@@ -12,7 +12,7 @@
 			if (preg_match('/table field/', $field['type'])) {
 				$field['table'] = $table;
 				$field['record'] = $record;
-				$sheet = $field['spreadsheet sheet'];
+				$sheet = 0;//$field['spreadsheet sheet'];
 				$column = $field['spreadsheet column'];
 				$fields[$sheet.'-'.$column][] = $field;
 			} elseif ($field['type'] == 'constant') {

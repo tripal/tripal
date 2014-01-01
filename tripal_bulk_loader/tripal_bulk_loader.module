@@ -236,13 +236,11 @@ function tripal_bulk_loader_views_api() {
  */
 function tripal_bulk_loader_theme() {
   return array(
-    'node' => array(
-      'variables' => array('node' => NULL),
+    'node__tripal_bulk_loader' => array(
+      'template' => 'node--tripal-bulk-loader',
       'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
-    ),
-    'tripal_bulk_loader_set_constants_form' => array(
-      'function' => 'theme_tripal_bulk_loader_set_constants_form',
-      'variables' => array('form' => NULL),
+      'render element' => 'node',
+      'base hook' => 'node',
     ),
     'tripal_bulk_loader_template' => array(
       'variables' => array('template_id' => NULL),
@@ -250,7 +248,7 @@ function tripal_bulk_loader_theme() {
       'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
     ),
     'tripal_bulk_loader_modify_template_base_form' => array(
-      'arguments' => array('form' => NULL),
+      'variables' => array('form' => NULL),
       'template' => 'tripal_bulk_loader_modify_template_base_form',
       'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
       'render element' => 'form'
@@ -269,7 +267,6 @@ function tripal_bulk_loader_theme() {
     */
     'tripal_bulk_loader_admin' => array(
       'template' => 'tripal_bulk_loader_admin',
-      'variables' =>  array(NULL),
       'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
     ),
   );
@@ -373,8 +370,9 @@ function tripal_bulk_loader_form($node, $form_state) {
     $node = (object) $node;
   }
 
-  $sql = "SELECT * FROM {tripal_bulk_loader_template}";
-  $results = db_query($sql)->execute();
+  $results = db_select('tripal_bulk_loader_template', 't')
+              ->fields('t', array('template_id','name'))
+              ->execute();
   $templates = array();
   foreach ($results as $template) {
     $templates [$template->template_id] = $template->name;
@@ -400,7 +398,7 @@ function tripal_bulk_loader_form($node, $form_state) {
     '#title'         => t('Loading Job Name'),
     '#weight'        => -10,
     '#required'      => TRUE,
-    '#default_value' => $node->loader_name
+    '#default_value' => (isset($node->loader_name)) ? $node->loader_name : ''
   );
 
   $form['loader']['template_id'] = array(
@@ -410,7 +408,7 @@ function tripal_bulk_loader_form($node, $form_state) {
     '#options'       => $templates,
     '#weight'        => -9,
     '#required'      => TRUE,
-    '#default_value' => $node->template_id,
+    '#default_value' => (isset($node->template_id)) ? $node->template_id : current($templates),
   );
 
   $form['loader']['file']= array(
@@ -418,7 +416,7 @@ function tripal_bulk_loader_form($node, $form_state) {
     '#title'         => t('Data File'),
     '#description'   => t('Please specify the data file to be loaded. This must be a tab-delimited text file with UNIX line endings.'),
     '#weight'        => -8,
-    '#default_value' => $node->file,
+    '#default_value' => (isset($node->file)) ? $node->file : '',
     '#maxlength'     => 1024,
   );
 
@@ -427,7 +425,7 @@ function tripal_bulk_loader_form($node, $form_state) {
     '#title' => t('File has a Header'),
     '#options' => array( 1 => 'Yes', 2 => 'No'),
     '#weight' => -7,
-    '#default_value' => $node->file_has_header,
+    '#default_value' => (isset($node->file_has_header)) ? $node->file_has_header : 1,
   );
 
   $form['loader']['keep_track_inserted'] = array(
@@ -438,7 +436,7 @@ function tripal_bulk_loader_form($node, $form_state) {
       .'successfully inserted into each table.'),
     '#options' => array( 1 => 'Yes', 0 => 'No'),
     '#weight' => -7,
-    '#default_value' => (isset($node->keep_track_inserted)) ? $node->keep_track_inserted : variable_get('tripal_bulk_loader_keep_track_inserted', FALSE),
+    '#default_value' => (isset($node->keep_track_inserted)) ? $node->keep_track_inserted : variable_get('tripal_bulk_loader_keep_track_inserted', 0),
   );
 
   return $form;
@@ -448,102 +446,123 @@ function tripal_bulk_loader_form($node, $form_state) {
 /**
  * Implements node_load
  *
+ * D7 Changes: now loads all $nodes at once so need to add loops
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_load($node) {
-  $sql = "SELECT * FROM {tripal_bulk_loader} WHERE nid = :nid";
-  $node = db_query($sql, array(':nid' => $node->nid))->fetchObject();
+function tripal_bulk_loader_load($nodes) {
 
-  $node->title = 'Bulk Loading Job: ' . $node->loader_name;
+  // Loading Job Details
+  // Add fields from the tripal_bulk_loader
+  $result = db_select('tripal_bulk_loader', 'tbl')
+    ->fields('tbl')
+    ->condition('nid',array_keys($nodes),'IN')
+    ->execute();
+  foreach ($result as $record) {
+    $nodes[$record->nid]->loader_name = $record->loader_name;
+    $nodes[$record->nid]->template_id = $record->template_id;
+    $nodes[$record->nid]->file = $record->file;
+    $nodes[$record->nid]->job_id = $record->job_id;
+    $nodes[$record->nid]->job_status = $record->job_status;
+    $nodes[$record->nid]->file_has_header = $record->file_has_header;
+    $nodes[$record->nid]->keep_track_inserted = $record->keep_track_inserted;
 
-  // Add job details
-  $progress = tripal_bulk_loader_progess_file_get_progress($node->job_id);
-  $sql = "SELECT * FROM {tripal_jobs} WHERE job_id=:job_id";
-  $node->job = db_query($sql, array(':job_id' => $node->job_id))->fetchObject();
-
-  // Add the loader template
-  $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template";
-  $results = db_query($sql, array(':template' => $node->template_id))->fetchObject();
-  $template = unserialize($results->template_array);
-  $node->template = $results;
-  $node->template->template_array = $template;
-
-  // Add inserted records
-  $sql = 'SELECT * FROM {tripal_bulk_loader_inserted} WHERE nid=:nid';
-  $resource = db_query($sql, array(':nid' => $node->nid))->execute();
-  foreach ($resource as $r) {
-    $r->num_inserted = sizeof(preg_split('/,/', $r->ids_inserted));
-    $node->inserted_records->{$r->table_inserted_into} = $r;
+    $nodes[$record->nid]->exposed_fields = array();
+    $nodes[$record->nid]->constants = array();
   }
 
-  // Add exposed field list
-  $node->exposed_fields = array();
-  if ($template) {
-    foreach ($template as $record_id => $record) {
-      foreach ($record['fields'] as $field_id => $field) {
-        if ($field['exposed']) {
-          $node->exposed_fields[] = array(
-            'record_id' => $record_id,
-            'field_id' => $field_id,
-            'title' => $field['title'],
-          );
+  // Job Details
+  // Add fields from tripal_jobs
+  $result = db_query('SELECT tbl.nid, tj.* FROM {tripal_jobs} tj '
+    . 'LEFT JOIN {tripal_bulk_loader} tbl ON tbl.job_id=tj.job_id '
+    . 'WHERE tbl.nid IN (:nids)',
+    array(':nids' => array_keys($nodes))
+  );
+  foreach ($result as $record) {
+    $nodes[$record->nid]->job = $record;
+  }
+
+  // Add the Loader Template
+  // Add fields from tripal_bulk_loader_template
+  $result = db_query('SELECT tbl.nid, tblt.* FROM {tripal_bulk_loader_template} tblt '
+    . 'LEFT JOIN {tripal_bulk_loader} tbl ON tbl.template_id=tblt.template_id '
+    . 'WHERE tbl.nid IN (:nids)',
+    array(':nids' => array_keys($nodes))
+  );
+  foreach ($result as $dbrecord) {
+    $nodes[$dbrecord->nid]->template = $dbrecord;
+    $nodes[$dbrecord->nid]->template->template_array = unserialize($dbrecord->template_array);
+
+    // Add exposed field list
+    $template = $nodes[$dbrecord->nid]->template->template_array;
+    $nodes[$dbrecord->nid]->exposed_fields = array();
+    if ($template) {
+      foreach ($template as $record_id => $record) {
+        foreach ($record['fields'] as $field_id => $field) {
+          if (isset($field['exposed'])) {
+            if ($field['exposed']) {
+              $nodes[$dbrecord->nid]->exposed_fields[] = array(
+                'record_id' => $record_id,
+                'field_id' => $field_id,
+                'title' => $field['title'],
+              );
+            }
+          }
         }
       }
     }
-
-    if (empty($node->exposed_fields)) {
-      $node->exposed_fields[] = array();
-    }
   }
 
+  // Add inserted records
+  // Add fields from tripal_bulk_loader_inserted
+  $result = db_query('SELECT tbli.* FROM {tripal_bulk_loader_inserted} tbli '
+    . 'WHERE tbli.nid IN (:nids)',
+    array(':nids' => array_keys($nodes))
+  );
+  foreach ($result as $record) {
+    $record->num_inserted = sizeof(preg_split('/,/', $record->ids_inserted));
+    $nodes[$record->nid]->inserted_records->{$record->table_inserted_into} = $record;
+  }
 
   // Add constants
-  $sql = 'SELECT * FROM {tripal_bulk_loader_constants} WHERE nid=:nid ORDER BY group_id, record_id, field_id';
-  $resource = db_query($sql, array(':nid' => $node->nid))->execute();
-  foreach ($resource as $r) {
-    $node->constants[$r->group_id][$r->record_id][$r->field_id] = array(
-      'constant_id' => $r->constant_id,
-      'group_id' => $r->group_id,
-      'chado_table' => $r->chado_table,
-      'chado_field' => $r->chado_field,
-      'record_id' => $r->record_id,
-      'field_id' => $r->field_id,
-      'value' => $r->value
+  // Add fields from tripal_bulk_loader_constants
+  $result = db_query('SELECT tblc.* FROM {tripal_bulk_loader_constants} tblc '
+    . 'WHERE tblc.nid IN (:nids) '
+    . 'ORDER BY group_id, record_id, field_id',
+    array(':nids' => array_keys($nodes))
+  );
+  foreach ($result as $record) {
+    $nodes[$record->nid]->constants[$record->group_id][$record->record_id][$record->field_id] = array(
+      'constant_id' => $record->constant_id,
+      'group_id' => $record->group_id,
+      'chado_table' => $record->chado_table,
+      'chado_field' => $record->chado_field,
+      'record_id' => $record->record_id,
+      'field_id' => $record->field_id,
+      'value' => $record->value
     );
   }
-  if (!$node->constants) {
-    $node->constants[] = array();
-  }
 
-  return $node;
 }
 
 /**
  * Implements node_insert
  * Insert the data from the node form on Create content
  *
+ * D7 Changes: seems to need db_insert; not recommended to change $node
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_insert($node) {
 
-  // Insert into tripal_bulk_loader
-  $sql = "INSERT INTO {tripal_bulk_loader} (nid, loader_name, template_id, file, file_has_header, job_status, keep_track_inserted) VALUES (:nid, :loader, :template, :file, :header, :status, :ids)";
-  db_query($sql,
-    array(':nid' => $node->nid,
-      ':loader' => $node->loader_name,
-      ':template' => $node->template_id,
-      ':file' => $node->file,
-      ':header' => $node->has_header,
-      ':status' => 'Initialized',
-      ':ids' => $node->keep_track_inserted
-    )
-  )->execute();
-
-  // Update title
-  $node->title =$node->loader_name;
-  drupal_write_record('node', $node, 'nid');
-  drupal_write_record('node_revision', $node, 'nid');
-
+  $node->title = $node->loader_name;
+  db_insert('tripal_bulk_loader')->fields(array(
+    'nid' => $node->nid,
+    'loader_name' => $node->loader_name,
+    'template_id' => $node->template_id,
+    'file' => $node->file,
+    'file_has_header' => $node->has_header,
+    'job_status' => 'Initialized',
+    'keep_track_inserted' => $node->keep_track_inserted
+  ))->execute();
   drupal_set_message(t('After reviewing the details, please Submit this Job (by clicking the "Submit Job" button below). No data will be loaded until the submitted job is reached in the queue.'));
 
 }
@@ -555,32 +574,39 @@ function tripal_bulk_loader_insert($node) {
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_delete($node) {
-  $sql = "DELETE FROM {tripal_bulk_loader} WHERE nid = :nid";
-  db_query($sql, array(':nid' => $node->nid))->execute();
+  $tables = array();
+  $tables[] = 'tripal_bulk_loader';
+  $tables[] = 'tripal_bulk_loader_constants';
+  $tables[] = 'tripal_bulk_loader_inserted';
+  foreach($tables as $table) {
+    db_delete($table)
+      ->condition('nid',$node->nid)
+      ->execute();
+  }
 }
 
 /**
  * Implements node_update
  * Updates the data submitted by the node form on edit
  *
+ * D7 Changes: db_update is much easier
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_update($node) {
 
   // Update tripal_bulk_loader
-  $sql = "UPDATE {tripal_bulk_loader} SET nid = :nid, loader_name = :loader, template_id = :template, file = :file, file_has_header = :header, keep_track_inserted = :ids WHERE nid = :wherenid";
-  db_query($sql,
-    array(':nid' => $node->nid,
-      ':loader' => $node->loader_name,
-      ':template' => $node->template_id,
-      ':file' => $node->file,
-      ':header' => $node->has_header,
-      ':ids' => $node->keep_track_inserted,
-      ':wherenid' => $node->nid
-    )
-  )->execute();
+  db_update('tripal_bulk_loader')->fields(array(
+    'nid' => $node->nid,
+    'loader_name' => $node->loader_name,
+    'template_id' => $node->template_id,
+    'file' => $node->file,
+    'file_has_header' => $node->has_header,
+    'keep_track_inserted' => $node->keep_track_inserted
+  ))->condition('nid',$node->nid)->execute();
 
   // Add a job if the user want to load the data
+  /**
+  No job checkbox in the form
   global $user;
   if ($node->job) {
     $job_args[0] =$node->loader_name;
@@ -594,6 +620,7 @@ function tripal_bulk_loader_update($node) {
       drupal_set_message(t("Can not open %file. Job not scheduled.", array('%file' => $node->file)));
     }
   }
+  */
 
 }
 
@@ -606,8 +633,11 @@ function tripal_bulk_loader_update($node) {
  */
 function tripal_bulk_loader_preprocess_tripal_bulk_loader_template(&$variables) {
 
-  $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=%d";
-  $template = db_query($sql, array(':template' => $variables['template_id']))->fetchObject();
+  $resource = db_select('tripal_bulk_loader_template','t')
+    ->fields('t')
+    ->condition('template_id', $variables['template_id'])
+    ->execute();
+  $template = $resource->fetchObject();
   $template->template_array = unserialize($template->template_array);
   $variables['template'] = $template;
 

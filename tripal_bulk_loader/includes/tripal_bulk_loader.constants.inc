@@ -41,15 +41,15 @@ function tripal_bulk_loader_update_constant($nid, $group_id, $table, $field, $re
   );
 
   // Check to see if already exists
-  $exists = db_query(
-    "SELECT constant_id FROM {tripal_bulk_loader_constants} WHERE nid=:nid AND record_id=:record AND field_id=:field AND group_id=:group",
-    array(
-      ':nid' => $record['nid'],
-      ':record' => $record['record_id'],
-      ':field' => $record['field_id'],
-      ':group' => $record['group_id']
-  ))->fetchObject();
-  if ($exists->constant_id) {
+  $exists = db_select('tripal_bulk_loader_constants', 'c')
+    ->fields('c',array('constant_id'))
+    ->condition('nid',$record['nid'])
+    ->condition('record_id',$record['record_id'])
+    ->condition('field_id',$record['field_id'])
+    ->condition('group_id',$record['group_id'])
+    ->execute();
+  $exists = $exists->fetchObject();
+  if (!isset($exists)) {
     $record['constant_id'] = $exists->constant_id;
     $status = drupal_write_record('tripal_bulk_loader_constants', $record, 'constant_id');
     if ($status) {
@@ -121,7 +121,7 @@ function tripal_bulk_loader_has_exposed_fields($node) {
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_set_constants_form($form_state, $node) {
+function tripal_bulk_loader_set_constants_form($form, $form_state, $node) {
   $form = array();
 
   $form['nid'] = array(
@@ -149,40 +149,70 @@ function tripal_bulk_loader_set_constants_form($form_state, $node) {
 
   // Display table of already added constant sets with the ability to re-arrange and delete
   $first_constant = reset($node->constants);
-  if (sizeof($node->constants) > 0 AND !empty($first_constant)) {
+  if (sizeof($node->constants) > 0) {
     $form['exposed_fields']['explanation-1'] = array(
       '#type' => 'item',
-      '#value' => t('You have already added constants to this bulk loading job. Each '
+      '#markup' => t('You have already added constants to this bulk loading job. Each '
         .'row in the following table represents a set of constants. Each set will be used '
         .'to load your data file with the specified template resulting in the each record '
         .'in the template to be loaded x number of times where there are x sets of '
         .'constants (rows in the following table).')
     );
 
-    $form['exposed_fields']['existing'] = array(
-      '#tree' => TRUE,
-    );
-
-    foreach ($node->constants as $set) {
-
+    $rows = array();
+    foreach ($node->constants as $group_id => $set) {
+      $row = array();
+      $row['group_id'] = $group_id;
+      $header['group_id'] = t('Group');
       foreach ($set as $record) {
         foreach ($record as $field) {
           $index = $field['record_id'] . '-' . $field['field_id'];
-          $group = $field['group_id'];
-          $form['exposed_fields']['existing'][$group][$index] = array(
-            '#type' => 'markup',
-            '#value' => filter_xss($field['value']),
-          );
+          $header[$index] = $field['value'];
+          $row[$index] = $field['value'];
         }
       }
+      $header['operations'] = t('Operations');
+      $row['operations'] = filter_xss(l(t('Edit'), 'node/' . $node->nid . '/constants/' . $group_id . '/edit') . '  |  '  .
+            l(t('Delete'), 'node/' . $node->nid . '/constants/' . $group_id . '/delete'));
 
-      $form['exposed_fields']['existing'][$group]['delete'] = array(
-        '#type' => 'markup',
-        '#value' => filter_xss(l(t('Edit'), 'node/' . $node->nid . '/constants/' . $group . '/edit') . '  |  '  .
-          l(t('Delete'), 'node/' . $node->nid . '/constants/' . $group . '/delete')),
-      );
-
+      $rows[] = $row;
     }
+
+    //get the header using the last constant set
+    $header = array();
+    $header['group_id'] = '';
+    $header_row = array();
+    $header_row[0]['group_id'] = array('data' => t('Group'),'header'=>TRUE);
+    foreach ($set as $record) {
+      foreach ($record as $field) {
+        $header[$field['record_id']]['data'] = $node->template->template_array[$field['record_id']]['record_id'];
+        $header[$field['record_id']]['colspan'] = sizeof($record);
+
+        $index = $field['record_id'] . '-' . $field['field_id'];
+        $header_row[0][$index] = array(
+          'data' => $node->template->template_array[$field['record_id']]['fields'][$field['field_id']]['title'],
+          'header' => TRUE
+        );
+      }
+    }
+    $header['operations'] = '';
+    $header_row[0]['operations'] = array('data' => t('Operations'),'header'=>TRUE);
+
+    $full_header = array(
+      0 => $header,
+      1 => $header_row[0]
+    );
+    $all_rows = array_merge($header_row, $rows);
+    $form['exposed_fields']['existing'] = array(
+      '#type' => 'markup',
+      '#markup' => theme('table', array(
+        'header' => $header,
+        'rows' => $all_rows
+      )),
+      // Added to make accessible to subthemeing
+      '#rows' => serialize($rows),
+      '#header' => serialize($full_header)
+    );
   }
 
   $form['exposed_fields']['new'] = array(
@@ -192,7 +222,7 @@ function tripal_bulk_loader_set_constants_form($form_state, $node) {
 
   $form['exposed_fields']['new']['explanation-2'] = array(
     '#type' => 'item',
-    '#value' => t('The following fields are constants in the selected template that you need to set values for.')
+    '#markup' => t('The following fields are constants in the selected template that you need to set values for.')
   );
 
   // Add textifelds for exposed fields of the current template
@@ -209,13 +239,24 @@ function tripal_bulk_loader_set_constants_form($form_state, $node) {
         $exposed_fields = TRUE;
         $indexes[$record_id][] = $field_id;
 
+        $default_value = '';
+        if (isset($node->constants[$record_id])) {
+          if (isset($node->constants[$record_id][$field_id])) {
+            $default_value = $node->constants[$record_id][$field_id]['value'];
+          }
+        } elseif (isset($field['constant value'])) {
+          $default_value = $field['constant value'];
+        } elseif(isset($field['spreadsheet column'])) {
+          $default_value = $field['spreadsheet column'];
+        }
+
         switch ($field['type']) {
           case 'table field':
             $form['exposed_fields']['new'][$record_id . '-' . $field_id] = array(
               '#type' => 'textfield',
               '#title' => t('%title', array('%title' => $field['title'])),
               '#description' => t('%exposed_description', array('%exposed_description' => $field['exposed_description'])),
-              '#default_value' => (isset($node->constants[$record_id][$field_id]['value'])) ? $node->constants[$record_id][$field_id]['value'] : $field['constant value'],
+              '#default_value' => $default_value,
             );
           break;
           case 'constant':
@@ -223,7 +264,7 @@ function tripal_bulk_loader_set_constants_form($form_state, $node) {
               '#type' => 'textfield',
               '#title' => t('%title', array('%title' => $field['title']) ),
               '#description' => t('Enter the case-sensitive value of this constant for your data file'),
-              '#default_value' => (isset($node->constants[$record_id][$field_id]['value'])) ? $node->constants[$record_id][$field_id]['value'] : $field['constant value'],
+              '#default_value' => $default_value,
             );
           break;
         }
@@ -285,28 +326,30 @@ function tripal_bulk_loader_set_constants_form_validate($form, $form_state) {
   if (strcmp('Add Constant Set', $op) == 0) {
       foreach ($indexes as $record_id => $array) {
         foreach ($array as $field_id) {
-          if ($template[$record_id]['fields'][$field_id]['exposed_validate']) {
-            $result = db_fetch_object(chado_query(
-              "SELECT 1 as valid FROM {%s} WHERE %s='%s'",
-              $template[$record_id]['table'],
-              $template[$record_id]['fields'][$field_id]['field'],
-              $form_state['values'][$record_id . '-' . $field_id]
-            ));
+          if (isset($template[$record_id]['fields'][$field_id]['exposed_validate'])) {
+            if ($template[$record_id]['fields'][$field_id]['exposed_validate']) {
+              $result = db_fetch_object(chado_query(
+                "SELECT 1 as valid FROM {%s} WHERE %s='%s'",
+                $template[$record_id]['table'],
+                $template[$record_id]['fields'][$field_id]['field'],
+                $form_state['values'][$record_id . '-' . $field_id]
+              ));
 
-            if (!$result->valid) {
-              $msg = 'A ' . $form['exposed_fields']['new'][$record_id . '-' . $field_id]['#title'] . ' of "' . $form['exposed_fields']['new'][$record_id . '-' . $field_id]['#value'] . '" must already exist!';
-              form_set_error($record_id . '-' . $field_id, $msg);
-            }
-            else {
-              drupal_set_message(
-                t(
-                  'Confirmed a %title of "%value" already exists.',
-                  array(
-                    '%title' => $form['exposed_fields']['new'][$record_id . '-' . $field_id]['#title'],
-                    '%value' => $form['exposed_fields']['new'][$record_id . '-' . $field_id]['#value']
+              if (!$result->valid) {
+                $msg = 'A ' . $form['exposed_fields']['new'][$record_id . '-' . $field_id]['#title'] . ' of "' . $form['exposed_fields']['new'][$record_id . '-' . $field_id]['#value'] . '" must already exist!';
+                form_set_error($record_id . '-' . $field_id, $msg);
+              }
+              else {
+                drupal_set_message(
+                  t(
+                    'Confirmed a %title of "%value" already exists.',
+                    array(
+                      '%title' => $form['exposed_fields']['new'][$record_id . '-' . $field_id]['#title'],
+                      '%value' => $form['exposed_fields']['new'][$record_id . '-' . $field_id]['#value']
+                    )
                   )
-                )
-              );
+                );
+              }
             }
           }
         }
@@ -346,57 +389,6 @@ function tripal_bulk_loader_set_constants_form_submit($form, $form_state) {
 
 }
 
-/**
- * Themes the bulk loading job set constants form
- *
- * @ingroup tripal_bulk_loader
- */
-function theme_tripal_bulk_loader_set_constants_form($form) {
-  $output = '';
-
-  $exposed_fields = unserialize($form['exposed_array']['#value']);
-  // need to put in the context of a node so we can use the has_exposed_fields function
-  if ($exposed_fields) {
-    $node->exposed_fields = $exposed_fields;
-  }
-  else {
-    $node->exposed_fields = array();
-  }
-
-  // Add draggable table for constant sets
-  if (tripal_bulk_loader_has_exposed_fields($node)) {
-    $i=1;
-    foreach (element_children($form['exposed_fields']['existing']) as $key) {
-      $element = &$form['exposed_fields']['existing'][$key];
-      $element['group']['#attributes']['class'] = 'weight-group';
-
-      $row = array();
-      foreach ($exposed_fields as $exposed) {
-        if ($i==1) {
-          $header[] = $exposed['title'];
-        }
-        $k = $exposed['record_id'] . '-' . $exposed['field_id'];
-        $row[] = drupal_render($element[$k]);
-      }
-      $row[] = drupal_render($element['delete']);
-      $row[] = drupal_render($element['group']) . drupal_render($element['id']);
-      if (!empty($row[0])) {
-        $rows[] = array('data' => $row, 'class' => 'draggable');
-      }
-      $i++;
-    }
-    //drupal_add_tabledrag('mytable', 'order', 'sibling', 'weight-group');
-    // @coder-ignore: no user input thus don't need to filter
-    $form['exposed_fields']['existing'] = array(
-      '#type' => 'markup',
-      '#value' => theme('table', $header, $rows, array('id' => 'mytable')) . '<br />',
-    );
-  }
-
-  $output .= drupal_render($form);
-  return $output;
-}
-
 ///////////////////////////////////////////////////////////
 // Set Constants Form (on Bulk Loader Node)
 ///////////////////////////////////////////////////////////
@@ -416,10 +408,8 @@ function theme_tripal_bulk_loader_set_constants_form($form) {
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_edit_constant_set_form($form_state, $node, $group_id) {
+function tripal_bulk_loader_edit_constant_set_form($form, $form_state, $node, $group_id) {
   $form = array();
-
-  $form['#redirect'] = 'node/' . $node->nid;
 
   $form['nid'] = array(
     '#type' => 'hidden',
@@ -503,8 +493,9 @@ function tripal_bulk_loader_edit_constant_set_form($form_state, $node, $group_id
   );
 
   $form['cancel'] = array(
-    '#type' => 'submit',
-    '#value' => 'Cancel',
+    '#type' => 'link',
+    '#title' => 'Cancel',
+    '#href' => 'node/'.$node->nid
   );
 
   return $form;
@@ -515,14 +506,17 @@ function tripal_bulk_loader_edit_constant_set_form($form_state, $node, $group_id
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_edit_constant_set_form_submit($form, $form_state) {
+function tripal_bulk_loader_edit_constant_set_form_submit($form, &$form_state) {
 
   // Update constants
   $template = unserialize($form_state['values']['template']);
   $indexes = unserialize($form_state['values']['indexes']);
+  $nid = $form_state['values']['nid'];
 
   $op = $form_state['values'][ $form_state['clicked_button']['#name'] ];
   if (strcmp('Save', $op) == 0) {
+    $form_state['redirect'] = 'node/' . $nid;
+    $form_state['rebuild'] = FALSE;
 
     foreach ($indexes as $record_id => $array) {
       foreach ($array as $field_id) {
@@ -558,10 +552,8 @@ function tripal_bulk_loader_edit_constant_set_form_submit($form, $form_state) {
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_delete_constant_set_form($form_state, $node, $group_id) {
+function tripal_bulk_loader_delete_constant_set_form($form, $form_state, $node, $group_id) {
   $form = array();
-
-  $form['#redirect'] = 'node/' . $node->nid;
 
   $form['nid'] = array(
     '#type' => 'value',
@@ -588,12 +580,18 @@ function tripal_bulk_loader_delete_constant_set_form($form_state, $node, $group_
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_delete_constant_set_form_submit($form, $form_state) {
+function tripal_bulk_loader_delete_constant_set_form_submit($form, &$form_state) {
 
   $group_id = $form_state['values']['group_id'];
   $nid = $form_state['values']['nid'];
   if ($nid && $form_state['values']['confirm']) {
-    db_query("DELETE FROM {tripal_bulk_loader_constants} WHERE nid=:nid AND group_id=:group", array(':nid' => $nid, ':group' => $group_id))->execute();
+    $form_state['redirect'] = 'node/' . $nid;
+    $form_state['rebuild'] = FALSE;
+
+    db_delete('tripal_bulk_loader_constants')
+      ->condition('nid', $nid)
+      ->condition('group_id',$group_id)
+      ->execute();
     drupal_set_message(t('Constant set successfully deleted.'));
   }
 

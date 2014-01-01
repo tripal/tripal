@@ -13,7 +13,7 @@
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_add_loader_job_form($form_state, $node) {
+function tripal_bulk_loader_add_loader_job_form($form, $form_state, $node) {
   $form = array();
 
   // --notify--
@@ -74,10 +74,10 @@ function tripal_bulk_loader_add_loader_job_form_submit($form, $form_state) {
       $job_id = tripal_add_job("Bulk Loading Job: $fname", 'tripal_bulk_loader', 'tripal_bulk_loader_load_data', $job_args, $user->uid);
 
       // add job_id to bulk_loader node
-      $success = db_query("UPDATE {tripal_bulk_loader} SET job_id=:job WHERE nid=:nid", array(':job' => $job_id, ':nid' => $form_state['values']['nid']))->execute();
-
-      // change status
-      db_query("UPDATE {tripal_bulk_loader} SET job_status=:status' WHERE nid=:nid", array(':status' => 'Submitted to Queue', ':nid' => $form_state['values']['nid']))->execute();
+      $success = db_update('tripal_bulk_loader')->fields(array(
+        'job_id' => $job_id,
+        'job_status' => 'Submitted to Queue'
+      ))->condition('nid',$form_state['values']['nid'])->execute();
     }
     else {
       drupal_set_message(t("Can not open %file. Job not scheduled.", array('%file' => $form_state['values']['file'])));
@@ -85,10 +85,14 @@ function tripal_bulk_loader_add_loader_job_form_submit($form, $form_state) {
   }
   elseif (preg_match('/Re-Submit Job/', $form_state['values']['op'])) {
     tripal_jobs_rerun($form_state['values']['job_id']);
-    db_query("UPDATE {tripal_bulk_loader} SET job_status=:status WHERE nid=:nid", array(':status' => 'Submitted to Queue', 'nid' => $form_state['values']['nid']))->execute();
+    $success = db_update('tripal_bulk_loader')->fields(array(
+        'job_status' => 'Submitted to Queue'
+      ))->condition('nid',$form_state['values']['nid'])->execute();
   }
   elseif (preg_match('/Cancel Job/', $form_state['values']['op'])) {
-    db_query("UPDATE {tripal_bulk_loader} SET job_status=:status WHERE nid=:nid", array(':status' => 'Job Cancelled', ':nid' => $form_state['values']['nid']))->execute();
+    $success = db_update('tripal_bulk_loader')->fields(array(
+        'job_status' => 'Job Cancelled'
+      ))->condition('nid',$form_state['values']['nid'])->execute();
     tripal_jobs_cancel($form_state['values']['job_id']);
   }
   elseif (preg_match('/Revert/', $form_state['values']['op'])) {
@@ -109,7 +113,9 @@ function tripal_bulk_loader_add_loader_job_form_submit($form, $form_state) {
     }
 
     // reset status
-    db_query("UPDATE {tripal_bulk_loader} SET job_status=:status WHERE nid=:nid", array(':status' => 'Reverted -Data Deleted', ':nid' => $form_state['values']['nid']))->execute();
+    $success = db_update('tripal_bulk_loader')->fields(array(
+        'job_status' => 'Reverted -Data Deleted'
+      ))->condition('nid',$form_state['values']['nid'])->execute();
   }
 
 }
