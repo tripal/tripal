@@ -248,7 +248,7 @@ function tripal_bulk_loader_theme() {
       'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
     ),
     'tripal_bulk_loader_modify_template_base_form' => array(
-      'variables' => array('form' => NULL),
+      //'variables' => array('form' => NULL),
       'template' => 'tripal_bulk_loader_modify_template_base_form',
       'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
       'render element' => 'form'
