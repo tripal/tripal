@@ -530,29 +530,39 @@ function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_delete_template_base_form() {
+function tripal_bulk_loader_delete_template_base_form($form, $form_state) {
   $form = array();
 
-  $sql = "SELECT * FROM {tripal_bulk_loader_template}";
-  $resource = db_query($sql);
-  $templates = array();
-  $templates[''] = 'Select a Template';
-  while ($r = $resource->fetchObject()) {
-    $templates[$r->template_id] = $r->name;
-  }
-  $form['template_name'] = array(
-      '#title'         => t('Template'),
-      '#description'   => t('Please select the template you would like to delete.'),
-      '#type'          => 'select',
-      '#options'       => $templates,
-      '#weight'        => 0,
-      '#required'      => TRUE,
-  );
+  $template_id = $form_state['build_info']['args'][0];
+  $form_state['storage']['template_id'] = $template_id;
 
-  $form['submit'] = array(
+  $description = '';
+  if (isset($_GET['template_name'])) {
+    $form_state['storage']['template_name'] = $_GET['template_name'];
+    $description .= '<p><strong>Template:</strong> '.$_GET['template_name'].'</p>';
+  }
+
+  $description .= '<p><strong>Are you sure you want to delete this template?</strong></p>';
+  $yes = 'Delete Template';
+  $no = 'Cancel';
+
+  $form['#attributes']['class'][] = 'confirmation';
+  $form['description'] = array('#markup' => $description);
+
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array(
     '#type' => 'submit',
-    '#value' => 'Delete Template',
+    '#value' => $yes ? $yes : t('Confirm'),
   );
+  $form['actions']['cancel'] = array(
+    '#type' => 'link',
+    '#title' => $no ? $no : t('Cancel'),
+    '#href' => 'admin/tripal/loaders/bulk/template/'.$template_id.'/edit',
+  );
+  // By default, render the form using theme_confirm_form().
+  if (!isset($form['#theme'])) {
+    $form['#theme'] = 'confirm_form';
+  }
 
   return $form;
 }
@@ -568,8 +578,24 @@ function tripal_bulk_loader_delete_template_base_form() {
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_delete_template_base_form_submit($form, &$form_state) {
-  $sql = "DELETE FROM {tripal_bulk_loader_template} WHERE template_id=:template";
-  db_query($sql, array(':template' => $form_state['values']['template_name']))->execute();
+
+  if (isset($form_state['storage']['template_id'])) {
+    if ($form_state['storage']['template_id'] > 0) {
+      db_delete('tripal_bulk_loader_template')
+        ->condition('template_id', $form_state['storage']['template_id'])
+        ->execute();
+      if (isset($form_state['storage']['template_name'])) {
+        drupal_set_message('Successfully deleted '.$form_state['storage']['template_name'].' template.');
+      }
+      else {
+        drupal_set_message('Successfully deleted the template');
+      }
+    }
+  }
+
+  $form_state['rebuild'] = FALSE;
+  $form_state['redirect'] = 'admin/tripal/loaders/bulk/templates';
+
 }
 
 /**
@@ -578,7 +604,7 @@ function tripal_bulk_loader_delete_template_base_form_submit($form, &$form_state
  */
 
 /**
- * Import/Export Template Form
+ * Import Template Form
  *
  * On export, simply selects the serialized array from the db for a given template
  * and presents it to the user. On import, a serialized template array and a name is
@@ -595,54 +621,27 @@ function tripal_bulk_loader_delete_template_base_form_submit($form, &$form_state
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_import_export_template_form($form_state = NULL, $mode) {
+function tripal_bulk_loader_import_template_form($form, $form_state) {
   $form = array();
 
-  $form['mode'] = array(
-    '#type' => 'hidden',
-    '#value' => $mode,
+  $form['new_template_name'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Template Name',
+    '#weight' => 1,
   );
-
-  if (preg_match('/import/', $mode)) {
-    $form['new_template_name'] = array(
-      '#type' => 'textfield',
-      '#title' => 'Template Name',
-      '#weight' => 1,
-    );
-  }
-  elseif (preg_match('/export/', $mode)) {
-    $sql = "SELECT * FROM {tripal_bulk_loader_template}";
-    $resource = db_query($sql);
-    $templates = array();
-    $templates[''] = 'Select a Template';
-    while ($r = $resource->fetchObject()) {
-      $templates[$r->template_id] = $r->name;
-    }
-
-    $form['template_id'] = array(
-      '#title'         => t('Template'),
-      '#description'   => t('Please select the template you would like to edit.'),
-      '#type'          => 'select',
-      '#options'       => $templates,
-      '#default_value' => $form_state['storage']['template_id'],
-      '#weight'        => 0,
-      '#required'      => TRUE,
-    );
-  }
 
   $form['template_array'] = array(
     '#type' => 'textarea',
-    '#title' => 'Template Array',
-    '#default_value' => $form_state['storage']['template_array'],
-    '#description' => t('Use this serialized array for import.'),
-    '#rows' => 15,
+    '#title' => 'Template Definition',
+    '#default_value' => (isset($form_state['values']['template_array'])) ? $form_state['values']['template_array'] : '',
+    '#description' => t('A serialized array describing the template.'),
+    '#rows' => 14,
     '#weight' => 5,
-
   );
 
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => 'Submit',
+    '#value' => 'Import',
     '#weight' => 10,
   );
 
@@ -650,7 +649,7 @@ function tripal_bulk_loader_import_export_template_form($form_state = NULL, $mod
 }
 
 /**
- * Import/Export Template Form Submit
+ * Import Template Form Submit
  *
  * @param $form
  *   The form that was submitted
@@ -659,36 +658,70 @@ function tripal_bulk_loader_import_export_template_form($form_state = NULL, $mod
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_import_export_template_form_submit($form, &$form_state) {
-  switch ($form_state['values']['mode']) {
-    case 'export':
-      $record = db_query("SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template", array(':template' => $form_state['values']['template_id']))->fetchObject();
-      //$form_state['storage']['template_array'] = $record->template_array;
-      $t = var_export(unserialize($record->template_array), TRUE);
-      $t = preg_replace("/\n\s+array/", "array", $t); // move array( to previous line
-      $t = preg_replace("/true/", "TRUE", $t); // upper case true
-      $t = preg_replace("/false/", "FALSE", $t); // upper case false
-      $t = preg_replace("/array\(/", "array (", $t); // put a space between array and paren
+function tripal_bulk_loader_import_template_form_submit($form, &$form_state) {
 
-      $form_state['storage']['template_array'] = $t;
-      $form_state['storage']['template_id'] = $form_state['values']['template_id'];
-    break;
-    case 'import':
-      // get the template array, and convert from text into an array.
-      $t = array();
-      eval("\$t = " . $form_state['values']['template_array'] . ";");
-      $record = array(
-        'name' => $form_state['values']['new_template_name'],
-        'template_array' => serialize($t),
-        'created' => time(),
-        'changed' => time()
-      );
-      drupal_write_record('tripal_bulk_loader_template', $record);
-      if ($record->template_id) {
-        drupal_set_message(t('Successfully imported Tripal Bulk Loader Template.'));
-      }
-    break;
+  $record = array(
+    'name' => $form_state['values']['new_template_name'],
+    'template_array' => $form_state['values']['template_array'],
+    'created' => time(),
+    'changed' => time()
+  );
+  $result = drupal_write_record('tripal_bulk_loader_template', $record);
+  if ($result) {
+    drupal_set_message(t('Successfully imported Tripal Bulk Loader Template.'));
   }
+
+  $form_state['rebuild'] = FALSE;
+  $form_state['redirect'] = 'admin/tripal/loaders/bulk/templates';
+
+}
+
+/**
+ * Export Template Form
+ *
+ * On export, simply selects the serialized array from the db for a given template
+ * and presents it to the user. On import, a serialized template array and a name is
+ * supplied and a template record is created.
+ *
+ * @todo Make array presented to the user more readable. (ie: unserialize and print to the screen)
+ *
+ * @param $form_state
+ *   The values and storage for the form
+ * @return
+ *   A form array to be rendered by drupal_get_form
+ *
+ * @ingroup tripal_bulk_loader
+ */
+function tripal_bulk_loader_export_template_form($form, $form_state) {
+
+  $template_id = $form_state['build_info']['args'][0];
+  $form_state['storage']['template_id'] = $template_id;
+  if ($template_id > 0) {
+    $result = db_select('tripal_bulk_loader_template','t')
+      ->fields('t')
+      ->condition('t.template_id',$template_id)
+      ->execute();
+    $template = $result->fetchObject();
+    $form_state['storage']['template_array'] = $template->template_array;
+  }
+
+  $form['name'] = array(
+    '#type' => 'item',
+    '#title' => 'Template Name',
+    '#markup' => $template->name,
+  );
+
+  $form['template_array'] = array(
+    '#type' => 'textarea',
+    '#title' => 'Export',
+    '#default_value' => $form_state['storage']['template_array'],
+    '#description' => t('Use this serialized array for import.'),
+    '#rows' => 30,
+    '#weight' => 5,
+
+  );
+
+  return $form;
 }
 
 /**

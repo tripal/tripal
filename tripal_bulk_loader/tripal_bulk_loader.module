@@ -176,30 +176,30 @@ function tripal_bulk_loader_menu() {
   );
 
   // Delete Template -----
-  $items['admin/tripal/loaders/bulk/manage_templates/delete'] = array(
+  $items['admin/tripal/loaders/bulk/template/%tblid/delete'] = array(
     'title' => 'Delete Template',
     'description' => 'Delete bulk loader template',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_bulk_loader_delete_template_base_form'),
+    'page arguments' => array('tripal_bulk_loader_delete_template_base_form',5),
     'access arguments' => array('administer tripal_bulk_loader'),
     'weight' => -4,
     'type' => MENU_NORMAL_ITEM,
   );
   // Import/Export ---------
-  $items['admin/tripal/loaders/bulk/manage_templates/import'] = array(
+  $items['admin/tripal/loaders/bulk/templates/import'] = array(
     'title' => 'Import Template',
     'description' => 'Import Loaders',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_bulk_loader_import_export_template_form', 'import'),
+    'page arguments' => array('tripal_bulk_loader_import_template_form'),
     'access arguments' => array('administer tripal_bulk_loader'),
     'weight' => 2,
     'type' => MENU_NORMAL_ITEM,
   );
-  $items['admin/tripal/loaders/bulk/manage_templates/export'] = array(
+  $items['admin/tripal/loaders/bulk/template/%tblid/export'] = array(
     'title' => 'Export Template',
     'description' => 'Export Loaders',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_bulk_loader_import_export_template_form', 'export'),
+    'page arguments' => array('tripal_bulk_loader_export_template_form', 5),
     'access arguments' => array('administer tripal_bulk_loader'),
     'weight' => 4,
     'type' => MENU_NORMAL_ITEM,
