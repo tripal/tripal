@@ -467,12 +467,14 @@ function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state
       $record = array(
         'name' => $form_state['values']['new_template_name'],
         'template_array' => array(),
+        'created' => time(),
+        'changed' => time()
       );
-      drupal_write_record('tripal_bulk_loader_template', $record);
+      $result = drupal_write_record('tripal_bulk_loader_template', $record);
       $form_state['storage']['template_id'] = $record['template_id'];
       $form_state['storage']['template_name'] = $record['name'];
       $form_state['storage']['template'] = array();
-      $form['rebuild'] = FALSE;
+      $form_state['rebuild'] = FALSE;
       $form_state['redirect'] = 'admin/tripal/loaders/bulk/template/'.$record['template_id'].'/edit';
     break;
 
@@ -508,7 +510,8 @@ function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state
   if ($save) {
     $record = array(
       'template_id' => $form_state['storage']['template_id'],
-      'template_array' => serialize($form_state['storage']['template'])
+      'template_array' => serialize($form_state['storage']['template']),
+      'changed' => time()
     );
     drupal_write_record('tripal_bulk_loader_template', $record, array('template_id'));
     drupal_set_message(t('Template Saved.'));
@@ -677,6 +680,8 @@ function tripal_bulk_loader_import_export_template_form_submit($form, &$form_sta
       $record = array(
         'name' => $form_state['values']['new_template_name'],
         'template_array' => serialize($t),
+        'created' => time(),
+        'changed' => time()
       );
       drupal_write_record('tripal_bulk_loader_template', $record);
       if ($record->template_id) {
@@ -1023,6 +1028,7 @@ function tripal_bulk_loader_edit_template_record_form_submit($form, &$form_state
 
     // Save Template
     $form_state['storage']['template']->template_array = serialize($template);
+    $form_state['storage']['template']->changed = time();
     $success = drupal_write_record('tripal_bulk_loader_template', $form_state['storage']['template'], array('template_id'));
 
     if ($success) {
@@ -1147,7 +1153,8 @@ function tripal_bulk_loader_delete_template_record_form_submit($form, &$form_sta
 
   $record = array(
     'template_id' => $form_state['storage']['template_id'],
-    'template_array' => serialize($form_state['storage']['template'])
+    'template_array' => serialize($form_state['storage']['template']),
+    'changed' => time()
   );
   drupal_write_record('tripal_bulk_loader_template', $record, array('template_id'));
   drupal_set_message(t('Template Saved.'));
@@ -1253,7 +1260,8 @@ function tripal_bulk_loader_duplicate_template_record_form_submit($form, &$form_
 
   $record = array(
     'template_id' => $form_state['storage']['template_id'],
-    'template_array' => serialize($form_state['storage']['template'])
+    'template_array' => serialize($form_state['storage']['template']),
+    'changed' => time()
   );
   drupal_write_record('tripal_bulk_loader_template', $record, array('template_id'));
   drupal_set_message(t('Template Saved.'));
@@ -2054,6 +2062,7 @@ function tripal_bulk_loader_template_field_form_submit($form, &$form_state) {
       $template[$priority]['fields'][$form_state['storage']['field_index']] = $field;
     }
     $form_state['storage']['template']->template_array = serialize($template);
+    $form_state['storage']['template']->changed = time();
     $success = drupal_write_record('tripal_bulk_loader_template', $form_state['storage']['template'], array('template_id'));
 
     if ($success) {
@@ -2225,7 +2234,8 @@ function tripal_bulk_loader_delete_template_field_form_submit($form, &$form_stat
 
   $record = array(
     'template_id' => $form_state['storage']['template_id'],
-    'template_array' => serialize($form_state['storage']['template'])
+    'template_array' => serialize($form_state['storage']['template']),
+    'changed' => time()
   );
   drupal_write_record('tripal_bulk_loader_template', $record, array('template_id'));
   drupal_set_message(t('Template Saved.'));

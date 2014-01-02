@@ -236,6 +236,36 @@ function tripal_bulk_loader_views_data() {
     ),
   );
 
+  $data['tripal_bulk_loader_template']['created'] = array(
+    'title' => t('Created'),
+    'help' => t('Date the template was created on.'),
+    'field' => array(
+      'handler' => 'views_handler_field_date',
+      'click sortable' => TRUE,
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort_date',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_date',
+    ),
+  );
+
+  $data['tripal_bulk_loader_template']['changed'] = array(
+    'title' => t('Updated'),
+    'help' => t('The date the template was last updated on.'),
+    'field' => array(
+      'handler' => 'views_handler_field_date',
+      'click sortable' => TRUE,
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort_date',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_date',
+    ),
+  );
+
   // Tripal Bulk Loader Constants ***************
   $data['tripal_bulk_loader_constants']['table']['group'] = t('Tripal Bulk Loader Constants');
   $data['tripal_bulk_loader_constants']['table'] = array(

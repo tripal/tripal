@@ -61,13 +61,25 @@ function tripal_bulk_loader_schema() {
             'type' => 'serial',
             'unsigned' => TRUE,
             'not null' => TRUE,
-      ),
-      'name' => array(
+          ),
+          'name' => array(
             'type' => 'varchar',
-      ),
-         'template_array' => array(
+          ),
+          'template_array' => array(
             'type' => 'varchar',
-      )
+          ),
+          'created' => array(
+            'description' => 'The Unix timestamp when the template was created.',
+            'type' => 'int',
+            'not null' => TRUE,
+            'default' => 0,
+          ),
+          'changed' => array(
+            'description' => 'The Unix timestamp when the template was most recently saved.',
+            'type' => 'int',
+            'not null' => TRUE,
+            'default' => 0,
+          )
     ),
       'primary key' => array('template_id'),
     'unique keys' => array(
@@ -199,7 +211,7 @@ function tripal_bulk_loader_update_6152() {
  * Update to 7.x-2.0
  * -Cast tripal_bulk_loader.template_id to int field
  */
-function tripal_bulk_loader_update_7200() {
+function tripal_bulk_loader_update_7201() {
 
   db_change_field(
     'tripal_bulk_loader',
@@ -208,7 +220,32 @@ function tripal_bulk_loader_update_7200() {
     array('type' => 'int')
   );
 
-  return 'Updated tripal_bulk_loader.template_id from character to integer';
+
+  db_add_field(
+    'tripal_bulk_loader_template',
+    'created',
+    array(
+      'description' => 'The Unix timestamp when the template was created.',
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    )
+  );
+
+  db_add_field(
+    'tripal_bulk_loader_template',
+    'changed',
+    array(
+      'description' => 'The Unix timestamp when the template was most recently saved.',
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    )
+  );
+
+
+  return 'Updated tripal_bulk_loader.template_id from character to integer '
+    . 'and added time created/updated track to templates.';
 
 }
 
