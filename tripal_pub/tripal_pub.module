@@ -488,7 +488,7 @@ function chado_pub_insert($node) {
     // insert the pub record
     $values = array(
       'title'       => trim($node->pubtitle),
-      'series_name' => trim($node->series_name),
+      'series_name' => substr(trim($node->series_name), 0, 255),
       'type_id'     => trim($node->type_id),
       'pyear'       => trim($node->pyear),
       'is_obsolete' => $node->is_obsolete ? 'true' : 'false', 
@@ -497,9 +497,9 @@ function chado_pub_insert($node) {
       'volume'      => $volume,    
       'issue'       => $issue,    
       'pages'       => $pages,
-      'miniref'     => $miniref,        
-      'publisher'   => $publisher,
-      'pubplace'    => $pubplace,
+      'miniref'     => substr($miniref, 0, 255),        
+      'publisher'   => substr($publisher, 0, 255),
+      'pubplace'    => substr($pubplace, 0, 255),
     );
     $pub = tripal_core_chado_insert('pub', $values);
     if (!$pub) {
