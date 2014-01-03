@@ -2,6 +2,7 @@
 
 require_once "api/tripal_organism.api.inc";
 require_once "includes/tripal_organism.admin.inc";
+require_once "includes/organism_sync.inc";
 
 /**
  * @file
@@ -117,11 +118,19 @@ function tripal_organism_menu() {
    'title' => 'Configuration',
    'description' => 'Manage integration of Chado organisms including associated features',
    'page callback' => 'drupal_get_form',
-   'page arguments' => array('tripal_organism_help'),
+   'page arguments' => array('tripal_organism_admin'),
    'access arguments' => array('adminster tripal organism'),
    'type' => MENU_NORMAL_ITEM,
   );
 
+  $items['admin/tripal/chado/tripal_organism/sync'] = array(
+    'title' => 'Sync Organisms',
+    'description' => 'Sync Chado organisms with Drupal',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_organism_sync'),
+    'access arguments' => array('adminster tripal organism'),
+    'type' => MENU_NORMAL_ITEM,
+  );
 
   return $items;
 }

@@ -198,7 +198,7 @@ function tripal_feature_menu() {
   );
   
   // the administative settings menu
-  $items['admin/tripal/tripal_feature'] = array(
+  $items['admin/tripal/chado/tripal_feature'] = array(
     'title' => 'Features',
     'description' => 'Basic Description of Tripal Organism Module Functionality',
     'page callback' => 'theme',
@@ -206,7 +206,7 @@ function tripal_feature_menu() {
     'access arguments' => array('administer tripal features'),
     'type' => MENU_NORMAL_ITEM,
   );
-  $items['admin/tripal/tripal_feature/configuration'] = array(
+  $items['admin/tripal/chado/tripal_feature/configuration'] = array(
     'title' => 'Configuration',
     'description' => 'Configure the Tripal Feature module.',
     'page callback' => 'drupal_get_form',
@@ -214,7 +214,7 @@ function tripal_feature_menu() {
     'access arguments' => array('administer tripal features'),
     'type' => MENU_NORMAL_ITEM,
   );
-  $items['admin/tripal/tripal_feature/fasta_loader'] = array(
+  $items['admin/tripal/chado/tripal_feature/fasta_loader'] = array(
     'title' => 'Import a multi-FASTA file',
     'description' => 'Load sequences from a multi-FASTA file into Chado',
     'page callback' => 'drupal_get_form',
@@ -222,7 +222,7 @@ function tripal_feature_menu() {
     'access arguments' => array('administer tripal features'),
     'type' => MENU_NORMAL_ITEM,
   );
-  $items['admin/tripal/tripal_feature/gff3_load'] = array(
+  $items['admin/tripal/chado/tripal_feature/gff3_load'] = array(
     'title' => 'Import a GFF3 file',
     'description' => 'Import a GFF3 file into Chado',
     'page callback' => 'drupal_get_form',
@@ -231,7 +231,7 @@ function tripal_feature_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
-  $items['admin/tripal/tripal_feature/delete'] = array(
+  $items['admin/tripal/chado/tripal_feature/delete'] = array(
     'title' => ' Delete Features',
     'description' => 'Delete multiple features from Chado',
     'page callback' => 'drupal_get_form',
@@ -240,7 +240,7 @@ function tripal_feature_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
-  $items['admin/tripal/tripal_feature/sync'] = array(
+  $items['admin/tripal/chado/tripal_feature/sync'] = array(
     'title' => ' Sync Features',
     'description' => 'Sync features from Chado with Drupal',
     'page callback' => 'drupal_get_form',
