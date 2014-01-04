@@ -3,6 +3,83 @@
 require_once "tripal_core.schema_v1.2.api.inc";
 require_once "tripal_core.schema_v1.11.api.inc";
 
+// Globals used by Tripals Error catching functions
+// Should match those defined by watchdog
+define('TRIPAL_CRITICAL',2);
+define('TRIPAL_ERROR',3);
+define('TRIPAL_WARNING',4);
+define('TRIPAL_NOTICE',5);
+define('TRIPAL_INFO',6);
+define('TRIPAL_DEBUG',7);
+
+/**
+ * Provide better error notice for Tripal
+ * @param $type
+ *   The catagory to which this message belongs. Can be any string, but the general
+ *   practice is to use the name of the module.
+ * @param $message
+ *   The message to store in the log. Keep $message translatable by not concatenating
+ *   dynamic values into it! Variables in the message should be added by using placeholder
+ *   strings alongside the variables argument to declare the value of the placeholders.
+ *   See t() for documentation on how $message and $variables interact.
+ * @param $variables
+ *   Array of variables to replace in the message on display or NULL if message is
+ *   already translated or not possible to translate.
+ * @param $severity
+ *   The severity of the message; one of the following values:
+ *     - TRIPAL_CRITICAL: Critical conditions.
+ *     - TRIPAL_ERROR: Error conditions.
+ *     - TRIPAL_WARNING: Warning conditions.
+ *     - TRIPAL_NOTICE: (default) Normal but significant conditions.
+ *     - TRIPAL_INFO: Informational messages.
+ *     - TRIPAL_DEBUG: Debug-level messages.
+ * @param $options
+ *   An array of options. Some available options include:
+ *     - print: prints the error message to the screen. Useful when display is the command-line
+ */
+function tripal_core_report_error($type, $severity, $message, $variables = array(), $options = array()) {
+
+  // Get human-readable severity string
+  $severity_string = '';
+  switch ($severity) {
+    case TRIPAL_CRITICAL:
+      $severity_string = 'CRITICAL';
+      break;
+    case TRIPAL_ERROR:
+      $severity_string = 'ERROR';
+      break;
+    case TRIPAL_WARNING:
+      $severity_string = 'WARNING';
+      break;
+    case TRIPAL_NOTICE:
+      $severity_string = 'NOTICE';
+      break;
+    case TRIPAL_INFO:
+      $severity_string = 'INFO';
+      break;
+    case TRIPAL_DEBUG:
+      $severity_string = 'DEBUG';
+      break;
+  }
+
+  // Send to watchdog
+  try {
+    watchdog($type, $message, $variables, $severity);
+  }
+  catch (Exception $e) {
+    print "CRITICAL -TRIPAL_CORE: Unable to register error message with watchdog";
+    $options['print'] = TRUE;
+  }
+
+  // If print option supplied then print directly to the screen
+  if (isset($options['print'])) {
+    if (sizeof($variables) > 0) {
+      $message = str_replace(array_keys($variables), $variables, $message);
+    }
+    print $severity_string . ' -' . $type . ':' . $message . "\n";
+  }
+}
+
 /**
  * @file
  * The Tripal Core API
@@ -96,12 +173,26 @@ require_once "tripal_core.schema_v1.11.api.inc";
  */
 function tripal_core_chado_insert($table, $values, $options = array()) {
 
+  $print_errors = (isset($options['print_errors'])) ? $options['print_errors'] : FALSE;
+
   if (!is_array($values)) {
-    watchdog('tripal_core', 'Cannot pass non array as values for inserting.', array(), WATCHDOG_ERROR);
+    tripal_core_report_error(
+      'tripal_core',
+      TRIPAL_ERROR,
+      'Cannot pass non array as values for inserting.',
+      array(),
+      array('print' => $print_errors)
+    );
     return FALSE;
   }
   if (count($values)==0) {
-    watchdog('tripal_core', 'Cannot pass an empty array as values for inserting.', array(), WATCHDOG_ERROR);
+    tripal_core_report_error(
+      'tripal_core',
+      TRIPAL_ERROR,
+      'Cannot pass an empty array as values for inserting.',
+      array(),
+      array('print' => $print_errors)
+    );
     return FALSE;
   }
 
@@ -130,7 +221,13 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
   // get the table description
   $table_desc = tripal_core_get_chado_table_schema($table);
   if (empty($table_desc)) {
-    watchdog('tripal_core', 'tripal_core_chado_insert: There is no table description for !table_name', array('!table_name' => $table), WATCHDOG_WARNING);
+    tripal_core_report_error(
+      'tripal_core',
+      TRIPAL_WARNING,
+      'tripal_core_chado_insert; There is no table description for !table_name',
+      array('!table_name' => $table),
+      array('print' => $print_errors)
+    );
   }
 
   // iterate through the values array and create a new 'insert_values' array
@@ -140,9 +237,14 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
     // make sure the field is in the table description. If not then return an error
     // message
     if (!array_key_exists($field, $table_desc['fields'])) {
-      watchdog('tripal_core', "tripal_core_chado_insert: The field '%field' does not exist " .
-        "for the table '%table'.  Cannot perform insert. Values: %array",
-        array('%field' => $field, '%table' => $table, '%array' => print_r($values, 1)), WATCHDOG_ERROR);
+      tripal_core_report_error(
+        'tripal_core',
+        TRIPAL_ERROR,
+        "tripal_core_chado_insert; The field '%field' does not exist " .
+          "for the table '%table'.  Cannot perform insert. Values: %array",
+        array('%field' => $field, '%table' => $table, '%array' => print_r($values, 1)),
+        array('print' => $print_errors)
+      );
       return FALSE;
     }
 
@@ -151,10 +253,22 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
       $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
 
       if (sizeof($results) > 1) {
-        watchdog('tripal_core', 'tripal_core_chado_insert: Too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
+        tripal_core_report_error(
+          'tripal_core',
+          TRIPAL_ERROR,
+          'tripal_core_chado_insert: Too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
+          array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)),
+          array('print' => $print_errors)
+        );
       }
       elseif (sizeof($results) < 1) {
-        //watchdog('tripal_core', 'tripal_core_chado_insert: no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
+        tripal_core_report_error(
+          'tripal_core',
+          TRIPAL_DEBUG,
+          'tripal_core_chado_insert: no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)',
+          array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)),
+          array('print' => $print_errors)
+        );
       }
       else {
         $insert_values[$field] = $results[0];
@@ -190,8 +304,13 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
         }
         // now check the constraint
         if (tripal_core_chado_select($table, $ukselect_cols, $ukselect_vals)) {
-          watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate record into $table table: " .
-            print_r($values, 1), array(), 'WATCHDOG_ERROR');
+          tripal_core_report_error(
+            'tripal_core',
+            TRIPAL_ERROR,
+            "tripal_core_chado_insert; Cannot insert duplicate record into $table table: !values",
+            array('!values' => print_r($values, TRUE)),
+            array('print' => $print_errors)
+          );
           return FALSE;
         }
       }
@@ -203,7 +322,13 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
       if (array_key_exists($pkey, $insert_values)) {
         $coptions = array('statement_name' => 'pqsel_' . $table . '_' . $pkey);
         if (tripal_core_chado_select($table, array($pkey), array($pkey => $insert_values[$pkey]), $coptions)) {
-          watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert duplicate primary key into $table table: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
+          tripal_core_report_error(
+            'tripal_core',
+            TRIPAL_ERROR,
+            'tripal_core_chado_insert; Cannot insert duplicate primary key into !table table: !values',
+            array('!table' => $table, '!values' => print_r($values, TRUE)),
+            array('print' => $print_errors)
+          );
           return FALSE;
         }
       }
@@ -212,9 +337,13 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
     // make sure required fields have a value
     if (!is_array($table_desc['fields'])) {
       $table_desc['fields'] = array();
-      watchdog('tripal_core', "tripal_core_chado_insert: %table missing fields: \n %schema",
-        array('%table' => $table, '%schema' => print_r($table_desc, 1)), WATCHDOG_WARNING);
-
+      tripal_core_report_error(
+        'tripal_core',
+        TRIPAL_WARNING,
+        "tripal_core_chado_insert; %table missing fields: \n %schema",
+        array('%table' => $table, '%schema' => print_r($table_desc, 1)),
+        array('print' => $print_errors)
+      );
     }
     foreach ($table_desc['fields'] as $field => $def) {
       // a field is considered missing if it cannot be NULL and there is no default
@@ -223,8 +352,13 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
           !array_key_exists($field, $insert_values) and
           !array_key_exists('default', $def) and
           strcmp($def['type'], serial) != 0) {
-        watchdog('tripal_core', "tripal_core_chado_insert: Field $table.$field cannot be NULL: " .
-          print_r($values, 1), array(), 'WATCHDOG_ERROR');
+        tripal_core_report_error(
+          'tripal_core',
+          TRIPAL_ERROR,
+          "tripal_core_chado_insert; Field %table.%field cannot be NULL: %values",
+          array('%table' => $table, '%field' => $field, '%values' => print_r($values, 1)),
+          array('print' => $print_errors)
+        );
         return FALSE;
       }
     }
@@ -259,8 +393,13 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
         $results = chado_query($sql);
         $value = $results->fetchObject();
         if (!$value) {
-          watchdog('tripal_core', "tripal_core_chado_insert: not able to retrieve primary key after insert: %sql",
-            array('%sql' => $sql), WATCHDOG_ERROR);
+          tripal_core_report_error(
+            'tripal_core',
+            TRIPAL_ERROR,
+            "tripal_core_chado_insert; not able to retrieve primary key after insert: %sql",
+            array('%sql' => $sql),
+            array('print' => $print_errors)
+          );
           return FALSE;
         }
         $values[$field] = $value;
@@ -272,14 +411,20 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
     return TRUE;
   }
   else {
-    watchdog('tripal_core', "tripal_core_chado_insert: Cannot insert record into '%table': " . print_r($values, 1),
-      array('%table' => $table), 'WATCHDOG_ERROR');
+    tripal_core_report_error(
+      'tripal_core',
+      TRIPAL_ERROR,
+      'tripal_core_chado_insert; Cannot insert record into "%table": %values',
+      array('%table' => $table, '%values' => print_r($values, 1)),
+      array('print' => $print_errors)
+    );
     return FALSE;
   }
 
   return FALSE;
 
 }
+
 /**
  * Provides a generic routine for updating into any Chado table
  *
@@ -344,25 +489,47 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
  */
 function tripal_core_chado_update($table, $match, $values, $options = NULL) {
 
+  $print_errors = (isset($options['print_errors'])) ? $options['print_errors'] : FALSE;
+
   if (!is_array($values)) {
-    watchdog('tripal_core', 'Cannot pass non array as values for updating.', array(),
-      WATCHDOG_ERROR);
+    tripal_core_report_error(
+      'tripal_core',
+      TRIPAL_ERROR,
+      'Cannot pass non array as values for updating.',
+      array(),
+      array('print' => $print_errors)
+    );
     return FALSE;
   }
   if (count($values)==0) {
-    watchdog('tripal_core', 'Cannot pass an empty array as values for updating.', array(),
-      WATCHDOG_ERROR);
+    tripal_core_report_error(
+      'tripal_core',
+      TRIPAL_ERROR,
+      'Cannot pass an empty array as values for updating.',
+      array(),
+      array('print' => $print_errors)
+    );
     return FALSE;
   }
 
   if (!is_array($match)) {
-    watchdog('tripal_core', 'Cannot pass non array as values for matching.', array(),
-      WATCHDOG_ERROR);
+    tripal_core_report_error(
+      'tripal_core',
+      TRIPAL_ERROR,
+      'Cannot pass non array as values for matching.',
+      array(),
+      array('print' => $print_errors)
+    );
     return FALSE;
   }
   if (count($match)==0) {
-    watchdog('tripal_core', 'Cannot pass an empty array as values for matching.', array(),
-      WATCHDOG_ERROR);
+    tripal_core_report_error(
+      'tripal_core',
+      TRIPAL_ERROR,
+      'Cannot pass an empty array as values for matching.',
+      array(),
+      array('print' => $print_errors)
+    );
     return FALSE;
   }
 
@@ -410,10 +577,22 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
     if (is_array($value)) {
       $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value);
       if (sizeof($results) > 1) {
-        watchdog('tripal_core', 'tripal_core_chado_update: When trying to find record to update, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
+        tripal_core_report_error(
+          'tripal_core',
+          TRIPAL_ERROR,
+          'tripal_core_chado_update: When trying to find record to update, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
+          array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)),
+          array('print' => $print_errors)
+        );
       }
       elseif (sizeof($results) < 1) {
-        //watchdog('tripal_core', 'tripal_core_chado_update: When trying to find record to update, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
+        tripal_core_report_error(
+          'tripal_core',
+          TRIPAL_DEBUG,
+          'tripal_core_chado_update: When trying to find record to update, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)',
+          array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)),
+          array('print' => $print_errors)
+        );
       }
       else {
         $update_matches[$field] = $results[0];
@@ -431,10 +610,22 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
       // select the value from the foreign key relationship for this value
       $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
       if (sizeof($results) > 1) {
-        watchdog('tripal_core', 'tripal_core_chado_update: When trying to find update values, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)), WATCHDOG_ERROR);
+        tripal_core_report_error(
+          'tripal_core',
+          TRIPAL_ERROR,
+          'tripal_core_chado_update: When trying to find update values, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
+          array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)),
+          array('print' => $print_errors)
+        );
       }
       elseif (sizeof($results) < 1) {
-        //watchdog('tripal_core', 'tripal_core_chado_update: When trying to find update values, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)), WATCHDOG_ERROR);
+        tripal_core_report_error(
+          'tripal_core',
+          TRIPAL_DEBUG,
+          'tripal_core_chado_update: When trying to find update values, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)',
+          array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)),
+          array('print' => $print_errors)
+        );
       }
       else {
         $update_values[$field] = $results[0];
@@ -491,7 +682,13 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
     return TRUE;
   }
   else {
-    watchdog('tripal_core', "Cannot update record in $table table.  \nMatch:" . print_r($match, 1) . "\nValues: " . print_r($values, 1), array(), 'WATCHDOG_ERROR');
+    tripal_core_report_error(
+      'tripal_core',
+      TRIPAL_ERROR,
+      "tripal_core_chado_update: Cannot update record in %table table.  \nMatch: %match \nValues: %values",
+      array('%table' => table, '%match' => print_r($match,TRUE), '%values' => print_r($values, 1)),
+      array('print' => $print_errors)
+    );
     return FALSE;
   }
 
@@ -747,19 +944,36 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
  */
 function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
 
+  $print_errors = (isset($options['print_errors'])) ? $options['print_errors'] : FALSE;
+
   if (!is_array($values)) {
-    watchdog('tripal_core', 'Cannot pass non array as values for selecting.', array(),
-      WATCHDOG_ERROR);
-      return FALSE;
+    tripal_core_report_error(
+      'tripal_core',
+      TRIPAL_ERROR,
+      'Cannot pass non array as values for selecting.',
+      array(),
+      array('print' => $print_errors)
+    );
+    return FALSE;
   }
   if (!is_array($columns)) {
-    watchdog('tripal_core', 'Cannot pass non array as columns for selecting.', array(),
-      WATCHDOG_ERROR);
+    tripal_core_report_error(
+      'tripal_core',
+      TRIPAL_ERROR,
+      'Cannot pass non array as columns for selecting.',
+      array(),
+      array('print' => $print_errors)
+    );
     return FALSE;
   }
   if (count($columns)==0) {
-    watchdog('tripal_core', 'Cannot pass an empty array as columns for selecting.', array(),
-      WATCHDOG_ERROR);
+    tripal_core_report_error(
+      'tripal_core',
+      TRIPAL_ERROR,
+      'Cannot pass an empty array as columns for selecting.',
+      array(),
+      array('print' => $print_errors)
+    );
     return FALSE;
   }
 
@@ -793,11 +1007,23 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
 
   // check that our columns and values arguments are proper arrays
   if (!is_array($columns)) {
-    watchdog('tripal_core', 'the $columns argument for tripal_core_chado_select must be an array.');
+    tripal_core_report_error(
+      'tripal_core',
+      TRIPAL_ERROR,
+      'tripal_core_chado_select; the $columns argument must be an array. Columns:%columns',
+      array('%columns' => print_r($columns, TRUE)),
+      array('print' => $print_errors)
+    );
     return FALSE;
   }
   if (!is_array($values)) {
-    watchdog('tripal_core', 'the $values argument for tripal_core_chado_select must be an array.');
+    tripal_core_report_error(
+      'tripal_core',
+      TRIPAL_ERROR,
+      'tripal_core_chado_select; the $values argument must be an array. Values:%values',
+      array('%values' => print_r($values, TRUE)),
+      array('print' => $print_errors)
+    );
     return FALSE;
   }
 
@@ -868,9 +1094,13 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
         // and there is no default value then we cannot check if the record
         // is a duplicate so return FALSE
         else {
-          watchdog('tripal_core', "tripal_core_chado_select: There is no value for %field"
-            . " thus we cannot check if this record is unique",
-            array('%field' => $field), WATCHDOG_ERROR);
+          tripal_core_report_error(
+            'tripal_core',
+            TRIPAL_ERROR,
+            'tripal_core_chado_select: There is no value for %field thus we cannot check if this record is unique',
+            array('%field' => $field),
+            array('print' => $print_errors)
+          );
           return FALSE;
         }
       }
@@ -897,9 +1127,13 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     // make sure the field is in the table description. If not then return an error
     // message
     if (!array_key_exists($field, $table_desc['fields'])) {
-      watchdog('tripal_core', "tripal_core_chado_select: The field '%field' does not exist " .
-        "for the table '%table'.  Cannot perform query. Values: %array",
-        array('%field' => $field, '%table' => $table, '%array' => print_r($values, 1)), WATCHDOG_ERROR);
+      tripal_core_report_error(
+        'tripal_core',
+        TRIPAL_ERROR,
+        'tripal_core_chado_select: The field "%field" does not exist for the table "%table".  Cannot perform query. Values: %array',
+        array('%field' => $field, '%table' => $table, '%array' => print_r($values, 1)),
+        array('print' => $print_errors)
+      );
       return array();
     }
 
@@ -2466,7 +2700,7 @@ function tripal_core_schema_exists($schema) {
   $name = $results->fetchObject();
   if (strcmp($name->nspname, $schema) != 0) {
     return FALSE;
-  }  
+  }
   return TRUE;
 }
 
@@ -2796,7 +3030,7 @@ function tripal_core_is_chado_installed() {
     return TRUE;
   }
 
-  // check to make sure the chado schema exists          
+  // check to make sure the chado schema exists
   return tripal_core_chado_schema_exists();
 }
 
