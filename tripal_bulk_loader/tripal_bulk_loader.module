@@ -248,23 +248,15 @@ function tripal_bulk_loader_theme() {
       'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
     ),
     'tripal_bulk_loader_modify_template_base_form' => array(
-      //'variables' => array('form' => NULL),
       'template' => 'tripal_bulk_loader_modify_template_base_form',
       'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
       'render element' => 'form'
     ),
-    /**
-    'tripal_bulk_loader_edit_template_field_form' => array(
-      'variables' => array('form' => NULL),
-      'template' => 'tripal_bulk_loader_edit_template_field_form',
-      'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
+    'tripal_bulk_loader_field_regex_fieldset' => array(
+      'file' => 'theme/tripal_bulk_loader.theme.inc',
+      'function' => 'tripal_bulk_loader_field_regex_fieldset',
+      'render element' => 'element'
     ),
-    'tripal_bulk_loader_add_template_field_form' => array(
-      'variables' => array('form' => NULL),
-      'template' => 'tripal_bulk_loader_add_template_field_form',
-      'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
-    ),
-    */
     'tripal_bulk_loader_admin' => array(
       'template' => 'tripal_bulk_loader_admin',
       'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',

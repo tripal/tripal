@@ -1604,6 +1604,10 @@ function tripal_bulk_loader_template_field_form_default_values($mode, &$form_sta
   $v['foreign_field'] = (isset($form_state['values']['foreign_field'])) ? $form_state['values']['foreign_field'] : current($ref_chado_fields);
   $v['required'] = (isset($form_state['values']['required'])) ? $form_state['values']['required'] : FALSE;
 
+  if (isset($original_field['regex']) && empty($form_state['storage']['regex']['pattern'])) {
+    $form_state['storage']['regex']['pattern'] = $original_field['regex']['pattern'];
+    $form_state['storage']['regex']['replace'] = $original_field['regex']['replace'];
+  }
   $v['regex_are_set'] = (isset($form_state['storage']['regex']['pattern'])) ? TRUE : FALSE;
   $v['regex-pattern'] = (isset($form_state['storage']['regex']['pattern'])) ? $form_state['storage']['regex']['pattern'] : array();
   $v['regex-replace'] = (isset($form_state['storage']['regex']['replace'])) ? $form_state['storage']['regex']['replace'] : array();
@@ -1660,7 +1664,13 @@ function tripal_bulk_loader_template_field_form($form, $form_state = NULL) {
     '#suffix' => '</div>',
   );
 
-  $form['fields']['field_type'] = array(
+  $form['fields']['basic'] = array(
+    '#type' => 'markup',
+    '#prefix' => '<div class="basic">',
+    '#suffix' => '</div>'
+  );
+
+  $form['fields']['basic']['field_type'] = array(
     '#type' => 'radios',
     '#title' => t('Type of Field'),
     '#options' => array(
@@ -1677,7 +1687,7 @@ function tripal_bulk_loader_template_field_form($form, $form_state = NULL) {
     ),
   );
 
-  $form['fields']['field_group']  = array(
+  $form['fields']['basic']['field_group']  = array(
     '#type' => 'select',
     '#title' => 'Record',
     '#description' => 'This is used to group a set of fields together allowing '
@@ -1692,7 +1702,7 @@ function tripal_bulk_loader_template_field_form($form, $form_state = NULL) {
     '#required' => TRUE,
   );
 
-  $form['fields']['record_name'] = array(
+  $form['fields']['basic']['record_name'] = array(
     '#type' => ($values['no_record_id']) ? 'textfield' : 'hidden',
     '#title' => 'Unique Record Name',
     '#prefix' => '<div id="tripal_bulk_loader_template-add_record">',
@@ -1701,7 +1711,7 @@ function tripal_bulk_loader_template_field_form($form, $form_state = NULL) {
     '#default_value' => $values['record_name'],
   );
 
-  $form['fields']['field_title'] = array(
+  $form['fields']['basic']['field_title'] = array(
     '#type' => 'textfield',
     '#title' => t('Human-readable Title for Field'),
     '#default_value' => $values['field_title'],
@@ -1844,7 +1854,7 @@ function tripal_bulk_loader_template_field_form($form, $form_state = NULL) {
     '#type' => 'fieldset',
     '#title' => 'Additional Options',
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE
+    '#collapsed' => FALSE
   );
 
   $form['fields']['additional']['required'] = array(
@@ -1857,7 +1867,7 @@ function tripal_bulk_loader_template_field_form($form, $form_state = NULL) {
     '#type' => 'fieldset',
     '#title' => 'Transform Data File Value Rules',
     '#collapsible' => TRUE,
-    '#collapsed' => $values['regex_are_set'],
+    '#collapsed' => FALSE//$values['regex_are_set'],
   );
 
   $form['fields']['additional']['regex_transform']['regex_description'] = array(
@@ -1873,16 +1883,17 @@ function tripal_bulk_loader_template_field_form($form, $form_state = NULL) {
 
   $form['fields']['additional']['regex_transform']['regex-data'] = array(
     '#tree' => TRUE,
+    '#theme' => 'tripal_bulk_loader_field_regex_fieldset'
   );
   foreach ($values['regex-pattern'] as $index => $pattern) {
     $data_element = array(
       'pattern' => array(
         '#type' => 'item',
-        '#markup' => $pattern,
+        '#markup' => check_plain($pattern),
       ),
       'replace' => array(
         '#type' => 'item',
-        '#markup' => $values['regex-replace'][$index],
+        '#markup' => check_plain($values['regex-replace'][$index]),
       ),
       'old_index' => array(
         '#type' => 'hidden',
@@ -1892,6 +1903,7 @@ function tripal_bulk_loader_template_field_form($form, $form_state = NULL) {
         '#type' => 'select',
         '#options' => range(0, sizeof($values['regex-pattern'])-1),
         '#default_value' => $index,
+        '#attributes' => array('class' => array('rank-weight')), // needed for table dragging
       ),
       'id' => array(
         '#type' => 'hidden',
@@ -1980,12 +1992,12 @@ function tripal_bulk_loader_template_field_form($form, $form_state = NULL) {
     '#value' => 'Test Transformation Rules'
   );
 
-  $form['fields']['submit-save'] = array(
+  $form['submit-save'] = array(
       '#type' => 'submit',
       '#value' => 'Save Changes'
   );
 
-  $form['fields']['submit-cancel'] = array(
+  $form['submit-cancel'] = array(
       '#type' => 'submit',
       '#value' => 'Cancel'
   );
@@ -2123,6 +2135,7 @@ function tripal_bulk_loader_template_field_form_submit($form, &$form_state) {
     // Add transformation rule to original field
     $form_state['storage']['regex']['pattern'][] = '/' . $form_state['values']['pattern'] . '/';
     $form_state['storage']['regex']['replace'][] = $form_state['values']['replace'];
+    $form_state['rebuild'] = TRUE;
     drupal_set_message(t('Successfully Added Transformation Rule'));
 
   }
