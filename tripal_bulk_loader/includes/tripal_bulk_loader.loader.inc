@@ -320,25 +320,22 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
     }
 
     // Start Transaction
-    /**
     $savepoint = '';
     switch (variable_get('tripal_bulk_loader_transactions', 'row')) {
       case "none":
         break;
       case "all":
         print "\t\tStart Transaction...\n";
-        tripal_db_start_transaction();
+        $TRANSACTION = db_transaction();
         $transactions = TRUE;
-        $savepoint = "";
         break;
       case "row":
         print "\t\tStart Transaction...\n";
-        tripal_db_start_transaction();
+        $TRANSACTION = db_transaction();
         $transactions = TRUE;
-        $savepoint = "last_row_complete";
+        $new_transaction_per_row = TRUE;
         break;
     }
-    */
 
     // Disable triggers
     /**
@@ -422,12 +419,12 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
 
         tripal_bulk_loader_progress_file_track_job($job_id, $no_errors);
         $failed = FALSE;
-        if ( !$no_errors ) {
+        if ($no_errors == FALSE) {
           // Encountered an error
           if ($transactions) {
-            tripal_db_rollback_transaction($savepoint);
+            $TRANSACTION->rollback();
           }
-          $failed = TRUE;
+          tripal_bulk_loader_finish_loading($node->nid, FALSE);
           break;
         }
       } // end of foreach table in default data array
@@ -435,50 +432,34 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
       tripal_bulk_loader_progress_file_track_job($job_id, FALSE, TRUE);
 
       if ($failed) {
+        $TRANSACTION->rollback();
+        tripal_bulk_loader_finish_loading($node->nid, FALSE);
         break;
       }
       else {
         // Row inserted successfully
-        // Set savepoint if supplied
-        if ($savepoint) {
-          if ($num_lines == 1) {
-            //tripal_db_set_savepoint_transaction($savepoint);
-          }
-          else {
-            // Tell it to remove the previous savepoint of the same name
-            //tripal_db_set_savepoint_transaction($savepoint, TRUE);
-          }
+        if ($transactions && $new_transaction_per_row) {
+          // commit current transaction and start a new one
+          unset($TRANSACTION);
+          $TRANSACTION = db_transaction();
         }
       }
     } //end of foreach line of file
 
-  /**
     // END Transaction
     if ($transactions) {
-      // end the transaction
-      tripal_db_commit_transaction();
+      unset($TRANSACTION);
     }
 
     if ($failed) {
       $loaded_without_errors = FALSE;
       break;
     }
-*/
     tripal_bulk_loader_progress_bar($total_lines, $total_lines);
     tripal_bulk_loader_progress_file_track_job($job_id, FALSE, FALSE, TRUE);
   } //end of foreach constant set
 
-  // set the status of the job (in the node not the tripal jobs)
-  if ($loaded_without_errors) {
-    $status = 'Loading Completed Successfully';
-  }
-  else {
-    $status = 'Errors Encountered';
-  }
-  db_update('tripal_bulk_loader')
-    ->fields(array('job_status' => $status))
-    ->condition('nid', $nid)
-    ->execute();
+  tripal_bulk_loader_finish_loading($node->nid, $loaded_without_errors);
 
 }
 
@@ -573,6 +554,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
                ' (' . $table_data['mode'] . ') Missing Database Required Value: ' . $table . '.' . $field;
         tripal_bulk_loader_throw_error($msg, array(), TRIPAL_ERROR);
         $data[$priority]['error'] = TRUE;
+        $no_errors = FALSE;
       }
     }
   }
@@ -1186,4 +1168,24 @@ function tripal_bulk_loader_throw_error($msg, $args, $severity) {
     $args,
     array('print' => TRUE)
   );
+}
+
+function tripal_bulk_loader_finish_loading($nid, $loaded_without_errors) {
+
+  // set the status of the job (in the node not the tripal jobs)
+  if ($loaded_without_errors) {
+    $status = 'Loading Completed Successfully';
+  }
+  else {
+    $status = 'Errors Encountered';
+  }
+  db_update('tripal_bulk_loader')
+    ->fields(array('job_status' => $status))
+    ->condition('nid', $nid)
+    ->execute();
+
+  if(!$loaded_without_errors) {
+    drush_set_error('BULK_LOAD_FAILED', 'Execution aborted due to errors.');
+    exit();
+  }
 }
