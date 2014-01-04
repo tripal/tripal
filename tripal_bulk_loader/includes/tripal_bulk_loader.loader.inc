@@ -140,8 +140,10 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
   drupal_set_time_limit(0);
 
   // set the status of the job (in the node not the tripal jobs)
-  db_query("UPDATE {tripal_bulk_loader} SET job_status=:status WHERE nid=:nid", array(':status' => 'Loading...', ':nid' => $nid))->execute();
-
+  db_update('tripal_bulk_loader')
+    ->fields(array('job_status' => 'Loading...'))
+    ->condition('nid', $nid)
+    ->execute();
 
   $node = node_load($nid);
   print "Template: " . $node->template->name . " (" . $node->template_id . ")\n";
@@ -149,8 +151,8 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
   $total_lines = trim(`wc --lines < $node->file`);
   print "File: " . $node->file . " (" . $total_lines . " lines)\n";
 
-  print "\nClearing all prepared statements from previous runs of this loader...\n";
-  tripal_core_chado_clear_prepared('_'.$node->nid.'_');
+  //print "\nClearing all prepared statements from previous runs of this loader...\n";
+  //tripal_core_chado_clear_prepared('_'.$node->nid.'_');
 
   // Prep Work ==================================================================================
   print "\nPreparing to load...\n";
@@ -318,6 +320,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
     }
 
     // Start Transaction
+    /**
     $savepoint = '';
     switch (variable_get('tripal_bulk_loader_transactions', 'row')) {
       case "none":
@@ -335,16 +338,20 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
         $savepoint = "last_row_complete";
         break;
     }
+    */
 
     // Disable triggers
+    /**
     $triggers_disabled = FALSE;
     if ($transactions AND variable_get('tripal_bulk_loader_disable_triggers', TRUE)) {
       print "\t\tDefer Constraints...\n";
       $triggers_disabled = TRUE;
       chado_query("SET CONSTRAINTS ALL DEFERRED");
     }
+    */
 
     // Acquire Locks
+    /**
     if ($transactions) {
       print "\t\tAcquiring Table Locks...\n";
       $lockmode = variable_get('tripal_bulk_loader_lock', 'ROW EXCLUSIVE');
@@ -353,6 +360,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
         chado_query("LOCK TABLE ".$table." IN ".$lockmode." MODE");
       }
     }
+    */
 
     print "\tLoading the current constant set...\n";
     tripal_bulk_loader_progress_bar(0, $total_lines);
@@ -434,16 +442,17 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
         // Set savepoint if supplied
         if ($savepoint) {
           if ($num_lines == 1) {
-            tripal_db_set_savepoint_transaction($savepoint);
+            //tripal_db_set_savepoint_transaction($savepoint);
           }
           else {
             // Tell it to remove the previous savepoint of the same name
-            tripal_db_set_savepoint_transaction($savepoint, TRUE);
+            //tripal_db_set_savepoint_transaction($savepoint, TRUE);
           }
         }
       }
     } //end of foreach line of file
 
+  /**
     // END Transaction
     if ($transactions) {
       // end the transaction
@@ -454,7 +463,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
       $loaded_without_errors = FALSE;
       break;
     }
-
+*/
     tripal_bulk_loader_progress_bar($total_lines, $total_lines);
     tripal_bulk_loader_progress_file_track_job($job_id, FALSE, FALSE, TRUE);
   } //end of foreach constant set
@@ -466,7 +475,10 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
   else {
     $status = 'Errors Encountered';
   }
-  db_query("UPDATE {tripal_bulk_loader} SET job_status=:status WHERE nid=:nid", array(':status' => $status, ':nid' => $nid))->execute();
+  db_update('tripal_bulk_loader')
+    ->fields(array('job_status' => $status))
+    ->condition('nid', $nid)
+    ->execute();
 
 }
 
