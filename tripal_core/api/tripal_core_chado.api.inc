@@ -67,7 +67,7 @@ function tripal_core_report_error($type, $severity, $message, $variables = array
     watchdog($type, $message, $variables, $severity);
   }
   catch (Exception $e) {
-    print "CRITICAL -TRIPAL_CORE: Unable to register error message with watchdog";
+    print "CRITICAL (TRIPAL_CORE): Unable to register error message with watchdog";
     $options['print'] = TRUE;
   }
 
@@ -76,7 +76,7 @@ function tripal_core_report_error($type, $severity, $message, $variables = array
     if (sizeof($variables) > 0) {
       $message = str_replace(array_keys($variables), $variables, $message);
     }
-    print $severity_string . ' -' . $type . ':' . $message . "\n";
+    print $severity_string . ' (' . strtoupper($type) . '):' . $message . "\n";
   }
 }
 
@@ -2141,8 +2141,14 @@ function chado_query($sql, $args = array()) {
 
   $is_local = tripal_core_is_chado_local();
 
+  // Args should be an array
   if (!is_array($args)) {
-    watchdog('tripal_core', 'Need to pass an array to chado_query, "%value" passed instead. Query: %query', array('%value' => $args, '%query' => $sql), WATCHDOG_ERROR);
+    tripal_core_report_error(
+      'tripal_core',
+      TRIPAL_ERROR,
+      'chado_query; Need to pass an array to chado_query, "%value" passed instead. Query: %query',
+      array('%value' => $args, '%query' => $sql)
+    );
     $args = array($args);
   }
 
