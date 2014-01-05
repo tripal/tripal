@@ -5,7 +5,48 @@
  * Bulk Loader Administration (Miscellaneous)
  */
 
+function tripal_bulk_loader_admin_jobs_listing() {
+  $output = '';
 
+  // Add Tripal Admin View CSS
+  $tripal_admin_view_css = drupal_get_path('module', 'tripal_views') . '/theme/tripal_views_admin_views.css';
+  drupal_add_css($tripal_admin_view_css);
+
+  // Add the view
+  $view = views_get_view('tripal_bulk_loading_jobs');
+  if (isset($view)) {
+    $view->set_display('default');
+    $output .= '<h2>' . $view->get_title() . '</h2>';
+    $output .= $view->preview('page');
+  }
+  else {
+    $output .= '<p>The "Tripal Bulk Loading Jobs" View should be displayed here. If you '
+      . 'have disabled, please re-enable it in order to administrate this module.</p>';
+  }
+
+  return $output;
+}
+
+function tripal_bulk_loader_admin_template_listing() {
+  $output = '';
+
+  // Add Tripal Admin View CSS
+  $tripal_admin_view_css = drupal_get_path('module', 'tripal_views') . '/theme/tripal_views_admin_views.css';
+  drupal_add_css($tripal_admin_view_css);
+
+  $view = views_get_view('tripal_bulk_loader_templates');
+  if (isset($view)) {
+    $view->set_display('default');
+    $output .= '<h2>' . $view->get_title() . '</h2>';
+    $output .= $view->preview('page');
+  }
+  else {
+    $output .= '<p>The "Tripal Bulk Loader Templates" View should be displayed here. If you '
+      . 'have disabled, please re-enable it in order to administrate this module.</p>';
+  }
+
+  return $output;
+}
 
 /**
  * Provides a description page and quick links for template management

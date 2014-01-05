@@ -154,7 +154,10 @@ function tripal_views_help ($path, $arg) {
  */
 function tripal_views_permission() {
   return array(
-    'manage tripal_views_integration',
+    'manage tripal_views_integration' => array(
+      'title' => t('Administrate Tripal Views Integration'),
+      'description' => t('Permission to manage Tripal Views Integration.')
+    ),
   );
 }
 
