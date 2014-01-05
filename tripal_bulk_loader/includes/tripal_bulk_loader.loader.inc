@@ -256,6 +256,14 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
   $original_default_data = $default_data;
   $group_index = 0;
   $total_num_groups = sizeof($node->constants);
+  // If there are no constant sets and no exposed fields
+  // then create an empty constant set so loader runs
+  if ($total_num_groups == 0 && empty($node->exposed_fields)) {
+    $node->constants = array(
+      0 => array()
+    );
+    $total_num_groups = 1;
+  }
   foreach ($node->constants as $group_id => $set) {
     // revert default data array for next set of constants
     $default_data = $original_default_data;
@@ -338,17 +346,14 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
     }
 
     // Disable triggers
-    /**
     $triggers_disabled = FALSE;
     if ($transactions AND variable_get('tripal_bulk_loader_disable_triggers', TRUE)) {
       print "\t\tDefer Constraints...\n";
       $triggers_disabled = TRUE;
       chado_query("SET CONSTRAINTS ALL DEFERRED");
     }
-    */
 
     // Acquire Locks
-    /**
     if ($transactions) {
       print "\t\tAcquiring Table Locks...\n";
       $lockmode = variable_get('tripal_bulk_loader_lock', 'ROW EXCLUSIVE');
@@ -357,7 +362,6 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
         chado_query("LOCK TABLE ".$table." IN ".$lockmode." MODE");
       }
     }
-    */
 
     print "\tLoading the current constant set...\n";
     tripal_bulk_loader_progress_bar(0, $total_lines);
@@ -1161,12 +1165,17 @@ function tripal_bulk_loader_progress_file_track_job($job_id, $record_added, $lin
 }
 
 function tripal_bulk_loader_throw_error($msg, $args, $severity) {
+  $options = array('print' => TRUE);
+  if ($severity == TRIPAL_NOTICE OR $severity == TRIPAL_INFO OR $severity == TRIPAL_DEBUG) {
+    unset($options['print']);
+  }
+
   tripal_core_report_error(
     'tripal_bulk',
     $severity,
     $msg,
     $args,
-    array('print' => TRUE)
+    $options
   );
 }
 
