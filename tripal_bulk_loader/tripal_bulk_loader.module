@@ -62,22 +62,6 @@ function tripal_bulk_loader_menu() {
     'access arguments' => array('administer tripal_bulk_loader'),
     'type' => MENU_NORMAL_ITEM,
   );
-  $items['admin/tripal/loaders/bulk/jobs'] = array(
-    'title' => 'Jobs',
-    'description' => 'Listing of Bulk Loading Jobs',
-    'page callback' => 'tripal_bulk_loader_admin_jobs_listing',
-    'access arguments' => array('administer tripal_bulk_loader'),
-    'weight' => 4,
-    'type' => MENU_DEFAULT_LOCAL_TASK,
-  );
-  $items['admin/tripal/loaders/bulk/templates'] = array(
-    'title' => 'Templates',
-    'description' => 'Listing of Bulk Loading Templates',
-    'page callback' => 'tripal_bulk_loader_admin_template_listing',
-    'access arguments' => array('administer tripal_bulk_loader'),
-    'weight' => 6,
-    'type' => MENU_LOCAL_TASK,
-  );
   $items['admin/tripal/loaders/bulk/configure'] = array(
     'title' => 'Configure',
     'description' => 'Configuration of global options related to bulk loading jobs',
@@ -94,6 +78,24 @@ function tripal_bulk_loader_menu() {
     'access arguments' => array('administer tripal_bulk_loader'),
     'weight' => 10,
     'type' => MENU_LOCAL_TASK,
+  );
+
+  // Enable View Callbacks
+  $items['admin/tripal/loaders/bulk/views/jobs/enable'] = array(
+    'title' => 'Enable Jobs Administrative View',
+    'description' => 'Enable Jobs Administrative View',
+    'page callback' => 'tripal_bulk_loader_admin_enable_view',
+    'page arguments' => array('tripal_bulk_loading_jobs'),
+    'access arguments' => array('administer tripal_bulk_loader'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/loaders/bulk/views/templates/enable'] = array(
+    'title' => 'Enable Templates Administrative View',
+    'description' => 'Enable Templates Administrative View',
+    'page callback' => 'tripal_bulk_loader_admin_enable_view',
+    'page arguments' => array('tripal_bulk_loader_templates'),
+    'access arguments' => array('administer tripal_bulk_loader'),
+    'type' => MENU_CALLBACK,
   );
 
   // Create/Edit Template --------

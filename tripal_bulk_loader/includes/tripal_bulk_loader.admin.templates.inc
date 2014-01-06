@@ -19,6 +19,16 @@
  */
 function tripal_bulk_loader_modify_template_base_form($form, $form_state = NULL, $mode) {
 
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado Data Loaders', 'admin/tripal/loaders');
+  $breadcrumb[] = l('Bulk Loader', 'admin/tripal/loaders/bulk');
+  $breadcrumb[] = l('Templates', 'admin/tripal/loaders/bulk/templates');
+  drupal_set_breadcrumb($breadcrumb);
+
    // get template id from path and rebuild form
   if (isset($form_state['build_info']['args'][1])) {
     $mode = 'edit';
@@ -533,6 +543,16 @@ function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state
 function tripal_bulk_loader_delete_template_base_form($form, $form_state) {
   $form = array();
 
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado Data Loaders', 'admin/tripal/loaders');
+  $breadcrumb[] = l('Bulk Loader', 'admin/tripal/loaders/bulk');
+  $breadcrumb[] = l('Templates', 'admin/tripal/loaders/bulk/templates');
+  drupal_set_breadcrumb($breadcrumb);
+
   $template_id = $form_state['build_info']['args'][0];
   $form_state['storage']['template_id'] = $template_id;
 
@@ -624,6 +644,16 @@ function tripal_bulk_loader_delete_template_base_form_submit($form, &$form_state
 function tripal_bulk_loader_import_template_form($form, $form_state) {
   $form = array();
 
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado Data Loaders', 'admin/tripal/loaders');
+  $breadcrumb[] = l('Bulk Loader', 'admin/tripal/loaders/bulk');
+  $breadcrumb[] = l('Templates', 'admin/tripal/loaders/bulk/templates');
+  drupal_set_breadcrumb($breadcrumb);
+
   $form['new_template_name'] = array(
     '#type' => 'textfield',
     '#title' => 'Template Name',
@@ -694,6 +724,16 @@ function tripal_bulk_loader_import_template_form_submit($form, &$form_state) {
  */
 function tripal_bulk_loader_export_template_form($form, $form_state) {
 
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado Data Loaders', 'admin/tripal/loaders');
+  $breadcrumb[] = l('Bulk Loader', 'admin/tripal/loaders/bulk');
+  $breadcrumb[] = l('Templates', 'admin/tripal/loaders/bulk/templates');
+  drupal_set_breadcrumb($breadcrumb);
+
   $template_id = $form_state['build_info']['args'][0];
   $form_state['storage']['template_id'] = $template_id;
   if ($template_id > 0) {
@@ -762,6 +802,17 @@ function tripal_bulk_loader_edit_template_record_form($form, $form_state) {
   if (!$template_id) {
     return $form;
   }
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado Data Loaders', 'admin/tripal/loaders');
+  $breadcrumb[] = l('Bulk Loader', 'admin/tripal/loaders/bulk');
+  $breadcrumb[] = l('Templates', 'admin/tripal/loaders/bulk/templates');
+  $breadcrumb[] = l('Edit Template', 'admin/tripal/loaders/bulk/template/' . $template_id . '/edit');
+  drupal_set_breadcrumb($breadcrumb);
 
   // Pre-process values/defaults ---------------------------
 
@@ -1115,6 +1166,17 @@ function tripal_bulk_loader_delete_template_record_form($form, $form_state) {
     return $form;
   }
 
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado Data Loaders', 'admin/tripal/loaders');
+  $breadcrumb[] = l('Bulk Loader', 'admin/tripal/loaders/bulk');
+  $breadcrumb[] = l('Templates', 'admin/tripal/loaders/bulk/templates');
+  $breadcrumb[] = l('Edit Template', 'admin/tripal/loaders/bulk/template/' . $template_id . '/edit');
+  drupal_set_breadcrumb($breadcrumb);
+
   $_GET['record_name'] = (isset($_GET['record_name'])) ?  $_GET['record_name'] : '';
   $_GET['chado_table'] = (isset($_GET['chado_table'])) ?  $_GET['chado_table'] : '';
   $_GET['record_mode'] = (isset($_GET['record_mode'])) ?  $_GET['record_mode'] : '';
@@ -1221,7 +1283,18 @@ function tripal_bulk_loader_duplicate_template_record_form($form, &$form_state) 
     return $form;
   }
 
-    $_GET['record_name'] = (isset($_GET['record_name'])) ?  $_GET['record_name'] : '';
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado Data Loaders', 'admin/tripal/loaders');
+  $breadcrumb[] = l('Bulk Loader', 'admin/tripal/loaders/bulk');
+  $breadcrumb[] = l('Templates', 'admin/tripal/loaders/bulk/templates');
+  $breadcrumb[] = l('Edit Template', 'admin/tripal/loaders/bulk/template/' . $template_id . '/edit');
+  drupal_set_breadcrumb($breadcrumb);
+
+  $_GET['record_name'] = (isset($_GET['record_name'])) ?  $_GET['record_name'] : '';
   $_GET['chado_table'] = (isset($_GET['chado_table'])) ?  $_GET['chado_table'] : '';
   $_GET['record_mode'] = (isset($_GET['record_mode'])) ?  $_GET['record_mode'] : '';
 
@@ -1646,6 +1719,17 @@ function tripal_bulk_loader_template_field_form($form, $form_state = NULL) {
   $mode = $v['mode'];
 
   $values = tripal_bulk_loader_template_field_form_default_values($mode, $form_state);
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado Data Loaders', 'admin/tripal/loaders');
+  $breadcrumb[] = l('Bulk Loader', 'admin/tripal/loaders/bulk');
+  $breadcrumb[] = l('Templates', 'admin/tripal/loaders/bulk/templates');
+  $breadcrumb[] = l('Edit Template', 'admin/tripal/loaders/bulk/template/' . $values['template_id'] . '/edit');
+  drupal_set_breadcrumb($breadcrumb);
 
   $form['template_name'] = array(
     '#type' => 'item',
@@ -2201,6 +2285,17 @@ function tripal_bulk_loader_delete_template_field_form($form, $form_state) {
   if (!$template_id) {
     return $form;
   }
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado Data Loaders', 'admin/tripal/loaders');
+  $breadcrumb[] = l('Bulk Loader', 'admin/tripal/loaders/bulk');
+  $breadcrumb[] = l('Templates', 'admin/tripal/loaders/bulk/templates');
+  $breadcrumb[] = l('Edit Template', 'admin/tripal/loaders/bulk/template/' . $template_id . '/edit');
+  drupal_set_breadcrumb($breadcrumb);
 
   $_GET['record_name'] = (isset($_GET['record_name'])) ?  $_GET['record_name'] : '';
   $_GET['field_name'] = (isset($_GET['field_name'])) ?  $_GET['field_name'] : '';

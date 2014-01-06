@@ -241,6 +241,16 @@ function tripal_bulk_loader_defaultview_admin_job_listing() {
     3 => 0,
   );
 
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page_1');
+  $handler->display->display_options['path'] = 'admin/tripal/loaders/bulk/jobs';
+  $handler->display->display_options['menu']['type'] = 'default tab';
+  $handler->display->display_options['menu']['title'] = 'Jobs';
+  $handler->display->display_options['menu']['weight'] = '0';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
+  $handler->display->display_options['tab_options']['weight'] = '0';
+
   return $view;
 }
 
@@ -341,7 +351,7 @@ function tripal_bulk_loader_defaultview_admin_template_listing() {
   $handler->display->display_options['fields']['nothing_3']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing_3']['alter']['text'] = 'View Jobs';
   $handler->display->display_options['fields']['nothing_3']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing_3']['alter']['path'] = 'admin/tripal/loaders/bulk/jobs';
+  $handler->display->display_options['fields']['nothing_3']['alter']['path'] = 'admin/tripal/loaders/bulk/jobs?name=[name]';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_4']['id'] = 'nothing_4';
   $handler->display->display_options['fields']['nothing_4']['table'] = 'views';
@@ -383,6 +393,15 @@ function tripal_bulk_loader_defaultview_admin_template_listing() {
     3 => 0,
   );
 
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page_1');
+  $handler->display->display_options['path'] = 'admin/tripal/loaders/bulk/templates';
+  $handler->display->display_options['menu']['type'] = 'tab';
+  $handler->display->display_options['menu']['title'] = 'Templates';
+  $handler->display->display_options['menu']['weight'] = '0';
+  $handler->display->display_options['menu']['name'] = 'management';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
 
   return $view;
 }
