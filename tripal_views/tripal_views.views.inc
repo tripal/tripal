@@ -117,6 +117,12 @@ function tripal_views_views_pre_render(&$view) {
   // view has populated the $view->exposed_input variable
   unset($view->exposed_input);
 
+  // Add css if tripal admin tagged view
+  if ($view->tag == 'tripal admin') {
+    $tripal_admin_view_css = drupal_get_path('module', 'tripal_views') . '/theme/tripal_views_admin_views.css';
+    drupal_add_css($tripal_admin_view_css);
+  }
+
 }
 
 /**

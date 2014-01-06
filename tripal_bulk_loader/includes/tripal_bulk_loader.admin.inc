@@ -17,10 +17,6 @@ function tripal_bulk_loader_admin_jobs_listing() {
   $breadcrumb[] = l('Bulk Loader', 'admin/tripal/loaders/bulk');
   drupal_set_breadcrumb($breadcrumb);
 
-  // Add Tripal Admin View CSS
-  $tripal_admin_view_css = drupal_get_path('module', 'tripal_views') . '/theme/tripal_views_admin_views.css';
-  drupal_add_css($tripal_admin_view_css);
-
   // Add the view
   $jobs_view = views_embed_view('tripal_bulk_loading_jobs','default');
   $template_view = views_embed_view('tripal_bulk_loader_templates','default');
