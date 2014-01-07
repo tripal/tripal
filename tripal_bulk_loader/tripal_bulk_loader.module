@@ -58,6 +58,7 @@ function tripal_bulk_loader_menu() {
   $items['admin/tripal/loaders/bulk'] = array(
     'title' => 'Bulk Loader',
     'description' => 'Templates for loading tab-delimited data',
+    'page callback' => 'tripal_bulk_loader_admin_jobs_listing',
     'access arguments' => array('administer tripal_bulk_loader'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -68,7 +69,7 @@ function tripal_bulk_loader_menu() {
     'page arguments' => array('tripal_bulk_loader_configuration_form'),
     'access arguments' => array('administer tripal_bulk_loader'),
     'weight' => 8,
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_LOCAL_TASK,
   );
   $items['admin/tripal/loaders/bulk/help'] = array(
     'title' => 'Help',
@@ -76,15 +77,25 @@ function tripal_bulk_loader_menu() {
     'page callback' => 'tripal_bulk_loader_admin_manage_templates',
     'access arguments' => array('administer tripal_bulk_loader'),
     'weight' => 10,
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_LOCAL_TASK,
   );
-  $items['admin/tripal/loaders/bulk/jobs'] = array(
-    'title' => 'Bulk Loader Jobs',
-    'description' => 'Listing of Bulk Loading Jobs',
-    'page callback' => 'tripal_bulk_loader_admin_jobs',
+
+  // Enable View Callbacks
+  $items['admin/tripal/loaders/bulk/views/jobs/enable'] = array(
+    'title' => 'Enable Jobs Administrative View',
+    'description' => 'Enable Jobs Administrative View',
+    'page callback' => 'tripal_bulk_loader_admin_enable_view',
+    'page arguments' => array('tripal_bulk_loading_jobs'),
     'access arguments' => array('administer tripal_bulk_loader'),
-    'weight' => -10,
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/loaders/bulk/views/templates/enable'] = array(
+    'title' => 'Enable Templates Administrative View',
+    'description' => 'Enable Templates Administrative View',
+    'page callback' => 'tripal_bulk_loader_admin_enable_view',
+    'page arguments' => array('tripal_bulk_loader_templates'),
+    'access arguments' => array('administer tripal_bulk_loader'),
+    'type' => MENU_CALLBACK,
   );
 
   // Create/Edit Template --------
@@ -95,7 +106,7 @@ function tripal_bulk_loader_menu() {
     'page arguments' => array('tripal_bulk_loader_modify_template_base_form', 'create'),
     'access arguments' => array('administer tripal_bulk_loader'),
     'weight' => -8,
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/loaders/bulk/template/%tblid/edit'] = array(
     'title' => 'Edit Template',
@@ -105,6 +116,7 @@ function tripal_bulk_loader_menu() {
     'access arguments' => array('administer tripal_bulk_loader'),
     'type' => MENU_CALLBACK,
   );
+  /**
   $items['admin/tripal/loaders/bulk/template/edit'] = array(
     'title' => 'Edit Template',
     'description' => 'Edit loader template for loading tab-delimited data',
@@ -112,8 +124,9 @@ function tripal_bulk_loader_menu() {
     'page arguments' => array('tripal_bulk_loader_modify_template_base_form', 'edit',FALSE),
     'access arguments' => array('administer tripal_bulk_loader'),
     'weight' => -6,
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
   );
+  */
 
   // Add/Edit Record -----
   $items['admin/tripal/loaders/bulk/template/%tblid/add_record'] = array(
@@ -183,7 +196,7 @@ function tripal_bulk_loader_menu() {
     'page arguments' => array('tripal_bulk_loader_delete_template_base_form',5),
     'access arguments' => array('administer tripal_bulk_loader'),
     'weight' => -4,
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
   );
   // Import/Export ---------
   $items['admin/tripal/loaders/bulk/templates/import'] = array(
@@ -193,7 +206,7 @@ function tripal_bulk_loader_menu() {
     'page arguments' => array('tripal_bulk_loader_import_template_form'),
     'access arguments' => array('administer tripal_bulk_loader'),
     'weight' => 2,
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/loaders/bulk/template/%tblid/export'] = array(
     'title' => 'Export Template',
@@ -202,7 +215,7 @@ function tripal_bulk_loader_menu() {
     'page arguments' => array('tripal_bulk_loader_export_template_form', 5),
     'access arguments' => array('administer tripal_bulk_loader'),
     'weight' => 4,
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
   );
 
   return $items;
@@ -248,23 +261,15 @@ function tripal_bulk_loader_theme() {
       'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
     ),
     'tripal_bulk_loader_modify_template_base_form' => array(
-      //'variables' => array('form' => NULL),
       'template' => 'tripal_bulk_loader_modify_template_base_form',
       'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
       'render element' => 'form'
     ),
-    /**
-    'tripal_bulk_loader_edit_template_field_form' => array(
-      'variables' => array('form' => NULL),
-      'template' => 'tripal_bulk_loader_edit_template_field_form',
-      'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
+    'tripal_bulk_loader_field_regex_fieldset' => array(
+      'file' => 'theme/tripal_bulk_loader.theme.inc',
+      'function' => 'tripal_bulk_loader_field_regex_fieldset',
+      'render element' => 'element'
     ),
-    'tripal_bulk_loader_add_template_field_form' => array(
-      'variables' => array('form' => NULL),
-      'template' => 'tripal_bulk_loader_add_template_field_form',
-      'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
-    ),
-    */
     'tripal_bulk_loader_admin' => array(
       'template' => 'tripal_bulk_loader_admin',
       'path' => drupal_get_path('module', 'tripal_bulk_loader') . '/theme',
@@ -297,26 +302,29 @@ function tripal_bulk_loader_theme() {
 function tripal_bulk_loader_node_access($node, $op, $account) {
   if ($op == 'create') {
     if (!user_access('create tripal_bulk_loader', $account)) {
-      return FALSE;
+      return NODE_ACCESS_DENY;
     }
-    return TRUE;
+    return NODE_ACCESS_ALLOW;
   }
   if ($op == 'update') {
     if (!user_access('edit tripal_bulk_loader', $account)) {
-      return FALSE;
+      return NODE_ACCESS_DENY;
     }
+    return NODE_ACCESS_ALLOW;
   }
   if ($op == 'delete') {
     if (!user_access('delete tripal_bulk_loader', $account)) {
-      return FALSE;
+      return NODE_ACCESS_DENY;
     }
+    return NODE_ACCESS_ALLOW;
   }
   if ($op == 'view') {
     if (!user_access('access tripal_bulk_loader', $account)) {
-      return FALSE;
+      return NODE_ACCESS_DENY;
     }
+    return NODE_ACCESS_ALLOW;
   }
-  return NULL;
+  return NODE_ACCESS_IGNORE;
 }
 
 /**
@@ -326,11 +334,26 @@ function tripal_bulk_loader_node_access($node, $op, $account) {
  */
 function tripal_bulk_loader_permission() {
   return array(
-      'access tripal_bulk_loader',
-      'create tripal_bulk_loader',
-      'delete tripal_bulk_loader',
-      'edit tripal_bulk_loader',
-      'administer tripal_bulk_loader',
+      'access tripal_bulk_loader' => array(
+        'title' => t('View Tripal Bulk Loading Jobs'),
+        'description' => t('Permission to view Tripal Bulk Loader Nodes')
+      ),
+      'create tripal_bulk_loader' => array(
+        'title' => t('Create Tripal Bulk Loading Jobs'),
+        'description' => t('Permission to create Tripal Bulk Loader Nodes')
+      ),
+      'edit tripal_bulk_loader' => array(
+        'title' => t('Edit Tripal Bulk Loading Jobs'),
+        'description' => t('Permission to edit Tripal Bulk Loader Nodes')
+      ),
+      'delete tripal_bulk_loader' => array(
+        'title' => t('Delete Tripal Bulk Loading Jobs'),
+        'description' => t('Permission to delete Tripal Bulk Loader Nodes')
+      ),
+      'administer tripal_bulk_loader' => array(
+        'title' => t('Administrate Tripal Bulk Loader'),
+        'description' => t('Permission to administrate the Tripal Bulk Loader including template management.')
+      ),
   );
 }
 

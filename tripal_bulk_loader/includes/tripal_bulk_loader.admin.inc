@@ -5,76 +5,54 @@
  * Bulk Loader Administration (Miscellaneous)
  */
 
-
-
-/**
- * Provides a description page and quick links for template management
- *
- * @ingroup tripal_bulk_loader
- */
-function tripal_bulk_loader_admin_manage_templates() {
+function tripal_bulk_loader_admin_jobs_listing() {
   $output = '';
-  $output .= '<p>' . t('Templates, as the term is used for this module, refer to plans
-  describing how the columns in the data file supplied to a bulk loading job map to tables
-  and fields in chado. Templates are created independently of bulk loading jobs so that
-  they can be re-used. Thus you only need one template to load any number of files of the
-  same format.') . '</p>';
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado Data Loaders', 'admin/tripal/loaders');
+  $breadcrumb[] = l('Bulk Loader', 'admin/tripal/loaders/bulk');
+  drupal_set_breadcrumb($breadcrumb);
+
+  // Add the view
+  $jobs_view = views_embed_view('tripal_bulk_loading_jobs','default');
+  $template_view = views_embed_view('tripal_bulk_loader_templates','default');
+  if (isset($jobs_view) && isset($template_view)) {
+    $output .= $jobs_view;
+  }
+  else {
+    $output .= '<p>The Tripal Bulk Loader uses primarily views to provide an '
+      . 'administrative interface. Currently one or more views needed for this '
+      . 'administrative interface are disabled. <strong>Click each of the following links to '
+      . 'enable the pertinent views</strong>:</p>';
+    $output .= '<ul>';
+    if (!isset($jobs_view)) {
+      $output .= '<li>'.l('Tripal Bulk Loading Jobs', 'admin/tripal/loaders/bulk/views/jobs/enable').'</li>';
+    }
+    if (!isset($template_view)) {
+      $output .= '<li>'.l('Tripal Bulk Loader Templates', 'admin/tripal/loaders/bulk/views/templates/enable').'</li>';
+    }
+    $output .= '</ul>';
+  }
 
   return $output;
 }
 
-/**
- * Provides a listing of bulk loader jobs and links for administration
- *
- * @ingroup tripal_bulk_loader
- */
-function tripal_bulk_loader_admin_jobs() {
-  $output = '';
-  $num_jobs_per_page = 50;
+function tripal_bulk_loader_admin_enable_view($view_name) {
 
-  $output .= '<p>' . t('Jobs are not automatically submitted to the tripal jobs management
-  system when they are first created. Any jobs listed below with a status of "Initialized"
-  will not have a Job ID until you go to the bulk loader page and submit the job.') . '</p>';
-
-  $header = array(
-    array('data' => 'Job ID', 'field' => 'job_id', 'sort' => 'DESC'),
-    array('data' => 'Name', 'field' => 'loader_name'),
-    array('data' =>  'Template', 'field' => 'template_name'),
-    array('data' =>  'Status', 'field' => 'job_status'),
-    array('data' => 'Progress', 'field' => 'progress'),
-    '');
-  $rows = array();
-  $query = db_select('tripal_bulk_loader', 'n')->extend('TableSort');
-  $query->join('tripal_bulk_loader_template', 't', 'cast(n.template_id as integer) = t.template_id');
-  $query->join('tripal_jobs', 'j', 'n.job_id = j.job_id');
-  $query->fields('n')
-    ->fields('t', array('name'))
-    ->fields('j', array('progress'))
-    ->orderByHeader($header);
-  $result = $query->execute();
-  /**
-  $resource = pager_query("SELECT n.*, t.name as template_name, j.progress
-    FROM {tripal_bulk_loader} n
-    LEFT JOIN {tripal_bulk_loader_template} t ON cast(n.template_id as integer) = t.template_id
-    LEFT JOIN {tripal_jobs} j ON n.job_id = j.job_id"
-    . tablesort_sql($header),
-    $num_jobs_per_page);
-    */
-  foreach ($result as $n) {
-    $rows[] = array(
-      l($n->job_id, 'admin/tripal/tripal_jobs/view/' . $n->job_id),
-      l($n->loader_name, 'node/' . $n->nid),
-      l($n->template_name, 'admin/tripal/loaders/bulk/template/'.$n->template_id.'/edit'),
-      $n->job_status,
-      ($n->progress) ? $n->progress . '%' : '',
-      l('View', 'node/' . $n->nid) . ' | ' .  l('Edit', 'node/' . $n->nid . '/edit')
-    );
+  $status = variable_get('views_defaults', array());
+  if (isset($status[$view_name])) {
+    $status[$view_name] = FALSE;
+    variable_set('views_defaults', $status);
+    drupal_set_message("Successfully Enabled $view_name");
   }
-  $output .= theme_table(array('header' => $header, 'rows' => $rows));
-
-  $output .= theme('pager');
-
-  return $output;
+  else {
+    drupal_set_message("Unable to find a view by the name of '$view_name'",'error');
+  }
+  drupal_goto('admin/tripal/loaders/bulk');
 }
 
 /**

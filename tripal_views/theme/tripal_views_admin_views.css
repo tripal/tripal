@@ -1,0 +1,44 @@
+/**
+ * @file
+ * CSS rules to theme tripal admin listings
+ */
+
+.views-exposed-form {
+  border: 1px solid #ccc;
+  padding: 15px;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.views-exposed-form .views-exposed-widget {
+  float: none;
+  display: block;
+  width: 450px;
+}
+
+.views-exposed-widget .views-widget {
+  display: inline-block;
+}
+
+.views-exposed-widget .views-widget .form-item {
+  padding-top: 0px;
+  padding-bottom: 0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+.views-exposed-widget label {
+  display: inline-block;
+  width: 15em;
+  font-weight: normal;
+}
+
+.views-exposed-widget label :after {
+  content: ":";
+}
+
+.views-exposed-form .views-submit-button {
+  position:absolute;
+  left:475px;
+  top: 0px;
+}
