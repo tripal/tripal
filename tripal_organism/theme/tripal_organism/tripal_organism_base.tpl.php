@@ -29,15 +29,6 @@ $organism = tripal_core_expand_chado_vars($organism,'field','organism.comment');
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7 
   $rows = array();
   
-  // common name row
-  $rows[] = array(
-    array(
-      'data' => 'Common Name', 
-      'header' => TRUE
-    ), 
-    $organism->common_name,
-  );
-  
   // genus row
   $rows[] = array(
     array(
@@ -54,6 +45,15 @@ $organism = tripal_core_expand_chado_vars($organism,'field','organism.comment');
       'header' => TRUE
     ), 
     '<i>' . $organism->species . '</i>'
+  );
+  
+  // common name row
+  $rows[] = array(
+    array(
+      'data' => 'Common Name',
+      'header' => TRUE
+    ),
+    $organism->common_name,
   );
   
   // abbreviation row

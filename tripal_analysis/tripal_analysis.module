@@ -554,31 +554,38 @@ function tripal_analysis_permission() {
  *
  * @ingroup tripal_analysis
  */
-function tripal_analysis_theme() {
+function tripal_analysis_theme($existing, $type, $theme, $path) {
+  $core_path = drupal_get_path('module', 'tripal_core');
   
   $theme_path = drupal_get_path('module', 'tripal_analysis') . '/theme';
   $items = array(
+    'node__chado_analysis' => array(
+      'template' => 'node--chado-generic',
+      'render element' => 'node',
+      'base hook' => 'node',
+      'path' => "$core_path/theme",
+    ),
     'tripal_analysis_base' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_analysis_base',
-       'path' => "$theme_path/tripal_analysis",
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_analysis_base',
+      'path' => "$path/theme/tripal_analysis",
     ),
     'tripal_feature_analyses' => array(
       'template' => 'tripal_feature_analyses',
-      'arguments' =>  array('node' => NULL),
-      'path' => "$theme_path/tripal_analysis",
+      'variables' =>  array('node' => NULL),
+      'path' => "$path/theme/tripal_analysis",
     ),
    'tripal_analysis_properties' => array(
-     'arguments' => array('node' => NULL),
-     'path' => "$theme_path/tripal_analysis",
+     'variables' => array('node' => NULL),
+     'path' => "$path/theme/tripal_analysis",
     ),
     'tripal_analysis_help' => array(
       'template' => 'tripal_analysis_help',
-      'arguments' =>  array(NULL),
-      'path' => $theme_path,
+      'variables' =>  array(NULL),
+      'path' => "$path/theme",
     ),
     'chado_analysis_node_form' => array(
-      'arguments' => array('form'),
+      'variables' => array('form'),
       'path' => $theme_path,
     ),
   );
