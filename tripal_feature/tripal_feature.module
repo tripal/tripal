@@ -266,40 +266,42 @@ function tripal_feature_menu() {
  *
  * @ingroup tripal_feature
  */
-function tripal_feature_theme() {
+function tripal_feature_theme($existing, $type, $theme, $path) {
   return array(
     'tripal_feature_search_index' => array(
-      'arguments' => array('node'),
+      'variables' => array('node'),
     ),
     'tripal_feature_search_results' => array(
-       'arguments' => array('node'),
+       'variables' => array('node'),
     ),
     'tripal_organism_feature_browser' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_organism_feature_browser',
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_organism_feature_browser',
+      'path' => "$path/theme/tripal_organism",
     ),
     'tripal_organism_feature_counts' => array(
-       'arguments' => array('node' => NULL),
-       'template' => 'tripal_organism_feature_counts',
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_organism_feature_counts',
+      'path' => "$path/theme/tripal_organism",
     ),
     'tripal_feature_base' => array(
-       'arguments' => array('node' => NULL),
+       'variables' => array('node' => NULL),
        'template' => 'tripal_feature_base',
     ),
     'tripal_feature_sequence' => array(
-       'arguments' => array('node' => NULL),
+       'variables' => array('node' => NULL),
        'template' => 'tripal_feature_sequence',
     ),
     'tripal_feature_proteins' => array(
-       'arguments' => array('node' => NULL),
+       'variables' => array('node' => NULL),
        'template' => 'tripal_feature_proteins',
     ),
     'tripal_feature_synonyms' => array(
-       'arguments' => array('node' => NULL),
+       'variables' => array('node' => NULL),
        'template' => 'tripal_feature_synonyms',
     ),
     'tripal_feature_phenotypes' => array(
-       'arguments' => array('node' => NULL),
+       'variables' => array('node' => NULL),
        'template' => 'tripal_feature_phenotypes',
     ),
     'tripal_feature_featurepos' => array(
@@ -307,27 +309,27 @@ function tripal_feature_theme() {
        'template' => 'tripal_feature_featurepos',
     ),
     'tripal_feature_featureloc_sequences' => array(
-       'arguments' => array('node' => NULL),
+       'variables' => array('node' => NULL),
        'template' => 'tripal_feature_featureloc_sequences',
     ),
     'tripal_feature_references' => array(
-       'arguments' => array('node' => NULL),
+       'variables' => array('node' => NULL),
        'template' => 'tripal_feature_references',
     ),
     'tripal_feature_properties' => array(
-       'arguments' => array('node' => NULL),
+       'variables' => array('node' => NULL),
        'template' => 'tripal_feature_properties',
     ),
     'tripal_feature_terms' => array(
-       'arguments' => array('node' => NULL),
+       'variables' => array('node' => NULL),
        'template' => 'tripal_feature_terms',
     ),
     'tripal_feature_alignments' => array(
-       'arguments' => array('node' => NULL),
+       'variables' => array('node' => NULL),
        'template' => 'tripal_feature_alignments',
     ),
     'tripal_feature_relationships' => array(
-       'arguments' => array('node' => NULL),
+       'variables' => array('node' => NULL),
        'template' => 'tripal_feature_relationships',
     ),
     'tripal_feature_edit_ALL_properties_form' => array(
@@ -336,7 +338,7 @@ function tripal_feature_theme() {
     ),
     'tripal_feature_admin' => array(
       'template' => 'tripal_feature_admin',
-      'arguments' =>  array(NULL),
+      'variables' =>  array(NULL),
       'path' => drupal_get_path('module', 'tripal_feature') . '/theme'
     ),
     
@@ -439,11 +441,11 @@ function tripal_feature_block_view($delta = '') {
         break;
       case 'org_feature_counts':
         $block['subject'] = t('Feature Type Summary');
-        $block['content'] = theme('tripal_organism_feature_counts', $node);
+        $block['content'] = theme('tripal_organism_feature_counts', array('node' => $node));
         break;
       case 'org_feature_browser':
         $block['subject'] = t('Feature Browser');
-        $block['content'] = theme('tripal_organism_feature_browser', $node);
+        $block['content'] = theme('tripal_organism_feature_browser', array('node' => $node));
         break;
       case 'library_feature_browser':
         $block['subject'] = t('Library Feature Browser');
@@ -1890,10 +1892,10 @@ function tripal_feature_node_view($node, $view_mode, $langcode) {
       // Show feature browser and counts
       if ($view_mode == 'full') {
         $node->content['tripal_organism_feature_counts'] = array(
-          '#value' => theme('tripal_organism_feature_counts', $node),
+          '#value' => theme('tripal_organism_feature_counts', array('node' => $node)),
         );
         $node->content['tripal_organism_feature_browser'] = array(
-          '#value' => theme('tripal_organism_feature_browser', $node),
+          '#value' => theme('tripal_organism_feature_browser', array('node' => $node)),
         );
       }
       break;
@@ -2056,9 +2058,9 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
  *
  * @ingroup tripal_feature
  */
-function tripal_feature_preprocess_tripal_organism_feature_counts(&$variables) {
-  $organism = $variables['node']->organism;
-  $organism->feature_counts = tripal_feature_load_organism_feature_counts($organism);
+function tripal_feature_preprocess_tripal_organism_feature_counts(&$variables, $hook) {
+ // $organism = $variables['node']->organism;
+  //$organism->feature_counts = tripal_feature_load_organism_feature_counts($organism);
 }
 
 /**
@@ -2066,9 +2068,9 @@ function tripal_feature_preprocess_tripal_organism_feature_counts(&$variables) {
  *
  * @ingroup tripal_feature
  */
-function tripal_feature_preprocess_tripal_organism_feature_browser(&$variables) {
-  $organism = $variables['node']->organism;
-  $organism->feature_browser = tripal_feature_load_organism_feature_browser($organism);
+function tripal_feature_preprocess_tripal_organism_feature_browser(&$variables, $hook) {
+  //$organism = $variables['node']->organism;
+  //$organism->feature_browser = tripal_feature_load_organism_feature_browser($organism);
 }
 
 /**

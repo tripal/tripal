@@ -1,6 +1,7 @@
 <?php
 // the comment field is a database text field so we have to expand it so that
 // it is included in the organism object
+$organism  = $variables['node']->organism;
 $organism = tripal_core_expand_chado_vars($organism,'field','organism.comment');
  
 ?>
@@ -68,7 +69,8 @@ $organism = tripal_core_expand_chado_vars($organism,'field','organism.comment');
   $rows[] = array(
     array(
       'data' => $image . $organism->comment, 
-      'colspan' => 2
+      'colspan' => 2,
+      'style' => 'text-align: justify;',
     ),
   );
   
@@ -81,7 +83,6 @@ $organism = tripal_core_expand_chado_vars($organism,'field','organism.comment');
     'rows' => $rows, 
     'attributes' => array(
       'id' => 'tripal_organism-table-base',
-      'class' => 'tripal-table',
     ), 
     'sticky' => FALSE,
     'caption' => '',
