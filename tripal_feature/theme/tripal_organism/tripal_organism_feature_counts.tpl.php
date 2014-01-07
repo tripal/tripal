@@ -1,9 +1,14 @@
 <?php
 
 $organism = $variables['node']->organism;
-$types    = $organism->feature_counts['types'];
-$names    = $organism->feature_counts['names'];
-$enabled  = $organism->feature_counts['enabled'];
+$enabled = 1;
+$types = array();
+
+if(property_exists($organism, 'feature_counts')) {
+  $types    = $organism->feature_counts['types'];
+  $names    = $organism->feature_counts['names'];
+  $enabled  = $organism->feature_counts['enabled'];
+}
 
 // only show this block if it is enabled
 if ($enabled) { 

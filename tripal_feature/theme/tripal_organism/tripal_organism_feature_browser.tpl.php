@@ -1,9 +1,14 @@
 <?php
 
 $organism = $variables['node']->organism;
-$features = $organism->feature_browser['features'];
-$pager    = $organism->feature_browser['pager'];
-$enabled  = $organism->feature_browser['enabled'];
+$enabled = 1;
+$features = array();
+
+if(property_exists($organism, 'feature_browser')) {
+  $features = $organism->feature_browser['features'];
+  $pager    = $organism->feature_browser['pager'];
+  $enabled  = $organism->feature_browser['enabled'];
+}
 
 // only show this block if it is enabled
 if ($enabled) { 

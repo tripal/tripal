@@ -153,12 +153,14 @@ function tripal_organism_help ($path, $arg) {
  * @ingroup tripal_organism
  */
 function tripal_organism_theme($existing, $type, $theme, $path) {
+  $core_path = drupal_get_path('module', 'tripal_core');
+  
   $items = array(
     'node__chado_organism' => array(
-      'template' => 'node--chado-organism',
+      'template' => 'node--chado-generic',
       'render element' => 'node',
       'base hook' => 'node',
-      'path' => "$path/theme",
+      'path' => "$core_path/theme",
     ),
     'tripal_organism_base' => array(
       'variables' => array('node' => NULL),

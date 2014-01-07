@@ -19,6 +19,7 @@
 //   NOTE: For a full listing of fields available in the node object the
 //       print_r $node line below or install the Drupal Devel module which 
 //       provides an extra tab at the top of the node page labelled Devel
+dpm($variables);
 
 $organism  = $variables['node']->organism;
 

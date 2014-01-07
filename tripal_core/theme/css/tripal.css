@@ -147,9 +147,8 @@ table.tripal-table-horz .tripal-table-odd-row {
   border-width:1px;
 }
 .tripal_toc ul {
- margin-left: 0px;
- margin-top: 5px;
- padding-left: 15px;
+  margin: 0 !important;
+  padding: 0 0 0.25em 1em !important;
 }
 .tripal_toc_title {
   font-size: 1.5em;
