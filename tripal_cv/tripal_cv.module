@@ -58,7 +58,7 @@ function tripal_cv_menu() {
     'title' => 'Help',
     'description' => "A description of the Tripal Controlled Vocabulary module including a short description of it's usage.",
     'page callback' => 'theme',
-    'page arguments' => array('tripal_cv_help'),
+    'page arguments' => array('tripal_cv_admin'),
     'access arguments' => array('administer controlled vocabularies'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
@@ -295,8 +295,8 @@ function tripal_cv_form_alter(&$form, &$form_state, $form_id) {
 function tripal_cv_theme() {
   $theme_path = drupal_get_path('module', 'tripal_cv') . '/theme';
   $items = array(
-    'tripal_cv_help' => array(
-      'template' => 'tripal_cv_help',
+    'tripal_cv_admin' => array(
+      'template' => 'tripal_cv_admin',
       'arguments' =>  array(NULL),
       'path' => $theme_path,
     ),
