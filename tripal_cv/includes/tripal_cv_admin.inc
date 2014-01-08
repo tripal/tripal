@@ -1,16 +1,57 @@
 <?php
+
+/**
+ * Provide landing page to the new admin pages
+ */
+function tripal_cv_admin_cv_listing() {
+  $output = '';
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado Modules', 'admin/tripal/chado');
+  $breadcrumb[] = l('Vocabularies', 'admin/tripal/chado/tripal_cv');
+  drupal_set_breadcrumb($breadcrumb);
+
+  // Add the view
+  $cvs_view = views_embed_view('tripal_cv_admin_cvs','default');
+  $cvterms_view = views_embed_view('tripal_cv_admin_cvterms','default');
+  if (isset($cvs_view) && isset($cvterms_view)) {
+    $output .= $cvs_view;
+  }
+  else {
+    $output .= '<p>The Tripal Controlled Vocabulary module uses primarily views to provide an '
+      . 'administrative interface. Currently one or more views needed for this '
+      . 'administrative interface are disabled. <strong>Click each of the following links to '
+      . 'enable the pertinent views</strong>:</p>';
+    $output .= '<ul>';
+    if (!isset($cvs_view)) {
+      $output .= '<li>'.l('Tripal Vocabularies', 'admin/tripal/chado/tripal_cv/views/cvs/enable').'</li>';
+    }
+    if (!isset($cvterm_view)) {
+      $output .= '<li>'.l('Tripal Vocabulary Terms', 'admin/tripal/chado/tripal_cv/views/cvterms/enable').'</li>';
+    }
+    $output .= '</ul>';
+  }
+
+  return $output;
+}
+
 /**
  * Purpose: Provides the form for Updating and Deleteing existing
  *   chado controlled vocabularies (See chado cv table)
  *
  * @ingroup tripal_cv
- */
+ *
 function tripal_cv_edit_page() {
   $output .= drupal_get_form('tripal_cv_select_form');
   $output .= '<div id="cv-edit-div">Please select a vocabulary above to view or edit</div>';
 
   return $output;
 }
+*/
 
 /**
  * Purpose: Provides the actual "Select CV" form on the Update/Delete Controlled
@@ -18,7 +59,7 @@ function tripal_cv_edit_page() {
  * @todo Modify this form to use Drupal AJAX
  *
  * @ingroup tripal_cv
- */
+ *
 function tripal_cv_select_form() {
 
   // get a list of db from chado for user to choose
@@ -46,12 +87,13 @@ function tripal_cv_select_form() {
 
   return $form;
 }
+*/
 
 /**
  * Purpose: The edit controlled vocabulary javascript
  *
  * @ingroup tripal_cv
- */
+ *
 function tripal_ajax_cv_edit() {
 
   // get the database id, build the form and then return the JSON object
@@ -60,12 +102,13 @@ function tripal_ajax_cv_edit() {
   drupal_json(array('status' => TRUE, 'data' => $form));
 
 }
+*/
 
 /**
  * Purpose: Provides a form to allow updating/deleteing of controlled vocabularies
  *
  * @ingroup tripal_cv
- */
+ *
 function tripal_cv_edit_form(&$form_state = NULL, $cvid = NULL) {
 
   $sql = "SELECT * FROM {cv} WHERE cv_id = :cv_id ";
@@ -126,12 +169,13 @@ function tripal_cv_edit_form(&$form_state = NULL, $cvid = NULL) {
 
   return $form;
 }
+*/
 
 /**
  * Purpose: The submit function of the update/delete controlled vocabulary form
  *
  * @ingroup tripal_cv
- */
+ *
 function tripal_cv_edit_form_submit($form, &$form_state) {
 
   $name =  $form_state['values']['name'];
@@ -169,13 +213,13 @@ function tripal_cv_edit_form_submit($form, &$form_state) {
   }
 
 }
-
+*/
 
 /**
  * Purpose: Provides the Add controlled vocabulary form
  *
   * @ingroup tripal_cv
- */
+ *
 function tripal_cv_add_form(&$form_state = NULL) {
 
   $form['cvid'] = array(
@@ -211,12 +255,12 @@ function tripal_cv_add_form(&$form_state = NULL) {
 
   return $form;
 }
-
+*/
 /**
  * Purpose: The submit function for the add controlled vocabulary form
  *
  * @ingroup tripal_cv
- */
+ *
 function tripal_cv_add_form_submit($form, &$form_state) {
 
   $name =  $form_state['values']['name'];
@@ -237,13 +281,13 @@ function tripal_cv_add_form_submit($form, &$form_state) {
   }
 
 }
-
+*/
 /**
  * Purpose: Provides the form that allows adding of terms to an existing
  *   controlled vocabulary
  *
   * @ingroup tripal_cv
- */
+ *
 function tripal_cv_cvterm_form(&$form_state, $action = 'add') {
   tripal_core_ahah_init_form();
 
@@ -427,13 +471,13 @@ function tripal_cv_cvterm_form(&$form_state, $action = 'add') {
 
   return $form;
 }
-
+*/
 
 /**
  * Purpose: Validates the input for adding a cvterm
  *
   * @ingroup tripal_cv
- */
+ *
 function tripal_cv_cvterm_form_validate($form, &$form_state) {
 
   // Ensure that submit does not get called unless the AHAH in the form was called
@@ -442,12 +486,12 @@ function tripal_cv_cvterm_form_validate($form, &$form_state) {
   }
 
 }
-
+*/
 /**
  * Purpose: Adds terms to an existing controlled vocabulary
  *
  * @ingroup tripal_cv
- */
+ *
 function tripal_cv_cvterm_form_submit($form, &$form_state) {
 
   // Ensure the AHAH in the form was called
@@ -512,14 +556,14 @@ function tripal_cv_cvterm_form_submit($form, &$form_state) {
   }
 
 }
-
+*/
 /**
  * Purpose: This function gets called when the selecting of a cv from
  *   the select list triggers it. This function simply rebuilds the form
  *   with new information. No elements are created here
  *
  * @ingroup tripal_cv
- */
+ *
 function tripal_cv_cvterm_callback() {
   $status = TRUE;
 
@@ -540,12 +584,12 @@ function tripal_cv_cvterm_callback() {
     )
   );
 }
-
+*/
 /**
  * Cvterm path form submit
  *
  * @ingroup tripal_cv
- */
+ *
 function tripal_cv_cvtermpath_form_submit($form, &$form_state) {
   global $user;
 
@@ -562,3 +606,4 @@ function tripal_cv_cvtermpath_form_submit($form, &$form_state) {
        'tripal_cv_update_cvtermpath', $job_args, $user->uid);
   }
 }
+*/
