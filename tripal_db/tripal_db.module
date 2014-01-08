@@ -28,6 +28,7 @@ function tripal_db_menu() {
   $items['admin/tripal/chado/tripal_db'] = array(
     'title' => 'Databases',
     'description' => 'References to External Database sites such as NCBI',
+    'page callback' => 'tripal_db_admin_db_listing',
     'access arguments' => array('administer db cross-references'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -38,18 +39,18 @@ function tripal_db_menu() {
     'page callback' => 'theme',
     'page arguments' => array('tripal_db_help'),
     'access arguments' => array('administer db cross-references'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_LOCAL_TASK,
     'weight' => 10
   );
 
-  $items['admin/tripal/chado/tripal_db/edit'] = array(
+  $items['admin/tripal/chado/tripal_db/edit/%'] = array(
     'title' => 'Edit a Database Reference',
     'description' => 'Edit existing Database References.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_db_db_edit_form'),
+    'page arguments' => array('tripal_db_db_edit_form',5),
     'access callback' => 'user_access',
     'access arguments' => array('administer db cross-references'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
   );
 
   $items['admin/tripal/chado/tripal_db/add'] = array(
@@ -59,7 +60,7 @@ function tripal_db_menu() {
     'page arguments' => array('tripal_db_db_add_form'),
     'access callback' => 'user_access',
     'access arguments' => array('administer db cross-references'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
   );
 
 
