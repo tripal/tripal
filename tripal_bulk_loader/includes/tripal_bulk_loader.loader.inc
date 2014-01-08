@@ -918,9 +918,6 @@ function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $dat
           array_key_exists($field, $tbl_description['foreign keys'][$foreign_table]['columns']) and
           $foreign_field == $tbl_description['foreign keys'][$foreign_table]['columns'][$field]) {
 
-        if (sizeof($foreign_values) == 1 && isset($foreign_values->currval)) {
-          $foreign_values = $foreign_values->currval;
-        }
         $values[$field] = $foreign_values;
       }
       // if the field in the Referral records is not in an FK relationship
