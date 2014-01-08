@@ -102,7 +102,7 @@ function tripal_analysis_add_cvterms() {
   
   
   // the 'analysis_property' vocabulary is for user definable properties.
-  tripal_cv_add_cvterm(array('name' => 'Analysis Type', 'def' => 'The type of analysis was performed.'), 
+  tripal_cv_add_cvterm(array('name' => 'Analysis Type', 'def' => 'The type of analysis that was performed.'), 
      'analysis_property', 0, 1, 'tripal');
 }
 

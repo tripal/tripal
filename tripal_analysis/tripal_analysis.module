@@ -56,13 +56,7 @@ function tripal_analysis_node_info() {
  * @ingroup tripal_analysis
  */
 function tripal_analysis_menu() {
-  //Sync analysis
-  $items['chado_sync_analyses'] = array(
-    'title' => 'Sync Data',
-    'page callback' => 'tripal_analysis_sync_analyses',
-    'access arguments' => array('administer tripal analyses'),
-    'type' => MENU_CALLBACK
-  );
+  
   // Tripal Analysis administrative settings
   $items['admin/tripal/chado/tripal_analysis'] = array(
     'title' => 'Analyses',
@@ -97,14 +91,6 @@ function tripal_analysis_menu() {
     'access arguments' => array('administer tripal analyses'),
     'type' => MENU_NORMAL_ITEM,
   );
-
-  $items['tripal_analysis/properties/minus/%/%'] = array(
-    'page callback' => 'tripal_analysis_property_delete',
-    'page arguments' => array(3, 4),
-    'access arguments' => array('edit chado_analysis content'),
-    'type ' => MENU_CALLBACK,
-  );
-
 
   return $items;
 }
@@ -188,10 +174,10 @@ function tripal_analysis_theme($existing, $type, $theme, $path) {
       'variables' =>  array(NULL),
       'path' => "$path/theme",
     ),
-    'chado_analysis_node_form' => array(
-      'variables' => array('form'),
-      'path' => $theme_path,
-    ),
+    'chado_analysis_form' => array(
+      'render element' => 'form',
+    )
+    
   );
 
   return $items;

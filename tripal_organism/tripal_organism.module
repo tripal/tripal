@@ -184,7 +184,7 @@ function tripal_organism_theme($existing, $type, $theme, $path) {
     ),
     'tripal_organism_help' => array(
       'template' => 'tripal_organism_help',
-      'arguments' =>  array(NULL),
+      'variables' =>  array(NULL),
       'path' => "$path/theme",
     ),
   );

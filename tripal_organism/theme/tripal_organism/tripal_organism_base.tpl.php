@@ -1,9 +1,6 @@
 <?php
-// the comment field is a database text field so we have to expand it so that
-// it is included in the organism object
 $organism  = $variables['node']->organism;
 $organism = tripal_core_expand_chado_vars($organism,'field','organism.comment');
- 
 ?>
 <div id="tripal_organism-base-box" class="tripal_organism-info-box tripal-info-box">
   <div class="tripal_organism-info-box-title tripal-info-box-title">Details</div>
