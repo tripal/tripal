@@ -41,25 +41,6 @@ function tripal_db_admin_db_listing() {
 
 /**
  *
- *
- * @ingroup tripal_db
- */
-function tripal_db_admin_page() {
-  $add_url = url("admin/tripal/tripal_db/add_db");
-  $output = "<a href=\"$add_url\">Add a new external database</a>";
-  $output .= drupal_get_form('tripal_db_select_form');
-  $output .= '<div id="db-edit-div">Please select a database above to view or edit</div>';
-  return $output;
-}
-/**
- *
- */
-function tripal_db_select_form() {
-  return $form;
-}
-
-/**
- *
  * @param $form
  * @param $form_state
  *
@@ -71,6 +52,9 @@ function tripal_db_db_edit_form($form, &$form_state) {
   $dbid = 0;
   if (array_key_exists('values', $form_state)) {
     $dbid = $form_state['values']['dbid'];
+  }
+  elseif (isset($form_state['build_info']['args'][0])) {
+    $dbid = $form_state['build_info']['args'][0];
   }
 
   // get a list of db from chado for user to choose
