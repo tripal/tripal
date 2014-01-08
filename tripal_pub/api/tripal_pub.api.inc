@@ -1197,6 +1197,10 @@ function tripal_pub_create_citation($pub) {
         $pub_type = $ptype;
         break;
       }
+      else if ($ptype == "Research Support, Non-U.S. Gov't") {
+        $pub_type = $ptype; 
+        break;
+      }
     }
     if (!$pub_type) {
       watchdog('tripal_pub', "Cannot generate citation for publication type: %types", 
@@ -1246,6 +1250,23 @@ function tripal_pub_create_citation($pub) {
       }
       $citation .= $pub['Pages'];
     }
+    $citation .= '.';
+  }
+  //----------------------
+  // Research Support, Non-U.S. Gov't
+  //----------------------
+  elseif ($pub_type == "Research Support, Non-U.S. Gov't") {
+    $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
+  
+    if ($pub['Journal Name']) {
+      $citation .= $pub['Journal Name'] . '. ';
+    }
+    if ($pub['Publication Date']) {
+      $citation .= $pub['Publication Date'];
+    }
+    elseif ($pub['Year']) {
+      $citation .= $pub['Year'];
+    }    
     $citation .= '.';
   }
   //----------------------
