@@ -11,6 +11,34 @@
 class tripal_views_handler_filter_select_string extends views_handler_filter_string {
 
   /**
+   * Define our new options (needed for export!)
+   */
+  function options_definition() {
+    $options = parent::option_definition();
+
+    $options['expose']['values_form_type'] = array(
+      'default' => 'textfield',
+      'export' => 'export_plugin'
+    );
+    $options['expose']['select_multiple'] = array(
+      'default' => FALSE,
+      'bool' => TRUE,
+      'export' => 'export_plugin'
+    );
+    $options['expose']['select_optional'] = array(
+      'default' => FALSE,
+      'bool' => TRUE,
+      'export' => 'export_plugin'
+    );
+    $options['expose']['max_length'] = array(
+      'default' => 40,
+      'export' => 'export_plugin'
+    );
+
+    return $options;
+  }
+
+  /**
    * Provide the options used in the select list.
    * Override this function in extended handlers to easily change option list.
    *
@@ -29,9 +57,10 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
     foreach ($filters as $filter_name => $details) {
        // we only want to inclue non-exposed filters
        if ($details->options['exposed'] == FALSE) {
+          $value = (is_array($details->value)) ? $details->value['value'] : $details->value;
           // we only want to filter on the table we're getting the list from
-          if (strcmp($details->table, $this->table)==0) {
-            $where .= "$details->field $details->operator " . $details->value['value'];
+          if (strcmp($details->table, $this->table)==0 AND !empty($value)) {
+            $where .= "$details->field $details->operator " . $details->value;
             $where .= ' AND ';
           }
        }
@@ -42,16 +71,16 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
     }
 
     // get the values from the table
-    $sql = 'SELECT ' . $this->real_field . ' FROM {' . $this->table . '}' . $where . ' ORDER BY ' . $this->field . ' ASC';
+    $sql = 'SELECT ' . $this->real_field . ' FROM {' . $this->table . '} ' . $where . ' ORDER BY ' . $this->field . ' ASC';
     $results = chado_query($sql);
 
     // Build the select box options
-    $max_length = $this->options['max_length'];
+    $max_length = (isset($this->options['expose']['max_length'])) ? $this->options['expose']['max_length'] : 40;
     if (!$max_length) {
       $max_length = 40;
     }
     $options = array();
-    if ($this->options['optional']) {
+    if ($this->options['expose']['select_optional']) {
       $options['All'] = '--Any--';
     }
     foreach ($results as $r) {
@@ -66,56 +95,69 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
     return $options;
   }
 
-  function options_form(&$form, &$form_state) {
-    parent::options_form($form, $form_state);
+  function expose_form(&$form, &$form_state) {
+    parent::expose_form($form, $form_state);
 
-    $form['values_form_type'] = array(
+    $form['expose']['values_form_type'] = array(
       '#type' => 'radios',
       '#title' => t('Filter Type'),
       '#options' => array(
         'textfield' => 'Text Field',
         'select' => 'Drop-Down Box',
       ),
-      '#default_value' => ($this->options['values_form_type']) ? $this->options['values_form_type'] : 'select',
+      '#default_value' => $this->options['expose']['values_form_type'],
     );
 
-    $form['select_multiple'] = array(
+    $form['expose']['select_multiple'] = array(
       '#type' => 'checkbox',
       '#title' => t('Select Multiple'),
       '#description' => t('Allows more then one option to be selected.'),
-      '#default_value' => (isset($this->options['select_multiple'])) ? $this->options['select_multiple'] : FALSE,
+      '#default_value' => $this->options['expose']['select_multiple'],
     );
 
-    $form['select_optional'] = array(
+    $form['expose']['select_optional'] = array(
       '#type' => 'checkbox',
       '#title' => t('Optional'),
       '#description' => t('Adds --Any-- to the available options.'),
-      '#default_value' => (isset($this->options['select_optional'])) ? $this->options['select_optional'] : TRUE,
+      '#default_value' => $this->options['expose']['select_optional'],
     );
 
-    $form['max_length'] = array(
+    $form['expose']['max_length'] = array(
       '#type' => 'textfield',
       '#title' => t('Max Width'),
       '#description' => t('Specify the maximum width of the select box'),
-      '#default_value' => (isset($this->options['max_length'])) ? $this->options['max_length'] : 40,
+      '#default_value' => $this->options['expose']['max_length'],
 
     );
-    $form['note'] = array(
+    $form['expose']['note'] = array(
       '#type' => 'markup',
       '#value' => t('<strong><font color="red">Note:</font></strong> If another filter exists for the same table then '.
                     'the values shown in the drop box will only include those from rows that are not filtered.'),
 
     );
 
+    return $form;
+
   }
 
   /**
-   * Assign our new form elements values to the options array
+   * Set values for my options
    */
-  function options_submit(&$form, &$form_state) {
-    $this->options['values_form_type'] = $form_state['input']['options']['values_form_type'];
-    $this->options['select_multiple'] = $form_state['input']['options']['select_multiple'];
-    $this->options['select_optional'] = $form_state['input']['options']['select_optional'];
+  function expose_submit(&$form, &$form_state) {
+    $this->options['expose']['values_form_type'] = $form_state['values']['options']['expose']['values_form_type'];
+    $this->options['expose']['select_multiple'] = $form_state['values']['options']['expose']['select_multiple'];
+    $this->options['expose']['select_optional'] = $form_state['values']['options']['expose']['select_optional'];
+    $this->options['expose']['max_length'] = $form_state['values']['options']['expose']['max_length'];
+  }
+
+  /**
+   * Assign defaults for our new options
+   */
+  function expose_options() {
+    $this->options['expose']['values_form_type'] = 'textfield';
+    $this->options['expose']['select_multiple'] = FALSE;
+    $this->options['expose']['select_optional'] = FALSE;
+    $this->options['expose']['max_length'] = 40;
   }
 
  /**
@@ -125,7 +167,9 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
   function value_form(&$form, &$form_state) {
     parent::value_form($form, $form_state);
 
-    if (preg_match('/select/', $this->options['values_form_type'])) {
+    $this->options['expose']['values_form_type'] = (isset($this->options['expose']['values_form_type'])) ? $this->options['expose']['values_form_type'] : 'textfield';
+
+    if (preg_match('/select/', $this->options['expose']['values_form_type'])) {
 
       //Select List
       $form['value'] = array(
@@ -135,7 +179,7 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
           '#default_value' => $this->value,
       );
 
-      if ($this->options['select_multiple']) {
+      if ($this->options['expose']['select_multiple']) {
         $form['value']['#multiple'] = TRUE;
       }
     }
@@ -156,8 +200,10 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
   function exposed_form(&$form, &$form_state) {
     parent::exposed_form($form, $form_state);
 
-    if ($this->options['select_multiple']) {
-      $form[$this->options['id']]['#multiple'] = TRUE;
+    if (isset($this->options['expose']['select_multiple'])) {
+      if ($this->options['expose']['select_multiple']) {
+        $form[$this->options['id']]['#multiple'] = TRUE;
+      }
     }
   }
 
@@ -172,25 +218,40 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
       return;
     }
 
-    if (is_array($this->value)) {
-      if (isset($this->value['All'])) {
-        unset($this->value['All']);
-      }
-
-      if ($this->operator == '!=') {
-        $this->operator = 'NOT IN';
-      }
-      else {
-        $this->operator = 'IN';
-      }
-    }
-
     $this->ensure_my_table();
     $field = $this->table_alias . "." . $this->real_field;
     $table = $this->query->get_table_info($this->table);
 
-    if ($this->value) {
-      $this->query->add_where($this->options['group'], $field, $this->value, $this->operator);
+    $this->options['expose']['values_form_type'] = (isset($this->options['expose']['values_form_type'])) ? $this->options['expose']['values_form_type'] : 'textfield';
+    if (preg_match('/select/', $this->options['expose']['values_form_type'])) {
+      if (is_array($this->value)) {
+        if (isset($this->value['All'])) {
+          unset($this->value['All']);
+        }
+
+        if ($this->operator == '!=') {
+          $this->operator = 'NOT IN';
+        }
+        else {
+          $this->operator = 'IN';
+        }
+      }
+      else {
+        // don't allow operators other than = and !=
+        if ($this->operator != '!=') {
+          $this->operator = '=';
+        }
+      }
+
+      if ($this->value) {
+        $this->query->add_where($this->options['group'], $field, $this->value, $this->operator);
+      }
+    }
+    else {
+      $info = $this->operators();
+      if (!empty($info[$this->operator]['method'])) {
+        $this->{$info[$this->operator]['method']}($field);
+      }
     }
 
   }

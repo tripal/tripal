@@ -27,6 +27,14 @@
   margin-bottom: 0px;
 }
 
+.views-exposed-widget .views-widget input[type="text"] {
+  width: 200px;
+}
+
+.views-exposed-widget .views-widget input[type="select"] {
+  width: 200px;
+}
+
 .views-exposed-widget label {
   display: inline-block;
   width: 15em;
