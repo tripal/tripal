@@ -287,6 +287,7 @@ function tripal_bulk_loader_defaultview_admin_template_listing() {
   $handler->display->display_options['header']['area']['table'] = 'views';
   $handler->display->display_options['header']['area']['field'] = 'area';
   $handler->display->display_options['header']['area']['label'] = 'Add Template';
+  $handler->display->display_options['header']['area']['empty'] = TRUE;
   $handler->display->display_options['header']['area']['content'] = '<ul class="action-links">
       <li><a href="template/create">Add Template</a></li>
       <li><a href="templates/import">Import Template</a></li>

@@ -41,20 +41,6 @@ function tripal_bulk_loader_admin_jobs_listing() {
   return $output;
 }
 
-function tripal_bulk_loader_admin_enable_view($view_name) {
-
-  $status = variable_get('views_defaults', array());
-  if (isset($status[$view_name])) {
-    $status[$view_name] = FALSE;
-    variable_set('views_defaults', $status);
-    drupal_set_message("Successfully Enabled $view_name");
-  }
-  else {
-    drupal_set_message("Unable to find a view by the name of '$view_name'",'error');
-  }
-  drupal_goto('admin/tripal/loaders/bulk');
-}
-
 /**
  * @section
  * Configuration Form

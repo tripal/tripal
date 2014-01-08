@@ -16,8 +16,8 @@ function tripal_db_admin_db_listing() {
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
-  $dbs_view = views_embed_view('db_admin','default');
-  $dbxrefs_view = views_embed_view('db_reference_admin','default');
+  $dbs_view = views_embed_view('tripal_db_admin_dbs','default');
+  $dbxrefs_view = views_embed_view('tripal_db_admin_dbxrefs','default');
   if (isset($dbs_view) && isset($dbxrefs_view)) {
     $output .= $dbs_view;
   }

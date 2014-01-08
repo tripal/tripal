@@ -84,16 +84,16 @@ function tripal_bulk_loader_menu() {
   $items['admin/tripal/loaders/bulk/views/jobs/enable'] = array(
     'title' => 'Enable Jobs Administrative View',
     'description' => 'Enable Jobs Administrative View',
-    'page callback' => 'tripal_bulk_loader_admin_enable_view',
-    'page arguments' => array('tripal_bulk_loading_jobs'),
+    'page callback' => 'tripal_views_admin_enable_view',
+    'page arguments' => array('tripal_bulk_loading_jobs','admin/tripal/loaders/bulk'),
     'access arguments' => array('administer tripal_bulk_loader'),
     'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/loaders/bulk/views/templates/enable'] = array(
     'title' => 'Enable Templates Administrative View',
     'description' => 'Enable Templates Administrative View',
-    'page callback' => 'tripal_bulk_loader_admin_enable_view',
-    'page arguments' => array('tripal_bulk_loader_templates'),
+    'page callback' => 'tripal_views_admin_enable_view',
+    'page arguments' => array('tripal_bulk_loader_templates', 'admin/tripal/loaders/bulk'),
     'access arguments' => array('administer tripal_bulk_loader'),
     'type' => MENU_CALLBACK,
   );
