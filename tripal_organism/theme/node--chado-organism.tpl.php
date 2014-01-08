@@ -19,6 +19,7 @@
 //   NOTE: For a full listing of fields available in the node object the
 //       print_r $node line below or install the Drupal Devel module which 
 //       provides an extra tab at the top of the node page labelled Devel
+dpm($variables);
 
 $organism  = $variables['node']->organism;
 
@@ -40,15 +41,29 @@ else { ?>
 <script type="text/javascript">
 (function ($) {
   Drupal.behaviors.organismBehavior = {
-    attach: function (context, settings){<?php 
+    attach: function (context, settings){<?php
+      // hide the resource sidbar if requested and strech the details section
       if ($no_sidebar) { ?>    
-        // hide the resource side bar and strech the details section    
         $(".tripal_toc").hide();
         $(".tripal_details").addClass("tripal_details_full");
         $(".tripal_details_full").removeClass("tripal_details"); <?php
-      } else { ?>
-        // use default resource sidebar
-        $(".tripal-info-box").hide(); <?php
+      } 
+      // use default resource sidebar
+      else { ?>        
+        $(".tripal-info-box").hide();
+
+        // set the widths of the details and sidebar sections so they can work 
+        // seemlessly with any theme.
+        total_width = $(".tripal_contents").width();
+        details_width = (total_width * 0.70) - 52; // 52 == 20  x 2 left/right padding + 10 right margin + 2pt border
+        toc_width = (total_width * 0.30) - 42;  // 42 == 20 x 2 left/right padding + 2pt border
+        // don't let sidebar get wider than 200px
+        if (toc_width > 200) {
+          details_width += toc_width - 200;
+          toc_width = 200;
+        }
+        $('#tripal_organism_toc').width(toc_width);
+        $('#tripal_organism_details').width(details_width); <?php
       } ?>
  
       // iterate through all of the info boxes and add their titles
@@ -102,46 +117,50 @@ else { ?>
 })(jQuery);
 </script>
 
-<div id="tripal_organism_details" class="tripal_details">
-
-   <!-- Basic Details Theme -->
-   <?php print theme('tripal_organism_base', $variables); ?>
-   
-   <!-- Resource Blocks CCK elements --> <?php
-   if(property_exists($node, 'field_resource_titles')) {
-	   for($i = 0; $i < count($node->field_resource_titles); $i++){
-	     if($node->field_resource_titles[$i]['value']){ ?>
-	       <div id="tripal_organism-resource_<?php print $i?>-box" class="tripal_organism-info-box tripal-info-box">
-	         <div class="tripal_organism-info-box-title tripal-info-box-title"><?php print $node->field_resource_titles[$i]['value'] ?></div>
-	         <?php print $node->field_resource_blocks[$i]['value']; ?>
-	       </div> <?php
-	     }
-	   } 
-	 }?>
-   <!-- Let modules add more content -->
-   <?php print $content ?>
-   
-</div>
-
-<!-- Table of contents -->
-<div id="tripal_organism_toc" class="tripal_toc">
-   <div id="tripal_organism_toc_title" class="tripal_toc_title">Resources</i></div>
-   <span id="tripal_organism_toc_desc" class="tripal_toc_desc"></span>
-   <ul id="tripal_organism_toc_list" class="tripal_toc_list">
-   
-     <!-- Resource Links CCK elements --><?php
-     if(property_exists($node, 'field_resource_links')) {
-	     for($i = 0; $i < count($node->field_resource_links); $i++){
-	       if($node->field_resource_links[$i]['value']){
-	         $matches = preg_split("/\|/",$node->field_resource_links[$i]['value']);?>
-	         <li><a href="<?php print $matches[1] ?>" target="_blank"><?php print $matches[0] ?></a></li><?php
-	       }
-	     }
-     }
+<div id="tripal_organism_content" class="tripal_contents">
+  <div id="tripal_organism_details" class="tripal_details">
+  
+     <!-- Resource Blocks CCK elements --> <?php
+     if (property_exists($node, 'field_resource_titles')) {
+       for ($i = 0; $i < count($node->field_resource_titles); $i++){
+         if ($node->field_resource_titles[$i]['value']){ ?>
+           <div id="tripal_organism-resource_<?php print $i?>-box" class="tripal_organism-info-box tripal-info-box">
+             <div class="tripal_organism-info-box-title tripal-info-box-title"><?php print $node->field_resource_titles[$i]['value'] ?></div>
+             <?php print $node->field_resource_blocks[$i]['value']; ?>
+           </div> <?php
+         }
+       } 
+     }?>
+     <!-- Let modules add more content -->
+     <?php
+       foreach ($content as $key => $values) {
+         if (array_key_exists('#value', $values)) {
+           print $content[$key]['#value'];
+         }
+       }
+     ?>
      
-     // ADD CUSTOMIZED <li> LINKS HERE 
-     ?> 
-   </ul>
-</div> <?php 
+  </div>
+  
+  <!-- Table of contents -->
+  <div id="tripal_organism_toc" class="tripal_toc">
+     <div id="tripal_organism_toc_title" class="tripal_toc_title">Resources</i></div>
+     <span id="tripal_organism_toc_desc" class="tripal_toc_desc"></span>
+     <ul id="tripal_organism_toc_list" class="tripal_toc_list">
+     
+       <!-- Resource Links CCK elements --><?php
+       if(property_exists($node, 'field_resource_links')) {
+         for($i = 0; $i < count($node->field_resource_links); $i++){
+           if($node->field_resource_links[$i]['value']){
+             $matches = preg_split("/\|/",$node->field_resource_links[$i]['value']);?>
+             <li><a href="<?php print $matches[1] ?>" target="_blank"><?php print $matches[0] ?></a></li><?php
+           }
+         }
+       }
+       ?> 
+     </ul>
+  </div>
+</div> 
+<?php 
 } ?>
 

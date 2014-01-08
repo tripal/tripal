@@ -391,7 +391,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
       foreach ($table_desc['primary key'] as $field) {
         $sql = "SELECT CURRVAL('{" . $table . "_" . $field . "_seq}')";
         $results = chado_query($sql);
-        $value = $results->fetchObject();
+        $value = $results->fetchField();
         if (!$value) {
           tripal_core_report_error(
             'tripal_core',
@@ -2185,9 +2185,7 @@ function chado_query($sql, $args = array()) {
  */
 function chado_get_id_for_node($table, $nid) {
   $sql = "SELECT " . $table . "_id as id FROM {chado_$table} WHERE nid = :nid";
-  $result = db_query($sql, array(':nid' => $nid))->fetchObject();
-
-  return $result->id;
+  return db_query($sql, array(':nid' => $nid))->fetchField();
 }
 
 /**
@@ -2202,8 +2200,7 @@ function chado_get_id_for_node($table, $nid) {
  */
 function chado_get_node_id($table, $id) {
   $sql = "SELECT nid FROM {chado_$table} WHERE " . $table . "_id = :" . $table . "_id";
-  $result = db_query($sql, array(":" . $table . "_id" => $id))->fetchObject();
-  return $results->nid;
+  return db_query($sql, array(":" . $table . "_id" => $id))->fetchField();
 }
 
 /**

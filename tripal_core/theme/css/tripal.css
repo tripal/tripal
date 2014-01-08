@@ -117,10 +117,19 @@ table.tripal-table-horz .tripal-table-odd-row {
    padding: 10px;
    background-color: #FFEEEE;
 }
+/**
+ * Tripal Contents container: contains both the details 
+ * section and the resources sidebar
+ */
+.tripal_contents {
+  width: 100%;
+}
 
+/**
+ * Resources Sidebar
+ */
 .tripal_toc {
-  float: left;
-  width: 20%;
+  float: right;  
   background-color: #EEEEEE;
 
   -moz-border-radius: 15px;
@@ -138,9 +147,8 @@ table.tripal-table-horz .tripal-table-odd-row {
   border-width:1px;
 }
 .tripal_toc ul {
- margin-left: 0px;
- margin-top: 5px;
- padding-left: 15px;
+  margin: 0 !important;
+  padding: 0 0 0.25em 1em !important;
 }
 .tripal_toc_title {
   font-size: 1.5em;
@@ -148,13 +156,13 @@ table.tripal-table-horz .tripal-table-odd-row {
   padding-bottom: 10px;
 }
 .tripal_toc_desc {
- /*font-style: italic; */
 }
+/**
+ * Details Section
+ */
 .tripal_details {
   float: left;
-  width: 69%;
   background-color: #FFFFFF;
-
   -moz-border-radius: 15px;
   -webkit-border-radius: 15px;
   -khtml-border-radius: 15px;
@@ -175,7 +183,6 @@ table.tripal-table-horz .tripal-table-odd-row {
 
 .tripal_details_full {
   float: left;
-  width: 95%;
   background-color: #FFFFFF;
 
   -moz-border-radius: 15px;
@@ -195,7 +202,9 @@ table.tripal-table-horz .tripal-table-odd-row {
   
   overflow:auto;
 }
-
+/**
+ * Tables
+ */
 .tripal-subtable {
   border-collapse:collapse;
   border: 0px solid black;

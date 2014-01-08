@@ -173,9 +173,10 @@ function tripal_jobs_report() {
     
   // create the report page
   $output = "Waiting jobs are executed first by priority level (the lower the " .
-             "number the higher the priority) and second by the order they " .
-             "were entered";  
-  $output .= drupal_render(drupal_get_form('tripal_jobs_report_form'));   
+            "number the higher the priority) and second by the order they " .
+            "were entered";
+  $report_form = drupal_get_form('tripal_jobs_report_form');
+  $output .= drupal_render($report_form);   
   $output .= theme_table($table);
   $output .= theme('pager');
   return $output;

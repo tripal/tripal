@@ -2,6 +2,7 @@
 
 require_once "api/tripal_organism.api.inc";
 require_once "includes/tripal_organism.admin.inc";
+require_once "includes/organism_sync.inc";
 
 /**
  * @file
@@ -117,11 +118,19 @@ function tripal_organism_menu() {
    'title' => 'Configuration',
    'description' => 'Manage integration of Chado organisms including associated features',
    'page callback' => 'drupal_get_form',
-   'page arguments' => array('tripal_organism_help'),
+   'page arguments' => array('tripal_organism_admin'),
    'access arguments' => array('adminster tripal organism'),
    'type' => MENU_NORMAL_ITEM,
   );
 
+  $items['admin/tripal/chado/tripal_organism/sync'] = array(
+    'title' => 'Sync Organisms',
+    'description' => 'Sync Chado organisms with Drupal',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_organism_sync'),
+    'access arguments' => array('adminster tripal organism'),
+    'type' => MENU_NORMAL_ITEM,
+  );
 
   return $items;
 }
@@ -143,33 +152,40 @@ function tripal_organism_help ($path, $arg) {
  *
  * @ingroup tripal_organism
  */
-function tripal_organism_theme() {
-  $theme_path = drupal_get_path('module', 'tripal_organism') . '/theme';
+function tripal_organism_theme($existing, $type, $theme, $path) {
+  $core_path = drupal_get_path('module', 'tripal_core');
+  
   $items = array(
+    'node__chado_organism' => array(
+      'template' => 'node--chado-generic',
+      'render element' => 'node',
+      'base hook' => 'node',
+      'path' => "$core_path/theme",
+    ),
     'tripal_organism_base' => array(
-      'arguments' => array('node' => NULL),
+      'variables' => array('node' => NULL),
       'template' => 'tripal_organism_base',
-      'path' => "$theme_path/tripal_organism",
+      'path' => "$path/theme/tripal_organism",
     ),
     'tripal_organism_description' => array(
-      'arguments' => array('node' => NULL),
+      'variables' => array('node' => NULL),
       'template' => 'tripal_organism_description',
-      'path' => "$theme_path/tripal_organism",
+      'path' => "$path/theme/tripal_organism",
     ),
     'tripal_organism_image' => array(
-      'arguments' => array('node' => NULL),
+      'variables' => array('node' => NULL),
       'template' => 'tripal_organism_image',
-      'path' => "$theme_path/tripal_organism",
+      'path' => "$path/theme/tripal_organism",
     ),
     'tripal_organism_teaser' => array(
-      'arguments' => array('node' => NULL),
+      'variables' => array('node' => NULL),
       'template' => 'tripal_organism_teaser',
-      'path' => "$theme_path/tripal_organism",
+      'path' => "$path/theme/tripal_organism",
     ),
     'tripal_organism_help' => array(
       'template' => 'tripal_organism_help',
       'arguments' =>  array(NULL),
-      'path' => $theme_path,
+      'path' => $path,
     ),
   );
   return $items;
@@ -265,9 +281,16 @@ function tripal_organism_permission() {
  *  @ingroup tripal_organism
  */
 function chado_organism_validate($node, $form, &$form_state) {
+  // remove any white space around values
+  $node->genus        = trim($node->genus);
+  $node->species      = trim($node->species);
+  $node->abbreviation = trim($node->abbreviation);
+  $node->common_name  = trim($node->common_name);
+  $node->description  = trim($node->description);
+  
   // if this is an update, we want to make sure that a different organism doesn't
   // already have this genus and speces
-  if ($node->organism_id) {
+  if (property_exists($node, 'organism_id')) {
     $sql = "
       SELECT *
       FROM {organism} O
@@ -312,6 +335,12 @@ function chado_organism_validate($node, $form, &$form_state) {
  * @ingroup tripal_organism
  */
 function chado_organism_insert($node) {
+  // remove any white space around values
+  $node->genus        = trim($node->genus);
+  $node->species      = trim($node->species);
+  $node->abbreviation = trim($node->abbreviation);
+  $node->common_name  = trim($node->common_name);
+  $node->description  = trim($node->description);
 
   $values = array(
     'genus'        => $node->genus,
@@ -320,10 +349,11 @@ function chado_organism_insert($node) {
     'common_name'  => $node->common_name,
     'comment'      => $node->description
   );
+  
   // if there is an organism_id in the $node object then this must be a sync so
   // we can skip adding the organism as it is already there, although
   // we do need to proceed with the rest of the insert
-  if (!$node->organism_id) {
+  if (!property_exists($node,'organism_id')) {
     $organism = tripal_core_chado_insert('organism', $values);
     if (!$organism) {
       drupal_set_message(t('Unable to add organism.', 'warning'));
@@ -339,13 +369,13 @@ function chado_organism_insert($node) {
 
   // Make sure the entry for this organism doesn't already exist in the
   // chado_organism table if it doesn't exist then we want to add it.
-
-  if (!chado_get_id_for_node('organism', $node->nid) ) {
-    // next add the item to the drupal table
-    $sql = "INSERT INTO {chado_organism} (nid, vid, organism_id) " .
-           "VALUES (:nid, :vid, :organism_id)";
-    $args = array(':nid' => $node->nid, ':vid' => $node->vid, ':organism_id' => $organism_id);
-    db_query($sql, $args);
+  $check_org_id = chado_get_id_for_node('organism', $node->nid);  
+  if (!$check_org_id) {
+    $record = new stdClass();
+    $record->nid = $node->nid;
+    $record->vid = $node->vid;
+    $record->organism_id = $organism_id;
+    drupal_write_record('chado_organism', $record);
   }
 
   // set the title for the node
@@ -364,6 +394,13 @@ function chado_organism_insert($node) {
  * @ingroup tripal_organism
  */
 function chado_organism_update($node) {
+  // remove any white space around values
+  $node->genus        = trim($node->genus);
+  $node->species      = trim($node->species);
+  $node->abbreviation = trim($node->abbreviation);
+  $node->common_name  = trim($node->common_name);
+  $node->description  = trim($node->description);
+  
   if ($node->revision) {
     // there is no way to handle revisions in Chado but leave
     // this here just to make not we've addressed it.
@@ -431,6 +468,22 @@ function chado_organism_delete($node) {
 }
 /**
  *
+ * @ingroup tripal_feature
+ */
+function tripal_organism_node_view($node, $view_mode, $langcode) {
+  switch ($node->type) {
+    case 'chado_organism':
+      // Show feature browser and counts
+      if ($view_mode == 'full') {
+        $node->content['tripal_organism_base'] = array(
+          '#value' => theme('tripal_organism_base', array('node' => $node)),
+        );
+      }
+      break;
+  }
+}
+/**
+ *
  *
  * @ingroup tripal_organism
  */
@@ -465,29 +518,42 @@ function chado_organism_add_image($node) {
  *
  * @ingroup tripal_organism
  */
-function chado_organism_form($node, $param) {
-  $organism = $node->organism;
-
-  // add in the comment since it is a text field and may not be included if too big
-  $organism = tripal_core_expand_chado_vars($organism, 'field', 'organism.comment');
-
-  // get form defaults
-  $abbreviation   = property_exists($node, 'abbreviation')   ? property_exists($node, 'abbreviation')   : $organism->abbreviation;
-  $genus          = property_exists($node, 'genus')          ? property_exists($node, 'genus')          : $organism->genus;
-  $species        = property_exists($node, 'species')        ? property_exists($node, 'species')        : $organism->species;
-  $common_name    = property_exists($node, 'common_name')    ? property_exists($node, 'common_name')    : $organism->common_name;
-  $description    = property_exists($node, 'description')    ? property_exists($node, 'description')    : $organism->comment;
-  $organism_image = property_exists($node, 'organism_image') ? property_exists($node, 'organism_image') : '';
-
+function chado_organism_form($node, $form_state) {
   $form = array();
+  
+  // we have a file upload element on the form soe we need the multipart encoding type
   $form['#attributes']['enctype'] = 'multipart/form-data';
+  
+  // if the organism is part of the node object then we are editing. If not we are inserting
+  if (property_exists($node, 'organism')) {
+    $organism = $node->organism;
 
-  // keep track of the organism id if we have one.  If we do have one then
-  // this would indicate an update as opposed to an insert.
-  $form['organism_id'] = array(
-    '#type' => 'value',
-    '#value' => $organism->organism_id,
-  );
+    // add in the comment since it is a text field and may not be included if too big
+    $organism = tripal_core_expand_chado_vars($organism, 'field', 'organism.comment');
+    
+    // get form defaults
+    $abbreviation   = property_exists($node, 'abbreviation')   ? property_exists($node, 'abbreviation')   : $organism->abbreviation;
+    $genus          = property_exists($node, 'genus')          ? property_exists($node, 'genus')          : $organism->genus;
+    $species        = property_exists($node, 'species')        ? property_exists($node, 'species')        : $organism->species;
+    $common_name    = property_exists($node, 'common_name')    ? property_exists($node, 'common_name')    : $organism->common_name;
+    $description    = property_exists($node, 'description')    ? property_exists($node, 'description')    : $organism->comment;
+    $organism_image = property_exists($node, 'organism_image') ? property_exists($node, 'organism_image') : '';
+    
+    // set the organism_id in the form
+    $form['organism_id'] = array(
+      '#type' => 'value',
+      '#value' => $organism->organism_id,
+    );
+  }
+  else {
+    // get form defaults
+    $abbreviation   = property_exists($node, 'abbreviation')   ? property_exists($node, 'abbreviation')   : '';
+    $genus          = property_exists($node, 'genus')          ? property_exists($node, 'genus')          : '';
+    $species        = property_exists($node, 'species')        ? property_exists($node, 'species')        : '';
+    $common_name    = property_exists($node, 'common_name')    ? property_exists($node, 'common_name')    : '';
+    $description    = property_exists($node, 'description')    ? property_exists($node, 'description')    : '';
+    $organism_image = property_exists($node, 'organism_image') ? property_exists($node, 'organism_image') : '';
+  }
 
   $form['abbreviation']= array(
     '#type' => 'textfield',
@@ -544,6 +610,7 @@ function chado_organism_load($nodes) {
     // build the organism variable
     $values = array('organism_id' => $organism_id);
     $organism = tripal_core_generate_chado_var('organism', $values);
+    
 
     // add in the description field
     $organism = tripal_core_expand_chado_vars($organism, 'field', 'organism.comment');
