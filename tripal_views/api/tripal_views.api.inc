@@ -158,6 +158,54 @@ function tripal_views_is_lightest_priority_setup($setup_id, $table_name) {
 }
 
 /**
+ * Programatically enable view
+ *
+ * @param $view_name
+ *   The machine-name of the view to be enabled
+ * @param $redirect_link
+ *   The path to redirect to. FALSE if no redirect needed
+ */
+function tripal_views_admin_enable_view($view_name, $redirect_link = FALSE) {
+
+  $status = variable_get('views_defaults', array());
+  if (isset($status[$view_name])) {
+    $status[$view_name] = FALSE;
+    variable_set('views_defaults', $status);
+    drupal_set_message("Successfully Enabled $view_name");
+  }
+  else {
+    drupal_set_message("Unable to find a view by the name of '$view_name'. Unable to enable this view.",'error');
+  }
+  if ($redirect_link) {
+    drupal_goto($redirect_link);
+  }
+}
+
+/**
+ * Programatically disable view
+ *
+ * @param $view_name
+ *   The machine-name of the view to be enabled
+ * @param $redirect_link
+ *   The path to redirect to. FALSE if no redirect needed
+ */
+function tripal_views_admin_disable_view($view_name, $redirect_link = FALSE) {
+
+  $status = variable_get('views_defaults', array());
+  if (isset($status[$view_name])) {
+    $status[$view_name] = TRUE;
+    variable_set('views_defaults', $status);
+    drupal_set_message("Disabled $view_name");
+  }
+  else {
+    drupal_set_message("Unable to find a view by the name of '$view_name'. Unable to disable this view.",'error');
+  }
+  if ($redirect_link) {
+    drupal_goto($redirect_link);
+  }
+}
+
+/**
  * Purpose: Deletes ALL Tripal Views Integrations.
  */
 function tripal_views_delete_all_integrations() {
