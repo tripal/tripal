@@ -3,6 +3,9 @@
  * CSS rules to theme tripal admin listings
  */
 
+/**
+ * Exposed Form Theme-ing
+ */
 .views-exposed-form {
   border: 1px solid #ccc;
   padding: 15px;
@@ -13,7 +16,7 @@
 .views-exposed-form .views-exposed-widget {
   float: none;
   display: block;
-  width: 450px;
+  width: 540px;
 }
 
 .views-exposed-widget .views-widget {
@@ -28,11 +31,11 @@
 }
 
 .views-exposed-widget .views-widget input[type="text"] {
-  width: 200px;
+  width: 250px;
 }
 
-.views-exposed-widget .views-widget input[type="select"] {
-  width: 200px;
+.views-exposed-widget .views-widget select {
+  width: 255px;
 }
 
 .views-exposed-widget label {
@@ -47,6 +50,29 @@
 
 .views-exposed-form .views-submit-button {
   position:absolute;
-  left:475px;
+  left:550px;
   top: 0px;
+}
+
+/**
+ * Table Theme-ing
+ */
+table.views-table {
+  table-layout: fixed;
+  width: 100%
+}
+
+th.views-field {
+  max-width: 33%;
+  word-wrap: break-word;
+}
+
+td.views-field.short-column, th.views-field.short-column {
+  width: 75px;
+  word-wrap: break-word;
+}
+
+td.views-field.wide-column, th.views-field.wide-column {
+  width: 45%;
+  word-wrap: break-word;
 }
