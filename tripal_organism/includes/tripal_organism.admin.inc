@@ -91,7 +91,7 @@ function get_tripal_organism_admin_form_reindex_set(&$form) {
   $form['reindex']['re-organisms'] = array(
     '#title'       => t('Organisms'),
     '#type'        => t('checkboxes'),
-    '#description' => t("Check the organisms whoee features you want to reindex. Note: this list contains all organisms, even those that may not be synced."),
+    '#description' => t("Check the organisms whose features you want to reindex. Note: this list contains all organisms, even those that may not be synced."),
     '#required'    => FALSE,
     '#prefix'      => '<div id="lib_boxes">',
     '#suffix'      => '</div>',

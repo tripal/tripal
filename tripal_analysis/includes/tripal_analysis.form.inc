@@ -231,7 +231,14 @@ function chado_analysis_validate($node, &$form) {
  * @ingroup tripal_analysis
  */
 function tripal_analysis_validate($node, &$form) {
-  
+  $node->analysisname = trim($node->analysisname);
+  $node->description = trim($node->description);
+  $node->program = trim($node->program);
+  $node->programversion = trim($node->programversion);
+  $node->algorithm = trim($node->algorithm);
+  $node->sourcename = trim($node->sourcename);
+  $node->sourceversion = trim($node->sourceversion);
+  $node->sourceuri = trim($node->sourceuri);
  
   // Only nodes being updated will have an nid already
   if (!is_null($node->nid)) {    

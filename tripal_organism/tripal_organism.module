@@ -185,10 +185,85 @@ function tripal_organism_theme($existing, $type, $theme, $path) {
     'tripal_organism_help' => array(
       'template' => 'tripal_organism_help',
       'arguments' =>  array(NULL),
-      'path' => $path,
+      'path' => "$path/theme",
     ),
   );
   return $items;
+}
+/**
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_organism_node_view($node, $view_mode, $langcode) {
+  switch ($node->type) {
+  	case 'chado_organism':
+  	  // Show feature browser and counts
+  	  if ($view_mode == 'full') {
+  	    $node->content['tripal_organism_base'] = array(
+  	      '#value' => theme('tripal_organism_base', array('node' => $node)),
+  	    );
+  	  }
+  	  break;
+  }
+}
+/**
+  *  Set the permission types that the chado module uses.  Essentially we
+  *  want permissionis that protect creation, editing and deleting of chado
+  *  data objects
+  *
+  *
+  @ingroup tripal_organism
+  */
+function tripal_organism_permission() {
+  return array(
+    'access chado_organism content' => array(
+      'title' => t('View Organisms'),
+      'description' => t('Allow users to view organism pages.'),
+    ),
+    'create chado_organism content' => array(
+      'title' => t('Create Organisms'),
+      'description' => t('Allow users to create new organism pages.'),
+    ),
+    'delete chado_organism content' => array(
+      'title' => t('Delete Organisms'),
+      'description' => t('Allow users to delete organism pages.'),
+    ),
+    'edit chado_organism content' => array(
+      'title' => t('Edit Organisms'),
+      'description' => t('Allow users to edit organism pages.'),
+    ),
+    'adminster tripal organism' => array(
+      'title' => t('Administer Organisms'),
+      'description' => t('Allow users to administer all organisms.'),
+    ),
+  );
+}
+/**
+ * Implements hook_views_api()
+ * Purpose: Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_db.views.inc where all the
+ *  views integration code is
+ *
+ * @ingroup tripal_organism
+ */
+function tripal_organism_views_api() {
+  return array(
+    'api' => 2.0,
+  );
+}
+/**
+ *
+ *
+ * @ingroup tripal_organism
+ */
+function tripal_organism_job_describe_args($callback, $args) {
+
+  $new_args = array();
+  if ($callback == 'tripal_organism_sync_organisms') {
+    $organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $args[0]));
+    $new_args['Organism'] = $organism[0]->genus . " " . $organism[0]->species;
+  }
+  return $new_args;
 }
 /**
  * Implement hook_access().
@@ -234,43 +309,10 @@ function chado_organism_node_access($node, $op, $account) {
   if ($op == 'view') {
     if (!user_access('access chado_organism content', $account)) {
       return FALSE;
-      }
+    }
   }
   return NULL;
 }
-/**
-  *  Set the permission types that the chado module uses.  Essentially we
-  *  want permissionis that protect creation, editing and deleting of chado
-  *  data objects
-  *
-  *
-  @ingroup tripal_organism
-  */
-function tripal_organism_permission() {
-  return array(
-    'access chado_organism content' => array(
-      'title' => t('View Organisms'),
-      'description' => t('Allow users to view organism pages.'),
-    ),
-    'create chado_organism content' => array(
-      'title' => t('Create Organisms'),
-      'description' => t('Allow users to create new organism pages.'),
-    ),
-    'delete chado_organism content' => array(
-      'title' => t('Delete Organisms'),
-      'description' => t('Allow users to delete organism pages.'),
-    ),
-    'edit chado_organism content' => array(
-      'title' => t('Edit Organisms'),
-      'description' => t('Allow users to edit organism pages.'),
-    ),
-    'adminster tripal organism' => array(
-      'title' => t('Administer Organisms'),
-      'description' => t('Allow users to administer all organisms.'),
-    ),
-  );
-}
-
 /**
  * Implementation of hook_validate
  *
@@ -341,19 +383,18 @@ function chado_organism_insert($node) {
   $node->abbreviation = trim($node->abbreviation);
   $node->common_name  = trim($node->common_name);
   $node->description  = trim($node->description);
-
-  $values = array(
-    'genus'        => $node->genus,
-    'species'      => $node->species,
-    'abbreviation' => $node->abbreviation,
-    'common_name'  => $node->common_name,
-    'comment'      => $node->description
-  );
   
   // if there is an organism_id in the $node object then this must be a sync so
   // we can skip adding the organism as it is already there, although
   // we do need to proceed with the rest of the insert
   if (!property_exists($node,'organism_id')) {
+    $values = array(
+      'genus'        => $node->genus,
+      'species'      => $node->species,
+      'abbreviation' => $node->abbreviation,
+      'common_name'  => $node->common_name,
+      'comment'      => $node->description
+    );
     $organism = tripal_core_chado_insert('organism', $values);
     if (!$organism) {
       drupal_set_message(t('Unable to add organism.', 'warning'));
@@ -466,22 +507,7 @@ function chado_organism_delete($node) {
       "library or feature depends on this organism. It was not removed from chado."));
   }
 }
-/**
- *
- * @ingroup tripal_feature
- */
-function tripal_organism_node_view($node, $view_mode, $langcode) {
-  switch ($node->type) {
-    case 'chado_organism':
-      // Show feature browser and counts
-      if ($view_mode == 'full') {
-        $node->content['tripal_organism_base'] = array(
-          '#value' => theme('tripal_organism_base', array('node' => $node)),
-        );
-      }
-      break;
-  }
-}
+
 /**
  *
  *
@@ -583,7 +609,6 @@ function chado_organism_form($node, $form_state) {
     '#type' => 'textarea',
     '#rows' => 15,
     '#title' => t('Description'),
-    '#required' => TRUE,
     '#default_value' => $description,
   );
   $form['organism_image']= array(
@@ -616,32 +641,4 @@ function chado_organism_load($nodes) {
     $organism = tripal_core_expand_chado_vars($organism, 'field', 'organism.comment');
     $nodes[$nid]->organism = $organism;
   }
-}
-
-/**
- * Implements hook_views_api()
- * Purpose: Essentially this hook tells drupal that there is views support for
- *  for this module which then includes tripal_db.views.inc where all the
- *  views integration code is
- *
- * @ingroup tripal_organism
- */
-function tripal_organism_views_api() {
-  return array(
-    'api' => 2.0,
-  );
-}
-/**
- *
- *
- * @ingroup tripal_organism
- */
-function tripal_organism_job_describe_args($callback, $args) {
-
-  $new_args = array();
-  if ($callback == 'tripal_organism_sync_organisms') {
-    $organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $args[0]));
-    $new_args['Organism'] = $organism[0]->genus . " " . $organism[0]->species;
-  }
-  return $new_args;
 }

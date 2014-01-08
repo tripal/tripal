@@ -62,7 +62,7 @@ $url = $urls[0]->value;
 
 ?>
 <div id="tripal_pub-base-box" class="tripal_pub-info-box tripal-info-box">
-  <div class="tripal_pub-info-box-title tripal-info-box-title"><?php print $pub->type_id->name ?> Details</div>
+  <div class="tripal_pub-info-box-title tripal-info-box-title">Publication Details</div>
   <!-- <div class="tripal_pub-info-box-desc tripal-info-box-desc"></div> -->
   <?php 
   if ($pub->is_obsolete == 't') { ?>
