@@ -64,16 +64,7 @@ $organism = tripal_core_expand_chado_vars($organism,'field','organism.comment');
     ),
     $organism->abbreviation
   );
-  
-  // photo and description row (spans both colums)
-  $rows[] = array(
-    array(
-      'data' => $image . $organism->comment, 
-      'colspan' => 2,
-      'style' => 'text-align: justify;',
-    ),
-  );
-  
+
   // the $table array contains the headers and rows array as well as other
   // options for controlling the display of the table.  Additional 
   // documentation can be found here:
@@ -93,4 +84,5 @@ $organism = tripal_core_expand_chado_vars($organism,'field','organism.comment');
   // once we have our table array structure defined, we call Drupal's theme_table()
   // function to generate the table.
   print theme_table($table); ?>
+  <div style="text-align: justify"><?php print $image . $organism->comment?></div>  
 </div>

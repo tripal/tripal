@@ -690,13 +690,9 @@ function tripal_bulk_loader_import_template_form($form, $form_state) {
  */
 function tripal_bulk_loader_import_template_form_submit($form, &$form_state) {
 
-  // get the template array, and convert from text into an array.
-  $t = array();
-  eval("\$t = " . $form_state['values']['template_array'] . ";");
-
   $record = array(
     'name' => $form_state['values']['new_template_name'],
-    'template_array' => serialize($t),
+    'template_array' => $form_state['values']['template_array'],
     'created' => time(),
     'changed' => time()
   );
@@ -726,7 +722,7 @@ function tripal_bulk_loader_import_template_form_submit($form, &$form_state) {
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_export_template_form($form, &$form_state) {
+function tripal_bulk_loader_export_template_form($form, $form_state) {
 
   // set the breadcrumb
   $breadcrumb = array();
@@ -746,13 +742,7 @@ function tripal_bulk_loader_export_template_form($form, &$form_state) {
       ->condition('t.template_id',$template_id)
       ->execute();
     $template = $result->fetchObject();
-
-    $t = var_export(unserialize($template->template_array), TRUE);
-    $t = preg_replace("/\n\s+array/", "array", $t); // move array( to previous line
-    $t = preg_replace("/true/", "TRUE", $t); // upper case true
-    $t = preg_replace("/false/", "FALSE", $t); // upper case false
-    $t = preg_replace("/array\(/", "array (", $t); // put a space between array and paren
-    $form_state['storage']['template_array'] = $t;
+    $form_state['storage']['template_array'] = $template->template_array;
   }
 
   $form['name'] = array(
@@ -796,7 +786,7 @@ function tripal_bulk_loader_export_template_form($form, &$form_state) {
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_edit_template_record_form($form, &$form_state) {
+function tripal_bulk_loader_edit_template_record_form($form, $form_state) {
   $form['#cache'] = TRUE; // Make sure the form is cached.
 
   // get args from path
@@ -1162,7 +1152,7 @@ function tripal_bulk_loader_edit_template_record_form_submit($form, &$form_state
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_delete_template_record_form($form, &$form_state) {
+function tripal_bulk_loader_delete_template_record_form($form, $form_state) {
   $form['#cache'] = TRUE; // Make sure the form is cached.
 
   // get args from path
@@ -1716,7 +1706,7 @@ function tripal_bulk_loader_template_field_form_default_values($mode, &$form_sta
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_template_field_form($form, &$form_state = NULL) {
+function tripal_bulk_loader_template_field_form($form, $form_state = NULL) {
   $form['#cache'] = TRUE; // Make sure the form is cached.
 
   // if there is no template supplied don't return rest of form
@@ -2280,7 +2270,7 @@ function tripal_bulk_loader_template_field_form_submit($form, &$form_state) {
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_delete_template_field_form($form, &$form_state) {
+function tripal_bulk_loader_delete_template_field_form($form, $form_state) {
   $form['#cache'] = TRUE; // Make sure the form is cached.
 
   // get args from path

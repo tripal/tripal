@@ -68,7 +68,7 @@ function drush_tripal_pub_tripal_pubs_import() {
   $create_contacts = drush_get_option('create_contacts');
   $dbxref = drush_get_option('dbxref');
   $do_report = drush_get_option('report');
-  $update = drush_get_option('$update');
+  $update = drush_get_option('update');
 
   if($update == 'Y') {
     $update = TRUE;
