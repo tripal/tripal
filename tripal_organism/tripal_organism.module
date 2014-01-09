@@ -100,7 +100,7 @@ function tripal_organism_menu() {
   // the administative settings menu
   $items['admin/tripal/chado/tripal_organism'] = array(
    'title' => 'Organisms',
-   'description' => 'Basic Description of Tripal Organism Module Functionality',
+   'description' => 'Any living biological entity, such as an animal, plant, fungus, or bacterium.',
    'page callback' => 'tripal_organism_admin_organism_view',
    'access arguments' => array('adminster tripal organism'),
    'type' => MENU_NORMAL_ITEM,

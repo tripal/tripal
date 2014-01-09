@@ -23,7 +23,7 @@ function tripal_cv_defaultview_admin_cvs_listing() {
 
 $view = new view();
 $view->name = 'tripal_cv_admin_cvs';
-$view->description = 'A listing of all controlled vocabularies';
+$view->description = 'DO NOT DISABLE';
 $view->tag = 'tripal admin';
 $view->base_table = 'cv';
 $view->human_name = 'CVs Admin';
@@ -211,7 +211,7 @@ function tripal_cv_defaultview_admin_cvterms_listing() {
 
 $view = new view();
 $view->name = 'tripal_cv_admin_cvterms';
-$view->description = 'A listing of all controlled vocabulary terms filtered by controlled vocabulary';
+$view->description = 'DO NOT DISABLE';
 $view->tag = 'tripal admin';
 $view->base_table = 'cvterm';
 $view->human_name = 'CV Terms Admin';

@@ -23,7 +23,7 @@ function tripal_bulk_loader_defaultview_admin_job_listing() {
 
   $view = new view();
   $view->name = 'tripal_bulk_loading_jobs';
-  $view->description = 'Administration of Tripal Bulk Loading Jobs (add, edit, delete).';
+  $view->description = 'DO NOT DISABLE';
   $view->tag = 'tripal admin';
   $view->base_table = 'tripal_bulk_loader';
   $view->human_name = 'Tripal Bulk Loading Jobs';
@@ -274,7 +274,7 @@ function tripal_bulk_loader_defaultview_admin_template_listing() {
 
   $view = new view();
   $view->name = 'tripal_bulk_loader_templates';
-  $view->description = 'Administration of Tripal Bulk Loading Templates (add, import, edit, delete, export).';
+  $view->description = 'DO NOT DISABLE';
   $view->tag = 'tripal admin';
   $view->base_table = 'tripal_bulk_loader_template';
   $view->human_name = 'Tripal Bulk Loader Templates';

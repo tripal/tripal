@@ -23,7 +23,7 @@ function tripal_db_defaultview_admin_db_listing() {
 
   $view = new view();
   $view->name = 'tripal_db_admin_dbs';
-  $view->description = 'A listing of all databases.';
+  $view->description = 'DO NOT DISABLE';
   $view->tag = 'tripal admin';
   $view->base_table = 'db';
   $view->human_name = 'DB Admin';
@@ -202,7 +202,7 @@ function tripal_db_defaultview_admin_dbxref_listing() {
 
   $view = new view();
   $view->name = 'tripal_db_admin_dbxrefs';
-  $view->description = '';
+  $view->description = 'DO NOT DISABLE';
   $view->tag = 'tripal admin';
   $view->base_table = 'dbxref';
   $view->human_name = 'DB Reference Admin';

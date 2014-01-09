@@ -17,7 +17,7 @@ function tripal_organism_admin_defaultview_organisms() {
 
   $view = new view();
   $view->name = 'tripal_organism_admin_organisms';
-  $view->description = 'A listing of all organism in chado';
+  $view->description = 'DO NOT DISABLE';
   $view->tag = 'tripal admin';
   $view->base_table = 'organism';
   $view->human_name = 'Organism Admin';
