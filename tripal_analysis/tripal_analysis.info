@@ -7,5 +7,6 @@ version = 7.x-2.0-beta1
 configure = admin/tripal/chado/tripal_analysis/configuration
 
 dependencies[] = tripal_core
+dependencies[] = tripal_views
 dependencies[] = tripal_db
 dependencies[] = tripal_cv

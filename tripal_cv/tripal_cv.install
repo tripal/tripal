@@ -59,9 +59,12 @@ function tripal_cv_install() {
  */
 function tripal_cv_uninstall() {
   // remove the materialized view
+  // D7 @todo Fix tripal_mviews_get_mview_id()
+  /**
   if ($mview = tripal_mviews_get_mview_id('cv_root_mview')) {
     tripal_mviews_action('delete', $mview);
   }
+  */
 }
 
 /**

@@ -62,9 +62,12 @@ function tripal_feature_install() {
  */
 function tripal_feature_uninstall() {
   // Drop the MView table if it exists
+  // D7 @todo Fix tripal_mviews_get_mview_id()
+  /**
   if ($mview_id = tripal_mviews_get_mview_id('organism_feature_count')) {
     tripal_mviews_action("delete", $mview_id);
   }
+  */
 }
 
 /**
