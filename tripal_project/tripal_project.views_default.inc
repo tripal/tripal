@@ -8,302 +8,185 @@
 function tripal_project_views_default_views() {
   $views = array();
 
-  if (!module_exists('tripal_views')) {
-    return $views;
-  }
-
-  $values = array('name' => 'project_description');
-  $description_type_id = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
-  $description_type_id = $description_type_id[0]->cvterm_id;
-
-  // Main default view
-  $view = new view;
-  $view->name = 'project_listing';
-  $view->description = 'A listing of chado projects';
-  $view->tag = 'chado default';
-  $view->base_table = 'project';
-  $view->core = 6;
-  $view->api_version = '2';
-  $view->disabled = FALSE;
-  $handler = $view->new_display('default', 'Defaults', 'default');
-  $handler->override_option('fields', array(
-    'name' => array(
-      'label' => 'Name',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'name',
-      'table' => 'project',
-      'field' => 'name',
-      'relationship' => 'none',
-    ),
-    'value' => array(
-      'label' => 'Description',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'value',
-      'table' => 'projectprop',
-      'field' => 'value',
-      'override' => array(
-        'button' => 'Override',
-      ),
-      'relationship' => 'none',
-    ),
-  ));
-  $handler->override_option('filters', array(
-    'name' => array(
-      'operator' => '~',
-      'value' => '',
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'name_op',
-        'identifier' => 'name',
-        'label' => 'Name Contains',
-        'remember' => 0,
-      ),
-      'case' => 0,
-      'id' => 'name',
-      'table' => 'project',
-      'field' => 'name',
-      'relationship' => 'none',
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-    ),
-    'type_id' => array(
-      'operator' => '=',
-      'value' => $description_type_id,
-      'group' => '0',
-      'exposed' => FALSE,
-      'expose' => array(
-        'operator' => FALSE,
-        'label' => '',
-        'optional' => FALSE,
-      ),
-      'case' => 1,
-      'id' => 'type_id',
-      'table' => 'projectprop',
-      'field' => 'type_id',
-      'override' => array(
-        'button' => 'Override',
-      ),
-      'relationship' => 'none',
-      'values_form_type' => 'select',
-      'multiple' => 0,
-      'optional' => 0,
-      'show_all' => 0,
-      'agg' => array(
-        'records_with' => 0,
-        'aggregates_with' => 1,
-      ),
-    ),
-    'value' => array(
-      'operator' => '~',
-      'value' => '',
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'value_op',
-        'identifier' => 'description',
-        'label' => 'Description Contains',
-        'remember' => 0,
-      ),
-      'case' => 0,
-      'id' => 'value',
-      'table' => 'projectprop',
-      'field' => 'value',
-      'override' => array(
-        'button' => 'Override',
-      ),
-      'relationship' => 'none',
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-    ),
-  ));
-  $handler->override_option('access', array(
-    'type' => 'perm',
-    'perm' => 'access chado_projects',
-  ));
-  $handler->override_option('cache', array(
-    'type' => 'none',
-  ));
-  $handler->override_option('title', 'Projects');
-  $handler->override_option('empty', 'No projects match the supplied criteria.');
-  $handler->override_option('empty_format', '2');
-  $handler->override_option('items_per_page', 50);
-  $handler->override_option('use_pager', '1');
-  $handler->override_option('style_plugin', 'table');
-  $handler->override_option('style_options', array(
-    'grouping' => '',
-    'override' => 1,
-    'sticky' => 0,
-    'order' => 'asc',
-    'summary' => '',
-    'columns' => array(
-      'name' => 'name',
-      'description' => 'description',
-    ),
-    'info' => array(
-      'name' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-      'description' => array(
-        'sortable' => 0,
-        'separator' => '',
-      ),
-    ),
-    'default' => 'name',
-  ));
-  $default_handler = $handler;
-  $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'chado/projects');
-  $handler->override_option('menu', array(
-    'type' => 'normal',
-    'title' => 'Projects',
-    'description' => 'A project is a collection of data resulting from a biological experiment.',
-    'weight' => '10',
-    'name' => 'navigation',
-  ));
-  $handler->override_option('tab_options', array(
-    'type' => 'none',
-    'title' => '',
-    'description' => '',
-    'weight' => 0,
-    'name' => 'navigation',
-  ));
-
-  // Add code specific to a local chado installation
-  // NOTE: Edit $handler above to $default_handler for the default display
-  if (tripal_core_chado_schema_exists()) {
-    // Add nid field
-    $fields = $view->get_items('field', 'default');
-    $new_fields = array(
-      'nid' => array(
-        'label' => 'Nid',
-        'alter' => array(
-          'alter_text' => 0,
-          'text' => '',
-          'make_link' => 0,
-          'path' => '',
-          'absolute' => 0,
-          'link_class' => '',
-          'alt' => '',
-          'rel' => '',
-          'prefix' => '',
-          'suffix' => '',
-          'target' => '',
-          'help' => '',
-          'trim' => 0,
-          'max_length' => '',
-          'word_boundary' => 1,
-          'ellipsis' => 1,
-          'html' => 0,
-          'strip_tags' => 0,
-        ),
-        'empty' => '',
-        'hide_empty' => 0,
-        'empty_zero' => 0,
-        'hide_alter_empty' => 1,
-        'link_to_node' => 0,
-        'exclude' => 1,
-        'id' => 'nid',
-        'table' => 'node',
-        'field' => 'nid',
-        'relationship' => 'none',
-      )
-    );
-    $fields = $new_fields + $fields;
-    // Adds project => Node relationship
-    $default_handler->override_option('relationships', array(
-      'nid' => array(
-        'label' => 'Project to Node',
-        'required' => 0,
-        'id' => 'nid',
-        'table' => 'chado_project',
-        'field' => 'nid',
-        'relationship' => 'none',
-      ),
-    ));
-    // Change project.name to have a link to the node
-    $fields['name']['alter']['link_to_node'] = 1;
-    $default_handler->override_option('fields', $fields);
-    // Only show records with published nodes
-/**
-    $filters = $view->get_items('filter', 'default');
-    $filters['status'] = array(
-      'operator' => '=',
-      'value' => '1',
-      'group' => '0',
-      'exposed' => FALSE,
-      'expose' => array(
-        'operator' => FALSE,
-        'label' => '',
-      ),
-      'id' => 'status',
-      'table' => 'node',
-      'field' => 'status',
-      'relationship' => 'none',
-    );
-    $default_handler->override_option('filters', $filters);
-*/
-  }
+  $view = tripal_project_defaultview_admin_projects();
   $views[$view->name] = $view;
 
   return $views;
+}
+
+function tripal_project_defaultview_admin_projects() {
+
+  $view = new view();
+  $view->name = 'tripal_project_admin_projects';
+  $view->description = 'DO NOT DISABLE';
+  $view->tag = 'tripal admin';
+  $view->base_table = 'project';
+  $view->human_name = 'Project Admin';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Master */
+  $handler = $view->new_display('default', 'Master', 'default');
+  $handler->display->display_options['title'] = 'Projects';
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'none';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '25';
+  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_options']['columns'] = array(
+    'nid' => 'nid',
+    'name' => 'name',
+    'description' => 'description',
+    'delete_node' => 'delete_node',
+    'edit_node' => 'edit_node',
+    'nothing' => 'nothing',
+  );
+  $handler->display->display_options['style_options']['default'] = 'name';
+  $handler->display->display_options['style_options']['info'] = array(
+    'nid' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'name' => array(
+      'sortable' => 1,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'description' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'delete_node' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'edit_node' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'nothing' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+  );
+  /* Header: Global: Action Links */
+  $handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
+  $handler->display->display_options['header']['action_links_area']['table'] = 'views';
+  $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
+  $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
+  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+    'label-1' => 'Add Project',
+    'path-1' => 'node/add/tripal-project',
+  );
+  $handler->display->display_options['header']['action_links_area']['link-2'] = array(
+    'label-2' => '',
+    'path-2' => '',
+  );
+  $handler->display->display_options['header']['action_links_area']['link-3'] = array(
+    'label-3' => '',
+    'path-3' => '',
+  );
+  $handler->display->display_options['header']['action_links_area']['link-4'] = array(
+    'label-4' => '',
+    'path-4' => '',
+  );
+  /* Relationship: Project: Project => Node */
+  $handler->display->display_options['relationships']['project_id']['id'] = 'project_id';
+  $handler->display->display_options['relationships']['project_id']['table'] = 'chado_project';
+  $handler->display->display_options['relationships']['project_id']['field'] = 'project_id';
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid']['id'] = 'nid';
+  $handler->display->display_options['fields']['nid']['table'] = 'node';
+  $handler->display->display_options['fields']['nid']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid']['exclude'] = TRUE;
+  /* Field: Chado Project: Name */
+  $handler->display->display_options['fields']['name']['id'] = 'name';
+  $handler->display->display_options['fields']['name']['table'] = 'project';
+  $handler->display->display_options['fields']['name']['field'] = 'name';
+  /* Field: Chado Project: Description */
+  $handler->display->display_options['fields']['description']['id'] = 'description';
+  $handler->display->display_options['fields']['description']['table'] = 'project';
+  $handler->display->display_options['fields']['description']['field'] = 'description';
+  $handler->display->display_options['fields']['description']['element_class'] = 'wide-column';
+  $handler->display->display_options['fields']['description']['element_label_class'] = 'wide-column';
+  /* Field: Content: Delete link */
+  $handler->display->display_options['fields']['delete_node']['id'] = 'delete_node';
+  $handler->display->display_options['fields']['delete_node']['table'] = 'views_entity_node';
+  $handler->display->display_options['fields']['delete_node']['field'] = 'delete_node';
+  $handler->display->display_options['fields']['delete_node']['relationship'] = 'project_id';
+  $handler->display->display_options['fields']['delete_node']['exclude'] = TRUE;
+  /* Field: Content: Edit link */
+  $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
+  $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
+  $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
+  $handler->display->display_options['fields']['edit_node']['relationship'] = 'project_id';
+  $handler->display->display_options['fields']['edit_node']['exclude'] = TRUE;
+  /* Field: Global: Custom text */
+  $handler->display->display_options['fields']['nothing']['id'] = 'nothing';
+  $handler->display->display_options['fields']['nothing']['table'] = 'views';
+  $handler->display->display_options['fields']['nothing']['field'] = 'nothing';
+  $handler->display->display_options['fields']['nothing']['label'] = '';
+  $handler->display->display_options['fields']['nothing']['alter']['text'] = '[edit_node]   [delete_node]';
+  $handler->display->display_options['fields']['nothing']['element_class'] = 'short-column';
+  $handler->display->display_options['fields']['nothing']['element_label_class'] = 'short-column';
+  $handler->display->display_options['fields']['nothing']['element_label_colon'] = FALSE;
+  /* Filter criterion: Chado Project: Name */
+  $handler->display->display_options['filters']['name']['id'] = 'name';
+  $handler->display->display_options['filters']['name']['table'] = 'project';
+  $handler->display->display_options['filters']['name']['field'] = 'name';
+  $handler->display->display_options['filters']['name']['operator'] = 'contains';
+  $handler->display->display_options['filters']['name']['group'] = 1;
+  $handler->display->display_options['filters']['name']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['name']['expose']['operator_id'] = '';
+  $handler->display->display_options['filters']['name']['expose']['label'] = 'Name Contains';
+  $handler->display->display_options['filters']['name']['expose']['identifier'] = 'name';
+  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Chado Project: Description */
+  $handler->display->display_options['filters']['description']['id'] = 'description';
+  $handler->display->display_options['filters']['description']['table'] = 'project';
+  $handler->display->display_options['filters']['description']['field'] = 'description';
+  $handler->display->display_options['filters']['description']['operator'] = 'contains';
+  $handler->display->display_options['filters']['description']['group'] = 1;
+  $handler->display->display_options['filters']['description']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['description']['expose']['operator_id'] = 'description_op';
+  $handler->display->display_options['filters']['description']['expose']['label'] = 'Description Contains';
+  $handler->display->display_options['filters']['description']['expose']['operator'] = 'description_op';
+  $handler->display->display_options['filters']['description']['expose']['identifier'] = 'description';
+  $handler->display->display_options['filters']['description']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page');
+  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_project/projects';
+  $handler->display->display_options['menu']['type'] = 'default tab';
+  $handler->display->display_options['menu']['title'] = 'Projects';
+  $handler->display->display_options['menu']['weight'] = '0';
+  $handler->display->display_options['menu']['name'] = 'management';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
+  $handler->display->display_options['tab_options']['weight'] = '0';
+
+  return $view;
 }

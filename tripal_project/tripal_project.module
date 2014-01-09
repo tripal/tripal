@@ -63,7 +63,8 @@ function tripal_project_views_api() {
 function tripal_project_menu() {
   $items[ 'admin/tripal/chado/tripal_project' ]= array(
     'title' => 'Projects',
-    'description' => ('A module for interfacing the GMOD chado database with Drupal, providing viewing of projects'),
+    'description' => ('A grouping of a variety of data (ie: group natural diversity experiment).'),
+    'page callback' => 'tripal_project_admin_project_view',
     'access arguments' => array('adminster tripal projects'),
     'type' => MENU_NORMAL_ITEM
   );
@@ -74,15 +75,25 @@ function tripal_project_menu() {
     'page callback' => 'theme',
     'page arguments' => array('tripal_project_help'),
     'access arguments' => array('adminster tripal projects'),
-    'type' => MENU_NORMAL_ITEM
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 6
   );
 
   $items[ 'admin/tripal/chado/tripal_project/configuration' ]= array(
-    'title' => 'Configuration',
+    'title' => 'Settings',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_project_help'),
+    'page arguments' => array('tripal_project_admin'),
     'access arguments' => array('adminster tripal projects'),
-    'type' => MENU_NORMAL_ITEM
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 4
+  );
+
+  $items['admin/tripal/chado/tripal_project/views/projects/enable'] = array(
+    'title' => 'Enable Project Administrative View',
+    'page callback' => 'tripal_views_admin_enable_view',
+    'page arguments' => array('tripal_project_admin_projects', 'admin/tripal/chado/tripal_project'),
+    'access arguments' => array('administer tripal_bulk_loader'),
+    'type' => MENU_CALLBACK,
   );
 
   return $items;
@@ -191,7 +202,7 @@ function chado_project_node_access($node, $op, $account) {
  */
 function tripal_project_theme() {
   $theme_path = drupal_get_path('module', 'tripal_project') . '/theme';
-  
+
   $items = array(
     'tripal_project_base' => array(
       'arguments' => array('node' => NULL),
