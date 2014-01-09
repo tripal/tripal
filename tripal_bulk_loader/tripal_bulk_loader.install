@@ -5,6 +5,20 @@
  */
 
 /**
+ * Disable default views when module is disabled
+ */
+function tripal_bulk_loader_disable() {
+
+  // Disable all default views provided by this module
+  require_once("tripal_bulk_loader.views_default.inc");
+  $views = tripal_bulk_loader_views_default_views();
+  foreach (array_keys($views) as $view_name) {
+    tripal_views_admin_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+  }
+
+}
+
+/**
  * Implements hook_schema
  *
  * Creates the following tables in the Drupal database:

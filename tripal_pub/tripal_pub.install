@@ -11,6 +11,20 @@
  */
 
 /**
+ * Disable default views when module is disabled
+ */
+function tripal_pub_disable() {
+
+  // Disable all default views provided by this module
+  require_once("tripal_pub.views_default.inc");
+  $views = tripal_pub_views_default_views();
+  foreach (array_keys($views) as $view_name) {
+    tripal_views_admin_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+  }
+
+}
+
+/**
  * Implementation of hook_requirements().
  */
 function tripal_pub_requirements($phase) {
@@ -55,7 +69,7 @@ function tripal_pub_uninstall() {
 }
 
 /**
- * 
+ *
  */
 function tripal_pub_enable() {
   // make sure we have our supported databases
@@ -74,24 +88,24 @@ function tripal_pub_schema() {
   $schema['chado_pub'] = array(
     'fields' => array(
       'vid' => array(
-        'type' => 'int', 
-        'unsigned' => TRUE, 
+        'type' => 'int',
+        'unsigned' => TRUE,
         'not null' => TRUE, 'default' => 0
       ),
       'nid' => array(
-        'type' => 'int', 
-        'unsigned' => TRUE, 
-        'not null' => TRUE, 
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
         'default' => 0
       ),
       'pub_id' => array(
-        'type' => 'int', 
-        'not null' => TRUE, 
+        'type' => 'int',
+        'not null' => TRUE,
         'default' => 0
       ),
       'sync_date' => array(
-        'type' => 'int', 
-        'not null' => FALSE, 
+        'type' => 'int',
+        'not null' => FALSE,
         'description' => 'UNIX integer sync date/time'
       ),
     ),
@@ -104,34 +118,34 @@ function tripal_pub_schema() {
     ),
     'primary key' => array('nid'),
   );
-  
+
   $schema['tripal_pub_import'] = array(
     'fields' => array(
       'pub_import_id' => array(
-        'type' => 'serial', 
+        'type' => 'serial',
         'not null' => TRUE
       ),
       'name' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
         'not null' => TRUE
       ),
       'criteria' => array(
-        'type' => 'text', 
-        'size' => 'normal', 
-        'not null' => TRUE, 
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => TRUE,
         'description' => 'Contains a serialized PHP array containing the search criteria'
       ),
       'disabled'  => array(
-        'type' => 'int', 
-        'unsigned' => TRUE, 
-        'not NULL' => TRUE, 
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not NULL' => TRUE,
         'default' => 0
-      ),      
+      ),
       'do_contact'  => array(
-        'type' => 'int', 
-        'unsigned' => TRUE, 
-        'not NULL' => TRUE, 
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not NULL' => TRUE,
         'default' => 0
       ),
     ),
@@ -140,7 +154,7 @@ function tripal_pub_schema() {
       'name' => array('name')
     ),
   );
-   
+
   return $schema;
 }
 

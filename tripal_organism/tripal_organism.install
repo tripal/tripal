@@ -6,6 +6,20 @@
  */
 
 /**
+ * Disable default views when module is disabled
+ */
+function tripal_organism_disable() {
+
+  // Disable all default views provided by this module
+  require_once("tripal_organism.views_default.inc");
+  $views = tripal_organism_views_default_views();
+  foreach (array_keys($views) as $view_name) {
+    tripal_views_admin_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+  }
+
+}
+
+/**
  * Implementation of hook_install().
  *
  * @ingroup tripal_organism
@@ -54,7 +68,7 @@ function tripal_organism_schema() {
       ),
       'primary key' => array('nid'),
   );
-  return $schema;  
+  return $schema;
 }
 
 /**
@@ -66,8 +80,8 @@ function tripal_organism_uninstall() {
 
   // Get the list of nodes to remove
   $sql_lib_id = "
-    SELECT nid, vid 
-    FROM {node} 
+    SELECT nid, vid
+    FROM {node}
     WHERE type='chado_organism'
   ";
   $result = db_query($sql_lib_id);
@@ -77,7 +91,7 @@ function tripal_organism_uninstall() {
 }
 
 /**
- * Implementation of hook_requirements(). 
+ * Implementation of hook_requirements().
  *
  */
 function tripal_organism_requirements($phase) {

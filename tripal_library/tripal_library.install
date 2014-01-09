@@ -5,6 +5,20 @@
  */
 
 /**
+ * Disable default views when module is disabled
+ */
+function tripal_library_disable() {
+
+  // Disable all default views provided by this module
+  require_once("tripal_library.views_default.inc");
+  $views = tripal_library_views_default_views();
+  foreach (array_keys($views) as $view_name) {
+    tripal_views_admin_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+  }
+
+}
+
+/**
  * Implementation of hook_requirements().
  */
 function tripal_library_requirements($phase) {
@@ -27,13 +41,13 @@ function tripal_library_requirements($phase) {
  * @ingroup tripal_library
  */
 function tripal_library_install() {
-  
+
   // create the module's data directory
   tripal_create_moddir('tripal_library');
 
   // add the materialized view
   tripal_library_add_mview_library_feature_count();
-  
+
   // add cvterms
   tripal_library_add_cvterms();
 }
@@ -94,7 +108,7 @@ function tripal_library_schema() {
 function tripal_library_add_mview_library_feature_count(){
   $view_name = 'library_feature_count';
   $comment = 'Provides count of feature by type that are associated with all libraries';
-  
+
   $schema = array(
     'table' => $view_name,
     'description' => $comment,
@@ -122,19 +136,19 @@ function tripal_library_add_mview_library_feature_count(){
       'library_feature_count_idx1' => array('library_id'),
     ),
   );
-  
+
   $sql = "
-    SELECT 
-      L.library_id, L.name, 
-      count(F.feature_id) as num_features, 
-      CVT.name as feature_type 
-    FROM library L 
-      INNER JOIN library_feature LF  ON LF.library_id = L.library_id 
-      INNER JOIN feature F           ON LF.feature_id = F.feature_id 
-      INNER JOIN cvterm CVT          ON F.type_id     = CVT.cvterm_id 
+    SELECT
+      L.library_id, L.name,
+      count(F.feature_id) as num_features,
+      CVT.name as feature_type
+    FROM library L
+      INNER JOIN library_feature LF  ON LF.library_id = L.library_id
+      INNER JOIN feature F           ON LF.feature_id = F.feature_id
+      INNER JOIN cvterm CVT          ON F.type_id     = CVT.cvterm_id
     GROUP BY L.library_id, L.name, CVT.name
   ";
-  
+
   tripal_add_mview($view_name, 'tripal_library', $schema, $sql, $comment);
 }
 
@@ -142,24 +156,24 @@ function tripal_library_add_mview_library_feature_count(){
  * @ingroup tripal_library
  */
 function tripal_library_add_cvterms() {
-  
+
   // Insert cvterm 'library_description' into cvterm table of chado
   // database. This CV term is used to keep track of the library
   // description in the libraryprop table.
-  tripal_cv_add_cvterm(array('name' => 'library_description', 'def' => 'Description of a library'), 
+  tripal_cv_add_cvterm(array('name' => 'library_description', 'def' => 'Description of a library'),
     'tripal', 0, 1, 'tripal');
-  
+
   // add cvterms for the map unit types
-  tripal_cv_add_cvterm(array('name' => 'cdna_library','def' => 'cDNA library'), 
+  tripal_cv_add_cvterm(array('name' => 'cdna_library','def' => 'cDNA library'),
     'tripal_library_types', 0, 1, 'tripal');
-  tripal_cv_add_cvterm(array('name' => 'bac_library','def' => 'Bacterial Artifical Chromsome (BAC) library'), 
+  tripal_cv_add_cvterm(array('name' => 'bac_library','def' => 'Bacterial Artifical Chromsome (BAC) library'),
     'tripal_library_types', 0, 1, 'tripal');
-  tripal_cv_add_cvterm(array('name' => 'fosmid_library','def' => 'Fosmid library'), 
-    'tripal_library_types', 0, 1, 'tripal');   
-  tripal_cv_add_cvterm(array('name' => 'cosmid_library','def' => 'Cosmid library'), 
+  tripal_cv_add_cvterm(array('name' => 'fosmid_library','def' => 'Fosmid library'),
     'tripal_library_types', 0, 1, 'tripal');
-  tripal_cv_add_cvterm(array('name' => 'yac_library','def' => 'Yeast Artificial Chromosome (YAC) library'), 
+  tripal_cv_add_cvterm(array('name' => 'cosmid_library','def' => 'Cosmid library'),
     'tripal_library_types', 0, 1, 'tripal');
-  tripal_cv_add_cvterm(array('name' => 'genomic_library','def' => 'Genomic Library'), 
+  tripal_cv_add_cvterm(array('name' => 'yac_library','def' => 'Yeast Artificial Chromosome (YAC) library'),
+    'tripal_library_types', 0, 1, 'tripal');
+  tripal_cv_add_cvterm(array('name' => 'genomic_library','def' => 'Genomic Library'),
     'tripal_library_types', 0, 1, 'tripal');
 }

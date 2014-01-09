@@ -5,7 +5,21 @@
  */
 
 /**
- * Implementation of hook_requirements(). 
+ * Disable default views when module is disabled
+ */
+function tripal_analysis_disable() {
+
+  // Disable all default views provided by this module
+  require_once("tripal_analysis.views_default.inc");
+  $views = tripal_analysis_views_default_views();
+  foreach (array_keys($views) as $view_name) {
+    tripal_views_admin_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+  }
+
+}
+
+/**
+ * Implementation of hook_requirements().
  */
 function tripal_analysis_requirements($phase) {
   $requirements = array();
@@ -32,10 +46,10 @@ function tripal_analysis_install() {
 
   // we may need the analysisfeatureprop table if it doesn't already exist
   tripal_analysis_create_analysisfeatureprop();
-  
+
   // add cvterms
   tripal_analysis_add_cvterms();
-  
+
   // add materialized views
   tripal_analysis_add_mview_analysis_organism();
 }
@@ -57,52 +71,52 @@ function tripal_analysis_uninstall() {
   }
 }
 /*
- * 
+ *
  */
 function tripal_analysis_create_analysisfeatureprop() {
-  
-  // Create analysisfeatureprop table in chado.  This is needed for Chado 
-  // version 1.11, the table exists in Chado 1.2. 
+
+  // Create analysisfeatureprop table in chado.  This is needed for Chado
+  // version 1.11, the table exists in Chado 1.2.
   if (!db_table_exists('chado.analysisfeatureprop')) {
     $sql = "
       CREATE TABLE chado.analysisfeatureprop (
-        analysisfeatureprop_id SERIAL PRIMARY KEY, 
-        analysisfeature_id     INTEGER NOT NULL REFERENCES chado.analysisfeature(analysisfeature_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, 
-        type_id                INTEGER NOT NULL REFERENCES chdo.cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, 
-        value                  TEXT, 
-        rank                   INTEGER NOT NULL, 
+        analysisfeatureprop_id SERIAL PRIMARY KEY,
+        analysisfeature_id     INTEGER NOT NULL REFERENCES chado.analysisfeature(analysisfeature_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+        type_id                INTEGER NOT NULL REFERENCES chdo.cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+        value                  TEXT,
+        rank                   INTEGER NOT NULL,
         CONSTRAINT analysisfeature_id_type_id_rank UNIQUE(analysisfeature_id, type_id, rank)
       )
     ";
     chado_query($sql);
-  } 
+  }
 }
 /*
- * 
+ *
  */
 function tripal_analysis_add_cvterms() {
-  
+
   tripal_cv_add_cv('tripal_analysis', 'Terms used for managing analyses in Tripal');
 
   // add analysis_date.  This is no longer used (as far as we can tell) but we don't
   // get rid of it in case it is used, so just keep it in the Tripal CV
   $term = array(
-    'name' => 'analysis_date', 
+    'name' => 'analysis_date',
     'def' => 'The date that an analysis was performed.'
   );
   tripal_cv_add_cvterm($term, 'tripal', 0, 1, 'tripal');
-  
+
   // add analysis_short_name.  This is no longer used (as far as we can tell) but we don't
   // get rid of it in case it is used, so just keep it in the Tripal CV
   $term = array(
-    'name' => 'analysis_short_name', 
+    'name' => 'analysis_short_name',
     'def' => 'A computer legible (no spaces or special characters) abbreviation for the analysis.'
-  );     
-  tripal_cv_add_cvterm($term, 'tripal', 0, 1 , 'tripal');     
-  
-  
+  );
+  tripal_cv_add_cvterm($term, 'tripal', 0, 1 , 'tripal');
+
+
   // the 'analysis_property' vocabulary is for user definable properties.
-  tripal_cv_add_cvterm(array('name' => 'Analysis Type', 'def' => 'The type of analysis that was performed.'), 
+  tripal_cv_add_cvterm(array('name' => 'Analysis Type', 'def' => 'The type of analysis that was performed.'),
      'analysis_property', 0, 1, 'tripal');
 }
 
@@ -116,7 +130,7 @@ function tripal_analysis_add_cvterms() {
  *     with this module.
  */
 function tripal_analysis_schema() {
-  
+
   // chado_analysis table
   $schema['chado_analysis'] = array(
     'fields' => array(
@@ -168,13 +182,13 @@ function tripal_analysis_schema() {
 }
 
 /*
- * 
+ *
  * @ingroup tripal_network
  */
 function tripal_analysis_add_mview_analysis_organism() {
   $view_name = 'analysis_organism';
   $comment = t('This view is for associating an organism (via it\'s associated features) to an analysis.');
-  
+
   // this is the SQL used to identify the organism to which an analsysis
   // has been used.  This is obtained though the analysisfeature -> feature -> organism
   // joins
@@ -185,12 +199,12 @@ function tripal_analysis_add_mview_analysis_organism() {
       INNER JOIN feature F          ON AF.feature_id = F.feature_id
       INNER JOIN organism O         ON O.organism_id = F.organism_id
   ";
-  
+
   // the schema array for describing this view
   $schema = array(
     'table' => $view_name,
     'description' => $comment,
-    'fields' => array(  
+    'fields' => array(
       'analysis_id' => array(
         'type' => 'int',
         'not null' => TRUE,
@@ -198,7 +212,7 @@ function tripal_analysis_add_mview_analysis_organism() {
       'organism_id' => array(
         'type' => 'int',
         'not null' => TRUE,
-      ),       
+      ),
     ),
     'indexes' => array(
       'networkmod_qtl_indx0' => array('analysis_id'),
@@ -216,10 +230,10 @@ function tripal_analysis_add_mview_analysis_organism() {
         'columns' => array(
           'organism_id' => 'organism_id',
         ),
-      ),      
+      ),
     ),
   );
-  
+
   // add the view
   tripal_add_mview($view_name, 'tripal_analysis', $schema, $sql, $comment);
 }

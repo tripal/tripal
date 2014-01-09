@@ -5,6 +5,20 @@
  */
 
 /**
+ * Disable default views when module is disabled
+ */
+function tripal_feature_disable() {
+
+  // Disable all default views provided by this module
+  require_once("tripal_feature.views_default.inc");
+  $views = tripal_feature_views_default_views();
+  foreach (array_keys($views) as $view_name) {
+    tripal_views_admin_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+  }
+
+}
+
+/**
  * Implementation of hook_requirements().
  */
 function tripal_feature_requirements($phase) {
@@ -33,7 +47,7 @@ function tripal_feature_install() {
 
   // add the materialized view
   tripal_feature_add_organism_count_mview();
-  
+
   // add a job to the job queue so this view gets updated automatically next
   // time the job facility is run
   if ($mview_id = tripal_mviews_get_mview_id('organism_feature_count')) {
@@ -52,36 +66,36 @@ function tripal_feature_uninstall() {
     tripal_mviews_action("delete", $mview_id);
   }
 }
- 
+
 /**
  * Implementation of hook_schema().
  *
  * @ingroup tripal_feature
  */
 function tripal_feature_schema() {
-  
+
   $schema['chado_feature'] = array(
     'fields' => array(
       'vid' => array(
-        'type' => 'int', 
-        'unsigned' => TRUE, 
-        'not null' => TRUE, 
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
         'default' => 0
        ),
       'nid' => array(
-        'type' => 'int', 
-        'unsigned' => TRUE, 
-        'not null' => TRUE, 
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
         'default' => 0
        ),
       'feature_id' => array(
-        'type' => 'int', 
-        'not null' => TRUE, 
+        'type' => 'int',
+        'not null' => TRUE,
         'default' => 0
       ),
       'sync_date' => array(
-        'type' => 'int', 
-        'not null' => FALSE, 
+        'type' => 'int',
+        'not null' => FALSE,
         'description' => 'UNIX integer sync date/time'
       ),
     ),
@@ -94,7 +108,7 @@ function tripal_feature_schema() {
     ),
     'primary key' => array('nid'),
   );
-  
+
   return $schema;
 };
 
@@ -142,7 +156,7 @@ function tripal_feature_add_organism_count_mview() {
         'length' => '255',
         'not null' => TRUE,
       ),
-    ),      
+    ),
     'indexes' => array(
       'organism_feature_count_idx1' => array('organism_id'),
       'organism_feature_count_idx2' => array('cvterm_id'),

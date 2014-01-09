@@ -6,6 +6,20 @@
  */
 
 /**
+ * Disable default views when module is disabled
+ */
+function tripal_cv_disable() {
+
+  // Disable all default views provided by this module
+  require_once("tripal_cv.views_default.inc");
+  $views = tripal_cv_views_default_views();
+  foreach (array_keys($views) as $view_name) {
+    tripal_views_admin_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+  }
+
+}
+
+/**
  * Implementation of hook_requirements().
  */
 function tripal_cv_requirements($phase) {
@@ -31,10 +45,10 @@ function tripal_cv_install() {
 
   // create the module's data directory
   tripal_create_moddir('tripal_cv');
-    
-  // add the cv_root_mview 
+
+  // add the cv_root_mview
   tripal_cv_add_cv_root_mview();
-  
+
   // create the tables that correlate OBO files/references with a chado CV
   tripal_cv_add_obo_defaults();
 }
@@ -56,20 +70,20 @@ function tripal_cv_uninstall() {
  * @ingroup tripal_cv
  */
 function tripal_cv_schema() {
-  
+
   $schema['tripal_cv_obo'] = array(
     'fields' => array(
       'obo_id' => array(
-        'type' => 'serial', 
-        'unsigned' => TRUE, 
+        'type' => 'serial',
+        'unsigned' => TRUE,
         'not null' => TRUE
       ),
       'name' => array(
-        'type' => 'varchar', 
+        'type' => 'varchar',
          'length' => 255
        ),
       'path'  => array(
-        'type' => 'varchar', 
+        'type' => 'varchar',
         'length' => 1024
       ),
     ),
@@ -83,7 +97,7 @@ function tripal_cv_schema() {
 }
 
 /**
- * 
+ *
  * @ingroup tripal_cv
  */
 function tripal_cv_add_cv_root_mview() {
@@ -104,7 +118,7 @@ function tripal_cv_add_cv_root_mview() {
       ),
       'cv_id' => array(
         'type' => 'int',
-        'not null' => TRUE, 
+        'not null' => TRUE,
       ),
       'cv_name' => array(
         'type' => 'varchar',
@@ -117,7 +131,7 @@ function tripal_cv_add_cv_root_mview() {
       'cv_root_mview_indx2' => array('cv_id'),
     ),
   );
-  
+
   $sql = "
     SELECT DISTINCT CVT.name,CVT.cvterm_id, CV.cv_id, CV.name
     FROM cvterm_relationship CVTR
@@ -126,7 +140,7 @@ function tripal_cv_add_cv_root_mview() {
     WHERE CVTR.object_id not in
       (SELECT subject_id FROM cvterm_relationship)
   ";
-  
+
   // Create the MView
   tripal_add_mview($mv_name, 'tripal_cv', $schema, $sql, $comment);
 }
