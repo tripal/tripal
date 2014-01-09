@@ -180,6 +180,12 @@ function tripal_organism_admin_defaultview_organisms() {
     3 => 0,
   );
 
+  /** MANUALLY ADD since filter handler no exporting correctly */
+  $handler->display->display_options['filters']['common_name']['expose']['values_form_type'] = 'textfield';
+  $handler->display->display_options['filters']['common_name']['expose']['select_multiple'] = FALSE;
+  $handler->display->display_options['filters']['common_name']['expose']['select_optional'] = FALSE;
+  $handler->display->display_options['filters']['common_name']['expose']['max_length'] = 40;
+
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
   $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_organism/organisms';
@@ -191,6 +197,13 @@ function tripal_organism_admin_defaultview_organisms() {
   $handler->display->display_options['menu']['context'] = 0;
   $handler->display->display_options['menu']['context_only_inline'] = 0;
   $handler->display->display_options['tab_options']['weight'] = '0';
+
+  /** MANUALLY ADD since filter handler no exporting correctly
+  $handler->display->display_options['filters']['common_name']['expose']['values_form_type'] = 'textfield';
+  $handler->display->display_options['filters']['common_name']['expose']['select_multiple'] = FALSE;
+  $handler->display->display_options['filters']['common_name']['expose']['select_optional'] = FALSE;
+  $handler->display->display_options['filters']['common_name']['expose']['max_length'] = 40;
+  */
 
   return $view;
 }

@@ -1,5 +1,34 @@
-<?php 
+<?php
 
+function tripal_library_admin_libraries_listing() {
+  $output = '';
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado', 'admin/tripal/chado');
+  $breadcrumb[] = l('Libraries', 'admin/tripal/chado/tripal_library');
+  drupal_set_breadcrumb($breadcrumb);
+
+  // Add the view
+  $view = views_embed_view('tripal_library_admin_libraries','default');
+  if (isset($view)) {
+    $output .= $view;
+  }
+  else {
+    $output .= '<p>The Tripal Library Module uses primarily views to provide an '
+      . 'administrative interface. Currently one or more views needed for this '
+      . 'administrative interface are disabled. <strong>Click each of the following links to '
+      . 'enable the pertinent views</strong>:</p>';
+    $output .= '<ul>';
+      $output .= '<li>'.l('Library Admin', 'admin/tripal/chado/tripal_library/views/libraries/enable').'</li>';
+    $output .= '</ul>';
+  }
+
+  return $output;
+}
 
 /**
  * Administrative settings form
@@ -311,14 +340,14 @@ function tripal_library_add_taxonomy($node, $library_id) {
   // do this because Drupal 6 fails to do this globally for us and
   // the drupal_execute function below won't work
   module_load_include('inc', 'taxonomy', 'taxonomy.admin');
-    
+
    // add the vocabulary
   $vocab_form['values']['name'] = 'DNA Libraries';
   $vocab_form['values']['description'] = 'Allows for associating/searching of library features by library name';
   $vocab_form['values']['help'] = '';
   $vocab_form['values']['module'] = 'taxonomy';
   drupal_form_submit('taxonomy_form_vocabulary', $vocab_form);
-  return;   
+  return;
 
    // make sure this term doesn't already exist.  If it doesn't then add it
   if ($vid) {
@@ -428,10 +457,10 @@ function tripal_library_feature_set_taxonomy($library_id = NULL) {
   if ($library_id) {
     print "Finding features for library with ID: $library_id\n";
     $sql = "
-      SELECT LF.feature_id, L.library_id, L.name as libname 
-      FROM {library_feature} LF 
-        INNER JOIN {library} L ON LF.library_id = L.library_id 
-      WHERE L.library_id = :library_id 
+      SELECT LF.feature_id, L.library_id, L.name as libname
+      FROM {library_feature} LF
+        INNER JOIN {library} L ON LF.library_id = L.library_id
+      WHERE L.library_id = :library_id
       ORDER BY LF.feature_id
     ";
     $features = chado_query($sql, array(':library_id' => $library_id));
@@ -439,18 +468,18 @@ function tripal_library_feature_set_taxonomy($library_id = NULL) {
   else {
     print "Finding features for all libraries\n";
     $sql = "
-      SELECT LF.feature_id, L.library_id, L.name as libname 
-      FROM {library_feature} LF 
-        INNER JOIN {library} L ON LF.library_id = L.library_id 
+      SELECT LF.feature_id, L.library_id, L.name as libname
+      FROM {library_feature} LF
+        INNER JOIN {library} L ON LF.library_id = L.library_id
       ORDER BY LF.feature_id
     ";
     $features = chado_query($sql);
   }
 
   $node_sql = "
-    SELECT * 
-    FROM {chado_feature} CF 
-      INNER JOIN {node} N ON CF.nid = N.nid 
+    SELECT *
+    FROM {chado_feature} CF
+      INNER JOIN {node} N ON CF.nid = N.nid
     WHERE feature_id = :feature_id
   ";
   // iterate through the features and add the taxonomy
@@ -474,19 +503,19 @@ function tripal_library_reindex_features($library_id = NULL, $job_id = NULL) {
   // with all libraries.
   if ($library_id) {
     $sql = "
-      SELECT LF.feature_id, L.library_id, L.name as libname 
-      FROM {library_feature} LF 
+      SELECT LF.feature_id, L.library_id, L.name as libname
+      FROM {library_feature} LF
         INNER JOIN {library} L ON LF.library_id = L.library_id
-      WHERE L.library_id = :library_id 
+      WHERE L.library_id = :library_id
       ORDER BY LF.feature_id
     ";
     $results = chado_query($sql, array(':library_id' => $library_id));
   }
   else {
     $sql = "
-      SELECT LF.feature_id, L.library_id, L.name as libname 
-      FROM {library_feature} LF 
-        INNER JOIN {library} L ON LF.library_id = L.library_id 
+      SELECT LF.feature_id, L.library_id, L.name as libname
+      FROM {library_feature} LF
+        INNER JOIN {library} L ON LF.library_id = L.library_id
       ORDER BY LF.feature_id
     ";
     $results = chado_query($sql);
@@ -521,19 +550,19 @@ function tripal_library_taxonify_features($library_id = NULL, $job_id = NULL) {
   // with all libraries.
   if ($library_id) {
     $sql = "
-      SELECT LF.feature_id, L.library_id, L.name as libname 
-      FROM {library_feature} LF 
-        INNER JOIN {library} L ON LF.library_id = L.library_id 
-      WHERE L.library_id = :library_id 
+      SELECT LF.feature_id, L.library_id, L.name as libname
+      FROM {library_feature} LF
+        INNER JOIN {library} L ON LF.library_id = L.library_id
+      WHERE L.library_id = :library_id
       ORDER BY LF.feature_id
     ";
     $results = chado_query($sql, array(':library_id' => $library_id));
   }
   else {
     $sql = "
-      SELECT LF.feature_id, L.library_id, L.name as libname 
-      FROM {library_feature} LF 
-        INNER JOIN {library} L ON LF.library_id = L.library_id 
+      SELECT LF.feature_id, L.library_id, L.name as libname
+      FROM {library_feature} LF
+        INNER JOIN {library} L ON LF.library_id = L.library_id
       ORDER BY LF.feature_id
     ";
     $results = chado_query($sql);
@@ -552,9 +581,9 @@ function tripal_library_taxonify_features($library_id = NULL, $job_id = NULL) {
 
   // use this SQL for getting the nodes
   $nsql =  "
-    SELECT * 
-    FROM {chado_feature} CF 
-      INNER JOIN {node} N ON N.nid = CF.nid 
+    SELECT *
+    FROM {chado_feature} CF
+      INNER JOIN {node} N ON N.nid = CF.nid
     WHERE feature_id = :feature_id
   ";
    // iterate through the features and set the taxonomy
@@ -584,6 +613,6 @@ function tripal_library_taxonify_features($library_id = NULL, $job_id = NULL) {
 function tripal_library_cleanup($dummy = NULL, $job_id = NULL) {
 
   return tripal_core_clean_orphaned_nodes('library', $job_id);
-  
+
 }
 

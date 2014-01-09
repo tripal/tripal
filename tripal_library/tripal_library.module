@@ -119,22 +119,33 @@ function chado_library_node_access($node, $op, $account) {
 function tripal_library_menu() {
   $items = array();
   // The administative settings menu
-  $items['admin/tripal/tripal_library'] = array(
+  $items['admin/tripal/chado/tripal_library'] = array(
     'title' => 'Libraries',
-    'description' => 'Basic Description of Tripal Library Module Functionality',
-    'page callback' => 'theme',
-    'page arguments' => array('tripal_library_help'),
+    'description' => 'A grouping of genetic data',
+    'page callback' => 'tripal_library_admin_libraries_listing',
     'access arguments' => array('administer tripal libraries'),
     'type' => MENU_NORMAL_ITEM,
+    'weight' => 0
   );
 
-  $items['admin/tripal/tripal_library/configuration'] = array(
-    'title' => 'Configuration',
+  $items['admin/tripal/chado/tripal_library/help'] = array(
+    'title' => 'Help',
+    'description' => 'Basic Description of Tripal Library Module Functionality',
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_library_admin'),
+    'access arguments' => array('administer tripal libraries'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 4
+  );
+
+  $items['admin/tripal/chado/tripal_library/configuration'] = array(
+    'title' => 'Settings',
     'description' => 'Configure the Tripal Library module',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_library_help'),
+    'page arguments' => array('tripal_library_admin'),
     'access arguments' => array('administer tripal libraries'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2
   );
 
   // Synchronizing libraries from Chado to Drupal
@@ -242,8 +253,8 @@ function tripal_library_theme() {
       'path' => "$theme_path/tripal_library",
     ),
     // help template
-    'tripal_library_help' => array(
-      'template' => 'tripal_library_help',
+    'tripal_library_admin' => array(
+      'template' => 'tripal_library_admin',
       'arguments' =>  array(NULL),
       'path' => $theme_path,
     ),
