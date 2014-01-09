@@ -1,7 +1,7 @@
 <?php
 
 include('api/tripal_views.api.inc');
-
+include('views/handlers/tripal_views_handler_area_action_links.inc');
 
 /**
  * @file
@@ -70,6 +70,11 @@ function tripal_views_views_handlers() {
         'parent' => 'views_handler_field',
       ),
       */
+
+      // Custom area handler
+      'tripal_views_handler_area_action_links' => array(
+        'parent' => 'views_handler_area',
+      ),
 
       // Custom Tripal Filter Handlers
       'tripal_views_handler_filter_no_results' => array(
@@ -153,6 +158,14 @@ function tripal_views_views_data() {
     'help' => t('Delay results until Apply/Search is clicked by the user.'),
     'filter' => array(
       'handler' => 'tripal_views_handler_filter_no_results',
+    ),
+  );
+
+  $data['views']['action_links_area'] = array(
+    'title' => t('Action Links'),
+    'help' => t('Add action links to the view.'),
+    'area' => array(
+      'handler' => 'tripal_views_handler_area_action_links',
     ),
   );
 

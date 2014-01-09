@@ -66,17 +66,20 @@ $handler->display->display_options['style_options']['info'] = array(
     'separator' => '',
   ),
 );
-/* Header: Global: Text area */
-$handler->display->display_options['header']['text']['id'] = 'text';
-$handler->display->display_options['header']['text']['table'] = 'views';
-$handler->display->display_options['header']['text']['field'] = 'area';
-$handler->display->display_options['header']['text']['label'] = 'Add Cv';
-$handler->display->display_options['header']['text']['empty'] = TRUE;
-$handler->display->display_options['header']['text']['content'] = '<ul class="action-links">
-          <li><a href="tripal_cv/cv/add">Add Vocabulary</a></li>
-          <li><a href="tripal_cv/obo_loader">Load Ontology</a></li>
-     </ul>';
-$handler->display->display_options['header']['text']['format'] = 'full_html';
+/* Header: Global: Action Links */
+  $handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
+  $handler->display->display_options['header']['action_links_area']['table'] = 'views';
+  $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
+  $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
+  $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
+  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+    'label-1' => 'Add Vocabulary',
+    'path-1' => 'admin/tripal/chado/tripal_cv/cv/add',
+  );
+  $handler->display->display_options['header']['action_links_area']['link-2'] = array(
+    'label-2' => 'Load Ontology',
+    'path-2' => 'admin/tripal/chado/tripal_cv/obo_loader',
+  );
 /* No results behavior: Global: Text area */
 $handler->display->display_options['empty']['text']['id'] = 'area';
 $handler->display->display_options['empty']['text']['table'] = 'views';
@@ -262,16 +265,16 @@ $handler->display->display_options['style_options']['info'] = array(
     'separator' => '',
   ),
 );
-/* Header: Global: Text area */
-$handler->display->display_options['header']['text']['id'] = 'text';
-$handler->display->display_options['header']['text']['table'] = 'views';
-$handler->display->display_options['header']['text']['field'] = 'area';
-$handler->display->display_options['header']['text']['label'] = 'Add cvterm';
-$handler->display->display_options['header']['text']['empty'] = TRUE;
-$handler->display->display_options['header']['text']['content'] = '<ul class="action-links">
-        <li><a href="cvterm/add">Add Term</a></li>
-   </ul>';
-$handler->display->display_options['header']['text']['format'] = 'full_html';
+/* Header: Global: Action Links */
+  $handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
+  $handler->display->display_options['header']['action_links_area']['table'] = 'views';
+  $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
+  $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
+  $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
+  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+    'label-1' => 'Add Term',
+    'path-1' => 'admin/tripal/chado/tripal_cv/cvterm/add',
+  );
 /* No results behavior: Global: Text area */
 $handler->display->display_options['empty']['text']['id'] = 'area';
 $handler->display->display_options['empty']['text']['table'] = 'views';
