@@ -112,6 +112,18 @@ function tripal_bulk_loader_defaultview_admin_job_listing() {
     'label-1' => 'Add Bulk Loading Job',
     'path-1' => 'node/add/tripal-bulk-loader',
   );
+  $handler->display->display_options['header']['action_links_area']['link-2'] = array(
+    'label-2' => '',
+    'path-2' => '',
+  );
+  $handler->display->display_options['header']['action_links_area']['link-3'] = array(
+    'label-3' => '',
+    'path-3' => '',
+  );
+  $handler->display->display_options['header']['action_links_area']['link-4'] = array(
+    'label-4' => '',
+    'path-4' => '',
+  );
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['area']['id'] = 'area';
   $handler->display->display_options['empty']['area']['table'] = 'views';
@@ -250,6 +262,7 @@ function tripal_bulk_loader_defaultview_admin_job_listing() {
   $handler->display->display_options['menu']['context'] = 0;
   $handler->display->display_options['menu']['context_only_inline'] = 0;
   $handler->display->display_options['tab_options']['weight'] = '0';
+
 
   return $view;
 }
