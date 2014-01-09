@@ -7,293 +7,190 @@
 function tripal_organism_views_default_views() {
   $views = array();
 
-  if (!module_exists('tripal_views')) {
-    return $views;
-  }
-
-  // Main default view
-  $view = new view;
-  $view->name = 'organism_listing';
-  $view->description = 'A listing of all organism in chado';
-  $view->tag = 'chado default';
-  $view->base_table = 'organism';
-  $view->core = 0;
-  $view->api_version = '2';
-  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
-  $handler = $view->new_display('default', 'Defaults', 'default');
-  $handler->override_option('fields', array(
-    'common_name' => array(
-      'label' => 'Common Name',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'link_to_node' => 1,
-      'exclude' => 0,
-      'id' => 'common_name',
-      'table' => 'organism',
-      'field' => 'common_name',
-      'relationship' => 'none',
-    ),
-    'genus' => array(
-      'label' => 'Genus',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'exclude' => 0,
-      'id' => 'genus',
-      'table' => 'organism',
-      'field' => 'genus',
-      'relationship' => 'none',
-    ),
-    'species' => array(
-      'label' => 'Species',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'exclude' => 0,
-      'id' => 'species',
-      'table' => 'organism',
-      'field' => 'species',
-      'relationship' => 'none',
-    ),
-    'abbreviation' => array(
-      'label' => 'Abbreviation',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'link_class' => '',
-        'alt' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'link_to_node' => 0,
-      'exclude' => 0,
-      'id' => 'abbreviation',
-      'table' => 'organism',
-      'field' => 'abbreviation',
-      'relationship' => 'none',
-    ),
-  ));
-  $handler->override_option('sorts', array(
-    'genus' => array(
-      'order' => 'ASC',
-      'id' => 'genus',
-      'table' => 'organism',
-      'field' => 'genus',
-      'relationship' => 'none',
-    ),
-    'species' => array(
-      'order' => 'ASC',
-      'id' => 'species',
-      'table' => 'organism',
-      'field' => 'species',
-      'relationship' => 'none',
-    ),
-  ));
-  $handler->override_option('access', array(
-    'type' => 'perm',
-    'perm' => 'access chado_organism content',
-  ));
-  $handler->override_option('cache', array(
-    'type' => 'none',
-  ));
-  $handler->override_option('title', 'Organisms');
-  $handler->override_option('empty', 'No organisms matched the supplied criteria.');
-  $handler->override_option('empty_format', '1');
-  $handler->override_option('items_per_page', 0);
-  $handler->override_option('style_plugin', 'table');
-  $handler->override_option('style_options', array(
-    'grouping' => '',
-    'override' => 1,
-    'sticky' => 0,
-    'order' => 'asc',
-    'summary' => '',
-    'columns' => array(
-      'common_name' => 'common_name',
-      'genus' => 'genus',
-      'species' => 'species',
-      'abbreviation' => 'abbreviation',
-    ),
-    'info' => array(
-      'common_name' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-      'genus' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-      'species' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-      'abbreviation' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-    ),
-    'default' => '-1',
-  ));
-  $default_handler = $handler;
-  $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'chado/organisms');
-  $handler->override_option('menu', array(
-    'type' => 'normal',
-    'title' => 'Organisms',
-    'description' => 'A biological organism.',
-    'weight' => '10',
-    'name' => 'navigation',
-  ));
-  $handler->override_option('tab_options', array(
-    'type' => 'none',
-    'title' => '',
-    'description' => '',
-    'weight' => 0,
-    'name' => 'navigation',
-  ));
-  // Add code specific to a local chado installation
-  // NOTE: Edit $handler above to $default_handler for the default display
-  if (tripal_core_chado_schema_exists()) {
-    // Add nid field
-    $fields = $view->get_items('field', 'default');
-    $new_fields = array(
-      'nid' => array(
-        'label' => 'Nid',
-        'alter' => array(
-          'alter_text' => 0,
-          'text' => '',
-          'make_link' => 0,
-          'path' => '',
-          'absolute' => 0,
-          'link_class' => '',
-          'alt' => '',
-          'rel' => '',
-          'prefix' => '',
-          'suffix' => '',
-          'target' => '',
-          'help' => '',
-          'trim' => 0,
-          'max_length' => '',
-          'word_boundary' => 1,
-          'ellipsis' => 1,
-          'html' => 0,
-          'strip_tags' => 0,
-        ),
-        'empty' => '',
-        'hide_empty' => 0,
-        'empty_zero' => 0,
-        'hide_alter_empty' => 1,
-        'link_to_node' => 0,
-        'exclude' => 1,
-        'id' => 'nid',
-        'table' => 'node',
-        'field' => 'nid',
-        'relationship' => 'none',
-      )
-    );
-    $fields = $new_fields + $fields;
-    // Adds organism => Node relationship
-    $default_handler->override_option('relationships', array(
-      'nid' => array(
-        'label' => 'Organism to Node',
-        'required' => 0,
-        'id' => 'nid',
-        'table' => 'chado_organism',
-        'field' => 'nid',
-        'relationship' => 'none',
-      ),
-    ));
-    // Change analysis.name to have a link to the node
-    $fields['common_name']['alter']['link_to_node'] = 1;
-    $default_handler->override_option('fields', $fields);
-    // Only show records with published nodes
-    /**
-    $filters = $view->get_items('filter', 'default');
-    $filters['status'] = array(
-      'operator' => '=',
-      'value' => '1',
-      'group' => '0',
-      'exposed' => FALSE,
-      'expose' => array(
-        'operator' => FALSE,
-        'label' => '',
-      ),
-      'id' => 'status',
-      'table' => 'node',
-      'field' => 'status',
-      'relationship' => 'none',
-    );
-    $default_handler->override_option('filters', $filters);
-    */
-  }
+  $view = tripal_organism_admin_defaultview_organisms();
   $views[$view->name] = $view;
 
   return $views;
+}
+
+function tripal_organism_admin_defaultview_organisms() {
+
+  $view = new view();
+  $view->name = 'tripal_organism_admin_organisms';
+  $view->description = 'A listing of all organism in chado';
+  $view->tag = 'tripal admin';
+  $view->base_table = 'organism';
+  $view->human_name = 'Organism Admin';
+  $view->core = 0;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Defaults */
+  $handler = $view->new_display('default', 'Defaults', 'default');
+  $handler->display->display_options['title'] = 'Organisms';
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['access']['perm'] = 'adminster tripal organism';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Filter';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '25';
+  $handler->display->display_options['pager']['options']['offset'] = '0';
+  $handler->display->display_options['pager']['options']['id'] = '0';
+  $handler->display->display_options['pager']['options']['quantity'] = '9';
+  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_options']['grouping'] = '';
+  $handler->display->display_options['style_options']['columns'] = array(
+    'common_name' => 'common_name',
+    'genus' => 'genus',
+    'species' => 'species',
+    'abbreviation' => 'abbreviation',
+  );
+  $handler->display->display_options['style_options']['default'] = '-1';
+  $handler->display->display_options['style_options']['info'] = array(
+    'common_name' => array(
+      'sortable' => 1,
+      'separator' => '',
+    ),
+    'genus' => array(
+      'sortable' => 1,
+      'separator' => '',
+    ),
+    'species' => array(
+      'sortable' => 1,
+      'separator' => '',
+    ),
+    'abbreviation' => array(
+      'sortable' => 1,
+      'separator' => '',
+    ),
+  );
+  /* Header: Global: Text area */
+  $handler->display->display_options['header']['area']['id'] = 'area';
+  $handler->display->display_options['header']['area']['table'] = 'views';
+  $handler->display->display_options['header']['area']['field'] = 'area';
+  $handler->display->display_options['header']['area']['label'] = 'Add Organism';
+  $handler->display->display_options['header']['area']['empty'] = TRUE;
+  $handler->display->display_options['header']['area']['content'] = '<ul class="action-links">
+          <li><a href="node/add/tripal_cv">Add Organism</a></li>
+     </ul>';
+  $handler->display->display_options['header']['area']['format'] = 'full_html';
+  /* No results behavior: Global: Text area */
+  $handler->display->display_options['empty']['text']['id'] = 'area';
+  $handler->display->display_options['empty']['text']['table'] = 'views';
+  $handler->display->display_options['empty']['text']['field'] = 'area';
+  $handler->display->display_options['empty']['text']['content'] = 'No organisms matched the supplied criteria.';
+  $handler->display->display_options['empty']['text']['format'] = '1';
+  /* Relationship: Organism: Organism => Node */
+  $handler->display->display_options['relationships']['organism_id']['id'] = 'organism_id';
+  $handler->display->display_options['relationships']['organism_id']['table'] = 'chado_organism';
+  $handler->display->display_options['relationships']['organism_id']['field'] = 'organism_id';
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid']['id'] = 'nid';
+  $handler->display->display_options['fields']['nid']['table'] = 'node';
+  $handler->display->display_options['fields']['nid']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid']['exclude'] = TRUE;
+  /* Field: Chado Organism: Common Name */
+  $handler->display->display_options['fields']['common_name']['id'] = 'common_name';
+  $handler->display->display_options['fields']['common_name']['table'] = 'organism';
+  $handler->display->display_options['fields']['common_name']['field'] = 'common_name';
+  $handler->display->display_options['fields']['common_name']['alter']['make_link'] = TRUE;
+  $handler->display->display_options['fields']['common_name']['alter']['path'] = 'node/[nid]';
+  /* Field: Chado Organism: Genus */
+  $handler->display->display_options['fields']['genus']['id'] = 'genus';
+  $handler->display->display_options['fields']['genus']['table'] = 'organism';
+  $handler->display->display_options['fields']['genus']['field'] = 'genus';
+  /* Field: Chado Organism: Species */
+  $handler->display->display_options['fields']['species']['id'] = 'species';
+  $handler->display->display_options['fields']['species']['table'] = 'organism';
+  $handler->display->display_options['fields']['species']['field'] = 'species';
+  /* Field: Chado Organism: Abbreviation */
+  $handler->display->display_options['fields']['abbreviation']['id'] = 'abbreviation';
+  $handler->display->display_options['fields']['abbreviation']['table'] = 'organism';
+  $handler->display->display_options['fields']['abbreviation']['field'] = 'abbreviation';
+  /* Field: Content: Delete link */
+  $handler->display->display_options['fields']['delete_node']['id'] = 'delete_node';
+  $handler->display->display_options['fields']['delete_node']['table'] = 'views_entity_node';
+  $handler->display->display_options['fields']['delete_node']['field'] = 'delete_node';
+  $handler->display->display_options['fields']['delete_node']['relationship'] = 'organism_id';
+  $handler->display->display_options['fields']['delete_node']['exclude'] = TRUE;
+  /* Field: Content: Edit link */
+  $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
+  $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
+  $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
+  $handler->display->display_options['fields']['edit_node']['relationship'] = 'organism_id';
+  $handler->display->display_options['fields']['edit_node']['exclude'] = TRUE;
+  /* Field: Global: Custom text */
+  $handler->display->display_options['fields']['nothing']['id'] = 'nothing';
+  $handler->display->display_options['fields']['nothing']['table'] = 'views';
+  $handler->display->display_options['fields']['nothing']['field'] = 'nothing';
+  $handler->display->display_options['fields']['nothing']['label'] = '';
+  $handler->display->display_options['fields']['nothing']['alter']['text'] = '[edit_node]   [delete_node]';
+  $handler->display->display_options['fields']['nothing']['element_label_colon'] = FALSE;
+  /* Sort criterion: Chado Organism: Genus */
+  $handler->display->display_options['sorts']['genus']['id'] = 'genus';
+  $handler->display->display_options['sorts']['genus']['table'] = 'organism';
+  $handler->display->display_options['sorts']['genus']['field'] = 'genus';
+  /* Sort criterion: Chado Organism: Species */
+  $handler->display->display_options['sorts']['species']['id'] = 'species';
+  $handler->display->display_options['sorts']['species']['table'] = 'organism';
+  $handler->display->display_options['sorts']['species']['field'] = 'species';
+  /* Filter criterion: Chado Organism: Common Name */
+  $handler->display->display_options['filters']['common_name']['id'] = 'common_name';
+  $handler->display->display_options['filters']['common_name']['table'] = 'organism';
+  $handler->display->display_options['filters']['common_name']['field'] = 'common_name';
+  $handler->display->display_options['filters']['common_name']['operator'] = 'contains';
+  $handler->display->display_options['filters']['common_name']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['common_name']['expose']['operator_id'] = '';
+  $handler->display->display_options['filters']['common_name']['expose']['label'] = 'Common Name Contains';
+  $handler->display->display_options['filters']['common_name']['expose']['identifier'] = 'common_name';
+  $handler->display->display_options['filters']['common_name']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Chado Organism: Genus */
+  $handler->display->display_options['filters']['genus']['id'] = 'genus';
+  $handler->display->display_options['filters']['genus']['table'] = 'organism';
+  $handler->display->display_options['filters']['genus']['field'] = 'genus';
+  $handler->display->display_options['filters']['genus']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['genus']['expose']['operator_id'] = 'genus_op';
+  $handler->display->display_options['filters']['genus']['expose']['label'] = 'Genus';
+  $handler->display->display_options['filters']['genus']['expose']['operator'] = 'genus_op';
+  $handler->display->display_options['filters']['genus']['expose']['identifier'] = 'genus';
+  $handler->display->display_options['filters']['genus']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Chado Organism: Species */
+  $handler->display->display_options['filters']['species']['id'] = 'species';
+  $handler->display->display_options['filters']['species']['table'] = 'organism';
+  $handler->display->display_options['filters']['species']['field'] = 'species';
+  $handler->display->display_options['filters']['species']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['species']['expose']['operator_id'] = 'species_op';
+  $handler->display->display_options['filters']['species']['expose']['label'] = 'Species';
+  $handler->display->display_options['filters']['species']['expose']['operator'] = 'species_op';
+  $handler->display->display_options['filters']['species']['expose']['identifier'] = 'species';
+  $handler->display->display_options['filters']['species']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page_1');
+  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_organism/organisms';
+  $handler->display->display_options['menu']['type'] = 'default tab';
+  $handler->display->display_options['menu']['title'] = 'Organisms';
+  $handler->display->display_options['menu']['description'] = 'A biological organism.';
+  $handler->display->display_options['menu']['weight'] = '-10';
+  $handler->display->display_options['menu']['name'] = 'management';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
+  $handler->display->display_options['tab_options']['weight'] = '0';
+
+  return $view;
 }

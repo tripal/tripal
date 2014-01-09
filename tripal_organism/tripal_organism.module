@@ -101,6 +101,7 @@ function tripal_organism_menu() {
   $items['admin/tripal/chado/tripal_organism'] = array(
    'title' => 'Organisms',
    'description' => 'Basic Description of Tripal Organism Module Functionality',
+   'page callback' => 'tripal_organism_admin_organism_view',
    'access arguments' => array('adminster tripal organism'),
    'type' => MENU_NORMAL_ITEM,
   );
@@ -111,25 +112,33 @@ function tripal_organism_menu() {
    'page callback' => 'theme',
    'page arguments' => array('tripal_organism_help'),
    'access arguments' => array('adminster tripal organism'),
-   'type' => MENU_NORMAL_ITEM,
+   'type' => MENU_LOCAL_TASK,
   );
 
   $items['admin/tripal/chado/tripal_organism/configuration'] = array(
-   'title' => 'Configuration',
+   'title' => 'Settings',
    'description' => 'Manage integration of Chado organisms including associated features',
    'page callback' => 'drupal_get_form',
    'page arguments' => array('tripal_organism_admin'),
    'access arguments' => array('adminster tripal organism'),
-   'type' => MENU_NORMAL_ITEM,
+   'type' => MENU_LOCAL_TASK,
   );
 
   $items['admin/tripal/chado/tripal_organism/sync'] = array(
-    'title' => 'Sync Organisms',
+    'title' => 'Sync',
     'description' => 'Sync Chado organisms with Drupal',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_organism_sync'),
     'access arguments' => array('adminster tripal organism'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/tripal/chado/tripal_organism/views/organisms/enable'] = array(
+    'title' => 'Enable Organism Administrative View',
+    'page callback' => 'tripal_views_admin_enable_view',
+    'page arguments' => array('tripal_organism_admin_organisms', 'admin/tripal/chado/tripal_organism'),
+    'access arguments' => array('administer tripal_bulk_loader'),
+    'type' => MENU_CALLBACK,
   );
 
   return $items;
@@ -154,7 +163,7 @@ function tripal_organism_help ($path, $arg) {
  */
 function tripal_organism_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
-  
+
   $items = array(
     'node__chado_organism' => array(
       'template' => 'node--chado-generic',
@@ -329,7 +338,7 @@ function chado_organism_validate($node, $form, &$form_state) {
   $node->abbreviation = trim($node->abbreviation);
   $node->common_name  = trim($node->common_name);
   $node->description  = trim($node->description);
-  
+
   // if this is an update, we want to make sure that a different organism doesn't
   // already have this genus and speces
   if (property_exists($node, 'organism_id')) {
@@ -383,7 +392,7 @@ function chado_organism_insert($node) {
   $node->abbreviation = trim($node->abbreviation);
   $node->common_name  = trim($node->common_name);
   $node->description  = trim($node->description);
-  
+
   // if there is an organism_id in the $node object then this must be a sync so
   // we can skip adding the organism as it is already there, although
   // we do need to proceed with the rest of the insert
@@ -410,7 +419,7 @@ function chado_organism_insert($node) {
 
   // Make sure the entry for this organism doesn't already exist in the
   // chado_organism table if it doesn't exist then we want to add it.
-  $check_org_id = chado_get_id_for_node('organism', $node->nid);  
+  $check_org_id = chado_get_id_for_node('organism', $node->nid);
   if (!$check_org_id) {
     $record = new stdClass();
     $record->nid = $node->nid;
@@ -441,7 +450,7 @@ function chado_organism_update($node) {
   $node->abbreviation = trim($node->abbreviation);
   $node->common_name  = trim($node->common_name);
   $node->description  = trim($node->description);
-  
+
   if ($node->revision) {
     // there is no way to handle revisions in Chado but leave
     // this here just to make not we've addressed it.
@@ -546,17 +555,17 @@ function chado_organism_add_image($node) {
  */
 function chado_organism_form($node, $form_state) {
   $form = array();
-  
+
   // we have a file upload element on the form soe we need the multipart encoding type
   $form['#attributes']['enctype'] = 'multipart/form-data';
-  
+
   // if the organism is part of the node object then we are editing. If not we are inserting
   if (property_exists($node, 'organism')) {
     $organism = $node->organism;
 
     // add in the comment since it is a text field and may not be included if too big
     $organism = tripal_core_expand_chado_vars($organism, 'field', 'organism.comment');
-    
+
     // get form defaults
     $abbreviation   = property_exists($node, 'abbreviation')   ? property_exists($node, 'abbreviation')   : $organism->abbreviation;
     $genus          = property_exists($node, 'genus')          ? property_exists($node, 'genus')          : $organism->genus;
@@ -564,7 +573,7 @@ function chado_organism_form($node, $form_state) {
     $common_name    = property_exists($node, 'common_name')    ? property_exists($node, 'common_name')    : $organism->common_name;
     $description    = property_exists($node, 'description')    ? property_exists($node, 'description')    : $organism->comment;
     $organism_image = property_exists($node, 'organism_image') ? property_exists($node, 'organism_image') : '';
-    
+
     // set the organism_id in the form
     $form['organism_id'] = array(
       '#type' => 'value',
@@ -635,7 +644,7 @@ function chado_organism_load($nodes) {
     // build the organism variable
     $values = array('organism_id' => $organism_id);
     $organism = tripal_core_generate_chado_var('organism', $values);
-    
+
 
     // add in the description field
     $organism = tripal_core_expand_chado_vars($organism, 'field', 'organism.comment');
