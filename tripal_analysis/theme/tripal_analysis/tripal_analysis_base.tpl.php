@@ -8,7 +8,7 @@ $analysis = tripal_core_expand_chado_vars($analysis,'field','analysis.descriptio
   // the $headers array is an array of fields to use as the colum headers. 
   // additional documentation can be found here 
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  // This table for the organism has a vertical header (down the first column)
+  // This table for the analysis has a vertical header (down the first column)
   // so we do not provide headers here, but specify them in the $rows array below.
   $headers = array();
   

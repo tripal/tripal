@@ -164,13 +164,9 @@ function tripal_analysis_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_analysis_base',
       'path' => "$path/theme/tripal_analysis",
     ),
-    'tripal_feature_analyses' => array(
-      'template' => 'tripal_feature_analyses',
-      'variables' =>  array('node' => NULL),
-      'path' => "$path/theme/tripal_analysis",
-    ),
     'tripal_analysis_properties' => array(
       'variables' => array('node' => NULL),
+      'template' => 'tripal_analysis_properties',
       'path' => "$path/theme/tripal_analysis",
     ),
     'tripal_analysis_help' => array(
@@ -178,6 +174,15 @@ function tripal_analysis_theme($existing, $type, $theme, $path) {
       'variables' =>  array(NULL),
       'path' => "$path/theme",
     ),
+    
+    // tripal_feature theme
+    'tripal_feature_analyses' => array(
+      'template' => 'tripal_feature_analyses',
+      'variables' =>  array('node' => NULL),
+      'path' => "$path/theme/tripal_analysis",
+    ),
+    
+    // form theme
     'chado_analysis_form' => array(
       'render element' => 'form',
     )
@@ -396,7 +401,10 @@ function chado_analysis_insert($node) {
   if ($node->new_id and $node->new_value) {
     $type_id = $node->new_id;
     $name = $properties_list[$type_id];
-    $index = count($properties[$name]);
+    $index = 0;
+    if (array_key_exists($name, $properties)) {
+      $index = count($properties[$name]);
+    }
     $properties[$name][$index] = trim($node->new_value);
   }
   // now add in the properties
@@ -494,17 +502,16 @@ function chado_analysis_update($node) {
 
   // now update the properties
   $properties = array(); // stores all of the properties we need to add
+  
   // get the list of properties for easy lookup (without doing lots of database queries
   $properties_list = array();
   $sql = "
-      SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition
-      FROM  {cvterm} CVT
+    SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition
+    FROM  {cvterm} CVT
       INNER JOIN {cv} ON CVT.cv_id = CV.cv_id
-      WHERE
-      CV.name = 'analysis_property' AND
-      NOT CVT.is_obsolete = 1
-      ORDER BY CVT.name ASC
-      ";
+    WHERE CV.name = 'analysis_property' AND NOT CVT.is_obsolete = 1
+    ORDER BY CVT.name ASC
+  ";
   $prop_types = chado_query($sql);
   while ($prop = $prop_types->fetchObject()) {
     $properties_list[$prop->cvterm_id] = $prop->name;
@@ -561,10 +568,6 @@ function chado_analysis_update($node) {
     }
   }
 }
-
-function chado_analysis_presave($node) {
-  
-}
  /**
   *  When a node is requested by the user this function is called to allow us
   *  to add auxiliary data to the node object.
@@ -586,30 +589,6 @@ function chado_analysis_load($nodes) {
     $analysis = tripal_core_expand_chado_vars($analysis, 'field', 'analysis.description');
     $nodes[$nid]->analysis = $analysis;
   }
-}
-
-/**
- *  This function customizes the view of the chado_analysis node.  It allows
- *  us to generate the markup.
- *
- * @ingroup tripal_analysis
- */
-function chado_analysis_view($node, $teaser = FALSE, $page = FALSE) {
-  // use drupal's default node view:
-  if (!$teaser) {
-    $node = node_prepare($node, $teaser);
-    // When previewing a node submitting form, it shows 'Array' instead of
-    // correct date format. We need to format the date here
-    $time = $node->timeexecuted;
-    if (is_array($time)) {
-      $month = $time['month'];
-      $day = $time['day'];
-      $year = $time['year'];
-      $timestamp = $year . '-' . $month . '-' . $day;
-      $node->timeexecuted = $timestamp;
-    }
-  }
-  return $node;
 }
 
 /**

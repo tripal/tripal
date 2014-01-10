@@ -250,7 +250,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
 
     if (is_array($value)) {
       // select the value from the foreign key relationship for this value
-      $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
+      $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value);
 
       if (sizeof($results) > 1) {
         tripal_core_report_error(
@@ -1867,7 +1867,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
               $object->expanded = $to_expand;
             }
             else {
-              if (!is_object($object->{$foreign_table})) {
+              if (!property_exists($object, $foreign_table) or !is_object($object->{$foreign_table})) {
                 $object->{$foreign_table} = new stdClass();
               }
               $object->{$foreign_table} = $foreign_object;

@@ -87,7 +87,16 @@ function chado_analysis_form($node, &$form_state) {
   $form['title']= array(
     '#type' => 'value',
     '#default_value' => $node->title,
-  );  
+  );
+  $form['instructions'] = array(
+    '#markup' => t('<b>Note</b>: When adding any type of data it is good to associate it with
+        an analysis so that site visitors can identify the source of the data including
+        necessary materials and methods.  The fields below imply that all analyses 
+        are derived from some software package. But, data can also be derived via retreival
+        from an external source or an analysis pipeline with multipel software components.
+        In these cases, provide values for the fields below that best makes sense
+        '),
+  );
   $form['analysisname']= array(
     '#type' => 'textfield',
     '#title' => t('Analysis Name'),
@@ -98,17 +107,17 @@ function chado_analysis_form($node, &$form_state) {
   );
   $form['program']= array(
     '#type' => 'textfield',
-    '#title' => t('Program'),
+    '#title' => t('Program, Pipeline Name or Method Name'),
     '#required' => TRUE,
     '#default_value' => $program,
-    '#description' => t("Program name, e.g. blastx, blastp, sim4, genscan."),
+    '#description' => t("Program name, e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package, provide a very brief description of the pipeline or method."),
   );
   $form['programversion']= array(
     '#type' => 'textfield',
-    '#title' => t('Program Version'),
+    '#title' => t('Program, Pipeline  or Method version'),
     '#required' => TRUE,
     '#default_value' => $programversion,
-    '#description' => t("Version description, e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter 'n/a' if no version is available."),
+    '#description' => t("Version description, e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter 'n/a' if no version is available or applicable."),
   );
   $form['algorithm']= array(
     '#type' => 'textfield',
@@ -258,7 +267,7 @@ function chado_analysis_node_form_add_new_empty_props(&$form, &$form_state, $pro
   $form['properties']['table']['new']["new_id"] = array(
     '#type'          => 'select',
     '#options'       => $properties_select,
-    '#value'         => $id,
+    '#default_value' => $id,
     '#ajax' => array(
       'callback' => "tripal_analysis_property_get_description",
       'wrapper'  => 'tripal-analysis-new_value',
@@ -268,7 +277,7 @@ function chado_analysis_node_form_add_new_empty_props(&$form, &$form_state, $pro
   );
   $form['properties']['table']['new']["new_value"] = array(
     '#type'           => 'textarea',
-    '#value'          => $text,
+    '#default_value'  => $text,
     '#cols'           => 50,
     '#rows'           => $rows,
     '#prefix'         => '<div id="tripal-analysis-new_value">',
@@ -492,7 +501,10 @@ function chado_analysis_node_form_add_analysisprop_table_props(&$form, $form_sta
   while ($prop = $analysis_props->fetchObject()) {
 
     $type_id = $prop->cvterm_id;
-    $rank = count($ranks[$type_id]);
+    $rank = 0;
+    if(array_key_exists($type_id, $ranks)) {
+      $rank = count($ranks[$type_id]);
+    }
 
     // skip any properties that the user requested to delete through a previous
     // AHAH callback or through the current AHAH callback
@@ -510,10 +522,10 @@ function chado_analysis_node_form_add_analysisprop_table_props(&$form, $form_sta
     $ranks[$type_id][$rank]['value'] = $prop->value;
     $ranks[$type_id][$rank]['definition']  = $prop->definition;
     $num_properties++;
+    $rows = 1;
 
     $form['properties']['table'][$type_id][$rank]["prop_id-$type_id-$rank"] = array(
-      '#type'          => 'item',
-      '#value'         => $prop->name,
+      '#markup'        => $prop->name,
     );
     $form['properties']['table'][$type_id][$rank]["prop_value-$type_id-$rank"] = array(
       '#type'          => 'textarea',
@@ -569,7 +581,6 @@ function chado_analysis_validate($node, &$form_state) {
  * @ingroup tripal_analysis
  */
 function tripal_analysis_validate($node, &$form_state) {
-  
   $node->analysisname = trim($node->analysisname);
   $node->description = trim($node->description);
   $node->program = trim($node->program);
@@ -627,7 +638,7 @@ function tripal_analysis_validate($node, &$form_state) {
   else {
     // To differentiate if we are syncing or creating a new analysis altogther, see if an
     // analysis_id already exists
-    if ($node->analysis_id and $node->analysis_id != 0) {
+    if (property_exists($node, 'analysis_id') and $node->analysis_id != 0) {
       // CASE B: Synchronizing a node from chado to drupal
       // we don't need to do anything.
     }
