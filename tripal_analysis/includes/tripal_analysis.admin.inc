@@ -5,6 +5,38 @@
  * Contains functions displaying administrative pages and forms
  */
 
+/**
+ *
+ */
+function tripal_analysis_admin_analysis_view() {
+  $output = '';
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado', 'admin/tripal/chado');
+  $breadcrumb[] = l('Analysis', 'admin/tripal/chado/tripal_analysis');
+  drupal_set_breadcrumb($breadcrumb);
+
+  // Add the view
+  $view = views_embed_view('tripal_analysis_admin_analyses','default');
+  if (isset($view)) {
+    $output .= $view;
+  }
+  else {
+    $output .= '<p>The Analysis module uses primarily views to provide an '
+      . 'administrative interface. Currently one or more views needed for this '
+      . 'administrative interface are disabled. <strong>Click each of the following links to '
+      . 'enable the pertinent views</strong>:</p>';
+    $output .= '<ul>';
+      $output .= '<li>'.l('Analysis View', 'admin/tripal/chado/tripal_analysis/views/analyses/enable').'</li>';
+    $output .= '</ul>';
+  }
+
+  return $output;
+}
 
 /**
  * Administration page callbacks for the Tripal Analysis module
@@ -53,7 +85,7 @@ function tripal_analysis_admin() {
     }
     $counter++;
   }
-  
+
   if($counter == 0) {
     $form['nothing'] = array(
       '#markup' => t('There are currently no settings to configure. However, analysis extension modules may add items here when they are installed.')

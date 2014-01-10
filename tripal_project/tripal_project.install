@@ -11,6 +11,20 @@
  */
 
 /**
+ * Disable default views when module is disabled
+ */
+function tripal_project_disable() {
+
+  // Disable all default views provided by this module
+  require_once("tripal_project.views_default.inc");
+  $views = tripal_project_views_default_views();
+  foreach (array_keys($views) as $view_name) {
+    tripal_views_admin_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+  }
+
+}
+
+/**
  * Implementation of hook_requirements().
  *
  */
@@ -32,10 +46,10 @@ function tripal_project_requirements($phase) {
  * Implementation of hook_install().
  */
 function tripal_project_install() {
-  
+
   // create the module's data directory
   tripal_create_moddir('tripal_project');
-  
+
   tripal_project_add_cvterms();
 }
 
@@ -73,13 +87,13 @@ function tripal_project_schema() {
 }
 
 /*
- * 
+ *
  */
 function tripal_project_add_cvterms() {
-  
+
   // Insert cvterm 'library_description' into cvterm table of chado
   // database. This CV term is used to keep track of the library
   // description in the libraryprop table.
-  tripal_cv_add_cvterm(array('name' => 'project_description', 'def' => 'Description of a project'), 
-    'tripal', 0, 1, 'tripal'); 
+  tripal_cv_add_cvterm(array('name' => 'project_description', 'def' => 'Description of a project'),
+    'tripal', 0, 1, 'tripal');
 }

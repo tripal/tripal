@@ -37,7 +37,7 @@ function tripal_db_menu() {
     'title' => 'Help',
     'description' => "A description of the Tripal Database module including a short description of it's usage.",
     'page callback' => 'theme',
-    'page arguments' => array('tripal_db_help'),
+    'page arguments' => array('tripal_db_admin'),
     'access arguments' => array('administer db cross-references'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
@@ -131,8 +131,8 @@ function tripal_db_views_api() {
 function tripal_db_theme() {
   $theme_path = drupal_get_path('module', 'tripal_db') . '/theme';
   $items = array(
-    'tripal_db_help' => array(
-      'template' => 'tripal_db_help',
+    'tripal_db_admin' => array(
+      'template' => 'tripal_db_admin',
       'arguments' =>  array(NULL),
       'path' => $theme_path,
     ),

@@ -5,6 +5,20 @@
  */
 
 /**
+ * Disable default views when module is disabled
+ */
+function tripal_featuremap_disable() {
+
+  // Disable all default views provided by this module
+  require_once("tripal_featuremap.views_default.inc");
+  $views = tripal_featuremap_views_default_views();
+  foreach (array_keys($views) as $view_name) {
+    tripal_views_admin_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+  }
+
+}
+
+/**
  * Implementation of hook_requirements().
  */
 function tripal_featuremap_requirements($phase) {
@@ -33,7 +47,7 @@ function tripal_featuremap_install() {
 
   // add the featuremapprop table to Chado
   tripal_featuremap_add_custom_tables();
-  
+
   // Add cvterms
   tripal_featuremap_add_cvterms();
 
@@ -89,49 +103,49 @@ function tripal_featuremap_schema() {
 
 
 /*
- * 
+ *
  */
 function tripal_featuremap_add_cvterms() {
-  
+
    // add cvterms for the map unit types
-   tripal_cv_add_cvterm(array('name' => 'cM','def' => 'Centimorgan units'), 
+   tripal_cv_add_cvterm(array('name' => 'cM','def' => 'Centimorgan units'),
      'featuremap_units', 0, 1, 'tripal');
-   tripal_cv_add_cvterm(array('name' => 'bp','def' => 'Base pairs units'), 
+   tripal_cv_add_cvterm(array('name' => 'bp','def' => 'Base pairs units'),
      'featuremap_units', 0, 1, 'tripal');
-   tripal_cv_add_cvterm(array('name' => 'bin_unit','def' => 'The bin unit'), 
-     'featuremap_units', 0, 1, 'tripal');   
-   tripal_cv_add_cvterm(array('name' => 'marker_order','def' => 'Units simply to define marker order.'), 
+   tripal_cv_add_cvterm(array('name' => 'bin_unit','def' => 'The bin unit'),
      'featuremap_units', 0, 1, 'tripal');
-   tripal_cv_add_cvterm(array('name' => 'undefined','def' => 'A catch-all for an undefined unit type'), 
+   tripal_cv_add_cvterm(array('name' => 'marker_order','def' => 'Units simply to define marker order.'),
      'featuremap_units', 0, 1, 'tripal');
-   
-   tripal_cv_add_cvterm(array('name' => 'start','def' => 'The start coordinate for a map feature.'), 
+   tripal_cv_add_cvterm(array('name' => 'undefined','def' => 'A catch-all for an undefined unit type'),
+     'featuremap_units', 0, 1, 'tripal');
+
+   tripal_cv_add_cvterm(array('name' => 'start','def' => 'The start coordinate for a map feature.'),
      'featurepos_property', 0, 1, 'tripal');
-   tripal_cv_add_cvterm(array('name' => 'stop','def' => 'The end coordinate for a map feature'), 
+   tripal_cv_add_cvterm(array('name' => 'stop','def' => 'The end coordinate for a map feature'),
      'featurepos_property', 0, 1, 'tripal');
-   
+
    // add cvterms for map properties
-   tripal_cv_add_cvterm(array('name' => 'Map Dbxref','def' => 'A unique identifer for the map in a remote database.  The format is a database abbreviation and a unique accession separated by a colon.  (e.g. Gramene:tsh1996a)'), 
+   tripal_cv_add_cvterm(array('name' => 'Map Dbxref','def' => 'A unique identifer for the map in a remote database.  The format is a database abbreviation and a unique accession separated by a colon.  (e.g. Gramene:tsh1996a)'),
      'featuremap_property', 0, 1, 'tripal');
-   tripal_cv_add_cvterm(array('name' => 'Map Type','def' => 'The type of Map (e.g. QTL, Physical, etc.)'), 
+   tripal_cv_add_cvterm(array('name' => 'Map Type','def' => 'The type of Map (e.g. QTL, Physical, etc.)'),
      'featuremap_property', 0, 1, 'tripal');
-   tripal_cv_add_cvterm(array('name' => 'Genome Group','def' => ''), 
+   tripal_cv_add_cvterm(array('name' => 'Genome Group','def' => ''),
      'featuremap_property', 0, 1, 'tripal');
-   tripal_cv_add_cvterm(array('name' => 'URL','def' => 'A univeral resource locator (URL) reference where the publication can be found.  For maps found online, this would be the web address for the map.'), 
+   tripal_cv_add_cvterm(array('name' => 'URL','def' => 'A univeral resource locator (URL) reference where the publication can be found.  For maps found online, this would be the web address for the map.'),
      'featuremap_property', 0, 1, 'tripal');
-   tripal_cv_add_cvterm(array('name' => 'Population Type','def' => 'A brief descriptoin of the population type used to generate the map (e.g. RIL, F2, BC1, etc).'), 
+   tripal_cv_add_cvterm(array('name' => 'Population Type','def' => 'A brief descriptoin of the population type used to generate the map (e.g. RIL, F2, BC1, etc).'),
      'featuremap_property', 0, 1, 'tripal');
-   tripal_cv_add_cvterm(array('name' => 'Population Size','def' => 'The size of the population used to construct the map.'), 
+   tripal_cv_add_cvterm(array('name' => 'Population Size','def' => 'The size of the population used to construct the map.'),
      'featuremap_property', 0, 1, 'tripal');
-   tripal_cv_add_cvterm(array('name' => 'Methods','def' => 'A brief description of the methods used to construct the map.'), 
+   tripal_cv_add_cvterm(array('name' => 'Methods','def' => 'A brief description of the methods used to construct the map.'),
      'featuremap_property', 0, 1, 'tripal');
-   tripal_cv_add_cvterm(array('name' => 'Software','def' => 'The software used to construct the map.'), 
+   tripal_cv_add_cvterm(array('name' => 'Software','def' => 'The software used to construct the map.'),
      'featuremap_property', 0, 1, 'tripal');
 
 }
 
 /*
- * 
+ *
  */
 function tripal_featuremap_add_custom_tables(){
   // add the featuremaprop table to Chado
@@ -192,9 +206,9 @@ function tripal_featuremap_add_custom_tables(){
         ),
       ),
     ),
-  );  
+  );
   tripal_core_create_custom_table('featuremapprop', $schema, TRUE);
-  
+
   // add the featuremap_dbxref table to Chado
   $schema = array (
     'table' => 'featuremap_dbxref',
@@ -246,7 +260,7 @@ function tripal_featuremap_add_custom_tables(){
     'referring_tables' => NULL,
   );
   tripal_core_create_custom_table('featuremap_dbxref', $schema, TRUE);
-  
+
   $schema = array (
     'table' => 'featureposprop',
     'fields' => array (

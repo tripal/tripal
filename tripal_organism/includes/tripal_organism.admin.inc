@@ -1,6 +1,39 @@
 <?php
 
 /**
+ *
+ */
+function tripal_organism_admin_organism_view() {
+  $output = '';
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado', 'admin/tripal/chado');
+  $breadcrumb[] = l('Organisms', 'admin/tripal/chado/tripal_organism');
+  drupal_set_breadcrumb($breadcrumb);
+
+  // Add the view
+  $view = views_embed_view('tripal_organism_admin_organisms','default');
+  if (isset($view)) {
+    $output .= $view;
+  }
+  else {
+    $output .= '<p>The Organism module uses primarily views to provide an '
+      . 'administrative interface. Currently one or more views needed for this '
+      . 'administrative interface are disabled. <strong>Click each of the following links to '
+      . 'enable the pertinent views</strong>:</p>';
+    $output .= '<ul>';
+      $output .= '<li>'.l('Organisms View', 'admin/tripal/chado/tripal_organism/views/organisms/enable').'</li>';
+    $output .= '</ul>';
+  }
+
+  return $output;
+}
+
+/**
  * Administrative settings for chado_orgnism
  *
  * @ingroup tripal_organism
@@ -10,7 +43,7 @@ function tripal_organism_admin() {
   $form = array();
 
   get_tripal_organism_admin_form_reindex_set($form);
-  get_tripal_organism_admin_form_taxonomy_set($form);  
+  get_tripal_organism_admin_form_taxonomy_set($form);
 
   return system_settings_form($form);
 }
@@ -41,7 +74,7 @@ function get_tripal_organism_admin_form_taxonomy_set(&$form) {
     '#value' => t(
       "Drupal allows for assignment of \"taxonomy\" or catagorical terms to " .
       "nodes. These terms allow for advanced filtering during searching. This option allows " .
-      "for setting taxonomy only for features that belong to the selected organisms below.  All " . 
+      "for setting taxonomy only for features that belong to the selected organisms below.  All " .
       "other features will be unaffected.  To set taxonomy for all features in the site see the Feature Administration page."),
     '#weight' => 1,
   );
@@ -161,9 +194,9 @@ function tripal_organism_reindex_features($organism_id = NULL, $job_id = NULL) {
   }
 
   $sql = "
-    SELECT * 
-    FROM {feature} 
-    WHERE organism_id = :organism_id 
+    SELECT *
+    FROM {feature}
+    WHERE organism_id = :organism_id
     ORDER BY feature_id";
   $results = chado_query($sql, array(':organism_id' => $organism_id));
 
@@ -196,9 +229,9 @@ function tripal_organism_taxonify_features($organism_id = NULL, $job_id = NULL) 
   }
 
   $sql = "
-    SELECT * 
-    FROM {feature} 
-    WHERE organism_id = :organism_id 
+    SELECT *
+    FROM {feature}
+    WHERE organism_id = :organism_id
     ORDER BY feature_id
   ";
   $results = chado_query($sql, array(':organism_id' => $organism_id));

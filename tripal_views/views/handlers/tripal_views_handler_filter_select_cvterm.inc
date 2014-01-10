@@ -35,13 +35,13 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
       else {
         //get a list of cvs currently used
         if ($this->view->base_table == 'cvterm') {
-          $sql = 'SELECT distinct(cv.cv_id) FROM {' . $this->view->base_table . '}'
-            .' LEFT JOIN cv cv ON cv.cv_id=cvterm.cv_id';
+          $sql = 'SELECT distinct(cv.cv_id) FROM chado.' . $this->view->base_table
+            .' LEFT JOIN chado.cv cv ON cv.cv_id=cvterm.cv_id';
         }
         else {
-          $sql = 'SELECT distinct(cv.cv_id) FROM {' . $this->view->base_table . '}'
-            .' LEFT JOIN cvterm cvterm ON cvterm.cvterm_id=' . $this->view->base_table . '.type_id '
-            .'LEFT JOIN cv cv ON cv.cv_id=cvterm.cv_id';
+          $sql = 'SELECT distinct(cv.cv_id) FROM chado.' . $this->view->base_table
+            .' LEFT JOIN chado.cvterm cvterm ON cvterm.cvterm_id=' . $this->view->base_table . '.type_id '
+            .'LEFT JOIN chado.cv cv ON cv.cv_id=cvterm.cv_id';
         }
         // D7 TODO: Check DBTNG changes work
         $resource = chado_query($sql);
@@ -71,7 +71,11 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
     //sort cvterms by name (case insensitive)
     natcasesort($cvterms);
 
-    return $cvterms;
+    if ($this->options['expose']['select_optional']) {
+      $options['All'] = '--Any--';
+    }
+
+    return $options + $cvterms;
 
   }
 

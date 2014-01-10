@@ -23,7 +23,7 @@ function tripal_bulk_loader_defaultview_admin_job_listing() {
 
   $view = new view();
   $view->name = 'tripal_bulk_loading_jobs';
-  $view->description = 'Administration of Tripal Bulk Loading Jobs (add, edit, delete).';
+  $view->description = 'DO NOT DISABLE';
   $view->tag = 'tripal admin';
   $view->base_table = 'tripal_bulk_loader';
   $view->human_name = 'Tripal Bulk Loading Jobs';
@@ -102,16 +102,28 @@ function tripal_bulk_loader_defaultview_admin_job_listing() {
       'empty_column' => 0,
     ),
   );
-  /* Header: Global: Text area */
-  $handler->display->display_options['header']['area']['id'] = 'area';
-  $handler->display->display_options['header']['area']['table'] = 'views';
-  $handler->display->display_options['header']['area']['field'] = 'area';
-  $handler->display->display_options['header']['area']['label'] = 'Add Job';
-  $handler->display->display_options['header']['area']['empty'] = TRUE;
-  $handler->display->display_options['header']['area']['content'] = '<ul class="action-links">
-    <li><a href="../../../../node/add/tripal-bulk-loader">Add Bulk Loading Job</a></li>
-    </ul>';
-  $handler->display->display_options['header']['area']['format'] = 'full_html';
+  /* Header: Global: Action Links */
+  $handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
+  $handler->display->display_options['header']['action_links_area']['table'] = 'views';
+  $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
+  $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
+  $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
+  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+    'label-1' => 'Add Bulk Loading Job',
+    'path-1' => 'node/add/tripal-bulk-loader',
+  );
+  $handler->display->display_options['header']['action_links_area']['link-2'] = array(
+    'label-2' => '',
+    'path-2' => '',
+  );
+  $handler->display->display_options['header']['action_links_area']['link-3'] = array(
+    'label-3' => '',
+    'path-3' => '',
+  );
+  $handler->display->display_options['header']['action_links_area']['link-4'] = array(
+    'label-4' => '',
+    'path-4' => '',
+  );
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['area']['id'] = 'area';
   $handler->display->display_options['empty']['area']['table'] = 'views';
@@ -251,6 +263,7 @@ function tripal_bulk_loader_defaultview_admin_job_listing() {
   $handler->display->display_options['menu']['context_only_inline'] = 0;
   $handler->display->display_options['tab_options']['weight'] = '0';
 
+
   return $view;
 }
 
@@ -261,7 +274,7 @@ function tripal_bulk_loader_defaultview_admin_template_listing() {
 
   $view = new view();
   $view->name = 'tripal_bulk_loader_templates';
-  $view->description = 'Administration of Tripal Bulk Loading Templates (add, import, edit, delete, export).';
+  $view->description = 'DO NOT DISABLE';
   $view->tag = 'tripal admin';
   $view->base_table = 'tripal_bulk_loader_template';
   $view->human_name = 'Tripal Bulk Loader Templates';
@@ -282,17 +295,20 @@ function tripal_bulk_loader_defaultview_admin_template_listing() {
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '25';
   $handler->display->display_options['style_plugin'] = 'table';
-  /* Header: Global: Text area */
-  $handler->display->display_options['header']['area']['id'] = 'area';
-  $handler->display->display_options['header']['area']['table'] = 'views';
-  $handler->display->display_options['header']['area']['field'] = 'area';
-  $handler->display->display_options['header']['area']['label'] = 'Add Template';
-  $handler->display->display_options['header']['area']['empty'] = TRUE;
-  $handler->display->display_options['header']['area']['content'] = '<ul class="action-links">
-      <li><a href="template/create">Add Template</a></li>
-      <li><a href="templates/import">Import Template</a></li>
-      </ul>';
-  $handler->display->display_options['header']['area']['format'] = 'full_html';
+  /* Header: Global: Action Links */
+  $handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
+  $handler->display->display_options['header']['action_links_area']['table'] = 'views';
+  $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
+  $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
+  $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
+  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+    'label-1' => 'Add Template',
+    'path-1' => 'admin/tripal/loaders/bulk/template/create',
+  );
+  $handler->display->display_options['header']['action_links_area']['link-2'] = array(
+    'label-2' => 'Import Template',
+    'path-2' => 'admin/tripal/loaders/bulk/templates/import',
+  );
   /* Field: Tripal Bulk Loader Templates: Name */
   $handler->display->display_options['fields']['name']['id'] = 'name';
   $handler->display->display_options['fields']['name']['table'] = 'tripal_bulk_loader_template';

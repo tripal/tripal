@@ -4,6 +4,40 @@
  * @todo Add file header description
  */
 
+/**
+ *
+ */
+function tripal_project_admin_project_view() {
+  $output = '';
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado', 'admin/tripal/chado');
+  $breadcrumb[] = l('Projects', 'admin/tripal/chado/tripal_project');
+  drupal_set_breadcrumb($breadcrumb);
+
+  // Add the view
+  $view = views_embed_view('tripal_project_admin_projects','default');
+  if (isset($view)) {
+    $output .= $view;
+  }
+  else {
+    $output .= '<p>The Project module uses primarily views to provide an '
+      . 'administrative interface. Currently one or more views needed for this '
+      . 'administrative interface are disabled. <strong>Click each of the following links to '
+      . 'enable the pertinent views</strong>:</p>';
+    $output .= '<ul>';
+      $output .= '<li>'.l('Projects View', 'admin/tripal/chado/tripal_project/views/projects/enable').'</li>';
+    $output .= '</ul>';
+  }
+
+  return $output;
+}
+
+
 function tripal_project_admin($form_state = NULL) {
   $form = array();
 
@@ -94,7 +128,7 @@ function get_tripal_project_admin_form_sync_set(&$form) {
       // check to see if the project is already present as a node in drupal.
       // if so, then skip it.
       $sql = "SELECT * FROM {chado_project} WHERE project_id = :project_id";
-      if (!db_query($sql, array(':project_id' => $project->project_id))->fetchObject()) { 
+      if (!db_query($sql, array(':project_id' => $project->project_id))->fetchObject()) {
         $proj_boxes[$project->project_id] = $project->name;
         $added++;
       }
@@ -270,7 +304,7 @@ function tripal_project_sync_projects($project_id = NULL, $job_id = NULL) {
   return $page_content;
 }
 /*
- * 
+ *
  */
 function tripal_project_sync_projects_form_submit($form, &$form_state) {
   global $user;
@@ -282,7 +316,7 @@ function tripal_project_sync_projects_form_submit($form, &$form_state) {
 }
 
 /*
- * 
+ *
  */
 function tripal_project_sync_all_projects() {
 

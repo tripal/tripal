@@ -58,7 +58,7 @@ function tripal_cv_menu() {
     'title' => 'Help',
     'description' => "A description of the Tripal Controlled Vocabulary module including a short description of it's usage.",
     'page callback' => 'theme',
-    'page arguments' => array('tripal_cv_help'),
+    'page arguments' => array('tripal_cv_admin'),
     'access arguments' => array('administer controlled vocabularies'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
@@ -89,17 +89,17 @@ function tripal_cv_menu() {
   /*
    * Menu items for adding and editing CVs
    */
-  $items['admin/tripal/chado/tripal_cv/edit_cv'] = array(
+  $items['admin/tripal/chado/tripal_cv/cv/edit/%'] = array(
     'title' => 'Edit a Controlled Vocabulary',
     'description' => 'Edit the details such as name and description for an existing controlled vocabulary.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_cv_cv_edit_form'),
+    'page arguments' => array('tripal_cv_cv_edit_form', 6),
     'access callback' => 'user_access',
     'access arguments' => array('administer controlled vocabularies'),
     'type' => MENU_CALLBACK,
   );
 
-  $items['admin/tripal/chado/tripal_cv/add_cv'] = array(
+  $items['admin/tripal/chado/tripal_cv/cv/add'] = array(
     'title' => 'Add a Controlled Vocabulary',
     'description' => 'Manually a new controlled vocabulary.',
     'page callback' => 'drupal_get_form',
@@ -112,6 +112,14 @@ function tripal_cv_menu() {
   /*
    * Menu items for adding and editing CVterms
    */
+  $items['admin/tripal/chado/tripal_cv/cv/%/cvterm/add'] = array(
+    'title' => 'Add a Controlled Vocabulary Term',
+    'description' => 'Add a new controlled vocabulary term.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_cv_cvterm_add_form',5),
+    'access arguments' => array('administer controlled vocabularies'),
+    'type' => MENU_CALLBACK,
+  );
   $items['admin/tripal/chado/tripal_cv/cvterm/add'] = array(
     'title' => 'Add a Controlled Vocabulary Term',
     'description' => 'Add a new controlled vocabulary term.',
@@ -120,11 +128,11 @@ function tripal_cv_menu() {
     'access arguments' => array('administer controlled vocabularies'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/chado/tripal_cv/cvterm/edit/%'] = array(
+  $items['admin/tripal/chado/tripal_cv/cv/%/cvterm/edit/%'] = array(
     'title' => 'Edit a Controlled Vocabulary Term',
     'description' => 'Edit an existing controlled vocabulary term.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_cv_cvterm_edit_form'),
+    'page arguments' => array('tripal_cv_cvterm_edit_form',5,8),
     'access arguments' => array('administer controlled vocabularies'),
     'type' => MENU_CALLBACK,
   );
@@ -287,8 +295,8 @@ function tripal_cv_form_alter(&$form, &$form_state, $form_id) {
 function tripal_cv_theme() {
   $theme_path = drupal_get_path('module', 'tripal_cv') . '/theme';
   $items = array(
-    'tripal_cv_help' => array(
-      'template' => 'tripal_cv_help',
+    'tripal_cv_admin' => array(
+      'template' => 'tripal_cv_admin',
       'arguments' =>  array(NULL),
       'path' => $theme_path,
     ),

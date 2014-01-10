@@ -23,7 +23,7 @@ function tripal_db_defaultview_admin_db_listing() {
 
   $view = new view();
   $view->name = 'tripal_db_admin_dbs';
-  $view->description = 'A listing of all databases.';
+  $view->description = 'DO NOT DISABLE';
   $view->tag = 'tripal admin';
   $view->base_table = 'db';
   $view->human_name = 'DB Admin';
@@ -72,15 +72,16 @@ function tripal_db_defaultview_admin_db_listing() {
       'separator' => '',
     ),
   );
-  /* Header: Global: Text area */
-  $handler->display->display_options['header']['text']['id'] = 'text';
-  $handler->display->display_options['header']['text']['table'] = 'views';
-  $handler->display->display_options['header']['text']['field'] = 'area';
-  $handler->display->display_options['header']['text']['label'] = 'Add DB';
-  $handler->display->display_options['header']['text']['content'] = '<ul class="action-links">
-        <li><a href="tripal_db/add">Add Database</a></li>
-    </ul>';
-  $handler->display->display_options['header']['text']['format'] = 'full_html';
+  /* Header: Global: Action Links */
+  $handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
+  $handler->display->display_options['header']['action_links_area']['table'] = 'views';
+  $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
+  $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
+  $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
+  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+    'label-1' => 'Add Database',
+    'path-1' => 'admin/tripal/chado/tripal_db/add',
+  );
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
   $handler->display->display_options['empty']['text']['table'] = 'views';
@@ -201,7 +202,7 @@ function tripal_db_defaultview_admin_dbxref_listing() {
 
   $view = new view();
   $view->name = 'tripal_db_admin_dbxrefs';
-  $view->description = '';
+  $view->description = 'DO NOT DISABLE';
   $view->tag = 'tripal admin';
   $view->base_table = 'dbxref';
   $view->human_name = 'DB Reference Admin';
