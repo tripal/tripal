@@ -56,11 +56,12 @@ function tripal_analysis_node_info() {
  * @ingroup tripal_analysis
  */
 function tripal_analysis_menu() {
-  
+
   // Tripal Analysis administrative settings
   $items['admin/tripal/chado/tripal_analysis'] = array(
     'title' => 'Analyses',
     'description' => 'A bioinformatics analysis producing features.',
+    'page callback' => 'tripal_analysis_admin_analysis_view',
     'access arguments' => array('administer tripal analyses'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -71,25 +72,28 @@ function tripal_analysis_menu() {
     'page callback' => 'theme',
     'page arguments' => array('tripal_analysis_help'),
     'access arguments' => array('administer tripal analyses'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10,
   );
 
   $items['admin/tripal/chado/tripal_analysis/configuration'] = array(
-    'title' => 'Configuration',
+    'title' => 'Settings',
     'description' => 'Settings for the displays of analysis results.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_analysis_admin'),
     'access arguments' => array('administer tripal analyses'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 5
   );
-  
+
   $items['admin/tripal/chado/tripal_analysis/sync'] = array(
-    'title' => 'Sync Analyses',
+    'title' => 'Sync',
     'description' => 'Sync Chado analyses with Drupal.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_analysis_sync_form'),
     'access arguments' => array('administer tripal analyses'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 0
   );
 
   return $items;
@@ -177,7 +181,7 @@ function tripal_analysis_theme($existing, $type, $theme, $path) {
     'chado_analysis_form' => array(
       'render element' => 'form',
     )
-    
+
   );
 
   return $items;
@@ -284,19 +288,19 @@ function chado_analysis_insert($node) {
   $node->sourcename = trim($node->sourcename);
   $node->sourceversion = trim($node->sourceversion);
   $node->sourceuri = trim($node->sourceuri);
-  
+
   // if there is an analysis_id in the $node object then this must be a sync so
   // we can skip adding the analysis as it is already there, although
   // we do need to proceed with the rest of the insert
   if (!property_exists($node,'analysis_id')) {
-    
+
     // Create a timestamp so we can insert it into the chado database
     $time  = $node->timeexecuted;
     $month = $time['month'];
     $day   = $time['day'];
     $year  = $time['year'];
     $timestamp = $month . '/' . $day . '/' . $year;
-    
+
     // insert and then get the newly inserted analysis record
     $values = array(
       'name'           => $node->analysisname,
@@ -321,10 +325,10 @@ function chado_analysis_insert($node) {
   else {
     $analysis_id = $node->analysis_id;
   }
-  
+
   // Make sure the entry for this analysis doesn't already exist in the
   // chado_analysis table if it doesn't exist then we want to add it.
-  $check_org_id = chado_get_id_for_node('analysis', $node->nid);  
+  $check_org_id = chado_get_id_for_node('analysis', $node->nid);
   if (!$check_org_id) {
     $record = new stdClass();
     $record->nid = $node->nid;
@@ -435,7 +439,7 @@ function chado_analysis_update($node) {
   $node->sourcename = trim($node->sourcename);
   $node->sourceversion = trim($node->sourceversion);
   $node->sourceuri = trim($node->sourceuri);
-    
+
   if ($node->revision) {
     // TODO -- decide what to do about revisions
   }
@@ -586,7 +590,7 @@ function chado_analysis_load($nodes) {
     // build the analysis variable
     $values = array('analysis_id' => $analysis_id);
     $analysis = tripal_core_generate_chado_var('analysis', $values);
-    
+
 
     // add in the description field
     $analysis = tripal_core_expand_chado_vars($analysis, 'field', 'analysis.description');

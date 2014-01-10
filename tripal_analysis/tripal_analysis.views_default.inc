@@ -123,13 +123,6 @@ function tripal_analysis_defaultvalue_admin_analysis() {
   $handler->display->display_options['fields']['sourcename']['table'] = 'analysis';
   $handler->display->display_options['fields']['sourcename']['field'] = 'sourcename';
   $handler->display->display_options['fields']['sourcename']['label'] = 'Source';
-  /* Field: Chado Analysis: Timeexecuted */
-  $handler->display->display_options['fields']['timeexecuted']['id'] = 'timeexecuted';
-  $handler->display->display_options['fields']['timeexecuted']['table'] = 'analysis';
-  $handler->display->display_options['fields']['timeexecuted']['field'] = 'timeexecuted';
-  $handler->display->display_options['fields']['timeexecuted']['label'] = 'Time Executed';
-  $handler->display->display_options['fields']['timeexecuted']['date_format'] = 'custom';
-  $handler->display->display_options['fields']['timeexecuted']['custom_date_format'] = 'F j, Y';
   /* Field: Content: Delete link */
   $handler->display->display_options['fields']['delete_node']['id'] = 'delete_node';
   $handler->display->display_options['fields']['delete_node']['table'] = 'views_entity_node';
@@ -187,18 +180,6 @@ function tripal_analysis_defaultvalue_admin_analysis() {
   $handler->display->display_options['filters']['sourcename']['expose']['label'] = 'Source Contains';
   $handler->display->display_options['filters']['sourcename']['expose']['operator'] = 'sourcename_op';
   $handler->display->display_options['filters']['sourcename']['expose']['identifier'] = 'sourcename';
-  /* Filter criterion: Chado Analysis: Timeexecuted */
-  $handler->display->display_options['filters']['timeexecuted']['id'] = 'timeexecuted';
-  $handler->display->display_options['filters']['timeexecuted']['table'] = 'analysis';
-  $handler->display->display_options['filters']['timeexecuted']['field'] = 'timeexecuted';
-  $handler->display->display_options['filters']['timeexecuted']['operator'] = '>';
-  $handler->display->display_options['filters']['timeexecuted']['group'] = 1;
-  $handler->display->display_options['filters']['timeexecuted']['exposed'] = TRUE;
-  $handler->display->display_options['filters']['timeexecuted']['expose']['operator_id'] = 'timeexecuted_op';
-  $handler->display->display_options['filters']['timeexecuted']['expose']['label'] = 'Time Executed';
-  $handler->display->display_options['filters']['timeexecuted']['expose']['use_operator'] = TRUE;
-  $handler->display->display_options['filters']['timeexecuted']['expose']['operator'] = 'timeexecuted_op';
-  $handler->display->display_options['filters']['timeexecuted']['expose']['identifier'] = 'timeexecuted';
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
