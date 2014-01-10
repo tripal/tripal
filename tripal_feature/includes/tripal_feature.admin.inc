@@ -7,6 +7,40 @@
 
 /**
  *
+ */
+function tripal_feature_admin_feature_view() {
+  $output = '';
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado', 'admin/tripal/chado');
+  $breadcrumb[] = l('Features', 'admin/tripal/chado/tripal_feature');
+  drupal_set_breadcrumb($breadcrumb);
+
+  // Add the view
+  $view = views_embed_view('tripal_feature_admin_features','default');
+  if (isset($view)) {
+    $output .= $view;
+  }
+  else {
+    $output .= '<p>The Feature module uses primarily views to provide an '
+      . 'administrative interface. Currently one or more views needed for this '
+      . 'administrative interface are disabled. <strong>Click each of the following links to '
+      . 'enable the pertinent views</strong>:</p>';
+    $output .= '<ul>';
+      $output .= '<li>'.l('Features View', 'admin/tripal/chado/tripal_feature/views/features/enable').'</li>';
+    $output .= '</ul>';
+  }
+
+  return $output;
+}
+
+
+/**
+ *
  *
  * @ingroup tripal_feature
  */
@@ -194,7 +228,7 @@ function tripal_feature_admin_validate($form, &$form_state) {
         'tripal_feature_set_urls', $job_args, $user->uid);
       break;
   }
-    
+
 }
 /**
  *
@@ -304,7 +338,7 @@ function get_tripal_feature_admin_form_taxonomy_set(&$form) {
 }
 
 /**
- * 
+ *
  * @param $form
  */
 function get_tripal_feature_admin_form_title_set(&$form) {
@@ -319,7 +353,7 @@ function get_tripal_feature_admin_form_title_set(&$form) {
     '#type'        => 'markup',
     '#value' => t('Each synced feature must have a unique page title, however, features
                    may have the same name if they are of different types or from
-                   different organisms.  Therefore, we must be sure that the 
+                   different organisms.  Therefore, we must be sure that the
                    page titles can uniquely identify the feature being viewed.  Select
                    an option below that will uniquely identify all features on your site.'),
   );
@@ -331,9 +365,9 @@ function get_tripal_feature_admin_form_title_set(&$form) {
   $form['title']['chado_feature_title'] = array(
     '#title'         => t('Feature Page Titles'),
     '#type'          => 'radios',
-    '#description'   => t('Choose a title type  from the list above that is 
-      guaranteed to be unique for all features.  If in doubt it is safest to 
-      choose the last option as that guarantees uniqueness. Click the 
+    '#description'   => t('Choose a title type  from the list above that is
+      guaranteed to be unique for all features.  If in doubt it is safest to
+      choose the last option as that guarantees uniqueness. Click the
       \'Save Configuration\' button at the bottom to save your selection.'),
     '#required'      => FALSE,
     '#options'       => $options,
@@ -341,12 +375,12 @@ function get_tripal_feature_admin_form_title_set(&$form) {
   );
 }
 /**
- * 
+ *
  * @param $form
  */
 function get_tripal_feature_admin_form_url_set(&$form) {
 
- 
+
   $form['url'] = array(
     '#type' => 'fieldset',
     '#title' => t('Feature URL Path'),
@@ -364,7 +398,7 @@ function get_tripal_feature_admin_form_url_set(&$form) {
     '[name]'       => '[name]:' . t('The feature name'),
     'reset'        => t('Reset'),
   );
-  
+
 
   $form['url']['chado_feature_url_string'] = array(
     '#title' => 'URL Syntax',
@@ -372,15 +406,15 @@ function get_tripal_feature_admin_form_url_set(&$form) {
     '#description' => t('You may rearrange elements in this text box to
       customize the URLs.  The available tags include: [id],
       [uniquename]. [name], [species], [genus], [type]. You can separate or
-      include any text between the tags. Click the "Set Feature URLs" button to 
+      include any text between the tags. Click the "Set Feature URLs" button to
       reset the URLs for all feature pages.  Click the "Save Configuration" button to
       simply save this setup. <b>Important</b>: be sure that whatever you choose will always be unique even considering
-      future data that may be added.  If you include the Chado table name, genus, species, type 
+      future data that may be added.  If you include the Chado table name, genus, species, type
       and uniquename you are guaranteed to have a unique URL. For example feature/[genus]/[species]/[type]/[uniquename]'),
     '#size' => 150,
-    '#default_value' => variable_get('chado_feature_url_string', '/feature/[genus]/[species]/[type]/[uniquename]'), 
+    '#default_value' => variable_get('chado_feature_url_string', '/feature/[genus]/[species]/[type]/[uniquename]'),
   );
-  
+
   $form['url']['chado_feature_url'] = array(
     '#title'         => t('URL components'),
     '#type'          => 'checkboxes',
@@ -393,14 +427,14 @@ function get_tripal_feature_admin_form_url_set(&$form) {
         if (this.value == \'reset\') {
           box.val(\'\');
         }
-        else {        
-          box.val(box.val() + "/" + this.value);          
+        else {
+          box.val(box.val() + "/" + this.value);
         }
         this.checked = false;
       ',
     ),
-  );  
-  
+  );
+
   $form['url']['button'] = array(
     '#type' => 'submit',
     '#value' => t('Set Feature URLs'),
@@ -421,7 +455,7 @@ function tripal_features_set_taxonomy($max_sync = 0, $job_id = NULL) {
   // iterate through all drupal feature nodes and set the taxonomy
   $results = db_query("SELECT * FROM {chado_feature}");
   $nsql =  "
-    SELECT * FROM {node} 
+    SELECT * FROM {node}
     WHERE nid = :nid
   ";
   $i = 0;
@@ -503,11 +537,11 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
 
   // get the cvterm and the organism for this feature
   $sql = "
-    SELECT CVT.name AS cvname, O.genus, O.species 
-    FROM {CVTerm} CVT 
-      INNER JOIN {Feature} F on F.type_id = CVT.cvterm_id 
-      INNER JOIN {Organism} O ON F.organism_id = O.organism_id 
-    WHERE F.feature_id = :feature_id 
+    SELECT CVT.name AS cvname, O.genus, O.species
+    FROM {CVTerm} CVT
+      INNER JOIN {Feature} F on F.type_id = CVT.cvterm_id
+      INNER JOIN {Organism} O ON F.organism_id = O.organism_id
+    WHERE F.feature_id = :feature_id
   ";
   $feature = chado_query($sql, array(':feature_id' => $feature_id))->fetchObject();
 
@@ -523,10 +557,10 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
   // get the library that this feature may belong to and add it as taxonomy
   if ($do_lb && $lb_vid) {
     $sql = "
-      SELECT L.name 
-      FROM {Library} L 
-        INNER JOIN {Library_feature} LF ON LF.library_id = L.library_id 
-      WHERE LF.feature_id = :feature_id 
+      SELECT L.name
+      FROM {Library} L
+        INNER JOIN {Library_feature} LF ON LF.library_id = L.library_id
+      WHERE LF.feature_id = :feature_id
     ";
     $library = chado_query($sql, array(':feature_id' => $feature_id))->fetchObject();
     $tags["$lb_vid"] = "$library->name";
@@ -541,10 +575,10 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
   // We'll add each one individually since there may be more than one analysis
   if ($do_an && $an_vid) {
     $sql = "
-      SELECT A.name 
-      FROM {Analysis} A 
-        INNER JOIN {analysisfeature} AF ON AF.analysis_id = A.analysis_id 
-      WHERE AF.feature_id = :feature_id 
+      SELECT A.name
+      FROM {Analysis} A
+        INNER JOIN {analysisfeature} AF ON AF.analysis_id = A.analysis_id
+      WHERE AF.feature_id = :feature_id
     ";
     $results = chado_query($sql, array(':feature_id' => $feature_id));
     $analysis_terms = array();
@@ -571,7 +605,7 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
 function tripal_features_cleanup($dummy = NULL, $job_id = NULL) {
 
   return tripal_core_clean_orphaned_nodes('feature', $job_id);
- 
+
 }
 /**
  *  This function is an extension of the chado_feature_view by providing
