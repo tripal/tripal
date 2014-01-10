@@ -899,9 +899,9 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
  *     (when using the -statement_name option).
  *
  * @return
- *  A database query result resource, FALSE if the query was not executed
+ *  An array of results, FALSE if the query was not executed
  *  correctly, an empty array if no records were matched, or the number of records
- *  in the dataset if $has_record is set.
+ *  in the dataset if $has_record is set. 
  *  If the option 'is_duplicate' is provided and the record is a duplicate it
  *  will return the duplicated record.  If the 'has_record' option is provided
  *  a value of TRUE will be returned if a record exists and FALSE will bee
