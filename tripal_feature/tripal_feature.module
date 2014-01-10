@@ -269,6 +269,15 @@ function tripal_feature_menu() {
     'type' => MENU_LOCAL_TASK,
   );
 
+  // Enable admin view
+  $items['admin/tripal/chado/tripal_feature/views/features/enable'] = array(
+    'title' => 'Enable feature Administrative View',
+    'page callback' => 'tripal_views_admin_enable_view',
+    'page arguments' => array('tripal_feature_admin_features', 'admin/tripal/chado/tripal_feature'),
+    'access arguments' => array('administer tripal_bulk_loader'),
+    'type' => MENU_CALLBACK,
+  );
+
   return $items;
 }
 /**
