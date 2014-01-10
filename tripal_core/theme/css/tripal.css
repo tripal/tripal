@@ -219,3 +219,22 @@ table.tripal-table-horz .tripal-table-odd-row {
 .tripal-notice {
   color: red;
 }
+
+/**
+ * Teaser
+ */
+.tripal-teaser {
+	 clear_both;
+	 margin-bottom: 10px;
+}
+.tripal-teaser-title {
+}
+.tripal-teaser-text {
+}
+.tripal-teaser-img {
+  width: 100px; 
+  height: 100px;
+  float: left; 
+  padding-right: 10px; 
+  padding-bottom: 5px;
+}
