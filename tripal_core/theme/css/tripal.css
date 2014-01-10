@@ -224,12 +224,16 @@ table.tripal-table-horz .tripal-table-odd-row {
  * Teaser
  */
 .tripal-teaser {
-	 clear_both;
-	 margin-bottom: 10px;
+  clear_both;
+  margin-bottom: 10px;
 }
 .tripal-teaser-title {
+  font-weight: bold;
+  margin-bottom: 5px;
 }
 .tripal-teaser-text {
+  text-align: justify;
+  text-justify:inter-word;
 }
 .tripal-teaser-img {
   width: 100px; 
