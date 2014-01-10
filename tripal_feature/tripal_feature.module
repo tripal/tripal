@@ -131,7 +131,7 @@ function tripal_feature_permissions() {
  *  @param $node
  *  The node on which the operation is to be performed, or, if it does not yet exist, the
  *  type of node to be created
- *  
+ *
  *  @param $op
  *  The operation to be performed
  *
@@ -141,9 +141,9 @@ function tripal_feature_permissions() {
  *  @return
  *  If the permission for the specified operation is not set then return FALSE. If the
  *  permission is set then return NULL as this allows other modules to disable
- *  access.  The only exception is when the $op == 'create'.  We will always 
+ *  access.  The only exception is when the $op == 'create'.  We will always
  *  return TRUE if the permission is set.
- *  
+ *
  * @ingroup tripal_feature
  */
 function chado_feature_node_access($node, $op, $account) {
@@ -189,62 +189,74 @@ function tripal_feature_menu() {
     'access arguments' => array('access chado_feature content'),
     'type' => MENU_CALLBACK,
   );
-  
+
   $items['find/sequences/ajax'] = array(
     'title' => 'Sequence Retrieval',
     'page callback' => 'tripal_feature_seq_extract_form_ahah_update',
     'access arguments' => array('access chado_feature content'),
     'type' => MENU_CALLBACK,
   );
-  
+
   // the administative settings menu
   $items['admin/tripal/chado/tripal_feature'] = array(
     'title' => 'Features',
-    'description' => 'Basic Description of Tripal Organism Module Functionality',
-    'page callback' => 'theme',
-    'page arguments' => array('tripal_feature_admin'),
+    'description' => 'A biological sequence or a section of a biological sequence, or a collection of such sections.',
+    'page callback' => 'tripal_feature_admin_feature_view',
     'access arguments' => array('administer tripal features'),
     'type' => MENU_NORMAL_ITEM,
   );
+  $items['admin/tripal/chado/tripal_feature/sync'] = array(
+    'title' => ' Sync',
+    'description' => 'Sync features from Chado with Drupal',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_feature_sync_form'),
+    'access arguments' => array('administer tripal features'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 0
+  );
+  $items['admin/tripal/chado/tripal_feature/delete'] = array(
+    'title' => ' Delete',
+    'description' => 'Delete multiple features from Chado',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_feature_delete_form'),
+    'access arguments' => array('administer tripal features'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2
+  );
   $items['admin/tripal/chado/tripal_feature/configuration'] = array(
-    'title' => 'Configuration',
+    'title' => 'Settings',
     'description' => 'Configure the Tripal Feature module.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_feature_admin'),
     'access arguments' => array('administer tripal features'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 5
   );
-  $items['admin/tripal/chado/tripal_feature/fasta_loader'] = array(
-    'title' => 'Import a multi-FASTA file',
+  $items['admin/tripal/chado/tripal_feature/help'] = array(
+    'title' => 'Help',
+    'description' => 'Help with the Tripal Feature module.',
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_feature_help'),
+    'access arguments' => array('administer tripal features'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' =>  10
+  );
+
+
+  /** Loaders */
+  $items['admin/tripal/loaders/fasta_loader'] = array(
+    'title' => 'Multi-FASTA file Loader',
     'description' => 'Load sequences from a multi-FASTA file into Chado',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_feature_fasta_load_form'),
     'access arguments' => array('administer tripal features'),
     'type' => MENU_NORMAL_ITEM,
   );
-  $items['admin/tripal/chado/tripal_feature/gff3_load'] = array(
-    'title' => 'Import a GFF3 file',
+  $items['admin/tripal/loaders/gff3_load'] = array(
+    'title' => 'GFF3 file Loader',
     'description' => 'Import a GFF3 file into Chado',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_feature_gff3_load_form'),
-    'access arguments' => array('administer tripal features'),
-    'type' => MENU_NORMAL_ITEM,
-  );
-
-  $items['admin/tripal/chado/tripal_feature/delete'] = array(
-    'title' => ' Delete Features',
-    'description' => 'Delete multiple features from Chado',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_feature_delete_form'),
-    'access arguments' => array('administer tripal features'),
-    'type' => MENU_NORMAL_ITEM,
-  );
-
-  $items['admin/tripal/chado/tripal_feature/sync'] = array(
-    'title' => ' Sync Features',
-    'description' => 'Sync features from Chado with Drupal',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_feature_sync_form'),
     'access arguments' => array('administer tripal features'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -255,6 +267,15 @@ function tripal_feature_menu() {
     'page arguments' => array(1),
     'access arguments' => array('access chado_feature content'),
     'type' => MENU_LOCAL_TASK,
+  );
+
+  // Enable admin view
+  $items['admin/tripal/chado/tripal_feature/views/features/enable'] = array(
+    'title' => 'Enable feature Administrative View',
+    'page callback' => 'tripal_views_admin_enable_view',
+    'page arguments' => array('tripal_feature_admin_features', 'admin/tripal/chado/tripal_feature'),
+    'access arguments' => array('administer tripal_bulk_loader'),
+    'type' => MENU_CALLBACK,
   );
 
   return $items;
@@ -336,12 +357,12 @@ function tripal_feature_theme($existing, $type, $theme, $path) {
       'arguments' => array('form' => NULL),
       'function' => 'theme_tripal_feature_edit_ALL_properties_form',
     ),
-    'tripal_feature_admin' => array(
-      'template' => 'tripal_feature_admin',
+    'tripal_feature_help' => array(
+      'template' => 'tripal_feature_help',
       'variables' =>  array(NULL),
       'path' => drupal_get_path('module', 'tripal_feature') . '/theme'
     ),
-    
+
     // themed forms
     'tripal_feature_seq_extract_form' => array(
        'arguments' => array('form'),
@@ -396,11 +417,11 @@ function tripal_feature_block_info() {
  * @ingroup tripal_feature
  */
 function tripal_feature_block_view($delta = '') {
-  
+
   if (user_access('access chado_feature content') and arg(0) == 'node' and is_numeric(arg(1))) {
     $nid = arg(1);
     $node = node_load($nid);
-  
+
     $block = array();
     switch ($delta) {
       case 'references':
@@ -513,24 +534,24 @@ function chado_feature_insert($node) {
     'type_id' => $type[0]->cvterm_id,
   );
   $feature = tripal_core_chado_select('feature', array('feature_id'), $values);
-    
+
   // add the genbank accession and synonyms
   chado_feature_add_synonyms($node->synonyms, $feature[0]->feature_id);
 
   // make sure the entry for this feature doesn't already exist in the chado_feature table
   // if it doesn't exist then we want to add it.
   $node_check_sql = "
-    SELECT * FROM {chado_feature} 
+    SELECT * FROM {chado_feature}
     WHERE feature_id = :feature_id
   ";
   $node_check = db_query($node_check_sql, array(':feature_id' => $feature[0]->feature_id))->fetchObject();
   if (!$node_check) {
     // next add the item to the drupal table
     $sql = "
-      INSERT INTO {chado_feature} (nid, vid, feature_id, sync_date) 
+      INSERT INTO {chado_feature} (nid, vid, feature_id, sync_date)
       VALUES (:nid, :vid, :feature_id, :time)
     ";
-    db_query($sql, array(':nid' => $node->nid, ':vid' => $node->vid, 
+    db_query($sql, array(':nid' => $node->nid, ':vid' => $node->vid,
       ':feature_id' => $feature[0]->feature_id, ':time' => REQUEST_TIME));
   }
 }
@@ -579,7 +600,7 @@ function chado_feature_update($node) {
     );
     $options = array('return_record' => TRUE);
     $status = tripal_core_chado_update('feature', $match, $values, $options);
-    
+
     // add the genbank synonyms
     chado_feature_add_synonyms($node->synonyms, $feature_id);
   }
@@ -591,7 +612,7 @@ function chado_feature_update($node) {
     WATCHDOG_WARNING
     );
   }
-  
+
 
 }
 /**
@@ -664,11 +685,11 @@ function chado_feature_add_synonyms($synonyms, $feature_id) {
     $synonym = chado_query($synonym_sql, array(':name' => $syn))->fetchObject();
     if (!$synonym) {
       $synonym_isql = "
-        INSERT INTO {synonym} (name, synonym_sgml, type_id) 
-        VALUES (:name, :synonym_sgml, 
-          (SELECT cvterm_id 
-           FROM {CVTerm} CVT 
-             INNER JOIN CV ON CVT.cv_id = CV.cv_id 
+        INSERT INTO {synonym} (name, synonym_sgml, type_id)
+        VALUES (:name, :synonym_sgml,
+          (SELECT cvterm_id
+           FROM {CVTerm} CVT
+             INNER JOIN CV ON CVT.cv_id = CV.cv_id
            WHERE CV.name = 'feature_property' and CVT.name = 'synonym')
           )
       ";
@@ -682,7 +703,7 @@ function chado_feature_add_synonyms($synonyms, $feature_id) {
 
     // now add in our new sysnonym
     $feature_syn_isql = "
-      INSERT INTO {feature_synonym} (synonym_id,feature_id,pub_id) 
+      INSERT INTO {feature_synonym} (synonym_id,feature_id,pub_id)
       VALUES (:synonym_id, :feature_id, :pub_id)";
     $args = array(':synonym_id' => $synonym->synonym_id, ':feature_id' => $feature_id, ':pub_id'=> 1);
     if (!chado_query($feature_syn_isql, $args)) {
@@ -705,12 +726,12 @@ function chado_feature_add_gbaccession($accession, $feature_id) {
 
   // remove any old accession from genbank dbEST
   $fdbxref_dsql = "
-    DELETE FROM {feature_dbxref} 
-    WHERE feature_id = :feature_id and dbxref_id IN 
-      (SELECT DBX.dbxref_id 
-       FROM {dbxref} DBX 
-         INNER JOIN DB  ON DB.db_id = DBX.db_id 
-         INNER JOIN feature_dbxref FDBX ON DBX.dbxref_id = FDBX.dbxref_id 
+    DELETE FROM {feature_dbxref}
+    WHERE feature_id = :feature_id and dbxref_id IN
+      (SELECT DBX.dbxref_id
+       FROM {dbxref} DBX
+         INNER JOIN DB  ON DB.db_id = DBX.db_id
+         INNER JOIN feature_dbxref FDBX ON DBX.dbxref_id = FDBX.dbxref_id
        WHERE DB.name = 'DB:Genbank' and FDBX.feature_id = :feature_id
       )
   ";
@@ -843,8 +864,8 @@ function chado_feature_form($node, $param) {
 
   // get the sequence ontology CV ID
   $values = array('name' => 'sequence');
-  $cv = tripal_core_chado_select('cv', array('cv_id'), $values); 
-  $cv_id = $cv[0]->cv_id; 
+  $cv = tripal_core_chado_select('cv', array('cv_id'), $values);
+  $cv_id = $cv[0]->cv_id;
 
   $form['feature_type'] = array(
    '#title'       => t('Feature Type'),
@@ -919,7 +940,7 @@ function chado_feature_form($node, $param) {
  */
 function chado_feature_validate($node) {
   $result = 0;
-  
+
   // make sure the feature type is a real sequence ontology term
   $type = tripal_cv_get_cvterm_by_name($node->feature_type, NULL, 'sequence');
   if (!$type) {
@@ -934,13 +955,13 @@ function chado_feature_validate($node) {
       SELECT *
       FROM {feature} F
         INNER JOIN {cvterm} CVT ON F.type_id = CVT.cvterm_id
-      WHERE 
-        F.uniquename     = :uname AND 
-        F.organism_id    = :orgnism_id AND 
-        CVT.name         = :cvtname AND 
+      WHERE
+        F.uniquename     = :uname AND
+        F.organism_id    = :orgnism_id AND
+        CVT.name         = :cvtname AND
         NOT f.feature_id = :feature_id
     ";
-    $args = array(':uname' => $node->uniquename, ':organism_id' => $node->organism_id, 
+    $args = array(':uname' => $node->uniquename, ':organism_id' => $node->organism_id,
       ':cvtname' => $node->feature_type, ':feature_id' => $node->feature_id);
     $result = chado_query($sql, $args)->fetchObject();
     if ($result) {
@@ -955,9 +976,9 @@ function chado_feature_validate($node) {
       SELECT *
       FROM {feature} F
         INNER JOIN {cvterm} CVT ON F.type_id = CVT.cvterm_id
-      WHERE 
-        F.uniquename  = :name AND 
-        F.organism_id = :organism_id AND 
+      WHERE
+        F.uniquename  = :name AND
+        F.organism_id = :organism_id AND
         CVT.name      = :cvtname
     ";
     $args = array(':name' => $node->uniquename, ':organism_id' => $node->organism_id, ':cvtname' => $node->feature_type);
@@ -994,10 +1015,10 @@ function chado_feature_load($node) {
     if (strcmp($feature->name, $feature->uniquename)==0) {
       $node->title = $feature->name . " (" . $feature->type_id->name . ") " . $feature->organism_id->genus . " " . $feature->organism_id->species ;
     }
-    // in previous version of Tripal, the feature title was simply the unique name. 
+    // in previous version of Tripal, the feature title was simply the unique name.
     // so, we recreate the title just to be sure all of our feature pages are consistent
     else {
-      $node->title = $feature->name . ", " . $feature->uniquename . " (" . $feature->type_id->name . ") " . $feature->organism_id->genus . " " . $feature->organism_id->species ;  
+      $node->title = $feature->name . ", " . $feature->uniquename . " (" . $feature->type_id->name . ") " . $feature->organism_id->genus . " " . $feature->organism_id->species ;
     }
   }
   // set the title to be the feature name or uniquename as configured
@@ -1005,7 +1026,7 @@ function chado_feature_load($node) {
     $node->title = $feature->name;
   }
   if ($title_type == 'feature_unique_name') {
-    $node->title = $feature->uniquename;  
+    $node->title = $feature->uniquename;
   }
 
   $additions = new stdClass();
@@ -1031,11 +1052,11 @@ function tripal_feature_load_organism($organism_id) {
 function tripal_feature_load_synonyms($feature_id) {
 
   $sql = "
-    SELECT S.name 
-    FROM {feature_synonym} FS 
-      INNER JOIN {synonym} S  ON FS.synonym_id = S.Synonym_id 
+    SELECT S.name
+    FROM {feature_synonym} FS
+      INNER JOIN {synonym} S  ON FS.synonym_id = S.Synonym_id
     WHERE FS.feature_id = :feature_id
-    ORDER BY S.name 
+    ORDER BY S.name
    ";
   $results = chado_query($sql, array(':feature_id' => $feature_id));
   $synonyms = array();
@@ -1053,16 +1074,16 @@ function tripal_feature_load_synonyms($feature_id) {
 function tripal_feature_load_properties($feature_id) {
 
   $sql = "
-    SELECT 
-      CVT.name as cvname, CVT.definition, CVT.is_obsolete, 
-      FS.type_id, FS.value, FS.rank,      
+    SELECT
+      CVT.name as cvname, CVT.definition, CVT.is_obsolete,
+      FS.type_id, FS.value, FS.rank,
       DBX.dbxref_id,DBX.accession,DB.name as dbname,
       DB.urlprefix, DB.description as db_description, DB.url
     FROM {featureprop} FS
       INNER JOIN {cvterm} CVT ON FS.type_id    = CVT.cvterm_id
       INNER JOIN {dbxref} DBX ON CVT.dbxref_id = DBX.dbxref_id
       INNER JOIN {db} DB      ON DB.db_id      = DBX.db_id
-    WHERE 
+    WHERE
       FS.feature_id = :feature_id
     ORDER BY FS.rank ASC
   ";
@@ -1082,17 +1103,17 @@ function tripal_feature_load_properties($feature_id) {
 function tripal_feature_load_references($feature_id) {
 
   $sql = "
-    SELECT 
+    SELECT
        F.uniquename, F.Feature_id,
        DB.description as dbdesc, DB.db_id, DB.name as db_name, DB.urlprefix,
-       DBX.accession, DBX.dbxref_id 
-    FROM {feature} F 
-      INNER JOIN {feature_dbxref} FDBX ON F.feature_id  = FDBX.feature_id 
-      INNER JOIN {dbxref} DBX          ON DBX.dbxref_id = FDBX.dbxref_id 
-      INNER JOIN {db}                  ON DB.db_id      = DBX.db_id 
-    WHERE 
+       DBX.accession, DBX.dbxref_id
+    FROM {feature} F
+      INNER JOIN {feature_dbxref} FDBX ON F.feature_id  = FDBX.feature_id
+      INNER JOIN {dbxref} DBX          ON DBX.dbxref_id = FDBX.dbxref_id
+      INNER JOIN {db}                  ON DB.db_id      = DBX.db_id
+    WHERE
       F.feature_id = :feature_id
-    ORDER BY DB.name 
+    ORDER BY DB.name
   ";
   $results = chado_query($sql, array(':feature_id' => $feature_id));
   $references = array();
@@ -1128,7 +1149,7 @@ function tripal_feature_load_featurelocs($feature_id, $side = 'as_parent', $aggr
   if (strcmp($side, 'as_child')==0) {
     $sql .= "WHERE FL.feature_id = :feature_id ";
   }
-  
+
   $flresults = chado_query($sql, array(':feature_id' => $feature_id));
 
   // copy the results into an array
@@ -1187,7 +1208,7 @@ function tripal_feature_load_relationships($feature_id, $side = 'as_subject') {
       FR.subject_id, FR.type_id as relationship_type_id, FR.object_id, FR.rank,
       CVT.name as rel_type,
       FO.name as object_name, FO.uniquename as object_uniquename,
-      CVTO.name as object_type, CVTO.cvterm_id as object_type_id      
+      CVTO.name as object_type, CVTO.cvterm_id as object_type_id
     FROM {feature_relationship} FR
      INNER JOIN {cvterm} CVT  ON FR.type_id    = CVT.cvterm_id
      INNER JOIN {feature} FS  ON FS.feature_id = FR.subject_id
@@ -1300,8 +1321,8 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
   // location and then annotate it with the parts found from the relationships
   // locations determiend above.
   $sql = "
-    SELECT substring(residues from :start for :size) as residues 
-    FROM {feature} 
+    SELECT substring(residues from :start for :size) as residues
+    FROM {feature}
     WHERE feature_id = :feature_id
   ";
   $floc_sequences = array();
@@ -1397,37 +1418,37 @@ function tripal_feature_get_matched_alignments($feature) {
   // match, or %_match
   //
    $sql = "
-     SELECT  
-       FL1.featureloc_id    as left_featureloc_id, 
-       FL1.srcfeature_id    as left_srcfeature_id, 
-       FL1.feature_id       as left_feature_id, 
-       FL1.fmin             as left_fmin, 
-       FL1.is_fmin_partial  as left_is_fmin_partial, 
-       FL1.fmax             as left_fmax, 
-       FL1.is_fmax_partial  as left_is_fmax_partial, 
-       FL1.strand           as left_strand,  
-       FL1.phase            as left_phase, 
-       FL1.locgroup         as left_locgroup, 
-       FL1.rank             as left_rank, 
-       FL2.featureloc_id    as right_featureloc_id, 
-       FL2.srcfeature_id    as right_srcfeature_id, 
-       FL2.feature_id       as right_feature_id, 
-       FL2.fmin             as right_fmin, 
-       FL2.is_fmin_partial  as right_is_fmin_partial, 
-       FL2.fmax             as right_fmax, 
-       FL2.is_fmax_partial  as right_is_fmax_partial, 
-       FL2.strand           as right_strand,  
-       FL2.phase            as right_phase, 
-       FL2.locgroup         as right_locgroup, 
-       FL2.rank             as right_rank 
-     FROM {feature} F1 
-       INNER JOIN {featureloc} FL1 on FL1.srcfeature_id = F1.feature_id 
-       INNER JOIN {feature} F2 on FL1.feature_id = F2.feature_id 
-       INNER JOIN {featureloc} FL2 on FL2.feature_id = F2.feature_id 
-       INNER JOIN {cvterm} CVT2 on F2.type_id = CVT2.cvterm_id 
-     WHERE 
-       F1.feature_id = :feature_id  AND 
-       (CVT2.name = 'match' or CVT2.name like '%_match') 
+     SELECT
+       FL1.featureloc_id    as left_featureloc_id,
+       FL1.srcfeature_id    as left_srcfeature_id,
+       FL1.feature_id       as left_feature_id,
+       FL1.fmin             as left_fmin,
+       FL1.is_fmin_partial  as left_is_fmin_partial,
+       FL1.fmax             as left_fmax,
+       FL1.is_fmax_partial  as left_is_fmax_partial,
+       FL1.strand           as left_strand,
+       FL1.phase            as left_phase,
+       FL1.locgroup         as left_locgroup,
+       FL1.rank             as left_rank,
+       FL2.featureloc_id    as right_featureloc_id,
+       FL2.srcfeature_id    as right_srcfeature_id,
+       FL2.feature_id       as right_feature_id,
+       FL2.fmin             as right_fmin,
+       FL2.is_fmin_partial  as right_is_fmin_partial,
+       FL2.fmax             as right_fmax,
+       FL2.is_fmax_partial  as right_is_fmax_partial,
+       FL2.strand           as right_strand,
+       FL2.phase            as right_phase,
+       FL2.locgroup         as right_locgroup,
+       FL2.rank             as right_rank
+     FROM {feature} F1
+       INNER JOIN {featureloc} FL1 on FL1.srcfeature_id = F1.feature_id
+       INNER JOIN {feature} F2 on FL1.feature_id = F2.feature_id
+       INNER JOIN {featureloc} FL2 on FL2.feature_id = F2.feature_id
+       INNER JOIN {cvterm} CVT2 on F2.type_id = CVT2.cvterm_id
+     WHERE
+       F1.feature_id = :feature_id  AND
+       (CVT2.name = 'match' or CVT2.name like '%_match')
      ORDER BY FL1.fmin
    ";
 
@@ -1610,24 +1631,24 @@ function tripal_feature_load_library_feature_browser($library) {
 
   // get the features for this library
   $sql  = "
-    SELECT F.name, F.feature_id, F.uniquename, CVT.name as cvname 
-    FROM {feature} F 
-      INNER JOIN {cvterm} CVT         ON F.type_id = CVT.cvterm_id 
-      INNER JOIN {library_feature} LF ON F.feature_id = LF.feature_id 
-      INNER JOIN {library} L          ON LF.library_id = L.library_id 
-    WHERE LF.library_id = :library_id and ($where_cvt) 
+    SELECT F.name, F.feature_id, F.uniquename, CVT.name as cvname
+    FROM {feature} F
+      INNER JOIN {cvterm} CVT         ON F.type_id = CVT.cvterm_id
+      INNER JOIN {library_feature} LF ON F.feature_id = LF.feature_id
+      INNER JOIN {library} L          ON LF.library_id = L.library_id
+    WHERE LF.library_id = :library_id and ($where_cvt)
     ORDER BY feature_id ASC
   ";
   $args[':library_id'] = $library->libary_id;
-  
+
   // the counting SQL
   $csql  = "
-    SELECT count(*) 
+    SELECT count(*)
     FROM {feature} F
-      INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id 
-      INNER JOIN {library_feature} LF on F.feature_id = LF.feature_id 
-      INNER JOIN {library} L on LF.library_id = L.library_id 
-    WHERE LF.library_id = :library_id and ($where_cvt) 
+      INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id
+      INNER JOIN {library_feature} LF on F.feature_id = LF.feature_id
+      INNER JOIN {library} L on LF.library_id = L.library_id
+    WHERE LF.library_id = :library_id and ($where_cvt)
       GROUP BY L.library_id ";
 
   $org_features = chado_pager_query($sql, 10, 0, $csql, $args);
@@ -1677,25 +1698,25 @@ function tripal_feature_load_analysis_feature_browser($analysis) {
 
   // get the features for this library
   $sql  = "
-    SELECT F.name,F.feature_id,F.uniquename,CVT.name as cvname 
-    FROM {feature} F 
-      INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id 
-      INNER JOIN {analysisfeature} AF on F.feature_id = AF.feature_id 
-      INNER JOIN {analysis} A on AF.analysis_id = A.analysis_id 
-    WHERE A.analysis_id = :analysis_id and ($where_cvt) 
+    SELECT F.name,F.feature_id,F.uniquename,CVT.name as cvname
+    FROM {feature} F
+      INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id
+      INNER JOIN {analysisfeature} AF on F.feature_id = AF.feature_id
+      INNER JOIN {analysis} A on AF.analysis_id = A.analysis_id
+    WHERE A.analysis_id = :analysis_id and ($where_cvt)
     ORDER BY feature_id ASC
   ";
   $args[':analysis_id'] = $analysis->analysis_id;
 
   // the counting SQL
   $csql  = "
-    SELECT count(*) 
+    SELECT count(*)
     FROM {feature} F
-      INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id 
-      INNER JOIN {analysisfeature} AF on F.feature_id = AF.feature_id 
-      INNER JOIN {analysis} A on AF.analysis_id = A.analysis_id 
-    WHERE A.analysis_id = %d and ($where_cvt) 
-    GROUP BY A.analysis_id 
+      INNER JOIN {cvterm} CVT on F.type_id = CVT.cvterm_id
+      INNER JOIN {analysisfeature} AF on F.feature_id = AF.feature_id
+      INNER JOIN {analysis} A on AF.analysis_id = A.analysis_id
+    WHERE A.analysis_id = %d and ($where_cvt)
+    GROUP BY A.analysis_id
   ";
 
   $org_features = chado_pager_query($sql, 10, 0, $csql, $args);
@@ -1845,11 +1866,11 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
  * @ingroup tripal_feature
  */
 function tripal_feature_node_presave($node) {
-  
+
   // set the title to ensure it is always unique
   switch ($node->type) {
     case 'chado_feature':
-      
+
       $values = array('organism_id' => $node->organism_id);
       $organism = tripal_core_chado_select('organism', array('genus', 'species'), $values);
       $node->title = $node->fname . ', ' . $node->uniquename . ' (' . $node->feature_type . ') ' . $organism[0]->genus . ' ' . $organism[0]->species;
@@ -1862,9 +1883,9 @@ function tripal_feature_node_presave($node) {
  * @ingroup tripal_feature
  */
 function tripal_feature_node_insert($node) {
-  
-  // set the URL path after inserting.  We do it here because we do not 
-  // know the feature_id in the presave 
+
+  // set the URL path after inserting.  We do it here because we do not
+  // know the feature_id in the presave
   switch ($node->type) {
     case 'chado_feature':
       if (!$node->feature_id) {
@@ -1872,10 +1893,10 @@ function tripal_feature_node_insert($node) {
         $chado_feature = db_query($sql, array(':nid' => $node->nid))->fetchObject();
         $node->feature_id = $chado_feature->feature_id;
       }
-      
+
       // remove any previous alias
       db_query("DELETE FROM {url_alias} WHERE src = :src", array(':src' => "node/$node->nid"));
-      
+
       // set the URL for this feature page
       $url_alias = tripal_feature_get_feature_url($node);
       path_set_alias("node/$node->nid", $url_alias);
@@ -1912,14 +1933,14 @@ function tripal_feature_node_view($node, $view_mode, $langcode) {
  *
  * @ingroup tripal_feature
  */
-function tripal_feature_node_update($node) { 
-  
+function tripal_feature_node_update($node) {
+
   // add items to other nodes, build index and search results
   switch ($node->type) {
     case 'chado_feature':
       // remove any previous alias
       db_query("DELETE FROM {url_alias} WHERE src = :src", array(':src' => "node/$node->nid"));
-      
+
       // set the URL for this feature page
       $url_alias = tripal_feature_get_feature_url($node);
       path_set_alias("node/$node->nid", $url_alias);
@@ -2317,15 +2338,15 @@ function tripal_feature_coder_ignore() {
  * features is shown.
  */
 function tripal_feature_match_features_page($id) {
-  
+
   // if the URL alias configuration is set such that the URL
   // always begins with 'feature' then we want to use the ID as it is and
   // forward it on. Otherwise, try to find the matching feature.
-  $url_alias = variable_get('chado_feature_url_string', '/feature/[genus]/[species]/[type]/[uniquename]'); 
+  $url_alias = variable_get('chado_feature_url_string', '/feature/[genus]/[species]/[type]/[uniquename]');
   if (!$url_alias) {
     $url_alias = '/feature/[genus]/[species]/[type]/[uniquename]';
-  } 
-  $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash  
+  }
+  $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash
   if (preg_match('/^feature\//', $url_alias)) {
     drupal_goto($id);
   }
@@ -2390,16 +2411,16 @@ function tripal_feature_match_features_page($id) {
 }
 
 /**
- * 
+ *
  * @param unknown_type $form
  * @param unknown_type $form_state
  * @param unknown_type $form_id
  */
 function tripal_feature_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == "tripal_feature_seq_extract_form") {    
+  if ($form_id == "tripal_feature_seq_extract_form") {
     // updating the form through the ahah callback sets the action of
     // the form to the ahah callback URL. We need to set it back
     // to the normal form URL
     $form['#action'] = url("find/sequences");
   }
-} 
+}
