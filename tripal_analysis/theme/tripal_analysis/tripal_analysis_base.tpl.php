@@ -37,7 +37,7 @@ $analysis = tripal_core_expand_chado_vars($analysis,'field','analysis.descriptio
   }
   $rows[] = array(
     array(
-      'data' => 'Implementation',
+      'data' => 'Method',
       'header' => TRUE
     ),
     $software

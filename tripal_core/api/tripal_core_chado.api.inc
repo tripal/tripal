@@ -2971,7 +2971,7 @@ function tripal_core_clean_orphaned_nodes($table, $job_id) {
 
     // see if the record in chado exist, if not remove the entry from the chado_$table
     $table_id = $table . "_id";
-    $results = chado_query($lsql, array(":" . $table . "_id " => $nid->$table_id));
+    $results = chado_query($lsql, array(":" . $table . "_id" => $nid->$table_id));
     $record = $results->fetchObject();
     if (!$record) {
       $deleted++;

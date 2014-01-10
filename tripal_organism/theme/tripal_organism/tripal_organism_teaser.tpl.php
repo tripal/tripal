@@ -1,9 +1,16 @@
 <?php
-
+$organism  = $variables['node']->organism;
 $image_url = tripal_organism_get_image_url($organism, $node->nid); ?>
 
-<div style="clear:both">
-  <a href="<?php print url("node/" . $node->nid) ?>"><?php print $organism->genus. " " . $organism->species . ", " . $organism->common_name; ?></a>
-  <img src="<?php print $image_url ?>" width="100px" height="100px" style="float: left; padding-right: 10px; padding-bottom: 5px;">   
-  <?php print $organism->comment; ?>
+<div class="tripal_organism-teaser tripal-teaser"> 
+  <div class="tripal-organism-teaser-title tripal-teaser-title"><?php 
+    print l("<i>$organism->genus $organism->species</i> ($organism->common_name)", "node/$node->nid", array('html' => TRUE));?>
+  </div>
+  <div class="tripal-organism-teaser-text tripal-teaser-text">
+    <img class="tripal-teaser-img" src="<?php print $image_url ?>" ><?php
+    print substr($organism->comment, 0, 650);
+    if (strlen($organism->comment) > 650) {
+      print "... " . l("[more]", "node/$node->nid");
+    } ?>
+  </div>
 </div>
