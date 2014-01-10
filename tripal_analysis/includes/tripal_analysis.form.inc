@@ -37,7 +37,7 @@ function chado_analysis_form($node, &$form_state) {
     $analysis_id = $analysis->analysis_id;
 
     // get form defaults
-    $analysisname   = $analysis->analysisname;
+    $analysisname   = $analysis->name;
     $program        = $analysis->program;
     $programversion = $analysis->programversion;
     $algorithm      = $analysis->algorithm;
@@ -555,9 +555,9 @@ function chado_analysis_node_form_add_analysisprop_table_props(&$form, $form_sta
  *
  * @ingroup tripal_analysis
  */
-function chado_analysis_validate($node, &$form) {
+function chado_analysis_validate($node, &$form_state) {
   // use the analysis parent to validate the node
-  tripal_analysis_validate($node, $form);
+  tripal_analysis_validate($node, $form_state);
 }
 
 /**
@@ -568,7 +568,7 @@ function chado_analysis_validate($node, &$form) {
  *
  * @ingroup tripal_analysis
  */
-function tripal_analysis_validate($node, $form, &$form_state) {
+function tripal_analysis_validate($node, &$form_state) {
   
   $node->analysisname = trim($node->analysisname);
   $node->description = trim($node->description);

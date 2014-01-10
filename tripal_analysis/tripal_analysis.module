@@ -248,6 +248,25 @@ function tripal_analysis_node_view($node, $view_mode, $langcode) {
   }
 }
 /**
+ * 
+ * @param $node
+ */
+function tripal_analysis_node_presave($node) {
+  // If this is an analysis of some type it will should have thre three required
+  // fields for the Chado analysis table: program, programversion and sourcename.
+  // So we will set the title for any node that has these three fields
+  if (property_exists($node, 'program') and 
+      property_exists($node, 'programversion') and
+      property_exists($node, 'sourcename')) {
+    if ($node->analysisname) {
+      $node->title = $node->analysisname;
+    }
+    else {
+      $node->title = "$node->program ($node->programversion) $node->sourcename";
+    }
+  }
+}
+/**
  * Implements hook_views_api()
  * Purpose: Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_analysis.views.inc where all the
@@ -368,29 +387,29 @@ function chado_analysis_insert($node) {
 
   foreach ($node as $name => $value) {
     if (preg_match('/^new_value-(\d+)-(\d+)/', $name, $matches)) {
-        $type_id = $matches[1];
-        $index = $matches[2];
-        $name = $properties_list[$type_id];
-        $properties[$name][$index] = trim($value);
-      }
-  }
-    if ($node->new_id and $node->new_value) {
-      $type_id = $node->new_id;
+      $type_id = $matches[1];
+      $index = $matches[2];
       $name = $properties_list[$type_id];
-      $index = count($properties[$name]);
-      $properties[$name][$index] = trim($node->new_value);
+      $properties[$name][$index] = trim($value);
     }
-    // now add in the properties
-    foreach ($properties as $property => $elements) {
-      foreach ($elements as $rank => $value) {
-        $status = tripal_analysis_insert_property($analysis_id, $property, $value, FALSE, 'analysis_property');
-        if (!$status) {
-            drupal_set_message("Error cannot add property: $property", "error");
-            watchdog('t_analysis', "Error cannot add property: %prop",
-              array('%property' => $property), WATCHDOG_ERROR);
-        }
+  }
+  if ($node->new_id and $node->new_value) {
+    $type_id = $node->new_id;
+    $name = $properties_list[$type_id];
+    $index = count($properties[$name]);
+    $properties[$name][$index] = trim($node->new_value);
+  }
+  // now add in the properties
+  foreach ($properties as $property => $elements) {
+    foreach ($elements as $rank => $value) {
+      $status = tripal_analysis_insert_property($analysis_id, $property, $value, FALSE, 'analysis_property');
+      if (!$status) {
+          drupal_set_message("Error cannot add property: $property", "error");
+          watchdog('t_analysis', "Error cannot add property: %prop",
+            array('%property' => $property), WATCHDOG_ERROR);
       }
     }
+  }
 }
 
 /**
@@ -450,29 +469,15 @@ function chado_analysis_update($node) {
   $year = $time['year'];
   $timestamp = $month . '/' . $day . '/' . $year;
 
-  // get the analysis_id for this node:
-  $sql = "
-    SELECT analysis_id
-    FROM {chado_analysis}
-    WHERE nid = :nid
-  ";
-  $analysis = db_query($sql, array(':nid' => $node->nid))->fetchObject();
-  $analysis_id = $analysis->analysis_id;
-
+  // update the record in Chado
+  $analysis_id = chado_get_id_for_node('analysis', $node->nid);
   $sql = "
     UPDATE {analysis}
-    SET name = :name,
-        description = :description,
-        program = :program,
-        programversion = :programversion,
-        algorithm = :algorithm,
-        sourcename = :sourcename,
-        sourceversion = :sourceversion,
-        sourceuri = :sourceuri,
-        timeexecuted = :timeexecuted
+    SET name = :name, description = :description, program = :program,
+        programversion = :programversion, algorithm = :algorithm, sourcename = :sourcename,
+        sourceversion = :sourceversion, sourceuri = :sourceuri, timeexecuted = :timeexecuted
     WHERE analysis_id = :analysis_id
   ";
-
   $args = array(
     ':name' => $node->analysisname,
     ':description' => $node->description,
@@ -483,26 +488,9 @@ function chado_analysis_update($node) {
     ':sourceversion' => $node->sourceversion,
     ':sourceuri' => $node->sourceuri,
     ':timeexecuted' => $timestamp,
-    ':analysis_id' => $anslysis_id
+    ':analysis_id' => $analysis_id
   );
   chado_query($sql, $args);
-
-  // Create a title for the analysis node using the unique keys so when the
-  // node is saved, it will have a title
-  $record = new stdClass();
-  // If the analysis has a name, use it as the node title. If not, construct
-  // the title using program, programversion, and sourcename
-  if ($node->analysisname) {
-    $record->title = $node->analysisname;
-  }
-  else {
-    //Construct node title as "program (version)
-    $record->title = "$node->program ($node->programversion)";
-  }
-
-  $record->nid = $node->nid;
-  drupal_write_record('node', $record, 'nid');
-  drupal_write_record('node_revisions', $record, 'nid');
 
   // now update the properties
   $properties = array(); // stores all of the properties we need to add
@@ -526,7 +514,6 @@ function chado_analysis_update($node) {
   //  1) prop_value-[type id]-[index]
   //  2) new_value-[type id]-[index]
   //  3) new_id, new_value
-  //  dpm($node);
   foreach ($node as $key => $value) {
     if (preg_match('/^prop_value-(\d+)-(\d+)/', $key, $matches)) {
       $type_id = $matches[1];
@@ -575,6 +562,9 @@ function chado_analysis_update($node) {
   }
 }
 
+function chado_analysis_presave($node) {
+  
+}
  /**
   *  When a node is requested by the user this function is called to allow us
   *  to add auxiliary data to the node object.

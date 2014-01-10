@@ -27,17 +27,17 @@ $analysis = tripal_core_expand_chado_vars($analysis,'field','analysis.descriptio
     $analysis->name
   );
 
-  // Software row
-  $software = '';
-  if($analysis->programversion and $analysis->programversion != 'n/a'){
-    $software =  " (" . $analysis->programversion . ")";
+  // Implementation row
+  $software = $analysis->program;
+  if($analysis->programversion != 'n/a'){
+    $software .=  " (" . $analysis->programversion . ")";
   }
   if($analysis->algorithm){
-    $software = ". " . $analysis->algorithm;
+    $software .= ". " . $analysis->algorithm;
   }
   $rows[] = array(
     array(
-      'data' => 'Software',
+      'data' => 'Implementation',
       'header' => TRUE
     ),
     $software
@@ -90,8 +90,7 @@ $analysis = tripal_core_expand_chado_vars($analysis,'field','analysis.descriptio
   // once we have our table array structure defined, we call Drupal's theme_table()
   // function to generate the table.
   print theme_table($table); 
-  if (property_exists($analysis, 'comment')) { ?>
-    <b>Description</b> <?php 
+  if (property_exists($analysis, 'description')) {  
     print $analysis->description; 
   } ?>
 </div>
