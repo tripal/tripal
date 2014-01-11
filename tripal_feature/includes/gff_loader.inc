@@ -324,26 +324,13 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   // empty the temp table
   $sql = "DELETE FROM {tripal_gff_temp}";
   chado_query($sql);
-
-  // get a persistent connection
-  $connection = tripal_db_persistent_chado();
-  if (!$connection) {
-     print "A persistant connection was not obtained. Loading will be slow\n";
-  }
   
   // begin the transaction
   if ($use_transaction) {
     tripal_db_start_transaction();
-        
-    // if we cannot get a connection then let the user know the loading will be slow
-    if (!$connection) {
-       print "A persistant connection was not obtained. Loading will be slow\n";
-    }
-    else {
-       print "\nNOTE: Loading of this GFF file is performed using a database transaction. \n" .
-             "If the load fails or is terminated prematurely then the entire set of \n" .
-             "insertions/updates is rolled back and will not be found in the database\n\n";
-    }
+    print "\nNOTE: Loading of this GFF file is performed using a database transaction. \n" .
+         "If the load fails or is terminated prematurely then the entire set of \n" .
+         "insertions/updates is rolled back and will not be found in the database\n\n";
   }
 
   // check to see if the file is located local to Drupal
@@ -394,23 +381,22 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   $intv_read = 0;
   
   // prepare the statement used to get the cvterm for each feature.
-  if (!tripal_core_is_sql_prepared('sel_cvterm_idnasy')) {
-    $psql = "PREPARE sel_cvterm_idnasy (int, text, text) AS
-             SELECT CVT.cvterm_id, CVT.cv_id, CVT.name, CVT.definition,
-                CVT.dbxref_id, CVT.is_obsolete, CVT.is_relationshiptype
-             FROM {cvterm} CVT
-                INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
-                LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
-             WHERE CV.cv_id = $1 and 
-               (lower(CVT.name) = lower($2) or lower(CVTS.synonym) = lower($3))";
-     $status = tripal_core_chado_prepare('sel_cvterm_idnasy', $psql, array('int', 'text', 'text'));
-     if (!$status) {
-       watchdog('T_gff3_loader', 'cannot prepare statement \'sel_cvterm_idnasy\'.', 
-         array(), WATCHDOG_ERROR);
-       return '';
-       
-     }  
-  } 
+  $psql = "
+    PREPARE sel_cvterm_idnasy (int, text, text) AS
+    SELECT CVT.cvterm_id, CVT.cv_id, CVT.name, CVT.definition,
+      CVT.dbxref_id, CVT.is_obsolete, CVT.is_relationshiptype
+    FROM {cvterm} CVT
+      INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+      LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
+    WHERE CV.cv_id = $1 and 
+     (lower(CVT.name) = lower($2) or lower(CVTS.synonym) = lower($3))
+   ";
+   $status = chado_query($psql);
+   if (!$status) {
+     watchdog('T_gff3_loader', 'cannot prepare statement \'sel_cvterm_idnasy\'.', 
+       array(), WATCHDOG_ERROR);
+     return '';
+   }  
 
   // iterate through each line of the GFF file
   print "Parsing Line $line_num (0.00%). Memory: " . number_format(memory_get_usage()) . " bytes\r";
@@ -568,7 +554,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       
       // replace the URL escape codes for each tag
       for ($i = 0; $i < count($tags[$tag_name]); $i++) {
-        $tags[$tag_name][$i] = urldecode($tags[$tag_name][$i]);                  
+        $tags[$tag_name][$i] = urldecode($tags[$tag_name][$i]);
       }
       
       // get the name and ID tags
@@ -597,13 +583,13 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
                 watchdog('T_gff3_loader', "Could not add the organism, '%org', from line %line. Skipping this line. ",
                   array('%org' => $attr_organism, '%line' => $line_num), WATCHDOG_ERROR); 
                 $skip_feature = 1; 
-              }                
+              }
             } 
             else {
               watchdog('T_gff3_loader', "The organism attribute '%org' on line %line does not exist. Skipping this line. ",
                 array('%org' => $attr_organism, '%line' => $line_num), WATCHDOG_ERROR); 
               $skip_feature = 1;
-            }             
+            }
           }
           else {
             // we found the organism in the database so use it
@@ -723,7 +709,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         return '';
       }  
     }
-    
+
     // if the option is to remove or refresh then we want to remove
     // the feature from the database.
     if ($remove or $refresh) {
@@ -773,7 +759,6 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
             exit;
           }
         }
-
         // add/update the featureloc if the landmark and the ID are not the same
         // if they are the same then this entry in the GFF is probably a landmark identifier
         if (strcmp($landmark, $attr_uniquename) !=0 ) {
@@ -781,6 +766,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
             $landmark, $fmin, $fmax, $strand, $phase, $attr_fmin_partial,
             $attr_fmax_partial, $attr_residue_info, $attr_locgroup);
         }
+continue;
         // add any aliases for this feature
         if (array_key_exists('Alias', $tags)) {
           tripal_feature_load_gff3_alias($feature, $tags['Alias']);
@@ -837,14 +823,16 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     print "\nSetting ranks of children...\n";
     
     // get features in a relationship that are also children of an alignment
-    $sql = "SELECT DISTINCT F.feature_id, F.organism_id, F.type_id, 
-              F.uniquename, FL.strand 
-            FROM {tripal_gff_temp} TGT 
-              INNER JOIN {feature} F                ON TGT.feature_id = F.feature_id
-              INNER JOIN {feature_relationship} FR  ON FR.object_id = TGT.feature_id
-              INNER JOIN {cvterm} CVT               ON CVT.cvterm_id = FR.type_id  
-              INNER JOIN {featureloc} FL            ON FL.feature_id = F.feature_id    
-            WHERE CVT.name = 'part_of'";
+    $sql = "
+      SELECT DISTINCT F.feature_id, F.organism_id, F.type_id, 
+        F.uniquename, FL.strand 
+      FROM {tripal_gff_temp} TGT 
+        INNER JOIN {feature} F                ON TGT.feature_id = F.feature_id
+        INNER JOIN {feature_relationship} FR  ON FR.object_id = TGT.feature_id
+        INNER JOIN {cvterm} CVT               ON CVT.cvterm_id = FR.type_id  
+        INNER JOIN {featureloc} FL            ON FL.feature_id = F.feature_id    
+      WHERE CVT.name = 'part_of'
+    ";
     $parents = chado_query($sql);
     
     // build and prepare the SQL for selecting the children relationship
@@ -1567,7 +1555,7 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
     $options = array('statement_name' => 'sel_feature_orunty');
   }  
   $results = tripal_core_chado_select('feature', array('feature_id'), $select, $options);
-  
+
   $srcfeature = '';
   if (count($results)==0) {
     // so we couldn't find the landmark using the uniquename. Let's try the 'name'.
@@ -1645,7 +1633,6 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
   //  is_fmin_partial and is_fmax_partial, right now these are
   //  hardcoded to be false and 0 below.
 
-
   // check to see if this featureloc already exists, but also keep track of the
   // last rank value
   $rank = 0;
@@ -1656,7 +1643,8 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
     'order_by' => array(
        'rank' => 'ASC'
     ),
-  );  
+  );
+ 
   $locrecs = tripal_core_chado_select('featureloc', array('*'), $select, $options);
 
   foreach ($locrecs as $featureloc) {

@@ -2143,9 +2143,7 @@ function chado_query($sql, $args = array()) {
 
   // Args should be an array
   if (!is_array($args)) {
-    tripal_core_report_error(
-      'tripal_core',
-      TRIPAL_ERROR,
+    tripal_core_report_error('tripal_core', TRIPAL_ERROR,
       'chado_query; Need to pass an array to chado_query, "%value" passed instead. Query: %query',
       array('%value' => $args, '%query' => $sql)
     );
@@ -2157,7 +2155,19 @@ function chado_query($sql, $args = array()) {
   if ($is_local) {
     $sql = preg_replace('/\n/', '', $sql);  // remove carriage returns
     $sql = preg_replace('/\{(.*?)\}/', 'chado.$1', $sql);
-    $results = db_query($sql, $args);
+    
+    // the featureloc table has some indexes that use function that call other functions
+    // and those calls do not reference a schema, therefore, any tables with featureloc
+    // must automaticaly have the chado schema set as active to find 
+    if(preg_match('/chado.featureloc/i', $sql)) {
+      $previous_db = tripal_db_set_active('chado') ;
+      $results = db_query($sql);
+      tripal_db_set_active($previous_db);
+    }
+    // for all other tables we should have everything in scope so just run the query
+    else {
+      $results = db_query($sql, $args);
+    }
   }
   // if Chado is not local to the Drupal database then we have to
   // switch to another database
@@ -3096,7 +3106,7 @@ function tripal_db_set_active($dbname  = 'default') {
   $chado_exists = variable_get('chado_schema_exists', FALSE);
   if ($dbname ) {
     if ($dbname == 'chado') {
-      db_query('set search_path to chado');
+      db_query('set search_path to chado,public');
       return 'default';
     }
     else {

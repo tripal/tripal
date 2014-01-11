@@ -207,7 +207,7 @@ function tripal_feature_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/tripal/chado/tripal_feature/sync'] = array(
-    'title' => ' Sync',
+    'title' => 'Sync',
     'description' => 'Sync features from Chado with Drupal',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_feature_sync_form'),
