@@ -17,7 +17,7 @@ function chado_analysis_form($node, &$form_state) {
   //    form elements and the form is being rebuilt
   //
   // set form field defaults
-  $analysis_id = null;
+  $analysis_id    = null;
   $analysisname   = '';
   $program        = '';
   $programversion = '';
@@ -581,6 +581,7 @@ function chado_analysis_validate($node, &$form_state) {
  * @ingroup tripal_analysis
  */
 function tripal_analysis_validate($node, &$form_state) {
+  // remove surrounding white-space on submitted values
   $node->analysisname = trim($node->analysisname);
   $node->description = trim($node->description);
   $node->program = trim($node->program);

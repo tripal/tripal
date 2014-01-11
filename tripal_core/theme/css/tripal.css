@@ -75,7 +75,7 @@ table.tripal-table-horz .tripal-table-odd-row {
 }
 
 .tripal-info-box-desc {
-  padding-bottom: 15px;
+  /* padding-bottom: 15px; */
 }
 /* hide the title when inside of a block on a panel */
 .pane-block .tripal-info-box-title {

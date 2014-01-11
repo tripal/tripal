@@ -7,27 +7,47 @@ $options = array('return_array' => 1);
 $feature = tripal_core_expand_chado_vars($feature, 'table', 'feature_synonym', $options);
 $synonyms = $feature->feature_synonym;
 
-
 if(count($synonyms) > 0){ ?>
   <div id="tripal_feature-synonyms-box" class="tripal_feature-info-box tripal-info-box">
     <div class="tripal_feature-info-box-title tripal-info-box-title">Synonyms</div>
-    <div class="tripal_feature-info-box-desc tripal-info-box-desc">The feature '<?php print $feature->name ?>' has the following synonyms</div>
-
-    <table id="tripal_feature-synonyms-table" class="tripal_feature-table tripal-table tripal-table-horz">
-      <tr>
-        <th>Synonym</th>
-      </tr> <?php
-      $i = 0; 
-      foreach ($synonyms as $feature_synonym){
-        $class = 'tripal-table-odd-row';
-        if($i % 2 == 0 ){
-           $class = 'tripal-table-even-row';
-        } ?>
-        <tr class="<?php print $class ?>">
-          <td><?php print $feature_synonym->synonym_id->name?></td>
-        </tr> <?php
-        $i++;  
-      } ?>
-    </table>
+    <div class="tripal_feature-info-box-desc tripal-info-box-desc">The feature '<?php print $feature->name ?>' has the following synonyms</div><?php
+    
+    // the $headers array is an array of fields to use as the colum headers. 
+    // additional documentation can be found here 
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    // This table for the analysis has a vertical header (down the first column)
+    // so we do not provide headers here, but specify them in the $rows array below.
+    $headers = array('Synonym');
+    
+    // the $rows array contains an array of rows where each row is an array
+    // of values for each column of the table in that row.  Additional documentation
+    // can be found here:
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7 
+    $rows = array();
+    foreach ($synonyms as $feature_synonym){
+      $rows[] = array(
+        $feature_synonym->synonym_id->name
+      );
+    } 
+    
+    // the $table array contains the headers and rows array as well as other
+    // options for controlling the display of the table.  Additional
+    // documentation can be found here:
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $table = array(
+      'header' => $headers,
+      'rows' => $rows,
+      'attributes' => array(
+        'id' => 'tripal_feature-table-synonyms',
+      ),
+      'sticky' => FALSE,
+      'caption' => '',
+      'colgroups' => array(),
+      'empty' => '',
+    );
+    
+    // once we have our table array structure defined, we call Drupal's theme_table()
+    // function to generate the table.
+      print theme_table($table); ?>
   </div><?php
 }

@@ -151,7 +151,6 @@ function tripal_analysis_permission() {
 function tripal_analysis_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
 
-  $theme_path = drupal_get_path('module', 'tripal_analysis') . '/theme';
   $items = array(
     'node__chado_analysis' => array(
       'template' => 'node--chado-generic',
@@ -593,8 +592,7 @@ function chado_analysis_load($nodes) {
     // build the analysis variable
     $values = array('analysis_id' => $analysis_id);
     $analysis = tripal_core_generate_chado_var('analysis', $values);
-
-
+    
     // add in the description field
     $analysis = tripal_core_expand_chado_vars($analysis, 'field', 'analysis.description');
     $nodes[$nid]->analysis = $analysis;
