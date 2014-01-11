@@ -11,6 +11,8 @@ require_once "includes/cvtermpath_form.inc";
 
 require_once "includes/tripal_cv_admin.inc";
 
+require_once "api/tripal_cv.schema.api.inc";
+
 /**
  * @defgroup tripal_cv CV Module
  * @ingroup tripal_modules
