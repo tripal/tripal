@@ -178,6 +178,7 @@ function tripal_library_admin_defaultviews_library() {
   $handler->display->display_options['filters']['type_id']['id'] = 'type_id';
   $handler->display->display_options['filters']['type_id']['table'] = 'library';
   $handler->display->display_options['filters']['type_id']['field'] = 'type_id';
+  $handler->display->display_options['filters']['type_id']['value'] = 'All';
   $handler->display->display_options['filters']['type_id']['group'] = '0';
   $handler->display->display_options['filters']['type_id']['exposed'] = TRUE;
   $handler->display->display_options['filters']['type_id']['expose']['operator_id'] = 'type_id_op';

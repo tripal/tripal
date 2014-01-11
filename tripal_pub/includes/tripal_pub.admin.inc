@@ -1,6 +1,40 @@
 <?php
 
 /**
+ *
+ */
+function tripal_pub_admin_pub_view() {
+  $output = '';
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado', 'admin/tripal/chado');
+  $breadcrumb[] = l('Publications', 'admin/tripal/chado/tripal_pub');
+  drupal_set_breadcrumb($breadcrumb);
+
+  // Add the view
+  $view = views_embed_view('tripal_pub_admin_publications','default');
+  if (isset($view)) {
+    $output .= $view;
+  }
+  else {
+    $output .= '<p>The Publications module uses primarily views to provide an '
+      . 'administrative interface. Currently one or more views needed for this '
+      . 'administrative interface are disabled. <strong>Click each of the following links to '
+      . 'enable the pertinent views</strong>:</p>';
+    $output .= '<ul>';
+      $output .= '<li>'.l('Publications View', 'admin/tripal/chado/tripal_pub/views/pubs/enable').'</li>';
+    $output .= '</ul>';
+  }
+
+  return $output;
+}
+
+
+/**
  * Administrative settings form
  *
  * @ingroup tripal_pub
@@ -37,7 +71,7 @@ function tripal_pub_admin() {
 }
 
 /**
- * 
+ *
  * @param $form
  */
 function get_tripal_pub_admin_form_default_type(&$form) {
@@ -46,15 +80,15 @@ function get_tripal_pub_admin_form_default_type(&$form) {
   // ontologies these are all grouped under the term 'Publication Type'
   // we want the default to be 'Journal Article'
   $sql = "
-    SELECT 
+    SELECT
       CVTS.cvterm_id, CVTS.name
     FROM {cvtermpath} CVTP
       INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
       INNER JOIN {cvterm} CVTO ON CVTP.object_id  = CVTO.cvterm_id
       INNER JOIN {cv}          ON CVTO.cv_id      = CV.cv_id
-    WHERE CV.name = 'tripal_pub' AND CVTO.name = 'Publication Type' AND 
+    WHERE CV.name = 'tripal_pub' AND CVTO.name = 'Publication Type' AND
       NOT CVTS.is_obsolete = 1
-    ORDER BY CVTS.name ASC 
+    ORDER BY CVTS.name ASC
   ";
   $results = chado_query($sql);
   $pub_types = array();
@@ -64,10 +98,10 @@ function get_tripal_pub_admin_form_default_type(&$form) {
       $d_type_id = $pub_type->cvterm_id;
     }
   }
-  
+
   // override the default by using the stored variable
   $d_type_id = variable_get('tripal_pub_default_type', $d_type_id);
-  
+
   $form['default_type'] = array(
     '#type' => 'fieldset',
     '#title' => t('Default Publication Type'),
@@ -92,14 +126,14 @@ function get_tripal_pub_admin_form_importing_set(&$form) {
     '#title' => t('Import Settings')
   );
   $form['import']['import_duplicate_check'] = array(
-    '#type' => 'radios', 
-    '#title' => t('Unique Constraint'),     
+    '#type' => 'radios',
+    '#title' => t('Unique Constraint'),
     '#options' => array(
-      'title_year' => t('Title and Year'), 
-      'title_year_media' => t('Title, Year, Media name (e.g. Journal Name, etc.)'), 
+      'title_year' => t('Title and Year'),
+      'title_year_media' => t('Title, Year, Media name (e.g. Journal Name, etc.)'),
       'title_year_type' => t('Title, Year, Media type (e.g. Journal, Conference Proceedings, etc.'),
     ),
-    '#description' => t('During import, Tripal will attempt to find duplicate publications. 
+    '#description' => t('During import, Tripal will attempt to find duplicate publications.
        There are several options for how to find a duplicate publication.  Choose the
        option that best suits your needs.'),
     '#default_value' => variable_get('tripal_pub_import_duplicate_check', 'title_year_media'),
@@ -151,10 +185,10 @@ function get_tripal_pub_admin_form_select_search_list(&$form) {
       INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
       INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
       INNER JOIN {cv} ON CVTO.cv_id = CV.cv_id
-    WHERE CV.name = 'tripal_pub' and 
-      (CVTO.name = 'Publication Details' or CVTS.name = 'Publication Type') and 
+    WHERE CV.name = 'tripal_pub' and
+      (CVTO.name = 'Publication Details' or CVTS.name = 'Publication Type') and
       NOT CVTS.is_obsolete = 1
-    ORDER BY CVTS.name ASC 
+    ORDER BY CVTS.name ASC
   ";
   $prop_types = chado_query($sql);
   while ($prop = $prop_types->fetchObject()) {
@@ -189,7 +223,7 @@ function tripal_pub_admin_validate($form, &$form_state) {
 
   $import_duplicate_check = $form_state['values']['import_duplicate_check'];
   variable_set('tripal_pub_import_duplicate_check', $import_duplicate_check);
-  
+
   $default_type = $form_state['values']['type_id'];
   variable_set('tripal_pub_default_type', $default_type);
 
