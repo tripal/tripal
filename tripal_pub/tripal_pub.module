@@ -114,23 +114,23 @@ function tripal_pub_menu() {
     'page arguments' => array('tripal_pub_sync_form'),
     'access arguments' => array('administer tripal pubs'),
     'type' => MENU_LOCAL_TASK,
-    'weight' => 0
+    'weight' => 2
   );
 
-
   $items['admin/tripal/chado/tripal_pub/import_list'] = array(
-    'title' => t('Importers List'),
+    'title' => t('Importers'),
     'description' => t('List all publication importers'),
     'page callback' => 'tripal_pub_importers_list',
     'access arguments' => array('administer tripal pubs'),
-    'type ' => MENU_CALLBACK,
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 0
   );
 
   $items['admin/tripal/chado/tripal_pub/import/new'] = array(
     'title' => t('Add an Importer'),
     'description' => t('Add a new publication importer.'),
     'page callback' => 'tripal_pub_importer_setup',
-    'page arguments' => array(4, NULL),
+    'page arguments' => array(5, NULL),
     'access arguments' => array('administer tripal pubs'),
     'type ' => MENU_CALLBACK,
   );
@@ -841,10 +841,10 @@ function tripal_pub_form_alter(&$form, &$form_state, $form_id) {
     // the form to the ahah callback URL. We need to set it back
     // to the normal form URL
     if ($form_state['values']['action'] == 'edit') {
-      $form['#action'] = url("admin/tripal/tripal_pub/import/edit/" . $form_state['values']['pub_import_id']);
+      $form['#action'] = url("admin/tripal/chado/tripal_pub/import/edit/" . $form_state['values']['pub_import_id']);
     }
     if ($form_state['values']['action'] == 'new') {
-      $form['#action'] = url("admin/tripal/tripal_pub/import/new");
+      $form['#action'] = url("admin/tripal/chado/tripal_pub/import/new");
     }
   }
   if ($form_id == "tripal_pub_search_form") {

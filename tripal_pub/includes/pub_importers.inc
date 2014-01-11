@@ -25,24 +25,28 @@ function tripal_pub_importers_list() {
     }
 
     $rows[] = array(
-      l(t('Edit/Test'), "admin/tripal/tripal_pub/import/edit/$importer->pub_import_id"),
+      l(t('Edit/Test'), "admin/tripal/chado/tripal_pub/import/edit/$importer->pub_import_id"),
       $importer->name,
       $criteria['remote_db'],
       $criteria_str,
       $importer->disabled ? 'Yes' : 'No',
       $importer->do_contact ? 'Yes' : 'No',
-      l(t('Delete'), "admin/tripal/tripal_pub/import/delete/$importer->pub_import_id"),
+      l(t('Delete'), "admin/tripal/chado/tripal_pub/import/delete/$importer->pub_import_id"),
     );
   }
 
   $rows[] = array(
     'data' => array(
-     array('data' => l(t('Create a new publication importer.'), "admin/tripal/tripal_pub/import/new"),
+     array('data' => l(t('Create a new publication importer.'), "admin/tripal/chado/tripal_pub/import/new"),
         'colspan' => 7),
      )
   );
 
-  $page = theme('table', $header, $rows);
+  $page = "<ul class='action-links'>";
+  $page .= '<li>' . l('New Importer', 'admin/tripal/chado/tripal_pub/import/new') . '</li>';
+  $page .= '</ul>';
+
+  $page .= theme('table', array('header' => $header, 'rows' => $rows));
   return $page;
 }
 
@@ -54,7 +58,7 @@ function tripal_pub_importer_setup($action = 'new', $pub_import_id = NULL) {
 
   $pager_id = 0;
   $limit = 20;
-  
+
   // make sure the tripal_pub and tripal_contact ontologies are loaded
   $values = array('name' => 'tripal_pub');
   $tpub_cv = tripal_core_chado_select('cv', array('cv_id'), $values);
@@ -70,7 +74,7 @@ function tripal_pub_importer_setup($action = 'new', $pub_import_id = NULL) {
   // generate the search form
   $form = drupal_get_form('tripal_pub_importer_setup_form',  $pub_import_id, $action);
 
-  $output = l("Return to publication importers list", "admin/tripal/tripal_pub/import_list");
+  $output = l("Return to publication importers list", "admin/tripal/chado/tripal_pub/import_list");
   $output .= $form;
 
   // retrieve any results
@@ -109,7 +113,7 @@ function tripal_pub_importer_setup($action = 'new', $pub_import_id = NULL) {
         $citation = htmlspecialchars($pub['Citation']);
         $raw_link = '';
         if($pub['Publication Dbxref']) {
-          $raw_link = l('raw', 'admin/tripal/tripal_pub/import/raw/' . $pub['Publication Dbxref'], array('attributes' => array('target' => '_blank')));
+          $raw_link = l('raw', 'admin/tripal/chado/tripal_pub/import/raw/' . $pub['Publication Dbxref'], array('attributes' => array('target' => '_blank')));
         }
         $rows[] = array(
         number_format($i),
@@ -120,12 +124,12 @@ function tripal_pub_importer_setup($action = 'new', $pub_import_id = NULL) {
       }
     }
     $headers = array('', 'Publication', '');
-    $table = theme('table', $headers, $rows);
+    $table = theme('table', array('header' => $headers, 'rows' => $rows));
 
     // join all to form the results
     $output .= "<br><p><b>Found " . number_format($total_items) .
       ". Page " . ($page + 1) . " of $total_pages. " .
-      " Results</b></br>" . $table . '</p>' . $pager;    
+      " Results</b></br>" . $table . '</p>' . $pager;
   }
   return $output;
 }
@@ -155,7 +159,7 @@ function theme_tripal_pub_importer_setup_form($form) {
   $markup .= '</div>';
   $markup .= '<div id="pub-search-form-row2">' . drupal_render($form['disabled']) . '</div>';
   $markup .= '<div id="pub-search-form-row3">' . drupal_render($form['do_contact']) . '</div>';
-  $markup .= theme('table', $headers, $rows, array('id' => 'tripal-pub-importer-table'));
+  $markup .= theme('table', array('header' => $headers, 'rows' => $rows, 'attributes' => array('id' => 'tripal-pub-importer-table')));
 
   $form['criteria'] = array(
     '#type' => 'markup',
@@ -171,7 +175,7 @@ function theme_tripal_pub_importer_setup_form($form) {
  */
 function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NULL, $action = 'new') {
   tripal_core_ahah_init_form();
-   
+
   // Set the default values. If the pub_import_id isn't already defined by the form values
   // and one is provided then look it up in the database
   $criteria = NULL;
@@ -214,7 +218,7 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
     unset($_SESSION['tripal_pub_import']);
   }
 
-   
+
   // change the number of criteria based on form_state post data.
   if (!$num_criteria) {
     $num_criteria = 1;
@@ -264,7 +268,7 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
     '#options' => $remote_dbs,
     '#default_value' => $remote_db,
     '#ahah' => array(
-      'path'    => "admin/tripal/tripal_pub/import/changedb",
+      'path'    => "admin/tripal/chado/tripal_pub/import/changedb",
       'wrapper' => 'tripal-pub-importer-setup-form',
       'event'   => 'click',
       'method'  => 'replace',
@@ -296,7 +300,7 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
   $form['do_contact'] = array(
     '#type'          => 'checkbox',
     '#title'         => t('Create Contact'),
-    '#description'   => t('Check to create an entry in the contact table for each author of a matching publication during import. This allows storage of 
+    '#description'   => t('Check to create an entry in the contact table for each author of a matching publication during import. This allows storage of
        additional information such as affilation, etc. Otherwise, only authors names are retrieved.'),
     '#default_value' => $do_contact,
   );
@@ -304,7 +308,7 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
   // choices array
   $scope_choices = array(
     'any'      => 'Any Field',
-    'abstract' => 'Abstract',  
+    'abstract' => 'Abstract',
     'author'   => 'Author',
     'id'       => 'Accession',
     'title'    => 'Title',
@@ -335,7 +339,7 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
       $scope        = isset($_SESSION['tripal_pub_import']['criteria'][$i]['scope'])        ? $_SESSION['tripal_pub_import']['criteria'][$i]['scope']        : $scope;
       $is_phrase    = isset($_SESSION['tripal_pub_import']['criteria'][$i]['is_phrase'])    ? $_SESSION['tripal_pub_import']['criteria'][$i]['is_phrase']    : $is_phrase;
       $operation    = isset($_SESSION['tripal_pub_import']['criteria'][$i]['operation'])    ? $_SESSION['tripal_pub_import']['criteria'][$i]['operation']    : $operation;
-      
+
       // If the form_state has variables then use those.  This happens when an error occurs on the form or the
       // form is resbumitted using AJAX
       if ($form_state['values']) {
@@ -347,8 +351,8 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
 
       $form['criteria'][$i]["search_terms-$i"] = array(
         '#type'          => 'textfield',
-        '#description'   => t('Please provide a list of words for searching. You may use 
-          conjunctions such as "AND" or "OR" to separate words if they are expected in 
+        '#description'   => t('Please provide a list of words for searching. You may use
+          conjunctions such as "AND" or "OR" to separate words if they are expected in
           the same scope, but do not mix ANDs and ORs.  Uncheck the "Is Phrase" checkbox to use conjunctions'),
         '#default_value' => $search_terms,
         '#required'      => TRUE,
@@ -362,7 +366,7 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
       );
       $form['criteria'][$i]["is_phrase-$i"] = array(
         '#type'    => 'checkbox',
-        '#title'   => t('Is Phrase?'),    
+        '#title'   => t('Is Phrase?'),
         '#default_value' => $is_phrase,
       );
 
@@ -388,7 +392,7 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
           '#value'        => t('Remove'),
           '#src'          => drupal_get_path('theme', 'tripal') . '/images/minus.png',
           '#ahah' => array(
-            'path'    => "admin/tripal/tripal_pub/import/criteria/minus/$i",
+            'path'    => "admin/tripal/chado/tripal_pub/import/criteria/minus/$i",
             'wrapper' => 'tripal-pub-importer-setup-form',
             'event'   => 'click',
             'method'  => 'replace',
@@ -397,14 +401,14 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
           );
         }
         $form['criteria'][$i]["add-$i"] = array(
-        '#type'         => 'image_button',      
+        '#type'         => 'image_button',
         '#value'        => t('Add'),
         '#src'          => drupal_get_path('theme', 'tripal') . '/images/add.png',
         '#ahah' => array(
-          'path'    => "admin/tripal/tripal_pub/import/criteria/add/$i",
+          'path'    => "admin/tripal/chado/tripal_pub/import/criteria/add/$i",
           'wrapper' => 'tripal-pub-importer-setup-form',
           'event'   => 'click',
-          'method'  => 'replace',          
+          'method'  => 'replace',
         ),
         '#attributes' => array('onClick' => 'return false;'),
         );
@@ -452,11 +456,11 @@ function tripal_pub_importer_setup_form_validate($form, &$form_state) {
     $scope =  $form_state['values']["scope-$i"];
     $is_phrase =  $form_state['values']["is_phrase-$i"];
     $operation =  $form_state['values']["operation-$i"];
-    
+
     if (!$is_phrase) {
     	if (preg_match('/and/i', $search_terms) and preg_match('/or/i', $search_terms)) {
     	  form_set_error("search_terms-$i", "You may use 'AND' or 'OR' but cannot use both. Add a new entry below with the same scope for the other conunction.");
-    	  $_SESSION['tripal_pub_import']['perform_search'] = 0;	
+    	  $_SESSION['tripal_pub_import']['perform_search'] = 0;
     	}
     }
   }
@@ -474,7 +478,7 @@ function tripal_pub_importer_setup_form_validate($form, &$form_state) {
  *
  */
 function tripal_pub_importer_setup_form_submit($form, &$form_state) {
-   
+
   $pub_import_id = $form_state['values']['pub_import_id'];
   $num_criteria = $form_state['values']['num_criteria'];
   $remote_db =  $form_state['values']["remote_db"];
@@ -528,7 +532,7 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
       if(drupal_write_record('tripal_pub_import', $record, 'pub_import_id')){
         unset($_SESSION['tripal_pub_import']);
         drupal_set_message('Publication import settings updated.');
-        drupal_goto('admin/tripal/tripal_pub/import_list');
+        drupal_goto('admin/tripal/chado/tripal_pub/import_list');
       }
       else {
         drupal_set_message('Could not update publication import settings.', 'error');
@@ -544,7 +548,7 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
         if ($form_state['values']['op'] == 'Save & Import Now') {
           tripal_pub_import_publications($record['pub_import_id']);
         }
-        drupal_goto('admin/tripal/tripal_pub/import_list');
+        drupal_goto('admin/tripal/chado/tripal_pub/import_list');
       }
       else {
         drupal_set_message('Could not save publication import settings.', 'error');
@@ -556,7 +560,7 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
     $success = db_query($sql, array(':pub_import_id' => $pub_import_id));
     if ($success) {
       drupal_set_message('Publication importer deleted.');
-      drupal_goto('admin/tripal/tripal_pub/import_list');
+      drupal_goto('admin/tripal/chado/tripal_pub/import_list');
     }
     else {
       drupal_set_message('Could not delete publication importer.', 'error');
@@ -572,7 +576,7 @@ function tripal_pub_importer_delete($pub_import_id) {
   $success = db_query($sql, array(':pub_import_id' => $pub_import_id));
   if ($success) {
     drupal_set_message('Publication importer deleted.');
-    drupal_goto('admin/tripal/tripal_pub/import_list');
+    drupal_goto('admin/tripal/chado/tripal_pub/import_list');
   }
   else {
     drupal_set_message('Could not delete publication importer.', 'error');
@@ -595,7 +599,7 @@ function tripal_pub_importer_setup_page_update_remotedb() {
   // return the updated JSON
   drupal_json(
   array(
-      'status'   => $status, 
+      'status'   => $status,
       'data'     => $data,
       'settings' => $settings,
   )
@@ -618,7 +622,7 @@ function tripal_pub_importer_setup_page_update_criteria($action, $i) {
   // return the updated JSON
   drupal_json(
   array(
-      'status'   => $status, 
+      'status'   => $status,
       'data'     => $data,
       'settings' => $settings,
   )
