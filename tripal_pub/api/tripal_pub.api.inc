@@ -1206,7 +1206,8 @@ function tripal_pub_create_citation($pub) {
       }
       else if ($ptype == "Research Support, Non-U.S. Gov't") {
         $pub_type = $ptype; 
-        break;
+        // we don't break because if the article is also a Journal Article
+        // we prefer that type
       }
     }
     if (!$pub_type) {
