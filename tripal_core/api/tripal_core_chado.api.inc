@@ -2539,55 +2539,6 @@ function tripal_core_delete_property_by_id($basetable, $record_id) {
 
 
 /**
- * Start a transaction block. Ensures the use of a persistent chado connection
- */
-function tripal_db_start_transaction() {
-  $transaction = db_transaction();
-  return $transaction;
-}
-
-/**
- * Set a savepoint to roll the current transaction back to if an error is encountered
- */
-function tripal_db_set_savepoint_transaction($savepoint, $release = FALSE) {
-  // Postgresql requires a savepoint of the same name to be unset before re-use
-  if ($release) {
-    chado_query("RELEASE SAVEPOINT :savepoint", array(':savepoint' => $savepoint));
-  }
-  chado_query("SAVEPOINT :savepoint", array(':savepoint' => $savepoint));
-}
-
-/**
- * Rollback changes.
- *
- * If $savepoint is NULL then rollback to the beginning of the transaction,
- * Otherwise, rollback to the point at which the named $savepoint was created
- *
- * @param $savepoint
- *   The name of the saved point in the transaction to rollback to
- *
- * @param $commit
- *   The transcation will only be committed if this value is TRUE. The
- *   default is TRUE.
- *
- * @return nothing
- */
-function tripal_db_rollback_transaction($savepoint = NULL, $commit = TRUE) {
-
-  if ($savepoint) {
-    chado_query("ROLLBACK TO SAVEPOINT :savepoint", array(':savepoint' => $savepoint));
-  }
-  else {
-    chado_query("ROLLBACK");
-  }
-
-  if ($commit) {
-    tripal_db_commit_transaction();
-  }
-
-}
-
-/**
  * Retrieves the schema in an array for the specified custom table.
  *
  * @param $table

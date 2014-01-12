@@ -378,34 +378,39 @@ function tripal_update_mview($mview_id) {
   if ($mview) {    
     // execute the query inside a transaction so that it doesn't destroy existing data
     // that may leave parts of the site unfunctional
-    tripal_db_start_transaction();
-    $previous_db = tripal_db_set_active('chado');  // use chado database
-    $results = db_query("DELETE FROM {" . $mview->mv_table . "}");
-    $results = db_query("INSERT INTO {" . $mview->mv_table . "} ($mview->query)");    
-    tripal_db_set_active($previous_db);  // now use drupal database
-    if ($results) {
-      // commit the transaction
-      tripal_db_commit_transaction();
-      $sql = "SELECT count(*) as cnt FROM {" . $mview->mv_table . "}";
-      $results = chado_query($sql);
-      $count = $results->fetchObject();
-      $record = new stdClass();
-      $record->mview_id = $mview_id;
-      $record->last_update = REQUEST_TIME;
-      $record->status = "Populated with " . number_format($count->cnt) . " rows";
-      drupal_write_record('tripal_mviews', $record, 'mview_id');
-      return TRUE;
+    $transaction = db_transaction();
+    try {
+      $previous_db = tripal_db_set_active('chado');  // use chado database
+      $success = db_query("DELETE FROM {" . $mview->mv_table . "}");
+      $success = db_query("INSERT INTO {" . $mview->mv_table . "} ($mview->query)");    
+      tripal_db_set_active($previous_db);  // now use drupal database
+      // if success get the number of results and update the table record
+      if ($success) { 
+        $sql = "SELECT count(*) as cnt FROM {" . $mview->mv_table . "}";
+        $results = chado_query($sql);
+        $count = $results->fetchObject();
+        $record = new stdClass();
+        $record->mview_id = $mview_id;
+        $record->last_update = REQUEST_TIME;
+        $record->status = "Populated with " . number_format($count->cnt) . " rows";
+        drupal_write_record('tripal_mviews', $record, 'mview_id');
+      }
+      // if not success then throw an error 
+      else {
+        throw new Exception("ERROR populating the materialized view ". $mview->mv_table . ". See Drupal's recent log entries for details.");
+      }
     }
-    else {
-      // rollback the transaction
-      tripal_db_rollback_transaction();
+    catch (Exception $e) {
       // print and save the error message
       $record = new stdClass();
       $record->mview_id = $mview_id;
-      $record->status = "ERROR populating. See Drupal's recent log entries for details.";
-      print $record->status . "\n";
+      $record->status = "ERROR populating $mview->mv_table. See Drupal's recent log entries for details.\n";
       drupal_write_record('tripal_mviews', $record, 'mview_id');
+      watchdog_exception('tripal_mviews', $e);
+      $transaction->rollback();
       return FALSE;
     }
+    print "Done.\n";
+    return TRUE;
   }
 }
