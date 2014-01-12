@@ -311,23 +311,15 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   $start_line = 1, $landmark_type = '', $alt_id_attr = '', $create_organism = FALSE, 
   $job = NULL) {     
 
-  // make sure our temporary table exists
   $ret = array(); 
-  if (!db_table_exists('tripal_gff_temp')) { 
-    $schema = tripal_feature_get_custom_tables('tripal_gff_temp');  
-    $success = tripal_core_create_custom_table('tripal_gff_temp', $schema['tripal_gff_temp']);
-    if (!$success) {
-      watchdog('T_gff3_loader', "Cannot create temporary loading table", array(), WATCHDOG_ERROR); 
-      return;
-    } 
-  }
+
   // empty the temp table
   $sql = "DELETE FROM {tripal_gff_temp}";
   chado_query($sql);
   
   // begin the transaction
   if ($use_transaction) {
-    tripal_db_start_transaction();
+    $transaction = tripal_db_start_transaction();
     print "\nNOTE: Loading of this GFF file is performed using a database transaction. \n" .
          "If the load fails or is terminated prematurely then the entire set of \n" .
          "insertions/updates is rolled back and will not be found in the database\n\n";

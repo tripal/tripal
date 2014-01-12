@@ -53,6 +53,9 @@ function tripal_feature_install() {
   if ($mview_id = tripal_mviews_get_mview_id('organism_feature_count')) {
     tripal_mviews_action('update', $mview_id);
   }
+  
+  // add the custom tables to Chado
+  tripal_feature_add_custom_tables();
 }
 
 /**
@@ -180,4 +183,43 @@ function tripal_feature_add_organism_count_mview() {
   ";
 
   tripal_add_mview($view_name, 'tripal_feature', $schema, $sql, $comment);
+}
+
+/**
+ * 
+ */
+function tripal_feature_add_custom_tables() {
+  
+  $schema['tripal_gff_temp'] = array(
+    'table' => 'tripal_gff_temp',
+    'fields' => array(
+      'feature_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'organism_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'uniquename' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'type_name' => array(
+        'type' => 'varchar',
+        'length' => '1024',
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'tripal_gff_temp_idx0' => array('feature_id'),
+      'tripal_gff_temp_idx0' => array('organism_id'),
+      'tripal_gff_temp_idx1' => array('uniquename'),
+    ),
+    'unique keys' => array(
+      'tripal_gff_temp_uq0' => array('feature_id'),
+      'tripal_gff_temp_uq1' => array('uniquename', 'organism_id', 'type_name'),
+    ),
+  );
+  tripal_core_create_custom_table('tripal_gff_temp', $schema, TRUE);
 }

@@ -667,3 +667,17 @@ function chado_featuremap_delete(&$node) {
   chado_query("DELETE FROM {featuremap} WHERE featuremap_id = :featuremap_id", array(':featuremap_id' => $featuremap_id));
   chado_query("DELETE FROM {featuremapprop} WHERE featuremap_id = :featuremap_id", array(':featuremap_id' => $featuremap_id));
 }
+
+/**
+ * Implementation of hook_form_alter()
+ *
+ * @param $form
+ * @param $form_state
+ * @param $form_id
+ */
+function tripal_featuremap_form_alter(&$form, &$form_state, $form_id) {
+  // turn of preview button for insert/updates
+  if ($form_id == "chado_featuremap_node_form") {
+    $form['actions']['preview']['#access'] = FALSE;
+  }
+}

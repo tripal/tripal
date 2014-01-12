@@ -1254,3 +1254,17 @@ function tripal_stock_match_stocks_page($id) {
   $output .= theme_table($header, $rows, $table_attrs, $caption);
   return $output;
 }
+
+/**
+ * Implementation of hook_form_alter()
+ *
+ * @param $form
+ * @param $form_state
+ * @param $form_id
+ */
+function tripal_stock_form_alter(&$form, &$form_state, $form_id) {
+  // turn of preview button for insert/updates
+  if ($form_id == "chado_stock_node_form") {
+    $form['actions']['preview']['#access'] = FALSE;
+  }
+}

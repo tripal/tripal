@@ -297,11 +297,17 @@ function tripal_analysis_views_api() {
 
 
 
-/*
- *
-*/
+/**
+ * Implementation of hook_form_alter()
+ * 
+ * @param $form
+ * @param $form_state
+ * @param $form_id
+ */
 function tripal_analysis_form_alter(&$form, &$form_state, $form_id) {
+  // turn of preview button for insert/updates
   if ($form_id == "chado_analysis_node_form") {
+    $form['actions']['preview']['#access'] = FALSE;
   }
 }
 /**

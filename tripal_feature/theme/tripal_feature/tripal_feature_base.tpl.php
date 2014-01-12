@@ -1,5 +1,5 @@
 <?php
-$feature  = $variables['node']->feature; ?>
+$feature  = $variables['node']->feature;  ?>
 
 <div id="tripal_feature-base-box" class="tripal_feature-info-box tripal-info-box">
   <div class="tripal_feature-info-box-title tripal-info-box-title">Details</div>
@@ -18,15 +18,6 @@ $feature  = $variables['node']->feature; ?>
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7 
   $rows = array();
 
-  // Is Obsolete Row
-  if(strcmp($feature->is_obsolete,'t')==0){
-    $rows[] = array(
-      array(
-        'data' => '<div class="tripal_feature-obsolete">This feature is obsolete</div>',
-        'colspan' => 2
-      ),
-    );
-  }
   // Name row
   $rows[] = array(
     array(
@@ -84,6 +75,15 @@ $feature  = $variables['node']->feature; ?>
         'header' => TRUE
       ),
       $feature->feature_id
+    );
+  }
+  // Is Obsolete Row
+  if($feature->is_obsolete == TRUE){
+    $rows[] = array(
+      array(
+        'data' => '<div class="tripal_feature-obsolete">This feature is obsolete</div>',
+        'colspan' => 2
+      ),
     );
   }
 

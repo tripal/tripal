@@ -831,51 +831,6 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
   return $residues;
 }
 
-
-/**
- * This function defines the custom tables that will be created 
- * in the chado schema.
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_get_custom_tables($table = NULL) {
-
- if (!$table or strcmp($table, 'tripal_gff_temp')==0) {
-    $schema['tripal_gff_temp'] = array(
-      'table' => 'tripal_gff_temp',
-      'fields' => array(
-        'feature_id' => array(
-          'type' => 'int',
-          'not null' => TRUE,
-        ),
-        'organism_id' => array(
-          'type' => 'int',
-          'not null' => TRUE,
-        ),
-        'uniquename' => array(
-          'type' => 'text',
-          'not null' => TRUE,
-        ),
-        'type_name' => array(
-          'type' => 'varchar',
-          'length' => '1024',
-          'not null' => TRUE,
-        ),
-      ),
-      'indexes' => array(
-        'tripal_gff_temp_idx0' => array('feature_id'),
-        'tripal_gff_temp_idx0' => array('organism_id'),
-        'tripal_gff_temp_idx1' => array('uniquename'),
-      ),
-      'unique keys' => array(
-        'tripal_gff_temp_uq0' => array('feature_id'),
-        'tripal_gff_temp_uq1' => array('uniquename', 'organism_id', 'type_name'),
-      ),
-    );
-  }
-  return $schema;
-}
-
 /**
  * Using the tripal_core_expand_chado_vars function to retrieve a set
  * of relationships can be very slow, especialy if there are many relationships

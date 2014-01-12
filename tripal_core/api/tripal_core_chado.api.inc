@@ -2542,13 +2542,8 @@ function tripal_core_delete_property_by_id($basetable, $record_id) {
  * Start a transaction block. Ensures the use of a persistent chado connection
  */
 function tripal_db_start_transaction() {
-/*  $connection = tripal_db_persistent_chado();
-  if ($connection) {
-    chado_query("BEGIN");
-    return $connection;
-  }
-  return FALSE;
-*/
+  $transaction = db_transaction();
+  return $transaction;
 }
 
 /**
@@ -2560,15 +2555,6 @@ function tripal_db_set_savepoint_transaction($savepoint, $release = FALSE) {
     chado_query("RELEASE SAVEPOINT :savepoint", array(':savepoint' => $savepoint));
   }
   chado_query("SAVEPOINT :savepoint", array(':savepoint' => $savepoint));
-}
-
-/**
- * A simple function to commit a database transaction
- *
- * @return nothing
- */
-function tripal_db_commit_transaction() {
-  chado_query("COMMIT");
 }
 
 /**
