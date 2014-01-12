@@ -12,7 +12,66 @@
  * @ingroup tripal_modules
  */
 
-/*************************************************************************
+/**
+ *  Menu items are automatically added for the new node types created
+ *  by this module to the 'Create Content' Navigation menu item.  This function
+ *  adds more menu items needed for this module.
+ *
+ * @ingroup tripal_phenotype
+ */
+function tripal_phenotype_menu() {
+  $items = array();
+
+    // the administative settings menu
+  $items['admin/tripal/chado/tripal_phenotype'] = array(
+   'title' => 'Phenotypes',
+   'description' => 'A controlled sentence describing observable effects of non-wild type function.',
+   'page callback' => 'tripal_phenotype_admin_phenotypes_listing',
+   'access arguments' => array('adminster tripal phenotype'),
+   'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['admin/tripal/chado/tripal_phenotype/help'] = array(
+   'title' => 'Help',
+   'description' => "A description of the Tripal phenotype module including a short description of it's usage.",
+   'page callback' => 'theme',
+   'page arguments' => array('tripal_phenotype_help'),
+   'access arguments' => array('adminster tripal phenotype'),
+   'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/tripal/chado/tripal_phenotype/views/phenotypes/enable'] = array(
+    'title' => 'Enable Phenotype Administrative View',
+    'page callback' => 'tripal_views_admin_enable_view',
+    'page arguments' => array('tripal_phenotype_admin_phenotypes', 'admin/tripal/chado/tripal_phenotype'),
+    'access arguments' => array('administer tripal_bulk_loader'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ *  We need to let drupal know about our theme functions and their arguments.
+ *  We create theme functions to allow users of the module to customize the
+ *  look and feel of the output generated in this module
+ *
+ * @ingroup tripal_phenotype
+ */
+function tripal_phenotype_theme($existing, $type, $theme, $path) {
+  $core_path = drupal_get_path('module', 'tripal_core');
+
+  $items = array(
+    'tripal_phenotype_help' => array(
+      'template' => 'tripal_phenotype_help',
+      'variables' =>  array(NULL),
+      'path' => "$path/theme",
+    ),
+  );
+  return $items;
+}
+
+/**
  * Implements hook_views_api()
  * Purpose: Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_phenotype.views.inc where all the
@@ -24,4 +83,34 @@ function tripal_phenotype_views_api() {
   return array(
       'api' => 2.0,
   );
+}
+
+function tripal_phenotype_admin_phenotypes_listing() {
+  $output = '';
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado', 'admin/tripal/chado');
+  $breadcrumb[] = l('Phenotypes', 'admin/tripal/chado/tripal_phenotype');
+  drupal_set_breadcrumb($breadcrumb);
+
+  // Add the view
+  $view = views_embed_view('tripal_phenotype_admin_phenotypes','default');
+  if (isset($view)) {
+    $output .= $view;
+  }
+  else {
+    $output .= '<p>The Tripal Phenotype Module uses primarily views to provide an '
+      . 'administrative interface. Currently one or more views needed for this '
+      . 'administrative interface are disabled. <strong>Click each of the following links to '
+      . 'enable the pertinent views</strong>:</p>';
+    $output .= '<ul>';
+      $output .= '<li>'.l('Phenotype Admin', 'admin/tripal/chado/tripal_phenotype/views/phenotypes/enable').'</li>';
+    $output .= '</ul>';
+  }
+
+  return $output;
 }
