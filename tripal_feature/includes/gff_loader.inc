@@ -836,23 +836,20 @@ continue;
     $parents = chado_query($sql);
     
     // build and prepare the SQL for selecting the children relationship
-    $sql = "SELECT DISTINCT FR.feature_relationship_id, FL.fmin, FR.rank
-            FROM {feature_relationship} FR
-              INNER JOIN {featureloc} FL on FL.feature_id = FR.subject_id";
-    if (!$connection) {
-      $sql .= "WHERE FR.object_id = :feature_id " .
-              "ORDER BY FL.fmin ASC ";
-    }
-    else {
-      $sql = "PREPARE sel_gffchildren (int) AS " . $sql . " WHERE FR.object_id = \$1 ORDER BY FL.fmin ASC";            
-    }
-    if (!tripal_core_is_sql_prepared('sel_gffchildren')) {
-      $success = tripal_core_chado_prepare('sel_gffchildren', $sql, array('int'));
-      if (!$success) {
-        watchdog("T_gff3_loader", "Cannot prepare statement 'sel_gffchildren' and cannot set children ranks.", 
-           array(), WATCHDOG_WARNING);
-        return 0;  
-      }
+    $sql = "";
+
+    $sql = "
+      PREPARE sel_gffchildren (int) AS 
+      SELECT DISTINCT FR.feature_relationship_id, FL.fmin, FR.rank
+      FROM {feature_relationship} FR
+        INNER JOIN {featureloc} FL on FL.feature_id = FR.subject_id
+      WHERE FR.object_id = \$1 ORDER BY FL.fmin ASC
+    ";            
+    $success = chado_query('sel_gffchildren', $sql);
+    if (!$success) {
+      watchdog("T_gff3_loader", "Cannot prepare statement 'sel_gffchildren' and cannot set children ranks.", 
+         array(), WATCHDOG_WARNING);
+      return 0;  
     }
     
     // now set the rank of any parent/child relationships.  The order is based
@@ -991,19 +988,19 @@ function tripal_feature_load_gff3_parents($feature, $cvterm, $parents, $organism
   $rel_type = 'part_of';
 
   // prepare these SQL statements that will be used repeatedly.
-  if (!tripal_core_is_sql_prepared('sel_cvterm_cvname_cvtname_synonym')) {
-    $psql = "PREPARE sel_cvterm_cvname_cvtname_synonym (text, text, text) AS
-             SELECT CVT.cvterm_id
-             FROM {cvterm} CVT
-               INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
-               LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
-             WHERE cv.name = $1 and (CVT.name = $2 or CVTS.synonym = $3)";
-    $status = tripal_core_chado_prepare('sel_cvterm_cvname_cvtname_synonym', $psql, array('text', 'text', 'text'));
-    if (!$status) {
-       watchdog("T_gff3_loader", "Cannot prepare statement 'sel_cvterm_cvname_cvtname_synonym' for ontology term", 
-         array(), WATCHDOG_WARNING);
-       return '';
-    }
+  $psql = "
+    PREPARE sel_cvterm_cvname_cvtname_synonym (text, text, text) AS
+    SELECT CVT.cvterm_id
+    FROM {cvterm} CVT
+      INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+      LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
+    WHERE cv.name = $1 and (CVT.name = $2 or CVTS.synonym = $3)
+  ";
+  $status = chado_query($psql);
+  if (!$status) {
+     watchdog("T_gff3_loader", "Cannot prepare statement 'sel_cvterm_cvname_cvtname_synonym' for ontology term", 
+       array(), WATCHDOG_WARNING);
+     return '';
   }
 
   // iterate through the parents in the list
@@ -1350,20 +1347,21 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
     $result = tripal_core_chado_select('pub', array('*'), $select, $options);    
     if (count($result) == 0) {
       // prepare the statement
-      if (!tripal_core_is_sql_prepared('ins_pub_uniquename_typeid')) {
-        $psql = "PREPARE ins_pub_uniquename_typeid (text, text) AS
-                 INSERT INTO {pub} (uniquename,type_id) VALUES ('%s',
-                 (SELECT cvterm_id
-                  FROM {cvterm} CVT
-                    INNER JOIN {dbxref} DBX on DBX.dbxref_id = CVT.dbxref_id
-                    INNER JOIN {db} DB on DB.db_id = DBX.db_id
-                  WHERE CVT.name = $1 and DB.name = $2)";
-        $status = tripal_core_chado_prepare('ins_pub_uniquename_typeid', $psql, args('text', 'text'));
-        if (!$status) {
-          watchdog("T_gff3_loader", "Cannot prepare statement 'ins_pub_uniquename_typeid", array(), WATCHDOG_WARNING);
-          return 0;
-        } 
-      }    
+      $psql = "
+        PREPARE ins_pub_uniquename_typeid (text, text) AS
+        INSERT INTO {pub} (uniquename,type_id) VALUES ('%s',
+        (SELECT cvterm_id
+        FROM {cvterm} CVT
+          INNER JOIN {dbxref} DBX on DBX.dbxref_id = CVT.dbxref_id
+          INNER JOIN {db} DB on DB.db_id = DBX.db_id
+        WHERE CVT.name = $1 and DB.name = $2)
+      ";
+      $status = chado_query($psql);
+      if (!$status) {
+        watchdog("T_gff3_loader", "Cannot prepare statement 'ins_pub_uniquename_typeid", array(), WATCHDOG_WARNING);
+        return 0;
+      } 
+
       // insert the null pub 
       $result = chado_query("EXECUTE ins_pub_uniquename_typeid (:uname, :type_id)", 
         array(':uname' => 'null', ':type_id' => 'null'))->fetchObject();

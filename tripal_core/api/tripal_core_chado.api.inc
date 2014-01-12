@@ -221,12 +221,9 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
   // get the table description
   $table_desc = tripal_core_get_chado_table_schema($table);
   if (empty($table_desc)) {
-    tripal_core_report_error(
-      'tripal_core',
-      TRIPAL_WARNING,
+    tripal_core_report_error('tripal_core', TRIPAL_WARNING,
       'tripal_core_chado_insert; There is no table description for !table_name',
-      array('!table_name' => $table),
-      array('print' => $print_errors)
+      array('!table_name' => $table), array('print' => $print_errors)
     );
   }
 
@@ -1127,9 +1124,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     // make sure the field is in the table description. If not then return an error
     // message
     if (!array_key_exists($field, $table_desc['fields'])) {
-      tripal_core_report_error(
-        'tripal_core',
-        TRIPAL_ERROR,
+      tripal_core_report_error('tripal_core', TRIPAL_ERROR,
         'tripal_core_chado_select: The field "%field" does not exist for the table "%table".  Cannot perform query. Values: %array',
         array('%field' => $field, '%table' => $table, '%array' => print_r($values, 1)),
         array('print' => $print_errors)
@@ -2161,7 +2156,7 @@ function chado_query($sql, $args = array()) {
     // must automaticaly have the chado schema set as active to find 
     if(preg_match('/chado.featureloc/i', $sql)) {
       $previous_db = tripal_db_set_active('chado') ;
-      $results = db_query($sql);
+      $results = db_query($sql, $args);
       tripal_db_set_active($previous_db);
     }
     // for all other tables we should have everything in scope so just run the query
