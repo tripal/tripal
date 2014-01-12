@@ -59,19 +59,13 @@ function tripal_analysis_install() {
  */
 function tripal_analysis_uninstall() {
 
-  // Remove analysis nodes from drupal.
-  $sql_ana_id = "
-    SELECT nid, vid
-    FROM {node}
-    WHERE type like 'chado_analysi%'
-  ";
-  $result = db_query($sql_ana_id);
-  while ($ana = $result->fetchObject()) {
-    node_delete($ana->nid);
+  // remove the materialized view
+  if ($mview = tripal_mviews_get_mview_id('analysis_organism')) {
+    tripal_mviews_action('delete', $mview);
   }
 }
-/*
- *
+/**
+ * 
  */
 function tripal_analysis_create_analysisfeatureprop() {
 
@@ -79,13 +73,15 @@ function tripal_analysis_create_analysisfeatureprop() {
   // version 1.11, the table exists in Chado 1.2.
   if (!db_table_exists('chado.analysisfeatureprop')) {
     $sql = "
-      CREATE TABLE chado.analysisfeatureprop (
+      CREATE TABLE {analysisfeatureprop} (
         analysisfeatureprop_id SERIAL PRIMARY KEY,
-        analysisfeature_id     INTEGER NOT NULL REFERENCES chado.analysisfeature(analysisfeature_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
-        type_id                INTEGER NOT NULL REFERENCES chdo.cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+        analysisfeature_id     INTEGER NOT NULL,
+        type_id                INTEGER NOT NULL,
         value                  TEXT,
         rank                   INTEGER NOT NULL,
-        CONSTRAINT analysisfeature_id_type_id_rank UNIQUE(analysisfeature_id, type_id, rank)
+        CONSTRAINT analysisfeature_id_type_id_rank UNIQUE (analysisfeature_id, type_id, rank),
+        CONSTRAINT analysisfeatureprop_analysisfeature_id_fkey FOREIGN KEY (analysisfeature_id) REFERENCES {analysisfeature}(analysisfeature_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
+        CONSTRAINT analysisfeatureprop_type_id_fkey FOREIGN KEY (type_id) REFERENCES {cvterm}(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
       )
     ";
     chado_query($sql);

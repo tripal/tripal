@@ -368,6 +368,77 @@ function tripal_core_chado_schema_v1_11_analysis() {
   return $description;
 }
 /**
+ * Implements hook_chado_schema_v1_11_analysisprop()
+ *
+ * Purpose: To describe the structure of 'analysisprop' to tripal.  This table doesn't
+ * exist in Chado v1.1 (it does in v1.2), so we need to describe it here
+ *
+ * @see tripal_core_chado_insert()
+ * @see tripal_core_chado_update()
+ * @see tripal_core_chado_select()
+ *
+ * @return
+ *    An array describing the 'analysisprop' table
+ *
+ * @ingroup tripal_chado_v1.11_schema_api
+ *
+ */
+function tripal_core_chado_schema_v1_11_analysisprop() {
+  $description =  array(
+    'table' => 'analysisprop',
+    'fields' => array(
+      'analysisprop_id' => array(
+        'type' => 'serial',
+        'not NULL' => '1',
+      ),
+      'analysis_id' => array(
+        'type' => 'int',
+        'not NULL' => '1',
+      ),
+      'type_id' => array(
+        'type' => 'int',
+        'not NULL' => '1',
+      ),
+      'value' => array(
+        'type' => 'text',
+        'not NULL' => '',
+      ),
+    ),
+    'primary key' => array(
+      0 => 'analysisprop_id',
+    ),
+    'unique keys' => array(
+      'analysisprop_c1' => array(
+        0 => 'analysis_id',
+        1 => 'type_id',
+      ),
+    ),
+    'indexes' => array(
+      'analysisprop_idx1' => array(
+        0 => 'analysis_id',
+      ),
+      'analysisprop_idx2' => array(
+        0 => 'type_id',
+      ),
+    ),
+    'foreign keys' => array(
+      'cvterm' => array(
+        'table' => 'cvterm',
+        'columns' => array(
+          'type_id' => 'cvterm_id',
+        ),
+      ),
+      'analysis' => array(
+        'table' => 'analysis',
+        'columns' => array(
+          'analysis_id' => 'analysis_id',
+        ),
+      ),
+    ),
+  );
+  return $description;
+}
+/**
  * Implements hook_chado_schema_v1_11_analysisfeature()
  * Purpose: To describe the structure of 'analysisfeature' to tripal
  * @see tripal_core_chado_insert()
@@ -451,141 +522,7 @@ function tripal_core_chado_schema_v1_11_analysisfeature() {
   );
   return $description;
 }
-/**
- * Implements hook_chado_schema_v1_11_analysisfeatureprop()
- * Purpose: To describe the structure of 'analysisfeatureprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
- *
- * @return
- *    An array describing the 'analysisfeatureprop' table
- *
- * @ingroup tripal_chado_v1.11_schema_api
- *
- */
-function tripal_core_chado_schema_v1_11_analysisfeatureprop() {
-  $description =  array(
-    'table' => 'analysisfeatureprop',
-    'fields' => array(
-      'analysisfeatureprop_id' => array(
-        'type' => 'serial',
-        'not NULL' => '1',
-      ),
-      'analysisfeature_id' => array(
-        'type' => 'int',
-        'not NULL' => '1',
-      ),
-      'type_id' => array(
-        'type' => 'int',
-        'not NULL' => '1',
-      ),
-      'value' => array(
-        'type' => 'text',
-        'not NULL' => '',
-      ),
-      'rank' => array(
-        'type' => 'int',
-        'not NULL' => '1',
-      ),
-    ),
-    'primary key' => array(
-      0 => 'analysisfeatureprop_id',
-    ),
-    'unique keys' => array(
-      'analysisfeature_id_type_id_rank' => array(
-        0 => 'analysisfeature_id',
-        1 => 'type_id',
-        2 => 'rank',
-      ),
-    ),
-    'indexes' => array(
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
-        'table' => 'cvterm',
-        'columns' => array(
-          'type_id' => 'cvterm_id',
-        ),
-      ),
-      'analysisfeature' => array(
-        'table' => 'analysisfeature',
-        'columns' => array(
-          'analysisfeature_id' => 'analysisfeature_id',
-        ),
-      ),
-    ),
-  );
-  return $description;
-}
-/**
- * Implements hook_chado_schema_v1_11_analysisprop()
- * Purpose: To describe the structure of 'analysisprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
- *
- * @return
- *    An array describing the 'analysisprop' table
- *
- * @ingroup tripal_chado_v1.11_schema_api
- *
- */
-function tripal_core_chado_schema_v1_11_analysisprop() {
-  $description =  array(
-    'table' => 'analysisprop',
-    'fields' => array(
-      'analysisprop_id' => array(
-        'type' => 'serial',
-        'not NULL' => '1',
-      ),
-      'analysis_id' => array(
-        'type' => 'int',
-        'not NULL' => '1',
-      ),
-      'type_id' => array(
-        'type' => 'int',
-        'not NULL' => '1',
-      ),
-      'value' => array(
-        'type' => 'text',
-        'not NULL' => '',
-      ),
-    ),
-    'primary key' => array(
-      0 => 'analysisprop_id',
-    ),
-    'unique keys' => array(
-      'analysisprop_c1' => array(
-        0 => 'analysis_id',
-        1 => 'type_id',
-      ),
-    ),
-    'indexes' => array(
-      'analysisprop_idx1' => array(
-        0 => 'analysis_id',
-      ),
-      'analysisprop_idx2' => array(
-        0 => 'type_id',
-      ),
-    ),
-    'foreign keys' => array(
-      'cvterm' => array(
-        'table' => 'cvterm',
-        'columns' => array(
-          'type_id' => 'cvterm_id',
-        ),
-      ),
-      'analysis' => array(
-        'table' => 'analysis',
-        'columns' => array(
-          'analysis_id' => 'analysis_id',
-        ),
-      ),
-    ),
-  );
-  return $description;
-}
+
 /**
  * Implements hook_chado_schema_v1_11_arraydesign()
  * Purpose: To describe the structure of 'arraydesign' to tripal

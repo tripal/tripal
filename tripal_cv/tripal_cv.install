@@ -52,8 +52,8 @@ function tripal_cv_install() {
   // add defaults to the tables that correlate OBO files/references with a chado CV
   tripal_cv_add_obo_defaults();
   
-  // add the custom tables to Chado
-  tripal_cv_add_custom_tables();
+  // create the temp table we will use for loading OBO files
+  tripal_cv_create_tripal_obo_temp();
 }
 /**
  * Implementation of hook_uninstall().
@@ -62,14 +62,41 @@ function tripal_cv_install() {
  */
 function tripal_cv_uninstall() {
   // remove the materialized view
-  // D7 @todo Fix tripal_mviews_get_mview_id()
-  /**
   if ($mview = tripal_mviews_get_mview_id('cv_root_mview')) {
     tripal_mviews_action('delete', $mview);
   }
-  */
+  
+  // drop the tripal_obo_temp table
+  if (db_table_exists('chado.tripal_obo_temp')) {
+    $sql = "DROP TABLE {tripal_obo_temp}";
+    chado_query($sql);
+  }
 }
-
+/**
+ *
+ */
+function tripal_cv_create_tripal_obo_temp() {
+  // the tripal_obo_temp table is used for temporary housing of records when loading OBO files
+  // we create it here using plain SQL because we want it to be in the chado schema but we 
+  // do not want to use the Tripal Custom Table API because we don't want it to appear in the 
+  // list of custom tables.  It needs to be available for the Tripal Chado API so we create it 
+  // here and then define it in the tripal_cv/api/tripal_cv.schema.api.inc
+  if (!db_table_exists('chado.tripal_obo_temp')) {
+    $sql = "
+      CREATE TABLE {tripal_obo_temp} (
+        id character varying(255) NOT NULL,
+        stanza text NOT NULL,
+        type character varying(50) NOT NULL,
+        CONSTRAINT tripal_obo_temp_uq0 UNIQUE (id)
+      );      
+    ";
+    chado_query($sql);
+    $sql = "CREATE INDEX tripal_obo_temp_idx0 ON {tripal_obo_temp} USING btree (id)";
+    chado_query($sql);
+    $sql = "CREATE INDEX tripal_obo_temp_idx1 ON {tripal_obo_temp} USING btree (type)";
+    chado_query($sql);
+  }
+}
 /**
  * Implementation of hook_schema().
  *
@@ -173,37 +200,4 @@ function tripal_cv_add_obo_defaults() {
   foreach ($ontologies as $o) {
     db_query("INSERT INTO {tripal_cv_obo} (name,path) VALUES (:name, :path)", array(':name' => $o[0], ':path' => $o[1]));
   }
-}
-
-/**
- * 
- */
-function tripal_cv_add_custom_tables() {
-  $schema = array(
-    'table' => 'tripal_obo_temp',
-    'fields' => array(
-      'id' => array(
-        'type' => 'varchar',
-        'length' => '255',
-        'not null' => TRUE,
-      ),
-      'stanza' => array(
-        'type' => 'text',
-        'not null' => TRUE,
-      ),
-      'type' => array(
-        'type' => 'varchar',
-        'length' => '50',
-        'not null' => TRUE,
-      ),
-    ),
-    'indexes' => array(
-      'tripal_obo_temp_idx0' => array('id'),
-      'tripal_obo_temp_idx0' => array('type'),
-    ),
-    'unique keys' => array(
-      'tripal_obo_temp_uq0' => array('id'),
-    ),
-  );
-  tripal_core_create_custom_table('tripal_obo_temp', $schema, TRUE);
 }

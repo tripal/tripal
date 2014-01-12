@@ -14,11 +14,12 @@
  *
  */
 
-require('api/tripal_analysis.api.inc');
-require('includes/tripal_analysis_privacy.inc');
-require('includes/tripal_analysis.admin.inc');
-require('includes/tripal_analysis.form.inc');
-require('includes/tripal_analysis.sync.inc');
+require_once 'api/tripal_analysis.api.inc';
+require_once 'includes/tripal_analysis_privacy.inc';
+require_once 'includes/tripal_analysis.admin.inc';
+require_once 'includes/tripal_analysis.form.inc';
+require_once 'includes/tripal_analysis.sync.inc';
+require_once "api/tripal_analysis.schema.api.inc";
 
 
 /**

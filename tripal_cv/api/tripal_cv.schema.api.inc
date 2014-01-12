@@ -14,7 +14,31 @@
  *
  */
 function tripal_cv_chado_schema_v1_2_tripal_obo_temp() {
-  $schema = tripal_cv_get_custom_tables('tripal_obo_temp');
-  $description = $schema['tripal_obo_temp'];
-  return $description;
+  $schema = array(
+    'table' => 'tripal_obo_temp',
+    'fields' => array(
+      'id' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'stanza' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'tripal_obo_temp_idx0' => array('id'),
+      'tripal_obo_temp_idx0' => array('type'),
+    ),
+    'unique keys' => array(
+      'tripal_obo_temp_uq0' => array('id'),
+    ),
+  );
+  return $schema;
 }

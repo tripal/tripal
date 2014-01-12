@@ -21,6 +21,7 @@ require_once "includes/gff_loader.inc";
 require_once "includes/seq_extract.inc";
 require_once "includes/tripal_feature-delete.inc";
 require_once "includes/tripal_feature.form.inc";
+require_once "api/tripal_feature.schema.api.inc";
 
 /**
  *
