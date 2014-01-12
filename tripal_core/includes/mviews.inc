@@ -18,7 +18,7 @@ function tripal_mview_admin_view() {
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
   $breadcrumb[] = l('Chado Schema', 'admin/tripal/schema');
-  $breadcrumb[] = l('Materialized Schema', 'admin/tripal/schema/mviews');
+  $breadcrumb[] = l('Materialized Views', 'admin/tripal/schema/mviews');
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
