@@ -134,22 +134,32 @@ function tripal_featuremap_menu() {
   $items = array();
 
   // The administative settings menu
-  $items['admin/tripal/tripal_featuremap'] = array(
+  $items['admin/tripal/chado/tripal_featuremap'] = array(
     'title' => 'Maps',
-    'description' => 'Basic Description of Tripal Map Module Functionality',
-    'page callback' => 'theme',
-    'page arguments' => array('tripal_featuremap_admin'),
+    'description' => 'Genetic Maps of Features',
+    'page callback' => 'tripal_featuremap_admin_featuremaps_listing',
     'access arguments' => array('administer tripal featuremap'),
     'type' => MENU_NORMAL_ITEM,
   );
 
-  $items['admin/tripal/tripal_featuremap/configuration'] = array(
-    'title' => 'Configuration',
+  $items['admin/tripal/chado/tripal_featuremap/help'] = array(
+    'title' => 'Help',
+    'description' => 'Basic Description of Tripal Map Module Functionality',
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_featuremap_help'),
+    'access arguments' => array('administer tripal featuremap'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10
+  );
+
+  $items['admin/tripal/chado/tripal_featuremap/configuration'] = array(
+    'title' => 'Settings',
     'description' => 'Manage integration of Chado maps including associated features.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_featuremap_admin'),
     'access arguments' => array('administer tripal featuremap'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2
   );
 
   // Synchronizing maps from Chado to Drupal
@@ -176,6 +186,14 @@ function tripal_featuremap_menu() {
     'page arguments' => array(3, 4),
     'access arguments' => array('edit chado_featuremap content'),
     'type ' => MENU_CALLBACK,
+  );
+
+  $items['admin/tripal/chado/tripal_featuremap/views/featuremaps/enable'] = array(
+    'title' => 'Enable featuremap Administrative View',
+    'page callback' => 'tripal_views_admin_enable_view',
+    'page arguments' => array('tripal_featuremap_admin_featuremaps', 'admin/tripal/chado/tripal_featuremap'),
+    'access arguments' => array('administer tripal_bulk_loader'),
+    'type' => MENU_CALLBACK,
   );
 
   return $items;
@@ -230,8 +248,8 @@ function tripal_featuremap_theme() {
       'arguments' => array('node' => NULL),
       'template' => 'tripal_featuremap_references',
     ),
-    'tripal_featuremap_admin' => array(
-      'template' => 'tripal_featuremap_admin',
+    'tripal_featuremap_help' => array(
+      'template' => 'tripal_featuremap_help',
       'arguments' =>  array(NULL),
       'path' => drupal_get_path('module', 'tripal_featuremap') . '/theme'
     ),
