@@ -7,27 +7,59 @@
  */
 
 /**
- *
+ * Provides a landing page for tripal jobs admin
+ */
+function tripal_jobs_admin_view() {
+  $output = '';
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Jobs', 'admin/tripal/tripal_jobs');
+  drupal_set_breadcrumb($breadcrumb);
+
+  // Add the view
+  $view = views_embed_view('tripal_core_admin_jobs','default');
+  if (isset($view)) {
+    $output .= $view;
+  }
+  else {
+    $output .= '<p>The Tripal Jobs management system uses primarily views to provide an '
+      . 'administrative interface. Currently one or more views needed for this '
+      . 'administrative interface are disabled. <strong>Click each of the following links to '
+      . 'enable the pertinent views</strong>:</p>';
+    $output .= '<ul>';
+      $output .= '<li>'.l('Jobs View', 'admin/tripal/tripal_jobs/views/jobs/enable').'</li>';
+    $output .= '</ul>';
+  }
+
+  return $output;
+}
+
+/**
+ * NO LONGER USED: REPLACED BY VIEW
  * @ingroup tripal_core
  */
 function tripal_jobs_report_form($form, &$form_state = NULL) {
   $form = array();
 
-  // set the default values 
+  // set the default values
   $default_status = '';
   $default_job_name = '';
   if (array_key_exists('values', $form_state)) {
     $default_status = array_key_exists('job_status', $form_state['values']) ? $form_state['values']['job_status'] : '';
     $default_job_name = array_key_exists('job_name', $form_state['values']) ? $form_state['values']['job_name'] : '';
   }
-  
+
   if (!$default_status and array_key_exists('tripal_job_filter', $_SESSION)) {
     $job_status = array_key_exists('job_status', $_SESSION['tripal_job_filter']) ? $_SESSION['tripal_job_filter']['job_status'] : '';
   }
   if (!$default_job_name and array_key_exists('tripal_job_filter', $_SESSION)) {
     $default_job_name = array_key_exists('job_name', $_SESSION['tripal_job_filter']) ? $_SESSION['tripal_job_filter']['job_name'] : '';
   }
-  
+
 
   $form['job_status'] = array(
     '#type'          => 'select',
@@ -46,7 +78,7 @@ function tripal_jobs_report_form($form, &$form_state = NULL) {
     '#type'          => 'textfield',
     '#title'         => t('Filter by Job Name'),
     '#description'   => t('The jobs will be filtered if text provided is contained in the job name'),
-    '#default_value' => $default_job_name,        
+    '#default_value' => $default_job_name,
   );
 
   $form['submit'] = array(
@@ -60,10 +92,10 @@ function tripal_jobs_report_form($form, &$form_state = NULL) {
  * @ingroup tripal_core
  */
 function tripal_jobs_report_form_submit($form, &$form_state = NULL) {
-  
+
   $job_status = $form_state['values']['job_status'];
   $job_name = $form_state['values']['job_name'];
-  
+
   $_SESSION['tripal_job_filter']['job_status'] = $job_status;
   $_SESSION['tripal_job_filter']['job_name'] = $job_name;
 }
@@ -80,7 +112,7 @@ function tripal_jobs_report() {
   // run the following function which will
   // change the status of jobs that have errored out
   tripal_jobs_check_running();
-  
+
   $job_status = '';
   $job_name = '';
   if (array_key_exists('tripal_job_filter', $_SESSION)) {
@@ -95,9 +127,9 @@ function tripal_jobs_report() {
       TJ.status as job_status, TJ,submit_date,TJ.start_time,
       TJ.end_time,TJ.priority,U.name as username
     FROM {tripal_jobs} TJ
-      INNER JOIN {users} U on TJ.uid = U.uid 
-    WHERE 1=1 
-  ";  
+      INNER JOIN {users} U on TJ.uid = U.uid
+    WHERE 1=1
+  ";
   $args = array();
   if ($job_status) {
     $sql .= "AND TJ.status = :status ";
@@ -108,9 +140,9 @@ function tripal_jobs_report() {
     $args[':job_name'] = "%$job_name%";
   }
   $sql .= " ORDER BY job_id DESC ";
-  
+
   // create the SQL that returns the total number of records
-  $count_sql = "SELECT count(*) as total FROM ($sql) as t1";  
+  $count_sql = "SELECT count(*) as total FROM ($sql) as t1";
   $result = db_query($count_sql, $args);
   $total_jobs = $result->fetchObject();
 
@@ -118,16 +150,16 @@ function tripal_jobs_report() {
   $num_per_page = 25;
   $page = pager_find_page();
   pager_default_initialize($total_jobs->total, $num_per_page);
-  
+
   // get results
   $pager_sql = "$sql LIMIT  :number OFFSET :offset";
   $args[':number'] = $num_per_page;
   $args[':offset'] = $num_per_page * $page;
   $jobs = db_query($pager_sql, $args);
-  
-  
+
+
   // iterate through the jobs and build the table rows
-  $rows = array();  
+  $rows = array();
   foreach ($jobs as $job) {
     $submit = tripal_jobs_get_submit_date($job);
     $start = tripal_jobs_get_start_time($job);
@@ -149,8 +181,8 @@ function tripal_jobs_report() {
       "$cancel_link $rerun_link $view_link",
     );
   }
-  
-  // the header for the jobs table  
+
+  // the header for the jobs table
   $header = array(
     'Job ID',
     'User',
@@ -162,21 +194,21 @@ function tripal_jobs_report() {
     'Action'
   );
   $table = array(
-    'header' => $header, 
-    'rows' => $rows, 
-    'attributes' => array(), 
+    'header' => $header,
+    'rows' => $rows,
+    'attributes' => array(),
     'sticky' => FALSE,
     'caption' => '',
-    'colgroups' => array(), 
-    'empty' => 'No jobs have been submitted', 
+    'colgroups' => array(),
+    'empty' => 'No jobs have been submitted',
   );
-    
+
   // create the report page
   $output = "Waiting jobs are executed first by priority level (the lower the " .
             "number the higher the priority) and second by the order they " .
             "were entered";
   $report_form = drupal_get_form('tripal_jobs_report_form');
-  $output .= drupal_render($report_form);   
+  $output .= drupal_render($report_form);
   $output .= theme_table($table);
   $output .= theme('pager');
   return $output;
@@ -191,7 +223,7 @@ function tripal_jobs_report() {
  *   The HTML describing the indicated job
  * @ingroup tripal_core
  */
-function tripal_jobs_view($job_id) { 
+function tripal_jobs_view($job_id) {
   // get the job record
   $sql =
     "SELECT TJ.job_id,TJ.uid,TJ.job_name,TJ.modulename,TJ.progress,
@@ -224,26 +256,26 @@ function tripal_jobs_view($job_id) {
     $job->arguments = $args;
   }
   // generate the list of arguments for display
-  $arguments = '';  
+  $arguments = '';
   foreach ($job->arguments as $key => $value) {
      $arguments .= "$key: $value<br>";
-  } 
-  
+  }
+
   // build the links
   $links  = l('Return to jobs list', "admin/tripal/tripal_jobs/") . ' | ' .
   $links .= l('Re-run this job', "admin/tripal/tripal_jobs/rerun/" . $job->job_id) . ' | ';
   if ($job->start_time == 0 and $job->end_time == 0) {
     $links .= l('Cancel this job', "admin/tripal/tripal_jobs/cancel/" . $job->job_id) . ' | ';
   }
-  
+
   // make our start and end times more legible
   $job->submit_date = tripal_jobs_get_submit_date($job);
   $job->start_time = tripal_jobs_get_start_time($job);
   $job->end_time = tripal_jobs_get_end_time($job);
-  
+
   // construct the table headers
   $header = array('Detail', 'Value');
-  
+
   // construct the table rows
   $rows[] = array('Job Description', $job->job_name);
   $rows[] = array('Submitting Module', $job->modulename);
@@ -258,17 +290,17 @@ function tripal_jobs_view($job_id) {
   $rows[] = array('Error Message', $job->error_msg);
   $rows[] = array('Priority', $job->priority);
   $rows[] = array('Submitting User', $job->username);
-  
+
   $table = array(
-    'header' => $header, 
-    'rows' => $rows, 
-    'attributes' => array(), 
+    'header' => $header,
+    'rows' => $rows,
+    'attributes' => array(),
     'sticky' => FALSE,
     'caption' => '',
-    'colgroups' => array(), 
-    'empty' => '', 
-  );    
-  
+    'colgroups' => array(),
+    'empty' => '',
+  );
+
   $output = '<p>' . substr($links, 0, -2) . '</p>'; // remove trailing |
   $output .= theme_table($table);
   return $output;

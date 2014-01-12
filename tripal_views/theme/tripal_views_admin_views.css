@@ -67,6 +67,11 @@ th.views-field {
   word-wrap: break-word;
 }
 
+td.views-field.extra-short-column, th.views-field.extra-short-column {
+  width: 25px;
+  word-wrap: break-word;
+}
+
 td.views-field.short-column, th.views-field.short-column {
   width: 75px;
   word-wrap: break-word;

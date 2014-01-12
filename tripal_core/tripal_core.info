@@ -5,3 +5,5 @@ project = tripal_core
 package = Tripal
 version = 7.x-2.0-beta1
 configure = admin/tripal
+
+dependencies[] = views

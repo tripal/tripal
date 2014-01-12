@@ -63,11 +63,11 @@ function tripal_core_init() {
   // add javascript files
   drupal_add_js(drupal_get_path('module', 'tripal_core') . '/theme/js/tripal.js');
   drupal_add_css(drupal_get_path('module', 'tripal_core') . '/theme/css/tripal.css');
-  
+
 
   // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist, and
   // only if the chado database is present.
-  if (tripal_core_is_chado_installed()) {    
+  if (tripal_core_is_chado_installed()) {
 
     // make sure the current version of chado is set
     tripal_core_set_chado_version();
@@ -194,10 +194,19 @@ function tripal_core_menu() {
   $items['admin/tripal/tripal_jobs'] = array(
     'title' => 'Jobs',
     'description' => 'Jobs managed by Tripal',
-    'page callback' => 'tripal_jobs_report',
+    'page callback' => 'tripal_jobs_admin_view',
     'access arguments' => array('access administration pages'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => -10
+  );
+  $items['admin/tripal/tripal_jobs/help'] = array(
+    'title' => 'Help',
+    'description' => 'Help for the tripal job management system',
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_core_job_help'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10
   );
   $items['admin/tripal/tripal_jobs/cancel/%'] = array(
     'title' => 'Jobs',
@@ -220,6 +229,13 @@ function tripal_core_menu() {
     'description' => 'View job details.',
     'page callback' => 'tripal_jobs_view',
     'page arguments' => array(4),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/tripal_jobs/views/jobs/enable'] = array(
+    'title' => 'Enable Jobs Administrative View',
+    'page callback' => 'tripal_views_admin_enable_view',
+    'page arguments' => array('tripal_core_admin_jobs', 'admin/tripal/tripal_jobs'),
     'access arguments' => array('access administration pages'),
     'type' => MENU_CALLBACK,
   );
@@ -357,6 +373,11 @@ function tripal_core_theme() {
     'theme_sequence_combo' => array(
       'render element' => 'element',
     ),
+    'tripal_core_jobs_help' => array(
+      'template' => 'tripal_core_jobs_help',
+      'variables' =>  array(NULL),
+      'path' => drupal_get_path('module', 'tripal_core') . '/theme'
+    ),
   );
 }
 
@@ -413,5 +434,19 @@ function tripal_core_coder_ignore() {
   return array(
     'path' => drupal_get_path('module', 'tripal_core'),
     'line prefix' => drupal_get_path('module', 'tripal_core'),
+  );
+}
+
+/**
+ * Implements hook_views_api()
+ * Purpose: Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_db.views.inc where all the
+ *  views integration code is
+ *
+ * @ingroup tripal_organism
+ */
+function tripal_core_views_api() {
+  return array(
+    'api' => 3.0,
   );
 }
