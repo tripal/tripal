@@ -9,12 +9,45 @@
  */
 
 /**
- * 
+ * Provides a landing page for tripal jobs admin
+ */
+function tripal_custom_table_admin_view() {
+  $output = '';
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado Schema', 'admin/tripal/schema');
+  $breadcrumb[] = l('Custom Tables', 'admin/tripal/schema/custom_tables');
+  drupal_set_breadcrumb($breadcrumb);
+
+  // Add the view
+  $view = views_embed_view('tripal_core_admin_custom_table','default');
+  if (isset($view)) {
+    $output .= $view;
+  }
+  else {
+    $output .= '<p>The Tripal Custom Table management system uses primarily views to provide an '
+      . 'administrative interface. Currently one or more views needed for this '
+      . 'administrative interface are disabled. <strong>Click each of the following links to '
+      . 'enable the pertinent views</strong>:</p>';
+    $output .= '<ul>';
+      $output .= '<li>'.l('Custom Tables View', 'admin/tripal/schema/custom_tables/views/tables/enable').'</li>';
+    $output .= '</ul>';
+  }
+
+  return $output;
+}
+
+/**
+ *
  */
 function tripal_custom_table_new_page() {
   $output = drupal_render(drupal_get_form('tripal_custom_tables_form'));
-  return $output;     
-  
+  return $output;
+
 }
 /**
  * A template function which returns markup to display details for the custom table
@@ -76,7 +109,7 @@ function tripal_custom_tables_list() {
   $custom_tables = db_query("SELECT * FROM {tripal_custom_tables} ORDER BY table_name");
 
   foreach ($custom_tables as $custom_table) {
- 
+
     $rows[] = array(
       l(t('View'), "admin/tripal/custom_tables/view/$custom_table->table_id") . " | " .
       l(t('Edit'), "admin/tripal/custom_tables/edit/$custom_table->table_id") . " | " .
@@ -93,16 +126,16 @@ function tripal_custom_tables_list() {
     )
   );
   $table = array(
-    'header' => $header, 
-    'rows' => $rows, 
-    'attributes' => array(), 
+    'header' => $header,
+    'rows' => $rows,
+    'attributes' => array(),
     'sticky' => FALSE,
     'caption' => '',
-    'colgroups' => array(), 
-    'empty' => 'No custom tables have been added', 
+    'colgroups' => array(),
+    'empty' => 'No custom tables have been added',
   );
 
-  $page = theme_table($table);  
+  $page = theme_table($table);
   return $page;
 }
 
@@ -161,11 +194,11 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
     '#type' => 'value',
     '#value' => $table_id
   );
-  
+
   $form['instructions']= array(
     '#type'          => 'item',
-    '#description'         => t('At times it is necessary to add a custom table to the Chado schema.  
-       These are not offically sanctioned tables but may be necessary for local data requirements.  
+    '#description'         => t('At times it is necessary to add a custom table to the Chado schema.
+       These are not offically sanctioned tables but may be necessary for local data requirements.
        Avoid creating custom tables when possible as other GMOD tools may not recognize these tables
        nor the data in them.  Linker tables or property tables are often a good candidate for
        a custom table. For example a table to link stocks and libraries (e.g. library_stock) would be
@@ -202,7 +235,7 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
     '#executes_submit_callback' => TRUE,
   );
   $form['#redirect'] = 'admin/tripal/custom_tables';
-  
+
   $form['example']= array(
     '#type'          => 'item',
     '#description'         => "<br>Example library_stock table: <pre>
@@ -216,7 +249,7 @@ array (
     'library_id' => array(
       'type' => 'int',
       'not null' => TRUE,
-    ),      
+    ),
     'stock_id' => array(
       'type' => 'int',
       'not null' => TRUE,
@@ -248,7 +281,7 @@ array (
 )
     </pre>",
   );
-  
+
 
   return $form;
 }
@@ -279,7 +312,7 @@ function tripal_custom_tables_form_validate($form, &$form_state) {
         t("The schema array should begin with the word 'array'."));
     }
     else {
-      $success = eval("\$schema_array = $schema;");    
+      $success = eval("\$schema_array = $schema;");
       if ($success === FALSE) {
         $error = error_get_last();
         form_set_error($form_state['values']['schema'],
@@ -299,10 +332,10 @@ function tripal_custom_tables_form_validate($form, &$form_state) {
           $exists = db_table_exists('chado.' . $schema_array['table']);
           if ($exists) {
             form_set_error($form_state['values']['schema'],
-              t("The table name already exists, please choose a different name."));  
+              t("The table name already exists, please choose a different name."));
           }
         }
-      }     
+      }
     }
   }
 }
@@ -320,7 +353,7 @@ function tripal_custom_tables_form_submit($form, &$form_state) {
   $table_id = $form_state['values']['table_id'];
   $schema = $form_state['values']['schema'];
   $force_drop = $form_state['values']['force_drop'];
-  
+
   $skip_creation = 1;
   if ($force_drop) {
      $skip_creation = 0;
@@ -329,9 +362,9 @@ function tripal_custom_tables_form_submit($form, &$form_state) {
   // conver the schema into a PHP array
   $schema_arr = array();
   eval("\$schema_arr = $schema;");
-  
 
-  if (strcmp($action, 'Edit') == 0) {    
+
+  if (strcmp($action, 'Edit') == 0) {
     tripal_core_edit_custom_table($table_id, $schema_arr['table'], $schema_arr, $skip_creation);
   }
   elseif (strcmp($action, 'Add') == 0) {
@@ -369,12 +402,12 @@ function tripal_custom_tables_action($op, $table_id, $redirect = FALSE) {
   $custom_table = $results->fetchObject();
 
   if ($op == 'delete') {
-  
+
     // remove the entry from the tripal_custom tables table
     $sql = "DELETE FROM {tripal_custom_tables} " .
            "WHERE table_id = $table_id";
     db_query($sql);
-    
+
     // drop the table from chado if it exists
     if (db_table_exists($custom_table->table_name)) {
       $success = chado_query("DROP TABLE %s", $custom_table->table_name);

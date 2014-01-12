@@ -287,5 +287,67 @@ function tripal_core_views_data_jobs($data) {
  */
 function tripal_core_views_data_custom_tables($data) {
 
+  $data['tripal_custom_tables']['table']['group'] = t('Tripal Custom Tables');
+  $data['tripal_custom_tables']['table']['base'] = array(
+    'field' => 'table_id', // This is the identifier field for the view.
+    'title' => t('Tripal Custom Tables'),
+    'help' => t('Custom Tables in Chado created by this Tripal Installation.'),
+    'weight' => -10,
+  );
+
+  // Table ID
+  $data['tripal_custom_tables']['table_id'] = array(
+    'title' => t('Custom Table ID'),
+    'help' => t('Custom table primary key.'),
+    'field' => array(
+      'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
+  // Table Name
+  $data['tripal_custom_tables']['table_name'] = array(
+    'title' => t('Table Name'),
+    'help' => t('The name of the table in the database.'),
+    'field' => array(
+      'handler' => 'views_handler_field',
+      'click sortable' => TRUE, // This is use by the table display plugin.
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+    ),
+  );
+
+  // Schema
+  $data['tripal_custom_tables']['schema'] = array(
+    'title' => t('Table Schema'),
+    'help' => t('The schema definition of the table.'),
+    'field' => array(
+      'handler' => 'views_handler_field',
+      'click sortable' => TRUE, // This is use by the table display plugin.
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+    ),
+  );
+
   return $data;
 }

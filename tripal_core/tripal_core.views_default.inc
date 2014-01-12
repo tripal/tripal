@@ -10,6 +10,9 @@ function tripal_core_views_default_views() {
   $view = tripal_core_admin_defaultview_jobs();
   $views[$view->name] = $view;
 
+  $view = tripal_core_admin_defaultview_custom_tables();
+  $views[$view->name] = $view;
+
   return $views;
 }
 
@@ -278,6 +281,123 @@ function tripal_core_admin_defaultview_jobs() {
   $handler->display->display_options['menu']['title'] = 'Jobs';
   $handler->display->display_options['menu']['description'] = 'Jobs managed by Tripal';
   $handler->display->display_options['menu']['weight'] = '-10';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
+  $handler->display->display_options['tab_options']['weight'] = '0';
+
+  return $view;
+}
+
+function tripal_core_admin_defaultview_custom_tables() {
+
+  $view = new view();
+  $view->name = 'tripal_core_admin_custom_table';
+  $view->description = 'DO NOT DISABLE';
+  $view->tag = 'tripal admin';
+  $view->base_table = 'tripal_custom_tables';
+  $view->human_name = 'Tripal Custom Table Admin';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Master */
+  $handler = $view->new_display('default', 'Master', 'default');
+  $handler->display->display_options['title'] = 'Custom Tables';
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'none';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Filter';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '25';
+  $handler->display->display_options['style_plugin'] = 'table';
+  /* Header: Global: Action Links */
+  $handler->display->display_options['header']['action_links_area']['id'] = 'action_links_area';
+  $handler->display->display_options['header']['action_links_area']['table'] = 'views';
+  $handler->display->display_options['header']['action_links_area']['field'] = 'action_links_area';
+  $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
+  $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
+  $handler->display->display_options['header']['action_links_area']['link-1'] = array(
+    'label-1' => 'Add Custom Table',
+    'path-1' => 'admin/tripal/schema/custom_tables/new',
+  );
+  $handler->display->display_options['header']['action_links_area']['link-2'] = array(
+    'label-2' => '',
+    'path-2' => '',
+  );
+  $handler->display->display_options['header']['action_links_area']['link-3'] = array(
+    'label-3' => '',
+    'path-3' => '',
+  );
+  $handler->display->display_options['header']['action_links_area']['link-4'] = array(
+    'label-4' => '',
+    'path-4' => '',
+  );
+  /* Field: Tripal Custom Tables: Custom Table ID */
+  $handler->display->display_options['fields']['table_id']['id'] = 'table_id';
+  $handler->display->display_options['fields']['table_id']['table'] = 'tripal_custom_tables';
+  $handler->display->display_options['fields']['table_id']['field'] = 'table_id';
+  $handler->display->display_options['fields']['table_id']['label'] = '';
+  $handler->display->display_options['fields']['table_id']['element_class'] = 'extra-short-column';
+  $handler->display->display_options['fields']['table_id']['element_label_class'] = 'extra-short-column';
+  $handler->display->display_options['fields']['table_id']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['table_id']['separator'] = '';
+  /* Field: Tripal Custom Tables: Table Name */
+  $handler->display->display_options['fields']['table_name']['id'] = 'table_name';
+  $handler->display->display_options['fields']['table_name']['table'] = 'tripal_custom_tables';
+  $handler->display->display_options['fields']['table_name']['field'] = 'table_name';
+  $handler->display->display_options['fields']['table_name']['label'] = 'Name';
+  $handler->display->display_options['fields']['table_name']['alter']['make_link'] = TRUE;
+  $handler->display->display_options['fields']['table_name']['alter']['path'] = 'admin/tripal/schema/custom_tables/view/[table_id]';
+  /* Field: Global: Custom text */
+  $handler->display->display_options['fields']['nothing']['id'] = 'nothing';
+  $handler->display->display_options['fields']['nothing']['table'] = 'views';
+  $handler->display->display_options['fields']['nothing']['field'] = 'nothing';
+  $handler->display->display_options['fields']['nothing']['label'] = 'Edit Link';
+  $handler->display->display_options['fields']['nothing']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['nothing']['alter']['text'] = 'Edit';
+  $handler->display->display_options['fields']['nothing']['alter']['make_link'] = TRUE;
+  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/tripal/schema/custom_tables/edit/[table_id]';
+  /* Field: Global: Custom text */
+  $handler->display->display_options['fields']['nothing_1']['id'] = 'nothing_1';
+  $handler->display->display_options['fields']['nothing_1']['table'] = 'views';
+  $handler->display->display_options['fields']['nothing_1']['field'] = 'nothing';
+  $handler->display->display_options['fields']['nothing_1']['label'] = 'Delete Link';
+  $handler->display->display_options['fields']['nothing_1']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['nothing_1']['alter']['text'] = 'Delete';
+  $handler->display->display_options['fields']['nothing_1']['alter']['make_link'] = TRUE;
+  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/tripal/schema/custom_tables/action/delete/[table_id]';
+  /* Field: Global: Custom text */
+  $handler->display->display_options['fields']['nothing_2']['id'] = 'nothing_2';
+  $handler->display->display_options['fields']['nothing_2']['table'] = 'views';
+  $handler->display->display_options['fields']['nothing_2']['field'] = 'nothing';
+  $handler->display->display_options['fields']['nothing_2']['label'] = '';
+  $handler->display->display_options['fields']['nothing_2']['alter']['text'] = '[nothing]   [nothing_1]';
+  $handler->display->display_options['fields']['nothing_2']['element_label_colon'] = FALSE;
+  /* Filter criterion: Tripal Custom Tables: Table Name */
+  $handler->display->display_options['filters']['table_name']['id'] = 'table_name';
+  $handler->display->display_options['filters']['table_name']['table'] = 'tripal_custom_tables';
+  $handler->display->display_options['filters']['table_name']['field'] = 'table_name';
+  $handler->display->display_options['filters']['table_name']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['table_name']['expose']['operator_id'] = 'table_name_op';
+  $handler->display->display_options['filters']['table_name']['expose']['label'] = 'Table Name';
+  $handler->display->display_options['filters']['table_name']['expose']['operator'] = 'table_name_op';
+  $handler->display->display_options['filters']['table_name']['expose']['identifier'] = 'table_name';
+  $handler->display->display_options['filters']['table_name']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page');
+  $handler->display->display_options['path'] = 'admin/tripal/schema/custom_tables/tables';
+  $handler->display->display_options['menu']['type'] = 'default tab';
+  $handler->display->display_options['menu']['title'] = 'Custom Tables';
+  $handler->display->display_options['menu']['description'] = 'A list of existing custom tables';
+  $handler->display->display_options['menu']['weight'] = '-10';
+  $handler->display->display_options['menu']['name'] = 'management';
   $handler->display->display_options['menu']['context'] = 0;
   $handler->display->display_options['menu']['context_only_inline'] = 0;
   $handler->display->display_options['tab_options']['weight'] = '0';
