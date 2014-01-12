@@ -2,9 +2,43 @@
 
 /**
  * @file
- * Contains functions for viewing and editing of Materialized Views 
+ * Contains functions for viewing and editing of Materialized Views
  * on a Tripal website.
  */
+
+/**
+ * Provides a landing page for tripal jobs admin
+ */
+function tripal_mview_admin_view() {
+  $output = '';
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado Schema', 'admin/tripal/schema');
+  $breadcrumb[] = l('Materialized Views', 'admin/tripal/schema/mviews');
+  drupal_set_breadcrumb($breadcrumb);
+
+  // Add the view
+  $view = views_embed_view('tripal_core_admin_mviews','default');
+  if (isset($view)) {
+    $output .= $view;
+  }
+  else {
+    $output .= '<p>The Tripal Materalized View management system uses primarily views to provide an '
+      . 'administrative interface. Currently one or more views needed for this '
+      . 'administrative interface are disabled. <strong>Click each of the following links to '
+      . 'enable the pertinent views</strong>:</p>';
+    $output .= '<ul>';
+      $output .= '<li>'.l('MViews View', 'admin/tripal/schema/mviews/views/mviews/enable').'</li>';
+    $output .= '</ul>';
+  }
+
+  return $output;
+}
+
 
 /**
  * A template function which returns markup to display details for the current materialized view
@@ -20,33 +54,33 @@ function tripal_mview_report($mview_id) {
   $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id";
   $results = db_query($sql, array(':mview_id' => $mview_id));
   $mview = $results->fetchObject();
-  
+
   $rows = array();
 
   // create a table with each row containig stats for
   // an individual job in the results set.
   $output  = "<p>" . l("Return to table of materialized views", "admin/tripal/schema/mviews/") . "</p>";
   $output .= "<p>Details for <b>$mview->name</b>:</p>";
-  
+
   // build the URLs using the url function so we can handle installations where
   // clean URLs are or are not used
   $update_url = url("admin/tripal/schema/mviews/action/update/$mview->mview_id");
   $delete_url = url("admin/tripal/schema/mviews/action/delete/$mview->mview_id");
   $edit_url = url("admin/tripal/schema/mviews/edit/$mview->mview_id");
   $rows[] = array('Actions', "<a href='$update_url'>Populate</a>, <a href='$edit_url'>Edit</a>,  <a href='$delete_url'>Delete</a>");
-  
-  if ($mview->last_update > 0) {    
+
+  if ($mview->last_update > 0) {
     $update = format_date($mview->last_update);
   }
   else {
     $update = 'Not yet populated';
   }
-  $rows[] = array('Last Update', $update);  
+  $rows[] = array('Last Update', $update);
   if ($mview->name) {
     $rows[] = array('View Name', $mview->name);
   }
   if ($mview->modulename) {
-    $rows[] = array('Module Name', $mview->modulename);    
+    $rows[] = array('Module Name', $mview->modulename);
   }
   if ($mview->mv_table) {
     $rows[] = array('Table Name', $mview->mv_table);
@@ -66,17 +100,17 @@ function tripal_mview_report($mview_id) {
   if ($mview->mv_schema) {
     $rows[] = array('Drupal Schema API Definition', "<textarea rows=\"20\" cols=\"120\" style=\"font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;\">" . $mview->mv_schema . "</textarea>");
   }
-  
+
   $header = array('Detail', 'Value');
   $table = array(
-    'header' => $header, 
-    'rows' => $rows, 
-    'attributes' => array(), 
+    'header' => $header,
+    'rows' => $rows,
+    'attributes' => array(),
     'sticky' => FALSE,
     'caption' => '',
-    'colgroups' => array(), 
-    'empty' => 'There are no materialized views', 
-  ); 
+    'colgroups' => array(),
+    'empty' => 'There are no materialized views',
+  );
   $table = theme_table($table);
   $output .= $table;
 
@@ -119,8 +153,8 @@ function tripal_mviews_report() {
         'colspan' => 6),
     )
   );
-  $page = '</p>' . t("Materialized Views (MViews) are custom tables populated with a defined SQL statement.  
-    Because Chado is highly normalized and highly constrained it serves as a wonderful 
+  $page = '</p>' . t("Materialized Views (MViews) are custom tables populated with a defined SQL statement.
+    Because Chado is highly normalized and highly constrained it serves as a wonderful
     data storage platform, but unfortunately some queries may be slow.  MViews alleviate slowness by aggregating data
     into tables that are more easy to query.  Use MViews to create tables for custom search pages or custom Tripal
     module development.") . '</p>';
@@ -133,14 +167,14 @@ function tripal_mviews_report() {
            '</ul></p>';
   $page .= '<b>' . t("Existing MViews") . '</b>';
   $table = array(
-    'header' => $header, 
-    'rows' => $rows, 
-    'attributes' => array(), 
+    'header' => $header,
+    'rows' => $rows,
+    'attributes' => array(),
     'sticky' => FALSE,
     'caption' => '',
-    'colgroups' => array(), 
-    'empty' => 'There are no materialized views', 
-  ); 
+    'colgroups' => array(),
+    'empty' => 'There are no materialized views',
+  );
   $page .= theme_table($table);
   return $page;
 }
@@ -168,8 +202,8 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
 
   // set defaults for collapsed fieldsets
   $schema_collapsed = 0;
-  $traditional_collapsed = 1;  
-  
+  $traditional_collapsed = 1;
+
   $default_name = '';
   $default_mv_table = '';
   $default_mv_specs = '';
@@ -179,11 +213,11 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
   $default_comment = '';
   $default_modulename = '';
   $default_schema =  '';
-  
+
   // if the view is the older style legacy view then this value get's set to 1
   $is_legacy = 0;
-  
-  
+
+
   // get this requested view
   if (strcmp($action, 'Edit') == 0 ) {
     $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id ";
@@ -228,10 +262,10 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
     if (!$default_schema) {
       $default_schema = $mview->mv_schema;
     }
-    if (!$default_modulename) {      
+    if (!$default_modulename) {
       $default_modulename = $mview->modulename ? $mview->modulename : 'tripal_core';
     }
-    
+
     if ($mview->mv_specs) {
       $is_legacy = 1;
     }
@@ -262,22 +296,22 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
     '#type' => 'value',
     '#value' => $is_legacy
   );
-  
+
   $form['mview_id'] = array(
     '#type' => 'value',
     '#value' => $mview_id
   );
-  
+
   $form['modulename'] = array(
     '#type' => 'value',
     '#value' => $default_modulename,
   );
-  
+
   $form['return_link'] = array(
     '#type' => 'item',
     '#description' => l("Return to table of materialized views", "admin/tripal/schema/mviews/"),
   );
-  
+
 
   $form['name']= array(
     '#type'          => 'textfield',
@@ -314,11 +348,11 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
     '#default_value' => $default_schema,
     '#rows'          => 25,
     '#attributes' => array(
-      'style' => "font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;",      
+      'style' => "font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;",
     ),
   );
 
-  // only let folks edit legacy MViews, not create new ones 
+  // only let folks edit legacy MViews, not create new ones
   if ($is_legacy) {
     // add a fieldset for the Original Table Description fields
     $form['traditional'] = array(
@@ -331,7 +365,7 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
       '#collapsible' => 1,
       '#collapsed' => $traditional_collapsed,
     );
-  
+
     $form['traditional']['mv_table']= array(
       '#type'          => 'textfield',
       '#title'         => t('Table Name'),
@@ -339,7 +373,7 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
       '#required'      => FALSE,
       '#default_value' => $default_mv_table,
     );
-  
+
     $form['traditional']['mv_specs']= array(
       '#type'          => 'textarea',
       '#title'         => t('Table Definition'),
@@ -347,7 +381,7 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
       '#required'      => FALSE,
       '#default_value' => $default_mv_specs,
     );
-  
+
     $form['traditional']['indexed']= array(
       '#type'          => 'textarea',
       '#title'         => t('Indexed Fields'),
@@ -355,7 +389,7 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
       '#required'      => FALSE,
       '#default_value' => $default_indexed,
     );
-  
+
     /**
     $form['traditional']['special_index']= array(
       '#type'          => 'textarea',
@@ -375,7 +409,7 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
     '#default_value' => $default_mvquery,
     '#rows'          => 25,
     '#attributes' => array(
-      'style' => "font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;",      
+      'style' => "font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;",
     ),
   );
 
@@ -411,7 +445,7 @@ function tripal_mviews_form_validate($form, &$form_state) {
   if ($is_legacy) {
     $mv_table = $form_state['values']['mv_table'];
     $mv_specs = $form_state['values']['mv_specs'];
-    $indexed = $form_state['values']['indexed'];    
+    $indexed = $form_state['values']['indexed'];
     $special_index = '';//$form_state['values']['special_index'];
   }
   else {
@@ -473,7 +507,7 @@ function tripal_mviews_form_submit($form, &$form_state) {
   if ($is_legacy) {
     $mv_table = $form_state['values']['mv_table'];
     $mv_specs = $form_state['values']['mv_specs'];
-    $indexed = $form_state['values']['indexed'];    
+    $indexed = $form_state['values']['indexed'];
     $special_index = '';//$form_state['values']['special_index'];
   }
   else {

@@ -244,10 +244,21 @@ function tripal_core_menu() {
   $items['admin/tripal/schema/mviews'] = array(
     'title' => 'Materialized Views',
     'description' => 'Materialized views are used to improve speed of large or complex queries.',
+    'page callback' => 'tripal_mview_admin_view',
     'access arguments' => array('access administration pages'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => -10
   );
+  $items['admin/tripal/schema/mviews/help'] = array(
+    'title' => 'Help',
+    'description' => 'Help for the materialized views management system',
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_core_mviews_help'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10
+  );
+  /**
   $items['admin/tripal/schema/mviews/list'] = array(
     'title' => 'List Materialized Views',
     'description' => 'A list of existing materialized views with the ability to edit & delete existing materialized views.',
@@ -256,13 +267,14 @@ function tripal_core_menu() {
     'type' => MENU_NORMAL_ITEM,
     'weight' => -10
   );
+  */
   $items['admin/tripal/schema/mviews/report/%'] = array(
     'title' => 'Materialized View',
     'description' => 'Materialized views are used to improve speed of large or complex queries. These are database views as compared to Drupal views.',
     'page callback' => 'tripal_mview_report',
     'page arguments' => array(5),
     'access arguments' => array('access administration pages'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/schema/mviews/new'] = array(
     'title' => 'Create Materialized View',
@@ -270,14 +282,14 @@ function tripal_core_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_mviews_form'),
     'access arguments' => array('access administration pages'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/schema/mviews/edit/%'] = array(
     'title' => 'Edit Materialized View',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_mviews_form', 5),
     'access arguments' => array('access administration pages'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/schema/mviews/action/%/%'] = array(
     'title' => 'Create Materialized View',
@@ -292,10 +304,21 @@ function tripal_core_menu() {
   $items['admin/tripal/schema/custom_tables'] = array(
     'title' => 'Custom Tables',
     'description' => 'Creation of custom tables that are added to Chado database.',
+    'page callback' => 'tripal_custom_table_admin_view',
     'access arguments' => array('access administration pages'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => -10
   );
+  $items['admin/tripal/schema/custom_tables/help'] = array(
+    'title' => 'Help',
+    'description' => 'Help for the tripal job management system',
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_core_job_help'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10
+  );
+  /**
   $items['admin/tripal/schema/custom_tables/list'] = array(
     'title' => 'List of Custom Tables',
     'description' => 'Provides a list of all custom tables created by Tripal and allows for editing or removing existing custom tables.',
@@ -304,33 +327,41 @@ function tripal_core_menu() {
     'type' => MENU_NORMAL_ITEM,
     'weight' => -10
   );
+  */
   $items['admin/tripal/schema/custom_tables/view/%'] = array(
     'title' => 'Custom Tables',
     'description' => 'Custom tables are added to Chado.',
     'page callback' => 'tripal_custom_table_view',
     'page arguments' => array(4),
     'access arguments' => array('access administration pages'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/schema/custom_tables/new'] = array(
     'title' => 'Create Custom Table',
     'description' => 'An interface for creating your own custom tables.',
     'page callback' => 'tripal_custom_table_new_page',
     'access arguments' => array('access administration pages'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/schema/custom_tables/edit/%'] = array(
     'title' => 'Edit Custom Table',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_custom_tables_form', 4),
     'access arguments' => array('access administration pages'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/schema/custom_tables/action/%/%'] = array(
     'title' => 'Create Custom Table',
     'description' => 'Custom tables are added to Chado.',
     'page callback' => 'tripal_custom_tables_action',
     'page arguments' => array(4, 5, "1"),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/schema/custom_tables/views/tables/enable'] = array(
+    'title' => 'Enable Custom Tables Administrative View',
+    'page callback' => 'tripal_views_admin_enable_view',
+    'page arguments' => array('tripal_core_admin_custom_table', 'admin/tripal/schema/custom_tables'),
     'access arguments' => array('access administration pages'),
     'type' => MENU_CALLBACK,
   );
@@ -375,6 +406,11 @@ function tripal_core_theme() {
     ),
     'tripal_core_jobs_help' => array(
       'template' => 'tripal_core_jobs_help',
+      'variables' =>  array(NULL),
+      'path' => drupal_get_path('module', 'tripal_core') . '/theme'
+    ),
+    'tripal_core_customtables_help' => array(
+      'template' => 'tripal_core_customtables_help',
       'variables' =>  array(NULL),
       'path' => drupal_get_path('module', 'tripal_core') . '/theme'
     ),
