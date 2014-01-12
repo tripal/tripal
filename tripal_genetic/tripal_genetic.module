@@ -14,9 +14,48 @@
 
 require('api/tripal_genetic.api.inc');
 require('includes/tripal_genetic.schema.inc');
+require('includes/tripal_genetic.admin.inc');
 
+/**
+ *  Menu items are automatically added for the new node types created
+ *  by this module to the 'Create Content' Navigation menu item.  This function
+ *  adds more menu items needed for this module.
+ *
+ * @ingroup tripal_genetic
+ */
+function tripal_genetic_menu() {
+  $items = array();
 
-/*************************************************************************
+    // the administative settings menu
+  $items['admin/tripal/chado/tripal_genetic'] = array(
+   'title' => 'Genetics',
+   'description' => 'Genetic data including Genotypes.',
+   'page callback' => 'tripal_genetic_admin_genetics_listing',
+   'access arguments' => array('adminster tripal genetic'),
+   'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['admin/tripal/chado/tripal_genetic/help'] = array(
+   'title' => 'Help',
+   'description' => "A description of the Tripal genetic module including a short description of it's usage.",
+   'page callback' => 'theme',
+   'page arguments' => array('tripal_genetic_help'),
+   'access arguments' => array('adminster tripal genetic'),
+   'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/tripal/chado/tripal_genetic/views/genetics/enable'] = array(
+    'title' => 'Enable genetic Administrative View',
+    'page callback' => 'tripal_views_admin_enable_view',
+    'page arguments' => array('tripal_genetic_admin_genetics', 'admin/tripal/chado/tripal_genetic'),
+    'access arguments' => array('administer tripal genetic'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
  * Implements hook_views_api()
  * Purpose: Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_genetic.views.inc where all the
@@ -26,7 +65,7 @@ require('includes/tripal_genetic.schema.inc');
  */
 function tripal_genetic_views_api() {
   return array(
-      'api' => 2.0,
+      'api' => 3.0,
   );
 }
 
@@ -47,6 +86,11 @@ function tripal_genetic_theme() {
       'arguments' => array('node' => NULL),
       'template' => 'tripal_stock_genotypes',
       'path' => "$theme_path/tripal_stock",
+    ),
+    'tripal_genetic_help' => array(
+      'template' => 'tripal_genetic_help',
+      'variables' =>  array(NULL),
+      'path' => "$theme_path",
     ),
   );
   return $items;

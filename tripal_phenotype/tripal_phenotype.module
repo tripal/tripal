@@ -81,7 +81,7 @@ function tripal_phenotype_theme($existing, $type, $theme, $path) {
  */
 function tripal_phenotype_views_api() {
   return array(
-      'api' => 2.0,
+      'api' => 3.0,
   );
 }
 
