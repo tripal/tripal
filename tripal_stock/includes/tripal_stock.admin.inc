@@ -5,6 +5,40 @@
  */
 
 /**
+ *
+ */
+function tripal_stock_admin_stock_view() {
+  $output = '';
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Chado', 'admin/tripal/chado');
+  $breadcrumb[] = l('Stocks', 'admin/tripal/chado/tripal_stock');
+  drupal_set_breadcrumb($breadcrumb);
+
+  // Add the view
+  $view = views_embed_view('tripal_stock_admin_stocks','default');
+  if (isset($view)) {
+    $output .= $view;
+  }
+  else {
+    $output .= '<p>The Stock module uses primarily views to provide an '
+      . 'administrative interface. Currently one or more views needed for this '
+      . 'administrative interface are disabled. <strong>Click each of the following links to '
+      . 'enable the pertinent views</strong>:</p>';
+    $output .= '<ul>';
+      $output .= '<li>'.l('Stocks View', 'admin/tripal/chado/tripal_stock/views/stocks/enable').'</li>';
+    $output .= '</ul>';
+  }
+
+  return $output;
+}
+
+
+/**
  * Purpose: Provide administration options for chado_stocks
  *
  * @return
@@ -17,9 +51,9 @@ function tripal_stock_admin() {
 
   get_tripal_stock_admin_form_title_set($form);
   get_tripal_stock_admin_form_url_set($form);
-  get_tripal_stock_admin_form_vocabulary_set($form);       
+  get_tripal_stock_admin_form_vocabulary_set($form);
   get_tripal_stock_admin_form_cleanup_set($form);
-  
+
 
   return system_settings_form($form);
 
@@ -41,18 +75,18 @@ function tripal_stock_admin_validate($form, &$form_state) {
 
   variable_set('chado_stock_types_cv', $form_state['values']['stock_types_cv']);
   variable_set('chado_stock_prop_types_cv', $form_state['values']['stock_prop_types_cv']);
-  variable_set('chado_stock_relationship_cv', $form_state['values']['stock_relationship_cv']);  
+  variable_set('chado_stock_relationship_cv', $form_state['values']['stock_relationship_cv']);
   variable_set('chado_stock_url_string', $form_state['values']['chado_stock_url_string']);
-  
+
   switch ($form_state['values']['op']) {
-    case  t('Set Controlled Vacabularies') :      
+    case  t('Set Controlled Vacabularies') :
       break;
-      
+
     case t('Clean up orphaned stocks') :
       tripal_add_job('Cleanup orphaned stocks', 'tripal_stock',
          'tripal_stock_cleanup', $job_args, $user->uid);
       break;
-    
+
     case t('Set Stock URLs') :
       tripal_add_job('Set Stock URLs', 'tripal_stock',
         'tripal_stock_set_urls', $job_args, $user->uid);
@@ -62,7 +96,7 @@ function tripal_stock_admin_validate($form, &$form_state) {
 }
 
 /**
- * 
+ *
  * @param $form
  */
 function get_tripal_stock_admin_form_title_set(&$form) {
@@ -76,9 +110,9 @@ function get_tripal_stock_admin_form_title_set(&$form) {
   $form['title']['desc'] = array(
     '#type'  => 'markup',
     '#value' => t('Each synced stock must have a unique page title, however, stocks
-      may have the same name if they are of different types or from different 
-      organisms.  Therefore, we must be sure that the page titles can uniquely 
-      identify the stock being viewed.  Select an option below that will 
+      may have the same name if they are of different types or from different
+      organisms.  Therefore, we must be sure that the page titles can uniquely
+      identify the stock being viewed.  Select an option below that will
       uniquely identify all stocks on your site.'),
   );
   $options = array(
@@ -89,9 +123,9 @@ function get_tripal_stock_admin_form_title_set(&$form) {
   $form['title']['chado_stock_title'] = array(
     '#title'         => t('Stock Page Titles'),
     '#type'          => 'radios',
-    '#description'   => t('Choose a title type  from the list above that is 
-      guaranteed to be unique for all stocks If in doubt it is safest to choose 
-      the last option as that guarantees uniqueness. Click the 
+    '#description'   => t('Choose a title type  from the list above that is
+      guaranteed to be unique for all stocks If in doubt it is safest to choose
+      the last option as that guarantees uniqueness. Click the
       \'Save Configuration\' button at the bottom to save your selection.'),
     '#required'      => FALSE,
     '#options'       => $options,
@@ -99,7 +133,7 @@ function get_tripal_stock_admin_form_title_set(&$form) {
   );
 }
 /**
- * 
+ *
  * @param  $form
  */
 function get_tripal_stock_admin_form_url_set(&$form) {
@@ -121,7 +155,7 @@ function get_tripal_stock_admin_form_url_set(&$form) {
     '[name]'       => '[name]:' . t('The stock name'),
     'reset'        => t('Reset'),
   );
-  
+
 
   $form['url']['chado_stock_url_string'] = array(
     '#title' => 'URL Syntax',
@@ -129,15 +163,15 @@ function get_tripal_stock_admin_form_url_set(&$form) {
     '#description' => t('You may rearrange elements in this text box to
       customize the URLs.  The available tags include: [id],
       [uniquename]. [name], [species], [genus], [type]. You can separate or
-      include any text between the tags. Click the "Set Stock URLs" button to 
+      include any text between the tags. Click the "Set Stock URLs" button to
       reset the URLs for all stock pages.  Click the "Save Configuration" button to
       simply save this setup. <b>Important</b>: be sure that whatever you choose will always be unique even considering
-      future data that may be added.  If you include the Chado table name, genus, species, type 
+      future data that may be added.  If you include the Chado table name, genus, species, type
       and uniquename you are guaranteed to have a unique URL. For example stock/[genus]/[species]/[type]/[uniquename]'),
     '#size' => 150,
-    '#default_value' => variable_get('chado_stock_url_string', '/stock/[genus]/[species]/[type]/[uniquename]'), 
+    '#default_value' => variable_get('chado_stock_url_string', '/stock/[genus]/[species]/[type]/[uniquename]'),
   );
-  
+
   $form['url']['chado_stock_url'] = array(
     '#title'         => t('URL components'),
     '#type'          => 'checkboxes',
@@ -150,21 +184,21 @@ function get_tripal_stock_admin_form_url_set(&$form) {
         if (this.value == \'reset\') {
           box.val(\'\');
         }
-        else {        
-          box.val(box.val() + "/" + this.value);          
+        else {
+          box.val(box.val() + "/" + this.value);
         }
         this.checked = false;
       ',
     ),
-  );  
-  
+  );
+
   $form['url']['button'] = array(
     '#type' => 'submit',
     '#value' => t('Set Stock URLs'),
   );
 }
 /**
- * 
+ *
  * @param $form
  */
 function get_tripal_stock_admin_form_vocabulary_set(&$form) {
