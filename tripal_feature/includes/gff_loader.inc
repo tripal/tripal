@@ -318,588 +318,598 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   chado_query($sql);
   
   // begin the transaction
+  $transaction = null;
   if ($use_transaction) {
-    $transaction = tripal_db_start_transaction();
+    $transaction = db_transaction();
     print "\nNOTE: Loading of this GFF file is performed using a database transaction. \n" .
          "If the load fails or is terminated prematurely then the entire set of \n" .
          "insertions/updates is rolled back and will not be found in the database\n\n";
   }
+  try {
 
-  // check to see if the file is located local to Drupal
-  $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $gff_file;
-  if (!file_exists($dfile)) {
-    // if not local to Drupal, the file must be someplace else, just use
-    // the full path provided
-    $dfile = $gff_file;
-  }
-  if (!file_exists($dfile)) {
-    watchdog('T_gff3_loader', "Cannot find the file: %dfile", 
-      array('%dfile' => $dfile), WATCHDOG_ERROR);
-    return 0;
-  }
-
-  print "Opening $gff_file\n";
-
-  //$lines = file($dfile,FILE_SKIP_EMPTY_LINES);
-  $fh = fopen($dfile, 'r');
-  if (!$fh) {
-    watchdog('T_gff3_loader', "cannot open file: %dfile", 
-      array('%dfile' => $dfile), WATCHDOG_ERROR);
-    return 0;
-  }
-  $filesize = filesize($dfile);
-
-  // get the controlled vocaubulary that we'll be using.  The
-  // default is the 'sequence' ontology
-  $sql = "SELECT * FROM {cv} WHERE name = :cvname";
-  $cv = chado_query($sql, array(':cvname' => 'sequence'))->fetchObject();
-  if (!$cv) {   
-    watchdog('T_gff3_loader', "Cannot find the 'sequence' ontology", 
-      array(), WATCHDOG_ERROR);
-    return '';
-  }
-
-  // get the organism for which this GFF3 file belongs
-  $sql = "SELECT * FROM {organism} WHERE organism_id = :organism_id";
-  $organism = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
-
-  $interval = intval($filesize * 0.0001);
-  if ($interval == 0) {
-    $interval = 1;
-  }
-  $in_fasta = 0;
-  $line_num = 0;
-  $num_read = 0;
-  $intv_read = 0;
-  
-  // prepare the statement used to get the cvterm for each feature.
-  $psql = "
-    PREPARE sel_cvterm_idnasy (int, text, text) AS
-    SELECT CVT.cvterm_id, CVT.cv_id, CVT.name, CVT.definition,
-      CVT.dbxref_id, CVT.is_obsolete, CVT.is_relationshiptype
-    FROM {cvterm} CVT
-      INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
-      LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
-    WHERE CV.cv_id = $1 and 
-     (lower(CVT.name) = lower($2) or lower(CVTS.synonym) = lower($3))
-   ";
-   $status = chado_query($psql);
-   if (!$status) {
-     watchdog('T_gff3_loader', 'cannot prepare statement \'sel_cvterm_idnasy\'.', 
-       array(), WATCHDOG_ERROR);
-     return '';
-   }  
-
-  // iterate through each line of the GFF file
-  print "Parsing Line $line_num (0.00%). Memory: " . number_format(memory_get_usage()) . " bytes\r";
-  while ($line = fgets($fh)) {
-    $line_num++;
-    $size = drupal_strlen($line);
-    $num_read += $size;
-    $intv_read += $size; 
-    
-    if ($line_num < $start_line) {
-      continue;
-    }    
-    
-    // update the job status every 1% features
-    if ($job and $intv_read >= $interval) {
-      $intv_read = 0;
-      $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
-      print "Parsing Line $line_num (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
-      tripal_job_set_progress($job, intval(($num_read / $filesize) * 100));
+    // check to see if the file is located local to Drupal
+    $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $gff_file;
+    if (!file_exists($dfile)) {
+      // if not local to Drupal, the file must be someplace else, just use
+      // the full path provided
+      $dfile = $gff_file;
     }
+    if (!file_exists($dfile)) {
+      watchdog('T_gff3_loader', "Cannot find the file: %dfile", 
+        array('%dfile' => $dfile), WATCHDOG_ERROR);
+      return 0;
+    }
+  
+    print "Opening $gff_file\n";
+  
+    //$lines = file($dfile,FILE_SKIP_EMPTY_LINES);
+    $fh = fopen($dfile, 'r');
+    if (!$fh) {
+      watchdog('T_gff3_loader', "cannot open file: %dfile", 
+        array('%dfile' => $dfile), WATCHDOG_ERROR);
+      return 0;
+    }
+    $filesize = filesize($dfile);
+  
+    // get the controlled vocaubulary that we'll be using.  The
+    // default is the 'sequence' ontology
+    $sql = "SELECT * FROM {cv} WHERE name = :cvname";
+    $cv = chado_query($sql, array(':cvname' => 'sequence'))->fetchObject();
+    if (!$cv) {   
+      watchdog('T_gff3_loader', "Cannot find the 'sequence' ontology", 
+        array(), WATCHDOG_ERROR);
+      return '';
+    }
+  
+    // get the organism for which this GFF3 file belongs
+    $sql = "SELECT * FROM {organism} WHERE organism_id = :organism_id";
+    $organism = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
+  
+    $interval = intval($filesize * 0.0001);
+    if ($interval == 0) {
+      $interval = 1;
+    }
+    $in_fasta = 0;
+    $line_num = 0;
+    $num_read = 0;
+    $intv_read = 0;
+    
+    // prepare the statement used to get the cvterm for each feature.
+    $psql = "
+      PREPARE sel_cvterm_idnasy (int, text, text) AS
+      SELECT CVT.cvterm_id, CVT.cv_id, CVT.name, CVT.definition,
+        CVT.dbxref_id, CVT.is_obsolete, CVT.is_relationshiptype
+      FROM {cvterm} CVT
+        INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+        LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
+      WHERE CV.cv_id = $1 and 
+       (lower(CVT.name) = lower($2) or lower(CVTS.synonym) = lower($3))
+     ";
+     $status = chado_query($psql);
+     if (!$status) {
+       watchdog('T_gff3_loader', 'cannot prepare statement \'sel_cvterm_idnasy\'.', 
+         array(), WATCHDOG_ERROR);
+       return '';
+     }  
+  
+    // iterate through each line of the GFF file
+    print "Parsing Line $line_num (0.00%). Memory: " . number_format(memory_get_usage()) . " bytes\r";
+    while ($line = fgets($fh)) {
+      $line_num++;
+      $size = drupal_strlen($line);
+      $num_read += $size;
+      $intv_read += $size; 
       
-    // check to see if we have FASTA section, if so then set the variable
-    // to start parsing
-    if (preg_match('/^##FASTA/i', $line)) {
-      if ($remove) {
-        // we're done because this is a delete operation so break out of the loop.
-        break;         
+      if ($line_num < $start_line) {
+        continue;
+      }    
+      
+      // update the job status every 1% features
+      if ($job and $intv_read >= $interval) {
+        $intv_read = 0;
+        $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
+        print "Parsing Line $line_num (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
+        tripal_job_set_progress($job, intval(($num_read / $filesize) * 100));
       }
-      tripal_feature_load_gff3_fasta($fh, $interval, $num_read, $intv_read, $line_num);
-      continue;
-    }
-    // if the ##sequence-region line is present then we want to add a new feature
-    if (preg_match('/^##sequence-region (.*?) (\d+) (\d+)$/i', $line, $region_matches)) {
-      $rid = $region_matches[1];
-      $rstart = $region_matches[2];
-      $rend = $region_matches[3];
-      if ($landmark_type) {
-        $result = chado_query("EXECUTE sel_cvterm_idnasy (:cv_id, :name, :synonym)", 
-          array(':cv_id' => $cv->cv_id, ':name' => $landmark_type, ':synonym' => $landmark_type));
-        $cvterm = $result->fetchObject();
-        if (!$cvterm) {
-          watchdog('T_gff3_loader', 'cannot find feature type \'%landmark_type\' on line %line_num of the GFF file', 
-            array('%landmark_type' => $landmark_type, '%line_num' => $line_num), WATCHDOG_ERROR);
-          return '';
+        
+      // check to see if we have FASTA section, if so then set the variable
+      // to start parsing
+      if (preg_match('/^##FASTA/i', $line)) {
+        if ($remove) {
+          // we're done because this is a delete operation so break out of the loop.
+          break;         
         }
-        tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $rid,
-          $rid, '', 'f', 'f', 1, 0);
-      }
-      continue;
-    }
-    
-    // skip comments
-    if (preg_match('/^#/', $line)) {
-      continue;
-    }
-    
-    // skip empty lines
-    if (preg_match('/^\s*$/', $line)) {
-      continue;
-    }    
-
-    // get the columns
-    $cols = explode("\t", $line);
-    if (sizeof($cols) != 9) {
-      watchdog('T_gff3_loader', 'improper number of columns on line %line_num', 
-        array('%line_num' => $line_num), WATCHDOG_ERROR);
-      return '';
-    }
-    
-    // get the column values
-    $landmark = $cols[0];
-    $source   = $cols[1];
-    $type     = $cols[2];
-    $start    = $cols[3];
-    $end      = $cols[4];
-    $score    = $cols[5];
-    $strand   = $cols[6];
-    $phase    = $cols[7];
-    $attrs    = explode(";", $cols[8]);  // split by a semicolon 
-    
-    // ready the start and stop for chado.  Chado expects these positions
-    // to be zero-based, so we substract 1 from the fmin
-    $fmin = $start - 1;
-    $fmax = $end;
-    if ($end < $start) {
-      $fmin = $end - 1;
-      $fmax = $start;
-    }
-    
-    // format the strand for chado
-    if (strcmp($strand, '.') == 0) {
-      $strand = 0;
-    }
-    elseif (strcmp($strand, '+') == 0) {
-      $strand = 1;
-    }
-    elseif (strcmp($strand, '-') == 0) {
-      $strand = -1;
-    }
-    if (strcmp($phase, '.') == 0) {
-      $phase = '';
-    }
-  
-    $result = chado_query("EXECUTE sel_cvterm_idnasy (:cv_id, :name, :synonym)", 
-      array(':cv_id' => $cv->cv_id, ':name' => $type, ':synonym' => $type));
-
-    $cvterm = $result->fetchObject();
-    if (!$cvterm) {
-      watchdog('T_gff3_loader', 'cannot find feature term \'%type\' on line %line_num of the GFF file', 
-        array('%type' => $type, '%line_num' => $line_num), WATCHDOG_ERROR);
-      return '';
-    }
-     
-    // break apart each of the attributes
-    $tags = array();
-    $attr_name = '';
-    $attr_uniquename = '';
-    $attr_residue_info = '';
-    $attr_locgroup = 0;
-    $attr_fmin_partial = 'f';
-    $attr_fmax_partial = 'f';
-    $attr_is_obsolete = 'f';
-    $attr_is_analysis = 'f';
-    $attr_others = '';       
-    $residues = '';
-    
-    // the organism to which a feature belongs can be set in the GFF
-    // file using the 'organism' attribute.  By default we 
-    // set the $feature_organism variable to the default organism for the landmark
-    $attr_organism = ''; 
-    $feature_organism = $organism;
-
-    foreach ($attrs as $attr) {
-      $attr = rtrim($attr);
-      $attr = ltrim($attr);
-      if (strcmp($attr, '')==0) {
+        tripal_feature_load_gff3_fasta($fh, $interval, $num_read, $intv_read, $line_num);
         continue;
       }
-      if (!preg_match('/^[^\=]+\=.+$/', $attr)) {
-        watchdog('T_gff3_loader', 'Attribute is not correctly formatted on line %line_num: %attr', 
-          array('%line_num' => $line_num, '%attr' => $attr), WATCHDOG_ERROR);
+      // if the ##sequence-region line is present then we want to add a new feature
+      if (preg_match('/^##sequence-region (.*?) (\d+) (\d+)$/i', $line, $region_matches)) {
+        $rid = $region_matches[1];
+        $rstart = $region_matches[2];
+        $rend = $region_matches[3];
+        if ($landmark_type) {
+          $result = chado_query("EXECUTE sel_cvterm_idnasy (:cv_id, :name, :synonym)", 
+            array(':cv_id' => $cv->cv_id, ':name' => $landmark_type, ':synonym' => $landmark_type));
+          $cvterm = $result->fetchObject();
+          if (!$cvterm) {
+            watchdog('T_gff3_loader', 'cannot find feature type \'%landmark_type\' on line %line_num of the GFF file', 
+              array('%landmark_type' => $landmark_type, '%line_num' => $line_num), WATCHDOG_ERROR);
+            return '';
+          }
+          tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $rid,
+            $rid, '', 'f', 'f', 1, 0);
+        }
+        continue;
+      }
+      
+      // skip comments
+      if (preg_match('/^#/', $line)) {
+        continue;
+      }
+      
+      // skip empty lines
+      if (preg_match('/^\s*$/', $line)) {
+        continue;
+      }    
+  
+      // get the columns
+      $cols = explode("\t", $line);
+      if (sizeof($cols) != 9) {
+        watchdog('T_gff3_loader', 'improper number of columns on line %line_num', 
+          array('%line_num' => $line_num), WATCHDOG_ERROR);
         return '';
       }
-
-      // break apart each tag
-      $tag = preg_split("/=/", $attr, 2);  // split by equals sign
       
-      // multiple instances of an attribute are separated by commas
-      $tag_name = $tag[0];
-      if (!array_key_exists($tag_name, $tags)) {
-        $tags[$tag_name] = array();
-      }
-      $tags[$tag_name] = array_merge($tags[$tag_name], explode(",", $tag[1]));  // split by comma
+      // get the column values
+      $landmark = $cols[0];
+      $source   = $cols[1];
+      $type     = $cols[2];
+      $start    = $cols[3];
+      $end      = $cols[4];
+      $score    = $cols[5];
+      $strand   = $cols[6];
+      $phase    = $cols[7];
+      $attrs    = explode(";", $cols[8]);  // split by a semicolon 
       
-      
-      // replace the URL escape codes for each tag
-      for ($i = 0; $i < count($tags[$tag_name]); $i++) {
-        $tags[$tag_name][$i] = urldecode($tags[$tag_name][$i]);
+      // ready the start and stop for chado.  Chado expects these positions
+      // to be zero-based, so we substract 1 from the fmin
+      $fmin = $start - 1;
+      $fmax = $end;
+      if ($end < $start) {
+        $fmin = $end - 1;
+        $fmax = $start;
       }
       
-      // get the name and ID tags
-      $skip_feature = 0;  // if there is a problem with any of the attributes this variable gets set
-      if (strcmp($tag_name, 'ID') == 0) {
-        $attr_uniquename =  urldecode($tag[1]);
+      // format the strand for chado
+      if (strcmp($strand, '.') == 0) {
+        $strand = 0;
       }
-      elseif (strcmp($tag_name, 'Name') == 0) {
-        $attr_name =  urldecode($tag[1]);
+      elseif (strcmp($strand, '+') == 0) {
+        $strand = 1;
       }
-      elseif (strcmp($tag_name, 'organism') == 0) {
-        $attr_organism = urldecode($tag[1]);
-        $org_matches = array();
-        if (preg_match('/^(.*?):(.*?)$/', $attr_organism, $org_matches)) {
-          $values = array(
-            'genus' => $org_matches[1],
-            'species' => $org_matches[2],
-          ); 
-          $options = array('statement_name' => 'sel_organism_gesp');
-          $org = tripal_core_chado_select('organism', array("*"), $values, $options);
-          if (count($org) == 0) {
-            if ($create_organism) {
-              $options = array('statement_name' => 'ins_organism_gesp');
-              $feature_organism = (object) tripal_core_chado_insert('organism', $values, $options);
-              if (!$feature_organism) {
-                watchdog('T_gff3_loader', "Could not add the organism, '%org', from line %line. Skipping this line. ",
+      elseif (strcmp($strand, '-') == 0) {
+        $strand = -1;
+      }
+      if (strcmp($phase, '.') == 0) {
+        $phase = '';
+      }
+    
+      $result = chado_query("EXECUTE sel_cvterm_idnasy (:cv_id, :name, :synonym)", 
+        array(':cv_id' => $cv->cv_id, ':name' => $type, ':synonym' => $type));
+  
+      $cvterm = $result->fetchObject();
+      if (!$cvterm) {
+        watchdog('T_gff3_loader', 'cannot find feature term \'%type\' on line %line_num of the GFF file', 
+          array('%type' => $type, '%line_num' => $line_num), WATCHDOG_ERROR);
+        return '';
+      }
+       
+      // break apart each of the attributes
+      $tags = array();
+      $attr_name = '';
+      $attr_uniquename = '';
+      $attr_residue_info = '';
+      $attr_locgroup = 0;
+      $attr_fmin_partial = 'f';
+      $attr_fmax_partial = 'f';
+      $attr_is_obsolete = 'f';
+      $attr_is_analysis = 'f';
+      $attr_others = '';       
+      $residues = '';
+      
+      // the organism to which a feature belongs can be set in the GFF
+      // file using the 'organism' attribute.  By default we 
+      // set the $feature_organism variable to the default organism for the landmark
+      $attr_organism = ''; 
+      $feature_organism = $organism;
+  
+      foreach ($attrs as $attr) {
+        $attr = rtrim($attr);
+        $attr = ltrim($attr);
+        if (strcmp($attr, '')==0) {
+          continue;
+        }
+        if (!preg_match('/^[^\=]+\=.+$/', $attr)) {
+          watchdog('T_gff3_loader', 'Attribute is not correctly formatted on line %line_num: %attr', 
+            array('%line_num' => $line_num, '%attr' => $attr), WATCHDOG_ERROR);
+          return '';
+        }
+  
+        // break apart each tag
+        $tag = preg_split("/=/", $attr, 2);  // split by equals sign
+        
+        // multiple instances of an attribute are separated by commas
+        $tag_name = $tag[0];
+        if (!array_key_exists($tag_name, $tags)) {
+          $tags[$tag_name] = array();
+        }
+        $tags[$tag_name] = array_merge($tags[$tag_name], explode(",", $tag[1]));  // split by comma
+        
+        
+        // replace the URL escape codes for each tag
+        for ($i = 0; $i < count($tags[$tag_name]); $i++) {
+          $tags[$tag_name][$i] = urldecode($tags[$tag_name][$i]);
+        }
+        
+        // get the name and ID tags
+        $skip_feature = 0;  // if there is a problem with any of the attributes this variable gets set
+        if (strcmp($tag_name, 'ID') == 0) {
+          $attr_uniquename =  urldecode($tag[1]);
+        }
+        elseif (strcmp($tag_name, 'Name') == 0) {
+          $attr_name =  urldecode($tag[1]);
+        }
+        elseif (strcmp($tag_name, 'organism') == 0) {
+          $attr_organism = urldecode($tag[1]);
+          $org_matches = array();
+          if (preg_match('/^(.*?):(.*?)$/', $attr_organism, $org_matches)) {
+            $values = array(
+              'genus' => $org_matches[1],
+              'species' => $org_matches[2],
+            ); 
+            $options = array('statement_name' => 'sel_organism_gesp');
+            $org = tripal_core_chado_select('organism', array("*"), $values, $options);
+            if (count($org) == 0) {
+              if ($create_organism) {
+                $options = array('statement_name' => 'ins_organism_gesp');
+                $feature_organism = (object) tripal_core_chado_insert('organism', $values, $options);
+                if (!$feature_organism) {
+                  watchdog('T_gff3_loader', "Could not add the organism, '%org', from line %line. Skipping this line. ",
+                    array('%org' => $attr_organism, '%line' => $line_num), WATCHDOG_ERROR); 
+                  $skip_feature = 1; 
+                }
+              } 
+              else {
+                watchdog('T_gff3_loader', "The organism attribute '%org' on line %line does not exist. Skipping this line. ",
                   array('%org' => $attr_organism, '%line' => $line_num), WATCHDOG_ERROR); 
-                $skip_feature = 1; 
+                $skip_feature = 1;
               }
-            } 
-            else {
-              watchdog('T_gff3_loader', "The organism attribute '%org' on line %line does not exist. Skipping this line. ",
-                array('%org' => $attr_organism, '%line' => $line_num), WATCHDOG_ERROR); 
-              $skip_feature = 1;
             }
-          }
+            else {
+              // we found the organism in the database so use it
+              $feature_organism = $org[0];
+            }
+          } 
           else {
-            // we found the organism in the database so use it
-            $feature_organism = $org[0];
+            watchdog('T_gff3_loader', "The organism attribute '%org' on line %line is not properly formated. It " .
+              "should be of the form: organism=Genus:species.  Skipping this line.", 
+              array('%org' => $attr_organism, '%line' => $line_num), WATCHDOG_ERROR);
+            $skip_feature = 1;  
+          }        
+        }
+        // get the list of non-reserved attributes
+        elseif (strcmp($tag_name, 'Alias') != 0        and strcmp($tag_name, 'Parent') != 0 and
+                strcmp($tag_name, 'Target') != 0       and strcmp($tag_name, 'Gap') != 0 and
+                strcmp($tag_name, 'Derives_from') != 0 and strcmp($tag_name, 'Note') != 0 and
+                strcmp($tag_name, 'Dbxref') != 0       and strcmp($tag_name, 'Ontology_term') != 0 and
+                strcmp($tag_name, 'Is_circular') != 0  and strcmp($tag_name, 'target_organism') != 0 and
+                strcmp($tag_name, 'target_type') != 0  and strcmp($tag_name, 'organism' != 0)) {
+          foreach ($tags[$tag_name] as $value) {
+            $attr_others[$tag_name][] = $value;
           }
-        } 
-        else {
-          watchdog('T_gff3_loader', "The organism attribute '%org' on line %line is not properly formated. It " .
-            "should be of the form: organism=Genus:species.  Skipping this line.", 
-            array('%org' => $attr_organism, '%line' => $line_num), WATCHDOG_ERROR);
-          $skip_feature = 1;  
-        }        
-      }
-      // get the list of non-reserved attributes
-      elseif (strcmp($tag_name, 'Alias') != 0        and strcmp($tag_name, 'Parent') != 0 and
-              strcmp($tag_name, 'Target') != 0       and strcmp($tag_name, 'Gap') != 0 and
-              strcmp($tag_name, 'Derives_from') != 0 and strcmp($tag_name, 'Note') != 0 and
-              strcmp($tag_name, 'Dbxref') != 0       and strcmp($tag_name, 'Ontology_term') != 0 and
-              strcmp($tag_name, 'Is_circular') != 0  and strcmp($tag_name, 'target_organism') != 0 and
-              strcmp($tag_name, 'target_type') != 0  and strcmp($tag_name, 'organism' != 0)) {
-        foreach ($tags[$tag_name] as $value) {
-          $attr_others[$tag_name][] = $value;
         }
       }
-    }
-    
-    if ($skip_line) {
-      continue;
-    }
-
-    // if neither name nor uniquename are provided then generate one
-    if (!$attr_uniquename and !$attr_name) {
-      // check if an alternate ID field is suggested, if so, then use
-      // that for the name
-      if (array_key_exists($alt_id_attr, $tags)) {
-        $attr_uniquename = $tags[$alt_id_attr][0];
-        $attr_name = $attr_uniquename;  
+      
+      if ($skip_line) {
+        continue;
       }
-      // if the row has a parent then generate a uniquename using the parent name
-      // add the date to the name in the event there are more than one child with
-      // the same parent.
-      elseif (array_key_exists('Parent', $tags)) {
-        $date = getdate();
-        $attr_uniquename = $tags['Parent'][0] . "-$type-$landmark-" . $date[0] . ":" . ($fmin + 1) . ".." . $fmax;
+  
+      // if neither name nor uniquename are provided then generate one
+      if (!$attr_uniquename and !$attr_name) {
+        // check if an alternate ID field is suggested, if so, then use
+        // that for the name
+        if (array_key_exists($alt_id_attr, $tags)) {
+          $attr_uniquename = $tags[$alt_id_attr][0];
+          $attr_name = $attr_uniquename;  
+        }
+        // if the row has a parent then generate a uniquename using the parent name
+        // add the date to the name in the event there are more than one child with
+        // the same parent.
+        elseif (array_key_exists('Parent', $tags)) {
+          $date = getdate();
+          $attr_uniquename = $tags['Parent'][0] . "-$type-$landmark-" . $date[0] . ":" . ($fmin + 1) . ".." . $fmax;
+          $attr_name = $attr_uniquename;
+        }
+        // generate a unique name based on the date, type and location
+        // and set the name to simply be the type
+        else {
+          $date = getdate();
+          $attr_uniquename = $date[0] . "-$type-$landmark:" . ($fmin + 1) . ".." . $fmax;
+          $attr_name = $type;
+        }      
+      }
+  
+      // if a name is not specified then use the unique name as the name
+      if (strcmp($attr_name, '')==0) {
         $attr_name = $attr_uniquename;
       }
-      // generate a unique name based on the date, type and location
-      // and set the name to simply be the type
-      else {
+  
+      // if an ID attribute is not specified then use the attribute name plus the date
+      if (!$attr_uniquename) {
         $date = getdate();
-        $attr_uniquename = $date[0] . "-$type-$landmark:" . ($fmin + 1) . ".." . $fmax;
-        $attr_name = $type;
-      }      
-    }
-
-    // if a name is not specified then use the unique name as the name
-    if (strcmp($attr_name, '')==0) {
-      $attr_name = $attr_uniquename;
-    }
-
-    // if an ID attribute is not specified then use the attribute name plus the date
-    if (!$attr_uniquename) {
-      $date = getdate();
-      $attr_uniquename = $attr_name . '-' . $date[0];
-    }
-
-    // make sure the landmark sequence exists in the database.  If the user 
-    // has not specified a landmark type (and it's not requiredin the GFF foramt)
-    // then We don't know the type of the landmark so we'll hope that it's unique across
-    // all types for the orgnaism. Only do this test if the landmark and the feature are
-    // different.
-    if (!$remove and !(strcmp($landmark, $attr_uniquename) == 0 or strcmp($landmark, $attr_name) == 0)) {
-      $select = array(
-        'organism_id' => $organism->organism_id,
-        'uniquename'  => $landmark,
-      );      
-      $columns = array('count(*) as num_landmarks');
-      $options = array('statement_name' => 'sel_feature_numland');
-      if ($landmark_type) {
-        $select['type_id'] = array(
-          'name' => $landmark_type,
-        );
-        $options = array('statement_name' => 'sel_feature_numlandty');
-      }      
-      $count = tripal_core_chado_select('feature', $columns, $select, $options);        
-      if (!$count or count($count) == 0 or $count[0]->num_landmarks == 0) {        
-        // now look for the landmark using the name rather than uniquename.
+        $attr_uniquename = $attr_name . '-' . $date[0];
+      }
+  
+      // make sure the landmark sequence exists in the database.  If the user 
+      // has not specified a landmark type (and it's not requiredin the GFF foramt)
+      // then We don't know the type of the landmark so we'll hope that it's unique across
+      // all types for the orgnaism. Only do this test if the landmark and the feature are
+      // different.
+      if (!$remove and !(strcmp($landmark, $attr_uniquename) == 0 or strcmp($landmark, $attr_name) == 0)) {
         $select = array(
           'organism_id' => $organism->organism_id,
-          'name'  => $landmark,
-        );
+          'uniquename'  => $landmark,
+        );      
         $columns = array('count(*) as num_landmarks');
-        $options = array('statement_name' => 'sel_feature_numlandna');              
+        $options = array('statement_name' => 'sel_feature_numland');
         if ($landmark_type) {
           $select['type_id'] = array(
             'name' => $landmark_type,
           );
-          $options = array('statement_name' => 'sel_feature_numlandnaty');
-        }
-        $count = tripal_core_chado_select('feature', $columns, $select, $options); 
-        if (!$count or count($count) == 0 or $count[0]->num_landmarks == 0) {
-          watchdog('T_gff3_loader', "The landmark '%landmark' cannot be found for this organism (%species) " .
-                "Please add the landmark and then retry the import of this GFF3 " .
-                "file", array('%landmark' => $landmark, '%species' => $organism->genus . " " . $organism->species), WATCHDOG_ERROR);
-          return '';
-        }
-        elseif ($count[0]->num_landmarks > 1) {
-          watchdog('T_gff3_loader', "The landmark '%landmark' has more than one entry for this organism (%species) " .
-                "Cannot continue", array('%landmark' => $landmark, '%species' => $organism->genus . " " . $organism->species), WATCHDOG_ERROR);
-          return '';  
-        }
-
-      }
-      if ($count[0]->num_landmarks > 1) {
-        watchdog('T_gff3_loader', "The landmark '%landmark' is not unique for this organism. " .
-              "The features cannot be associated", array('%landmark' => $landmark), WATCHDOG_ERROR);
-        return '';
-      }  
-    }
-
-    // if the option is to remove or refresh then we want to remove
-    // the feature from the database.
-    if ($remove or $refresh) {
-      $sql = "DELETE FROM {feature}
-              WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
-      $match = array(
-         'organism_id' => $feature_organism->organism_id,
-         'uniquename'  => $attr_uniquename,
-         'type_id'     => $cvterm->cvterm_id
-      );
-      $result = tripal_core_chado_delete('feature', $match);
-      if (!$result) {
-        watchdog('T_gff3_loader', "cannot delete feature %attr_uniquename", 
-          array('%attr_uniquename' => $attr_uniquename), WATCHDOG_ERROR);
-      }
-      $feature = 0;
-      unset($result);
-    }
-
-    // add or update the feature and all properties
-    if ($update or $refresh or $add_only) {
-
-      // add/update the feature
-      $feature = tripal_feature_load_gff3_feature($feature_organism, $analysis_id, $cvterm,
-        $attr_uniquename, $attr_name, $residues, $attr_is_analysis,
-        $attr_is_obsolete, $add_only, $score);  
-   
-      if ($feature) {
-        
-        // add a record for this feature to the tripal_gff_temp table for
-        // later lookup
-        $values = array(
-          'feature_id' => $feature->feature_id,
-          'organism_id' => $feature->organism_id,
-          'type_name' => $type,
-          'uniquename' => $feature->uniquename
-        );
-        // make sure this record doesn't already exist in oru temp table
-        $options = array('statement_name' => 'sel_tripalgfftemp_all');
-        $results = tripal_core_chado_select('tripal_gff_temp', array('*'), $values, $options);
-
-        if (count($results) == 0) {
-          $options = array('statement_name' => 'ins_tripalgfftemp');
-          $result = tripal_core_chado_insert('tripal_gff_temp', $values, $options);
-          if (!$result) {
-            watchdog('T_gff3_loader', "Cound not save record in temporary table, Cannot continue.", array(), WATCHDOG_ERROR);
-            exit;
-          }
-        }
-        // add/update the featureloc if the landmark and the ID are not the same
-        // if they are the same then this entry in the GFF is probably a landmark identifier
-        if (strcmp($landmark, $attr_uniquename) !=0 ) {
-          tripal_feature_load_gff3_featureloc($feature, $organism,
-            $landmark, $fmin, $fmax, $strand, $phase, $attr_fmin_partial,
-            $attr_fmax_partial, $attr_residue_info, $attr_locgroup);
-        }
-continue;
-        // add any aliases for this feature
-        if (array_key_exists('Alias', $tags)) {
-          tripal_feature_load_gff3_alias($feature, $tags['Alias']);
+          $options = array('statement_name' => 'sel_feature_numlandty');
         }      
-        // add any dbxrefs for this feature
-        if (array_key_exists('Dbxref', $tags)) {
-          tripal_feature_load_gff3_dbxref($feature, $tags['Dbxref']);
-        }
-        // add any ontology terms for this feature
-        if (array_key_exists('Ontology_term', $tags)) {
-          tripal_feature_load_gff3_ontology($feature, $tags['Ontology_term']);
-        }       
-        // add parent relationships
-        if (array_key_exists('Parent', $tags)) {
-          tripal_feature_load_gff3_parents($feature, $cvterm, $tags['Parent'], $feature_organism->organism_id, $fmin);
-        }               
-        // add target relationships
-        if (array_key_exists('Target', $tags)) {
-          tripal_feature_load_gff3_target($feature, $tags, $target_organism_id, $target_type, $create_target, $attr_locgroup);          
-        }
-        // add gap information.  This goes in simply as a property
-        if (array_key_exists('Gap', $tags)) {
-          foreach ($tags['Gap'] as $value) {
-            tripal_feature_load_gff3_property($feature, 'Gap', $value);
+        $count = tripal_core_chado_select('feature', $columns, $select, $options);        
+        if (!$count or count($count) == 0 or $count[0]->num_landmarks == 0) {        
+          // now look for the landmark using the name rather than uniquename.
+          $select = array(
+            'organism_id' => $organism->organism_id,
+            'name'  => $landmark,
+          );
+          $columns = array('count(*) as num_landmarks');
+          $options = array('statement_name' => 'sel_feature_numlandna');              
+          if ($landmark_type) {
+            $select['type_id'] = array(
+              'name' => $landmark_type,
+            );
+            $options = array('statement_name' => 'sel_feature_numlandnaty');
           }
-        }
-        // add notes. This goes in simply as a property
-        if (array_key_exists('Note', $tags)) {
-          foreach ($tags['Note'] as $value) {
-              tripal_feature_load_gff3_property($feature, 'Note', $value);
+          $count = tripal_core_chado_select('feature', $columns, $select, $options); 
+          if (!$count or count($count) == 0 or $count[0]->num_landmarks == 0) {
+            watchdog('T_gff3_loader', "The landmark '%landmark' cannot be found for this organism (%species) " .
+                  "Please add the landmark and then retry the import of this GFF3 " .
+                  "file", array('%landmark' => $landmark, '%species' => $organism->genus . " " . $organism->species), WATCHDOG_ERROR);
+            return '';
           }
+          elseif ($count[0]->num_landmarks > 1) {
+            watchdog('T_gff3_loader', "The landmark '%landmark' has more than one entry for this organism (%species) " .
+                  "Cannot continue", array('%landmark' => $landmark, '%species' => $organism->genus . " " . $organism->species), WATCHDOG_ERROR);
+            return '';  
+          }
+  
         }
-        // add the Derives_from relationship (e.g. polycistronic genes).
-        if (array_key_exists('Derives_from', $tags)) {
-          tripal_feature_load_gff3_derives_from($feature, $tags['Derives_from'][0], $feature_organism);
+        if ($count[0]->num_landmarks > 1) {
+          watchdog('T_gff3_loader', "The landmark '%landmark' is not unique for this organism. " .
+                "The features cannot be associated", array('%landmark' => $landmark), WATCHDOG_ERROR);
+          return '';
+        }  
+      }
+  
+      // if the option is to remove or refresh then we want to remove
+      // the feature from the database.
+      if ($remove or $refresh) {
+        $sql = "DELETE FROM {feature}
+                WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
+        $match = array(
+           'organism_id' => $feature_organism->organism_id,
+           'uniquename'  => $attr_uniquename,
+           'type_id'     => $cvterm->cvterm_id
+        );
+        $result = tripal_core_chado_delete('feature', $match);
+        if (!$result) {
+          watchdog('T_gff3_loader', "cannot delete feature %attr_uniquename", 
+            array('%attr_uniquename' => $attr_uniquename), WATCHDOG_ERROR);
         }
-        // add in the GFF3_source dbxref so that GBrowse can find the feature using the source column
-        $source_ref = array('GFF_source:' . $source);
-        tripal_feature_load_gff3_dbxref($feature, $source_ref);
-        // add any additional attributes
-        if ($attr_others) {
-          foreach ($attr_others as $tag_name => $values) {
-            foreach ($values as $value) {
-              tripal_feature_load_gff3_property($feature, $tag_name, $value);
+        $feature = 0;
+        unset($result);
+      }
+  
+      // add or update the feature and all properties
+      if ($update or $refresh or $add_only) {
+  
+        // add/update the feature
+        $feature = tripal_feature_load_gff3_feature($feature_organism, $analysis_id, $cvterm,
+          $attr_uniquename, $attr_name, $residues, $attr_is_analysis,
+          $attr_is_obsolete, $add_only, $score);  
+     
+        if ($feature) {
+          
+          // add a record for this feature to the tripal_gff_temp table for
+          // later lookup
+          $values = array(
+            'feature_id' => $feature->feature_id,
+            'organism_id' => $feature->organism_id,
+            'type_name' => $type,
+            'uniquename' => $feature->uniquename
+          );
+          // make sure this record doesn't already exist in oru temp table
+          $options = array('statement_name' => 'sel_tripalgfftemp_all');
+          $results = tripal_core_chado_select('tripal_gff_temp', array('*'), $values, $options);
+  
+          if (count($results) == 0) {
+            $options = array('statement_name' => 'ins_tripalgfftemp');
+            $result = tripal_core_chado_insert('tripal_gff_temp', $values, $options);
+            if (!$result) {
+              watchdog('T_gff3_loader', "Cound not save record in temporary table, Cannot continue.", array(), WATCHDOG_ERROR);
+              exit;
             }
           }
+          // add/update the featureloc if the landmark and the ID are not the same
+          // if they are the same then this entry in the GFF is probably a landmark identifier
+          if (strcmp($landmark, $attr_uniquename) !=0 ) {
+            tripal_feature_load_gff3_featureloc($feature, $organism,
+              $landmark, $fmin, $fmax, $strand, $phase, $attr_fmin_partial,
+              $attr_fmax_partial, $attr_residue_info, $attr_locgroup);
+          }
+
+          // add any aliases for this feature
+          if (array_key_exists('Alias', $tags)) {
+            tripal_feature_load_gff3_alias($feature, $tags['Alias']);
+          }      
+          // add any dbxrefs for this feature
+          if (array_key_exists('Dbxref', $tags)) {
+            tripal_feature_load_gff3_dbxref($feature, $tags['Dbxref']);
+          }
+          // add any ontology terms for this feature
+          if (array_key_exists('Ontology_term', $tags)) {
+            tripal_feature_load_gff3_ontology($feature, $tags['Ontology_term']);
+          }       
+          // add parent relationships
+          if (array_key_exists('Parent', $tags)) {
+            tripal_feature_load_gff3_parents($feature, $cvterm, $tags['Parent'], $feature_organism->organism_id, $fmin);
+          }               
+          // add target relationships
+          if (array_key_exists('Target', $tags)) {
+            tripal_feature_load_gff3_target($feature, $tags, $target_organism_id, $target_type, $create_target, $attr_locgroup);          
+          }
+          // add gap information.  This goes in simply as a property
+          if (array_key_exists('Gap', $tags)) {
+            foreach ($tags['Gap'] as $value) {
+              tripal_feature_load_gff3_property($feature, 'Gap', $value);
+            }
+          }
+          // add notes. This goes in simply as a property
+          if (array_key_exists('Note', $tags)) {
+            foreach ($tags['Note'] as $value) {
+                tripal_feature_load_gff3_property($feature, 'Note', $value);
+            }
+          }
+          // add the Derives_from relationship (e.g. polycistronic genes).
+          if (array_key_exists('Derives_from', $tags)) {
+            tripal_feature_load_gff3_derives_from($feature, $tags['Derives_from'][0], $feature_organism);
+          }
+          // add in the GFF3_source dbxref so that GBrowse can find the feature using the source column
+          $source_ref = array('GFF_source:' . $source);
+          tripal_feature_load_gff3_dbxref($feature, $source_ref);
+          // add any additional attributes
+          if ($attr_others) {
+            foreach ($attr_others as $tag_name => $values) {
+              foreach ($values as $value) {
+                tripal_feature_load_gff3_property($feature, $tag_name, $value);
+              }
+            }
+          }
+          
+        }
+      }
+    }
+  
+    if (!$remove) {
+      print "\nSetting ranks of children...\n";
+      
+      // get features in a relationship that are also children of an alignment
+      $sql = "
+        SELECT DISTINCT F.feature_id, F.organism_id, F.type_id, 
+          F.uniquename, FL.strand 
+        FROM {tripal_gff_temp} TGT 
+          INNER JOIN {feature} F                ON TGT.feature_id = F.feature_id
+          INNER JOIN {feature_relationship} FR  ON FR.object_id = TGT.feature_id
+          INNER JOIN {cvterm} CVT               ON CVT.cvterm_id = FR.type_id  
+          INNER JOIN {featureloc} FL            ON FL.feature_id = F.feature_id    
+        WHERE CVT.name = 'part_of'
+      ";
+      $parents = chado_query($sql);
+      
+      // build and prepare the SQL for selecting the children relationship
+      $sql = "";
+  
+      $sql = "
+        PREPARE sel_gffchildren (int) AS 
+        SELECT DISTINCT FR.feature_relationship_id, FL.fmin, FR.rank
+        FROM {feature_relationship} FR
+          INNER JOIN {featureloc} FL on FL.feature_id = FR.subject_id
+        WHERE FR.object_id = \$1 ORDER BY FL.fmin ASC
+      ";            
+      $success = chado_query('sel_gffchildren', $sql);
+      if (!$success) {
+        watchdog("T_gff3_loader", "Cannot prepare statement 'sel_gffchildren' and cannot set children ranks.", 
+           array(), WATCHDOG_WARNING);
+        return 0;  
+      }
+      
+      // now set the rank of any parent/child relationships.  The order is based
+      // on the fmin.  The start rank is 1.  This allows features with other
+      // relationships to be '0' (the default), and doesn't interfer with the
+      // ordering defined here.        
+      while ($parent = $parents->fetchObject()) {
+        
+        // get the children
+        if ($connection) {      
+          $result = chado_query('EXECUTE sel_gffchildren (:feature_id)', array(':feature_id' => $parent->feature_id));
+        }
+        else {
+          $result = chado_query($sql, array(':feature_id' => $parent->feature_id));
         }
         
+        // build an array of the children
+        $children = array();
+        while ($child = $result->fetchObject()) {
+           $children[] = $child;  
+        }
+        
+        // the children list comes sorted in ascending fmin
+        // but if the parent is on the reverse strand we need to 
+        // reverse the order of the children.
+        if ($parent->strand == -1) {
+          arsort($children);
+        }    
+    
+        // first set the ranks to a negative number so that we don't
+        // get a duplicate error message when we try to change any of them    
+        $rank = -1;
+        foreach ($children as $child) {
+          $match = array('feature_relationship_id' => $child->feature_relationship_id);
+          $options = array('statement_name' => 'upd_featurerelationship_rank');      
+          $values = array('rank' => $rank);      
+          tripal_core_chado_update('feature_relationship', $match, $values, $options);
+          $rank--;
+        }
+        // now set the rank correctly. The rank should start at 0.
+        $rank = 0;
+        foreach ($children as $child) {
+          $match = array('feature_relationship_id' => $child->feature_relationship_id);
+          $options = array('statement_name' => 'upd_featurerelationship_rank');      
+          $values = array('rank' => $rank); 
+          //print "Was: " . $child->rank . " now $rank ($parent->strand)\n"     ;
+          tripal_core_chado_update('feature_relationship', $match, $values, $options);
+          $rank++;
+        }
       }
     }
+  }
+  catch (Exception $e) {
+    print "\n"; // make sure we start errors on new line
+    watchdog_exception('T_gff3_loader', $e);
+    if ($use_transaction) {
+      $transaction->rollback();
+      print "FAILED: Rolling back database changes...\n";
+    }
+    else {
+      print "FAILED\n";
+    }
+    return 0;
   }
 
-  if (!$remove) {
-    print "\nSetting ranks of children...\n";
-    
-    // get features in a relationship that are also children of an alignment
-    $sql = "
-      SELECT DISTINCT F.feature_id, F.organism_id, F.type_id, 
-        F.uniquename, FL.strand 
-      FROM {tripal_gff_temp} TGT 
-        INNER JOIN {feature} F                ON TGT.feature_id = F.feature_id
-        INNER JOIN {feature_relationship} FR  ON FR.object_id = TGT.feature_id
-        INNER JOIN {cvterm} CVT               ON CVT.cvterm_id = FR.type_id  
-        INNER JOIN {featureloc} FL            ON FL.feature_id = F.feature_id    
-      WHERE CVT.name = 'part_of'
-    ";
-    $parents = chado_query($sql);
-    
-    // build and prepare the SQL for selecting the children relationship
-    $sql = "";
-
-    $sql = "
-      PREPARE sel_gffchildren (int) AS 
-      SELECT DISTINCT FR.feature_relationship_id, FL.fmin, FR.rank
-      FROM {feature_relationship} FR
-        INNER JOIN {featureloc} FL on FL.feature_id = FR.subject_id
-      WHERE FR.object_id = \$1 ORDER BY FL.fmin ASC
-    ";            
-    $success = chado_query('sel_gffchildren', $sql);
-    if (!$success) {
-      watchdog("T_gff3_loader", "Cannot prepare statement 'sel_gffchildren' and cannot set children ranks.", 
-         array(), WATCHDOG_WARNING);
-      return 0;  
-    }
-    
-    // now set the rank of any parent/child relationships.  The order is based
-    // on the fmin.  The start rank is 1.  This allows features with other
-    // relationships to be '0' (the default), and doesn't interfer with the
-    // ordering defined here.        
-    while ($parent = $parents->fetchObject()) {
-      
-      // get the children
-      if ($connection) {      
-        $result = chado_query('EXECUTE sel_gffchildren (:feature_id)', array(':feature_id' => $parent->feature_id));
-      }
-      else {
-        $result = chado_query($sql, array(':feature_id' => $parent->feature_id));
-      }
-      
-      // build an array of the children
-      $children = array();
-      while ($child = $result->fetchObject()) {
-         $children[] = $child;  
-      }
-      
-      // the children list comes sorted in ascending fmin
-      // but if the parent is on the reverse strand we need to 
-      // reverse the order of the children.
-      if ($parent->strand == -1) {
-        arsort($children);
-      }    
-  
-      // first set the ranks to a negative number so that we don't
-      // get a duplicate error message when we try to change any of them    
-      $rank = -1;
-      foreach ($children as $child) {
-        $match = array('feature_relationship_id' => $child->feature_relationship_id);
-        $options = array('statement_name' => 'upd_featurerelationship_rank');      
-        $values = array('rank' => $rank);      
-        tripal_core_chado_update('feature_relationship', $match, $values, $options);
-        $rank--;
-      }
-      // now set the rank correctly. The rank should start at 0.
-      $rank = 0;
-      foreach ($children as $child) {
-        $match = array('feature_relationship_id' => $child->feature_relationship_id);
-        $options = array('statement_name' => 'upd_featurerelationship_rank');      
-        $values = array('rank' => $rank); 
-        //print "Was: " . $child->rank . " now $rank ($parent->strand)\n"     ;
-        tripal_core_chado_update('feature_relationship', $match, $values, $options);
-        $rank++;
-      }
-    }
-  }
-  
-  // commit the transaction
-  if ($use_transaction) {
-    tripal_db_commit_transaction();
-  }
   print "Done\n";
-  
   return 1;
 }
 /**

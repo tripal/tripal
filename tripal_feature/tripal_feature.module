@@ -2227,10 +2227,11 @@ function tripal_feature_match_features_page($id) {
 }
 
 /**
- *
- * @param unknown_type $form
- * @param unknown_type $form_state
- * @param unknown_type $form_id
+ * Implementation of hook_form_alter()
+ * 
+ * @param $form
+ * @param $form_state
+ * @param $form_id
  */
 function tripal_feature_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == "tripal_feature_seq_extract_form") {
@@ -2239,7 +2240,7 @@ function tripal_feature_form_alter(&$form, &$form_state, $form_id) {
     // to the normal form URL
     $form['#action'] = url("find/sequences");
   }
-  // turn of preview button for feature insert/updates
+  // turn off preview button for insert/updates
   if ($form_id == "chado_feature_node_form") {
     $form['actions']['preview']['#access'] = FALSE;
   }
