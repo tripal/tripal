@@ -244,10 +244,21 @@ function tripal_core_menu() {
   $items['admin/tripal/schema/mviews'] = array(
     'title' => 'Materialized Views',
     'description' => 'Materialized views are used to improve speed of large or complex queries.',
+    'page callback' => 'tripal_mview_admin_view',
     'access arguments' => array('access administration pages'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => -10
   );
+  $items['admin/tripal/schema/mviews/help'] = array(
+    'title' => 'Help',
+    'description' => 'Help for the materialized views management system',
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_core_mviews_help'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10
+  );
+  /**
   $items['admin/tripal/schema/mviews/list'] = array(
     'title' => 'List Materialized Views',
     'description' => 'A list of existing materialized views with the ability to edit & delete existing materialized views.',
@@ -256,13 +267,14 @@ function tripal_core_menu() {
     'type' => MENU_NORMAL_ITEM,
     'weight' => -10
   );
+  */
   $items['admin/tripal/schema/mviews/report/%'] = array(
     'title' => 'Materialized View',
     'description' => 'Materialized views are used to improve speed of large or complex queries. These are database views as compared to Drupal views.',
     'page callback' => 'tripal_mview_report',
     'page arguments' => array(5),
     'access arguments' => array('access administration pages'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/schema/mviews/new'] = array(
     'title' => 'Create Materialized View',
@@ -270,14 +282,14 @@ function tripal_core_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_mviews_form'),
     'access arguments' => array('access administration pages'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/schema/mviews/edit/%'] = array(
     'title' => 'Edit Materialized View',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_mviews_form', 5),
     'access arguments' => array('access administration pages'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/schema/mviews/action/%/%'] = array(
     'title' => 'Create Materialized View',
