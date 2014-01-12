@@ -1024,7 +1024,7 @@ function tripal_feature_load_gff3_parents($feature, $cvterm, $parents, $organism
     $parentcvterm = chado_query("EXECUTE sel_cvterm_cvname_cvtname_synonym (:cvname, :name, :synonym)", 
       array(':cvname' => 'sequence', ':name' => $parent_type, ':synonym' => $parent_type))->fetchObject();
     $relcvterm = chado_query("EXECUTE sel_cvterm_cvname_cvtname_synonym (:cvname, :name, :synonym)", 
-      array(':cvname' => 'relationship', ':name' => $rel_type, ':synonymn' => $rel_type))->fetchObject();
+      array(':cvname' => 'relationship', ':name' => $rel_type, ':synonym' => $rel_type))->fetchObject();
     $values = array(
         'organism_id' => $organism_id,
         'uniquename' => $parent,
