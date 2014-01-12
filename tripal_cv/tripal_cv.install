@@ -49,8 +49,11 @@ function tripal_cv_install() {
   // add the cv_root_mview
   tripal_cv_add_cv_root_mview();
 
-  // create the tables that correlate OBO files/references with a chado CV
+  // add defaults to the tables that correlate OBO files/references with a chado CV
   tripal_cv_add_obo_defaults();
+  
+  // add the custom tables to Chado
+  tripal_cv_add_custom_tables();
 }
 /**
  * Implementation of hook_uninstall().
@@ -95,6 +98,7 @@ function tripal_cv_schema() {
     ),
     'primary key' => array('obo_id'),
   );
+  
 
   return $schema;
 }
@@ -169,4 +173,37 @@ function tripal_cv_add_obo_defaults() {
   foreach ($ontologies as $o) {
     db_query("INSERT INTO {tripal_cv_obo} (name,path) VALUES (:name, :path)", array(':name' => $o[0], ':path' => $o[1]));
   }
+}
+
+/**
+ * 
+ */
+function tripal_cv_add_custom_tables() {
+  $schema = array(
+    'table' => 'tripal_obo_temp',
+    'fields' => array(
+      'id' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'stanza' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'type' => array(
+        'type' => 'varchar',
+        'length' => '50',
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'tripal_obo_temp_idx0' => array('id'),
+      'tripal_obo_temp_idx0' => array('type'),
+    ),
+    'unique keys' => array(
+      'tripal_obo_temp_uq0' => array('id'),
+    ),
+  );
+  tripal_core_create_custom_table('tripal_obo_temp', $schema, TRUE);
 }

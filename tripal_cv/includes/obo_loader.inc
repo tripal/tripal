@@ -223,14 +223,7 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
     
   // make sure our temporary table exists
   $ret = array(); 
-  if (!chado_table_exists('tripal_obo_temp')) { 
-    $schema = tripal_cv_get_custom_tables('tripal_obo_temp');  
-    $success = tripal_core_create_custom_table('tripal_obo_temp', $schema['tripal_obo_temp']);
-    if (!$success) {
-      watchdog('T_obo_loader', "Cannot create temporary loading table", array(), WATCHDOG_ERROR); 
-      return;
-    } 
-  }
+
   // empty the temp table
   $sql = "DELETE FROM {tripal_obo_temp}";
   chado_query($sql);
