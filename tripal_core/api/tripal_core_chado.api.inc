@@ -221,12 +221,9 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
   // get the table description
   $table_desc = tripal_core_get_chado_table_schema($table);
   if (empty($table_desc)) {
-    tripal_core_report_error(
-      'tripal_core',
-      TRIPAL_WARNING,
+    tripal_core_report_error('tripal_core', TRIPAL_WARNING,
       'tripal_core_chado_insert; There is no table description for !table_name',
-      array('!table_name' => $table),
-      array('print' => $print_errors)
+      array('!table_name' => $table), array('print' => $print_errors)
     );
   }
 
@@ -1127,9 +1124,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     // make sure the field is in the table description. If not then return an error
     // message
     if (!array_key_exists($field, $table_desc['fields'])) {
-      tripal_core_report_error(
-        'tripal_core',
-        TRIPAL_ERROR,
+      tripal_core_report_error('tripal_core', TRIPAL_ERROR,
         'tripal_core_chado_select: The field "%field" does not exist for the table "%table".  Cannot perform query. Values: %array',
         array('%field' => $field, '%table' => $table, '%array' => print_r($values, 1)),
         array('print' => $print_errors)
@@ -2143,9 +2138,7 @@ function chado_query($sql, $args = array()) {
 
   // Args should be an array
   if (!is_array($args)) {
-    tripal_core_report_error(
-      'tripal_core',
-      TRIPAL_ERROR,
+    tripal_core_report_error('tripal_core', TRIPAL_ERROR,
       'chado_query; Need to pass an array to chado_query, "%value" passed instead. Query: %query',
       array('%value' => $args, '%query' => $sql)
     );
@@ -2157,7 +2150,19 @@ function chado_query($sql, $args = array()) {
   if ($is_local) {
     $sql = preg_replace('/\n/', '', $sql);  // remove carriage returns
     $sql = preg_replace('/\{(.*?)\}/', 'chado.$1', $sql);
-    $results = db_query($sql, $args);
+    
+    // the featureloc table has some indexes that use function that call other functions
+    // and those calls do not reference a schema, therefore, any tables with featureloc
+    // must automaticaly have the chado schema set as active to find 
+    if(preg_match('/chado.featureloc/i', $sql)) {
+      $previous_db = tripal_db_set_active('chado') ;
+      $results = db_query($sql, $args);
+      tripal_db_set_active($previous_db);
+    }
+    // for all other tables we should have everything in scope so just run the query
+    else {
+      $results = db_query($sql, $args);
+    }
   }
   // if Chado is not local to the Drupal database then we have to
   // switch to another database
@@ -2537,13 +2542,8 @@ function tripal_core_delete_property_by_id($basetable, $record_id) {
  * Start a transaction block. Ensures the use of a persistent chado connection
  */
 function tripal_db_start_transaction() {
-/*  $connection = tripal_db_persistent_chado();
-  if ($connection) {
-    chado_query("BEGIN");
-    return $connection;
-  }
-  return FALSE;
-*/
+  $transaction = db_transaction();
+  return $transaction;
 }
 
 /**
@@ -2555,15 +2555,6 @@ function tripal_db_set_savepoint_transaction($savepoint, $release = FALSE) {
     chado_query("RELEASE SAVEPOINT :savepoint", array(':savepoint' => $savepoint));
   }
   chado_query("SAVEPOINT :savepoint", array(':savepoint' => $savepoint));
-}
-
-/**
- * A simple function to commit a database transaction
- *
- * @return nothing
- */
-function tripal_db_commit_transaction() {
-  chado_query("COMMIT");
 }
 
 /**
@@ -3096,7 +3087,7 @@ function tripal_db_set_active($dbname  = 'default') {
   $chado_exists = variable_get('chado_schema_exists', FALSE);
   if ($dbname ) {
     if ($dbname == 'chado') {
-      db_query('set search_path to chado');
+      db_query('set search_path to chado,public');
       return 'default';
     }
     else {

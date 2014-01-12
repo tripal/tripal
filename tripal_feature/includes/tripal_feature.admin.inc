@@ -538,9 +538,9 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
   // get the cvterm and the organism for this feature
   $sql = "
     SELECT CVT.name AS cvname, O.genus, O.species
-    FROM {CVTerm} CVT
-      INNER JOIN {Feature} F on F.type_id = CVT.cvterm_id
-      INNER JOIN {Organism} O ON F.organism_id = O.organism_id
+    FROM {cvterm} CVT
+      INNER JOIN {feature} F on F.type_id = CVT.cvterm_id
+      INNER JOIN {organism} O ON F.organism_id = O.organism_id
     WHERE F.feature_id = :feature_id
   ";
   $feature = chado_query($sql, array(':feature_id' => $feature_id))->fetchObject();

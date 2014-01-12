@@ -144,12 +144,12 @@ function tripal_feature_set_urls($na = NULL, $job = NULL) {
   // are not Chado tables we must manually prepare them 
   $psql = "
     PREPARE del_url_alias_by_src (text) AS
-    DELETE FROM {url_alias} WHERE src = \$1
+    DELETE FROM {url_alias} WHERE source = \$1
   ";
   db_query($psql);
   $psql = "
     PREPARE ins_url_alias_nisrds (text, text) AS
-    INSERT INTO url_alias (src, dst) VALUES (\$1, \$2)
+    INSERT INTO url_alias (source, alias) VALUES (\$1, \$2)
   ";
   db_query($psql);
   
@@ -183,20 +183,20 @@ function tripal_feature_set_urls($na = NULL, $job = NULL) {
     }
     
     // remove any previous alias and then add the new one
-    $success = db_query("EXECUTE del_url_alias_by_src(:src)", array(':src' => $src));    
+    $success = db_query("EXECUTE del_url_alias_by_src(:source)", array(':source' => $src));    
     if (!$success) {
       db_query('DEALLOCATE "del_url_alias_by_src"');
       db_query('DEALLOCATE "ins_url_alias_nisrds"');
       db_query("ROLLBACK");
-      watchdog('trp-seturl', "Failed Removing URL Alias: %src", array('%src' => $src), WATCHDOG_ERROR);
+      watchdog('trp-seturl', "Failed Removing URL Alias: %source", array('%source' => $src), WATCHDOG_ERROR);
       return;
     }
-    $success = db_query("EXECUTE ins_url_alias_nisrds(:src, :dst)", array(':src' => $src, ':dst' => $dst));
+    $success = db_query("EXECUTE ins_url_alias_nisrds(:source, :alias)", array(':source' => $src, ':alias' => $dst));
     if (!$success) {
       db_query('DEALLOCATE "del_url_alias_by_src"');
       db_query('DEALLOCATE "ins_url_alias_nisrds"');
       db_query("ROLLBACK");
-      watchdog('trp-seturl', "Failed Adding URL Alias: %dst", array('%dst' => $dst), WATCHDOG_ERROR);
+      watchdog('trp-seturl', "Failed Adding URL Alias: %alias", array('%alias' => $dst), WATCHDOG_ERROR);
       return;
     }
 

@@ -999,3 +999,17 @@ function tripal_pub_node_update($node) {
     tripal_pub_set_pub_url($node, $pub_id);
   }
 }
+
+/**
+ * Implementation of hook_form_alter()
+ *
+ * @param $form
+ * @param $form_state
+ * @param $form_id
+ */
+function tripal_pub_form_alter(&$form, &$form_state, $form_id) {
+  // turn of preview button for insert/updates
+  if ($form_id == "chado_pub_node_form") {
+    $form['actions']['preview']['#access'] = FALSE;
+  }
+}

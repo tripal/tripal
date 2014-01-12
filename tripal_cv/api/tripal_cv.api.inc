@@ -736,7 +736,7 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
       return 0;
     } 
     $result = chado_query($cvtermsql, array(':accession' => $accession, ':name' => $dbname));
-    $cvterm = $result->fetchObject();   
+    $cvterm = $result->fetchObject();
   }
   // upate the cvterm
   elseif ($update) { 
@@ -761,46 +761,6 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
   }
   // return the cvterm
   return $cvterm;
-}
-
-
-/**
- * This function defines the custom tables that will be created 
- * in the chado schema.
- *
- * @ingroup tripal_cv_api
- */
-function tripal_cv_get_custom_tables($table = NULL) {
-
- if (!$table or strcmp($table, 'tripal_obo_temp')==0) {
-    $schema['tripal_obo_temp'] = array(
-      'table' => 'tripal_obo_temp',
-      'fields' => array(
-        'id' => array(
-          'type' => 'varchar',
-          'length' => '255',
-          'not null' => TRUE,
-        ),
-        'stanza' => array(
-          'type' => 'text',
-          'not null' => TRUE,
-        ),
-        'type' => array(
-          'type' => 'varchar',
-          'length' => '50',
-          'not null' => TRUE,
-        ),
-      ),
-      'indexes' => array(
-        'tripal_obo_temp_idx0' => array('id'),
-        'tripal_obo_temp_idx0' => array('type'),
-      ),
-      'unique keys' => array(
-        'tripal_obo_temp_uq0' => array('id'),
-      ),
-    );
-  }
-  return $schema;
 }
 
 /**

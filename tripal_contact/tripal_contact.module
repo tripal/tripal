@@ -685,10 +685,16 @@ function tripal_contact_preprocess_tripal_contact_relationships(&$variables) {
   $contact->all_relationships = $relationships;
 }
 
-/*
- *
+/**
+ * Implementation of hook_form_alter()
+ * 
+ * @param $form
+ * @param $form_state
+ * @param $form_id
  */
 function tripal_contact_form_alter(&$form, &$form_state, $form_id) {
+  // turn of preview button for insert/updates
   if ($form_id == "chado_contact_node_form") {
+    $form['actions']['preview']['#access'] = FALSE;
   }
 }

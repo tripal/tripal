@@ -2,6 +2,9 @@
 #tripal_feature-sequence-residues {
   background-color: #FFFFFF;
   font-family: monospace;
+  margin: 10px 0 0 0;
+  padding: 0px;
+  font-size: medium;
 }
 
 pre#tripal_feature-featureloc_sequence {

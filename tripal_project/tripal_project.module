@@ -597,3 +597,16 @@ function tripal_project_preprocess_tripal_project_relationships(&$variables) {
   $project->all_relationships = $relationships;
 
 }
+/**
+ * Implementation of hook_form_alter()
+ *
+ * @param $form
+ * @param $form_state
+ * @param $form_id
+ */
+function tripal_project_form_alter(&$form, &$form_state, $form_id) {
+  // turn of preview button for insert/updates
+  if ($form_id == "chado_project_node_form") {
+    $form['actions']['preview']['#access'] = FALSE;
+  }
+}

@@ -219,54 +219,58 @@ function tripal_cv_load_update_cvtermpath($newcvs, $jobid) {
  */
 function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
   
-  $header = array();
-    
-  // make sure our temporary table exists
-  $ret = array(); 
-  if (!chado_table_exists('tripal_obo_temp')) { 
-    $schema = tripal_cv_get_custom_tables('tripal_obo_temp');  
-    $success = tripal_core_create_custom_table('tripal_obo_temp', $schema['tripal_obo_temp']);
-    if (!$success) {
-      watchdog('T_obo_loader', "Cannot create temporary loading table", array(), WATCHDOG_ERROR); 
-      return;
-    } 
+  $transaction = db_transaction();
+  print "\nNOTE: Loading of this OBO file is performed using a database transaction. \n" .
+      "If the load fails or is terminated prematurely then the entire set of \n" .
+      "insertions/updates is rolled back and will not be found in the database\n\n";
+  try {
+    $header = array();
+      
+    // make sure our temporary table exists
+    $ret = array(); 
+  
+    // empty the temp table
+    $sql = "DELETE FROM {tripal_obo_temp}";
+    chado_query($sql);
+  
+    print "Step 1: Preloading File $file\n";  
+  
+    // make sure we have an 'internal' and a '_global' database
+    if (!tripal_db_add_db('internal')) {
+      tripal_cv_obo_quiterror("Cannot add 'internal' database");
+    }
+    if (!tripal_db_add_db('_global')) {
+      tripal_cv_obo_quiterror("Cannot add '_global' database");
+    }
+  
+    // parse the obo file
+    $default_db = tripal_cv_obo_parse($file, $header, $jobid);
+  
+    // add the CV for this ontology to the database
+    $defaultcv = tripal_cv_add_cv($header['default-namespace'][0], '');
+    if (!$defaultcv) {
+      tripal_cv_obo_quiterror('Cannot add namespace ' . $header['default-namespace'][0]);
+    }
+    $newcvs[$header['default-namespace'][0]] = $defaultcv->cv_id;
+  
+    // add any typedefs to the vocabulary first
+    print "\nStep 2: Loading type defs...\n"; 
+    tripal_cv_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid);
+  
+    // next add terms to the vocabulary
+    print "\nStep 3: Loading terms...\n";  
+    if (!tripal_cv_obo_process_terms($defaultcv, $jobid, $newcvs, $default_db)) {
+      tripal_cv_obo_quiterror('Cannot add terms from this ontology');
+    }
   }
-  // empty the temp table
-  $sql = "DELETE FROM {tripal_obo_temp}";
-  chado_query($sql);
-
-  print "Step 1: Preloading File $file\n";  
-
-  // make sure we have an 'internal' and a '_global' database
-  if (!tripal_db_add_db('internal')) {
-    tripal_cv_obo_quiterror("Cannot add 'internal' database");
-  }
-  if (!tripal_db_add_db('_global')) {
-    tripal_cv_obo_quiterror("Cannot add '_global' database");
+  catch (Exception $e) {
+    print "\n"; // make sure we start errors on new line
+    watchdog_exception('T_obo_loader', $e);
+    $transaction->rollback();
+    print "FAILED: Rolling back database changes...\n";
+    return 0;
   }
 
-  // parse the obo file
-  $default_db = tripal_cv_obo_parse($file, $header, $jobid);
-
-  // add the CV for this ontology to the database
-  $defaultcv = tripal_cv_add_cv($header['default-namespace'][0], '');
-  if (!$defaultcv) {
-    tripal_cv_obo_quiterror('Cannot add namespace ' . $header['default-namespace'][0]);
-  }
-  $newcvs[$header['default-namespace'][0]] = $defaultcv->cv_id;
-
-  // add any typedefs to the vocabulary first
-  print "\nStep 2: Loading type defs...\n"; 
-  tripal_cv_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid);
-
-  // next add terms to the vocabulary
-  print "\nStep 3: Loading terms...\n";  
-  if (!tripal_cv_obo_process_terms($defaultcv, $jobid, $newcvs, $default_db)) {
-    tripal_cv_obo_quiterror('Cannot add terms from this ontology');
-  }
-
-  // transaction is complete
-  tripal_db_commit_transaction();
   return;
 }
 
