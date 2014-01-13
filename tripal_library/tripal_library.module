@@ -155,6 +155,15 @@ function tripal_library_menu() {
     'access arguments' => array('administer tripal libraries'),
     'type' => MENU_CALLBACK
   );
+
+  $items['admin/tripal/chado/tripal_library/views/libraries/enable'] = array(
+    'title' => 'Enable Library Administrative View',
+    'page callback' => 'tripal_views_admin_enable_view',
+    'page arguments' => array('tripal_library_admin_libraries', 'admin/tripal/chado/tripal_library'),
+    'access arguments' => array('administer tripal libraries'),
+    'type' => MENU_CALLBACK,
+  );
+
   return $items;
 }
 

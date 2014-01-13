@@ -2,7 +2,7 @@
 
 require_once('api/tripal_natural_diversity.api.inc');
 require_once('includes/tripal_natural_diversity.schema.inc');
-
+require_once('includes/tripal_natural_diversity.admin.inc');
 /**
  *  @file
  * This file contains the basic functions needed for this drupal module.
@@ -15,7 +15,47 @@ require_once('includes/tripal_natural_diversity.schema.inc');
  * @ingroup tripal_modules
  */
 
-/*************************************************************************
+/**
+ *  Menu items are automatically added for the new node types created
+ *  by this module to the 'Create Content' Navigation menu item.  This function
+ *  adds more menu items needed for this module.
+ *
+ * @ingroup tripal_natural_diversity
+ */
+function tripal_natural_diversity_menu() {
+  $items = array();
+
+    // the administative settings menu
+  $items['admin/tripal/chado/tripal_natdiv'] = array(
+   'title' => 'Natural Diversity Experiments',
+   'description' => 'Experiments relating to natural diversity such as genotype and phenotype experiments.',
+   'page callback' => 'tripal_natural_diversity_admin_natdiv_view',
+   'access arguments' => array('adminster tripal natural_diversity'),
+   'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['admin/tripal/chado/tripal_natdiv/help'] = array(
+   'title' => 'Help',
+   'description' => "A description of the Tripal natural_diversity module including a short description of it's usage.",
+   'page callback' => 'theme',
+   'page arguments' => array('tripal_natdiv_help'),
+   'access arguments' => array('adminster tripal natural_diversity'),
+   'type' => MENU_LOCAL_TASK,
+   'weight' => 10
+  );
+
+  $items['admin/tripal/chado/tripal_natdiv/views/natdiv_exp/enable'] = array(
+    'title' => 'Enable Natural Diversity Administrative View',
+    'page callback' => 'tripal_views_admin_enable_view',
+    'page arguments' => array('tripal_natural_diversity_admin_natdiv_exp', 'admin/tripal/chado/tripal_natdiv'),
+    'access arguments' => array('administer tripal_bulk_loader'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
  * Implements hook_views_api()
  * Purpose: Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_natural_diversity.views.inc where all the
@@ -25,7 +65,7 @@ require_once('includes/tripal_natural_diversity.schema.inc');
  */
 function tripal_natural_diversity_views_api() {
   return array(
-      'api' => 2.0,
+      'api' => 3.0,
   );
 }
 
@@ -54,6 +94,11 @@ function tripal_natural_diversity_theme() {
       'template' => 'tripal_stock_nd_phenotypes',
       'path' => "$theme_path/tripal_stock",
     ),
+    'tripal_natdiv_help' => array(
+      'template' => 'tripal_natdiv_help',
+      'variables' =>  array(NULL),
+      'path' => "$theme_path",
+    ),
   );
   return $items;
 }
@@ -64,13 +109,13 @@ function tripal_natural_diversity_theme() {
 function tripal_natural_diversity_block_info() {
 
   $blocks['ndfgenotype']['info'] = t('Tripal Natural Diversity Feature Genotypes');
-  $blocks['ndfgenotype']['cache'] = BLOCK_NO_CACHE;
+  $blocks['ndfgenotype']['cache'] = 'BLOCK_NO_CACHE';
 
   $blocks['ndsgenotype']['info'] = t('Tripal Natural Diversity Library Genotypes');
-  $blocks['ndsgenotype']['cache'] = BLOCK_NO_CACHE;
+  $blocks['ndsgenotype']['cache'] = 'BLOCK_NO_CACHE';
 
   $blocks['ndsphenotype']['info'] = t('Tripal Natural Diversity Stock Phenotypes');
-  $blocks['ndsphenotype']['cache'] = BLOCK_NO_CACHE;
+  $blocks['ndsphenotype']['cache'] = 'BLOCK_NO_CACHE';
 
   return $blocks;
 }

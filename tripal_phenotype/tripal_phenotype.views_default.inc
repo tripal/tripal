@@ -8,481 +8,193 @@
 function tripal_phenotype_views_default_views() {
   $views = array();
 
-  if (!module_exists('tripal_views')) {
-    return $views;
-  }
-
-  // Main default view
-  $view = new view;
-  $view->name = 'phenotype_listing';
-  $view->description = 'A listing of chado phenotypes';
-  $view->tag = 'chado default';
-  $view->base_table = 'phenotype';
-  $view->core = 6;
-  $view->api_version = '2';
-  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
-  $handler = $view->new_display('default', 'Defaults', 'default');
-  $handler->override_option('relationships', array(
-    'assay_id' => array(
-      'label' => 'assay_id to cvterm',
-      'required' => 0,
-      'id' => 'assay_id',
-      'table' => 'phenotype',
-      'field' => 'assay_id',
-      'relationship' => 'none',
-    ),
-    'attr_id' => array(
-      'label' => 'attr_id to cvterm',
-      'required' => 0,
-      'id' => 'attr_id',
-      'table' => 'phenotype',
-      'field' => 'attr_id',
-      'relationship' => 'none',
-    ),
-    'cvalue_id' => array(
-      'label' => 'cvalue_id to cvterm',
-      'required' => 0,
-      'id' => 'cvalue_id',
-      'table' => 'phenotype',
-      'field' => 'cvalue_id',
-      'relationship' => 'none',
-    ),
-    'observable_id' => array(
-      'label' => 'observable_id to cvterm',
-      'required' => 0,
-      'id' => 'observable_id',
-      'table' => 'phenotype',
-      'field' => 'observable_id',
-      'relationship' => 'none',
-    ),
-  ));
-  $handler->override_option('fields', array(
-    'uniquename' => array(
-      'label' => 'Unique Name',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'uniquename',
-      'table' => 'phenotype',
-      'field' => 'uniquename',
-      'relationship' => 'none',
-    ),
-    'name_1' => array(
-      'label' => 'Phenotypic Attribute',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'name_1',
-      'table' => 'cvterm',
-      'field' => 'name',
-      'relationship' => 'attr_id',
-    ),
-    'name_3' => array(
-      'label' => 'Controlled Value',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'name_3',
-      'table' => 'cvterm',
-      'field' => 'name',
-      'relationship' => 'cvalue_id',
-    ),
-    'value' => array(
-      'label' => 'Value',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'value',
-      'table' => 'phenotype',
-      'field' => 'value',
-      'relationship' => 'none',
-    ),
-    'name_2' => array(
-      'label' => 'Observation Type',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'name_2',
-      'table' => 'cvterm',
-      'field' => 'name',
-      'relationship' => 'observable_id',
-    ),
-    'name' => array(
-      'label' => 'Evidence Type',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'name',
-      'table' => 'cvterm',
-      'field' => 'name',
-      'relationship' => 'assay_id',
-    ),
-  ));
-  $handler->override_option('filters', array(
-    'search_results' => array(
-      'operator' => '=',
-      'value' => '',
-      'group' => '0',
-      'exposed' => FALSE,
-      'expose' => array(
-        'operator' => FALSE,
-        'label' => '',
-      ),
-      'id' => 'search_results',
-      'table' => 'views',
-      'field' => 'search_results',
-      'relationship' => 'none',
-      'apply_button' => 'Show',
-      'no_results_text' => 'Click "Show" to see a list of all phenotypes matching the entered criteria. If you leave a any of the criteria blank then the phenotypes will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all phenotypes will be listed.',
-    ),
-    'attr_id' => array(
-      'operator' => '=',
-      'value' => '',
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'attr_id_op',
-        'identifier' => 'attr_id',
-        'label' => 'Phenotypic Attribute',
-        'remember' => 0,
-      ),
-      'case' => 1,
-      'id' => 'attr_id',
-      'table' => 'phenotype',
-      'field' => 'attr_id',
-      'relationship' => 'none',
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-      'values_form_type' => 'select',
-      'multiple' => 1,
-      'optional' => 0,
-      'show_all' => 0,
-    ),
-    'cvalue_id' => array(
-      'operator' => '=',
-      'value' => '',
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'cvalue_id_op',
-        'identifier' => 'cvalue_id',
-        'label' => 'Controlled Value',
-        'remember' => 0,
-      ),
-      'case' => 1,
-      'id' => 'cvalue_id',
-      'table' => 'phenotype',
-      'field' => 'cvalue_id',
-      'relationship' => 'none',
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-      'values_form_type' => 'select',
-      'multiple' => 1,
-      'optional' => 0,
-      'show_all' => 0,
-    ),
-    'observable_id' => array(
-      'operator' => '=',
-      'value' => '',
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'observable_id_op',
-        'identifier' => 'observable_id',
-        'label' => 'Observation Type',
-        'remember' => 0,
-      ),
-      'case' => 1,
-      'id' => 'observable_id',
-      'table' => 'phenotype',
-      'field' => 'observable_id',
-      'relationship' => 'none',
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-      'values_form_type' => 'select',
-      'multiple' => 1,
-      'optional' => 0,
-      'show_all' => 0,
-    ),
-    'assay_id' => array(
-      'operator' => '=',
-      'value' => '',
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'assay_id_op',
-        'identifier' => 'assay_id',
-        'label' => 'Evidence Type',
-        'remember' => 0,
-      ),
-      'case' => 1,
-      'id' => 'assay_id',
-      'table' => 'phenotype',
-      'field' => 'assay_id',
-      'relationship' => 'none',
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-      'values_form_type' => 'select',
-      'multiple' => 1,
-      'optional' => 0,
-      'show_all' => 0,
-    ),
-    'uniquename' => array(
-      'operator' => '~',
-      'value' => '',
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'uniquename_op',
-        'identifier' => 'uniquename',
-        'label' => 'Unique Name Contains',
-        'remember' => 0,
-      ),
-      'case' => 0,
-      'id' => 'uniquename',
-      'table' => 'phenotype',
-      'field' => 'uniquename',
-      'relationship' => 'none',
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-    ),
-    'value' => array(
-      'operator' => '~',
-      'value' => '',
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'value_op',
-        'identifier' => 'phen_value',
-        'label' => 'Value Contains',
-        'remember' => 0,
-      ),
-      'case' => 0,
-      'id' => 'value',
-      'table' => 'phenotype',
-      'field' => 'value',
-      'relationship' => 'none',
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-    ),
-  ));
-  $handler->override_option('access', array(
-    'type' => 'perm',
-    'perm' => 'access content',
-  ));
-  $handler->override_option('cache', array(
-    'type' => 'none',
-  ));
-  $handler->override_option('title', 'Phenotypes');
-  $handler->override_option('header', 'Click "Show" to see a list of all phenotypes matching the entered criteria. If you leave a any of the criteria blank then the phenotypes will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all phenotypes will be listed.');
-  $handler->override_option('header_format', '2');
-  $handler->override_option('header_empty', 0);
-  $handler->override_option('empty', 'No phenotypes match the supplied criteria.');
-  $handler->override_option('empty_format', '2');
-  $handler->override_option('items_per_page', 50);
-  $handler->override_option('use_pager', '1');
-  $handler->override_option('style_plugin', 'table');
-  $handler->override_option('style_options', array(
-    'grouping' => '',
-    'override' => 1,
-    'sticky' => 0,
-    'order' => 'asc',
-    'summary' => '',
-    'columns' => array(
-      'uniquename' => 'uniquename',
-      'value' => 'value',
-    ),
-    'info' => array(
-      'uniquename' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-      'value' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-    ),
-    'default' => 'uniquename',
-  ));
-  $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'chado/phenotypes');
-  $handler->override_option('menu', array(
-    'type' => 'normal',
-    'title' => 'Phenotypes',
-    'description' => 'A phenotypic statement, or a single atomic phenotypic observation, is a controlled sentence describing observable effects of non-wild type function.',
-    'weight' => '10',
-    'name' => 'navigation',
-  ));
-  $handler->override_option('tab_options', array(
-    'type' => 'none',
-    'title' => '',
-    'description' => '',
-    'weight' => 0,
-    'name' => 'navigation',
-  ));
+  $view = tripal_phenotype_defaultview_admin_phenotypes();
   $views[$view->name] = $view;
 
   return $views;
+}
+
+function tripal_phenotype_defaultview_admin_phenotypes() {
+
+  $view = new view();
+  $view->name = 'tripal_phenotype_admin_phenotypes';
+  $view->description = 'DO NOT DISABLE';
+  $view->tag = 'tripal admin';
+  $view->base_table = 'phenotype';
+  $view->human_name = 'Phenotype Admin';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Defaults */
+  $handler = $view->new_display('default', 'Defaults', 'default');
+  $handler->display->display_options['title'] = 'Phenotypes';
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['access']['perm'] = 'access administration pages';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Filter';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '25';
+  $handler->display->display_options['pager']['options']['offset'] = '0';
+  $handler->display->display_options['pager']['options']['id'] = '0';
+  $handler->display->display_options['pager']['options']['quantity'] = '9';
+  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_options']['grouping'] = '';
+  $handler->display->display_options['style_options']['columns'] = array(
+    'uniquename' => 'uniquename',
+    'value' => 'value',
+  );
+  $handler->display->display_options['style_options']['default'] = 'uniquename';
+  $handler->display->display_options['style_options']['info'] = array(
+    'uniquename' => array(
+      'sortable' => 1,
+      'separator' => '',
+    ),
+    'value' => array(
+      'sortable' => 1,
+      'separator' => '',
+    ),
+  );
+  /* No results behavior: Global: Text area */
+  $handler->display->display_options['empty']['text']['id'] = 'area';
+  $handler->display->display_options['empty']['text']['table'] = 'views';
+  $handler->display->display_options['empty']['text']['field'] = 'area';
+  $handler->display->display_options['empty']['text']['content'] = 'No phenotypes match the supplied criteria.';
+  $handler->display->display_options['empty']['text']['format'] = '2';
+  /* Relationship: Chado Phenotype: observable_id => Cvterm */
+  $handler->display->display_options['relationships']['observable_id_to_cvterm']['id'] = 'observable_id_to_cvterm';
+  $handler->display->display_options['relationships']['observable_id_to_cvterm']['table'] = 'phenotype';
+  $handler->display->display_options['relationships']['observable_id_to_cvterm']['field'] = 'observable_id_to_cvterm';
+  $handler->display->display_options['relationships']['observable_id_to_cvterm']['label'] = 'Observable ID  => Cvterm';
+  /* Relationship: Chado Phenotype: attr_id => Cvterm */
+  $handler->display->display_options['relationships']['attr_id_to_cvterm']['id'] = 'attr_id_to_cvterm';
+  $handler->display->display_options['relationships']['attr_id_to_cvterm']['table'] = 'phenotype';
+  $handler->display->display_options['relationships']['attr_id_to_cvterm']['field'] = 'attr_id_to_cvterm';
+  $handler->display->display_options['relationships']['attr_id_to_cvterm']['label'] = 'Attribute id => Cvterm';
+  /* Relationship: Chado Phenotype: cvalue_id => Cvterm */
+  $handler->display->display_options['relationships']['cvalue_id_to_cvterm']['id'] = 'cvalue_id_to_cvterm';
+  $handler->display->display_options['relationships']['cvalue_id_to_cvterm']['table'] = 'phenotype';
+  $handler->display->display_options['relationships']['cvalue_id_to_cvterm']['field'] = 'cvalue_id_to_cvterm';
+  $handler->display->display_options['relationships']['cvalue_id_to_cvterm']['label'] = 'cvalue id => Cvterm';
+  /* Relationship: Chado Phenotype: assay_id => Cvterm */
+  $handler->display->display_options['relationships']['assay_id_to_cvterm']['id'] = 'assay_id_to_cvterm';
+  $handler->display->display_options['relationships']['assay_id_to_cvterm']['table'] = 'phenotype';
+  $handler->display->display_options['relationships']['assay_id_to_cvterm']['field'] = 'assay_id_to_cvterm';
+  $handler->display->display_options['relationships']['assay_id_to_cvterm']['label'] = 'assay id => Cvterm';
+  /* Field: Chado Phenotype: Uniquename */
+  $handler->display->display_options['fields']['uniquename']['id'] = 'uniquename';
+  $handler->display->display_options['fields']['uniquename']['table'] = 'phenotype';
+  $handler->display->display_options['fields']['uniquename']['field'] = 'uniquename';
+  $handler->display->display_options['fields']['uniquename']['label'] = 'Unique Name';
+  /* Field: Chado Cvterm: Name */
+  $handler->display->display_options['fields']['name_2']['id'] = 'name_2';
+  $handler->display->display_options['fields']['name_2']['table'] = 'cvterm';
+  $handler->display->display_options['fields']['name_2']['field'] = 'name';
+  $handler->display->display_options['fields']['name_2']['relationship'] = 'observable_id_to_cvterm';
+  $handler->display->display_options['fields']['name_2']['label'] = 'Observed Unit';
+  /* Field: Chado Cvterm: Name */
+  $handler->display->display_options['fields']['name_1']['id'] = 'name_1';
+  $handler->display->display_options['fields']['name_1']['table'] = 'cvterm';
+  $handler->display->display_options['fields']['name_1']['field'] = 'name';
+  $handler->display->display_options['fields']['name_1']['relationship'] = 'attr_id_to_cvterm';
+  $handler->display->display_options['fields']['name_1']['label'] = 'Phenotypic Attribute';
+  /* Field: Chado Cvterm: Name */
+  $handler->display->display_options['fields']['name_3']['id'] = 'name_3';
+  $handler->display->display_options['fields']['name_3']['table'] = 'cvterm';
+  $handler->display->display_options['fields']['name_3']['field'] = 'name';
+  $handler->display->display_options['fields']['name_3']['relationship'] = 'cvalue_id_to_cvterm';
+  $handler->display->display_options['fields']['name_3']['label'] = 'Controlled Value';
+  /* Field: Chado Phenotype: Value */
+  $handler->display->display_options['fields']['value']['id'] = 'value';
+  $handler->display->display_options['fields']['value']['table'] = 'phenotype';
+  $handler->display->display_options['fields']['value']['field'] = 'value';
+  /* Field: Chado Cvterm: Name */
+  $handler->display->display_options['fields']['name']['id'] = 'name';
+  $handler->display->display_options['fields']['name']['table'] = 'cvterm';
+  $handler->display->display_options['fields']['name']['field'] = 'name';
+  $handler->display->display_options['fields']['name']['relationship'] = 'assay_id_to_cvterm';
+  $handler->display->display_options['fields']['name']['label'] = 'Evidence Type';
+  /* Filter criterion: Chado Phenotype: Attr Id */
+  $handler->display->display_options['filters']['attr_id']['id'] = 'attr_id';
+  $handler->display->display_options['filters']['attr_id']['table'] = 'phenotype';
+  $handler->display->display_options['filters']['attr_id']['field'] = 'attr_id';
+  $handler->display->display_options['filters']['attr_id']['group'] = '0';
+  $handler->display->display_options['filters']['attr_id']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['attr_id']['expose']['operator_id'] = 'attr_id_op';
+  $handler->display->display_options['filters']['attr_id']['expose']['label'] = 'Phenotypic Attribute';
+  $handler->display->display_options['filters']['attr_id']['expose']['operator'] = 'attr_id_op';
+  $handler->display->display_options['filters']['attr_id']['expose']['identifier'] = 'attr_id';
+  /* Filter criterion: Chado Phenotype: Cvalue Id */
+  $handler->display->display_options['filters']['cvalue_id']['id'] = 'cvalue_id';
+  $handler->display->display_options['filters']['cvalue_id']['table'] = 'phenotype';
+  $handler->display->display_options['filters']['cvalue_id']['field'] = 'cvalue_id';
+  $handler->display->display_options['filters']['cvalue_id']['group'] = '0';
+  $handler->display->display_options['filters']['cvalue_id']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['cvalue_id']['expose']['operator_id'] = 'cvalue_id_op';
+  $handler->display->display_options['filters']['cvalue_id']['expose']['label'] = 'Controlled Value';
+  $handler->display->display_options['filters']['cvalue_id']['expose']['operator'] = 'cvalue_id_op';
+  $handler->display->display_options['filters']['cvalue_id']['expose']['identifier'] = 'cvalue_id';
+  /* Filter criterion: Chado Phenotype: Observable Id */
+  $handler->display->display_options['filters']['observable_id']['id'] = 'observable_id';
+  $handler->display->display_options['filters']['observable_id']['table'] = 'phenotype';
+  $handler->display->display_options['filters']['observable_id']['field'] = 'observable_id';
+  $handler->display->display_options['filters']['observable_id']['group'] = '0';
+  $handler->display->display_options['filters']['observable_id']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['observable_id']['expose']['operator_id'] = 'observable_id_op';
+  $handler->display->display_options['filters']['observable_id']['expose']['label'] = 'Observation Type';
+  $handler->display->display_options['filters']['observable_id']['expose']['operator'] = 'observable_id_op';
+  $handler->display->display_options['filters']['observable_id']['expose']['identifier'] = 'observable_id';
+  /* Filter criterion: Chado Phenotype: Assay Id */
+  $handler->display->display_options['filters']['assay_id']['id'] = 'assay_id';
+  $handler->display->display_options['filters']['assay_id']['table'] = 'phenotype';
+  $handler->display->display_options['filters']['assay_id']['field'] = 'assay_id';
+  $handler->display->display_options['filters']['assay_id']['group'] = '0';
+  $handler->display->display_options['filters']['assay_id']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['assay_id']['expose']['operator_id'] = 'assay_id_op';
+  $handler->display->display_options['filters']['assay_id']['expose']['label'] = 'Evidence Type';
+  $handler->display->display_options['filters']['assay_id']['expose']['operator'] = 'assay_id_op';
+  $handler->display->display_options['filters']['assay_id']['expose']['identifier'] = 'assay_id';
+  /* Filter criterion: Chado Phenotype: Uniquename */
+  $handler->display->display_options['filters']['uniquename']['id'] = 'uniquename';
+  $handler->display->display_options['filters']['uniquename']['table'] = 'phenotype';
+  $handler->display->display_options['filters']['uniquename']['field'] = 'uniquename';
+  $handler->display->display_options['filters']['uniquename']['operator'] = '~';
+  $handler->display->display_options['filters']['uniquename']['group'] = '0';
+  $handler->display->display_options['filters']['uniquename']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['uniquename']['expose']['operator_id'] = 'uniquename_op';
+  $handler->display->display_options['filters']['uniquename']['expose']['label'] = 'Unique Name Contains';
+  $handler->display->display_options['filters']['uniquename']['expose']['operator'] = 'uniquename_op';
+  $handler->display->display_options['filters']['uniquename']['expose']['identifier'] = 'uniquename';
+  /* Filter criterion: Chado Phenotype: Value */
+  $handler->display->display_options['filters']['value']['id'] = 'value';
+  $handler->display->display_options['filters']['value']['table'] = 'phenotype';
+  $handler->display->display_options['filters']['value']['field'] = 'value';
+  $handler->display->display_options['filters']['value']['operator'] = 'contains';
+  $handler->display->display_options['filters']['value']['group'] = '0';
+  $handler->display->display_options['filters']['value']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['value']['expose']['operator_id'] = 'value_op';
+  $handler->display->display_options['filters']['value']['expose']['label'] = 'Value Contains';
+  $handler->display->display_options['filters']['value']['expose']['operator'] = 'value_op';
+  $handler->display->display_options['filters']['value']['expose']['identifier'] = 'phen_value';
+  $handler->display->display_options['filters']['value']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page_1');
+  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_phenotype/phenotypes';
+  $handler->display->display_options['menu']['type'] = 'default tab';
+  $handler->display->display_options['menu']['title'] = 'Phenotypes';
+  $handler->display->display_options['menu']['description'] = 'A controlled sentence describing observable effects of non-wild type function';
+  $handler->display->display_options['menu']['weight'] = '-10';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
+  $handler->display->display_options['tab_options']['weight'] = '0';
+
+  return $view;
 }

@@ -8,246 +8,121 @@
 function tripal_genetic_views_default_views() {
   $views = array();
 
-  if (!module_exists('tripal_views')) {
-    return $views;
-  }
-
-  // Main default view
-  $view = new view;
-  $view->name = 'genotype_listing';
-  $view->description = 'A listing of observed genotypes and the features displaying them';
-  $view->tag = 'chado default';
-  $view->base_table = 'genotype';
-  $view->core = 6;
-  $view->api_version = '2';
-  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
-  $handler = $view->new_display('default', 'Defaults', 'default');
-  $handler->override_option('fields', array(
-    'uniquename' => array(
-      'label' => 'Uniquename',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'uniquename',
-      'table' => 'genotype',
-      'field' => 'uniquename',
-      'relationship' => 'none',
-    ),
-    'name' => array(
-      'label' => 'Name',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'name',
-      'table' => 'genotype',
-      'field' => 'name',
-      'relationship' => 'none',
-    ),
-    'description' => array(
-      'label' => 'Description',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'description',
-      'table' => 'genotype',
-      'field' => 'description',
-      'relationship' => 'none',
-    ),
-  ));
-  $handler->override_option('filters', array(
-    'uniquename' => array(
-      'operator' => '~',
-      'value' => '',
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'uniquename_op',
-        'identifier' => 'uniquename',
-        'label' => 'Unique Name Contains',
-        'remember' => 0,
-      ),
-      'case' => 0,
-      'id' => 'uniquename',
-      'table' => 'genotype',
-      'field' => 'uniquename',
-      'relationship' => 'none',
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-    ),
-    'description' => array(
-      'operator' => '~',
-      'value' => '',
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'description_op',
-        'identifier' => 'description',
-        'label' => 'Description Contains',
-        'remember' => 0,
-      ),
-      'case' => 0,
-      'id' => 'description',
-      'table' => 'genotype',
-      'field' => 'description',
-      'relationship' => 'none',
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-    ),
-    'search_results' => array(
-      'operator' => '=',
-      'value' => '',
-      'group' => '0',
-      'exposed' => FALSE,
-      'expose' => array(
-        'operator' => FALSE,
-        'label' => '',
-      ),
-      'id' => 'search_results',
-      'table' => 'views',
-      'field' => 'search_results',
-      'relationship' => 'none',
-      'apply_button' => 'Show',
-      'no_results_text' => 'Click "Show" to see a list of all genotypes matching the entered criteria. If you leave a any of the criteria blank then the genotypes will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all genotypes will be listed.',
-    ),
-  ));
-  $handler->override_option('access', array(
-    'type' => 'perm',
-    'perm' => 'access content',
-  ));
-  $handler->override_option('cache', array(
-    'type' => 'none',
-  ));
-  $handler->override_option('title', 'Genotypes Observed');
-  $handler->override_option('header', 'Click "Show" to see a list of all genotypes matching the entered criteria. If you leave a any of the criteria blank then the genotypes will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all genotypes will be listed.');
-  $handler->override_option('header_format', '2');
-  $handler->override_option('header_empty', 0);
-  $handler->override_option('empty', 'No genotypes match the current criteria.');
-  $handler->override_option('empty_format', '2');
-  $handler->override_option('items_per_page', 50);
-  $handler->override_option('use_pager', '1');
-  $handler->override_option('style_plugin', 'table');
-  $handler->override_option('style_options', array(
-    'grouping' => '',
-    'override' => 1,
-    'sticky' => 0,
-    'order' => 'asc',
-    'summary' => '',
-    'columns' => array(
-      'uniquename' => 'uniquename',
-      'name' => 'name',
-      'description' => 'description',
-    ),
-    'info' => array(
-      'uniquename' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-      'name' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-      'description' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-    ),
-    'default' => 'uniquename',
-  ));
-  $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'chado/genotypes');
-  $handler->override_option('menu', array(
-    'type' => 'normal',
-    'title' => 'Genotypes',
-    'description' => 'A genotype is defined by a collection of features, mutations, balancers, deficiencies, haplotype blocks, or engineered constructs.',
-    'weight' => '10',
-    'name' => 'navigation',
-  ));
-  $handler->override_option('tab_options', array(
-    'type' => 'none',
-    'title' => '',
-    'description' => '',
-    'weight' => 0,
-    'name' => 'navigation',
-  ));
+  $view = tripal_genetic_defaultviews_admin_genotypes();
   $views[$view->name] = $view;
 
   return $views;
+}
+
+function tripal_genetic_defaultviews_admin_genotypes() {
+
+  $view = new view();
+  $view->name = 'tripal_genetic_admin_genetics';
+  $view->description = 'DO NOT DISABLE';
+  $view->tag = 'tripal admin';
+  $view->base_table = 'genotype';
+  $view->human_name = 'Genotype Admin';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Defaults */
+  $handler = $view->new_display('default', 'Defaults', 'default');
+  $handler->display->display_options['title'] = 'Genotypes Observed';
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Filter';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '25';
+  $handler->display->display_options['pager']['options']['offset'] = '0';
+  $handler->display->display_options['pager']['options']['id'] = '0';
+  $handler->display->display_options['pager']['options']['quantity'] = '9';
+  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_options']['grouping'] = '';
+  $handler->display->display_options['style_options']['columns'] = array(
+    'uniquename' => 'uniquename',
+    'name' => 'name',
+    'description' => 'description',
+  );
+  $handler->display->display_options['style_options']['default'] = 'uniquename';
+  $handler->display->display_options['style_options']['info'] = array(
+    'uniquename' => array(
+      'sortable' => 1,
+      'separator' => '',
+    ),
+    'name' => array(
+      'sortable' => 1,
+      'separator' => '',
+    ),
+    'description' => array(
+      'sortable' => 1,
+      'separator' => '',
+    ),
+  );
+  /* No results behavior: Global: Text area */
+  $handler->display->display_options['empty']['text']['id'] = 'area';
+  $handler->display->display_options['empty']['text']['table'] = 'views';
+  $handler->display->display_options['empty']['text']['field'] = 'area';
+  $handler->display->display_options['empty']['text']['content'] = 'No genotypes match the current criteria.';
+  $handler->display->display_options['empty']['text']['format'] = '2';
+  /* Field: Chado Genotype: Uniquename */
+  $handler->display->display_options['fields']['uniquename']['id'] = 'uniquename';
+  $handler->display->display_options['fields']['uniquename']['table'] = 'genotype';
+  $handler->display->display_options['fields']['uniquename']['field'] = 'uniquename';
+  /* Field: Chado Genotype: Name */
+  $handler->display->display_options['fields']['name']['id'] = 'name';
+  $handler->display->display_options['fields']['name']['table'] = 'genotype';
+  $handler->display->display_options['fields']['name']['field'] = 'name';
+  /* Field: Chado Genotype: Description */
+  $handler->display->display_options['fields']['description']['id'] = 'description';
+  $handler->display->display_options['fields']['description']['table'] = 'genotype';
+  $handler->display->display_options['fields']['description']['field'] = 'description';
+  /* Filter criterion: Chado Genotype: Uniquename */
+  $handler->display->display_options['filters']['uniquename']['id'] = 'uniquename';
+  $handler->display->display_options['filters']['uniquename']['table'] = 'genotype';
+  $handler->display->display_options['filters']['uniquename']['field'] = 'uniquename';
+  $handler->display->display_options['filters']['uniquename']['operator'] = 'contains';
+  $handler->display->display_options['filters']['uniquename']['group'] = '0';
+  $handler->display->display_options['filters']['uniquename']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['uniquename']['expose']['operator_id'] = 'uniquename_op';
+  $handler->display->display_options['filters']['uniquename']['expose']['label'] = 'Unique Name Contains';
+  $handler->display->display_options['filters']['uniquename']['expose']['operator'] = 'uniquename_op';
+  $handler->display->display_options['filters']['uniquename']['expose']['identifier'] = 'uniquename';
+  $handler->display->display_options['filters']['uniquename']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Chado Genotype: Description */
+  $handler->display->display_options['filters']['description']['id'] = 'description';
+  $handler->display->display_options['filters']['description']['table'] = 'genotype';
+  $handler->display->display_options['filters']['description']['field'] = 'description';
+  $handler->display->display_options['filters']['description']['operator'] = 'contains';
+  $handler->display->display_options['filters']['description']['group'] = '0';
+  $handler->display->display_options['filters']['description']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['description']['expose']['operator_id'] = 'description_op';
+  $handler->display->display_options['filters']['description']['expose']['label'] = 'Description Contains';
+  $handler->display->display_options['filters']['description']['expose']['operator'] = 'description_op';
+  $handler->display->display_options['filters']['description']['expose']['identifier'] = 'description';
+  $handler->display->display_options['filters']['description']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page_1');
+  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_genetic/genotypes';
+  $handler->display->display_options['menu']['type'] = 'default tab';
+  $handler->display->display_options['menu']['title'] = 'Genotypes';
+  $handler->display->display_options['menu']['description'] = 'A genotype is defined by a collection of features, mutations, etc.';
+  $handler->display->display_options['menu']['weight'] = '-10';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
+  $handler->display->display_options['tab_options']['weight'] = '0';
+
+  return $view;
 }

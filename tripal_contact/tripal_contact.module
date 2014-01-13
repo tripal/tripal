@@ -191,16 +191,16 @@ function tripal_contact_theme() {
 function tripal_contact_block_info() {
 
   $blocks['contbase']['info'] = t('Tripal Contact Details');
-  $blocks['contbase']['cache'] = BLOCK_NO_CACHE;
+  $blocks['contbase']['cache'] = 'BLOCK_NO_CACHE';
 
   $blocks['contprops']['info'] = t('Tripal Contact Properties');
-  $blocks['contprops']['cache'] = BLOCK_NO_CACHE;
+  $blocks['contprops']['cache'] = 'BLOCK_NO_CACHE';
 
   $blocks['contrels']['info'] = t('Tripal Contact Relationships');
-  $blocks['contrels']['cache'] = BLOCK_NO_CACHE;
+  $blocks['contrels']['cache'] = 'BLOCK_NO_CACHE';
 
   $blocks['contpubs']['info'] = t('Tripal Cotact Publications');
-  $blocks['contpubs']['cache'] = BLOCK_NO_CACHE;
+  $blocks['contpubs']['cache'] = 'BLOCK_NO_CACHE';
 
   return $blocks;
 }
@@ -687,7 +687,7 @@ function tripal_contact_preprocess_tripal_contact_relationships(&$variables) {
 
 /**
  * Implementation of hook_form_alter()
- * 
+ *
  * @param $form
  * @param $form_state
  * @param $form_id

@@ -944,34 +944,34 @@ function chado_stock_delete($node) {
  */
 function tripal_stock_block_info() {
   $blocks['base']['info'] = t('Tripal Stock Details');
-  $blocks['base']['cache'] = BLOCK_NO_CACHE;
+  $blocks['base']['cache'] = 'BLOCK_NO_CACHE';
 
   $blocks['properties']['info'] = t('Tripal Stock Properties');
-  $blocks['properties']['cache'] = BLOCK_NO_CACHE;
+  $blocks['properties']['cache'] = 'BLOCK_NO_CACHE';
 
   $blocks['references']['info'] = t('Tripal Stock References');
-  $blocks['references']['cache'] = BLOCK_NO_CACHE;
+  $blocks['references']['cache'] = 'BLOCK_NO_CACHE';
 
   $blocks['relationships_as_object']['info'] = t('Tripal Stock Relationships');
-  $blocks['relationships_as_object']['cache'] = BLOCK_NO_CACHE;
+  $blocks['relationships_as_object']['cache'] = 'BLOCK_NO_CACHE';
 
   $blocks['synonyms']['info'] = t('Tripal Stock Synonyms');
-  $blocks['synonyms']['cache'] = BLOCK_NO_CACHE;
+  $blocks['synonyms']['cache'] = 'BLOCK_NO_CACHE';
 
   $blocks['collections']['info'] = t('Tripal Stock Collections');
-  $blocks['collections']['cache'] = BLOCK_NO_CACHE;
+  $blocks['collections']['cache'] = 'BLOCK_NO_CACHE';
 
   $blocks['phenotypes']['info'] = t('Tripal Stock Phenotypes');
-  $blocks['phenotypes']['cache'] = BLOCK_NO_CACHE;
+  $blocks['phenotypes']['cache'] = 'BLOCK_NO_CACHE';
 
   $blocks['genotypes']['info'] = t('Tripal Stock Genotypes');
-  $blocks['genotypes']['cache'] = BLOCK_NO_CACHE;
+  $blocks['genotypes']['cache'] = 'BLOCK_NO_CACHE';
 
   $blocks['locations']['info'] = t('Tripal Stock Locations');
-  $blocks['locations']['cache'] = BLOCK_NO_CACHE;
+  $blocks['locations']['cache'] = 'BLOCK_NO_CACHE';
 
   $blocks['orgstocks']['info'] = t('Tripal Organism Stocks');
-  $blocks['orgstocks']['cache'] = BLOCK_NO_CACHE;
+  $blocks['orgstocks']['cache'] = 'BLOCK_NO_CACHE';
 
   return $blocks;
 }
