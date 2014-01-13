@@ -8,935 +8,484 @@
 function tripal_natural_diversity_views_default_views() {
   $views = array();
 
-
-  if (!module_exists('tripal_views')) {
-    return $views;
-  }
-
-
   // Experiment Listing
-  $view = new view;
-  $view->name = 'natdiv_experiment_listing';
-  $view->description = 'A listing of all natural diversity experiments';
-  $view->tag = 'chado default';
-  $view->base_table = 'nd_experiment';
-  $view->core = 6;
-  $view->api_version = '2';
-  $view->disabled = FALSE;
-  $handler = $view->new_display('default', 'Defaults', 'default');
-  $handler->override_option('fields', array(
-    'name' => array(
-      'label' => 'Type',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'name',
-      'table' => 'cvterm',
-      'field' => 'name',
-      'relationship' => 'none',
-    ),
-    'description' => array(
-      'label' => 'Location Experiment Performed',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'description',
-      'table' => 'nd_geolocation',
-      'field' => 'description',
-      'relationship' => 'none',
-    ),
-  ));
-  $handler->override_option('sorts', array(
-    'name' => array(
-      'order' => 'ASC',
-      'id' => 'name',
-      'table' => 'cvterm',
-      'field' => 'name',
-      'relationship' => 'none',
-    ),
-    'description' => array(
-      'order' => 'ASC',
-      'id' => 'description',
-      'table' => 'nd_geolocation',
-      'field' => 'description',
-      'relationship' => 'none',
-    ),
-  ));
-  $handler->override_option('filters', array(
-    'type_id' => array(
-      'operator' => '=',
-      'value' => '',
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'type_id_op',
-        'identifier' => 'type_id',
-        'label' => 'Experiment Type',
-        'remember' => 0,
-      ),
-      'case' => 1,
-      'id' => 'type_id',
-      'table' => 'nd_experiment',
-      'field' => 'type_id',
-      'relationship' => 'none',
-      'values_form_type' => 'select',
-      'multiple' => 1,
-      'optional' => 0,
-      'show_all' => 0,
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-    ),
-    'description' => array(
-      'operator' => '=',
-      'value' => array(),
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'description_op',
-        'identifier' => 'geolocation',
-        'label' => 'Location Experiment Performed',
-        'remember' => 0,
-      ),
-      'case' => 1,
-      'id' => 'description',
-      'table' => 'nd_geolocation',
-      'field' => 'description',
-      'relationship' => 'none',
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-      'values_form_type' => 'select',
-      'multiple' => 1,
-      'optional' => 0,
-    ),
-    'search_results' => array(
-      'operator' => '=',
-      'value' => '',
-      'group' => '0',
-      'exposed' => FALSE,
-      'expose' => array(
-        'operator' => FALSE,
-        'label' => '',
-      ),
-      'id' => 'search_results',
-      'table' => 'views',
-      'field' => 'search_results',
-      'relationship' => 'none',
-      'apply_button' => 'Show',
-      'no_results_text' => 'Click "Show" to see a list of all experiments matching the entered criteria. If you leave a any of the criteria blank then the experiments will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all experiments will be listed.',
-    ),
-  ));
-  $handler->override_option('access', array(
-    'type' => 'perm',
-    'perm' => 'access content',
-  ));
-  $handler->override_option('cache', array(
-    'type' => 'none',
-  ));
-  $handler->override_option('title', 'Natural Diversity Experiments');
-  $handler->override_option('header', 'Click "Show" to see a list of all experiments matching the entered criteria. If you leave a any of the criteria blank then the experiments will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all experiments will be listed.');
-  $handler->override_option('header_format', '2');
-  $handler->override_option('header_empty', 0);
-  $handler->override_option('empty', 'No natural diversity experiments match the current criteria.');
-  $handler->override_option('empty_format', '2');
-  $handler->override_option('items_per_page', 50);
-  $handler->override_option('use_pager', '1');
-  $handler->override_option('style_plugin', 'table');
-  $handler->override_option('style_options', array(
-    'grouping' => '',
-    'override' => 1,
-    'sticky' => 0,
-    'order' => 'asc',
-    'summary' => '',
-    'columns' => array(
-      'name' => 'name',
-      'description' => 'description',
-    ),
-    'info' => array(
-      'name' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-      'description' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-    ),
-    'default' => '-1',
-  ));
-  $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'chado/natdiv_experiments');
-  $handler->override_option('menu', array(
-    'type' => 'normal',
-    'title' => 'Natural Diversity Experiments',
-    'description' => 'A single assay resulting in a single genotype or phenotype. Multiple assays resulting in an entire experiment should be grouped together as a project.',
-    'weight' => '10',
-    'name' => 'navigation',
-  ));
-  $handler->override_option('tab_options', array(
-    'type' => 'none',
-    'title' => '',
-    'description' => '',
-    'weight' => 0,
-    'name' => 'navigation',
-  ));
+  $view = tripal_natural_diversity_defaultview_admin_natdiv_exp();
   $views[$view->name] = $view;
 
   // List geolocations
-  $view = new view;
-  $view->name = 'geolocation_listing';
-  $view->description = 'A listing of locations where natural diversity experiments took place.';
-  $view->tag = 'chado default';
-  $view->base_table = 'nd_geolocation';
-  $view->core = 6;
-  $view->api_version = '2';
-  $view->disabled = FALSE;
-  $handler = $view->new_display('default', 'Defaults', 'default');
-  $handler->override_option('fields', array(
-    'description' => array(
-      'label' => 'Name',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'description',
-      'table' => 'nd_geolocation',
-      'field' => 'description',
-      'relationship' => 'none',
-    ),
-    'latitude' => array(
-      'label' => 'Latitude',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'latitude',
-      'table' => 'nd_geolocation',
-      'field' => 'latitude',
-      'relationship' => 'none',
-    ),
-    'longitude' => array(
-      'label' => 'Longitude',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'longitude',
-      'table' => 'nd_geolocation',
-      'field' => 'longitude',
-      'relationship' => 'none',
-    ),
-    'altitude' => array(
-      'label' => 'Altitude',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'altitude',
-      'table' => 'nd_geolocation',
-      'field' => 'altitude',
-      'relationship' => 'none',
-    ),
-    'geodetic_datum' => array(
-      'label' => 'Geodetic Datum',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'geodetic_datum',
-      'table' => 'nd_geolocation',
-      'field' => 'geodetic_datum',
-      'relationship' => 'none',
-    ),
-  ));
-  $handler->override_option('filters', array(
-    'geodetic_datum' => array(
-      'operator' => '=',
-      'value' => array(),
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'geodetic_datum_op',
-        'identifier' => 'geodetic_datum',
-        'label' => 'Geodetic Datum',
-        'remember' => 0,
-      ),
-      'case' => 1,
-      'id' => 'geodetic_datum',
-      'table' => 'nd_geolocation',
-      'field' => 'geodetic_datum',
-      'relationship' => 'none',
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-      'values_form_type' => 'select',
-      'multiple' => 1,
-      'optional' => 0,
-    ),
-    'latitude' => array(
-      'operator' => '=',
-      'value' => array(
-        'value' => '',
-        'min' => '',
-        'max' => '',
-      ),
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 1,
-        'operator' => 'latitude_op',
-        'identifier' => 'latitude',
-        'label' => 'Latitude',
-        'optional' => 0,
-        'remember' => 0,
-      ),
-      'case' => 1,
-      'id' => 'latitude',
-      'table' => 'nd_geolocation',
-      'field' => 'latitude',
-      'relationship' => 'none',
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-    ),
-    'longitude' => array(
-      'operator' => '=',
-      'value' => array(
-        'value' => '',
-        'min' => '',
-        'max' => '',
-      ),
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 1,
-        'operator' => 'longitude_op',
-        'identifier' => 'longitude',
-        'label' => 'Longitude',
-        'optional' => 0,
-        'remember' => 0,
-      ),
-      'case' => 1,
-      'id' => 'longitude',
-      'table' => 'nd_geolocation',
-      'field' => 'longitude',
-      'relationship' => 'none',
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-    ),
-    'altitude' => array(
-      'operator' => '=',
-      'value' => array(
-        'value' => '',
-        'min' => '',
-        'max' => '',
-      ),
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 1,
-        'operator' => 'altitude_op',
-        'identifier' => 'altitude',
-        'label' => 'Altitude',
-        'optional' => 0,
-        'remember' => 0,
-      ),
-      'case' => 0,
-      'id' => 'altitude',
-      'table' => 'nd_geolocation',
-      'field' => 'altitude',
-      'relationship' => 'none',
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-    ),
-    'description' => array(
-      'operator' => '~',
-      'value' => '',
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'description_op',
-        'identifier' => 'description',
-        'label' => 'Name Contains',
-        'remember' => 0,
-      ),
-      'case' => 0,
-      'id' => 'description',
-      'table' => 'nd_geolocation',
-      'field' => 'description',
-      'relationship' => 'none',
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-      'values_form_type' => 'textfield',
-      'multiple' => 0,
-      'optional' => 0,
-    ),
-  ));
-  $handler->override_option('access', array(
-    'type' => 'perm',
-    'perm' => 'access content',
-  ));
-  $handler->override_option('cache', array(
-    'type' => 'none',
-  ));
-  $handler->override_option('title', 'Geographical Locations');
-  $handler->override_option('header', 'Use the following criteria to limit the locations listed. If you leave a any of the criteria blank then the locations will be not be filtered based on that field.');
-  $handler->override_option('header_format', '2');
-  $handler->override_option('header_empty', 0);
-  $handler->override_option('empty', 'No locations matched the current criteria.');
-  $handler->override_option('empty_format', '2');
-  $handler->override_option('items_per_page', 50);
-  $handler->override_option('use_pager', '1');
-  $handler->override_option('style_plugin', 'table');
-  $handler->override_option('style_options', array(
-    'grouping' => '',
-    'override' => 1,
-    'sticky' => 0,
-    'order' => 'asc',
-    'summary' => '',
-    'columns' => array(
-      'description' => 'description',
-      'latitude' => 'latitude',
-      'longitude' => 'longitude',
-      'altitude' => 'altitude',
-      'geodetic_datum' => 'geodetic_datum',
-    ),
-    'info' => array(
-      'description' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-      'latitude' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-      'longitude' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-      'altitude' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-      'geodetic_datum' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-    ),
-    'default' => 'description',
-  ));
-  $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'chado/natdiv_geolocations');
-  $handler->override_option('menu', array(
-    'type' => 'normal',
-    'title' => 'Locations',
-    'description' => 'Geographical locations in which natural diversity experiments might be performed.',
-    'weight' => '10',
-    'name' => 'navigation',
-  ));
-  $handler->override_option('tab_options', array(
-    'type' => 'none',
-    'title' => '',
-    'description' => '',
-    'weight' => 0,
-    'name' => 'navigation',
-  ));
+  $view = tripal_natural_diversity_defaultview_admin_geolocations();
   $views[$view->name] = $view;
 
   // List protocols
-  $view = new view;
-  $view->name = 'natdiv_protocol_listing';
-  $view->description = 'A listing of protocols used for natural diversity experiments';
-  $view->tag = 'chado default';
-  $view->base_table = 'nd_protocol';
-  $view->core = 6;
-  $view->api_version = '2';
-  $view->disabled = FALSE;
-  $handler = $view->new_display('default', 'Defaults', 'default');
-  $handler->override_option('fields', array(
-    'name' => array(
-      'label' => 'Name',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'name',
-      'table' => 'nd_protocol',
-      'field' => 'name',
-      'relationship' => 'none',
-    ),
-  ));
-  $handler->override_option('filters', array(
-    'name' => array(
-      'operator' => '~',
-      'value' => '',
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'name_op',
-        'identifier' => 'name',
-        'label' => 'Name Contains',
-        'remember' => 0,
-      ),
-      'case' => 0,
-      'id' => 'name',
-      'table' => 'nd_protocol',
-      'field' => 'name',
-      'relationship' => 'none',
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-    ),
-    'search_results' => array(
-      'operator' => '=',
-      'value' => '',
-      'group' => '0',
-      'exposed' => FALSE,
-      'expose' => array(
-        'operator' => FALSE,
-        'label' => '',
-      ),
-      'id' => 'search_results',
-      'table' => 'views',
-      'field' => 'search_results',
-      'relationship' => 'none',
-      'apply_button' => 'Show',
-      'no_results_text' => 'Click "Show" to see a list of all protocols matching the entered criteria. If you leave a any of the criteria blank then the protocols will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all protocols will be listed.',
-    ),
-  ));
-  $handler->override_option('access', array(
-    'type' => 'perm',
-    'perm' => 'access content',
-  ));
-  $handler->override_option('cache', array(
-    'type' => 'none',
-  ));
-  $handler->override_option('title', 'Protocols');
-  $handler->override_option('header', 'Click "Show" to see a list of all protocols matching the entered criteria. If you leave a any of the criteria blank then the protocols will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all protocols will be listed.');
-  $handler->override_option('header_format', '2');
-  $handler->override_option('header_empty', 0);
-  $handler->override_option('empty', 'No protocols match the current criteria.');
-  $handler->override_option('empty_format', '2');
-  $handler->override_option('items_per_page', 50);
-  $handler->override_option('use_pager', '1');
-  $handler->override_option('style_plugin', 'table');
-  $handler->override_option('style_options', array(
-    'grouping' => '',
-    'override' => 1,
-    'sticky' => 0,
-    'order' => 'asc',
-    'summary' => '',
-    'columns' => array(
-      'name' => 'name',
-    ),
-    'info' => array(
-      'name' => array(
-        'sortable' => 1,
-        'separator' => '',
-      ),
-    ),
-    'default' => 'name',
-  ));
-  $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'chado/natdiv_protocols');
-  $handler->override_option('menu', array(
-    'type' => 'normal',
-    'title' => 'Protocols',
-    'description' => 'The protcols used for natural diversity experiments',
-    'weight' => '10',
-    'name' => 'navigation',
-  ));
-  $handler->override_option('tab_options', array(
-    'type' => 'none',
-    'title' => '',
-    'description' => '',
-    'weight' => 0,
-    'name' => 'navigation',
-  ));
+  $view = tripal_natural_diversity_defaultview_admin_protocols();
   $views[$view->name] = $view;
 
   // List Reagents
-  $view = new view;
-  $view->name = 'natdiv_reagent_listing';
-  $view->description = 'A listing of reagents used in natural diversity experiments';
-  $view->tag = 'chado default';
-  $view->base_table = 'nd_reagent';
-  $view->core = 6;
-  $view->api_version = '2';
-  $view->disabled = FALSE;
-  $handler = $view->new_display('default', 'Defaults', 'default');
-  $handler->override_option('fields', array(
-    'name_1' => array(
-      'label' => 'Name',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'name_1',
-      'table' => 'nd_reagent',
-      'field' => 'name',
-      'relationship' => 'none',
-    ),
-    'name' => array(
-      'label' => 'Type',
-      'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
-        'make_link' => 0,
-        'path' => '',
-        'absolute' => 0,
-        'link_class' => '',
-        'alt' => '',
-        'rel' => '',
-        'prefix' => '',
-        'suffix' => '',
-        'target' => '',
-        'help' => '',
-        'trim' => 0,
-        'max_length' => '',
-        'word_boundary' => 1,
-        'ellipsis' => 1,
-        'html' => 0,
-        'strip_tags' => 0,
-      ),
-      'empty' => '',
-      'hide_empty' => 0,
-      'empty_zero' => 0,
-      'hide_alter_empty' => 1,
-      'type' => 'separator',
-      'separator' => ', ',
-      'exclude' => 0,
-      'id' => 'name',
-      'table' => 'cvterm',
-      'field' => 'name',
-      'relationship' => 'none',
-    ),
-  ));
-  $handler->override_option('filters', array(
-    'type_id' => array(
-      'operator' => '=',
-      'value' => '',
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'type_id_op',
-        'identifier' => 'type_id',
-        'label' => 'Type',
-        'remember' => 0,
-      ),
-      'case' => 1,
-      'id' => 'type_id',
-      'table' => 'nd_reagent',
-      'field' => 'type_id',
-      'relationship' => 'none',
-      'values_form_type' => 'select',
-      'multiple' => 1,
-      'optional' => 0,
-      'show_all' => 0,
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-    ),
-    'search_results' => array(
-      'operator' => '=',
-      'value' => '',
-      'group' => '0',
-      'exposed' => FALSE,
-      'expose' => array(
-        'operator' => FALSE,
-        'label' => '',
-      ),
-      'id' => 'search_results',
-      'table' => 'views',
-      'field' => 'search_results',
-      'relationship' => 'none',
-      'apply_button' => 'Show',
-      'no_results_text' => 'Click "Show" to see a list of all reagents matching the entered criteria. If you leave a any of the criteria blank then the reagents will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all reagents will be listed.',
-    ),
-    'name' => array(
-      'operator' => '~',
-      'value' => '',
-      'group' => '0',
-      'exposed' => TRUE,
-      'expose' => array(
-        'use_operator' => 0,
-        'operator' => 'name_op',
-        'identifier' => 'name',
-        'label' => 'Name Contains',
-        'remember' => 0,
-      ),
-      'case' => 0,
-      'id' => 'name',
-      'table' => 'nd_reagent',
-      'field' => 'name',
-      'relationship' => 'none',
-      'agg' => array(
-        'records_with' => 1,
-        'aggregates_with' => 1,
-      ),
-    ),
-  ));
-  $handler->override_option('access', array(
-    'type' => 'perm',
-    'perm' => 'access content',
-  ));
-  $handler->override_option('cache', array(
-    'type' => 'none',
-  ));
-  $handler->override_option('title', 'Reagents');
-  $handler->override_option('header', 'Click "Show" to see a list of all reagents matching the entered criteria. If you leave a any of the criteria blank then the reagents will be not be filtered based on that field. Furthermore, if you leave all criteria blank then all reagents will be listed.');
-  $handler->override_option('header_format', '2');
-  $handler->override_option('header_empty', 0);
-  $handler->override_option('empty', 'No reagents match the current criteria.');
-  $handler->override_option('empty_format', '2');
-  $handler->override_option('items_per_page', 50);
-  $handler->override_option('use_pager', '1');
-  $handler->override_option('style_plugin', 'table');
-  $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->override_option('path', 'chado/natdiv_reagents');
-  $handler->override_option('menu', array(
-    'type' => 'normal',
-    'title' => 'Reagents',
-    'description' => 'Reagents used in natural diversity experiments',
-    'weight' => '10',
-    'name' => 'navigation',
-  ));
-  $handler->override_option('tab_options', array(
-    'type' => 'none',
-    'title' => '',
-    'description' => '',
-    'weight' => 0,
-    'name' => 'navigation',
-  ));
+  $view = tripal_natural_diversity_defaultview_admin_reagents();
   $views[$view->name] = $view;
 
   return $views;
+}
+
+function tripal_natural_diversity_defaultview_admin_natdiv_exp() {
+
+  $view = new view();
+  $view->name = 'tripal_natural_diversity_admin_natdiv_exp';
+  $view->description = 'DO NOT DISABLE';
+  $view->tag = 'tripal admin';
+  $view->base_table = 'nd_experiment';
+  $view->human_name = 'NatDiv Experiment Admin';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Defaults */
+  $handler = $view->new_display('default', 'Defaults', 'default');
+  $handler->display->display_options['title'] = 'Natural Diversity Experiments';
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Filter';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '25';
+  $handler->display->display_options['pager']['options']['offset'] = '0';
+  $handler->display->display_options['pager']['options']['id'] = '0';
+  $handler->display->display_options['pager']['options']['quantity'] = '9';
+  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_options']['grouping'] = '';
+  $handler->display->display_options['style_options']['columns'] = array(
+    'name' => 'name',
+    'description' => 'description',
+  );
+  $handler->display->display_options['style_options']['default'] = '-1';
+  $handler->display->display_options['style_options']['info'] = array(
+    'name' => array(
+      'sortable' => 1,
+      'separator' => '',
+    ),
+    'description' => array(
+      'sortable' => 1,
+      'separator' => '',
+    ),
+  );
+  /* No results behavior: Global: Text area */
+  $handler->display->display_options['empty']['text']['id'] = 'area';
+  $handler->display->display_options['empty']['text']['table'] = 'views';
+  $handler->display->display_options['empty']['text']['field'] = 'area';
+  $handler->display->display_options['empty']['text']['content'] = 'No natural diversity experiments match the current criteria.';
+  $handler->display->display_options['empty']['text']['format'] = '2';
+  /* Field: Chado Cvterm: Name */
+  $handler->display->display_options['fields']['name']['id'] = 'name';
+  $handler->display->display_options['fields']['name']['table'] = 'cvterm';
+  $handler->display->display_options['fields']['name']['field'] = 'name';
+  $handler->display->display_options['fields']['name']['label'] = 'Type';
+  /* Field: Chado Nd Geolocation: Description */
+  $handler->display->display_options['fields']['description']['id'] = 'description';
+  $handler->display->display_options['fields']['description']['table'] = 'nd_geolocation';
+  $handler->display->display_options['fields']['description']['field'] = 'description';
+  $handler->display->display_options['fields']['description']['label'] = 'Location Experiment Performed';
+  /* Sort criterion: Chado Cvterm: Name */
+  $handler->display->display_options['sorts']['name']['id'] = 'name';
+  $handler->display->display_options['sorts']['name']['table'] = 'cvterm';
+  $handler->display->display_options['sorts']['name']['field'] = 'name';
+  /* Sort criterion: Chado Nd Geolocation: Description */
+  $handler->display->display_options['sorts']['description']['id'] = 'description';
+  $handler->display->display_options['sorts']['description']['table'] = 'nd_geolocation';
+  $handler->display->display_options['sorts']['description']['field'] = 'description';
+  /* Filter criterion: Chado Nd Experiment: Type Id */
+  $handler->display->display_options['filters']['type_id']['id'] = 'type_id';
+  $handler->display->display_options['filters']['type_id']['table'] = 'nd_experiment';
+  $handler->display->display_options['filters']['type_id']['field'] = 'type_id';
+  $handler->display->display_options['filters']['type_id']['group'] = '0';
+  $handler->display->display_options['filters']['type_id']['value'] = 'All';
+  $handler->display->display_options['filters']['type_id']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['type_id']['expose']['operator_id'] = 'type_id_op';
+  $handler->display->display_options['filters']['type_id']['expose']['label'] = 'Experiment Type';
+  $handler->display->display_options['filters']['type_id']['expose']['operator'] = 'type_id_op';
+  $handler->display->display_options['filters']['type_id']['expose']['identifier'] = 'type_id';
+  /* Filter criterion: Chado Nd Geolocation: Description */
+  $handler->display->display_options['filters']['description']['id'] = 'description';
+  $handler->display->display_options['filters']['description']['table'] = 'nd_geolocation';
+  $handler->display->display_options['filters']['description']['field'] = 'description';
+  $handler->display->display_options['filters']['description']['value'] = array();
+  $handler->display->display_options['filters']['description']['group'] = '0';
+  $handler->display->display_options['filters']['description']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['description']['expose']['operator_id'] = 'description_op';
+  $handler->display->display_options['filters']['description']['expose']['label'] = 'Location Experiment Performed';
+  $handler->display->display_options['filters']['description']['expose']['operator'] = 'description_op';
+  $handler->display->display_options['filters']['description']['expose']['identifier'] = 'geolocation';
+
+  /** MANUALLY ADD since filter handler no exporting correctly */
+  $handler->display->display_options['filters']['type_id']['expose']['values_form_type'] = 'select';
+  $handler->display->display_options['filters']['type_id']['expose']['select_multiple'] = FALSE;
+  $handler->display->display_options['filters']['type_id']['expose']['select_optional'] = TRUE;
+  $handler->display->display_options['filters']['type_id']['expose']['max_length'] = 40;
+
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page_1');
+  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_natdiv/experiments';
+  $handler->display->display_options['menu']['type'] = 'default tab';
+  $handler->display->display_options['menu']['title'] = 'Experiments';
+  $handler->display->display_options['menu']['description'] = 'A single assay resulting in a single genotype or phenotype.';
+  $handler->display->display_options['menu']['weight'] = '-10';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
+  $handler->display->display_options['tab_options']['weight'] = '0';
+
+  /** MANUALLY ADD since filter handler no exporting correctly
+  $handler->display->display_options['filters']['type_id']['expose']['values_form_type'] = 'select';
+  $handler->display->display_options['filters']['type_id']['expose']['select_multiple'] = FALSE;
+  $handler->display->display_options['filters']['type_id']['expose']['select_optional'] = TRUE;
+  $handler->display->display_options['filters']['type_id']['expose']['max_length'] = 40;
+  */
+
+  return $view;
+}
+
+function tripal_natural_diversity_defaultview_admin_geolocations() {
+
+  $view = new view();
+  $view->name = 'tripal_natural_diversity_admin_geolocs';
+  $view->description = 'DO NOT DISABLE';
+  $view->tag = 'tripal admin';
+  $view->base_table = 'nd_geolocation';
+  $view->human_name = 'NatDiv Locations Admin';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Defaults */
+  $handler = $view->new_display('default', 'Defaults', 'default');
+  $handler->display->display_options['title'] = 'Geographical Locations';
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Filter';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '25';
+  $handler->display->display_options['pager']['options']['offset'] = '0';
+  $handler->display->display_options['pager']['options']['id'] = '0';
+  $handler->display->display_options['pager']['options']['quantity'] = '9';
+  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_options']['grouping'] = '';
+  $handler->display->display_options['style_options']['columns'] = array(
+    'description' => 'description',
+    'latitude' => 'latitude',
+    'longitude' => 'longitude',
+    'altitude' => 'altitude',
+    'geodetic_datum' => 'geodetic_datum',
+  );
+  $handler->display->display_options['style_options']['default'] = 'description';
+  $handler->display->display_options['style_options']['info'] = array(
+    'description' => array(
+      'sortable' => 1,
+      'separator' => '',
+    ),
+    'latitude' => array(
+      'sortable' => 1,
+      'separator' => '',
+    ),
+    'longitude' => array(
+      'sortable' => 1,
+      'separator' => '',
+    ),
+    'altitude' => array(
+      'sortable' => 1,
+      'separator' => '',
+    ),
+    'geodetic_datum' => array(
+      'sortable' => 1,
+      'separator' => '',
+    ),
+  );
+  /* No results behavior: Global: Text area */
+  $handler->display->display_options['empty']['text']['id'] = 'area';
+  $handler->display->display_options['empty']['text']['table'] = 'views';
+  $handler->display->display_options['empty']['text']['field'] = 'area';
+  $handler->display->display_options['empty']['text']['content'] = 'No locations matched the current criteria.';
+  $handler->display->display_options['empty']['text']['format'] = '2';
+  /* Field: Chado Nd Geolocation: Description */
+  $handler->display->display_options['fields']['description']['id'] = 'description';
+  $handler->display->display_options['fields']['description']['table'] = 'nd_geolocation';
+  $handler->display->display_options['fields']['description']['field'] = 'description';
+  $handler->display->display_options['fields']['description']['label'] = 'Name';
+  /* Field: Chado Nd Geolocation: Latitude */
+  $handler->display->display_options['fields']['latitude']['id'] = 'latitude';
+  $handler->display->display_options['fields']['latitude']['table'] = 'nd_geolocation';
+  $handler->display->display_options['fields']['latitude']['field'] = 'latitude';
+  /* Field: Chado Nd Geolocation: Longitude */
+  $handler->display->display_options['fields']['longitude']['id'] = 'longitude';
+  $handler->display->display_options['fields']['longitude']['table'] = 'nd_geolocation';
+  $handler->display->display_options['fields']['longitude']['field'] = 'longitude';
+  /* Field: Chado Nd Geolocation: Altitude */
+  $handler->display->display_options['fields']['altitude']['id'] = 'altitude';
+  $handler->display->display_options['fields']['altitude']['table'] = 'nd_geolocation';
+  $handler->display->display_options['fields']['altitude']['field'] = 'altitude';
+  /* Field: Chado Nd Geolocation: Geodetic Datum */
+  $handler->display->display_options['fields']['geodetic_datum']['id'] = 'geodetic_datum';
+  $handler->display->display_options['fields']['geodetic_datum']['table'] = 'nd_geolocation';
+  $handler->display->display_options['fields']['geodetic_datum']['field'] = 'geodetic_datum';
+  /* Filter criterion: Chado Nd Geolocation: Geodetic Datum */
+  $handler->display->display_options['filters']['geodetic_datum']['id'] = 'geodetic_datum';
+  $handler->display->display_options['filters']['geodetic_datum']['table'] = 'nd_geolocation';
+  $handler->display->display_options['filters']['geodetic_datum']['field'] = 'geodetic_datum';
+  $handler->display->display_options['filters']['geodetic_datum']['group'] = '0';
+  $handler->display->display_options['filters']['geodetic_datum']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['geodetic_datum']['expose']['label'] = 'Geodetic Datum';
+  $handler->display->display_options['filters']['geodetic_datum']['expose']['identifier'] = 'geodetic_datum';
+  $handler->display->display_options['filters']['geodetic_datum']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Chado Nd Geolocation: Latitude */
+  $handler->display->display_options['filters']['latitude']['id'] = 'latitude';
+  $handler->display->display_options['filters']['latitude']['table'] = 'nd_geolocation';
+  $handler->display->display_options['filters']['latitude']['field'] = 'latitude';
+  $handler->display->display_options['filters']['latitude']['value'] = '';
+  $handler->display->display_options['filters']['latitude']['group'] = '0';
+  $handler->display->display_options['filters']['latitude']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['latitude']['expose']['label'] = 'Latitude';
+  $handler->display->display_options['filters']['latitude']['expose']['identifier'] = 'latitude';
+  $handler->display->display_options['filters']['latitude']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Chado Nd Geolocation: Longitude */
+  $handler->display->display_options['filters']['longitude']['id'] = 'longitude';
+  $handler->display->display_options['filters']['longitude']['table'] = 'nd_geolocation';
+  $handler->display->display_options['filters']['longitude']['field'] = 'longitude';
+  $handler->display->display_options['filters']['longitude']['value'] = '';
+  $handler->display->display_options['filters']['longitude']['group'] = '0';
+  $handler->display->display_options['filters']['longitude']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['longitude']['expose']['label'] = 'Longitude';
+  $handler->display->display_options['filters']['longitude']['expose']['identifier'] = 'longitude';
+  $handler->display->display_options['filters']['longitude']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Chado Nd Geolocation: Altitude */
+  $handler->display->display_options['filters']['altitude']['id'] = 'altitude';
+  $handler->display->display_options['filters']['altitude']['table'] = 'nd_geolocation';
+  $handler->display->display_options['filters']['altitude']['field'] = 'altitude';
+  $handler->display->display_options['filters']['altitude']['value'] = '';
+  $handler->display->display_options['filters']['altitude']['group'] = '0';
+  $handler->display->display_options['filters']['altitude']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['altitude']['expose']['label'] = 'Altitude';
+  $handler->display->display_options['filters']['altitude']['expose']['identifier'] = 'altitude';
+  $handler->display->display_options['filters']['altitude']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Chado Nd Geolocation: Description */
+  $handler->display->display_options['filters']['description']['id'] = 'description';
+  $handler->display->display_options['filters']['description']['table'] = 'nd_geolocation';
+  $handler->display->display_options['filters']['description']['field'] = 'description';
+  $handler->display->display_options['filters']['description']['operator'] = 'contains';
+  $handler->display->display_options['filters']['description']['group'] = '0';
+  $handler->display->display_options['filters']['description']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['description']['expose']['label'] = 'Description Contains';
+  $handler->display->display_options['filters']['description']['expose']['identifier'] = 'description';
+  $handler->display->display_options['filters']['description']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page_1');
+  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_natdiv/locations';
+  $handler->display->display_options['menu']['type'] = 'tab';
+  $handler->display->display_options['menu']['title'] = 'Locations';
+  $handler->display->display_options['menu']['description'] = 'Geographical locations in which natural diversity experiments might be performed.';
+  $handler->display->display_options['menu']['weight'] = '-8';
+  $handler->display->display_options['menu']['name'] = 'management';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
+
+  return $view;
+}
+
+function tripal_natural_diversity_defaultview_admin_reagents() {
+
+  $view = new view();
+  $view->name = 'tripal_natural_diversity_admin_reagents';
+  $view->description = 'DO NOT DISABLE';
+  $view->tag = 'tripal admin';
+  $view->base_table = 'nd_reagent';
+  $view->human_name = 'NatDiv Reagent Admin';
+  $view->core = 6;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Defaults */
+  $handler = $view->new_display('default', 'Defaults', 'default');
+  $handler->display->display_options['title'] = 'Reagents';
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Filter';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '25';
+  $handler->display->display_options['pager']['options']['offset'] = '0';
+  $handler->display->display_options['pager']['options']['id'] = '0';
+  $handler->display->display_options['pager']['options']['quantity'] = '9';
+  $handler->display->display_options['style_plugin'] = 'table';
+  /* No results behavior: Global: Text area */
+  $handler->display->display_options['empty']['text']['id'] = 'area';
+  $handler->display->display_options['empty']['text']['table'] = 'views';
+  $handler->display->display_options['empty']['text']['field'] = 'area';
+  $handler->display->display_options['empty']['text']['content'] = 'No reagents match the current criteria.';
+  $handler->display->display_options['empty']['text']['format'] = '2';
+  /* Field: Chado Nd Reagent: Name */
+  $handler->display->display_options['fields']['name_1']['id'] = 'name_1';
+  $handler->display->display_options['fields']['name_1']['table'] = 'nd_reagent';
+  $handler->display->display_options['fields']['name_1']['field'] = 'name';
+  /* Field: Chado Cvterm: Name */
+  $handler->display->display_options['fields']['name']['id'] = 'name';
+  $handler->display->display_options['fields']['name']['table'] = 'cvterm';
+  $handler->display->display_options['fields']['name']['field'] = 'name';
+  $handler->display->display_options['fields']['name']['label'] = 'Type';
+  /* Filter criterion: Chado Nd Reagent: Type Id */
+  $handler->display->display_options['filters']['type_id']['id'] = 'type_id';
+  $handler->display->display_options['filters']['type_id']['table'] = 'nd_reagent';
+  $handler->display->display_options['filters']['type_id']['field'] = 'type_id';
+  $handler->display->display_options['filters']['type_id']['value'] = 'All';
+  $handler->display->display_options['filters']['type_id']['group'] = '0';
+  $handler->display->display_options['filters']['type_id']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['type_id']['expose']['operator_id'] = 'type_id_op';
+  $handler->display->display_options['filters']['type_id']['expose']['label'] = 'Type';
+  $handler->display->display_options['filters']['type_id']['expose']['operator'] = 'type_id_op';
+  $handler->display->display_options['filters']['type_id']['expose']['identifier'] = 'type_id';
+  $handler->display->display_options['filters']['type_id']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Chado Nd Reagent: Name */
+  $handler->display->display_options['filters']['name']['id'] = 'name';
+  $handler->display->display_options['filters']['name']['table'] = 'nd_reagent';
+  $handler->display->display_options['filters']['name']['field'] = 'name';
+  $handler->display->display_options['filters']['name']['operator'] = 'contains';
+  $handler->display->display_options['filters']['name']['group'] = '0';
+  $handler->display->display_options['filters']['name']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['name']['expose']['operator_id'] = 'name_op';
+  $handler->display->display_options['filters']['name']['expose']['label'] = 'Name Contains';
+  $handler->display->display_options['filters']['name']['expose']['operator'] = 'name_op';
+  $handler->display->display_options['filters']['name']['expose']['identifier'] = 'name';
+  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+
+  /** MANUALLY ADD since filter handler no exporting correctly */
+  $handler->display->display_options['filters']['type_id']['expose']['values_form_type'] = 'select';
+  $handler->display->display_options['filters']['type_id']['expose']['select_multiple'] = FALSE;
+  $handler->display->display_options['filters']['type_id']['expose']['select_optional'] = TRUE;
+  $handler->display->display_options['filters']['type_id']['expose']['max_length'] = 40;
+
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page_1');
+  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_natdiv/reagents';
+  $handler->display->display_options['menu']['type'] = 'tab';
+  $handler->display->display_options['menu']['title'] = 'Reagents';
+  $handler->display->display_options['menu']['description'] = 'Reagents used in natural diversity experiments';
+  $handler->display->display_options['menu']['weight'] = '0';
+  $handler->display->display_options['menu']['name'] = 'management';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
+
+  /** MANUALLY ADD since filter handler no exporting correctly
+  $handler->display->display_options['filters']['type_id']['expose']['values_form_type'] = 'select';
+  $handler->display->display_options['filters']['type_id']['expose']['select_multiple'] = FALSE;
+  $handler->display->display_options['filters']['type_id']['expose']['select_optional'] = TRUE;
+  $handler->display->display_options['filters']['type_id']['expose']['max_length'] = 40;
+  */
+
+  return $view;
+}
+
+function tripal_natural_diversity_defaultview_admin_protocols() {
+
+  $view = new view();
+  $view->name = 'tripal_natural_diversity_admin_protocols';
+  $view->description = 'DO NOT DISABLE';
+  $view->tag = 'tripal admin';
+  $view->base_table = 'nd_protocol';
+  $view->human_name = 'NatDiv Protocol Admin';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Defaults */
+  $handler = $view->new_display('default', 'Defaults', 'default');
+  $handler->display->display_options['title'] = 'Protocols';
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Filter';
+  $handler->display->display_options['pager']['type'] = 'none';
+  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_options']['grouping'] = '';
+  $handler->display->display_options['style_options']['columns'] = array(
+    'name' => 'name',
+  );
+  $handler->display->display_options['style_options']['default'] = 'name';
+  $handler->display->display_options['style_options']['info'] = array(
+    'name' => array(
+      'sortable' => 1,
+      'separator' => '',
+    ),
+  );
+  /* No results behavior: Global: Text area */
+  $handler->display->display_options['empty']['text']['id'] = 'area';
+  $handler->display->display_options['empty']['text']['table'] = 'views';
+  $handler->display->display_options['empty']['text']['field'] = 'area';
+  $handler->display->display_options['empty']['text']['content'] = 'No protocols match the current criteria.';
+  $handler->display->display_options['empty']['text']['format'] = '2';
+  /* Field: Chado Nd Protocol: Name */
+  $handler->display->display_options['fields']['name']['id'] = 'name';
+  $handler->display->display_options['fields']['name']['table'] = 'nd_protocol';
+  $handler->display->display_options['fields']['name']['field'] = 'name';
+  /* Filter criterion: Chado Nd Protocol: Name */
+  $handler->display->display_options['filters']['name']['id'] = 'name';
+  $handler->display->display_options['filters']['name']['table'] = 'nd_protocol';
+  $handler->display->display_options['filters']['name']['field'] = 'name';
+  $handler->display->display_options['filters']['name']['operator'] = 'contains';
+  $handler->display->display_options['filters']['name']['group'] = '0';
+  $handler->display->display_options['filters']['name']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['name']['expose']['operator_id'] = 'name_op';
+  $handler->display->display_options['filters']['name']['expose']['label'] = 'Name Contains';
+  $handler->display->display_options['filters']['name']['expose']['operator'] = 'name_op';
+  $handler->display->display_options['filters']['name']['expose']['identifier'] = 'name';
+  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page_1');
+  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_natdiv/protocols';
+  $handler->display->display_options['menu']['type'] = 'tab';
+  $handler->display->display_options['menu']['title'] = 'Protocols';
+  $handler->display->display_options['menu']['description'] = 'The protcols used for natural diversity experiments';
+  $handler->display->display_options['menu']['weight'] = '-5';
+  $handler->display->display_options['menu']['name'] = 'management';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
+
+  return $view;
 }

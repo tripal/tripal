@@ -143,37 +143,37 @@ function tripal_featuremap_defaultview_admin_featuremaps() {
   $handler->display->display_options['sorts']['name']['table'] = 'featuremap';
   $handler->display->display_options['sorts']['name']['field'] = 'name';
   /* Filter criterion: Chado Featuremap: Name */
-$handler->display->display_options['filters']['name_1']['id'] = 'name_1';
-$handler->display->display_options['filters']['name_1']['table'] = 'featuremap';
-$handler->display->display_options['filters']['name_1']['field'] = 'name';
-$handler->display->display_options['filters']['name_1']['operator'] = 'contains';
-$handler->display->display_options['filters']['name_1']['group'] = '0';
-$handler->display->display_options['filters']['name_1']['exposed'] = TRUE;
-$handler->display->display_options['filters']['name_1']['expose']['operator_id'] = 'name_1_op';
-$handler->display->display_options['filters']['name_1']['expose']['label'] = 'Name Contains';
-$handler->display->display_options['filters']['name_1']['expose']['operator'] = 'name_1_op';
-$handler->display->display_options['filters']['name_1']['expose']['identifier'] = 'name_1';
-$handler->display->display_options['filters']['name_1']['expose']['remember_roles'] = array(
-  2 => '2',
-  1 => 0,
-  3 => 0,
-);
-/* Filter criterion: Chado Featuremap: Description */
-$handler->display->display_options['filters']['description']['id'] = 'description';
-$handler->display->display_options['filters']['description']['table'] = 'featuremap';
-$handler->display->display_options['filters']['description']['field'] = 'description';
-$handler->display->display_options['filters']['description']['operator'] = 'contains';
-$handler->display->display_options['filters']['description']['group'] = '0';
-$handler->display->display_options['filters']['description']['exposed'] = TRUE;
-$handler->display->display_options['filters']['description']['expose']['operator_id'] = 'description_op';
-$handler->display->display_options['filters']['description']['expose']['label'] = 'Description Contains';
-$handler->display->display_options['filters']['description']['expose']['operator'] = 'description_op';
-$handler->display->display_options['filters']['description']['expose']['identifier'] = 'description';
-$handler->display->display_options['filters']['description']['expose']['remember_roles'] = array(
-  2 => '2',
-  1 => 0,
-  3 => 0,
-);
+  $handler->display->display_options['filters']['name_1']['id'] = 'name_1';
+  $handler->display->display_options['filters']['name_1']['table'] = 'featuremap';
+  $handler->display->display_options['filters']['name_1']['field'] = 'name';
+  $handler->display->display_options['filters']['name_1']['operator'] = 'contains';
+  $handler->display->display_options['filters']['name_1']['group'] = '0';
+  $handler->display->display_options['filters']['name_1']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['name_1']['expose']['operator_id'] = 'name_1_op';
+  $handler->display->display_options['filters']['name_1']['expose']['label'] = 'Name Contains';
+  $handler->display->display_options['filters']['name_1']['expose']['operator'] = 'name_1_op';
+  $handler->display->display_options['filters']['name_1']['expose']['identifier'] = 'name_1';
+  $handler->display->display_options['filters']['name_1']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
+  /* Filter criterion: Chado Featuremap: Description */
+  $handler->display->display_options['filters']['description']['id'] = 'description';
+  $handler->display->display_options['filters']['description']['table'] = 'featuremap';
+  $handler->display->display_options['filters']['description']['field'] = 'description';
+  $handler->display->display_options['filters']['description']['operator'] = 'contains';
+  $handler->display->display_options['filters']['description']['group'] = '0';
+  $handler->display->display_options['filters']['description']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['description']['expose']['operator_id'] = 'description_op';
+  $handler->display->display_options['filters']['description']['expose']['label'] = 'Description Contains';
+  $handler->display->display_options['filters']['description']['expose']['operator'] = 'description_op';
+  $handler->display->display_options['filters']['description']['expose']['identifier'] = 'description';
+  $handler->display->display_options['filters']['description']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    3 => 0,
+  );
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
