@@ -17,7 +17,6 @@ function tripal_views_menu() {
   $items['chado'] = array(
     'title' => 'Search Biological Data',
     'description' => 'Listings of the various biological data available categorized by type.',
-    'page callback' => 'tripal_views_biological_data_page',
     'access arguments' => array('access content'),
     'expanded' => TRUE,
     'type' => MENU_NORMAL_ITEM,
@@ -26,13 +25,13 @@ function tripal_views_menu() {
   $items['admin/tripal/views-integration'] = array(
     'title' => 'Views Integration',
     'description' => 'Integration of all the chado tables and fields with Drupal Views.',
-    //'page callback' => 'theme',
-    //'page arguments' => array('tripal_views_admin'),
+    'page callback' => 'tripal_views_admin_integration_view',
     'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => 2
   );
 
+  /**
   $items['admin/tripal/views-integration/list'] = array(
     'title' => 'List of Integrated Tables',
     'description' => 'Provide a list of all integrated tables and allows for adding new tables or editing already integrated tables.',
@@ -41,6 +40,7 @@ function tripal_views_menu() {
     'type' => MENU_NORMAL_ITEM,
     'weight' => 0,
   );
+  */
 
   $items['admin/tripal/views-integration/new'] = array(
     'title' => 'Integrate A Table',
@@ -48,7 +48,7 @@ function tripal_views_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_views_integration_form'),
     'access arguments' => array('manage tripal_views_integration'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
     'weight' => 1,
   );
 
@@ -57,7 +57,7 @@ function tripal_views_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_views_integration_form', 4),
     'access arguments' => array('manage tripal_views_integration'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
   );
 
   $items['admin/tripal/views-integration/delete/%'] = array(
@@ -82,7 +82,7 @@ function tripal_views_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_views_integration_import_form'),
     'access arguments' => array('manage tripal_views_integration'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
     'weight' => 2,
   );
 
@@ -92,7 +92,7 @@ function tripal_views_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_views_integration_export_form', 4),
     'access arguments' => array('manage tripal_views_integration'),
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_CALLBACK,
     'weight' => 3,
   );
 
@@ -109,10 +109,18 @@ function tripal_views_menu() {
     'title' => 'Help',
     'description' => "A description of the Tripal Views module including a short description of it's usage.",
     'page callback' => 'theme',
-    'page arguments' => array('tripal_views_admin'),
+    'page arguments' => array('tripal_views_help'),
     'access arguments' => array('manage tripal_views_integration'),
-    'type' => MENU_NORMAL_ITEM,
-    'weight' => 4,
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10,
+  );
+
+  $items['admin/tripal/views-integrations/views/integrations/enable'] = array(
+    'title' => 'Enable Integrations Administrative View',
+    'page callback' => 'tripal_views_admin_enable_view',
+    'page arguments' => array('tripal_views_admin_integrations', 'admin/tripal/views-integrations'),
+    'access arguments' => array('administer tripal_bulk_loader'),
+    'type' => MENU_CALLBACK,
   );
 
   return $items;
@@ -142,7 +150,7 @@ function tripal_views_init() {
  */
 function tripal_views_help ($path, $arg) {
   if ($path == 'admin/help#tripal_views') {
-    return theme('tripal_views_admin', array());
+    return theme('tripal_views_help', array());
   }
 }
 
@@ -197,8 +205,8 @@ function tripal_views_theme($existing, $type, $theme, $path) {
       'variables' => array('element' => NULL)
     ),
     // instructions page for the views module
-    'tripal_views_admin' => array(
-      'template' => 'tripal_views_admin',
+    'tripal_views_help' => array(
+      'template' => 'tripal_views_help',
       'variables' =>  array(NULL),
       'path' => drupal_get_path('module', 'tripal_views') . '/theme'
     ),
@@ -253,4 +261,33 @@ function tripal_views_form_alter($form, $form_state, $form_id) {
     }
     */
   }
+}
+
+function tripal_views_admin_integration_view() {
+  $output = '';
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  $breadcrumb[] = l('Tripal', 'admin/tripal');
+  $breadcrumb[] = l('Intgrations', 'admin/tripal/views-integrations');
+  drupal_set_breadcrumb($breadcrumb);
+
+  // Add the view
+  $view = views_embed_view('tripal_views_admin_integrations','default');
+  if (isset($view)) {
+    $output .= $view;
+  }
+  else {
+    $output .= '<p>The Tripal Views Module uses primarily views to provide an '
+      . 'administrative interface. Currently one or more views needed for this '
+      . 'administrative interface are disabled. <strong>Click each of the following links to '
+      . 'enable the pertinent views</strong>:</p>';
+    $output .= '<ul>';
+      $output .= '<li>'.l('Tripal Views Admin', 'admin/tripal/views-integrations/views/integrations/enable').'</li>';
+    $output .= '</ul>';
+  }
+
+  return $output;
 }

@@ -373,6 +373,14 @@ function tripal_core_views_data_mviews($data) {
     'weight' => 10,
   );
 
+    // Implicit Join to Tripal Views
+  $data['tripal_mviews']['table']['join'] = array(
+    'tripal_views' => array(
+      'left_field' => 'mview_id',
+      'field' => 'mview_id',
+    ),
+  );
+
   // Mview ID
   $data['tripal_mviews']['mview_id'] = array(
     'title' => t('Materialized View ID'),

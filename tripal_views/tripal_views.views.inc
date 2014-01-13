@@ -147,6 +147,9 @@ function tripal_views_views_pre_render(&$view) {
 function tripal_views_views_data() {
   $data = array();
 
+  // Manually integrate the drupal.tripal_views* tables
+  $data = tripal_views_views_data_tripal_views_tables($data);
+
   // MAKE SURE ALL CHADO TABLES ARE INTEGRATED
   tripal_views_integrate_all_chado_tables();
 
@@ -363,6 +366,154 @@ function tripal_views_views_data() {
         }
       }
   }
+
+  return $data;
+}
+
+/**
+ *
+ */
+function tripal_views_views_data_tripal_views_tables($data) {
+
+  $data['tripal_views']['table']['group'] = t('Tripal Views Integration');
+  $data['tripal_views']['table']['base'] = array(
+    'field' => 'setup_id', // This is the identifier field for the view.
+    'title' => t('Tripal Views Integration'),
+    'help' => t('Specifications on how to integrate various tables with Drupal Views'),
+    'weight' => -10,
+  );
+
+  // Implicit Join to Materialized Views
+  $data['tripal_views']['table']['join'] = array(
+    'tripal_mviews' => array(
+      'left_field' => 'mview_id',
+      'field' => 'mview_id',
+    ),
+  );
+
+  // setup_id
+  $data['tripal_views']['setup_id'] = array(
+    'title' => t('Setup ID'),
+    'help' => t('Primary key of the integration'),
+    'field' => array(
+      'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
+  // mview_id
+  $data['tripal_views']['mview_id'] = array(
+    'title' => t('Materialized View ID'),
+    'help' => t('The primary key of the Mview integrated.'),
+    'field' => array(
+      'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
+  // base_table
+  $data['tripal_views']['base_table'] = array(
+    'title' => t('Base Table?'),
+    'help' => t('Whether the table being integrated should be considered a base table.'),
+    'field' => array(
+      'handler' => 'views_handler_field_boolean',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_boolean_operator',
+      'label' => t('Base Table?'),
+      'type' => 'yes-no',
+      'use equal' => TRUE,
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
+  // table_name
+  $data['tripal_views']['table_name'] = array(
+    'title' => t('Chado Table Name'),
+    'help' => t('The name of the table being integrated'),
+    'field' => array(
+      'handler' => 'views_handler_field',
+      'click sortable' => TRUE, // This is use by the table display plugin.
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+    ),
+  );
+
+  // priority
+  $data['tripal_views']['priority'] = array(
+    'title' => t('Priority'),
+    'help' => t('The priority of the integration.'),
+    'field' => array(
+      'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+
+  // name
+  $data['tripal_views']['name'] = array(
+    'title' => t('Name'),
+    'help' => t('The name of the integration'),
+    'field' => array(
+      'handler' => 'views_handler_field',
+      'click sortable' => TRUE, // This is use by the table display plugin.
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+    ),
+  );
+
+  // comment
+  $data['tripal_views']['comment'] = array(
+    'title' => t('Description'),
+    'help' => t('Short description or comment about this integration.'),
+    'field' => array(
+      'handler' => 'views_handler_field',
+      'click sortable' => TRUE, // This is use by the table display plugin.
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_string',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+    ),
+  );
 
   return $data;
 }
