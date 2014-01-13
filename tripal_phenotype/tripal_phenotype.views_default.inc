@@ -64,38 +64,58 @@ function tripal_phenotype_defaultview_admin_phenotypes() {
   $handler->display->display_options['empty']['text']['field'] = 'area';
   $handler->display->display_options['empty']['text']['content'] = 'No phenotypes match the supplied criteria.';
   $handler->display->display_options['empty']['text']['format'] = '2';
+  /* Relationship: Chado Phenotype: observable_id => Cvterm */
+  $handler->display->display_options['relationships']['observable_id_to_cvterm']['id'] = 'observable_id_to_cvterm';
+  $handler->display->display_options['relationships']['observable_id_to_cvterm']['table'] = 'phenotype';
+  $handler->display->display_options['relationships']['observable_id_to_cvterm']['field'] = 'observable_id_to_cvterm';
+  $handler->display->display_options['relationships']['observable_id_to_cvterm']['label'] = 'Observable ID  => Cvterm';
+  /* Relationship: Chado Phenotype: attr_id => Cvterm */
+  $handler->display->display_options['relationships']['attr_id_to_cvterm']['id'] = 'attr_id_to_cvterm';
+  $handler->display->display_options['relationships']['attr_id_to_cvterm']['table'] = 'phenotype';
+  $handler->display->display_options['relationships']['attr_id_to_cvterm']['field'] = 'attr_id_to_cvterm';
+  $handler->display->display_options['relationships']['attr_id_to_cvterm']['label'] = 'Attribute id => Cvterm';
+  /* Relationship: Chado Phenotype: cvalue_id => Cvterm */
+  $handler->display->display_options['relationships']['cvalue_id_to_cvterm']['id'] = 'cvalue_id_to_cvterm';
+  $handler->display->display_options['relationships']['cvalue_id_to_cvterm']['table'] = 'phenotype';
+  $handler->display->display_options['relationships']['cvalue_id_to_cvterm']['field'] = 'cvalue_id_to_cvterm';
+  $handler->display->display_options['relationships']['cvalue_id_to_cvterm']['label'] = 'cvalue id => Cvterm';
+  /* Relationship: Chado Phenotype: assay_id => Cvterm */
+  $handler->display->display_options['relationships']['assay_id_to_cvterm']['id'] = 'assay_id_to_cvterm';
+  $handler->display->display_options['relationships']['assay_id_to_cvterm']['table'] = 'phenotype';
+  $handler->display->display_options['relationships']['assay_id_to_cvterm']['field'] = 'assay_id_to_cvterm';
+  $handler->display->display_options['relationships']['assay_id_to_cvterm']['label'] = 'assay id => Cvterm';
   /* Field: Chado Phenotype: Uniquename */
   $handler->display->display_options['fields']['uniquename']['id'] = 'uniquename';
   $handler->display->display_options['fields']['uniquename']['table'] = 'phenotype';
   $handler->display->display_options['fields']['uniquename']['field'] = 'uniquename';
   $handler->display->display_options['fields']['uniquename']['label'] = 'Unique Name';
   /* Field: Chado Cvterm: Name */
+  $handler->display->display_options['fields']['name_2']['id'] = 'name_2';
+  $handler->display->display_options['fields']['name_2']['table'] = 'cvterm';
+  $handler->display->display_options['fields']['name_2']['field'] = 'name';
+  $handler->display->display_options['fields']['name_2']['relationship'] = 'observable_id_to_cvterm';
+  $handler->display->display_options['fields']['name_2']['label'] = 'Observed Unit';
+  /* Field: Chado Cvterm: Name */
   $handler->display->display_options['fields']['name_1']['id'] = 'name_1';
   $handler->display->display_options['fields']['name_1']['table'] = 'cvterm';
   $handler->display->display_options['fields']['name_1']['field'] = 'name';
-  $handler->display->display_options['fields']['name_1']['relationship'] = 'attr_id';
+  $handler->display->display_options['fields']['name_1']['relationship'] = 'attr_id_to_cvterm';
   $handler->display->display_options['fields']['name_1']['label'] = 'Phenotypic Attribute';
   /* Field: Chado Cvterm: Name */
   $handler->display->display_options['fields']['name_3']['id'] = 'name_3';
   $handler->display->display_options['fields']['name_3']['table'] = 'cvterm';
   $handler->display->display_options['fields']['name_3']['field'] = 'name';
-  $handler->display->display_options['fields']['name_3']['relationship'] = 'cvalue_id';
+  $handler->display->display_options['fields']['name_3']['relationship'] = 'cvalue_id_to_cvterm';
   $handler->display->display_options['fields']['name_3']['label'] = 'Controlled Value';
   /* Field: Chado Phenotype: Value */
   $handler->display->display_options['fields']['value']['id'] = 'value';
   $handler->display->display_options['fields']['value']['table'] = 'phenotype';
   $handler->display->display_options['fields']['value']['field'] = 'value';
   /* Field: Chado Cvterm: Name */
-  $handler->display->display_options['fields']['name_2']['id'] = 'name_2';
-  $handler->display->display_options['fields']['name_2']['table'] = 'cvterm';
-  $handler->display->display_options['fields']['name_2']['field'] = 'name';
-  $handler->display->display_options['fields']['name_2']['relationship'] = 'observable_id';
-  $handler->display->display_options['fields']['name_2']['label'] = 'Observation Type';
-  /* Field: Chado Cvterm: Name */
   $handler->display->display_options['fields']['name']['id'] = 'name';
   $handler->display->display_options['fields']['name']['table'] = 'cvterm';
   $handler->display->display_options['fields']['name']['field'] = 'name';
-  $handler->display->display_options['fields']['name']['relationship'] = 'assay_id';
+  $handler->display->display_options['fields']['name']['relationship'] = 'assay_id_to_cvterm';
   $handler->display->display_options['fields']['name']['label'] = 'Evidence Type';
   /* Filter criterion: Chado Phenotype: Attr Id */
   $handler->display->display_options['filters']['attr_id']['id'] = 'attr_id';

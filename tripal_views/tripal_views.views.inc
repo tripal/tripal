@@ -348,14 +348,14 @@ function tripal_views_views_data() {
             WATCHDOG_NOTICE);
         }
         // add relationship entry
-        $fake_field = $base_table . '_to_' . $left_table;
+        $fake_field = $base_field . '_to_' . $left_table;
         $data[$base_table][$fake_field] = array(
-          'title' => "$base_title => $left_title",
-          'help' => "Joins $base_title to $left_title",
+          'title' => "$base_title.$base_field => $left_title",
+          'help' => "Joins $base_title.$base_field to $left_title",
           'relationship' => array(
             'handler' => $join->relationship_handler,
-            'title' => t("$base_title => $left_title"),
-            'label' => t("$base_title => $left_title"),
+            'title' => t("$base_field => $left_title"),
+            'label' => t("$base_field => $left_title"),
             'real field' => $base_field,
             'base' => $left_table,
             'base field' => $left_field
