@@ -301,12 +301,9 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
         }
         // now check the constraint
         if (tripal_core_chado_select($table, $ukselect_cols, $ukselect_vals)) {
-          tripal_core_report_error(
-            'tripal_core',
-            TRIPAL_ERROR,
+          tripal_core_report_error('tripal_core', TRIPAL_ERROR,
             "tripal_core_chado_insert; Cannot insert duplicate record into $table table: !values",
-            array('!values' => print_r($values, TRUE)),
-            array('print' => $print_errors)
+            array('!values' => print_r($values, TRUE)), array('print' => $print_errors)
           );
           return FALSE;
         }
@@ -317,11 +314,9 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
     if (array_key_exists('primary key', $table_desc)) {
       $pkey = $table_desc['primary key'][0];
       if (array_key_exists($pkey, $insert_values)) {
-        $coptions = array('statement_name' => 'pqsel_' . $table . '_' . $pkey);
+        $coptions = array();
         if (tripal_core_chado_select($table, array($pkey), array($pkey => $insert_values[$pkey]), $coptions)) {
-          tripal_core_report_error(
-            'tripal_core',
-            TRIPAL_ERROR,
+          tripal_core_report_error('tripal_core', TRIPAL_ERROR,
             'tripal_core_chado_insert; Cannot insert duplicate primary key into !table table: !values',
             array('!table' => $table, '!values' => print_r($values, TRUE)),
             array('print' => $print_errors)
@@ -559,7 +554,7 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
         $columns[] = $field;
         $stmt_suffix .= substr($field, 0, 2);
       }
-      $options2 = array('statement_name' => 'sel_' . $table . '_' . $stmt_suffix);
+      $options2 = array();
       $results = tripal_core_chado_select($table, $columns, $match, $options2);
       if (count($results) > 0) {
         foreach ($results as $index => $pkey) {
@@ -574,18 +569,14 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
     if (is_array($value)) {
       $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value);
       if (sizeof($results) > 1) {
-        tripal_core_report_error(
-          'tripal_core',
-          TRIPAL_ERROR,
+        tripal_core_report_error('tripal_core', TRIPAL_ERROR,
           'tripal_core_chado_update: When trying to find record to update, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
           array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)),
           array('print' => $print_errors)
         );
       }
       elseif (sizeof($results) < 1) {
-        tripal_core_report_error(
-          'tripal_core',
-          TRIPAL_DEBUG,
+        tripal_core_report_error('tripal_core',TRIPAL_DEBUG,
           'tripal_core_chado_update: When trying to find record to update, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)',
           array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)),
           array('print' => $print_errors)
@@ -875,14 +866,6 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
  *     An associative array containing the column names of the table as keys
  *     and the type of sort (i.e. ASC, DESC) as the values.  The results in the
  *     query will be sorted by the key values in the direction listed by the value
- *  - statement_name: the name of the prepared statement to use. If the statement
- *     has not yet been prepared it will be prepared automatically. On subsequent
- *     calls with the same statement_name only an execute on the previously
- *     prepared statement will occur.
- *  - is_prepared: TRUE or FALSE. Whether or not the statement is prepared. By
- *     default if the statement is not prepared it will be automatically.
- *     However to avoid this check, which requires a database query you can
- *     set this value to true and the check will not be performed.
  *  - is_duplicate: TRUE or FALSE.  Checks the values submited to see if
  *     they violate any of the unique constraints. If so, the record
  *     is returned, if not, FALSE is returned.
@@ -892,8 +875,7 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
  *     should specify the number of records to return and 'element' is a
  *     unique integer to differentiate between pagers when more than one
  *     appear on a page.  The 'element' should start with zero and increment by
- *     one for each pager.  The pager currently does not work with prepared queries
- *     (when using the -statement_name option).
+ *     one for each pager.  
  *
  * @return
  *  An array of results, FALSE if the query was not executed
@@ -922,7 +904,6 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
  *      ),
  *   );
  *   $options = array(
- *     'statement_name' => 'sel_feature_genus_species_cvname'
  *     'order_by' => array(
  *        'name' => 'ASC'
  *     ),
@@ -1091,17 +1072,12 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
         // and there is no default value then we cannot check if the record
         // is a duplicate so return FALSE
         else {
-          tripal_core_report_error(
-            'tripal_core',
-            TRIPAL_ERROR,
+          tripal_core_report_error('tripal_core', TRIPAL_ERROR,
             'tripal_core_chado_select: There is no value for %field thus we cannot check if this record is unique',
-            array('%field' => $field),
-            array('print' => $print_errors)
-          );
+            array('%field' => $field), array('print' => $print_errors));
           return FALSE;
         }
       }
-      $new_options['statement_name'] = $uq_sname;
 
       $results = tripal_core_chado_select($table, $new_columns, $new_values, $new_options);
       // if we have a duplicate record then return the results
@@ -1367,7 +1343,7 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
     // TODO: what do we do if we get to this point and we have a fk
     // relationship expected but we don't have any definition for one in the
     // table schema??
-    $version = tripal_core_get_chado_version(TRUE);
+    $version = $GLOBALS["chado_version"];
     $message = t("There is no foreign key relationship defined for " . $field . " .
        To define a foreign key relationship, determine the table this foreign
        key referrs to (<foreign table>) and then implement
@@ -1839,14 +1815,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
           }
 
           // generate a new object for this table using the FK values in the base table.
-          // if a prepared statement is provided generate a new statement_name so that
-          // we don't conflict when we recurse.
           $new_options = $table_options;
-/*
-          if (array_key_exists('statement_name', $table_options)) {
-             $new_options['statement_name'] = "exp_" . $foreign_table . "_" . substr($left, 0, 2) . substr($right, 0, 2);
-          }
-*/
           $foreign_object = tripal_core_generate_chado_var($foreign_table, array($left => $object->{$right}), $new_options);
 
           // if the generation of the object was successful, update the base object to include it.
@@ -2133,8 +2102,7 @@ function chado_query_range($query, $args, $from, $count) {
  * @ingroup tripal_chado_api
  */
 function chado_query($sql, $args = array()) {
-
-  $is_local = tripal_core_is_chado_local();
+  $is_local = $GLOBALS["chado_is_local"];
 
   // Args should be an array
   if (!is_array($args)) {
@@ -2143,6 +2111,7 @@ function chado_query($sql, $args = array()) {
       array('%value' => $args, '%query' => $sql)
     );
     $args = array($args);
+    return FALSE;
   }
 
   // if Chado is local to the database then prefix the Chado table
@@ -2168,7 +2137,7 @@ function chado_query($sql, $args = array()) {
   // switch to another database
   else {
     $previous_db = tripal_db_set_active('chado') ;
-    $results = db_query($sql);
+    $results = db_query($sql, $args);
     tripal_db_set_active($previous_db);
   }
 
@@ -2322,7 +2291,7 @@ $cv_name, $value, $update_if_present = 0) {
     'name' => $property,
   );
 
-  $options = array('statement_name' => 'sel_cvterm_cv');
+  $options = array();
   $term = tripal_core_chado_select('cvterm', array('cvterm_id'), $values, $options);
   if (!$term or count($term) == 0) {
     watchdog('tripal_core', "Cannot find property '%prop_name'.",
@@ -2347,7 +2316,7 @@ $cv_name, $value, $update_if_present = 0) {
     'rank' => $rank,
   );
 
-  $options = array('statement_name' => 'ins_' . $basetable . 'prop_' . substr($fkcol, 0, 2) . 'tyvara');
+  $options = array();
   $result = tripal_core_chado_insert($basetable . 'prop', $values, $options);
   return $result;
 }
@@ -2591,34 +2560,7 @@ function chado_table_exists($table) {
   }
   return TRUE;
 }
-/**
- * Check that the Chado schema exists within the local database
- *
- * @return
- *   TRUE/FALSE depending upon whether it exists
- */
-function tripal_core_chado_schema_exists() {
 
-  // This is postgresql-specific code to check the existence of the chado schema
-  // @coder-ignore: acting on pg_catalog schema rather then drupal schema therefore, table prefixing does not apply
-  $sql = "
-    SELECT nspname
-    FROM pg_namespace
-    WHERE
-      has_schema_privilege(nspname, 'USAGE') AND
-      nspname = 'chado'
-  ";
-  $results = db_query($sql);
-  $name = $results->fetchObject();
-  if ($name) {
-    variable_set('chado_schema_exists', FALSE);
-    return TRUE;
-  }
-  else {
-    variable_set('chado_schema_exists', TRUE);
-    return FALSE;
-  }
-}
 /**
  * Check that any given schema exists
  *
@@ -2665,10 +2607,9 @@ function tripal_core_schema_exists($schema) {
  * @ingroup tripal_core_api
  */
 function tripal_core_get_chado_tables($include_custom = NULL) {
-
-
+ 
   // first get the chado version that is installed
-  $v = tripal_core_get_chado_version();
+  $v = $GLOBALS["chado_version"];
 
   $tables = array();
   if ($v == '1.2') {
@@ -2698,73 +2639,11 @@ function tripal_core_get_chado_tables($include_custom = NULL) {
   return $tables;
 }
 /**
- * Sets a Drupal variable with the current version of Chado.  This variable
- * can then be queried later using the tripal_core_get_chado_Version
- *
- * @returns
- *   The version of Chado
- *
- * @ingroup tripal_core_api
- */
-function tripal_core_set_chado_version() {
-  global $databases;
-  $is_local = 0;
-
-  // check that Chado is installed if not return 'uninstalled as the version'
-  $chado_exists = tripal_core_chado_schema_exists();
-  if (!$chado_exists) {
-    // if it's not in the drupal database check to see if it's specified in the $db_url
-    // in the settings.php
-    if (!array_key_exists('chado', $databases)) {
-      // if it's not in the drupal database or specified in the $db_url then
-      // return uninstalled as the version
-      return 'not installed';
-    }
-    $previous_db = tripal_db_set_active('chado');
-    $prop_exists = db_table_exists('chadoprop');
-    tripal_db_set_active($previous_db);
-  }
-  else {
-    $is_local = 1;
-    $prop_exists = db_table_exists('chado.chadoprop');
-  }
-
-  // if the table doesn't exist then we don't know what version but we know
-  // it must be 1.11 or older.
-  if (!$prop_exists) {
-    return "1.11 or older";
-  }
-
-  $sql = "
-    SELECT value
-    FROM {chadoprop} CP
-      INNER JOIN {cvterm} CVT on CVT.cvterm_id = CP.type_id
-      INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
-    WHERE CV.name = 'chado_properties' and CVT.name = 'version'
-  ";
-  if (!$is_local) {
-    $previous_db = tripal_db_set_active('chado');
-    $results = db_query($sql);
-    tripal_db_set_active($previous_db);
-  }
-  else {
-    $results = chado_query($sql);
-  }
-  $v = $results->fetchObject();
-
-  // if we don't have a version in the chadoprop table then it must be
-  // v1.11 or older
-  if (!$v) {
-    variable_set('chado_version', "1.11 or older");
-    return "1.11 or older";
-  }
-
-  variable_set('chado_version', $v->value);
-  return $v->value;
-}
-/**
  * Returns the version number of the currently installed Chado instance.
- * It can return the real or effective version.
+ * It can return the real or effective version.  Note, this function
+ * is executed in the hook_init() of the tripal_core module which then
+ * sets the $GLOBAL['exact_chado_version'] and $GLOBAL['chado_version'] 
+ * variable.  You can access these variables rather than calling this function.
  *
  * @param $exact
  *   Set this argument to 1 to retrieve the exact version that is installed.
@@ -2775,7 +2654,7 @@ function tripal_core_set_chado_version() {
  *
  * @param $warn_if_unsupported
  *   If the currently installed version of Chado is not supported by Tripal
- *   the generatea a Drupal warning.
+ *   this generates a Drupal warning.
  *
  * @returns
  *   The version of Chado
@@ -2783,11 +2662,64 @@ function tripal_core_set_chado_version() {
  * @ingroup tripal_core_api
  */
 function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FALSE) {
-  // first get the chado version that is installed
-//  $exact_version = variable_get('chado_version', '');
-//  if (!$exact_version) {
-    $exact_version = tripal_core_set_chado_version();
-//  }
+  
+  global $databases;
+  $version = '';
+  $is_local = 0;
+  
+  // check that Chado is installed if not return 'uninstalled as the version'
+  $chado_exists = tripal_core_chado_schema_exists();
+  if (!$chado_exists) {
+    // if it's not in the drupal database check to see if it's specified in the $db_url
+    // in the settings.php
+    if (!array_key_exists('chado', $databases)) {
+      // if it's not in the drupal database or specified in the $db_url then
+      // return uninstalled as the version
+      return 'not installed';
+    }
+    $is_local = 0;
+    $previous_db = tripal_db_set_active('chado');
+    $prop_exists = db_table_exists('chadoprop');
+    tripal_db_set_active($previous_db);
+  }
+  else {
+    $is_local = 1;
+    $prop_exists = db_table_exists('chado.chadoprop');
+  }
+  
+  // if the table doesn't exist then we don't know what version but we know
+  // it must be 1.11 or older.
+  if (!$prop_exists) {
+    $version = "1.11 or older";
+  }
+  else {  
+    $sql = "
+      SELECT value
+      FROM {chadoprop} CP
+        INNER JOIN {cvterm} CVT on CVT.cvterm_id = CP.type_id
+        INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+      WHERE CV.name = 'chado_properties' and CVT.name = 'version'
+    ";
+    if (!$is_local) {
+      $previous_db = tripal_db_set_active('chado');
+      $results = db_query($sql);
+      tripal_db_set_active($previous_db);
+    }
+    else {
+      $results = chado_query($sql);
+    }
+    $v = $results->fetchObject();
+    
+    // if we don't have a version in the chadoprop table then it must be
+    // v1.11 or older
+    if (!$v) {
+      $version =  "1.11 or older";
+    }  
+    $version =  $v->value;
+  }
+  
+  // next get the exact Chado version that is installed
+  $exact_version = $version;
 
   // Tripal only supports v1.11 or newer.. really this is the same as v1.1
   // but at the time the v1.11 schema API was written we didn't know that so
@@ -2832,7 +2764,7 @@ function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FA
 function tripal_core_get_chado_table_schema($table) {
 
   // first get the chado version that is installed
-  $v = tripal_core_get_chado_version();
+  $v = $GLOBALS["chado_version"];
 
   // get the table array from the proper chado schema
   $v = preg_replace("/\./", "_", $v); // reformat version for hook name
@@ -2958,7 +2890,34 @@ function tripal_core_clean_orphaned_nodes($table, $job_id) {
 
   return '';
 }
+/**
+ * Check that the Chado schema exists within the local database
+ *
+ * @return
+ *   TRUE/FALSE depending upon whether it exists
+ */
+function tripal_core_chado_schema_exists() {
 
+  // This is postgresql-specific code to check the existence of the chado schema
+  // @coder-ignore: acting on pg_catalog schema rather then drupal schema therefore, table prefixing does not apply
+  $sql = "
+    SELECT nspname
+    FROM pg_namespace
+    WHERE
+      has_schema_privilege(nspname, 'USAGE') AND
+      nspname = 'chado'
+  ";
+  $results = db_query($sql);
+  $name = $results->fetchObject();
+  if ($name) {
+    variable_set('chado_schema_exists', FALSE);
+    return TRUE;
+  }
+  else {
+    variable_set('chado_schema_exists', TRUE);
+    return FALSE;
+  }
+}
 /**
  * Check whether chado is installed (either in the same or a different database)
  *
@@ -2989,18 +2948,15 @@ function tripal_core_is_chado_installed() {
  * @ingroup tripal_chado_api
  */
 function tripal_core_is_chado_local() {
-  global $db_url, $db_type;
+  global $databases, $db_type;
 
-  $is_installed = tripal_core_is_chado_installed();
-  if ($is_installed) {
-    if (is_array($db_url)) {
-      if (isset($db_url['chado'])) {
-        return FALSE;
-      }
-    }
-    return TRUE;
+  // first check if chado is in the $databases variable of the settings.php file
+  if (array_key_exists('chado', $databases)) {
+    return FALSE;
   }
-  return FALSE;
+  
+  // check to make sure the chado schema exists
+  return tripal_core_chado_schema_exists();
 }
 
 /**
@@ -3035,7 +2991,6 @@ function tripal_core_is_tripal_node_type($chado_table) {
 function tripal_db_set_active($dbname  = 'default') {
   global $databases, $active_db;
 
-  $chado_exists = variable_get('chado_schema_exists', FALSE);
   if ($dbname ) {
     if ($dbname == 'chado') {
       db_query('set search_path to chado,public');

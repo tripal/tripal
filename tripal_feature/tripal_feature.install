@@ -25,7 +25,7 @@ function tripal_feature_requirements($phase) {
   $requirements = array();
   if ($phase == 'install') {
     // make sure chado is installed
-    if (!tripal_core_is_chado_installed()) {
+    if (!$GLOBALS["chado_is_installed"]) {
       $requirements ['tripal_feature'] = array(
           'title' => "t ripal_feature",
           'value' => "ERROR: Chado most be installed before this module can be enabled",

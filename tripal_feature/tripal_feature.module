@@ -14,14 +14,16 @@
  */
 
 require_once "api/tripal_feature.api.inc";
+require_once "api/tripal_feature.schema.api.inc";
+
 require_once "includes/tripal_feature.admin.inc";
 require_once "includes/tripal_feature.sync_features.inc";
-require_once "includes/fasta_loader.inc";
-require_once "includes/gff_loader.inc";
-require_once "includes/seq_extract.inc";
-require_once "includes/tripal_feature-delete.inc";
+require_once "includes/tripal_feature.fasta_loader.inc";
+require_once "includes/tripal_feature.gff_loader.inc";
+require_once "includes/tripal_feature.seq_extract.inc";
+require_once "includes/tripal_feature.delete.inc";
 require_once "includes/tripal_feature.form.inc";
-require_once "api/tripal_feature.schema.api.inc";
+
 
 /**
  *

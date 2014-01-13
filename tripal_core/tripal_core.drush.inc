@@ -305,7 +305,7 @@ function drush_tripal_core_tripal_update_mview() {
  * Returns the current version of chado
  */
 function drush_tripal_core_tripal_chado_version() {
-  $version = tripal_core_get_chado_version();
+  $version = $GLOBALS["exact_chado_version"];
   drush_print('Current Chado Version: ' . $version);
 }
 

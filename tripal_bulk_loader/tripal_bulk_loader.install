@@ -270,7 +270,7 @@ function tripal_bulk_loader_requirements($phase) {
   $requirements = array();
   if ($phase == 'install') {
     // make sure chado is installed
-    if (!tripal_core_is_chado_installed()) {
+    if (!$GLOBALS["chado_is_installed"]) {
       $requirements ['tripal_bulk_loader'] = array(
             'title' => "tripal_bulk_loader",
             'value' => "ERROR: Chado most be installed before this module can be enabled",

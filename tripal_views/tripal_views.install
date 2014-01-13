@@ -380,7 +380,7 @@ function tripal_views_requirements($phase) {
   $requirements = array();
   if ($phase == 'install') {
     // make sure chado is installed
-    $version = tripal_core_set_chado_version();
+    $version = tripal_get_set_chado_version(TRUE);
     if ($version == 'not installed') {
       $requirements ['tripal_views'] = array(
             'title' => "tripal_views",

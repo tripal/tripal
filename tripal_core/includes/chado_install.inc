@@ -13,7 +13,7 @@
 function tripal_core_chado_load_form() {
 
   // we want to force the version of Chado to be set properly
-  $real_version = tripal_core_set_chado_version();
+  $real_version = tripal_core_get_chado_version(TRUE);
 
   // get the effective version.  Pass true as second argument
   // to warn the user if the current version is not compatible
