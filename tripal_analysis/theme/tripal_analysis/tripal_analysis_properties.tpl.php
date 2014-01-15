@@ -3,14 +3,7 @@
 // get the analysis object and expand it to include the records from the analysisprop table
 $analysis = $variables['node']->analysis;
 $analysis = tripal_core_expand_chado_vars($analysis,'table', 'analysisprop', array('return_array' => 1));
-$analysisprops = $analysis->analysisprop;
-
-// put the properties in an array for easier access
-$properties = array();
-foreach ($analysisprops as $property) {
-  $property = tripal_core_expand_chado_vars($property,'field','analysisprop.value');
-  $properties[] = $property;
-}
+$properties = $analysis->analysisprop;
 
 if (count($properties) > 0) { ?>
   <div id="tripal_analysis-properties-box" class="tripal_analysis-info-box tripal-info-box">

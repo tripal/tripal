@@ -116,8 +116,8 @@ $cv_name, $value, $update_if_present = 0) {
   $options = array();
   $term = tripal_core_chado_select('cvterm', array('cvterm_id'), $values, $options);
   if (!$term or count($term) == 0) {
-    watchdog('tripal_core', "Cannot find property '%prop_name'.",
-    array('%prop_name' => $property), WATCHDOG_ERROR);
+    watchdog('tripal_core', "Cannot find property '%prop_name' in vocabulary '%cvname'.",
+    array('%prop_name' => $property, '%cvname' => $cv_name), WATCHDOG_ERROR);
     return FALSE;
   }
 

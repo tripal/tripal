@@ -1482,7 +1482,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
 
   // Expandable fields without value needed for criteria--------------------------------------------
   $all->expandable_fields = array();
-  if (array_key_exists('referring_tables', $table_desc)) {
+  if (array_key_exists('referring_tables', $table_desc) and $table_desc['referring_tables']) {
     $all->expandable_tables = $table_desc['referring_tables'];
   }
   else {
@@ -1620,21 +1620,24 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
             // add the foreign record to the current object in a nested manner
             $object->{$foreign_key} = $foreign_object;
             // Flatten expandable_x arrays so only in the bottom object
-            if (property_exists($object->{$foreign_key}, 'expandable_fields') and is_array($object->{$foreign_key}->expandable_fields)) {
+            if (property_exists($object->{$foreign_key}, 'expandable_fields') and 
+                is_array($object->{$foreign_key}->expandable_fields)) {
               $object->expandable_fields = array_merge(
                 $object->expandable_fields,
                 $object->{$foreign_key}->expandable_fields
               );
               unset($object->{$foreign_key}->expandable_fields);
             }
-            if (property_exists($object->{$foreign_key}, 'expandable_tables') and is_array($object->{$foreign_key}->expandable_tables)) {
+            if (property_exists($object->{$foreign_key}, 'expandable_tables') and 
+                is_array($object->{$foreign_key}->expandable_tables)) {
               $object->expandable_tables = array_merge(
                 $object->expandable_tables,
                 $object->{$foreign_key}->expandable_tables
               );
               unset($object->{$foreign_key}->expandable_tables);
             }
-            if (property_exists($object->{$foreign_key}, 'expandable_nodes') and is_array($object->{$foreign_key}->expandable_nodes)) {
+            if (property_exists($object->{$foreign_key}, 'expandable_nodes') and 
+                is_array($object->{$foreign_key}->expandable_nodes)) {
               $object->expandable_nodes = array_merge(
                 $object->expandable_nodes,
                 $object->{$foreign_key}->expandable_nodes

@@ -186,11 +186,6 @@ function tripal_analysis_theme($existing, $type, $theme, $path) {
       'variables' =>  array('node' => NULL),
       'path' => "$path/theme/tripal_analysis",
     ),
-    
-    // form theme
-    'chado_analysis_form' => array(
-      'render element' => 'form',
-    )
 
   );
 
@@ -361,6 +356,20 @@ function chado_analysis_insert($node) {
       return;
     }
     $analysis_id = $analysis['analysis_id'];
+    
+    // now add in the properties
+    $properties = tripal_core_properties_form_retreive($node, 'analysis_property');
+    foreach ($properties as $property => $elements) {
+      foreach ($elements as $rank => $value) {
+    
+        $status = tripal_analysis_insert_property($analysis_id, $property, $value, FALSE, 'analysis_property');
+        if (!$status) {
+          drupal_set_message("Error cannot add property: $property", "error");
+          watchdog('t_analysis', "Error cannot add property: %prop",
+          array('%property' => $property), WATCHDOG_ERROR);
+        }
+      }
+    }
   }
   else {
     $analysis_id = $node->analysis_id;
@@ -381,60 +390,6 @@ function chado_analysis_insert($node) {
   // use by other analysis modules that may be using this function
   $node->analysis = $analysis;
   $node->analysis_id = $analysis_id; // we need to set this for children
-
-  // now add the properties
-  $properties = array(); // stores all of the properties we need to add
-
-  // get the list of properties for easy lookup (without doing lots of database queries
-  $properties_list = array();
-  $sql = "
-      SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition
-      FROM  {cvterm} CVT
-        INNER JOIN {cv} ON CVT.cv_id = CV.cv_id
-      WHERE
-        CV.name = 'analysis_property' AND
-        NOT CVT.is_obsolete = 1
-      ORDER BY CVT.name ASC
-  ";
-  $prop_types = chado_query($sql);
-  while ($prop = $prop_types->fetchObject()) {
-    $properties_list[$prop->cvterm_id] = $prop->name;
-  }
-
-  // get the properties that should be added. Properties are in one of two forms:
-  //  1) prop_value-[type id]-[index]
-  //  2) new_value-[type id]-[index]
-  //  3) new_id, new_value
-
-  foreach ($node as $name => $value) {
-    if (preg_match('/^new_value-(\d+)-(\d+)/', $name, $matches)) {
-      $type_id = $matches[1];
-      $index = $matches[2];
-      $name = $properties_list[$type_id];
-      $properties[$name][$index] = trim($value);
-    }
-  }
-  if ($node->new_id and $node->new_value) {
-    $type_id = $node->new_id;
-    $name = $properties_list[$type_id];
-    $index = 0;
-    if (array_key_exists($name, $properties)) {
-      $index = count($properties[$name]);
-    }
-    $properties[$name][$index] = trim($node->new_value);
-  }
-  
-  // now add in the properties
-  foreach ($properties as $property => $elements) {
-    foreach ($elements as $rank => $value) {
-      $status = tripal_analysis_insert_property($analysis_id, $property, $value, FALSE, 'analysis_property');
-      if (!$status) {
-          drupal_set_message("Error cannot add property: $property", "error");
-          watchdog('t_analysis', "Error cannot add property: %prop",
-            array('%property' => $property), WATCHDOG_ERROR);
-      }
-    }
-  }
 }
 
 /**
@@ -517,67 +472,17 @@ function chado_analysis_update($node) {
   // now update the properties
   $properties = array(); // stores all of the properties we need to add
   
-  // get the list of properties for easy lookup (without doing lots of database queries
-  $properties_list = array();
-  $sql = "
-    SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition
-    FROM  {cvterm} CVT
-      INNER JOIN {cv} ON CVT.cv_id = CV.cv_id
-    WHERE CV.name = 'analysis_property' AND NOT CVT.is_obsolete = 1
-    ORDER BY CVT.name ASC
-  ";
-  $prop_types = chado_query($sql);
-  while ($prop = $prop_types->fetchObject()) {
-    $properties_list[$prop->cvterm_id] = $prop->name;
-  }
-
-  // get the properties that should be added. Properties are in one of three forms:
-  //  1) prop_value-[type id]-[index]
-  //  2) new_value-[type id]-[index]
-  //  3) new_id, new_value
-  foreach ($node as $key => $value) {
-    if (preg_match('/^prop_value-(\d+)-(\d+)/', $key, $matches)) {
-      $type_id = $matches[1];
-      $index = $matches[2];
-      $name = $properties_list[$type_id];
-      $properties[$name][$index] = trim($value);
-    }
-    if (preg_match('/^new_value-(\d+)-(\d+)/', $key, $matches)) {
-      $type_id = $matches[1];
-      $index = $matches[2];
-      $name = $properties_list[$type_id];
-      $properties[$name][$index] = trim($value);
-    }
-  }
-  if ($node->new_id and $node->new_value) {
-    $type_id = $node->new_id;
-    $name = $properties_list[$type_id];
-    $index = count($properties[$name]);
-    $properties[$name][$index] = trim($node->new_value);
-  }
-
   // now add in the properties by first removing any the analysis
   // already has and adding the ones we have
-  $sql = "
-    DELETE FROM {analysisprop} WHERE analysis_id = :analysis_id AND type_id IN (
-      SELECT CVT.cvterm_id
-      FROM  {cvterm} CVT
-        INNER JOIN {cv} ON CVT.cv_id = CV.cv_id
-      WHERE CV.name = 'analysis_property')
-  ";
-  $success = chado_query($sql, array(':analysis_id' => $analysis_id));
-  if (!$success) {
-    drupal_set_message("Cannot update analysis properties", "error");
-    watchdog('t_analysis', "Cannot update analysis properties.", array(), WATCHDOG_ERROR);
-    return;
-  }
+  tripal_core_chado_delete('analysisprop', array('analysis_id' => $analysis_id));
+  $properties = tripal_core_properties_form_retreive($node, 'analysis_property');
   foreach ($properties as $property => $elements) {
     foreach ($elements as $rank => $value) {
       $status = tripal_analysis_insert_property($analysis_id, $property, $value, FALSE, 'analysis_property');
       if (!$status) {
         drupal_set_message("Error cannot add property: '$property'", "error");
         watchdog('t_analysis', "Error cannot add property: '%prop'",
-          array('%prop' => $property), WATCHDOG_ERROR);
+        array('%prop' => $property), WATCHDOG_ERROR);
       }
     }
   }

@@ -5,14 +5,16 @@ $contact = $variables['node']->contact;
 $contact = tripal_core_expand_chado_vars($contact,'table', 'contactprop', array('return_array' => 1));
 $contactprops = $contact->contactprop;
 
-// put the properties in an array for easier access
+// put the properties in an array so we can remove the contact_description property
 $properties = array();
-foreach ($contactprops as $property) {
-  // we want to keep all properties but the contact_description as that
-  // property is shown on the base template page.
-  if($property->type_id->name != 'contact_description') {
-    $property = tripal_core_expand_chado_vars($property,'field','contactprop.value');
-    $properties[] = $property;
+if ($contactprops) {
+  foreach ($contactprops as $property) {
+    // we want to keep all properties but the contact_description as that
+    // property is shown on the base template page.
+    if($property->type_id->name != 'contact_description') {
+      $property = tripal_core_expand_chado_vars($property,'field','contactprop.value');
+      $properties[] = $property;
+    }
   }
 }
 
