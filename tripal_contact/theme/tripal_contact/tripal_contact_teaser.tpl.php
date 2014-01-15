@@ -7,9 +7,14 @@ $contact = $variables['node']->contact; ?>
     print l($node->title, "node/$node->nid", array('html' => TRUE));?>
   </div>
   <div class="tripal-contact-teaser-text tripal-teaser-text"><?php 
-    print substr($contact->description, 0, 650);
-    if (strlen($contact->description) > 650) {
-      print "... " . l("[more]", "node/$node->nid");
+    if ($contact->description) {
+      print substr($contact->description, 0, 650);
+      if (strlen($contact->description) > 650) {
+        print "... " . l("[more]", "node/$node->nid");
+      } 
+    } 
+    else {
+      print $node->title; 
     } ?>
   </div>
 </div>

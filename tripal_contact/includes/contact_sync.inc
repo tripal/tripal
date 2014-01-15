@@ -79,6 +79,7 @@ function tripal_contact_sync_contacts($job_id = NULL) {
 
   while ($contact = $results->fetchObject()) {
     $new_node = new stdClass();
+    $new_node->uid = $user->uid;
     $new_node->contact_id = $contact->contact_id;
     $new_node->type = 'chado_contact';
     $new_node->title = $contact->name;
