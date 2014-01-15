@@ -1100,3 +1100,16 @@ function tripal_feature_add_cvterm($feature_id, $cvname, $cvterm) {
   }
   return TRUE;
 }
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_feature_return_fasta($feature, $desc) {
+  $fasta  = ">" . variable_get('chado_feature_accession_prefix', 'FID') . "$feature->feature_id|$feature->name";
+  $fasta .= " $desc\n";
+  $fasta .= wordwrap($feature->residues, 50, "\n", TRUE);
+  $fasta .= "\n\n";
+  return $fasta;
+}
