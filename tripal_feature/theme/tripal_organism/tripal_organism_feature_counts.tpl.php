@@ -9,7 +9,6 @@ if(property_exists($organism, 'feature_counts')) {
   $names    = $organism->feature_counts['names'];
   $enabled  = $organism->feature_counts['enabled'];
 }
-dpm($organism);
 
 // only show this block if it is enabled
 if ($enabled) { 

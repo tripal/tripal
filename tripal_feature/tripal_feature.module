@@ -1350,58 +1350,6 @@ function tripal_feature_load_organism_feature_counts($organism) {
   }
   return array( 'types' => $ordered_types, 'names' => $names, 'enabled' => TRUE );
 }
-/**
- *
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_load_organism_feature_browser($organism) {
-
-  if (!$organism) {
-    return array();
-  }
-
-  // don't show the browser if the settings in the admin page is turned off
-  // instead return the array indicating the status of the browser
-  $show_browser = variable_get('tripal_feature_browse_setting', 'show_feature_browser');
-  if (strcmp($show_browser, 'show_feature_browser')!=0) {
-    return array('enabled' => FALSE);
-  }
-
-  // get the list of available sequence ontology terms for which
-  // we will build drupal pages from features in chado.  If a feature
-  // is not one of the specified typse we won't build a node for it.
-  $allowed_types = variable_get('chado_browser_feature_types', 'EST contig');
-  $allowed_types = preg_replace("/[\s\n\r]+/", " ", $allowed_types);
-  $so_terms = split(' ', $allowed_types);
-
-  // perform the query
-  $values = array(
-    'organism_id' => $organism->organism_id,
-    'type_id' => array(
-      'name' => $so_terms
-    ),
-  );
-  $columns = array('feature_id', 'name', 'uniquename', 'type_id');
-  $options = array(
-    'pager' => array('limit' => 10, 'element' => 0),
-    'order_by' => array('name' => 'ASC'),
-  );
-  $features = tripal_core_chado_select('feature', $columns, $values, $options);
-  $pager = theme('pager');
-
-  // add the node ids and types
-  $nsql = "SELECT nid FROM {chado_feature} WHERE feature_id = :feature_id";
-  $tsql = "SELECT name FROM {cvterm} WHERE cvterm_id = :cvterm_id";
-  foreach ($features as $feature) {
-    $node = db_query($nsql, array(':feature_id' => $feature->feature_id))->fetchObject();
-    $type = chado_query($tsql, array(':cvterm_id' => $feature->type_id))->fetchObject();
-    $feature->nid = $node->nid;
-    $feature->type_name = $type->name;
-  }
-
-  return array( 'features' => $features, 'pager' => $pager, 'enabled' => TRUE );
-}
 
 /**
  * This generates the Feature Browser which can optionally be included on library pages
@@ -1965,36 +1913,6 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
 function tripal_feature_preprocess_tripal_organism_feature_counts(&$variables, $hook) {
   $organism = $variables['node']->organism;
   $organism->feature_counts = tripal_feature_load_organism_feature_counts($organism);
-}
-
-/**
- *
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_preprocess_tripal_organism_feature_browser(&$variables, $hook) {
-  $organism = $variables['node']->organism;
-  $organism->feature_browser = tripal_feature_load_organism_feature_browser($organism);
-}
-
-/**
- * Preprocessor function for the Library Feature Browser
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_preprocess_tripal_library_feature_browser(&$variables) {
-  $library = $variables['node']->library;
-  $library->feature_browser = tripal_feature_load_library_feature_browser($library);
-}
-
-/**
- * Preprocessor function for the Analysis Feature Browser
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_preprocess_tripal_analysis_feature_browser(&$variables) {
-  $analysis = $variables['node']->analysis;
-  $analysis->feature_browser = tripal_feature_load_analysis_feature_browser($analysis);
 }
 
 /**

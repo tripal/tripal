@@ -942,32 +942,20 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   $print_errors = (isset($options['print_errors'])) ? $options['print_errors'] : FALSE;
 
   if (!is_array($values)) {
-    tripal_core_report_error(
-      'tripal_core',
-      TRIPAL_ERROR,
-      'Cannot pass non array as values for selecting.',
-      array(),
-      array('print' => $print_errors)
+    tripal_core_report_error('tripal_core', TRIPAL_ERROR, 'Cannot pass non array as values for selecting.',
+      array(), array('print' => $print_errors)
     );
     return FALSE;
   }
   if (!is_array($columns)) {
-    tripal_core_report_error(
-      'tripal_core',
-      TRIPAL_ERROR,
-      'Cannot pass non array as columns for selecting.',
-      array(),
-      array('print' => $print_errors)
+    tripal_core_report_error('tripal_core', TRIPAL_ERROR, 'Cannot pass non array as columns for selecting.',
+      array(), array('print' => $print_errors)
     );
     return FALSE;
   }
   if (count($columns)==0) {
-    tripal_core_report_error(
-      'tripal_core',
-      TRIPAL_ERROR,
-      'Cannot pass an empty array as columns for selecting.',
-      array(),
-      array('print' => $print_errors)
+    tripal_core_report_error('tripal_core', TRIPAL_ERROR, 'Cannot pass an empty array as columns for selecting.',
+      array(), array('print' => $print_errors)
     );
     return FALSE;
   }
@@ -1230,13 +1218,12 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     $sql = drupal_substr($sql, 0, -2);  // get rid of the trailing ', '
   }
 
-  // if the caller has requested the SQL rather than the results...
-  // which happens in the case of wanting to use the Drupal pager, then do so
+  // if the caller has requested the SQL rather than the results then do so
   if ($options['return_sql'] == TRUE) {
     return array('sql' => $sql, 'args' => $args);
   }
   if (array_key_exists('limit', $pager)) {
-    $resource = chado_pager_query($sql, $pager['limit'], $pager['element'], NULL, $args);
+    $resource = chado_pager_query($sql, $args, $pager['limit'], $pager['element']);
   }
   else {
     $resource = chado_query($sql, $args);
@@ -2036,77 +2023,42 @@ function tripal_core_exclude_field_from_feature_by_default() {
  * @param $query
  *   The SQL statement to execute, this is followed by a variable number of args
  *   used as substitution values in the SQL statement.
+ * @param $args
+ *   The array of arguments for the query. They keys are the placeholders
  * @param $limit
  *   The number of query results to display per page.
  * @param $element
  *   An optional integer to distinguish between multiple pagers on one page.
  * @param $count_query
  *   An SQL query used to count matching records.
- *
+ *   
  * @returns
  *   A database query result resource or FALSE if the query was not
  *   executed correctly
  *
  * @ingroup tripal_chado_api
  */
-function chado_pager_query($query, $limit, $element, $count_query) {
+function chado_pager_query($query, $args, $limit, $element, $count_query = NULL) {
 
-  // The following code is almost an exact duplicate of the
-  // Drupal pager_query function. However, substitions have
-  // been made to call chado_query rather than db_query
-
-  global $pager_page_array, $pager_total, $pager_total_items;
-  $page = isset($_GET['page']) ? $_GET['page'] : '';
-
-  // get the SQL query arguments that get substituted into modifiers later.
-  $args = func_get_args();
-  $args = array_slice($args, 4);
-  // Alternative syntax for '...'
-  if (isset($args[0]) && is_array($args[0])) {
-    $args = $args[0];
-  }
+  $page = pager_find_page();
+  $offset = $limit * $page;
 
   // Construct a count query if none was given.
   if (!isset($count_query)) {
-    $count_query = preg_replace(array('/SELECT.*?FROM /As', '/ORDER BY .*/'), array('SELECT COUNT(*) FROM ', ''), $query);
+    $count_query = preg_replace(array('/SELECT.*?FROM /As', '/ORDER BY .*/'), 
+      array('SELECT COUNT(*) FROM ', ''), $query);
   }
 
-  // Convert comma-separated $page to an array, used by other functions.
-  $pager_page_array = explode(',', $page);
-
   // We calculate the total of pages as ceil(items / limit).
-  $pager_total_items[$element] = db_result(chado_query($count_query, $args));
-  $pager_total[$element] = ceil($pager_total_items[$element] / $limit);
-  $pager_page_array[$element] = max(0, min((int) $pager_page_array[$element], ((int) $pager_total[$element]) - 1));
-
-  return chado_query_range($query, $args, $pager_page_array[$element] * $limit, $limit);
+  $pager_total_items = chado_query($count_query, $args)->fetchField();
+  
+  pager_default_initialize($pager_total_items, $limit, $element);
+  
+  $query .= ' LIMIT ' . (int) $limit . ' OFFSET ' . (int) $offset;
+  $results = chado_query($query, $args);
+  return $results;
 }
 
-/**
- * Use this function instead of db_query_range().
- *
- * @param $sql
- *   The SQL statement to execute, this is followed by a variable number of args
- *   used as substitution values in the SQL statement.
- * @param $args
- *   The SQL arguments
- * @param $from
- *   The first result row to return..
- * @param $count
- *   The maximum number of result rows to return.
- *
- * @returns
- *   A database query result resource or FALSE if the query was not
- *   executed correctly
- *
- * @ingroup tripal_chado_api
- */
-function chado_query_range($query, $args, $from, $count) {
-
-  $query .= ' LIMIT ' . (int) $count . ' OFFSET ' . (int) $from;
-
-  return chado_query($query, $args);
-}
 /**
  * Use this function instead of db_query() to avoid switching databases
  * when making query to the chado database
