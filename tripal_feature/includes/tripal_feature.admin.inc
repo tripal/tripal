@@ -84,7 +84,7 @@ function tripal_feature_admin() {
        '#type'        => 'textarea',
        '#description' => t("Enter the Sequence Ontology (SO) terms for the feature types that " .
                            "will be shown in the feature browser."),
-       '#default_value' => variable_get('chado_browser_feature_types', 'gene contig'),
+       '#default_value' => variable_get('chado_browser_feature_types', 'gene mRNA'),
     );
 
 
@@ -156,8 +156,7 @@ function tripal_feature_admin() {
     );
 
     get_tripal_feature_admin_form_taxonomy_set($form);
-    get_tripal_feature_admin_form_reindex_set($form);
-    get_tripal_feature_admin_form_cleanup_set($form);
+//    get_tripal_feature_admin_form_reindex_set($form);
 /*  }
   else {
     $form['notice'] = array(
@@ -191,11 +190,6 @@ function tripal_feature_admin_validate($form, &$form_state) {
 
   switch ($form_state['values']['op']) {
 
-    case  t('Sync all Features') :
-      tripal_add_job('Sync all features', 'tripal_feature',
-        'tripal_feature_sync_features', $job_args, $user->uid);
-      break;
-
     case t('Set/Reset Taxonomy for all feature nodes') :
       tripal_add_job('Set all feature taxonomy', 'tripal_feature',
         'tripal_features_set_taxonomy', $job_args, $user->uid);
@@ -204,11 +198,6 @@ function tripal_feature_admin_validate($form, &$form_state) {
     case t('Reindex all feature nodes') :
       tripal_add_job('Reindex all features', 'tripal_feature',
         'tripal_features_reindex', $job_args, $user->uid);
-      break;
-
-    case t('Clean up orphaned features') :
-      tripal_add_job('Cleanup orphaned features', 'tripal_feature',
-        'tripal_features_cleanup', $job_args, $user->uid);
       break;
 
     case t('Set Browser') :
@@ -230,37 +219,7 @@ function tripal_feature_admin_validate($form, &$form_state) {
   }
 
 }
-/**
- *
- *
- * @ingroup tripal_feature
- */
-function get_tripal_feature_admin_form_cleanup_set(&$form) {
-  $form['cleanup'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Clean Up'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-  );
-  $form['cleanup']['description'] = array(
-    '#type' => 'item',
-    '#value' => t("With Drupal and chado residing in different databases " .
-      "it is possible that nodes in Drupal and features in Chado become " .
-      "\"orphaned\".  This can occur if a feature node in Drupal is " .
-      "deleted but the corresponding chado feature is not and/or vice " .
-      "versa.  The Cleanup function will also remove nodes for features " .
-      "that are not in the list of allowed feature types as specified " .
-      "above.  This is helpful when a feature type needs to be " .
-      "removed but was previously present as Drupal nodes. " .
-      "Click the button below to resolve these discrepancies."),
-    '#weight' => 1,
-  );
-  $form['cleanup']['button'] = array(
-    '#type' => 'submit',
-    '#value' => t('Clean up orphaned features'),
-    '#weight' => 2,
-  );
-}
+
 
 /**
  *
@@ -591,22 +550,7 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
 
 }
 
-/**
- *
- * Remove orphaned drupal nodes
- *
- * @param $dummy
- *   Not Used -kept for backwards compatibility
- * @param $job_id
- *   The id of the tripal job executing this function
- *
- * @ingroup tripal_feature
- */
-function tripal_features_cleanup($dummy = NULL, $job_id = NULL) {
 
-  return tripal_core_clean_orphaned_nodes('feature', $job_id);
-
-}
 /**
  *  This function is an extension of the chado_feature_view by providing
  *  the markup for the feature object THAT WILL BE INDEXED.

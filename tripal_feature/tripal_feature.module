@@ -29,8 +29,7 @@ require_once "includes/tripal_feature.form.inc";
  *
  * @ingroup tripal_feature
  */
-function tripal_feature_init() {
-
+function tripal_feature_init() { 
   drupal_add_css(drupal_get_path('module', 'tripal_feature') . '/theme/css/tripal_feature.css');
   drupal_add_js(drupal_get_path('module', 'tripal_feature') . '/theme/js/tripal_feature.js');
 }
@@ -301,19 +300,24 @@ function tripal_feature_theme($existing, $type, $theme, $path) {
       'base hook' => 'node',
       'path' => "$core_path/theme",
     ),
-    'tripal_organism_feature_browser' => array(
+    'tripal_feature_alignments' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_organism_feature_browser',
-      'path' => "$path/theme/tripal_organism",
+      'template' => 'tripal_feature_alignments',
+      'path' => "$path/theme/tripal_feature",
     ),
-    'tripal_organism_feature_counts' => array(
+    'tripal_feature_analyses' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_organism_feature_counts',
-      'path' => "$path/theme/tripal_organism",
+      'template' => 'tripal_feature_analyses',
+      'path' => "$path/theme/tripal_feature",
     ),
     'tripal_feature_base' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_feature_base',
+      'path' => "$path/theme/tripal_feature",
+    ),
+    'tripal_feature_featurepos' => array(
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_feature_featurepos',
       'path' => "$path/theme/tripal_feature",
     ),
     'tripal_feature_sequence' => array(
@@ -336,16 +340,6 @@ function tripal_feature_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_feature_phenotypes',
       'path' => "$path/theme/tripal_feature",
     ),
-    'tripal_feature_featurepos' => array(
-      'arguments' => array('node' => NULL),
-      'template' => 'tripal_feature_featurepos',
-      'path' => "$path/theme/tripal_feature",
-    ),
-    'tripal_feature_featureloc_sequences' => array(
-      'variables' => array('node' => NULL),
-      'template' => 'tripal_feature_featureloc_sequences',
-      'path' => "$path/theme/tripal_feature",
-    ),
     'tripal_feature_references' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_feature_references',
@@ -361,11 +355,6 @@ function tripal_feature_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_feature_terms',
       'path' => "$path/theme/tripal_feature",
     ),
-    'tripal_feature_alignments' => array(
-      'variables' => array('node' => NULL),
-      'template' => 'tripal_feature_alignments',
-      'path' => "$path/theme/tripal_feature",
-    ),
     'tripal_feature_relationships' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_feature_relationships',
@@ -377,10 +366,29 @@ function tripal_feature_theme($existing, $type, $theme, $path) {
       'path' => drupal_get_path('module', 'tripal_feature') . '/theme'
     ),
 
+    // template for the organism page
+    'tripal_organism_feature_browser' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_organism_feature_browser',
+      'path' => "$path/theme/tripal_organism",
+    ),
+    'tripal_organism_feature_counts' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_organism_feature_counts',
+      'path' => "$path/theme/tripal_organism",
+    ),
+    
     // themed forms
     'tripal_feature_seq_extract_form' => array(
        'arguments' => array('form'),
-    )
+    ),
+    
+    // themed teaser
+    'tripal_feature_teaser' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_feature_teaser',
+      'path' => "$path/theme/tripal_feature",
+    ),
   );
   
   return $items;
@@ -505,70 +513,60 @@ function tripal_feature_block_view($delta = '') {
  * @ingroup tripal_feature
  */
 function chado_feature_insert($node) {
+  
+  $node->uniquename   = trim($node->uniquename);
+  $node->fname        = trim($node->fname);
+  $node->feature_type = trim($node->feature_type);
+  $node->residues     = trim($node->residues);
+  
   // remove spaces, newlines from residues
   $residues = preg_replace("/[\n\r\s]/", "", $node->residues);
   $obsolete = 'FALSE';
   if ($node->is_obsolete) {
     $obsolete = 'TRUE';
   }
+  
+  $feature_id = '';
 
-  // check to see if we are inserting a duplicate record.
-  $values = array(
-    'cv_id' => array(
-      'name' => 'sequence'
-    ),
-    'name' => $node->feature_type
-  );
-  $type = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
-  $values = array(
-    'organism_id' => $node->organism_id,
-    'name' => $node->fname,
-    'uniquename' => $node->uniquename,
-    'residues' => $residues,
-    'seqlen' => drupal_strlen($residues),
-    'is_obsolete' => $obsolete,
-    'type_id' => $type[0]->cvterm_id,
-    'md5checksum' => md5($residues)
-  );
-  $options = array('is_duplicate' => TRUE, 'has_record' => TRUE);
-  $exists = tripal_core_chado_select('feature', array('*'), $values, $options);
-
-  // if the record is not a duplicate then add it
-  if (!$exists) {
-    $istatus = tripal_core_chado_insert('feature', $values);
-    if (!$istatus) {
+  // if there is an feature_id in the $node object then this must be a sync so
+  // we can skip adding the feature as it is already there, although
+  // we do need to proceed with the rest of the insert
+  if (!property_exists($node, 'feature_id')) {
+    $values = array(
+      'organism_id' => $node->organism_id,
+      'name' => $node->fname,
+      'uniquename' => $node->uniquename,
+      'residues' => $residues,
+      'seqlen' => drupal_strlen($residues),
+      'is_obsolete' => $obsolete,
+      'type_id' => $type[0]->cvterm_id,
+      'md5checksum' => md5($residues)
+    );
+    $feature = tripal_core_chado_select('feature', array('*'), $values);
+    if (!$feature) {
       drupal_set_message(t('Unable to add feature.'), 'warning');
       watchdog('tripal_feature', 'Insert feature: Unable to create feature where values: %values',
         array('%values' => print_r($values, TRUE)), WATCHDOG_WARNING);
+      return;
     }
+    $feature_id = $feature->feature_id;
+    
+    // add the genbank accession and synonyms
+    chado_feature_add_synonyms($node->synonyms, $node->feature_id);
+  }
+  else {
+    $feature_id = $node->feature_id;
   }
 
-  // now get the newly added record
-  $values = array(
-    'organism_id' => $node->organism_id,
-    'uniquename' => $node->uniquename,
-    'type_id' => $type[0]->cvterm_id,
-  );
-  $feature = tripal_core_chado_select('feature', array('feature_id'), $values);
-
-  // add the genbank accession and synonyms
-  chado_feature_add_synonyms($node->synonyms, $feature[0]->feature_id);
-
-  // make sure the entry for this feature doesn't already exist in the chado_feature table
-  // if it doesn't exist then we want to add it.
-  $node_check_sql = "
-    SELECT * FROM {chado_feature}
-    WHERE feature_id = :feature_id
-  ";
-  $node_check = db_query($node_check_sql, array(':feature_id' => $feature[0]->feature_id))->fetchObject();
-  if (!$node_check) {
-    // next add the item to the drupal table
-    $sql = "
-      INSERT INTO {chado_feature} (nid, vid, feature_id, sync_date)
-      VALUES (:nid, :vid, :feature_id, :time)
-    ";
-    db_query($sql, array(':nid' => $node->nid, ':vid' => $node->vid,
-      ':feature_id' => $feature[0]->feature_id, ':time' => REQUEST_TIME));
+  // Make sure the entry for this feature doesn't already exist in the
+  // chado_feature table if it doesn't exist then we want to add it.
+  $check_org_id = chado_get_id_for_node('feature', $node->nid);
+  if (!$check_org_id) {
+    $record = new stdClass();
+    $record->nid = $node->nid;
+    $record->vid = $node->vid;
+    $record->feature_id = $feature_id;
+    drupal_write_record('chado_feature', $record);
   }
 }
 
@@ -578,6 +576,12 @@ function chado_feature_insert($node) {
  * @ingroup tripal_feature
  */
 function chado_feature_update($node) {
+  
+  $node->uniquename   = trim($node->uniquename);
+  $node->fname        = trim($node->fname);
+  $node->feature_type = trim($node->feature_type);
+  $node->residues     = trim($node->residues);
+  
   if ($node->revision) {
     // there is no way to handle revisions in Chado but leave
     // this here just to make not we've addressed it.
@@ -956,12 +960,8 @@ function tripal_feature_load_featurelocs($feature_id, $side = 'as_parent', $aggr
   while ($loc = $flresults->fetchObject()) {
     // if a drupal node exists for this feature then add the nid to the
     // results object
-    $sql = 'SELECT nid FROM {chado_feature} WHERE feature_id = :feature_id';
-
-    $ffeature = db_query($sql, array(':feature_id' => $loc->feature_id))->fetchObject();
-    $sfeature = db_query($sql, array(':feature_id' => $loc->src_feature_id))->fetchObject();
-    $loc->fnid = $ffeature->nid;
-    $loc->snid = $sfeature->nid;
+    $loc->fnid = chado_get_node_id('feature', $loc->feature_id);
+    $loc->snid = chado_get_node_id('feature', $loc->src_feature_id);
     // add the result to the array
     $featurelocs[$i++] = $loc;
   }
@@ -1118,11 +1118,6 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
   // where this feature is found.   We want to get the sequence for each
   // location and then annotate it with the parts found from the relationships
   // locations determiend above.
-  $sql = "
-    SELECT substring(residues from :start for :size) as residues
-    FROM {feature}
-    WHERE feature_id = :feature_id
-  ";
   $floc_sequences = array();
   foreach ($featurelocs as $featureloc) {
 
@@ -1171,7 +1166,18 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
 
       $floc_sequences[$src]['src'] = $src;
       $floc_sequences[$src]['type'] = $featureloc->feature_id->type_id->name;
-      $args = array(':start' => $featureloc->fmin + 1, ':size' => ($featureloc->fmax - $featureloc->fmin), ':feature_id' => $featureloc->srcfeature_id->feature_id);
+      $args = array(':feature_id' => $featureloc->srcfeature_id->feature_id);
+      $start = $featureloc->fmin + 1;
+      $size = $featureloc->fmax - $featureloc->fmin;
+      // TODO: fix the hard coded $start and $size
+      // the $start and $size variables are hard-coded in the SQL statement
+      // because the db_query function places quotes around all placeholders
+      // (e.g. :start & :size) and screws up the substring function
+      $sql = "
+        SELECT substring(residues from $start for $size) as residues
+        FROM {feature}
+        WHERE feature_id = :feature_id
+      ";
       $sequence = chado_query($sql, $args)->fetchObject();
       $residues = $sequence->residues;
       if ($featureloc->strand < 0) {
@@ -1588,7 +1594,7 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
     }
   }
 
-  $newseq .= "<div id=\"tripal_feature-featureloc_sequence-legend\">Legend: ";
+  $newseq = "<div id=\"tripal_feature-featureloc_sequence-legend\">Legend: ";
   foreach ($types as $type_name => $present) {
     $newseq .= "<span id=\"tripal_feature-legend-$type_name\" class=\"tripal_feature-legend-item tripal_feature-featureloc_sequence-$type_name\" script=\"\">$type_name</span>";
   }
@@ -1602,6 +1608,7 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
 
   // iterate through the parts. They should be in order.
   $ends = array();
+  $seqcount = 0;
   foreach ($parts as $index => $types) {
 
     // get the start for this part.  All types in this part start at the
@@ -1641,7 +1648,7 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
   }
 
   // add in rest of the sequence
-  for ($i = $pos; $i <= strlen($sequence); $i++) {
+  for ($i = $pos; $i < strlen($sequence); $i++) {
     $newseq .= $sequence{$pos};
     $seqcount++;
     if ($seqcount % 50 == 0) {
@@ -1668,7 +1675,6 @@ function tripal_feature_node_presave($node) {
   // set the title to ensure it is always unique
   switch ($node->type) {
     case 'chado_feature':
-
       $values = array('organism_id' => $node->organism_id);
       $organism = tripal_core_chado_select('organism', array('genus', 'species'), $values);
       $node->title = $node->fname . ', ' . $node->uniquename . ' (' . $node->feature_type . ') ' . $organism[0]->genus . ' ' . $organism[0]->species;
@@ -1711,14 +1717,35 @@ function tripal_feature_node_view($node, $view_mode, $langcode) {
     case 'chado_feature':
       // Show feature browser and counts
       if ($view_mode == 'full') {
+        $node->content['tripal_feature_alignments'] = array(
+          '#value' => theme('tripal_feature_alignments', array('node' => $node)),
+        );
+        $node->content['tripal_feature_analyses'] = array(
+          '#value' => theme('tripal_feature_analyses', array('node' => $node)),
+        );
         $node->content['tripal_feature_base'] = array(
           '#value' => theme('tripal_feature_base', array('node' => $node)),
+        );
+        $node->content['tripal_feature_phenotypes'] = array(
+          '#value' => theme('tripal_feature_phenotypes', array('node' => $node)),
+        );
+        $node->content['tripal_feature_properties'] = array(
+          '#value' => theme('tripal_feature_properties', array('node' => $node)),
+        );
+        $node->content['tripal_feature_references'] = array(
+          '#value' => theme('tripal_feature_references', array('node' => $node)),
+        );
+        $node->content['tripal_feature_relationships'] = array(
+          '#value' => theme('tripal_feature_relationships', array('node' => $node)),
         );
         $node->content['tripal_feature_seqence'] = array(
           '#value' => theme('tripal_feature_sequence', array('node' => $node)),
         );
         $node->content['tripal_feature_synonyms'] = array(
           '#value' => theme('tripal_feature_synonyms', array('node' => $node)),
+        );
+        $node->content['tripal_feature_terms'] = array(
+          '#value' => theme('tripal_feature_terms', array('node' => $node)),
         );
       }
       if ($view_mode == 'teaser') {
@@ -1767,7 +1794,33 @@ function tripal_feature_node_update($node) {
   }
 }
 
+/**
+ * @ingroup tripal_feature
+ */
+function tripal_feature_preprocess_tripal_feature_sequence(&$variables) {
+  // we want to provide a new variable that contains the matched features.
+  $feature = $variables['node']->feature;
+  
+  // get the featureloc src features
+  $options = array(
+    'return_array' => 1,
+    'include_fk' => array(
+      'srcfeature_id' => array(
+        'type_id' => 1
+      ),
+    ),
+  );
 
+  $feature = tripal_core_expand_chado_vars($feature, 'table', 'featureloc', $options);
+  
+  // because there are two foriegn keys in the featureloc table with the feature table
+  // we have to access the records for each by specifying the field name after the table name:
+  $ffeaturelocs = $feature->featureloc->feature_id;
+  
+  // now extract the sequences
+  $featureloc_sequences = tripal_feature_load_featureloc_sequences($feature->feature_id, $ffeaturelocs);
+  $feature->featureloc_sequences = $featureloc_sequences;
+}
 /**
  *
  *
@@ -1777,7 +1830,7 @@ function tripal_feature_preprocess_tripal_feature_relationships(&$variables) {
   // we want to provide a new variable that contains the matched features.
   $feature = $variables['node']->feature;
 
-  if (!$feature->all_relationships) {
+  if (!property_exists($feature, 'all_relationships')) {
     $feature->all_relationships = tripal_feature_get_feature_relationships($feature);
   }
 }
@@ -1791,7 +1844,7 @@ function tripal_feature_preprocess_tripal_feature_proteins(&$variables) {
   // we want to provide a new variable that contains the matched features.
   $feature = $variables['node']->feature;
 
-  if (!$feature->all_relationships) {
+  if (!property_exists($feature, 'all_relationships')) {
     $feature->all_relationships = tripal_feature_get_feature_relationships($feature);
   }
 }
@@ -1804,65 +1857,74 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
 
   // we want to provide a new variable that contains the matched features.
   $feature = $variables['node']->feature;
-  $feature = tripal_core_expand_chado_vars($feature, 'table', 'featureloc');
+  $options = array(
+    'return_array' => 1,
+    'include_fk' => array(
+      'srcfeature_id' => array(
+        'type_id' => 1,
+      ),
+      'feature_id' => array(
+        'type_id' => 1
+      ),
+    )
+  );
+  $feature = tripal_core_expand_chado_vars($feature, 'table', 'featureloc', $options);
 
   // get alignments as child
   $cfeaturelocs = $feature->featureloc->feature_id;
   if (!$cfeaturelocs) {
-     $cfeaturelocs = array();
-  }
-  elseif (!is_array($cfeaturelocs)) {
-     $cfeaturelocs = array($cfeaturelocs);
+    $cfeaturelocs = array();
   }
   // get alignment as parent
   $pfeaturelocs = $feature->featureloc->srcfeature_id;
   if (!$pfeaturelocs) {
-     $pfeaturelocs = array();
-  }
-  elseif (!is_array($pfeaturelocs)) {
-     $pfeaturelocs = array($pfeaturelocs);
+    $pfeaturelocs = array();
   }
 
   // get matched alignments (those with an itermediate 'match' or 'EST_match', etc
   $mfeaturelocs = tripal_feature_get_matched_alignments($feature);
-  $feature->matched_featurelocs = mfeaturelocs;
+  $feature->matched_featurelocs = $mfeaturelocs;
 
   // combine all three alignments into a single array for printing together in
   // a single list
   $alignments = array();
   foreach ($pfeaturelocs as $featureloc) {
-     // if type is a 'match' then ignore it. We will handle those below
-     if (preg_match('/(^match$|^.*?_match|match_part)$/', $featureloc->feature_id->type_id->name)) {
-        continue;
-     }
-     $alignment = new stdClass();
-     $alignment->record = $featureloc;
-     $alignment->name = $featureloc->feature_id->name;
-     $alignment->nid = $featureloc->feature_id->nid;
-     $alignment->type = $featureloc->feature_id->type_id->name;
-     $alignment->fmin = $featureloc->fmin;
-     $alignment->fmax = $featureloc->fmax;
-     $alignment->phase = $featureloc->phase;
-     $alignment->strand = $featureloc->strand;
-     $alignments[] = $alignment;
+    // if type is a 'match' then ignore it. We will handle those below
+    if (preg_match('/(^match$|^.*?_match|match_part)$/', $featureloc->feature_id->type_id->name)) {
+       continue;
+    }
+    $alignment = new stdClass();
+    $alignment->record = $featureloc;
+    $alignment->name = $featureloc->feature_id->name;
+    $alignment->type = $featureloc->feature_id->type_id->name;
+    $alignment->fmin = $featureloc->fmin;
+    $alignment->fmax = $featureloc->fmax;
+    $alignment->phase = $featureloc->phase;
+    $alignment->strand = $featureloc->strand;
+    $alignments[] = $alignment;
+    if (property_exists($featureloc->feature_id, 'nid')) {
+      $alignment->nid = $featureloc->feature_id->nid;
+    }
   }
   foreach ($cfeaturelocs as $featureloc) {
-     // if type is a 'match' then ignore it. We will handle those below
-     if (preg_match('/(^match$|^.*?_match|match_part)$/', $featureloc->feature_id->type_id->name)) {
-        continue;
-     }
-     $alignment = new stdClass();
-     $alignment->record = $featureloc;
-     $alignment->name = $featureloc->srcfeature_id->name;
-     $alignment->nid = $featureloc->srcfeature_id->nid;
-     $alignment->type = $featureloc->srcfeature_id->type_id->name;
-     $alignment->fmin = $featureloc->fmin;
-     $alignment->is_fmin_partial = $featureloc->is_fmin_partial;
-     $alignment->fmax = $featureloc->fmax;
-     $alignment->is_fmax_partial = $featureloc->is_fmax_partial;
-     $alignment->phase = $featureloc->phase;
-     $alignment->strand = $featureloc->strand;
-     $alignments[] = $alignment;
+    // if type is a 'match' then ignore it. We will handle those below
+    if (preg_match('/(^match$|^.*?_match|match_part)$/', $featureloc->feature_id->type_id->name)) {
+      continue;
+    }
+    $alignment = new stdClass();
+    $alignment->record = $featureloc;
+    $alignment->name = $featureloc->srcfeature_id->name;    
+    $alignment->type = $featureloc->srcfeature_id->type_id->name;
+    $alignment->fmin = $featureloc->fmin;
+    $alignment->is_fmin_partial = $featureloc->is_fmin_partial;
+    $alignment->fmax = $featureloc->fmax;
+    $alignment->is_fmax_partial = $featureloc->is_fmax_partial;
+    $alignment->phase = $featureloc->phase;
+    $alignment->strand = $featureloc->strand;
+    $alignments[] = $alignment;
+    if (property_exists($featureloc->srcfeature_id, 'nid')) {
+      $alignment->nid = $featureloc->srcfeature_id->nid;
+    }
   }
   // in matching features, the left feature is always the feature
   // provided to this function.
@@ -1875,7 +1937,6 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
      $alignment->record = $featureloc;
      $alignment->right_feature = $rfeature;
      $alignment->name = $rfeature->name;
-     $alignment->nid = $rfeature->nid;
      $alignment->type = $rfeature->type_id->name;
      $alignment->fmin = $featureloc->left_fmin;
      $alignment->is_fmin_partial = $featureloc->left_is_fmin_partial;
@@ -1890,6 +1951,9 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
      $alignment->right_phase = $featureloc->right_phase;
      $alignment->right_strand = $featureloc->right_strand;
      $alignments[] = $alignment;
+     if (property_exists($rfeature, 'nid')) {
+       $alignment->nid = $rfeature->nid;
+     }
   }
   $feature->all_featurelocs = $alignments;
 }
@@ -1899,8 +1963,8 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
  * @ingroup tripal_feature
  */
 function tripal_feature_preprocess_tripal_organism_feature_counts(&$variables, $hook) {
- // $organism = $variables['node']->organism;
-  //$organism->feature_counts = tripal_feature_load_organism_feature_counts($organism);
+  $organism = $variables['node']->organism;
+  $organism->feature_counts = tripal_feature_load_organism_feature_counts($organism);
 }
 
 /**
@@ -1909,8 +1973,8 @@ function tripal_feature_preprocess_tripal_organism_feature_counts(&$variables, $
  * @ingroup tripal_feature
  */
 function tripal_feature_preprocess_tripal_organism_feature_browser(&$variables, $hook) {
-  //$organism = $variables['node']->organism;
-  //$organism->feature_browser = tripal_feature_load_organism_feature_browser($organism);
+  $organism = $variables['node']->organism;
+  $organism->feature_browser = tripal_feature_load_organism_feature_browser($organism);
 }
 
 /**
@@ -2117,8 +2181,13 @@ function tripal_feature_job_describe_args($callback, $args) {
     $new_args['Import all and update'] = ($args[4] == 1) ? "Yes" : "No";
     $new_args['Import all and replace'] = ($args[5] == 1) ? "Yes" : "No";
     $new_args['Delete features'] = ($args[6] == 1) ? "Yes" : "No";
-    $target_organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $args[8]));
-    $new_args['Target organism'] = $target_organism[0]->genus . " " . $target_organism[0]->species;
+    if ($args[8]) {
+      $target_organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $args[8]));
+      $new_args['Target organism'] = $target_organism[0]->genus . " " . $target_organism[0]->species;
+    }
+    else {
+      $new_args['Target organism'] = '';
+    }
     $new_args['Target type'] = $args[9];
     $new_args['Create target'] = ($args[10] == 1) ? "Yes" : "No";
     $new_args['Starting line'] = $args[11];

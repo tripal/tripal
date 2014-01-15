@@ -78,16 +78,6 @@ function tripal_organism_schema() {
  */
 function tripal_organism_uninstall() {
 
-  // Get the list of nodes to remove
-  $sql_lib_id = "
-    SELECT nid, vid
-    FROM {node}
-    WHERE type='chado_organism'
-  ";
-  $result = db_query($sql_lib_id);
-  foreach ($result as $node) {
-    node_delete($node->nid);
-  }
 }
 
 /**

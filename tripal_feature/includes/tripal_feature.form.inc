@@ -210,14 +210,13 @@ function chado_feature_validate($node, &$form_state) {
   
   $result = 0;
 
-  // make sure the feature type is a real sequence ontology term
-  $type = tripal_cv_get_cvterm_by_name($node->feature_type, NULL, 'sequence');
-  if (!$type) {
-    form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
-  }
-
   // CASE A: if the nid exists then this is an update
   if (property_exists($node, 'nid')) {
+    // make sure the feature type is a real sequence ontology term
+    $type = tripal_cv_get_cvterm_by_name($node->feature_type, NULL, 'sequence');
+    if (!$type) {
+      form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
+    }
     
     // if this is an update, we want to make sure that a different feature for
     // the organism doesn't already have this uniquename. We don't want to give
@@ -249,6 +248,13 @@ function chado_feature_validate($node, &$form_state) {
     }
     else {
       // CASE C: We are validating a form for inserting a new node
+      
+      // make sure the feature type is a real sequence ontology term
+      $type = tripal_cv_get_cvterm_by_name($node->feature_type, NULL, 'sequence');
+      if (!$type) {
+        form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
+      }
+      
       // if this is an insert then we just need to make sure this name doesn't
       // already exist for this organism if it does then we need to throw an error
       $sql = "

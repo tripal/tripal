@@ -375,22 +375,15 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     $intv_read = 0;
     
     // prepare the statement used to get the cvterm for each feature.
-    $psql = "
-      PREPARE sel_cvterm_idnasy (int, text, text) AS
+    $sel_cvterm_sql = "
       SELECT CVT.cvterm_id, CVT.cv_id, CVT.name, CVT.definition,
         CVT.dbxref_id, CVT.is_obsolete, CVT.is_relationshiptype
       FROM {cvterm} CVT
         INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
         LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
-      WHERE CV.cv_id = $1 and 
-       (lower(CVT.name) = lower($2) or lower(CVTS.synonym) = lower($3))
+      WHERE CV.cv_id = :cv_id and 
+       (lower(CVT.name) = lower(:name) or lower(CVTS.synonym) = lower(:synonym))
      ";
-     $status = chado_query($psql);
-     if (!$status) {
-       watchdog('T_gff3_loader', 'cannot prepare statement \'sel_cvterm_idnasy\'.', 
-         array(), WATCHDOG_ERROR);
-       return '';
-     }  
   
     // iterate through each line of the GFF file
     print "Parsing Line $line_num (0.00%). Memory: " . number_format(memory_get_usage()) . " bytes\r";
@@ -419,7 +412,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           // we're done because this is a delete operation so break out of the loop.
           break;         
         }
-        tripal_feature_load_gff3_fasta($fh, $interval, $num_read, $intv_read, $line_num);
+        tripal_feature_load_gff3_fasta($fh, $interval, $num_read, $intv_read, $line_num, $filesize, $job);
         continue;
       }
       // if the ##sequence-region line is present then we want to add a new feature
@@ -428,8 +421,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         $rstart = $region_matches[2];
         $rend = $region_matches[3];
         if ($landmark_type) {
-          $result = chado_query("EXECUTE sel_cvterm_idnasy (:cv_id, :name, :synonym)", 
-            array(':cv_id' => $cv->cv_id, ':name' => $landmark_type, ':synonym' => $landmark_type));
+          $result = chado_query($sel_cvterm_sql, array(':cv_id' => $cv->cv_id, ':name' => $landmark_type, ':synonym' => $landmark_type));
           $cvterm = $result->fetchObject();
           if (!$cvterm) {
             watchdog('T_gff3_loader', 'cannot find feature type \'%landmark_type\' on line %line_num of the GFF file', 
@@ -492,10 +484,8 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       }
       if (strcmp($phase, '.') == 0) {
         $phase = '';
-      }
-    
-      $result = chado_query("EXECUTE sel_cvterm_idnasy (:cv_id, :name, :synonym)", 
-        array(':cv_id' => $cv->cv_id, ':name' => $type, ':synonym' => $type));
+      }    
+      $result = chado_query($sel_cvterm_sql, array(':cv_id' => $cv->cv_id, ':name' => $type, ':synonym' => $type));
   
       $cvterm = $result->fetchObject();
       if (!$cvterm) {
@@ -815,9 +805,9 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           F.uniquename, FL.strand 
         FROM {tripal_gff_temp} TGT 
           INNER JOIN {feature} F                ON TGT.feature_id = F.feature_id
-          INNER JOIN {feature_relationship} FR  ON FR.object_id = TGT.feature_id
-          INNER JOIN {cvterm} CVT               ON CVT.cvterm_id = FR.type_id  
-          INNER JOIN {featureloc} FL            ON FL.feature_id = F.feature_id    
+          INNER JOIN {feature_relationship} FR  ON FR.object_id   = TGT.feature_id
+          INNER JOIN {cvterm} CVT               ON CVT.cvterm_id  = FR.type_id  
+          INNER JOIN {featureloc} FL            ON FL.feature_id  = F.feature_id    
         WHERE CVT.name = 'part_of'
       ";
       $parents = chado_query($sql);
@@ -833,16 +823,25 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       // now set the rank of any parent/child relationships.  The order is based
       // on the fmin.  The start rank is 1.  This allows features with other
       // relationships to be '0' (the default), and doesn't interfer with the
-      // ordering defined here.        
+      // ordering defined here.  
+      $num_recs = $parents->rowCount();
+      $i = 1;
+      $interval = intval($num_recs * 0.0001);
+      if ($interval == 0) {
+        $interval = 1;
+      }
+      $percent = sprintf("%.2f", ($i / $num_recs) * 100);
+      print "Setting $i of $num_recs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
+      
       while ($parent = $parents->fetchObject()) {
         
+        if ($i % $interval == 0) {
+          $percent = sprintf("%.2f", ($i / $num_recs) * 100);
+          print "Setting $i of $num_recs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
+        }
+        
         // get the children
-        if ($connection) {      
-          $result = chado_query($sel_gffchildren_sql, array(':feature_id' => $parent->feature_id));
-        }
-        else {
-          $result = chado_query($sql, array(':feature_id' => $parent->feature_id));
-        }
+        $result = chado_query($sel_gffchildren_sql, array(':feature_id' => $parent->feature_id));
         
         // build an array of the children
         $children = array();
@@ -875,6 +874,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           tripal_core_chado_update('feature_relationship', $match, $values);
           $rank++;
         }
+        $i++;
       }
     }
   }
@@ -891,7 +891,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     return 0;
   }
 
-  print "Done\n";
+  print "\nDone\n";
   return 1;
 }
 /**
@@ -1712,15 +1712,13 @@ function tripal_feature_load_gff3_property($feature, $property, $value) {
 /*
  * 
  */
-function tripal_feature_load_gff3_fasta($fh, $interval, &$num_read, &$intv_read, &$line_num) {
-  print "Loading FASTA sequences\n";
+function tripal_feature_load_gff3_fasta($fh, $interval, &$num_read, &$intv_read, &$line_num, $filesize, $job) {
+  print "\nLoading FASTA sequences\n";
   $residues = '';
-  $sel_gfftemp_un_sql = " 
-    SELECT feature_id FROM tripal_gff_temp
-    WHERE uniquename = :uname
-  ";
   $id = NULL;
   
+  $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
+  print "Parsing Line $line_num (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
   // iterate through the remaining lines of the file
   while ($line = fgets($fh)) {
     
@@ -1741,45 +1739,49 @@ function tripal_feature_load_gff3_fasta($fh, $interval, &$num_read, &$intv_read,
     
     // if we encounter a definition line then get the name, uniquename,
     // accession and relationship subject from the definition line
-    if (preg_match('/^>/', $line)) {   
-      // if we are beginning a new sequence then save the last one we 
-      // just finished.     
-             
+    if (preg_match('/^>/', $line)) {
+      
+      // if we are beginning a new sequence then save to the database the last one we just finished.     
       if ($id) {
-        $result = chado_query($sel_gfftemp_un_sql, array(':uname' => $id));
-        if (!$result) {
+        $values = array('uniquename' => $id);
+        $result = tripal_core_chado_select('tripal_gff_temp', array('*'), $values); 
+        if (count($result) == 0) {
           watchdog('T_gff3_loader', 'Cannot find feature to assign FASTA sequence: %uname', 
-             array('%uname' => $id), WATCHDOG_WARNING); 
+             array('%uname' => $id), WATCHDOG_WARNING);
         }
-        // if we have a feature then add the residues
-        else {    
-          $feature = $result->fetchObject();    
+        else {
+          // if we have a feature then add the residues
+          $feature = $result[0];
           $values = array('residues' => $residues);
           $match = array('feature_id' => $feature->feature_id);
           tripal_core_chado_update('feature', $match, $values);
         }
       }
+      
       // get the feature ID for this ID from the tripal_gff_temp table
-      $id = preg_replace('/^>(.*)$/', '\1', $line);      
+      $id = preg_replace('/^>(.*)$/', '\1', $line);
       $residues = '';
     }
     else {
       $residues .= trim($line);
     }
   } 
+  
   // add in the last sequence
-  $result = chado_query($sel_gfftemp_un_sql, array(':uname' => $id));
-  if (!$result) {
+  $values = array('uniquename' => $id);
+  $result = tripal_core_chado_select('tripal_gff_temp', array('*'), $values); 
+  if (count($result) == 0) {
     watchdog('T_gff3_loader', 'Cannot find feature to assign FASTA sequence: %uname', 
-       array('%uname' => $id), WATCHDOG_WARNING); 
+       array('%uname' => $id), WATCHDOG_WARNING);
   }
-  // if we have a feature then add the residues
-  else {        
-    $feature = $result->fetchObject();    
+  else {
+    // if we have a feature then add the residues
+    $feature = $result[0];
     $values = array('residues' => $residues);
     $match = array('feature_id' => $feature->feature_id);
     tripal_core_chado_update('feature', $match, $values);
-  } 
+  }
+
 }
 
 /*
@@ -1878,14 +1880,30 @@ function tripal_feature_load_gff3_target($feature, $tags, $target_organism_id, $
            'name' => 'sequence',
         )
       );
+      
+      // get the cvterm_id for the target type
       $type = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
       if (count($type) == 1) {
         $t_type_id = $type[0]->cvterm_id;
       }
       else {
-        watchdog('T_gff3_loader', "The target_type attribute does not exist in the sequence ontology: %type. ", 
-          array('%type' => $gff_target_type), WATCHDOG_WARNING);
-        $t_type_id = '';
+        // check to see if this is a synonym
+        $sql = "
+          SELECT CVTS.cvterm_id
+          FROM {cvtermsynonym} CVTS
+            INNER JOIN {cvterm} CVT ON CVT.cvterm_id = CVTS.cvterm_id
+            INNER JOIN {cv} CV      ON CV.cv_id = CVT.cv_id 
+          WHERE CV.name = 'sequence' and CVTS.synonym = :synonym
+        ";
+        $synonym = chado_query($sql, array(':synonym' => $gff_target_type))->fetchObject();
+        if ($synonym) {
+          $t_type_id = $synonym->cvterm_id;
+        }
+        else {
+          watchdog('T_gff3_loader', "The target_type attribute does not exist in the sequence ontology: %type. ", 
+            array('%type' => $gff_target_type), WATCHDOG_WARNING);
+          $t_type_id = '';
+        }
       }
     }                       
     

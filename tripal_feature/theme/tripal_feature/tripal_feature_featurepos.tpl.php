@@ -1,6 +1,4 @@
 <?php
-$feature = $variables['node']->feature;
-$map_positions = array();
 
 // expand the feature object to include the records from the featurepos table
 // specify the number of features to show by default and the unique pager ID
@@ -8,6 +6,7 @@ $num_results_per_page = 25;
 $featurepos_pager_id = 0;
 
 // get the maps associated with this feature
+$feature = $variables['node']->feature;
 $options = array(  
   'return_array' => 1,
   'order_by' => array('map_feature_id' => 'ASC'),

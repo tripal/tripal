@@ -332,7 +332,7 @@ function chado_analysis_insert($node) {
   // if there is an analysis_id in the $node object then this must be a sync so
   // we can skip adding the analysis as it is already there, although
   // we do need to proceed with the rest of the insert
-  if (!property_exists($node,'analysis_id')) {
+  if (!property_exists($node, 'analysis_id')) {
 
     // Create a timestamp so we can insert it into the chado database
     $time  = $node->timeexecuted;
@@ -423,6 +423,7 @@ function chado_analysis_insert($node) {
     }
     $properties[$name][$index] = trim($node->new_value);
   }
+  
   // now add in the properties
   foreach ($properties as $property => $elements) {
     foreach ($elements as $rank => $value) {

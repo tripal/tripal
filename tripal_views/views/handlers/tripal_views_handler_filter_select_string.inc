@@ -143,7 +143,7 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
   /**
    * Set values for my options
    */
-  function expose_submit(&$form, &$form_state) {
+  function expose_submit($form, &$form_state) {
     $this->options['expose']['values_form_type'] = $form_state['values']['options']['expose']['values_form_type'];
     $this->options['expose']['select_multiple'] = $form_state['values']['options']['expose']['select_multiple'];
     $this->options['expose']['select_optional'] = $form_state['values']['options']['expose']['select_optional'];

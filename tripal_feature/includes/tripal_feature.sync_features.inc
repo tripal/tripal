@@ -5,41 +5,13 @@
  * @todo Add file header description
  */
 
-
-# This script can be run as a stand-alone script to sync all the features from chado to drupal
-// Parameter f specifies the feature_id to sync
-// -f 0 will sync all features
-
-$arguments = getopt("f:t:");
-
-if (isset($arguments['f']) and isset($arguments['t']) and $arguments['t'] == 'chado_feature') {
-  $drupal_base_url = parse_url('http://www.example.com');
-  $_SERVER['HTTP_HOST'] = $drupal_base_url['host'];
-  $_SERVER['REQUEST_URI'] = $_SERVER['SCRIPT_NAME'] = $_SERVER['PHP_SELF'];
-  $_SERVER['REMOTE_ADDR'] = NULL;
-  $_SERVER['REQUEST_METHOD'] = NULL;
-
-  require_once 'includes/bootstrap.inc';
-  drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
-
-  $feature_id = $arguments['f'];
-
-  if ($feature_id > 0) {
-    tripal_feature_sync_feature($feature_id);
-  }
-  else {
-    print "syncing all features...\n";
-    tripal_feature_sync_features();
-  }
-}
 /**
  *
  */
 function tripal_feature_sync_form() {
 
   $form['description'] = array(
-  '#type' => 'item',
-  '#value' => t("Add feature types, optionally select an organism and " .
+  '#markup' => t("Add feature types, optionally select an organism and " .
      "click the 'Sync all Features' button to create Drupal " .
      "content for features in chado. Only features of the types listed " .
      "below in the Feature Types box will be synced. You may limit the " .
@@ -57,7 +29,7 @@ function tripal_feature_sync_form() {
        "spaces or entered separately on new lines. The names must match " .
        "exactly (spelling and case) with terms in the sequence ontology"),
     '#required'    => TRUE,
-    '#default_value' => variable_get('chado_sync_feature_types', 'gene contig'),
+    '#default_value' => variable_get('chado_sync_feature_types', 'gene mRNA'),
   );
 
   // get the list of organisms
@@ -80,17 +52,49 @@ function tripal_feature_sync_form() {
     '#value' => t('Sync all Features'),
     '#weight' => 3,
   );
+  
+  get_tripal_feature_admin_form_cleanup_set($form);
 
   return $form;
 }
+
+/**
+ *
+ *
+ * @ingroup tripal_feature
+ */
+function get_tripal_feature_admin_form_cleanup_set(&$form) {
+  $form['cleanup'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Clean Up'),
+    '#collapsible' => FALSE,
+    '#collapsed' => FALSE,
+  );
+  $form['cleanup']['description'] = array(
+    '#markup' => t("With Drupal and chado residing in different databases " .
+        "it is possible that nodes in Drupal and features in Chado become " .
+        "\"orphaned\".  This can occur if a feature node in Drupal is " .
+        "deleted but the corresponding chado feature is not and/or vice " .
+        "versa.  The Cleanup function will also remove nodes for features " .
+        "that are not in the list of allowed feature types as specified " .
+        "above.  This is helpful when a feature type needs to be " .
+        "removed but was previously present as Drupal nodes. " .
+        "Click the button below to resolve these discrepancies."),
+    '#weight' => 1,
+  );
+  $form['cleanup']['button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Clean up orphaned features'),
+    '#weight' => 2,
+  );
+}
+
 /**
  *
  */
 function tripal_feature_sync_form_validate($form, &$form_state) {
   $organism_id   = $form_state['values']['organism_id'];
   $feature_types = $form_state['values']['feature_types'];
-
-  // nothing to do
 }
 /**
  *
@@ -101,20 +105,27 @@ function tripal_feature_sync_form_submit($form, &$form_state) {
 
   $organism_id   = $form_state['values']['organism_id'];
   $feature_types = $form_state['values']['feature_types'];
-
-  $job_args = array(0, $organism_id, $feature_types);
-
-  if ($organism_id) {
-    $organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $organism_id));
-    $title = "Sync all features for " . $organism[0]->genus . " " . $organism[0]->species;
+  
+  switch ($form_state['values']['op']) {
+    case  t('Sync all Features') :
+      $job_args = array(0, $organism_id, $feature_types);
+      if ($organism_id) {
+        $organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $organism_id));
+        $title = "Sync all features for " . $organism[0]->genus . " " . $organism[0]->species;
+      }
+      else {
+        $title = t('Sync all features for all synced organisms');
+      }
+      variable_set('chado_sync_feature_types', $feature_types);    
+      tripal_add_job($title, 'tripal_feature', 'tripal_feature_sync_features', $job_args, $user->uid);
+      break;
+      
+    case t('Clean up orphaned features') :
+      $job_args = array();
+      tripal_add_job('Cleanup orphaned features', 'tripal_feature',
+      'tripal_features_cleanup', $job_args, $user->uid);
+      break;
   }
-  else {
-    $title = t('Sync all features for all synced organisms');
-  }
-
-  variable_set('chado_sync_feature_types', $feature_types);
-
-  tripal_add_job($title, 'tripal_feature', 'tripal_feature_sync_features', $job_args, $user->uid);
 }
 /**
  *  
@@ -300,13 +311,13 @@ function tripal_feature_get_feature_url($node, $url_alias = NULL) {
 function tripal_feature_sync_features($max_sync = 0, $organism_id = NULL,
   $feature_types = NULL, $job_id = NULL) {
   
-  $i = 0;
-
+  global $user;
+    
   // get the list of available sequence ontology terms for which
   // we will build drupal pages from features in chado.  If a feature
   // is not one of the specified typse we won't build a node for it.
   if (!$feature_types) {
-    $allowed_types = variable_get('chado_sync_feature_types', 'gene contig');
+    $allowed_types = variable_get('chado_sync_feature_types', 'gene mRNA');
   }
   else {
     $allowed_types = $feature_types;
@@ -315,11 +326,14 @@ function tripal_feature_sync_features($max_sync = 0, $organism_id = NULL,
 
   print "Looking for features of type: $allowed_types\n";
 
-  # TODO: fix the hard-coding of variables in this SQL statement
   $so_terms = split(' ', $allowed_types);
   $where_cvt = "";
+  $args = array();
+  $i = 0;
   foreach ($so_terms as $term) {
-    $where_cvt .= "CVT.name = '$term' OR ";
+    $where_cvt .= "CVT.name = :term$i OR ";
+    $args[":term$i"] = $term;
+    $i++;
   }
   $where_cvt = drupal_substr($where_cvt, 0, drupal_strlen($where_cvt)-3);  # strip trailing 'OR'
 
@@ -327,218 +341,110 @@ function tripal_feature_sync_features($max_sync = 0, $organism_id = NULL,
   // those organisms
   $orgs = tripal_organism_get_synced();
   $where_org = "";
+  $i = 0;
   foreach ($orgs as $org) {
     if ($organism_id) {
       if ($org->organism_id and $org->organism_id == $organism_id) {
-        $where_org .= "F.organism_id = $org->organism_id OR ";
+        $where_org .= "F.organism_id = :org_id$i OR ";
+        $args[":org_id$i"] = $org->organism_id;
       }
     }
     else {
-    if ($org->organism_id) {
-      $where_org .= "F.organism_id = $org->organism_id OR ";
+      if ($org->organism_id) {
+        $where_org .= "F.organism_id = :org_id$i OR ";
+        $args[":org_id$i"] = $org->organism_id;
+      }
     }
-    }
+    $i++;
   }
   $where_org = drupal_substr($where_org, 0, drupal_strlen($where_org)-3);  # strip trailing 'OR'
 
-  // use this SQL statement to get the features that we're going to upload
+  // get the list of features that we will sync
   $sql = "
-    SELECT feature_id 
-    FROM {FEATURE} F 
-      INNER JOIN {Cvterm} CVT ON F.type_id = CVT.cvterm_id 
-      INNER JOIN {CV} on CV.cv_id = CVT.cv_id 
-    WHERE ($where_cvt) AND ($where_org) AND CV.name = 'sequence' 
+    SELECT F.*, CVT.name as cvtname, O.genus, O.species 
+    FROM {feature} F 
+      INNER JOIN {cvterm} CVT ON F.type_id     = CVT.cvterm_id 
+      INNER JOIN {cv} CV      ON CV.cv_id      = CVT.cv_id
+      INNER JOIN {organism} O ON O.organism_id = F.organism_id 
+      LEFT JOIN public.chado_feature CF ON CF.feature_id = F.feature_ID
+    WHERE 
+     ($where_cvt) AND ($where_org) AND CV.name = 'sequence' AND
+     CF.feature_id IS NULL
     ORDER BY feature_id";
-
-  // get the list of features
-  $results = chado_query($sql);
-
-  // load into ids array
-  $count = 0;
-  $ids = array();
-  while ($id = $results->fetchObject()) {
-    $ids[$count] = $id->feature_id;
-    $count++;
-  }
-
-  // make sure our vocabularies are set before proceeding
-  tripal_feature_set_vocabulary();
-
-  // pre-create the SQL statement that will be used to check
-  // if a feature has already been synced.  We skip features
-  // that have been synced
-  $sql = "SELECT * FROM {chado_feature} WHERE feature_id = :feature_id";
+  
+  print_r($sql);
+  print_r($args);
+  $results = chado_query($sql, $args);
+  
 
   // Iterate through features that need to be synced
+  $count = $results->rowCount();
   $interval = intval($count * 0.01);
   if ($interval < 1) {
     $interval = 1;
   }
-  $num_ids = sizeof($ids);
-  $i = 0;
-  foreach ($ids as $feature_id) {
-    // update the job status every 1% features
-    if ($job_id and $i % $interval == 0) {
-      tripal_job_set_progress($job_id, intval(($i/$count)*100));
+  $i = 0;  
+  $transaction = db_transaction();
+  try {
+    //  tripal_feature_set_vocabulary();
+    print "Loading feature $i of $count (0.00%). Memory: " . number_format(memory_get_usage()) . " bytes\r";
+    foreach ($results as $feature) {
+      // update the job status every 1% features
+      if ($job_id and $i % $interval == 0) {
+        $percent = sprintf("%.2f", ($i / $count) * 100);        
+        print "Parsing Line $line_num (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
+        tripal_job_set_progress($job_id, intval(($i/$count)*100));
+      }
+      $new_node = new stdClass();
+      $new_node->type = 'chado_feature';
+      $new_node->uid = $user->uid;
+      $new_node->feature_id = $feature->feature_id;
+      
+      // set these values as they are needed for constructing the title and
+      // the match the names of the fields in the feature form
+      $new_node->organism_id = $feature->organism_id;
+      $new_node->fname = $feature->name;
+      $new_node->uniquename = $feature->uniquename;
+      $new_node->feature_type = $feature->cvtname;
+      
+      node_validate($new_node, $form, $form_state);
+      if (!form_get_errors()) {
+        $node = node_submit($new_node);
+        node_save($node);
+      }
+      else {
+        watchdog('trp-fsync', "Failed to insert feature: %title", array('%title' => $new_node->title), WATCHDOG_ERROR);
+      }
+      
+      // set the taxonomy for this node
+      //  tripal_feature_set_taxonomy($node, $feature_id);
+      
+      $i++;
     }
-    // if we have a maximum number to sync then stop when we get there
-    // if not then just continue on
-    if ($max_sync and $i == $max_sync) {
-      return '';
-    }
-    if (!db_query($sql, array(':feature_id' => $feature_id))->fetchObject()) {
-
-      # parsing all the features can cause memory overruns
-      # we are not sure why PHP does not clean up the memory as it goes
-      # to avoid this problem we will call this script through an
-      # independent system call
-      print "$i of $num_ids Syncing feature id: $feature_id\n";
-      $cmd = "php " . drupal_get_path('module', 'tripal_feature') . "/includes/tripal_feature.sync_features.inc -f $feature_id -t chado_feature";
-      system($cmd);
-
-    }
-    $i++;
   }
-
-  return '';
+  catch (Exception $e) {
+    print "\n"; // make sure we start errors on new line
+    watchdog_exception('trp-fsync', $e);
+    $transaction->rollback();
+    print "FAILED: Rolling back database changes...\n";
+  }
 }
+
+
 
 /**
  *
+ * Remove orphaned drupal nodes
+ *
+ * @param $dummy
+ *   Not Used -kept for backwards compatibility
+ * @param $job_id
+ *   The id of the tripal job executing this function
  *
  * @ingroup tripal_feature
  */
-function tripal_feature_sync_feature($feature_id) {
-  //print "\tSyncing feature $feature_id\n";
+function tripal_features_cleanup($dummy = NULL, $job_id = NULL) {
 
-  global $user;
-  $create_node = 1;   // set to 0 if the node exists and we just sync and not create
+  return tripal_core_clean_orphaned_nodes('feature', $job_id);
 
-  // get the accession prefix
-  $aprefix = variable_get('chado_feature_accession_prefix', 'FID');
-
-  // if we don't have a feature_id then return
-  if (!$feature_id) {
-    drupal_set_message(t("Please provide a feature_id to sync"));
-    return '';
-  }
-
-  // get information about this feature
-  $fsql = "
-    SELECT F.feature_id, F.name, F.uniquename,O.genus, 
-      O.species,CVT.name as cvname,F.residues,F.organism_id 
-    FROM {FEATURE} F 
-      INNER JOIN {Cvterm} CVT ON F.type_id = CVT.cvterm_id 
-      INNER JOIN {Organism} O ON F.organism_id = O.organism_ID 
-    WHERE F.feature_id = :feature_id
-  ";
-  $feature = chado_query($fsql, array(':feature_id' => $feature_id))->fetchObject();
-
-  // get the synonyms for this feature
-  $synsql = "
-    SELECT S.name 
-    FROM {feature_synonym} FS 
-      INNER JOIN {synonym} S on FS.synonym_id = S.synonym_id 
-    WHERE FS.feature_id = :feature_id
-  ";
-  $synonyms = chado_query($synsql, array(':feature_id' => $feature_id));
-
-  // now add these synonyms to the feature object as a single string
-  $synstring = '';
-  while ($synonym = $synonyms->fetchObject()) {
-    $synstring .= "$synonym->name\n";
-  }
-  $feature->synonyms = $synstring;
-
-  // check to make sure that we don't have any nodes with this feature name as a title
-  // but without a corresponding entry in the chado_feature table if so then we want to
-  // clean up that node.  (If a node is found we don't know if it belongs to our feature or
-  // not since features can have the same name/title.)
-  $tsql =  "SELECT * FROM {node} N WHERE title = :title";
-  $cnsql = "SELECT * FROM {chado_feature} WHERE nid = :nid";
-  $nodes = db_query($tsql, array(':title' => $feature->name));
-  // cycle through all nodes that may have this title
-  while ($node = $nodes->fetchObject()) {
-    $feature_nid = db_query($cnsql, array(':nid' => $node->nid))->fetchObject();
-    if (!$feature_nid) {
-      drupal_set_message(t("%feature_id: A node is present but the chado_feature entry is missing... correcting", array('%feature_id' => $feature_id)));
-      node_delete($node->nid);
-    }
-  }
-
-  // check if this feature already exists in the chado_feature table.
-  // if we have a chado feature, we want to check to see if we have a node
-  $cfsql = "SELECT * FROM {chado_feature} WHERE feature_id = :feature_id";
-  // @coder-ignore: don't need to use db_rewrite_sql() since need all nodes regardless of access control
-  $nsql =  "SELECT * FROM {node} N WHERE nid = :nid";
-  $chado_feature = db_query($cfsql, array(':feature_id' => $feature->feature_id))->fetchObject();
-  if ($chado_feature) {
-    drupal_set_message(t("%feature_id: A chado_feature entry exists", array('%feature_id' => $feature_id)));
-    $node = db_query($nsql, array(':nid' => $chado_feature->nid))->fetchObject();
-    if (!$node) {
-      // if we have a chado_feature but not a node then we have a problem and
-      // need to cleanup
-      drupal_set_message(t("%feature_id: The node is missing, but has a chado_feature entry... correcting", array('%feature_id' => $feature_id)));
-      $df_sql = "DELETE FROM {chado_feature} WHERE feature_id = :feature_id";
-      db_query($df_sql, array(':feature_id' => $feature_id));
-    }
-    else {
-      drupal_set_message(t("%feature_id: A corresponding node exists", array('%feature_id' => $feature_id)));
-      $create_node = 0;
-    }
-  }
-
-  // if we've encountered an error then just return.
-  if ($error_msg = db_error()) {
-    //print "$error_msg\n";
-    return '';
-  }
-
-  // if a drupal node does not exist for this feature then we want to
-  // create one.  Note that the node_save call in this block
-  // will call the hook_submit function which
-  if ($create_node) {
-    // get the organism for this feature
-    $sql = "SELECT * FROM {organism} WHERE organism_id = :organism_id";
-    $organism = chado_query($sql, array(':organism_id' => $feature->organism_id))->fetchObject();
-
-    drupal_set_message(t("%feature_id: Creating node $feature->name", array('%feature_id' => $feature_id)));
-    $new_node = new stdClass();
-    $new_node->type = 'chado_feature';
-    $new_node->uid = $user->uid;
-    $new_node->title = "$feature->name, $feature->uniquename ($feature->cvname) $organism->genus $organism->species";
-    $new_node->fname = "$feature->name";
-    $new_node->uniquename = "$feature->uniquename";
-    $new_node->feature_id = $feature->feature_id;
-    $new_node->residues = $feature->residues;
-    $new_node->organism_id = $feature->organism_id;
-    $new_node->feature_type = $feature->cvname;
-    $new_node->synonyms = $feature->synonyms;
-
-    // validate the node and if okay then submit
-    node_validate($new_node);
-    if ($errors = form_get_errors()) {
-      print "Error encountered validating new node. Cannot sync\n";
-      foreach ($errors as $key => $msg) {        
-        watchdog('trp-fsync', "%msg", array('%msg' => $msg), 'error');
-      }
-      exit;
-    }
-    else {
-      $node = node_submit($new_node);
-      node_save($node);
-    }
-  }
-  else {
-    $node = $chado_feature;
-  }
-
-
-  // set the taxonomy for this node
-  drupal_set_message(t("%feature_id ($node->nid): setting taxonomy", array('%feature_id' => $feature_id)));
-  tripal_feature_set_taxonomy($node, $feature_id);
-
-
-  return '';
 }
-

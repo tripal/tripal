@@ -50,6 +50,8 @@ require_once "includes/chado_install.inc";
 require_once "includes/form_elements.inc";
 
 
+tripal_core_set_globals();  
+
 /**
  * Implements hook_init().
  * Used to set the search_path, create default content and set default variables.
@@ -63,18 +65,6 @@ function tripal_core_init() {
   drupal_add_js(drupal_get_path('module', 'tripal_core') . '/theme/js/tripal.js');
   drupal_add_css(drupal_get_path('module', 'tripal_core') . '/theme/css/tripal.css');
 
-  // these global variables are meant to be accessed by all Tripal
-  // modules to find the chado version installed and if Chado is local.
-  // these variables are stored as globals rather than using the drupal_set_variable
-  // functions because the Drupal functions make databaes queries and for long
-  // running loaders we don't want those queries repeatedly.
-  $GLOBALS["chado_is_installed"]  = tripal_core_is_chado_installed();
-  if ($GLOBALS["chado_is_installed"]) {
-    $GLOBALS["chado_is_local"]      = tripal_core_is_chado_local();
-    $GLOBALS["chado_version"]       = tripal_core_get_chado_version();
-    $GLOBALS["exact_chado_version"] = tripal_core_get_chado_version(TRUE);
-  }
-  
   
   // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist, and
   // only if the chado database is present.

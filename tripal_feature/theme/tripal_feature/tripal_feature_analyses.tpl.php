@@ -1,51 +1,56 @@
 <?php
 $feature = $variables['node']->feature;
-
-// expand the feature object to include the libraries from the library_feature
-// table in chado.
-$feature = tripal_core_expand_chado_vars($feature,'table','analysisfeature');
-
-// get the references. if only one reference exists then we want to convert
-// the object into an array, otherwise the value is an array
+$options = array('return_array' => 1);
+$feature = tripal_core_expand_chado_vars($feature, 'table', 'analysisfeature', $options);
 $analyses = $feature->analysisfeature;
-if (!$analyses) {
-   $analyses = array();
-} 
-elseif (!is_array($analyses)) { 
-   $analyses = array($analyses); 
-}
 
-// don't show this page if there are no libraries
+// don't show this page if there are no analyses
 if (count($analyses) > 0) { ?>
   <div id="tripal_feature-analyses-box" class="tripal_feature-info-box tripal-info-box">
     <div class="tripal_feature-info-box-title tripal-info-box-title">Analyses</div>
-    <div class="tripal_feature-info-box-desc tripal-info-box-desc">This <?php print $feature->type_id->name ?> is derived from or has results from the following analyses</div>
-    <table id="tripal_feature-analyses-table" class="tripal_feature-table tripal-table tripal-table-horz">
-      <tr>
-        <th>Analysis Name</th>
-        <th>Date Performed</th>
-      </tr> <?php
-      $i = 0; 
-      foreach ($analyses as $analysis) {
-        $class = 'tripal-table-odd-row';
-        if ($i % 2 == 0 ) {
-           $class = 'tripal-table-even-row';
-        } ?>
-        <tr class="<?php print $class ?>">
-          <td><?php 
-            $nid = chado_get_node_id('analysis', $analysis->analysis_id->analysis_id);
-            if ($nid) {
-               print "<a href=\"". url("node/".$nid) . "\">".$analysis->analysis_id->name."</a>";
-            } else {
-               print $analysis->analysis_id->name;
-            } ?>
-          </td>
-          <td> <?php print preg_replace('/\d\d:\d\d:\d\d/', '',  $analysis->analysis_id->timeexecuted) ?>
-          </td>
-        </tr> <?php
-        $i++;  
-      } ?>
-    </table> 
+    <div class="tripal_feature-info-box-desc tripal-info-box-desc">This <?php print $feature->type_id->name ?> is derived from or has results from the following analyses</div> <?php
+    
+    // the $headers array is an array of fields to use as the colum headers.
+    // additional documentation can be found here
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $headers = array('Analysis Name' ,'Date Performed');
+    
+    // the $rows array contains an array of rows where each row is an array
+    // of values for each column of the table in that row.  Additional documentation
+    // can be found here:
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $rows = array();
+    
+    foreach ($analyses as $analysis) {
+      $analysis_name = $analysis->analysis_id->name;
+      if (property_exists($analysis->analysis_id, 'nid')) {
+        $analysis_name = l($analysis_name, "node/" . $analysis->analysis_id->nid);
+      } 
+      $rows[] = array(
+        $analysis_name,
+        preg_replace('/\d\d:\d\d:\d\d/', '',  $analysis->analysis_id->timeexecuted),
+      );
+    }
+     
+    // the $table array contains the headers and rows array as well as other
+    // options for controlling the display of the table.  Additional
+    // documentation can be found here:
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $table = array(
+      'header' => $headers,
+      'rows' => $rows,
+      'attributes' => array(
+        'id' => 'tripal_feature-table-analyses',
+      ),
+      'sticky' => FALSE,
+      'caption' => '',
+      'colgroups' => array(),
+      'empty' => '',
+    );
+    
+    // once we have our table array structure defined, we call Drupal's theme_table()
+    // function to generate the table.
+    print theme_table($table); ?>
   </div><?php 
 } 
 

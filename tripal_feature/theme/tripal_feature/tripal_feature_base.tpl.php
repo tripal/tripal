@@ -43,12 +43,10 @@ $feature  = $variables['node']->feature;  ?>
     $feature->type_id->name
   );
   // Organism row
+  $organism = $feature->organism_id->genus ." " . $feature->organism_id->species ." (" .$feature->organism_id->common_name .")";
   if ($feature->organism_id->nid) {
     $organism = l("<i>" . $feature->organism_id->genus . " " . $feature->organism_id->species . "</i> (" .$feature->organism_id->common_name .")", "node/".$feature->organism_id->nid, array('html' => TRUE));
   } 
-  else {
-    $organism = $feature->organism_id->genus ." " . $feature->organism_id->species ." (" .$feature->organism_id->common_name .")";
-  }
   $rows[] = array(
     array(
       'data' => 'Organism',

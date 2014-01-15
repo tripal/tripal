@@ -12,6 +12,23 @@ define('TRIPAL_NOTICE',5);
 define('TRIPAL_INFO',6);
 define('TRIPAL_DEBUG',7);
 
+
+/**
+ * This function is used to set the global Chado variables
+ */
+function tripal_core_set_globals() {
+  // these global variables are meant to be accessed by all Tripal
+  // modules to find the chado version installed and if Chado is local.
+  // these variables are stored as globals rather than using the drupal_set_variable
+  // functions because the Drupal functions make databaes queries and for long
+  // running loaders we don't want those queries repeatedly.
+  $GLOBALS["chado_is_installed"]  = tripal_core_is_chado_installed();
+  if ($GLOBALS["chado_is_installed"]) {
+    $GLOBALS["chado_is_local"]      = tripal_core_is_chado_local();
+    $GLOBALS["chado_version"]       = tripal_core_get_chado_version();
+    $GLOBALS["exact_chado_version"] = tripal_core_get_chado_version(TRUE);
+  }
+}
 /**
  * Provide better error notice for Tripal
  * @param $type
@@ -1449,7 +1466,7 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
  */
 function tripal_core_generate_chado_var($table, $values, $base_options = array()) {
   $all = new stdClass();
-
+  
   $return_array = 0;
   if (array_key_exists('return_array', $base_options)) {
     $return_array = 1;
@@ -1559,9 +1576,10 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
         $sql = "
           SELECT $table_primary_key, nid
           FROM {chado_$table}
-          WHERE $table_primary_key = :$table_primary_key";
+          WHERE $table_primary_key = :$table_primary_key
+        ";
         $mapping = db_query($sql, array(":$table_primary_key" => $object->{$table_primary_key}))->fetchObject();
-        if ($mapping->{$table_primary_key}) {
+        if ($mapping and $mapping->$table_primary_key) {
           $object->nid = $mapping->nid;
           $object->expandable_nodes[] = $table;
         }
@@ -1609,28 +1627,30 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
             if (is_array($include_fk)) {
               $options['include_fk'] = $include_fk[$foreign_key];
             }
+
             $foreign_object = tripal_core_generate_chado_var($foreign_table, $foreign_values, $options);
+            
             // add the foreign record to the current object in a nested manner
             $object->{$foreign_key} = $foreign_object;
             // Flatten expandable_x arrays so only in the bottom object
-            if (is_array($object->{$foreign_key}->expandable_fields)) {
+            if (property_exists($object->{$foreign_key}, 'expandable_fields') and is_array($object->{$foreign_key}->expandable_fields)) {
               $object->expandable_fields = array_merge(
-              $object->expandable_fields,
-              $object->{$foreign_key}->expandable_fields
+                $object->expandable_fields,
+                $object->{$foreign_key}->expandable_fields
               );
               unset($object->{$foreign_key}->expandable_fields);
             }
-            if (is_array($object->{$foreign_key}->expandable_tables)) {
+            if (property_exists($object->{$foreign_key}, 'expandable_tables') and is_array($object->{$foreign_key}->expandable_tables)) {
               $object->expandable_tables = array_merge(
-              $object->expandable_tables,
-              $object->{$foreign_key}->expandable_tables
+                $object->expandable_tables,
+                $object->{$foreign_key}->expandable_tables
               );
               unset($object->{$foreign_key}->expandable_tables);
             }
-            if (is_array($object->{$foreign_key}->expandable_nodes)) {
+            if (property_exists($object->{$foreign_key}, 'expandable_nodes') and is_array($object->{$foreign_key}->expandable_nodes)) {
               $object->expandable_nodes = array_merge(
-              $object->expandable_nodes,
-              $object->{$foreign_key}->expandable_nodes
+                $object->expandable_nodes,
+                $object->{$foreign_key}->expandable_nodes
               );
               unset($object->{$foreign_key}->expandable_nodes);
             }
@@ -1697,7 +1717,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
  *     multiple records exist.
  *   - include_fk:
  *     an array of FK relationships to follow. By default, the
- *     tripal_core_chado_select function will follow all FK relationships but this
+ *     tripal_core_expand_chado_vars function will follow all FK relationships but this
  *     may generate more queries then is desired slowing down this function call when
  *     there are lots of FK relationships to follow.  Provide an array specifying the
  *     fields to include.  For example, if expanding a property table (e.g. featureprop)
@@ -1817,21 +1837,22 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
           // generate a new object for this table using the FK values in the base table.
           $new_options = $table_options;
           $foreign_object = tripal_core_generate_chado_var($foreign_table, array($left => $object->{$right}), $new_options);
-
+          
           // if the generation of the object was successful, update the base object to include it.
           if ($foreign_object) {
-            // in the case where the foreign key relationships exists more
-            // than once with the same table we want to alter the array structure. rather than
-            // add the object with a key of the table name, we will add the FK field name in between
+            // in the case where the foreign key relationship exists more
+            // than once with the same table we want to alter the array structure to
+            // include the field name.
             if (count($foreign_table_desc['foreign keys'][$base_table]['columns']) > 1) {
-              if (!is_object($object->{$foreign_table})) {
+              if (!property_exists($object, $foreign_table)) {
                 $object->{$foreign_table} = new stdClass();
               }
               $object->{$foreign_table}->{$left} = $foreign_object;
               $object->expanded = $to_expand;
+              
             }
             else {
-              if (!property_exists($object, $foreign_table) or !is_object($object->{$foreign_table})) {
+              if (!property_exists($object, $foreign_table)) {
                 $object->{$foreign_table} = new stdClass();
               }
               $object->{$foreign_table} = $foreign_object;
@@ -1840,8 +1861,11 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
           }
           // if the object returned is NULL then handle that
           else {
+            // in the case where the foreign key relationship exists more
+            // than once with the same table we want to alter the array structure to
+            // include the field name.
             if (count($foreign_table_desc['foreign keys'][$base_table]['columns']) > 1) {
-              if (!is_object($object->{$foreign_table})) {
+              if (!property_exists($object, $foreign_table)) {
                 $object->{$foreign_table} = new stdClass();
               }
               $object->{$foreign_table}->{$left} = NULL;
@@ -1912,8 +1936,8 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
       return FALSE;
   }
 
-  //move extended array downwards-------------------------------------------------------------------
-  if (!$object->expanded) {
+  // move extended array downwards
+  if (!property_exists($object, 'expanded')) {
     //if there's no extended field then go hunting for it
     foreach ( (array)$object as $field_name => $field_value) {
       if (is_object($field_value)) {
@@ -1925,7 +1949,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
     }
   }
   //try again becasue now we might have moved it down
-  if ($object->expanded) {
+  if (property_exists($object, 'expanded')) {
     $expandable_name = 'expandable_' . $type . 's';
     if ($object->{$expandable_name}) {
       $key_to_remove = array_search($object->expanded, $object->{$expandable_name});
@@ -2762,7 +2786,7 @@ function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FA
  * @ingroup tripal_core_api
  */
 function tripal_core_get_chado_table_schema($table) {
-
+  
   // first get the chado version that is installed
   $v = $GLOBALS["chado_version"];
 
