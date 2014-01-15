@@ -772,28 +772,26 @@ function chado_pub_update($node) {
  *   The node with the information to be loaded into the database
  *
  */
-function chado_pub_load($node) {
-  // get the feature details from chado
-  $pub_id = chado_get_id_for_node('pub', $node->nid);
-
-  $values = array('pub_id' => $pub_id);
-  $pub = tripal_core_generate_chado_var('pub', $values);
-
-  // expand the 'text' fields as those aren't included by default
-  // and they really shouldn't be so large to cause problems
-  if (is_array($pub) or is_object($pub)) {
+function chado_pub_load($nodes) {
+  
+  foreach ($nodes as $nid => $node) {
+    // find the pub and add in the details
+    $pub_id = chado_get_id_for_node('pub', $nid);
+  
+    // get the pub
+    $values = array('pub_id' => $pub_id);
+    $pub = tripal_core_generate_chado_var('pub', $values);
+    
+    // expand the 'text' fields as those aren't included by default
+    // and they really shouldn't be so large to cause problems
     $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.title');
     $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.volumetitle');
     $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.uniquename');
+    
+    // set the URL path
+    $nodes[$nid]->path = "pub/$pub_id";
+    $nodes[$nid]->pub = $pug;
   }
-
-  // set the URL path
-  $path = "pub/$pub_id";
-
-  $additions = new stdClass();
-  $additions->pub = $pub;
-  return $additions;
-
 }
 
 /**
@@ -946,14 +944,15 @@ function tripal_pub_node_insert($node) {
  * @param $node
  * @param $types
  */
-function tripal_pub_node_load($node, $types) {
+function tripal_pub_node_load($nodes, $types) {
+
   // we want the publications to always have a URL of http://[base url]/pub/[pub id]
   // where [pub id] is the Chado publication ID.  This will allow for easy linking
   // into the publication without needing to know the node.  Of course if you know the
   // node that will still work too (e.g. http://[base url]/node/[node id]
   // so the nodeapi function ensures that the URL path is set after insert or update
   // of the node and when the node is loaded if it hasn't yet been set.
-  if ($node->type == 'chado_pub') {
+  if (count(array_intersect(array('chado_pub'), $types))) {
     if (!$node->path) {
       $pub_id = chado_get_id_for_node('pub', $node->nid);
       $path = tripal_pub_set_pub_url($node, $pub_id);

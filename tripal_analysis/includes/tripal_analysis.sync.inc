@@ -243,7 +243,7 @@ function tripal_analysis_sync_analyses($analysis_id = NULL, $job_id = NULL) {
         }
       }
       else {
-        print "Failed to insert organism $organism->common_name\n";
+        print "Failed to insert analysis $analysis->name\n";
       }
     }
     else {

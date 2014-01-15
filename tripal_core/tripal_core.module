@@ -38,11 +38,11 @@
 
 require_once "api/tripal_core_chado.api.inc";
 require_once "api/tripal_core_files.api.inc";
-require_once "api/tripal_core_ahah.api.inc";
 require_once "api/tripal_core_custom_tables.api.inc";
 require_once "api/tripal_core_jobs.api.inc";
 require_once "api/tripal_core_mviews.api.inc";
 require_once "api/tripal_core_misc.api.inc";
+require_once "api/tripal_core_properties.api.inc";
 require_once "includes/jobs.inc";
 require_once "includes/mviews.inc";
 require_once "includes/custom_tables.inc";
@@ -388,12 +388,12 @@ function tripal_core_permission() {
  *
  * @ingroup tripal_core
  */
-function tripal_core_theme() {
+function tripal_core_theme($existing, $type, $theme, $path) {
   return array(
     'tripal_core_customize' => array(
       'arguments' => array('job_id' => NULL),
       'template' => 'tripal_core_customize',
-      'path' => drupal_get_path('module', 'tripal_core') . '/theme'
+      'path' => "$path/theme"
     ),
     'theme_file_upload_combo' => array(
       'render element' => 'element',
@@ -404,12 +404,17 @@ function tripal_core_theme() {
     'tripal_core_jobs_help' => array(
       'template' => 'tripal_core_jobs_help',
       'variables' =>  array(NULL),
-      'path' => drupal_get_path('module', 'tripal_core') . '/theme'
+      'path' => "$path/theme"
     ),
     'tripal_core_customtables_help' => array(
       'template' => 'tripal_core_customtables_help',
       'variables' =>  array(NULL),
-      'path' => drupal_get_path('module', 'tripal_core') . '/theme'
+      'path' => "$path/theme"
+    ),
+    
+    // form theme
+    'tripal_core_properties_form' => array(
+      'render element' => 'form',
     ),
   );
 }

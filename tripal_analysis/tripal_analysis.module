@@ -484,9 +484,6 @@ function chado_analysis_update($node) {
   $node->sourceversion = trim($node->sourceversion);
   $node->sourceuri = trim($node->sourceuri);
 
-  if ($node->revision) {
-    // TODO -- decide what to do about revisions
-  }
   // Create a timestamp so we can insert it into the chado database
   $time = $node->timeexecuted;
   $month = $time['month'];

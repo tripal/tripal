@@ -188,7 +188,7 @@ function chado_analysis_form($node, &$form_state) {
     '#title' => t('Analysis Details'),
     '#description' => t('You may add additional properties by
       selecting a property type from the dropdown and adding text.  You may add 
-      as many properties as desired by clicking the plus button on the right.  To 
+      as many properties as desired by clicking the add button on the right.  To 
       remove a property, click the minus button.  If a property is not available
       you may add it by ' . l('adding the term', 'admin/tripal/tripal_cv/cvterm/add') . '
       to the <b>analysis_property</b> vocabulary within the <b>tripal</b> database'),
@@ -203,7 +203,6 @@ function chado_analysis_form($node, &$form_state) {
   // get the analysis properties
   $properties_select = array();
   $properties_select[] = 'Select a Property';
-  $properties_list = array();
   $sql = "
     SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition
     FROM  {cvterm} CVT
@@ -216,7 +215,6 @@ function chado_analysis_form($node, &$form_state) {
   $prop_types = chado_query($sql);
   while ($prop = $prop_types->fetchObject()) {
     $properties_select[$prop->cvterm_id] = $prop->name;
-    $properties_list[$prop->cvterm_id] = $prop;
   }
   
   // this array keeps track of all properties we have and allows the functions
@@ -303,8 +301,8 @@ function chado_analysis_node_form_add_new_empty_props(&$form, &$form_state, $pro
     // but we need it or Drupal will run the default validate anyway.
     // we also set #limit_validation_errors to empty so fields that
     // are required that don't have values won't generate warnings. 
-    '#submit'   => array('chado_anslysis_node_form_props_button_submit'),
-    '#validate' => array('chado_anslysis_node_form_props_button_validate'),
+    '#submit'   => array('chado_analysis_node_form_props_button_submit'),
+    '#validate' => array('chado_analysis_node_form_props_button_validate'),
     '#limit_validation_errors' => array(array('new_id')),
   );
 }
@@ -314,7 +312,7 @@ function chado_analysis_node_form_add_new_empty_props(&$form, &$form_state, $pro
  * the validate and submit routines on the form button. Therefore, this function
  * only needs to tell Drupal to rebuild the form
  */
-function chado_anslysis_node_form_props_button_validate($form, &$form_state){
+function chado_analysis_node_form_props_button_validate($form, &$form_state){
   if (array_key_exists('triggering_element', $form_state) and 
       $form_state['triggering_element']['#name'] == 'add' and
       $form_state['input']['new_id'] == 0 ){
@@ -326,7 +324,7 @@ function chado_anslysis_node_form_props_button_validate($form, &$form_state){
 /**
  * This function is just a dummy to override the default form submit on ajax calls for buttons
  */
-function chado_anslysis_node_form_props_button_submit($form, &$form_state){
+function chado_analysis_node_form_props_button_submit($form, &$form_state){
   // do nothing
 }
 /**
@@ -407,8 +405,8 @@ function chado_analysis_node_form_add_new_props(&$form, &$form_state, &$ranks, &
         // but we need it or Drupal will run the default validate anyway.
         // we also set #limit_validation_errors to empty so fields that
         // are required that don't have values won't generate warnings.
-        '#submit'   => array('chado_anslysis_node_form_props_button_submit'),
-        '#validate' => array('chado_anslysis_node_form_props_button_validate'),
+        '#submit'   => array('chado_analysis_node_form_props_button_submit'),
+        '#validate' => array('chado_analysis_node_form_props_button_validate'),
         '#limit_validation_errors' => array(),
       );
     }
@@ -468,8 +466,8 @@ function chado_analysis_node_form_add_new_props(&$form, &$form_state, &$ranks, &
       // but we need it or Drupal will run the default validate anyway.
       // we also set #limit_validation_errors to empty so fields that
       // are required that don't have values won't generate warnings.
-      '#submit'   => array('chado_anslysis_node_form_props_button_submit'),
-      '#validate' => array('chado_anslysis_node_form_props_button_validate'),
+      '#submit'   => array('chado_analysis_node_form_props_button_submit'),
+      '#validate' => array('chado_analysis_node_form_props_button_validate'),
       '#limit_validation_errors' => array(),
     );
 
@@ -554,8 +552,8 @@ function chado_analysis_node_form_add_analysisprop_table_props(&$form, $form_sta
       // but we need it or Drupal will run the default validate anyway.
       // we also set #limit_validation_errors to empty so fields that
       // are required that don't have values won't generate warnings.
-      '#submit'   => array('chado_anslysis_node_form_props_button_submit'),
-      '#validate' => array('chado_anslysis_node_form_props_button_validate'),
+      '#submit'   => array('chado_analysis_node_form_props_button_submit'),
+      '#validate' => array('chado_analysis_node_form_props_button_validate'),
       '#limit_validation_errors' => array(),
     );
   }
