@@ -314,7 +314,7 @@ function chado_project_form(&$node, $form_state) {
  *
  * @ingroup tripal_project
  */
-function chado_project_validate($node) {
+function chado_project_validate($node, $form, &$form_state) {
   $project = 0;
   // check to make sure the name on the project is unique
   // before we try to insert into chado.

@@ -260,7 +260,7 @@ function tripal_pub_set_pub_url($node, $pub_id) {
   $url_alias = "pub/$pub_id";
 
   // remove any previous alias
-  db_query("DELETE FROM {url_alias} WHERE src = :src", array(':src' => $node_url));
+  db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => $node_url));
   // add the new alias
   $path_alias = array("source" => $node_url, "alias" => $url_alias);
   path_save($path_alias);
