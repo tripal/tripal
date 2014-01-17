@@ -355,14 +355,14 @@ function tripal_core_delete_property_by_id($basetable, $record_id) {
  *   value should be that of the contact_id.  This is the record from which currently assigned
  *   properties will be retrieved.
  * @param $exclude
- *   An array of cvterms to exclude when retreiving terms already saved in the database.
+ *   An optional array of cvterms to exclude when retreiving terms already saved in the database.
  *   Use this array when properties are present but should be handled elsewhere.
  *   For example, for contacts, the description field is stored as a property because 
  *   the actual field is only 255 characters. The 'contact_description' therefore should
  *   not be shown in the list of properties, even if present, because it is handled by
  *   a different form element.
  * @param $include
- *   An array of terms to pre-populate in the form.  This argument can be used to
+ *   An optional array of terms to pre-populate in the form.  This argument can be used to
  *   add a default set of pre-populated properties regardless if they exist in the database
  *   or not.  The array should be of the following form:
  *     array(
@@ -372,12 +372,14 @@ function tripal_core_delete_property_by_id($basetable, $record_id) {
  *     );
  *   The 'cvterm' key should have as a value an object with these properties: 'name', 'cvterm_id', 'definition'. 
  * @param $instructions
- *   An additional set of instructions for the form properties.
- *   
+ *   An optional additional set of instructions for the form properties.
+ * @param $fset_title
+ *   A title for the property field set.  The default is 'Additional Details'.
  * @ingroup tripal_properties_api
  */
 function tripal_core_properties_form(&$form, &$form_state, $prop_table, $id_field, $cv_name,
-    $available_props, $id = NULL, $exclude = array(), $include = array(), $instructions = '') {
+    $available_props, $id = NULL, $exclude = array(), $include = array(), $instructions = '', 
+    $fset_title = 'Additional Details') {
   
   $d_removed      = array(); // lists removed properties
   $num_new        = 0;  // the number of new rows
@@ -397,7 +399,7 @@ function tripal_core_properties_form(&$form, &$form_state, $prop_table, $id_fiel
   
   $form['properties'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Additional Details'),
+    '#title' => t($fset_title),
     '#description' => t('You may add additional properties by
       selecting a property type from the dropdown and adding text.  You may add
       as many properties as desired by clicking the add button on the right.  To

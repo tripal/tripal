@@ -202,9 +202,10 @@ function chado_analysis_form($node, &$form_state) {
   }
   
   $exclude = array();
+  $include = array();
   $instructions = t('To add additional properties to the drop down. ' . l("Add terms to the analysis_property vocabulary", "admin/tripal/chado/tripal_cv/cvterm/add") . ".");
   tripal_core_properties_form($form, $form_state, 'analysisprop', 'analysis_id', 'analysis_property',
-    $properties, $analysis_id, $exclude, $instructions);
+    $properties, $analysis_id, $exclude, $include, $instructions, 'Properties');
 
   return $form;
 }
@@ -215,7 +216,7 @@ function chado_analysis_form($node, &$form_state) {
  */
 function chado_analysis_validate($node, $form, &$form_state) {
   // use the analysis parent to validate the node
-  tripal_analysis_validate($node, $form_state);
+  tripal_analysis_validate($node, $form, $form_state);
 }
 
 /**

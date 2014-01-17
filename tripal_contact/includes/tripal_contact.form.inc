@@ -151,8 +151,9 @@ function chado_contact_form(&$node, $form_state) {
   }
   
   $exclude = array('contact_description');
+  $include = array();
   tripal_core_properties_form($form, $form_state, 'contactprop', 'contact_id', 'tripal_contact',
-    $properties, $contact_id, $exclude, '');
+    $properties, $contact_id, $exclude, $include, '', 'Properties');
    
   return $form;
 }
@@ -167,7 +168,6 @@ function chado_contact_validate($node, $form, &$form_state) {
   $node->title          = trim($node->title);
   $node->description    = trim($node->description);
  
-  
   // if this is a delete then don't validate
   if($node->op == 'Delete') {
     return;
@@ -180,7 +180,7 @@ function chado_contact_validate($node, $form, &$form_state) {
   }
   
   // Validating for an update
-  if (!property_exists($node,'nid')) {    
+  if (property_exists($node, 'nid')) {    
     // get the existing node    
     $values = array('contact_id' => $node->contact_id);      
     $result = tripal_core_chado_select('contact', array('*'), $values);
@@ -191,7 +191,7 @@ function chado_contact_validate($node, $form, &$form_state) {
       $values = array('name' => $node->title);
       $result = tripal_core_chado_select('contact', array('contact_id'), $values);
       if ($result and count($result) > 0) {
-        form_set_error('title', 'Cannot update the contact with this contact name. An contact with this name already exists.');
+        form_set_error('title', 'Cannot update the contact with this contact name. A contact with this name already exists.');
         return;
       }  
     }
@@ -204,7 +204,7 @@ function chado_contact_validate($node, $form, &$form_state) {
     );
     $contact = tripal_core_chado_select('contact', array('contact_id'), $values);
     if ($contact and count($contact) > 0) {
-      form_set_error('title', 'Cannot add the contact with this name. An contact with these values already exists.');
+      form_set_error('title', 'Cannot add the contact with this name. A contact with these values already exists.');
       return;
     }
   }

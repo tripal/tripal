@@ -213,10 +213,10 @@ function chado_pub_form($node, $form_state) {
   // add in the properties fields. The 'Citation' term is special because it serves
   // both as a property and as the uniquename for the publiation table so we exclude it
   // as it shouldn't be selected as a property
-  $exclude = array("Citation");
+  $exclude = array("Citation"); 
   $instructions = '';
   tripal_core_properties_form($form, $form_state, 'pubprop', 'pub_id', 'tripal_pub',
-    $properties, $pub_id, $exclude, $more_props, $instructions);
+    $properties, $pub_id, $exclude, $more_props, $instructions, 'Properties');
 
   return $form;
 
