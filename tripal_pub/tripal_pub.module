@@ -218,29 +218,14 @@ function tripal_pub_theme($existing, $type, $theme, $path) {
       'path' => "$core_path/theme",
     ),
     // node templates
-    'tripal_pub_base' => array(
-      'arguments' => array('node' => NULL),
-      'template' => 'tripal_pub_base',
-      'path' => "$path/theme/tripal_pub",
-    ),
-    'tripal_pub_properties' => array(
-      'arguments' => array('node' => NULL),
-      'template' => 'tripal_pub_properties',
-      'path' => "$path/theme/tripal_pub",
-    ),
     'tripal_pub_authors' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_pub_authors',
       'path' => "$path/theme/tripal_pub",
     ),
-    'tripal_pub_references' => array(
+    'tripal_pub_base' => array(
       'arguments' => array('node' => NULL),
-      'template' => 'tripal_pub_references',
-      'path' => "$path/theme/tripal_pub",
-    ),
-    'tripal_pub_relationships' => array(
-      'arguments' => array('node' => NULL),
-      'template' => 'tripal_pub_relationships',
+      'template' => 'tripal_pub_base',
       'path' => "$path/theme/tripal_pub",
     ),
     'tripal_pub_featuremaps' => array(
@@ -263,6 +248,21 @@ function tripal_pub_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_pub_projects',
       'path' => "$path/theme/tripal_pub",
     ),
+    'tripal_pub_properties' => array(
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_pub_properties',
+      'path' => "$path/theme/tripal_pub",
+    ),
+    'tripal_pub_references' => array(
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_pub_references',
+      'path' => "$path/theme/tripal_pub",
+    ),
+    'tripal_pub_relationships' => array(
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_pub_relationships',
+      'path' => "$path/theme/tripal_pub",
+    ),
     'tripal_pub_stocks' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_pub_stocks',
@@ -273,7 +273,7 @@ function tripal_pub_theme($existing, $type, $theme, $path) {
     'tripal_pub_help' => array(
       'template' => 'tripal_pub_help',
       'arguments' =>  array(NULL),
-      'path' => $path,
+      'path' => "$path/theme",
     ),
 
     // themed forms
@@ -840,7 +840,7 @@ function tripal_pub_preprocess_tripal_pub_relationships(&$variables) {
   // query, therefore we will manually perform the query
   $sql = "
     SELECT P.title, P.pub_id, CP.nid, CVT.name as rel_type
-    FROM pub_relationship PR
+    FROM {pub_relationship} PR
       INNER JOIN {pub} P            ON PR.object_id = P.pub_id
       INNER JOIN {cvterm} CVT       ON PR.type_id   = CVT.cvterm_id
       LEFT JOIN public.chado_pub CP ON P.pub_id     = CP.pub_id
@@ -849,7 +849,7 @@ function tripal_pub_preprocess_tripal_pub_relationships(&$variables) {
   $as_subject = chado_query($sql, array(':subject_id' => $pub->pub_id));
   $sql = "
     SELECT P.title, P.pub_id, CP.nid, CVT.name as rel_type
-    FROM pub_relationship PR
+    FROM {pub_relationship} PR
       INNER JOIN {pub} P            ON PR.subject_id = P.pub_id
       INNER JOIN {cvterm} CVT       ON PR.type_id    = CVT.cvterm_id
       LEFT JOIN public.chado_pub CP ON P.pub_id      = CP.pub_id
@@ -927,8 +927,35 @@ function tripal_pub_node_view($node, $view_mode, $langcode) {
     case 'chado_pub':
       // Show feature browser and counts
       if ($view_mode == 'full') {
+        $node->content['tripal_pub_authors'] = array(
+          '#value' => theme('tripal_pub_authors', array('node' => $node)),
+        );
         $node->content['tripal_pub_base'] = array(
           '#value' => theme('tripal_pub_base', array('node' => $node)),
+        );
+        $node->content['tripal_pub_featuremaps'] = array(
+          '#value' => theme('tripal_pub_featuremaps', array('node' => $node)),
+        );
+        $node->content['tripal_pub_features'] = array(
+          '#value' => theme('tripal_pub_features', array('node' => $node)),
+        );
+        $node->content['tripal_pub_libraries'] = array(
+          '#value' => theme('tripal_pub_libraries', array('node' => $node)),
+        );
+        $node->content['tripal_pub_projects'] = array(
+          '#value' => theme('tripal_pub_projects', array('node' => $node)),
+        );
+        $node->content['tripal_pub_properties'] = array(
+          '#value' => theme('tripal_pub_properties', array('node' => $node)),
+        );
+        $node->content['tripal_pub_references'] = array(
+          '#value' => theme('tripal_pub_references', array('node' => $node)),
+        );
+        $node->content['tripal_pub_relationships'] = array(
+          '#value' => theme('tripal_pub_relationships', array('node' => $node)),
+        );
+        $node->content['tripal_pub_stocks'] = array(
+          '#value' => theme('tripal_pub_stocks', array('node' => $node)),
         );
       }
       if ($view_mode == 'teaser') {

@@ -1,9 +1,3 @@
-<h3>Tripal Contact Quick Links:</h3>
-<ul>
-  <li><a href="<?php print url('admin/tripal/tripal_contact/configuration') ?>">Contact Configuration</a></li>
-  <li><a href="<?php print url('admin/tripal/tripal_contact/sync') ?>">Sync Contacts</a></li>
-</ul>
-
 <h3>Module Description:</h3>
 <p>The Tripal Contact module is an interface for the Chado Contact module which provides information about
    people or organizations.  This module provides support for visualization of "contact" pages, editing and updating.

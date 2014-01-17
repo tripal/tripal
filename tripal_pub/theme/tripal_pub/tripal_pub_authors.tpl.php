@@ -31,64 +31,82 @@ if (count($authors) > 0) {
 
 if ($has_contacts) { ?>
   <div id="tripal_pub-pubauthors-box" class="tripal_pub-info-box tripal-info-box">
-    <div class="tripal_pub-info-box-title tripal-info-box-title">Authors</div>
-    <div class="tripal_pub-info-box-desc tripal-info-box-desc">Additional information about authors:</div>
-    <table id="tripal_pubauthor_<?php print $rank?>-table" class="tripal_pub-table tripal-table tripal-table-horz"><?php 
-      $rank = 1;
-      foreach ($authors as $author) {
-         
-        // expand the author to include the contact information linked via the pubauthor_contact table
-        $contact = $author->pubauthor_contact[0]->contact_id;
-        $options = array(
-          'return_array' => 1,
-          'include_fk' => array(
-            'type_id' => 1,       
-          ),      
-        );
-        $contact = tripal_core_expand_chado_vars($contact, 'table', 'contactprop', $options);
-        $properties = $contact->contactprop;
-        $options = array('order_by' => array('rank' => 'ASC'));
-        $properties = tripal_core_expand_chado_vars($properties, 'field', 'contactprop.value', $options); 
-        
-        $class = 'tripal_pub-table-odd-row tripal-table-odd-row';
-        if($rank % 2 == 0 ){
-           $class = 'tripal_pub-table-even-row tripal-table-even-row';
-        } ?>            
-        <tr class="<?php print $class?>">
-          <td><?php print $rank?></td>
-          <?php
-          // now build the table for display the authors and their information 
-          if ($contact->nid) {?>
-            <td><?php print l($author->givennames . " " . $author->surname, 'node/' . $contact->nid) ?></td><?php
+    <div class="tripal_pub-info-box-title tripal-info-box-title">Author Details</div>
+    <div class="tripal_pub-info-box-desc tripal-info-box-desc">Additional information about authors:</div> <?php
+    // the $headers array is an array of fields to use as the colum headers.
+    // additional documentation can be found here
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $headers = array('', 'Details');
+    
+    // the $rows array contains an array of rows where each row is an array
+    // of values for each column of the table in that row.  Additional documentation
+    // can be found here:
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $rows = array();
+    
+    $rank = 1;
+    foreach ($authors as $author) {
+       
+      // expand the author to include the contact information linked via the pubauthor_contact table
+      $contact = $author->pubauthor_contact[0]->contact_id;
+      $options = array(
+        'return_array' => 1,
+        'include_fk' => array(
+          'type_id' => 1,       
+        ),      
+      );
+      $contact = tripal_core_expand_chado_vars($contact, 'table', 'contactprop', $options);
+      $properties = $contact->contactprop;
+      $options = array('order_by' => array('rank' => 'ASC'));
+      $properties = tripal_core_expand_chado_vars($properties, 'field', 'contactprop.value', $options); 
+      
+      // link the contact to it's node if one exists
+      $contact_name = $author->givennames . " " . $author->surname;
+      if (property_exists($contact, 'nid')) {
+        $contact_name = l($contact_name, 'node/' . $contact->nid);
+      }
+      
+      // Get some additional details about this contact if they exists.
+      $details = '';
+      if (is_array($properties)) {
+        foreach ($properties as $property) {
+          // skip the description and name properties
+          if ($property->type_id->name == "contact_description" or
+              $property->type_id->name == "Surname" or
+              $property->type_id->name == "Given Name" or
+              $property->type_id->name == "First Initials" or
+              $property->type_id->name == "Suffix") {
+            continue;
           }
-          else {?>
-            <td><?php print $author->givennames . " " . $author->surname ?></td><?php
-          } ?>
-          <td> 
-            <table class="tripal-subtable"><?php 
-              if (is_array($properties)) {          
-                foreach ($properties as $property) {
-                  // skip the description and name properties
-                  if ($property->type_id->name == "contact_description" or
-                      $property->type_id->name == "Surname" or
-                      $property->type_id->name == "Given Name" or
-                      $property->type_id->name == "First Initials" or
-                      $property->type_id->name == "Suffix") {
-                    continue;
-                  }?>
-                  <tr>
-                    <td><?php print $property->type_id->name ?></td>
-                    <td>:</td>
-                    <td><?php print $property->value ?></td>
-                  </tr><?php
-                  $i++; 
-                } 
-              }?> 
-            </table>
-          </td>
-        </tr><?php 
-        $rank++;
-      }?>
-    </table>
+          $details .= "<br>" . $property->type_id->name . " : " .  $property->value;
+        }
+      }
+      
+      $rows[] = array(
+        $rank,
+        $contact_name . $details,
+      );
+      $rank++;
+    }
+    
+    // the $table array contains the headers and rows array as well as other
+    // options for controlling the display of the table.  Additional
+    // documentation can be found here:
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $table = array(
+      'header' => $headers,
+      'rows' => $rows,
+      'attributes' => array(
+        'id' => 'tripal_pub-table-contacts',
+      ),
+      'sticky' => FALSE,
+      'caption' => '',
+      'colgroups' => array(),
+      'empty' => '',
+    );
+    
+    // once we have our table array structure defined, we call Drupal's theme_table()
+    // function to generate the table.
+    print theme_table($table); ?>
   </div><?php      
 }

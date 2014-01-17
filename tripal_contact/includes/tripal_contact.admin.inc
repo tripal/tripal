@@ -43,7 +43,7 @@ function tripal_contact_admin() {
   $form = array();
 
   $form['nothing'] = array(
-    '#markup' => t('There are currently no settings to configure. .')
+    '#markup' => t('There are currently no settings to configure.')
   );
 
   return system_settings_form($form);

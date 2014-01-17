@@ -34,6 +34,17 @@ $contact = $variables['node']->contact; ?>
     ),
     $contact->type_id->name,
   );
+  // allow site admins to see the contact ID
+  if (user_access('access administration pages')) {
+    // Pub ID
+    $rows[] = array(
+      array(
+        'data' => 'Contact ID',
+        'header' => TRUE
+      ),
+      $contact->contact_id
+    );
+  }
   
   // the $table array contains the headers and rows array as well as other
   // options for controlling the display of the table.  Additional

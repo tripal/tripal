@@ -106,15 +106,6 @@ function tripal_organism_menu() {
    'type' => MENU_NORMAL_ITEM,
   );
 
-  $items['admin/tripal/chado/tripal_organism/help'] = array(
-   'title' => 'Help',
-   'description' => "A description of the Tripal Organism module including a short description of it's usage.",
-   'page callback' => 'theme',
-   'page arguments' => array('tripal_organism_help'),
-   'access arguments' => array('adminster tripal organism'),
-   'type' => MENU_LOCAL_TASK,
-  );
-
   $items['admin/tripal/chado/tripal_organism/configuration'] = array(
    'title' => 'Settings',
    'description' => 'Manage integration of Chado organisms including associated features',
@@ -140,7 +131,15 @@ function tripal_organism_menu() {
     'access arguments' => array('administer tripal_bulk_loader'),
     'type' => MENU_CALLBACK,
   );
-
+  
+  $items['admin/tripal/chado/tripal_organism/help'] = array(
+    'title' => 'Help',
+    'description' => "A description of the Tripal Organism module including a short description of it's usage.",
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_organism_help'),
+    'access arguments' => array('adminster tripal organism'),
+    'type' => MENU_LOCAL_TASK,
+  );
   return $items;
 }
 

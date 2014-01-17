@@ -892,7 +892,7 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
  *     should specify the number of records to return and 'element' is a
  *     unique integer to differentiate between pagers when more than one
  *     appear on a page.  The 'element' should start with zero and increment by
- *     one for each pager.  
+ *     one for each pager.    
  *
  * @return
  *  An array of results, FALSE if the query was not executed
@@ -1223,7 +1223,8 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     return array('sql' => $sql, 'args' => $args);
   }
   if (array_key_exists('limit', $pager)) {
-    $resource = chado_pager_query($sql, $args, $pager['limit'], $pager['element']);
+    $total_records = 0;
+    $resource = chado_pager_query($sql, $args, $pager['limit'], $pager['element'], NULL, $total_records);
   }
   else {
     $resource = chado_query($sql, $args);
@@ -1941,7 +1942,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
   //try again becasue now we might have moved it down
   if (property_exists($object, 'expanded')) {
     $expandable_name = 'expandable_' . $type . 's';
-    if ($object->{$expandable_name}) {
+    if (property_exists($object, $expandable_name) and $object->{$expandable_name}) {
       $key_to_remove = array_search($object->expanded, $object->{$expandable_name});
       unset($object->{$expandable_name}[$key_to_remove]);
       unset($object->expanded);
@@ -2034,7 +2035,7 @@ function tripal_core_exclude_field_from_feature_by_default() {
  *   An optional integer to distinguish between multiple pagers on one page.
  * @param $count_query
  *   An SQL query used to count matching records.
- *   
+ *
  * @returns
  *   A database query result resource or FALSE if the query was not
  *   executed correctly
@@ -2042,8 +2043,9 @@ function tripal_core_exclude_field_from_feature_by_default() {
  * @ingroup tripal_chado_api
  */
 function chado_pager_query($query, $args, $limit, $element, $count_query = NULL) {
-
-  $page = pager_find_page();
+  
+  // get the page and offset for the pager
+  $page = pager_find_page($element);
   $offset = $limit * $page;
 
   // Construct a count query if none was given.
@@ -2053,9 +2055,10 @@ function chado_pager_query($query, $args, $limit, $element, $count_query = NULL)
   }
 
   // We calculate the total of pages as ceil(items / limit).
-  $pager_total_items = chado_query($count_query, $args)->fetchField();
+  $total_records = chado_query($count_query, $args)->fetchField();
+  $_SESSION['chado_pager'][$element]['total_records'] = $total_records;
   
-  pager_default_initialize($pager_total_items, $limit, $element);
+  pager_default_initialize($total_records, $limit, $element);
   
   $query .= ' LIMIT ' . (int) $limit . ' OFFSET ' . (int) $offset;
   $results = chado_query($query, $args);

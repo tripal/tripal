@@ -175,6 +175,7 @@ function tripal_organism_sync_organisms($organism_id = NULL, $job_id = NULL) {
       $new_node->genus = $organism->genus;
       $new_node->species = $organism->species;
       $new_node->description = '';
+      
       $form = array(); // dummy variable
       $form_state = array(); // dummy variable
       node_validate($new_node, $form, $form_state);
@@ -186,11 +187,10 @@ function tripal_organism_sync_organisms($organism_id = NULL, $job_id = NULL) {
         }
       }
       else {
-        print "Failed to insert organism $organism->common_name\n";
+        watchdog('torg_sync', "Unable to create organism node. ID: %org_id, Name: %name.",
+          array('%org_id' => $organism->organism_id, '%name' => $organism->genus . ' ' . $organism->species), 
+          WATCHDOG_WARNING);
       }
-    }
-    else {
-      print "Skipped $organism->common_name\n";
     }
   }
   return $page_content;
