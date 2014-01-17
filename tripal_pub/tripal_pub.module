@@ -129,21 +129,21 @@ function tripal_pub_menu() {
   $items['admin/tripal/chado/tripal_pub/import/new'] = array(
     'title' => t('Add an Importer'),
     'description' => t('Add a new publication importer.'),
-    'page callback' => 'tripal_pub_importer_setup',
-    'page arguments' => array(5, NULL),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_pub_importer_setup_form'),
     'access arguments' => array('administer tripal pubs'),
     'type ' => MENU_CALLBACK,
   );
 
   $items['admin/tripal/chado/tripal_pub/import/raw/%'] = array(
     'page callback' => 'tripal_pub_get_raw_data',
-    'page arguments' => array(5),
+    'page arguments' => array(6),
     'access arguments' => array('administer tripal pubs'),
     'type ' => MENU_CALLBACK,
   );
 
   $items['admin/tripal/chado/tripal_pub/import/edit/%'] = array(
-    'page callback' => 'tripal_pub_importer_setup',
+    'page callback' => 'tripal_pub_importer_setup_page',
     'page arguments' => array(4, 5),
     'access arguments' => array('administer tripal pubs'),
     'type ' => MENU_CALLBACK,
@@ -278,10 +278,10 @@ function tripal_pub_theme($existing, $type, $theme, $path) {
 
     // themed forms
     'tripal_pub_importer_setup_form' => array(
-      'arguments' => array('form'),
+      'render element' => 'form',
     ),
     'tripal_pub_search_form' => array(
-      'arguments' => array('form'),
+      'render element' => 'form',
     ),
     
     // teaser
@@ -1034,15 +1034,16 @@ function tripal_pub_form_alter(&$form, &$form_state, $form_id) {
     $form['actions']['preview']['#access'] = FALSE;
   }
   if ($form_id == "tripal_pub_importer_setup_form") {
-    // updating the form through the ahah callback sets the action of
+/*    // updating the form through the ahah callback sets the action of
     // the form to the ahah callback URL. We need to set it back
     // to the normal form URL
-    if ($form_state['values']['action'] == 'edit') {
+    if (array_key_exists('values', $form_state) and $form_state['values']['action'] == 'edit') {
       $form['#action'] = url("admin/tripal/chado/tripal_pub/import/edit/" . $form_state['values']['pub_import_id']);
     }
-    if ($form_state['values']['action'] == 'new') {
+    if (array_key_exists('values', $form_state) and $form_state['values']['action'] == 'new') {
       $form['#action'] = url("admin/tripal/chado/tripal_pub/import/new");
     }
+    */
   }
   if ($form_id == "tripal_pub_search_form") {
     $form['#action'] = url("find/publications");

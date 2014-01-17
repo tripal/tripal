@@ -474,7 +474,7 @@ function  tripal_core_properties_form_add_new_empty_props(&$form, &$form_state, 
     '#cols'           => 50,
     '#rows'           => $rows,
     '#prefix'         => '<div id="tripal-properties-new_value">',
-    '#description'    => $description,
+    '#description'    => '<span style="white-space: normal">' . $description . '</span>',
     '#suffix'         => '</div>',
   );
 
@@ -570,6 +570,11 @@ function tripal_core_properties_form_add_new_props(&$form, &$form_state, &$ranks
 
       // determine how many rows we need in the textarea
       $rows = 1;
+      $rows = strlen($value) / 80 + 1;
+      if ($rows > 10) {
+        $rows = 10;
+      }
+      
       // add the new fields
       $form['properties']['table']['new'][$new_id][$rank]["new_id-$new_id-$rank"] = array(
         '#markup' => $cvterm[0]->name
@@ -579,7 +584,7 @@ function tripal_core_properties_form_add_new_props(&$form, &$form_state, &$ranks
         '#default_value' => $value,
         '#cols'          => 50,
         '#rows'          => $rows,
-        '#description'   => $cvterm[0]->definition,
+        '#description'   => '<span style="white-space: normal">' . $cvterm[0]->definition . '</span>',
       );
 
       $form['properties']['table']['new'][$new_id][$rank]["remove-$new_id-$rank"] = array(
@@ -741,6 +746,11 @@ function  tripal_core_properties_form_add_prop_table_props($prop_table, $id_fiel
     $ranks[$type_id][$rank]['value'] = $value;
     $num_properties++;
     $rows = 1;
+    $rows = strlen($value) / 80 + 1;
+    if ($rows > 10) {
+      $rows = 10;
+    }
+    
 
     $form['properties']['table'][$type_id][$rank]["prop_id-$type_id-$rank"] = array(
       '#markup'        => $name,
@@ -750,7 +760,7 @@ function  tripal_core_properties_form_add_prop_table_props($prop_table, $id_fiel
       '#default_value' => $value,
       '#cols'          => 50,
       '#rows'          => $rows,
-      '#description'   => $definition,
+      '#description'   => '<span style="white-space: normal">' . $definition . '</span>',
     );
 
     $form['properties']['table'][$type_id][$rank]["remove-$type_id-$rank"] = array(

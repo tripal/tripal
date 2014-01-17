@@ -1,6 +1,6 @@
 <?php
 /**
- * A function to render a listing of all publication importers
+ * A function to generate a table containing the list of publication importers
  *
  * @ingroup tripal_pub
  */
@@ -42,8 +42,8 @@ function tripal_pub_importers_list() {
      )
   );
 
-  $page = "<ul class='action-links'>";
-  $page .= '<li>' . l('New Importer', 'admin/tripal/chado/tripal_pub/import/new') . '</li>';
+  $page  = "<ul class='action-links'>";
+  $page .= '  <li>' . l('New Importer', 'admin/tripal/chado/tripal_pub/import/new') . '</li>';
   $page .= '</ul>';
 
   $page .= theme('table', array('header' => $header, 'rows' => $rows));
@@ -53,7 +53,7 @@ function tripal_pub_importers_list() {
 /*
  *
  */
-function tripal_pub_importer_setup($action = 'new', $pub_import_id = NULL) {
+function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) {
   global $pager_total, $pager_total_items;
 
   $pager_id = 0;
@@ -63,7 +63,7 @@ function tripal_pub_importer_setup($action = 'new', $pub_import_id = NULL) {
   $values = array('name' => 'tripal_pub');
   $tpub_cv = tripal_core_chado_select('cv', array('cv_id'), $values);
   if (count($tpub_cv) == 0) {
-  	drupal_set_message(t('Before importing publications you must first ') . l(t('load the Tripal Pub Ontology'), 'admin/tripal/tripal_cv/obo_loader'), 'error');
+    drupal_set_message(t('Before importing publications you must first ') . l(t('load the Tripal Pub Ontology'), 'admin/tripal/tripal_cv/obo_loader'), 'error');
   }
   $values = array('name' => 'tripal_contact');
   $tpub_cv = tripal_core_chado_select('cv', array('cv_id'), $values);
@@ -75,8 +75,9 @@ function tripal_pub_importer_setup($action = 'new', $pub_import_id = NULL) {
   $form = drupal_get_form('tripal_pub_importer_setup_form',  $pub_import_id, $action);
 
   $output = l("Return to publication importers list", "admin/tripal/chado/tripal_pub/import_list");
-  $output .= $form;
+  $output .= drupal_render($form);
 
+  /*
   // retrieve any results
   $remote_db = $_SESSION['tripal_pub_import']['remote_db'];
   $num_criteria = $_SESSION['tripal_pub_import']['num_criteria'];
@@ -131,55 +132,39 @@ function tripal_pub_importer_setup($action = 'new', $pub_import_id = NULL) {
       ". Page " . ($page + 1) . " of $total_pages. " .
       " Results</b></br>" . $table . '</p>' . $pager;
   }
+  */
   return $output;
 }
-/*
- *
- */
-function theme_tripal_pub_importer_setup_form($form) {
-  $rows = array();
-  foreach ($form['criteria'] as $i => $element) {
-    if(is_numeric($i)) {
-      $rows[] = array(
-      drupal_render($element["operation-$i"]),
-      drupal_render($element["scope-$i"]),
-      drupal_render($element["search_terms-$i"]),
-      drupal_render($element["is_phrase-$i"]),
-      drupal_render($element["add-$i"]) . drupal_render($element["remove-$i"]),
-      );
-    }
-  }
-  $headers = array('Operation','Scope', 'Search Terms', '','');
 
-  $markup  = '';
-  $markup .= '<div>' . drupal_render($form['remote_db']) . '</div>';
-  $markup .= '<div id="pub-search-form-row1">';
-  $markup .= '  <div id="pub-search-form-col1">' . drupal_render($form['loader_name']) . '</div>';
-  $markup .= '  <div id="pub-search-form-col3">' . drupal_render($form['days']) . '</div>';
-  $markup .= '</div>';
-  $markup .= '<div id="pub-search-form-row2">' . drupal_render($form['disabled']) . '</div>';
-  $markup .= '<div id="pub-search-form-row3">' . drupal_render($form['do_contact']) . '</div>';
-  $markup .= theme('table', array('header' => $headers, 'rows' => $rows, 'attributes' => array('id' => 'tripal-pub-importer-table')));
-
-  $form['criteria'] = array(
-    '#type' => 'markup',
-    '#value' =>  $markup,
-    '#weight' => -10,
-  );
-  return drupal_render($form);
-}
 /**
  * Purpose: Provides the form to search pubmed
  *
  * @ingroup tripal_pub
  */
-function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NULL, $action = 'new') {
-  tripal_core_ahah_init_form();
-
+function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_id = NULL, $action = 'new') {
+  // Default values can come in the following ways:
+  //
+  // 1) as elements of the $pub_importer object.  This occurs when editing an existing importer 
+  // 2) in the $form_state['values'] array which occurs on a failed validation or
+  //    ajax callbacks from non submit form elements
+  // 3) in the $form_state['input'] array which occurs on ajax callbacks from submit
+  //    form elements and the form is being rebuilt
+  //
+  // set form field defaults
+  
+  
   // Set the default values. If the pub_import_id isn't already defined by the form values
   // and one is provided then look it up in the database
   $criteria = NULL;
-  if ($action == "edit" and !$form_state['values']) {
+  $remote_db = '';
+  $days = '';
+  $disabled = '';
+  $do_contact = '';
+  $num_criteria = '';
+  $loader_name = '';
+  
+  // if this is an edit the we are pulling an import object from the database
+  if ($action == "edit") {
     $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = :pub_import_id";
     $importer = db_query($sql, array(':pub_import_id' => $pub_import_id))->fetchObject();
 
@@ -191,45 +176,46 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
     $num_criteria   = $criteria['num_criteria'];
     $loader_name    = $criteria['loader_name'];
   }
-
-  // if we're here because the form was posted then load from the session variable (we lost the form state)
-  $num_criteria = isset($_SESSION['tripal_pub_import']['num_criteria']) ? $_SESSION['tripal_pub_import']['num_criteria'] : $num_criteria;
-  $loader_name  = isset($_SESSION['tripal_pub_import']['loader_name'])  ? $_SESSION['tripal_pub_import']['loader_name']  : $loader_name;
-  $remote_db    = isset($_SESSION['tripal_pub_import']['remote_db'])    ? $_SESSION['tripal_pub_import']['remote_db']    : $remote_db;
-  $disabled     = isset($_SESSION['tripal_pub_import']['disabled'])     ? $_SESSION['tripal_pub_import']['disabled']     : $disabled;
-  $do_contact   = isset($_SESSION['tripal_pub_import']['do_contact'])   ? $_SESSION['tripal_pub_import']['do_contact']   : $do_contact;
-  $days         = isset($_SESSION['tripal_pub_import']['days'])         ? $_SESSION['tripal_pub_import']['days']         : $days;
-
-
-  // If the form_state has variables then use those.  This happens when an error occurs on the form or the
-  // form is resbumitted using AJAX
-  if ($form_state['values']) {
-    $num_criteria = $form_state['values']['num_criteria'] ? $form_state['values']['num_criteria'] : $num_criteria;
-    $loader_name  = $form_state['values']['loader_name']  ? $form_state['values']['loader_name']  : $loader_name;
-    $remote_db    = $form_state['values']['remote_db']    ? $form_state['values']['remote_db']    : $remote_db;
-    $disabled     = $form_state['values']['disabled']     ? $form_state['values']['disabled']     : $disabled;
-    $do_contact   = $form_state['values']['do_contact']   ? $form_state['values']['do_contact']   : $do_contact;
-    $days         = $form_state['values']['days']         ? $form_state['values']['days']         : $days;
+  // if we are re constructing the form from a failed validation or ajax callback
+  // then use the $form_state['values'] values
+  if (array_key_exists('values', $form_state)) {
+    $remote_db    = $form_state['values']['remote_db'];
+    $days         = $form_state['values']['days'];
+    $disabled     = $form_state['values']['disabled'];
+    $do_contact   = $form_state['values']['do_contact'];
+    $num_criteria = $form_state['values']['num_criteria'];
+    $loader_name  = $form_state['values']['loader_name'];
+  }
+  // if we are re building the form from after submission (from ajax call) then
+  // the values are in the $form_state['input'] array
+  if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
+    $remote_db    = $form_state['input']['remote_db'];
+    $days         = $form_state['input']['days'];
+    $disabled     = $form_state['input']['disabled'];
+    $do_contact   = $form_state['input']['do_contact'];
+    $num_criteria = $form_state['input']['num_criteria'];
+    $loader_name  = $form_state['input']['loader_name'];
   }
 
   // check if the pub_import_id in the session variable is not the same as the one we've been provided
   // if so, then clear the session variable
-  if ($pub_import_id and $pub_import_id != $_SESSION['tripal_pub_import']['pub_import_id']) {
-    unset($_SESSION['tripal_pub_import']);
-  }
+//  if ($pub_import_id and $pub_import_id != $_SESSION['tripal_pub_import']['pub_import_id']) {
+//    unset($_SESSION['tripal_pub_import']);
+//  }
 
 
   // change the number of criteria based on form_state post data.
   if (!$num_criteria) {
     $num_criteria = 1;
   }
+/*  
   if($form_state['post']["add-$num_criteria"]) {
     $num_criteria++;
   }
   if($form_state['post']["remove-$num_criteria"]) {
     $num_criteria--;
   }
-
+*/
   $form['pub_import_id'] = array(
     '#type'          => 'hidden',
     '#value'         => $pub_import_id,
@@ -262,17 +248,19 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
   if (!$remote_db) {
     $remote_db = 'PMID';
   }
+  $form['#prefix'] = '<div id="tripal-pubs-importer-setup">';
+  $form['#suffix'] = '</div>';
   $form['remote_db'] = array(
     '#title' => t('Remote Database'),
     '#type' => 'select',
     '#options' => $remote_dbs,
     '#default_value' => $remote_db,
-    '#ahah' => array(
-      'path'    => "admin/tripal/chado/tripal_pub/import/changedb",
-      'wrapper' => 'tripal-pub-importer-setup-form',
-      'event'   => 'click',
-      'method'  => 'replace',
-  ),
+    '#ajax' => array(
+      'callback' => "tripal_pubs_setup_form_ajax_update",
+      'wrapper'  => 'tripal-pubs-importer-setup',
+      'effect'   => 'fade',
+      'method'   => 'replace',
+    ),
   );
 
   $form['num_criteria']= array(
@@ -304,7 +292,47 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
        additional information such as affilation, etc. Otherwise, only authors names are retrieved.'),
     '#default_value' => $do_contact,
   );
+  
+  // add in the form for the criteria
+  tripal_pub_importer_setup_add_criteria_fields($form, $form_state, $num_criteria, $criteria);
 
+  $form['test'] = array(
+    '#type'         => 'submit',
+    '#value'        => t('Test Importer'),
+  );
+  $form['save'] = array(
+    '#type'         => 'submit',
+    '#value'        => t('Save Importer'),
+  );
+  /*
+  $form['import'] = array(
+    '#type'         => 'submit',
+    '#value'        => t('Save & Import Now'),
+  );
+  */
+  $form['delete'] = array(
+    '#type'         => 'submit',
+    '#value'        => t('Delete Importer'),
+  );
+  
+  // allow the selected remote database to make changes to the form if needed
+  $callback = "tripal_pub_remote_alter_form_$remote_db";
+  $form = call_user_func($callback, $form, $form_state);
+ 
+  $form['#theme'] = 'tripal_pub_importer_setup_form';
+  
+  return $form;
+}
+
+/**
+ * 
+ * @param $form
+ * @param $form_state
+ * @param $num_criteria
+ * @param $criteria
+ */
+function tripal_pub_importer_setup_add_criteria_fields(&$form, &$form_state, $num_criteria, $criteria){
+  
   // choices array
   $scope_choices = array(
     'any'      => 'Any Field',
@@ -313,133 +341,151 @@ function tripal_pub_importer_setup_form(&$form_state = NULL, $pub_import_id = NU
     'id'       => 'Accession',
     'title'    => 'Title',
     'journal'   => 'Journal Name'
-    );
-
-    $first_op_choices = array(
+  );
+  
+  $first_op_choices = array(
     ''    => '',
     'NOT' => 'NOT'
-    );
-    $op_choices = array(
+  );
+  $op_choices = array(
     'AND' => 'AND',
     'OR'  => 'OR',
     'NOT' => 'NOT'
+  );
+  
+  for($i = 1; $i <= $num_criteria; $i++) {
+    $is_phrase = 1;
+    
+    $search_terms = '';
+    $scope = '';
+    $is_phrase = '';
+    $operation = '';
+  
+    // if we have criteria supplied from the database then use that as the initial defaults
+    if ($criteria) {
+      $search_terms = $criteria['criteria'][$i]['search_terms'];
+      $scope        = $criteria['criteria'][$i]['scope'];
+      $is_phrase    = $criteria['criteria'][$i]['is_phrase'];
+      $operation    = $criteria['criteria'][$i]['operation'];
+    }
+    
+/*    
+    // if we're here because the form was posted then load from the session variable (we lost the form state)
+    $search_terms = isset($_SESSION['tripal_pub_import']['criteria'][$i]['search_terms']) ? $_SESSION['tripal_pub_import']['criteria'][$i]['search_terms'] : $search_terms;
+    $scope        = isset($_SESSION['tripal_pub_import']['criteria'][$i]['scope'])        ? $_SESSION['tripal_pub_import']['criteria'][$i]['scope']        : $scope;
+    $is_phrase    = isset($_SESSION['tripal_pub_import']['criteria'][$i]['is_phrase'])    ? $_SESSION['tripal_pub_import']['criteria'][$i]['is_phrase']    : $is_phrase;
+    $operation    = isset($_SESSION['tripal_pub_import']['criteria'][$i]['operation'])    ? $_SESSION['tripal_pub_import']['criteria'][$i]['operation']    : $operation;
+*/
+      
+    // If the form_state has variables then use those.  This happens when an error occurs on the form or the
+    // form is resbumitted using AJAX
+    if (array_key_exists('values', $form_state)) {
+      $search_terms = $form_state['values']["search_terms-$i"];
+      $scope        = $form_state['values']["scope-$i"];
+      $is_phrase    = $form_state['values']["is_phrase-$i"];
+      $operation    = $form_state['values']["operation-$i"];
+    }
+    $form['criteria'][$i]["scope-$i"] = array(
+      '#type'          => 'select',
+      '#description'   => t('Please select the fields to search for this term.'),
+      '#options'       => $scope_choices,
+      '#default_value' => $scope,
     );
-    for($i = 1; $i <= $num_criteria; $i++) {
-    	$is_phrase = 1;
-
-      // if we have criteria supplied from the database then use that as the initial defaults
-      if ($criteria) {
-        $search_terms = $criteria['criteria'][$i]['search_terms'];
-        $scope = $criteria['criteria'][$i]['scope'];
-        $is_phrase = $criteria['criteria'][$i]['is_phrase'];
-        $operation = $criteria['criteria'][$i]['operation'];
-      }
-      // if we're here because the form was posted then load from the session variable (we lost the form state)
-      $search_terms = isset($_SESSION['tripal_pub_import']['criteria'][$i]['search_terms']) ? $_SESSION['tripal_pub_import']['criteria'][$i]['search_terms'] : $search_terms;
-      $scope        = isset($_SESSION['tripal_pub_import']['criteria'][$i]['scope'])        ? $_SESSION['tripal_pub_import']['criteria'][$i]['scope']        : $scope;
-      $is_phrase    = isset($_SESSION['tripal_pub_import']['criteria'][$i]['is_phrase'])    ? $_SESSION['tripal_pub_import']['criteria'][$i]['is_phrase']    : $is_phrase;
-      $operation    = isset($_SESSION['tripal_pub_import']['criteria'][$i]['operation'])    ? $_SESSION['tripal_pub_import']['criteria'][$i]['operation']    : $operation;
-
-      // If the form_state has variables then use those.  This happens when an error occurs on the form or the
-      // form is resbumitted using AJAX
-      if ($form_state['values']) {
-        $search_terms = $form_state['values']["search_terms-$i"];
-        $scope        = $form_state['values']["scope-$i"];
-        $is_phrase    = $form_state['values']["is_phrase-$i"];
-        $operation    = $form_state['values']["operation-$i"];
-      }
-
-      $form['criteria'][$i]["search_terms-$i"] = array(
-        '#type'          => 'textfield',
-        '#description'   => t('Please provide a list of words for searching. You may use
-          conjunctions such as "AND" or "OR" to separate words if they are expected in
-          the same scope, but do not mix ANDs and ORs.  Uncheck the "Is Phrase" checkbox to use conjunctions'),
-        '#default_value' => $search_terms,
-        '#required'      => TRUE,
-        '#maxlength' => 2048,
-      );
-      $form['criteria'][$i]["scope-$i"] = array(
-        '#type'          => 'select',
-        '#description'   => t('Please select the fields to search for this term.'),
-        '#options'       => $scope_choices,
-        '#default_value' => $scope,
-      );
-      $form['criteria'][$i]["is_phrase-$i"] = array(
-        '#type'    => 'checkbox',
-        '#title'   => t('Is Phrase?'),
-        '#default_value' => $is_phrase,
-      );
-
-      if ($i == 1) {
-        /*
-         $form['criteria'][$i]["operation-$i"] = array(
+    $form['criteria'][$i]["search_terms-$i"] = array(
+      '#type'          => 'textfield',
+      '#description'   => t('<span style="white-space: normal">Please provide a list of words for searching. You may use
+        conjunctions such as "AND" or "OR" to separate words if they are expected in
+        the same scope, but do not mix ANDs and ORs.  Uncheck the "Is Phrase" checkbox to use conjunctions</span>'),
+      '#default_value' => $search_terms,
+      '#required'      => TRUE,
+      '#maxlength' => 2048,
+    );
+    $form['criteria'][$i]["is_phrase-$i"] = array(
+      '#type'    => 'checkbox',
+      '#title'   => t('Is Phrase?'),
+      '#default_value' => $is_phrase,
+    );
+  
+    if ($i == 1) {
+      /*
+       $form['criteria'][$i]["operation-$i"] = array(
          '#type'          => 'select',
          '#options'       => $first_op_choices,
          '#default_value' => $operation,
-         );*/
-      }
-      if ($i > 1) {
-        $form['criteria'][$i]["operation-$i"] = array(
+       );*/
+    }
+    if ($i > 1) {
+      $form['criteria'][$i]["operation-$i"] = array(
         '#type'          => 'select',
         '#options'       => $op_choices,
         '#default_value' => $operation,
-        );
-      }
-      if ($i == $num_criteria) {
-        if($i > 1) {
-          $form['criteria'][$i]["remove-$i"] = array(
-          '#type'         => 'image_button',
-          '#value'        => t('Remove'),
-          '#src'          => drupal_get_path('theme', 'tripal') . '/images/minus.png',
-          '#ahah' => array(
-            'path'    => "admin/tripal/chado/tripal_pub/import/criteria/minus/$i",
-            'wrapper' => 'tripal-pub-importer-setup-form',
-            'event'   => 'click',
-            'method'  => 'replace',
-          ),
-          '#attributes' => array('onClick' => 'return false;'),
-          );
-        }
-        $form['criteria'][$i]["add-$i"] = array(
-        '#type'         => 'image_button',
-        '#value'        => t('Add'),
-        '#src'          => drupal_get_path('theme', 'tripal') . '/images/add.png',
-        '#ahah' => array(
-          'path'    => "admin/tripal/chado/tripal_pub/import/criteria/add/$i",
-          'wrapper' => 'tripal-pub-importer-setup-form',
-          'event'   => 'click',
-          'method'  => 'replace',
-        ),
-        '#attributes' => array('onClick' => 'return false;'),
-        );
-      }
+      );
     }
-
-    $form['test'] = array(
-    '#type'         => 'submit',
-    '#value'        => t('Test Importer'),
-    );
-    $form['save'] = array(
-    '#type'         => 'submit',
-    '#value'        => t('Save Importer'),
-    );
-    /*
-     $form['import'] = array(
-     '#type'         => 'submit',
-     '#value'        => t('Save & Import Now'),
-     );*/
-    $form['delete'] = array(
-    '#type'         => 'submit',
-    '#value'        => t('Delete Importer'),
-    );
-
-    // allow the selected remote database to make changes to the form if needed
-    $callback = "tripal_pub_remote_alter_form_$remote_db";
-    $form = call_user_func($callback, $form, $form_state);
-
-    return $form;
+    if ($i == $num_criteria) {
+      if($i > 1) {
+        $form['criteria'][$i]["remove-$i"] = array(
+          '#type'         => 'button',
+          '#name'         => 'remove',
+          '#value'        => t('Remove'),
+          '#ajax' => array(
+            'callback' => "tripal_pubs_setup_form_ajax_update",
+            'wrapper'  => 'tripal-pubs-importer-setup',
+            'effect'   => 'fade',
+            'method'   => 'replace',
+            'prevent'  => 'click'
+          ),
+          // When this button is clicked, the form will be validated and submitted.
+          // Therefore, we set custom submit and validate functions to override the
+          // default form submit.  In the validate function we set the form_state
+          // to rebuild the form so the submit function never actually gets called,
+          // but we need it or Drupal will run the default validate anyway.
+          // we also set #limit_validation_errors to empty so fields that
+          // are required that don't have values won't generate warnings.
+          '#submit'   => array('tripal_pub_setup_form_criteria_button_submit'),
+          '#validate' => array('tripal_pub_setup_form_criteria_button_validate'),
+          '#limit_validation_errors' => array(),
+        );
+      }
+      $form['criteria'][$i]["add-$i"] = array(
+        '#type'  => 'button',
+        '#name'  => 'add',
+        '#value' => t('Add'),
+        '#ajax'  => array(
+          'callback' => "tripal_pubs_setup_form_ajax_update",
+          'wrapper'  => 'tripal-pubs-importer-setup',
+          'effect'   => 'fade',
+          'method'   => 'replace',
+          'prevent'  => 'click'
+        ),
+        // When this button is clicked, the form will be validated and submitted.
+        // Therefore, we set custom submit and validate functions to override the
+        // default form submit.  In the validate function we set the form_state
+        // to rebuild the form so the submit function never actually gets called,
+        // but we need it or Drupal will run the default validate anyway.
+        // we also set #limit_validation_errors to empty so fields that
+        // are required that don't have values won't generate warnings.
+        '#submit'   => array('tripal_pub_setup_form_criteria_button_submit'),
+        '#validate' => array('tripal_pub_setup_form_criteria_button_validate'),
+        '#limit_validation_errors' => array(),
+      );
+    }
+  }
 }
-
+/**
+ * This function is used to rebuild the form if an ajax call is made vai a button.
+ * The button causes the form to be submitted. We don't want this so we override
+ * the validate and submit routines on the form button. Therefore, this function
+ * only needs to tell Drupal to rebuild the form
+ */
+function  tripal_pub_setup_form_criteria_button_validate($form, &$form_state){
+  $form_state['rebuild'] = TRUE;
+}
+/**
+ * This function is just a dummy to override the default form submit on ajax calls for buttons
+ */
+function tripal_pub_setup_form_criteria_button_submit($form, &$form_state){
+  // do nothing
+}
 /**
  *
  */
@@ -458,10 +504,10 @@ function tripal_pub_importer_setup_form_validate($form, &$form_state) {
     $operation =  $form_state['values']["operation-$i"];
 
     if (!$is_phrase) {
-    	if (preg_match('/and/i', $search_terms) and preg_match('/or/i', $search_terms)) {
-    	  form_set_error("search_terms-$i", "You may use 'AND' or 'OR' but cannot use both. Add a new entry below with the same scope for the other conunction.");
-    	  $_SESSION['tripal_pub_import']['perform_search'] = 0;
-    	}
+      if (preg_match('/and/i', $search_terms) and preg_match('/or/i', $search_terms)) {
+        form_set_error("search_terms-$i", "You may use 'AND' or 'OR' but cannot use both. Add a new entry below with the same scope for the other conunction.");
+        $_SESSION['tripal_pub_import']['perform_search'] = 0;
+      }
     }
   }
 
@@ -567,7 +613,14 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
     }
   }
 }
-
+/**
+ * AJAX callback for updating the form.  Because we are replacing 
+ * the entire form we just need to return it 
+ */
+function tripal_pubs_setup_form_ajax_update($form, $form_state) {
+  dpm('Hi');
+  return $form;
+}
 /*
  *
  */
@@ -627,4 +680,53 @@ function tripal_pub_importer_setup_page_update_criteria($action, $i) {
       'settings' => $settings,
   )
   );
+}
+
+/**
+ * 
+ * @param $form
+ */
+function theme_tripal_pub_importer_setup_form($variables) {
+  $form = $variables['form'];
+
+  $rows = array();
+  foreach ($form['criteria'] as $i => $element) {
+    if(is_numeric($i)) {
+      $rows[] = array(
+        drupal_render($element["operation-$i"]),
+        drupal_render($element["scope-$i"]),
+        drupal_render($element["search_terms-$i"]),
+        drupal_render($element["is_phrase-$i"]),
+        drupal_render($element["add-$i"]) . drupal_render($element["remove-$i"]),
+      );
+    }
+  }
+  
+  // now build the table containing the criteria elements
+  $headers = array('Operation','Scope', 'Search Terms', '','');
+  $table = array(
+    'header' => $headers,
+    'rows' => $rows,
+    'attributes' => array(),
+    'sticky' => TRUE,
+    'caption' => '',
+    'colgroups' => array(),
+    'empty' => '',
+  );
+  $criteria_table = theme_table($table);
+  
+  $markup  = '';
+  $markup .= '<div>' . drupal_render($form['remote_db']) . '</div>';
+  $markup .= '<div id="pub-search-form-row1">';
+  $markup .= '  <div id="pub-search-form-col1">' . drupal_render($form['loader_name']) . '</div>';
+  $markup .= '  <div id="pub-search-form-col3">' . drupal_render($form['days']) . '</div>';
+  $markup .= '</div>';
+  $markup .= '<div id="pub-search-form-row2">' . drupal_render($form['disabled']) . '</div>';
+  $markup .= '<div id="pub-search-form-row3">' . drupal_render($form['do_contact']) . '</div>';
+  $markup .= $criteria_table;
+  $markup .= drupal_render($form['test']);
+  $markup .= drupal_render($form['save']);
+  $markup .= drupal_render($form['delete']);
+
+  return $markup;
 }
