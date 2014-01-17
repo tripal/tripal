@@ -19,20 +19,16 @@ function chado_pub_form($node, $form_state) {
   // set form field defaults
   $pub_id      = null;
   $title       = '';
-  $volumetitle = '';
-  $volume      = '';
-  $series_name = '';
-  $issue       = '';
   $pyear       = '';
-  $pages       = '';
-  $miniref     = '';
   $uniquename  = '';
   $type_id     = '';
   $is_obsolete = '';
-  $publisher   = '';
-  $pubplace    = '';
   
-  
+  // some of the fields in the pub table should show up in the properties 
+  // form elements to make the form more seemless.  We will add them
+  // to this array.
+  $more_props = array();
+
   // if we are editing an existing node then the pub is already part of the node
   if (property_exists($node, 'pub')) {
     $pub = $node->pub;
@@ -41,19 +37,11 @@ function chado_pub_form($node, $form_state) {
     $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.uniquename');
     $pub_id = $pub->pub_id;
     
-    $title       = $node->title;
-    $volumetitle = $node->volumetitle;
-    $volume      = $node->volume;
-    $series_name = $node->series_name;
-    $issue       = $node->issue;
-    $pyear       = $node->pyear;
-    $pages       = $node->pages;
-    $miniref     = $node->miniref;
-    $uniquename  = $node->uniquename;
-    $type_id     = $node->type_id;
-    $is_obsolete = $node->is_obsolete;
-    $publisher   = $node->publisher;
-    $pubplace    = $node->pubplace;
+    $title       = $pub->title;
+    $pyear       = $pub->pyear;
+    $uniquename  = $pub->uniquename;
+    $type_id     = $pub->type_id->cvterm_id;
+    $is_obsolete = $pub->is_obsolete;
     
     // if the obsolete value is set by the database then it is in the form of
     // 't' or 'f', we need to convert to 1 or 0
@@ -65,40 +53,68 @@ function chado_pub_form($node, $form_state) {
       '#type' => 'value',
       '#value' => $pub->pub_id,
     );
+    
+    // get fields from the pub table and convert them to properties. We will add these to the $more_props
+    // array which gets passed in to the tripal_core_properties_form() API call further down
+    if ($pub->volumetitle) {
+      $cvterm = tripal_cv_get_cvterm_by_name('Volume Title', NULL, 'tripal_pub');
+      $more_props[] = array('cvterm' => $cvterm, 'value' => $pub->volumetitle);
+    }
+    if ($pub->volume) {
+      $cvterm = tripal_cv_get_cvterm_by_name('Volume', NULL, 'tripal_pub');
+      $more_props[] = array('cvterm' => $cvterm, 'value' => $pub->volume);
+    }
+    if ($pub->series_name) {
+      switch ($pub->type_id->name) {
+        case 'Journal Article':
+          $cvterm = tripal_cv_get_cvterm_by_name('Journal Name', NULL, 'tripal_pub');
+          $more_props[] = array('cvterm' => $cvterm, 'value' => $pub->series_name);
+          break;
+        case 'Conference Proceedings':
+          $cvterm = tripal_cv_get_cvterm_by_name('Conference Name', NULL, 'tripal_pub');
+          $more_props[] = array('cvterm' => $cvterm, 'value' => $pub->series_name);
+          break;
+        default:
+          $cvterm = tripal_cv_get_cvterm_by_name('Series Name', NULL, 'tripal_pub');
+          $more_props[] = array('cvterm' => $cvterm, 'value' => $pub->series_name);
+      }
+    }
+    if ($pub->issue) {
+      $cvterm = tripal_cv_get_cvterm_by_name('Issue', NULL, 'tripal_pub');
+      $more_props[] = array('cvterm' => $cvterm, 'value' => $pub->issue);
+    }
+    if ($pub->pages) {
+      $cvterm = tripal_cv_get_cvterm_by_name('Pages', NULL, 'tripal_pub');
+      $more_props[] = array('cvterm' => $cvterm, 'value' => $pub->pages);
+    }
+    if ($pub->miniref) {
+      // not sure what to do with this one
+    }
+    if ($pub->publisher) {
+      $cvterm = tripal_cv_get_cvterm_by_name('Publisher', NULL, 'tripal_pub');
+      $more_props[] = array('cvterm' => $cvterm, 'value' => $pub->publisher);
+    }
+    if ($pub->pubplace) {
+      $cvterm = tripal_cv_get_cvterm_by_name('Published Location', NULL, 'tripal_pub');
+      $more_props[] = array('cvterm' => $cvterm, 'value' => $pub->pages);
+    }
   }
   // if we are re constructing the form from a failed validation or ajax callback
   // then use the $form_state['values'] values
   if (array_key_exists('values', $form_state)) {
     $title        = $form_state['values']['pubtitle'];
-    $volumetitle  = $form_state['values']['volumetitle'];
-    $volume       = $form_state['values']['volume'];
-    $series_name  = $form_state['values']['series_name'];
-    $issue        = $form_state['values']['issue'];
     $pyear        = $form_state['values']['pyear'];
-    $pages        = $form_state['values']['pages'];
-    $miniref      = $form_state['values']['miniref'];
     $uniquename   = $form_state['values']['uniquename'];
     $type_id      = $form_state['values']['type_id'];
     $is_obsolete  = $form_state['values']['is_obsolete'];
-    $publisher    = $form_state['values']['publisher'];
-    $pubplace     = $form_state['values']['pubplace'];
   }
   // if we are re building the form from after submission (from ajax call) then
   // the values are in the $form_state['input'] array
   if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
     $title        = $form_state['input']['pubtitle'];
-    $volumetitle  = $form_state['input']['volumetitle'];
-    $volume       = $form_state['input']['volume'];
-    $series_name  = $form_state['input']['series_name'];
-    $issue        = $form_state['input']['issue'];
-    $pyear        = $form_state['input']['pyear'];
-    $pages        = $form_state['input']['pages'];
-    $miniref      = $form_state['input']['miniref'];
     $uniquename   = $form_state['input']['uniquename'];
     $type_id      = $form_state['input']['type_id'];
     $is_obsolete  = $form_state['input']['is_obsolete'];
-    $publisher    = $form_state['input']['publisher'];
-    $pubplace     = $form_state['input']['pubplace'];
   }
  
   // a drupal title can only be 255 characters, but the Chado title can be much longer.
@@ -200,7 +216,7 @@ function chado_pub_form($node, $form_state) {
   $exclude = array("Citation");
   $instructions = '';
   tripal_core_properties_form($form, $form_state, 'pubprop', 'pub_id', 'tripal_pub',
-    $properties, $pub_id, $exclude, $instructions);
+    $properties, $pub_id, $exclude, $more_props, $instructions);
 
   return $form;
 
@@ -309,7 +325,7 @@ function chado_pub_validate($node, $form, &$form_state) {
     if((strcmp(strtolower($pub[0]->title), strtolower($title)) == 0) and
        (strcmp(strtolower($pub[0]->series_name), strtolower($series_name)) == 0) and
        ($pub[0]->type_id == $type_id) and
-       ($pub[0]->year == $pyear)) {
+       ($pub[0]->pyear == $pyear)) {
       $skip_duplicate_check = 1;
     }
 

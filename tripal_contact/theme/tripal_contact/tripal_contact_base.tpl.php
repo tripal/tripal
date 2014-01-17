@@ -54,7 +54,7 @@ $contact = $variables['node']->contact; ?>
   // once we have our table array structure defined, we call Drupal's theme_table()
   // function to generate the table.
   print theme_table($table);
-  if (property_exists($contact, 'description')) {
-    print $contact->description;
+  if (property_exists($contact, 'description')) { ?>
+    <div style="text-align: justify"><?php print $contact->description; ?></div> <?php 
   } ?>
 </div>

@@ -361,13 +361,23 @@ function tripal_core_delete_property_by_id($basetable, $record_id) {
  *   the actual field is only 255 characters. The 'contact_description' therefore should
  *   not be shown in the list of properties, even if present, because it is handled by
  *   a different form element.
+ * @param $include
+ *   An array of terms to pre-populate in the form.  This argument can be used to
+ *   add a default set of pre-populated properties regardless if they exist in the database
+ *   or not.  The array should be of the following form:
+ *     array(
+ *       array('cvterm' => $obj1, 'value' => $val1),
+ *       array('cvterm' => $obj2, 'value' => $val2),
+ *       ... etc
+ *     );
+ *   The 'cvterm' key should have as a value an object with these properties: 'name', 'cvterm_id', 'definition'. 
  * @param $instructions
  *   An additional set of instructions for the form properties.
  *   
  * @ingroup tripal_properties_api
  */
 function tripal_core_properties_form(&$form, &$form_state, $prop_table, $id_field, $cv_name,
-    $available_props, $id = NULL, $exclude = array(), $instructions = '') {
+    $available_props, $id = NULL, $exclude = array(), $include = array(), $instructions = '') {
   
   $d_removed      = array(); // lists removed properties
   $num_new        = 0;  // the number of new rows
@@ -407,7 +417,7 @@ function tripal_core_properties_form(&$form, &$form_state, $prop_table, $id_fiel
   // add in the properties from the Chado prop table (only pertains to existing analyses)
   if ($id) {
     tripal_core_properties_form_add_prop_table_props($prop_table, $id_field, $cv_name,
-      $form, $form_state, $id, $ranks, $d_removed, $exclude);
+      $form, $form_state, $id, $ranks, $d_removed, $exclude, $include);
   }
   
   // add in any new properties that have been added by the user through an AHAH callback
@@ -659,11 +669,14 @@ function tripal_core_properties_form_add_new_props(&$form, &$form_state, &$ranks
 
   return $num_properties;
 }
-/*
+/**
+ * This function queries the proper xxxprop table to look for existing values for the given
+ * $id.  It then adds these properties to the form for editing.  It also will incorporate
+ * extra properties that were specified manually by the caller.
  *
-*/
+ */
 function  tripal_core_properties_form_add_prop_table_props($prop_table, $id_field, $cv_name, 
-    &$form, $form_state, $id, &$ranks, &$d_removed, $exclude = array()) {
+    &$form, $form_state, $id, &$ranks, &$d_removed, $exclude = array(), $include = array()) {
 
   // get the existing properties
   $num_properties = 0;
@@ -672,21 +685,36 @@ function  tripal_core_properties_form_add_prop_table_props($prop_table, $id_fiel
     return;
   }
 
+  // create an array of properties so we can merge those in the database with those provided by the caller
+  $all_props = array();
+  foreach ($include as $prop) {
+    $all_props[] = $prop;
+  }
+  
+  // now merge in properties saved in the database
   $sql = "
     SELECT CVT.cvterm_id, CVT.name, CVT.definition, PP.value, PP.rank
     FROM {" . $prop_table . "} PP
       INNER JOIN {cvterm} CVT ON CVT.cvterm_id = PP.type_id
       INNER JOIN {cv} CV      ON CVT.cv_id     = CV.cv_id
-    WHERE 
-      PP.$id_field = :id AND 
+      WHERE
+      PP.$id_field = :id AND
       CV.name = '$cv_name'
-    ORDER BY CVT.name, PP.rank
-  ";
+      ORDER BY CVT.name, PP.rank
+      ";
   $props = chado_query($sql, array(':id' => $id));
   while ($prop = $props->fetchObject()) {
+    $all_props[] = array('cvterm' => $prop, 'value' => $prop->value);
+  }
 
-    $type_id = $prop->cvterm_id;
-    $rank = 0;
+  // iterate through the properties
+  foreach ($all_props as $prop) {
+
+    $type_id    = $prop['cvterm']->cvterm_id;
+    $value      = $prop['value'];
+    $name       = $prop['cvterm']->name;
+    $definition = $prop['cvterm']->definition;
+    $rank       = 0;
     if(array_key_exists($type_id, $ranks)) {
       $rank = count($ranks[$type_id]);
     }
@@ -697,7 +725,7 @@ function  tripal_core_properties_form_add_prop_table_props($prop_table, $id_fiel
       continue;
     }
     // skip any properties that should be excluded
-    if (count(array_intersect(array($prop->name), $exclude)) == 1) {
+    if (count(array_intersect(array($name), $exclude)) == 1) {
       continue;
     }
     if (array_key_exists('triggering_element', $form_state) and
@@ -706,22 +734,21 @@ function  tripal_core_properties_form_add_prop_table_props($prop_table, $id_fiel
       continue;
     }
 
-    $ranks[$type_id][$rank]['name']  = $prop->name;
+    $ranks[$type_id][$rank]['name']  = $name;
     $ranks[$type_id][$rank]['id']    = $type_id;
-    $ranks[$type_id][$rank]['value'] = $prop->value;
-    $ranks[$type_id][$rank]['definition']  = $prop->definition;
+    $ranks[$type_id][$rank]['value'] = $value;
     $num_properties++;
     $rows = 1;
 
     $form['properties']['table'][$type_id][$rank]["prop_id-$type_id-$rank"] = array(
-      '#markup'        => $prop->name,
+      '#markup'        => $name,
     );
     $form['properties']['table'][$type_id][$rank]["prop_value-$type_id-$rank"] = array(
       '#type'          => 'textarea',
-      '#default_value' => $prop->value,
+      '#default_value' => $value,
       '#cols'          => 50,
       '#rows'          => $rows,
-      '#description'   => $prop->definition,
+      '#description'   => $definition,
     );
 
     $form['properties']['table'][$type_id][$rank]["remove-$type_id-$rank"] = array(
