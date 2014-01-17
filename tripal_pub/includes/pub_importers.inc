@@ -216,6 +216,7 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
     $num_criteria--;
   }
 */
+  
   $form['pub_import_id'] = array(
     '#type'          => 'hidden',
     '#value'         => $pub_import_id,
@@ -227,7 +228,7 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
     '#required'      => TRUE,
   );
 
-  $form['loader_name'] = array(
+  $form['themed_element']['loader_name'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Loader Name'),
     '#description'   => t('Please provide a name for this loader setup..'),
@@ -248,9 +249,7 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
   if (!$remote_db) {
     $remote_db = 'PMID';
   }
-  $form['#prefix'] = '<div id="tripal-pubs-importer-setup">';
-  $form['#suffix'] = '</div>';
-  $form['remote_db'] = array(
+  $form['themed_element']['remote_db'] = array(
     '#title' => t('Remote Database'),
     '#type' => 'select',
     '#options' => $remote_dbs,
@@ -272,20 +271,20 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
     '#default_value' => $pub_import_id,
   );
 
-  $form['days'] = array(
+  $form['themed_element']['days'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Days since record modified'),
     '#description'   => t('Limit the search to include pubs that have been added no more than this many days before today.'),
     '#default_value' => $days,
     '#size'          => 5,
   );
-  $form['disabled'] = array(
+  $form['themed_element']['disabled'] = array(
     '#type'          => 'checkbox',
     '#title'         => t('Disabled'),
     '#description'   => t('Check to disable this importer.'),
     '#default_value' => $disabled,
   );
-  $form['do_contact'] = array(
+  $form['themed_element']['do_contact'] = array(
     '#type'          => 'checkbox',
     '#title'         => t('Create Contact'),
     '#description'   => t('Check to create an entry in the contact table for each author of a matching publication during import. This allows storage of
@@ -319,7 +318,7 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
   $callback = "tripal_pub_remote_alter_form_$remote_db";
   $form = call_user_func($callback, $form, $form_state);
  
-  $form['#theme'] = 'tripal_pub_importer_setup_form';
+  $form['themed_element']['#theme'] = 'tripal_pub_importer_setup_form_elements';
   
   return $form;
 }
@@ -385,13 +384,13 @@ function tripal_pub_importer_setup_add_criteria_fields(&$form, &$form_state, $nu
       $is_phrase    = $form_state['values']["is_phrase-$i"];
       $operation    = $form_state['values']["operation-$i"];
     }
-    $form['criteria'][$i]["scope-$i"] = array(
+    $form['themed_element']['criteria'][$i]["scope-$i"] = array(
       '#type'          => 'select',
       '#description'   => t('Please select the fields to search for this term.'),
       '#options'       => $scope_choices,
       '#default_value' => $scope,
     );
-    $form['criteria'][$i]["search_terms-$i"] = array(
+    $form['themed_element']['criteria'][$i]["search_terms-$i"] = array(
       '#type'          => 'textfield',
       '#description'   => t('<span style="white-space: normal">Please provide a list of words for searching. You may use
         conjunctions such as "AND" or "OR" to separate words if they are expected in
@@ -400,7 +399,7 @@ function tripal_pub_importer_setup_add_criteria_fields(&$form, &$form_state, $nu
       '#required'      => TRUE,
       '#maxlength' => 2048,
     );
-    $form['criteria'][$i]["is_phrase-$i"] = array(
+    $form['themed_element']['criteria'][$i]["is_phrase-$i"] = array(
       '#type'    => 'checkbox',
       '#title'   => t('Is Phrase?'),
       '#default_value' => $is_phrase,
@@ -415,7 +414,7 @@ function tripal_pub_importer_setup_add_criteria_fields(&$form, &$form_state, $nu
        );*/
     }
     if ($i > 1) {
-      $form['criteria'][$i]["operation-$i"] = array(
+      $form['themed_element']['criteria'][$i]["operation-$i"] = array(
         '#type'          => 'select',
         '#options'       => $op_choices,
         '#default_value' => $operation,
@@ -423,7 +422,7 @@ function tripal_pub_importer_setup_add_criteria_fields(&$form, &$form_state, $nu
     }
     if ($i == $num_criteria) {
       if($i > 1) {
-        $form['criteria'][$i]["remove-$i"] = array(
+        $form['themed_element']['criteria'][$i]["remove-$i"] = array(
           '#type'         => 'button',
           '#name'         => 'remove',
           '#value'        => t('Remove'),
@@ -446,7 +445,7 @@ function tripal_pub_importer_setup_add_criteria_fields(&$form, &$form_state, $nu
           '#limit_validation_errors' => array(),
         );
       }
-      $form['criteria'][$i]["add-$i"] = array(
+      $form['themed_element']['criteria'][$i]["add-$i"] = array(
         '#type'  => 'button',
         '#name'  => 'add',
         '#value' => t('Add'),
@@ -614,81 +613,31 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
   }
 }
 /**
- * AJAX callback for updating the form.  Because we are replacing 
- * the entire form we just need to return it 
+ * AJAX callback for updating the form.  
  */
 function tripal_pubs_setup_form_ajax_update($form, $form_state) {
-  dpm('Hi');
-  return $form;
-}
-/*
- *
- */
-function tripal_pub_importer_delete($pub_import_id) {
-  $sql = "DELETE FROM {tripal_pub_import} WHERE pub_import_id = :pub_import_id";
-  $success = db_query($sql, array(':pub_import_id' => $pub_import_id));
-  if ($success) {
-    drupal_set_message('Publication importer deleted.');
-    drupal_goto('admin/tripal/chado/tripal_pub/import_list');
-  }
-  else {
-    drupal_set_message('Could not delete publication importer.', 'error');
-  }
-}
-/*
- * AHAH callback
- */
-function tripal_pub_importer_setup_page_update_remotedb() {
-  $status = TRUE;
-
-  // prepare and render the form
-  $form = tripal_core_ahah_prepare_form();
-  $data = theme('tripal_pub_importer_setup_form', $form);
-
-  // bind javascript events to the new objects that will be returned
-  // so that AHAH enabled elements will work.
-  $settings = tripal_core_ahah_bind_events();
-
-  // return the updated JSON
-  drupal_json(
-  array(
-      'status'   => $status,
-      'data'     => $data,
-      'settings' => $settings,
-  )
-  );
-}
-/*
- * AHAH callback
- */
-function tripal_pub_importer_setup_page_update_criteria($action, $i) {
-  $status = TRUE;
-
-  // prepare and render the form
-  $form = tripal_core_ahah_prepare_form();
-  $data = theme('tripal_pub_importer_setup_form', $form);
-
-  // bind javascript events to the new objects that will be returned
-  // so that AHAH enabled elements will work.
-  $settings = tripal_core_ahah_bind_events();
-
-  // return the updated JSON
-  drupal_json(
-  array(
-      'status'   => $status,
-      'data'     => $data,
-      'settings' => $settings,
-  )
-  );
+  return $form['themed_element'];
 }
 
 /**
  * 
  * @param $form
  */
-function theme_tripal_pub_importer_setup_form($variables) {
+
+function theme_tripal_pub_importer_setup_form_elements($variables) {
   $form = $variables['form'];
 
+  // first render the fields at the top of the form
+  $markup  = '';
+  $markup .= '<div>' . drupal_render($form['remote_db']) . '</div>';
+  $markup .= '<div id="pub-search-form-row1">';
+  $markup .= '  <div id="pub-search-form-col1">' . drupal_render($form['loader_name']) . '</div>';
+  $markup .= '  <div id="pub-search-form-col3">' . drupal_render($form['days']) . '</div>';
+  $markup .= '</div>';
+  $markup .= '<div id="pub-search-form-row2">' . drupal_render($form['disabled']) . '</div>';
+  $markup .= '<div id="pub-search-form-row3">' . drupal_render($form['do_contact']) . '</div>';
+
+  // next render the criteria fields into a table format
   $rows = array();
   foreach ($form['criteria'] as $i => $element) {
     if(is_numeric($i)) {
@@ -702,7 +651,6 @@ function theme_tripal_pub_importer_setup_form($variables) {
     }
   }
   
-  // now build the table containing the criteria elements
   $headers = array('Operation','Scope', 'Search Terms', '','');
   $table = array(
     'header' => $headers,
@@ -714,19 +662,14 @@ function theme_tripal_pub_importer_setup_form($variables) {
     'empty' => '',
   );
   $criteria_table = theme_table($table);
-  
-  $markup  = '';
-  $markup .= '<div>' . drupal_render($form['remote_db']) . '</div>';
-  $markup .= '<div id="pub-search-form-row1">';
-  $markup .= '  <div id="pub-search-form-col1">' . drupal_render($form['loader_name']) . '</div>';
-  $markup .= '  <div id="pub-search-form-col3">' . drupal_render($form['days']) . '</div>';
-  $markup .= '</div>';
-  $markup .= '<div id="pub-search-form-row2">' . drupal_render($form['disabled']) . '</div>';
-  $markup .= '<div id="pub-search-form-row3">' . drupal_render($form['do_contact']) . '</div>';
   $markup .= $criteria_table;
-  $markup .= drupal_render($form['test']);
-  $markup .= drupal_render($form['save']);
-  $markup .= drupal_render($form['delete']);
-
-  return $markup;
+  
+  // add the rendered form
+  $form = array(
+    '#markup' => $markup,
+    '#prefix' => '<div id="tripal-pubs-importer-setup">',
+    '#suffix' => '</div>',
+  );
+  
+  return drupal_render($form);
 }
