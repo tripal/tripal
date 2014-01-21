@@ -1,12 +1,11 @@
 <?php
 $stock = $node->stock;
-$organism = $node->stock->organism_id; 
+$organism = $node->stock->organism_id;
 $main_db_reference = $stock->dbxref_id;
 
 // expand the text fields
 $stock = tripal_core_expand_chado_vars($stock, 'field', 'stock.description');
 $stock = tripal_core_expand_chado_vars($stock, 'field', 'stock.uniquename');
-
 ?>
 <div id="tripal_stock-base-box" class="tripal_stock-info-box tripal-info-box">
   <div class="tripal_stock-info-box-title tripal-info-box-title">Details</div>
@@ -30,23 +29,23 @@ $stock = tripal_core_expand_chado_vars($stock, 'field', 'stock.uniquename');
       </tr>
       <tr class="tripal_stock-table-odd-row tripal-table-odd-row">
         <th>Organism</th>
-        <td><?php 
+        <td><?php
           if ($organism->nid) { ?>
-      	   <a href="<?php print url("node/$organism->nid") ?>"><?php print "<i>" . $organism->genus . 
-            " " . $organism->species . "</i> (" . $organism->common_name . " )"?></a><?php 
-          } else { 
+      	   <a href="<?php print url("node/$organism->nid") ?>"><?php print "<i>" . $organism->genus .
+            " " . $organism->species . "</i> (" . $organism->common_name . " )"?></a><?php
+          } else {
             print "<i>" . $organism->genus . " " . $organism->species . "</i> (" . $organism->common_name . ")";
           } ?>
         </td>
-     	</tr>   
+     	</tr>
       <tr class="tripal_stock-table-even-row tripal-table-even-row">
         <th>Description</th>
-        <td><?php print $stock->description ?></td>      
-      </tr>   
-      <!--  
+        <td><?php print $stock->description ?></td>
+      </tr>
+      <!--
       <tr class="tripal_stock-table-odd-row tripal-table-odd-row">
         <th>Internal ID</th>
         <td><?php print $stock->stock_id ?></td>
-      </tr>     -->	                                
+      </tr>     -->
    </table>
 </div>

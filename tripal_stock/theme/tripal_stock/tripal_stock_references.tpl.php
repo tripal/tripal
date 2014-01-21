@@ -4,7 +4,7 @@ $references = array();
 
 // First, get the dbxref record from stock recrod itself if one exists
 if ($stock->dbxref_id) {
-  $stock->dbxref_id->is_primary = 1;  // add this new property so we know it's the primary reference
+  $stock->dbxref_id->is_primary = TRUE;  // add this new property so we know it's the primary reference
   $references[] = $stock->dbxref_id;
 }
 
@@ -27,35 +27,35 @@ if(count($references) > 0){ ?>
 	      <th>Dababase</th>
 	      <th>Accession</th>
 	    </tr> <?php
-	    $i = 0; 
-	    foreach ($references as $dbxref){ 
+	    $i = 0;
+	    foreach ($references as $dbxref){
 	      $class = 'tripal_stock-table-odd-row tripal-table-odd-row';
 	      if($i % 2 == 0 ){
 	         $class = 'tripal_stock-table-odd-row tripal-table-even-row';
 	      } ?>
 	      <tr class="<?php print $class ?>">
-	        <td> <?php 
-	          if ($dbxref->db_id->url) { 
+	        <td> <?php
+	          if ($dbxref->db_id->url) {
               print l($dbxref->db_id->name, $dbxref->db_id->url);
-            } 
-            else { 
-              print $dbxref->db_id->name; 
+            }
+            else {
+              print $dbxref->db_id->name;
             } ?>
 	        </td>
-	        <td> <?php 
-	          if ($dbxref->db_id->urlprefix) { 
+	        <td> <?php
+	          if ($dbxref->db_id->urlprefix) {
 	           	print l($dbxref->accession, $dbxref->db_id->urlprefix.$dbxref->accession);
-	          } 
-	          else { 
-	            print $dbxref->accession; 
+	          }
+	          else {
+	            print $dbxref->accession;
 	          }
 	          if ($dbxref->is_primary) {
 	            print " <i>(primary cross-reference)</i>";
 	          } ?>
 	        </td>
 	      </tr> <?php
-	      $i++;  
+	      $i++;
 	    } ?>
-	  </table> 
-	</div><?php 
+	  </table>
+	</div><?php
 }
