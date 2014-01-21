@@ -592,7 +592,7 @@ function chado_library_form($node) {
  *
  * @ingroup tripal_library
  */
-function chado_library_validate($node) {
+function chado_library_validate($node, $form, &$form_state) {
   $lib = 0;
   // check to make sure the unique name on the library is unique
   // before we try to insert into chado.

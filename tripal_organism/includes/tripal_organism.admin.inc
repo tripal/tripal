@@ -42,8 +42,11 @@ function tripal_organism_admin() {
 
   $form = array();
 
-  get_tripal_organism_admin_form_reindex_set($form);
-  get_tripal_organism_admin_form_taxonomy_set($form);
+  $form['nothing'] = array(
+    '#markup' => t('There are currently no settings to configure.')
+  );
+  //get_tripal_organism_admin_form_reindex_set($form);
+  //get_tripal_organism_admin_form_taxonomy_set($form);
 
   return system_settings_form($form);
 }

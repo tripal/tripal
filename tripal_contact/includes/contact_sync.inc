@@ -73,34 +73,45 @@ function tripal_contact_sync_contacts($job_id = NULL) {
     SELECT C.*
     FROM chado.contact C
       LEFT JOIN {chado_contact} CP ON CP.contact_id = C.contact_id
-    WHERE CP.contact_id IS NULL
+    WHERE CP.contact_id IS NULL and NOT C.name = 'null'
   ";
   $results = db_query($sql);
+  
+  // We'll use the following SQL statement for checking if the contact
+  // already exists as a drupal node.
+  $sql = "SELECT * FROM {chado_contact} WHERE contact_id = :contact_id";
 
   while ($contact = $results->fetchObject()) {
-    $new_node = new stdClass();
-    $new_node->uid = $user->uid;
-    $new_node->contact_id = $contact->contact_id;
-    $new_node->type = 'chado_contact';
-    $new_node->title = $contact->name;
-    $new_node->description = $contact->description;
-    $new_node->type_id = $contact->type_id;
-  
-    $form = array(); // dummy variable
-    $form_state = array(); // dummy variable
-    node_validate($new_node, $form, $form_state);
-    if (!form_get_errors()) {
-      $node = node_submit($new_node);
-      node_save($node);
-      if ($node->nid) {
-        print "Added contact: $new_node->title\n";
+    
+    // check if this contact already exists in the drupal database. if it
+    // does then skip this contact and go to the next one.
+    if (!db_query($sql, array(':contact_id' => $contact->contact_id))->fetchObject()) {
+    
+      $new_node = new stdClass();
+      $new_node->uid = $user->uid;
+      $new_node->contact_id = $contact->contact_id;
+      $new_node->type = 'chado_contact';
+      $new_node->title = $contact->name;
+      $new_node->description = $contact->description;
+      $new_node->type_id = $contact->type_id;
+    
+      $form = array(); // dummy variable
+      $form_state = array(); // dummy variable
+      node_validate($new_node, $form, $form_state);
+      if (!form_get_errors()) {
+        $node = node_submit($new_node);
+        node_save($node);
+        if ($node->nid) {
+          print "Added contact: $new_node->title\n";
+        }
       }
-    }
-    else {
-      print "ERROR: Unable to create " . $contact->name . "\n" . print_r($errors, TRUE) . "\n";
-      return FALSE;
-    }
-  } 
+      else {
+        watchdog('tcontact_sync', "Unable to create contact node. ID: %contact_id, Name: %name.",
+          array('%contact_id' => $contact->contact_id, '%name' => $contact->name), WATCHDOG_WARNING);      
+        
+      }
+    } 
+  }
 }
 
 /**

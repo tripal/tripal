@@ -112,7 +112,7 @@ function chado_featuremap_form($node) {
  *
  * @ingroup tripal_featuremap
  */
-function chado_featuremap_validate($node, &$form) {
+function chado_featuremap_validate($node, $form, &$form_state) {
   $name          = trim($node->title);
   $featuremap_id = trim($node->featuremap_id);
   $unittype_id   = trim($node->unittype_id);

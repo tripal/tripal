@@ -1,13 +1,4 @@
 <br />
-<h3>Tripal Publication Quick Links</h3>
-<ul>
-	<li><?php print l('Search for Publications', 'find/publications') ?></li>
-	<li><?php print l('Configuration', 'admin/tripal/tripal_pub/configuration') ?></li>
-	<li><?php print l('Sync Publications', 'admin/tripal/tripal_pub/sync') ?></li>
-	<li><?php print l('List of Importers', 'admin/tripal/tripal_pub/import_list') ?></li>
-	<li><?php print l('Add a New Importer', 'admin/tripal/tripal_pub/import/new') ?></li>
-</ul>
-
 <h3>Module Description:</h3>
 <p>The Tripal Publication Module provides the functionality for adding,
 editing, deleting viewing and bulk importing of publications. This

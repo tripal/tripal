@@ -44,7 +44,7 @@ function chado_contact_form(&$node, $form_state) {
     // the contact description was incorrectly stored in the $node->body field.
     // It is better to store it in the Chado tables.  However, the 'description'
     // field of the contact table is only 255 characters.  So, we are going
-    // to follow the same as the analysis module and store the description in
+    // to follow the same as the contact module and store the description in
     // the contactprop table and leave the contact.description field blank.
     // however, for backwards compatibitily, we check to see if the description
     // is in the $node->body field. If it is we'll use that.  When the node is
@@ -151,8 +151,9 @@ function chado_contact_form(&$node, $form_state) {
   }
   
   $exclude = array('contact_description');
+  $include = array();
   tripal_core_properties_form($form, $form_state, 'contactprop', 'contact_id', 'tripal_contact',
-    $properties, $contact_id, $exclude, '');
+    $properties, $contact_id, $exclude, $include, '', 'Properties');
    
   return $form;
 }
@@ -162,15 +163,24 @@ function chado_contact_form(&$node, $form_state) {
  *
  * @ingroup tripal_contact
  */
-function chado_contact_validate($node, &$form) {
+function chado_contact_validate($node, $form, &$form_state) {
   // remove surrounding white-space on submitted values
   $node->title          = trim($node->title);
   $node->description    = trim($node->description);
  
-  // Only nodes being updated will have an nid already
-  if (!property_exists($node,'nid')) {    
-    // CASE A: We are validating a form for updating an existing node
-    
+  // if this is a delete then don't validate
+  if($node->op == 'Delete') {
+    return;
+  }
+  
+  // we are syncing if we do not have a node ID but we do have a contact_id. We don't
+  // need to validate during syncing so just skip it.
+  if (is_null($node->nid) and property_exists($node, 'contact_id') and $node->contact_id != 0) {
+    return;
+  }
+  
+  // Validating for an update
+  if (property_exists($node, 'nid')) {    
     // get the existing node    
     $values = array('contact_id' => $node->contact_id);      
     $result = tripal_core_chado_select('contact', array('*'), $values);
@@ -181,29 +191,21 @@ function chado_contact_validate($node, &$form) {
       $values = array('name' => $node->title);
       $result = tripal_core_chado_select('contact', array('contact_id'), $values);
       if ($result and count($result) > 0) {
-        form_set_error('title', 'Cannot update the contact with this contact name. An contact with this name already exists.');
+        form_set_error('title', 'Cannot update the contact with this contact name. A contact with this name already exists.');
         return;
       }  
     }
   }
+  // Validating for an insert
   else {
-    // To differentiate if we are syncing or creating a new contact altogther, see if an
-    // contact_id already exists
-    if (property_exists($node, 'contact_id') and $node->contact_id != 0) {
-      // CASE B: Synchronizing a node from chado to drupal
-      // we don't need to do anything.
-    }
-    else {
-      // CASE C: We are validating a form for inserting a new node
-      // The unique constraint for the chado contact table is: name
-      $values = array(
-        'name' => $node->title,
-      );
-      $contact = tripal_core_chado_select('contact', array('contact_id'), $values);
-      if ($contact and count($contact) > 0) {
-        form_set_error('title', 'Cannot add the contact with this name. An contact with these values already exists.');
-        return;
-      }
+    // The unique constraint for the chado contact table is: name
+    $values = array(
+      'name' => $node->title,
+    );
+    $contact = tripal_core_chado_select('contact', array('contact_id'), $values);
+    if ($contact and count($contact) > 0) {
+      form_set_error('title', 'Cannot add the contact with this name. A contact with these values already exists.');
+      return;
     }
   }
 }

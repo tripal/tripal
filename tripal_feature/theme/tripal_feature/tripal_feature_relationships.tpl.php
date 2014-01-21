@@ -46,7 +46,7 @@ if (count($object_rels) > 0 or count($subject_rels) > 0) { ?>
           // link the feature to it's node
           $feature_name = $object->record->object_id->name;
           if (property_exists($object->record, 'nid')) {
-            $feature_name = "<a href=\"" . url("node/" . $object->record->nid) . "\" target=\"_blank\">" . $object->record->object_id->name . "</a>";
+            $feature_name = l($feature_name, "node/" . $object->record->nid, array('attributes' => array('target' => "_blank")));
           }
           // link the organism to it's node
           $organism = $object->record->object_id->organism_id;
@@ -104,7 +104,7 @@ if (count($object_rels) > 0 or count($subject_rels) > 0) { ?>
           // link the feature to it's node
           $feature_name = $subject->record->subject_id->name;
           if (property_exists($subject->record, 'nid')) {
-            $feature_name = "<a href=\"" . url("node/" . $subject->record->nid) . "\" target=\"_blank\">" . $subject->record->subject_id->name . "</a>";
+            $feature_name = l($feature_name, "node/" . $subject->record->nid, array('attributes' => array('target' => "_blank")));
           }
           // link the organism to it's node
           $organism = $subject->record->subject_id->organism_id;

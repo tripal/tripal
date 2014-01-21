@@ -99,31 +99,33 @@ function tripal_organism_menu() {
 
   // the administative settings menu
   $items['admin/tripal/chado/tripal_organism'] = array(
-   'title' => 'Organisms',
-   'description' => 'Any living biological entity, such as an animal, plant, fungus, or bacterium.',
-   'page callback' => 'tripal_organism_admin_organism_view',
-   'access arguments' => array('adminster tripal organism'),
-   'type' => MENU_NORMAL_ITEM,
+    'title' => 'Organisms',
+    'description' => 'Any living biological entity, such as an animal, plant, fungus, or bacterium.',
+    'page callback' => 'tripal_organism_admin_organism_view',
+    'access arguments' => array('adminster tripal organism'),
+    'type' => MENU_NORMAL_ITEM,
   );
-
+  
   $items['admin/tripal/chado/tripal_organism/help'] = array(
-   'title' => 'Help',
-   'description' => "A description of the Tripal Organism module including a short description of it's usage.",
-   'page callback' => 'theme',
-   'page arguments' => array('tripal_organism_help'),
-   'access arguments' => array('adminster tripal organism'),
-   'type' => MENU_LOCAL_TASK,
+    'title' => 'Help',
+    'description' => "A description of the Tripal Organism module including a short description of it's usage.",
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_organism_help'),
+    'access arguments' => array('adminster tripal organism'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10
   );
-
+  
   $items['admin/tripal/chado/tripal_organism/configuration'] = array(
-   'title' => 'Settings',
-   'description' => 'Manage integration of Chado organisms including associated features',
-   'page callback' => 'drupal_get_form',
-   'page arguments' => array('tripal_organism_admin'),
-   'access arguments' => array('adminster tripal organism'),
-   'type' => MENU_LOCAL_TASK,
+    'title' => 'Settings',
+    'description' => 'Manage integration of Chado organisms including associated features',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_organism_admin'),
+    'access arguments' => array('adminster tripal organism'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 5
   );
-
+  
   $items['admin/tripal/chado/tripal_organism/sync'] = array(
     'title' => 'Sync',
     'description' => 'Sync Chado organisms with Drupal',
@@ -131,6 +133,7 @@ function tripal_organism_menu() {
     'page arguments' => array('tripal_organism_sync'),
     'access arguments' => array('adminster tripal organism'),
     'type' => MENU_LOCAL_TASK,
+    'weight' => 2
   );
 
   $items['admin/tripal/chado/tripal_organism/views/organisms/enable'] = array(
@@ -140,6 +143,7 @@ function tripal_organism_menu() {
     'access arguments' => array('administer tripal_bulk_loader'),
     'type' => MENU_CALLBACK,
   );
+  
 
   return $items;
 }
@@ -355,9 +359,20 @@ function chado_organism_validate($node, $form, &$form_state) {
   $node->abbreviation = trim($node->abbreviation);
   $node->common_name  = trim($node->common_name);
   $node->description  = trim($node->description);
+  
+  
+  // if this is a delete then don't validate
+  if($node->op == 'Delete') {
+    return;
+  }
+  
+  // we are syncing if we do not have a node ID but we do have a organism_id. We don't
+  // need to validate during syncing so just skip it.
+  if (is_null($node->nid) and property_exists($node, 'organism_id') and $node->organism_id != 0) {
+    return;
+  }
 
-  // if this is an update, we want to make sure that a different organism doesn't
-  // already have this genus and speces
+  // Validating for an update
   if (property_exists($node, 'organism_id')) {
     $sql = "
       SELECT *
@@ -378,7 +393,7 @@ function chado_organism_validate($node, $form, &$form_state) {
         WATCHDOG_WARNING);
     }
   }
-  // if this is an insert then check to make sure the genus and species are unique
+  // Validating for an insert
   else {
     $values = array(
       'genus' => $node->genus,

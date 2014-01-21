@@ -99,7 +99,7 @@ if ($enabled) {
         'header' => $headers,
         'rows' => $rows,
         'attributes' => array(
-          'id' => 'tripal_feature-table-analyses',
+          'id' => 'tripal_organism-table-features',
         ),
         'sticky' => FALSE,
         'caption' => '',

@@ -6,15 +6,83 @@
 function tripal_analysis_sync_form () {
   $form = array();
   
-  get_tripal_analysis_admin_form_sync_set($form);
-  get_tripal_analysis_admin_form_cleanup_set($form);
+  // define the fieldsets
+  $form['sync'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Sync Analyses')
+  );
+
+  // get the list of analyses
+  $sql = "SELECT * FROM {analysis} ORDER BY name";
+  $ana_rset = chado_query($sql);
+
+  // if we've added any analyses to the list that can be synced
+  // then we want to build the form components to allow the user
+  // to select one or all of them.  Otherwise, just present
+  // a message stating that all analyses are currently synced.
+  $ana_boxes = array();
+  $added = 0;
+  while ($analysis = $ana_rset->fetchObject()) {
+    // check to see if the analysis is already present as a node in drupal.
+    // if so, then skip it.
+    $sql = "SELECT * FROM {chado_analysis} WHERE analysis_id = :analysis_id";
+    if (!db_query($sql, array(':analysis_id' => $analysis->analysis_id))->fetchObject()) {
+      $ana_boxes[$analysis->analysis_id] = "$analysis->name";
+      $added++;
+    }
+  }
+
+  // if we have analyses we need to add to the checkbox then
+  // build that form element
+  if ($added > 0) {
+    $ana_boxes['all'] = "All analyses";
+
+    $form['sync']['analyses'] = array(
+      '#title'       => t('Available analyses'),
+      '#type'        => t('checkboxes'),
+      '#description' => t("Check the analyses you want to sync.  Drupal " .
+          "content will be created for each of the analyses listed above. " .
+          "Select 'All analyses' to sync all of them."),
+      '#required'    => FALSE,
+      '#prefix'      => '<div id="ana_boxes">',
+      '#suffix'      => '</div>',
+      '#options'     => $ana_boxes,
+    );
+    $form['sync']['button'] = array(
+      '#type' => 'submit',
+      '#value' => t('Submit Sync Job')
+    );
+  }
+  // we don't have any analyses to select from
+  else {
+    $form['sync']['value'] = array(
+      '#markup' => t('All analyses in Chado are currently synced with Drupal.')
+    );
+  }
+  
+  $form['cleanup'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Clean Up')
+  );
+  $form['cleanup']['description'] = array(
+    '#markup' => t("With Drupal and chado residing in different databases " .
+        "it is possible that nodes in Drupal and analyses in Chado become " .
+        "\"orphaned\".  This can occur if an analysis node in Drupal is " .
+        "deleted but the corresponding chado analysis is not and/or vice " .
+        "versa. Click the button below to resolve these discrepancies."),
+    '#weight' => 1,
+  );
+  $form['cleanup']['button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Clean up orphaned analyses'),
+    '#weight' => 2,
+  );
   
   return $form;
 }
 
 /**
  * Validate the administrative form
- * @todo Stephen: Why is validate used rather then submit?
  *
  * @param $form
  *   The form API array of the form to be validated
@@ -65,121 +133,6 @@ function tripal_analysis_sync_form_submit($form, &$form_state) {
     'tripal_analyses_cleanup', $job_args, $user->uid);
   }
 }
-/**
- * The "Clean-up orphaned analysis & nodes" Form
- *
- * @param $form
- *  The administrative form as it is currently
- *
- * @return
- *  A form API array describing an administrative form
- *
- * @ingroup tripal_analysis
- */
-function get_tripal_analysis_admin_form_cleanup_set(&$form) {
-  $form['cleanup'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Clean Up')
-  );
-  $form['cleanup']['description'] = array(
-    '#markup' => t("With Drupal and chado residing in different databases " .
-        "it is possible that nodes in Drupal and analyses in Chado become " .
-        "\"orphaned\".  This can occur if an analysis node in Drupal is " .
-        "deleted but the corresponding chado analysis is not and/or vice " .
-        "versa. Click the button below to resolve these discrepancies."),
-    '#weight' => 1,
-  );
-  $form['cleanup']['button'] = array(
-    '#type' => 'submit',
-    '#value' => t('Clean up orphaned analyses'),
-    '#weight' => 2,
-  );
-}
-
-/**
- * The "sync Analysis in chado with drupal" form
- *
- * @param $form
- *  The administrative form as it is currently
- *
- * @return
- *  A form API array describing an administrative form
- *
- * @ingroup tripal_analysis
- */
-function get_tripal_analysis_admin_form_sync_set(&$form) {
-  // define the fieldsets
-  $form['sync'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Sync Analyses')
-  );
-
-  // before proceeding check to see if we have any
-  // currently processing jobs. If so, we don't want
-  // to give the opportunity to sync analyses
-  $active_jobs = FALSE;
-  if (tripal_get_module_active_jobs('tripal_analysis')) {
-    $active_jobs = TRUE;
-  }
-
-  if (!$active_jobs) {
-
-    // get the list of analyses
-    $sql = "SELECT * FROM {analysis} ORDER BY name";
-    $ana_rset = chado_query($sql);
-
-    // if we've added any analyses to the list that can be synced
-    // then we want to build the form components to allow the user
-    // to select one or all of them.  Otherwise, just present
-    // a message stating that all analyses are currently synced.
-    $ana_boxes = array();
-    $added = 0;
-    while ($analysis = $ana_rset->fetchObject()) {
-      // check to see if the analysis is already present as a node in drupal.
-      // if so, then skip it.
-      $sql = "SELECT * FROM {chado_analysis} WHERE analysis_id = :analysis_id";
-      if (!db_query($sql, array(':analysis_id' => $analysis->analysis_id))->fetchObject()) {
-        $ana_boxes[$analysis->analysis_id] = "$analysis->name";
-        $added++;
-      }
-    }
-
-    // if we have analyses we need to add to the checkbox then
-    // build that form element
-    if ($added > 0) {
-      $ana_boxes['all'] = "All analyses";
-
-      $form['sync']['analyses'] = array(
-        '#title'       => t('Available analyses'),
-        '#type'        => t('checkboxes'),
-        '#description' => t("Check the analyses you want to sync.  Drupal " .
-            "content will be created for each of the analyses listed above. " .
-            "Select 'All analyses' to sync all of them."),
-        '#required'    => FALSE,
-        '#prefix'      => '<div id="ana_boxes">',
-        '#suffix'      => '</div>',
-        '#options'     => $ana_boxes,
-      );
-      $form['sync']['button'] = array(
-        '#type' => 'submit',
-        '#value' => t('Submit Sync Job')
-      );
-    }
-    // we don't have any analyses to select from
-    else {
-      $form['sync']['value'] = array(
-        '#markup' => t('All analyses in Chado are currently synced with Drupal.')
-      );
-    }
-  }
-  // we don't want to present a form since we have an active job running
-  else {
-    $form['sync']['value'] = array(
-      '#markup' => t('Currently, jobs exist related to chado analyses. Please check back later for analyses that can by synced once these jobs have finished.  You can view the status of pending jobs in the Tripal jobs page.')
-    );
-  }
-}
-
 /**
  * Synchronize analyses from chado to drupal
  *
@@ -244,13 +197,11 @@ function tripal_analysis_sync_analyses($analysis_id = NULL, $job_id = NULL) {
       }
       else {
         print "Failed to insert analysis $analysis->name\n";
+        watchdog('tanalysis_sync', "Unable to create analysis node. ID: %analysis_id, Name: %name.",
+         array('%analysis_id' => $analysis->analysis_id, '%name' => $analysis->name), WATCHDOG_WARNING);
       }
     }
-    else {
-      $page_content .= "Skipped $new_node->title<br />";
-    }
   }
-  return $page_content;
 }
 
 /**

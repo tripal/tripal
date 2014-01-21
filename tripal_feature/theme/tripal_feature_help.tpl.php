@@ -1,13 +1,3 @@
- <h3>Tripal Feature Quick Links:</h3>
-  <ul>
-   <li><a href="<?php print url("find/sequences") ?>">Retrieve Sequences</a></li>
-   <li><a href="<?php print url("admin/tripal/tripal_feature/configuration") ?>">Feature Configuration</a></li>
-   <li><a href="<?php print url("admin/tripal/tripal_feature/fasta_loader") ?>">Import a multi-FASTA file</a></li>
-   <li><a href="<?php print url("admin/tripal/tripal_feature/gff3_load") ?>">Import a GFF3 file</a></li>
-   <li><a href="<?php print url("admin/tripal/tripal_feature/sync") ?>">Sync Features</a></li>
-   <li><a href="<?php print url("admin/tripal/tripal_feature/delete") ?>">Delete Features</a></li>
- </ul>
-
   <h3>Module Description:</h3>
   <p>The Tripal Feature module provides a new feature content type and interface for genomic features. </p>
 

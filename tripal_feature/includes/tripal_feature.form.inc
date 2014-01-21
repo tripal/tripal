@@ -201,17 +201,27 @@ function chado_feature_form($node, &$form_state) {
  *
  * @ingroup tripal_feature
  */
-function chado_feature_validate($node, &$form_state) {
+function chado_feature_validate($node, $form, &$form_state) {
   // remove surrounding white-space on submitted values
   $node->uniquename   = trim($node->uniquename);
   $node->fname        = trim($node->fname);
   $node->feature_type = trim($node->feature_type); 
   $node->residues     = trim($node->residues);
   
-  $result = 0;
+  // if this is a delete then don't validate
+  if($node->op == 'Delete') {
+    return;
+  }
+  
+  // we are syncing if we do not have a node ID but we do have a feature_id. We don't
+  // need to validate during syncing so just skip it.
+  if (is_null($node->nid) and property_exists($node, 'feature_id') and $node->feature_id != 0) {
+    return;
+  }
 
-  // CASE A: if the nid exists then this is an update
+  // Validating for an update
   if (property_exists($node, 'nid')) {
+    
     // make sure the feature type is a real sequence ontology term
     $type = tripal_cv_get_cvterm_by_name($node->feature_type, NULL, 'sequence');
     if (!$type) {
@@ -240,37 +250,30 @@ function chado_feature_validate($node, &$form_state) {
       }
     }
   }
+  // Validating for an insert
   else {
-    // To differentiate if we are syncing or creating a new feature altogther, see if a feature_id already exists
-    if (property_exists($node, 'feature_id') and $node->feature_id != 0) {
-      // CASE B: Synchronizing a node from chado to drupal
-      // we don't need to do anything.
+      
+    // make sure the feature type is a real sequence ontology term
+    $type = tripal_cv_get_cvterm_by_name($node->feature_type, NULL, 'sequence');
+    if (!$type) {
+      form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
     }
-    else {
-      // CASE C: We are validating a form for inserting a new node
-      
-      // make sure the feature type is a real sequence ontology term
-      $type = tripal_cv_get_cvterm_by_name($node->feature_type, NULL, 'sequence');
-      if (!$type) {
-        form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
-      }
-      
-      // if this is an insert then we just need to make sure this name doesn't
-      // already exist for this organism if it does then we need to throw an error
-      $sql = "
-        SELECT *
-        FROM {feature} F
-          INNER JOIN {cvterm} CVT ON F.type_id = CVT.cvterm_id
-        WHERE
-          F.uniquename  = :name AND
-          F.organism_id = :organism_id AND
-          CVT.name      = :cvtname
-      ";
-      $args = array(':name' => $node->uniquename, ':organism_id' => $node->organism_id, ':cvtname' => $node->feature_type);
-      $result = chado_query($sql, $args)->fetchObject();
-      if ($result) {
-        form_set_error('uniquename', t("Feature insert cannot proceed. The feature name '$node->uniquename' already exists for this organism. Please provide a unique name for this feature."));
-      }
+    
+    // if this is an insert then we just need to make sure this name doesn't
+    // already exist for this organism if it does then we need to throw an error
+    $sql = "
+      SELECT *
+      FROM {feature} F
+        INNER JOIN {cvterm} CVT ON F.type_id = CVT.cvterm_id
+      WHERE
+        F.uniquename  = :name AND
+        F.organism_id = :organism_id AND
+        CVT.name      = :cvtname
+    ";
+    $args = array(':name' => $node->uniquename, ':organism_id' => $node->organism_id, ':cvtname' => $node->feature_type);
+    $result = chado_query($sql, $args)->fetchObject();
+    if ($result) {
+      form_set_error('uniquename', t("Feature insert cannot proceed. The feature name '$node->uniquename' already exists for this organism. Please provide a unique name for this feature."));
     }
   }
 }

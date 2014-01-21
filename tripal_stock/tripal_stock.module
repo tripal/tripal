@@ -641,7 +641,7 @@ function chado_stock_form($node, $form_state) {
  *
  * @ingroup tripal_stock
  */
-function chado_stock_validate($node, &$form) {
+function chado_stock_validate($node, $node, $form, &$form_state) {
 
   $int_in_chado_sql = "SELECT count(*) as count FROM {:table} WHERE :column = :value";
   $string_in_chado_sql = "SELECT count(*) as count FROM {:table} WHERE :column = :value";

@@ -226,7 +226,6 @@ function tripal_cv_get_cvterm_by_name($name, $cv_id = NULL, $cv_name = 'tripal')
        'cv_id' => $cv_id,
     );
     $options = array(
-      'statement_name' => 'sel_cvterm_nacv',
       'case_insensitive_columns' => array('name')
     );
     $r = tripal_core_chado_select('cvterm', array('*'), $values, $options);
@@ -237,22 +236,13 @@ function tripal_cv_get_cvterm_by_name($name, $cv_id = NULL, $cv_name = 'tripal')
       'cv_id' => array(
         'name' => $cv_name,
       ),
-    );    
-
-    $options = array(
-      'statement_name' => 'sel_cvterm_nacv',
-      'case_insensitive_columns' => array('name')
     );
-    $r = tripal_core_chado_select('cvterm', array('*'), $values, $options);      
+    $options = array('case_insensitive_columns' => array('name'));
+    $r = tripal_core_chado_select('cvterm', array('*'), $values, $options);
   }
   else {
-    $values = array(
-      'name' => $name,
-    );
-    $options = array(
-      'statement_name' => 'sel_cvterm_na',
-      'case_insensitive_columns' => array('name')
-    );
+    $values = array('name' => $name);
+    $options = array('case_insensitive_columns' => array('name'));
     $r = tripal_core_chado_select('cvterm', array('*'), $values, $options);
   }
 

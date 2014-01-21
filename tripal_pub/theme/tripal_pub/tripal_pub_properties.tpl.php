@@ -24,54 +24,64 @@ if (is_array($pubprops)) {
   }
 }
 // we'll keep track of the keywords so we can lump them into a single row
-$keywords = array(); ?>
-  <div id="tripal_pub-properties-box" class="tripal_pub-info-box tripal-info-box">
-    <div class="tripal_pub-info-box-title tripal-info-box-title">More Details</div>
-    <div class="tripal_pub-info-box-desc tripal-info-box-desc">Additional details for this publication include:</div>
-    <table class="tripal_pub-table tripal-table tripal-table-horz">
-      <tr>
-        <th>Property Name</th>
-        <th>Value</th>
-      </tr> <?php
-      if (count($properties) > 0) {
-        $i = 0;
-        foreach ($properties as $property) {
-          if ($property->type_id->name == 'Keywords') {
-            $keywords[] = $property->value;
-            continue;
-          }
-          $class = 'tripal_pub-table-odd-row tripal-table-odd-row';
-          if ($i % 2 == 0 ) {
-             $class = 'tripal_pub-table-odd-row tripal-table-even-row';
-          }
-          $i++; 
-          ?>
-          <tr class="<?php print $class ?>">
-            <td nowrap><?php print $property->type_id->name ?></td>
-            <td><?php print $property->value ?></td>
-          </tr><?php 
-        } 
-        if (count($keywords) > 0) {
-          $class = 'tripal_pub-table-odd-row tripal-table-odd-row';
-          if ($i % 2 == 0 ) {
-             $class = 'tripal_pub-table-odd-row tripal-table-even-row';
-          }
-          $i++; 
-          ?>
-          <tr class="<?php print $class ?>">
-            <td nowrap>Keywords</td>
-            <td><?php print implode(', ', $keywords) ?></td>
-          </tr><?php   
-        }
-        $class = 'tripal_pub-table-odd-row tripal-table-odd-row';
-        if ($i % 2 == 0 ) {
-           $class = 'tripal_pub-table-odd-row tripal-table-even-row';
-        }
-      } ?>
-    <tr class="<?php print $class ?>">
-      <td>Internal ID</td>
-      <td style="text-align:justify;"><?php print $pub->pub_id; ?></td>
-    </tr>
-  </table> 
-</div> <?php
+$keywords = array(); 
 
+if (count($properties)) { ?>
+  <div id="tripal_pub-properties-box" class="tripal_pub-info-box tripal-info-box">
+    <div class="tripal_pub-info-box-title tripal-info-box-title">Additional Properties</div>
+    <div class="tripal_pub-info-box-desc tripal-info-box-desc">Additional details for this publication include:</div> <?php 
+  
+    // the $headers array is an array of fields to use as the colum headers.
+    // additional documentation can be found here
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $headers = array('Property Name', 'Value');
+    
+    // the $rows array contains an array of rows where each row is an array
+    // of values for each column of the table in that row.  Additional documentation
+    // can be found here:
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $rows = array();
+    
+    $keywords = array();
+    foreach ($properties as $property) {
+      // each keyword is stored as a seperate properties. We want to show them
+      // only in a single field not as a bunc of individual properties, so when we see one, 
+      // save it in an array for later and down't add it yet to the table yet.
+      if ($property->type_id->name == 'Keywords') {
+        $keywords[] = $property->value;
+        continue;
+      }
+      $rows[] = array(
+        $property->type_id->name,
+        $property->value
+      );
+    }
+    // now add in a single row for all keywords
+    if (count($keywords) > 0) {
+      $rows[] = array(
+        'Keywords',
+        implode(', ', $keywords),
+      );
+    } 
+
+    // the $table array contains the headers and rows array as well as other
+    // options for controlling the display of the table.  Additional
+    // documentation can be found here:
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $table = array(
+      'header' => $headers,
+      'rows' => $rows,
+      'attributes' => array(
+        'id' => 'tripal_pub-table-properties',
+      ),
+      'sticky' => FALSE,
+      'caption' => '',
+      'colgroups' => array(),
+      'empty' => '',
+    );
+    
+    // once we have our table array structure defined, we call Drupal's theme_table()
+    // function to generate the table.
+    print theme_table($table);?> 
+  </div> <?php
+}

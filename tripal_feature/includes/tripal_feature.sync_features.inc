@@ -407,18 +407,17 @@ function tripal_feature_sync_features($max_sync = 0, $organism_id = NULL,
       $new_node->uniquename = $feature->uniquename;
       $new_node->feature_type = $feature->cvtname;
       
+      $form = array(); // dummy variable
+      $form_state = array(); // dummy variable
       node_validate($new_node, $form, $form_state);
       if (!form_get_errors()) {
         $node = node_submit($new_node);
         node_save($node);
       }
       else {
-        watchdog('trp-fsync', "Failed to insert feature: %title", array('%title' => $new_node->title), WATCHDOG_ERROR);
+        watchdog('tfeature_sync', "Unable to create feature node. ID: %feature_id, Name: %name.",
+          array('%feature_id' => $feature->feature_id, '%name' => $feature->uniquename), WATCHDOG_WARNING);      
       }
-      
-      // set the taxonomy for this node
-      //  tripal_feature_set_taxonomy($node, $feature_id);
-      
       $i++;
     }
   }
