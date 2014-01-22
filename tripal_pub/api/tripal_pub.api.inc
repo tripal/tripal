@@ -36,12 +36,6 @@
  *    The number of records to retrieve.  In cases with large numbers of
  *    records to retrieve, the remote database may limit the size of each
  *    retrieval.
- * @param $pager_id
- *    Optional.  This function uses the 'tripal_pager_callback' function
- *    to page a set of results.  This is helpful when generating results to
- *    be view online.  The pager works identical to the pager_query function
- *    of drupal. Simply provide a unique integer value for this argument.  Each
- *    form on a single page should have a unique $pager_id.
  * @param $page
  *    Optional.  If this function is called where the
  *    page for the pager cannot be set using the $_GET variable, use this
@@ -53,21 +47,18 @@
  *
  * @ingroup tripal_pub_api
  */
-function tripal_pub_get_remote_search_results($remote_db, $search_array,
-$num_to_retrieve, $pager_id = 0, $page = 0) {
+function tripal_pub_get_remote_search_results($remote_db, $search_array, $num_to_retrieve, $page = 0) {
 
-  // manually set the $_GET['page'] parameter to trick the pager
-  // into giving us the requested page
-  if (is_int($page) and $page > 0) {
-    $_GET['page'] = $page;
-  }
   // now call the callback function to get the results
   $callback = "tripal_pub_remote_search_$remote_db";
-  $pubs = array();
+  $pubs =  array(
+    'total_records' => 0,
+    'search_str'    => '',
+    'pubs'          => array(),
+  );
   if (function_exists($callback)) {
-    $pubs = call_user_func($callback, $search_array, $num_to_retrieve, $pager_id);
+    $pubs = call_user_func($callback, $search_array, $num_to_retrieve, $page);
   }
-
   return $pubs;
 }
 /*
@@ -94,8 +85,8 @@ function tripal_pub_get_raw_data($dbxref) {
           'scope' => 'id',
           'operation' => '',
           'is_phrase' => 0,
-    ),
-    ),
+       ),
+      ),
     );
     $pubs = tripal_pub_get_remote_search_results($remote_db, $search, 1, 0);
 
@@ -265,7 +256,7 @@ function tripal_pub_import_publications($report_email = FALSE, $do_update = FALS
       $HTML_report .= "<b>$total new publications from importer: $importer</b><br><ol>\n";
       foreach ($report['inserted'] as $pub) {
         $item = $pub['Title'];
-        if ($pub['pub_id']) {
+        if (array_key_exists('pub_id', $pub)) {
           $item = l($pub['Title'], "$base_url/pub/" . $pub['pub_id']);
         }
         $HTML_report .= "<li>$item</li>\n";
@@ -1136,7 +1127,7 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
           FROM {cvterm} 
           WHERE name = :cvtname AND cv_id = 
             (SELECT cv_id 
-             FROM cv 
+             FROM {cv} 
              WHERE name = 'tripal_pub'
             )
          ) 
@@ -1228,35 +1219,35 @@ function tripal_pub_create_citation($pub) {
   if ($pub_type == 'Journal Article') {
     $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
   
-    if ($pub['Journal Name']) {
+    if (array_key_exists('Journal Name', $pub)) {
       $citation .= $pub['Journal Name'] . '. ';
     }
-    elseif ($pub['Journal Abbreviation']) {
+    elseif (array_key_exists('Journal Abbreviation', $pub)) {
       $citation .= $pub['Journal Abbreviation'] . '. ';
     }
-    elseif ($pub['Series Name']) {
+    elseif (array_key_exists('Series Name', $pub)) {
       $citation .= $pub['Series Name'] . '. ';  
     }
-    elseif ($pub['Series Abbreviation']) {
+    elseif (array_key_exists('Series Abbreviation', $pub)) {
       $citation .= $pub['Series Abbreviation'] . '. ';
     }
-    if ($pub['Publication Date']) {
+    if (array_key_exists('Publication Date', $pub)) {
       $citation .= $pub['Publication Date'];
     }
-    elseif ($pub['Year']) {
+    elseif (array_key_exists('Year', $pub)) {
       $citation .= $pub['Year'];
     }
-    if ($pub['Volume'] or $pub['Issue'] or $pub['Pages']) {
+    if (array_key_exists('Volume', $pub) or array_key_exists('Issue', $pub) or array_key_exists('Pages',$pub)) {
       $citation .= '; ';
     }
-    if ($pub['Volume']) {
+    if (array_key_exists('Volume', $pub)) {
       $citation .= $pub['Volume'];
     }
-    if ($pub['Issue']) {
+    if (array_key_exists('Issue', $pub)) {
       $citation .= '(' . $pub['Issue'] . ')';
     }
-    if ($pub['Pages']) {
-      if($pub['Volume']) {
+    if (array_key_exists('Pages', $pub)) {
+      if (array_key_exists('Volume', $pub)) {
         $citation .= ':';
       }
       $citation .= $pub['Pages'];
@@ -1269,13 +1260,13 @@ function tripal_pub_create_citation($pub) {
   elseif ($pub_type == "Research Support, Non-U.S. Gov't") {
     $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
   
-    if ($pub['Journal Name']) {
+    if (array_key_exists('Journal Name', $pub)) {
       $citation .= $pub['Journal Name'] . '. ';
     }
-    if ($pub['Publication Date']) {
+    if (array_key_exists('Publication Date', $pub)) {
       $citation .= $pub['Publication Date'];
     }
-    elseif ($pub['Year']) {
+    elseif (array_key_exists('Year', $pub)) {
       $citation .= $pub['Year'];
     }
     $citation .= '.';
@@ -1286,35 +1277,35 @@ function tripal_pub_create_citation($pub) {
   elseif ($pub_type == 'Letter') {
     $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
   
-    if ($pub['Journal Name']) {
+    if (array_key_exists('Journal Name', $pub)) {
       $citation .= $pub['Journal Name'] . '. ';
     }
-    elseif ($pub['Journal Abbreviation']) {
+    elseif (array_key_exists('Journal Abbreviation', $pub)) {
       $citation .= $pub['Journal Abbreviation'] . '. ';
     }
-    elseif ($pub['Series Name']) {
+    elseif (array_key_exists('Series Name', $pub)) {
       $citation .= $pub['Series Name'] . '. ';  
     }
-    elseif ($pub['Series Abbreviation']) {
+    elseif (array_key_exists('Series Abbreviation', $pub)) {
       $citation .= $pub['Series Abbreviation'] . '. ';
     }
-    if ($pub['Publication Date']) {
+    if (array_key_exists('Publication Date', $pub)) {
       $citation .= $pub['Publication Date'];
     }
-    elseif ($pub['Year']) {
+    elseif (array_key_exists('Year', $pub)) {
       $citation .= $pub['Year'];
     }
-    if ($pub['Volume'] or $pub['Issue'] or $pub['Pages']) {
+    if (array_key_exists('Volume', $pub) or array_key_exists('Issue', $pub) or array_key_exists('Pages',$pub)) {
       $citation .= '; ';
     }
-    if ($pub['Volume']) {
+    if (array_key_exists('Volume', $pub)) {
       $citation .= $pub['Volume'];
     }
-    if ($pub['Issue']) {
+    if (array_key_exists('Issue', $pub)) {
       $citation .= '(' . $pub['Issue'] . ')';
     }
-    if ($pub['Pages']) {
-      if($pub['Volume']) {
+    if (array_key_exists('Pages', $pub)) {
+      if (array_key_exists('Volume', $pub)) {
         $citation .= ':';
       }
       $citation .= $pub['Pages'];
@@ -1339,32 +1330,32 @@ function tripal_pub_create_citation($pub) {
   elseif ($pub_type == 'Conference Proceedings') {
     $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
   
-    if ($pub['Conference Name']) {
+    if (array_key_exists('Conference Name', $pub)) {
       $citation .= $pub['Conference Name'] . '. ';
     }
-    elseif ($pub['Series Name']) {
+    elseif (array_key_exists('Series Name', $pub)) {
       $citation .= $pub['Series Name'] . '. ';  
     }
-    elseif ($pub['Series Abbreviation']) {
+    elseif (array_key_exists('Series Abbreviation', $pub)) {
       $citation .= $pub['Series Abbreviation'] . '. ';
     }
-    if ($pub['Publication Date']) {
+    if (array_key_exists('Publication Date', $pub)) {
       $citation .= $pub['Publication Date'];
     }
-    elseif ($pub['Year']) {
+    elseif (array_key_exists('Year', $pub)) {
       $citation .= $pub['Year'];
     }
-    if ($pub['Volume'] or $pub['Issue'] or $pub['Pages']) {
+    if (array_key_exists('Volume', $pub) or array_key_exists('Issue', $pub) or array_key_exists('Pages',$pub)) {
       $citation .= '; ';
     }
-    if ($pub['Volume']) {
+    if (array_key_exists('Volume', $pub)) {
       $citation .= $pub['Volume'];
     }
-    if ($pub['Issue']) {
+    if (array_key_exists('Issue', $pub)) {
       $citation .= '(' . $pub['Issue'] . ')';
     }
-    if ($pub['Pages']) {
-      if($pub['Volume']) {
+    if (array_key_exists('Pages', $pub)) {
+      if (array_key_exists('Volume', $pub)) {
         $citation .= ':';
       }
       $citation .= $pub['Pages'];

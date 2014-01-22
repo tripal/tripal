@@ -85,8 +85,8 @@ function tripal_pub_defaultview_admin_publications() {
     'path-1' => 'node/add/tripal-pub',
   );
   $handler->display->display_options['header']['action_links_area']['link-2'] = array(
-    'label-2' => 'Add Citation',
-    'path-2' => 'admin/tripal/chado/tripal_pub/citation',
+    'label-2' => '',
+    'path-2' => '',
   );
   $handler->display->display_options['header']['action_links_area']['link-3'] = array(
     'label-3' => '',

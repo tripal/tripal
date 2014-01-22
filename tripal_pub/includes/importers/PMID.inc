@@ -9,13 +9,11 @@
 /**
  *
  */
-function tripal_pub_remote_alter_form_PMID($form, $form_state) {
-  $num_criteria = $form['num_criteria']['#default_value'];
-
+function tripal_pub_remote_alter_form_PMID($form, $form_state, $num_criteria = 1) {
   // PubMed doesn't have an 'Abstract' field, so we need to convert the criteria
   // from 'Abstract' to 'Title/Abstract'
   for($i = 1; $i <= $num_criteria; $i++) {
-    $form['criteria'][$i]["scope-$i"]['#options']['abstract'] = 'Abstract/Title';
+    $form['themed_element']['criteria'][$i]["scope-$i"]['#options']['abstract'] = 'Abstract/Title';
   }
 
   return $form;
@@ -24,7 +22,7 @@ function tripal_pub_remote_alter_form_PMID($form, $form_state) {
  *
  */
 function tripal_pub_remote_validate_form_PMID($form, $form_state) {
-  $num_criteria = $form['num_criteria']['#default_value'];
+  $num_criteria = $form_state['values']['num_criteria'];
 
   for ($i = 1; $i <= $num_criteria; $i++) {
     $search_terms =  trim($form_state['values']["search_terms-$i"]);
@@ -38,7 +36,7 @@ function tripal_pub_remote_validate_form_PMID($form, $form_state) {
 /**
  *
  */
-function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_id) {
+function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $page) {
 
   // convert the terms list provicded by the caller into a string with words
   // separated by a '+' symbol.
@@ -59,18 +57,18 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_i
 
     // if this is phrase make sure the search terms are surrounded by quotes
     if ($is_phrase) {
-      $search_str .= "(\"$search_terms\" |SCOPE|) ";
+      $search_str .= "(\"$search_terms\" |SCOPE|)";
     }
     // if this is not a phase then we want to separate each 'OR or 'AND' into a unique criteria
     else {
-    	$search_str .= "(";
-    	if (preg_match('/and/i', $search_terms)) {
-    	  $elements = preg_split('/\s+and+\s/i', $search_terms);
-    	  foreach ($elements as $element) {
+      $search_str .= "(";
+      if (preg_match('/and/i', $search_terms)) {
+        $elements = preg_split('/\s+and+\s/i', $search_terms);
+        foreach ($elements as $element) {
           $search_str .= "($element |SCOPE|) AND ";
-    	  }
-    	  $search_str = substr($search_str, 0, -5); // remove trailing 'AND '              
-    	} 
+        }
+        $search_str = substr($search_str, 0, -5); // remove trailing 'AND '              
+      } 
       elseif (preg_match('/or/i', $search_terms)) {
         $elements = preg_split('/\s+or+\s/i', $search_terms);
         foreach ($elements as $element) {
@@ -79,19 +77,19 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_i
         $search_str = substr($search_str, 0, -4); // remove trailing 'OR '        
       }
       else {
-      	$search_str .= "($search_terms |SCOPE|) ";
+        $search_str .= "($search_terms |SCOPE|)";
       }
-      $search_str .= ') ';
+      $search_str .= ')';
     }
 
     if ($scope == 'title') {
-    	$search_str = preg_replace('/\|SCOPE\|/', '[Title]', $search_str);
+      $search_str = preg_replace('/\|SCOPE\|/', '[Title]', $search_str);
     }
     elseif ($scope == 'author') {
-    	$search_str = preg_replace('/\|SCOPE\|/', '[Author]', $search_str);
+      $search_str = preg_replace('/\|SCOPE\|/', '[Author]', $search_str);
     }
     elseif ($scope == 'abstract') {
-    	$search_str = preg_replace('/\|SCOPE\|/', '[Title/Abstract]', $search_str);
+      $search_str = preg_replace('/\|SCOPE\|/', '[Title/Abstract]', $search_str);
     }
     elseif ($scope == 'journal') {
       $search_str = preg_replace('/\|SCOPE\|/', '[Journal]', $search_str);
@@ -111,66 +109,26 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $pager_i
     $search_str .= " AND (\"" . sprintf("%04d/%02d/%02d", $past_date['year'], $past_date['mon'], $past_date['mday']) . "\"[Date - Create] : \"3000\"[Date - Create]))";
   }
 
-  $search_array['limit'] = $num_to_retrieve;
-  $search_array['search_string'] = $search_str;
-
-  //dpm($search_str);
-  unset($_SESSION['tripal_pub_PMID_query']);
-  // we want to get the list of pubs using the search terms but using a Drupal style pager
-  $pubs = tripal_pager_callback('tripal_pub_PMID_range',  $num_to_retrieve, $pager_id,
-    'tripal_pub_PMID_count', $search_array);
-
-  return $pubs;
-}
-
-/*
- * This function is used as the callback function when used with the
- * tripal_pager_callback function.  This function returns a count of
- * the dataset to be paged.
- */
-function tripal_pub_PMID_count($search_array) {
-  $search_str = $search_array['search_string'];
-  $limit = $search_array['limit'];
-
-  $results = tripal_pub_PMID_search_init($search_str, $limit);
-  $_SESSION['tripal_pub_PMID_query'][$search_str]['Count'] = $results['Count'];
-  $_SESSION['tripal_pub_PMID_query'][$search_str]['WebEnv'] = $results['WebEnv'];
-  $_SESSION['tripal_pub_PMID_query'][$search_str]['QueryKey'] = $results['QueryKey'];
-   
-  return $results['Count'];
-
-}
-
-/*
- * This function is used as the callback function when used with the
- * tripal_pager_callback function.  This function returns the results
- * within the specified range
- */
-function tripal_pub_PMID_range($search_array, $start = 0, $limit = 10) {
-  $search_str = $search_array['search_string'];
-  $limit = $search_array['limit'];
-
-  $count = $_SESSION['tripal_pub_PMID_query'][$search_str]['Count'];
-  if ($count == 0) {
-    return array();
+  // now initialize the query 
+  $results = tripal_pub_PMID_search_init($search_str, $num_to_retrieve);
+  $total_records = $results['Count'];
+  $query_key     = $results['QueryKey'];
+  $web_env       = $results['WebEnv'];
+  
+  // initialize the pager
+  $start = $page * $num_to_retrieve;
+  
+  // if we have no records then return an empty array
+  if ($total_records == 0) {
+    return array(
+      'total_records' => $total_records,
+      'search_str'    => $search_str,
+      'pubs'          => array(),
+    );
   }
-
-  // get the query_key and the web_env from the previous count query.
-  $query_key = $_SESSION['tripal_pub_PMID_query'][$search_str]['QueryKey'];
-  $web_env   = $_SESSION['tripal_pub_PMID_query'][$search_str]['WebEnv'];
-
-  // if this function has been called without calling the count function
-  // then we need to do the query.
-  if (!$query_key) {
-    $results = tripal_pub_PMID_search_init($search_str, $limit);
-    $_SESSION['tripal_pub_PMID_query']['WebEnv'] = $results['WebEnv'];
-    $_SESSION['tripal_pub_PMID_query']['QueryKey'] = $results['QueryKey'];
-    $query_key =  $results['QueryKey'];
-    $web_env = $results['WebEnv'];
-  }
-
-  // now get the list of PMIDs from the previous search
-  $pmids_txt = tripal_pub_PMID_fetch($query_key, $web_env, 'uilist', 'text', $start, $limit);
+  
+  // now get the list of PMIDs from the initialized search
+  $pmids_txt = tripal_pub_PMID_fetch($query_key, $web_env, 'uilist', 'text', $start, $num_to_retrieve);
 
   // iterate through each PMID and get the publication record. This requires a new search and new fetch
   $pmids = explode("\n", trim($pmids_txt));
@@ -181,7 +139,11 @@ function tripal_pub_PMID_range($search_array, $start = 0, $limit = 10) {
     $pub     = tripal_pub_PMID_parse_pubxml($pub_xml);
     $pubs[]  = $pub;
   }
-  return $pubs;
+  return array(
+    'total_records' => $total_records,
+    'search_str'    => $search_str,
+    'pubs'          => $pubs,
+  );
 }
 
 /*
@@ -335,7 +297,7 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
           // just skip it.  Examples of other PMIDs are in the articles that
           // cite this one.
           $xml->read(); // get the value for this element
-          if(!$pub['Publication Dbxref']) {
+          if(!array_key_exists('Publication Dbxref', $pub)) {
             $pub['Publication Dbxref'] = 'PMID:' . $xml->value;
           }
           break;
@@ -696,9 +658,9 @@ function tripal_pub_PMID_parse_journal_issue($xml, &$pub) {
         case 'PubDate':
           $date = tripal_pub_PMID_parse_date($xml, 'PubDate');
           $year = $date['year'];
-          $month = $date['month'];
-          $day = $date['day'];
-          $medline = $date['medline'];
+          $month = array_key_exists('month', $date) ? $date['month'] : '';
+          $day = array_key_exists('day', $date) ? $date['day'] : '';
+          $medline = array_key_exists('medline', $date) ? $date['medline'] : '';
            
           $pub['Year'] = $year;
           if ($month and $day and $year) {
@@ -784,7 +746,7 @@ function tripal_pub_PMID_parse_authorlist($xml, &$pub) {
             // a corresponding corrected entry so we can saftely skip it.
             continue;
           }
-          if ($author['Collective']) {
+          if (array_key_exists('Collective', $author)) {
             $authors .= $author['Collective'] . ', ';
           }
           else {

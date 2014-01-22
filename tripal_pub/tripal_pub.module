@@ -53,7 +53,7 @@ function tripal_pub_node_info() {
 /**
  * Tripal-Publication-Menu
  *
- * Implemets hook_menu(): Adds menu items for the tripal_pub module menu. This section
+ * Implements hook_menu(): Adds menu items for the tripal_pub module menu. This section
  * gives the outline for the main menu of the Tripal-Publication module
  *
  * @return
@@ -117,6 +117,16 @@ function tripal_pub_menu() {
     'weight' => 2
   );
 
+  $items['admin/tripal/chado/tripal_pub/citation'] = array(
+    'title' => 'Citations',
+    'description' => 'Update publication citations',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_pub_citation_form'),
+    'access arguments' => array('administer tripal pubs'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 1
+  );
+  
   $items['admin/tripal/chado/tripal_pub/import_list'] = array(
     'title' => t('Importers'),
     'description' => t('List all publication importers'),
@@ -125,12 +135,20 @@ function tripal_pub_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 0
   );
-
+  
+  // add a second link for the importer on the data loaders page
+  $items['admin/tripal/loaders/pub_import'] = array(
+    'title' => 'Publications Importers',
+    'description' => 'Create importers that can periodically import publications from remote online publication databases.',
+    'page callback' => 'tripal_pub_importers_list',
+    'access arguments' => array('administer tripal pubs'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  
   $items['admin/tripal/chado/tripal_pub/import/new'] = array(
     'title' => t('Add an Importer'),
     'description' => t('Add a new publication importer.'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_pub_importer_setup_form'),
+    'page callback' => 'tripal_pub_importer_setup_page',
     'access arguments' => array('administer tripal pubs'),
     'type ' => MENU_CALLBACK,
   );
@@ -144,7 +162,7 @@ function tripal_pub_menu() {
 
   $items['admin/tripal/chado/tripal_pub/import/edit/%'] = array(
     'page callback' => 'tripal_pub_importer_setup_page',
-    'page arguments' => array(4, 5),
+    'page arguments' => array(5, 6),
     'access arguments' => array('administer tripal pubs'),
     'type ' => MENU_CALLBACK,
   );
@@ -184,15 +202,6 @@ function tripal_pub_menu() {
     'page arguments' => array(3, 4),
     'access arguments' => array('edit chado_pub content'),
     'type ' => MENU_CALLBACK,
-  );
-
-  $items['admin/tripal/chado/tripal_pub/citation'] = array(
-      'title' => ' Create Citations',
-      'description' => 'Create citations in Chado with Drupal',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('tripal_pub_citation_form'),
-      'access arguments' => array('administer tripal pubs'),
-      'type' => MENU_CALLBACK,
   );
 
   return $items;
