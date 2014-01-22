@@ -1,4 +1,149 @@
 <?php
+
+/**
+ * @file
+ * API to manage the chado prop table for various Tripal Node Types
+ *
+ * How To Use:
+ * @code
+
+  function chado_example_form($form, $form_state) {
+
+    // When setting the defaults for your form make sure to take into account
+    // that when ajax is fired via a button (which it is for the properties api)
+    // you're user entered data is in $form_state['input'] instead of $form_state['values']
+    // although it has not been validated. Thus make sure you handle values in $form_state['input']
+    // or user input may be loast on addition of properties
+
+    // All the form array definition particular to your node type
+
+    // Add the properties form to your current form
+    // get the chado_example properties to be used in the dropdown
+    $properties = array();
+    $properties[] = 'Select a Property';
+    $sql = "
+      SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition
+      FROM  {cvterm} CVT
+        INNER JOIN {cv} CV ON CVT.cv_id = CV.cv_id
+      WHERE
+        CV.name = :ontology_name AND
+        NOT CVT.is_obsolete = 1
+      ORDER BY CVT.name ASC
+    ";
+    $ontology_name = 'nameofproptypeontology';  //you need to set this variable with the cv.name of the ontology governing your prop tables type_id
+    $prop_types = chado_query($sql, array(':ontology_name' => $ontology_name));
+    while ($prop = $prop_types->fetchObject()) {
+      $properties[$prop->cvterm_id] = $prop->name;
+    }
+
+    $exclude = array();
+    $include = array();
+    $instructions = t('To add additional properties to the drop down. ' . l("Add terms to the $ontology_name vocabulary", "admin/tripal/chado/tripal_cv/cvterm/add") . ".");
+
+    // actually create and add the form
+    tripal_core_properties_form(
+      $form, $form_state,     // form and form_state of the current form
+      'exampleprop',          // properties table name
+      'example_id',           // key to link to the chado content created by this node
+      $ontology_name,         // name of ontology governing your prop table type_id column
+      $properties,            // an array of properties to use in the drop-down
+      $example_id,            // the value of the above key
+      $exclude,               // elements from the ontology you don't want to be available as property types
+      $include,               // additional elements not in the ontology that you do what in the drop-down
+      $instructions,          // form specific instructions
+      'Properties'            // name of the fieldset
+    );
+
+    return $form;
+  }
+
+  function nodetype_insert($node) {
+
+    // if there is an example_id in the $node object then this must be a sync so
+    // we can skip adding the chado_example as it is already there, although
+    // we do need to proceed with the rest of the insert
+    if (!property_exists($node, 'example_id')) {
+
+      // Add record to chado example table
+
+      // Add to any other tables needed
+
+      // Add each property (exampleprop table)
+      // example_property = controlled vocab name for exampleprop.type_id
+      $properties = tripal_core_properties_form_retreive($node, 'example_property');
+      foreach ($properties as $property => $elements) {
+        foreach ($elements as $rank => $value) {
+
+          $success = tripal_core_insert_property(
+            'example',        //base table name
+            $example_id,      // key to link to the chado content created by this node
+            $property,        // cvterm.name of the property to be added
+            $ontology_name,   // name of the ontology the cvterm is from
+            $value            // the value o the property
+          );
+
+          if (!$success) {
+            watchdog(
+              'tripal_example',
+              'Example Update: Unable to insert property %cvterm %value.',
+              array('%cvterm' => $property, '%value' => $value),
+              WATCHDOG_ERROR
+            );
+          }
+        }
+      }
+    }
+
+    // Add record to chado_example linking example_id to new node
+
+  }
+
+  function nodetype_update($node) {
+
+
+      // Update record in chado example table
+
+      // Update any other tables needed
+
+      // First delete any existing properties
+      tripal_core_chado_delete(
+        'exampleprop',                        // the name of the prop table
+        array('example_id' => $example_id)    // name of your key and the current value used to determine which to delete
+      );
+
+      // Add each property (exampleprop table)
+      // example_property = controlled vocab name for exampleprop.type_id
+      $properties = tripal_core_properties_form_retreive($node, 'example_property');
+      foreach ($properties as $property => $elements) {
+        foreach ($elements as $rank => $value) {
+
+          $success = tripal_core_insert_property(
+            'example',        //base table name
+            $example_id,      // key to link to the chado content created by this node
+            $property,        // cvterm.name of the property to be added
+            $ontology_name,   // name of the ontology the cvterm is from
+            $value            // the value o the property
+          );
+
+          if (!$success) {
+            watchdog(
+              'tripal_example',
+              'Example Update: Unable to insert property %cvterm %value.',
+              array('%cvterm' => $property, '%value' => $value),
+              WATCHDOG_ERROR
+            );
+          }
+        }
+      }
+    }
+
+    // Don't need to update chado_example linking table since niether example_id or nid can be changed in update
+
+  }
+
+ * @endcode
+ */
+
 /**
  * Retrieve a property for a given base table record
  *
@@ -329,13 +474,13 @@ function tripal_core_delete_property_by_id($basetable, $record_id) {
 }
 
 /**
- * This function is a wrapper for adding fields to an existing form for managing properties.  
+ * This function is a wrapper for adding fields to an existing form for managing properties.
  * Many of the chado tables have a corresponding 'prop' table (e.g. analysisprop, contactprop,
  * organismprop, etc) and those prop tables all have the same schema.  Use this function
  * to add all the necessary components to a form for allowing the user to add/edit properties to
  * a given record.  To retreive properties in hook_insert or hook_update of a node form use
  * use the function tripal_core_properties_form_retreive().
- * 
+ *
  * @param $form
  *   The Drupal form array into which the properties elements will be added
  * @param $form_state
@@ -357,7 +502,7 @@ function tripal_core_delete_property_by_id($basetable, $record_id) {
  * @param $exclude
  *   An optional array of cvterms to exclude when retreiving terms already saved in the database.
  *   Use this array when properties are present but should be handled elsewhere.
- *   For example, for contacts, the description field is stored as a property because 
+ *   For example, for contacts, the description field is stored as a property because
  *   the actual field is only 255 characters. The 'contact_description' therefore should
  *   not be shown in the list of properties, even if present, because it is handled by
  *   a different form element.
@@ -370,7 +515,7 @@ function tripal_core_delete_property_by_id($basetable, $record_id) {
  *       array('cvterm' => $obj2, 'value' => $val2),
  *       ... etc
  *     );
- *   The 'cvterm' key should have as a value an object with these properties: 'name', 'cvterm_id', 'definition'. 
+ *   The 'cvterm' key should have as a value an object with these properties: 'name', 'cvterm_id', 'definition'.
  * @param $instructions
  *   An optional additional set of instructions for the form properties.
  * @param $fset_title
@@ -378,12 +523,12 @@ function tripal_core_delete_property_by_id($basetable, $record_id) {
  * @ingroup tripal_properties_api
  */
 function tripal_core_properties_form(&$form, &$form_state, $prop_table, $id_field, $cv_name,
-    $available_props, $id = NULL, $exclude = array(), $include = array(), $instructions = '', 
+    $available_props, $id = NULL, $exclude = array(), $include = array(), $instructions = '',
     $fset_title = 'Additional Details') {
-  
+
   $d_removed      = array(); // lists removed properties
   $num_new        = 0;  // the number of new rows
-  
+
   // if we are re constructing the form from a failed validation or ajax callback
   // then use the $form_state['values'] values
   if (array_key_exists('values', $form_state)) {
@@ -396,7 +541,7 @@ function tripal_core_properties_form(&$form, &$form_state, $prop_table, $id_fiel
     $d_removed      = $form_state['input']['removed'];
     $num_new        = $form_state['input']['num_new'] ? $form_state['input']['num_new'] : 0;
   }
-  
+
   $form['properties'] = array(
     '#type' => 'fieldset',
     '#title' => t($fset_title),
@@ -411,23 +556,23 @@ function tripal_core_properties_form(&$form, &$form_state, $prop_table, $id_fiel
     '#prefix' => '<div id="tripal-generic-edit-properties-table">',
     '#suffix' => '</div>',
   );
-  
+
   // this array keeps track of all properties we have and allows the functions
   // below to select the next rank if a property is dupliated
   $ranks = array();
-  
+
   // add in the properties from the Chado prop table (only pertains to existing analyses)
   if ($id) {
     tripal_core_properties_form_add_prop_table_props($prop_table, $id_field, $cv_name,
       $form, $form_state, $id, $ranks, $d_removed, $exclude, $include);
   }
-  
+
   // add in any new properties that have been added by the user through an AHAH callback
   tripal_core_properties_form_add_new_props($form, $form_state, $ranks, $d_removed);
-  
+
   // add an empty row of field to allow for addition of a new property
   tripal_core_properties_form_add_new_empty_props($form, $form_state, $available_props);
-  
+
   $form['properties']['table']['#theme'] = 'tripal_core_properties_form';
 }
 
@@ -527,7 +672,7 @@ function tripal_core_props_form_props_button_submit($form, &$form_state){
  * This adds
  */
 function tripal_core_properties_form_add_new_props(&$form, &$form_state, &$ranks, &$d_removed) {
-   
+
   // set some default values
   $j = 0;
   $num_properties = 0;
@@ -574,7 +719,7 @@ function tripal_core_properties_form_add_new_props(&$form, &$form_state, &$ranks
       if ($rows > 10) {
         $rows = 10;
       }
-      
+
       // add the new fields
       $form['properties']['table']['new'][$new_id][$rank]["new_id-$new_id-$rank"] = array(
         '#markup' => $cvterm[0]->name
@@ -682,7 +827,7 @@ function tripal_core_properties_form_add_new_props(&$form, &$form_state, &$ranks
  * extra properties that were specified manually by the caller.
  *
  */
-function  tripal_core_properties_form_add_prop_table_props($prop_table, $id_field, $cv_name, 
+function  tripal_core_properties_form_add_prop_table_props($prop_table, $id_field, $cv_name,
     &$form, $form_state, $id, &$ranks, &$d_removed, $exclude = array(), $include = array()) {
 
   // get the existing properties
@@ -697,7 +842,7 @@ function  tripal_core_properties_form_add_prop_table_props($prop_table, $id_fiel
   foreach ($include as $prop) {
     $all_props[] = $prop;
   }
-  
+
   // now merge in properties saved in the database
   $sql = "
     SELECT CVT.cvterm_id, CVT.name, CVT.definition, PP.value, PP.rank
@@ -750,7 +895,7 @@ function  tripal_core_properties_form_add_prop_table_props($prop_table, $id_fiel
     if ($rows > 10) {
       $rows = 10;
     }
-    
+
 
     $form['properties']['table'][$type_id][$rank]["prop_id-$type_id-$rank"] = array(
       '#markup'        => $name,
@@ -834,7 +979,7 @@ function theme_tripal_core_properties_form($variables) {
  *
  */
 function tripal_core_props_theme_node_form_properties($form) {
-  $rows = array(); 
+  $rows = array();
 
   // first add in the properties derived from the prop table
   // the array tree for these properties looks like this:
@@ -900,26 +1045,26 @@ function tripal_core_props_theme_node_form_properties($form) {
  * This function is used in a hook_insert, hook_update for a node form
  * when the properties form has been added to the form.  It retrieves all of the properties
  * and returns them in an array of the format:
- *   
+ *
  *   $properties[<property name>][<rank>] = <value
- * 
+ *
  * This array can then be used for inserting or updating properties using the API call
  * tripal_hook_insert_property()
- * 
+ *
  * @param $node
  * @param $cvname
  *   The name of the controlled vocabulary that the properties belong to
- * 
+ *
  * @return
  *   A properties array
- *   
+ *
  * @ingroup tripal_properties_api
  */
 function tripal_core_properties_form_retreive($node, $cv_name) {
-  
+
   // now add the properties
   $properties = array(); // stores all of the properties we need to add
-  
+
   // get the list of properties for easy lookup (without doing lots of database queries
   $properties_list = array();
   $sql = "
@@ -935,12 +1080,12 @@ function tripal_core_properties_form_retreive($node, $cv_name) {
   while ($prop = $prop_types->fetchObject()) {
     $properties_list[$prop->cvterm_id] = $prop->name;
   }
-  
+
   // get the properties that should be added. Properties are in one of two forms:
   //  1) prop_value-[type id]-[index]
   //  2) new_value-[type id]-[index]
   //  3) new_id, new_value
-  
+
   foreach ($node as $name => $value) {
     if (preg_match('/^new_value-(\d+)-(\d+)/', $name, $matches)) {
       $type_id = $matches[1];

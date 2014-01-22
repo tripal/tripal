@@ -13,14 +13,16 @@
 
   function modulename_menu() {
 
-    $module_name = 'tripal_stock';
-    $linking_table = 'chado_stock';
-    $items['admin/tripal/chado/tripal_stock/sync'] = array(
+    $module_name = 'tripal_example';        // the machine name of your module
+    $linking_table = 'chado_example';       // the base specified in hook_node_info
+    // This menu item will be a tab on the admin/tripal/chado/tripal_example page
+    // that is not selected by default
+    $items['admin/tripal/chado/tripal_example/sync'] = array(
       'title' => ' Sync',
-      'description' => 'Sync stocks from Chado with Drupal',
+      'description' => 'Sync examples from Chado with Drupal',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_core_chado_node_sync_form', $module_name, $linking_table),
-      'access arguments' => array('administer tripal stocks'),
+      'access arguments' => array('administer tripal examples'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 0
     );
@@ -30,22 +32,24 @@
 
   modulename_node_info() {
     return array(
-      'chado_stock' => array(
-        'name' => t('Stock'),
-        'base' => 'chado_stock',
-        'description' => t('A Chado Stock is a collection of material that can be sampled and have experiments performed on it.'),
+      'chado_example' => array(
+        'name' => t('example'),
+        'base' => 'chado_example',
+        'description' => t('A Chado example is a collection of material that can be sampled and have experiments performed on it.'),
         'has_title' => TRUE,
         'has_body' => FALSE,
+
+        // this is what differs from the regular Drupal-documented hook_node_info()
         'chado_node_api' => array(
-          'base_table' => 'stock',
-          'hook_prefix' => 'chado_stock',
+          'base_table' => 'example',            // the name of the chado base table
+          'hook_prefix' => 'chado_example',     // usually the name of the node type
           'title' => array(
-            'singular' => t('Stock'),
-            'plural' => t('Stocks')
+            'singular' => t('Example'),         // Singular human-readable title
+            'plural' => t('Examples')           // Plural human-readable title
           ),
-          'select_by' => array(
-            'type_id' => TRUE,
-            'organism_id' => TRUE
+          'select_by' => array(                 // foreign keys present in your table
+            'type_id' => TRUE,                  // TRUE if there is an example.type_id field
+            'organism_id' => TRUE               // TRUE if there is an example.organism_id field
           ),
         )
       ),
@@ -55,24 +59,49 @@
   // Create New Node
   // @param $new_node: a basic new node object
   // @param $record: the record object from chado specifying the biological data for this node
-  function chado_stock_chado_node_sync_create_new_node($new_node, $record) {
+  function chado_example_chado_node_sync_create_new_node($new_node, $record) {
 
     // Add relevant chado details to the new node object
-    // At a minimum you should add the primary key to the node
-    $new_node->stock_id = $record->stock_id;
+    // This really only needs to be the fields from the node used during node creation
+    // including values used to generate the title, etc.
+    // All additional chado data will be added via nodetype_load when the node is later used
+    $new_node->uniquename = $record->uniquename;
 
     return $new_node;
   }
 
   // Alter the sync form (optional)
-  function chado_stock_chado_node_sync_form($form, $form_state) {
+  function chado_example_chado_node_sync_form($form, $form_state) {
+
     // Change or add to the form array as needed
+    // Any changes should be made in accordance with the Drupal Form API
+
     return $form;
   }
 
   // Bypass chado node api sync form submit (optional)
   // Allows you to use this function as your own submit
-  function chado_stock_chado_node_sync_form ($form, $form_state) {}
+  function chado_example_chado_node_sync_form ($form, $form_state) {
+
+    global $user;
+
+    $job_args = array(
+      $base_table,      // the base chado table (ie: feature)
+      $max_sync,        // the maximum number of records to sync or FALSE for sync all that match
+      $organism_id,     // the organism_id to restrict records to or FALSE if not to restrict by organism_id
+      $types            // A string with the cvterm.name of the types to restrict to separated by |||
+    );
+
+    // You should register a tripal job
+    tripal_add_job(
+      $title,                                   // the title of the job -be descriptive
+      $module,                                  // the name of your module
+      'tripal_core_chado_node_sync_records',    // the chado node api sync function
+      $job_args,                                // an array with the arguments to pass to the above function
+      $user->uid                                // the user who submitted the job
+    );
+
+  }
 
 
   // Alter the query for the chado database which gets the chado records to be sync'd (optional)
@@ -81,8 +110,17 @@
   // @param $where_clauses: an array of where clauses which will all be AND'ed together. Use :placeholders for values.
   // @param $where_args: an associative array of arguments to be subbed in to the where clause
   //           where the key = :placeholder and the value is the actual argument to be subbed in
-  function chado_stock_chado_node_sync_select_query (&$select, &$joins, &$where_clauses, &$where_args) {
+  function chado_example_chado_node_sync_select_query (&$select, &$joins, &$where_clauses, &$where_args) {
 
+    // You can add fields to be selected
+    $select[] = 'example.myfavfield';
+
+    // Or joins to important tables
+    $joins[] = 'LEFT JOIN {exampleprop} PROP ON PROP.example_id=EXAMPLE.example_id';
+
+    // Or filter the query using where clauses
+    $where_clauses[] = 'example.myfavfield = :favvalue';
+    $where_args[':favvalue'] = 'awesome-ness';
   }
 
  * @endcode
