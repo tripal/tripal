@@ -381,20 +381,17 @@ function tripal_core_properties_form(&$form, &$form_state, $prop_table, $id_fiel
     $available_props, $id = NULL, $exclude = array(), $include = array(), $instructions = '', 
     $fset_title = 'Additional Details') {
   
-  $d_removed      = array(); // lists removed properties
-  $num_new        = 0;  // the number of new rows
+  $d_removed = array(); // lists removed properties
   
   // if we are re constructing the form from a failed validation or ajax callback
   // then use the $form_state['values'] values
   if (array_key_exists('values', $form_state)) {
-    $d_removed      = $form_state['values']['removed'];
-    $num_new        = $form_state['values']['num_new'] ? $form_state['values']['num_new'] : 0;
+    $d_removed = $form_state['values']['removed'];
   }
   // if we are re building the form from after submission (from ajax call) then
   // the values are in the $form_state['input'] array
   if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
-    $d_removed      = $form_state['input']['removed'];
-    $num_new        = $form_state['input']['num_new'] ? $form_state['input']['num_new'] : 0;
+    $d_removed = $form_state['input']['removed'];
   }
   
   $form['properties'] = array(

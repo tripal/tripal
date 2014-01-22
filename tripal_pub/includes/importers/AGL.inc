@@ -2,19 +2,17 @@
 /**
  *
  */
-function tripal_pub_remote_alter_form_AGL($form, $form_state) {
-
-  $num_criteria = $form['num_criteria']['#default_value'];
-
+function tripal_pub_remote_alter_form_AGL($form, $form_state, $num_criteria = 1) {
+  
   // So far we haven't been able to get AGL to filter results to only
   // include pubs by the XX number days in the past.  So, we will
   // change the 'days' element to be the year to query
-  $form['days']['#title'] = t('Year');
-  $form['days']['#description']  = t('Please enter a year to limit records by the year they were published, created or modified in the database.');
+  $form['themed_element']['days']['#title'] = t('Year');
+  $form['themed_element']['days']['#description']  = t('Please enter a year to limit records by the year they were published, created or modified in the database.');
 
   // The Journal Name filter doesn't seem to work, so remove it
   for($i = 1; $i <= $num_criteria; $i++) {
-    unset($form['criteria'][$i]["scope-$i"]['#options']['journal']);
+    unset($form['themed_element']['criteria'][$i]["scope-$i"]['#options']['journal']);
   }
   return $form;
 }
@@ -23,7 +21,7 @@ function tripal_pub_remote_alter_form_AGL($form, $form_state) {
  */
 function tripal_pub_remote_validate_form_AGL($form, $form_state) {
   $days =  trim($form_state['values']["days"]);
-  $num_criteria = $form['num_criteria']['#default_value'];
+  $num_criteria = $form_state['values']['num_criteria'];
 
   if ($days and !preg_match('/^\d\d\d\d$/', $days)) {
     form_set_error("days", "Please enter a four digit year.");
@@ -48,10 +46,10 @@ function tripal_pub_remote_validate_form_AGL($form, $form_state) {
 /**
  *
  */
-function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id) {
+function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
   // get some values from the serach array
   $num_criteria = $search_array['num_criteria'];
-  $days = $search_array['days'];
+  $days         = $search_array['days'];
 
   // set some defaults
   $search_array['limit'] = $num_to_retrieve;
@@ -328,43 +326,76 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $pager_id
     "id"       => "u=12",
     "year"     => "u=30 r=o", 
     "journal"  => "u=1033"
+  );
+  yaz_ccl_conf($yazc, $fields);
+
+  if (!yaz_ccl_parse($yazc, $ccl, $cclresult)) {
+    drupal_set_message('Error parsing search string: ' . $cclresult["errorstring"], "error");
+    watchdog('tpub_import', 'Error: %errstr', array('%errstr' => $cclresult["errorstring"]), WATCHDOG_ERROR);
+    return array(
+      'total_records' => 0,
+      'search_str'    => '',
+      'pubs'          => array(),
     );
-    yaz_ccl_conf($yazc, $fields);
+  }
+  $search_str = $cclresult["rpn"];
+ 
+  // get the total number of records 
+  $total_records = tripal_pub_AGL_count($yazc, $search_str);
+  
+  // get the pubs in the specified rang
+  $start = $page * $num_to_retrieve;
+  $results = tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $total_records);
 
-    if (!yaz_ccl_parse($yazc, $ccl, $cclresult)) {
-      drupal_set_message('Error parsing search string: ' . $cclresult["errorstring"], "error");
-      watchdog('tpub_import', 'Error: %errstr', array('%errstr' => $cclresult["errorstring"]), WATCHDOG_ERROR);
-      return array();
+  // close the connection
+  yaz_close($yazc);
+
+  return $results;
+}
+/**
+ * 
+ */
+function tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $total_records) {
+  yaz_range($yazc, 1, $total_records);
+  if (!yaz_present($yazc)) {
+    $error_no = yaz_errno($yazc);
+    $error_msg = yaz_error($yazc);
+    $additional = yaz_addinfo($yazc);
+    if ($additional != $error_msg) {
+      $error_msg .= " $additional";
     }
-    $search_str = $cclresult["rpn"];
-
-    $search_array['search_string'] = $search_str;
-
-    // save the YAZ connection in the session for use by other functions
-    $_SESSION['tripal_pub_AGL_query'][$search_str]['yaz_connection'] = $yazc;
-
-    //dpm($search_array);
-    // we want to get the list of pubs using the search terms but using a Drupal style pager
-    $pubs = tripal_pager_callback('tripal_pub_AGL_range',  $num_to_retrieve, $pager_id,
-    'tripal_pub_AGL_count', $search_array);
-
-    // close the connection
-    unset($_SESSION['tripal_pub_AGL_query'][$search_str]['yaz_connection']);
-    yaz_close($yazc);
-
-    return $pubs;
+    drupal_set_message("ERROR waiting on search at AGL: ($error_no) $error_msg", "error");
+    watchdog('tpub_import', "ERROR waiting on search at AGL: (%error_no) %error_msg",
+    array('%error_no' => $error_no, '%error_msg' => $error_msg), WATCHDOG_ERROR);
+    return array(
+      'total_records' => $total_records,
+      'search_str'    => $search_str,
+      'pubs'          => array(),
+    );
+  }
+  if ($start + $num_to_retrieve > $total_records) {
+    $num_to_retrieve = $total_records - $start;
+  }
+  
+  $pubs = array();
+  for($i = $start; $i < $start + $num_to_retrieve; $i++) {
+    $pub_xml = yaz_record($yazc, $i + 1, 'xml; charset=marc-8,utf-8');
+    $pub     = tripal_pub_AGL_parse_pubxml($pub_xml);
+    $pubs[]  = $pub;
+  }
+  return array(
+    'total_records' => $total_records,
+    'search_str'    => $search_str,
+    'pubs'          => $pubs,
+  );
 }
 /*
  * This function is used as the callback function when used with the
  * tripal_pager_callback function.  This function returns a count of
  * the dataset to be paged.
  */
-function tripal_pub_AGL_count($search_array) {
-  $search_str = $search_array['search_string'];
-  $days       = $search_array['days'];
-  $limit      = $search_array['limit'];
+function tripal_pub_AGL_count($yazc, $search_str) {
 
-  $yazc = $_SESSION['tripal_pub_AGL_query'][$search_str]['yaz_connection'];
   //yaz_sort($yazc, "1=31 id"); // sort by publication date descending
   if (!yaz_search($yazc, "rpn", $search_str)){
     $error_no = yaz_errno($yazc);
@@ -393,48 +424,9 @@ function tripal_pub_AGL_count($search_array) {
 
   // get the total number of results from the serach
   $count = yaz_hits($yazc);
-  $_SESSION['tripal_pub_AGL_query'][$search_str]['Count'] = $count;
   return $count;
 }
 
-/*
- * This function is used as the callback function when used with the
- * tripal_pager_callback function.  This function returns the results
- * within the specified range
- */
-function tripal_pub_AGL_range($search_array, $start = 0, $limit = 10) {
-  $pubs = array();
-
-  $search_str = $search_array['search_string'];
-  $days       = $search_array['days'];
-  $limit      = $search_array['limit'];
-
-  $yazc  = $_SESSION['tripal_pub_AGL_query'][$search_str]['yaz_connection'];
-  $count = $_SESSION['tripal_pub_AGL_query'][$search_str]['Count'];
-  yaz_range($yazc, 1, $num_pubs);
-  if (!yaz_present($yazc)) {
-    $error_no = yaz_errno($yazc);
-    $error_msg = yaz_error($yazc);
-    $additional = yaz_addinfo($yazc);
-    if ($additional != $error_msg) {
-      $error_msg .= " $additional";
-    }
-    drupal_set_message("ERROR waiting on search at AGL: ($error_no) $error_msg", "error");
-    watchdog('tpub_import', "ERROR waiting on search at AGL: (%error_no) %error_msg",
-              array('%error_no' => $error_no, '%error_msg' => $error_msg), WATCHDOG_ERROR);
-    return $pubs;
-  }
-   
-  if ($start + $limit > $count) {
-    $limit = $count - $start;
-  }
-  for($i = $start; $i < $start + $limit; $i++) {
-    $pub_xml = yaz_record($yazc, $i + 1, 'xml; charset=marc-8,utf-8');
-    $pub     = tripal_pub_AGL_parse_pubxml($pub_xml);
-    $pubs[]  = $pub;
-  }
-  return $pubs;
-}
 
 /*
  * Description of XML format:
@@ -703,14 +695,14 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
           $codes = tripal_pub_remote_search_AGL_get_subfield($xml);
           foreach ($codes as $code => $value) {
             switch ($code) {
-            	case 'a':
-            		if (preg_match('/Proceedings/i', $value)) {
-            		  $pub['Series Name'] = preg_replace('/\.$/', '', $value);
-            		  $pub['Publication Type'][0] = 'Conference Proceedings';
-            		}
-            		else {
-            			$pub['Journal Name'] = preg_replace('/\.$/', '', $value);
-            		}
+              case 'a':
+                if (preg_match('/Proceedings/i', $value)) {
+                  $pub['Series Name'] = preg_replace('/\.$/', '', $value);
+                  $pub['Publication Type'][0] = 'Conference Proceedings';
+                }
+                else {
+                  $pub['Journal Name'] = preg_replace('/\.$/', '', $value);
+                }
                 break;
               case 't':
                 if (preg_match('/Proceedings/i', $value)) {
@@ -793,24 +785,31 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
 
   // build the full authors list
   if (is_array($pub['Author List'])) {
-	  foreach ($pub['Author List'] as $author) {
-	    if ($author['valid'] == 'N') {
-	      // skip non-valid entries.  A non-valid entry should have
-	      // a corresponding corrected entry so we can saftely skip it.
-	      continue;
-	    }
-	    if ($author['Collective']) {
-	      $authors .= $author['Collective'] . ', ';
-	    }
-	    else {
-	      $authors .= $author['Surname'] . ' ' . $author['First Initials'] . ', ';
-	    }
-	  }
-	  $authors = substr($authors, 0, -2);
-	  $pub['Authors'] = $authors;
+    $authors = '';
+    foreach ($pub['Author List'] as $author) {
+      if (array_key_exists('valid', $author) and $author['valid'] == 'N') {
+        // skip non-valid entries.  A non-valid entry should have
+        // a corresponding corrected entry so we can saftely skip it.
+        continue;
+      }
+      if (array_key_exists('Collective', $author)) {
+        $authors .= $author['Collective'] . ', ';
+      }
+      else {
+        if (array_key_exists('Surname', $author)) {
+          $authors .= $author['Surname'];
+          if(array_key_exists('First Initials', $author)) {
+            $authors .= ' ' . $author['First Initials'];
+          }
+          $authors .= ', ';
+        }
+      }
+    }
+    $authors = substr($authors, 0, -2);
+    $pub['Authors'] = $authors;
   }
   else {
-    $pub['Authors'] = $pub['Author List'];	
+    $pub['Authors'] = $pub['Author List'];  
   }
 
   // build the citation

@@ -4,22 +4,26 @@
 */
 function tripal_pub_citation_form($form_state) {
 
-  $form['create_all'] = array(
-    '#type' => 'item',
-    '#value' => t('Submit a job to create citation for the publications in chado. '),
+  $form['instructions'] = array(
+    '#markup' => '<p>Use this form to unify publication citations. Citations are created automtically when
+      importing publications but citations are set by the user when publications are added manually.  
+      Or publications added to the Chado database by tools other than the Tripal Publication Importer may 
+      not have citations set. If you are certain that all necessary information for all publications is present (e.g. 
+      authors, volume, issue, page numbers, etc.) but citations are not consistent, then you can
+      choose to update all citations for all publications using the form below. Alternatively, you
+      can update citations only for publication that do not already have one.</p>'
   );
   
   $form['options'] = array(
     '#type' => 'radios',
-    '#options' => 
-      array('all' => 'Create citation for all publications. Replace the existing citation if it exists.', 
-                'new' => 'Create citation for publication only if it does not already have one.'),
+    '#options' => array(
+      'all' => 'Create citation for all publications. Replace the existing citation if it exists.', 
+      'new' => 'Create citation for publication only if it does not already have one.'),
     '#default_value' => 'all'
   );
   
   $form['submit'] = array(
     '#type' => 'submit',
-    '#weight' => 10,
     '#value' => t('Submit')
   );
 

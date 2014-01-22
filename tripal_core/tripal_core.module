@@ -41,7 +41,6 @@ require_once "api/tripal_core_files.api.inc";
 require_once "api/tripal_core_custom_tables.api.inc";
 require_once "api/tripal_core_jobs.api.inc";
 require_once "api/tripal_core_mviews.api.inc";
-require_once "api/tripal_core_misc.api.inc";
 require_once "api/tripal_core_properties.api.inc";
 require_once "includes/jobs.inc";
 require_once "includes/mviews.inc";
