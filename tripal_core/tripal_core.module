@@ -38,6 +38,7 @@
 
 require_once "api/tripal_core_chado.api.inc";
 require_once "api/tripal_core_files.api.inc";
+require_once "api/tripal_core_chado_nodes.api.inc";
 require_once "api/tripal_core_custom_tables.api.inc";
 require_once "api/tripal_core_jobs.api.inc";
 require_once "api/tripal_core_mviews.api.inc";
@@ -49,7 +50,7 @@ require_once "includes/chado_install.inc";
 require_once "includes/form_elements.inc";
 
 
-tripal_core_set_globals();  
+tripal_core_set_globals();
 
 /**
  * Implements hook_init().
@@ -64,7 +65,7 @@ function tripal_core_init() {
   drupal_add_js(drupal_get_path('module', 'tripal_core') . '/theme/js/tripal.js');
   drupal_add_css(drupal_get_path('module', 'tripal_core') . '/theme/css/tripal.css');
 
-  
+
   // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist, and
   // only if the chado database is present.
   if ($GLOBALS["chado_is_installed"]) {
@@ -410,7 +411,7 @@ function tripal_core_theme($existing, $type, $theme, $path) {
       'variables' =>  array(NULL),
       'path' => "$path/theme"
     ),
-    
+
     // form theme
     'tripal_core_properties_form' => array(
       'render element' => 'form',
