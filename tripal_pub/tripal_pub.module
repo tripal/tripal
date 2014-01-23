@@ -289,7 +289,7 @@ function tripal_pub_theme($existing, $type, $theme, $path) {
     'tripal_pub_importer_setup_form_elements' => array(
       'render element' => 'form',
     ),
-    'tripal_pub_search_form' => array(
+    'tripal_pub_search_setup_form_elements' => array(
       'render element' => 'form',
     ),
     

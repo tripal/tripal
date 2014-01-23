@@ -10,18 +10,19 @@ function tripal_pub_search_page() {
 
   // generate the search form
   $form = drupal_get_form('tripal_pub_search_form');
-  $output .= $form;
+  $output = drupal_render($form);
 
   // retrieve any results
-  if ($_SESSION['tripal_pub_search_form']['perform_search']) {
+  if (array_key_exists('tripal_pub_search_form', $_SESSION) and 
+      $_SESSION['tripal_pub_search_form']['perform_search']) {
     $num_criteria = $_SESSION['tripal_pub_search_form']['num_criteria'];
     $from_year    = $_SESSION['tripal_pub_search_form']['from_year'];
     $to_year      = $_SESSION['tripal_pub_search_form']['to_year'];
      
     $search_array = array();
     $search_array['num_criteria'] = $num_criteria;
-    $search_array['from_year'] = $from_year;
-    $search_array['to_year'] = $to_year;
+    $search_array['from_year']    = $from_year;
+    $search_array['to_year']      = $to_year;
     for ($i = 0; $i <= $num_criteria; $i++) {
       $search_array['criteria'][$i]['search_terms'] = $_SESSION['tripal_pub_search_form']['criteria'][$i]['search_terms'];
       $search_array['criteria'][$i]['scope']        = $_SESSION['tripal_pub_search_form']['criteria'][$i]['scope'];
@@ -33,15 +34,24 @@ function tripal_pub_search_page() {
     $pubs = tripal_pub_get_search_results($search_array, $limit, $pager_id);
 
     // generate the pager
-    $total_pages = $pager_total[$pager_id];
-    $total_items = $pager_total_items[$pager_id];
     $page = isset($_GET['page']) ? $_GET['page'] : '0';
-    $pager = theme('pager');
+    $total_records = $_SESSION['chado_pager'][0]['total_records'];
+    $total_pages = (int) ($total_records / $limit) + 1;
+        
+    // generate the pager
+    pager_default_initialize($total_records, $limit);
+    $pager = array(
+      'tags' => array(),
+      'element' => 0,
+      'parameters' => array(),
+      'quantity' => $limit,
+    );
+    $pager = theme_pager($pager);
 
     // iterate through the results and construct the table displaying the publications
     $rows = array();
     $i = $page * $limit + 1;
-    while($pub = $pubs->fetchObject()) {
+    foreach ($pubs as $pub) {
       // get the citation for this publication
       $values = array(
         'pub_id' => $pub->pub_id, 
@@ -72,9 +82,10 @@ function tripal_pub_search_page() {
 
     $headers = array('', 'Year', 'Publication');
     $table = theme('table', $headers, $rows);
-
+    
+    
     // join all to form the results
-    $output .= "<br><p><b>Found " . number_format($total_items) .
+    $output .= "<br><p><b>Found " . number_format($total_records) .
       ". Page " . ($page + 1) . " of $total_pages. " .
       " Results</b></br>" . $table . '</p>' . $pager;    
   }
@@ -85,43 +96,59 @@ function tripal_pub_search_page() {
  *
  * @ingroup tripal_pub
  */
-function tripal_pub_search_form(&$form_state = NULL) {
-  tripal_core_ahah_init_form();
-
+function tripal_pub_search_form($form, &$form_state) {
+  // Default values can come in the following ways:
+  //
+  // 1) as elements of the $pub_importer object.  This occurs when editing an existing importer
+  // 2) in the $form_state['values'] array which occurs on a failed validation or
+  //    ajax callbacks from non submit form elements
+  // 3) in the $form_state['input'] array which occurs on ajax callbacks from submit
+  //    form elements and the form is being rebuilt
+  //
+  
   // Set the default values. If the pub_import_id isn't already defined by the form values
   // and one is provided then look it up in the database
   $criteria = NULL;
+  $num_criteria = 2;
+  $from_year = '';
+  $to_year = '';
 
   // if the session has variables then use those.  This should only happen when
   // the 'Test Criteria' button is clicked.
-  $num_criteria = $_SESSION['tripal_pub_search_form']['num_criteria'] ? $_SESSION['tripal_pub_search_form']['num_criteria'] : $num_criteria;
-  $from_year = $_SESSION['tripal_pub_search_form']['from_year'] ? $_SESSION['tripal_pub_search_form']['from_year'] : '';
-  $to_year = $_SESSION['tripal_pub_search_form']['to_year'] ? $_SESSION['tripal_pub_search_form']['to_year'] : '';
-
-
-  // If the form_state has variables then use those.  This happens when an error occurs on the form or the
-  // form is resbumitted using AJAX
-  $num_criteria = $form_state['values']['num_criteria'] ? $form_state['values']['num_criteria'] : $num_criteria;
-
-   
-  // change the number of criteria based on form_state post data.
-  if (!$num_criteria) {
-    $num_criteria = 2;
+  if (array_key_exists('tripal_pub_search_form', $_SESSION)) {
+    $num_criteria = $_SESSION['tripal_pub_search_form']['num_criteria'] ? $_SESSION['tripal_pub_search_form']['num_criteria'] : $num_criteria;
+    $from_year    = $_SESSION['tripal_pub_search_form']['from_year']    ? $_SESSION['tripal_pub_search_form']['from_year']    : '';
+    $to_year      = $_SESSION['tripal_pub_search_form']['to_year']      ? $_SESSION['tripal_pub_search_form']['to_year']      : '';
   }
-  if($form_state['post']["add-$num_criteria"]) {
+  if (array_key_exists('values', $form_state)) {
+    $num_criteria = $form_state['values']['num_criteria'] ? $form_state['values']['num_criteria'] : $num_criteria;
+    $from_year    = $form_state['values']['from_year']    ? $form_state['values']['from_year']    : $from_year;
+    $to_year      = $form_state['values']['to_year']      ? $form_state['values']['to_year']      : $to_year;
+  }
+  if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
+    $num_criteria = $form_state['input']['num_criteria'] ? $form_state['input']['num_criteria'] : $num_criteria;
+    $from_year    = $form_state['input']['from_year']    ? $form_state['input']['from_year']    : $from_year;
+    $to_year      = $form_state['input']['to_year']      ? $form_state['input']['to_year']      : $to_year;
+    
+  }
+
+  if (array_key_exists('triggering_element', $form_state) and
+  $form_state['triggering_element']['#name'] == 'add') {
     $num_criteria++;
   }
-  if($form_state['post']["remove-$num_criteria"]) {
+  if (array_key_exists('triggering_element', $form_state) and
+  $form_state['triggering_element']['#name'] == 'remove') {
     $num_criteria--;
   }
-
+  
   $form['num_criteria']= array(
     '#type'          => 'hidden',
     '#default_value' => $num_criteria,
   );
   $form['instructions'] = array(
-    '#type'  => 'item',
-    '#value' => t('To search for publications enter keywords in the text boxes below.  You can limit your search by selecting the field in the dropdown box. Click the plus and minus symbols to add additional fields for searching. '),
+    '#markup'  =>  t('To search for publications enter keywords in the text boxes below.  
+        You can limit your search by selecting the field in the dropdown box. Click the 
+        add and remove buttons to add additional fields for searching. '),
   );
 
   // get publication properties list
@@ -140,8 +167,8 @@ function tripal_pub_search_form(&$form_state = NULL) {
   ";
   $allowed_fields = variable_get('tripal_pub_allowed_search_fields', array());
   $prop_types = chado_query($sql);
-  while ($prop = $prop_types->fetchObject()) {
-    if($allowed_fields[$prop->cvterm_id] > 0) {
+  foreach ($prop_types as $prop) {
+    if(array_key_exists($prop->cvterm_id, $allowed_fields) and $allowed_fields[$prop->cvterm_id] > 0) {
       $properties[$prop->cvterm_id] = $prop->name;
     }
   }
@@ -152,24 +179,25 @@ function tripal_pub_search_form(&$form_state = NULL) {
     $operation = '';
     $mode = '';
 
-    // if we have criteria supplied from the database then use that, othrewise look from the form_state or the session
-    if ($criteria) {
-      $search_terms = $criteria['criteria'][$i]['search_terms'];
-      $scope = $criteria['criteria'][$i]['scope'];
-      $mode = $criteria['criteria'][$i]['mode'];
-      $operation = $criteria['criteria'][$i]['operation'];
-    }
     // first populate defaults using any values in the SESSION variable
-    $search_terms = $_SESSION['tripal_pub_search_form']['criteria'][$i]['search_terms'] ? $_SESSION['tripal_pub_search_form']['criteria'][$i]['search_terms'] : $search_terms;
-    $scope        = $_SESSION['tripal_pub_search_form']['criteria'][$i]['scope']        ? $_SESSION['tripal_pub_search_form']['criteria'][$i]['scope']        : $scope;
-    $mode         = $_SESSION['tripal_pub_search_form']['criteria'][$i]['mode']         ? $_SESSION['tripal_pub_search_form']['criteria'][$i]['mode']         : $mode;
-    $operation    = $_SESSION['tripal_pub_search_form']['criteria'][$i]['operation']    ? $_SESSION['tripal_pub_search_form']['criteria'][$i]['operation']    : $operation;
-
-    // next populate defaults using any form values
-    $search_terms = $form_state['values']["search_terms-$i"] ? $form_state['values']["search_terms-$i"] : $search_terms;
-    $scope        = $form_state['values']["scope-$i"]        ? $form_state['values']["scope-$i"]        : $scope;
-    $mode         = $form_state['values']["mode-$i"]         ? $form_state['values']["mode-$i"]         : $mode;
-    $operation    = $form_state['values']["operation-$i"]    ? $form_state['values']["operation-$i"]    : $operation;
+    if (array_key_exists('tripal_pub_search_form', $_SESSION)) {
+      $search_terms = $_SESSION['tripal_pub_search_form']['criteria'][$i]['search_terms'] ? $_SESSION['tripal_pub_search_form']['criteria'][$i]['search_terms'] : $search_terms;
+      $scope        = $_SESSION['tripal_pub_search_form']['criteria'][$i]['scope']        ? $_SESSION['tripal_pub_search_form']['criteria'][$i]['scope']        : $scope;
+      $mode         = $_SESSION['tripal_pub_search_form']['criteria'][$i]['mode']         ? $_SESSION['tripal_pub_search_form']['criteria'][$i]['mode']         : $mode;
+      $operation    = $_SESSION['tripal_pub_search_form']['criteria'][$i]['operation']    ? $_SESSION['tripal_pub_search_form']['criteria'][$i]['operation']    : $operation;
+    }
+    if (array_key_exists('values', $form_state)) {      
+      $search_terms = array_key_exists("search_terms-$i", $form_state['values']) ? $form_state['values']["search_terms-$i"] : $search_terms;
+      $scope        = array_key_exists("scope-$i", $form_state['values'])        ? $form_state['values']["scope-$i"]        : $scope;
+      $mode         = array_key_exists("mode-$i", $form_state['values'])         ? $form_state['values']["mode-$i"]         : $mode;
+      $operation    = array_key_exists("operation-$i", $form_state['values'])    ? $form_state['values']["operation-$i"]    : $operation;
+    }
+    if (array_key_exists('input', $form_state)) {
+      $search_terms = array_key_exists("search_terms-$i", $form_state['input']) ? $form_state['input']["search_terms-$i"] : $search_terms;
+      $scope        = array_key_exists("scope-$i", $form_state['input'])        ? $form_state['input']["scope-$i"]        : $scope;
+      $mode         = array_key_exists("mode-$i", $form_state['input'])         ? $form_state['input']["mode-$i"]         : $mode;
+      $operation    = array_key_exists("operation-$i", $form_state['input'])    ? $form_state['input']["operation-$i"]    : $operation;
+    }
 
     // default to searching the title and abstract
     if (!$scope) {
@@ -185,7 +213,7 @@ function tripal_pub_search_form(&$form_state = NULL) {
       '#type'          => 'select',
       '#options'       => $properties,
       '#default_value' => $scope,
-      '#attributes' => array('class' => 'tripal-pub-search-form-scope-select'),
+      '#attributes' => array('class' => array('tripal-pub-search-form-scope-select')),
     );
     /*
      $form['criteria'][$i]["mode-$i"] = array(
@@ -211,36 +239,56 @@ function tripal_pub_search_form(&$form_state = NULL) {
     if ($i == $num_criteria) {
       if($i > 1) {
         $form['criteria'][$i]["remove-$i"] = array(
-          '#type'         => 'image_button',
-          '#value'        => t('Remove'),
-          '#src'          => drupal_get_path('theme', 'tripal') . '/images/minus.png',
-          '#ahah' => array(
-            'path'    => "find/publications/criteria/minus/$i",
-            'wrapper' => 'tripal-pub-search-form',
-            'event'   => 'click',
-            'method'  => 'replace',
-        ),
-          '#attributes' => array('onClick' => 'return false;'),
+          '#type'  => 'button',
+          '#name'  => 'remove',
+          '#value' => t('Remove'),
+          '#ajax' => array(
+            'callback' => "tripal_pubs_search_form_ajax_update",
+            'wrapper'  => 'tripal-pub-search-form-criteria',
+            'effect'   => 'fade',
+            'method'   => 'replace',
+            'prevent'  => 'click'
+          ),
+          // When this button is clicked, the form will be validated and submitted.
+          // Therefore, we set custom submit and validate functions to override the
+          // default form submit.  In the validate function we set the form_state
+          // to rebuild the form so the submit function never actually gets called,
+          // but we need it or Drupal will run the default validate anyway.
+          // we also set #limit_validation_errors to empty so fields that
+          // are required that don't have values won't generate warnings.
+          '#submit'   => array('tripal_pub_search_form_ajax_button_submit'),
+          '#validate' => array('tripal_pub_search_form_ajax_button_validate'),
+          '#limit_validation_errors' => array(),
         );
       }
       $form['criteria'][$i]["add-$i"] = array(
-        '#type'         => 'image_button',      
-        '#value'        => t('Add'),
-        '#src'          => drupal_get_path('theme', 'tripal') . '/images/add.png',
-        '#ahah' => array(
-          'path'    => "find/publications/criteria/add/$i",
-          'wrapper' => 'tripal-pub-search-form',
-          'event'   => 'click',
-          'method'  => 'replace',          
-      ),
-        '#attributes' => array('onClick' => 'return false;'),
+        '#type'  => 'button',      
+        '#name'  => 'add',
+        '#value' => t('Add'),
+        '#ajax' => array(
+          'callback' => "tripal_pubs_search_form_ajax_update",
+          'wrapper'  => 'tripal-pub-search-form-criteria',
+          'effect'   => 'fade',
+          'method'   => 'replace',
+          'prevent'  => 'click'
+        ),
+        // When this button is clicked, the form will be validated and submitted.
+        // Therefore, we set custom submit and validate functions to override the
+        // default form submit.  In the validate function we set the form_state
+        // to rebuild the form so the submit function never actually gets called,
+        // but we need it or Drupal will run the default validate anyway.
+        // we also set #limit_validation_errors to empty so fields that
+        // are required that don't have values won't generate warnings.
+        '#submit'   => array('tripal_pub_search_form_ajax_button_submit'),
+        '#validate' => array('tripal_pub_search_form_ajax_button_validate'),
+        '#limit_validation_errors' => array(),
       );
     }
   }
   $form['criteria']["date"] = array(
       '#type'          => 'select',
       '#options'       => array('Years' => 'Years'),
-      '#attributes' => array('class' => 'tripal-pub-search-form-scope-select'),
+      '#attributes'    => array('class' => array('tripal-pub-search-form-scope-select')),
   );
   $form['criteria']["from_year"] = array(
     '#type'          => 'textfield',
@@ -267,62 +315,36 @@ function tripal_pub_search_form(&$form_state = NULL) {
     '#type'         => 'submit',
     '#value'        => t('Reset'),
   );
+  
+  $form['criteria']['#theme'] = 'tripal_pub_search_setup_form_elements';
 
   return $form;
 }
-/*
- *
+/**
+ * This function is used to rebuild the form if an ajax call is made vai a button.
+ * The button causes the form to be submitted. We don't want this so we override
+ * the validate and submit routines on the form button. Therefore, this function
+ * only needs to tell Drupal to rebuild the form
  */
-function theme_tripal_pub_search_form($form) {
-  $rows = array();
-  foreach ($form['criteria'] as $i => $element) {
-    if(is_numeric($i)) {
-      $rows[] = array(
-      drupal_render($element["operation-$i"]),
-      drupal_render($element["scope-$i"]),
-      //drupal_render($element["mode-$i"]) .
-      drupal_render($element["search_terms-$i"]),
-      drupal_render($element["add-$i"]) . drupal_render($element["remove-$i"]),
-      );
-    }
-  }
-
-  $rows[] = array(
-    '&nbsp;',
-  drupal_render($form['criteria']['date']),
-  array(
-      'data' =>
-        "<div id=\"pub-search-form-dates-row\"> 
-           <div id=\"pub-search-form-dates\"> ".
-  drupal_render($form['criteria']['from_year']) .
-  drupal_render($form['criteria']['to_year']) . "
-          </div>
-         </div>",
-  ),
-    ''
-    );
-    $table = theme('table', $headers, $rows, array('id' => 'tripal-pub-search-form-table', 'border' => '0'));
-    $headers = array();
-    $markup  = drupal_render($form['instructions']) . "
-     <div id=\"pub-search-form-row1\">$table</div>
-     <div style=\"clear: both;\"></div>
-  "; 
-
-    $form['criteria'] = array(
-    '#type' => 'markup',
-    '#value' =>  $markup,
-    '#weight' => -10,
-    );
-    return drupal_render($form);
+function tripal_pub_search_form_ajax_button_submit() {
+  $form_state['rebuild'] = TRUE;
+  
 }
+/**
+ * This function is just a dummy to override the default form submit on ajax calls for buttons
+ */
+function tripal_pub_search_form_ajax_button_validate() {
+  // do nothing
+}
+
 /**
  *
  */
 function tripal_pub_search_form_validate($form, &$form_state) {
   $num_criteria = $form_state['values']['num_criteria'];
-  $from_year = $form_state['values']['from_year'];
-  $to_year   = $form_state['values']['to_year'];
-  $op        = $form_state['values']['op'];
+  $from_year    = $form_state['values']['from_year'];
+  $to_year      = $form_state['values']['to_year'];
+  $op           = $form_state['values']['op'];
 
   // no need to vlaidate on a reset
   if ($op == 'Reset') {
@@ -356,18 +378,28 @@ function tripal_pub_search_form_submit($form, &$form_state) {
     $_SESSION['tripal_pub_search_form']['num_criteria'] = $num_criteria;
     unset($_SESSION['tripal_pub_search_form']['criteria']);
     for ($i = 0; $i <= $num_criteria; $i++) {
-      $search_terms =  trim($form_state['values']["search_terms-$i"]);
-      $scope =  $form_state['values']["scope-$i"];
-      //$mode =  $form_state['values']["mode-$i"];
+      $search_terms = '';
+      $scope = '';
       $mode = 'Contains';
-      $operation =  $form_state['values']["operation-$i"];
-
+      $operation = '';
+      if (array_key_exists("search_terms-$i", $form_state['values'])) {
+        $search_terms =  trim($form_state['values']["search_terms-$i"]);
+      }
+      if (array_key_exists("scope-$i", $form_state['values'])) {
+        $scope =  $form_state['values']["scope-$i"];
+      }
+      if (array_key_exists("operation-$i", $form_state['values'])) {
+        $operation =  $form_state['values']["operation-$i"];
+      }
+      //$mode =  $form_state['values']["mode-$i"];
+      
       $_SESSION['tripal_pub_search_form']['criteria'][$i] = array(
         'search_terms' => $search_terms,
         'scope' => $scope,
         'mode' => $mode,
         'operation' => $operation
       );
+      
     }
     $_SESSION['tripal_pub_search_form']['from_year'] = $from_year;
     $_SESSION['tripal_pub_search_form']['to_year'] = $to_year;
@@ -410,7 +442,7 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
   $select = "SELECT DISTINCT P.*, CP.nid ";
   $from   = "FROM {pub} P
                LEFT JOIN public.chado_pub CP on P.pub_id = CP.pub_id 
-               INNER JOIN cvterm CVT on CVT.cvterm_id = P.type_id
+               INNER JOIN {cvterm} CVT on CVT.cvterm_id = P.type_id
             ";
   $where  = "WHERE (NOT P.title = 'null') "; // always exclude the dummy pub
   $order  = "ORDER BY P.pyear DESC, P.title ASC";
@@ -458,7 +490,10 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
     // get the scope type
     $values = array('cvterm_id' => $type_id);
     $cvterm = tripal_core_chado_select('cvterm', array('name'), $values);
-    $type_name = $cvterm[0]->name;
+    $type_name = '';
+    if (count($cvterm) > 0) {
+      $type_name = $cvterm[0]->name;
+    }
     if ($type_name == 'Title') {
       $where .= " $op (lower(P.title)  $action) ";
       $args[":crit$i"] = $value;
@@ -509,7 +544,6 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
       $where .= " $op (lower(PP$i.value) $action) ";
       $args[":crit$i"] = $type_id;
     }
-
   }
   if($from_year and $to_year) {
     $where .= " AND (P.pyear ~ '....' AND to_number(P.pyear,'9999') >= :from$i AND to_number(P.pyear,'9999') <= :to$i) ";
@@ -518,5 +552,69 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
   }
   $sql = "$select $from $where $order";
   $count = "SELECT count(*) FROM ($select $from $where $order) as t1";
-  return chado_pager_query($sql, $limit, $pager_id, $count, $args);
+  return chado_pager_query($sql, $args, $limit, $pager_id, $count);
+}
+
+/**
+ * 
+ */
+function tripal_pubs_search_form_ajax_update($form, $form_state) {
+  return $form['criteria'];
+}
+
+/**
+*
+* @param unknown $form
+*/
+function theme_tripal_pub_search_setup_form_elements($variables) {
+  $form = $variables['form'];
+
+  $rows = array();
+  // put each criteria element in a single table row
+  foreach ($form as $i => $element) {
+    if(is_numeric($i)) {
+      $rows[] = array(
+        drupal_render($element["operation-$i"]),
+        drupal_render($element["scope-$i"]),
+        //drupal_render($element["mode-$i"]) .
+        drupal_render($element["search_terms-$i"]),
+        array(
+          'data' => drupal_render($element["add-$i"]) . drupal_render($element["remove-$i"]),
+          'nowrap' => 'nowrap', 
+        ),
+      );
+    }
+  }
+
+  // add in the from_year and to_year elements as the final row of the table
+  $rows[] = array(
+    '&nbsp;',
+    drupal_render($form['date']),
+    array(
+      'data' =>
+        "<div id=\"pub-search-form-dates-row\">
+           <div id=\"pub-search-form-dates\"> ".
+             drupal_render($form['from_year']) .
+             drupal_render($form['to_year']) . "
+           </div>
+         </div>
+        ",
+    ),
+    ''
+  );
+  
+  $headers = array();  
+  $table = array(
+    'header' => $headers,
+    'rows' => $rows,
+    'attributes' => array('id' => 'tripal-pub-search-form-table', 'border' => '0'),
+    'sticky' => TRUE,
+    'caption' => '',
+    'colgroups' => array(),
+    'empty' => '',
+  );
+  $results  = '<div id="tripal-pub-search-form-criteria">';
+  $results .= theme_table($table);
+  $results .= '</div>';
+  return $results;
 }

@@ -2042,7 +2042,7 @@ function tripal_core_exclude_field_from_feature_by_default() {
  *
  * @ingroup tripal_chado_api
  */
-function chado_pager_query($query, $args, $limit, $element, $count_query = NULL) {
+function chado_pager_query($query, $args, $limit, $element, $count_query = '') {
   
   // get the page and offset for the pager
   $page = pager_find_page($element);
@@ -2055,7 +2055,15 @@ function chado_pager_query($query, $args, $limit, $element, $count_query = NULL)
   }
 
   // We calculate the total of pages as ceil(items / limit).
-  $total_records = chado_query($count_query, $args)->fetchField();
+  $results = chado_query($count_query, $args);
+  if (!$results) {
+    tripal_core_report_error('tripal_core', TRIPAL_ERROR,
+      "chado_pager_query(): Query failed: %cq", array('%cq' => $count_query));
+    return;
+  }
+  $total_records = $results->fetchField();
+
+  // set a session variable for storing the total number of records
   $_SESSION['chado_pager'][$element]['total_records'] = $total_records;
   
   pager_default_initialize($total_records, $limit, $element);
