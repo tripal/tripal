@@ -9,16 +9,30 @@
 
   function chado_example_form($form, $form_state) {
 
-    // When setting the defaults for your form make sure to take into account
-    // that when ajax is fired via a button (which it is for the properties api)
-    // you're user entered data is in $form_state['input'] instead of $form_state['values']
-    // although it has not been validated. Thus make sure you handle values in $form_state['input']
-    // or user input may be loast on addition of properties
+    // Default values for form elements can come in the following ways:
+    //
+    // 1) as elements of the $node object.  This occurs when editing an existing node
+    // 2) in the $form_state['values'] array which occurs on a failed validation or 
+    //    ajax callbacks when the ajax call originates from non-submit fields other
+    //    than button
+    // 3) in the $form_state['input'] array which occurs on ajax callbacks from submit 
+    //    form elements (e.g. buttons) and the form is being rebuilt but has not yet
+    //    been validated
+    //
+    // The properties elements added by this function do use AJAX calls from buttons,
+    // therefore, it is important to check for form values in the $form_state['values']
+    // for case #2 above, and in the $form_state['input'] for case #3.
+    // See the chado analysis node form for an example.
+   
 
-    // All the form array definition particular to your node type
+    // Next, add in all the form array definition particular to your node type
 
-    // Add the properties form to your current form
-    // get the chado_example properties to be used in the dropdown
+    // To add in the properties form elements, you first need to prepare the arguments
+    // for the function call.  One inportant argument is a list of properties that 
+    // will be made avaialble for the user to select from.  You should query the 
+    // database to retrieve the applicable terms from the cvterm table and store them in an array
+    // of where the cvterm.cvterm_id field is the key and the cvterm.name is the value.
+    // these terms should all be from the same vocabulary.
     $properties = array();
     $properties[] = 'Select a Property';
     $sql = "
@@ -30,17 +44,38 @@
         NOT CVT.is_obsolete = 1
       ORDER BY CVT.name ASC
     ";
-    $ontology_name = 'nameofproptypeontology';  //you need to set this variable with the cv.name of the ontology governing your prop tables type_id
+    
+    $ontology_name = 'name_of_proptype_ontology';  //you need to set this variable with the cv.name of the ontology governing your prop tables type_id
     $prop_types = chado_query($sql, array(':ontology_name' => $ontology_name));
     while ($prop = $prop_types->fetchObject()) {
       $properties[$prop->cvterm_id] = $prop->name;
     }
 
-    $exclude = array();
+    // the properties form will add a select dropdown of terms containing the items in the $properties array
+    // constructed above, but it will also pre-populate rows of properties that already are associated
+    // with the object.  If you would like to pre-populated properties regardless if they exist in the database
+    // or not, you can create an $include array which has the following format:
+    //     array(
+    //       array('cvterm' => $obj1, 'value' => $val1),
+    //       array('cvterm' => $obj2, 'value' => $val2),
+    //       ... etc
+    //     );
+    //   The 'cvterm' key should have as a value an object with these properties: 'name', 'cvterm_id', 'definition'.
     $include = array();
+    
+    // sometimes a property exists in the database and is properly associated with the object, but we do 
+    // not want it to appear in the list of properties that are pre-populated. It may be handled in some
+    // other way.  For example, for contacts, the description field is stored as a property because
+    // the actual contact.description field is only 255 characters. The 'contact_description' property should
+    // not be shown in the list of properties, even if present, because it is handled by
+    // a different form element.  This array holds the value of the cvterm.name column of the cvterms 
+    // to exclude
+    $exclude = array();
+    
+    // the instructions argument provides additional instructions to the user beyond the default instructions.
     $instructions = t('To add additional properties to the drop down. ' . l("Add terms to the $ontology_name vocabulary", "admin/tripal/chado/tripal_cv/cvterm/add") . ".");
 
-    // actually create and add the form
+    // Finally, and add the properties form elements to the form
     tripal_core_properties_form(
       $form, $form_state,     // form and form_state of the current form
       'exampleprop',          // properties table name
@@ -57,7 +92,7 @@
     return $form;
   }
 
-  function nodetype_insert($node) {
+  function chado_example_insert($node) {
 
     // if there is an example_id in the $node object then this must be a sync so
     // we can skip adding the chado_example as it is already there, although
@@ -68,7 +103,14 @@
 
       // Add to any other tables needed
 
-      // Add each property (exampleprop table)
+      // Add each property (exampleprop table). The tripal_core_properties_form_retrieve()
+      // function retrieves all of the properties and returns them in an array of the format:
+      //
+      // $properties[<property name>][<rank>] = <value
+      //
+      // This array can then be used for inserting or updating properties using the API call
+      //   tripal_hook_insert_property()
+      //
       // example_property = controlled vocab name for exampleprop.type_id
       $properties = tripal_core_properties_form_retreive($node, 'example_property');
       foreach ($properties as $property => $elements) {
@@ -98,7 +140,7 @@
 
   }
 
-  function nodetype_update($node) {
+  function chado_example_update($node) {
 
 
       // Update record in chado example table
