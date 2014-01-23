@@ -192,52 +192,46 @@ function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db
  */
 function tripal_pub_import_publications($report_email = FALSE, $do_update = FALSE) {
   $num_to_retrieve = 100;
-  $pager_id = 0;
   $page = 0;
-  $num_pubs = 0;
-
-  // get a persistent connection
-  $connection = tripal_db_persistent_chado();
-  if (!$connection) {
-    print "A persistant connection was not obtained. Loading will be slow\n";
-  }
-
-  // if we cannot get a connection then let the user know the loading will be slow
-  tripal_db_start_transaction();
-  if ($connection) {
-    print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
-           "If the load fails or is terminated prematurely then the entire set of \n" .
-           "insertions/updates is rolled back and will not be found in the database\n\n";
-  }
-
-  // get all of the loaders
-  $args = array();
-  $sql = "SELECT * FROM {tripal_pub_import} WHERE disabled = 0 ";
-  $results = db_query($sql, $args);
-  $do_contact = FALSE;
-  $reports = array();
-  while ($import = $results->fetchObject()) {
-    print "Importing: " . $import->name . "\n";
-    // keep track if any of the importers want to create contacts from authors
-    if ($import->do_contact == 1) {
-      $do_contact = TRUE;
+  
+  // start the transaction
+  $transaction = db_transaction();
+  
+  try {
+    // get all of the loaders
+    $args = array();
+    $sql = "SELECT * FROM {tripal_pub_import} WHERE disabled = 0 ";
+    $results = db_query($sql, $args);
+    $do_contact = FALSE;
+    $reports = array();
+    foreach ($results as $import) {
+      $page = 0;
+      print "Importing: " . $import->name . "\n";
+      // keep track if any of the importers want to create contacts from authors
+      if ($import->do_contact == 1) {
+        $do_contact = TRUE;
+      }
+      $criteria = unserialize($import->criteria);
+      $remote_db = $criteria['remote_db'];
+      do {
+        // retrieve the pubs for this page. We'll retreive 100 at a time
+        $results = tripal_pub_get_remote_search_results($remote_db, $criteria, $num_to_retrieve, $page);
+        $pubs = $results['pubs'];
+        $reports[$import->name] = tripal_pub_add_publications($pubs, $import->do_contact, $do_update);
+        $page++;
+      }
+      // continue looping until we have a $pubs array that does not have
+      // our requested numer of records.  This means we've hit the end
+      while (count($pubs) == $num_to_retrieve);
     }
-    $criteria = unserialize($import->criteria);
-    $remote_db = $criteria['remote_db'];
-    do {
-      // retrieve the pubs for this page. We'll retreive 10 at a time
-      $pubs = tripal_pub_get_remote_search_results($remote_db, $criteria, $num_to_retrieve, $pager_id, $page);
-      $reports[$import->name] = tripal_pub_add_publications($pubs, $import->do_contact, $do_update);
-      $page++;
-    }
-    // continue looping until we have a $pubs array that does not have
-    // our requested numer of records.  This means we've hit the end
-    while (count($pubs) == $num_to_retrieve);
   }
-
-  // transaction is complete
-  tripal_db_commit_transaction();
-
+  catch (Exception $e) {
+    print "\n"; // make sure we start errors on new line
+    watchdog_exception('T_pub_import', $e);
+    $transaction->rollback();
+    print "FAILED: Rolling back database changes...\n";
+    return;
+  }
   print "Transaction Complete\n";
 
   // sync the newly added publications with Drupal. If the user
@@ -315,11 +309,11 @@ function tripal_pub_import_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_updat
           'scope' => 'id',
           'operation' => '',
           'is_phrase' => 0,
-    ),
-    ),
+        ),
+      ),
     );
     $remote_db = $criteria['remote_db'];
-    $pubs = tripal_pub_get_remote_search_results($remote_db, $criteria, $num_to_retrieve, $pager_id, $page);
+    $pubs = tripal_pub_get_remote_search_results($remote_db, $criteria, $num_to_retrieve, $page);
     $pub_id = tripal_pub_add_publications($pubs, $do_contact, $do_update);
 
   }

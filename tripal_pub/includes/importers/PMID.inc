@@ -37,7 +37,6 @@ function tripal_pub_remote_validate_form_PMID($form, $form_state) {
  *
  */
 function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $page) {
-
   // convert the terms list provicded by the caller into a string with words
   // separated by a '+' symbol.
   $num_criteria = $search_array['num_criteria'];

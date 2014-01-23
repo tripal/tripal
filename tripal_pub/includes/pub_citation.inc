@@ -52,6 +52,7 @@ function tripal_pub_create_citations ($options) {
       cv_id = (SELECT cv_id FROM {cv} WHERE name = 'tripal_pub')
   ";
   $citation_type_id = chado_query($sql)->fetchField();
+  
   // Create and replace citation for all pubs
   if ($options == 'all') {
     $sql = "SELECT pub_id FROM {pub} P WHERE pub_id <> 1";
