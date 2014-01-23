@@ -31,3 +31,20 @@ function tripal_bulk_loader_field_regex_fieldset($variables) {
     'attributes' => array('id' => 'regex_list_form_id'), // needed for table dragging
   ));
 }
+
+/**
+ * Preprocessor function for the tripal_bulk_loader template
+ *
+ * @ingroup tripal_bulk_loader
+ */
+function tripal_bulk_loader_preprocess_tripal_bulk_loader_template(&$variables) {
+
+  $resource = db_select('tripal_bulk_loader_template','t')
+    ->fields('t')
+    ->condition('template_id', $variables['template_id'])
+    ->execute();
+  $template = $resource->fetchObject();
+  $template->template_array = unserialize($template->template_array);
+  $variables['template'] = $template;
+
+}
