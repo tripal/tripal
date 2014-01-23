@@ -212,6 +212,22 @@ function tripal_bulk_loader_load($nodes) {
 }
 
 /**
+ * Implements hook_node_presave()
+ * @ingroup tripal_bulk_loader
+ */
+function tripal_bulk_loader_node_presave($node) {
+
+  // We need to set the title using loader details before the node is saved
+  // which has already been done by the time hook_insert is called
+  switch ($node->type) {
+    case 'tripal_bulk_loader':
+      $node->title = 'Bulk Loading Job: ' . $node->loader_name;
+      break;
+  }
+}
+
+
+/**
  * Implements node_insert
  * Insert the data from the node form on Create content
  *
@@ -220,7 +236,6 @@ function tripal_bulk_loader_load($nodes) {
  */
 function tripal_bulk_loader_insert($node) {
 
-  $node->title = $node->loader_name;
   db_insert('tripal_bulk_loader')->fields(array(
     'nid' => $node->nid,
     'loader_name' => $node->loader_name,
