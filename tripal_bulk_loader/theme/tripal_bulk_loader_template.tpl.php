@@ -1,4 +1,15 @@
 <?php
+
+  // Retrieve Template
+  $template = db_select('tripal_bulk_loader_template', 't')
+    ->fields('t')
+    ->condition('template_id', $variables['template_id'], '=')
+    ->execute()
+    ->fetchObject();
+
+  $template->template_array = unserialize($template->template_array);
+
+  // Summarize Template
 	$fields = array();
 	$constants = array();
 	foreach ($template->template_array as $priority => $table_array) {
