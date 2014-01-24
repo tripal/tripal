@@ -1,23 +1,21 @@
 <?php
 
-$feature = $variables['node']->feature;
+$library = $variables['node']->library;
 
 $options = array('return_array' => 1);
-$feature = tripal_core_expand_chado_vars($feature, 'table', 'feature_cvterm', $options);
-$terms = $feature->feature_cvterm;
+$library = tripal_core_expand_chado_vars($library, 'table', 'library_cvterm', $options);
+$terms = $library->library_cvterm;
 
 // order the terms by CV
 $s_terms = array();
-if ($terms) {
-  foreach ($terms as $term) {
-    $s_terms[$term->cvterm_id->cv_id->name][] = $term;  
-  }
+foreach ($terms as $term) {
+  $s_terms[$term->cvterm_id->cv_id->name][] = $term;  
 }
 
 if (count($s_terms) > 0) { ?>
-  <div id="tripal_feature-terms-box" class="tripal_feature-info-box tripal-info-box">
-    <div class="tripal_feature-info-box-title tripal-info-box-title">Annotated Terms</div>
-    <div class="tripal_feature-info-box-desc tripal-info-box-desc">The following terms have been associated with this <?php print $node->feature->type_id->name ?>:</div>  <?php
+  <div id="tripal_library-terms-box" class="tripal_library-info-box tripal-info-box">
+    <div class="tripal_library-info-box-title tripal-info-box-title">Annotated Terms</div>
+    <div class="tripal_library-info-box-desc tripal-info-box-desc">The following terms have been associated with this <?php print $node->library->type_id->name ?>:</div>  <?php
     
     // iterate through each term
     $i = 0;
@@ -56,7 +54,7 @@ if (count($s_terms) > 0) { ?>
         'header' => $headers,
         'rows' => $rows,
         'attributes' => array(
-          'id' => "tripal_feature-table-terms-$i",
+          'id' => "tripal_library-table-terms-$i",
         ),
         'sticky' => FALSE,
         'caption' => '<b>Vocabulary: ' . ucwords(preg_replace('/_/', ' ', $cv)) . '</b>',

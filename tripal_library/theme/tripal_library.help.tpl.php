@@ -1,7 +1,3 @@
-<h3>Tripal Library Administrative Tools Quick Links:</h3>
-<ul>
- <li><a href="<?php print url("admin/tripal/tripal_library/configuration") ?>">Library Configuration</a></li>
-</ul>
 <h3>Module Description:</h3>
 <p>The Tripal Library module is an interface for the Chado Library module which groups features (sequences) into genetic libraries.
     This module provides support for visualization of "library" pages, editing and updating.</p>

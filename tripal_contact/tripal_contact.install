@@ -58,13 +58,31 @@ function tripal_contact_install() {
   $obo_path = drupal_realpath(drupal_get_path('module', 'tripal_contact') . '/files/tcontact.obo');
   $obo_id = tripal_cv_add_obo_ref('Tripal Contacts', $obo_path);
   tripal_cv_submit_obo_job($obo_id);
+  
+  /*
+  // Install our custom block visibility settings per node type
+  $query = db_insert('block_node_type')
+    ->fields(array('type', 'module', 'delta'))
+    ->values(array(
+      'type'   => 'chado_contact',
+      'module' => 'tripal_contact', // My module name
+      'delta'  => 'contbase', // Same delta used in hook_block_info
+    )
+  )->execute();
+  */
 }
 
 /**
  * Implementation of hook_uninstall().
  */
 function tripal_contact_uninstall() {
-
+  /*
+  // remove our custom block visibility settings per node type
+  db_delete('block_node_type')
+    ->condition('module', 'chado_contact')
+    ->condition('delta', 'contbase')
+    ->execute();
+    */
 }
 
 /**

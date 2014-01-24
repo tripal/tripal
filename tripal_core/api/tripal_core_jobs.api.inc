@@ -34,7 +34,7 @@
  * @param $callback
  *    The name of a function to be called when the job is executed
  * @param $arguments
- *    An array of arguements to be passed on to the callback
+ *    An array of arguments to be passed on to the callback
  * @param $uid
  *    The uid of the user adding the job
  * @param $priority
@@ -64,7 +64,11 @@
 function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $priority = 10) {
 
   // convert the arguments into a string for storage in the database
-  $args = implode("::", $arguments);
+  $args = array();
+  if (is_array($arguments)) {
+    $args = serialize($arguments);
+  }
+  
   $record = new stdClass();
   $record->job_name = $job_name;
   $record->modulename = $modulename;
@@ -73,9 +77,8 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $pr
   $record->submit_date = REQUEST_TIME;
   $record->uid = $uid;
   $record->priority = $priority;  # the lower the number the higher the priority
-  if ($args) {
-    $record->arguments = $args;
-  }
+  $record->arguments = $args;
+
   if (drupal_write_record('tripal_jobs', $record)) {
     $jobs_url = url("admin/tripal/tripal_jobs");
     drupal_set_message(t("Job '%job_name' submitted.  Check the <a href='!jobs_url'>jobs page</a> for status", array('%job_name' => $job_name, '!jobs_url' => $jobs_url)));
@@ -192,8 +195,15 @@ function tripal_jobs_rerun($job_id, $goto_jobs_page = TRUE) {
 
   $sql = "SELECT * FROM {tripal_jobs} WHERE job_id = :job_id";
   $results = db_query($sql, array(':job_id' => $job_id));
-  $job = $results->fetchObject();
-  $args = explode("::", $job->arguments);
+  $job = $results->fetchObject(); 
+  // arguments for jobs used to be stored as plain string with a double colon
+  // separating them.  But as of Tripal v2.0 the arguments are stored as 
+  // a serialized array.  To be backwards compatible, we should check for serialization
+  // and if not then we will use the old style
+  $args = unserialize($job->arguments);
+  if (!$args) {
+    $args = explode("::", $job->arguments);
+  }
   $job_id = tripal_add_job($job->job_name, $job->modulename, $job->callback, $args, $user_id, $job->priority);
 
   if ($goto_jobs_page) {
@@ -285,7 +295,15 @@ function tripal_jobs_launch($do_parallel = 0, $job_id = NULL) {
     // Add the job_id as the last item in the list of arguments. All
     // callback functions should support this argument.
     $callback = $job->callback;
-    $args = split("::", $job->arguments);
+    
+    // arguments for jobs used to be stored as plain string with a double colon
+    // separating them.  But as of Tripal v2.0 the arguments are stored as
+    // a serialized array.  To be backwards compatible, we should check for serialization
+    // and if not then we will use the old style
+    $args = unserialize($job->arguments);
+    if (!$args) {
+      $args = explode("::", $job->arguments);
+    }
     $args[] = $job->job_id;
     print "Calling: $callback(" . implode(", ", $args) . ")\n";
     call_user_func_array($callback, $args);

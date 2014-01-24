@@ -291,6 +291,6 @@ function get_tripal_stock_admin_form_cleanup_set(&$form) {
  */
 function tripal_stock_cleanup($dummy = NULL, $job_id = NULL) {
 
-  return tripal_core_clean_orphaned_nodes('stock', $job_id);
+  return tripal_core_chado_node_cleanup_orphaned('stock', $job_id);
 
 }

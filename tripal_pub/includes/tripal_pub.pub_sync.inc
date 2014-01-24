@@ -132,6 +132,6 @@ function tripal_pub_sync_pubs($job_id = NULL) {
  */
 function tripal_pub_cleanup($dummy = NULL, $job_id = NULL) {
 
-  return tripal_core_clean_orphaned_nodes('pub', $job_id);
+  return tripal_core_chado_node_cleanup_orphaned('pub', $job_id);
 
 }

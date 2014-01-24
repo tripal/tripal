@@ -203,16 +203,16 @@ function tripal_contact_theme($existing, $type, $theme, $path) {
 function tripal_contact_block_info() {
 
   $blocks['contbase']['info'] = t('Tripal Contact Details');
-  $blocks['contbase']['cache'] = 'BLOCK_NO_CACHE';
+  $blocks['contbase']['cache'] = 'DRUPAL_NO_CACHE';
 
   $blocks['contprops']['info'] = t('Tripal Contact Properties');
-  $blocks['contprops']['cache'] = 'BLOCK_NO_CACHE';
+  $blocks['contprops']['cache'] = 'DRUPAL_NO_CACHE';
 
   $blocks['contrels']['info'] = t('Tripal Contact Relationships');
-  $blocks['contrels']['cache'] = 'BLOCK_NO_CACHE';
+  $blocks['contrels']['cache'] = 'DRUPAL_NO_CACHE';
 
-  $blocks['contpubs']['info'] = t('Tripal Cotact Publications');
-  $blocks['contpubs']['cache'] = 'BLOCK_NO_CACHE';
+  $blocks['contpubs']['info'] = t('Tripal Contact Publications');
+  $blocks['contpubs']['cache'] = 'DRUPAL_NO_CACHE';
 
   return $blocks;
 }
@@ -229,19 +229,35 @@ function tripal_contact_block_view($delta = '') {
     switch ($delta) {
       case 'contbase':
         $block['subject'] = t('Details');
-        $block['content'] = theme('tripal_contact_base', $node);
+        $block['content'] = array(
+          '#theme' => 'tripal_contact_base', 
+          '#nodes' => $node,
+          '#title' => '',
+        );
         break;
       case 'contprops':
         $block['subject'] = t('Properties');
-        $block['content'] = theme('tripal_contact_properties', $node);
+        $block['content'] = array(
+          '#theme' => 'tripal_contact_properties', 
+          '#nodes' => $node,
+          '#title' => '',
+        );
         break;
       case 'contrels':
         $block['subject'] = t('Relationships');
-        $block['content'] = theme('tripal_contact_relationships', $node);
+        $block['content'] = array(
+          '#theme' => 'tripal_contact_relationships', 
+          '#nodes' => $node,
+          '#title' => '',
+        );
         break;
       case 'contpubs':
         $block['subject'] = t('Publications');
-        $block['content'] = theme('tripal_contact_publications', $node);
+        $block['content'] = array(
+          '#theme' => 'tripal_contact_publications', 
+          '#nodes' => $node,
+          '#title' => '',
+        );
         break;
       default :
     }

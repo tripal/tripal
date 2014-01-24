@@ -401,7 +401,7 @@ function tripal_featuremap_sync_featuremaps($featuremap_id = NULL, $job_id = NUL
  */
 function tripal_featuremap_cleanup($dummy = NULL, $job_id = NULL) {
 
-  return tripal_core_clean_orphaned_nodes('featuremap', $job_id);
+  return tripal_core_chado_node_cleanup_orphaned('featuremap', $job_id);
 
 }
 /**

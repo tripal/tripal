@@ -126,6 +126,6 @@ function tripal_contact_sync_contacts($job_id = NULL) {
  */
 function tripal_contact_cleanup($dummy = NULL, $job_id = NULL) {
 
-  return tripal_core_clean_orphaned_nodes('contact', $job_id);
+  return tripal_core_chado_node_cleanup_orphaned('contact', $job_id);
 
 }

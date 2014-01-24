@@ -95,7 +95,7 @@ function chado_analysis_form($node, &$form_state) {
         are derived from some software package. But, data can also be derived via retreival
         from an external source or an analysis pipeline with multipel software components.
         In these cases, provide values for the fields below that best makes sense
-        '),
+     '),
   );
   $form['analysisname']= array(
     '#type' => 'textfield',
@@ -317,4 +317,254 @@ function tripal_analysis_validate($node, $form, &$form_state) {
       return;
     }
   }
+}
+
+/**
+ *  When a new chado_analysis node is created we also need to add information
+ *  to our chado_analysis table.  This function is called on insert of a new
+ *  node of type 'chado_analysis' and inserts the necessary information.
+ *
+ * @ingroup tripal_analysis
+ */
+function chado_analysis_insert($node) {
+
+  $node->analysisname = trim($node->analysisname);
+  $node->description = trim($node->description);
+  $node->program = trim($node->program);
+  $node->programversion = trim($node->programversion);
+  $node->algorithm = trim($node->algorithm);
+  $node->sourcename = trim($node->sourcename);
+  $node->sourceversion = trim($node->sourceversion);
+  $node->sourceuri = trim($node->sourceuri);
+
+  // if there is an analysis_id in the $node object then this must be a sync so
+  // we can skip adding the analysis as it is already there, although
+  // we do need to proceed with the rest of the insert
+  if (!property_exists($node, 'analysis_id')) {
+
+    // Create a timestamp so we can insert it into the chado database
+    $time  = $node->timeexecuted;
+    $month = $time['month'];
+    $day   = $time['day'];
+    $year  = $time['year'];
+    $timestamp = $month . '/' . $day . '/' . $year;
+
+    // insert and then get the newly inserted analysis record
+    $values = array(
+      'name'           => $node->analysisname,
+      'description'    => $node->description,
+      'program'        => $node->program,
+      'programversion' => $node->programversion,
+      'algorithm'      => $node->algorithm,
+      'sourcename'     => $node->sourcename,
+      'sourceversion'  => $node->sourceversion,
+      'sourceuri'      => $node->sourceuri,
+      'timeexecuted'   => $timestamp
+    );
+    $analysis = tripal_core_chado_insert('analysis', $values);
+    if (!$analysis) {
+      drupal_set_message(t('Unable to add analysis.', 'warning'));
+      watchdog('tripal_analysis', 'Insert analysis: Unable to create analysis where values:%values',
+      array('%values' => print_r($values, TRUE)), WATCHDOG_ERROR);
+      return;
+    }
+    $analysis_id = $analysis['analysis_id'];
+
+    // now add in the properties
+    $properties = tripal_core_properties_form_retreive($node, 'analysis_property');
+    foreach ($properties as $property => $elements) {
+      foreach ($elements as $rank => $value) {
+
+        $status = tripal_analysis_insert_property($analysis_id, $property, $value, FALSE, 'analysis_property');
+        if (!$status) {
+          drupal_set_message("Error cannot add property: $property", "error");
+          watchdog('t_analysis', "Error cannot add property: %prop",
+          array('%property' => $property), WATCHDOG_ERROR);
+        }
+      }
+    }
+  }
+  else {
+    $analysis_id = $node->analysis_id;
+  }
+
+  // Make sure the entry for this analysis doesn't already exist in the
+  // chado_analysis table if it doesn't exist then we want to add it.
+  $check_org_id = chado_get_id_for_node('analysis', $node->nid);
+  if (!$check_org_id) {
+    $record = new stdClass();
+    $record->nid = $node->nid;
+    $record->vid = $node->vid;
+    $record->analysis_id = $analysis_id;
+    drupal_write_record('chado_analysis', $record);
+  }
+
+  // add the analysis to the node object for
+  // use by other analysis modules that may be using this function
+  $node->analysis = $analysis;
+  $node->analysis_id = $analysis_id; // we need to set this for children
+}
+
+/**
+ * Removes analysis from the chado database
+ *
+ * @param $node
+ *   The node object specifying which chado record to delete
+ *
+ * @ingroup tripal_analysis
+ */
+function chado_analysis_delete($node) {
+  $analysis_id = chado_get_id_for_node('analysis', $node->nid);
+
+  // if we don't have an analysis id for this node then this isn't a node of
+  // type chado_analysis or the entry in the chado_analysis table was lost.
+  if (!$analysis_id) {
+    return;
+  }
+
+  // Remove data from the {chado_analysis}, {node}, and {node_revisions} tables
+  $sql_del = "DELETE FROM {chado_analysis} WHERE nid = :nid AND vid = :vid";
+  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  $sql_del = "DELETE FROM {node} WHERE nid = :nid AND vid = :vid";
+  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  $sql_del = "DELETE FROM {node_revision} WHERE nid = :nid AND vid = :vid";
+  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+
+  //Remove from analysis and analysisprop tables of chado database as well
+  chado_query("DELETE FROM {analysis} WHERE analysis_id = :analysis_id", array(':analysis_id' => $analysis_id));
+}
+
+/**
+ * Update analyses
+ *
+ * @param $node
+ *   The updated node object
+ *
+ * @ingroup tripal_analysis
+ */
+function chado_analysis_update($node) {
+  $node->analysisname = trim($node->analysisname);
+  $node->description = trim($node->description);
+  $node->program = trim($node->program);
+  $node->programversion = trim($node->programversion);
+  $node->algorithm = trim($node->algorithm);
+  $node->sourcename = trim($node->sourcename);
+  $node->sourceversion = trim($node->sourceversion);
+  $node->sourceuri = trim($node->sourceuri);
+
+  // Create a timestamp so we can insert it into the chado database
+  $time = $node->timeexecuted;
+  $month = $time['month'];
+  $day = $time['day'];
+  $year = $time['year'];
+  $timestamp = $month . '/' . $day . '/' . $year;
+
+  // update the record in Chado
+  $analysis_id = chado_get_id_for_node('analysis', $node->nid);
+  $match = array(
+    'analysis_id' => $node->analysis_id,
+  );
+  $values = array(
+    'name'           => $node->analysisname,
+    'description'    => $node->description,
+    'program'        => $node->program,
+    'programversion' => $node->programversion,
+    'algorithm'      => $node->algorithm,
+    'sourcename'     => $node->sourcename,
+    'sourceversion'  => $node->sourceversion,
+    'sourceuri'      => $node->sourceuri,
+    'timeexecuted'   => $timestamp,
+    'analysis_id'    => $analysis_id
+  );
+  $status = tripal_core_chado_update('analysis', $match, $values);
+  if (!$status) {
+    drupal_set_message(t('Unable to update analysis.', 'warning'));
+    watchdog('tripal_analysis', 'Update analysis: Unable to update analysis where values: %values',
+    array('%values' => print_r($values, TRUE)), WATCHDOG_ERROR);
+  }
+
+  // now add in the properties by first removing any the analysis
+  // already has and adding the ones we have
+  tripal_core_chado_delete('analysisprop', array('analysis_id' => $analysis_id));
+  $properties = tripal_core_properties_form_retreive($node, 'analysis_property');
+  foreach ($properties as $property => $elements) {
+    foreach ($elements as $rank => $value) {
+      $status = tripal_analysis_insert_property($analysis_id, $property, $value, FALSE, 'analysis_property');
+      if (!$status) {
+        drupal_set_message("Error cannot add property: '$property'", "error");
+        watchdog('t_analysis', "Error cannot add property: '%prop'",
+        array('%prop' => $property), WATCHDOG_ERROR);
+      }
+    }
+  }
+}
+/**
+ *  When a node is requested by the user this function is called to allow us
+ *  to add auxiliary data to the node object.
+ *
+ * @ingroup tripal_analysis
+ */
+function chado_analysis_load($nodes) {
+
+  foreach ($nodes as $nid => $node) {
+    // find the analysis and add in the details
+    $analysis_id = chado_get_id_for_node('analysis', $nid);
+
+    // build the analysis variable
+    $values = array('analysis_id' => $analysis_id);
+    $analysis = tripal_core_generate_chado_var('analysis', $values);
+
+    // add in the description field
+    $analysis = tripal_core_expand_chado_vars($analysis, 'field', 'analysis.description');
+    $nodes[$nid]->analysis = $analysis;
+  }
+}
+
+/**
+ * Implement hook_access().
+ *
+ * This hook allows node modules to limit access to the node types they define.
+ *
+ *  @param $node
+ *  The node on which the operation is to be performed, or, if it does not yet exist, the
+ *  type of node to be created
+ *
+ *  @param $op
+ *  The operation to be performed
+ *
+ *  @param $account
+ *  A user object representing the user for whom the operation is to be performed
+ *
+ *  @return
+ *  If the permission for the specified operation is not set then return FALSE. If the
+ *  permission is set then return NULL as this allows other modules to disable
+ *  access.  The only exception is when the $op == 'create'.  We will always
+ *  return TRUE if the permission is set.
+ *
+ * @ingroup tripal_analysis
+ */
+function chado_analysis_node_access($node, $op, $account) {
+
+  if ($op == 'create') {
+    if (!user_access('create chado_analysis content', $account)) {
+      return FALSE;
+    }
+    return TRUE;
+  }
+  if ($op == 'update') {
+    if (!user_access('edit chado_analysis content', $account)) {
+      return FALSE;
+    }
+  }
+  if ($op == 'delete') {
+    if (!user_access('delete chado_analysis content', $account)) {
+      return FALSE;
+    }
+  }
+  if ($op == 'view') {
+    if (!user_access('access chado_analysis content', $account)) {
+      return FALSE;
+    }
+  }
+  return NULL;
 }

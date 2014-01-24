@@ -380,5 +380,5 @@ function tripal_project_sync_all_projects() {
  */
 function tripal_project_cleanup($dummy = NULL, $job_id = NULL) {
 
-  return tripal_core_clean_orphaned_nodes('project', $job_id);
+  return tripal_core_chado_node_cleanup_orphaned('project', $job_id);
 }
