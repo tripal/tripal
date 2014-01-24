@@ -25,7 +25,11 @@ function tripal_pub_importers_list() {
     }
 
     $rows[] = array(
-      l(t('Edit/Test'), "admin/tripal/chado/tripal_pub/import/edit/$importer->pub_import_id"),
+      array(
+        'data' => l(t('Edit/Test'), "admin/tripal/chado/tripal_pub/import/edit/$importer->pub_import_id") . '<br>' .
+                  l(t('Import Pubs'), "admin/tripal/chado/tripal_pub/import/submit/$importer->pub_import_id"),
+        'nowrap' => 'nowrap'
+      ),
       $importer->name,
       $criteria['remote_db'],
       $criteria_str,
@@ -45,9 +49,15 @@ function tripal_pub_importers_list() {
      to query a remote database, find publications that match the specified criteria 
      and then import those publications into the Chado database. An example use case would
      be to peridocially add new publications to this Tripal site that have appeared in PubMed
-     in the last 30 days.  See the " . 
+     in the last 30 days.  You can import publications in one of two ways:
+     <ol>
+      <li>Create a new importer by clicking the 'New Importer' link above, and after saving it should appear in the list below.  Click the
+          link labeled 'Import Pubs' to schedule a job to import the publications</li>
+      <li>The first method only performs the import once.  However, you can schedule the 
+          importer to run peridically by adding a cron job. See the " . 
      l("Pub Module help instructions", "admin/tripal/chado/tripal_pub/help") . " to learn how to 
-     set the importers to run automatically.") . '</p>';
+     set the importers to run automatically.") . '</li>
+     </ol><br>';
 
   $page .= theme('table', array('header' => $header, 'rows' => $rows));
   
@@ -232,6 +242,12 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
     $do_contact   = $_SESSION['tripal_pub_import']['do_contact'];
     $num_criteria = $_SESSION['tripal_pub_import']['num_criteria'];
     $loader_name  = $_SESSION['tripal_pub_import']['loader_name'];
+    
+    // check if the pub_import_id in the session variable is not the same as the one we've been provided
+    // if so, then clear the session variable
+    if ($pub_import_id and $pub_import_id != $_SESSION['tripal_pub_import']['pub_import_id']) {
+      unset($_SESSION['tripal_pub_import']);
+    }
   }
   
   // if we are re constructing the form from a failed validation or ajax callback
@@ -267,11 +283,7 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
     $num_criteria--;
   }
   
-  // check if the pub_import_id in the session variable is not the same as the one we've been provided
-  // if so, then clear the session variable
-  if ($pub_import_id and $pub_import_id != $_SESSION['tripal_pub_import']['pub_import_id']) {
-    unset($_SESSION['tripal_pub_import']);
-  }
+
   
   // set the values we need for later but that should not be shown on the form
   $form['num_criteria']= array(
@@ -732,3 +744,24 @@ function theme_tripal_pub_importer_setup_form_elements($variables) {
   
   return drupal_render($form);
 }
+
+/**
+ * Add a job to import publications
+ * 
+ * @param $pub_importer_id
+ */
+function tripal_pub_importer_submit_job($import_id) {
+  global $user;
+  
+  // get all of the loaders
+  $args = array(':import_id' => $import_id);
+  $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = :import_id ";
+  $import = db_query($sql, $args)->fetchObject();
+  
+  $args = array($import_id);
+  tripal_add_job("Import publications $import->name", 'tripal_pub',
+    'tripal_pub_import_publications_by_import_id', $args, $user->uid);
+  
+  drupal_goto('admin/tripal/chado/tripal_pub/import_list');
+}
+

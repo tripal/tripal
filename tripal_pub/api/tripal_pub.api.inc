@@ -99,92 +99,148 @@ function tripal_pub_get_raw_data($dbxref) {
  */
 function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db = NULL) {
 
-  // get a persistent connection
-  $connection = tripal_db_persistent_chado();
-  if (!$connection) {
-    print "A persistant connection was not obtained. Loading will be slow\n";
-  }
+  print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
+      "If the load fails or is terminated prematurely then the entire set of \n" .
+      "insertions/updates is rolled back and will not be found in the database\n\n";
+  $transaction = db_transaction();
+  try {
 
-  // if we cannot get a connection then let the user know the loading will be slow
-  tripal_db_start_transaction();
-  if ($connection) {
-    print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
-           "If the load fails or is terminated prematurely then the entire set of \n" .
-           "insertions/updates is rolled back and will not be found in the database\n\n";
-  }
-
-  // get a list of all publications by their Dbxrefs that have supported databases
-  $sql = "
-    SELECT DB.name as db_name, DBX.accession
-    FROM pub P
-      INNER JOIN pub_dbxref PDBX ON P.pub_id = PDBX.pub_id
-      INNER JOIN dbxref DBX      ON DBX.dbxref_id = PDBX.dbxref_id
-      INNER JOIN db DB           ON DB.db_id = DBX.db_id
-  "; 
-  $args = array();
-  if ($dbxref and preg_match('/^(.*?):(.*?)$/', $dbxref, $matches)) {
-    $dbname = $matches[1];
-    $accession = $matches[2];
-    $sql .= "WHERE DBX.accession = :accession and DB.name = :dbname ";
-    $args[':accession'] = $accession;
-    $args[':dbname'] = $dbname;
-  }
-  elseif ($db) {
-    $sql .= " WHERE DB.name = :dbname ";
-    $args[':dbname'] = $db;
-  }
-  $sql .= "ORDER BY DB.name, P.pub_id";
-  $results = chado_query($sql, $args);
-
-  $num_to_retrieve = 100;
-  $i = 0;                 // count the number of IDs. When we hit $num_to_retrieve we'll do the query
-  $curr_db = '';          // keeps track of the current current database
-  $ids = array();         // the list of IDs for the database
-  $search = array();      // the search array passed to the search function
-
-  // iterate through the pub IDs
-  while ($pub = $results->fetchObject()) {
-    $accession = $pub->accession;
-    $remote_db = $pub->db_name;
-
-    // here we need to only update publications for databases we support
-    $supported_dbs = variable_get('tripal_pub_supported_dbs', array());
-    if(!in_array($remote_db, $supported_dbs)) {
-      continue;
+    // get a list of all publications by their Dbxrefs that have supported databases
+    $sql = "
+      SELECT DB.name as db_name, DBX.accession
+      FROM pub P
+        INNER JOIN pub_dbxref PDBX ON P.pub_id = PDBX.pub_id
+        INNER JOIN dbxref DBX      ON DBX.dbxref_id = PDBX.dbxref_id
+        INNER JOIN db DB           ON DB.db_id = DBX.db_id
+    "; 
+    $args = array();
+    if ($dbxref and preg_match('/^(.*?):(.*?)$/', $dbxref, $matches)) {
+      $dbname = $matches[1];
+      $accession = $matches[2];
+      $sql .= "WHERE DBX.accession = :accession and DB.name = :dbname ";
+      $args[':accession'] = $accession;
+      $args[':dbname'] = $dbname;
     }
-    $search = array(
-      'num_criteria' => 1,
-      'remote_db' => $remote_db,
-      'criteria' => array(
-        '1' => array(
-          'search_terms' => "$remote_db:$accession",
-          'scope' => 'id',
-          'operation' => '',
-          'is_phrase' => 0,
+    elseif ($db) {
+      $sql .= " WHERE DB.name = :dbname ";
+      $args[':dbname'] = $db;
+    }
+    $sql .= "ORDER BY DB.name, P.pub_id";
+    $results = chado_query($sql, $args);
+  
+    $num_to_retrieve = 100;
+    $i = 0;                 // count the number of IDs. When we hit $num_to_retrieve we'll do the query
+    $curr_db = '';          // keeps track of the current current database
+    $ids = array();         // the list of IDs for the database
+    $search = array();      // the search array passed to the search function
+  
+    // iterate through the pub IDs
+    while ($pub = $results->fetchObject()) {
+      $accession = $pub->accession;
+      $remote_db = $pub->db_name;
+  
+      // here we need to only update publications for databases we support
+      $supported_dbs = variable_get('tripal_pub_supported_dbs', array());
+      if(!in_array($remote_db, $supported_dbs)) {
+        continue;
+      }
+      $search = array(
+        'num_criteria' => 1,
+        'remote_db' => $remote_db,
+        'criteria' => array(
+          '1' => array(
+            'search_terms' => "$remote_db:$accession",
+            'scope' => 'id',
+            'operation' => '',
+            'is_phrase' => 0,
+          ),
         ),
-      ),
-    );
-    $pubs = tripal_pub_get_remote_search_results($remote_db, $search, 1, 0);
-    tripal_pub_add_publications($pubs, $do_contact, TRUE);
-
-    $i++;
+      );
+      $pubs = tripal_pub_get_remote_search_results($remote_db, $search, 1, 0);
+      tripal_pub_add_publications($pubs, $do_contact, TRUE);
+  
+      $i++;
+    }
+  
+    // sync the newly added publications with Drupal
+    print "Syncing publications with Drupal...\n";
+    tripal_pub_sync_pubs();
+  
+    // if the caller wants to create contacts then we should sync them
+    if ($do_contact) {
+      print "Syncing contacts with Drupal...\n";
+      tripal_contact_sync_contacts();
+    }
   }
-
-  // transaction is complete
-  tripal_db_commit_transaction();
-
-  print "Transaction Complete\n";
-
-  // sync the newly added publications with Drupal
-  print "Syncing publications with Drupal...\n";
-  tripal_pub_sync_pubs();
-
-  // if the caller wants to create contacts then we should sync them
-  if ($do_contact) {
-    print "Syncing contacts with Drupal...\n";
-    tripal_contact_sync_contacts();
+  catch (Exception $e) {
+    print "\n"; // make sure we start errors on new line
+    watchdog_exception('T_pub_import', $e);
+    $transaction->rollback();
+    print "FAILED: Rolling back database changes...\n";
+    return;
   }
+  print "Done.\n";
+}
+/**
+ *
+ * @param $pub_importer_id
+ */
+function tripal_pub_import_publications_by_import_id($import_id, $job_id = NULL) {
+  print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
+        "If the load fails or is terminated prematurely then the entire set of \n" .
+        "insertions/updates is rolled back and will not be found in the database\n\n";
 
+  // start the transaction
+  $transaction = db_transaction();
+
+  try {
+    $page = 0;
+    $do_contact = FALSE;
+    $num_to_retrieve = 100;
+
+    // get all of the loaders
+    $args = array(':import_id' => $import_id);
+    $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = :import_id ";
+    $import = db_query($sql, $args)->fetchObject();
+
+    print "Importing: " . $import->name . "\n";
+
+    $criteria = unserialize($import->criteria);
+    $remote_db = $criteria['remote_db'];
+    $total_pubs = 0;
+    do {
+      // retrieve the pubs for this page. We'll retreive 100 at a time
+      $results  = tripal_pub_get_remote_search_results($remote_db, $criteria, $num_to_retrieve, $page);
+      $pubs     = $results['pubs'];
+      $num_pubs = $rseults['total_records'];
+      $total_pubs += $num_pubs;
+      tripal_pub_add_publications($pubs, $import->do_contact);
+      $page++;
+    }
+    // continue looping until we have a $pubs array that does not have
+    // our requested numer of records.  This means we've hit the end
+    while (count($pubs) == $num_to_retrieve);
+
+    // sync the newly added publications with Drupal. If the user
+    // requested a report then we don't want to print any syncing information
+    // so pass 'FALSE' to the sync call
+    print "Syncing publications with Drupal...\n";
+    tripal_pub_sync_pubs();
+
+    // if any of the importers wanted to create contacts from the authors then sync them
+    if($import->do_contact) {
+      print "Syncing contacts with Drupal...\n";
+      tripal_contact_sync_contacts();
+    }
+    tripal_job_set_progress($job_id, '100');
+  }
+  catch (Exception $e) {
+    print "\n"; // make sure we start errors on new line
+    watchdog_exception('T_pub_import', $e);
+    $transaction->rollback();
+    print "FAILED: Rolling back database changes...\n";
+    return;
+  }
   print "Done.\n";
 }
 /*
@@ -193,6 +249,10 @@ function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db
 function tripal_pub_import_publications($report_email = FALSE, $do_update = FALSE) {
   $num_to_retrieve = 100;
   $page = 0;
+  
+  print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
+      "If the load fails or is terminated prematurely then the entire set of \n" .
+      "insertions/updates is rolled back and will not be found in the database\n\n";
   
   // start the transaction
   $transaction = db_transaction();
@@ -224,53 +284,51 @@ function tripal_pub_import_publications($report_email = FALSE, $do_update = FALS
       // our requested numer of records.  This means we've hit the end
       while (count($pubs) == $num_to_retrieve);
     }
+    
+    // sync the newly added publications with Drupal. If the user
+    // requested a report then we don't want to print any syncing information
+    // so pass 'FALSE' to the sync call
+    print "Syncing publications with Drupal...\n";
+    tripal_pub_sync_pubs();
+  
+    // iterate through each of the reports and generate a final report with HTML links
+    $HTML_report = '';
+    if ($report_email) {
+      $HTML_report .= "<html>";
+      global $base_url;
+      foreach ($reports as $importer => $report) {
+        $total = count($report['inserted']);
+        $HTML_report .= "<b>$total new publications from importer: $importer</b><br><ol>\n";
+        foreach ($report['inserted'] as $pub) {
+          $item = $pub['Title'];
+          if (array_key_exists('pub_id', $pub)) {
+            $item = l($pub['Title'], "$base_url/pub/" . $pub['pub_id']);
+          }
+          $HTML_report .= "<li>$item</li>\n";
+        }
+        $HTML_report .= "</ol>\n";
+      }
+      $HTML_report .= "</html>";
+      $site_email = variable_get('site_mail', '');
+      $params = array(
+        'message' => $HTML_report
+      );
+      drupal_mail('tripal_pub', 'import_report', $report_email, language_default(), $params, $site_email, TRUE);
+    }
+  
+    // if any of the importers wanted to create contacts from the authors then sync them
+    if($do_contact) {
+      print "Syncing contacts with Drupal...\n";
+      tripal_contact_sync_contacts();
+    }
   }
   catch (Exception $e) {
     print "\n"; // make sure we start errors on new line
     watchdog_exception('T_pub_import', $e);
-    $transaction->rollback();
-    print "FAILED: Rolling back database changes...\n";
+      $transaction->rollback();
+      print "FAILED: Rolling back database changes...\n";
     return;
   }
-  print "Transaction Complete\n";
-
-  // sync the newly added publications with Drupal. If the user
-  // requested a report then we don't want to print any syncing information
-  // so pass 'FALSE' to the sync call
-  print "Syncing publications with Drupal...\n";
-  tripal_pub_sync_pubs();
-
-  // iterate through each of the reports and generate a final report with HTML links
-  $HTML_report = '';
-  if ($report_email) {
-    $HTML_report .= "<html>";
-    global $base_url;
-    foreach ($reports as $importer => $report) {
-      $total = count($report['inserted']);
-      $HTML_report .= "<b>$total new publications from importer: $importer</b><br><ol>\n";
-      foreach ($report['inserted'] as $pub) {
-        $item = $pub['Title'];
-        if (array_key_exists('pub_id', $pub)) {
-          $item = l($pub['Title'], "$base_url/pub/" . $pub['pub_id']);
-        }
-        $HTML_report .= "<li>$item</li>\n";
-      }
-      $HTML_report .= "</ol>\n";
-    }
-    $HTML_report .= "</html>";
-    $site_email = variable_get('site_mail', '');
-    $params = array(
-      'message' => $HTML_report
-    );
-    drupal_mail('tripal_pub', 'import_report', $report_email, language_default(), $params, $site_email, TRUE);
-  }
-
-  // if any of the importers wanted to create contacts from the authors then sync them
-  if($do_contact) {
-    print "Syncing contacts with Drupal...\n";
-    tripal_contact_sync_contacts();
-  }
-   
   print "Done.\n";
 }
 /*
@@ -282,61 +340,61 @@ function tripal_pub_import_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_updat
   $page = 0;
   $num_pubs = 0;
 
-  // get a persistent connection
-  $connection = tripal_db_persistent_chado();
-  if (!$connection) {
-    print "A persistant connection was not obtained. Loading will be slow\n";
-  }
-
-  // if we cannot get a connection then let the user know the loading will be slow
-  tripal_db_start_transaction();
-  if ($connection) {
-    print "\nNOTE: Loading of the publication is performed using a database transaction. \n" .
-           "If the load fails or is terminated prematurely then the entire set of \n" .
-           "insertions/updates is rolled back and will not be found in the database\n\n";
-  }
-
-  if(preg_match('/^(.*?):(.*?)$/', $pub_dbxref, $matches)) {
-    $dbname = $matches[1];
-    $accession = $matches[2];
-
-    $criteria = array(
-      'num_criteria' => 1,
-      'remote_db' => $dbname,
-      'criteria' => array(
-        '1' => array(
-          'search_terms' => "$dbname:$accession",
-          'scope' => 'id',
-          'operation' => '',
-          'is_phrase' => 0,
+  print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
+      "If the load fails or is terminated prematurely then the entire set of \n" .
+      "insertions/updates is rolled back and will not be found in the database\n\n";
+  
+  $transaction = db_transaction();
+  try {
+    if(preg_match('/^(.*?):(.*?)$/', $pub_dbxref, $matches)) {
+      $dbname = $matches[1];
+      $accession = $matches[2];
+  
+      $criteria = array(
+        'num_criteria' => 1,
+        'remote_db' => $dbname,
+        'criteria' => array(
+          '1' => array(
+            'search_terms' => "$dbname:$accession",
+            'scope' => 'id',
+            'operation' => '',
+            'is_phrase' => 0,
+          ),
         ),
-      ),
-    );
-    $remote_db = $criteria['remote_db'];
-    $pubs = tripal_pub_get_remote_search_results($remote_db, $criteria, $num_to_retrieve, $page);
-    $pub_id = tripal_pub_add_publications($pubs, $do_contact, $do_update);
+      );
+      $remote_db = $criteria['remote_db'];
+      $results = tripal_pub_get_remote_search_results($remote_db, $criteria, $num_to_retrieve, $page);
+      $pubs          = $results['pubs'];
+      $search_str    = $results['search_str'];
+      $total_records = $results['total_records'];
+      $pub_id = tripal_pub_add_publications($pubs, $do_contact, $do_update);
+    }
 
+    // sync the newly added publications with Drupal
+    print "Syncing publications with Drupal...\n";
+    tripal_pub_sync_pubs();
+  
+    // if any of the importers wanted to create contacts from the authors then sync them
+    if($do_contact) {
+      print "Syncing contacts with Drupal...\n";
+      tripal_contact_sync_contacts();
+    }
   }
-
-  // transaction is complete
-  tripal_db_commit_transaction();
-
-  print "Transaction Complete\n";
-
-  // sync the newly added publications with Drupal
-  print "Syncing publications with Drupal...\n";
-  tripal_pub_sync_pubs();
-
-  // if any of the importers wanted to create contacts from the authors then sync them
-  if($do_contact) {
-    print "Syncing contacts with Drupal...\n";
-    tripal_contact_sync_contacts();
+  catch (Exception $e) {
+    print "\n"; // make sure we start errors on new line
+    watchdog_exception('T_pub_import', $e);
+        $transaction->rollback();
+        print "FAILED: Rolling back database changes...\n";
+      return;
   }
    
   print "Done.\n";
 }
-/*
- *
+/**
+ * 
+ * @param $pubs
+ * @param $do_contact
+ * @param $update
  */
 function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE) {
   $report = array();
@@ -344,7 +402,7 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE) {
   $report['inserted'] = array();
   $report['skipped'] = array();
   $total_pubs = count($pubs);
-
+  
   // iterate through the publications and add each one
   $i = 1;
   foreach ($pubs as $pub) {
@@ -614,18 +672,21 @@ function tripal_pub_get_pub_by_uniquename($name) {
  *
  */
 function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE, $update_if_exists = FALSE) {
-
   $pub_id = 0;
+  
+  if (!is_array($pub_details)) {
+    return FALSE;
+  }
 
   // first try to find the publication using the accession number. It will have
   // one if the pub has already been loaded for the publication database
-  if ($pub_details['Publication Dbxref']) {
+  if (array_key_exists('Publication Dbxref', $pub_details)) {
     $results = tripal_pub_get_pubs_by_dbxref($pub_details['Publication Dbxref']);
     if(count($results) == 1) {
       $pub_id = $results[0];
       if ($pub_id and !$update_if_exists) {
-        watchdog('tripal_pub', "A publication with this Dbxref already exists... Skipping: %dbxref",
-        array('%dbxref' => $pub_details['Publication Dbxref']), WATCHDOG_WARNING);
+        //watchdog('tripal_pub', "A publication with this Dbxref already exists... Skipping: %dbxref",
+        //array('%dbxref' => $pub_details['Publication Dbxref']), WATCHDOG_WARNING);
         $action = 'skipped';
         return $pub_id;
       }
@@ -641,7 +702,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   // if we couldn't find a publication by the accession (which means it doesn't
   // yet exist or it has been added using a different publication database) then
   // try to find it using the title and publication year.
-  if (!$pub_id and $pub_details['Title']) {
+  if (!$pub_id and array_key_exists('Title', $pub_details)) {
 
     $results = tripal_pub_get_pubs_by_title_type_pyear_series($pub_details['Title'], NULL, $pub_details['Year']);
     if (count($results) == 1) {
@@ -662,13 +723,14 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
       return FALSE;
     }
   }
-
   // get the publication type (use the first publication type, any others will get stored as properties)
-  if (is_array($pub_details['Publication Type'])) {
-    $pub_type = tripal_cv_get_cvterm_by_name($pub_details['Publication Type'][0], NULL, 'tripal_pub');
-  }
-  elseif ($pub_details['Publication Type']) {
-    $pub_type = tripal_cv_get_cvterm_by_name($pub_details['Publication Type'], NULL, 'tripal_pub');
+  if (array_key_exists('Publication Type', $pub_details)) {
+    if(is_array($pub_details['Publication Type'])) {
+      $pub_type = tripal_cv_get_cvterm_by_name($pub_details['Publication Type'][0], NULL, 'tripal_pub');
+    }
+    else {
+      $pub_type = tripal_cv_get_cvterm_by_name($pub_details['Publication Type'], NULL, 'tripal_pub');
+    }
   }
   else {
     watchdog('tripal_pub', "The Publication Type is a required property but is missing", array(), WATCHDOG_ERROR);

@@ -2045,7 +2045,7 @@ function tripal_core_exclude_field_from_feature_by_default() {
 function chado_pager_query($query, $args, $limit, $element, $count_query = '') {
   
   // get the page and offset for the pager
-  $page = pager_find_page($element);
+  $page = isset($_GET['page']) ? $_GET['page'] : '0';
   $offset = $limit * $page;
 
   // Construct a count query if none was given.
@@ -2109,7 +2109,7 @@ function chado_query($sql, $args = array()) {
   if ($is_local) {
     $sql = preg_replace('/\n/', '', $sql);  // remove carriage returns
     $sql = preg_replace('/\{(.*?)\}/', 'chado.$1', $sql);
-    
+
     // the featureloc table has some indexes that use function that call other functions
     // and those calls do not reference a schema, therefore, any tables with featureloc
     // must automaticaly have the chado schema set as active to find 

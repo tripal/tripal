@@ -3,9 +3,7 @@
  *
  */
 function tripal_pub_search_page() {
-  global $pager_total, $pager_total_items;
 
-  $pager_id = 0;
   $limit = 25;
 
   // generate the search form
@@ -31,22 +29,10 @@ function tripal_pub_search_page() {
     }
 
     // get the list of publications from the remote database using the search criteria.
-    $pubs = tripal_pub_get_search_results($search_array, $limit, $pager_id);
-
-    // generate the pager
+    $pubs = tripal_pub_get_search_results($search_array, $limit);
     $page = isset($_GET['page']) ? $_GET['page'] : '0';
     $total_records = $_SESSION['chado_pager'][0]['total_records'];
     $total_pages = (int) ($total_records / $limit) + 1;
-        
-    // generate the pager
-    pager_default_initialize($total_records, $limit);
-    $pager = array(
-      'tags' => array(),
-      'element' => 0,
-      'parameters' => array(),
-      'quantity' => $limit,
-    );
-    $pager = theme_pager($pager);
 
     // iterate through the results and construct the table displaying the publications
     $rows = array();
@@ -57,7 +43,7 @@ function tripal_pub_search_page() {
         'pub_id' => $pub->pub_id, 
         'type_id' => array(
           'name' => 'Citation',
-      ),
+        ),
       );
       $citation_rec = tripal_core_generate_chado_var('pubprop', $values);
       $citation_rec = tripal_core_expand_chado_vars($citation_rec, 'field', 'pubprop.value');
@@ -79,15 +65,42 @@ function tripal_pub_search_page() {
       );
       $i++;
     }
+    
+    if (count($rows) == 0) {
+      $rows[] = array(
+        array(
+          'data' => 'No results found',
+          'colspan' => 3
+        )
+      );
+    }
 
     $headers = array('', 'Year', 'Publication');
-    $table = theme('table', $headers, $rows);
+    $table = array(
+      'header' => $headers,
+      'rows' => $rows,
+      'attributes' => array('id' => 'tripal-pub-search-results-table', 'border' => '0'),
+      'sticky' => TRUE,
+      'caption' => '',
+      'colgroups' => array(),
+      'empty' => '',
+    );
+    $results = theme_table($table);
     
+    // generate the pager
+    pager_default_initialize($total_records, $limit);
+    $pager = array(
+      'tags' => array(),
+      'element' => 0,
+      'parameters' => array(),
+      'quantity' => $limit,
+    );
+    $pager = theme_pager($pager);
     
     // join all to form the results
     $output .= "<br><p><b>Found " . number_format($total_records) .
       ". Page " . ($page + 1) . " of $total_pages. " .
-      " Results</b></br>" . $table . '</p>' . $pager;    
+      " Results</b></br>" . $results . $pager;    
   }
   return $output;
 }
@@ -145,6 +158,17 @@ function tripal_pub_search_form($form, &$form_state) {
     '#type'          => 'hidden',
     '#default_value' => $num_criteria,
   );
+  
+  if (user_access('access administration pages')) {
+    $form['admin-instructions'] = array(
+      '#prefix' => '<div class="tripal-no-results">',
+      '#markup'  =>  t('Administrators, you can select the fields with which a user can use to search,
+          by checking the desired fields on the ' .
+          l('Publication Module Settings Page', 'admin/tripal/chado/tripal_pub/configuration'). ' in
+         the section titled "Search Options".  The selected fields will appear in the dropdowns below.'),
+      '#suffix' => '</div>'
+    );
+  }
   $form['instructions'] = array(
     '#markup'  =>  t('To search for publications enter keywords in the text boxes below.  
         You can limit your search by selecting the field in the dropdown box. Click the 
@@ -433,10 +457,10 @@ function tripal_pub_search_page_update_criteria($action, $i) {
   )
   );
 }
-/*
+/**
  *
  */
-function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
+function tripal_pub_get_search_results($search_array, $limit) {
 
   // build the SQL based on the criteria provided by the user
   $select = "SELECT DISTINCT P.*, CP.nid ";
@@ -476,17 +500,6 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
       $op = 'AND';
     }
 
-    $action = "= lower('%s')";
-    if($mode == 'Contains') {
-      $action = 'LIKE lower(\'%%' . ":crit$i" . '%%\')';
-    }
-    if($mode == 'Starts With') {
-      $action = '= lower(\'%%' . ":crit$i" . '\')';
-    }
-    if($mode == 'Ends With') {
-      $action = '= lower(\'' . ":crit$i" . '%%\')';
-    }
-     
     // get the scope type
     $values = array('cvterm_id' => $type_id);
     $cvterm = tripal_core_chado_select('cvterm', array('name'), $values);
@@ -495,54 +508,55 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
       $type_name = $cvterm[0]->name;
     }
     if ($type_name == 'Title') {
-      $where .= " $op (lower(P.title)  $action) ";
-      $args[":crit$i"] = $value;
+      $where .= " $op (lower(P.title) LIKE lower(:crit$i)) ";
+      $args[":crit$i"] = '%' . $value . '%';
     }
     elseif ($type_name == 'Year') {
-      $where .= " $op (lower(P.pyear)  $action) ";
-      $args[":crit$i"] = $value;
+      $where .= " $op (lower(P.pyear) = lower(:crit$i)) ";
+      $args[":crit$i"] = '%' . $value . '%';
     }
     elseif ($type_name == 'Volume') {
-      $where .= " $op (lower(P.volume)  $action) ";
-      $args[":crit$i"] = $value;
+      $where .= " $op (lower(P.volume) = lower(:crit$i)) ";
+      $args[":crit$i"] = '%' . $value . '%';
     }
     elseif ($type_name == 'Issue') {
-      $where .= " $op (lower(P.issue)  $action)";
-      $args[":crit$i"] = $value;
+      $where .= " $op (lower(P.issue) = lower(:crit$i)) ";
+      $args[":crit$i"] = '%' . $value . '%';
     }
     elseif ($type_name == 'Journal Name') {
       $from .= " LEFT JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id AND PP$i.type_id = :crit$i ";
-      $where .= " $op ((lower(P.series_name) $action and CVT.name = 'Journal Article') OR
-                       (lower(PP$i.value) $action)) ";
+      $where .= " $op ((lower(P.series_name) = lower(:crit$i) and CVT.name = 'Journal Article') OR
+                       (lower(PP$i.value) = lower(:crit$i))) ";
       $args[":crit$i"] = $type_id;
     }
     elseif ($type_name == 'Conference Name') {
       $from .= " LEFT JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id AND PP$i.type_id = :crit$i ";
-      $where .= " $op ((lower(P.series_name) $action and CVT.name = 'Conference Proceedings') OR
-                       (lower(PP$i.value) $action)) ";
+      $where .= " $op ((lower(P.series_name) = lower(:crit$i) and CVT.name = 'Conference Proceedings') OR
+                       (lower(PP$i.value) = lower(:crit$i))) ";
       $args[":crit$i"] = $type_id;
     }
     elseif ($type_name == 'Publication Type') {
-      $where .= " $op (lower(CVT.name) $action)";
+      $where .= " $op (lower(CVT.name) = lower(:crit$i))";
       $args[":crit$i"] = $value;
     }
     elseif ($type_id == 0) { //'Any Field'
       $from .= " LEFT JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id ";
-      $where .= " $op (lower(PP$i.value)  $action OR
-                       lower(P.title) $action OR 
-                       lower(P.volumetitle) $action OR
-                       lower(P.publisher) $action OR
-                       lower(P.uniquename) $action OR
-                       lower(P.pubplace) $action OR
-                       lower(P.miniref) $action OR
-                       lower(P.series_name) $action) ";
-      $args[":crit$i"] = $value;
+      $where .= " $op (lower(PP$i.value)  LIKE lower(:crit$i) OR
+                       lower(P.title) LIKE lower(:crit$i) OR 
+                       lower(P.volumetitle) LIKE lower(:crit$i) OR
+                       lower(P.publisher) LIKE lower(:crit$i) OR
+                       lower(P.uniquename) LIKE lower(:crit$i) OR
+                       lower(P.pubplace) LIKE lower(:crit$i) OR
+                       lower(P.miniref) LIKE lower(:crit$i) OR
+                       lower(P.series_name) LIKE lower(:crit$i)) ";
+      $args[":crit$i"] = '%' . $value . '%';
     }
     // for all other properties
     else {
-      $from .= " LEFT JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id AND PP$i.type_id = :crit$i ";
-      $where .= " $op (lower(PP$i.value) $action) ";
-      $args[":crit$i"] = $type_id;
+      $from .= " LEFT JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id AND PP$i.type_id = :type_id$i ";
+      $where .= " $op (lower(PP$i.value) LIKE lower(:crit$i)) ";
+      $args[":crit$i"] = '%' . $value . '%';
+      $args[":type_id$i"] = $type_id;
     }
   }
   if($from_year and $to_year) {
@@ -552,7 +566,7 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
   }
   $sql = "$select $from $where $order";
   $count = "SELECT count(*) FROM ($select $from $where $order) as t1";
-  return chado_pager_query($sql, $args, $limit, $pager_id, $count);
+  return chado_pager_query($sql, $args, $limit, 0, $count);
 }
 
 /**

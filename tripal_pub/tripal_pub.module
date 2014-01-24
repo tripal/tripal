@@ -166,6 +166,13 @@ function tripal_pub_menu() {
     'access arguments' => array('administer tripal pubs'),
     'type ' => MENU_CALLBACK,
   );
+  
+  $items['admin/tripal/chado/tripal_pub/import/submit/%'] = array(
+    'page callback' => 'tripal_pub_importer_submit_job',
+    'page arguments' => array(6),
+    'access arguments' => array('administer tripal pubs'),
+    'type ' => MENU_CALLBACK,
+  );
 
   $items['admin/tripal/chado/tripal_pub/import/delete/%'] = array(
     'page callback' => 'tripal_pub_importer_delete',
@@ -1059,4 +1066,23 @@ function tripal_pub_form_alter(&$form, &$form_state, $form_id) {
   }
   if ($form_id == "chado_pub_node_form") {
   }
+}
+
+/**
+ * 
+ * @param $callback
+ * @param $args
+ */
+function tripal_pub_job_describe_args($callback, $args) {
+
+  $new_args = array();
+  if ($callback == 'tripal_pub_import_publications_by_import_id') {
+    // get all of the loaders
+    $qargs = array(':import_id' => $args[0]);
+    $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = :import_id ";
+    $import = db_query($sql, $qargs)->fetchObject();
+    
+    $new_args['Importer'] = $import->name;
+  }
+  return $new_args;
 }
