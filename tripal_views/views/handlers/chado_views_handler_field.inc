@@ -92,7 +92,7 @@ class chado_views_handler_field extends views_handler_field {
   /**
    * Splits the aggregated values up for use in rendering
    */
-  function pre_render(&$values) {
+  function pre_render($values) {
 
     // further check the results to see if this field is a postgresql array
     $this->aggregated = chado_wrapper_is_aggregated_by_result($this, $values);

@@ -822,7 +822,7 @@ function tripal_pub_preprocess_tripal_pub_relationships(&$variables) {
   // query, therefore we will manually perform the query
   $sql = "
     SELECT P.title, P.pub_id, CP.nid, CVT.name as rel_type
-    FROM pub_relationship PR
+    FROM {pub_relationship} PR
       INNER JOIN {pub} P            ON PR.object_id = P.pub_id
       INNER JOIN {cvterm} CVT       ON PR.type_id   = CVT.cvterm_id
       LEFT JOIN public.chado_pub CP ON P.pub_id     = CP.pub_id
@@ -831,7 +831,7 @@ function tripal_pub_preprocess_tripal_pub_relationships(&$variables) {
   $as_subject = chado_query($sql, $pub->pub_id);
   $sql = "
     SELECT P.title, P.pub_id, CP.nid, CVT.name as rel_type
-    FROM pub_relationship PR
+    FROM {pub_relationship} PR
       INNER JOIN {pub} P            ON PR.subject_id = P.pub_id
       INNER JOIN {cvterm} CVT       ON PR.type_id    = CVT.cvterm_id
       LEFT JOIN public.chado_pub CP ON P.pub_id      = CP.pub_id

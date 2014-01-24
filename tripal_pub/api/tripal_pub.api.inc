@@ -227,6 +227,8 @@ function tripal_pub_import_publications($report_email = FALSE, $do_update = FALS
   $do_contact = FALSE;
   $reports = array();
   while ($import = db_fetch_object($results)) {
+    $page = 0;
+    
     print "Importing: " . $import->name . "\n";
     // keep track if any of the importers want to create contacts from authors
     if ($import->do_contact == 1) {
