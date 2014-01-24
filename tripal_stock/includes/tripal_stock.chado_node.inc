@@ -23,11 +23,11 @@ function tripal_stock_node_info() {
       'chado_node_api' => array(
         'base_table' => 'stock',
         'hook_prefix' => 'chado_stock',
-        'title' => array(
+        'record_type_title' => array(
           'singular' => t('Stock'),
           'plural' => t('Stocks')
         ),
-        'select_by' => array(
+        'sync_filters' => array(
           'type_id' => TRUE,
           'organism_id' => TRUE
         ),
