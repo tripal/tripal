@@ -43,6 +43,8 @@ require_once "api/tripal_core_custom_tables.api.inc";
 require_once "api/tripal_core_jobs.api.inc";
 require_once "api/tripal_core_mviews.api.inc";
 require_once "api/tripal_core_properties.api.inc";
+require_once "api/tripal_core.database_references.api.inc";
+
 require_once "includes/jobs.inc";
 require_once "includes/mviews.inc";
 require_once "includes/custom_tables.inc";
@@ -415,6 +417,12 @@ function tripal_core_theme($existing, $type, $theme, $path) {
     // form theme
     'tripal_core_properties_form' => array(
       'render element' => 'form',
+    ),
+
+    // additional dbxrefs form theme
+    'tripal_core_additional_dbxrefs_form_table' => array(
+      'function' => 'theme_tripal_core_additional_dbxrefs_form_table',
+      'render element' => 'element',
     ),
   );
 }

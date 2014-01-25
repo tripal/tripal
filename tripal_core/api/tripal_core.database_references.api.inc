@@ -1,0 +1,508 @@
+<?php
+
+/**
+ * @file
+ * API to manage the chado _dbxref table for various Tripal Node Types
+ *
+ * How To Use:
+ * @code
+
+  function chado_example_form($form, $form_state) {
+
+    // Default values for form elements can come in the following ways:
+    //
+    // 1) as elements of the $node object.  This occurs when editing an existing node
+    // 2) in the $form_state['values'] array which occurs on a failed validation or
+    //    ajax callbacks when the ajax call originates from non-submit fields other
+    //    than button
+    // 3) in the $form_state['input'] array which occurs on ajax callbacks from submit
+    //    form elements (e.g. buttons) and the form is being rebuilt but has not yet
+    //    been validated
+    //
+    // The reference elements added by this function do use AJAX calls from buttons,
+    // therefore, it is important to check for form values in the $form_state['values']
+    // for case #2 above, and in the $form_state['input'] for case #3.
+    // See the chado analysis node form for an example.
+
+
+    // Next, add in all the form array definition particular to your node type
+
+    // To add in the additional database reference form elements, you first need to prepare the arguments
+    // for the function call.
+
+    $details = array(
+      'linking_table' => 'example_dbxref',         // the name of the table linking additional dbxrefs to this node
+      'base_foreign_key' => 'example_id',          // key to link to the chado content created by this node
+      'base_key_value' => $example_id,             // the value of the above key
+      'fieldset_title' => 'Additional References', // the non-translated title for this fieldset
+      'additional_instructions' => ''              // a non-stranslated string providing additional instructions
+    );
+
+    // Finally, and add the additional form elements to the form
+    tripal_core_additional_dbxrefs_form($form, $form_state, $details);
+
+    return $form;
+  }
+
+  function chado_example_insert($node) {
+
+    // if there is an example_id in the $node object then this must be a sync so
+    // we can skip adding the chado_example as it is already there, although
+    // we do need to proceed with the rest of the insert
+    if (!property_exists($node, 'example_id')) {
+
+      // Add record to chado example table
+
+      // Add to any other tables needed
+
+      // Add all additional database references
+      // This function will create new database references as needed and select existing ones.
+      // Existing _dbxref links will be cleared and then re-added
+      tripal_core_additional_dbxrefs_form_update_dbxrefs(
+        $node,              // the node object passed in via hook_insert()
+        'example_dbxref',   // the name of the _dbxref linking table
+        'example_id',       // key to link to the chado content created by this node
+        $node->example_id   // value of the above key
+      );
+    }
+
+    // Add record to chado_example linking example_id to new node
+
+  }
+
+  function chado_example_update($node) {
+
+
+      // Update record in chado example table
+
+      // Update any other tables needed
+
+      // Update all additional database references
+      // This function will create new database references as needed and select existing ones.
+      // Existing _dbxref links will be cleared and then re-added
+      tripal_core_additional_dbxrefs_form_update_dbxrefs(
+        $node,              // the node object passed in via hook_insert()
+        'example_dbxref',   // the name of the _dbxref linking table
+        'example_id',       // key to link to the chado content created by this node
+        $node->example_id   // value of the above key
+      );
+
+    // Don't need to update chado_example linking table since niether example_id or nid can be changed in update
+
+  }
+
+ * @endcode
+ */
+
+/**
+ * @section
+ * Additional Database References Form to be added to node forms
+ */
+
+/**
+ * Provides a form for adding to BASE_dbxref and dbxref tables
+ *
+ * @param $form
+ *   The Drupal form array into which the dbxref elements will be added
+ * @param $form_state
+ *   The corresponding form_state array for the form
+ * @param $details
+ *   An array defining details needed by this form. Required Keys are:
+ *     - linking_table: the name of the dbxref linking table (ie: feature_dbxref)
+ *     - base_foreign_key: the name of the foreign key linking this table to the non-dbxref table (ie: feature_id)
+ *     - base_key_value: the value of the base_foreign_key for the current form (ie: 999 if the feature_id=999)
+ *   Optional keys include:
+ *     - fieldset_title: the non-translated title for this fieldset
+ *     - additional_instructions: a non-translated string providing additional instructions
+ */
+function tripal_core_additional_dbxrefs_form(&$form, &$form_state, $details) {
+
+  // Set Defaults for optional fields
+  $details['fieldset_title'] = 'Additional Database References';
+  $details['additional_instructions'] = '';
+
+  $form['addtl_dbxrefs'] = array(
+    '#type' => 'fieldset',
+    '#title' => t($details['fieldset_title']),
+    '#description' => t('You may add additional database references by
+      selecting a database reference type from the dropdown and adding text.  You may add
+      as many database references as desired by clicking the add button on the right.  To
+      remove a database reference, click the remove button. ' . $details['additional_instructions']),
+    '#prefix' => "<div id='addtl-dbxrefs-fieldset'>",
+    '#suffix' => '</div>'
+  );
+
+  $form['addtl_dbxrefs']['dbxref_table'] = array(
+    '#type' => 'markup',
+    '#tree' => TRUE,
+    '#prefix' => '<div id="tripal-generic-edit-addtl_dbxrefs-table">',
+    '#suffix' => '</div>',
+    '#theme' => 'tripal_core_additional_dbxrefs_form_table'
+  );
+
+  // Add dbxrefs already attached to the node
+  //---------------------------------------------
+  if (isset($form_state['addtl_dbxrefs'])) {
+    $existing_dbxrefs = $form_state['addtl_dbxrefs'];
+  }
+  else {
+    $existing_dbxrefs = chado_query(
+      "SELECT dbxref.dbxref_id, db.name as db_name, db.db_id as db_id, dbxref.accession as accession, dbxref.description as description, dbxref.version
+        FROM {dbxref} dbxref
+        LEFT JOIN {db} db ON db.db_id = dbxref.db_id
+        LEFT JOIN {".$details['linking_table']."} linking_table ON linking_table.dbxref_id = dbxref.dbxref_id
+        WHERE linking_table.".$details['base_foreign_key']."= :base_key_value
+        ORDER BY db.name ASC, dbxref.version ASC",
+        array(':base_key_value' => $details['base_key_value'])
+    );
+  }
+  foreach ($existing_dbxrefs as $dbxref) {
+
+    $version = (!empty($dbxref->version)) ? $dbxref->version : 'NONE';
+
+    $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id] = array(
+      '#type' => 'markup',
+      '#value' => ''
+    );
+
+    $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version] = array(
+      '#type' => 'markup',
+      '#value' => ''
+    );
+
+    $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['db_id'] = array(
+      '#type' => 'hidden',
+      '#value' => $dbxref->db_id
+    );
+
+    $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['accession'] = array(
+      '#type' => 'hidden',
+      '#value' => $dbxref->accession
+    );
+
+    $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['dbxref_id'] = array(
+      '#type' => 'hidden',
+      '#value' => $dbxref->dbxref_id
+    );
+
+    $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['db'] = array(
+      '#type' => 'markup',
+      '#markup' => $dbxref->db_name
+    );
+
+    $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['dbxref_version'] = array(
+      '#type' => 'markup',
+      '#markup' => $dbxref->version
+    );
+
+    $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['dbxref_accession'] = array(
+      '#type' => 'markup',
+      '#markup' => $dbxref->accession
+    );
+
+    $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['dbxref_action'] = array(
+      '#type' => 'submit',
+      '#value' => t('Remove'),
+      '#name' => "dbxref_remove-".$dbxref->db_id.'-'.$version,
+      '#ajax' => array(
+        'callback' => "tripal_core_additional_dbxrefs_form_ajax_update",
+        'wrapper' => 'tripal-generic-edit-addtl_dbxrefs-table',
+        'effect'   => 'fade',
+        'method'   => 'replace',
+        'prevent'  => 'click'
+      ),
+      '#validate' => array('tripal_core_additional_dbxrefs_form_remove_button_validate'),
+      '#submit' => array('tripal_core_additional_dbxrefs_form_remove_button_submit'),
+    );
+  }
+
+  // Form elements for adding a new dbxref
+  //---------------------------------------------
+  $form['addtl_dbxrefs']['dbxref_table']['new'] = array(
+    '#type' => 'markup',
+    '#prefix' => '<span class="addtl-dbxrefs-add-new-dbxref">',
+    '#suffix' => '</span>'
+  );
+
+  $db_options = array(0 => 'Select a Database');
+  $select = tripal_core_chado_select('db',array('db_id','name'),array());
+  foreach($select as $db) {
+    $db_options[$db->db_id] = $db->name;
+  }
+  $form['addtl_dbxrefs']['dbxref_table']['new']['db'] = array(
+    '#type' => 'select',
+    '#options' => $db_options,
+  );
+
+  $form['addtl_dbxrefs']['dbxref_table']['new']['dbxref_accession'] = array(
+    '#type' => 'textfield',
+  );
+
+  $form['addtl_dbxrefs']['dbxref_table']['new']['dbxref_version'] = array(
+    '#type' => 'textfield',
+  );
+
+  $form['addtl_dbxrefs']['dbxref_table']['new']['dbxref_action'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add'),
+    '#name' => "dbxref-add",
+    '#ajax' => array(
+      'callback' => "tripal_core_additional_dbxrefs_form_ajax_update",
+      'wrapper' => 'tripal-generic-edit-addtl_dbxrefs-table',
+      'effect'   => 'fade',
+      'method'   => 'replace',
+      'prevent'  => 'click'
+    ),
+    '#validate' => array('tripal_core_additional_dbxrefs_form_add_button_validate'),
+    '#submit' => array('tripal_core_additional_dbxrefs_form_add_button_submit'),
+  );
+
+}
+
+/**
+ * Validate the user input for creating a new dbxref
+ * Called by the add button in tripal_core_additional_dbxrefs_form
+ */
+function tripal_core_additional_dbxrefs_form_add_button_validate($form, &$form_state) {
+
+  // Ensure the db_id is supplied & Valid
+  $db = tripal_core_chado_select(
+    'db',
+    array('db_id', 'name'),
+    array('db_id' => $form_state['input']['dbxref_table']['new']['db'])
+  );
+  if (!isset($db[0])) {
+    form_set_error('db', 'Please select a database before attempting to add a new database reference.');
+  }
+  else {
+    $form_state['values']['dbxref_table']['new']['db_name'] = $db[0]->name;
+  }
+
+  // Ensure accession is supplied
+  if (empty($form_state['input']['dbxref_table']['new']['dbxref_accession'])) {
+    form_set_error('dbxref_accession','You must enter the accession before attempting to add a new database reference.');
+  }
+
+}
+
+/**
+ * Called by the add button in tripal_core_additional_dbxrefs_form
+ *
+ * Create an array of additional dbxrefs in the form state. This array will then be
+ * used to rebuild the form in subsequent builds
+ */
+function tripal_core_additional_dbxrefs_form_add_button_submit(&$form, &$form_state) {
+
+  // if the addtl_dbxrefs array is not set then this is the first time modifying the
+  // dbxref table. this means we need to include all the dbxrefs from the db
+  if (!isset($form_state['addtl_dbxrefs'])) {
+    tripal_core_additional_dbxrefs_form_create_dbxref_formstate_array($form, $form_state);
+  }
+
+  // get details for the new dbxref
+  $dbxref = array(
+    'db_id' => $form_state['values']['dbxref_table']['new']['db'],
+    'db_name' => $form_state['values']['dbxref_table']['new']['db_name'],
+    'dbxref_id' => NULL,
+    'version' => $form_state['values']['dbxref_table']['new']['dbxref_version'],
+    'accession' => $form_state['values']['dbxref_table']['new']['dbxref_accession'],
+  );
+  $form_state['addtl_dbxrefs'][] = (object) $dbxref;
+
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * There is no user input for the remove buttons so there is no need to validate
+ * However, both a submit & validate need to be specified so this is just a placeholder
+ *
+ * Called by the many remove buttons in tripal_core_additional_dbxrefs_form
+ */
+function tripal_core_additional_dbxrefs_form_remove_button_validate($form, $form_state) {
+  // No Validation needed for remove
+}
+
+/**
+ * Remove the correct dbxref from the form
+ * Called by the many remove buttons in tripal_core_additional_dbxrefs_form
+ */
+function tripal_core_additional_dbxrefs_form_remove_button_submit(&$form, &$form_state) {
+
+  // if the addtl_dbxrefs array is not set then this is the first time modifying the
+  // dbxref table. this means we need to include all the dbxrefs from the db
+  if (!isset($form_state['addtl_dbxrefs'])) {
+    tripal_core_additional_dbxrefs_form_create_dbxref_formstate_array($form, $form_state);
+  }
+
+  // remove the specified dbxref from the form dbxref table
+  if(preg_match('/dbxref_remove-([^-]+-[^-]+)/',$form_state['triggering_element']['#name'],$match)) {
+    $key = $match[1];
+    if (array_key_exists($key, $form_state['addtl_dbxrefs'])) {
+      unset($form_state['addtl_dbxrefs'][$key]);
+    }
+  }
+
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Ajax function which returns the section of the form to be re-rendered
+ */
+function tripal_core_additional_dbxrefs_form_ajax_update($form, $form_state) {
+  return $form['addtl_dbxrefs']['dbxref_table'];
+}
+
+/**
+ * Creates an array in form_state containing the existing addtl_dbxrefs. This array is
+ * then modified by the add/remove buttons and used as a source for rebuilding the form.
+ */
+function tripal_core_additional_dbxrefs_form_create_dbxref_formstate_array($form, &$form_state) {
+
+  $form_state['addtl_dbxrefs'] = array();
+
+  foreach (element_children($form['addtl_dbxrefs']['dbxref_table']) as $db_id) {
+    if ($db_id != 'new') {
+      foreach (element_children($form['addtl_dbxrefs']['dbxref_table'][$db_id]) as $version) {
+          $element = $form['addtl_dbxrefs']['dbxref_table'][$db_id][$version];
+          $dbxref = array(
+            'db_id' => $element['db_id']['#value'],
+            'db_name' => $element['db']['#markup'],
+            'dbxref_id' => $element['dbxref_id']['#value'],
+            'version' => $element['dbxref_version']['#markup'],
+            'accession' => $element['dbxref_accession']['#markup'],
+          );
+          $version = (!empty($dbxref['version'])) ? $dbxref['version'] : 'NONE';
+          $key = $dbxref['db_id'] . '-' . $version;
+          $form_state['addtl_dbxrefs'][$key] = (object) $dbxref;
+      }
+    }
+  }
+}
+
+/**
+ * Function to theme the add/remove dbxrefs form into a table
+ */
+function theme_tripal_core_additional_dbxrefs_form_table($variables) {
+  $element = $variables['element'];
+
+  $header = array(
+    'db' => t('Database'),
+    'dbxref_accession' => t('Accession'),
+    'dbxref_version' => t('Version'),
+    'dbxref_action' => t('Actions'),
+  );
+
+  $rows = array();
+  foreach (element_children($element) as $db_id) {
+    if ($db_id == 'new') {
+      $row = array();
+
+        $row['data'] = array();
+        foreach ($header as $fieldname => $title) {
+          $row['data'][] = drupal_render($element[$db_id][$fieldname]);
+        }
+        $rows[] = $row;
+    }
+    else {
+      foreach (element_children($element[$db_id]) as $version) {
+        $row = array();
+
+        $row['data'] = array();
+        foreach ($header as $fieldname => $title) {
+          $row['data'][] = drupal_render($element[$db_id][$version][$fieldname]);
+        }
+        $rows[] = $row;
+      }
+    }
+  }
+
+  return theme('table', array(
+    'header' => $header,
+    'rows' => $rows
+  ));
+}
+
+/**
+ * This function is used in a hook_insert, hook_update for a node form
+ * when the additional_dbxrefs form has been added to the form.  It retrieves all of the dbxrefs
+ * and returns them in an array of the format:
+ *
+ *   $dbxefs[<db_id>][<version>][<dbxref_id>] = <accession>
+ *
+ * This array can then be used for inserting or updating dbxrefs using the API call
+ * tripal_hook_insert_dbxref()
+ *
+ * @param $node
+ *
+ * @return
+ *   A dbxref array
+ *
+ * @ingroup tripal_databaserefernce_api
+ */
+function tripal_core_additional_dbxrefs_form_retreive($node) {
+  $dbxrefs = array();
+  foreach ($node->dbxref_table as $db_id => $elements) {
+    if ($db_id != 'new') {
+      foreach ($elements as $version => $dbxref) {
+        $dbxref_id = (!empty($dbxref['dbxref_id'])) ? $dbxref['dbxref_id'] : 'NONE';
+        $dbxrefs[$db_id][$version][$dbxref_id] = $dbxref['accession'];
+      }
+    }
+  }
+
+  return $dbxrefs;
+}
+
+/**
+ * This function is used in hook_insert or hook_update and handles inserting of any new
+ * dbxrefs and creation of links between those dbxrefs and node content
+ *
+ * @param $node
+ *    The node passed into hook_insert & hook_update
+ * @param $linking_table
+ *    The name of the _dbxref linking table (ie: feature_dbxref)
+ * @param $foreignkey_name
+ *    The name of the foreign key used to link to the node content (ie: feature_id)
+ * @param $foreignkey_value
+ *    The value of the foreign key (ie: 445, if there exists a feature where feature_id=445)
+ */
+function tripal_core_additional_dbxrefs_form_update_dbxrefs($node, $linking_table, $foreignkey_name, $foreignkey_value) {
+
+  // First remove existing dbxref links
+  tripal_core_chado_delete($linking_table, array($foreignkey_name => $foreignkey_value));
+
+  // Add back in dbxref links and insert dbxrefs as needed
+  $dbxrefs = tripal_core_additional_dbxrefs_form_retreive($node);
+  foreach ($dbxrefs as $db_id => $versions) {
+    foreach ($versions as $version => $elements) {
+      foreach ($elements as $dbxref_id => $accession) {
+        // If there is no dbxref then we have to create that first
+        if ($dbxref_id == 'NONE') {
+          $version = ($version == 'NONE') ? '' : $version;
+          $success = tripal_db_add_dbxref(
+            $db_id,
+            $accession,
+            $version,
+            NULL
+          );
+          if ($success) {
+            $dbxref_id = $success->dbxref_id;
+          }
+          else {
+            $dbxref_id = FALSE;
+          }
+        }
+
+        // add _dbxref linker
+        if ($dbxref_id) {
+          $success_link = tripal_db_add_dbxref_link(
+            $linking_table,
+            $dbxref_id,
+            $foreignkey_name,
+            $foreignkey_value
+          );
+        }
+      }
+    }
+  }
+}

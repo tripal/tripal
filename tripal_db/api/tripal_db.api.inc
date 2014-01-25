@@ -102,7 +102,7 @@ function tripal_db_get_db_by_name($name) {
 
   $values = array('name' => $name);
   $options = array('statement_name' => 'sel_db_na');
-  
+
   $db = tripal_core_chado_select('db', array('*'), $values, $options);
   if (count($db) == 1) {
     return $db[0];
@@ -282,12 +282,12 @@ function tripal_db_get_dbxref_by_accession($accession, $db_id=0) {
  *   then nothing is added.
  *
  * @return
- *   An object populated with fields from the newly added database.  If the 
+ *   An object populated with fields from the newly added database.  If the
  *   database already exists it returns the values in the current entry.
  *
  * @ingroup tripal_db_api
  */
-function tripal_db_add_db($dbname, $description = '', $url = '', 
+function tripal_db_add_db($dbname, $description = '', $url = '',
   $urlprefix = '', $update = 0) {
 
   // build the values array for inserting/updating
@@ -297,16 +297,16 @@ function tripal_db_add_db($dbname, $description = '', $url = '',
     'url' => $url,
     'urlprefix' => $urlprefix
   );
-  
+
   // get the database record if it already exists
   $sel_values = array('name' => $dbname);
   $sel_options = array('statement_name' => 'sel_db_na');
   $result = tripal_core_chado_select('db', array('*'), $sel_values, $sel_options);
-  
+
   // if it does not exists then add it
-  if (count($result) == 0) {    
-    $ins_options = array('statement_name' => 'ins_db_nadeurur');   
-    $success = tripal_core_chado_insert('db', $ins_values, $ins_options); 
+  if (count($result) == 0) {
+    $ins_options = array('statement_name' => 'ins_db_nadeurur');
+    $success = tripal_core_chado_insert('db', $ins_values, $ins_options);
     if (!$success) {
       watchdog('tripal_db', "Cannot create db '$dbname'.", NULL, WATCHDOG_WARNING);
       return 0;
@@ -323,7 +323,7 @@ function tripal_db_add_db($dbname, $description = '', $url = '',
     }
     $result = tripal_core_chado_select('db', array('*'), $sel_values, $sel_options);
   }
-  
+
   // return the database object
   return $result[0];
 
@@ -340,25 +340,59 @@ function tripal_db_add_dbxref($db_id, $accession, $version = '', $description = 
     'version'     => $version,
     'description' => $description
   );
-    
+
   // check to see if the dbxref exists
   $sel_values = array(
     'db_id'     => $db_id,
     'accession' => $accession,
+    'version' => $version
   );
-  $sel_options = array('statement_name' => 'sel_dbxref_dbacve', 'is_duplicate' => 1);
-  $result = tripal_core_chado_select('dbxref', array('*'), $sel_values, $sel_options);
-  
+  $result = tripal_core_chado_select('dbxref', array('*'), $sel_values);
+
   // if it doesn't already exist then add it
   if (!$result) {
-    $ins_options = array('statement_name' => 'ins_dbxref_dbacvede');
-    $success = tripal_core_chado_insert('dbxref', $ins_values, $ins_options);
+    $success = tripal_core_chado_insert('dbxref', $ins_values);
     if (!$success) {
       watchdog('tripal_cv', "Failed to insert the dbxref record $accession", NULL, WATCHDOG_WARNING);
       return 0;
     }
-    $result = tripal_core_chado_select('dbxref', array('*'), $sel_values, $sel_options);
+    $result = tripal_core_chado_select('dbxref', array('*'), $sel_values);
   }
-  
-  return $result[0];
+
+  if (isset($result[0])) {
+    return $result[0];
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ *
+ */
+function tripal_db_add_dbxref_link($linking_table, $dbxref_id, $foreignkey_name, $foreignkey_id) {
+
+  $values = array(
+    'dbxref_id' => $dbxref_id,
+    $foreignkey_name => $foreignkey_id
+  );
+
+  $result = tripal_core_chado_select($linking_table, array('*'), $values);
+
+  // if it doesn't already exist then add it
+  if (!$result) {
+    $success = tripal_core_chado_insert($linking_table, $values);
+    if (!$success) {
+      watchdog('tripal_db', "Failed to insert the $linking_table record $accession", NULL, WATCHDOG_WARNING);
+      return 0;
+    }
+    $result = tripal_core_chado_select($linking_table, array('*'), $values);
+  }
+
+  if (isset($result[0])) {
+    return $result[0];
+  }
+  else {
+    return FALSE;
+  }
 }
