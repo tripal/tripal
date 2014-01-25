@@ -86,14 +86,49 @@ function tripal_project_schema() {
   return $schema;
 }
 
-/*
+/**
+ * 
+ */
+function tripal_project_add_cvs() {
+  tripal_cv_add_cv('project_property', 'Contains properties for projects');
+}
+/**
  *
  */
 function tripal_project_add_cvterms() {
 
-  // Insert cvterm 'library_description' into cvterm table of chado
-  // database. This CV term is used to keep track of the library
-  // description in the libraryprop table.
-  tripal_cv_add_cvterm(array('name' => 'project_description', 'def' => 'Description of a project'),
-    'tripal', 0, 1, 'tripal');
+  // Insert cvterm 'project_description' into cvterm table of chado
+  // database. This CV term is used to keep track of the project
+  // description in the projectprop table.
+  tripal_cv_add_cvterm(
+    array(
+      'name' => 'Project Description', 
+      'def'  => 'Description of a project'
+    ),
+    'project_property', 0, 1, 'tripal'
+  );
+}
+
+/**
+ * This is the required update for tripal_project when upgrading from Drupal core API 6.x.
+ */
+function tripal_project_update_7000() {
+
+  // For Tripal in Drupal 6 the project_description cvterm was stored in the
+  // 'tripal' CV.  It should be stored in the new project_property CV that
+  // is added by this module for Tripal 2.0 and Drupal 7.  So, we need to
+  // reset the CV ID for that term and rename the term to 'Project Description'
+  tripal_project_add_cvs();
+  $cv = tripal_cv_get_cv_by_name('project_property');
+  $cvterm = tripal_cv_get_cvterm_by_name('project_description', $cv->cv_id);
+  $match = array(
+    'cvterm_id' => $cvterm->cvterm_id,
+  );
+  $values = array(
+    'name'  => 'Project Description',
+  );
+  tripal_core_chado_update('cvterm', $match, $values);
+  if (!$success) {
+    throw new DrupalUpdateException('Failed to move project properties to new project_property CV.');
+  }
 }

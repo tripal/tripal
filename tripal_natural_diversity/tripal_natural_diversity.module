@@ -48,7 +48,7 @@ function tripal_natural_diversity_menu() {
     'title' => 'Enable Natural Diversity Administrative View',
     'page callback' => 'tripal_views_admin_enable_view',
     'page arguments' => array('tripal_natural_diversity_admin_natdiv_exp', 'admin/tripal/chado/tripal_natdiv'),
-    'access arguments' => array('administer tripal_bulk_loader'),
+    'access arguments' => array('administer tripal natural_diversity'),
     'type' => MENU_CALLBACK,
   );
 

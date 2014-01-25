@@ -140,7 +140,7 @@ function tripal_organism_menu() {
     'title' => 'Enable Organism Administrative View',
     'page callback' => 'tripal_views_admin_enable_view',
     'page arguments' => array('tripal_organism_admin_organisms', 'admin/tripal/chado/tripal_organism'),
-    'access arguments' => array('administer tripal_bulk_loader'),
+    'access arguments' => array('administer tripal organism'),
     'type' => MENU_CALLBACK,
   );
   

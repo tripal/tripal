@@ -44,7 +44,7 @@ function tripal_phenotype_menu() {
     'title' => 'Enable Phenotype Administrative View',
     'page callback' => 'tripal_views_admin_enable_view',
     'page arguments' => array('tripal_phenotype_admin_phenotypes', 'admin/tripal/chado/tripal_phenotype'),
-    'access arguments' => array('administer tripal_bulk_loader'),
+    'access arguments' => array('administer tripal phenotype'),
     'type' => MENU_CALLBACK,
   );
 

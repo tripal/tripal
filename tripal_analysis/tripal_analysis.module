@@ -235,7 +235,7 @@ function tripal_analysis_block_view($delta = '') {
 
 /**
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_analysis
  */
 function tripal_analysis_node_view($node, $view_mode, $langcode) {
   switch ($node->type) {

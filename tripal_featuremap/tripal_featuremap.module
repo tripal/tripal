@@ -188,7 +188,7 @@ function tripal_featuremap_menu() {
     'title' => 'Enable featuremap Administrative View',
     'page callback' => 'tripal_views_admin_enable_view',
     'page arguments' => array('tripal_featuremap_admin_featuremaps', 'admin/tripal/chado/tripal_featuremap'),
-    'access arguments' => array('administer tripal_bulk_loader'),
+    'access arguments' => array('administer tripal featuremap'),
     'type' => MENU_CALLBACK,
   );
 

@@ -258,6 +258,4 @@ function tripal_library_update_7000() {
   if (!$success) {
     throw new DrupalUpdateException('Failed to move library properties to new library_property CV.');
   }
-
-  
 }
