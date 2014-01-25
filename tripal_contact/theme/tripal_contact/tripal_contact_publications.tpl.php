@@ -46,7 +46,14 @@ if (count($pubauthor_contacts) > 0) { ?>
       if ($pub->nid) {
         // replace the title with a link
         $link = l($pub->title, 'node/' . $pub->nid ,array('attributes' => array('target' => '_blank')));
-        $citation = preg_replace('/' . $pub->title . '/', $link, $citation);
+        $patterns = array(
+          '/(\()/', '/(\))/', 
+          '/(\])/', '/(\[)/',
+          '/(\{)/', '/(\})/',
+          '/(\+)/', '/(\.)/', '/(\?)/', 
+        );
+        $fixed_title = preg_replace($patterns, "\\\\$1", $pub->title);
+        $citation = preg_replace('/' . $fixed_title . '/', $link, $citation);
       }
       
       $rows[] = array(

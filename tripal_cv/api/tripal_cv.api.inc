@@ -539,7 +539,10 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
   }
   
   // make sure the CV name exists
-  $cv = tripal_cv_add_cv($cvname, '');
+  $cv = tripal_cv_get_cv_by_name($cvname);
+  if (!$cv) {
+    $cv = tripal_cv_add_cv($cvname, '');
+  }
   if (!$cv) {
     watchdog('tripal_cv', "Cannot find namespace '$cvname' when adding/updating $id", NULL, WATCHDOG_WARNING);
     return 0;
@@ -561,7 +564,10 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
   
   // add the database. The function will just return the DB object if the
   // database already exists.
-  $db = tripal_db_add_db($dbname);
+  $db = tripal_db_get_db_by_name($dbname);
+  if (!$db) {
+    $db = tripal_db_add_db($dbname);
+  }
   if (!$db) {
     watchdog('tripal_cv', "Cannot find database '$dbname' in Chado.", NULL, WATCHDOG_WARNING);
     return 0;

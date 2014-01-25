@@ -1782,7 +1782,9 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
         $table_desc = tripal_core_get_chado_table_schema($tablename);
         $values = array();
         foreach ($table_desc['primary key'] as $key) {
-          $values[$key] = $object->{$key};
+          if(property_exists($object, $key)) {
+            $values[$key] = $object->{$key};
+          }
         }
         if ($base_table == $tablename) {
           //get the field
@@ -1818,7 +1820,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
       $foreign_table_desc = tripal_core_get_chado_table_schema($foreign_table);
 
       // If it's connected to the base table via a FK constraint
-      if ($foreign_table_desc['foreign keys'][$base_table]) {
+      if (array_key_exists($base_table, $foreign_table_desc['foreign keys'])) {
         foreach ($foreign_table_desc['foreign keys'][$base_table]['columns'] as $left => $right) {
           // if the FK value in the base table is not there then we can't expand it, so just skip it.
           if (!$object->{$right}) {
@@ -1873,7 +1875,10 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
         $did_expansion = 0;
         foreach ((array) $object as $field_name => $field_value) {
           // if we have a nested object ->expand the table in it
-          if (is_object($field_value)) {
+          // check to see if the $field_name is a valid chado table, we don't need
+          // to call tripal_core_expand_chado_vars on fields that aren't tables          
+          $check = tripal_core_get_chado_table_schema($field_name);          
+          if ($check) {
             $did_expansion = 1;
             $object->{$field_name} = tripal_core_expand_chado_vars($field_value, 'table', $foreign_table);
           }
@@ -2042,10 +2047,10 @@ function tripal_core_exclude_field_from_feature_by_default() {
  *
  * @ingroup tripal_chado_api
  */
-function chado_pager_query($query, $args, $limit, $element, $count_query = NULL) {
+function chado_pager_query($query, $args, $limit, $element, $count_query = '') {
   
   // get the page and offset for the pager
-  $page = pager_find_page($element);
+  $page = isset($_GET['page']) ? $_GET['page'] : '0';
   $offset = $limit * $page;
 
   // Construct a count query if none was given.
@@ -2055,7 +2060,15 @@ function chado_pager_query($query, $args, $limit, $element, $count_query = NULL)
   }
 
   // We calculate the total of pages as ceil(items / limit).
-  $total_records = chado_query($count_query, $args)->fetchField();
+  $results = chado_query($count_query, $args);
+  if (!$results) {
+    tripal_core_report_error('tripal_core', TRIPAL_ERROR,
+      "chado_pager_query(): Query failed: %cq", array('%cq' => $count_query));
+    return;
+  }
+  $total_records = $results->fetchField();
+
+  // set a session variable for storing the total number of records
   $_SESSION['chado_pager'][$element]['total_records'] = $total_records;
   
   pager_default_initialize($total_records, $limit, $element);
@@ -2101,7 +2114,7 @@ function chado_query($sql, $args = array()) {
   if ($is_local) {
     $sql = preg_replace('/\n/', '', $sql);  // remove carriage returns
     $sql = preg_replace('/\{(.*?)\}/', 'chado.$1', $sql);
-    
+
     // the featureloc table has some indexes that use function that call other functions
     // and those calls do not reference a schema, therefore, any tables with featureloc
     // must automaticaly have the chado schema set as active to find 
@@ -2431,119 +2444,7 @@ function tripal_core_get_chado_table_schema($table) {
 
   return $table_arr;
 }
-/**
- * This function will delete Drupal nodes for any sync'ed table (e.g.
- * feature, organism, analysis, stock, library) if the chado record has been
- * deleted or the entry in the chado_[table] table has been removed.
- *
- * @param $table
- *   The name of the table that corresonds to the node type we want to clean up.
- * @param $job_id
- *   This should be the job id from the Tripal jobs system.  This function
- *   will update the job status using the provided job ID.
- *
- * @ingroup tripal_core_api
- */
-function tripal_core_clean_orphaned_nodes($table, $job_id) {
-  $count = 0;
 
-  // build the SQL statments needed to check if nodes point to valid analyses
-  $dsql = "SELECT * FROM {node} WHERE type = 'chado_" . $table . "' order by nid";
-  $nsql = "SELECT * FROM {node} WHERE nid = :nid";
-  $csql = "SELECT * FROM {chado_" . $table . "} WHERE nid = :nid ";
-  $clsql= "SELECT * FROM {chado_" . $table . "}";
-  $lsql = "SELECT * FROM {" . $table . "} where " . $table . "_id = :" . $table . "_id ";
-
-  // load into nodes array
-  print "Getting nodes\n";
-  $nodes = array();
-  $res = db_query($dsql);
-  foreach ($res as $node) {
-    $nodes[$count] = $node;
-    $count++;
-  }
-
-  // load the chado_$table into an array
-  print "Getting chado_$table\n";
-  $cnodes = array();
-  $res = db_query($clsql);
-  foreach ($res as $node) {
-    $cnodes[$count] = $node;
-    $count++;
-  }
-  $interval = intval($count * 0.01);
-  if ($interval < 1) {
-    $interval = 1;
-  }
-
-  // iterate through all of the chado_$table entries and remove those
-  // that don't have a node or don't have a $table record in chado.libary
-  print "Verifying all chado_$table Entries\n";
-  $deleted = 0;
-  foreach ($cnodes as $nid) {
-
-    // update the job status every 1% analyses
-    if ($job_id and $i % $interval == 0) {
-      tripal_job_set_progress($job_id, intval(($i / $count) * 100));
-    }
-
-    // see if the node exits, if not remove the entry from the chado_$table table
-    $results = db_query($nsql, array(':nid' => $nid->nid));
-    $node = $results->fetchObject();
-    if (!$node) {
-      $deleted++;
-      db_query("DELETE FROM {chado_" . $table . "} WHERE nid = :nid", array(':nid' => $nid->nid));
-      $message = "chado_$table missing node.... DELETING: $nid->nid";
-      watchdog('tripal_core', $message, array(), WATCHDOG_WARNING);
-    }
-
-    // see if the record in chado exist, if not remove the entry from the chado_$table
-    $table_id = $table . "_id";
-    $results = chado_query($lsql, array(":" . $table . "_id" => $nid->$table_id));
-    $record = $results->fetchObject();
-    if (!$record) {
-      $deleted++;
-      $sql = "DELETE FROM {chado_" . $table . "} WHERE " . $table . "_id = :" . $table . "_id";
-      db_query($sql, array(":" . $table . "_id" => $nid->$table_id));
-      $message = "chado_$table missing $table.... DELETING entry.";
-      watchdog('tripal_core', $message, array(), WATCHDOG_WARNING);
-    }
-    $i++;
-  }
-  print "\t$deleted chado_$table entries missing either a node or chado entry.\n";
-
-  // iterate through all of the nodes and delete those that don't
-  // have a corresponding entry in chado_$table
-  $deleted = 0;
-  foreach ($nodes as $node) {
-
-    // update the job status every 1% libraries
-    if ($job_id and $i % $interval == 0) {
-      tripal_job_set_progress($job_id, intval(($i / $count) * 100));
-    }
-
-    // check to see if the node has a corresponding entry
-    // in the chado_$table table. If not then delete the node.
-    $results = db_query($csql, array(":nid" => $node->nid));
-    $link = $results->fetchObject();
-    if (!$link) {
-      if (node_access('delete', $node)) {
-        $deleted++;
-        $message = "Node missing in chado_$table table.... DELETING node $node->nid";
-        watchdog("tripal_core", $message, array(), WATCHDOG_WARNING);
-        node_delete($node->nid);
-      }
-      else {
-        $message = "Node missing in chado_$table table.... but cannot delete due to improper permissions (node $node->nid)";
-        watchdog("tripal_core", $message, array(), WATCHDOG_WARNING);
-      }
-    }
-    $i++;
-  }
-  print "\t$deleted nodes did not have corresponding chado_$table entries.\n";
-
-  return '';
-}
 /**
  * Check that the Chado schema exists within the local database
  *

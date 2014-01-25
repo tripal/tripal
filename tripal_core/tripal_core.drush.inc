@@ -187,7 +187,7 @@ function drush_tripal_core_set_user($username) {
   }
   else {
     drush_print('ERROR: Please provide a username for running this job.');
-    return;
+    exit;
   }
 }
 
@@ -368,5 +368,5 @@ function drush_tripal_core_tripal_node_sync($module) {
  *  The name of a module with nodes associated with it. For example, feature
  */
 function drush_tripal_core_tripal_node_clean($module) {
-  tripal_core_clean_orphaned_nodes($module, 0);
+  tripal_core_chado_node_cleanup_orphaned($module, 0);
 }

@@ -207,5 +207,5 @@ function tripal_organism_sync_organisms($organism_id = NULL, $job_id = NULL) {
  */
 function tripal_organism_cleanup($dummy = NULL, $job_id = NULL) {
 
-  return tripal_core_clean_orphaned_nodes('organism', $job_id);
+  return tripal_core_chado_node_cleanup_orphaned('organism', $job_id);
 }

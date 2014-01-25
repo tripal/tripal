@@ -49,6 +49,7 @@ function tripal_library_install() {
   tripal_library_add_mview_library_feature_count();
 
   // add cvterms
+  tripal_library_add_cvs();
   tripal_library_add_cvterms();
 }
 
@@ -153,6 +154,13 @@ function tripal_library_add_mview_library_feature_count(){
 }
 
 /**
+ * Adds new CV's used by this module
+ */
+function tripal_library_add_cvs(){
+  tripal_cv_add_cv('library_property', 'Contains properties for libraries');
+  tripal_cv_add_cv('library_type', 'Contains terms for types of libraries (e.g. BAC, cDNA, FOSMID, etc).');
+}
+/**
  * @ingroup tripal_library
  */
 function tripal_library_add_cvterms() {
@@ -160,20 +168,94 @@ function tripal_library_add_cvterms() {
   // Insert cvterm 'library_description' into cvterm table of chado
   // database. This CV term is used to keep track of the library
   // description in the libraryprop table.
-  tripal_cv_add_cvterm(array('name' => 'library_description', 'def' => 'Description of a library'),
-    'tripal', 0, 1, 'tripal');
+  tripal_cv_add_cvterm(
+     array(
+       'name' => 'Library Description', 
+       'def' => 'Description of a library'
+     ),
+    'library_property', 0, 1, 'tripal'
+   );
 
   // add cvterms for the map unit types
-  tripal_cv_add_cvterm(array('name' => 'cdna_library','def' => 'cDNA library'),
-    'tripal_library_types', 0, 1, 'tripal');
-  tripal_cv_add_cvterm(array('name' => 'bac_library','def' => 'Bacterial Artifical Chromsome (BAC) library'),
-    'tripal_library_types', 0, 1, 'tripal');
-  tripal_cv_add_cvterm(array('name' => 'fosmid_library','def' => 'Fosmid library'),
-    'tripal_library_types', 0, 1, 'tripal');
-  tripal_cv_add_cvterm(array('name' => 'cosmid_library','def' => 'Cosmid library'),
-    'tripal_library_types', 0, 1, 'tripal');
-  tripal_cv_add_cvterm(array('name' => 'yac_library','def' => 'Yeast Artificial Chromosome (YAC) library'),
-    'tripal_library_types', 0, 1, 'tripal');
-  tripal_cv_add_cvterm(array('name' => 'genomic_library','def' => 'Genomic Library'),
-    'tripal_library_types', 0, 1, 'tripal');
+  tripal_cv_add_cvterm(
+    array(
+      'name' => 'cdna_library',
+      'def' => 'cDNA library'
+    ),
+    'library_type', 0, 1, 'tripal'
+  );
+  tripal_cv_add_cvterm(
+    array(
+      'name' => 'bac_library',
+      'def' => 'Bacterial Artifical Chromsome (BAC) library'
+    ),
+    'library_type', 0, 1, 'tripal'
+  );
+  tripal_cv_add_cvterm(
+    array(
+      'name' => 'fosmid_library',
+      'def' => 'Fosmid library'
+    ),
+    'library_type', 0, 1, 'tripal'
+  );
+  tripal_cv_add_cvterm(
+    array(
+      'name' => 'cosmid_library',
+      'def' => 'Cosmid library'
+    ),
+    'library_type', 0, 1, 'tripal'
+  );
+  tripal_cv_add_cvterm(
+    array(
+      'name' => 'yac_library',
+      'def' => 'Yeast Artificial Chromosome (YAC) library'
+    ),
+    'library_type', 0, 1, 'tripal'
+  );
+  tripal_cv_add_cvterm(
+    array(
+      'name' => 'genomic_library',
+      'def' => 'Genomic Library'),
+    'library_type', 0, 1, 'tripal'
+  );
+}
+
+/**
+ * This is the required update for tripal_library when upgrading from Drupal core API 6.x. 
+ */
+function tripal_library_update_7000() {
+  
+  // the library types were formerly in a vocabulary named 'tripal_library_types'.
+  // rename that to just be 'library_type'
+  $cv = tripal_cv_get_cv_by_name('tripal_library_types');
+  $match = array(
+    'cv_id' => $cv->cv_id
+  );
+  $values = array(
+    'name' => 'library_type'
+  );
+  $success = tripal_core_chado_update('cv', $match, $values);
+  if (!$success) {
+    throw new DrupalUpdateException('Failed to rename tripal_library_types CV.');
+  }
+  
+  
+  // For Tripal in Drupal 6 the library_description cvterm was stored in the 
+  // 'tripal' CV.  It should be stored in the new library_property CV that
+  // is added by this module for Tripal 2.0 and Drupal 7.  So, we need to 
+  // reset the CV ID for that term and rename the term to 'Library Description'
+  tripal_library_add_cvs();
+  $cv = tripal_cv_get_cv_by_name('library_property');
+  $cvterm = tripal_cv_get_cvterm_by_name('library_description');
+  $match = array(
+    'cvterm_id' => $cvterm->cvterm_id,
+  );
+  $values = array(
+    'cv_id' => $cv->cv_id,
+    'name' => 'Library Description',
+  );
+  tripal_core_chado_update('cvterm', $match, $values);
+  if (!$success) {
+    throw new DrupalUpdateException('Failed to move library properties to new library_property CV.');
+  }
 }

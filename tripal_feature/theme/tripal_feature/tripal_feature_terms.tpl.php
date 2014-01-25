@@ -1,14 +1,17 @@
 <?php
 
-$feature = $node->feature;
+$feature = $variables['node']->feature;
+
 $options = array('return_array' => 1);
 $feature = tripal_core_expand_chado_vars($feature, 'table', 'feature_cvterm', $options);
 $terms = $feature->feature_cvterm;
 
 // order the terms by CV
 $s_terms = array();
-foreach ($terms as $term) {
-  $s_terms[$term->cvterm_id->cv_id->name][] = $term;  
+if ($terms) {
+  foreach ($terms as $term) {
+    $s_terms[$term->cvterm_id->cv_id->name][] = $term;  
+  }
 }
 
 if (count($s_terms) > 0) { ?>
@@ -56,7 +59,7 @@ if (count($s_terms) > 0) { ?>
           'id' => "tripal_feature-table-terms-$i",
         ),
         'sticky' => FALSE,
-        'caption' => ucwords(preg_replace('/_/', ' ', $cv)),
+        'caption' => '<b>Vocabulary: ' . ucwords(preg_replace('/_/', ' ', $cv)) . '</b>',
         'colgroups' => array(),
         'empty' => '',
       );

@@ -321,6 +321,11 @@ function tripal_stock_theme() {
       'template' => 'tripal_stock_properties',
       'path' => "$theme_path/tripal_stock",
     ),
+    'tripal_stock_publications' => array(
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_stock.publications',
+      'path' => "$theme_path/tripal_stock",
+    ),
     'tripal_stock_references' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_stock_references',

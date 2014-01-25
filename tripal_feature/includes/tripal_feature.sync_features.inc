@@ -444,6 +444,6 @@ function tripal_feature_sync_features($max_sync = 0, $organism_id = NULL,
  */
 function tripal_features_cleanup($dummy = NULL, $job_id = NULL) {
 
-  return tripal_core_clean_orphaned_nodes('feature', $job_id);
+  return tripal_core_chado_node_cleanup_orphaned('feature', $job_id);
 
 }

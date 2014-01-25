@@ -119,7 +119,7 @@ function tripal_views_menu() {
     'title' => 'Enable Integrations Administrative View',
     'page callback' => 'tripal_views_admin_enable_view',
     'page arguments' => array('tripal_views_admin_integrations', 'admin/tripal/views-integrations'),
-    'access arguments' => array('administer tripal_bulk_loader'),
+    'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_CALLBACK,
   );
 
