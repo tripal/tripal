@@ -334,6 +334,16 @@ function chado_stock_form($node, $form_state) {
       $properties, $stock_id, $exclude, $include, $instructions, 'Properties');
   }
 
+  // ADDITIONAL DBXREFS FORM
+  //---------------------------------------------
+
+  $details = array(
+    'linking_table' => 'stock_dbxref',
+    'base_foreign_key' => 'stock_id',
+    'base_key_value' => $stock_id
+  );
+  tripal_core_additional_dbxrefs_form($form, $form_state, $details);
+
   return $form;
 }
 
@@ -580,6 +590,16 @@ function chado_stock_insert($node) {
         }
       }
     }
+
+    // Now add the additional references
+    if ($stock_added) {
+      tripal_core_additional_dbxrefs_form_update_dbxrefs(
+        $node,
+        'stock_dbxref',
+        'stock_id',
+        $stock_id
+      );
+    }
   } //end of adding stock to chado
   else {
     // stock already exists since this is a sync
@@ -756,6 +776,18 @@ function chado_stock_update($node) {
         }
       }
     }
+  }
+
+  // now update the additional dbxrefs
+  if ($node->stock_id > 0) {
+    $stock_id = $node->stock_id;
+
+    tripal_core_additional_dbxrefs_form_update_dbxrefs(
+      $node,
+      'stock_dbxref',
+      'stock_id',
+      $stock_id
+    );
   }
 }
 
