@@ -11,10 +11,10 @@ $project = $variables['node']->project;
 // if there is data in the projectprop table for a descrtion then that takes 
 // precedence 
 $description = '';
-if ($node->body) {
+if (property_exists($node, 'body')) {
   $description = $node->body;
 }
-if ($node->description) {
+if ($project->description) {
   $description = $project->description;
 }
 else {

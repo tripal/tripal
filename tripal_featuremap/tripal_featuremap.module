@@ -132,7 +132,7 @@ function tripal_featuremap_menu() {
     'title' => 'Help',
     'description' => 'Basic Description of Tripal Map Module Functionality',
     'page callback' => 'theme',
-    'page arguments' => array('tripal_featuremap.help'),
+    'page arguments' => array('tripal_featuremap_help'),
     'access arguments' => array('administer tripal featuremap'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
@@ -226,37 +226,37 @@ function tripal_featuremap_theme($existing, $type, $theme, $path) {
       'base hook' => 'node',
       'path' => "$core_path/theme",
     ),
-    'tripal_featuremap.base' => array(
+    'tripal_featuremap_base' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_featuremap.base',
       'path' => "$path/theme/tripal_featuremap",
     ),
-    'tripal_featuremap.properties' => array(
+    'tripal_featuremap_properties' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_featuremap.properties',
       'path' => "$path/theme/tripal_featuremap",
     ),
-    'tripal_featuremap.featurepos' => array(
+    'tripal_featuremap_featurepos' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_featuremap.featurepos',
       'path' => "$path/theme/tripal_featuremap",
     ),
-    'tripal_featuremap.publication' => array(
+    'tripal_featuremap_publication' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_featuremap.publication',
       'path' => "$path/theme/tripal_featuremap",
     ),
-    'tripal_featuremap.references' => array(
+    'tripal_featuremap_references' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_featuremap.references',
       'path' => "$path/theme/tripal_featuremap",
     ),
-    'tripal_featuremap.help' => array(
+    'tripal_featuremap_help' => array(
       'template' => 'tripal_featuremap.help',
       'variables' =>  array(NULL),
       'path' => "$path/theme",
     ),
-    'tripal_featuremap.teaser' => array(
+    'tripal_featuremap_teaser' => array(
       'template' => 'tripal_featuremap.teaser',
       'variables' =>  array(NULL),
       'path' => "$path/theme/tripal_featuremap",
@@ -273,25 +273,25 @@ function tripal_featuremap_node_view($node, $view_mode, $langcode) {
     case 'chado_featuremap':
       // Show feature browser and counts
       if ($view_mode == 'full') {
-        $node->content['tripal_featuremap.base'] = array(
-          '#value' => theme('tripal_featuremap.base', array('node' => $node)),
+        $node->content['tripal_featuremap_base'] = array(
+          '#value' => theme('tripal_featuremap_base', array('node' => $node)),
         );
-        $node->content['tripal_featuremap.featurepos'] = array(
-          '#value' => theme('tripal_featuremap.featurepos', array('node' => $node)),
+        $node->content['tripal_featuremap_featurepos'] = array(
+          '#value' => theme('tripal_featuremap_featurepos', array('node' => $node)),
         );
-        $node->content['tripal_featuremap.properties'] = array(
-          '#value' => theme('tripal_featuremap.properties', array('node' => $node)),
+        $node->content['tripal_featuremap_properties'] = array(
+          '#value' => theme('tripal_featuremap_properties', array('node' => $node)),
         );
-        $node->content['tripal_featuremap.publication'] = array(
-          '#value' => theme('tripal_featuremap.publication', array('node' => $node)),
+        $node->content['tripal_featuremap_publication'] = array(
+          '#value' => theme('tripal_featuremap_publication', array('node' => $node)),
         );
-        $node->content['tripal_featuremap.references'] = array(
-          '#value' => theme('tripal_featuremap.references', array('node' => $node)),
+        $node->content['tripal_featuremap_references'] = array(
+          '#value' => theme('tripal_featuremap_references', array('node' => $node)),
         );
       }
       if ($view_mode == 'teaser') {
-        $node->content['tripal_featuremap.teaser'] = array(
-          '#value' => theme('tripal_featuremap.teaser', array('node' => $node)),
+        $node->content['tripal_featuremap_teaser'] = array(
+          '#value' => theme('tripal_featuremap_teaser', array('node' => $node)),
         );
       }
       break;
@@ -332,23 +332,23 @@ function tripal_featuremap_block_view($delta = '') {
     switch ($delta) {
       case 'mapbase':
         $block['subject'] = t('Library Details');
-        $block['content'] = theme('tripal_featuremap.base', $node);
+        $block['content'] = theme('tripal_featuremap_base', $node);
         break;
       case 'mapprops':
         $block['subject'] = t('Properties');
-        $block['content'] = theme('tripal_featuremap.properties', $node);
+        $block['content'] = theme('tripal_featuremap_properties', $node);
         break;
       case 'mappos':
         $block['subject'] = t('Features');
-        $block['content'] = theme('tripal_featuremap.featurepos', $node);
+        $block['content'] = theme('tripal_featuremap_featurepos', $node);
         break;
       case 'mappubs':
         $block['subject'] = t('Publications');
-        $block['content'] = theme('tripal_featuremap.publication', $node);
+        $block['content'] = theme('tripal_featuremap_publication', $node);
         break;
       case 'maprefs':
         $block['subject'] = t('References');
-        $block['content'] = theme('tripal_featuremap.references', $node);
+        $block['content'] = theme('tripal_featuremap_references', $node);
         break;
       default :
     }

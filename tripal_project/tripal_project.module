@@ -1,7 +1,8 @@
 <?php
-
-require('includes/tripal_project.admin.inc');
 require('api/tripal_project.api.inc');
+require('theme/tripal_project.theme.inc');
+require('includes/tripal_project.admin.inc');
+require('includes/tripal_project.chado_node.inc');
 
 /**
  *  @file
@@ -85,7 +86,7 @@ function tripal_project_menu() {
     'title' => 'Help',
     'description' => ("Basic Description of Tripal Project Module Functionality."),
     'page callback' => 'theme',
-    'page arguments' => array('tripal_project.help'),
+    'page arguments' => array('tripal_project_help'),
     'access arguments' => array('adminster tripal projects'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 6
@@ -184,37 +185,37 @@ function tripal_project_theme($existing, $type, $theme, $path) {
       'base hook' => 'node',
       'path' => "$core_path/theme",
     ),
-    'tripal_project.base' => array(
+    'tripal_project_base' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_project.base',
       'path' => "$path/theme/tripal_project",
     ),
-    'tripal_project.contact' => array(
+    'tripal_project_contact' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_project.contact',
       'path' => "$path/theme/tripal_project",
     ),
-    'tripal_project.properties' => array(
+    'tripal_project_properties' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_project.properties',
       'path' => "$path/theme/tripal_project",
     ),
-    'tripal_project.publications' => array(
+    'tripal_project_publications' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_project.publications',
       'path' => "$path/theme/tripal_project",
     ),
-    'tripal_project.relationships' => array(
+    'tripal_project_relationships' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_project.relationships',
       'path' => "$path/theme/tripal_project",
     ),
-    'tripal_project.teaser' => array(
+    'tripal_project_teaser' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_project.teaser',
       'path' => "$path/theme/tripal_project",
     ),
-    'tripal_project.help' => array(
+    'tripal_project_help' => array(
       'variables' => 'tripal_project.help',
       'variables' =>  array(NULL),
       'path' => "$path/theme",
@@ -232,20 +233,20 @@ function tripal_project_node_view($node, $view_mode, $langcode) {
     case 'chado_project':
       // Show feature browser and counts
       if ($view_mode == 'full') {
-        $node->content['tripal_project.base'] = array(
-          '#value' => theme('tripal_project.base', array('node' => $node)),
+        $node->content['tripal_project_base'] = array(
+          '#value' => theme('tripal_project_base', array('node' => $node)),
         );
-        $node->content['tripal_project.contact'] = array(
-          '#value' => theme('tripal_project.contact', array('node' => $node)),
+        $node->content['tripal_project_contact'] = array(
+          '#value' => theme('tripal_project_contact', array('node' => $node)),
         );
-        $node->content['tripal_project.properties'] = array(
-          '#value' => theme('tripal_project.properties', array('node' => $node)),
+        $node->content['tripal_project_properties'] = array(
+          '#value' => theme('tripal_project_properties', array('node' => $node)),
         );
-        $node->content['tripal_project.publications'] = array(
-          '#value' => theme('tripal_project.publications', array('node' => $node)),
+        $node->content['tripal_project_publications'] = array(
+          '#value' => theme('tripal_project_publications', array('node' => $node)),
         );
-        $node->content['tripal_project.relationships'] = array(
-          '#value' => theme('tripal_project.relationships', array('node' => $node)),
+        $node->content['tripal_project_relationships'] = array(
+          '#value' => theme('tripal_project_relationships', array('node' => $node)),
         );
       }
       if ($view_mode == 'teaser') {
@@ -316,79 +317,7 @@ function tripal_project_block_view($delta = '') {
     return $block;
   }
 }
-/**
- *
- *
- * @ingroup tripal_project
- */
-function tripal_project_preprocess_tripal_project_relationships(&$variables) {
-  // we want to provide a new variable that contains the matched projects.
-  $project = $variables['node']->project;
 
-  // normally we would use tripal_core_expand_chado_vars to expand our
-  // organism object and add in the relationships, however whan a large
-  // number of relationships are present this significantly slows the
-  // query, therefore we will manually perform the query
-  $sql = "
-    SELECT P.name, P.project_id, CP.nid, CVT.name as rel_type
-    FROM project_relationship PR
-      INNER JOIN {project} P            ON PR.object_project_id = P.project_id
-      INNER JOIN {cvterm} CVT           ON PR.type_id           = CVT.cvterm_id
-      LEFT JOIN public.chado_project CP ON P.project_id         = CP.project_id
-    WHERE PR.subject_project_id = :project_id
-  ";
-  $as_subject = chado_query($sql, array(':project_id' => $project->project_id));
-  $sql = "
-    SELECT P.name, P.project_id, CP.nid, CVT.name as rel_type
-    FROM project_relationship PR
-      INNER JOIN {project} P            ON PR.subject_project_id = P.project_id
-      INNER JOIN {cvterm} CVT           ON PR.type_id            = CVT.cvterm_id
-      LEFT JOIN public.chado_project CP ON P.project_id          = CP.project_id
-    WHERE PR.object_project_id = :project_id
-  ";
-  $as_object = chado_query($sql, array(':project_id' => $project->project_id));
-
-  // combine both object and subject relationshisp into a single array
-  $relationships = array();
-  $relationships['object'] = array();
-  $relationships['subject'] = array();
-
-  // iterate through the object relationships
-  while ($relationship = $as_object->fetchObject()) {
-
-     // get the relationship and child types
-     $rel_type = t(preg_replace('/_/', " ", $relationship->rel_type));
-     $sub_type = t(preg_replace('/_/', " ", $relationship->sub_type));
-
-     if (!array_key_exists($rel_type, $relationships['object'])) {
-       $relationships['object'][$rel_type] = array();
-     }
-     if (!array_key_exists($sub_type, $relationships['object'][$rel_type])) {
-       $relationships['object'][$rel_type][$sub_type] = array();
-     }
-     $relationships['object'][$rel_type][$sub_type][] = $relationship;
-  }
-
-  // now add in the subject relationships
-  while ($relationship = $as_subject->fetchObject()) {
-
-     // get the relationship and child types
-     $rel_type = t(preg_replace('/_/', " ", $relationship->rel_type));
-     $obj_type = t(preg_replace('/_/', " ", $relationship->obj_type));
-
-     if (!array_key_exists($rel_type, $relationships['subject'])) {
-       $relationships['subject'][$rel_type] = array();
-     }
-     if (!array_key_exists($obj_type, $relationships['subject'][$rel_type])) {
-       $relationships['subject'][$rel_type][$obj_type] = array();
-     }
-     $relationships['subject'][$rel_type][$obj_type][] = $relationship;
-  }
-
-
-  $project->all_relationships = $relationships;
-
-}
 /**
  * Implementation of hook_form_alter()
  *

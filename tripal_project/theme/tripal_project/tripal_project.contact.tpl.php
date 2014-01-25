@@ -8,20 +8,20 @@ $project_contacts = $project->project_contact;
 
 if (count($project_contacts) > 0) { ?>
   <div id="tripal_project-contacts-box" class="tripal_project-info-box tripal-info-box">
-    <div class="tripal_project-info-box-title tripal-info-box-title">People</div>
-    <div class="tripal_project-info-box-desc tripal-info-box-desc">The following people particpated in development or execution of this project</div><?php     
+    <div class="tripal_project-info-box-title tripal-info-box-title">Participants</div>
+    <div class="tripal_project-info-box-desc tripal-info-box-desc">The following indivuals or groups have particpated in development or execution of this project</div><?php     
     
     // the $headers array is an array of fields to use as the colum headers.
     // additional documentation can be found here
     // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-    $headers = array('Property Name', 'Value');
+    $headers = array('', 'Details');
     
     // the $rows array contains an array of rows where each row is an array
     // of values for each column of the table in that row.  Additional documentation
     // can be found here:
     // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
     $rows = array();
-    
+    $i = 1;
     foreach ($project_contacts as $project_contact) {
       $contact = $project_contact->contact_id;
       $contact_name = $contact->name;
@@ -31,6 +31,7 @@ if (count($project_contacts) > 0) { ?>
       
       // Get some additional details about this contact if they exists.
       $details = '';
+      $options = array('return_array' => 1);
       $contact = tripal_core_expand_chado_vars($contact, 'table', 'contactprop', $options);
       $properties = $contact->contactprop;
       $options = array('order_by' => array('rank' => 'ASC'));
@@ -51,8 +52,10 @@ if (count($project_contacts) > 0) { ?>
       }
       
       $rows[] = array(
+        $i,
         $contact_name . $details,
       );
+      $i++;
     } 
         // the $table array contains the headers and rows array as well as other
     // options for controlling the display of the table.  Additional

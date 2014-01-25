@@ -100,7 +100,7 @@ function tripal_library_menu() {
     'title' => 'Help',
     'description' => 'Basic Description of Tripal Library Module Functionality',
     'page callback' => 'theme',
-    'page arguments' => array('tripal_library.help'),
+    'page arguments' => array('tripal_library_help'),
     'access arguments' => array('administer tripal libraries'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
@@ -167,26 +167,28 @@ function tripal_library_node_view($node, $view_mode, $langcode) {
   switch ($node->type) {
     case 'chado_library':
       if ($view_mode == 'full') {
-        $node->content['tripal_library.base'] = array(
-          '#value' => theme('tripal_library.base', array('node' => $node)),
+        $node->content['tripal_library_base'] = array(
+          '#value' => theme('tripal_library_base', array('node' => $node)),
         );      
-        $node->content['tripal_library.properties'] = array(
-          '#value' => theme('tripal_library.properties', array('node' => $node)),
+        $node->content['tripal_library_properties'] = array(
+          '#value' => theme('tripal_library_properties', array('node' => $node)),
         );
-        
-        $node->content['tripal_library.references'] = array(
-          '#value' => theme('tripal_library.references', array('node' => $node)),
+        $node->content['tripal_library_publications'] = array(
+          '#value' => theme('tripal_library_publications', array('node' => $node)),
+        );
+        $node->content['tripal_library_references'] = array(
+          '#value' => theme('tripal_library_references', array('node' => $node)),
         );      
-        $node->content['tripal_library.synonyms'] = array(
-          '#value' => theme('tripal_library.synonyms', array('node' => $node)),
+        $node->content['tripal_library_synonyms'] = array(
+          '#value' => theme('tripal_library_synonyms', array('node' => $node)),
         );
-        $node->content['tripal_library.terms'] = array(
-          '#value' => theme('tripal_library.terms', array('node' => $node)),
+        $node->content['tripal_library_terms'] = array(
+          '#value' => theme('tripal_library_terms', array('node' => $node)),
         );
       }
       if ($view_mode == 'teaser') {
-        $node->content['tripal_library.teaser'] = array(
-          '#value' => theme('tripal_library.teaser', array('node' => $node)),
+        $node->content['tripal_library_teaser'] = array(
+          '#value' => theme('tripal_library_teaser', array('node' => $node)),
         );
       }
       break;
@@ -225,53 +227,58 @@ function tripal_library_theme($existing, $type, $theme, $path) {
     ),
 
     // tripal_library templates
-    'tripal_library.base' => array(
+    'tripal_library_base' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_library.base',
       'path' => "$path/theme/tripal_library",
     ),
-    'tripal_library.properties' => array(
+    'tripal_library_properties' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_library.properties',
       'path' => "$path/theme/tripal_library",
     ),
-    'tripal_library.references' => array(
+    'tripal_library_publications' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_library.publications',
+      'path' => "$path/theme/tripal_library",
+    ),
+    'tripal_library_references' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_library.references',
       'path' => "$path/theme/tripal_library",
     ),
-    'tripal_library.synonyms' => array(
+    'tripal_library_synonyms' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_library.synonyms',
       'path' => "$path/theme/tripal_library",
     ),
-    'tripal_library.terms' => array(
+    'tripal_library_terms' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_library.terms',
       'path' => "$path/theme/tripal_library",
     ),
-    'tripal_library.help' => array(
+    'tripal_library_help' => array(
       'template' => 'tripal_library.help',
       'variables' =>  array(NULL),
       'path' => "$path/theme",
     ),
     
     // teaser
-    'tripal_library.teaser' => array(
+    'tripal_library_teaser' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_library.teaser',
       'path' => "$path/theme/tripal_library",
     ),
     
     // tripal_organism templates
-    'tripal_organism.libraries' => array(
+    'tripal_organism_libraries' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_organism.libraries',
       'path' => "$path/theme/tripal_organism",
     ),
     
     // tripal_feature templates
-    'tripal_feature.libraries' => array(
+    'tripal_feature_libraries' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_feature.libraries',
       'path' => "$path/theme/tripal_feature",
@@ -331,31 +338,31 @@ function tripal_library_block_view($delta = '') {
     switch ($delta) {
       case 'libreferences':
         $block['subject'] = t('Cross References');
-        $block['content'] = theme('tripal_library.references', $node);
+        $block['content'] = theme('tripal_library_references', $node);
         break;
       case 'libbase':
         $block['subject'] = t('Library Details');
-        $block['content'] = theme('tripal_library.base', $node);
+        $block['content'] = theme('tripal_library_base', $node);
         break;
       case 'libsynonyms':
         $block['subject'] = t('Synonyms');
-        $block['content'] = theme('tripal_library.synonyms', $node);
+        $block['content'] = theme('tripal_library_synonyms', $node);
         break;
       case 'libproperties':
         $block['subject'] = t('Properties');
-        $block['content'] = theme('tripal_library.properties', $node);
+        $block['content'] = theme('tripal_library_properties', $node);
         break;
       case 'libterms':
         $block['subject'] = t('Library Terms');
-        $block['content'] = theme('tripal_library.terms', $node);
+        $block['content'] = theme('tripal_library_terms', $node);
         break;
       case 'featurelibs':
         $block['subject'] = t('Libraries');
-        $block['content'] = theme('tripal_feature.libraries', $node);
+        $block['content'] = theme('tripal_feature_libraries', $node);
         break;
       case 'orglibs':
         $block['subject'] = t('Libraries');
-        $block['content'] = theme('tripal_organism.libraries', $node);
+        $block['content'] = theme('tripal_organism_libraries', $node);
         break;
       default :
     }

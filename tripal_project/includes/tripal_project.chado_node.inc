@@ -21,7 +21,6 @@
 function chado_project_form(&$node, $form_state) {
   $form = array();
   
-dpm("hi");
   // Default values can come in the following ways:
   //
   // 1) as elements of the $node object.  This occurs when editing an existing project
@@ -48,22 +47,25 @@ dpm("hi");
     // is in the $node->body field. If it is we'll use that.  When the node is
     // edited the text will be moved out of the body and into the projectprop
     // table where it should belong.
-    if ($node->body) {
+    if (property_exists($node, 'body')) {
       $description = $node->body;
     }
     else {
-      $description = $node->description;
+      $description = $project->description;
     }
     if (!$description) {
       $projectprop = tripal_project_get_property($project->project_id, 'Project Description');
       $description = $projectprop->value;
     }
     
+    $title = $project->name;
+    $project_id = $project->project_id;
+    
     // keep track of the project id if we have.  If we do have one then
     // this is an update as opposed to an insert.
     $form['project_id'] = array(
       '#type' => 'value',
-      '#value' => $project->project_id,
+      '#value' => $project_id,
     );
   }
   
@@ -86,7 +88,6 @@ dpm("hi");
     '#description'   => t('Please enter the title for this project. This appears at the top of the project page.'),
     '#required'      => TRUE,
     '#default_value' => $node->title,
-    '#weight'        => 1
   );
 
   $form['description']= array(
@@ -95,7 +96,6 @@ dpm("hi");
     '#description'   => t('A brief description of the project'),
     '#required'      => TRUE,
     '#default_value' => $description,
-    '#weight'        => 5
   );
 
   // get the project properties
@@ -128,7 +128,7 @@ dpm("hi");
   // as a property even though it will be stored as a property. 
   $exclude = array('Project Description');
   $include = array();
-  $instructions = t('To add additional properties to the drop down. ' . l("Add terms to the project_property vocabulary", "admin/tripal/chado/tripal_cv/cvterm/add") . ".");
+  $instructions = t('To add properties to the drop down list, you must ' . l("add terms to the project_property vocabulary", "admin/tripal/chado/tripal_cv/cvterm/add") . ".");
   tripal_core_properties_form($form, $form_state, 'projectprop', 'project_id', 'project_property',
     $properties, $project_id, $exclude, $include, $instructions, 'Properties');
   
@@ -159,7 +159,7 @@ function chado_project_validate($node, $form, &$form_state) {
   $project = 0;
   // check to make sure the name on the project is unique
   // before we try to insert into chado.
-  if ($node->project_id) {
+  if (property_exists($node, 'project_id')) {
     $sql = "SELECT * FROM {project} WHERE name = :name AND NOT project_id = :project_id";
     $project = chado_query($sql, array(':name' => $node->title, ':project_id' => $node->project_id))->fetchObject();
   }

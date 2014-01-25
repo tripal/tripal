@@ -1,16 +1,16 @@
 <?php
-$project = $variables['node']->project;
+$feature = $variables['node']->feature;
 
-// expand project to include pubs 
+// expand feature to include pubs 
 $options = array('return_array' => 1);
-$project = tripal_core_expand_chado_vars($project, 'table', 'project_pub', $options);
-$project_pubs = $project->project_pub; 
+$feature = tripal_core_expand_chado_vars($feature, 'table', 'feature_pub', $options);
+$feature_pubs = $feature->feature_pub; 
 
 
-if (count($project_pubs) > 0) { ?>
-  <div id="tripal_project_pub-pub-box" class="tripal_project_pub-info-box tripal-info-box">
-    <div class="tripal_project_pub-info-box-title tripal-info-box-title">Publications</div>
-    <div class="tripal_project_pub-info-box-desc tripal-info-box-desc"></div> <?php 
+if (count($feature_pubs) > 0) { ?>
+  <div id="tripal_feature_pub-pub-box" class="tripal_feature_pub-info-box tripal-info-box">
+    <div class="tripal_feature_pub-info-box-title tripal-info-box-title">Publications</div>
+    <div class="tripal_feature_pub-info-box-desc tripal-info-box-desc"></div> <?php 
   
     // the $headers array is an array of fields to use as the colum headers.
     // additional documentation can be found here
@@ -23,8 +23,8 @@ if (count($project_pubs) > 0) { ?>
     // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
     $rows = array();
     
-    foreach ($project_pubs as $project_pub) {
-      $pub = $project_pub->pub_id;
+    foreach ($feature_pubs as $feature_pub) {
+      $pub = $feature_pub->pub_id;
       $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.title');
       $citation = $pub->title;  // use the title as the default citation
       
@@ -70,7 +70,7 @@ if (count($project_pubs) > 0) { ?>
       'header' => $headers,
       'rows' => $rows,
       'attributes' => array(
-        'id' => 'tripal_project-table-publications',
+        'id' => 'tripal_feature-table-publications',
       ),
       'sticky' => FALSE,
       'caption' => '',

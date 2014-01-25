@@ -879,6 +879,10 @@ function tripal_stock_node_view($node, $view_mode, $langcode) {
         $node->content['tripal_stock_properties'] = array(
           '#value' => theme('tripal_stock_properties', array('node' => $node)),
         );
+        // Publications
+        $node->content['tripal_stock_publications'] = array(
+          '#value' => theme('tripal_stock_publications', array('node' => $node)),
+        );
         // Synonyms
         $node->content['tripal_stock_synonyms'] = array(
           '#value' => theme('tripal_stock_synonyms', array('node' => $node)),

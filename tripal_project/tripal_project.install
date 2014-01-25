@@ -97,13 +97,28 @@ function tripal_project_add_cvs() {
  */
 function tripal_project_add_cvterms() {
 
-  // Insert cvterm 'project_description' into cvterm table of chado
+  // Insert cvterm 'Project Description' into cvterm table of chado
   // database. This CV term is used to keep track of the project
   // description in the projectprop table.
   tripal_cv_add_cvterm(
     array(
       'name' => 'Project Description', 
       'def'  => 'Description of a project'
+    ),
+    'project_property', 0, 1, 'tripal'
+  );
+  
+  tripal_cv_add_cvterm(
+    array(
+      'name' => 'Project Type',
+      'def'  => 'The short few word description of the type of project.'
+    ),
+   'project_property', 0, 1, 'tripal'
+  );
+  tripal_cv_add_cvterm(
+    array(
+      'name' => 'Funding Source',
+      'def'  => 'The funding source for this project.'
     ),
     'project_property', 0, 1, 'tripal'
   );
@@ -131,4 +146,7 @@ function tripal_project_update_7000() {
   if (!$success) {
     throw new DrupalUpdateException('Failed to move project properties to new project_property CV.');
   }
+  
+  // add in new CVterms
+  tripal_project_add_cvterms();
 }
