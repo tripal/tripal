@@ -1782,7 +1782,9 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
         $table_desc = tripal_core_get_chado_table_schema($tablename);
         $values = array();
         foreach ($table_desc['primary key'] as $key) {
-          $values[$key] = $object->{$key};
+          if(property_exists($object, $key)) {
+            $values[$key] = $object->{$key};
+          }
         }
         if ($base_table == $tablename) {
           //get the field

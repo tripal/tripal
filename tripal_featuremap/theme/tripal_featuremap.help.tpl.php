@@ -1,8 +1,3 @@
-<h3>Tripal Feature Map Quick Links:</h3>
-<ul>
-  <li><a href="<?php print url('admin/tripal/tripal_featuremap/configuration') ?>">Map Configuration</a></li>
-</ul>
-
 <h3>Module Description:</h3>
 <p>The Tripal Map module is an interface for the Chado Map module which groups features (sequences) into 
    maps (typically genetic maps).

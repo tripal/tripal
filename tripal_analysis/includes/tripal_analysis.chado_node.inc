@@ -47,7 +47,7 @@ function chado_analysis_form($node, &$form_state) {
     $timeexecuted   = $analysis->timeexecuted;
     $description    = $analysis->description;
      
-    // set the organism_id in the form
+    // set the analysis_id in the form
     $form['analysis_id'] = array(
       '#type' => 'value',
       '#value' => $analysis->analysis_id,
@@ -250,7 +250,7 @@ function tripal_analysis_validate($node, $form, &$form_state) {
   }
   
   // Validating for an update
-  if (!is_null($node->nid)) {    
+  if (!is_null($node->nid)) {
    
     // get the existing node    
     $values = array('analysis_id' => $node->analysis_id);      

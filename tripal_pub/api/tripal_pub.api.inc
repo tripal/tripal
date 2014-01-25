@@ -439,8 +439,8 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE) {
   print "\n";
   return $report;
 }
-/*
- *
+/**
+ * Adds a dbxref record to a publication
  */
 function tripal_pub_add_pub_dbxref($pub_id, $pub_dbxref) {
 

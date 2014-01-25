@@ -72,6 +72,17 @@ $analysis = tripal_core_expand_chado_vars($analysis,'field','analysis.descriptio
     preg_replace("/^(\d+-\d+-\d+) .*/","$1", $analysis->timeexecuted),
   ); 
   
+  // allow site admins to see the feature ID
+  if (user_access('access administration pages')) {
+    // Analysis ID
+    $rows[] = array(
+      array(
+        'data' => 'Analysis ID',
+        'header' => TRUE
+      ),
+      $analysis->analysis_id
+    );
+  }
   // the $table array contains the headers and rows array as well as other
   // options for controlling the display of the table.  Additional
   // documentation can be found here:

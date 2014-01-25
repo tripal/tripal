@@ -152,7 +152,7 @@ function chado_library_validate($node, $form, &$form_state) {
   $lib = 0;
   // check to make sure the unique name on the library is unique
   // before we try to insert into chado.
-  if ($node->library_id) {
+  if (property_exists($node, 'library_id')) {
     $sql = "
       SELECT *
       FROM {library}
@@ -302,13 +302,49 @@ function chado_library_delete(&$node) {
 }
 
 /**
- * 
- * @param unknown $node
+ * Implement hook_access().
+ *
+ * This hook allows node modules to limit access to the node types they define.
+ *
+ *  @param $node
+ *  The node on which the operation is to be performed, or, if it does not yet exist, the
+ *  type of node to be created
+ *
+ *  @param $op
+ *  The operation to be performed
+ *
+ *  @param $account
+ *  A user object representing the user for whom the operation is to be performed
+ *
+ *  @return
+ *  If the permission for the specified operation is not set then return FALSE. If the
+ *  permission is set then return NULL as this allows other modules to disable
+ *  access.  The only exception is when the $op == 'create'.  We will always
+ *  return TRUE if the permission is set.
+ *
+ * @ingroup tripal_library
  */
-function tripal_library_node_presave($node) {
-  // if this is a chado_library and the $node->library object is set then we 
-  // are syncing and we want to set the node title to be the same as the node name
-  if ($node->type == 'chado_library' and property_exists($node, 'library')) {
-    $node->title = $node->library->name;
+function chado_library_node_access($node, $op, $account) {
+  if ($op == 'create') {
+    if (!user_access('create chado_library content', $account)) {
+      return FALSE;
+    }
+    return TRUE;
   }
+  if ($op == 'update') {
+    if (!user_access('edit chado_library content', $account)) {
+      return FALSE;
+    }
+  }
+  if ($op == 'delete') {
+    if (!user_access('delete chado_library content', $account)) {
+      return FALSE;
+    }
+  }
+  if ($op == 'view') {
+    if (!user_access('access chado_library content', $account)) {
+      return FALSE;
+    }
+  }
+  return NULL;
 }

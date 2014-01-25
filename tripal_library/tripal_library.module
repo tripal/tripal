@@ -77,53 +77,7 @@ function tripal_library_permisssions() {
     ),
   );
 }
-/**
- * Implement hook_access().
- *
- * This hook allows node modules to limit access to the node types they define.
- *
- *  @param $node
- *  The node on which the operation is to be performed, or, if it does not yet exist, the
- *  type of node to be created
- *
- *  @param $op
- *  The operation to be performed
- *
- *  @param $account
- *  A user object representing the user for whom the operation is to be performed
- *
- *  @return
- *  If the permission for the specified operation is not set then return FALSE. If the
- *  permission is set then return NULL as this allows other modules to disable
- *  access.  The only exception is when the $op == 'create'.  We will always
- *  return TRUE if the permission is set.
- *
- * @ingroup tripal_library
- */
-function chado_library_node_access($node, $op, $account) {
-  if ($op == 'create') {
-    if (!user_access('create chado_library content', $account)) {
-      return FALSE;
-    }
-    return TRUE;
-  }
-  if ($op == 'update') {
-    if (!user_access('edit chado_library content', $account)) {
-      return FALSE;
-    }
-  }
-  if ($op == 'delete') {
-    if (!user_access('delete chado_library content', $account)) {
-      return FALSE;
-    }
-  }
-  if ($op == 'view') {
-    if (!user_access('access chado_library content', $account)) {
-      return FALSE;
-    }
-  }
-  return NULL;
-}
+
 /**
  * Menu items are automatically added for the new node types created
  * by this module to the 'Create Content' Navigation menu item.  This function
@@ -377,31 +331,31 @@ function tripal_library_block_view($delta = '') {
     switch ($delta) {
       case 'libreferences':
         $block['subject'] = t('Cross References');
-        $block['content'] = theme('tripal_library_references', $node);
+        $block['content'] = theme('tripal_library.references', $node);
         break;
       case 'libbase':
         $block['subject'] = t('Library Details');
-        $block['content'] = theme('tripal_library_base', $node);
+        $block['content'] = theme('tripal_library.base', $node);
         break;
       case 'libsynonyms':
         $block['subject'] = t('Synonyms');
-        $block['content'] = theme('tripal_library_synonyms', $node);
+        $block['content'] = theme('tripal_library.synonyms', $node);
         break;
       case 'libproperties':
         $block['subject'] = t('Properties');
-        $block['content'] = theme('tripal_library_properties', $node);
+        $block['content'] = theme('tripal_library.properties', $node);
         break;
       case 'libterms':
         $block['subject'] = t('Library Terms');
-        $block['content'] = theme('tripal_library_terms', $node);
+        $block['content'] = theme('tripal_library.terms', $node);
         break;
       case 'featurelibs':
         $block['subject'] = t('Libraries');
-        $block['content'] = theme('tripal_feature_libraries', $node);
+        $block['content'] = theme('tripal_feature.libraries', $node);
         break;
       case 'orglibs':
         $block['subject'] = t('Libraries');
-        $block['content'] = theme('tripal_organism_libraries', $node);
+        $block['content'] = theme('tripal_organism.libraries', $node);
         break;
       default :
     }
@@ -429,5 +383,17 @@ function tripal_library_form_alter(&$form, &$form_state, $form_id) {
   // turn of preview button for insert/updates
   if ($form_id == "chado_library_node_form") {
     $form['actions']['preview']['#access'] = FALSE;
+  }
+}
+
+/**
+ *
+ * @param $node
+ */
+function tripal_library_node_presave($node) {
+  // if this is a chado_library and the $node->library object is set then we
+  // are syncing and we want to set the node title to be the same as the node name
+  if ($node->type == 'chado_library' and property_exists($node, 'library')) {
+    $node->title = $node->library->name;
   }
 }
