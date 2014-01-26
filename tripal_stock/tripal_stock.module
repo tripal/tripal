@@ -82,65 +82,6 @@ function tripal_stock_menu() {
     'weight' => 10
   );
 
-  // Adding Secondary Properties-----------------
-  $items['node/%cs_node/properties'] = array(
-    'title' => 'Add Properties & Synonyms',
-    'description' => 'Settings for Chado Stocks',
-    'page callback' => 'tripal_stock_add_ALL_property_page',
-    'page arguments' => array(1),
-    'access arguments' => array('create chado_stock content'),
-    'type' => MENU_CALLBACK
-  );
-
-  $items['node/%cs_node/db_references'] = array(
-    'title' => 'Add Database References',
-    'description' => 'Settings for Chado Stocks',
-    'page callback' => 'tripal_stock_add_ALL_dbreferences_page',
-    'page arguments' => array(1),
-    'access arguments' => array('create chado_stock content'),
-    'type' => MENU_CALLBACK
-  );
-
-  $items['node/%cs_node/relationships'] = array(
-    'title' => 'Add Relationships',
-    'description' => 'Settings for Chado Stocks',
-    'page callback' => 'tripal_stock_add_ALL_relationships_page',
-    'page arguments' => array(1),
-    'access arguments' => array('create chado_stock content'),
-    'type' => MENU_CALLBACK
-  );
-
-  //Edit/Deleting Secondary Properties-------------
-  $items['node/%cs_node/edit_properties'] = array(
-    'title' => 'Edit Properties',
-    'description' => 'Settings for Chado Stocks',
-    'page callback' => 'tripal_stock_edit_ALL_properties_page',
-    'page arguments' => array(1),
-    'access arguments' => array('edit chado_stock content'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 8,
-  );
-
-    $items['node/%cs_node/edit_relationships'] = array(
-    'title' => 'Edit Relationships',
-    'description' => 'Settings for Chado Stocks',
-    'page callback' => 'tripal_stock_edit_ALL_relationships_page',
-    'page arguments' => array(1),
-    'access arguments' => array('edit chado_stock content'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 9,
-  );
-
-  $items['node/%cs_node/edit_db_references'] = array(
-    'title' => 'Edit DB References',
-    'description' => 'Settings for Chado Stocks',
-    'page callback' => 'tripal_stock_edit_ALL_dbreferences_page',
-    'page arguments' => array(1),
-    'access arguments' => array('edit chado_stock content'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 10,
-  );
-
   // the menu link for addressing any stock (by name, uniquename, synonym)
   $items['stock/%'] = array(
     'page callback' => 'tripal_stock_match_stocks_page',

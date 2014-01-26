@@ -49,7 +49,7 @@ if(count($references) > 0){ ?>
 	          else {
 	            print $dbxref->accession;
 	          }
-	          if ($dbxref->is_primary) {
+	          if (property_exists($dbxref,'is_primary')) {
 	            print " <i>(primary cross-reference)</i>";
 	          } ?>
 	        </td>
