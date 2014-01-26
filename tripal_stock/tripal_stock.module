@@ -24,11 +24,8 @@
 require_once("includes/tripal_stock.admin.inc");
 require_once("includes/tripal_stock.sync_stocks.inc");
 require_once("includes/other_module_api_functions.inc");
-require_once("includes/tripal_stock-secondary_tables.inc");
-require_once("includes/tripal_stock-properties.inc");
-require_once("includes/tripal_stock-relationships.inc");
-require_once("includes/tripal_stock-db_references.inc");
 require_once("includes/tripal_stock.chado_node.inc");
+
 require_once("api/tripal_stock.api.inc");
 
 /**
