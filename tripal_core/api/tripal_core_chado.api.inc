@@ -892,12 +892,12 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
  *     should specify the number of records to return and 'element' is a
  *     unique integer to differentiate between pagers when more than one
  *     appear on a page.  The 'element' should start with zero and increment by
- *     one for each pager.    
+ *     one for each pager.
  *
  * @return
  *  An array of results, FALSE if the query was not executed
  *  correctly, an empty array if no records were matched, or the number of records
- *  in the dataset if $has_record is set. 
+ *  in the dataset if $has_record is set.
  *  If the option 'is_duplicate' is provided and the record is a duplicate it
  *  will return the duplicated record.  If the 'has_record' option is provided
  *  a value of TRUE will be returned if a record exists and FALSE will bee
@@ -1454,7 +1454,7 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
  */
 function tripal_core_generate_chado_var($table, $values, $base_options = array()) {
   $all = new stdClass();
-  
+
   $return_array = 0;
   if (array_key_exists('return_array', $base_options)) {
     $return_array = 1;
@@ -1617,11 +1617,11 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
             }
 
             $foreign_object = tripal_core_generate_chado_var($foreign_table, $foreign_values, $options);
-            
+
             // add the foreign record to the current object in a nested manner
             $object->{$foreign_key} = $foreign_object;
             // Flatten expandable_x arrays so only in the bottom object
-            if (property_exists($object->{$foreign_key}, 'expandable_fields') and 
+            if (property_exists($object->{$foreign_key}, 'expandable_fields') and
                 is_array($object->{$foreign_key}->expandable_fields)) {
               $object->expandable_fields = array_merge(
                 $object->expandable_fields,
@@ -1629,7 +1629,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
               );
               unset($object->{$foreign_key}->expandable_fields);
             }
-            if (property_exists($object->{$foreign_key}, 'expandable_tables') and 
+            if (property_exists($object->{$foreign_key}, 'expandable_tables') and
                 is_array($object->{$foreign_key}->expandable_tables)) {
               $object->expandable_tables = array_merge(
                 $object->expandable_tables,
@@ -1637,7 +1637,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
               );
               unset($object->{$foreign_key}->expandable_tables);
             }
-            if (property_exists($object->{$foreign_key}, 'expandable_nodes') and 
+            if (property_exists($object->{$foreign_key}, 'expandable_nodes') and
                 is_array($object->{$foreign_key}->expandable_nodes)) {
               $object->expandable_nodes = array_merge(
                 $object->expandable_nodes,
@@ -1830,7 +1830,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
           // generate a new object for this table using the FK values in the base table.
           $new_options = $table_options;
           $foreign_object = tripal_core_generate_chado_var($foreign_table, array($left => $object->{$right}), $new_options);
-          
+
           // if the generation of the object was successful, update the base object to include it.
           if ($foreign_object) {
             // in the case where the foreign key relationship exists more
@@ -1842,7 +1842,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
               }
               $object->{$foreign_table}->{$left} = $foreign_object;
               $object->expanded = $to_expand;
-              
+
             }
             else {
               if (!property_exists($object, $foreign_table)) {
@@ -1876,8 +1876,8 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
         foreach ((array) $object as $field_name => $field_value) {
           // if we have a nested object ->expand the table in it
           // check to see if the $field_name is a valid chado table, we don't need
-          // to call tripal_core_expand_chado_vars on fields that aren't tables          
-          $check = tripal_core_get_chado_table_schema($field_name);          
+          // to call tripal_core_expand_chado_vars on fields that aren't tables
+          $check = tripal_core_get_chado_table_schema($field_name);
           if ($check) {
             $did_expansion = 1;
             $object->{$field_name} = tripal_core_expand_chado_vars($field_value, 'table', $foreign_table);
@@ -2048,14 +2048,14 @@ function tripal_core_exclude_field_from_feature_by_default() {
  * @ingroup tripal_chado_api
  */
 function chado_pager_query($query, $args, $limit, $element, $count_query = '') {
-  
+
   // get the page and offset for the pager
   $page = isset($_GET['page']) ? $_GET['page'] : '0';
   $offset = $limit * $page;
 
   // Construct a count query if none was given.
   if (!isset($count_query)) {
-    $count_query = preg_replace(array('/SELECT.*?FROM /As', '/ORDER BY .*/'), 
+    $count_query = preg_replace(array('/SELECT.*?FROM /As', '/ORDER BY .*/'),
       array('SELECT COUNT(*) FROM ', ''), $query);
   }
 
@@ -2070,9 +2070,9 @@ function chado_pager_query($query, $args, $limit, $element, $count_query = '') {
 
   // set a session variable for storing the total number of records
   $_SESSION['chado_pager'][$element]['total_records'] = $total_records;
-  
+
   pager_default_initialize($total_records, $limit, $element);
-  
+
   $query .= ' LIMIT ' . (int) $limit . ' OFFSET ' . (int) $offset;
   $results = chado_query($query, $args);
   return $results;
@@ -2117,7 +2117,7 @@ function chado_query($sql, $args = array()) {
 
     // the featureloc table has some indexes that use function that call other functions
     // and those calls do not reference a schema, therefore, any tables with featureloc
-    // must automaticaly have the chado schema set as active to find 
+    // must automaticaly have the chado schema set as active to find
     if(preg_match('/chado.featureloc/i', $sql)) {
       $previous_db = tripal_db_set_active('chado') ;
       $results = db_query($sql, $args);
@@ -2274,7 +2274,7 @@ function tripal_core_schema_exists($schema) {
  * @ingroup tripal_core_api
  */
 function tripal_core_get_chado_tables($include_custom = NULL) {
- 
+
   // first get the chado version that is installed
   $v = $GLOBALS["chado_version"];
 
@@ -2309,7 +2309,7 @@ function tripal_core_get_chado_tables($include_custom = NULL) {
  * Returns the version number of the currently installed Chado instance.
  * It can return the real or effective version.  Note, this function
  * is executed in the hook_init() of the tripal_core module which then
- * sets the $GLOBAL['exact_chado_version'] and $GLOBAL['chado_version'] 
+ * sets the $GLOBAL['exact_chado_version'] and $GLOBAL['chado_version']
  * variable.  You can access these variables rather than calling this function.
  *
  * @param $exact
@@ -2329,11 +2329,11 @@ function tripal_core_get_chado_tables($include_custom = NULL) {
  * @ingroup tripal_core_api
  */
 function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FALSE) {
-  
+
   global $databases;
   $version = '';
   $is_local = 0;
-  
+
   // check that Chado is installed if not return 'uninstalled as the version'
   $chado_exists = tripal_core_chado_schema_exists();
   if (!$chado_exists) {
@@ -2353,13 +2353,13 @@ function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FA
     $is_local = 1;
     $prop_exists = db_table_exists('chado.chadoprop');
   }
-  
+
   // if the table doesn't exist then we don't know what version but we know
   // it must be 1.11 or older.
   if (!$prop_exists) {
     $version = "1.11 or older";
   }
-  else {  
+  else {
     $sql = "
       SELECT value
       FROM {chadoprop} CP
@@ -2376,15 +2376,15 @@ function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FA
       $results = chado_query($sql);
     }
     $v = $results->fetchObject();
-    
+
     // if we don't have a version in the chadoprop table then it must be
     // v1.11 or older
     if (!$v) {
       $version =  "1.11 or older";
-    }  
+    }
     $version =  $v->value;
   }
-  
+
   // next get the exact Chado version that is installed
   $exact_version = $version;
 
@@ -2429,7 +2429,7 @@ function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FA
  * @ingroup tripal_core_api
  */
 function tripal_core_get_chado_table_schema($table) {
-  
+
   // first get the chado version that is installed
   $v = $GLOBALS["chado_version"];
 
@@ -2509,7 +2509,7 @@ function tripal_core_is_chado_local() {
   if (array_key_exists('chado', $databases)) {
     return FALSE;
   }
-  
+
   // check to make sure the chado schema exists
   return tripal_core_chado_schema_exists();
 }
@@ -2562,4 +2562,52 @@ function tripal_db_set_active($dbname  = 'default') {
   elseif (array_key_exists($dbname, $databases)) {
     return db_set_active($dbname);
   }
+}
+
+/**
+ * Get max rank for a given set of criteria
+ * This function was developed with the many property tables in chado in mind but will
+ * work for any table with a rank
+ *
+ * @params tablename: the name of the chado table you want to select the max rank from
+ *    this table must contain a rank column of type integer
+ * @params where_options: array(
+ *                          <column_name> => array(
+ *                            'type' => <type of column: INT/STRING>,
+ *                            'value' => <the value you want to filter on>,
+ *                            'exact' => <if TRUE use =; if FALSE use ~>,
+ *                          )
+ *        )
+ *     where options should include the id and type for that table to correctly
+ *     group a set of records together where the only difference are the value and rank
+ * @return the maximum rank
+ *
+ */
+function tripal_core_get_max_chado_rank($tablename, $where_options) {
+
+  $where_clauses = array();
+  $where_args = array();
+
+  //generate the where clause from supplied options
+  // the key is the column name
+  $i = 0;
+  $sql = "
+    SELECT max(rank) as max_rank, count(rank) as count
+    FROM {".$tablename."}
+    WHERE
+  ";
+  foreach ($where_options as $key => $value) {
+    $where_clauses[] = "$key = :$key";
+    $where_args[":$key"] = $value;
+  }
+  $sql .= implode($where_clauses, ' AND ');
+
+  $result = chado_query($sql, $where_args)->fetchObject();
+  if ($result->count > 0) {
+    return $result->max_rank;
+  }
+  else {
+    return -1;
+  }
+
 }
