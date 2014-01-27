@@ -799,8 +799,8 @@ function tripal_core_properties_form_add_new_props(&$form, &$form_state, &$ranks
 
   // second add in any new properties added during this callback
   if (array_key_exists('triggering_element', $form_state) and
-  $form_state['triggering_element']['#name'] == 'add' and
-  $form_state['input']['new_id'] != 0) {
+    $form_state['triggering_element']['#name'] == 'add' and
+    $form_state['input']['new_id'] != 0) {
     $new_id    = $form_state['input']['new_id'];
     $new_value = $form_state['input']['new_value'];
 

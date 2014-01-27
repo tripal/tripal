@@ -121,6 +121,7 @@ function tripal_core_additional_dbxrefs_form(&$form, &$form_state, $details) {
   $details['fieldset_title'] = 'Additional Database References';
   $details['additional_instructions'] = '';
 
+  // the fieldset of the dbxref elements
   $form['addtl_dbxrefs'] = array(
     '#type' => 'fieldset',
     '#title' => t($details['fieldset_title']),
@@ -131,7 +132,9 @@ function tripal_core_additional_dbxrefs_form(&$form, &$form_state, $details) {
     '#prefix' => "<div id='addtl-dbxrefs-fieldset'>",
     '#suffix' => '</div>'
   );
-
+  
+  // this form element is a tree, so that we don't puke all of the values into then node variable
+  // it is set as a tree, and keeps them in the $form_state['values']['dbxref_table'] heading.
   $form['addtl_dbxrefs']['dbxref_table'] = array(
     '#type' => 'markup',
     '#tree' => TRUE,
@@ -139,9 +142,17 @@ function tripal_core_additional_dbxrefs_form(&$form, &$form_state, $details) {
     '#suffix' => '</div>',
     '#theme' => 'tripal_core_additional_dbxrefs_form_table'
   );
-
-  // Add dbxrefs already attached to the node
-  //---------------------------------------------
+  
+  /* DBxrefs can come to us in two ways:
+   * 
+   * 1) In the form state in the $form_state['addtl_dbxrefs']. Data is in this field
+   *    when an AJAX call updates the form state or a validation error.
+   *     
+   * 2) Directly from the database if the record already has dbxref's associated.  This
+   *    data is only used the first time the form is loaded. On AJAX calls or validation
+   *    errors the fields on the form are populated from the $form_state['addtl_dbxrefs']
+   *    entry.
+   */ 
   if (isset($form_state['addtl_dbxrefs'])) {
     $existing_dbxrefs = $form_state['addtl_dbxrefs'];
   }
@@ -151,11 +162,27 @@ function tripal_core_additional_dbxrefs_form(&$form, &$form_state, $details) {
         FROM {dbxref} dbxref
         LEFT JOIN {db} db ON db.db_id = dbxref.db_id
         LEFT JOIN {".$details['linking_table']."} linking_table ON linking_table.dbxref_id = dbxref.dbxref_id
-        WHERE linking_table.".$details['base_foreign_key']."= :base_key_value
-        ORDER BY db.name ASC, dbxref.version ASC",
-        array(':base_key_value' => $details['base_key_value'])
+       WHERE linking_table.".$details['base_foreign_key']."= :base_key_value
+       ORDER BY db.name ASC, dbxref.version ASC",
+       array(':base_key_value' => $details['base_key_value'])
     );
   }
+  
+  /* The format of the $existing_dbxref's array is
+   * 
+   * $existing_dbxrefs = array(
+   *   '[db_id]-[version]' => array(
+   *     'db_id' => [the db.db_id value]
+   *     'db_name' => [the db.name value]
+   *     'dbxref_id' => [the dbxref.dbxref_id value, or NULL if it doesn't yet exists],
+   *     'version' => [the dbxref.version value],
+   *     'accession' => [the dbxref.accession value],
+   *   ),
+   * );
+   * 
+   * loop on the array elements of the $existing_dbxrefs array and add
+   * an element to the form for each one.
+   */ 
   foreach ($existing_dbxrefs as $dbxref) {
 
     $version = (!empty($dbxref->version)) ? $dbxref->version : 'NONE';
@@ -199,7 +226,7 @@ function tripal_core_additional_dbxrefs_form(&$form, &$form_state, $details) {
       '#type' => 'markup',
       '#markup' => $dbxref->accession
     );
-
+    // remove button
     $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['dbxref_action'] = array(
       '#type' => 'submit',
       '#value' => t('Remove'),
@@ -223,9 +250,10 @@ function tripal_core_additional_dbxrefs_form(&$form, &$form_state, $details) {
     '#prefix' => '<span class="addtl-dbxrefs-add-new-dbxref">',
     '#suffix' => '</span>'
   );
-
+ 
+  // add in the existing databases
   $db_options = array(0 => 'Select a Database');
-  $select = tripal_core_chado_select('db',array('db_id','name'),array());
+  $select = tripal_core_chado_select('db', array('db_id','name'), array(), array('order_by' => array('name' => 'ASC')));
   foreach($select as $db) {
     $db_options[$db->db_id] = $db->name;
   }
@@ -242,6 +270,7 @@ function tripal_core_additional_dbxrefs_form(&$form, &$form_state, $details) {
     '#type' => 'textfield',
   );
 
+  // add button
   $form['addtl_dbxrefs']['dbxref_table']['new']['dbxref_action'] = array(
     '#type' => 'submit',
     '#value' => t('Add'),
@@ -253,6 +282,13 @@ function tripal_core_additional_dbxrefs_form(&$form, &$form_state, $details) {
       'method'   => 'replace',
       'prevent'  => 'click'
     ),
+    // When this button is clicked, the form will be validated and submitted.
+    // Therefore, we set custom submit and validate functions to override the
+    // default form submit.  In the validate function we set the form_state
+    // to rebuild the form so the node form submit function never actually gets called,
+    // but we need it or Drupal will run the default validate anyway.
+    // we also set #limit_validation_errors to empty so fields that
+    // are required that don't have values won't generate warnings.
     '#validate' => array('tripal_core_additional_dbxrefs_form_add_button_validate'),
     '#submit' => array('tripal_core_additional_dbxrefs_form_add_button_submit'),
   );
@@ -282,7 +318,6 @@ function tripal_core_additional_dbxrefs_form_add_button_validate($form, &$form_s
   if (empty($form_state['input']['dbxref_table']['new']['dbxref_accession'])) {
     form_set_error('dbxref_accession','You must enter the accession before attempting to add a new database reference.');
   }
-
 }
 
 /**
@@ -355,6 +390,8 @@ function tripal_core_additional_dbxrefs_form_ajax_update($form, $form_state) {
 /**
  * Creates an array in form_state containing the existing addtl_dbxrefs. This array is
  * then modified by the add/remove buttons and used as a source for rebuilding the form.
+ * This function get's called at each button (add and remove) button submits the first
+ * time one of the button's is clicked to instantiates the $form_state['addtl_dbxrefs'] array
  */
 function tripal_core_additional_dbxrefs_form_create_dbxref_formstate_array($form, &$form_state) {
 

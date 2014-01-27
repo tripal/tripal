@@ -13,6 +13,7 @@
  */
 
 require('api/tripal_genetic.api.inc');
+require('theme/tripal_genetic.theme.inc');
 require('includes/tripal_genetic.schema.inc');
 require('includes/tripal_genetic.admin.inc');
 
@@ -74,23 +75,24 @@ function tripal_genetic_views_api() {
  *
  * @ingroup tripal_genetic
  */
-function tripal_genetic_theme() {
-  $theme_path = drupal_get_path('module', 'tripal_genetic') . '/theme';
+function tripal_genetic_theme($existing, $type, $theme, $path) {
+  $core_path = drupal_get_path('module', 'tripal_core');
+    
   $items = array(
     'tripal_feature_genotypes' => array(
-      'arguments' => array('node' => NULL),
-      'template' => 'tripal_feature_genotypes',
-      'path' => "$theme_path/tripal_feature",
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_feature.genotypes',
+      'path' => "$path/theme/tripal_feature",
     ),
     'tripal_stock_genotypes' => array(
-      'arguments' => array('node' => NULL),
-      'template' => 'tripal_stock_genotypes',
-      'path' => "$theme_path/tripal_stock",
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_stock.genotypes',
+      'path' => "$path/theme/tripal_stock",
     ),
     'tripal_genetic_help' => array(
-      'template' => 'tripal_genetic_help',
+      'template' => 'tripal_genetic.help',
       'variables' =>  array(NULL),
-      'path' => "$theme_path",
+      'path' => "$path/theme/",
     ),
   );
   return $items;
