@@ -34,7 +34,7 @@ $feature = tripal_core_expand_chado_vars($feature, 'table', 'feature_genotype', 
 $feature_genotypes = $feature->feature_genotype->feature_id;
 
 // the total number of records for the paged query is stored in a session variable
-$total_records = $_SESSION['chado_pager'][$element]['total_records'];
+$total_records = $_SESSION['chado_pager'][$feature_pager_id]['total_records'];
 
 // now iterate through the feature genotypes and print a paged table.
 if (count($feature_genotypes) > 0) {?>
@@ -89,8 +89,9 @@ if (count($feature_genotypes) > 0) {?>
       $details = '';
       if(count($properties) > 0) { 
         foreach ($properties as $property){ 
-          $details .=  '<br>' . ucwords(preg_replace('/_/', ' ', $property->type_id->name)) . ': ' . $property->value;
+          $details .=  ucwords(preg_replace('/_/', ' ', $property->type_id->name)) . ': ' . $property->value . '<br>';
         } 
+        $details = substr($details, 0, -4); // remove trailing <br>
       }
       // build the list of germplasm.
       $germplasm = '';
@@ -100,9 +101,11 @@ if (count($feature_genotypes) > 0) {?>
           $gname = $stock->name; 
           if(property_exists($stock, 'nid')) {
             $gname = l($gname, 'node/' . $stock->nid, array('attributes' => array('target' => '_blank')));
+            dpm($gname);
           }
-          $germplasm .= '<br>' . ucwords(preg_replace('/_/', ' ', $stock->type_id->name)) . ': ' . $gname;
+          $germplasm .= ucwords(preg_replace('/_/', ' ', $stock->type_id->name)) . ': ' . $gname . '<br>';
         }
+        $germplasm = substr($germplasm, 0, -4); // remove trailing <br>
       } 
       // add the fields to the table row
       $rows[] = array(

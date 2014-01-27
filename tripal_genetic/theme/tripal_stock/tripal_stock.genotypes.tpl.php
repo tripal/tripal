@@ -11,7 +11,7 @@ $stock = $variables['node']->stock;
 
 // specify the number of genotypes to show by default and the unique pager ID
 $num_results_per_page = 25; 
-$stock_pager_id = 0;
+$stock_pager_id = 15;
 
 // get the genotypes from the stock_genotype table
 $options = array(
@@ -25,7 +25,7 @@ $stock = tripal_core_expand_chado_vars($stock, 'table', 'stock_genotype', $optio
 $stock_genotypes = $stock->stock_genotype;
 
 // the total number of records for the paged query is stored in a session variable
-$total_records = $_SESSION['chado_pager'][$element]['total_records'];
+$total_records = $_SESSION['chado_pager'][$stock_pager_id]['total_records'];
 
 // now iterate through the stock genotypes and print a paged table.
 if (count($stock_genotypes) > 0) {?>
@@ -36,7 +36,7 @@ if (count($stock_genotypes) > 0) {?>
     // the $headers array is an array of fields to use as the colum headers.
     // additional documentation can be found here
     // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-    $headers = array('Name', 'Type', 'Genotype', 'Details', 'Germplasm');
+    $headers = array('Name', 'Type', 'Genotype', 'Details', 'Markers');
     
     // the $rows array contains an array of rows where each row is an array
     // of values for each column of the table in that row.  Additional documentation
@@ -79,8 +79,9 @@ if (count($stock_genotypes) > 0) {?>
       $details = '';
       if(count($properties) > 0) {
         foreach ($properties as $property){
-          $details .=  '<br>' . ucwords(preg_replace('/_/', ' ', $property->type_id->name)) . ': ' . $property->value;
+          $details .=  ucwords(preg_replace('/_/', ' ', $property->type_id->name)) . ': ' . $property->value . '<br>';
         }
+        $details = substr($details, 0, -4); // remove trailing <br>
       }
       
       // build the list of features.
@@ -92,8 +93,9 @@ if (count($stock_genotypes) > 0) {?>
           if(property_exists($feature, 'nid')) {
             $fname = l($fname, 'node/' . $feature->nid, array('attributes' => array('target' => '_blank')));
           }
-          $germplasm .= '<br>' . ucwords(preg_replace('/_/', ' ', $feature->type_id->name)) . ': ' . $fname;
+          $germplasm .= ucwords(preg_replace('/_/', ' ', $feature->type_id->name)) . ': ' . $fname . '<br>';
         }
+        $germplasm = substr($germplasm, 0, -4); // remove trailing <br>
       }
         
       // add the fields to the table row
