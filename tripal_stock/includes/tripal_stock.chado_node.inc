@@ -344,6 +344,19 @@ function chado_stock_form($node, $form_state) {
   );
   tripal_core_additional_dbxrefs_form($form, $form_state, $details);
 
+  // RELATIONSHIPS FORM
+  //---------------------------------------------
+
+  $details = array(
+    'relationship_table' => 'stock_relationship',
+    'base_table' => 'stock',
+    'base_foreign_key' => 'stock_id',
+    'base_key_value' => $stock_id,
+    'nodetype' => 'stock',
+    'cv_id' => variable_get('chado_stock_relationship_cv', 0)
+  );
+  tripal_core_relationships_form($form, $form_state, $details);
+
   return $form;
 }
 
@@ -593,10 +606,19 @@ function chado_stock_insert($node) {
 
     // Now add the additional references
     if ($stock_added) {
-      tripal_core_additional_dbxrefs_form_update_dbxrefs(
+      tripal_core_relationships_form_update_relationships(
         $node,
         'stock_dbxref',
         'stock_id',
+        $stock_id
+      );
+    }
+
+    // Now add in relationships
+    if ($stock_added) {
+      tripal_core_relationships_form_update_dbxrefs(
+        $node,
+        'stock_relationship',
         $stock_id
       );
     }
@@ -780,13 +802,20 @@ function chado_stock_update($node) {
 
   // now update the additional dbxrefs
   if ($node->stock_id > 0) {
-    $stock_id = $node->stock_id;
-
     tripal_core_additional_dbxrefs_form_update_dbxrefs(
       $node,
       'stock_dbxref',
       'stock_id',
-      $stock_id
+      $node->stock_id
+    );
+  }
+
+  // now update relationships
+  if ($node->stock_id > 0) {
+    tripal_core_relationships_form_update_relationships(
+      $node,
+      'stock_relationship',
+      $node->stock_id
     );
   }
 }
