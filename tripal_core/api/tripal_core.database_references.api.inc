@@ -265,7 +265,7 @@ function tripal_core_additional_dbxrefs_form(&$form, &$form_state, $details) {
       // additional dbxref fields and in the submit we remove the indicated dbxref
       // from the chado_additional_dbxrefs array. In order to keep validate errors
       // from the node form validate and Drupal required errors for non-dbxref fields
-      // preventing the user from adding dbxrefs we set the #limit_validation_errors below
+      // preventing the user from removing dbxrefs we set the #limit_validation_errors below
       '#validate' => array('tripal_core_additional_dbxrefs_form_remove_button_validate'),
       '#submit' => array('tripal_core_additional_dbxrefs_form_remove_button_submit'),
       // Limit the validation of the form upon clicking this button to the dbxref_table tree
@@ -434,6 +434,16 @@ function tripal_core_additional_dbxrefs_form_ajax_update($form, $form_state) {
  * then modified by the add/remove buttons and used as a source for rebuilding the form.
  * This function get's called at each button (add and remove) button submits the first
  * time one of the button's is clicked to instantiates the $form_state['chado_additional_dbxrefs'] array
+ *
+ * $form_state['chado_additional_dbxrefs'] = array(
+ *   '[db_id]-[version]' => array(
+ *     'db_id' => [the db.db_id value]
+ *     'db_name' => [the db.name value]
+ *     'dbxref_id' => [the dbxref.dbxref_id value, or NULL if it doesn't yet exists],
+ *     'version' => [the dbxref.version value],
+ *     'accession' => [the dbxref.accession value],
+ *   ),
+ * );
  */
 function tripal_core_additional_dbxrefs_form_create_dbxref_formstate_array($form, &$form_state) {
 
