@@ -932,33 +932,29 @@ function tripal_stock_node_view($node, $view_mode, $langcode) {
         $node->content['tripal_stock_base'] = array(
           '#value' => theme('tripal_stock_base', array('node' => $node)),
         );
-        // Cross References
-        $node->content['tripal_stock_references'] = array(
-          '#value' => theme('tripal_stock_references', array('node' => $node)),
+        // Stock Collections
+        $node->content['tripal_stock_collections'] = array(
+          '#value' => theme('tripal_stock_collections', array('node' => $node)),
         );
         // Properties
         $node->content['tripal_stock_properties'] = array(
           '#value' => theme('tripal_stock_properties', array('node' => $node)),
         );
-        // Publications
-        $node->content['tripal_stock_publications'] = array(
-          '#value' => theme('tripal_stock_publications', array('node' => $node)),
-        );
-        // Synonyms
-        $node->content['tripal_stock_synonyms'] = array(
-          '#value' => theme('tripal_stock_synonyms', array('node' => $node)),
+        // Cross References
+        $node->content['tripal_stock_references'] = array(
+          '#value' => theme('tripal_stock_references', array('node' => $node)),
         );
         // Relationships
         $node->content['tripal_stock_relationships'] = array(
           '#value' => theme('tripal_stock_relationships', array('node' => $node)),
         );
-        // Stock Collections
-        $node->content['tripal_stock_collections'] = array(
-          '#value' => theme('tripal_stock_collections', array('node' => $node)),
+        // Synonyms
+        $node->content['tripal_stock_synonyms'] = array(
+          '#value' => theme('tripal_stock_synonyms', array('node' => $node)),
         );
-        // Stock Genotypes
-        $node->content['tripal_stock_genotypes'] = array(
-          '#value' => theme('tripal_stock_genotypes', array('node' => $node)),
+        // Publications
+        $node->content['tripal_stock_publications'] = array(
+          '#value' => theme('tripal_stock_publications', array('node' => $node)),
         );
       }
       if ($view_mode == 'teaser') {

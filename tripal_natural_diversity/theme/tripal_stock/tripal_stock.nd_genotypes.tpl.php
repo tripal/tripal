@@ -60,7 +60,6 @@ $options = array(
 );
 $stock = tripal_core_expand_chado_vars($stock, 'table', 'nd_experiment_stock', $options);
 $nd_experiment_stocks = $stock->nd_experiment_stock;
-dpm($stock);
 if (count($nd_experiment_stocks) > 0) {
   
   // iterate through the nd_experiment_stock records and look to see if there is
