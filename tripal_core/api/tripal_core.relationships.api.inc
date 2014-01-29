@@ -157,7 +157,9 @@ function tripal_core_relationships_form(&$form, &$form_state, $details) {
     '#suffix' => '</div>'
   );
 
-  $form['relationships']['rel_table'] = array(
+  // this form element is a tree, so that we don't puke all of the values into then node variable
+  // it is set as a tree, and keeps them in the $form_state['values']['relationship_table'] heading.
+  $form['relationships']['relationship_table'] = array(
     '#type' => 'markup',
     '#tree' => TRUE,
     '#prefix' => '<div id="tripal-generic-edit-relationships-table">',
@@ -167,6 +169,16 @@ function tripal_core_relationships_form(&$form, &$form_state, $details) {
 
   // Add relationships already attached to the node
   //---------------------------------------------
+  /* Relationships can come to us in two ways:
+   *
+   * 1) In the form state in the $form_state['chado_relationships']. Data is in this field
+   *    when an AJAX call updates the form state or a validation error.
+   *
+   * 2) Directly from the database if the record already has _relationships associated.  This
+   *    data is only used the first time the form is loaded. On AJAX calls or validation
+   *    errors the fields on the form are populated from the $form_state['chado_relationships']
+   *    entry.
+   */
   if (isset($form_state['chado_relationships'])) {
     $existing_rels = $form_state['chado_relationships'];
   }
@@ -181,50 +193,86 @@ function tripal_core_relationships_form(&$form, &$form_state, $details) {
         array(':base_key_value' => $details['base_key_value'])
     );
   }
+
+  /* The format of the $existing_rels' array is either:
+   *
+   * From the chado_relationships array:
+   * $form_state['chado_relationships'] = array(
+   *   '[type_id]-[rank]' => array(
+   *     'object_id' => [the _relationship.object_id value],
+   *     'object_name' => [the base_table.uniquename value linked on base_foreign_key=object_id],
+   *     'subject_id' => [the _relationship.subject_id value],
+   *     'subject_name' => [the base_table.uniquename value linked on base_foreign_key=subject_id],
+   *     'type_id' => [the _relationship.type_id value],
+   *     'type_name' => [the cvterm.name value linked on type_id],
+   *     'rank' => [the _relationship.rank value],
+   *   ),
+   * );
+   *
+   * OR
+   * Populated from the database:
+   * $existing_rels = array(
+   *   0 => array(
+   *     'relationship_id' => [the _relationship.relationship_id value],
+   *     'object_id' => [the _relationship.object_id value],
+   *     'object_name' => [the base_table.uniquename value linked on base_foreign_key=object_id],
+   *     'subject_id' => [the _relationship.subject_id value],
+   *     'subject_name' => [the base_table.uniquename value linked on base_foreign_key=subject_id],
+   *     'type_id' => [the _relationship.type_id value],
+   *     'type_name' => [the cvterm.name value linked on type_id],
+   *     'rank' => [the _relationship.rank value],
+   *   ),
+   * );
+   *
+   * NOTE: The main difference is the key
+   *
+   * Loop on the array elements of the $existing_rels array and add
+   * an element to the form for each one.
+   */
   foreach ($existing_rels as $relationship) {
 
-    $form['relationships']['rel_table'][$relationship->type_id]['#type'] = 'markup';
-    $form['relationships']['rel_table'][$relationship->type_id]['#type'] = '';
+    $form['relationships']['relationship_table'][$relationship->type_id]['#type'] = 'markup';
+    $form['relationships']['relationship_table'][$relationship->type_id]['#type'] = '';
 
-    $form['relationships']['rel_table'][$relationship->type_id][$relationship->rank]['#type'] = 'markup';
-    $form['relationships']['rel_table'][$relationship->type_id][$relationship->rank]['#value'] = '';
+    $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['#type'] = 'markup';
+    $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['#value'] = '';
 
-    $form['relationships']['rel_table'][$relationship->type_id][$relationship->rank]['object_id'] = array(
+    $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['object_id'] = array(
       '#type' => 'hidden',
       '#value' => $relationship->object_id
     );
 
-    $form['relationships']['rel_table'][$relationship->type_id][$relationship->rank]['subject_id'] = array(
+    $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['subject_id'] = array(
       '#type' => 'hidden',
       '#value' => $relationship->subject_id
     );
 
-    $form['relationships']['rel_table'][$relationship->type_id][$relationship->rank]['type_id'] = array(
+    $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['type_id'] = array(
       '#type' => 'hidden',
       '#value' => $relationship->type_id
     );
 
-    $form['relationships']['rel_table'][$relationship->type_id][$relationship->rank]['object_name'] = array(
+    $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['object_name'] = array(
       '#type' => 'markup',
       '#markup' => $relationship->object_name
     );
 
-    $form['relationships']['rel_table'][$relationship->type_id][$relationship->rank]['type_name'] = array(
+    $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['type_name'] = array(
       '#type' => 'markup',
       '#markup' => $relationship->type_name
     );
 
-    $form['relationships']['rel_table'][$relationship->type_id][$relationship->rank]['subject_name'] = array(
+    $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['subject_name'] = array(
       '#type' => 'markup',
       '#markup' => $relationship->subject_name
     );
 
-    $form['relationships']['rel_table'][$relationship->type_id][$relationship->rank]['rank'] = array(
+    $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['rank'] = array(
       '#type' => 'markup',
       '#markup' => $relationship->rank
     );
 
-    $form['relationships']['rel_table'][$relationship->type_id][$relationship->rank]['rel_action'] = array(
+    $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['rel_action'] = array(
       '#type' => 'submit',
       '#value' => t('Remove'),
       '#name' => "rel_remove-".$relationship->type_id.'-'.$relationship->rank,
@@ -235,40 +283,53 @@ function tripal_core_relationships_form(&$form, &$form_state, $details) {
         'method'   => 'replace',
         'prevent'  => 'click'
       ),
+      // When this button is clicked, the form will be validated and submitted.
+      // Therefore, we set custom submit and validate functions to override the
+      // default node form submit.  In the validate function we validate only the
+      // relationship fields and in the submit we remove the indicated relationship
+      // from the chado_relationships array. In order to keep validate errors
+      // from the node form validate and Drupal required errors for non-relationship fields
+      // preventing the user from removing relationships we set the #limit_validation_errors below
       '#validate' => array('tripal_core_relationships_form_remove_button_validate'),
       '#submit' => array('tripal_core_relationships_form_remove_button_submit'),
+      // Limit the validation of the form upon clicking this button to the relationship_table tree
+      // No other fields will be validated (ie: no fields from the main form or any other api
+      // added form).
+      '#limit_validation_errors' => array(
+        array('relationship_table')  // Validate all fields within $form_state['values']['relationship_table']
+      )
     );
   }
 
-  $form['relationships']['rel_table']['new']['object_name'] = array(
+  $form['relationships']['relationship_table']['new']['object_name'] = array(
     '#type' => 'textfield',
   );
 
-  $form['relationships']['rel_table']['new']['object_is_current'] = array(
+  $form['relationships']['relationship_table']['new']['object_is_current'] = array(
     '#type' => 'checkbox',
     '#title' => t('Current '.$details['nodetype']),
   );
 
-  $form['relationships']['rel_table']['new']['type_name'] = array(
+  $form['relationships']['relationship_table']['new']['type_name'] = array(
     '#type' => 'select',
     '#options' => $type_options,
   );
 
-  $form['relationships']['rel_table']['new']['subject_name'] = array(
+  $form['relationships']['relationship_table']['new']['subject_name'] = array(
     '#type' => 'textfield',
   );
 
-  $form['relationships']['rel_table']['new']['subject_is_current'] = array(
+  $form['relationships']['relationship_table']['new']['subject_is_current'] = array(
     '#type' => 'checkbox',
     '#title' => t('Current '.$details['nodetype']),
   );
 
-  $form['relationships']['rel_table']['new']['rank'] = array(
+  $form['relationships']['relationship_table']['new']['rank'] = array(
     '#type' => 'markup',
     '#markup' => ''
   );
 
-  $form['relationships']['rel_table']['new']['rel_action'] = array(
+  $form['relationships']['relationship_table']['new']['rel_action'] = array(
     '#type' => 'submit',
     '#value' => t('Add'),
     '#name' => 'rel_add',
@@ -279,8 +340,21 @@ function tripal_core_relationships_form(&$form, &$form_state, $details) {
       'method'   => 'replace',
       'prevent'  => 'click'
     ),
+    // When this button is clicked, the form will be validated and submitted.
+    // Therefore, we set custom submit and validate functions to override the
+    // default node form submit.  In the validate function we validate only the
+    // relationship fields and in the submit we add them to the chado_relationships
+    // array. In order to keep validate errors from the node form validate and Drupal
+    // required errors for non-relationship fields preventing the user from adding relationships we
+    // set the #limit_validation_errors below
     '#validate' => array('tripal_core_relationships_form_add_button_validate'),
     '#submit' => array('tripal_core_relationships_form_add_button_submit'),
+    // Limit the validation of the form upon clicking this button to the relationship_table tree
+    // No other fields will be validated (ie: no fields from the main form or any other api
+    // added form).
+    '#limit_validation_errors' => array(
+      array('relationship_table')  // Validate all fields within $form_state['values']['relationship_table']
+    )
   );
 
 }
@@ -296,16 +370,16 @@ function tripal_core_relationships_form_add_button_validate($form, &$form_state)
   $details = unserialize($form_state['values']['rel_details']);
 
   // At least one of the participants must be the current node
-  if (!($form_state['values']['rel_table']['new']['subject_is_current'] OR $form_state['values']['rel_table']['new']['object_is_current'])) {
+  if (!($form_state['values']['relationship_table']['new']['subject_is_current'] OR $form_state['values']['relationship_table']['new']['object_is_current'])) {
     // If the checkbox isn't set then check to see if either has the same uniquename as the node
-    if ($form_state['values']['rel_table']['new']['subject_name'] == $form_state['values']['uniquename']) {
-      $form_state['values']['rel_table']['new']['subject_is_current'] = 1;
+    if ($form_state['values']['relationship_table']['new']['subject_name'] == $form_state['values']['uniquename']) {
+      $form_state['values']['relationship_table']['new']['subject_is_current'] = 1;
       form_set_error('subject_is_current', 'To set the current '.$details['nodetype'].', select the
         checkbox. You entered the unique name of the current '.$details['nodetype'].' as the subject,
         is this what you meant to do?');
     }
-    elseif ($form_state['values']['rel_table']['new']['subject_name'] == $form_state['values']['uniquename']) {
-      $form_state['values']['rel_table']['new']['object_is_current'] = 1;
+    elseif ($form_state['values']['relationship_table']['new']['subject_name'] == $form_state['values']['uniquename']) {
+      $form_state['values']['relationship_table']['new']['object_is_current'] = 1;
       form_set_error('subject_is_current', 'To set the current '.$details['nodetype'].', select the
         checkbox. You entered the unique name of the current '.$details['nodetype'].' as the subject,
         is this what you meant to do?');
@@ -318,50 +392,50 @@ function tripal_core_relationships_form_add_button_validate($form, &$form_state)
   }
 
   // The non-current uniquename must be exist in the base table (subject)
-  if (!($form_state['values']['rel_table']['new']['subject_is_current'])) {
+  if (!($form_state['values']['relationship_table']['new']['subject_is_current'])) {
     $result = tripal_core_chado_select(
       $details['base_table'],
       array($details['base_foreign_key']),
-      array('uniquename' => $form_state['values']['rel_table']['new']['subject_name'])
+      array('uniquename' => $form_state['values']['relationship_table']['new']['subject_name'])
     );
     if (!isset($result[0])) {
       form_set_error('subject_name', 'The subject must be the unique name of an
         existing '.$details['nodetype'].' unless the "Current '.$details['nodetype'].'" checkbox is selected');
     }
     else {
-      $form_state['values']['rel_table']['new']['subject_id'] = $result[0]->{$details['base_foreign_key']};
+      $form_state['values']['relationship_table']['new']['subject_id'] = $result[0]->{$details['base_foreign_key']};
     }
   }
 
   // The non-current uniquename must exist in the base table (object)
-  if (!($form_state['values']['rel_table']['new']['object_is_current'])) {
+  if (!($form_state['values']['relationship_table']['new']['object_is_current'])) {
     $result = tripal_core_chado_select(
       $details['base_table'],
       array($details['base_foreign_key']),
-      array('uniquename' => $form_state['values']['rel_table']['new']['object_name'])
+      array('uniquename' => $form_state['values']['relationship_table']['new']['object_name'])
     );
     if (!isset($result[0])) {
       form_set_error('object_name', 'The object must be the unique name of an
         existing '.$details['nodetype'].' unless the "Current '.$details['nodetype'].'" checkbox is selected');
     }
     else {
-      $form_state['values']['rel_table']['new']['object_id'] = $result[0]->{$details['base_foreign_key']};
+      $form_state['values']['relationship_table']['new']['object_id'] = $result[0]->{$details['base_foreign_key']};
     }
   }
 
   // The type must be a valid cvterm
-  if ($form_state['values']['rel_table']['new']['type_name']) {
-    $form_state['values']['rel_table']['new']['type_id'] = $form_state['values']['rel_table']['new']['type_name'];
+  if ($form_state['values']['relationship_table']['new']['type_name']) {
+    $form_state['values']['relationship_table']['new']['type_id'] = $form_state['values']['relationship_table']['new']['type_name'];
     $result = tripal_core_chado_select(
       'cvterm',
       array('name'),
-      array('cvterm_id' => $form_state['values']['rel_table']['new']['type_id'])
+      array('cvterm_id' => $form_state['values']['relationship_table']['new']['type_id'])
     );
     if (!isset($result[0])) {
       form_set_error('type_id', 'The select type is not a valid controlled vocabulary term.');
     }
     else {
-      $form_state['values']['rel_table']['new']['type_name'] = $result[0]->name;
+      $form_state['values']['relationship_table']['new']['type_name'] = $result[0]->name;
     }
   }
   else {
@@ -388,26 +462,26 @@ function tripal_core_relationships_form_add_button_submit(&$form, &$form_state) 
   }
 
   // get details for the new relationship
-  if ($form_state['values']['rel_table']['new']['subject_is_current']) {
+  if ($form_state['values']['relationship_table']['new']['subject_is_current']) {
 
     $relationship = array(
-      'type_id' => $form_state['values']['rel_table']['new']['type_id'],
-      'object_id' => $form_state['values']['rel_table']['new']['object_id'],
+      'type_id' => $form_state['values']['relationship_table']['new']['type_id'],
+      'object_id' => $form_state['values']['relationship_table']['new']['object_id'],
       'subject_id' => $form_state['values'][ $details['base_foreign_key'] ],
-      'type_name' => $form_state['values']['rel_table']['new']['type_name'],
-      'object_name' => $form_state['values']['rel_table']['new']['object_name'],
+      'type_name' => $form_state['values']['relationship_table']['new']['type_name'],
+      'object_name' => $form_state['values']['relationship_table']['new']['object_name'],
       'subject_name' => $form_state['values']['uniquename'],
       'rank' => '0'
     );
   }
   else {
     $relationship = array(
-      'type_id' => $form_state['values']['rel_table']['new']['type_id'],
+      'type_id' => $form_state['values']['relationship_table']['new']['type_id'],
       'object_id' => $form_state['values'][ $details['base_foreign_key'] ],
-      'subject_id' => $form_state['values']['rel_table']['new']['subject_id'],
-      'type_name' => $form_state['values']['rel_table']['new']['type_name'],
+      'subject_id' => $form_state['values']['relationship_table']['new']['subject_id'],
+      'type_name' => $form_state['values']['relationship_table']['new']['type_name'],
       'object_name' => $form_state['values']['uniquename'],
-      'subject_name' => $form_state['values']['rel_table']['new']['subject_name'],
+      'subject_name' => $form_state['values']['relationship_table']['new']['subject_name'],
       'rank' => '0'
     );
   }
@@ -474,12 +548,24 @@ function tripal_core_relationships_form_remove_button_submit(&$form, &$form_stat
  * @ingroup tripal_relationships_api
  */
 function tripal_core_relationships_form_ajax_update($form, $form_state) {
-  return $form['relationships']['rel_table'];
+  return $form['relationships']['relationship_table'];
 }
 
 /**
  * Creates an array in form_state containing the existing relationships. This array is
  * then modified by the add/remove buttons and used as a source for rebuilding the form.
+ *
+ * $form_state['chado_relationships'] = array(
+ *   '[type_id]-[rank]' => array(
+ *     'object_id' => [the _relationship.object_id value],
+ *     'object_name' => [the base_table.uniquename value linked on base_foreign_key=object_id],
+ *     'subject_id' => [the _relationship.subject_id value],
+ *     'subject_name' => [the base_table.uniquename value linked on base_foreign_key=subject_id],
+ *     'type_id' => [the _relationship.type_id value],
+ *     'type_name' => [the cvterm.name value linked on type_id],
+ *     'rank' => [the _relationship.rank value],
+ *   ),
+ * );
  *
  * @ingroup tripal_relationships_api
  */
@@ -487,10 +573,10 @@ function tripal_core_relationships_form_create_relationship_formstate_array($for
 
   $form_state['chado_relationships'] = array();
 
-  foreach (element_children($form['relationships']['rel_table']) as $type_id) {
+  foreach (element_children($form['relationships']['relationship_table']) as $type_id) {
     if ($type_id != 'new') {
-      foreach (element_children($form['relationships']['rel_table'][$type_id]) as $rank) {
-          $element = $form['relationships']['rel_table'][$type_id][$rank];
+      foreach (element_children($form['relationships']['relationship_table'][$type_id]) as $rank) {
+          $element = $form['relationships']['relationship_table'][$type_id][$rank];
           $rel = array(
             'type_id' => $element['type_id']['#value'],
             'object_id' => $element['object_id']['#value'],
