@@ -28,7 +28,7 @@ function tripal_library_requirements($phase) {
     if (!$GLOBALS["chado_is_installed"]) {
       $requirements ['tripal_library'] = array(
         'title' => "tripal_library",
-        'value' => "ERROR: Chado most be installed before this module can be enabled",
+        'value' => "ERROR: Chado must be installed before this module can be enabled",
         'severity' => REQUIREMENT_ERROR,
       );
     }

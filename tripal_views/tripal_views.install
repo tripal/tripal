@@ -5,6 +5,26 @@
  * Functions related to installing/uninstalling this module
  */
 
+
+/**
+ * Implementation of hook_requirements().
+ *
+ */
+function tripal_views_requirements($phase) {
+  $requirements = array();
+  if ($phase == 'install') {
+    // make sure chado is installed
+    if (!$GLOBALS["chado_is_installed"]) {
+      $requirements ['tripal_views'] = array(
+        'title' => "tripal_views",
+        'value' => "ERROR: Chado must be installed before this module can be enabled",
+        'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+  return $requirements;
+}
+
 /**
  * Implementation of hook_install().
  *
@@ -371,23 +391,4 @@ function tripal_views_views_schema() {
   );
 
   return $schema;
-}
-/**
- * Implementation of hook_requirements().
- *
- */
-function tripal_views_requirements($phase) {
-  $requirements = array();
-  if ($phase == 'install') {
-    // make sure chado is installed
-    $version = tripal_get_set_chado_version(TRUE);
-    if ($version == 'not installed') {
-      $requirements ['tripal_views'] = array(
-            'title' => "tripal_views",
-            'value' => "ERROR: Chado most be installed before this module can be enabled",
-            'severity' => REQUIREMENT_ERROR,
-      );
-    }
-  }
-  return $requirements;
 }

@@ -1,11 +1,16 @@
 <?php
 /*
- * There are two ways that stock genotypes can be housed in Chado.  The first, more simple
- * method, is via the stock_genotype table.  This is simply a linker table between the
- * stock and genotype tables of Chado.  A more complex method is via the Natural Diversity
- * tables.  In these tables, the genotypes are in the nd_experiment_genotype table 
- * and there may be an associated project, contact info, etc. This template is for the simple
- * stock_genotype linker table.
+ * Details about genotypes associated with stocks can be found in two ways by 
+ * traversing the the foreign key (FK) relationships in these ways:
+ * 
+ *   Simple Method: stock => stock_genotype => genotype
+ *   ND Method:     stock => nd_experiment_stock => nd_experiment => nd_experiment_genotype => genotype
+ *   
+ * The tripal_natural_diversity module handles display of genotypes when stored using the 
+ * ND method.  This template handles display of genotype when stored using
+ * the Simple Method.  If the tripal_natural_diversity module is enabled then this template
+ * will not show.  You should instead see the tripal_stock.nd_genotypes.tpl.php template
+ *  
  */
 $stock = $variables['node']->stock;
 
@@ -31,7 +36,7 @@ $total_records = $_SESSION['chado_pager'][$stock_pager_id]['total_records'];
 if (count($stock_genotypes) > 0) {?>
   <div id="tripal_stock-genotypes-box" class="tripal_stock-info-box tripal-info-box">
     <div class="tripal_stock-info-box-title tripal-info-box-title">Genotypes</div>
-    <div class="tripal_stock-info-box-desc tripal-info-box-desc">This following <?php print number_format($total_records) ?> genotype(s) have been recorded for this stock.</div> <?php
+    <div class="tripal_stock-info-box-desc tripal-info-box-desc">The following <?php print number_format($total_records) ?> genotype(s) have been recorded for this stock.</div> <?php
     
     // the $headers array is an array of fields to use as the colum headers.
     // additional documentation can be found here
@@ -84,8 +89,8 @@ if (count($stock_genotypes) > 0) {?>
         $details = substr($details, 0, -4); // remove trailing <br>
       }
       
-      // build the list of features.
-      $germplasm = '';
+      // build the list of marker features.
+      $markers = '';
       if(count($feature_genotypes) > 0) {
         foreach ($feature_genotypes as $feature_genotype){
           $feature = $feature_genotype->feature_id;
@@ -93,9 +98,9 @@ if (count($stock_genotypes) > 0) {?>
           if(property_exists($feature, 'nid')) {
             $fname = l($fname, 'node/' . $feature->nid, array('attributes' => array('target' => '_blank')));
           }
-          $germplasm .= ucwords(preg_replace('/_/', ' ', $feature->type_id->name)) . ': ' . $fname . '<br>';
+          $markers .= ucwords(preg_replace('/_/', ' ', $feature->type_id->name)) . ': ' . $fname . '<br>';
         }
-        $germplasm = substr($germplasm, 0, -4); // remove trailing <br>
+        $markers = substr($markers, 0, -4); // remove trailing <br>
       }
         
       // add the fields to the table row
@@ -104,7 +109,7 @@ if (count($stock_genotypes) > 0) {?>
         $type,
         $genotype->description,
         $details,
-        $germplasm
+        $markers
       );
     } 
     
@@ -135,9 +140,9 @@ if (count($stock_genotypes) > 0) {?>
     // page number we want the browser to re-appear with the page is loaded.
     $pager = array(
       'tags' => array(),
-      'element' => $feature_pager_id,
+      'element' => $stock_pager_id,
       'parameters' => array(
-        'block' => 'features'
+        'block' => 'genotypes'
       ),
       'quantity' => $num_results_per_page,
     );

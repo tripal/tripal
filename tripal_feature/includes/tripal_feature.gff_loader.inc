@@ -1288,7 +1288,6 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
     $select = array('uniquename' => 'null');
     $result = tripal_core_chado_select('pub', array('*'), $select);    
     if (count($result) == 0) {
-      // prepare the statement
       $pub_sql = "
         INSERT INTO {pub} (uniquename,type_id) 
         VALUES (:uname,
