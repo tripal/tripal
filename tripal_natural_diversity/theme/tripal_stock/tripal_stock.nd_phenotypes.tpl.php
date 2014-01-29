@@ -94,7 +94,7 @@ if (count($phenotypes) > 0) {?>
       // add in the attribute type pheonotypes values are stored qualitatively or quantitatively. 
       // If qualitatively the cvalue_id will link to a type. If quantitative we
       // use the value column
-      $details . = ucwords(preg_replace('/_/', ' ', $phenotype->attr_id->name)) . ': ';
+      $details .= ucwords(preg_replace('/_/', ' ', $phenotype->attr_id->name)) . ': ';
       if ($phenotype->cvalue_id) { 
         $details .= ucwords(preg_replace('/_/', ' ', $phenotype->cvalue_id->name)) . '<br>';
       }

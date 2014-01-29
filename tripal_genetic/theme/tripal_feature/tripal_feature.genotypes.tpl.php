@@ -42,7 +42,6 @@ $feature_genotypes = $feature->feature_genotype->feature_id;
 // the total number of records for the paged query is stored in a session variable
 $total_records = $_SESSION['chado_pager'][$feature_pager_id]['total_records'];
 
-
 // now iterate through the feature genotypes and print a paged table.
 if (count($feature_genotypes) > 0) {?>
   <div id="tripal_feature-genotypes-box" class="tripal_feature-info-box tripal-info-box">
@@ -104,11 +103,11 @@ if (count($feature_genotypes) > 0) {?>
       if(count($stock_genotypes) > 0) { 
         foreach ($stock_genotypes as $stock_genotype){ 
           $stock = $stock_genotype->stock_id; 
-          $stock_name = $stock->name; 
+          $stock_name = $stock->name . ' (' . $stock->uniquename . ')'; 
           if(property_exists($stock, 'nid')) {
             $stock_name = l($stock_name, 'node/' . $stock->nid, array('attributes' => array('target' => '_blank')));
           }
-          $stock_names .= ucwords(preg_replace('/_/', ' ', $stock->type_id->name)) . ': ' . $stock_name . '<br>';
+          $stock_names .= $stock_name . '<br>';
         }
         $stock_names = substr($stock_names, 0, -4); // remove trailing <br>
       } 

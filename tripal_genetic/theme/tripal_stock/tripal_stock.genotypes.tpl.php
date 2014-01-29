@@ -90,17 +90,18 @@ if (count($stock_genotypes) > 0) {?>
       }
       
       // build the list of marker features.
-      $markers = '';
+      $feature_names = 'N/A';
       if(count($feature_genotypes) > 0) {
+        $feature_names = '';
         foreach ($feature_genotypes as $feature_genotype){
           $feature = $feature_genotype->feature_id;
-          $fname = $feature->name;
+          $feature_name = $feature->name . ' (' . $feature->uniquename . ')';
           if(property_exists($feature, 'nid')) {
-            $fname = l($fname, 'node/' . $feature->nid, array('attributes' => array('target' => '_blank')));
+            $feature_name = l($feature_name, 'node/' . $feature->nid, array('attributes' => array('target' => '_blank')));
           }
-          $markers .= ucwords(preg_replace('/_/', ' ', $feature->type_id->name)) . ': ' . $fname . '<br>';
+          $feature_names .= $feature_name . '<br>';
         }
-        $markers = substr($markers, 0, -4); // remove trailing <br>
+        $feature_names = substr($feature_names, 0, -4); // remove trailing <br>
       }
         
       // add the fields to the table row
@@ -109,7 +110,7 @@ if (count($stock_genotypes) > 0) {?>
         $type,
         $genotype->description,
         $details,
-        $markers
+        $feature_names
       );
     } 
     

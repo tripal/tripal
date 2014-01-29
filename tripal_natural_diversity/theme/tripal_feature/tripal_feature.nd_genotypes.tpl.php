@@ -139,7 +139,7 @@ if (count($feature_genotypes) > 0) { ?>
             $stock = $nd_experiment_stock->stock_id;
             $stock_name = $stock->name . ' (' . $stock->uniquename . ')';
             if (property_exists($stock, 'nid')) {
-              $stock_name = l($stock_names, 'node/' . $stock->nid);
+              $stock_name = l($stock_name, 'node/' . $stock->nid);
             }
             $stock_names .= $stock_name . '<br>';
           }
@@ -152,15 +152,16 @@ if (count($feature_genotypes) > 0) { ?>
         $nd_experiment = tripal_core_expand_chado_vars($nd_experiment, 'table', 'nd_experiment_project', $options);
         $nd_experiment_projects = $nd_experiment->nd_experiment_project;
         if (count($nd_experiment_projects) > 0) {
+          $project_names = '';
           foreach ($nd_experiment_projects as $nd_experiment_project) {
             $project = $nd_experiment_project->project_id;
-            $name = $project->name;
+            $project_name = $project->name;
             if (property_exists($project, 'nid')) {
-              $name = l($name, "node/" . $project->nid, array('attributes' => array('target' => '_blank')));
+              $project_name = l($project_name, "node/" . $project->nid, array('attributes' => array('target' => '_blank')));
             }
-            $project_name .= $name . '<br>';
+            $project_names .= $project_name . '<br>';
           }
-          $project_name = substr($project_name, 0, -4); // remove trailing <br>
+          $project_names = substr($project_names, 0, -4); // remove trailing <br>
         }
       }
 
@@ -170,7 +171,7 @@ if (count($feature_genotypes) > 0) { ?>
         $genotype->description,
         $details,
         $stock_names,
-        $project_name,
+        $project_names,
       );
     } 
     

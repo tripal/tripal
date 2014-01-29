@@ -106,12 +106,11 @@ function tripal_genetic_theme($existing, $type, $theme, $path) {
 function tripal_genetic_node_view($node, $view_mode, $langcode) {
   
   if ($node->type == 'chado_feature') {
-    // the tripal_natural_diversity module provides a tripal_feature_nd_genotype
-    // template.  The only difference between them is the addition of
-    // project information by the ND module's template.  Therefore,
-    // if the tripal_natural_diversity content is present then don't add the
-    // template from this module as the ND module would superceed this.
     if ($view_mode == 'full') {
+      // the tripal_natural_diversity module provides a tripal_feature_nd_genotype
+      // template.  The ND template superceeds this one. Therefore,
+      // if the tripal_natural_diversity content is present then don't add the
+      // template from this module as the ND module would superceed this.
       if (!array_key_exists('tripal_feature_nd_genotypes', $node->content)) {
         $node->content['tripal_feature_genotypes'] = array(
           '#value' => theme('tripal_feature_genotypes', array('node' => $node)),
@@ -120,12 +119,11 @@ function tripal_genetic_node_view($node, $view_mode, $langcode) {
     }
   }
   if ($node->type == 'chado_stock') {
-    // the tripal_natural_diversity module provides a tripal_stock_nd_genotype
-    // template.  The only difference between them is the addition of
-    // project information by the ND module's template.  Therefore,
-    // if the tripal_natural_diversity content is present then don't add the
-    // template from this module as the ND module would superceed this.
     if ($view_mode == 'full') {
+      // the tripal_natural_diversity module provides a tripal_stock_nd_genotype
+      // template.  The ND template superceeds this one. Therefore,
+      // if the tripal_natural_diversity content is present then don't add the
+      // template from this module as the ND module would superceed this.
       if (!array_key_exists('tripal_stock_nd_genotypes', $node->content)) {
         $node->content['tripal_stock_genotypes'] = array(
           '#value' => theme('tripal_stock_genotypes', array('node' => $node)),

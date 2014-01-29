@@ -52,21 +52,21 @@ $stock_pager_id = 15;
 
 // get all of the nd_experiment_stock records for this stock.
 $genotypes = array();
-$values = array('stock_id' => $stock->stock_id);
 $options = array(
-  'return_array' = 1;
+  'return_array' => 1,
   'include_fk' => array(
     'nd_experiment_id' => 1
   ),
 );
-$stock = tripal_core_expand_chado_vars($stock, 'table', 'nd_experiment_stock', $values, $options);
+$stock = tripal_core_expand_chado_vars($stock, 'table', 'nd_experiment_stock', $options);
 $nd_experiment_stocks = $stock->nd_experiment_stock;
-if ($nd_experiment_stocks) {
+dpm($stock);
+if (count($nd_experiment_stocks) > 0) {
   
   // iterate through the nd_experiment_stock records and look to see if there is
   // an nd_experiment_genotype record. If so, then add it out $genotypes array
-  foreach ($nd_experiment_stock as $nd_experiment_stock) {
-    $nd_experiment_id = $nd_experiment_stock->nd_experiment_id->nd_experiment_id
+  foreach ($nd_experiment_stocks as $nd_experiment_stock) {
+    $nd_experiment_id = $nd_experiment_stock->nd_experiment_id->nd_experiment_id;
     $nd_experiment    = $nd_experiment_stock->nd_experiment_id;
       
     // expand the nd_experiment record to include the nd_experiment_genotype table
@@ -85,7 +85,7 @@ if ($nd_experiment_stocks) {
       ),
     );
     $nd_experiment = tripal_core_expand_chado_vars($nd_experiment, 'table', 'nd_experiment_genotype', $options);
-    nd_experiment_genotypes = $nd_experiment->nd_experiment_genotype;
+    $nd_experiment_genotypes = $nd_experiment->nd_experiment_genotype;
     if ($nd_experiment_genotypes) {
       // for each of the genotypes, add them to our $genotypes array so we can 
       // display each one
@@ -166,12 +166,12 @@ if (count($genotypes) > 0) { ?>
       $genotype = tripal_core_expand_chado_vars($genotype, 'table', 'feature_genotype', $options);
       $feature_genotypes = $genotype->feature_genotype;
       if (count($feature_genotypes) > 0) {
+        $feature_names = '';
         foreach ($feature_genotypes as $feature_genotype) {
           $feature = $feature_genotype->feature_id;
-          $features[$feature->feature_id] = $feature;
           $feature_name = $feature->name . ' (' . $feature->uniquename . ')';
           if (property_exists($feature, 'nid')) {
-            $feature_name = l($feature_names, 'node/' . $feature->nid);
+            $feature_name = l($feature_name, 'node/' . $feature->nid);
           }
           $feature_names .= $feature_name . '<br>';
         }
@@ -184,15 +184,16 @@ if (count($genotypes) > 0) { ?>
       $nd_experiment = tripal_core_expand_chado_vars($nd_experiment, 'table', 'nd_experiment_project', $options);
       $nd_experiment_projects = $nd_experiment->nd_experiment_project;
       if (count($nd_experiment_projects) > 0) {
+        $project_names = '';
         foreach ($nd_experiment_projects as $nd_experiment_project) {
           $project = $nd_experiment_project->project_id;
-          $name = $project->name;
+          $project_name = $project->name;
           if (property_exists($project, 'nid')) {
-            $name = l($name, "node/" . $project->nid, array('attributes' => array('target' => '_blank')));
+            $project_name = l($project_name, "node/" . $project->nid, array('attributes' => array('target' => '_blank')));
           }
-          $project_name .= $name . '<br>';
+          $project_names .= $project_name . '<br>';
         }
-        $project_name = substr($project_name, 0, -4); // remove trailing <br>
+        $project_names = substr($project_names, 0, -4); // remove trailing <br>
       }
 
       $rows[] = array(
@@ -201,7 +202,7 @@ if (count($genotypes) > 0) { ?>
         $genotype->description,
         $details,
         $feature_names,
-        $project_name,
+        $project_names,
       );
     } 
     
