@@ -15,14 +15,8 @@ $options = array(
 $feature = tripal_core_expand_chado_vars($feature, 'table', 'feature_phenotype', $options);
 $feature_phenotypes = $feature->feature_phenotype;
 
-if(count($feature_phenotypes) > 0){ 
+if(count($feature_phenotypes) > 0){ ?>
   
-  // expand the text fields
-  $options = array('return_array' => 1);
-  $feature = tripal_core_expand_chado_vars($feature, 'field', 'phenotype.value', $options);
-  $feature = tripal_core_expand_chado_vars($feature, 'field', 'phenotype.uniquename', $options);
-  $feature = tripal_core_expand_chado_vars($feature, 'field', 'phenotype.name', $options); ?>
-
   <div id="tripal_feature-phenotypes-box" class="tripal_feature-info-box tripal-info-box">
     <div class="tripal_feature-info-box-title tripal-info-box-title">Phenotypes</div>
     <div class="tripal_feature-info-box-desc tripal-info-box-desc">The feature is associated with the following phenotypes</div><?php
@@ -37,13 +31,31 @@ if(count($feature_phenotypes) > 0){
     // can be found here:
     // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
     $rows = array();
-    foreach ($feature_phenotypes as $index => $feature_phenotype){
+    
+    // iterate through the feature_phenotype records
+    foreach ($feature_phenotypes as $feature_phenotype){
+      $phenotype = $feature_phenotype->phenotype_id;
+      
+      // expand the text fields
+      $options = array('return_array' => 1);
+      $phenotype = tripal_core_expand_chado_vars($phenotype, 'field', 'phenotype.value', $options);
+      $phenotype = tripal_core_expand_chado_vars($phenotype, 'field', 'phenotype.uniquename', $options);
+      $phenotype = tripal_core_expand_chado_vars($phenotype, 'field', 'phenotype.name', $options); 
+      
+      // get the phenotype value. If the value is qualitative the cvalue_id will link to a type. 
+      // If quantitative we use the value column
+      $phen_value = $phenotype->value . '<br>';
+      if ($phenotype->cvalue_id) {
+        $phen_value .= ucwords(preg_replace('/_/', ' ', $phenotype->cvalue_id->name)) . '<br>';
+      }
+      
+      $phen_value = $phenotype->cvalue_id ? $phenotype->cvalue_id->name : $phenotype->value;
       $phenotype = $feature_phenotype->phenotype_id;
       $rows[] = array(
         $phenotype->attr_id->name,
         $phenotype->observable_id->name,
-        $phenotype->cvalue_id ? $phenotype->cvalue_id->name : $phenotype->value,
-        $phenotype->assay_id
+        $phen_value,
+        $phenotype->assay_id->name
       );
     } 
     // the $table array contains the headers and rows array as well as other

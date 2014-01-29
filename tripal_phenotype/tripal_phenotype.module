@@ -62,8 +62,13 @@ function tripal_phenotype_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
 
   $items = array(
+    'tripal_feature_phenotypes' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_feature.phenotypes',
+      'path' => "$path/theme/tripal_feature",
+    ),
     'tripal_phenotype_help' => array(
-      'template' => 'tripal_phenotype_help',
+      'template' => 'tripal_phenotype.help',
       'variables' =>  array(NULL),
       'path' => "$path/theme",
     ),
@@ -113,4 +118,21 @@ function tripal_phenotype_admin_phenotypes_listing() {
   }
 
   return $output;
+}
+
+/**
+ *
+ * @ingroup tripal_phenotype
+ */
+function tripal_phenotype_node_view($node, $view_mode, $langcode) {
+  switch ($node->type) {
+    case 'chado_feature':
+      // Show feature browser and counts
+      if ($view_mode == 'full') {
+        $node->content['tripal_feature_phenotypes'] = array(
+          '#value' => theme('tripal_feature_phenotypes', array('node' => $node)),
+        );
+      }
+      break;
+  }
 }
