@@ -848,40 +848,26 @@ function tripal_stock_node_update($node) {
 function tripal_stock_node_view($node, $view_mode, $langcode) {
 
   switch ($node->type) {
-    case 'chado_organism':
-      if ($view_mode == 'full') {
-        // Show stock if the organism/feature is not at teaser view
-        $node->content['tripal_organism_stocks'] = array(
-          '#value' => theme('tripal_organism_stocks', $node),
-        );
-      }
-      break;
     case 'chado_stock':
       if ($view_mode == 'full') {
         $node->content['tripal_stock_base'] = array(
           '#value' => theme('tripal_stock_base', array('node' => $node)),
         );
-        // Stock Collections
         $node->content['tripal_stock_collections'] = array(
           '#value' => theme('tripal_stock_collections', array('node' => $node)),
         );
-        // Properties
         $node->content['tripal_stock_properties'] = array(
           '#value' => theme('tripal_stock_properties', array('node' => $node)),
         );
-        // Cross References
         $node->content['tripal_stock_references'] = array(
           '#value' => theme('tripal_stock_references', array('node' => $node)),
         );
-        // Relationships
         $node->content['tripal_stock_relationships'] = array(
           '#value' => theme('tripal_stock_relationships', array('node' => $node)),
         );
-        // Synonyms
         $node->content['tripal_stock_synonyms'] = array(
           '#value' => theme('tripal_stock_synonyms', array('node' => $node)),
         );
-        // Publications
         $node->content['tripal_stock_publications'] = array(
           '#value' => theme('tripal_stock_publications', array('node' => $node)),
         );
@@ -892,6 +878,12 @@ function tripal_stock_node_view($node, $view_mode, $langcode) {
         );
       }
       break;
+    case 'chado_organism':
+      if ($view_mode == 'full') {
+        $node->content['tripal_organism_stocks'] = array(
+          '#value' => theme('tripal_organism_stocks', $node),
+        );
+      }
+      break;
   }
-
 }

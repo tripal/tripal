@@ -1,5 +1,5 @@
 <?php
-// there is no stock_synonym table, analogous to the feature_synonym table.
+// there is no stock_synonym table, analogous to the stock_synonym table.
 // Therefore, synonyms have been stored in the stockprop table with a type 
 // of 'synonym' or 'alias'.
 $stock = $node->stock;
@@ -20,25 +20,46 @@ if ($stockprops) {
 }
 
 if(count($synonyms) > 0){ ?>
-	<div id="tripal_stock-synonyms-box" class="tripal_stock-info-box tripal-info-box">
-	  <div class="tripal_stock-info-box-title tripal-info-box-title">Synonyms</div>
-	  <div class="tripal_stock-info-box-desc tripal-info-box-desc">The feature '<?php print $stock->name ?>' has the following synonyms</div> 
-	  		
-	  <table id="tripal_stock-synonyms-table" class="tripal_stock-table tripal-table tripal-table-horz">
-      <tr>
-        <th>Name</th>
-      </tr> <?php
-      $i = 0; 
-      foreach ($synonyms as $synonym){
-        $class = 'tripal-table-odd-row';
-        if($i % 2 == 0 ){
-           $class = 'tripal-table-even-row';
-        } ?>
-        <tr class="<?php print $class ?>">
-          <td><?php print $synonym->value?></td>
-        </tr> <?php
-        $i++;  
-      } ?>
-    </table>
-	</div><?php
+  <div id="tripal_stock-synonyms-box" class="tripal_stock-info-box tripal-info-box">
+    <div class="tripal_stock-info-box-title tripal-info-box-title">Synonyms</div>
+    <div class="tripal_stock-info-box-desc tripal-info-box-desc">The stock '<?php print $stock->name ?>' has the following synonyms</div> <?php
+    
+    // the $headers array is an array of fields to use as the colum headers. 
+    // additional documentation can be found here 
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    // This table for the analysis has a vertical header (down the first column)
+    // so we do not provide headers here, but specify them in the $rows array below.
+    $headers = array('Synonym');
+    
+    // the $rows array contains an array of rows where each row is an array
+    // of values for each column of the table in that row.  Additional documentation
+    // can be found here:
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7 
+    $rows = array();
+    foreach ($synonyms as $property){
+      $rows[] = array(
+        $property->value,
+      );
+    } 
+    
+    // the $table array contains the headers and rows array as well as other
+    // options for controlling the display of the table.  Additional
+    // documentation can be found here:
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $table = array(
+      'header' => $headers,
+      'rows' => $rows,
+      'attributes' => array(
+        'id' => 'tripal_stock-table-synonyms',
+      ),
+      'sticky' => FALSE,
+      'caption' => '',
+      'colgroups' => array(),
+      'empty' => '',
+    );
+    
+    // once we have our table array structure defined, we call Drupal's theme_table()
+    // function to generate the table.
+      print theme_table($table); ?>
+  </div><?php
 }

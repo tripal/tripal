@@ -9,39 +9,56 @@ $collections = $stock->stockcollection_stock;
 if (count($collections) > 0) {?>
   <div id="tripal_stock-collections-box" class="tripal_stock-info-box tripal-info-box">
     <div class="tripal_stock-info-box-title tripal-info-box-title">Stock Collections</div>
-    <div class="tripal_stock-info-box-desc tripal-info-box-desc">This stock is found in the following collections.</div>
-    <table id="tripal_stock-table-collection" class="tripal_stock-table tripal-table tripal-table-horz">     
-      <tr class="tripal_stock-table-odd-row tripal-table-even-row">
-        <th>Collection Name</th>
-        <th>Type</th>
-        <th>Contact</th>
-      </tr> <?php
-      foreach ($collections as $collection_stock){ 
-        // get the stock collection details
-        $collection = $collection_stock->stockcollection_id;
-        
-        $class = 'tripal_stock-table-odd-row tripal-table-odd-row';
-        if($i % 2 == 0 ){
-          $class = 'tripal_stock-table-odd-row tripal-table-even-row';
-        } ?>
-        <tr class="<?php print $class ?>">
-          <td><?php 
-            if($collection->nid){    
-              $link =  url("node/$collection->nid");        
-              print "<a href=\"$link\">$collection->name</a>";
-            } 
-            else {
-              print $collection->name;
-            } ?>
-          </td>
-          <td><?php print ucwords(preg_replace('/_/', ' ', $collection->type_id->name)) ?> </td>
-          <td><?php 
-            $contact = $collection->contact_id; 
-            print $contact->name . "<br>" .  $contact->description ?>              
-          </td>
-        </tr> <?php
-        $i++; 
-      }?>  
-    </table> 
+    <div class="tripal_stock-info-box-desc tripal-info-box-desc">This stock is found in the following collections.</div> <?php 
+    
+    // the $headers array is an array of fields to use as the colum headers. 
+    // additional documentation can be found here 
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    // This table for the analysis has a vertical header (down the first column)
+    // so we do not provide headers here, but specify them in the $rows array below.
+    $headers = array('Collection Name', 'Type', 'Contact');
+    
+    // the $rows array contains an array of rows where each row is an array
+    // of values for each column of the table in that row.  Additional documentation
+    // can be found here:
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7 
+    $rows = array();
+
+    foreach ($collections as $collection_stock){ 
+      // get the stock collection details
+      $collection = $collection_stock->stockcollection_id; 
+      $contact    = $collection->contact_id;
+      
+      $cname = $collection->name;
+      if (property_exists($collection, 'nid')) {
+        $cname = l($collection->name, "node/" . $collection->nid, array('attributes' => array('target' => '_blank')));
+      }
+      
+      $rows[] = array(
+        $cname,
+        ucwords(preg_replace('/_/', ' ', $collection->type_id->name)),
+        $contact->name,
+      );
+    }
+     
+    // the $table array contains the headers and rows array as well as other
+    // options for controlling the display of the table.  Additional
+    // documentation can be found here:
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $table = array(
+      'header' => $headers,
+      'rows' => $rows,
+      'attributes' => array(
+        'id' => 'tripal_stock-table-synonyms',
+      ),
+      'sticky' => FALSE,
+      'caption' => '',
+      'colgroups' => array(),
+      'empty' => '',
+    );
+    
+    // once we have our table array structure defined, we call Drupal's theme_table()
+    // function to generate the table.
+    print theme_table($table); ?>  
   </div><?php
 }

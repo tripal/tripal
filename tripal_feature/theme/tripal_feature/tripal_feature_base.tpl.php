@@ -44,13 +44,13 @@ $feature  = $variables['node']->feature;  ?>
   );
   // Organism row
   $organism = $feature->organism_id->genus ." " . $feature->organism_id->species ." (" . $feature->organism_id->common_name .")";
-  if ($feature->organism_id->nid) {
+  if (property_exists($feature->organism_id, 'nid')) {
     $organism = l("<i>" . $feature->organism_id->genus . " " . $feature->organism_id->species . "</i> (" . $feature->organism_id->common_name .")", "node/".$feature->organism_id->nid, array('html' => TRUE));
   } 
   $rows[] = array(
     array(
       'data' => 'Organism',
-      'header' => TRUE
+      'header' => TRUE,
     ),
     $organism
   );
@@ -59,7 +59,7 @@ $feature  = $variables['node']->feature;  ?>
     $rows[] = array(
       array(
         'data' => 'Sequence length',
-        'header' => TRUE
+        'header' => TRUE,
       ),
       $feature->seqlen
     );
@@ -70,7 +70,7 @@ $feature  = $variables['node']->feature;  ?>
     $rows[] = array(
       array(
         'data' => 'Feature ID',
-        'header' => TRUE
+        'header' => TRUE,
       ),
       $feature->feature_id
     );

@@ -72,7 +72,7 @@ $analysis = tripal_core_expand_chado_vars($analysis,'field','analysis.descriptio
     preg_replace("/^(\d+-\d+-\d+) .*/","$1", $analysis->timeexecuted),
   ); 
   
-  // allow site admins to see the feature ID
+  // allow site admins to see the analysis ID
   if (user_access('access administration pages')) {
     // Analysis ID
     $rows[] = array(
