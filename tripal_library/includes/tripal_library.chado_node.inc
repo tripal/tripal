@@ -13,7 +13,7 @@ function chado_library_form($node, &$form_state) {
   // 1) as elements of the $node object.  This occurs when editing an existing library
   // 2) in the $form_state['values'] array which occurs on a failed validation or
   //    ajax callbacks from non submit form elements
-  // 3) in the $form_state['input'[ array which occurs on ajax callbacks from submit
+  // 3) in the $form_state['input'] array which occurs on ajax callbacks from submit
   //    form elements and the form is being rebuilt
   //
   // set form field defaults

@@ -340,11 +340,6 @@ function tripal_feature_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_feature_synonyms',
       'path' => "$path/theme/tripal_feature",
     ),
-    'tripal_feature_phenotypes' => array(
-      'variables' => array('node' => NULL),
-      'template' => 'tripal_feature_phenotypes',
-      'path' => "$path/theme/tripal_feature",
-    ),
     'tripal_feature_references' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_feature_references',
@@ -1386,8 +1381,8 @@ function tripal_feature_node_view($node, $view_mode, $langcode) {
         $node->content['tripal_feature_base'] = array(
           '#value' => theme('tripal_feature_base', array('node' => $node)),
         );
-        $node->content['tripal_feature_phenotypes'] = array(
-          '#value' => theme('tripal_feature_phenotypes', array('node' => $node)),
+        $node->content['tripal_feature_featurepos'] = array(
+          '#value' => theme('tripal_feature_featurepos', array('node' => $node)),
         );
         $node->content['tripal_feature_properties'] = array(
           '#value' => theme('tripal_feature_properties', array('node' => $node)),

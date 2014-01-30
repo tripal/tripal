@@ -35,7 +35,7 @@ function tripal_contact_requirements($phase) {
     if (!$GLOBALS["chado_is_installed"]) {
       $requirements ['tripal_contact'] = array(
         'title' => "tripal_contact",
-        'value' => "ERROR: Chado most be installed before this module can be enabled",
+        'value' => "ERROR: Chado must be installed before this module can be enabled",
         'severity' => REQUIREMENT_ERROR,
       );
     }

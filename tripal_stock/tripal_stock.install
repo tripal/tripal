@@ -31,7 +31,7 @@ function tripal_stock_requirements($phase) {
     if (!$GLOBALS["chado_is_installed"]) {
       $requirements ['tripal_stock'] = array(
         'title' => "tripal_stock",
-        'value' => "ERROR: Chado most be installed before this module can be enabled",
+        'value' => "ERROR: Chado must be installed before this module can be enabled",
         'severity' => REQUIREMENT_ERROR,
       );
     }

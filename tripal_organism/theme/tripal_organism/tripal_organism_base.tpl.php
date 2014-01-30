@@ -1,7 +1,7 @@
 <?php
 $organism  = $variables['node']->organism;
-$organism = tripal_core_expand_chado_vars($organism,'field','organism.comment');
-?>
+$organism = tripal_core_expand_chado_vars($organism,'field','organism.comment'); ?>
+
 <div id="tripal_organism-base-box" class="tripal_organism-info-box tripal-info-box">
   <div class="tripal_organism-info-box-title tripal-info-box-title">Details</div>
   <!--  <div class="tripal_organism-info-box-desc tripal-info-box-desc"></div> --><?php      
