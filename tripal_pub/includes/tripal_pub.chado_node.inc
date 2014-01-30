@@ -888,3 +888,127 @@ function chado_pub_delete(&$node) {
   chado_query("DELETE FROM {pubprop} WHERE pub_id = :pub_id", array(':pub_id' => $pub_id));
   chado_query("DELETE FROM {pub} WHERE pub_id = :pub_id", array(':pub_id' => $pub_id));
 }
+
+/**
+ * Implementation of hook_tripal_pub_node_info().
+ *
+ * This node_info, is a simple node that describes the functionallity of the module.
+ *
+ */
+function tripal_pub_node_info() {
+
+  return array(
+    'chado_pub' => array(
+      'name' => t('Publication'),
+      'base' => 'chado_pub',
+      'description' => t('A publication from the Chado database'),
+      'title_label' => t('Article Title'),
+      'body_label' => t('Abstract'),
+      'has_title' => TRUE,
+      'has_body' => FALSE,
+    ),
+  );
+}
+
+/**
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_pub_node_view($node, $view_mode, $langcode) {
+  switch ($node->type) {
+  	case 'chado_pub':
+  	  // Show feature browser and counts
+  	  if ($view_mode == 'full') {
+  	    $node->content['tripal_pub_authors'] = array(
+  	      '#value' => theme('tripal_pub_authors', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_pub_base'] = array(
+  	      '#value' => theme('tripal_pub_base', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_pub_featuremaps'] = array(
+  	      '#value' => theme('tripal_pub_featuremaps', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_pub_features'] = array(
+  	      '#value' => theme('tripal_pub_features', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_pub_libraries'] = array(
+  	      '#value' => theme('tripal_pub_libraries', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_pub_projects'] = array(
+  	      '#value' => theme('tripal_pub_projects', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_pub_properties'] = array(
+  	      '#value' => theme('tripal_pub_properties', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_pub_references'] = array(
+  	      '#value' => theme('tripal_pub_references', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_pub_relationships'] = array(
+  	      '#value' => theme('tripal_pub_relationships', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_pub_stocks'] = array(
+  	      '#value' => theme('tripal_pub_stocks', array('node' => $node)),
+  	    );
+  	  }
+  	  if ($view_mode == 'teaser') {
+  	    $node->content['tripal_pub_teaser'] = array(
+  	      '#value' => theme('tripal_pub_teaser', array('node' => $node)),
+  	    );
+  	  }
+  	  break;
+  }
+}
+/**
+ *
+ * @param $node
+ */
+function tripal_pub_node_insert($node) {
+  // we want the publications to always have a URL of http://[base url]/pub/[pub id]
+  // where [pub id] is the Chado publication ID.  This will allow for easy linking
+  // into the publication without needing to know the node.  Of course if you know the
+  // node that will still work too (e.g. http://[base url]/node/[node id]
+  // so the nodeapi function ensures that the URL path is set after insert or update
+  // of the node and when the node is loaded if it hasn't yet been set.
+  if ($node->type == 'chado_pub') {
+    $pub_id = chado_get_id_for_node('pub', $node->nid);
+    tripal_pub_set_pub_url($node, $pub_id);
+  }
+}
+/**
+ *
+ * @param $node
+ * @param $types
+ */
+function tripal_pub_node_load($nodes, $types) {
+
+  // we want the publications to always have a URL of http://[base url]/pub/[pub id]
+  // where [pub id] is the Chado publication ID.  This will allow for easy linking
+  // into the publication without needing to know the node.  Of course if you know the
+  // node that will still work too (e.g. http://[base url]/node/[node id]
+  // so the nodeapi function ensures that the URL path is set after insert or update
+  // of the node and when the node is loaded if it hasn't yet been set.
+  if (count(array_intersect(array('chado_pub'), $types))) {
+    foreach ($nodes as $nid => $node) {
+      if ($node->type == 'chado_pub' and !property_exists($node, 'path')) {
+        $pub_id = chado_get_id_for_node('pub', $node->nid);
+        $path = tripal_pub_set_pub_url($node, $pub_id);
+      }
+    }
+  }
+}
+/**
+ *
+ * @param $node
+ */
+function tripal_pub_node_update($node) {
+  // we want the publications to always have a URL of http://[base url]/pub/[pub id]
+  // where [pub id] is the Chado publication ID.  This will allow for easy linking
+  // into the publication without needing to know the node.  Of course if you know the
+  // node that will still work too (e.g. http://[base url]/node/[node id]
+  // so the nodeapi function ensures that the URL path is set after insert or update
+  // of the node and when the node is loaded if it hasn't yet been set.
+  if ($node->type == 'chado_pub') {
+    $pub_id = chado_get_id_for_node('pub', $node->nid);
+    tripal_pub_set_pub_url($node, $pub_id);
+  }
+}
