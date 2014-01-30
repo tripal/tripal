@@ -4,7 +4,13 @@
  *
  */
 
+// Chado Query API: Functions to query (select/insert/update/delete) from chado
+require_once 'chado_query_api/tripal_api.chado_query.manage_properties.inc';
+
+// Chado Node API: Functions to help standardize creating nodes for chado tables
 require_once 'chado_node_api/tripal_api.chado_node.properties.inc';
+require_once 'chado_node_api/tripal_api.chado_node.references.inc';
+require_once 'chado_node_api/tripal_api.chado_node.relationships.inc';
 
 // DEPRECATED Function Wrappers
 require_once 'DEPRECATED/tripal-2.0_pre-release.inc';
