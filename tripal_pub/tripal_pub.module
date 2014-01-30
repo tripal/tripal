@@ -3,7 +3,6 @@
 require_once "api/tripal_pub.api.inc";
 require_once "theme/tripal_pub.theme.inc";
 require_once "includes/tripal_pub.admin.inc";
-require_once "includes/tripal_pub.pub_sync.inc";
 require_once "includes/tripal_pub.chado_node.inc";
 require_once "includes/tripal_pub.pub_importers.inc";
 require_once "includes/tripal_pub.pub_search.inc";
@@ -89,14 +88,15 @@ function tripal_pub_menu() {
 
   $items['admin/tripal/chado/tripal_pub/sync'] = array(
     'title' => ' Sync',
-    'description' => 'Sync publications in Chado with Drupal',
+    'description' => 'Create pages on this site for libraries stored in Chado',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_pub_sync_form'),
-    'access arguments' => array('administer tripal pubs'),
+    'page arguments' => array('tripal_core_chado_node_sync_form', 'tripal_pub', 'chado_pub'),
+    'access arguments' => array('administer tripal pub'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 2
   );
-
+  return $items;
+  
   $items['admin/tripal/chado/tripal_pub/citation'] = array(
     'title' => 'Citations',
     'description' => 'Update publication citations',

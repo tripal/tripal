@@ -1,6 +1,39 @@
 <?php
 
 /**
+ * Implementation of hook_tripal_pub_node_info().
+ *
+ * This node_info, is a simple node that describes the functionallity of the module.
+ *
+ */
+function tripal_pub_node_info() {
+
+  return array(
+    'chado_pub' => array(
+      'name' => t('Publication'),
+      'base' => 'chado_pub',
+      'description' => t('A publication from the Chado database'),
+      'title_label' => t('Article Title'),
+      'body_label' => t('Abstract'),
+      'has_title' => TRUE,
+      'has_body' => FALSE,
+      'chado_node_api' => array(
+        'base_table' => 'pub',
+        'hook_prefix' => 'chado_pub',
+        'record_type_title' => array(
+          'singular' => t('Publication'),
+          'plural' => t('Publications')
+        ),
+        'sync_filters' => array(
+          'type_id' => FALSE,
+          'organism_id' => FALSE
+        ),
+      ),
+    ),
+  );
+}
+
+/**
  * This is the chado_pub node form callback. The arguments
  * are out of order from a typical form because it's a defined callback
  */
@@ -889,26 +922,7 @@ function chado_pub_delete(&$node) {
   chado_query("DELETE FROM {pub} WHERE pub_id = :pub_id", array(':pub_id' => $pub_id));
 }
 
-/**
- * Implementation of hook_tripal_pub_node_info().
- *
- * This node_info, is a simple node that describes the functionallity of the module.
- *
- */
-function tripal_pub_node_info() {
 
-  return array(
-    'chado_pub' => array(
-      'name' => t('Publication'),
-      'base' => 'chado_pub',
-      'description' => t('A publication from the Chado database'),
-      'title_label' => t('Article Title'),
-      'body_label' => t('Abstract'),
-      'has_title' => TRUE,
-      'has_body' => FALSE,
-    ),
-  );
-}
 
 /**
  *

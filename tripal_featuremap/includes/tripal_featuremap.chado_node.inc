@@ -1,5 +1,37 @@
 <?php
 /**
+ * Provide information to drupal about the node types that we're creating
+ * in this module
+ *
+ * @ingroup tripal_featuremap
+ */
+function tripal_featuremap_node_info() {
+  $nodes = array();
+  $nodes['chado_featuremap'] = array(
+    'name' => t('Feature Map'),
+    'base' => 'chado_featuremap',
+    'description' => t('A map of features from the chado database (e.g. genetic map)'),
+    'has_title' => FALSE,
+    'title_label' => t('Feature Map'),
+    'has_body' => FALSE,
+    'body_label' => t('Feature Map Description'),
+    'locked' => TRUE,
+    'chado_node_api' => array(
+      'base_table' => 'featuremap',
+      'hook_prefix' => 'chado_featuremap',
+      'record_type_title' => array(
+        'singular' => t('Feature Map'),
+        'plural' => t('Feature Maps')
+      ),
+      'sync_filters' => array(
+        'type_id' => FALSE,
+        'organism_id' => FALSE
+      ),
+    )
+  );
+  return $nodes;
+}
+/**
  *  When editing or creating a new node of type 'chado_featuremap' we need
  *  a form.  This function creates the form that will be used for this.
  *
@@ -394,4 +426,48 @@ function chado_featuremap_delete(&$node) {
   chado_query("DELETE FROM {featuremap_dbxref} WHERE featuremap_id = :featuremap_id", array(':featuremap_id' => $featuremap_id));
   chado_query("DELETE FROM {featuremap}        WHERE featuremap_id = :featuremap_id", array(':featuremap_id' => $featuremap_id));
   
+}
+/**
+ *
+ * @param $node
+ */
+function tripal_featuremap_node_presave($node) {
+  // if this is a chado_featuremap and the $node->featuremap object is set then we
+  // are syncing and we want to set the node title to be the same as the node name
+  if ($node->type == 'chado_featuremap' and property_exists($node, 'featuremap')) {
+    $node->title = $node->featuremap->name;
+  }
+}
+/**
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_featuremap_node_view($node, $view_mode, $langcode) {
+  switch ($node->type) {
+  	case 'chado_featuremap':
+  	  // Show feature browser and counts
+  	  if ($view_mode == 'full') {
+  	    $node->content['tripal_featuremap_base'] = array(
+  	      '#value' => theme('tripal_featuremap_base', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_featuremap_featurepos'] = array(
+  	      '#value' => theme('tripal_featuremap_featurepos', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_featuremap_properties'] = array(
+  	      '#value' => theme('tripal_featuremap_properties', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_featuremap_publication'] = array(
+  	      '#value' => theme('tripal_featuremap_publication', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_featuremap_references'] = array(
+  	      '#value' => theme('tripal_featuremap_references', array('node' => $node)),
+  	    );
+  	  }
+  	  if ($view_mode == 'teaser') {
+  	    $node->content['tripal_featuremap_teaser'] = array(
+  	      '#value' => theme('tripal_featuremap_teaser', array('node' => $node)),
+  	    );
+  	  }
+  	  break;
+  }
 }

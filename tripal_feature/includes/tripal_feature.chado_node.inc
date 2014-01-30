@@ -1,5 +1,37 @@
 <?php 
+/**
+ *  Provide information to drupal about the node types that we're creating
+ *  in this module
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_feature_node_info() {
+  $nodes = array();
 
+  $nodes['chado_feature'] = array(
+    'name'        => t('Feature'),
+    'base'        => 'chado_feature',
+    'description' => t('A feature from the chado database'),
+    'has_title'   => FALSE,
+    'title_label' => t('Feature'),
+    'has_body'    => FALSE,
+    'body_label'  => t('Feature Description'),
+    'locked'      => TRUE,
+    'chado_node_api' => array(
+      'base_table' => 'feature',
+      'hook_prefix' => 'chado_feature',
+      'record_type_title' => array(
+        'singular' => t('Feature'),
+        'plural' => t('Features')
+      ),
+      'sync_filters' => array(
+        'type_id' => TRUE,
+        'organism_id' => TRUE
+      ),
+    )
+  );
+  return $nodes;
+}
 /**
  * Implementation of hook_form
  * 
@@ -588,27 +620,6 @@ function chado_feature_load($nodes) {
       $node->title = $feature->uniquename;
     }
   }
-}
-/**
- *  Provide information to drupal about the node types that we're creating
- *  in this module
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_node_info() {
-  $nodes = array();
-
-  $nodes['chado_feature'] = array(
-    'name'        => t('Feature'),
-    'base'        => 'chado_feature',
-    'description' => t('A feature from the chado database'),
-    'has_title'   => FALSE,
-    'title_label' => t('Feature'),
-    'has_body'    => FALSE,
-    'body_label'  => t('Feature Description'),
-    'locked'      => TRUE
-  );
-  return $nodes;
 }
 /**
  *

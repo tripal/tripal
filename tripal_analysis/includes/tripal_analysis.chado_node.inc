@@ -1,4 +1,35 @@
-<?php 
+<?php
+/**
+ * Provide information to drupal about the node types that we're creating
+ * in this module
+ *
+ * @ingroup tripal_analysis
+ */
+function tripal_analysis_node_info() {
+  $nodes = array();
+  $nodes['chado_analysis'] = array(
+    'name' => t('Analysis'),
+    'base' => 'chado_analysis',
+    'description' => t('An analysis'),
+    'has_title' => FALSE,
+    'title_label' => t('Analysis'),
+    'locked' => TRUE,
+    'chado_node_api' => array(
+      'base_table' => 'analysis',
+      'hook_prefix' => 'chado_analysis',
+      'record_type_title' => array(
+        'singular' => t('Analysis'),
+        'plural' => t('Analyses')
+      ),
+      'sync_filters' => array(
+        'type_id' => FALSE,
+        'organism_id' => FALSE,
+        'checkboxes' => array('name'),
+      ),
+    )
+  );
+  return $nodes;
+} 
 /**
  *  When editing or creating a new node of type 'chado_analysis' we need
  *  a form.  This function creates the form that will be used for this.
@@ -567,4 +598,47 @@ function chado_analysis_node_access($node, $op, $account) {
     }
   }
   return NULL;
+}
+/**
+ *
+ * @ingroup tripal_analysis
+ */
+function tripal_analysis_node_view($node, $view_mode, $langcode) {
+  switch ($node->type) {
+    case 'chado_analysis':
+      // Show feature browser and counts
+      if ($view_mode == 'full') {
+        $node->content['tripal_analysis_base'] = array(
+          '#value' => theme('tripal_analysis_base', array('node' => $node)),
+        );
+        $node->content['tripal_analysis_properties'] = array(
+          '#value' => theme('tripal_analysis_properties', array('node' => $node)),
+        );
+      }
+      if ($view_mode == 'teaser') {
+        $node->content['tripal_analysis_teaser'] = array(
+          '#value' => theme('tripal_analysis_teaser', array('node' => $node)),
+        );
+      }
+      break;
+  }
+}
+/**
+ *
+ * @param $node
+ */
+function tripal_analysis_node_presave($node) {
+  // If this is an analysis of some type it will should have thre three required
+  // fields for the Chado analysis table: program, programversion and sourcename.
+  // So we will set the title for any node that has these three fields
+  if (property_exists($node, 'program') and
+  property_exists($node, 'programversion') and
+  property_exists($node, 'sourcename')) {
+    if ($node->analysisname) {
+      $node->title = $node->analysisname;
+    }
+    else {
+      $node->title = "$node->program ($node->programversion) $node->sourcename";
+    }
+  }
 }

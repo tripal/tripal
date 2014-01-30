@@ -1,4 +1,37 @@
 <?php
+
+/**
+ * Provide information to drupal about the node types that we're creating
+ * in this module
+ *
+ * @ingroup tripal_library
+ */
+function tripal_library_node_info() {
+  $nodes = array();
+  $nodes['chado_library'] = array(
+    'name' => t('Library'),
+    'base' => 'chado_library',
+    'description' => t('A library from the chado database'),
+    'has_title' => FALSE,
+    'title_label' => t('Library'),
+    'has_body' => FALSE,
+    'locked' => TRUE,
+    'chado_node_api' => array(
+      'base_table' => 'library',
+      'hook_prefix' => 'chado_library',
+      'record_type_title' => array(
+        'singular' => t('Library'),
+        'plural' => t('Libraries')
+      ),
+      'sync_filters' => array(
+        'type_id' => TRUE,
+        'organism_id' => TRUE
+      ),
+    )
+  );
+  return $nodes;
+}
+
 /**
  *  When editing or creating a new node of type 'chado_library' we need
  *  a form.  This function creates the form that will be used for this.
@@ -347,4 +380,65 @@ function chado_library_node_access($node, $op, $account) {
     }
   }
   return NULL;
+}
+/**
+ * @ingroup tripal_library
+ */
+function tripal_library_node_view($node, $view_mode, $langcode) {
+
+  switch ($node->type) {
+    case 'chado_library':
+      if ($view_mode == 'full') {
+        $node->content['tripal_library_base'] = array(
+          '#value' => theme('tripal_library_base', array('node' => $node)),
+        );
+        $node->content['tripal_library_properties'] = array(
+          '#value' => theme('tripal_library_properties', array('node' => $node)),
+        );
+        $node->content['tripal_library_publications'] = array(
+          '#value' => theme('tripal_library_publications', array('node' => $node)),
+        );
+        $node->content['tripal_library_references'] = array(
+          '#value' => theme('tripal_library_references', array('node' => $node)),
+        );
+        $node->content['tripal_library_synonyms'] = array(
+          '#value' => theme('tripal_library_synonyms', array('node' => $node)),
+        );
+        $node->content['tripal_library_terms'] = array(
+          '#value' => theme('tripal_library_terms', array('node' => $node)),
+        );
+      }
+      if ($view_mode == 'teaser') {
+        $node->content['tripal_library_teaser'] = array(
+          '#value' => theme('tripal_library_teaser', array('node' => $node)),
+        );
+      }
+      break;
+    case 'chado_organism':
+      if ($view_mode == 'full') {
+        $node->content['tripal_organism.libraries'] = array(
+          '#value' => theme('tripal_organism.libraries', array('node' => $node)),
+        );
+      }
+      break;
+    case 'chado_feature':
+      if ($view_mode == 'full') {
+        $node->content['tripal_feature.libraries'] = array(
+          '#value' => theme('tripal_feature.libraries', array('node' => $node)),
+        );
+      }
+      break;
+  }
+}
+
+/**
+ *
+ * @param $node
+ */
+function tripal_library_node_presave($node) {
+  // if this is a chado_library and the $node->library object is set then we
+  // are syncing and we want to set the node title to be the same as the node name
+  if ($node->type == 'chado_library' and property_exists($node, 'library')) {
+    $node->title = $node->library->name;
+  }
 }

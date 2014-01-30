@@ -13,37 +13,7 @@ require('theme/tripal_library.theme.inc');
 require('includes/tripal_library.admin.inc');
 require('includes/tripal_library.chado_node.inc');
 
-/**
- * Provide information to drupal about the node types that we're creating
- * in this module
- *
- * @ingroup tripal_library
- */
-function tripal_library_node_info() {
-  $nodes = array();
-  $nodes['chado_library'] = array(
-    'name' => t('Library'),
-    'base' => 'chado_library',
-    'description' => t('A library from the chado database'),
-    'has_title' => FALSE,
-    'title_label' => t('Library'),
-    'has_body' => FALSE,
-    'locked' => TRUE,
-    'chado_node_api' => array(
-      'base_table' => 'library',
-      'hook_prefix' => 'chado_library',
-      'record_type_title' => array(
-        'singular' => t('Library'),
-        'plural' => t('Libraries')
-      ),
-      'sync_filters' => array(
-        'type_id' => TRUE,
-        'organism_id' => TRUE
-      ),
-    )
-  );
-  return $nodes;
-}
+
 
 
 /**
@@ -120,18 +90,9 @@ function tripal_library_menu() {
     'description' => 'Create pages on this site for libraries stored in Chado',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_core_chado_node_sync_form', 'tripal_library', 'chado_library'),
-    'access arguments' => array('administer tripal libraries'),
+    'access arguments' => array('administer tripal library'),
     'type' => MENU_LOCAL_TASK,
-    'weight' => 0
-  );
-  return $items;
-
-  // Synchronizing libraries from Chado to Drupal
-  $items['chado_sync_libraries'] = array(
-    'title' => 'Sync Library Data',
-    'page callback' => 'tripal_library_sync_libraries',
-    'access arguments' => array('administer tripal libraries'),
-    'type' => MENU_CALLBACK
+    'weight' => 2
   );
 
   $items['admin/tripal/chado/tripal_library/views/libraries/enable'] = array(
@@ -159,55 +120,7 @@ function tripal_library_views_api() {
   );
 }
 
-/**
- * @ingroup tripal_library
- */
-function tripal_library_node_view($node, $view_mode, $langcode) {
 
-  switch ($node->type) {
-    case 'chado_library':
-      if ($view_mode == 'full') {
-        $node->content['tripal_library_base'] = array(
-          '#value' => theme('tripal_library_base', array('node' => $node)),
-        );      
-        $node->content['tripal_library_properties'] = array(
-          '#value' => theme('tripal_library_properties', array('node' => $node)),
-        );
-        $node->content['tripal_library_publications'] = array(
-          '#value' => theme('tripal_library_publications', array('node' => $node)),
-        );
-        $node->content['tripal_library_references'] = array(
-          '#value' => theme('tripal_library_references', array('node' => $node)),
-        );      
-        $node->content['tripal_library_synonyms'] = array(
-          '#value' => theme('tripal_library_synonyms', array('node' => $node)),
-        );
-        $node->content['tripal_library_terms'] = array(
-          '#value' => theme('tripal_library_terms', array('node' => $node)),
-        );
-      }
-      if ($view_mode == 'teaser') {
-        $node->content['tripal_library_teaser'] = array(
-          '#value' => theme('tripal_library_teaser', array('node' => $node)),
-        );
-      }
-      break;
-    case 'chado_organism':
-      if ($view_mode == 'full') {
-        $node->content['tripal_organism.libraries'] = array(
-          '#value' => theme('tripal_organism.libraries', array('node' => $node)),
-        );
-      }
-      break;
-    case 'chado_feature':
-      if ($view_mode == 'full') {
-        $node->content['tripal_feature.libraries'] = array(
-          '#value' => theme('tripal_feature.libraries', array('node' => $node)),
-        );
-      }
-      break;
-  }
-}
 /**
  *  We need to let drupal know about our theme functions and their arguments.
  *  We create theme functions to allow users of the module to customize the
@@ -390,17 +303,5 @@ function tripal_library_form_alter(&$form, &$form_state, $form_id) {
   // turn of preview button for insert/updates
   if ($form_id == "chado_library_node_form") {
     $form['actions']['preview']['#access'] = FALSE;
-  }
-}
-
-/**
- *
- * @param $node
- */
-function tripal_library_node_presave($node) {
-  // if this is a chado_library and the $node->library object is set then we
-  // are syncing and we want to set the node title to be the same as the node name
-  if ($node->type == 'chado_library' and property_exists($node, 'library')) {
-    $node->title = $node->library->name;
   }
 }
