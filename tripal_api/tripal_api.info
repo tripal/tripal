@@ -1,0 +1,7 @@
+name = Tripal API
+description = Contains general API functionality useful to a number of Tripal modules.
+core = 7.x
+project = tripal_api
+package = Tripal
+version = 7.x-2.0-beta1
+configure = admin/tripal

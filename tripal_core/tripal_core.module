@@ -42,7 +42,7 @@ require_once "api/tripal_core_chado_nodes.api.inc";
 require_once "api/tripal_core_custom_tables.api.inc";
 require_once "api/tripal_core_jobs.api.inc";
 require_once "api/tripal_core_mviews.api.inc";
-require_once "api/tripal_core_properties.api.inc";
+require_once "api/tripal_core.properties.api.inc";
 require_once "api/tripal_core.database_references.api.inc";
 require_once "api/tripal_core.relationships.api.inc";
 
@@ -413,11 +413,6 @@ function tripal_core_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_core_customtables_help',
       'variables' =>  array(NULL),
       'path' => "$path/theme"
-    ),
-
-    // form theme
-    'tripal_core_properties_form' => array(
-      'render element' => 'form',
     ),
 
     // additional dbxrefs form theme
