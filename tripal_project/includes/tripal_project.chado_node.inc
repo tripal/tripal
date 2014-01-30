@@ -1,6 +1,41 @@
 <?php
 
 /**
+ * Implementation of hook_node_info().
+ *
+ * This node_info, is a simple node that describes the functionallity of the module. It specifies
+ * that the title(Project Name) and body(Description) set to true so that they information can be
+ * entered
+ *
+ *
+ * @ingroup tripal_project
+ */
+function tripal_project_node_info() {
+  return array(
+    'chado_project' => array(
+      'name' => t('Project'),
+      'base' => 'chado_project',
+      'description' => t('A project from the Chado database'),
+      'has_title' => TRUE,
+      'title_label' => t('Project Name'),
+      'had_body' => TRUE,
+      'body_label' => t('Full Description'),
+      'chado_node_api' => array(
+        'base_table' => 'project',
+        'hook_prefix' => 'chado_project',
+        'record_type_title' => array(
+          'singular' => t('Project'),
+          'plural' => t('Projects')
+        ),
+        'sync_filters' => array(
+          'type_id' => FALSE,
+          'organism_id' => FALSE
+        ),
+      ),
+    ),
+  );
+}
+/**
  * Implementation of hook_form().
  *
  *  This form takes the Project Title information and description from the user.
@@ -392,4 +427,37 @@ function chado_project_node_access($node, $op, $account) {
     }
   }
   return NULL;
+}
+/**
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_project_node_view($node, $view_mode, $langcode) {
+  switch ($node->type) {
+  	case 'chado_project':
+  	  // Show feature browser and counts
+  	  if ($view_mode == 'full') {
+  	    $node->content['tripal_project_base'] = array(
+  	      '#value' => theme('tripal_project_base', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_project_contact'] = array(
+  	      '#value' => theme('tripal_project_contact', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_project_properties'] = array(
+  	      '#value' => theme('tripal_project_properties', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_project_publications'] = array(
+  	      '#value' => theme('tripal_project_publications', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_project_relationships'] = array(
+  	      '#value' => theme('tripal_project_relationships', array('node' => $node)),
+  	    );
+  	  }
+  	  if ($view_mode == 'teaser') {
+  	    $node->content['tripal_project_teaser'] = array(
+  	      '#value' => theme('tripal_project_teaser', array('node' => $node)),
+  	    );
+  	  }
+  	  break;
+  }
 }

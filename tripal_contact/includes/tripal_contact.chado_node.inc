@@ -1,5 +1,37 @@
 <?php
 /**
+ * Implementation of hook_tripal_contact_node_info().
+ *
+ * This node_info, is a simple node that describes the functionallity of the module.
+ *
+ */
+function tripal_contact_node_info() {
+
+  return array(
+    'chado_contact' => array(
+      'name' => t('Contact'),
+      'base' => 'chado_contact',
+      'description' => t('A contact from the Chado database'),
+      'title_label' => t('Article Title'),
+      'body_label' => t('Abstract'),
+      'has_title' => TRUE,
+      'has_body' => FALSE,
+      'chado_node_api' => array(
+        'base_table' => 'contact',
+        'hook_prefix' => 'chado_contact',
+        'record_type_title' => array(
+          'singular' => t('Contact'),
+          'plural' => t('Contacts')
+        ),
+        'sync_filters' => array(
+          'type_id' => FALSE,
+          'organism_id' => FALSE
+        ),
+      )
+    ),
+  );
+}
+/**
  * Implementation of tripal_contact_form().
  *
  *
@@ -464,4 +496,36 @@ function chado_contact_delete(&$node) {
   // Remove data from contact and contactprop tables of chado database as well
   chado_query("DELETE FROM {contactprop} WHERE contact_id = :contact_id", array(':contact_id' => $contact_id));
   chado_query("DELETE FROM {contact} WHERE contact_id = :contact_id", array(':contact_id' => $contact_id));
+}
+
+
+/**
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_contact_node_view($node, $view_mode, $langcode) {
+  switch ($node->type) {
+  	case 'chado_contact':
+  	  // Show feature browser and counts
+  	  if ($view_mode == 'full') {
+  	    $node->content['tripal_contact_base'] = array(
+  	      '#value' => theme('tripal_contact_base', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_contact_properties'] = array(
+  	      '#value' => theme('tripal_contact_properties', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_contact_publications'] = array(
+  	      '#value' => theme('tripal_contact_publications', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_contact_relationships'] = array(
+  	      '#value' => theme('tripal_contact_relationships', array('node' => $node)),
+  	    );
+  	  }
+  	  if ($view_mode == 'teaser') {
+  	    $node->content['tripal_contact_teaser'] = array(
+  	      '#value' => theme('tripal_contact_teaser', array('node' => $node)),
+  	    );
+  	  }
+  	  break;
+  }
 }

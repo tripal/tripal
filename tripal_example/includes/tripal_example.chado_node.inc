@@ -24,6 +24,24 @@ function tripal_example_node_info() {
   //  'has_title'   => FALSE,
   //  'has_body'    => FALSE,
   //  'locked'      => TRUE
+  // This section of the node type array specifies how Tripal will sync the node
+  // types with data in Chado. When Drupal creates a node it has no way of
+  // coordinating which node belongs to which record in Chado. Therefore,
+  // Tripal maintains tables in the Drupal schema that maps Drupal nodes
+  // to recrords in Chado.  Syncing is the process of creating Drupal nodes
+  // and linking them to the appropriate record. 
+  //  'chado_node_api' => array(
+  //    'base_table' => 'example',       // the base table name (e.g. feature, library, contact)
+  //    'hook_prefix' => 'chado_example',// the node type hook prefix
+  //    'record_type_title' => array(
+  //      'singular' => t('Library'),    // how to refer to the record 
+  //      'plural' => t('Libraries')     // how to refer to the record in plurals
+  //    ),
+  //    'sync_filters' => array(
+  //      'type_id' => TRUE,             // if the record has a type_id set to TRUE
+  //      'organism_id' => TRUE          // if the record has an organism_id set to TRUE
+  //    ),
+  //  )
   //);
   
   return $nodes;

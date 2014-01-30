@@ -10,7 +10,7 @@
  */
 
 require('api/tripal_contact.api.inc');
-require('includes/contact_sync.inc');
+require('theme/tripal_contact.theme.inc');
 require('includes/tripal_contact.admin.inc');
 require('includes/tripal_contact.chado_node.inc');
 
@@ -52,26 +52,7 @@ function tripal_contact_init() {
 
 }
 
-/**
- * Implementation of hook_tripal_contact_node_info().
- *
- * This node_info, is a simple node that describes the functionallity of the module.
- *
- */
-function tripal_contact_node_info() {
 
-  return array(
-    'chado_contact' => array(
-      'name' => t('Contact'),
-      'base' => 'chado_contact',
-      'description' => t('A contact from the Chado database'),
-      'title_label' => t('Article Title'),
-      'body_label' => t('Abstract'),
-      'has_title' => TRUE,
-      'has_body' => FALSE,
-    ),
-  );
-}
 
 /**
  * Tripal-contact-Menu
@@ -123,6 +104,16 @@ function tripal_contact_menu() {
     'access arguments' => array('administer tripal contacts'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 0
+  );
+  
+  $items['admin/tripal/chado/tripal_contact/sync'] = array(
+    'title' => ' Sync',
+    'description' => 'Create pages on this site for libraries stored in Chado',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_core_chado_node_sync_form', 'tripal_contact', 'chado_contact'),
+    'access arguments' => array('administer tripal contact'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2
   );
 
   // AJAX calls for adding/removing properties to a contact
@@ -294,77 +285,7 @@ function tripal_contact_permissions() {
 }
 
 
-/**
- *
- *
- * @ingroup tripal_contact
- */
-function tripal_contact_preprocess_tripal_contact_relationships(&$variables) {
-  // we want to provide a new variable that contains the matched contacts.
-  $contact = $variables['node']->contact;
 
-  // normally we would use tripal_core_expand_chado_vars to expand our
-  // organism object and add in the relationships, however whan a large
-  // number of relationships are present this significantly slows the
-  // query, therefore we will manually perform the query
-  $sql = "
-    SELECT C.name, C.contact_id, CP.nid, CVT.name as rel_type
-    FROM {contact_relationship} PR
-      INNER JOIN {contact} C              ON PR.object_id  = C.contact_id
-      INNER JOIN {cvterm} CVT             ON PR.type_id    = CVT.cvterm_id
-      LEFT  JOIN public.chado_contact CP  ON C.contact_id  = CP.contact_id
-    WHERE PR.subject_id = :contact_id
-  ";
-  $as_subject = chado_query($sql, array(':contact_id' => $contact->contact_id));
-  $sql = "
-    SELECT C.name, C.contact_id, CP.nid, CVT.name as rel_type
-    FROM {contact_relationship} PR
-      INNER JOIN {contact} C              ON PR.subject_id = C.contact_id
-      INNER JOIN {cvterm} CVT             ON PR.type_id    = CVT.cvterm_id
-      LEFT  JOIN public.chado_contact CP  ON C.contact_id  = CP.contact_id
-    WHERE PR.object_id = :contact_id
-  ";
-  $as_object = chado_query($sql, array(':contact_id' => $contact->contact_id));
-
-  // combine both object and subject relationshisp into a single array
-  $relationships = array();
-  $relationships['object'] = array();
-  $relationships['subject'] = array();
-
-  // iterate through the object relationships
-  while ($relationship = $as_object->fetchObject()) {
-
-     // get the relationship and child types
-     $rel_type = t(preg_replace('/_/', " ", $relationship->rel_type));
-     $sub_type = t(preg_replace('/_/', " ", $relationship->sub_type));
-
-     if (!array_key_exists($rel_type, $relationships['object'])) {
-       $relationships['object'][$rel_type] = array();
-     }
-     if (!array_key_exists($sub_type, $relationships['object'][$rel_type])) {
-       $relationships['object'][$rel_type][$sub_type] = array();
-     }
-     $relationships['object'][$rel_type][$sub_type][] = $relationship;
-  }
-
-  // now add in the subject relationships
-  while ($relationship = $as_subject->fetchObject()) {
-
-     // get the relationship and child types
-     $rel_type = t(preg_replace('/_/', " ", $relationship->rel_type));
-     $obj_type = t(preg_replace('/_/', " ", $relationship->obj_type));
-
-     if (!array_key_exists($rel_type, $relationships['subject'])) {
-       $relationships['subject'][$rel_type] = array();
-     }
-     if (!array_key_exists($obj_type, $relationships['subject'][$rel_type])) {
-       $relationships['subject'][$rel_type][$obj_type] = array();
-     }
-     $relationships['subject'][$rel_type][$obj_type][] = $relationship;
-  }
-
-  $contact->all_relationships = $relationships;
-}
 
 /**
  * Implementation of hook_form_alter()
@@ -377,36 +298,5 @@ function tripal_contact_form_alter(&$form, &$form_state, $form_id) {
   // turn of preview button for insert/updates
   if ($form_id == "chado_contact_node_form") {
     $form['actions']['preview']['#access'] = FALSE;
-  }
-}
-
-/**
- *
- * @ingroup tripal_feature
- */
-function tripal_contact_node_view($node, $view_mode, $langcode) {
-  switch ($node->type) {
-    case 'chado_contact':
-      // Show feature browser and counts
-      if ($view_mode == 'full') {
-        $node->content['tripal_contact_base'] = array(
-          '#value' => theme('tripal_contact_base', array('node' => $node)),
-        );
-        $node->content['tripal_contact_properties'] = array(
-          '#value' => theme('tripal_contact_properties', array('node' => $node)),
-        );
-        $node->content['tripal_contact_publications'] = array(
-          '#value' => theme('tripal_contact_publications', array('node' => $node)),
-        );
-        $node->content['tripal_contact_relationships'] = array(
-          '#value' => theme('tripal_contact_relationships', array('node' => $node)),
-        );
-      }
-      if ($view_mode == 'teaser') {
-        $node->content['tripal_contact_teaser'] = array(
-          '#value' => theme('tripal_contact_teaser', array('node' => $node)),
-        );
-      }
-      break;
   }
 }

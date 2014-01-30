@@ -17,7 +17,6 @@ require_once "api/tripal_feature.api.inc";
 require_once "api/tripal_feature.schema.api.inc";
 require_once "theme/tripal_feature.theme.inc";
 require_once "includes/tripal_feature.admin.inc";
-require_once "includes/tripal_feature.sync_features.inc";
 require_once "includes/tripal_feature.fasta_loader.inc";
 require_once "includes/tripal_feature.gff_loader.inc";
 require_once "includes/tripal_feature.seq_extract.inc";
@@ -142,15 +141,7 @@ function tripal_feature_menu() {
     'access arguments' => array('administer tripal features'),
     'type' => MENU_NORMAL_ITEM,
   );
-  $items['admin/tripal/chado/tripal_feature/sync'] = array(
-    'title' => 'Sync',
-    'description' => 'Sync features from Chado with Drupal',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_feature_sync_form'),
-    'access arguments' => array('administer tripal features'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 0
-  );
+
   $items['admin/tripal/chado/tripal_feature/delete'] = array(
     'title' => ' Delete',
     'description' => 'Delete multiple features from Chado',
@@ -159,6 +150,15 @@ function tripal_feature_menu() {
     'access arguments' => array('administer tripal features'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 2
+  );
+  $items['admin/tripal/chado/tripal_feature/sync'] = array(
+    'title' => ' Sync',
+    'description' => 'Create pages on this site for features stored in Chado',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_core_chado_node_sync_form', 'tripal_feature', 'chado_feature'),
+    'access arguments' => array('administer tripal feature'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 1
   );
   $items['admin/tripal/chado/tripal_feature/configuration'] = array(
     'title' => 'Settings',
@@ -1057,16 +1057,6 @@ function tripal_feature_job_describe_args($callback, $args) {
     $new_args['Landmark Type'] = $args[12];
     $new_args['Alternate ID attribute'] = $args[13];
     $new_args['Create Organism'] = ($args[14] == 1) ? "Yes" : "No";
-  }
-  if ($callback == 'tripal_feature_sync_features') {
-    if ($args[0]) {
-      $organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $args[0]));
-      $new_args['Organism'] = $organism[0]->genus . " " . $organism[0]->species;
-    }
-    else {
-      $new_args['Organism'] = '';
-    }
-    $new_args['Feature Types'] = $args[1];
   }
   return $new_args;
 }
