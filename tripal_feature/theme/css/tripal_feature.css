@@ -9,8 +9,9 @@
 
 pre#tripal_feature-featureloc_sequence {
   color: #000000;
+  /*
   height: 400px;
-  overflow: scroll;
+  overflow: scroll; */
 }
 
 div#tripal_feature-featureloc_sequence-legend {

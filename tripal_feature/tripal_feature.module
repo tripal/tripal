@@ -1388,7 +1388,7 @@ function tripal_feature_node_view($node, $view_mode, $langcode) {
           '#value' => theme('tripal_feature_properties', array('node' => $node)),
         );
         $node->content['tripal_feature_publications'] = array(
-          '#value' => theme('tripal_feature_properties', array('node' => $node)),
+          '#value' => theme('tripal_feature_publications', array('node' => $node)),
         );
         $node->content['tripal_feature_references'] = array(
           '#value' => theme('tripal_feature_references', array('node' => $node)),
