@@ -292,47 +292,13 @@ function chado_stock_form($node, $form_state) {
 
   // PROPERTIES FORM
   //---------------------------------------------
-  $ontology = variable_get('chado_stock_prop_types_cv', FALSE);
-  if (!$ontology) {
-    tripal_core_report_error(
-      'chado_stock',
-      TRIPAL_ERROR,
-      'Stock property type controlled vocabulary is not set. please set it in the Stock configuration form.'
-    );
-    tripal_core_report_error(
-      'chado_stock',
-      TRIPAL_ERROR,
-      'Unable to add properties form to the node form because stock property type controlled vocabulary is not set'
-    );
-  }
-  else {
-    // ontology name needed for properties api
-    $cv = tripal_core_chado_select('cv',array('name'),array('cv_id' => $ontology));
-    $ontology_name = $cv[0]->name;
-
-    // get the stockprop types for the property drop-down
-    $properties = array();
-    $properties[] = 'Select a Property';
-    $sql = "
-      SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition
-      FROM  {cvterm} CVT
-        INNER JOIN {cv} CV ON CVT.cv_id = CV.cv_id
-      WHERE
-        CV.name = :ontology AND
-        NOT CVT.is_obsolete = 1
-      ORDER BY CVT.name ASC
-    ";
-    $prop_types = chado_query($sql, array(':ontology' => $ontology_name));
-    while ($prop = $prop_types->fetchObject()) {
-      $properties[$prop->cvterm_id] = $prop->name;
-    }
-
-    $exclude = array();
-    $include = array();
-    $instructions = t('To add additional properties to the drop down. ' . l("Add terms to the ".$ontology_name." vocabulary", "admin/tripal/chado/tripal_cv/cvterm/add") . ".");
-    tripal_core_properties_form($form, $form_state, 'stockprop', 'stock_id', $ontology_name,
-      $properties, $stock_id, $exclude, $include, $instructions, 'Properties');
-  }
+  $details = array(
+    'property_table' => 'stockprop',
+    'base_foreign_key' => 'stock_id',
+    'base_key_value' => $stock_id,
+    'cv_id' => variable_get('chado_stock_prop_types_cv', FALSE)
+  );
+  tripal_api_chado_node_properties_form($form, $form_state, $details);
 
   // ADDITIONAL DBXREFS FORM
   //---------------------------------------------
@@ -577,31 +543,15 @@ function chado_stock_insert($node) {
 
     // Now add properties
     if ($stock_added) {
-      $ontology = variable_get('chado_stock_prop_types_cv', FALSE);
-      $cv = tripal_core_chado_select('cv',array('name'),array('cv_id' => $ontology));
-      $ontology_name = $cv[0]->name;
 
-      $properties = tripal_core_properties_form_retreive($node, $ontology_name);
-      foreach ($properties as $property => $elements) {
-        foreach ($elements as $rank => $value) {
-          $success = tripal_core_insert_property(
-            'stock',
-            $stock_id,
-            $property,
-            $ontology_name,
-            $value
-          );
+      $details = array(
+        'property_table' => 'stockprop',
+        'base_table' => 'stock',
+        'foreignkey_name' => 'stock_id',
+        'foreignkey_value' => $stock_id
+      );
+      tripal_api_chado_node_properties_form_update_properties($node, $details);
 
-          if (!$success) {
-            watchdog(
-              'tripal_stock',
-              'Stock Insert: Unable to insert property %cvterm %value.',
-              array('%cvterm' => $property, '%value' => $value),
-              WATCHDOG_ERROR
-            );
-          }
-        }
-      }
     }
 
     // Now add the additional references
@@ -768,36 +718,15 @@ function chado_stock_update($node) {
 
   // now update the properties
   if ($node->stock_id > 0) {
-    $stock_id = $node->stock_id;
 
-    $ontology = variable_get('chado_stock_prop_types_cv', FALSE);
-    $cv = tripal_core_chado_select('cv',array('name'),array('cv_id' => $ontology));
-    $ontology_name = $cv[0]->name;
+    $details = array(
+      'property_table' => 'stockprop',
+      'base_table' => 'stock',
+      'foreignkey_name' => 'stock_id',
+      'foreignkey_value' => $node->stock_id
+    );
+    tripal_api_chado_node_properties_form_update_properties($node, $details);
 
-    // now add in the properties by first removing any the stock
-    // already has and adding the ones we have
-    tripal_core_chado_delete('stockprop', array('stock_id' => $stock_id));
-    $properties = tripal_core_properties_form_retreive($node, $ontology_name);
-    foreach ($properties as $property => $elements) {
-      foreach ($elements as $rank => $value) {
-        $success = tripal_core_insert_property(
-          'stock',
-          $stock_id,
-          $property,
-          $ontology_name,
-          $value
-        );
-
-        if (!$success) {
-          watchdog(
-            'tripal_stock',
-            'Stock Update: Unable to insert property %cvterm %value.',
-            array('%cvterm' => $property, '%value' => $value),
-            WATCHDOG_ERROR
-          );
-        }
-      }
-    }
   }
 
   // now update the additional dbxrefs
