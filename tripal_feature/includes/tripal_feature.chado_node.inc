@@ -63,6 +63,11 @@ function chado_feature_form($node, &$form_state) {
         $synonyms .= $synonym->synonym_id->name . "\n";
       }
     }
+    // keep track of the feature id 
+    $form['feature_id'] = array(
+      '#type' => 'value',
+      '#value' => $feature_id,
+    );
   }
   // if we are re constructing the form from a failed validation or ajax callback
   // then use the $form_state['values'] values
@@ -87,18 +92,6 @@ function chado_feature_form($node, &$form_state) {
     $synonyms     = $form_state['input']['synonyms'];
   }
 
-  // We need to pass above variables for preview to show
-  $form['feature'] = array(
-    '#type' => 'value',
-    '#value' => $feature
-  );
-
-  // keep track of the feature id if we have one.  If we do have one then
-  // this would indicate an update as opposed to an insert.
-  $form['feature_id'] = array(
-    '#type' => 'value',
-    '#value' => $feature_id,
-  );
   $form['fname']= array(
     '#type' => 'textfield',
     '#title' => t('Feature Name'),
@@ -364,7 +357,7 @@ function chado_feature_insert($node) {
       'type_id' => $type[0]->cvterm_id,
       'md5checksum' => md5($residues)
     );
-    $feature = tripal_core_chado_select('feature', array('*'), $values);
+    $feature = tripal_core_chado_insert('feature', $values);
     if (!$feature) {
       drupal_set_message(t('Unable to add feature.'), 'warning');
       watchdog('tripal_feature', 'Insert feature: Unable to create feature where values: %values',
@@ -404,10 +397,6 @@ function chado_feature_update($node) {
   $node->feature_type = trim($node->feature_type);
   $node->residues     = trim($node->residues);
 
-  if ($node->revision) {
-    // there is no way to handle revisions in Chado but leave
-    // this here just to make not we've addressed it.
-  }
 
   $residues = preg_replace("/[\n\r\s]/", "", $node->residues);
   $obsolete = 'FALSE';
