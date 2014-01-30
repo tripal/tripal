@@ -8,62 +8,6 @@
    padding-bottom: 10px;
 }
 
-.tripal-table {
-   width: 100%; 
-}
-.tripal-table th, 
-.tripal-table td {
-   vertical-align:text-top;
-   padding-left: 10px;
-   padding-right: 10px;
-   padding-top: 5px;
-   padding-bottom: 5px;
-}
-.tripal-table-horz {
-   border-top: 1px solid #999999;
-   border-bottom: 1px solid #999999; 
-}
-
-/* settings for vertical tables (headers across left-side) */
-table.tripal-table-vert .tripal-table-even-row th {
-   background-color: #EEEEEE;
-   font-weight: none;
-   text-align: right;
-}
-table.tripal-table-vert .tripal-table-odd-row th {
-   background-color: #FFFFFF;
-   text-align: right;
-}
-table.tripal-table-vert .tripal-table-even-row {
-   background-color: #EEEEEE;
-   border-top: 1px solid #CCCCCC;
-   border-bottom: 1px solid #CCCCCC;
-}
-table.tripal-table-vert .tripal-table-odd-row {
-   background-color: #FFFFFF;
-   border-top: 1px solid #CCCCCC;
-   border-bottom: 1px solid #CCCCCC;
-}
-/* settings for horizontal tables (headers across top) */
-table.tripal-table-horz th {
-   background-color: #EEEEFF;
-   font-weight: none;
-   text-align: left;
-}
-table.tripal-table-horz .tripal-table-even-row {
-   background-color: #FFFFFF;
-   font-weight: none;
-   text-align: left;
-   border-top: 1px solid #CCCCCC;
-   border-bottom: 1px solid #CCCCCC;
-}
-table.tripal-table-horz .tripal-table-odd-row {
-   background-color: #EEEEEE;
-   text-align: left;
-   border-top: 1px solid #CCCCCC;
-   border-bottom: 1px solid #CCCCCC;
-}
-
 .tripal-info-box-title {
   font-size: 1.5em;
   padding-bottom: 15px;
@@ -85,32 +29,6 @@ table.tripal-table-horz .tripal-table-odd-row {
    height: 0px;
 }
 
-/* Ajax loader */
-#tripal_ajaxLoading {
-   position: fixed;
-   top: 40%;
-   left: 40%;
-   padding: 15px;
-   border: 1px solid #000000;
-   background-color: #EEEEEE;
-   opacity: 0.75;
-   -moz-opacity: 0.75;
-   z-index: 10;
-}
-
-#tripal_ajaxLoading #loadingText {
-   font-weight: bold;
-   font-size: 1.5em;
-   color: #000000;
-}
-
-/* Restrict the list of checkboxes in a 300px window */
-.form-checkboxes {
-   height: auto;
-   max-height: 300px;
-   overflow: auto;
-}
-
 /* no results message */
 .tripal-no-results {
    font-style: italic;
@@ -123,32 +41,50 @@ table.tripal-table-horz .tripal-table-odd-row {
  */
 .tripal_contents {
   width: 100%;
+  position: relative;
+}
+
+#tripal_contents_table {
+  padding: 0px !important;
+  margin: 0px !important;
+  
+}
+
+#tripal_contents_table tbody {
+  padding: 0px !important;
+  margin: 0px !important;
+  border: 0px solid #FFFFFF;
+}
+
+.tripal_contents_table_td { 
+  border: 0px solid #FFFFFF !important;
+  padding: 0px !important;
+  text-align: left;
+  vertical-align: top;
+}
+.tripal_contents_table_tr {
+background-color: transparent;
 }
 
 /**
  * Resources Sidebar
  */
 .tripal_toc {
-  float: right;  
-  background-color: #EEEEEE;
-
-  -moz-border-radius: 15px;
-  -webkit-border-radius: 15px;
-  -khtml-border-radius: 15px;
-  border-radius: 15px;
-
-  -moz-box-shadow: 3px 3px 4px #888888;
-  -webkit-box-shadow: 3px 3px 4px #888888;
-  box-shadow: 3px 3px 4px #888888;
-
-  padding: 20px;
-  min-height: 500px;
-  border-style:solid;
-  border-width:1px;
+  padding: 0px; 
+  margin-right: 0px;
 }
 .tripal_toc ul {
   margin: 0 !important;
-  padding: 0 0 0.25em 1em !important;
+  padding: 0 !important;
+  list-style-type: none;
+}
+.tripal_toc li {
+	background-color: #EEEEEE;
+  border-style:solid;
+  border-width:1px;
+  border-color: #999999;
+  padding: 3px 20px 3px 20px;
+  margin: 2px 0 2px 0;
 }
 .tripal_toc_title {
   font-size: 1.5em;
@@ -161,23 +97,10 @@ table.tripal-table-horz .tripal-table-odd-row {
  * Details Section
  */
 .tripal_details {
-  float: left;
-  background-color: #FFFFFF;
-  -moz-border-radius: 15px;
-  -webkit-border-radius: 15px;
-  -khtml-border-radius: 15px;
-  border-radius: 15px;
-
-  -moz-box-shadow: 3px 3px 4px #888888;
-  -webkit-box-shadow: 3px 3px 4px #888888;
-  box-shadow: 3px 3px 4px #888888;
-  padding: 20px;
+  padding: 0px 20px 20px 20px;
   min-height: 500px;
   margin-right: 10px;
   margin-bottom: 10px;
-  border-style:solid;
-  border-width:1px;
-  
   overflow:auto;
 }
 

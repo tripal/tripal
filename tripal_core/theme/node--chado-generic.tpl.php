@@ -32,21 +32,7 @@ else { ?>
       } 
       // use default resource sidebar
       else { ?>        
-        $(".tripal-info-box").hide();
-
-        // set the widths of the details and sidebar sections so they can work 
-        // seemlessly with any theme.
-        total_width = $(".tripal_contents").width();
-        details_width = (total_width * 0.70) - 52; // 52 == 20  x 2 left/right padding + 10 right margin + 2pt border
-        toc_width = (total_width * 0.30) - 42;  // 42 == 20 x 2 left/right padding + 2pt border
-        // don't let sidebar get wider than 200px
-        if (toc_width > 200) {
-          details_width += toc_width - 200;
-          toc_width = 200;
-        }
-        $('#tripal_<?php print $ttype?>_toc').width(toc_width);
-        $('#tripal_<?php print $ttype?>_details').width(details_width);
-        <?php
+        $(".tripal-info-box").hide(); <?php
       } ?>
  
       // iterate through all of the info boxes and add their titles
@@ -72,9 +58,7 @@ else { ?>
           //alert("fixed: " + href);
         }
         $(href).fadeIn('slow');
-        // we want to make sure our table of contents and the details
-        // box stay the same height
-        $("#tripal_<?php print $ttype?>_toc").height($(href).parent().height());
+
         return false;
       }); 
 
@@ -90,64 +74,57 @@ else { ?>
       else {
         $("#tripal_<?php print $ttype?>-base-box").show();
       }
-
-      // make sure the sidebar and details sections are the same hieght
-      base_height = $("#tripal_<?php print $ttype?>_details").height();
-      toc_height = $("#tripal_<?php print $ttype?>_toc").height();
-      if (toc_height > base_height) {
-        $("#tripal_<?php print $ttype?>_details").height(toc_height);
-      }
-      else {
-        $("#tripal_<?php print $ttype?>_toc").height(base_height);
-      }
     }
   };
 })(jQuery);
 </script>
 
 <div id="tripal_<?php print $ttype?>_content" class="tripal_contents">
-  <div id="tripal_<?php print $ttype?>_details" class="tripal_details">
-  
-     <!-- Resource Blocks CCK elements --> <?php
-     if (property_exists($node, 'field_resource_titles')) {
-       for ($i = 0; $i < count($node->field_resource_titles); $i++){
-         if ($node->field_resource_titles[$i]['value']){ ?>
-           <div id="tripal_<?php print $ttype?>-resource_<?php print $i?>-box" class="tripal_<?php print $ttype?>-info-box tripal-info-box">
-             <div class="tripal_<?php print $ttype?>-info-box-title tripal-info-box-title"><?php print $node->field_resource_titles[$i]['value'] ?></div>
-             <?php print $node->field_resource_blocks[$i]['value']; ?>
-           </div> <?php
-         }
-       } 
-     }?>
-     <!-- Let modules add more content -->
-     <?php
-       foreach ($content as $key => $values) {
-         if (array_key_exists('#value', $values)) {
-           print $content[$key]['#value'];
-         }
-       }
-     ?>
-     
-  </div>
-  
-  <!-- Table of contents -->
-  <div id="tripal_<?php print $ttype?>_toc" class="tripal_toc">
-     <div id="tripal_<?php print $ttype?>_toc_title" class="tripal_toc_title">Resources</i></div>
-     <span id="tripal_<?php print $ttype?>_toc_desc" class="tripal_toc_desc"></span>
-     <ul id="tripal_<?php print $ttype?>_toc_list" class="tripal_toc_list">
-     
-       <!-- Resource Links CCK elements --><?php
-       if(property_exists($node, 'field_resource_links')) {
-         for($i = 0; $i < count($node->field_resource_links); $i++){
-           if($node->field_resource_links[$i]['value']){
-             $matches = preg_split("/\|/",$node->field_resource_links[$i]['value']);?>
-             <li><a href="<?php print $matches[1] ?>" target="_blank"><?php print $matches[0] ?></a></li><?php
+  <table id="tripal_contents_table">
+    <tr class="tripal_contents_table_tr">
+      <td nowrap class="tripal_contents_table_td"  align="left">
+        <div id="tripal_<?php print $ttype?>_toc" class="tripal_toc">
+          <ul id="tripal_<?php print $ttype?>_toc_list" class="tripal_toc_list">
+          
+           <!-- Resource Links CCK elements --><?php
+           if(property_exists($node, 'field_resource_links')) {
+             for($i = 0; $i < count($node->field_resource_links); $i++){
+               if($node->field_resource_links[$i]['value']){
+                 $matches = preg_split("/\|/",$node->field_resource_links[$i]['value']);?>
+                 <li><a href="<?php print $matches[1] ?>" target="_blank"><?php print $matches[0] ?></a></li><?php
+               }
+             }
            }
-         }
-       }
-       ?> 
-     </ul>
-  </div>
+           ?> 
+            </ul>
+          </div>
+        </td>
+        <td class="tripal_contents_table_td" align="left" width="100%">
+          <div id="tripal_<?php print $ttype?>_details" class="tripal_details">
+        
+           <!-- Resource Blocks CCK elements --> <?php
+           if (property_exists($node, 'field_resource_titles')) {
+             for ($i = 0; $i < count($node->field_resource_titles); $i++){
+               if ($node->field_resource_titles[$i]['value']){ ?>
+                 <div id="tripal_<?php print $ttype?>-resource_<?php print $i?>-box" class="tripal_<?php print $ttype?>-info-box tripal-info-box">
+                   <div class="tripal_<?php print $ttype?>-info-box-title tripal-info-box-title"><?php print $node->field_resource_titles[$i]['value'] ?></div>
+                   <?php print $node->field_resource_blocks[$i]['value']; ?>
+                 </div> <?php
+               }
+             } 
+           }?>
+           <!-- Let modules add more content -->
+           <?php
+             foreach ($content as $key => $values) {
+               if (array_key_exists('#value', $values)) {
+                 print $content[$key]['#value'];
+               }
+             }
+           ?>
+        </div>
+      </td>
+    </tr>
+  </table>
 </div> 
 <?php 
 } ?>
