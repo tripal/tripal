@@ -560,39 +560,41 @@ function tripal_core_additional_dbxrefs_form_retreive($node) {
  */
 function tripal_core_additional_dbxrefs_form_update_dbxrefs($node, $linking_table, $foreignkey_name, $foreignkey_value) {
 
-  // First remove existing dbxref links
-  tripal_core_chado_delete($linking_table, array($foreignkey_name => $foreignkey_value));
+  if (isset($node->dbxref_table) AND ($foreignkey_value > 0)) {
+    // First remove existing dbxref links
+    tripal_core_chado_delete($linking_table, array($foreignkey_name => $foreignkey_value));
 
-  // Add back in dbxref links and insert dbxrefs as needed
-  $dbxrefs = tripal_core_additional_dbxrefs_form_retreive($node);
-  foreach ($dbxrefs as $db_id => $versions) {
-    foreach ($versions as $version => $elements) {
-      foreach ($elements as $dbxref_id => $accession) {
-        // If there is no dbxref then we have to create that first
-        if ($dbxref_id == 'NONE') {
-          $version = ($version == 'NONE') ? '' : $version;
-          $success = tripal_db_add_dbxref(
-            $db_id,
-            $accession,
-            $version,
-            NULL
-          );
-          if ($success) {
-            $dbxref_id = $success->dbxref_id;
+    // Add back in dbxref links and insert dbxrefs as needed
+    $dbxrefs = tripal_core_additional_dbxrefs_form_retreive($node);
+    foreach ($dbxrefs as $db_id => $versions) {
+      foreach ($versions as $version => $elements) {
+        foreach ($elements as $dbxref_id => $accession) {
+          // If there is no dbxref then we have to create that first
+          if ($dbxref_id == 'NONE') {
+            $version = ($version == 'NONE') ? '' : $version;
+            $success = tripal_db_add_dbxref(
+              $db_id,
+              $accession,
+              $version,
+              NULL
+            );
+            if ($success) {
+              $dbxref_id = $success->dbxref_id;
+            }
+            else {
+              $dbxref_id = FALSE;
+            }
           }
-          else {
-            $dbxref_id = FALSE;
-          }
-        }
 
-        // add _dbxref linker
-        if ($dbxref_id) {
-          $success_link = tripal_db_add_dbxref_link(
-            $linking_table,
-            $dbxref_id,
-            $foreignkey_name,
-            $foreignkey_value
-          );
+          // add _dbxref linker
+          if ($dbxref_id) {
+            $success_link = tripal_db_add_dbxref_link(
+              $linking_table,
+              $dbxref_id,
+              $foreignkey_name,
+              $foreignkey_value
+            );
+          }
         }
       }
     }

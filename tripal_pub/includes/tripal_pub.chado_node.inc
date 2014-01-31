@@ -228,7 +228,8 @@ function chado_pub_form($node, $form_state) {
     'property_table' => 'pubprop',
     'base_foreign_key' => 'pub_id',
     'base_key_value' => $pub_id,
-    'cv_name' => 'tripal_pub'
+    'cv_name' => 'tripal_pub',
+    'exclude'=> array('Citation')
   );
   chado_node_properties_form($form, $form_state, $details);
   // get publication properties list

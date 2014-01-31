@@ -698,26 +698,28 @@ function tripal_core_relationships_form_retreive($node) {
  */
 function tripal_core_relationships_form_update_relationships($node, $relationship_table, $current_id) {
 
-  // First remove existing relationships links
-  tripal_core_chado_delete($relationship_table, array('subject_id' => $current_id));
-  tripal_core_chado_delete($relationship_table, array('object_id' => $current_id));
+  if (isset($node->rel_table) AND ($current_id > 0)) {
+    // First remove existing relationships links
+    tripal_core_chado_delete($relationship_table, array('subject_id' => $current_id));
+    tripal_core_chado_delete($relationship_table, array('object_id' => $current_id));
 
-  // Add back in dbxref links and insert dbxrefs as needed
-  $relationships = tripal_core_relationships_form_retreive($node);
-  foreach ($relationships as $type_id => $ranks) {
-    foreach ($ranks as $rank => $element) {
+    // Add back in dbxref links and insert dbxrefs as needed
+    $relationships = tripal_core_relationships_form_retreive($node);
+    foreach ($relationships as $type_id => $ranks) {
+      foreach ($ranks as $rank => $element) {
 
-      // add relationship
-      $success_link = tripal_core_chado_insert(
-        $relationship_table,
-        array(
-          'subject_id' => $element['subject_id'],
-          'type_id' => $type_id,
-          'object_id' => $element['object_id'],
-          'rank' => $rank
-        )
-      );
+        // add relationship
+        $success_link = tripal_core_chado_insert(
+          $relationship_table,
+          array(
+            'subject_id' => $element['subject_id'],
+            'type_id' => $type_id,
+            'object_id' => $element['object_id'],
+            'rank' => $rank
+          )
+        );
 
+      }
     }
   }
 }

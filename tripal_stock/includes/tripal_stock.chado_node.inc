@@ -166,9 +166,11 @@ function chado_stock_form($node, $form_state) {
     $type_id = $node->stock->type_id->cvterm_id;
     $organism_id = $node->stock->organism_id->organism_id;
     $sdescription = $node->stock->description;
-    $dbxref_accession = $node->stock->dbxref_id->accession;
-    $dbxref_description = $node->stock->dbxref_id->description;
-    $dbxref_database = $node->stock->dbxref_id->db_id->db_id;
+    if (isset($node->stock->dbxref_id->db_id)) {
+      $dbxref_accession = $node->stock->dbxref_id->accession;
+      $dbxref_description = $node->stock->dbxref_id->description;
+      $dbxref_database = $node->stock->dbxref_id->db_id->db_id;
+    }
   }
 
   // 2) if we are re constructing the form from a failed validation or ajax callback
@@ -198,6 +200,11 @@ function chado_stock_form($node, $form_state) {
     $dbxref_description = $form_state['input']['db_description'];
     $dbxref_database = $form_state['input']['database'];
   }
+
+  $form['manually_edit_chado'] = array(
+    '#type' => 'hidden',
+    '#value' => TRUE,
+  );
 
   $form['names'] = array(
     '#type' => 'fieldset',
@@ -457,26 +464,10 @@ function chado_stock_validate(&$node, $form, &$form_state) {
  */
 function chado_stock_insert($node) {
 
-  // If the chado stock exists (e.g. this is only a syncing operation)
-  // then don't create but simply link to node
-  if (isset($node->chado_stock_exists)) {
-    if ($node->chado_stock_exists) {
-      if (!empty($node->stock_id)) {
-        db_insert('chado_stock')->fields(array(
-          'nid' => $node->nid,
-          'vid' => $node->vid,
-          'stock_id' => $node->stock_id
-        ));
-      }
-
-      return $node;
-    }
-  }
-
   // if there is an stock_id in the $node object then this must be a sync so
   // we can skip adding the stock to chado as it is already there, although
   // we do need to proceed with the rest of the insert
-  if (!property_exists($node, 'stock_id')) {
+  if (property_exists($node, 'manually_edit_chado')) {
 
     // before we can add the stock, we must add the dbxref if one has been
     // provided by the user.
@@ -536,14 +527,15 @@ function chado_stock_insert($node) {
 
     if (is_array($stock)) {
       $stock_added = TRUE;
+      $stock_id = $stock['stock_id'];
     }
     else {
       $stock_added = FALSE;
     }
 
-    // Now add properties
     if ($stock_added) {
 
+      // Now add properties
       $details = array(
         'property_table' => 'stockprop',
         'base_table' => 'stock',
@@ -552,21 +544,15 @@ function chado_stock_insert($node) {
       );
       chado_node_properties_form_update_properties($node, $details);
 
-    }
-
-    // Now add the additional references
-    if ($stock_added) {
-      tripal_core_relationships_form_update_relationships(
+      // Now add the additional references
+      tripal_core_additional_dbxrefs_form_update_dbxrefs(
         $node,
         'stock_dbxref',
         'stock_id',
         $stock_id
       );
-    }
-
-    // Now add in relationships
-    if ($stock_added) {
-      tripal_core_relationships_form_update_dbxrefs(
+      // Now add in relationships
+      tripal_core_relationships_form_update_relationships(
         $node,
         'stock_relationship',
         $stock_id

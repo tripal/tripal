@@ -701,9 +701,6 @@ function chado_node_properties_form(&$form, &$form_state, $details) {
       array('property_table')  // Validate all fields within $form_state['values']['property_table']
     )
   );
-
-  ddl($form, 'form');
-  ddl($form_state, 'form state');
 }
 
 /**
@@ -793,8 +790,6 @@ function chado_node_properties_form_remove_button_submit(&$form, &$form_state) {
   if (!isset($form_state['chado_properties'])) {
     chado_node_properties_form_create_property_formstate_array($form, $form_state);
   }
-
-  ddl($form_state, 'form state in remove');
 
   // remove the specified property from the form property table
   if(preg_match('/property_remove-([^-]+-[^-]+)/',$form_state['triggering_element']['#name'],$match)) {
@@ -944,38 +939,42 @@ function chado_node_properties_form_retreive($node) {
  */
 function chado_node_properties_form_update_properties($node, $details, $retrieved_properties = FALSE) {
 
-  // First remove existing property links
-  tripal_core_chado_delete($details['property_table'], array($details['foreignkey_name'] => $details['foreignkey_value']));
+  $details['foreignkey_value'] = (isset($details['foreignkey_value'])) ? $details['foreignkey_value'] : 0;
 
-  // Add back in property links and insert properties as needed
-  if ($retrieved_properties) {
-    $properties = $retrieved_properties;
-  }
-  else {
-    $properties = chado_node_properties_form_retreive($node);
-  }
-  foreach ($properties as $type_id => $ranks) {
-    foreach ($ranks as $rank => $value) {
+  if (isset($node->property_table) AND ($details['foreignkey_value'] > 0)) {
+    // First remove existing property links
+    tripal_core_chado_delete($details['property_table'], array($details['foreignkey_name'] => $details['foreignkey_value']));
 
-      $success = tripal_core_chado_insert(
-        $details['property_table'],
-        array(
-          $details['foreignkey_name'] => $details['foreignkey_value'],
-          'type_id' => $type_id,
-          'value' => $value,
-          'rank' => $rank
-        )
-      );
+    // Add back in property links and insert properties as needed
+    if ($retrieved_properties) {
+      $properties = $retrieved_properties;
+    }
+    else {
+      $properties = chado_node_properties_form_retreive($node);
+    }
+    foreach ($properties as $type_id => $ranks) {
+      foreach ($ranks as $rank => $value) {
 
-      if (!$success) {
-        watchdog(
-          'tripal_' . $details['base_table'],
-          $details['base_table'] . ' Insert: Unable to insert property type_id %cvterm with value %value.',
-          array('%cvterm' => $type_id, '%value' => $value),
-          WATCHDOG_ERROR
+        $success = tripal_core_chado_insert(
+          $details['property_table'],
+          array(
+            $details['foreignkey_name'] => $details['foreignkey_value'],
+            'type_id' => $type_id,
+            'value' => $value,
+            'rank' => $rank
+          )
         );
-      }
 
+        if (!$success) {
+          watchdog(
+            'tripal_' . $details['base_table'],
+            $details['base_table'] . ' Insert: Unable to insert property type_id %cvterm with value %value.',
+            array('%cvterm' => $type_id, '%value' => $value),
+            WATCHDOG_ERROR
+          );
+        }
+
+      }
     }
   }
 }
