@@ -234,17 +234,26 @@ function tripal_core_chado_node_sync_form($form, &$form_state) {
       foreach ($results as $result) {
         $values[$result->id] = $result->value;
       }
-      $form['sync']['ids'] = array(
-        '#title'         => 'Avaliable ' . $args['record_type_title']['plural'],
-        '#type'          => 'checkboxes',
-        '#description'   => t("The above  %title_plural have not been synced. Check those to be synced or leave all unchecked to sync them all.",
-          array(
-            '%title_singular' => strtolower($args['record_type_title']['singular']),
-            '%title_plural'   => strtolower($args['record_type_title']['plural'])
-          )),
-        '#options'       => $values,
-        '#default_value' => (isset($form_state['values']['ids'])) ? $form_state['values']['ids'] : array(),
-      );
+      if (count($values) > 0) {
+        $form['sync']['ids'] = array(
+          '#title'         => 'Avaliable ' . $args['record_type_title']['plural'],
+          '#type'          => 'checkboxes',
+          '#description'   => t("The above  %title_plural have not been synced. Check those to be synced or leave all unchecked to sync them all.",
+            array(
+              '%title_singular' => strtolower($args['record_type_title']['singular']),
+              '%title_plural'   => strtolower($args['record_type_title']['plural'])
+            )),
+          '#options'       => $values,
+          '#default_value' => (isset($form_state['values']['ids'])) ? $form_state['values']['ids'] : array(),
+          '#prefix'        => '<div style="height: 200px; overflow: scroll">',
+          '#suffix'        => '</div><br>',
+        );
+      } 
+      else {
+        $form['sync']['no_ids'] = array(
+          '#markup' => "<p>There are no " .  strtolower($args['record_type_title']['plural']) . " to sync.</p>",
+        );
+      }
     }
   }
   // if we provide a list of checkboxes we shouldn't need a max_sync
@@ -387,17 +396,17 @@ function tripal_core_chado_node_sync_records($base_table, $max_sync = FALSE, $or
     $select[] = 'cvterm.name as cvtname';
     $joins[] = "LEFT JOIN {cvterm} cvterm ON $base_table.type_id = cvterm.cvterm_id";
     foreach ($types as $type) {
-      $where_clauses[] = "cvterm.name = :type_name_$type";
-      $where_args[":type_name_$type"] = $type;
+      $where_clauses['type'][] = "cvterm.name = :type_name_$type";
+      $where_args['type'][":type_name_$type"] = $type;
     }
   }
   
   // if IDs have been supplied
   if ($ids) {
-    $restrictions .= "  Specific Records: " . count($ids) . " recored(s) directory specified.\n";
+    $restrictions .= "  Specific Records: " . count($ids) . " recored(s) specified.\n";
     foreach ($ids as $id) {
-      $where_clauses[] = "$base_table_id = :id_$id";
-      $where_args[":id_$id"] = $id;
+      $where_clauses['id'][] = "$base_table.$base_table_id = :id_$id";
+      $where_args['id'][":id_$id"] = $id;
     }
   }
 
@@ -408,8 +417,8 @@ function tripal_core_chado_node_sync_records($base_table, $max_sync = FALSE, $or
     
     $select[] = 'organism.*';
     $joins[] = "LEFT JOIN {organism} organism ON organism.organism_id = $base_table.organism_id";
-    $where_clauses[] = 'organism.organism_id = :organism_id';
-    $where_args[':organism_id'] = $organism_id;
+    $where_clauses['organism'][] = 'organism.organism_id = :organism_id';
+    $where_args['organism'][':organism_id'] = $organism_id;
   }
 
   // Allow module to add to query
@@ -418,11 +427,34 @@ function tripal_core_chado_node_sync_records($base_table, $max_sync = FALSE, $or
     call_user_func($hook_query_alter, $select, $joins, $where_clauses, $where_args);
   }
 
-  // Build Query
-  $query = "SELECT " . implode(', ',$select) . ' FROM {' . $base_table . '} ' . $base_table . ' ' . implode(' ', $joins);
-  if (count($where_clauses) > 0) {
-    $query .= " WHERE " . implode(' AND ', $where_clauses);
+  // Build Query, we do a left join on the chado_xxxx table in the Drupal schema
+  // so that if no criteria are specified we only get those items that have not
+  // yet been synced. 
+  $query = "
+    SELECT " . implode(', ',$select) . ' ' .
+    'FROM {' . $base_table . '} ' . $base_table . ' ' . implode(' ', $joins) . ' '.
+    "  LEFT JOIN public.chado_$base_table CT ON CT.$base_table_id = $base_table.$base_table_id " .
+    "WHERE CT.$base_table_id IS NULL AND";
+  
+  // extend the where clause if needed
+  $where = '';
+  $sql_args = array();
+  if (count($where_clauses['type']) > 0) {
+    $where .= '(' . implode(' OR ', $where_clauses['type']) . ') AND';
+    $sql_args = array_merge($sql_args, $where_args['type']);
   }
+  if (count($where_clauses['organism']) > 0) {
+    $where .= '(' . implode(' OR ', $where_clauses['organism']) . ') AND';
+    $sql_args = array_merge($sql_args, $where_args['organism']);
+  }
+  if (count($where_clauses['id']) > 0) {
+    $where .= '(' . implode(' OR ', $where_clauses['id']) . ') AND';
+    $sql_args = array_merge($sql_args, $where_args['id']);
+  }
+  if ($where) {
+    $query .= $where;
+  }
+  $query = substr($query, 0, -4); // remove the trailing 'AND'
   $query .- " ORDER BY " . $base_table_id;
 
   // If Maximum number to Sync is supplied
@@ -437,14 +469,9 @@ function tripal_core_chado_node_sync_records($base_table, $max_sync = FALSE, $or
   else {
     print "\n";
   } 
-    
-  
-  //print "\nQuery: " . preg_replace(array("/FROM/","/LEFT/","/WHERE/"), array("\nFROM","\nLEFT","\nWHERE"), $query) . "\n";
 
-  print_r($query, $where_args);
-  
-  //print "Executing Query...\n";
-  $results = chado_query($query, $where_args);
+  // execute the query
+  $results = chado_query($query, $sql_args);
 
   // Iterate through features that need to be synced
   $count = $results->rowCount();
@@ -460,7 +487,7 @@ function tripal_core_chado_node_sync_records($base_table, $max_sync = FALSE, $or
   try {
     foreach ($results as $record) {
 
-      print "\nLoading $base_table $i of $count ($base_table_id=".$record->{$base_table_id}.")...";
+      print "\nLoading $base_table " . ($i + 1) . " of $count ($base_table_id=".$record->{$base_table_id}.")...";
 
       // update the job status every 1% features
       if ($job_id and $i % $interval == 0) {
