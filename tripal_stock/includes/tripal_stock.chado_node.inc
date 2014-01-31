@@ -298,7 +298,7 @@ function chado_stock_form($node, $form_state) {
     'base_key_value' => $stock_id,
     'cv_id' => variable_get('chado_stock_prop_types_cv', FALSE)
   );
-  tripal_api_chado_node_properties_form($form, $form_state, $details);
+  chado_node_properties_form($form, $form_state, $details);
 
   // ADDITIONAL DBXREFS FORM
   //---------------------------------------------
@@ -550,7 +550,7 @@ function chado_stock_insert($node) {
         'foreignkey_name' => 'stock_id',
         'foreignkey_value' => $stock_id
       );
-      tripal_api_chado_node_properties_form_update_properties($node, $details);
+      chado_node_properties_form_update_properties($node, $details);
 
     }
 
@@ -725,7 +725,7 @@ function chado_stock_update($node) {
       'foreignkey_name' => 'stock_id',
       'foreignkey_value' => $node->stock_id
     );
-    tripal_api_chado_node_properties_form_update_properties($node, $details);
+    chado_node_properties_form_update_properties($node, $details);
 
   }
 

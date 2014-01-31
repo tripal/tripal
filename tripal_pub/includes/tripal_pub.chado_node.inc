@@ -40,13 +40,13 @@ function tripal_pub_node_info() {
 
 function chado_pub_form($node, $form_state) {
   $form = array();
-  
+
   // Default values can come in the following ways:
   //
   // 1) as elements of the $node object.  This occurs when editing an existing pub
-  // 2) in the $form_state['values'] array which occurs on a failed validation or 
+  // 2) in the $form_state['values'] array which occurs on a failed validation or
   //    ajax callbacks from non submit form elements
-  // 3) in the $form_state['input'] array which occurs on ajax callbacks from submit 
+  // 3) in the $form_state['input'] array which occurs on ajax callbacks from submit
   //    form elements and the form is being rebuilt
   //
   // set form field defaults
@@ -56,8 +56,8 @@ function chado_pub_form($node, $form_state) {
   $uniquename  = '';
   $type_id     = '';
   $is_obsolete = '';
-  
-  // some of the fields in the pub table should show up in the properties 
+
+  // some of the fields in the pub table should show up in the properties
   // form elements to make the form more seemless.  We will add them
   // to this array.
   $more_props = array();
@@ -69,24 +69,24 @@ function chado_pub_form($node, $form_state) {
     $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.volumetitle');
     $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.uniquename');
     $pub_id = $pub->pub_id;
-    
+
     $title       = $pub->title;
     $pyear       = $pub->pyear;
     $uniquename  = $pub->uniquename;
     $type_id     = $pub->type_id->cvterm_id;
     $is_obsolete = $pub->is_obsolete;
-    
+
     // if the obsolete value is set by the database then it is in the form of
     // 't' or 'f', we need to convert to 1 or 0
     $is_obsolete = $is_obsolete == 't' ? 1 : $is_obsolete;
     $is_obsolete = $is_obsolete == 'f' ? 0 : $is_obsolete;
-    
+
     // set the organism_id in the form
     $form['pub_id'] = array(
       '#type' => 'value',
       '#value' => $pub->pub_id,
     );
-    
+
     // get fields from the pub table and convert them to properties. We will add these to the $more_props
     // array which gets passed in to the tripal_core_properties_form() API call further down
     if ($pub->volumetitle) {
@@ -149,7 +149,7 @@ function chado_pub_form($node, $form_state) {
     $type_id      = $form_state['input']['type_id'];
     $is_obsolete  = $form_state['input']['is_obsolete'];
   }
- 
+
   // a drupal title can only be 255 characters, but the Chado title can be much longer.
   // we use the publication title as the drupal title, but we'll need to truncate it.
   $form['title'] = array(
@@ -186,7 +186,7 @@ function chado_pub_form($node, $form_state) {
       $type_id = $pub_type->cvterm_id;
     }
   }
-  
+
   $form['type_id'] = array(
     '#type' => 'select',
     '#title' => t('Publication Type'),
@@ -206,12 +206,12 @@ function chado_pub_form($node, $form_state) {
     '#type' => 'textarea',
     '#title' => t('Citation'),
     '#default_value' => $uniquename,
-    '#description' => t('All publications must have a unique citation. 
-      <b>Please enter the full citation for this publication or leave blank and one will be generated 
-      automatically if possible</b>.  For PubMed style citations list 
-      the last name of the author followed by initials. Each author should be separated by a comma. Next comes 
-      the title, followed by the series title (e.g. journal name), publication date (4 digit year, 3 character Month, day), volume, issue and page numbers. You may also use HTML to provide a link in the citation.  
-      Below is an example: <pre>Medeiros PM, Ladio AH, Santos AM, Albuquerque UP. <a href="http://www.ncbi.nlm.nih.gov/pubmed/23462414" target="_blank">Does the selection of medicinal plants by Brazilian local populations 
+    '#description' => t('All publications must have a unique citation.
+      <b>Please enter the full citation for this publication or leave blank and one will be generated
+      automatically if possible</b>.  For PubMed style citations list
+      the last name of the author followed by initials. Each author should be separated by a comma. Next comes
+      the title, followed by the series title (e.g. journal name), publication date (4 digit year, 3 character Month, day), volume, issue and page numbers. You may also use HTML to provide a link in the citation.
+      Below is an example: <pre>Medeiros PM, Ladio AH, Santos AM, Albuquerque UP. <a href="http://www.ncbi.nlm.nih.gov/pubmed/23462414" target="_blank">Does the selection of medicinal plants by Brazilian local populations
         suffer taxonomic influence?</a> J Ethnopharmacol. 2013 Apr 19; 146(3):842-52.</pre>'),
   );
   $form['is_obsolete'] = array(
@@ -219,8 +219,20 @@ function chado_pub_form($node, $form_state) {
     '#title' => t('Is Obsolete? (Check for Yes)'),
     '#default_value' => $is_obsolete,
   );
- 
+
+  // Properties Form
+  // ----------------------------------
+  // D7 @TODO: Properties API doesn't handle exclude
+  $exclude = array("Citation");
+  $details = array(
+    'property_table' => 'pubprop',
+    'base_foreign_key' => 'pub_id',
+    'base_key_value' => $pub_id,
+    'cv_name' => 'tripal_pub'
+  );
+  chado_node_properties_form($form, $form_state, $details);
   // get publication properties list
+  /**
   $properties_select = array();
   $properties_select[] = 'Select a Property';
   $sql = "
@@ -242,14 +254,15 @@ function chado_pub_form($node, $form_state) {
       $properties[$prop->cvterm_id] = $prop->name;
     }
   }
-  
+
   // add in the properties fields. The 'Citation' term is special because it serves
   // both as a property and as the uniquename for the publiation table so we exclude it
   // as it shouldn't be selected as a property
-  $exclude = array("Citation"); 
+  $exclude = array("Citation");
   $instructions = '';
   tripal_core_properties_form($form, $form_state, 'pubprop', 'pub_id', 'tripal_pub',
     $properties, $pub_id, $exclude, $more_props, $instructions, 'Properties');
+  */
 
   return $form;
 
@@ -264,7 +277,7 @@ function chado_pub_validate($node, $form, &$form_state) {
   $pyear        = trim($node->pyear);
   $uniquename   = trim($node->uniquename);
   $is_obsolete  = $node->is_obsolete;
-  $type_id      = $node->type_id;  
+  $type_id      = $node->type_id;
 
   // if this is a delete then don't validate
   if($node->op == 'Delete') {
@@ -276,9 +289,9 @@ function chado_pub_validate($node, $form, &$form_state) {
   if (is_null($node->nid) and property_exists($node, 'pub_id') and $node->pub_id != 0) {
     return;
   }
-  
+
   $pub = array();
-  
+
   // make sure the year is four digits
   if(!preg_match('/^\d{4}$/', $pyear)){
     form_set_error('pyear', t('The publication year should be a 4 digit year.'));
@@ -293,7 +306,7 @@ function chado_pub_validate($node, $form, &$form_state) {
     $message = t('Invalid publication type.');
     form_set_error('type_id', $message);
     return;
-  }  
+  }
 
   // get the media name looking at the properties
   $series_name = '';
@@ -312,7 +325,7 @@ function chado_pub_validate($node, $form, &$form_state) {
       $pub[$prop_type->name] = $value;
     }
     // if this is a new property (added by this submit of the form)
-    elseif ($element == 'new_id') {       
+    elseif ($element == 'new_id') {
       $prop_type = tripal_cv_get_cvterm_by_id($value);
       if($prop_type->name == 'Conference Name' or $prop_type->name == 'Journal Name') {
         $series_name = $node->new_value;
@@ -343,10 +356,10 @@ function chado_pub_validate($node, $form, &$form_state) {
   }
 
   // Validating for an update
-  if (!is_null($node->nid)) { 
-    
+  if (!is_null($node->nid)) {
+
     $pub_id = $node->pub_id;
-    
+
     // first get the original title, type and year before it was changed
     $values = array('pub_id' => $pub_id);
     $columns = array('title', 'pyear', 'type_id', 'series_name');
@@ -364,7 +377,7 @@ function chado_pub_validate($node, $form, &$form_state) {
 
     // check to see if a duplicate publication already exists
     if (!$skip_duplicate_check) {
-      chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvterm, $pub_id); 
+      chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvterm, $pub_id);
     }
     chado_pub_validate_check_uniquename($uniquename, $pub_id);
   }
@@ -375,11 +388,11 @@ function chado_pub_validate($node, $form, &$form_state) {
   }
 }
 /**
- * 
+ *
  * @param unknown $uniquename
  */
 function chado_pub_validate_check_uniquename($uniquename, $pub_id = NULL) {
-  
+
   $results = tripal_pub_get_pub_by_uniquename($uniquename);
   // make sure we don't capture our pub_id in the list (remove it)
   foreach ($results as $index => $found_pub_id) {
@@ -393,10 +406,10 @@ function chado_pub_validate_check_uniquename($uniquename, $pub_id = NULL) {
   }
 }
 /**
- * 
+ *
  */
 function chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvterm, $pub_id = NULL) {
-  
+
   // make sure the publication is unique using the prefereed import duplication check
   $import_dups_check = variable_get('tripal_pub_import_duplicate_check', 'title_year_media');
   switch ($import_dups_check) {
@@ -415,7 +428,7 @@ function chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvter
       break;
     case 'title_year_type':
       $results = tripal_pub_get_pubs_by_title_type_pyear_series($title, $cvterm[0]->name, $pyear, NULL);
-  
+
       // make sure we don't capture our pub_id in the list (remove it)
       foreach ($results as $index => $found_pub_id) {
         if($found_pub_id == $pub_id){
@@ -429,7 +442,7 @@ function chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvter
       break;
     case 'title_year_media':
       $results = tripal_pub_get_pubs_by_title_type_pyear_series($title, NULL, $pyear, $series_name);
-  
+
       // make sure we don't capture our pub_id in the list (remove it)
       foreach ($results as $index => $found_pub_id) {
         if($found_pub_id == $pub_id){
@@ -529,7 +542,7 @@ function chado_pub_insert($node) {
     $cross_refs = array(); // stores any cross references for this publication
 
     // get the properties from the form
-    $properties = tripal_core_properties_form_retreive($node, 'tripal_pub');
+    $properties = chado_node_properties_form_retreive($node);
 
     // get the list of properties for easy lookup (without doing lots of database queries
     $properties_list = array();
@@ -642,17 +655,8 @@ function chado_pub_insert($node) {
     $pub_id = $pub['pub_id'];
 
     // now add in the properties
-    foreach ($properties as $property => $elements) {
-      foreach ($elements as $rank => $value) {
-
-        $status = tripal_pub_insert_property($pub['pub_id'], $property, $value, FALSE);
-        if (!$status) {
-          drupal_set_message("Error cannot add property: $property", "error");
-          watchdog('tripal_pub', "Error cannot add property: %prop",
-          array('%property' => $property), WATCHDOG_ERROR);
-        }
-      }
-    }
+    // Only adds in those not used in the pub record
+    chado_node_properties_form_update_properties($node, $details, $properties);
 
     // add in any database cross-references
     foreach ($cross_refs as $index => $ref) {
@@ -712,7 +716,7 @@ function chado_pub_update($node) {
   $cross_refs = array(); // stores any cross references for this publication
 
   // get the properties from the form
-  $properties = tripal_core_properties_form_retreive($node, 'tripal_pub');
+  $properties = chado_node_properties_form_retreive($node);
 
   // get the list of properties for easy lookup (without doing lots of database queries
   $properties_list = array();
@@ -829,17 +833,13 @@ function chado_pub_update($node) {
 
   // now add in the properties by first removing any the publication
   // already has and adding the ones we have
-  tripal_core_chado_delete('pubprop', array('pub_id' => $pub_id));
-  foreach ($properties as $property => $elements) {
-    foreach ($elements as $rank => $value) {
-      $status = tripal_pub_insert_property($pub_id, $property, $value, FALSE);
-      if (!$status) {
-        drupal_set_message("Error cannot add property: '$property'", "error");
-        watchdog('tripal_pub', "Error cannot add property: '%prop'",
-        array('%prop' => $property), WATCHDOG_ERROR);
-      }
-    }
-  }
+  $details = array(
+    'property_table' => 'pubprop',
+    'base_table' => 'pub',
+    'foreignkey_name' => 'pub_id',
+    'foreignkey_value' => $pub_id
+  );
+  chado_node_properties_form_update_properties($node, $details, $$properties);
 
   // add in any database cross-references after first removing
   tripal_core_chado_delete('pub_dbxref', array('pub_id' => $pub_id));

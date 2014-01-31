@@ -415,13 +415,19 @@ function tripal_core_theme($existing, $type, $theme, $path) {
       'path' => "$path/theme"
     ),
 
-    // additional dbxrefs form theme
+    // Chado Node API Themes
+    // --------------------------------
+    // Properties Node Form
+    'chado_node_properties_form_table' => array(
+      'function' => 'theme_chado_node_properties_form_table',
+      'render element' => 'element',
+    ),
+    // Additional Dbxrefs Nore Form
     'tripal_core_additional_dbxrefs_form_table' => array(
       'function' => 'theme_tripal_core_additional_dbxrefs_form_table',
       'render element' => 'element',
     ),
-
-    // relationships form theme
+    // Relationships Nore Form
     'tripal_core_relationships_form_table' => array(
       'function' => 'theme_tripal_core_relationships_form_table',
       'render element' => 'element',

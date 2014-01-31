@@ -62,16 +62,16 @@ function chado_contact_form(&$node, $form_state) {
   $type_id     = 0;
   $title       = '';
   $description = '';
-  
+
   // if we are editing an existing node then the contact is already part of the node
   if (property_exists($node, 'contact')) {
     $contact = $node->contact;
     $contact_id = $contact->contact_id;
-    
+
     // get form defaults
     $type_id     = $contact->type_id->cvterm_id;
     $title       = $contact->name;
-    
+
     // get the contact default values.  When this module was first created
     // the contact description was incorrectly stored in the $node->body field.
     // It is better to store it in the Chado tables.  However, the 'description'
@@ -93,7 +93,7 @@ function chado_contact_form(&$node, $form_state) {
       $contactprop = tripal_contact_get_property($contact->contact_id, 'contact_description');
       $description = $contactprop->value;
     }
-     
+
     // set the contact_id in the form
     $form['contact_id'] = array(
       '#type' => 'value',
@@ -124,14 +124,14 @@ function chado_contact_form(&$node, $form_state) {
       INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
       INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
       INNER JOIN {cv} CV       ON CVTO.cv_id = CV.cv_id
-    WHERE 
-      CV.name = 'tripal_contact' AND 
+    WHERE
+      CV.name = 'tripal_contact' AND
       CVTO.name = 'Contact Type' AND
       CVTP.pathdistance = 1
-    ORDER BY CVTS.name ASC 
+    ORDER BY CVTS.name ASC
   ";
   $results = chado_query($sql);
-  $contact_types = array();
+  $contact_types = array(3723 => 'Person');
   while ($contact_type = $results->fetchObject()) {
     $contact_types[$contact_type->cvterm_id] = $contact_type->name;
     if (strcmp($contact_type->name, "Person") == 0 and !$type_id) {
@@ -145,7 +145,7 @@ function chado_contact_form(&$node, $form_state) {
     '#required' => TRUE,
     '#default_value' => $type_id,
   );
-  
+
   $form['title']= array(
     '#type'          => 'textfield',
     '#title'         => t('Contact Name'),
@@ -163,30 +163,29 @@ function chado_contact_form(&$node, $form_state) {
     '#default_value' => $description,
   );
 
-  // get the contact properties that the user can use for this form
-  $properties = array();
-  $properties[] = 'Select a Property';
-  $sql = "
-    SELECT CVTS.cvterm_id, CVTS.name
-    FROM {cvtermpath} CVTP
-      INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
-      INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
-      INNER JOIN {cv} CV       ON CVTO.cv_id = CV.cv_id
-    WHERE
-      CV.name = 'tripal_contact' AND
-      NOT CVTO.name = 'Contact Type'
-    ORDER BY CVTS.name ASC
-  ";
-  $prop_types = chado_query($sql);
-  while ($prop = $prop_types->fetchObject()) {
-    $properties[$prop->cvterm_id] = $prop->name;
-  }
-  
+  // Properties Form
+  // ----------------------------------
+  // D7 @TODO: Properties API doesn't handle using cvtermpath to get options
+  // SELECT CVTS.cvterm_id, CVTS.name
+  // FROM {cvtermpath} CVTP
+  //   INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
+  //   INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
+  //   INNER JOIN {cv} CV       ON CVTO.cv_id = CV.cv_id
+  // WHERE
+  //   CV.name = 'tripal_contact' AND
+  //   NOT CVTO.name = 'Contact Type'
+  // ORDER BY CVTS.name ASC
+
+  // D7 @TODO: Properties API doesn't handle Exclude
   $exclude = array('contact_description');
-  $include = array();
-  tripal_core_properties_form($form, $form_state, 'contactprop', 'contact_id', 'tripal_contact',
-    $properties, $contact_id, $exclude, $include, '', 'Properties');
-   
+  $details = array(
+    'property_table' => 'contactprop',
+    'base_foreign_key' => 'contact_id',
+    'base_key_value' => $contact_id,
+    'cv_name' => 'tripal_contact'
+  );
+  chado_node_properties_form($form, $form_state, $details);
+
   return $form;
 }
 
@@ -199,25 +198,25 @@ function chado_contact_validate($node, $form, &$form_state) {
   // remove surrounding white-space on submitted values
   $node->title          = trim($node->title);
   $node->description    = trim($node->description);
- 
+
   // if this is a delete then don't validate
   if($node->op == 'Delete') {
     return;
   }
-  
+
   // we are syncing if we do not have a node ID but we do have a contact_id. We don't
   // need to validate during syncing so just skip it.
   if (is_null($node->nid) and property_exists($node, 'contact_id') and $node->contact_id != 0) {
     return;
   }
-  
+
   // Validating for an update
-  if (property_exists($node, 'nid')) {    
-    // get the existing node    
+  if (property_exists($node, 'nid')) {
+    // get the existing node
     $values = array('contact_id' => $node->contact_id);
     $result = tripal_core_chado_select('contact', array('*'), $values);
     $contact = $result[0];
-      
+
     // if the name has changed make sure it doesn't conflict with an existing name
     if ($contact->name != $node->title) {
       $values = array('name' => $node->title);
@@ -225,7 +224,7 @@ function chado_contact_validate($node, $form, &$form_state) {
       if ($result and count($result) > 0) {
         form_set_error('title', 'Cannot update the contact with this contact name. A contact with this name already exists.');
         return;
-      }  
+      }
     }
   }
   // Validating for an insert
@@ -329,21 +328,13 @@ function chado_contact_insert($node) {
     $contact_id = $contact['contact_id'];
 
     // now add in the properties
-    $properties = tripal_core_properties_form_retreive($node, 'tripal_contact');
-    foreach ($properties as $property => $elements) {
-      foreach ($elements as $rank => $value) {
-
-        $status = tripal_contact_insert_property($contact_id, $property, $value, FALSE);
-        if (!$status) {
-          drupal_set_message("Error cannot add property: $property", "error");
-          watchdog('t_contact', "Error cannot add property: %prop",
-          array('%property' => $property), WATCHDOG_ERROR);
-        }
-      }
-    }
-
-    // add in the description as a separate property
-    tripal_contact_insert_property($contact_id, 'contact_description', $node->description, FALSE);
+    $details = array(
+      'property_table' => 'contactprop',
+      'base_table' => 'contact',
+      'foreignkey_name' => 'contact_id',
+      'foreignkey_value' => $contact_id
+    );
+    chado_node_properties_form_update_properties($node, $details);
   }
   else {
     $contact_id = $node->contact_id;
@@ -400,19 +391,13 @@ function chado_contact_update($node) {
 
   // now add in the properties by first removing any the contact
   // already has and adding the ones we have
-  tripal_core_chado_delete('contactprop', array('contact_id' => $contact_id));
-  $properties = tripal_core_properties_form_retreive($node, 'tripal_contact');
-
-  foreach ($properties as $property => $elements) {
-    foreach ($elements as $rank => $value) {
-      $status = tripal_contact_insert_property($contact_id, $property, $value, FALSE);
-      if (!$status) {
-        drupal_set_message("Error cannot add property: '$property'", "error");
-        watchdog('t_contact', "Error cannot add property: '%prop'",
-        array('%prop' => $property), WATCHDOG_ERROR);
-      }
-    }
-  }
+  $details = array(
+    'property_table' => 'contactprop',
+    'base_table' => 'contact',
+    'foreignkey_name' => 'contact_id',
+    'foreignkey_value' => $contact_id
+  );
+  chado_node_properties_form_update_properties($node, $details);
 
   // add in the description as a separate property
   tripal_contact_update_property($contact_id, 'contact_description', $node->description, 1);

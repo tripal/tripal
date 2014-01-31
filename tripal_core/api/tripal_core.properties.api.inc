@@ -40,7 +40,7 @@
     );
 
     // Finally, and add the additional form elements to the form
-    tripal_api_chado_node_properties_form($form, $form_state, $details);
+    chado_node_properties_form($form, $form_state, $details);
 
     return $form;
   }
@@ -534,7 +534,7 @@ function chado_node_properties_form(&$form, &$form_state, $details) {
   else {
     if (isset($details['cv_name'])) {
       $existing_properties = chado_query(
-        "SELECT CVT.cvterm_id, CVT.name as type_name, CVT.definition, PP.value, PP.rank
+        "SELECT PP.".$details['property_table']."_id property_id, CVT.cvterm_id as type_id, CVT.name as type_name, CVT.definition, PP.value, PP.rank
         FROM {" . $details['property_table'] . "} PP
         INNER JOIN {cvterm} CVT ON CVT.cvterm_id = PP.type_id
         INNER JOIN {cv} CV      ON CVT.cv_id     = CV.cv_id
@@ -702,6 +702,8 @@ function chado_node_properties_form(&$form, &$form_state, $details) {
     )
   );
 
+  ddl($form, 'form');
+  ddl($form_state, 'form state');
 }
 
 /**
@@ -792,6 +794,8 @@ function chado_node_properties_form_remove_button_submit(&$form, &$form_state) {
     chado_node_properties_form_create_property_formstate_array($form, $form_state);
   }
 
+  ddl($form_state, 'form state in remove');
+
   // remove the specified property from the form property table
   if(preg_match('/property_remove-([^-]+-[^-]+)/',$form_state['triggering_element']['#name'],$match)) {
     $key = $match[1];
@@ -835,7 +839,7 @@ function chado_node_properties_form_create_property_formstate_array($form, &$for
       foreach (element_children($form['properties']['property_table'][$type_id]) as $rank) {
           $element = $form['properties']['property_table'][$type_id][$rank];
           $property = array(
-            'type_id' => $element['type_id']['#value'],
+            'type_id' => $element['prop_type_id']['#value'],
             'type_name' => $element['type']['#markup'],
             'property_id' => $element['property_id']['#value'],
             'value' => $element['value']['#markup'],
@@ -931,14 +935,22 @@ function chado_node_properties_form_retreive($node) {
  *   - base_table: the name of the base table (ie: feature)
  *   - foreignkey_name: the name of the foreign key used to link to the node content (ie: feature_id)
  *   - foreignkey_value: the value of the foreign key (ie: 445, if there exists a feature where feature_id=445)
+ * @param $retrieved_properties
+ *   An array of properties from chado_node_properties_form_retreive($node). This can be used if you need
+ *   special handling for some of the properties (See FeatureMap chado_featuremap_insert for an example)
  */
-function chado_node_properties_form_update_properties($node, $details) {
+function chado_node_properties_form_update_properties($node, $details, $retrieved_properties = FALSE) {
 
   // First remove existing property links
   tripal_core_chado_delete($details['property_table'], array($details['foreignkey_name'] => $details['foreignkey_value']));
 
   // Add back in property links and insert properties as needed
-  $properties = chado_node_properties_form_retreive($node);
+  if ($retrieved_properties) {
+    $properties = $retrieved_properties;
+  }
+  else {
+    $properties = chado_node_properties_form_retreive($node);
+  }
   foreach ($properties as $type_id => $ranks) {
     foreach ($ranks as $rank => $value) {
 

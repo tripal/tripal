@@ -55,7 +55,7 @@ function tripal_project_node_info() {
  */
 function chado_project_form(&$node, $form_state) {
   $form = array();
-  
+
   // Default values can come in the following ways:
   //
   // 1) as elements of the $node object.  This occurs when editing an existing project
@@ -68,7 +68,7 @@ function chado_project_form(&$node, $form_state) {
   $project_id = null;
   $title = '';
   $description = '';
-  
+
   // if we are editing an existing node then the project is already part of the node
   if (property_exists($node, 'project')) {
     $project = $node->project;
@@ -92,10 +92,10 @@ function chado_project_form(&$node, $form_state) {
       $projectprop = tripal_project_get_property($project->project_id, 'Project Description');
       $description = $projectprop->value;
     }
-    
+
     $title = $project->name;
     $project_id = $project->project_id;
-    
+
     // keep track of the project id if we have.  If we do have one then
     // this is an update as opposed to an insert.
     $form['project_id'] = array(
@@ -103,7 +103,7 @@ function chado_project_form(&$node, $form_state) {
       '#value' => $project_id,
     );
   }
-  
+
   // if we are re constructing the form from a failed validation or ajax callback
   // then use the $form_state['values'] values
   if (array_key_exists('values', $form_state)) {
@@ -133,40 +133,24 @@ function chado_project_form(&$node, $form_state) {
     '#default_value' => $description,
   );
 
-  // get the project properties
-  $properties = array();
-  $properties[] = 'Select a Property';
-  $sql = "
-    SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition
-    FROM  {cvterm} CVT
-      INNER JOIN {cv} ON CVT.cv_id = CV.cv_id
-    WHERE
-      CV.name = 'project_property' AND
-      NOT CVT.is_obsolete = 1
-    ORDER BY CVT.name ASC
-  ";
-  $prop_types = chado_query($sql);
-  while ($prop = $prop_types->fetchObject()) {
-    // because we are using the project description property as
-    // a replacement for the project.description field and we want the 
-    // user to add a description in the field above, we remove the property
-    // from the list.
-    if (strcmp($prop->name, "Project Description")==0) {
-      continue;
-    }
-    $properties[$prop->cvterm_id] = $prop->name;
-  }
-  
-  // we want to exclude the project description from being loaded as a stored property 
+  // Properties Form
+  // ----------------------------------
+  // D7 @TODO: Properties API doesn't handle exclude
+  // we want to exclude the project description from being loaded as a stored property
   // because we want to use the property to replace the project.description field as it is
-  // only 255 characters which isn't large enough. We don't want the user to set it 
-  // as a property even though it will be stored as a property. 
+  // only 255 characters which isn't large enough. We don't want the user to set it
+  // as a property even though it will be stored as a property.
   $exclude = array('Project Description');
-  $include = array();
   $instructions = t('To add properties to the drop down list, you must ' . l("add terms to the project_property vocabulary", "admin/tripal/chado/tripal_cv/cvterm/add") . ".");
-  tripal_core_properties_form($form, $form_state, 'projectprop', 'project_id', 'project_property',
-    $properties, $project_id, $exclude, $include, $instructions, 'Properties');
-  
+  $details = array(
+    'property_table' => 'projectprop',
+    'base_foreign_key' => 'project_id',
+    'base_key_value' => $project_id,
+    'cv_name' => 'project_property',
+    'additional_instructions' => $instructions
+  );
+  chado_node_properties_form($form, $form_state, $details);
+
   return $form;
 
 }
@@ -176,21 +160,21 @@ function chado_project_form(&$node, $form_state) {
  * @ingroup tripal_project
  */
 function chado_project_validate($node, $form, &$form_state) {
-  
+
   $node->title = trim($node->title);
   $node->description = trim($node->description);
-  
+
   // if this is a delete then don't validate
   if($node->op == 'Delete') {
     return;
   }
-  
+
   // we are syncing if we do not have a node ID but we do have a project_id. We don't
   // need to validate during syncing so just skip it.
   if (is_null($node->nid) and property_exists($node, 'project_id') and $node->project_id != 0) {
     return;
   }
-  
+
   $project = 0;
   // check to make sure the name on the project is unique
   // before we try to insert into chado.
@@ -219,7 +203,7 @@ function chado_project_insert($node) {
 
   $node->title = trim($node->title);
   $node->description = trim($node->description);
-  
+
   // if there is an project_id in the $node object then this must be a sync so
   // we can skip adding the project as it is already there, although
   // we do need to proceed with the rest of the insert
@@ -236,21 +220,16 @@ function chado_project_insert($node) {
       return;
     }
     $project_id = $project['project_id'];
-    
+
     // now add in the properties
-    $properties = tripal_core_properties_form_retreive($node, 'project_property');
-    foreach ($properties as $property => $elements) {
-      foreach ($elements as $rank => $value) {
-    
-        $status = tripal_project_insert_property($project_id, $property, $value, FALSE, 'project_property');
-        if (!$status) {
-          drupal_set_message("Error cannot add property: $property", "error");
-          watchdog('t_project', "Error cannot add property: %prop",
-          array('%property' => $property), WATCHDOG_ERROR);
-        }
-      }
-    }
-    
+    $details = array(
+      'property_table' => 'projectprop',
+      'base_table' => 'project',
+      'foreignkey_name' => 'project_id',
+      'foreignkey_value' => $project_id
+    );
+    chado_node_properties_form_update_properties($node, $details);
+
     // add in the description as a separate property
     tripal_project_insert_property($project_id, 'Project Description', $node->description, FALSE);
   }
@@ -316,7 +295,7 @@ function chado_project_delete($node) {
  * @ingroup tripal_project
  */
 function chado_project_update($node) {
-  
+
   $node->title = trim($node->title);
   $node->description = trim($node->description);
 
@@ -333,22 +312,17 @@ function chado_project_update($node) {
     watchdog('tripal_project', 'Update project: Unable to update project where values: %values',
     array('%values' => print_r($values, TRUE)), WATCHDOG_ERROR);
   }
-  
+
   // now add in the properties by first removing any the project
   // already has and adding the ones we have
-  tripal_core_chado_delete('projectprop', array('project_id' => $project_id));
-  $properties = tripal_core_properties_form_retreive($node, 'project_property');
-  foreach ($properties as $property => $elements) {
-    foreach ($elements as $rank => $value) {
-      $status = tripal_project_insert_property($project_id, $property, $value, FALSE, 'project_property');
-      if (!$status) {
-        drupal_set_message("Error cannot add property: '$property'", "error");
-        watchdog('t_project', "Error cannot add property: '%prop'",
-        array('%prop' => $property), WATCHDOG_ERROR);
-      }
-    }
-  }
-  
+  $details = array(
+    'property_table' => 'projectprop',
+    'base_table' => 'project',
+    'foreignkey_name' => 'project_id',
+    'foreignkey_value' => $project_id
+  );
+  chado_node_properties_form_update_properties($node, $details);
+
   // add the project description as a property
   tripal_project_update_property($project_id, 'Project Description', $node->description, 1);
 }
@@ -370,10 +344,10 @@ function chado_project_load($nodes) {
   foreach ($nodes as $nid => $node) {
     // get the feature details from chado
     $project_id = chado_get_id_for_node('project', $node->nid);
-  
+
     $values = array('project_id' => $project_id);
     $project = tripal_core_generate_chado_var('project', $values);
-  
+
     $nodes[$nid]->project = $project;
   }
 

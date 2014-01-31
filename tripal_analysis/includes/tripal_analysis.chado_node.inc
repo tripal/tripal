@@ -29,7 +29,7 @@ function tripal_analysis_node_info() {
     )
   );
   return $nodes;
-} 
+}
 /**
  *  When editing or creating a new node of type 'chado_analysis' we need
  *  a form.  This function creates the form that will be used for this.
@@ -38,13 +38,13 @@ function tripal_analysis_node_info() {
  */
 function chado_analysis_form($node, &$form_state) {
   $form = array();
-  
+
   // Default values can come in the following ways:
   //
   // 1) as elements of the $node object.  This occurs when editing an existing analysis
-  // 2) in the $form_state['values'] array which occurs on a failed validation or 
+  // 2) in the $form_state['values'] array which occurs on a failed validation or
   //    ajax callbacks from non submit form elements
-  // 3) in the $form_state['input'[ array which occurs on ajax callbacks from submit 
+  // 3) in the $form_state['input'[ array which occurs on ajax callbacks from submit
   //    form elements and the form is being rebuilt
   //
   // set form field defaults
@@ -60,7 +60,7 @@ function chado_analysis_form($node, &$form_state) {
   $description    = '';
   $d_removed      = array(); // lists removed properties
   $num_new        = 0;  // the number of new rows
-  
+
   // if we are editing an existing node then the analysis is already part of the node
   if (property_exists($node, 'analysis')) {
     $analysis = $node->analysis;
@@ -77,14 +77,14 @@ function chado_analysis_form($node, &$form_state) {
     $sourceuri      = $analysis->sourceuri;
     $timeexecuted   = $analysis->timeexecuted;
     $description    = $analysis->description;
-     
+
     // set the analysis_id in the form
     $form['analysis_id'] = array(
       '#type' => 'value',
       '#value' => $analysis->analysis_id,
     );
   }
-  // if we are re constructing the form from a failed validation or ajax callback 
+  // if we are re constructing the form from a failed validation or ajax callback
   // then use the $form_state['values'] values
   if (array_key_exists('values', $form_state)) {
     $analysisname   = $form_state['values']['analysisname'];
@@ -122,7 +122,7 @@ function chado_analysis_form($node, &$form_state) {
   $form['instructions'] = array(
     '#markup' => t('<b>Note</b>: When adding any type of data it is good to associate it with
         an analysis so that site visitors can identify the source of the data including
-        necessary materials and methods.  The fields below imply that all analyses 
+        necessary materials and methods.  The fields below imply that all analyses
         are derived from some software package. But, data can also be derived via retreival
         from an external source or an analysis pipeline with multipel software components.
         In these cases, provide values for the fields below that best makes sense
@@ -214,29 +214,24 @@ function chado_analysis_form($node, &$form_state) {
        someone to recreate the analysis, including materials and methods
        for collection of the source data and performing the analysis'),
   );
-  
-  // get the analysis properties
-  $properties = array();
-  $properties[] = 'Select a Property';
-  $sql = "
-    SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition
-    FROM  {cvterm} CVT
-      INNER JOIN {cv} ON CVT.cv_id = CV.cv_id
-    WHERE
-      CV.name = 'analysis_property' AND
-      NOT CVT.is_obsolete = 1
-    ORDER BY CVT.name ASC
-  ";
-  $prop_types = chado_query($sql);
-  while ($prop = $prop_types->fetchObject()) {
-    $properties[$prop->cvterm_id] = $prop->name;
-  }
-  
+
+
   $exclude = array();
   $include = array();
+
+
+  // Properties Form
+  // ----------------------------------
   $instructions = t('To add additional properties to the drop down. ' . l("Add terms to the analysis_property vocabulary", "admin/tripal/chado/tripal_cv/cvterm/add") . ".");
-  tripal_core_properties_form($form, $form_state, 'analysisprop', 'analysis_id', 'analysis_property',
-    $properties, $analysis_id, $exclude, $include, $instructions, 'Properties');
+  $details = array(
+    'property_table' => 'analysisprop',
+    'base_foreign_key' => 'analysis_id',
+    'base_key_value' => $analysis_id,
+    'cv_name' => 'analysis_property',
+    'fieldset_title' => 'Properties',
+    'additional_instructions' => $instructions
+  );
+  chado_node_properties_form($form, $form_state, $details);
 
   return $form;
 }
@@ -268,26 +263,26 @@ function tripal_analysis_validate($node, $form, &$form_state) {
   $node->sourcename = trim($node->sourcename);
   $node->sourceversion = trim($node->sourceversion);
   $node->sourceuri = trim($node->sourceuri);
- 
+
   // if this is a delete then don't validate
   if($node->op == 'Delete') {
     return;
   }
-  
+
   // we are syncing if we do not have a node ID but we do have a analysis_id. We don't
   // need to validate during syncing so just skip it.
   if (is_null($node->nid) and property_exists($node, 'analysis_id') and $node->analysis_id != 0) {
     return;
   }
-  
+
   // Validating for an update
   if (!is_null($node->nid)) {
-   
-    // get the existing node    
-    $values = array('analysis_id' => $node->analysis_id);      
+
+    // get the existing node
+    $values = array('analysis_id' => $node->analysis_id);
     $result = tripal_core_chado_select('analysis', array('*'), $values);
     $analysis = $result[0];
-      
+
     // if the name has changed make sure it doesn't conflict with an existing name
     if ($analysis->name != $node->analysisname) {
       $values = array('name' => $node->analysisname);
@@ -295,12 +290,12 @@ function tripal_analysis_validate($node, $form, &$form_state) {
       if ($result and count($result) > 0) {
         form_set_error('analysisname', 'Cannot update the analysis with this analysis name. An analysis with this name already exists.');
         return;
-      }  
+      }
     }
-    
+
     // if the unique constraint has changed check to make sure it doesn't conflict with an
     // existing record
-    if ($analysis->program != $node->program or $analysis->programversion != $node->programversion or 
+    if ($analysis->program != $node->program or $analysis->programversion != $node->programversion or
        $analysis->sourcename != $node->sourcename) {
       $values = array(
         'program' => $node->program,
@@ -310,18 +305,18 @@ function tripal_analysis_validate($node, $form, &$form_state) {
       $result = tripal_core_chado_select('analysis', array('analysis_id'), $values);
       if ($result and count($result) > 0) {
         if ($analysis->program != $node->program) {
-          $field = 'program';  
+          $field = 'program';
         }
         if ($analysis->programversion != $node->programversion) {
-          $field = 'programversion';  
+          $field = 'programversion';
         }
         if ($analysis->sourcename != $node->sourcename) {
-          $field = 'sourcename';  
+          $field = 'sourcename';
         }
         form_set_error($field, 'Cannot update the analysis with this program,
           program version and source name. An analysis with these values already exists.');
         return;
-      }  
+      }
     }
   }
   // Validating for an insert
@@ -337,10 +332,10 @@ function tripal_analysis_validate($node, $form, &$form_state) {
         program version and source name. An analysis with these values already exists.');
       return;
     }
-    
-    // make sure we have a unique analysis name. This is not a requirement 
+
+    // make sure we have a unique analysis name. This is not a requirement
     // for the analysis table but we use the analysis name for the Drupal node
-    // title, so it should be unique      
+    // title, so it should be unique
     $values = array('name' => $node->analysisname);
     $result = tripal_core_chado_select('analysis', array('analysis_id'), $values);
     if ($result and count($result) > 0) {
@@ -402,18 +397,13 @@ function chado_analysis_insert($node) {
     $analysis_id = $analysis['analysis_id'];
 
     // now add in the properties
-    $properties = tripal_core_properties_form_retreive($node, 'analysis_property');
-    foreach ($properties as $property => $elements) {
-      foreach ($elements as $rank => $value) {
-
-        $status = tripal_analysis_insert_property($analysis_id, $property, $value, FALSE, 'analysis_property');
-        if (!$status) {
-          drupal_set_message("Error cannot add property: $property", "error");
-          watchdog('t_analysis', "Error cannot add property: %prop",
-          array('%property' => $property), WATCHDOG_ERROR);
-        }
-      }
-    }
+    $details = array(
+      'property_table' => 'analysisprop',
+      'base_table' => 'analysis',
+      'foreignkey_name' => 'analysis_id',
+      'foreignkey_value' => $analysis_id
+    );
+    chado_node_properties_form_update_properties($node, $details);
   }
   else {
     $analysis_id = $node->analysis_id;
@@ -516,18 +506,13 @@ function chado_analysis_update($node) {
 
   // now add in the properties by first removing any the analysis
   // already has and adding the ones we have
-  tripal_core_chado_delete('analysisprop', array('analysis_id' => $analysis_id));
-  $properties = tripal_core_properties_form_retreive($node, 'analysis_property');
-  foreach ($properties as $property => $elements) {
-    foreach ($elements as $rank => $value) {
-      $status = tripal_analysis_insert_property($analysis_id, $property, $value, FALSE, 'analysis_property');
-      if (!$status) {
-        drupal_set_message("Error cannot add property: '$property'", "error");
-        watchdog('t_analysis', "Error cannot add property: '%prop'",
-        array('%prop' => $property), WATCHDOG_ERROR);
-      }
-    }
-  }
+  $details = array(
+    'property_table' => 'analysisprop',
+    'base_table' => 'analysis',
+    'foreignkey_name' => 'analysis_id',
+    'foreignkey_value' => $analysis_id
+  );
+  chado_node_properties_form_update_properties($node, $details);
 }
 /**
  *  When a node is requested by the user this function is called to allow us
