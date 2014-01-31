@@ -629,11 +629,11 @@ function tripal_feature_node_presave($node) {
 
   // set the title to ensure it is always unique
   switch ($node->type) {
-  	case 'chado_feature':
-  	  $values = array('organism_id' => $node->organism_id);
-  	  $organism = tripal_core_chado_select('organism', array('genus', 'species'), $values);
-  	  $node->title = $node->fname . ', ' . $node->uniquename . ' (' . $node->feature_type . ') ' . $organism[0]->genus . ' ' . $organism[0]->species;
-  	  break;
+    case 'chado_feature':
+      $values = array('organism_id' => $node->organism_id);
+      $organism = tripal_core_chado_select('organism', array('genus', 'species'), $values);
+      $node->title = $node->fname . ', ' . $node->uniquename . ' (' . $node->feature_type . ') ' . $organism[0]->genus . ' ' . $organism[0]->species;
+      break;
   }
 }
 
@@ -646,91 +646,157 @@ function tripal_feature_node_insert($node) {
   // set the URL path after inserting.  We do it here because we do not
   // know the feature_id in the presave
   switch ($node->type) {
-  	case 'chado_feature':
-  	  if (!$node->feature_id) {
-  	    $sql = "SELECT * FROM {chado_feature} WHERE nid = :nid";
-  	    $chado_feature = db_query($sql, array(':nid' => $node->nid))->fetchObject();
-  	    $node->feature_id = $chado_feature->feature_id;
-  	  }
+    case 'chado_feature':
+      if (!$node->feature_id) {
+        $sql = "SELECT * FROM {chado_feature} WHERE nid = :nid";
+        $chado_feature = db_query($sql, array(':nid' => $node->nid))->fetchObject();
+        $node->feature_id = $chado_feature->feature_id;
+      }
 
-  	  // remove any previous alias
-  	  db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
+      // remove any previous alias
+      db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
 
-  	  // set the URL for this feature page
-  	  $url_alias = tripal_feature_get_feature_url($node);
-  	  $path_alias = array("source" => "node/$node->nid", "alias" => $url_alias);
-  	  path_save($path_alias);
-  	  break;
+      // set the URL for this feature page
+      $url_alias = tripal_feature_get_feature_url($node);
+      $path_alias = array("source" => "node/$node->nid", "alias" => $url_alias);
+      path_save($path_alias);
+      break;
   }
 }
+/**
+ *
+ * @param $node
+ *   A node object containing at least the feature_id and nid
+ * @param $url_alias
+ *   Optional.  This should be the URL alias syntax string that contains
+ *   placeholders such as [id], [genus], [species], [name], [uniquename],
+ *   and [type].  These placeholders will be substituted for actual values.
+ *   If this parameter is not provided then the value of the
+ *   chado_feature_url_string Drupal variable will be used.
+ */
+function tripal_feature_get_feature_url($node, $url_alias = NULL) {
 
+  // get the starting URL alias
+  if(!$url_alias) {
+    $url_alias = variable_get('chado_feature_url_string', '/feature/[genus]/[species]/[type]/[uniquename]');
+    if (!$url_alias) {
+      $url_alias = '/feature/[genus]/[species]/[type]/[uniquename]';
+    }
+    $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash
+  }
+
+  // get the feature
+  $values = array('feature_id' => $node->feature_id);
+  $feature = tripal_core_chado_select('feature', array('*'), $values);
+  if (!$feature) {
+    watchdog('trp-seturl', "Cannot find feature when setting URL alias for feature: %id", array('%id' => $node->feature_id), WATCHDOG_ERROR);
+    return FALSE;
+  }
+  $feature = (object) $feature[0];
+
+  // get the organism
+  $values = array('organism_id' => $feature->organism_id);
+  $organism  = tripal_core_chado_select('organism', array('*'), $values);
+  if (!$organism) {
+    watchdog('trp-seturl', "Cannot find organism when setting URL alias for feature: %id", array('%id' => $node->feature_id), WATCHDOG_ERROR);
+    return FALSE;
+  }
+  $genus = preg_replace('/\s/', '_', strtolower($organism[0]->genus));
+  $species = preg_replace('/\s/', '_', strtolower($organism[0]->species));
+
+  // get the type
+  $values = array('cvterm_id' => $feature->type_id);
+  $cvterm = tripal_core_chado_select('cvterm', array('name'), $values);
+  if (!$cvterm) {
+    watchdog('trp-seturl', "Cannot find type when setting URL alias for feature: %id", array('%id' => $node->feature_id), WATCHDOG_ERROR);
+    return FALSE;
+  }
+  $type = preg_replace('/\s/', '_', $cvterm[0]->name);
+
+  // now substitute in the values
+  $url_alias = preg_replace('/\[id\]/', $feature->feature_id, $url_alias);
+  $url_alias = preg_replace('/\[genus\]/', $genus, $url_alias);
+  $url_alias = preg_replace('/\[species\]/', $species, $url_alias);
+  $url_alias = preg_replace('/\[type\]/', $type, $url_alias);
+  $url_alias = preg_replace('/\[name\]/', $feature->name, $url_alias);
+  $url_alias = preg_replace('/\[uniquename\]/', $feature->uniquename, $url_alias);
+
+  // the dst field of the url_alias table is only 128 characters long.
+  // if this is the case then simply return the node URL, we can't set this one
+  if (strlen($url_alias) > 128) {
+    watchdog('trp-seturl', "Cannot set alias longer than 128 characters: %alias.", array('%alias' => $url_alias), WATCHDOG_ERROR);
+    return "node/" . $node->nid;
+  }
+
+  return $url_alias;
+}
 /**
  *
  * @ingroup tripal_feature
  */
 function tripal_feature_node_view($node, $view_mode, $langcode) {
   switch ($node->type) {
-  	case 'chado_feature':
-  	  // Show feature browser and counts
-  	  if ($view_mode == 'full') {
-  	    $node->content['tripal_feature_alignments'] = array(
-  	      '#value' => theme('tripal_feature_alignments', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_feature_analyses'] = array(
-  	      '#value' => theme('tripal_feature_analyses', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_feature_base'] = array(
-  	      '#value' => theme('tripal_feature_base', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_feature_featurepos'] = array(
-  	      '#value' => theme('tripal_feature_featurepos', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_feature_properties'] = array(
-  	      '#value' => theme('tripal_feature_properties', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_feature_publications'] = array(
-  	      '#value' => theme('tripal_feature_publications', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_feature_references'] = array(
-  	      '#value' => theme('tripal_feature_references', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_feature_relationships'] = array(
-  	      '#value' => theme('tripal_feature_relationships', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_feature_seqence'] = array(
-  	      '#value' => theme('tripal_feature_sequence', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_feature_synonyms'] = array(
-  	      '#value' => theme('tripal_feature_synonyms', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_feature_terms'] = array(
-  	      '#value' => theme('tripal_feature_terms', array('node' => $node)),
-  	    );
-  	  }
-  	  if ($view_mode == 'teaser') {
-  	    $node->content['tripal_feature_teaser'] = array(
-  	      '#value' => theme('tripal_feature_teaser', array('node' => $node)),
-  	    );
-  	  }
-  	  break;
-  	case 'chado_organism':
-  	  // Show feature browser and counts
-  	  if ($view_mode == 'full') {
-  	    $node->content['tripal_organism_feature_counts'] = array(
-  	      '#value' => theme('tripal_organism_feature_counts', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_organism_feature_browser'] = array(
-  	      '#value' => theme('tripal_organism_feature_browser', array('node' => $node)),
-  	    );
-  	  }
-  	  break;
-  	  // TODO: handle these node types. Should we also have a feature browser?
-  	case 'chado_library':
-  	  break;
-  	case 'chado_stock':
-  	  break;
-  	case 'chado_analysis':
-  	  break;
+    case 'chado_feature':
+      // Show feature browser and counts
+      if ($view_mode == 'full') {
+        $node->content['tripal_feature_alignments'] = array(
+          '#value' => theme('tripal_feature_alignments', array('node' => $node)),
+        );
+        $node->content['tripal_feature_analyses'] = array(
+          '#value' => theme('tripal_feature_analyses', array('node' => $node)),
+        );
+        $node->content['tripal_feature_base'] = array(
+          '#value' => theme('tripal_feature_base', array('node' => $node)),
+        );
+        $node->content['tripal_feature_featurepos'] = array(
+          '#value' => theme('tripal_feature_featurepos', array('node' => $node)),
+        );
+        $node->content['tripal_feature_properties'] = array(
+          '#value' => theme('tripal_feature_properties', array('node' => $node)),
+        );
+        $node->content['tripal_feature_publications'] = array(
+          '#value' => theme('tripal_feature_publications', array('node' => $node)),
+        );
+        $node->content['tripal_feature_references'] = array(
+          '#value' => theme('tripal_feature_references', array('node' => $node)),
+        );
+        $node->content['tripal_feature_relationships'] = array(
+          '#value' => theme('tripal_feature_relationships', array('node' => $node)),
+        );
+        $node->content['tripal_feature_seqence'] = array(
+          '#value' => theme('tripal_feature_sequence', array('node' => $node)),
+        );
+        $node->content['tripal_feature_synonyms'] = array(
+          '#value' => theme('tripal_feature_synonyms', array('node' => $node)),
+        );
+        $node->content['tripal_feature_terms'] = array(
+          '#value' => theme('tripal_feature_terms', array('node' => $node)),
+        );
+      }
+      if ($view_mode == 'teaser') {
+        $node->content['tripal_feature_teaser'] = array(
+          '#value' => theme('tripal_feature_teaser', array('node' => $node)),
+        );
+      }
+      break;
+    case 'chado_organism':
+      // Show feature browser and counts
+      if ($view_mode == 'full') {
+        $node->content['tripal_organism_feature_counts'] = array(
+          '#value' => theme('tripal_organism_feature_counts', array('node' => $node)),
+        );
+        $node->content['tripal_organism_feature_browser'] = array(
+          '#value' => theme('tripal_organism_feature_browser', array('node' => $node)),
+        );
+      }
+      break;
+      // TODO: handle these node types. Should we also have a feature browser?
+    case 'chado_library':
+      break;
+    case 'chado_stock':
+      break;
+    case 'chado_analysis':
+      break;
   }
 }
 /**
@@ -741,14 +807,14 @@ function tripal_feature_node_update($node) {
 
   // add items to other nodes, build index and search results
   switch ($node->type) {
-  	case 'chado_feature':
-  	  // remove any previous alias
-  	  db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
+    case 'chado_feature':
+      // remove any previous alias
+      db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
 
-  	  // set the URL for this feature page
-  	  $url_alias = tripal_feature_get_feature_url($node);
-  	  $path_alias = array("source" => "node/$node->nid", "alias" => $url_alias);
-  	  path_save($path_alias);
-  	  break;
+      // set the URL for this feature page
+      $url_alias = tripal_feature_get_feature_url($node);
+      $path_alias = array("source" => "node/$node->nid", "alias" => $url_alias);
+      path_save($path_alias);
+      break;
   }
 }
