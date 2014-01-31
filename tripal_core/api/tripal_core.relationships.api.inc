@@ -668,11 +668,14 @@ function theme_tripal_core_relationships_form_table($variables) {
  */
 function tripal_core_relationships_form_retreive($node) {
   $rels = array();
-  foreach ($node->rel_table as $type_id => $elements) {
-    if ($type_id != 'new') {
-      foreach ($elements as $rank => $relationships) {
-        $rels[$type_id][$rank]['subject_id'] = $relationships['subject_id'];
-        $rels[$type_id][$rank]['object_id'] = $relationships['object_id'];
+
+  if (isset($node->rel_table)) {
+    foreach ($node->rel_table as $type_id => $elements) {
+      if ($type_id != 'new') {
+        foreach ($elements as $rank => $relationships) {
+          $rels[$type_id][$rank]['subject_id'] = $relationships['subject_id'];
+          $rels[$type_id][$rank]['object_id'] = $relationships['object_id'];
+        }
       }
     }
   }

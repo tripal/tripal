@@ -913,10 +913,13 @@ function theme_chado_node_properties_form_table($variables) {
  */
 function chado_node_properties_form_retreive($node) {
   $properties = array();
-  foreach ($node->property_table as $type_id => $elements) {
-    if ($type_id != 'new' AND $type_id != 'details') {
-      foreach ($elements as $rank => $element) {
-        $properties[$type_id][$rank] = $element['prop_value'];
+
+  if (isset($node->property_table)) {
+    foreach ($node->property_table as $type_id => $elements) {
+      if ($type_id != 'new' AND $type_id != 'details') {
+        foreach ($elements as $rank => $element) {
+          $properties[$type_id][$rank] = $element['prop_value'];
+        }
       }
     }
   }

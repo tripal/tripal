@@ -530,11 +530,14 @@ function theme_tripal_core_additional_dbxrefs_form_table($variables) {
  */
 function tripal_core_additional_dbxrefs_form_retreive($node) {
   $dbxrefs = array();
-  foreach ($node->dbxref_table as $db_id => $elements) {
-    if ($db_id != 'new') {
-      foreach ($elements as $version => $dbxref) {
-        $dbxref_id = (!empty($dbxref['dbxref_id'])) ? $dbxref['dbxref_id'] : 'NONE';
-        $dbxrefs[$db_id][$version][$dbxref_id] = $dbxref['accession'];
+
+  if (isset($node->dbxref_table)) {
+    foreach ($node->dbxref_table as $db_id => $elements) {
+      if ($db_id != 'new') {
+        foreach ($elements as $version => $dbxref) {
+          $dbxref_id = (!empty($dbxref['dbxref_id'])) ? $dbxref['dbxref_id'] : 'NONE';
+          $dbxrefs[$db_id][$version][$dbxref_id] = $dbxref['accession'];
+        }
       }
     }
   }
