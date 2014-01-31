@@ -59,10 +59,6 @@ function tripal_analysis_install() {
  */
 function tripal_analysis_uninstall() {
 
-  // remove the materialized view
-  if ($mview = tripal_mviews_get_mview_id('analysis_organism')) {
-    tripal_mviews_action('delete', $mview);
-  }
 }
 /**
  * 

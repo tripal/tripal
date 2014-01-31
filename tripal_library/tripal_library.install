@@ -59,10 +59,7 @@ function tripal_library_install() {
  * @ingroup tripal_library
  */
 function tripal_library_uninstall() {
-  // Drop the MView table if it exists
-  if ($mview_id = tripal_mviews_get_mview_id('library_feature_count')) {
-    tripal_mviews_action("delete", $mview_id);
-  }
+
 }
 
 /**
