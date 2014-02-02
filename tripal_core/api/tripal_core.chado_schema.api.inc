@@ -2,7 +2,28 @@
 
 /**
  * @file
+ * @defgroup tripal_chado_schema_api Chado Query API
+ * @ingroup tripal_chado_api
+ * @{
+ * Provides an application programming interface (API) for describing Chado tables.
+ * This API consists of a set of functions, one for each table in Chado.  Each
+ * function simply returns a Drupal style array that defines the table.
  *
+ * Because Drupal 6 does not handle foreign key (FK) relationships, however FK
+ * relationships are needed to for Tripal Views.  Therefore, FK relationships
+ * have been added to the schema defintitions below.
+ *
+ * The functions provided in this documentation should not be called as is, but if you need
+ * the Drupal-style array definition for any table, use the following function
+ * call:
+ *
+ *   $table_desc = tripal_core_get_chado_table_schema($table)
+ *
+ * where the variable $table contains the name of the table you want to
+ * retireve.  The tripal_core_get_chado_table_schema function determines the appropriate version of
+ * Chado and uses the Drupal hook infrastructure to call the appropriate
+ * hook function to retrieve the table schema.
+ * @}
  */
 
 /**
@@ -12,6 +33,8 @@
  *
  * @return
  *   TRUE/FALSE depending upon whether it exists
+ *
+ * @ingroup tripal_chado_schema_api
  */
 function chado_table_exists($table) {
   global $databases;
@@ -43,7 +66,7 @@ function chado_table_exists($table) {
  * @return
  *   TRUE/FALSE depending upon whether or not the schema exists
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_schema_api
  */
 function tripal_core_schema_exists($schema) {
 
@@ -69,6 +92,8 @@ function tripal_core_schema_exists($schema) {
  *
  * @return
  *   TRUE/FALSE depending upon whether it exists
+ *
+ * @ingroup tripal_chado_schema_api
  */
 function tripal_core_chado_schema_exists() {
 
@@ -99,7 +124,7 @@ function tripal_core_chado_schema_exists() {
  * @return
  *   TRUE/FALSE depending upon whether chado is installed.
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_schema_api
  */
 function tripal_core_is_chado_installed() {
   global $databases;
@@ -120,7 +145,7 @@ function tripal_core_is_chado_installed() {
  * @return
  *   TRUE/FALSE depending upon whether chado is local.
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_schema_api
  */
 function tripal_core_is_chado_local() {
   global $databases, $db_type;
@@ -155,7 +180,7 @@ function tripal_core_is_chado_local() {
  * @returns
  *   The version of Chado
  *
- * @ingroup tripal_core_api
+ * @ingroup tripal_chado_schema_api
  */
 function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FALSE) {
 
@@ -259,7 +284,7 @@ function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FA
  * @returns
  *   An associative array where the key and value pairs are the Chado table names.
  *
- * @ingroup tripal_core_api
+ * @ingroup tripal_chado_schema_api
  */
 function tripal_core_get_chado_tables($include_custom = NULL) {
 
@@ -304,7 +329,7 @@ function tripal_core_get_chado_tables($include_custom = NULL) {
  * @returns
  *   A Drupal Schema API array defining the table.
  *
- * @ingroup tripal_core_api
+ * @ingroup tripal_chado_schema_api
  */
 function tripal_core_get_chado_table_schema($table) {
 
@@ -333,7 +358,7 @@ function tripal_core_get_chado_table_schema($table) {
  *   A Drupal-style Schema API array definition of the table. Returns
  *   FALSE on failure.
  *
- * @ingroup tripal_core_api
+ * @ingroup tripal_chado_schema_api
  */
 function tripal_get_chado_custom_schema($table) {
 

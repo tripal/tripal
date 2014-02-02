@@ -38,14 +38,14 @@
 
 // APPLICATION PROGRAMMER INTERFACE -------------
 // Chado API
-require_once "api/tripal_core.general_chado.api.inc";
-require_once 'api/tripal_core.generic_query.api.inc';
+require_once "api/tripal_core.chado_general.api.inc";
+require_once 'api/tripal_core.chado_query.api.inc';
 require_once 'api/tripal_core.chado_variables.api.inc';
 require_once 'api/tripal_core.chado_schema.api.inc';
 require_once "api/tripal_core.chado_nodes.api.inc";
-require_once "api/tripal_core.properties.api.inc";
-require_once "api/tripal_core.database_references.api.inc";
-require_once "api/tripal_core.relationships.api.inc";
+require_once "api/tripal_core.chado_nodes.properties.api.inc";
+require_once "api/tripal_core.chado_nodes.dbxrefs.api.inc";
+require_once "api/tripal_core.chado_nodes.relationships.api.inc";
 
 // Table API
 require_once "api/tripal_core.custom_tables.api.inc";

@@ -2,8 +2,17 @@
 
 /**
  * @file
- * Functions for managing Drupal Nodes corresponding to chado content
- *
+ * @defgroup tripal_chado_node_api Chado Node API
+ * @ingroup tripal_chado_api
+ * @{
+ * Many Tripal modules implement Drupal node types as a means of displaying chado
+ * records individually through Drupal as a single web page. In order to do this, many of
+ * the same drupal hooks are implemented and the code between modules is actually quite
+ * similar. This API aims to abstract much of the common functionality in order to make
+ * it easier for new Tripal modules to implement drupal node types and to centralize the
+ * maintenance effort as much as possible.
+ * @}
+ */
 
 /**
  * Determine whether a given chado table is directly linked to a node
@@ -12,6 +21,8 @@
  *   The name of a chado table to check (ie: feature)
  * @return
  *   TRUE if it is linked to a node and FALSE otherwise
+ *
+ * @ingroup tripal_chado_node_api
  */
 function tripal_core_is_tripal_node_type($chado_table) {
   $linking_table = 'chado_' . $chado_table;
@@ -148,10 +159,14 @@ function tripal_core_is_tripal_node_type($chado_table) {
   }
 
  * @endcode
+ *
+ * @ingroup tripal_chado_node_api
  */
 
 /**
  * Generic Sync Form
+ *
+ * @ingroup tripal_chado_node_api
  */
 function tripal_core_chado_node_sync_form($form, &$form_state) {
   $form = array();
@@ -320,6 +335,8 @@ function tripal_core_chado_node_sync_form($form, &$form_state) {
 
 /**
  * Generic Sync Form Submit
+ *
+ * @ingroup tripal_chado_node_api
  */
 function tripal_core_chado_node_sync_form_submit($form, $form_state) {
 
@@ -391,6 +408,8 @@ function tripal_core_chado_node_sync_form_submit($form, $form_state) {
 
 /**
  * Actual Sync Function. Works on a group of records
+ *
+ * @ingroup tripal_chado_node_api
  */
 function tripal_core_chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = FALSE,
     $types = array(), $ids = array(), $job_id = NULL) {
@@ -566,6 +585,7 @@ function tripal_core_chado_node_sync_records($base_table, $max_sync = FALSE, $or
   }
 
 }
+
 /**
  * This function will delete Drupal nodes for any sync'ed table (e.g.
  * feature, organism, analysis, stock, library) if the chado record has been
@@ -577,7 +597,7 @@ function tripal_core_chado_node_sync_records($base_table, $max_sync = FALSE, $or
  *   This should be the job id from the Tripal jobs system.  This function
  *   will update the job status using the provided job ID.
  *
- * @ingroup tripal_core_api
+ * @ingroup tripal_chado_node_api
  */
 function tripal_core_chado_node_cleanup_orphaned($table, $job_id = NULL) {
   $count = 0;

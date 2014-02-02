@@ -2,6 +2,9 @@
 
 /**
  * @file
+ * @defgroup tripal_chado_variables_api Chado Variables API
+ * @ingroup tripal_chado_api
+ * @{
  * This API generates objects containing the full details of a record(s) in chado.
  * These should be used in all theme templates.
  *
@@ -64,7 +67,7 @@
  * @return
  *   An array of type => criteria where the type is excluded if the criteria evaluates to TRUE
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_variables_api
  */
 function tripal_core_exclude_type_by_default() {
   return array('text' => 'strlen("&gt;field_value&lt; ") > 100');
@@ -93,7 +96,7 @@ function tripal_core_exclude_type_by_default() {
  * @return
  *   An array of type => criteria where the type is excluded if the criteria evaluates to TRUE
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_variables_api
  */
 function tripal_core_exclude_field_from_feature_by_default() {
   return array();
@@ -188,7 +191,7 @@ function tripal_core_exclude_field_from_feature_by_default() {
  * @endcode
  *      will exclude all text fields with a length > 50. Thus if $feature.residues is longer than 50 *      it will be excluded, otherwise it will be added.
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_variables_api
  */
 function tripal_core_generate_chado_var($table, $values, $base_options = array()) {
   $all = new stdClass();
@@ -491,7 +494,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
    $feature = tripal_core_expand_chado_vars($feature, 'table', 'featureprop');
  * @endcode
  *
- * @ingroup tripal_chado_api
+ * @ingroup tripal_chado_variables_api
  */
 function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_options = array()) {
 
