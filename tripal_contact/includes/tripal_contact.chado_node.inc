@@ -165,16 +165,28 @@ function chado_contact_form(&$node, $form_state) {
 
   // Properties Form
   // ----------------------------------
-  // D7 @TODO: Properties API doesn't handle using cvtermpath to get options
-  // SELECT CVTS.cvterm_id, CVTS.name
-  // FROM {cvtermpath} CVTP
-  //   INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
-  //   INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
-  //   INNER JOIN {cv} CV       ON CVTO.cv_id = CV.cv_id
-  // WHERE
-  //   CV.name = 'tripal_contact' AND
-  //   NOT CVTO.name = 'Contact Type'
-  // ORDER BY CVTS.name ASC
+  // Need to pass in our own select_options since we use cvtermpath to filter ours
+  $select_options = array();
+  $select_options[] = 'Select a Property';
+  $sql = "
+   SELECT CVTS.cvterm_id, CVTS.name
+   FROM {cvtermpath} CVTP
+     INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
+     INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
+     INNER JOIN {cv} CV       ON CVTO.cv_id = CV.cv_id
+   WHERE
+     CV.name = 'tripal_contact' AND
+     NOT CVTO.name = 'Contact Type'
+   ORDER BY CVTS.name ASC";
+  $prop_types = chado_query($sql);
+  while ($prop = $prop_types->fetchObject()) {
+    // add all properties except the Citation. That property is set via the uniquename field
+    if ($prop->name != 'Citation') {
+      if (!isset($select_options[$prop->cvterm_id])) {
+        $select_options[$prop->cvterm_id] = $prop->name;
+      }
+    }
+  }
 
   // D7 @TODO: Properties API doesn't handle Exclude
   $exclude = array('contact_description');
@@ -182,7 +194,8 @@ function chado_contact_form(&$node, $form_state) {
     'property_table' => 'contactprop',
     'base_foreign_key' => 'contact_id',
     'base_key_value' => $contact_id,
-    'cv_name' => 'tripal_contact'
+    'cv_name' => 'tripal_contact',
+    'select_options' => $select_options
   );
   chado_node_properties_form($form, $form_state, $details);
 

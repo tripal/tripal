@@ -222,20 +222,9 @@ function chado_pub_form($node, $form_state) {
 
   // Properties Form
   // ----------------------------------
-  // D7 @TODO: Properties API doesn't handle exclude
-  $exclude = array("Citation");
-  $details = array(
-    'property_table' => 'pubprop',
-    'base_foreign_key' => 'pub_id',
-    'base_key_value' => $pub_id,
-    'cv_name' => 'tripal_pub',
-    'exclude'=> array('Citation')
-  );
-  chado_node_properties_form($form, $form_state, $details);
-  // get publication properties list
-  /**
-  $properties_select = array();
-  $properties_select[] = 'Select a Property';
+  // Need to pass in our own select_options since we use cvtermpath to filter ours
+  $select_options = array();
+  $select_options[] = 'Select a Property';
   $sql = "
     SELECT
       DISTINCT CVTS.cvterm_id, CVTS.name, CVTS.definition
@@ -252,18 +241,22 @@ function chado_pub_form($node, $form_state) {
   while ($prop = $prop_types->fetchObject()) {
     // add all properties except the Citation. That property is set via the uniquename field
     if ($prop->name != 'Citation') {
-      $properties[$prop->cvterm_id] = $prop->name;
+      $select_options[$prop->cvterm_id] = $prop->name;
     }
   }
 
-  // add in the properties fields. The 'Citation' term is special because it serves
-  // both as a property and as the uniquename for the publiation table so we exclude it
-  // as it shouldn't be selected as a property
+  // D7 @TODO: Properties API doesn't handle exclude
   $exclude = array("Citation");
-  $instructions = '';
-  tripal_core_properties_form($form, $form_state, 'pubprop', 'pub_id', 'tripal_pub',
-    $properties, $pub_id, $exclude, $more_props, $instructions, 'Properties');
-  */
+
+  $details = array(
+    'property_table' => 'pubprop',
+    'base_foreign_key' => 'pub_id',
+    'base_key_value' => $pub_id,
+    'cv_name' => 'tripal_pub',
+    'select_options' => $select_options,
+    'exclude'=> array('Citation')
+  );
+  chado_node_properties_form($form, $form_state, $details);
 
   return $form;
 

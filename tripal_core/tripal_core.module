@@ -36,16 +36,26 @@
  * @ingroup tripal_modules
  */
 
-require_once "api/tripal_core_chado.api.inc";
-require_once "api/tripal_core_files.api.inc";
-require_once "api/tripal_core_chado_nodes.api.inc";
-require_once "api/tripal_core_custom_tables.api.inc";
-require_once "api/tripal_core_jobs.api.inc";
-require_once "api/tripal_core_mviews.api.inc";
+// APPLICATION PROGRAMMER INTERFACE -------------
+// Chado API
+require_once "api/tripal_core.general_chado.api.inc";
+require_once 'api/tripal_core.generic_query.api.inc';
+require_once 'api/tripal_core.chado_variables.api.inc';
+require_once 'api/tripal_core.chado_schema.api.inc';
+require_once "api/tripal_core.chado_nodes.api.inc";
 require_once "api/tripal_core.properties.api.inc";
 require_once "api/tripal_core.database_references.api.inc";
 require_once "api/tripal_core.relationships.api.inc";
 
+// Table API
+require_once "api/tripal_core.custom_tables.api.inc";
+require_once "api/tripal_core.mviews.api.inc";
+
+// Miscellaneous API
+require_once "api/tripal_core.files.api.inc";
+require_once "api/tripal_core.jobs.api.inc";
+
+// INCLUDES -------------------------------------
 require_once "includes/jobs.inc";
 require_once "includes/mviews.inc";
 require_once "includes/custom_tables.inc";

@@ -448,6 +448,8 @@ function tripal_core_delete_property_by_id($basetable, $record_id) {
  *   Optional keys include:
  *     - fieldset_title: the non-translated title for this fieldset
  *     - additional_instructions: a non-translated string providing additional instructions
+ *     - select_options: must be an array where the [key] is a valid cvterm_id and
+ *       the [value] is the human-readable name of the option. This is generated from the cv_name/id by default
  */
 function chado_node_properties_form(&$form, &$form_state, $details) {
 
@@ -456,37 +458,42 @@ function chado_node_properties_form(&$form, &$form_state, $details) {
   $details['additional_instructions'] = '';
 
   // Get Property Types for the Select List
-  if (isset($details['cv_name'])) {
-    $property_options = array();
-    $property_options[] = 'Select a Property';
-    $sql = "
-      SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition
-      FROM  {cvterm} CVT
-        INNER JOIN {cv} CV ON CVT.cv_id = CV.cv_id
-      WHERE
-        CV.name = :cv_name AND
-        NOT CVT.is_obsolete = 1
-      ORDER BY CVT.name ASC
-    ";
-    $prop_types = chado_query($sql, array(':cv_name' => $details['cv_name']));
-    while ($prop = $prop_types->fetchObject()) {
-      $property_options[$prop->cvterm_id] = $prop->name;
-    }
-  } elseif (isset($details['cv_id'])) {
-    $property_options = array();
-    $property_options[] = 'Select a Property';
-    $sql = "
-      SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition
-      FROM  {cvterm} CVT
-        INNER JOIN {cv} CV ON CVT.cv_id = CV.cv_id
-      WHERE
-        CV.cv_id = :cv_id AND
-        NOT CVT.is_obsolete = 1
-      ORDER BY CVT.name ASC
-    ";
-    $prop_types = chado_query($sql, array(':cv_id' => $details['cv_id']));
-    while ($prop = $prop_types->fetchObject()) {
-      $property_options[$prop->cvterm_id] = $prop->name;
+  if (isset($details['select_options'])) {
+    $property_options = $details['select_options'];
+  }
+  else {
+    if (isset($details['cv_name'])) {
+      $property_options = array();
+      $property_options[] = 'Select a Property';
+      $sql = "
+        SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition
+        FROM  {cvterm} CVT
+          INNER JOIN {cv} CV ON CVT.cv_id = CV.cv_id
+        WHERE
+          CV.name = :cv_name AND
+          NOT CVT.is_obsolete = 1
+        ORDER BY CVT.name ASC
+      ";
+      $prop_types = chado_query($sql, array(':cv_name' => $details['cv_name']));
+      while ($prop = $prop_types->fetchObject()) {
+        $property_options[$prop->cvterm_id] = $prop->name;
+      }
+    } elseif (isset($details['cv_id'])) {
+      $property_options = array();
+      $property_options[] = 'Select a Property';
+      $sql = "
+        SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition
+        FROM  {cvterm} CVT
+          INNER JOIN {cv} CV ON CVT.cv_id = CV.cv_id
+        WHERE
+          CV.cv_id = :cv_id AND
+          NOT CVT.is_obsolete = 1
+        ORDER BY CVT.name ASC
+      ";
+      $prop_types = chado_query($sql, array(':cv_id' => $details['cv_id']));
+      while ($prop = $prop_types->fetchObject()) {
+        $property_options[$prop->cvterm_id] = $prop->name;
+      }
     }
   }
 
