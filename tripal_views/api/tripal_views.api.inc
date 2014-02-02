@@ -3,9 +3,14 @@
 /**
  * @file
  * API functions for Tripal Views Integration
- *
+ */
+
+ /**
  * @defgroup tripal_views_api Tripal Views Module API
  * @ingroup tripal_api
+ * @{
+ * Provides functions for Tripal Views Integrations
+ * @}
  */
 
 /**

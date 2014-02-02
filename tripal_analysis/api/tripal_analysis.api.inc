@@ -1,24 +1,25 @@
 <?php
 
 /**
- * @file
- * API functions relating to Analysis'
- *
  * @defgroup tripal_analysis_api Analysis Module API
  * @ingroup tripal_api
+ * @{
+ * API functions relating to Analysis'
+ * @}
  */
+
 /**
- * Register tripal_analysis sub-modules
+ * Register tripal_analysis_api sub-modules
  *
  * @param $modulename
  *  The name of the module to be registered as a tripal analysis submodule
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_analysis_api
  */
-function tripal_analysis_register_child($modulename) {
-  $sql = "SELECT * FROM {tripal_analysis} WHERE modulename = :modname";
+function tripal_analysis_api_register_child($modulename) {
+  $sql = "SELECT * FROM {tripal_analysis_api} WHERE modulename = :modname";
   if (!db_query($sql, array(':modname' => $modulename))->fetchField()) {
-    $sql = "INSERT INTO {tripal_analysis} (modulename) VALUES (:modname)";
+    $sql = "INSERT INTO {tripal_analysis_api} (modulename) VALUES (:modname)";
     db_query($sql, array(':modname' => $modulename));
   }
 }
@@ -29,11 +30,11 @@ function tripal_analysis_register_child($modulename) {
  * @param $modulename
  *  The name of the module to un-register
  *
- * @ingroup tripal_analysis
+ * @ingroup tripal_analysis_api
  */
-function tripal_analysis_unregister_child($modulename) {
-  if (db_table_exists('tripal_analysis')) {
-      $sql = "DELETE FROM {tripal_analysis} WHERE modulename = :modname";
+function tripal_analysis_api_unregister_child($modulename) {
+  if (db_table_exists('tripal_analysis_api')) {
+      $sql = "DELETE FROM {tripal_analysis_api} WHERE modulename = :modname";
       db_query($sql, array(':modname' => $modulename));
   }
 }
@@ -50,9 +51,9 @@ function tripal_analysis_unregister_child($modulename) {
  * @return
  *    An analysis chado variable with the specified properties expanded
  *
- * @ingroup tripal_analysis_api
+ * @ingroup tripal_analysis_api_api
  */
-function tripal_analysis_get_property($analysis_id, $property, $cvname = 'tripal') {
+function tripal_analysis_api_get_property($analysis_id, $property, $cvname = 'tripal') {
   return tripal_core_get_property('analysis', $analysis_id, $property, $cvname);
 }
 
@@ -73,9 +74,9 @@ function tripal_analysis_get_property($analysis_id, $property, $cvname = 'tripal
  * @return
  *   True of success, False otherwise
  *
- * @ingroup tripal_analysis_api
+ * @ingroup tripal_analysis_api_api
  */
-function tripal_analysis_insert_property($analysis_id, $property, $value, $update_if_present = 0, $cvname = 'tripal') {
+function tripal_analysis_api_insert_property($analysis_id, $property, $value, $update_if_present = 0, $cvname = 'tripal') {
     return tripal_core_insert_property('analysis', $analysis_id, $property, $cvname, $value, $update_if_present);
 }
 
@@ -99,9 +100,9 @@ function tripal_analysis_insert_property($analysis_id, $property, $value, $updat
  * @return
  *   True of success, False otherwise
  *
- * @ingroup tripal_analysis_api
+ * @ingroup tripal_analysis_api_api
  */
-function tripal_analysis_update_property($analysis_id, $property, $value, $insert_if_missing = 0, $cvname = 'tripal') {
+function tripal_analysis_api_update_property($analysis_id, $property, $value, $insert_if_missing = 0, $cvname = 'tripal') {
   return tripal_core_update_property('analysis', $analysis_id, $property, $cvname, $value, $insert_if_missing);
 }
 
@@ -121,9 +122,9 @@ function tripal_analysis_update_property($analysis_id, $property, $value, $inser
  * @return
  *   True of success, False otherwise
  *
- * @ingroup tripal_analysis_api
+ * @ingroup tripal_analysis_api_api
  */
-function tripal_analysis_delete_property($analysis_id, $property, $cvname = 'tripal') {
+function tripal_analysis_api_delete_property($analysis_id, $property, $cvname = 'tripal') {
   return tripal_core_delete_property('analysis', $analysis_id, $property, $cvname);
 }
 
@@ -136,9 +137,9 @@ function tripal_analysis_delete_property($analysis_id, $property, $cvname = 'tri
  * @return
  *   node of analysis on success, null otherwise
  *
- * @ingroup tripal_analysis_api
+ * @ingroup tripal_analysis_api_api
  */
-function tripal_analysis_get_node($analysis_id) {
+function tripal_analysis_api_get_node($analysis_id) {
   $sql = "SELECT *
            FROM {chado_analysis} CA
               INNER JOIN {node} N on CA.nid = N.nid

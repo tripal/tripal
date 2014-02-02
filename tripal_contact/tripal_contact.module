@@ -1,20 +1,6 @@
 <?php
 
 /**
- *  @file
- * This file contains the basic functions needed for this drupal module.
- * The drupal tripal_contact module maps directly to the chado X module.
- *
- * For documentation regarding the Chado X module:
- * @see http://gmod.org/wiki/Chado_General_Module
- */
-
-require('api/tripal_contact.api.inc');
-require('theme/tripal_contact.theme.inc');
-require('includes/tripal_contact.admin.inc');
-require('includes/tripal_contact.chado_node.inc');
-
-/**
  * @defgroup tripal_contact Contact Module
  * @ingroup tripal_modules
  * @{
@@ -27,8 +13,12 @@ require('includes/tripal_contact.chado_node.inc');
  * @}
  */
 
+require('api/tripal_contact.api.inc');
+require('theme/tripal_contact.theme.inc');
+require('includes/tripal_contact.admin.inc');
+require('includes/tripal_contact.chado_node.inc');
 
-/*************************************************************************
+/**
  * Implements hook_views_api()
  * Purpose: Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_contact.views.inc where all the
@@ -105,7 +95,7 @@ function tripal_contact_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 0
   );
-  
+
   $items['admin/tripal/chado/tripal_contact/sync'] = array(
     'title' => ' Sync',
     'description' => 'Create pages on this site for libraries stored in Chado',
@@ -147,7 +137,7 @@ function tripal_contact_menu() {
  */
 function tripal_contact_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
-  
+
   $items = array(
     'node__chado_contact' => array(
       'template' => 'node--chado-generic',
@@ -221,7 +211,7 @@ function tripal_contact_block_view($delta = '') {
       case 'contbase':
         $block['subject'] = t('Details');
         $block['content'] = array(
-          '#theme' => 'tripal_contact_base', 
+          '#theme' => 'tripal_contact_base',
           '#nodes' => $node,
           '#title' => '',
         );
@@ -229,7 +219,7 @@ function tripal_contact_block_view($delta = '') {
       case 'contprops':
         $block['subject'] = t('Properties');
         $block['content'] = array(
-          '#theme' => 'tripal_contact_properties', 
+          '#theme' => 'tripal_contact_properties',
           '#nodes' => $node,
           '#title' => '',
         );
@@ -237,7 +227,7 @@ function tripal_contact_block_view($delta = '') {
       case 'contrels':
         $block['subject'] = t('Relationships');
         $block['content'] = array(
-          '#theme' => 'tripal_contact_relationships', 
+          '#theme' => 'tripal_contact_relationships',
           '#nodes' => $node,
           '#title' => '',
         );
@@ -245,7 +235,7 @@ function tripal_contact_block_view($delta = '') {
       case 'contpubs':
         $block['subject'] = t('Publications');
         $block['content'] = array(
-          '#theme' => 'tripal_contact_publications', 
+          '#theme' => 'tripal_contact_publications',
           '#nodes' => $node,
           '#title' => '',
         );

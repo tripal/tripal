@@ -1,10 +1,10 @@
 <?php
 /**
- * @file
- * All functions in this file provide an API to administrative management of bulk loader templates
- *
  * @defgroup tripal_bulk_loader_api Tripal Bulk Loader Module API
  * @ingroup tripal_api
+ * @{
+ * All functions in this file provide an API to administrative management of bulk loader templates
+ * @}
  */
 
 /**

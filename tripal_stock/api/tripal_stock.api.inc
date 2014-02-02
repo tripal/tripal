@@ -7,6 +7,9 @@
 /**
  * @defgroup tripal_stock_api Stock Module API
  * @ingroup tripal_api
+ * @{
+ * Provides an application programming interface (API) to manage stocks
+ * @}
  */
 
 /**

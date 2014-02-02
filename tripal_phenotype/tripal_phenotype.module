@@ -1,15 +1,11 @@
 <?php
 
 /**
- *  @file
- * This file contains the basic functions needed for this drupal module.
- * The drupal tripal_phenotype module maps directly to the chado X module.
- *
- * For documentation regarding the Chado X module:
- * @see http://gmod.org/wiki/Chado_General_Module
- *
  * @defgroup tripal_phenotype Phenotype Module
  * @ingroup tripal_modules
+ * @{
+ * Provides functions for managing chado phenotype data
+ * @}
  */
 
 /**

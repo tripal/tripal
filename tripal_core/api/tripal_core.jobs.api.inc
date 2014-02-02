@@ -1,8 +1,5 @@
 <?php
 /**
- * @file
- * Contains functions related to the Tripal Jobs API
- *
  * @defgroup tripal_jobs_api Jobs API
  * @ingroup tripal_core_api
  * @{
@@ -21,7 +18,7 @@
  * waiting jobs is determined first by priority and second by the order the jobs were entered.
  *
  * The API functions described below provide a programmatic interface for adding, checking and viewing jobs.
- * @} 
+ * @}
  */
 
 /**
@@ -68,7 +65,7 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $pr
   if (is_array($arguments)) {
     $args = serialize($arguments);
   }
-  
+
   $record = new stdClass();
   $record->job_name = $job_name;
   $record->modulename = $modulename;
@@ -190,14 +187,14 @@ function tripal_jobs_get_end_time($job) {
  */
 function tripal_jobs_rerun($job_id, $goto_jobs_page = TRUE) {
   global $user;
-  
+
   $user_id = $user->uid;
 
   $sql = "SELECT * FROM {tripal_jobs} WHERE job_id = :job_id";
   $results = db_query($sql, array(':job_id' => $job_id));
-  $job = $results->fetchObject(); 
+  $job = $results->fetchObject();
   // arguments for jobs used to be stored as plain string with a double colon
-  // separating them.  But as of Tripal v2.0 the arguments are stored as 
+  // separating them.  But as of Tripal v2.0 the arguments are stored as
   // a serialized array.  To be backwards compatible, we should check for serialization
   // and if not then we will use the old style
   $args = unserialize($job->arguments);
@@ -295,7 +292,7 @@ function tripal_jobs_launch($do_parallel = 0, $job_id = NULL) {
     // Add the job_id as the last item in the list of arguments. All
     // callback functions should support this argument.
     $callback = $job->callback;
-    
+
     // arguments for jobs used to be stored as plain string with a double colon
     // separating them.  But as of Tripal v2.0 the arguments are stored as
     // a serialized array.  To be backwards compatible, we should check for serialization

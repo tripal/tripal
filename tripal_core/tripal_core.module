@@ -29,11 +29,18 @@
  /**
  * @defgroup tripal_core_api Core Module API
  * @ingroup tripal_api
+ * @{
+ * Functions providing support for all Tripal modules.
+ * @}
  */
 
 /**
  * @defgroup tripal_core Tripal Core Module
  * @ingroup tripal_modules
+ * @{
+ * Functionality useful for all other Tripal modules including the Tripal jobs, files,
+ * materialized views and custom table functions.
+ * @}
  */
 
 // APPLICATION PROGRAMMER INTERFACE -------------

@@ -1,11 +1,6 @@
 <?php
 
 /**
- * @file
- * @todo Add file header description
- */
-
-/**
  * @defgroup tripal_feature Feature Module
  * @ingroup tripal_modules
  * @{

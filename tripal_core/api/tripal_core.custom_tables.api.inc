@@ -1,8 +1,5 @@
 <?php
 /**
- * @file
- * Contains functions for the Custom Tables API
-
  * @defgroup tripal_custom_tables_api Custom Tables API
  * @ingroup tripal_core_api
  * @{
@@ -11,7 +8,7 @@
  */
 
 /**
- * Edits a custom table in the chado database. It supports 
+ * Edits a custom table in the chado database. It supports
  * using the Drupal Schema API array.
  *
  * @param $table_id
@@ -39,11 +36,11 @@ function tripal_core_edit_custom_table($table_id, $table_name, $schema, $skip_cr
   $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
   $results = db_query($sql, array(':table_id' => $table_id));
   $custom_table = $results->fetchObject();
-  
+
   // if the user changed the table name, we want to drop the old one and force
   // creation of the new one.
   if ($custom_table->table_name != $table_name) {
-    chado_query("DROP TABLE %s", $custom_table->table_name);  
+    chado_query("DROP TABLE %s", $custom_table->table_name);
     $skip_creation = 0; // we want to create the table
   }
 
@@ -93,7 +90,7 @@ function tripal_core_edit_custom_table($table_id, $table_name, $schema, $skip_cr
  *   A Drupal-style Schema API definition of the table
  * @param $skip_creation
  *   Set as TRUE to skip dropping and re-creation of the table if it already
- *   exists.  This is useful if the table was already created through another 
+ *   exists.  This is useful if the table was already created through another
  *   means and you simply want to make Tripal aware of the table schema.  If the
  *   table does not exist it will be created.
  *
@@ -106,17 +103,17 @@ function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
   global $databases;
   $created = 0;
   $recreated = 0;
-  
+
   // see if the table entry already exists in the tripal_custom_tables table.
   $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_name = :table_name";
   $results = db_query($sql, array(':table_name' => $table));
   $centry = $results->fetchObject();
-  
+
   // check to see if the table already exists in the chado schema
-  $exists = chado_table_exists($table); 
-  
+  $exists = chado_table_exists($table);
+
   // if the table does not exist then create it
-  if (!$exists) { 
+  if (!$exists) {
     try {
       $ret = db_create_table('chado.' . $table, $schema);
       $created = 1;
@@ -126,15 +123,15 @@ function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
       watchdog('tripal_core', "Error adding custom table: @message", array('@message' => $error), WATCHDOG_ERROR);
       drupal_set_message("Could not add custom table. $error.", "error");
       return FALSE;
-    }    
-  }  
+    }
+  }
 
   // if the table exists in Chado and in our custom table and
-  // skip creation is turned off then drop and re-create the table 
-  if ($exists and is_object($centry) and !$skip_creation) {    
-    
-    // drop the table we'll recreate it with the new schema    
-    try {      
+  // skip creation is turned off then drop and re-create the table
+  if ($exists and is_object($centry) and !$skip_creation) {
+
+    // drop the table we'll recreate it with the new schema
+    try {
       chado_query('DROP TABLE {' . $table . '}');
       db_create_table('chado.' . $table, $schema);
       $recreated = 1;
@@ -162,24 +159,24 @@ function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
   if (!$success) {
     watchdog('tripal_core', "Error adding custom table %table_name.",
       array('%table_name' => $table), WATCHDOG_ERROR);
-    drupal_set_message(t("Could not add custom table %table_name. 
-      Please check the schema array.", array('%table_name' => $table)), 'error');      
+    drupal_set_message(t("Could not add custom table %table_name.
+      Please check the schema array.", array('%table_name' => $table)), 'error');
     return FALSE;
   }
-  
-  
+
+
   // now add any foreign key constraints
   if (!$skip_creation and array_key_exists('foreign keys', $schema)) {
-    
+
     // iterate through the foreign keys and add each one
     $fkeys = $schema['foreign keys'];
     foreach ($fkeys as $fktable => $fkdetails) {
       $relations = $fkdetails['columns'];
       foreach ($relations as $left => $right) {
         $sql = '
-          ALTER TABLE {' . $table . '} 
-            ADD CONSTRAINT ' . $table . '_' . $left . '_fkey FOREIGN KEY (' . $left . ') 
-            REFERENCES  {' . $fktable . '} (' . $right . ') 
+          ALTER TABLE {' . $table . '}
+            ADD CONSTRAINT ' . $table . '_' . $left . '_fkey FOREIGN KEY (' . $left . ')
+            REFERENCES  {' . $fktable . '} (' . $right . ')
             ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
         ';
         try {
@@ -189,13 +186,13 @@ function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
           $error = $e->getMessage();
           watchdog('tripal_core', "Error, could not add foreign key contraint to custom table: %error",
             array('%error' => $error), WATCHDOG_ERROR);
-          drupal_set_message("Could not add foreign key contraint to table: $error", 'error');      
-          return FALSE;          
+          drupal_set_message("Could not add foreign key contraint to table: $error", 'error');
+          return FALSE;
         }
       }
     }
   }
-  
+
   if ($created) {
     drupal_set_message("Custom table created successfully.", 'status');
   }

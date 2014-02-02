@@ -11,12 +11,14 @@ require_once "includes/importers/tripal_pub.PMID.inc";
 require_once "includes/importers/tripal_pub.AGL.inc";
 
 /**
- * @file
- *
+ * @defgroup tripal_pub Publication Module
+ * @ingroup tripal_modules
+ * @{
  * The Tripal Publication module allows you to search the PubMed databse for academic articles,
- * that relate to user specified tpoic\s. As well, it allows management of publications so that
+ * that relate to user specified topic\s. As well, it allows management of publications so that
  * a user can enter specified details regarding a desired publication. This allows all of the important
  * information that is unique to a Academic Publication to be stored for access.
+ * @}
  */
 
 
@@ -96,7 +98,7 @@ function tripal_pub_menu() {
     'weight' => 2
   );
   return $items;
-  
+
   $items['admin/tripal/chado/tripal_pub/citation'] = array(
     'title' => 'Citations',
     'description' => 'Update publication citations',
@@ -106,7 +108,7 @@ function tripal_pub_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 1
   );
-  
+
   $items['admin/tripal/chado/tripal_pub/import_list'] = array(
     'title' => t('Importers'),
     'description' => t('List all publication importers'),
@@ -115,7 +117,7 @@ function tripal_pub_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 0
   );
-  
+
   // add a second link for the importer on the data loaders page
   $items['admin/tripal/loaders/pub_import'] = array(
     'title' => 'Publications Importers',
@@ -124,7 +126,7 @@ function tripal_pub_menu() {
     'access arguments' => array('administer tripal pubs'),
     'type' => MENU_NORMAL_ITEM,
   );
-  
+
   $items['admin/tripal/chado/tripal_pub/import/new'] = array(
     'title' => t('Add an Importer'),
     'description' => t('Add a new publication importer.'),
@@ -146,7 +148,7 @@ function tripal_pub_menu() {
     'access arguments' => array('administer tripal pubs'),
     'type ' => MENU_CALLBACK,
   );
-  
+
   $items['admin/tripal/chado/tripal_pub/import/submit/%'] = array(
     'page callback' => 'tripal_pub_importer_submit_job',
     'page arguments' => array(6),
@@ -205,7 +207,7 @@ function tripal_pub_menu() {
  */
 function tripal_pub_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
-  
+
   $items = array(
     'node__chado_pub' => array(
       'template' => 'node--chado-generic',
@@ -279,7 +281,7 @@ function tripal_pub_theme($existing, $type, $theme, $path) {
     'tripal_pub_search_setup_form_elements' => array(
       'render element' => 'form',
     ),
-    
+
     // teaser
     'tripal_pub_teaser' => array(
       'variables' => array('node' => NULL),
@@ -402,7 +404,7 @@ function tripal_pub_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /**
- * 
+ *
  * @param $callback
  * @param $args
  */
@@ -414,7 +416,7 @@ function tripal_pub_job_describe_args($callback, $args) {
     $qargs = array(':import_id' => $args[0]);
     $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = :import_id ";
     $import = db_query($sql, $qargs)->fetchObject();
-    
+
     $new_args['Importer'] = $import->name;
   }
   return $new_args;

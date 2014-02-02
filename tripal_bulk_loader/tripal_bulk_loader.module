@@ -1,11 +1,11 @@
 <?php
 
 /**
- * @file
- * The functions for the Tripal bulk loader.
- *
  * @defgroup tripal_bulk_loader Tripal Bulk Loader Module
  * @ingroup tripal_modules
+ * @{
+ * Functions implementing the Tripal Generic tab-delimited chado data loader
+ * @}
  */
 
 // Loader

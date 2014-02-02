@@ -1,27 +1,20 @@
-<?php 
+<?php
 /**
- * @file
- * The Tripal Files API
- *
- * This file provides the API to help Tripal modules to storing files
- * in a consistent directory strcuture.
- *
- * @defgroup tripal_files_api  Files API
+ * @defgroup tripal_files_api Files API
  * @ingroup tripal_core_api
  * @{
  * Provides an application programming interface (API) for managing files within
  * the Tripal data directory structure.
- *
  * @}
  *
  */
- 
+
 /**
  * This function is a substitute for Drupal 6's file_directory_path()
  * function which no longer exists in Drupal 7.  However, the function
  * call is useful because it's more intitutive. So this wrapper was created
- * to mimic the behavior of the old function.  
- * 
+ * to mimic the behavior of the old function.
+ *
  * @return
  *   the public directory where tripal files are housed: sites/default/files/tripal
  */
@@ -59,7 +52,7 @@ function tripal_create_moddir($module_name) {
 /**
  * This function creates directories inside of the module's
  * Data directory.
- * 
+ *
  * @param $module_name
  * @param $path
  */
@@ -67,7 +60,7 @@ function tripal_create_mod_subdir($module_name, $path) {
 
   // make sure the module data directory exists
   tripal_create_moddir($module_name);
-  
+
   // now make sure the sub dir exists
   $sub_dir = tripal_file_directory_path() . $module_name . $path;
   if (!file_prepare_directory($sub_dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
@@ -87,7 +80,7 @@ function tripal_create_mod_subdir($module_name, $path) {
  *
  * @returns
  *   The path within the Drupal installation where the data directory resides
- *   
+ *
  * @ingroup tripal_files_api
  */
 function tripal_get_moddir($module_name) {

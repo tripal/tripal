@@ -1,7 +1,6 @@
 <?php
 
 /**
- * @file
  * @defgroup tripal_chado_node_api Chado Node API
  * @ingroup tripal_chado_api
  * @{
@@ -11,6 +10,22 @@
  * similar. This API aims to abstract much of the common functionality in order to make
  * it easier for new Tripal modules to implement drupal node types and to centralize the
  * maintenance effort as much as possible.
+ *
+ * A generic sync form has been created. See tripal_core_chado_node_sync_form() for
+ * instructions on how to implement this form in your module.
+ *
+ * Many of the base chado tables also have associated prop, _dbxref and _relationship
+ * tables. Generic mini-forms have been created to help you handle these forms. To
+ * implement this functionality you call the mini-form from your module node form and
+ * then call the associated update functions from both your hook_insert and hook_update.
+ * The functions of interest are as follows:
+ *   - chado_node_properties_form() and chado_node_properties_form_update_properties()
+ *     to provide an interface for adding/removing properties
+ *   - tripal_core_additional_dbxrefs_form() and tripal_core_additional_dbxrefs_form_update_dbxrefs()
+ *     to provide an interface for adding/removing additional database references
+ *   - tripal_core_relationships_form() and tripal_core_relationships_form_update_relationships()
+ *     to provide an interface for adding/removing relationships between chado records
+ *     from your base table
  * @}
  */
 

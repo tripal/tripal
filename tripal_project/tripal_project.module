@@ -5,15 +5,11 @@ require('includes/tripal_project.admin.inc');
 require('includes/tripal_project.chado_node.inc');
 
 /**
- *  @file
- * This file contains the basic functions needed for this drupal module.
- * The drupal tripal_project module maps directly to the chado general module.
- *
- * For documentation regarding the Chado General module:
- * @see http://gmod.org/wiki/Chado_General_Module
- *
  * @defgroup tripal_project Project Module
  * @ingroup tripal_modules
+ * @{
+ * Provides functions for managing chado projects including creating details pages for each one
+ * @}
  */
 
 /**
@@ -74,7 +70,7 @@ function tripal_project_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 0
   );
-  
+
   $items['admin/tripal/chado/tripal_project/views/projects/enable'] = array(
     'title' => 'Enable Project Administrative View',
     'page callback' => 'tripal_views_admin_enable_view',

@@ -1,7 +1,6 @@
 <?php
 
 /**
- * @file
  * @defgroup tripal_chado_schema_api Chado Query API
  * @ingroup tripal_chado_api
  * @{

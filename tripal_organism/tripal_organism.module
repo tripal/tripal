@@ -8,6 +8,9 @@ require_once "includes/tripal_organism.chado_node.inc";
  * @file
  * @defgroup tripal_organism Organism Module
  * @ingroup tripal_modules
+ * @{
+ * Provides functions for managing chado organisms including creating details pages for each one
+ * @}
  */
 
 /**
@@ -88,7 +91,7 @@ function tripal_organism_menu() {
     'access arguments' => array('adminster tripal organism'),
     'type' => MENU_NORMAL_ITEM,
   );
-  
+
   $items['admin/tripal/chado/tripal_organism/help'] = array(
     'title' => 'Help',
     'description' => "A description of the Tripal Organism module including a short description of it's usage.",
@@ -98,7 +101,7 @@ function tripal_organism_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
   );
-  
+
   $items['admin/tripal/chado/tripal_organism/configuration'] = array(
     'title' => 'Settings',
     'description' => 'Manage integration of Chado organisms including associated features',
@@ -118,7 +121,7 @@ function tripal_organism_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 2
   );
-  
+
   $items['admin/tripal/chado/tripal_organism/views/organisms/enable'] = array(
     'title' => 'Enable Organism Administrative View',
     'page callback' => 'tripal_views_admin_enable_view',
@@ -126,7 +129,7 @@ function tripal_organism_menu() {
     'access arguments' => array('administer tripal organism'),
     'type' => MENU_CALLBACK,
   );
-  
+
 
   return $items;
 }

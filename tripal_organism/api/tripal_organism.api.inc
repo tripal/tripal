@@ -1,11 +1,11 @@
 <?php
 
 /**
- * @file
- * Provides an application programming interface (API) to manage organisms
- *
- * @defgroup tripal_library_api Organism Module API
+ * @defgroup tripal_library_api Organism API
  * @ingroup tripal_api
+ * @{
+ * Provides an application programming interface (API) to manage organisms
+ * @}
  */
 
 /**
@@ -69,29 +69,29 @@ function tripal_organism_get_synced() {
 }
 
 /**
- * 
+ *
  * @param $organism
  * @param $nid
  */
 function tripal_organism_get_image_url($organism, $nid = NULL) {
   $url = '';
-  
+
   // first look for an image with the genus/species name.  This is old-style tripal
   // and we keep it for backwards compatibility.  If we don't find that file
   // then look for the image with the node ID in the name. If we don't find that then
-  // no image tag is generated  
+  // no image tag is generated
   $base_path = realpath('.');
   $image_dir = tripal_get_moddir('tripal_organism') . "/images";
   $image_name =  $organism->genus . "_" . $organism->species . ".jpg";
 
-  if (file_exists("$base_path/$image_dir/$image_name")) { 
-    $url = file_create_url("$image_dir/$image_name"); 
-  } 
+  if (file_exists("$base_path/$image_dir/$image_name")) {
+    $url = file_create_url("$image_dir/$image_name");
+  }
   else {
      $image_name = $nid . ".jpg";
-     if (file_exists("$base_path/$image_dir/$image_name")) { 
-       $url = file_create_url("$image_dir/$image_name"); 
-     }  
-  } 
+     if (file_exists("$base_path/$image_dir/$image_name")) {
+       $url = file_create_url("$image_dir/$image_name");
+     }
+  }
   return $url;
 }

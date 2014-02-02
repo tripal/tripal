@@ -1,17 +1,11 @@
 <?php
 
 /**
- * @file
- * Contains all the main hook implementations for the tripal_analysis module
- *
  * @defgroup tripal_analysis Analysis Module
  * @ingroup tripal_modules
  * @{
  * Provides functions for managing chado analysis' including creating details pages for each one
- *
  * @}
- *
- *
  */
 
 require_once 'api/tripal_analysis.api.inc';
@@ -161,7 +155,7 @@ function tripal_analysis_theme($existing, $type, $theme, $path) {
       'variables' =>  array(NULL),
       'path' => "$path/theme",
     ),
-    
+
     // tripal_feature theme
     'tripal_feature_analyses' => array(
       'template' => 'tripal_feature_analyses',
@@ -233,7 +227,7 @@ function tripal_analysis_views_api() {
 
 /**
  * Implementation of hook_form_alter()
- * 
+ *
  * @param $form
  * @param $form_state
  * @param $form_id

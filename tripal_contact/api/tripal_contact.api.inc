@@ -1,10 +1,10 @@
 <?php
 /**
- * @file
- * Provides an application programming interface (API) to manage libraries
- *
- * @defgroup tripal_contact_api contact Module API
+ * @defgroup tripal_contact_api Contact Module API
  * @ingroup tripal_api
+ * @{
+ * Provides an application programming interface (API) to manage chado contacts
+ * @}
  */
 
 /**
@@ -90,7 +90,7 @@ function tripal_contact_delete_property($contact_id, $property) {
 
 /**
  * Adds a contact to the Chado contact table
- * 
+ *
  * @param $name
  *   The name of the contact
  * @param $description
@@ -101,28 +101,28 @@ function tripal_contact_delete_property($contact_id, $property) {
  *   An associative array containing a list of key value pairs for the properites.
  *   The key's must be valid terms in the tripal_contact vocabulary (e.g. Affiliation,
  *   Address, etc).
- *   
+ *
  * @return
- *   On success, an array is returned containing the fields of the contact 
- *   record including the newly added contact_id. On failure, FALSE is 
+ *   On success, an array is returned containing the fields of the contact
+ *   record including the newly added contact_id. On failure, FALSE is
  *   returned
- *   
+ *
  * @ingroup tripal_contact_api
- * 
+ *
  */
 function tripal_contact_add_contact($name, $description, $type, $properties) {
 
-  // check to see if this contact name already exists.    
+  // check to see if this contact name already exists.
   $values =  array('name' => $name);
   $options = array('statement_name' => 'sel_contact_na');
   $contact = tripal_core_chado_select('contact', array('contact_id'), $values, $options);
-  
-  if (count($contact) == 0) {    
+
+  if (count($contact) == 0) {
     $cvterm = tripal_cv_get_cvterm_by_name($type, NULL, 'tripal_contact');
     if (!$cvterm) {
       watchdog('tripal_contact',"Cannot find contact type '%type'",
         array('%type' => $type), WATCHDOG_ERROR);
-      return FALSE;  
+      return FALSE;
     }
     $values =  array(
       'name' => $name,
@@ -133,26 +133,26 @@ function tripal_contact_add_contact($name, $description, $type, $properties) {
     $contact = tripal_core_chado_insert('contact', $values, $options);
     if (!$contact) {
       watchdog('tripal_contact','Could not add the contact', array(), WATCHDOG_ERROR);
-      return FALSE; 
+      return FALSE;
     }
   }
   else {
     $contact = (array) $contact[0];
   }
- 
+
   // add the description property. We don't store this in the contact.description
-  // field because it is only 255 characters long and may not be enough  
+  // field because it is only 255 characters long and may not be enough
   if ($description) {
     tripal_contact_insert_property($contact['contact_id'], 'contact_description', $description, TRUE);
   }
-    
+
   // add in the other properties provided
   foreach ($properties as $key => $value) {
     $success = tripal_contact_insert_property($contact['contact_id'], $key,$value, TRUE);
     if (!$success) {
       watchdog('tripal_contact',"Could not add the contact property '%prop'", array('%prop' => $key), WATCHDOG_ERROR);
-      return FALSE;  
-    }  
+      return FALSE;
+    }
   }
-  return $contact; 
+  return $contact;
 }

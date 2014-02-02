@@ -1,6 +1,14 @@
 <?php
 
 /**
+ * @defgroup tripal_featuremap_api Feature Map API
+ * @ingroup tripal_api
+ * @{
+ * Provides an application programming interface (API) to manage chado feature maps
+ * @}
+ */
+
+/**
  * Retrieve properties of a given type for a given featuremap
  *
  * @param $featuremap_id
@@ -117,7 +125,7 @@ function tripal_featuremap_add_featuremap_dbxref($featuremap_id, $featuremap_dbx
 
   // make sure our database already exists
   $db = tripal_db_add_db($dbname);
-   
+
   // get the database cross-reference
   $dbxvalues = array(
     'accession' => $accession,

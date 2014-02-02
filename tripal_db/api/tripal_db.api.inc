@@ -1,11 +1,12 @@
 <?php
 
 /**
- * @file
- * Provides an application programming interface (API) to manage references to external databases
- *
- * @defgroup tripal_db_api DB Module API
+
+ * @defgroup tripal_db_api Database Reference API
  * @ingroup tripal_api
+ * @{
+ * Provides an application programming interface (API) to manage references to external databases
+ * @}
  */
 
 /**

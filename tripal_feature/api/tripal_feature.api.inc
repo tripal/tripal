@@ -1,10 +1,10 @@
 <?php
 /**
- * @file
- * Provides an application programming interface (API) for working with features
- *
- * @defgroup tripal_feature_api Feature Module API
+ * @defgroup tripal_feature_api Feature API
  * @ingroup tripal_api
+ * @{
+ * Provides an application programming interface (API) for working with features
+ * @}
  */
 
 /**
@@ -111,7 +111,7 @@ function tripal_feature_analysis_insert_property($analysis_id = NULL, $feature_i
   if (!$success) {
      watchdog('tripal_feature',
       'tripal_feature_analysis_insert_property: Failed to insert analysis feature property',
-       array(), WATCHDOG_WARNING);  
+       array(), WATCHDOG_WARNING);
      return FALSE;
   }
   return $success;
@@ -437,7 +437,7 @@ function tripal_feature_reverse_complement($sequence) {
   return strtoupper($seq);
 }
 /**
- * Retrieves the sequence for a feature.  
+ * Retrieves the sequence for a feature.
  *
  * @param $feature_id
  *   The feature_id of the feature for which the sequence will be retrieved
@@ -450,11 +450,11 @@ function tripal_feature_reverse_complement($sequence) {
  *   Set to '1' if the sequence should be obtained from the parent to which
  *   this feature is aligned.
  * @param $aggregate
- *   Set to '1' if the sequence should only contain sub features, excluding 
+ *   Set to '1' if the sequence should only contain sub features, excluding
  *   intra sub feature sequence.  For example, set this option to obtain just
  *   the coding sequence of an mRNA.
  * @param $output_format
- *   The type of format.  Valid formats include 'fasta_html', 'fasta_txt' and 
+ *   The type of format.  Valid formats include 'fasta_html', 'fasta_txt' and
  *   'raw'.  The format 'fasta_txt' outputs line
  *   breaks as <br> tags and the entire return value is in a <span> tag
  *   with a fixed-width font definition.  'fasta_txt' outputs line breaks with
@@ -464,38 +464,38 @@ function tripal_feature_reverse_complement($sequence) {
  * @param $upstream
  *   An integer specifing the number of upstream bases to include in the output
  * @param $downstream
- *   An integer specifying the number of downstream bases to include in the 
+ *   An integer specifying the number of downstream bases to include in the
  *   output.
  * @param $sub_features
- *   Only include sub features (or child features) of the types provided in the array 
+ *   Only include sub features (or child features) of the types provided in the array
  * @param $relationship
  *   If a relationship name is provided (e.g. sequence_of) then any sequences that
  *   are in relationships of this type with matched sequences are also included
  * @param $rel_part
  *   If a relationship is provided in the preceeding argument then the rel_part
- *   must be either 'object' or 'subject' to indicate which side of the 
+ *   must be either 'object' or 'subject' to indicate which side of the
  *   relationship the matched features belong
- *      
+ *
  * @return
  *   The DNA/protein sequence formated as requested.
  *
  * @ingroup tripal_feature_api
  */
-function tripal_feature_get_formatted_sequence($feature_id, $feature_name, 
+function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
   $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
   $upstream, $downstream, $sub_features = array(), $relationship = '', $rel_part = '') {
-  
+
   // to speed things up we need to make sure we have a persistent connection
-  $connection = tripal_db_persistent_chado(); 
-  
+  $connection = tripal_db_persistent_chado();
+
   if (!$upstream) {
      $upstream = 0;
   }
   if (!$downstream) {
      $downstream = 0;
   }
-  
-  if ($rel_part == "object" or $rel_part == "subject") { 
+
+  if ($rel_part == "object" or $rel_part == "subject") {
     if ($rel_part == "subject") {
       $psql = '
         PREPARE feature_rel_get_object (int, text) AS
@@ -506,17 +506,17 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
           INNER JOIN feature FO              ON FO.feature_id   = FR.object_id
           INNER JOIN cvterm CVTO             ON CVTO.cvterm_id  = FO.type_id
           INNER JOIN organism O              ON O.organism_id   = FO.organism_id
-        WHERE 
+        WHERE
           FS.feature_id = $1 AND
           CVTFR.name    = $2
-      ';  
+      ';
       $status = tripal_core_chado_prepare('feature_rel_get_object', $psql, array('int', 'text'));
       if (!$status) {
-        watchdog('tripal_feature', "init: not able to prepare SQL statement '%name'", 
+        watchdog('tripal_feature', "init: not able to prepare SQL statement '%name'",
           array('%name' => 'feature_by_subject'), 'WATCHDOG ERROR');
-      }    
+      }
       $sql = "EXECUTE feature_rel_get_object(:feature_id, :relationship)";
-      $features = chado_query($sql, array(':feature_id' => $feature_id, ':relationship' => $relationship)); 
+      $features = chado_query($sql, array(':feature_id' => $feature_id, ':relationship' => $relationship));
     }
     if ($rel_part == "object") {
       $psql = '
@@ -528,20 +528,20 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
           INNER JOIN feature FS              ON FS.feature_id   = FR.subject_id
           INNER JOIN cvterm CVTO             ON CVTO.cvterm_id  = FS.type_id
           INNER JOIN organism O              ON O.organism_id   = FS.organism_id
-        WHERE 
+        WHERE
           FO.feature_id = $1 AND
           CVTFR.name    = $2
       ';
       $status = tripal_core_chado_prepare('feature_rel_get_subject', $psql, array('int', 'text'));
       if (!$status) {
-        watchdog('tripal_feature', "init: not able to prepare SQL statement '%name'", 
+        watchdog('tripal_feature', "init: not able to prepare SQL statement '%name'",
           array('%name' => 'feature_by_object'), 'WATCHDOG ERROR');
       }
       $sql = "EXECUTE feature_rel_get_subject(:feature_id, :relationship)";
-      $features = chado_query($sql, array(':feature_id' => $feature_id, ':relationship' => $relationship));     
+      $features = chado_query($sql, array(':feature_id' => $feature_id, ':relationship' => $relationship));
     }
     $sequences = '';
-    while ($feature = $features->fetchObject()) {  
+    while ($feature = $features->fetchObject()) {
 
       // recurse and get the sequences for these in the relationship
       if ($rel_part == "subject") {
@@ -550,99 +550,99 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
       if ($rel_part == "object") {
         $defline = "$feature->uniquename $feature->feature_type ($feature->genus $feature->species), $relationship, $feature_name";
       }
-      $sequences .= tripal_feature_get_formatted_sequence($feature->feature_id, $defline, 
+      $sequences .= tripal_feature_get_formatted_sequence($feature->feature_id, $defline,
         $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
-        $upstream, $downstream, $sub_features, '', '');  
-    }  
-    return $sequences;  
+        $upstream, $downstream, $sub_features, '', '');
+    }
+    return $sequences;
   }
-  
+
   // prepare statements we'll need to use later
   if (!tripal_core_is_sql_prepared('sequence_by_parent')) {
     // prepare the queries we're going to use later during the render phase
     // This SQL statement uses conditionals in the select clause to handle
     // cases cases where the alignment is in the reverse direction and when
-    // the upstream and downstream extensions go beyond the lenght of the 
+    // the upstream and downstream extensions go beyond the lenght of the
     // parent sequence.
     $psql ='
-      PREPARE sequence_by_parent (int, int, int) AS 
+      PREPARE sequence_by_parent (int, int, int) AS
       SELECT srcname, srcfeature_id, strand, srctypename, typename,
-        fmin, fmax, upstream, downstream, adjfmin, adjfmax, 
+        fmin, fmax, upstream, downstream, adjfmin, adjfmax,
         substring(residues from (adjfmin + 1) for (upstream + (fmax - fmin) + downstream))  as residues,
         genus, species
       FROM (
         SELECT
-          OF.name srcname, FL.srcfeature_id, FL.strand, 
+          OF.name srcname, FL.srcfeature_id, FL.strand,
           OCVT.name as srctypename, SCVT.name as typename,
           FL.fmin, FL.fmax, OO.genus, OO.species,
-          CASE 
-            WHEN FL.strand >= 0 THEN 
-              CASE 
+          CASE
+            WHEN FL.strand >= 0 THEN
+              CASE
                  WHEN FL.fmin - $1 <= 0 THEN 0
                  ELSE FL.fmin - $1
               END
             WHEN FL.strand < 0 THEN
-              CASE 
+              CASE
                  WHEN FL.fmin - $2 <= 0 THEN 0
                  ELSE FL.fmin - $2
-              END                   
-          END as adjfmin,                                                                
-          CASE 
+              END
+          END as adjfmin,
+          CASE
             WHEN FL.strand >= 0 THEN
-              CASE 
-                WHEN FL.fmax + $2 > OF.seqlen THEN OF.seqlen 
+              CASE
+                WHEN FL.fmax + $2 > OF.seqlen THEN OF.seqlen
                 ELSE FL.fmax + $2
               END
             WHEN FL.strand < 0 THEN
               CASE
                 WHEN FL.fmax + $1 > OF.seqlen THEN OF.seqlen
-                ELSE FL.fmax + $1   
-              END               
-          END as adjfmax,                     
-          CASE 
-            WHEN FL.strand >= 0 THEN 
-              CASE 
+                ELSE FL.fmax + $1
+              END
+          END as adjfmax,
+          CASE
+            WHEN FL.strand >= 0 THEN
+              CASE
                  WHEN FL.fmin - $1 <= 0 THEN FL.fmin
                  ELSE $1
               END
             ELSE
-              CASE 
+              CASE
                  WHEN FL.fmax + $1 > OF.seqlen THEN OF.seqlen - FL.fmax
                  ELSE $1
-              END                   
-          END as upstream,                
-          CASE 
-            WHEN FL.strand >= 0 THEN 
-              CASE 
+              END
+          END as upstream,
+          CASE
+            WHEN FL.strand >= 0 THEN
+              CASE
                  WHEN FL.fmax + $2 > OF.seqlen THEN OF.seqlen - FL.fmax
                  ELSE $2
               END
             ELSE
-              CASE 
+              CASE
                  WHEN FL.fmin - $2 <= 0 THEN FL.fmin
                  ELSE $2
-              END                   
-          END as downstream,  
-          OF.residues                                                     
-        FROM {featureloc} FL 
+              END
+          END as downstream,
+          OF.residues
+        FROM {featureloc} FL
           INNER JOIN {feature} SF   on FL.feature_id    = SF.feature_id
           INNER JOIN {cvterm}  SCVT on SF.type_id       = SCVT.cvterm_id
-          INNER JOIN {feature} OF   on FL.srcfeature_id = OF.feature_id                
+          INNER JOIN {feature} OF   on FL.srcfeature_id = OF.feature_id
           INNER JOIN {cvterm}  OCVT on OF.type_id       = OCVT.cvterm_id
           INNER JOIN {organism} OO  on OF.organism_id   = OO.organism_id
         WHERE SF.feature_id = $3 and NOT (OF.residues = \'\' or OF.residues IS NULL)) as tbl1
-    ';              
+    ';
     $status = tripal_core_chado_prepare('sequence_by_parent', $psql, array('int', 'int', 'int'));
     if (!$status) {
-      watchdog('tripal_feature', 
-        "init: not able to prepare SQL statement '%name'", 
+      watchdog('tripal_feature',
+        "init: not able to prepare SQL statement '%name'",
         array('%name' => 'sequence_by_parent'), 'WATCHDOG ERROR');
     }
-    
+
     // this query is meant to get all of the sub features of any given
     // feature (arg #1) and order them as they appear on the reference
     // feature (arg #2).
-    $psql ='PREPARE sub_features (int, int) AS 
+    $psql ='PREPARE sub_features (int, int) AS
             SELECT SF.feature_id, CVT.name as type_name, SF.type_id
             FROM {feature_relationship} FR
               INNER JOIN {feature} SF on SF.feature_id = FR.subject_id
@@ -650,50 +650,50 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
               INNER JOIN {featureloc} FL on FL.feature_id = FR.subject_id
               INNER JOIN {feature} PF on PF.feature_id = FL.srcfeature_id
             WHERE FR.object_id = $1 and PF.feature_id = $2
-            ORDER BY FL.fmin ASC';            
+            ORDER BY FL.fmin ASC';
     $status = tripal_core_chado_prepare('sub_features', $psql, array('int', 'int'));
     if (!$status) {
-      watchdog('tripal_views_handler_field_sequence', 
-        "init: not able to prepare SQL statement '%name'", 
+      watchdog('tripal_views_handler_field_sequence',
+        "init: not able to prepare SQL statement '%name'",
         array('%name' => 'ssub_features'), 'WATCHDOG ERROR');
     }
-    $psql ='PREPARE count_sub_features (int, int) AS 
+    $psql ='PREPARE count_sub_features (int, int) AS
             SELECT count(*) as num_children
             FROM {feature_relationship} FR
               INNER JOIN {feature} SF on SF.feature_id = FR.subject_id
               INNER JOIN {cvterm} CVT on CVT.cvterm_id = SF.type_id
               INNER JOIN {featureloc} FL on FL.feature_id = FR.subject_id
               INNER JOIN {feature} PF on PF.feature_id = FL.srcfeature_id
-            WHERE FR.object_id = $1 and PF.feature_id = $2';            
+            WHERE FR.object_id = $1 and PF.feature_id = $2';
     $status = tripal_core_chado_prepare('count_sub_features', $psql, array('int', 'int'));
     if (!$status) {
-      watchdog('tripal_views_handler_field_sequence', 
-        "init: not able to prepare SQL statement '%name'", 
+      watchdog('tripal_views_handler_field_sequence',
+        "init: not able to prepare SQL statement '%name'",
         array('%name' => 'count_sub_features'), 'WATCHDOG ERROR');
     }
   }
-    
+
   // if we need to get the sequence from the parent then do so now.
-  if ($derive_from_parent) {                  
-    
+  if ($derive_from_parent) {
+
     // execute the query to get the sequence from the parent
     $sql = "EXECUTE sequence_by_parent (:upstream, :downstream, :feature_id)";
     $parents = chado_query($sql, array(':uptream' => $upstream, ':downstream' => $downstream, ':feature_id' => $feature_id));
 
-    while ($parent = $parents->fetchObject()) {  
+    while ($parent = $parents->fetchObject()) {
       $seq = '';  // initialize the sequence for each parent
 
       // if we are to aggregate then we will ignore the feature returned
       // by the query above and rebuild it using the sub features
       if ($aggregate) {
-        
+
         // now get the sub features that are located on the parent.
         $sql = "EXECUTE sub_features (:feature_id, :srcfeature_id)";
         $children = chado_query($sql, array(':feature_id' => $feature_id, ':srcfeature_id' => $parent->srcfeature_id));
         $sql = "EXECUTE count_sub_features (:feature_id, :srcfeature_id)";
         $sub_features = chado_query($sql, array(':feature_id' => $feature_id, ':srcfeature_id' => $parent->srcfeature_id));
         $num_children = $sub_features->fetchObject();
-               
+
         // iterate through the sub features and concat their sequences. They
         // should already be in order.
         $types = array();
@@ -705,20 +705,20 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
           if (count($sub_features) > 0 and !in_array($child->type_name, $sub_features)) {
              continue;
           }
-        
+
           // keep up with the types
           if (!in_array($child->type_name, $types)) {
             $types[] = $child->type_name;
           }
-          
+
           $sql = "EXECUTE sequence_by_parent (:upstream, %d, :feature_id)";
 
-          // if the first sub feature we need to include the upstream bases. first check if 
+          // if the first sub feature we need to include the upstream bases. first check if
           // the feature is in the foward direction or the reverse.
           if ($i == 0 and $parent->strand >= 0) {  // forward direction
             // -------------------------- ref
-            //    ....---->  ---->        
-            //     up    1       2         
+            //    ....---->  ---->
+            //     up    1       2
             $q = chado_query($sql, array(':upstream' => $upstream, ':downstream' => 0, ':feature_id' => $child->feature_id));
           }
           elseif ($i == 0 and $parent->strand < 0) { // reverse direction
@@ -727,7 +727,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
             //    down  1       2
             $q = chado_query($sql, array(':upstream' => 0, ':downstream' => $downstream, ':feature_id' => $child->feature_id));
           }
-                    
+
           // Next, if the last sub feature we need to include the downstream bases. first check if
           // the feature is in teh forward direction or the reverse
           if ($i == $num_children->num_children - 1 and $parent->strand >= 0) {  // forward direction
@@ -742,38 +742,38 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
             //          1       2  up
             $q = chado_query($sql, array(':upstream' => $upstream, ':downstream' => 0, ':feature_id' => $child->feature_id));
           }
-          
+
           // for internal sub features we don't want upstream or downstream bases
-          else {         
+          else {
             $sql = "EXECUTE sequence_by_parent (%d, %d, %d)";
             $q = chado_query($sql, array(':upstream' => 0, ':downstream' => 0, ':feature_id' => $child->feature_id));
           }
-          
+
           while ($subseq = $q->fetchObject()) {
-            // concatenate the sequences of all the sub features            
+            // concatenate the sequences of all the sub features
             if ($subseq->srcfeature_id == $parent->srcfeature_id) {
-              $seq .= $subseq->residues;   
+              $seq .= $subseq->residues;
             }
-          }                 
+          }
           $i++;
-        } 
-      } 
+        }
+      }
       // if this isn't an aggregate then use the parent residues
       else {
          $seq = $parent->residues;
       }
-                            
+
       // get the reverse compliment if feature is on the reverse strand
       $dir = 'forward';
       if ($parent->strand < 0) {
         $seq = tripal_feature_reverse_complement($seq);
         $dir = 'reverse';
       }
-      
+
       // now format for display
       if ($output_format == 'fasta_html') {
          $seq = wordwrap($seq, $num_bases_per_line, "<br>", TRUE);
-      } 
+      }
       elseif ($output_format == 'fasta_txt') {
          $seq = wordwrap($seq, $num_bases_per_line, "\r\n", TRUE);
       }
@@ -788,19 +788,19 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
          $residues .= "Includes " . $parent->downstream . " bases downstream.  ";
       }
       if (!$seq) {
-        
+
         if ($output_format == 'fasta_html') {
-          $residues .= "No sequence available.</br>"; 
-        } 
+          $residues .= "No sequence available.</br>";
+        }
         else {
-          $residues .= "No sequence available.\r\n"; 
-        }         
+          $residues .= "No sequence available.\r\n";
+        }
       }
       else {
         if ($output_format == 'fasta_html') {
           $residues .= "<br>";
         }
-        $residues .= "\r\n" . $seq . "\r\n";          
+        $residues .= "\r\n" . $seq . "\r\n";
         if ($output_format == 'fasta_html') {
           $residues .= "<br>";
         }
@@ -810,18 +810,18 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
   // if we are not getting the sequence from the parent sequence then
   // use what comes through from the feature record
   else {
-    $sql = "SELECT * FROM {feature} F WHERE feature_id = :feature_id"; 
+    $sql = "SELECT * FROM {feature} F WHERE feature_id = :feature_id";
     $values = chado_query($sql, array(':feature_id' => $feature_id))->fetchObject();
     $residues = $values->residues;
     if ($output_format == 'fasta_html') {
-       $residues = wordwrap($residues, $num_bases_per_line, "<br>", TRUE);  
-    } 
+       $residues = wordwrap($residues, $num_bases_per_line, "<br>", TRUE);
+    }
     elseif ($output_format == 'fasta_txt') {
-       $residues = wordwrap($residues, $num_bases_per_line, "\r\n", TRUE);  
+       $residues = wordwrap($residues, $num_bases_per_line, "\r\n", TRUE);
     }
     $residues = ">$feature_name\r\n$residues\r\n";
   }
-  
+
   // format the residues for display
   if ($residues and $num_bases_per_line) {
     if ($output_format == 'fasta_html') {
@@ -837,34 +837,34 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
  * This function adds an entry to the feature_dbxref table.
   *
  * @param $feature_id
- *   The numeric feature_if of the feature 
+ *   The numeric feature_if of the feature
  * @param $dbname
  *   The name of the database to which the term belongs
  * @param accession
- *   The accession of the term   
- *    
+ *   The accession of the term
+ *
  * @return
  *   TRUE on success. FALSE on failure.
  *
  * @ingroup tripal_feature_api
  */
 function tripal_feature_add_dbxref($feature_id, $dbname, $accession) {
-   
+
   // make sure the db exists. If it doesn't, then add it
   $values = array('name' => $dbname);
   $options = array('statement_name' => 'sel_db_na');
   $db = tripal_core_chado_select('db', array('db_id'), $values, $options);
-  if (!$db or count($db) == 0) {    
+  if (!$db or count($db) == 0) {
     $options = array('statement_name' => 'ins_db_na');
     $success = tripal_core_chado_insert('db', $values, $options);
       if (!$success) {
-      watchdog('tripal_feature', 'tripal_feature_add_dbxref: The feature dbxref entry for feature, %feature_id, " . 
-        "could not be added because the database, %dbname, does not exist and cannot be added.', 
+      watchdog('tripal_feature', 'tripal_feature_add_dbxref: The feature dbxref entry for feature, %feature_id, " .
+        "could not be added because the database, %dbname, does not exist and cannot be added.',
         array('%feature_id' => $feature_id, '%dbname' => $dbname), WATCHDOG_WARNING);
       return FALSE;
     }
   }
-  
+
   // first make sure that the record doesn't already exist
   $values = array(
     'dbxref_id' => array(
@@ -877,13 +877,13 @@ function tripal_feature_add_dbxref($feature_id, $dbname, $accession) {
   );
   $options = array('statement_name' => 'sel_featuredbxref_dbfe');
   $xref = tripal_core_chado_select('feature_dbxref', array('feature_dbxref_id'), $values, $options);
-  if (count($xref) == 0) {    
+  if (count($xref) == 0) {
     // if the record doesn't exist then add it.
     $options = array('statement_name' => 'ins_featuredbxref_dbfe');
     $success = tripal_core_chado_insert('feature_dbxref', $values, $options);
     if (!$success) {
-      watchdog('tripal_feature', 'tripal_feature_add_dbxref: The feature dbxref entry for feature, %feature_id, ' . 
-        'could not be added: %db:%accession.', array('%feature_id' => $feature_id, '%db' => $dbname, 
+      watchdog('tripal_feature', 'tripal_feature_add_dbxref: The feature dbxref entry for feature, %feature_id, ' .
+        'could not be added: %db:%accession.', array('%feature_id' => $feature_id, '%db' => $dbname,
         '%accession' => $accession), WATCHDOG_WARNING);
       return FALSE;
     }
@@ -895,34 +895,34 @@ function tripal_feature_add_dbxref($feature_id, $dbname, $accession) {
  * This function adds an entry to the feature_cvterm table.
   *
  * @param $feature_id
- *   The numeric feature_if of the feature 
+ *   The numeric feature_if of the feature
  * @param $cvname
  *   The name of the controlled vocabulary to which the term belongs
  * @param cvterm
- *   The name of the cvterm  
- *    
+ *   The name of the cvterm
+ *
  * @return
  *   TRUE on success. FALSE on failure.
  *
  * @ingroup tripal_feature_api
  */
 function tripal_feature_add_cvterm($feature_id, $cvname, $cvterm) {
-   
+
   // make sure the cv exists. If it doesn't, then add it
   $values = array('name' => $cvname);
   $options = array('statement_name' => 'sel_cv_na');
   $cv = tripal_core_chado_select('cv', array('cv_id'), $values, $options);
-  if (!$cv or count($cv) == 0) {    
+  if (!$cv or count($cv) == 0) {
     $options = array('statement_name' => 'ins_cv_na');
     $success = tripal_core_chado_insert('cv', $values, $options);
       if (!$success) {
-      watchdog('tripal_feature', 'tripal_feature_add_cvterm: The feature cvterm entry for feature, %feature_id, " . 
-        "could not be added because the CV, %cvname, does not exist and cannot be added.', 
+      watchdog('tripal_feature', 'tripal_feature_add_cvterm: The feature cvterm entry for feature, %feature_id, " .
+        "could not be added because the CV, %cvname, does not exist and cannot be added.',
         array('%feature_id' => $feature_id, '%cvname' => $cvname), WATCHDOG_WARNING);
       return FALSE;
     }
   }
-  
+
   // first make sure that the record doesn't already exist
   $values = array(
     'cvterm_id' => array(
@@ -936,12 +936,12 @@ function tripal_feature_add_cvterm($feature_id, $cvname, $cvterm) {
   );
   $options = array('statement_name' => 'sel_featuredcvterm_cvfepu');
   $xref = tripal_core_chado_select('feature_cvterm', array('feature_cvterm_id'), $values, $options);
-  if (count($xref) == 0) {    
+  if (count($xref) == 0) {
     // if the record doesn't exist then add it.
     $options = array('statement_name' => 'ins_featurecvterm_cvfepu');
     $success = tripal_core_chado_insert('feature_cvterm', $values, $options);
     if (!$success) {
-      watchdog('tripal_feature', 'tripal_feature_add_cvterm: The feature cvterm entry for feature, %feature_id, ' . 
+      watchdog('tripal_feature', 'tripal_feature_add_cvterm: The feature cvterm entry for feature, %feature_id, ' .
         'could not be added: %cvterm.', array('%feature_id' => $feature_id, '%cvterm' => $cvterm), WATCHDOG_WARNING);
       return FALSE;
     }

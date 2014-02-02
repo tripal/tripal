@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * @defgroup tripal_views Tripal Views Module
+ * @ingroup tripal_modules
+ * @{
+ * Provides functions for integrating chado with Drupal Views.
+ * @}
+ */
+
 require_once "tripal_views.views.inc";
 
 require_once "includes/tripal_views_integration.inc";

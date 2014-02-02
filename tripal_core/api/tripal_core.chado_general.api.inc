@@ -4,9 +4,6 @@ require_once "tripal_core.schema_v1.2.api.inc";
 require_once "tripal_core.schema_v1.11.api.inc";
 
 /**
- * @file
- * Chado API
- *
  * @defgroup tripal_chado_api Chado API
  * @ingroup tripal_core_api
  * @{
