@@ -47,7 +47,6 @@
 #tripal_contents_table {
   padding: 0px !important;
   margin: 0px !important;
-  
 }
 
 #tripal_contents_table tbody {
@@ -58,9 +57,14 @@
 
 .tripal_contents_table_td { 
   border: 0px solid #FFFFFF !important;
-  padding: 0px !important;
   text-align: left;
   vertical-align: top;
+  padding: 0px 0px 0px 20px;
+}
+.tripal_contents_table_td_toc { 
+  border: 1px solid #888888 !important;
+  padding: 10px !important;
+  background: none repeat scroll 0 0 rgba(0, 0, 0, 0.063);
 }
 .tripal_contents_table_tr {
 background-color: transparent;
@@ -79,11 +83,12 @@ background-color: transparent;
   list-style-type: none;
 }
 .tripal_toc li {
-	background-color: #EEEEEE;
+  /*
+  background-color: #EEEEEE;
   border-style:solid;
   border-width:1px;
-  border-color: #999999;
-  padding: 3px 20px 3px 20px;
+  border-color: #999999;  */
+  padding: 3px 20px 3px 10px;
   margin: 2px 0 2px 0;
 }
 .tripal_toc_title {
@@ -97,10 +102,7 @@ background-color: transparent;
  * Details Section
  */
 .tripal_details {
-  padding: 0px 20px 20px 20px;
-  min-height: 500px;
-  margin-right: 10px;
-  margin-bottom: 10px;
+  min-height: 400px;
   overflow:auto;
 }
 

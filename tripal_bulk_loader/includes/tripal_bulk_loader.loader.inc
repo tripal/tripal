@@ -672,51 +672,51 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       // This should have been set on the first round of inserts for this record
       $match = $data[$priority]['is_duplicate'];
       // However, sometimes there is a pre-existing record before the loader starts
-			// Thus check that this value is set and if not, then generate a match array
-			// based on the unique keys for this record.
-			if (empty($match)) {
-				$match = array();
-				// First check to see if we have fields for the primary key
-				foreach ($table_desc['primary key'] as $k_field) {
-					if (!empty($values[$k_field])) {
-						$match[$k_field] = $values[$k_field];
-					}
-				}
-				// Otherwise check the fields that are part of the unique key
-				if (empty($match)) {
-					foreach ($table_desc['unique keys'] as $u_keys) {
-						foreach ($u_keys as $u_field) {
-							if (!empty($values[$u_field])) {
-								$match[$u_field] = $values[$u_field];
-							}
-						}
-					}
-				}
-			}
-			if (!empty($match)) {
-				// Now we need to check if it already exists via a select
-				$results = tripal_core_chado_select($table, array_keys($table_desc['fields']), $match, array('print_errors' => TRUE));
-				// If not then insert
-				if (empty($results)) {
-					$options['statement_name'] = 'ins_'.$options['statement_name'];
-					$options['print_errors'] = TRUE;
-					$record = tripal_core_chado_insert($table, $values, $options);
-				}
-				else {
-				  $options['return_record'] = TRUE;
-				  $options['print_errors'] = TRUE;
-  		    $record = tripal_core_chado_update($table, $match, $values, $options);
-  		  }
-  	  }
-  	  else {
-  	  	$msg = "\nLine " . $addt->line_num . ' ' . $table_data['record_id'] . ' (' .
+      // Thus check that this value is set and if not, then generate a match array
+      // based on the unique keys for this record.
+      if (empty($match)) {
+        $match = array();
+        // First check to see if we have fields for the primary key
+        foreach ($table_desc['primary key'] as $k_field) {
+          if (!empty($values[$k_field])) {
+            $match[$k_field] = $values[$k_field];
+          }
+        }
+        // Otherwise check the fields that are part of the unique key
+        if (empty($match)) {
+          foreach ($table_desc['unique keys'] as $u_keys) {
+            foreach ($u_keys as $u_field) {
+              if (!empty($values[$u_field])) {
+                $match[$u_field] = $values[$u_field];
+              }
+            }
+          }
+        }
+      }
+      if (!empty($match)) {
+        // Now we need to check if it already exists via a select
+        $results = tripal_core_chado_select($table, array_keys($table_desc['fields']), $match, array('print_errors' => TRUE));
+        // If not then insert
+        if (empty($results)) {
+          $options['statement_name'] = 'ins_'.$options['statement_name'];
+          $options['print_errors'] = TRUE;
+          $record = tripal_core_chado_insert($table, $values, $options);
+        }
+        else {
+          $options['return_record'] = TRUE;
+          $options['print_errors'] = TRUE;
+          $record = tripal_core_chado_update($table, $match, $values, $options);
+        }
+      }
+      else {
+        $msg = "\nLine " . $addt->line_num . ' ' . $table_data['record_id'] . ' (' .
         $table_data['mode'] . ') Unable to update record since none of the unique key or primary key fields were available ' .
         ' where values:' . print_r($values, TRUE);
 
-      	tripal_bulk_loader_throw_error($msg, array(), TRIPAL_ERROR);
-      	$data[$priority]['error'] = TRUE;
-      	$no_errors = FALSE;
-  	  }
+        tripal_bulk_loader_throw_error($msg, array(), TRIPAL_ERROR);
+        $data[$priority]['error'] = TRUE;
+        $no_errors = FALSE;
+      }
     }
     else {
       $options['print_errors'] = TRUE;

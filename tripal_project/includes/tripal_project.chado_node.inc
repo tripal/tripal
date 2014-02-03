@@ -408,30 +408,30 @@ function chado_project_node_access($node, $op, $account) {
  */
 function tripal_project_node_view($node, $view_mode, $langcode) {
   switch ($node->type) {
-  	case 'chado_project':
-  	  // Show feature browser and counts
-  	  if ($view_mode == 'full') {
-  	    $node->content['tripal_project_base'] = array(
-  	      '#value' => theme('tripal_project_base', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_project_contact'] = array(
-  	      '#value' => theme('tripal_project_contact', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_project_properties'] = array(
-  	      '#value' => theme('tripal_project_properties', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_project_publications'] = array(
-  	      '#value' => theme('tripal_project_publications', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_project_relationships'] = array(
-  	      '#value' => theme('tripal_project_relationships', array('node' => $node)),
-  	    );
-  	  }
-  	  if ($view_mode == 'teaser') {
-  	    $node->content['tripal_project_teaser'] = array(
-  	      '#value' => theme('tripal_project_teaser', array('node' => $node)),
-  	    );
-  	  }
-  	  break;
+    case 'chado_project':
+      // Show feature browser and counts
+      if ($view_mode == 'full') {
+        $node->content['tripal_project_base'] = array(
+          '#value' => theme('tripal_project_base', array('node' => $node)),
+        );
+        $node->content['tripal_project_contact'] = array(
+          '#value' => theme('tripal_project_contact', array('node' => $node)),
+        );
+        $node->content['tripal_project_properties'] = array(
+          '#value' => theme('tripal_project_properties', array('node' => $node)),
+        );
+        $node->content['tripal_project_publications'] = array(
+          '#value' => theme('tripal_project_publications', array('node' => $node)),
+        );
+        $node->content['tripal_project_relationships'] = array(
+          '#value' => theme('tripal_project_relationships', array('node' => $node)),
+        );
+      }
+      if ($view_mode == 'teaser') {
+        $node->content['tripal_project_teaser'] = array(
+          '#value' => theme('tripal_project_teaser', array('node' => $node)),
+        );
+      }
+      break;
   }
 }

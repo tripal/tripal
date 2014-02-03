@@ -2368,9 +2368,9 @@ function tripal_bulk_loader_delete_template_field_form_submit($form, &$form_stat
     $form_state['storage']['field_id'],
     $form_state['storage']['template']
   );
-	if (!empty($new_template)) {
-		$form_state['storage']['template'] = $new_template;
-	}
+  if (!empty($new_template)) {
+    $form_state['storage']['template'] = $new_template;
+  }
   drupal_set_message(t('Deleted Field from Template.'));
 
   $record = array(

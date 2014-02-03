@@ -924,46 +924,46 @@ function chado_pub_delete(&$node) {
  */
 function tripal_pub_node_view($node, $view_mode, $langcode) {
   switch ($node->type) {
-  	case 'chado_pub':
-  	  // Show feature browser and counts
-  	  if ($view_mode == 'full') {
-  	    $node->content['tripal_pub_authors'] = array(
-  	      '#value' => theme('tripal_pub_authors', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_pub_base'] = array(
-  	      '#value' => theme('tripal_pub_base', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_pub_featuremaps'] = array(
-  	      '#value' => theme('tripal_pub_featuremaps', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_pub_features'] = array(
-  	      '#value' => theme('tripal_pub_features', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_pub_libraries'] = array(
-  	      '#value' => theme('tripal_pub_libraries', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_pub_projects'] = array(
-  	      '#value' => theme('tripal_pub_projects', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_pub_properties'] = array(
-  	      '#value' => theme('tripal_pub_properties', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_pub_references'] = array(
-  	      '#value' => theme('tripal_pub_references', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_pub_relationships'] = array(
-  	      '#value' => theme('tripal_pub_relationships', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_pub_stocks'] = array(
-  	      '#value' => theme('tripal_pub_stocks', array('node' => $node)),
-  	    );
-  	  }
-  	  if ($view_mode == 'teaser') {
-  	    $node->content['tripal_pub_teaser'] = array(
-  	      '#value' => theme('tripal_pub_teaser', array('node' => $node)),
-  	    );
-  	  }
-  	  break;
+    case 'chado_pub':
+      // Show feature browser and counts
+      if ($view_mode == 'full') {
+        $node->content['tripal_pub_authors'] = array(
+          '#value' => theme('tripal_pub_authors', array('node' => $node)),
+        );
+        $node->content['tripal_pub_base'] = array(
+          '#value' => theme('tripal_pub_base', array('node' => $node)),
+        );
+        $node->content['tripal_pub_featuremaps'] = array(
+          '#value' => theme('tripal_pub_featuremaps', array('node' => $node)),
+        );
+        $node->content['tripal_pub_features'] = array(
+          '#value' => theme('tripal_pub_features', array('node' => $node)),
+        );
+        $node->content['tripal_pub_libraries'] = array(
+          '#value' => theme('tripal_pub_libraries', array('node' => $node)),
+        );
+        $node->content['tripal_pub_projects'] = array(
+          '#value' => theme('tripal_pub_projects', array('node' => $node)),
+        );
+        $node->content['tripal_pub_properties'] = array(
+          '#value' => theme('tripal_pub_properties', array('node' => $node)),
+        );
+        $node->content['tripal_pub_references'] = array(
+          '#value' => theme('tripal_pub_references', array('node' => $node)),
+        );
+        $node->content['tripal_pub_relationships'] = array(
+          '#value' => theme('tripal_pub_relationships', array('node' => $node)),
+        );
+        $node->content['tripal_pub_stocks'] = array(
+          '#value' => theme('tripal_pub_stocks', array('node' => $node)),
+        );
+      }
+      if ($view_mode == 'teaser') {
+        $node->content['tripal_pub_teaser'] = array(
+          '#value' => theme('tripal_pub_teaser', array('node' => $node)),
+        );
+      }
+      break;
   }
 }
 /**

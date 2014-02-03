@@ -79,10 +79,17 @@ else { ?>
 })(jQuery);
 </script>
 
-<div id="tripal_<?php print $ttype?>_content" class="tripal_contents">
+<div id="tripal_<?php print $ttype?>_content" class="tripal_contents"> <?php 
+  if ($page['tripal_sidebar']) { ?>
+    <div id="tripal-sidebar" class="column sidebar">
+      <div class="section">
+        <?php print render($page["chado_" . $ttype . " _toc"]); ?>
+      </div>
+    </div><?php 
+  } ?>
   <table id="tripal_contents_table">
     <tr class="tripal_contents_table_tr">
-      <td nowrap class="tripal_contents_table_td"  align="left">
+      <td nowrap class="tripal_contents_table_td tripal_contents_table_td_toc"  align="left">
         <div id="tripal_<?php print $ttype?>_toc" class="tripal_toc">
           <ul id="tripal_<?php print $ttype?>_toc_list" class="tripal_toc_list">
           

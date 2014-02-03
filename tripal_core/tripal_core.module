@@ -521,3 +521,6 @@ function tripal_core_views_api() {
     'api' => 3.0,
   );
 }
+
+
+

@@ -44,9 +44,9 @@ function tripal_bulk_loader_is_record_name_unique($new_record_name, $template_id
   // Check the new record name is unique
   foreach ($template_array as $priority => $t) {
     if (strcmp($t['record_id'], $new_record_name) == 0) {
-    	if (($priority != $current_priority) AND ($current_priority !== NULL)) {
-	      return FALSE;
-	    }
+      if (($priority != $current_priority) AND ($current_priority !== NULL)) {
+        return FALSE;
+      }
     }
   }
   return TRUE;
@@ -67,21 +67,21 @@ function tripal_bulk_loader_is_record_name_unique($new_record_name, $template_id
  */
 function tripal_bulk_loader_delete_record($delete_priority, $template_array) {
 
-	if (empty($template_array)) {
-		drupal_set_message("Unable to delete record with a priority of $priority since the template was not supplied",'error');
-		return FALSE;
-	}
+  if (empty($template_array)) {
+    drupal_set_message("Unable to delete record with a priority of $priority since the template was not supplied",'error');
+    return FALSE;
+  }
 
-	$new_template_array = array();
-	$i=0;
-	foreach ($template_array as $priority => $record) {
-		if ($priority != $delete_priority) {
-			$new_template_array[$i] = $record;
-			$i++;
-		}
-	}
+  $new_template_array = array();
+  $i=0;
+  foreach ($template_array as $priority => $record) {
+    if ($priority != $delete_priority) {
+      $new_template_array[$i] = $record;
+      $i++;
+    }
+  }
 
-	return $new_template_array;
+  return $new_template_array;
 }
 
 /**
@@ -101,27 +101,27 @@ function tripal_bulk_loader_delete_record($delete_priority, $template_array) {
  */
 function tripal_bulk_loader_delete_field($priority, $delete_field_index, $template_array) {
 
-	if (empty($template_array)) {
-		drupal_set_message("Unable to delete record with a priority of $priority since the template was not supplied",'error');
-		return FALSE;
-	}
+  if (empty($template_array)) {
+    drupal_set_message("Unable to delete record with a priority of $priority since the template was not supplied",'error');
+    return FALSE;
+  }
 
-	// Re-order the remaining fields of the same record to ensure that the indicies are
-	// 0 to size and. If this is not done, weird behaviour may result
-	$new_template_array = $template_array;
-	$new_template_array[$priority]['fields'] = array();
-	$i=0;
-	foreach ($template_array[$priority]['fields'] as $field_index => $field_details) {
-		if ($field_index != $delete_field_index) {
-			$new_template_array[$priority]['fields'][$i] = $field_details;
-			$i++;
-		}
-	}
+  // Re-order the remaining fields of the same record to ensure that the indicies are
+  // 0 to size and. If this is not done, weird behaviour may result
+  $new_template_array = $template_array;
+  $new_template_array[$priority]['fields'] = array();
+  $i=0;
+  foreach ($template_array[$priority]['fields'] as $field_index => $field_details) {
+    if ($field_index != $delete_field_index) {
+      $new_template_array[$priority]['fields'][$i] = $field_details;
+      $i++;
+    }
+  }
 
-	// If this field was the only one in the current record, also delete the record
-	if (empty($new_template_array[$priority]['fields'])) {
-		$new_template_array = tripal_bulk_loader_delete_record($priority, $new_template_array);
-	}
+  // If this field was the only one in the current record, also delete the record
+  if (empty($new_template_array[$priority]['fields'])) {
+    $new_template_array = tripal_bulk_loader_delete_record($priority, $new_template_array);
+  }
 
-	return $new_template_array;
+  return $new_template_array;
 }

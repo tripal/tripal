@@ -6,6 +6,6 @@ $organism = $variables['node']->organism;
    <table id="tripal_organism-table-description" class="tripal_organism-table tripal-table tripal-table-horz">
       <tr class="tripal_organism-table-odd-row tripal-table-even-row">
         <td><?php print $organism->comment; ?></td>
-      </tr>        	                                
+      </tr>                                          
    </table>
 </div>

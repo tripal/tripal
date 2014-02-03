@@ -44,7 +44,7 @@ if (count($stocks) > 0) { ?>
           <td><?php
             $name = $stock->name;
             if (!$stock->name) {
-            	$name = $stock->uniquename;
+              $name = $stock->uniquename;
             }
             if ($stock->nid) {    
               print l($name, "node/$stock->nid", array('attributes' => array('target' => '_blank')));        
