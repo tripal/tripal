@@ -537,6 +537,7 @@ function chado_pub_insert($node) {
 
     // get the properties from the form
     $properties = chado_node_properties_form_retreive($node);
+    ddl($properties, 'clean properties');
 
     // get the list of properties for easy lookup (without doing lots of database queries
     $properties_list = array();
@@ -557,7 +558,10 @@ function chado_pub_insert($node) {
       // both as a property and as the uniquename for the
       // pub and we want it stored in both the pub table and the pubprop table
       if ($prop->name == 'Citation') {
-        $properties[$prop->name][0] = $node->uniquename;
+        $citation_id = $prop->cvterm_id;
+        if (!empty($node->uniquename)) {
+          $properties[$citation_id] = $node->uniquename;
+        }
       }
     }
 
@@ -572,8 +576,9 @@ function chado_pub_insert($node) {
     $pubplace = '';
     $miniref = '';
     $cross_refs = array();
-    foreach ($properties as $name => $element) {
+    foreach ($properties as $type_id => $element) {
       $value = trim($element[0]);
+      $name = $properties_list[$type_id];
 
       // populate our $pub_array for building a citation
       $pub_arr[$name] = $value;
@@ -581,27 +586,27 @@ function chado_pub_insert($node) {
       // remove properties that are stored in the pub table
       if ($name == "Volume") {
         $volume = $value;
-        unset($properties[$name]);
+        unset($properties[$type_id]);
       }
       elseif ($name == "Volume Title") {
         $volumetitle = $value;
-        unset($properties[$name]);
+        unset($properties[$type_id]);
       }
       elseif ($name == "Issue") {
         $issue = $value;
-        unset($properties[$name]);
+        unset($properties[$type_id]);
       }
       elseif ($name == "Pages") {
         $pages = $value;
-        unset($properties[$name]);
+        unset($properties[$type_id]);
       }
       elseif ($name == "Publisher") {
         $publisher = $value;
-        unset($properties[$name]);
+        unset($properties[$type_id]);
       }
       elseif ($name == "Series Name" or $name == "Journal Name" or $name == "Conference Name") {
         $series_name = $value;
-        unset($properties[$name]);
+        unset($properties[$type_id]);
       }
       elseif ($name == "Journal Country" or $name == "Published Location") {
         $pubplace = $value;
@@ -615,13 +620,13 @@ function chado_pub_insert($node) {
       }
     }
     // generate a citation for this pub if one doesn't already exist
-    if (!$node->uniquename and array_key_exists('Citation', $properties)) {
+    if (!$node->uniquename and !array_key_exists($citation_id, $properties)) {
       $pub_type = tripal_cv_get_cvterm_by_id($node->type_id);
       $pub_arr['Title'] = $node->pubtitle;
       $pub_arr['Publication Type'][0] = $pub_type->name;
       $pub_arr['Year'] = $node->pyear;
       $node->uniquename = tripal_pub_create_citation($pub_arr);
-      $properties['Citation'][0] = $node->uniquename;
+      $properties[$citation_id][0] = $node->uniquename;
     }
 
     // insert the pub record
@@ -650,6 +655,13 @@ function chado_pub_insert($node) {
 
     // now add in the properties
     // Only adds in those not used in the pub record
+    ddl($properties, 'properties before update');
+    $details = array(
+      'property_table' => 'pubprop',
+      'base_table' => 'pub',
+      'foreignkey_name' => 'pub_id',
+      'foreignkey_value' => $pub_id
+    );
     chado_node_properties_form_update_properties($node, $details, $properties);
 
     // add in any database cross-references
@@ -732,7 +744,10 @@ function chado_pub_update($node) {
     // both as a property and as the uniquename for the
     // pub and we want it stored in both the pub table and the pubprop table
     if ($prop->name == 'Citation') {
-      $properties[$prop->name][0] = $node->uniquename;
+      $citation_id = $prop->cvterm_id;
+      if (!empty($node->uniquename)) {
+        $properties[$citation_id][0] = $node->uniquename;
+      }
     }
   }
 
@@ -747,35 +762,36 @@ function chado_pub_update($node) {
   $pubplace = '';
   $miniref = '';
   $cross_refs = array();
-  foreach ($properties as $name => $element) {
+  foreach ($properties as $type_id => $element) {
     foreach ($element as $index => $value) {
+      $name = $properties_list[$type_id];
       // populate our $pub_array for building a citation
       $pub_arr[$name] = $value;
 
       // remove properties that are stored in the pub table
       if ($name == "Volume") {
         $volume = $value;
-        unset($properties[$name]);
+        unset($properties[$type_id]);
       }
       elseif ($name == "Volume Title") {
         $volumetitle = $value;
-        unset($properties[$name]);
+        unset($properties[$type_id]);
       }
       elseif ($name == "Issue") {
         $issue = $value;
-        unset($properties[$name]);
+        unset($properties[$type_id]);
       }
       elseif ($name == "Pages") {
         $pages = $value;
-        unset($properties[$name]);
+        unset($properties[$type_id]);
       }
       elseif ($name == "Publisher") {
         $publisher = $value;
-        unset($properties[$name]);
+        unset($properties[$type_id]);
       }
       elseif ($name == "Journal Name" or $name == "Conference Name") {
         $series_name = $value;
-        unset($properties[$name]);
+        unset($properties[$type_id]);
       }
       elseif ($name == "Journal Country" or $name == "Published Location") {
         $pubplace = $value;
@@ -796,7 +812,7 @@ function chado_pub_update($node) {
     $pub_arr['Publication Type'][0] = $pub_type->name;
     $pub_arr['Year'] = $node->pyear;
     $node->uniquename = tripal_pub_create_citation($pub_arr);
-    $properties['Citation'][0] = $node->uniquename;
+    $properties[$citation_id][0] = $node->uniquename;
   }
 
   // update the pub record
@@ -833,7 +849,7 @@ function chado_pub_update($node) {
     'foreignkey_name' => 'pub_id',
     'foreignkey_value' => $pub_id
   );
-  chado_node_properties_form_update_properties($node, $details, $$properties);
+  chado_node_properties_form_update_properties($node, $details, $properties);
 
   // add in any database cross-references after first removing
   tripal_core_chado_delete('pub_dbxref', array('pub_id' => $pub_id));

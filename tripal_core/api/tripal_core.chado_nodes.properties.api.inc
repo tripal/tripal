@@ -598,73 +598,76 @@ function chado_node_properties_form(&$form, &$form_state, $details) {
    * NOTE: The main difference is the key
    *
    * Loop on the array elements of the $existing_properties array and add
-   * an element to the form for each one.
+   * an element to the form for each one as long as it's also in the
+   * $properties_options array.
    */
   foreach ($existing_properties as $property) {
+    if (array_key_exists($property->type_id, $property_options)) {
 
-    $form['properties']['property_table'][$property->type_id]['#type'] = 'markup';
-    $form['properties']['property_table'][$property->type_id]['#value'] = '';
+      $form['properties']['property_table'][$property->type_id]['#type'] = 'markup';
+      $form['properties']['property_table'][$property->type_id]['#value'] = '';
 
-    $form['properties']['property_table'][$property->type_id][$property->rank]['#type'] = 'markup';
-    $form['properties']['property_table'][$property->type_id][$property->rank]['#value'] = '';
+      $form['properties']['property_table'][$property->type_id][$property->rank]['#type'] = 'markup';
+      $form['properties']['property_table'][$property->type_id][$property->rank]['#value'] = '';
 
-    $form['properties']['property_table'][$property->type_id][$property->rank]['prop_type_id'] = array(
-      '#type' => 'hidden',
-      '#value' => $property->type_id
-    );
+      $form['properties']['property_table'][$property->type_id][$property->rank]['prop_type_id'] = array(
+        '#type' => 'hidden',
+        '#value' => $property->type_id
+      );
 
-    $form['properties']['property_table'][$property->type_id][$property->rank]['prop_value'] = array(
-      '#type' => 'hidden',
-      '#value' => $property->value
-    );
+      $form['properties']['property_table'][$property->type_id][$property->rank]['prop_value'] = array(
+        '#type' => 'hidden',
+        '#value' => $property->value
+      );
 
-    $form['properties']['property_table'][$property->type_id][$property->rank]['property_id'] = array(
-      '#type' => 'hidden',
-      '#value' => $property->property_id
-    );
+      $form['properties']['property_table'][$property->type_id][$property->rank]['property_id'] = array(
+        '#type' => 'hidden',
+        '#value' => $property->property_id
+      );
 
-    $form['properties']['property_table'][$property->type_id][$property->rank]['type'] = array(
-      '#type' => 'markup',
-      '#markup' => $property->type_name
-    );
+      $form['properties']['property_table'][$property->type_id][$property->rank]['type'] = array(
+        '#type' => 'markup',
+        '#markup' => $property->type_name
+      );
 
-    $form['properties']['property_table'][$property->type_id][$property->rank]['value'] = array(
-      '#type' => 'markup',
-      '#markup' => $property->value
-    );
+      $form['properties']['property_table'][$property->type_id][$property->rank]['value'] = array(
+        '#type' => 'markup',
+        '#markup' => $property->value
+      );
 
-    $form['properties']['property_table'][$property->type_id][$property->rank]['rank'] = array(
-      '#type' => 'markup',
-      '#markup' => $property->rank
-    );
-    // remove button
-    $form['properties']['property_table'][$property->type_id][$property->rank]['property_action'] = array(
-      '#type' => 'submit',
-      '#value' => t('Remove'),
-      '#name' => "property_remove-".$property->type_id.'-'.$property->rank,
-      '#ajax' => array(
-        'callback' => "chado_node_properties_form_ajax_update",
-        'wrapper' => 'tripal-generic-edit-properties-table',
-        'effect'   => 'fade',
-        'method'   => 'replace',
-        'prevent'  => 'click'
-      ),
-      // When this button is clicked, the form will be validated and submitted.
-      // Therefore, we set custom submit and validate functions to override the
-      // default node form submit.  In the validate function we validate only the
-      // property fields and in the submit we remove the indicated property
-      // from the chado_properties array. In order to keep validate errors
-      // from the node form validate and Drupal required errors for non-property fields
-      // preventing the user from removing properties we set the #limit_validation_errors below
-      '#validate' => array('chado_node_properties_form_remove_button_validate'),
-      '#submit' => array('chado_node_properties_form_remove_button_submit'),
-      // Limit the validation of the form upon clicking this button to the property_table tree
-      // No other fields will be validated (ie: no fields from the main form or any other api
-      // added form).
-      '#limit_validation_errors' => array(
-        array('property_table')  // Validate all fields within $form_state['values']['property_table']
-      )
-    );
+      $form['properties']['property_table'][$property->type_id][$property->rank]['rank'] = array(
+        '#type' => 'markup',
+        '#markup' => $property->rank
+      );
+      // remove button
+      $form['properties']['property_table'][$property->type_id][$property->rank]['property_action'] = array(
+        '#type' => 'submit',
+        '#value' => t('Remove'),
+        '#name' => "property_remove-".$property->type_id.'-'.$property->rank,
+        '#ajax' => array(
+          'callback' => "chado_node_properties_form_ajax_update",
+          'wrapper' => 'tripal-generic-edit-properties-table',
+          'effect'   => 'fade',
+          'method'   => 'replace',
+          'prevent'  => 'click'
+        ),
+        // When this button is clicked, the form will be validated and submitted.
+        // Therefore, we set custom submit and validate functions to override the
+        // default node form submit.  In the validate function we validate only the
+        // property fields and in the submit we remove the indicated property
+        // from the chado_properties array. In order to keep validate errors
+        // from the node form validate and Drupal required errors for non-property fields
+        // preventing the user from removing properties we set the #limit_validation_errors below
+        '#validate' => array('chado_node_properties_form_remove_button_validate'),
+        '#submit' => array('chado_node_properties_form_remove_button_submit'),
+        // Limit the validation of the form upon clicking this button to the property_table tree
+        // No other fields will be validated (ie: no fields from the main form or any other api
+        // added form).
+        '#limit_validation_errors' => array(
+          array('property_table')  // Validate all fields within $form_state['values']['property_table']
+        )
+      );
+    }
   }
 
   // Form elements for adding a new property

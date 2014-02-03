@@ -315,7 +315,7 @@ function chado_stock_form($node, $form_state) {
     'base_foreign_key' => 'stock_id',
     'base_key_value' => $stock_id
   );
-  tripal_core_additional_dbxrefs_form($form, $form_state, $details);
+  chado_node_additional_dbxrefs_form($form, $form_state, $details);
 
   // RELATIONSHIPS FORM
   //---------------------------------------------
@@ -328,7 +328,7 @@ function chado_stock_form($node, $form_state) {
     'nodetype' => 'stock',
     'cv_id' => variable_get('chado_stock_relationship_cv', 0)
   );
-  tripal_core_relationships_form($form, $form_state, $details);
+  chado_node_relationships_form($form, $form_state, $details);
 
   return $form;
 }
@@ -545,18 +545,19 @@ function chado_stock_insert($node) {
       chado_node_properties_form_update_properties($node, $details);
 
       // Now add the additional references
-      tripal_core_additional_dbxrefs_form_update_dbxrefs(
-        $node,
-        'stock_dbxref',
-        'stock_id',
-        $stock_id
+      $details = array(
+        'linking_table' => 'stock_dbxref',
+        'foreignkey_name' => 'stock_id',
+        'foreignkey_value' => $stock_id
       );
+      chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
+
       // Now add in relationships
-      tripal_core_relationships_form_update_relationships(
-        $node,
-        'stock_relationship',
-        $stock_id
+      $details = array(
+        'relationship_table' => 'stock_relationship',
+        'foreignkey_value' => $node->stock_id
       );
+      chado_node_relationships_form_update_relationships($node, $details);
     }
   } //end of adding stock to chado
   else {
@@ -609,7 +610,10 @@ function chado_stock_update($node) {
   }
 
   //update dbxref
+  $dbxref_status = NULL;
+  $dbxref_present = FALSE;
   if ($node->database) {
+    $dbxref_present = TRUE;
     if ($node->accession) {
       $dbxref_mode = '';
       $stock = tripal_core_chado_select(
@@ -659,15 +663,15 @@ function chado_stock_update($node) {
         }
       }
     }
-  }
 
-  if (!$dbxref_status) {
-    watchdog(
-      'tripal_stock',
-      'Stock Update: Unable to %mode main stock dbxref with values: %values',
-      array('%values' => print_r($values, TRUE), '%mode' => $dbxref_mode),
-      WATCHDOG_WARNING
-    );
+    if (!$dbxref_status) {
+      watchdog(
+        'tripal_stock',
+        'Stock Update: Unable to %mode main stock dbxref with values: %values',
+        array('%values' => print_r($values, TRUE), '%mode' => $dbxref_mode),
+        WATCHDOG_WARNING
+      );
+    }
   }
 
   //can't change stock id which is all thats stored in drupal thus only update chado
@@ -678,11 +682,13 @@ function chado_stock_update($node) {
     'description' => $node->stock_description,
     'type_id' => $node->type_id,
   );
-  if ($dbxref_status) {
-    $update_values['dbxref_id'] = array(
-      'db_id' => $node->database,
-      'accession' => $node->accession
-    );
+  if ($dbxref_present) {
+    if ($dbxref_status) {
+      $update_values['dbxref_id'] = array(
+        'db_id' => $node->database,
+        'accession' => $node->accession
+      );
+    }
   }
   $status = tripal_core_chado_update('stock', array('stock_id' => $node->stock_id), $update_values);
 
@@ -717,21 +723,21 @@ function chado_stock_update($node) {
 
   // now update the additional dbxrefs
   if ($node->stock_id > 0) {
-    tripal_core_additional_dbxrefs_form_update_dbxrefs(
-      $node,
-      'stock_dbxref',
-      'stock_id',
-      $node->stock_id
+    $details = array(
+      'linking_table' => 'stock_dbxref',
+      'foreignkey_name' => 'stock_id',
+      'foreignkey_value' => $node->stock_id
     );
+    chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
   }
 
   // now update relationships
   if ($node->stock_id > 0) {
-    tripal_core_relationships_form_update_relationships(
-      $node,
-      'stock_relationship',
-      $node->stock_id
+    $details = array(
+      'relationship_table' => 'stock_relationship',
+      'foreignkey_value' => $node->stock_id
     );
+    chado_node_relationships_form_update_relationships($node, $details);
   }
 }
 
