@@ -39,12 +39,20 @@ require_once("api/tripal_stock.api.inc");
 function tripal_stock_menu() {
   $items = array();
 
+  // the menu link for addressing any stock (by name, uniquename, synonym)
+  $items['stock/%'] = array(
+    'page callback' => 'tripal_stock_match_stocks_page',
+    'page arguments' => array(1),
+    'access arguments' => array('access chado_stock content'),
+    'type' => MENU_LOCAL_TASK,
+  );
+  
   //Administrative settings menu-----------------
   $items['admin/tripal/chado/tripal_stock'] = array(
     'title' => 'Stocks',
     'description' => 'A stock is the physical entities of an organism, either living or preserved.',
     'page callback' => 'tripal_stock_admin_stock_view',
-    'access arguments' => array('administer tripal stocks'),
+    'access arguments' => array('administer tripal stock'),
     'type' => MENU_NORMAL_ITEM
   );
 
@@ -53,7 +61,7 @@ function tripal_stock_menu() {
     'description' => 'Settings for Chado Stocks',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_stock_admin'),
-    'access arguments' => array('administer tripal stocks'),
+    'access arguments' => array('administer tripal stock'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 5
   );
@@ -64,7 +72,7 @@ function tripal_stock_menu() {
     'page callback' => 'drupal_get_form',
     //'page arguments' => array('tripal_stock_sync_form'),
     'page arguments' => array('tripal_core_chado_node_sync_form', 'tripal_stock', 'chado_stock'),
-    'access arguments' => array('administer tripal stocks'),
+    'access arguments' => array('administer tripal stock'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 0
   );
@@ -74,18 +82,12 @@ function tripal_stock_menu() {
     'description' => 'Basic Description of Tripal Stock Module Functionality',
     'page callback' => 'theme',
     'page arguments' => array('tripal_stock_help'),
-    'access arguments' => array('administer tripal stocks'),
+    'access arguments' => array('administer tripal stock'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
   );
 
-  // the menu link for addressing any stock (by name, uniquename, synonym)
-  $items['stock/%'] = array(
-    'page callback' => 'tripal_stock_match_stocks_page',
-    'page arguments' => array(1),
-    'access arguments' => array('access chado_stock content'),
-    'type' => MENU_LOCAL_TASK,
-  );
+
   return $items;
 }
 

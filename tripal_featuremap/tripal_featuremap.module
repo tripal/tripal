@@ -122,7 +122,7 @@ function tripal_featuremap_menu() {
     'description' => 'Sync featuremaps from Chado with Drupal',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_core_chado_node_sync_form', 'tripal_featuremap', 'chado_featuremap'),
-    'access arguments' => array('administer tripal featuremaps'),
+    'access arguments' => array('administer tripal featuremap'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 0
   );
@@ -133,24 +133,6 @@ function tripal_featuremap_menu() {
     'page callback' => 'tripal_featuremap_sync_featuremaps',
     'access arguments' => array('administer tripal featuremap'),
     'type' => MENU_CALLBACK
-  );
-
-  // AJAX calls for adding/removing properties to a featuremap
-  $items['tripal_featuremap/properties/add'] = array(
-    'page callback' => 'tripal_featuremap_property_add',
-    'access arguments' => array('edit chado_featuremap content'),
-    'type ' => MENU_CALLBACK,
-  );
-  $items['tripal_featuremap/properties/description'] = array(
-    'page callback' => 'tripal_featuremap_property_get_description',
-    'access arguments' => array('edit chado_featuremap content'),
-    'type ' => MENU_CALLBACK,
-  );
-  $items['tripal_featuremap/properties/minus/%/%'] = array(
-    'page callback' => 'tripal_featuremap_property_delete',
-    'page arguments' => array(3, 4),
-    'access arguments' => array('edit chado_featuremap content'),
-    'type ' => MENU_CALLBACK,
   );
 
   $items['admin/tripal/chado/tripal_featuremap/views/featuremaps/enable'] = array(

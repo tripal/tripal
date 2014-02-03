@@ -128,12 +128,20 @@ function tripal_feature_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  // the menu link for addressing any feature (by name, uniquename, synonym)
+  $items['feature/%'] = array(
+    'page callback' => 'tripal_feature_match_features_page',
+    'page arguments' => array(1),
+    'access arguments' => array('access chado_feature content'),
+    'type' => MENU_LOCAL_TASK,
+  );
+  
   // the administative settings menu
   $items['admin/tripal/chado/tripal_feature'] = array(
     'title' => 'Features',
     'description' => 'A biological sequence or a section of a biological sequence, or a collection of such sections.',
     'page callback' => 'tripal_feature_admin_feature_view',
-    'access arguments' => array('administer tripal features'),
+    'access arguments' => array('administer tripal feature'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -142,7 +150,7 @@ function tripal_feature_menu() {
     'description' => 'Delete multiple features from Chado',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_feature_delete_form'),
-    'access arguments' => array('administer tripal features'),
+    'access arguments' => array('administer tripal feature'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 2
   );
@@ -160,7 +168,7 @@ function tripal_feature_menu() {
     'description' => 'Configure the Tripal Feature module.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_feature_admin'),
-    'access arguments' => array('administer tripal features'),
+    'access arguments' => array('administer tripal feature'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 5
   );
@@ -169,7 +177,7 @@ function tripal_feature_menu() {
     'description' => 'Help with the Tripal Feature module.',
     'page callback' => 'theme',
     'page arguments' => array('tripal_feature_help'),
-    'access arguments' => array('administer tripal features'),
+    'access arguments' => array('administer tripal feature'),
     'type' => MENU_LOCAL_TASK,
     'weight' =>  10
   );
@@ -181,7 +189,7 @@ function tripal_feature_menu() {
     'description' => 'Load sequences from a multi-FASTA file into Chado',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_feature_fasta_load_form'),
-    'access arguments' => array('administer tripal features'),
+    'access arguments' => array('administer tripal feature'),
     'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/tripal/loaders/gff3_load'] = array(
@@ -189,16 +197,8 @@ function tripal_feature_menu() {
     'description' => 'Import a GFF3 file into Chado',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_feature_gff3_load_form'),
-    'access arguments' => array('administer tripal features'),
+    'access arguments' => array('administer tripal feature'),
     'type' => MENU_NORMAL_ITEM,
-  );
-
-  // the menu link for addressing any feature (by name, uniquename, synonym)
-  $items['feature/%'] = array(
-    'page callback' => 'tripal_feature_match_features_page',
-    'page arguments' => array(1),
-    'access arguments' => array('access chado_feature content'),
-    'type' => MENU_LOCAL_TASK,
   );
 
   // Enable admin view

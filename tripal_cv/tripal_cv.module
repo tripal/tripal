@@ -158,18 +158,6 @@ function tripal_cv_menu() {
     'access arguments' => array('administer controlled vocabularies'),
     'type' => MENU_CALLBACK,
   );
-
-  /*
-   * Charts
-   */
-  $items['tripal_cv_chart'] = array(
-    'path' => 'tripal_cv_chart',
-    'page callback' => 'tripal_cv_chart',
-    'page arguments' => array(1),
-    'access arguments' => array('access content'),
-    'type' => MENU_CALLBACK
-  );
-
   /*
    * Menu items for enabling views
    */
@@ -187,6 +175,18 @@ function tripal_cv_menu() {
     'access arguments' => array('administer controlled vocabularies'),
     'type' => MENU_CALLBACK,
   );
+  
+  /*
+   * Charts
+  */
+  $items['tripal_cv_chart'] = array(
+    'path' => 'tripal_cv_chart',
+    'page callback' => 'tripal_cv_chart',
+    'page arguments' => array(1),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+  
 
   /*
    * Menu items for working with CV Trees

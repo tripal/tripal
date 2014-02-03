@@ -62,7 +62,7 @@ function tripal_contact_menu() {
     'title' => 'Contacts',
     'description' => ('Model persons, institutes, groups, organizations, etc.'),
     'page callback' => 'tripal_contact_admin_contact_view',
-    'access arguments' => array('administer tripal contacts'),
+    'access arguments' => array('administer tripal contact'),
     'type' => MENU_NORMAL_ITEM
   );
 
@@ -81,7 +81,7 @@ function tripal_contact_menu() {
     'description' => ('Help with the contact module.'),
     'page callback' => 'theme',
     'page arguments' => array('tripal_contact_help'),
-    'access arguments' => array('administer tripal contacts'),
+    'access arguments' => array('administer tripal contact'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
   );
@@ -91,7 +91,7 @@ function tripal_contact_menu() {
     'description' => 'Sync contacts in Chado with Drupal',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_contact_sync_form'),
-    'access arguments' => array('administer tripal contacts'),
+    'access arguments' => array('administer tripal contact'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 0
   );
@@ -104,24 +104,6 @@ function tripal_contact_menu() {
     'access arguments' => array('administer tripal contact'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 2
-  );
-
-  // AJAX calls for adding/removing properties to a contact
-  $items['tripal_contact/properties/add'] = array(
-    'page callback' => 'tripal_contact_property_add',
-    'access arguments' => array('edit chado_contact content'),
-    'type ' => MENU_CALLBACK,
-  );
-  $items['tripal_contact/properties/description'] = array(
-    'page callback' => 'tripal_contact_property_get_description',
-    'access arguments' => array('edit chado_contact content'),
-    'type ' => MENU_CALLBACK,
-  );
-  $items['tripal_contact/properties/minus/%/%'] = array(
-    'page callback' => 'tripal_contact_property_delete',
-    'page arguments' => array(3, 4),
-    'access arguments' => array('edit chado_contact content'),
-    'type ' => MENU_CALLBACK,
   );
 
   return $items;

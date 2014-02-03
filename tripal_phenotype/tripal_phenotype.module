@@ -9,6 +9,21 @@
  */
 
 /**
+ *  Set the permission types that the chado module uses.  Essentially we
+ *  want permissionis
+ *
+ * @ingroup tripal_phenotype
+ */
+function tripal_phenotype_permission() {
+  return array(
+    'adminster tripal phenotype' => array(
+      'title' => t('Administer Phenotype Module'),
+      'description' => t('Allow users to administer the phenotype module.'),
+    ),
+  );
+}
+
+/**
  *  Menu items are automatically added for the new node types created
  *  by this module to the 'Create Content' Navigation menu item.  This function
  *  adds more menu items needed for this module.

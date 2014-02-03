@@ -64,7 +64,7 @@ function tripal_pub_menu() {
     'title' => 'Publications',
     'description' => ('A documented provenance artefact - publications, documents, personal communication.'),
     'page callback' => 'tripal_pub_admin_pub_view',
-    'access arguments' => array('administer tripal pubs'),
+    'access arguments' => array('administer tripal pub'),
     'type' => MENU_NORMAL_ITEM
   );
 
@@ -73,7 +73,7 @@ function tripal_pub_menu() {
     'description' => ('A module for interfacing the GMOD chado database with Drupal, providing viewing of publications'),
     'page callback' => 'theme',
     'page arguments' => array('tripal_pub_help'),
-    'access arguments' => array('administer tripal pubs'),
+    'access arguments' => array('administer tripal pub'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
   );
@@ -83,7 +83,7 @@ function tripal_pub_menu() {
     'description' => 'Configure the Tripal publication module.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_pub_admin'),
-    'access arguments' => array('administer tripal pubs'),
+    'access arguments' => array('administer tripal pub'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 5
   );
@@ -104,7 +104,7 @@ function tripal_pub_menu() {
     'description' => 'Update publication citations',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_pub_citation_form'),
-    'access arguments' => array('administer tripal pubs'),
+    'access arguments' => array('administer tripal pub'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 1
   );
@@ -113,7 +113,7 @@ function tripal_pub_menu() {
     'title' => t('Importers'),
     'description' => t('List all publication importers'),
     'page callback' => 'tripal_pub_importers_list',
-    'access arguments' => array('administer tripal pubs'),
+    'access arguments' => array('administer tripal pub'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 0
   );
@@ -131,65 +131,48 @@ function tripal_pub_menu() {
     'title' => t('Add an Importer'),
     'description' => t('Add a new publication importer.'),
     'page callback' => 'tripal_pub_importer_setup_page',
-    'access arguments' => array('administer tripal pubs'),
+    'access arguments' => array('administer tripal pub'),
     'type ' => MENU_CALLBACK,
   );
 
   $items['admin/tripal/chado/tripal_pub/import/raw/%'] = array(
     'page callback' => 'tripal_pub_get_raw_data',
     'page arguments' => array(6),
-    'access arguments' => array('administer tripal pubs'),
+    'access arguments' => array('administer tripal pub'),
     'type ' => MENU_CALLBACK,
   );
 
   $items['admin/tripal/chado/tripal_pub/import/edit/%'] = array(
     'page callback' => 'tripal_pub_importer_setup_page',
     'page arguments' => array(5, 6),
-    'access arguments' => array('administer tripal pubs'),
+    'access arguments' => array('administer tripal pub'),
     'type ' => MENU_CALLBACK,
   );
 
   $items['admin/tripal/chado/tripal_pub/import/submit/%'] = array(
     'page callback' => 'tripal_pub_importer_submit_job',
     'page arguments' => array(6),
-    'access arguments' => array('administer tripal pubs'),
+    'access arguments' => array('administer tripal pub'),
     'type ' => MENU_CALLBACK,
   );
 
   $items['admin/tripal/chado/tripal_pub/import/delete/%'] = array(
     'page callback' => 'tripal_pub_importer_delete',
     'page arguments' => array(5),
-    'access arguments' => array('administer tripal pubs'),
+    'access arguments' => array('administer tripal pub'),
     'type ' => MENU_CALLBACK,
   );
   $items['admin/tripal/chado/tripal_pub/import/changedb'] = array(
     'page callback' => 'tripal_pub_importer_setup_page_update_remotedb',
     'page arguments' => array(),
-    'access arguments' => array('administer tripal pubs'),
+    'access arguments' => array('administer tripal pub'),
     'type ' => MENU_CALLBACK,
   );
 
   $items['admin/tripal/chado/tripal_pub/import/criteria/%/%'] = array(
     'page callback' => 'tripal_pub_importer_setup_page_update_criteria',
     'page arguments' => array(5, 6),
-    'access arguments' => array('administer tripal pubs'),
-    'type ' => MENU_CALLBACK,
-  );
-
-  $items['tripal_pub/chado/properties/add'] = array(
-    'page callback' => 'tripal_pub_property_add',
-    'access arguments' => array('edit chado_pub content'),
-    'type ' => MENU_CALLBACK,
-  );
-  $items['tripal_pub/chado/properties/description'] = array(
-    'page callback' => 'tripal_pub_property_get_description',
-    'access arguments' => array('edit chado_pub content'),
-    'type ' => MENU_CALLBACK,
-  );
-  $items['tripal_pub/chado/properties/minus/%/%'] = array(
-    'page callback' => 'tripal_pub_property_delete',
-    'page arguments' => array(3, 4),
-    'access arguments' => array('edit chado_pub content'),
+    'access arguments' => array('administer tripal pub'),
     'type ' => MENU_CALLBACK,
   );
 

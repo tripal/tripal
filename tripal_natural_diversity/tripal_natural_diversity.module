@@ -13,6 +13,20 @@ require_once('includes/tripal_natural_diversity.admin.inc');
  */
 
 /**
+ *  Set the permission types that the chado module uses.  Essentially we
+ *  want permissionis
+ *
+ * @ingroup tripal_natural_diversity
+ */
+function tripal_natural_diversity_permission() {
+  return array(
+    'adminster tripal nd' => array(
+      'title' => t('Administer Natural Diversity Module'),
+      'description' => t('Allow users to administer the natural diversity module.'),
+    ),
+  );
+}
+/**
  *  Menu items are automatically added for the new node types created
  *  by this module to the 'Create Content' Navigation menu item.  This function
  *  adds more menu items needed for this module.
@@ -27,7 +41,7 @@ function tripal_natural_diversity_menu() {
    'title' => 'Natural Diversity Experiments',
    'description' => 'Experiments relating to natural diversity such as genotype and phenotype experiments.',
    'page callback' => 'tripal_natural_diversity_admin_natdiv_view',
-   'access arguments' => array('adminster tripal natural_diversity'),
+   'access arguments' => array('adminster tripal nd'),
    'type' => MENU_NORMAL_ITEM,
   );
 
@@ -36,7 +50,7 @@ function tripal_natural_diversity_menu() {
     'description' => ('Help for the Tripal natural diversity module.'),
     'page callback' => 'theme',
     'page arguments' => array('tripal_natural_diversity_help'),
-    'access arguments' => array('administer tripal natual_diversity'),
+    'access arguments' => array('administer tripal nd'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
   );
@@ -45,7 +59,7 @@ function tripal_natural_diversity_menu() {
     'title' => 'Enable Natural Diversity Administrative View',
     'page callback' => 'tripal_views_admin_enable_view',
     'page arguments' => array('tripal_natural_diversity_admin_natdiv_exp', 'admin/tripal/chado/tripal_natdiv'),
-    'access arguments' => array('administer tripal natural_diversity'),
+    'access arguments' => array('administer tripal nd'),
     'type' => MENU_CALLBACK,
   );
 

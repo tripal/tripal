@@ -14,6 +14,20 @@ require('includes/tripal_genetic.schema.inc');
 require('includes/tripal_genetic.admin.inc');
 
 /**
+ *  Set the permission types that the chado module uses.  Essentially we
+ *  want permissionis 
+ *
+ * @ingroup tripal_genetic
+ */
+function tripal_genetic_permission() {
+  return array(
+    'adminster tripal genetic' => array(
+      'title' => t('Administer Genetic Module'),
+      'description' => t('Allow users to administer the genetic module.'),
+    ),
+  );
+}
+/**
  *  Menu items are automatically added for the new node types created
  *  by this module to the 'Create Content' Navigation menu item.  This function
  *  adds more menu items needed for this module.

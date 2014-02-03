@@ -74,14 +74,14 @@ function tripal_db_menu() {
     'title' => 'Enable Database Administrative View',
     'page callback' => 'tripal_views_admin_enable_view',
     'page arguments' => array('tripal_db_admin_dbs', 'admin/tripal/chado/tripal_db'),
-    'access arguments' => array('administer controlled vocabularies'),
+    'access arguments' => array('administer db cross-references'),
     'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/chado/tripal_db/views/dbxrefs/enable'] = array(
     'title' => 'Enable Reference Administrative View',
     'page callback' => 'tripal_views_admin_enable_view',
     'page arguments' => array('tripal_db_admin_dbxrefs', 'admin/tripal/chado/tripal_db'),
-    'access arguments' => array('administer controlled vocabularies'),
+    'access arguments' => array('administer db cross-references'),
     'type' => MENU_CALLBACK,
   );
 
