@@ -39,7 +39,7 @@
     );
 
     // Finally, and add the additional form elements to the form
-    tripal_core_additional_dbxrefs_form($form, $form_state, $details);
+    chado_node_additional_dbxrefs_form($form, $form_state, $details);
 
     return $form;
   }
@@ -58,7 +58,7 @@
       // Add all additional database references
       // This function will create new database references as needed and select existing ones.
       // Existing _dbxref links will be cleared and then re-added
-      tripal_core_additional_dbxrefs_form_update_dbxrefs(
+      chado_node_additional_dbxrefs_form_update_dbxrefs(
         $node,              // the node object passed in via hook_insert()
         'example_dbxref',   // the name of the _dbxref linking table
         'example_id',       // key to link to the chado content created by this node
@@ -80,7 +80,7 @@
       // Update all additional database references
       // This function will create new database references as needed and select existing ones.
       // Existing _dbxref links will be cleared and then re-added
-      tripal_core_additional_dbxrefs_form_update_dbxrefs(
+      chado_node_additional_dbxrefs_form_update_dbxrefs(
         $node,              // the node object passed in via hook_insert()
         'example_dbxref',   // the name of the _dbxref linking table
         'example_id',       // key to link to the chado content created by this node
@@ -119,7 +119,7 @@
  *
  * @ingroup tripal_chado_node_api
  */
-function tripal_core_additional_dbxrefs_form(&$form, &$form_state, $details) {
+function chado_node_additional_dbxrefs_form(&$form, &$form_state, $details) {
 
   // Set Defaults for optional fields
   $details['fieldset_title'] = 'Additional Database References';
@@ -144,7 +144,7 @@ function tripal_core_additional_dbxrefs_form(&$form, &$form_state, $details) {
     '#tree' => TRUE,
     '#prefix' => '<div id="tripal-generic-edit-addtl_dbxrefs-table">',
     '#suffix' => '</div>',
-    '#theme' => 'tripal_core_additional_dbxrefs_form_table'
+    '#theme' => 'chado_node_additional_dbxrefs_form_table'
   );
 
   /* DBxrefs can come to us in two ways:
@@ -257,7 +257,7 @@ function tripal_core_additional_dbxrefs_form(&$form, &$form_state, $details) {
       '#value' => t('Remove'),
       '#name' => "dbxref_remove-".$dbxref->db_id.'-'.$version,
       '#ajax' => array(
-        'callback' => "tripal_core_additional_dbxrefs_form_ajax_update",
+        'callback' => "chado_node_additional_dbxrefs_form_ajax_update",
         'wrapper' => 'tripal-generic-edit-addtl_dbxrefs-table',
         'effect'   => 'fade',
         'method'   => 'replace',
@@ -270,8 +270,8 @@ function tripal_core_additional_dbxrefs_form(&$form, &$form_state, $details) {
       // from the chado_additional_dbxrefs array. In order to keep validate errors
       // from the node form validate and Drupal required errors for non-dbxref fields
       // preventing the user from removing dbxrefs we set the #limit_validation_errors below
-      '#validate' => array('tripal_core_additional_dbxrefs_form_remove_button_validate'),
-      '#submit' => array('tripal_core_additional_dbxrefs_form_remove_button_submit'),
+      '#validate' => array('chado_node_additional_dbxrefs_form_remove_button_validate'),
+      '#submit' => array('chado_node_additional_dbxrefs_form_remove_button_submit'),
       // Limit the validation of the form upon clicking this button to the dbxref_table tree
       // No other fields will be validated (ie: no fields from the main form or any other api
       // added form).
@@ -314,7 +314,7 @@ function tripal_core_additional_dbxrefs_form(&$form, &$form_state, $details) {
     '#value' => t('Add'),
     '#name' => "dbxref-add",
     '#ajax' => array(
-      'callback' => "tripal_core_additional_dbxrefs_form_ajax_update",
+      'callback' => "chado_node_additional_dbxrefs_form_ajax_update",
       'wrapper' => 'tripal-generic-edit-addtl_dbxrefs-table',
       'effect'   => 'fade',
       'method'   => 'replace',
@@ -327,8 +327,8 @@ function tripal_core_additional_dbxrefs_form(&$form, &$form_state, $details) {
     // array. In order to keep validate errors from the node form validate and Drupal
     // required errors for non-dbxref fields preventing the user from adding dbxrefs we
     // set the #limit_validation_errors below
-    '#validate' => array('tripal_core_additional_dbxrefs_form_add_button_validate'),
-    '#submit' => array('tripal_core_additional_dbxrefs_form_add_button_submit'),
+    '#validate' => array('chado_node_additional_dbxrefs_form_add_button_validate'),
+    '#submit' => array('chado_node_additional_dbxrefs_form_add_button_submit'),
     // Limit the validation of the form upon clicking this button to the dbxref_table tree
     // No other fields will be validated (ie: no fields from the main form or any other api
     // added form).
@@ -341,11 +341,11 @@ function tripal_core_additional_dbxrefs_form(&$form, &$form_state, $details) {
 
 /**
  * Validate the user input for creating a new dbxref
- * Called by the add button in tripal_core_additional_dbxrefs_form
+ * Called by the add button in chado_node_additional_dbxrefs_form
  *
  * @ingroup tripal_chado_node_api
  */
-function tripal_core_additional_dbxrefs_form_add_button_validate($form, &$form_state) {
+function chado_node_additional_dbxrefs_form_add_button_validate($form, &$form_state) {
 
   // Ensure the db_id is supplied & Valid
   $db = tripal_core_chado_select(
@@ -367,19 +367,19 @@ function tripal_core_additional_dbxrefs_form_add_button_validate($form, &$form_s
 }
 
 /**
- * Called by the add button in tripal_core_additional_dbxrefs_form
+ * Called by the add button in chado_node_additional_dbxrefs_form
  *
  * Create an array of additional dbxrefs in the form state. This array will then be
  * used to rebuild the form in subsequent builds
  *
  * @ingroup tripal_chado_node_api
  */
-function tripal_core_additional_dbxrefs_form_add_button_submit(&$form, &$form_state) {
+function chado_node_additional_dbxrefs_form_add_button_submit(&$form, &$form_state) {
 
   // if the chado_additional_dbxrefs array is not set then this is the first time modifying the
   // dbxref table. this means we need to include all the dbxrefs from the db
   if (!isset($form_state['chado_additional_dbxrefs'])) {
-    tripal_core_additional_dbxrefs_form_create_dbxref_formstate_array($form, $form_state);
+    chado_node_additional_dbxrefs_form_create_dbxref_formstate_array($form, $form_state);
   }
 
   // get details for the new dbxref
@@ -401,26 +401,26 @@ function tripal_core_additional_dbxrefs_form_add_button_submit(&$form, &$form_st
  * There is no user input for the remove buttons so there is no need to validate
  * However, both a submit & validate need to be specified so this is just a placeholder
  *
- * Called by the many remove buttons in tripal_core_additional_dbxrefs_form
+ * Called by the many remove buttons in chado_node_additional_dbxrefs_form
  *
  * @ingroup tripal_chado_node_api
  */
-function tripal_core_additional_dbxrefs_form_remove_button_validate($form, $form_state) {
+function chado_node_additional_dbxrefs_form_remove_button_validate($form, $form_state) {
   // No Validation needed for remove
 }
 
 /**
  * Remove the correct dbxref from the form
- * Called by the many remove buttons in tripal_core_additional_dbxrefs_form
+ * Called by the many remove buttons in chado_node_additional_dbxrefs_form
  *
  * @ingroup tripal_chado_node_api
  */
-function tripal_core_additional_dbxrefs_form_remove_button_submit(&$form, &$form_state) {
+function chado_node_additional_dbxrefs_form_remove_button_submit(&$form, &$form_state) {
 
   // if the chado_additional_dbxrefs array is not set then this is the first time modifying the
   // dbxref table. this means we need to include all the dbxrefs from the db
   if (!isset($form_state['chado_additional_dbxrefs'])) {
-    tripal_core_additional_dbxrefs_form_create_dbxref_formstate_array($form, $form_state);
+    chado_node_additional_dbxrefs_form_create_dbxref_formstate_array($form, $form_state);
   }
 
   // remove the specified dbxref from the form dbxref table
@@ -439,7 +439,7 @@ function tripal_core_additional_dbxrefs_form_remove_button_submit(&$form, &$form
  *
  * @ingroup tripal_chado_node_api
  */
-function tripal_core_additional_dbxrefs_form_ajax_update($form, $form_state) {
+function chado_node_additional_dbxrefs_form_ajax_update($form, $form_state) {
   return $form['addtl_dbxrefs']['dbxref_table'];
 }
 
@@ -461,7 +461,7 @@ function tripal_core_additional_dbxrefs_form_ajax_update($form, $form_state) {
  *
  * @ingroup tripal_chado_node_api
  */
-function tripal_core_additional_dbxrefs_form_create_dbxref_formstate_array($form, &$form_state) {
+function chado_node_additional_dbxrefs_form_create_dbxref_formstate_array($form, &$form_state) {
 
   $form_state['chado_additional_dbxrefs'] = array();
 
@@ -489,7 +489,7 @@ function tripal_core_additional_dbxrefs_form_create_dbxref_formstate_array($form
  *
  * @ingroup tripal_chado_node_api
  */
-function theme_tripal_core_additional_dbxrefs_form_table($variables) {
+function theme_chado_node_additional_dbxrefs_form_table($variables) {
   $element = $variables['element'];
 
   $header = array(
@@ -546,7 +546,7 @@ function theme_tripal_core_additional_dbxrefs_form_table($variables) {
  *
  * @ingroup tripal_chado_node_api
  */
-function tripal_core_additional_dbxrefs_form_retreive($node) {
+function chado_node_additional_dbxrefs_form_retreive($node) {
   $dbxrefs = array();
 
   if (isset($node->dbxref_table)) {
@@ -578,14 +578,14 @@ function tripal_core_additional_dbxrefs_form_retreive($node) {
  *
  * @ingroup tripal_chado_node_api
  */
-function tripal_core_additional_dbxrefs_form_update_dbxrefs($node, $linking_table, $foreignkey_name, $foreignkey_value) {
+function chado_node_additional_dbxrefs_form_update_dbxrefs($node, $linking_table, $foreignkey_name, $foreignkey_value) {
 
   if (isset($node->dbxref_table) AND ($foreignkey_value > 0)) {
     // First remove existing dbxref links
     tripal_core_chado_delete($linking_table, array($foreignkey_name => $foreignkey_value));
 
     // Add back in dbxref links and insert dbxrefs as needed
-    $dbxrefs = tripal_core_additional_dbxrefs_form_retreive($node);
+    $dbxrefs = chado_node_additional_dbxrefs_form_retreive($node);
     foreach ($dbxrefs as $db_id => $versions) {
       foreach ($versions as $version => $elements) {
         foreach ($elements as $dbxref_id => $accession) {
