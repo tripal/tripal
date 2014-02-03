@@ -116,6 +116,8 @@
  *     - fieldset_title: the non-translated title for this fieldset
  *     - additional_instructions: a non-translated string providing additional instructions
  *     - nodetype_plural: the non-translated plural title of this node type
+ *     - select_options: must be an array where the [key] is a valid cvterm_id and
+ *       the [value] is the human-readable name of the option. This is generated from the cv_name/id by default
  *
  * @ingroup tripal_chado_node_api
  */
@@ -128,17 +130,44 @@ function chado_node_relationships_form(&$form, &$form_state, $details) {
   $details['additional_instructions'] = (isset($details['additional_instructions'])) ? $details['additional_instructions'] : '';
   $details['nodetype_plural']  = (isset($details['nodetype_plural'])) ? $details['nodetype_plural'] : $details['nodetype'] . 's';
 
-  // Get relationship type options
-  if (isset($details['cv_id'])) {
-    $query = "SELECT cvterm_id, name FROM {cvterm} cvterm WHERE cv_id = :cv_id";
-    $result = chado_query($query, array(':cv_id' => $details['cv_id']));
-  } elseif (isset($details['cv_name'])) {
-    $query = "SELECT cvterm_id, name FROM {cvterm} cvterm WHERE cv_id IN (SELECT cv_id FROM cv WHERE name = :cv_name)";
-    $result = chado_query($query, array(':cv_name' => $details['cv_name']));
+  // Get Property Types for the Select List
+  if (isset($details['select_options'])) {
+    $type_options = $details['select_options'];
   }
-  $type_options = array(0 => 'Select a Type');
-  foreach ($result as $cvterm) {
-    $type_options[ $cvterm->cvterm_id ] = $cvterm->name;
+  else {
+    if (isset($details['cv_name'])) {
+      $type_options = array();
+      $type_options[] = 'Select a Property';
+      $sql = "
+        SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition
+        FROM  {cvterm} CVT
+          INNER JOIN {cv} CV ON CVT.cv_id = CV.cv_id
+        WHERE
+          CV.name = :cv_name AND
+          NOT CVT.is_obsolete = 1
+        ORDER BY CVT.name ASC
+      ";
+      $prop_types = chado_query($sql, array(':cv_name' => $details['cv_name']));
+      while ($prop = $prop_types->fetchObject()) {
+        $type_options[$prop->cvterm_id] = $prop->name;
+      }
+    } elseif (isset($details['cv_id'])) {
+      $type_options = array();
+      $type_options[] = 'Select a Property';
+      $sql = "
+        SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition
+        FROM  {cvterm} CVT
+          INNER JOIN {cv} CV ON CVT.cv_id = CV.cv_id
+        WHERE
+          CV.cv_id = :cv_id AND
+          NOT CVT.is_obsolete = 1
+        ORDER BY CVT.name ASC
+      ";
+      $prop_types = chado_query($sql, array(':cv_id' => $details['cv_id']));
+      while ($prop = $prop_types->fetchObject()) {
+        $type_options[$prop->cvterm_id] = $prop->name;
+      }
+    }
   }
 
   $form['relationships'] = array(
@@ -232,75 +261,77 @@ function chado_node_relationships_form(&$form, &$form_state, $details) {
    * an element to the form for each one.
    */
   foreach ($existing_rels as $relationship) {
+    if (array_key_exists($relationship->type_id, $type_options)) {
 
-    $form['relationships']['relationship_table'][$relationship->type_id]['#type'] = 'markup';
-    $form['relationships']['relationship_table'][$relationship->type_id]['#type'] = '';
+      $form['relationships']['relationship_table'][$relationship->type_id]['#type'] = 'markup';
+      $form['relationships']['relationship_table'][$relationship->type_id]['#type'] = '';
 
-    $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['#type'] = 'markup';
-    $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['#value'] = '';
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['#type'] = 'markup';
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['#value'] = '';
 
-    $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['object_id'] = array(
-      '#type' => 'hidden',
-      '#value' => $relationship->object_id
-    );
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['object_id'] = array(
+        '#type' => 'hidden',
+        '#value' => $relationship->object_id
+      );
 
-    $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['subject_id'] = array(
-      '#type' => 'hidden',
-      '#value' => $relationship->subject_id
-    );
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['subject_id'] = array(
+        '#type' => 'hidden',
+        '#value' => $relationship->subject_id
+      );
 
-    $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['type_id'] = array(
-      '#type' => 'hidden',
-      '#value' => $relationship->type_id
-    );
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['type_id'] = array(
+        '#type' => 'hidden',
+        '#value' => $relationship->type_id
+      );
 
-    $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['object_name'] = array(
-      '#type' => 'markup',
-      '#markup' => $relationship->object_name
-    );
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['object_name'] = array(
+        '#type' => 'markup',
+        '#markup' => $relationship->object_name
+      );
 
-    $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['type_name'] = array(
-      '#type' => 'markup',
-      '#markup' => $relationship->type_name
-    );
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['type_name'] = array(
+        '#type' => 'markup',
+        '#markup' => $relationship->type_name
+      );
 
-    $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['subject_name'] = array(
-      '#type' => 'markup',
-      '#markup' => $relationship->subject_name
-    );
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['subject_name'] = array(
+        '#type' => 'markup',
+        '#markup' => $relationship->subject_name
+      );
 
-    $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['rank'] = array(
-      '#type' => 'markup',
-      '#markup' => $relationship->rank
-    );
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['rank'] = array(
+        '#type' => 'markup',
+        '#markup' => $relationship->rank
+      );
 
-    $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['rel_action'] = array(
-      '#type' => 'submit',
-      '#value' => t('Remove'),
-      '#name' => "rel_remove-".$relationship->type_id.'-'.$relationship->rank,
-      '#ajax' => array(
-        'callback' => 'chado_node_relationships_form_ajax_update',
-        'wrapper' => 'tripal-generic-edit-relationships-table',
-        'effect'   => 'fade',
-        'method'   => 'replace',
-        'prevent'  => 'click'
-      ),
-      // When this button is clicked, the form will be validated and submitted.
-      // Therefore, we set custom submit and validate functions to override the
-      // default node form submit.  In the validate function we validate only the
-      // relationship fields and in the submit we remove the indicated relationship
-      // from the chado_relationships array. In order to keep validate errors
-      // from the node form validate and Drupal required errors for non-relationship fields
-      // preventing the user from removing relationships we set the #limit_validation_errors below
-      '#validate' => array('chado_node_relationships_form_remove_button_validate'),
-      '#submit' => array('chado_node_relationships_form_remove_button_submit'),
-      // Limit the validation of the form upon clicking this button to the relationship_table tree
-      // No other fields will be validated (ie: no fields from the main form or any other api
-      // added form).
-      '#limit_validation_errors' => array(
-        array('relationship_table')  // Validate all fields within $form_state['values']['relationship_table']
-      )
-    );
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['rel_action'] = array(
+        '#type' => 'submit',
+        '#value' => t('Remove'),
+        '#name' => "rel_remove-".$relationship->type_id.'-'.$relationship->rank,
+        '#ajax' => array(
+          'callback' => 'chado_node_relationships_form_ajax_update',
+          'wrapper' => 'tripal-generic-edit-relationships-table',
+          'effect'   => 'fade',
+          'method'   => 'replace',
+          'prevent'  => 'click'
+        ),
+        // When this button is clicked, the form will be validated and submitted.
+        // Therefore, we set custom submit and validate functions to override the
+        // default node form submit.  In the validate function we validate only the
+        // relationship fields and in the submit we remove the indicated relationship
+        // from the chado_relationships array. In order to keep validate errors
+        // from the node form validate and Drupal required errors for non-relationship fields
+        // preventing the user from removing relationships we set the #limit_validation_errors below
+        '#validate' => array('chado_node_relationships_form_remove_button_validate'),
+        '#submit' => array('chado_node_relationships_form_remove_button_submit'),
+        // Limit the validation of the form upon clicking this button to the relationship_table tree
+        // No other fields will be validated (ie: no fields from the main form or any other api
+        // added form).
+        '#limit_validation_errors' => array(
+          array('relationship_table')  // Validate all fields within $form_state['values']['relationship_table']
+        )
+      );
+    }
   }
 
   $form['relationships']['relationship_table']['new']['object_name'] = array(
