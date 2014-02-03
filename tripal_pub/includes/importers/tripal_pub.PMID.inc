@@ -2,10 +2,8 @@
 /**
  * @file
  * Tripal Pub PubMed Interface
- *
- * @defgroup tripal_pub_PMID PubMed Interface
- * @ingroup tripal_pub
  */
+
 /**
  *
  */
@@ -18,6 +16,7 @@ function tripal_pub_remote_alter_form_PMID($form, $form_state, $num_criteria = 1
 
   return $form;
 }
+
 /**
  *
  */
@@ -66,14 +65,14 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $page) {
         foreach ($elements as $element) {
           $search_str .= "($element |SCOPE|) AND ";
         }
-        $search_str = substr($search_str, 0, -5); // remove trailing 'AND '              
-      } 
+        $search_str = substr($search_str, 0, -5); // remove trailing 'AND '
+      }
       elseif (preg_match('/or/i', $search_terms)) {
         $elements = preg_split('/\s+or+\s/i', $search_terms);
         foreach ($elements as $element) {
           $search_str .= "($element |SCOPE|) OR ";
         }
-        $search_str = substr($search_str, 0, -4); // remove trailing 'OR '        
+        $search_str = substr($search_str, 0, -4); // remove trailing 'OR '
       }
       else {
         $search_str .= "($search_terms |SCOPE|)";
@@ -98,7 +97,7 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $page) {
       $search_str = preg_replace('/\|SCOPE\|/', '[Uid]', $search_str);
     }
     else {
-      $search_str = preg_replace('/\|SCOPE\|/', '', $search_str);  
+      $search_str = preg_replace('/\|SCOPE\|/', '', $search_str);
     }
   }
   if ($days) {
@@ -108,15 +107,15 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $page) {
     $search_str .= " AND (\"" . sprintf("%04d/%02d/%02d", $past_date['year'], $past_date['mon'], $past_date['mday']) . "\"[Date - Create] : \"3000\"[Date - Create]))";
   }
 
-  // now initialize the query 
+  // now initialize the query
   $results = tripal_pub_PMID_search_init($search_str, $num_to_retrieve);
   $total_records = $results['Count'];
   $query_key     = $results['QueryKey'];
   $web_env       = $results['WebEnv'];
-  
+
   // initialize the pager
   $start = $page * $num_to_retrieve;
-  
+
   // if we have no records then return an empty array
   if ($total_records == 0) {
     return array(
@@ -125,7 +124,7 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $page) {
       'pubs'          => array(),
     );
   }
-  
+
   // now get the list of PMIDs from the initialized search
   $pmids_txt = tripal_pub_PMID_fetch($query_key, $web_env, 'uilist', 'text', $start, $num_to_retrieve);
 
@@ -149,7 +148,7 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $page) {
  *
  */
 function tripal_pub_PMID_search_init($search_str, $retmax){
-   
+
   // do a search for a single result so that we can establish a history, and get
   // the number of records. Once we have the number of records we can retrieve
   // those requested in the range.
@@ -219,7 +218,7 @@ $retmod = 'null', $start = 0, $limit = 10, $args = array()){
   // the PMID's within the range specied.  The PMIDs will be returned as a text list
   $fetch_url = "http://www.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?".
     "rettype=$rettype" .
-    "&retmode=$retmod" . 
+    "&retmode=$retmod" .
     "&retstart=$start" .
     "&retmax=$limit" .
     "&db=Pubmed" .
@@ -356,7 +355,7 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
     }
   }
   $pub['Citation'] = tripal_pub_create_citation($pub);
-  
+
   $pub['raw'] = $pub_xml;
   return $pub;
 }
@@ -502,8 +501,8 @@ function tripal_pub_PMID_parse_publication_type($xml, &$pub) {
       switch ($element) {
         case 'PublicationType':
           $xml->read();
-          $value = $xml->value;          
-          $pub_cvterm = tripal_cv_get_cvterm_by_name($value, NULL, 'tripal_pub');          
+          $value = $xml->value;
+          $pub_cvterm = tripal_cv_get_cvterm_by_name($value, NULL, 'tripal_pub');
           if (!$pub_cvterm) {
             // see if this we can find the name using a synonym
             $pub_cvterm = tripal_cv_get_cvterm_by_synonym($value, NULL, 'tripal_pub');
@@ -660,7 +659,7 @@ function tripal_pub_PMID_parse_journal_issue($xml, &$pub) {
           $month = array_key_exists('month', $date) ? $date['month'] : '';
           $day = array_key_exists('day', $date) ? $date['day'] : '';
           $medline = array_key_exists('medline', $date) ? $date['medline'] : '';
-           
+
           $pub['Year'] = $year;
           if ($month and $day and $year) {
             $pub['Publication Date'] = "$year $month $day";

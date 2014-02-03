@@ -2,7 +2,6 @@
 
 /**
  *
- * @ingroup tripal_feature_views
  */
 function tripal_feature_views_default_views() {
   $views = array();

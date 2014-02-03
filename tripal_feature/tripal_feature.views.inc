@@ -11,11 +11,6 @@
  */
 
 /**
- * @defgroup tripal_feature_views Feature Views Integration
- * @ingroup views
- */
-
-/**
  * Implements hook_views_handlers()
  *
  * Purpose: Register all custom handlers with views
@@ -23,8 +18,6 @@
  *   "how a field should be filtered", "how a field should be sorted"
  *
  * @return: An array of handler definitions
- *
- * @ingroup tripal_feature_views
  */
 function tripal_feature_views_handlers() {
   return array(

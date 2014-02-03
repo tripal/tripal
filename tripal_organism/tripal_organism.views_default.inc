@@ -2,7 +2,7 @@
 
 /**
  *
- * @ingroup tripal_organism_views
+ *
  */
 function tripal_organism_views_default_views() {
   $views = array();

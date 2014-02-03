@@ -2,8 +2,6 @@
 
 /**
  * Implements hook_views_default_views().
- *
- * @ingroup tripal_genetic
  */
 function tripal_genetic_views_default_views() {
   $views = array();

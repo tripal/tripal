@@ -11,8 +11,6 @@
  * @return a data array formatted for the Views module
  *
  * D7 @todo: Add support for materialized views relationships using the new method
- *
- * @ingroup tripal_views
  */
 function tripal_bulk_loader_views_data() {
   $data = array();

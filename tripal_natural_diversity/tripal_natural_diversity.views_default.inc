@@ -1,10 +1,6 @@
 <?php
 
-/* -- SPF Jun 13, 2013 removed as a search by ND experiment
- * results in a huge return list.  As in the case of a genotyping
- * GWAS experiment where tens of thousands of SNP genotypes are
- * present.  --
- */
+
 function tripal_natural_diversity_views_default_views() {
   $views = array();
 

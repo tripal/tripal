@@ -2,8 +2,6 @@
 
 /**
  *
- *
- * @ingroup tripal_featuremap_views
  */
 function tripal_featuremap_views_default_views() {
   $views = array();

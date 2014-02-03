@@ -3,7 +3,7 @@
 /**
  *
  *
- * @ingroup tripal_project_views
+ *
  */
 function tripal_project_views_default_views() {
   $views = array();

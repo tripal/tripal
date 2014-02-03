@@ -5,7 +5,6 @@ require_once "includes/tripal_organism.admin.inc";
 require_once "includes/tripal_organism.chado_node.inc";
 
 /**
- * @file
  * @defgroup tripal_organism Organism Module
  * @ingroup tripal_modules
  * @{

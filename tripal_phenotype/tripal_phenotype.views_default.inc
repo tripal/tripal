@@ -3,7 +3,6 @@
 /**
  *
  *
- * @ingroup tripal_phenotype_views
  */
 function tripal_phenotype_views_default_views() {
   $views = array();

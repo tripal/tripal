@@ -2,8 +2,6 @@
 
 /**
  * Implements hook_views_default_views().
- *
- * @ingroup tripal_analysis_views
  */
 function tripal_analysis_views_default_views() {
   $views = array();
