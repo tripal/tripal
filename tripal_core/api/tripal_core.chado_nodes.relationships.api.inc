@@ -463,10 +463,6 @@ function chado_node_relationships_form_add_button_submit(&$form, &$form_state) {
     chado_node_relationships_form_create_relationship_formstate_array($form, $form_state);
   }
 
-  ddl($form_state['node'], 'node');
-  ddl($form_state, 'form state');
-  ddl($details, 'details');
-
   $name = (isset($form_state['node']->{$details['base_table']}->uniquename)) ? $form_state['node']->{$details['base_table']}->uniquename : 'CURRENT';
 
   // get details for the new relationship
@@ -715,7 +711,6 @@ function chado_node_relationships_form_update_relationships($node, $relationship
 
     // Add back in relationships as needed
     $relationships = chado_node_relationships_form_retreive($node);
-    ddl($relationships, 'relationships');
     foreach ($relationships as $type_id => $ranks) {
       foreach ($ranks as $rank => $element) {
 
@@ -744,7 +739,7 @@ function chado_node_relationships_form_update_relationships($node, $relationship
             'object_id' => $values['object_id'],
           )
         );
-        ddl($rank_select, 'rank');
+        $values['rank'] = $rank_select + 1;
 
         // add relationship
         $success_link = tripal_core_chado_insert(
