@@ -581,23 +581,33 @@ function chado_node_additional_dbxrefs_form_retreive($node) {
  *
  * @param $node
  *    The node passed into hook_insert & hook_update
- * @param $linking_table
- *    The name of the _dbxref linking table (ie: feature_dbxref)
- * @param $foreignkey_name
- *    The name of the foreign key used to link to the node content (ie: feature_id)
- * @param $foreignkey_value
- *    The value of the foreign key (ie: 445, if there exists a feature where feature_id=445)
+ * @param $details
+ *   - linking_table: the name of the _dbxref linking table (ie: feature_dbxref)
+ *   - foreignkey_name: the name of the foreign key used to link to the node content (ie: feature_id)
+ *   - foreignkey_value: the value of the foreign key (ie: 445, if there exists a feature where feature_id=445)
+ * @param $retrieved_dbxrefs
+ *   An array of databa references from chado_node_additional_dbxrefs_form_retreive($node).
+ *   This can be used if you need special handling for some of the database references
  *
  * @ingroup tripal_chado_node_api
  */
-function chado_node_additional_dbxrefs_form_update_dbxrefs($node, $linking_table, $foreignkey_name, $foreignkey_value) {
+function chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details, $retrieved_dbxrefs = FALSE) {
+
+  $linking_table = $details['linking_table'];
+  $foreignkey_name = $details['foreignkey_name'];
+  $foreignkey_value = $details['foreignkey_value'];
 
   if (isset($node->dbxref_table) AND ($foreignkey_value > 0)) {
     // First remove existing dbxref links
     tripal_core_chado_delete($linking_table, array($foreignkey_name => $foreignkey_value));
 
     // Add back in dbxref links and insert dbxrefs as needed
-    $dbxrefs = chado_node_additional_dbxrefs_form_retreive($node);
+    if ($retrieved_dbxrefs) {
+      $dbxrefs = $retrieved_dbxrefs;
+    }
+    else {
+      $dbxrefs = chado_node_additional_dbxrefs_form_retreive($node);
+    }
     foreach ($dbxrefs as $db_id => $versions) {
       foreach ($versions as $version => $elements) {
         foreach ($elements as $dbxref_id => $accession) {

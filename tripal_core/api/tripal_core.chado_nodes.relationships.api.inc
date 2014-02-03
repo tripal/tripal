@@ -726,14 +726,19 @@ function chado_node_relationships_form_retreive($node) {
  *
  * @param $node
  *    The node passed into hook_insert & hook_update
- * @param $relationship_table
- *    The name of the _relationship linking table (ie: feature_relationship)
- * @param $current_id
- *    The value of the foreign key (ie: 445, if there exists a feature where feature_id=445)
+ * @param $details
+ *  - relationship_table: the name of the _relationship linking table (ie: feature_relationship)
+ *  - foreignkey_value: the value of the foreign key (ie: 445, if there exists a feature where feature_id=445)
+ * @param $retrieved_relationships
+ *   An array of relationships from chado_node_relationships_form_retreive($node). This
+ *   can be used if you need special handling for some of the relationships.
  *
  * @ingroup tripal_chado_node_api
  */
-function chado_node_relationships_form_update_relationships($node, $relationship_table, $current_id) {
+function chado_node_relationships_form_update_relationships($node, $details, $retrieved_relationships = FALSE) {
+
+  $relationship_table = $details['relationship_table'];
+  $current_id = $details['foreignkey_value'];
 
   if (isset($node->relationship_table) AND ($current_id > 0)) {
     // First remove existing relationships links
@@ -741,7 +746,12 @@ function chado_node_relationships_form_update_relationships($node, $relationship
     tripal_core_chado_delete($relationship_table, array('object_id' => $current_id));
 
     // Add back in relationships as needed
-    $relationships = chado_node_relationships_form_retreive($node);
+    if ($retrieved_relationships) {
+      $relationships = $retrieved_relationships;
+    }
+    else {
+      $relationships = chado_node_relationships_form_retreive($node);
+    }
     foreach ($relationships as $type_id => $ranks) {
       foreach ($ranks as $rank => $element) {
 

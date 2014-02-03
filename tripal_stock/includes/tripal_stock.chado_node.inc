@@ -545,18 +545,19 @@ function chado_stock_insert($node) {
       chado_node_properties_form_update_properties($node, $details);
 
       // Now add the additional references
-      chado_node_additional_dbxrefs_form_update_dbxrefs(
-        $node,
-        'stock_dbxref',
-        'stock_id',
-        $stock_id
+      $details = array(
+        'linking_table' => 'stock_dbxref',
+        'foreignkey_name' => 'stock_id',
+        'foreignkey_value' => $stock_id
       );
+      chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
+
       // Now add in relationships
-      chado_node_relationships_form_update_relationships(
-        $node,
-        'stock_relationship',
-        $stock_id
+      $details = array(
+        'relationship_table' => 'stock_relationship',
+        'foreignkey_value' => $node->stock_id
       );
+      chado_node_relationships_form_update_relationships($node, $details);
     }
   } //end of adding stock to chado
   else {
@@ -722,21 +723,21 @@ function chado_stock_update($node) {
 
   // now update the additional dbxrefs
   if ($node->stock_id > 0) {
-    chado_node_additional_dbxrefs_form_update_dbxrefs(
-      $node,
-      'stock_dbxref',
-      'stock_id',
-      $node->stock_id
+    $details = array(
+      'linking_table' => 'stock_dbxref',
+      'foreignkey_name' => 'stock_id',
+      'foreignkey_value' => $node->stock_id
     );
+    chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
   }
 
   // now update relationships
   if ($node->stock_id > 0) {
-    chado_node_relationships_form_update_relationships(
-      $node,
-      'stock_relationship',
-      $node->stock_id
+    $details = array(
+      'relationship_table' => 'stock_relationship',
+      'foreignkey_value' => $node->stock_id
     );
+    chado_node_relationships_form_update_relationships($node, $details);
   }
 }
 
