@@ -61,6 +61,22 @@ $organism = tripal_core_expand_chado_vars($organism,'field','organism.comment');
     ),
     $organism->abbreviation
   );
+  
+  // allow site admins to see the organism ID
+  if (user_access('access administration pages')) {
+    // Organism ID
+    $rows[] = array(
+      array(
+        'data' => 'Organism ID',
+        'header' => TRUE,
+        'class' => 'tripal-site-admin-only-noimg'
+      ),
+      array(
+        'data' => $organism->organism_id,
+        'class' => 'tripal-site-admin-only-noimg'
+      ),
+    );
+  }
 
   // the $table array contains the headers and rows array as well as other
   // options for controlling the display of the table.  Additional 

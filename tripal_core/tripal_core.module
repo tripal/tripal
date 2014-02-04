@@ -534,6 +534,7 @@ function tripal_core_views_api() {
   );
 }
 
+
 /**
  * After the node is built, we want to add instructions to each
  * content section letting the administrator know which template
@@ -543,28 +544,26 @@ function tripal_core_views_api() {
  */
 function tripal_core_node_view_alter(&$build) {
   global $theme;
-  
 
   $cache = cache_get("theme_registry:$theme", 'cache');
-  $paths = array();
+  $node = $build['#node'];
+  
   foreach ($build as $key => $value) {
+    // for tripal templates do some customizations
     if (preg_match('/^tripal_/', $key)) {
+      
+      // add in some default div's, id's and classes
+      // that can be consistent regardless of customizations to templates
+      //$build[$key]['#value'] = "<div id=\"$key-block\" class=\"tripal-info-box\">" . $build[$key]['#value'] . '</div>';
+
+      // get the template path
+      $path = '';
       if (array_key_exists($key, $cache->data)) {
-        $paths[$key] = $cache->data[$key]['path'];
+        $path = $cache->data[$key]['path'];
       }
     }
   }
-  if (count($paths) > 0) {
-    $message = '<p>The content displayed on this page is provided by the following templates: <ul>';
-    foreach ($paths as $template => $path) {
-      $message .= "<li>$key: $path</li>";
-    }
-    $message .= "</ul>";
-    $build['tripal_template_paths']['#value'] = theme(
-      'theme_tripal_admin_message',
-      array('message' => $message)
-    );
-  }
-//  dpm($build);
-//  dpm($cache);
+
+  //dpm($build);
+  //dpm($cache);
 }
