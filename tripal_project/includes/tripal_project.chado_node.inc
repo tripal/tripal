@@ -135,21 +135,55 @@ function chado_project_form(&$node, $form_state) {
 
   // Properties Form
   // ----------------------------------
-  // D7 @TODO: Properties API doesn't handle exclude
   // we want to exclude the project description from being loaded as a stored property
   // because we want to use the property to replace the project.description field as it is
   // only 255 characters which isn't large enough. We don't want the user to set it
   // as a property even though it will be stored as a property.
-  $exclude = array('Project Description');
+  $cv_result = tripal_core_chado_select('cv',array('cv_id'),array('name' => 'project_property'));
+  $cv_id = $cv_result[0]->cv_id;
+  $select_options = tripal_cv_get_cvterm_options($cv_id);
+  $descrip_id = array_search('Project Description', $select_options);
+  unset($select_options[$descrip_id]);
+
   $instructions = t('To add properties to the drop down list, you must ' . l("add terms to the project_property vocabulary", "admin/tripal/chado/tripal_cv/cvterm/add") . ".");
   $details = array(
     'property_table' => 'projectprop',
     'base_foreign_key' => 'project_id',
     'base_key_value' => $project_id,
     'cv_name' => 'project_property',
-    'additional_instructions' => $instructions
+    'additional_instructions' => $instructions,
+    'select_options' => $select_options
   );
   chado_node_properties_form($form, $form_state, $details);
+
+  // RELATIONSHIPS FORM
+  //---------------------------------------------
+  // We want to use the contact_relationship_types cv if there are any terms available
+  // and if not, to default to the relationship ontology
+  $cv_result = tripal_core_chado_select('cv',array('cv_id'),array('name' => 'project_relationship_types'));
+  $cv_id = $cv_result[0]->cv_id;
+  $select_options = tripal_cv_get_cvterm_options($cv_id);
+  if (empty($select_options)) {
+    $cv_result = tripal_core_chado_select('cv',array('cv_id'),array('name' => 'relationship'));
+    $cv_id = $cv_result[0]->cv_id;
+    $select_options = tripal_cv_get_cvterm_options($cv_id);
+  }
+  // D7 @TODO: tell tripal admin's about this
+
+  $details = array(
+    'relationship_table' => 'project_relationship', // the name of the _relationship table
+    'base_table' => 'project',                      // the name of your chado base table
+    'base_foreign_key' => 'project_id',             // the name of the key in your base chado table
+    'base_key_value' => $project_id,                // the value of example_id for this record
+    'nodetype' => 'project',                        // the human-readable name of your node type
+    'cv_name' => 'project_relationship_types',      // the cv.name of the cv governing example_relationship.type_id
+    'base_name_field' => 'name',                    // the base table field you want to be used as the name
+    'subject_field_name' => 'subject_project_id',
+    'object_field_name' => 'object_project_id',
+    'select_options' => $select_options
+  );
+  // Adds the form elements to your current form
+  chado_node_relationships_form($form, $form_state, $details);
 
   return $form;
 
@@ -221,17 +255,27 @@ function chado_project_insert($node) {
     }
     $project_id = $project['project_id'];
 
-    // now add in the properties
+    // * Properties Form *
+    // Add the description property
+    $properties = chado_node_properties_form_retreive($node);
+    $descrip_id = tripal_cv_get_cvterm_by_name('Project Description', NULL, 'project_property');
+    $properties[$descrip_id->cvterm_id][0] = $node->description;
+
     $details = array(
       'property_table' => 'projectprop',
       'base_table' => 'project',
       'foreignkey_name' => 'project_id',
       'foreignkey_value' => $project_id
     );
-    chado_node_properties_form_update_properties($node, $details);
+    chado_node_properties_form_update_properties($node, $details, $properties);
 
-    // add in the description as a separate property
-    tripal_project_insert_property($project_id, 'Project Description', $node->description, FALSE);
+    // * Relationships Form *
+    $details = array(
+      'relationship_table' => 'project_relationship',  // name of the _relationship table
+      'foreignkey_value' => $project_id                // value of the example_id key
+    );
+    chado_node_relationships_form_update_relationships($node, $details);
+
   }
   else {
     $project_id = $node->project_id;
@@ -313,18 +357,26 @@ function chado_project_update($node) {
     array('%values' => print_r($values, TRUE)), WATCHDOG_ERROR);
   }
 
-  // now add in the properties by first removing any the project
-  // already has and adding the ones we have
+  // * Properties Form *
+  // Add the description property
+  $properties = chado_node_properties_form_retreive($node);
+  $descrip_id = tripal_cv_get_cvterm_by_name('Project Description', NULL, 'project_property');
+  $properties[$descrip_id->cvterm_id][0] = $node->description;
+
   $details = array(
     'property_table' => 'projectprop',
     'base_table' => 'project',
     'foreignkey_name' => 'project_id',
     'foreignkey_value' => $project_id
   );
-  chado_node_properties_form_update_properties($node, $details);
+  chado_node_properties_form_update_properties($node, $details, $properties);
 
-  // add the project description as a property
-  tripal_project_update_property($project_id, 'Project Description', $node->description, 1);
+  // * Relationships Form *
+  $details = array(
+    'relationship_table' => 'project_relationship',  // name of the _relationship table
+    'foreignkey_value' => $project_id                // value of the example_id key
+  );
+  chado_node_relationships_form_update_relationships($node, $details);
 }
 
 /**
