@@ -176,13 +176,20 @@
   */ 
  
 .tripal-site-admin-only {
-   background-image: url("../images/TripalLogo-sm.png");
-   background-repeat: no-repeat;
-   background-color: #BBBBFF;
+  background-image: url("../images/TripalLogo-sm.png");
+  background-repeat: no-repeat;
+  background-color: #cce3ff;
 }
 
 .tripal-site-admin-message {
    padding: 10px 10px 10px 55px;
    font-style: italic;
 }
-
+/**
+ * When when no tripal logo image is wanted 
+ */
+.tripal-site-admin-only-noimg {
+  background-image: none;
+  background-color: #cce3ff;
+  color: black;
+}
