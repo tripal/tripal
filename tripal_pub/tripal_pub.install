@@ -212,7 +212,7 @@ function tripal_pub_add_custom_tables() {
 /**
  *
  */
-function tripal_project_add_cvs() {
+function tripal_pub_add_cvs() {
 
   // Add cv for relationship types
   tripal_cv_add_cv(
@@ -223,7 +223,7 @@ function tripal_project_add_cvs() {
 /**
  *
  */
-function tripal_project_add_cvterms() {
+function tripal_pub_add_cvterms() {
 
 }
 
