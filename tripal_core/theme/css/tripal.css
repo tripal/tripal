@@ -1,9 +1,117 @@
-.tripal-info-box {
-   width: 100%;
-   padding-bottom: 10px;
+/**
+ * The Tripal generic node template (node--chado-generc.tpl.php)
+ * has an outer div box with class 'tripal-contents' and with an inner 
+ * table with an id of 'tripal-contents-table'.  The table has a single
+ * row with two columns.  The smaller left column houses the table of 
+ * contents (TOC) for the node data.  The larger right column houses the data:
+ *
+ * |-----------------------------------------------|
+ * |  .tripal-contents                             |
+ * | |-------------------------------------------| |
+ * | | #tripal-contents-table                    | |
+ * | |        |                                  | |
+ * | |        |                                  | |
+ * | | TOC    |          Data                    | |
+ * | | column |          Column                  | |
+ * | |        |                                  | |
+ * | |        |                                  | |
+ * | |        |                                  | |
+ * | |-------------------------------------------| |
+ * |-----------------------------------------------|
+ *
+ * The tripal-contents box and the inner table are designed to fill the width
+ * of the contents section of any theme.  Customize the CSS below to change
+ * the look-and-feel.
+ *
+ */
+
+.tripal-contents {
+  width: 100%;
 }
 
-.tripal-info-box-nosidebar {
+#tripal-contents_table {
+  padding: 0px !important;
+  margin:  0px !important;
+}
+
+/**
+ * The table formatting must override the default theme.  This is because
+ * the table is meant for organizing the sidebar and contents so they don't
+ * slip and slide around as would happen with div boxes that were floated.
+ * Therefore, we use !important to keep the default theme from overrideing
+ * the table settings. 
+ */
+ 
+#tripal-contents-table tbody {
+  padding: 0px !important;
+  margin:  0px !important;
+  border:  none !important;
+  background-color: transparent !important;
+}
+.tripal-contents-table-tr {
+  padding: 0px !important;
+  margin:  0px !important;
+  border:  none !important;
+  background-color: transparent !important;
+}
+.tripal-contents-table-td-toc { 
+  border: 1px solid #888888 !important;
+  margin:  0px !important;
+  padding: 10px !important;
+  background-color: transparent !important;
+  text-align: left !important;
+  vertical-align: top !important;
+}
+.tripal-contents-table-td-data { 
+  border: none !important;
+  margin:  0px !important;
+  padding: 0px 0px 0px 20px !important;
+  background-color: transparent !important;
+  text-align: left !important;
+  vertical-align: top !important;
+}
+
+/**
+ * The table of contents is an unordered list. The following can are used
+ * to style the list 
+ */
+.tripal_toc_list ul {
+
+}
+.tripal_toc_list li {
+  padding: 3px 20px 3px 10px !important;
+  margin: 2px 0 2px 0 !important;
+}
+
+/******************************************************************************
+ * The links that appear in the TOC section are added dynamically by
+ * JavaScript code found at the top of the node--chado-generc.tpl.php template.
+ * Each link in the TOC cooresponds to a "block" of data added to the Data
+ * Column. Initially, the JavaScript hids all "blocks" except for the "Details"
+ * block.  There will be as many blocks as there are TOC links.
+ *
+ * By default, all blocks have the following layout that consists of a 
+ * container div box with the class 'tripal-info-box', a div box to house the
+ * block title with the class 'tripal-info-box-title', and a div box to
+ * house a brief description about the block with the class 
+ * 'tripal-info-box-desc' 
+ *
+ * |-----------------------------------------------|
+ * |  .tripal-info-box                             |
+ * | |-------------------------------------------| |
+ * | | .tripal-info-box-title                    | |
+ * | |-------------------------------------------| |
+ * | | .tripal-info-box-desc                     | |
+ * | |-------------------------------------------| |
+ * |                                               |
+ * | (Block data goes here)                        |
+ * |                                               |
+ * |                                               |
+ * |                                               |
+ * |                                               |
+ * |-----------------------------------------------|
+ */
+.tripal-info-box {
    width: 100%;
    padding-bottom: 10px;
 }
@@ -13,140 +121,26 @@
   padding-bottom: 15px;
 }
 
-.tripal-info-box-title-nosidebar {
-  font-size: 1.5em;
-  padding-bottom: 15px;
-}
-
 .tripal-info-box-desc {
-  /* padding-bottom: 15px; */
-}
-/* hide the title when inside of a block on a panel */
-.pane-block .tripal-info-box-title {
-   visibility: hidden;
-   padding: 0;
-   margin: 0;
-   height: 0px;
+
 }
 
-/* no results message */
-.tripal-no-results {
-   font-style: italic;
-   padding: 10px;
-   background-color: #FFEEEE;
-}
-/**
- * Tripal Contents container: contains both the details 
- * section and the resources sidebar
- */
-.tripal_contents {
-  width: 100%;
-  position: relative;
-}
-
-#tripal_contents_table {
-  padding: 0px !important;
-  margin: 0px !important;
-}
-
-#tripal_contents_table tbody {
-  padding: 0px !important;
-  margin: 0px !important;
-  border: 0px solid #FFFFFF;
-}
-
-.tripal_contents_table_td { 
-  border: 0px solid #FFFFFF !important;
-  text-align: left;
-  vertical-align: top;
-  padding: 0px 0px 0px 20px;
-}
-.tripal_contents_table_td_toc { 
-  border: 1px solid #888888 !important;
-  padding: 10px !important;
-  background: none repeat scroll 0 0 rgba(0, 0, 0, 0.063);
-}
-.tripal_contents_table_tr {
-background-color: transparent;
-}
-
-/**
- * Resources Sidebar
- */
-.tripal_toc {
-  padding: 0px; 
-  margin-right: 0px;
-}
-.tripal_toc ul {
-  margin: 0 !important;
-  padding: 0 !important;
-  list-style-type: none;
-}
-.tripal_toc li {
-  /*
-  background-color: #EEEEEE;
-  border-style:solid;
-  border-width:1px;
-  border-color: #999999;  */
-  padding: 3px 20px 3px 10px;
-  margin: 2px 0 2px 0;
-}
-.tripal_toc_title {
-  font-size: 1.5em;
-  line-height: 110%;
-  padding-bottom: 10px;
-}
-.tripal_toc_desc {
-}
-/**
- * Details Section
- */
-.tripal_details {
-  min-height: 400px;
-  overflow:auto;
-}
-
-.tripal_details_full {
-  float: left;
-  background-color: #FFFFFF;
-
-  -moz-border-radius: 15px;
-  -webkit-border-radius: 15px;
-  -khtml-border-radius: 15px;
-  border-radius: 15px;
-
-  -moz-box-shadow: 3px 3px 4px #888888;
-  -webkit-box-shadow: 3px 3px 4px #888888;
-  box-shadow: 3px 3px 4px #888888;
-  padding: 20px;
-  min-height: 500px;
-  margin-right: 10px;
-  margin-bottom: 10px;
-  border-style:solid;
-  border-width:1px;
-  
-  overflow:auto;
-}
-/**
- * Tables
- */
-.tripal-subtable {
-  border-collapse:collapse;
-  border: 0px solid black;
-  width: auto;
-}
-
-.tripal-subtable td {
-  padding: 0px 5px 5px 0px; 
-  border: 0px solid black;
-}
-
-.tripal-notice {
-  color: red;
-}
-
-/**
- * Teaser
+/******************************************************************************
+ * The teaser appears anywhere that a small snippet of the content is required.
+ * When any node in Drupal is published to the home page a teaser is used.
+ * Teasers can also be used in views to provide lists of content. The 
+ * teaser template is similar to the block but with the following sections and
+ * classes
+ *
+ * |-----------------------------------------------|
+ * |  .tripal-teaser                               |
+ * | |-------------------------------------------| |
+ * | | .tripal-teaser-title                      | |
+ * | |-------------------------------------------| |
+ * | | .tripal-teaser-text                       | |
+ * | |                                           | |
+ * | |-------------------------------------------| |
+ * |-----------------------------------------------|
  */
 .tripal-teaser {
   clear_both;
@@ -160,9 +154,35 @@ background-color: transparent;
   text-align: justify;
   text-justify:inter-word;
 }
+
+/**
+ * some nodes such as the organism node may have images. This class
+ * is used to format any image that appears in the teaser 
+ */
 .tripal-teaser-img {
   width: 100px; 
   float: left; 
   padding-right: 10px; 
   padding-bottom: 5px;
 }
+
+/******************************************************************************
+ * Administrative CSS classes
+ *****************************************************************************/
+ 
+ /**
+  * This class is used when providing hints or other instructions to the 
+  * site administrator
+  */ 
+ 
+.tripal-site-admin-only {
+   background-image: url("../images/TripalLogo-sm.png");
+   background-repeat: no-repeat;
+   background-color: #BBBBFF;
+}
+
+.tripal-site-admin-message {
+   padding: 10px 10px 10px 55px;
+   font-style: italic;
+}
+

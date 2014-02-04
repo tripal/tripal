@@ -73,12 +73,11 @@ if ($enabled) {
       $rows = array();
       
       // let admins know they can customize the terms that appear in the list
-      if (user_access('access administration pages')) { ?>
-         <div class="tripal-no-results">Administrators, you can specify the feature types
-         that should appear in this browser or remove it from the list of resources by navigating to the 
-         <?php print l("Tripal feature settings page", "admin/tripal/chado/tripal_feature/configuration", array('attributes' => array('target' => '_blank'))) ?>.  
-         </div><?php 
-      }
+      print theme('tripal_admin_message', array('message' => "
+        Administrators, you can specify the feature types that should appear in 
+        this browser or remove it from the list of resources by navigating to the ". 
+        l("Tripal feature settings page", "admin/tripal/chado/tripal_feature/configuration", array('attributes' => array('target' => '_blank')))
+      ));
       
       foreach ($features as $feature){
         $fname =  $feature->name;
@@ -127,36 +126,32 @@ if ($enabled) {
       print theme_pager($pager); ?>
     </div> <?php
   } 
-  else {
-    // if there are no results and this is the admin user then show some instructions
-    // otherwise nothing is shown.
-    if(user_access('access administration pages')){ ?>
-      <div id="tripal_organism-feature_browser-box" class="tripal_organism-info-box tripal-info-box">
-        <div class="tripal_organism-info-box-title tripal-info-box-title">Feature Browser</div>
-        <div class="tripal-no-results">
-          There are no features available for browsing
-          <p><br>Administrators, perform the following to show features in this browser:
-          <ul>
-            <li>Load features for this organism using the 
-            <?php print l("FASTA loader", 'admin/tripal/loaders/fasta_loader'); ?>, 
-            <?php print l("GFF Loader",   'admin/tripal/loaders/gff3_load'); ?> or 
-            <?php print l("Bulk Loader",  'admin/tripal/loaders/bulk'); ?></li>
-            <li>Sync the features that should have pages using the 
-            <?php print l("Sync features page", 'admin/tripal/chado/tripal_feature/sync');?></li>
-            <li>Return to this page to browse features.</li>
-            <li>Ensure the user 
-            <?php print l("has permission", 'admin/people/permissions'); ?> to view the feature content</li>
-          </ul> 
-          <br>
-          <br>
-          You can specify the feature types
-          that should appear in this browser or remove it from the list of resources by navigating to the 
-          <?php print l("Tripal feature settings page", "admin/tripal/chado/tripal_feature/configuration", array('attributes' => array('target' => '_blank'))) ?>.
-          </p>
-          The feature browser will not appear to site visitors unless features are present.  These instructions only appear to site administrators.
-        </div>         
-      </div><?php
-    }
+  else {  ?>
+    <div id="tripal_organism-feature_browser-box" class="tripal_organism-info-box tripal-info-box">
+      <div class="tripal_organism-info-box-title tripal-info-box-title">Feature Browser</div>
+      <p>There are no results.</p><?php
+      print theme('tripal_admin_message', array('message' => "
+        Administrators, perform the following to show features in this browser:
+        <ul>
+          <li>Load features for this organism using the " .
+            l("FASTA loader", 'admin/tripal/loaders/fasta_loader') . ",  ".
+            l("GFF Loader",   'admin/tripal/loaders/gff3_load') . " or ".
+            l("Bulk Loader",  'admin/tripal/loaders/bulk'). "</li>
+          <li>Sync the features that should have pages using the ".
+            l("Sync features page", 'admin/tripal/chado/tripal_feature/sync'). "</li>
+          <li>Return to this page to browse features.</li>
+          <li>Ensure the user " .
+           l("has permission", 'admin/people/permissions') . " to view the feature content</li>
+        </ul>
+        <br>
+        <br>
+        You can specify the feature types
+        that should appear in this browser or remove it from the list of resources by navigating to the " . 
+        l("Tripal feature settings page", "admin/tripal/chado/tripal_feature/configuration", array('attributes' => array('target' => '_blank')))  . "
+        </p>
+        The feature browser will not appear to site visitors unless features are present. "
+      )); ?>
+    </div><?php
   }
 }
 

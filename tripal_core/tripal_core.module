@@ -453,8 +453,16 @@ function tripal_core_theme($existing, $type, $theme, $path) {
       'function' => 'theme_chado_node_relationships_form_table',
       'render element' => 'element',
     ),
+    
+    // Admin messages theme
+    // --------------------------------
+    'tripal_admin_message' => array(
+      'function' => 'theme_tripal_admin_message',
+      'variables' => array('message' => NULL),
+    )
   );
 }
+
 
 /**
  * Implements hook_job_describe_args().
@@ -526,5 +534,37 @@ function tripal_core_views_api() {
   );
 }
 
+/**
+ * After the node is built, we want to add instructions to each
+ * content section letting the administrator know which template
+ * they can customize
+ * 
+ * @param unknown $build
+ */
+function tripal_core_node_view_alter(&$build) {
+  global $theme;
+  
 
-
+  $cache = cache_get("theme_registry:$theme", 'cache');
+  $paths = array();
+  foreach ($build as $key => $value) {
+    if (preg_match('/^tripal_/', $key)) {
+      if (array_key_exists($key, $cache->data)) {
+        $paths[$key] = $cache->data[$key]['path'];
+      }
+    }
+  }
+  if (count($paths) > 0) {
+    $message = '<p>The content displayed on this page is provided by the following templates: <ul>';
+    foreach ($paths as $template => $path) {
+      $message .= "<li>$key: $path</li>";
+    }
+    $message .= "</ul>";
+    $build['tripal_template_paths']['#value'] = theme(
+      'theme_tripal_admin_message',
+      array('message' => $message)
+    );
+  }
+  dpm($build);
+  dpm($cache);
+}

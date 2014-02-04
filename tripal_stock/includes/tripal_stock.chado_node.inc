@@ -783,7 +783,16 @@ function tripal_stock_node_presave($node) {
 
   switch ($node->type) {
     case 'chado_stock':
-      $values = array('organism_id' => $node->organism_id);
+      // for a form submission the fields part of the node object
+      // but for a sync the feilds are in an object of the node
+      $organism_id = null;
+      if(property_exists($node, 'stock')) {
+        $organism_id = $node->stock->organism_id;
+      }
+      else {
+        $organism_id = $node->organism_id;
+      }
+      $values = array('organism_id' => $organism_id);
       $organism = tripal_core_chado_select('organism', array('genus','species'), $values);
       $values = array('cvterm_id' => $node->type_id);
       $cvterm = tripal_core_chado_select('cvterm', array('name'), $values);
@@ -873,7 +882,7 @@ function tripal_stock_node_view($node, $view_mode, $langcode) {
     case 'chado_organism':
       if ($view_mode == 'full') {
         $node->content['tripal_organism_stocks'] = array(
-          '#value' => theme('tripal_organism_stocks', $node),
+          '#value' => theme('tripal_organism_stocks', array('node' => $node)),
         );
       }
       break;

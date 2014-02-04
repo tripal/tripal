@@ -424,10 +424,15 @@ function chado_featuremap_delete(&$node) {
  * @param $node
  */
 function tripal_featuremap_node_presave($node) {
-  // if this is a chado_featuremap and the $node->featuremap object is set then we
-  // are syncing and we want to set the node title to be the same as the node name
-  if ($node->type == 'chado_featuremap' and property_exists($node, 'featuremap')) {
-    $node->title = $node->featuremap->name;
+  if ($node->type == 'chado_featuremap') {
+    // for a form submission the fields part of the node object
+    // but for a sync the feilds are in an object of the node
+    if(property_exists($node, 'featuremap')) {
+      $node->title = $node->featuremap->name;
+    }
+    else {
+      // the title is already set in the form
+    }
   }
 }
 /**

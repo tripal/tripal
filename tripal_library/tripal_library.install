@@ -154,8 +154,14 @@ function tripal_library_add_mview_library_feature_count(){
  * Adds new CV's used by this module
  */
 function tripal_library_add_cvs(){
-  tripal_cv_add_cv('library_property', 'Contains properties for libraries');
-  tripal_cv_add_cv('library_type', 'Contains terms for types of libraries (e.g. BAC, cDNA, FOSMID, etc).');
+  tripal_cv_add_cv(
+    'library_property', 
+    'Contains properties for libraries'
+  );
+  tripal_cv_add_cv(
+    'library_type', 
+    'Contains terms for types of libraries (e.g. BAC, cDNA, FOSMID, etc).'
+  );
 }
 /**
  * @ingroup tripal_library
