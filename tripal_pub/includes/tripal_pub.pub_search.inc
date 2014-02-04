@@ -159,16 +159,13 @@ function tripal_pub_search_form($form, &$form_state) {
     '#default_value' => $num_criteria,
   );
   
-  if (user_access('access administration pages')) {
-    $form['admin-instructions'] = array(
-      '#prefix' => '<div class="tripal-no-results">',
-      '#markup'  =>  t('Administrators, you can select the fields with which a user can use to search,
-          by checking the desired fields on the ' .
-          l('Publication Module Settings Page', 'admin/tripal/chado/tripal_pub/configuration'). ' in
-         the section titled "Search Options".  The selected fields will appear in the dropdowns below.'),
-      '#suffix' => '</div>'
-    );
-  }
+  $form['admin-instructions'] = array(
+    '#markup'  =>  theme('tripal_admin_message', array('message' => 
+      t('Administrators, you can select the fields with which a user can use to search,
+         by checking the desired fields on the ' .
+         l('Publication Module Settings Page', 'admin/tripal/chado/tripal_pub/configuration'). ' in
+        the section titled "Search Options".  The selected fields will appear in the dropdowns below.'))),
+  ); 
   $form['instructions'] = array(
     '#markup'  =>  t('To search for publications enter keywords in the text boxes below.  
         You can limit your search by selecting the field in the dropdown box. Click the 

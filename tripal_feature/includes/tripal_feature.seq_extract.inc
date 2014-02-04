@@ -38,16 +38,12 @@ function tripal_feature_seq_extract_page() {
   // generate the search form 
   $output .= '';
   if (user_access('access administration pages')) { 
-    $output .= "
-      <div class=\"tripal-no-results\">
-        <p>Administrators, the " . l('organism_feature_count', 'admin/tripal/mviews') . " and 
-        " . l('analysis_organism', 'admin/tripal/mviews') . " materialized
+    $output .= theme('tripal_admin_message', array('message' => "
+        Administrators, the " . l('organism_feature_count', 'admin/tripal/schema/mviews') . " and 
+        " . l('analysis_organism', 'admin/tripal/schema/mviews') . " materialized
         views must be populated before using this form.  Those views should be re-populated 
-        when new data is added.  If you use the " . l('jquery_update module', 'http://drupal.org/project/jquery_update') . ", it may break this form.
-        You will need to update the  jquery_update/replace/jquery.form.js file with " .
-        l('a more recent version', 'https://raw.github.com/malsup/form/master/jquery.form.js') . "</p>         
-      </div>
-    ";
+        when new data is added."
+    ));
   }
   $output .= "<div id=\"tripal-feature-seq-extract-form-block\">";
   $output .= drupal_get_form('tripal_feature_seq_extract_form');  

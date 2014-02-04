@@ -424,10 +424,15 @@ function chado_featuremap_delete(&$node) {
  * @param $node
  */
 function tripal_featuremap_node_presave($node) {
-  // if this is a chado_featuremap and the $node->featuremap object is set then we
-  // are syncing and we want to set the node title to be the same as the node name
-  if ($node->type == 'chado_featuremap' and property_exists($node, 'featuremap')) {
-    $node->title = $node->featuremap->name;
+  if ($node->type == 'chado_featuremap') {
+    // for a form submission the fields part of the node object
+    // but for a sync the feilds are in an object of the node
+    if(property_exists($node, 'featuremap')) {
+      $node->title = $node->featuremap->name;
+    }
+    else {
+      // the title is already set in the form
+    }
   }
 }
 /**
@@ -436,30 +441,30 @@ function tripal_featuremap_node_presave($node) {
  */
 function tripal_featuremap_node_view($node, $view_mode, $langcode) {
   switch ($node->type) {
-  	case 'chado_featuremap':
-  	  // Show feature browser and counts
-  	  if ($view_mode == 'full') {
-  	    $node->content['tripal_featuremap_base'] = array(
-  	      '#value' => theme('tripal_featuremap_base', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_featuremap_featurepos'] = array(
-  	      '#value' => theme('tripal_featuremap_featurepos', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_featuremap_properties'] = array(
-  	      '#value' => theme('tripal_featuremap_properties', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_featuremap_publication'] = array(
-  	      '#value' => theme('tripal_featuremap_publication', array('node' => $node)),
-  	    );
-  	    $node->content['tripal_featuremap_references'] = array(
-  	      '#value' => theme('tripal_featuremap_references', array('node' => $node)),
-  	    );
-  	  }
-  	  if ($view_mode == 'teaser') {
-  	    $node->content['tripal_featuremap_teaser'] = array(
-  	      '#value' => theme('tripal_featuremap_teaser', array('node' => $node)),
-  	    );
-  	  }
-  	  break;
+    case 'chado_featuremap':
+      // Show feature browser and counts
+      if ($view_mode == 'full') {
+        $node->content['tripal_featuremap_base'] = array(
+          '#value' => theme('tripal_featuremap_base', array('node' => $node)),
+        );
+        $node->content['tripal_featuremap_featurepos'] = array(
+          '#value' => theme('tripal_featuremap_featurepos', array('node' => $node)),
+        );
+        $node->content['tripal_featuremap_properties'] = array(
+          '#value' => theme('tripal_featuremap_properties', array('node' => $node)),
+        );
+        $node->content['tripal_featuremap_publication'] = array(
+          '#value' => theme('tripal_featuremap_publication', array('node' => $node)),
+        );
+        $node->content['tripal_featuremap_references'] = array(
+          '#value' => theme('tripal_featuremap_references', array('node' => $node)),
+        );
+      }
+      if ($view_mode == 'teaser') {
+        $node->content['tripal_featuremap_teaser'] = array(
+          '#value' => theme('tripal_featuremap_teaser', array('node' => $node)),
+        );
+      }
+      break;
   }
 }

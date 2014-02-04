@@ -38,7 +38,7 @@ function tripal_project_menu() {
     'title' => 'Projects',
     'description' => ('A project. Can be used for grouping data such as with the natural diversity module data.'),
     'page callback' => 'tripal_project_admin_project_view',
-    'access arguments' => array('adminster tripal projects'),
+    'access arguments' => array('adminster tripal project'),
     'type' => MENU_NORMAL_ITEM
   );
 
@@ -47,7 +47,7 @@ function tripal_project_menu() {
     'description' => ("Basic Description of Tripal Project Module Functionality."),
     'page callback' => 'theme',
     'page arguments' => array('tripal_project_help'),
-    'access arguments' => array('adminster tripal projects'),
+    'access arguments' => array('adminster tripal project'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 6
   );
@@ -56,7 +56,7 @@ function tripal_project_menu() {
     'title' => 'Settings',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_project_admin'),
-    'access arguments' => array('adminster tripal projects'),
+    'access arguments' => array('adminster tripal project'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 4
   );
@@ -66,7 +66,7 @@ function tripal_project_menu() {
     'description' => 'Create pages on this site for projects stored in Chado',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_core_chado_node_sync_form', 'tripal_project', 'chado_project'),
-    'access arguments' => array('administer tripal projects'),
+    'access arguments' => array('administer tripal project'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 0
   );
@@ -75,7 +75,7 @@ function tripal_project_menu() {
     'title' => 'Enable Project Administrative View',
     'page callback' => 'tripal_views_admin_enable_view',
     'page arguments' => array('tripal_project_admin_projects', 'admin/tripal/chado/tripal_project'),
-    'access arguments' => array('administer tripal projects'),
+    'access arguments' => array('administer tripal project'),
     'type' => MENU_CALLBACK,
   );
 

@@ -260,13 +260,14 @@ function chado_organism_delete($node) {
   $check_feature = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
   $sql = "SELECT library_id FROM {library} WHERE organism_id = :organism_id";
   $check_lib = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
-
-  if (!$check_lib && !$check_feature) {
+  $sql = "SELECT stock_id FROM {stock} WHERE organism_id = :organism_id";
+  $check_stock = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
+  
+  if (!$check_lib && !$check_feature && !$check_stock) {
     tripal_core_chado_delete('organism', array('organism_id' => $organism_id));
   }
   else {
-    drupal_set_message(t("Organism deleted from drupal. Warning: at least one " .
-        "library or feature depends on this organism. It was not removed from chado."));
+    drupal_set_message(t("Warning: other data depends on this organism. The organism page was removed from this site but the organism was removed from Chado."), 'warning');
   }
 }
 
@@ -412,8 +413,16 @@ function chado_organism_load($nodes) {
 function tripal_organism_node_presave($node) {
   switch ($node->type) {
     case 'chado_organism':
-      // set the title for the node
-      $node->title = "$node->genus $node->species";
+      // for a form submission the fields part of the node object
+      // but for a sync the feilds are in an object of the node
+      if(property_exists($node, 'organism')) {
+        // set the title
+        $node->title = $node->organism->genus . " " . $node->organism->species;
+      } 
+      else {
+        // set the title
+        $node->title = $node->genus  . " " . $node->species;
+      }
       break;
   }
 }

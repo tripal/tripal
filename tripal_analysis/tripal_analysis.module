@@ -39,7 +39,7 @@ function tripal_analysis_menu() {
     'title' => 'Analyses',
     'description' => 'A bioinformatics analysis producing features.',
     'page callback' => 'tripal_analysis_admin_analysis_view',
-    'access arguments' => array('administer tripal analyses'),
+    'access arguments' => array('administer tripal analysis'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -48,7 +48,7 @@ function tripal_analysis_menu() {
     'description' => "A description of the Tripal Analysis module including a short description of it's usage.",
     'page callback' => 'theme',
     'page arguments' => array('tripal_analysis_help'),
-    'access arguments' => array('administer tripal analyses'),
+    'access arguments' => array('administer tripal analysis'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10,
   );
@@ -58,7 +58,7 @@ function tripal_analysis_menu() {
     'description' => 'Settings for the displays of analysis results.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_analysis_admin'),
-    'access arguments' => array('administer tripal analyses'),
+    'access arguments' => array('administer tripal analysis'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 5
   );

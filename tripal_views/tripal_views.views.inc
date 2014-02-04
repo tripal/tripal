@@ -569,35 +569,35 @@ function tripal_views_views_data_alter(&$data) {
           //      without 1st needing to add relationship to organism table
           $base_field = $base_table . '_id';
           $data[$linker_table][$base_field] = array(
-			      'group' => $base_title,
-			      'title' => $base_title . 'Node',
-			      'help' => "Links $base_title to it's node.",
-			      'relationship' => array(
-			        'handler' => 'views_handler_relationship',
-			        'title' => t("$base_title => Node"),
-			        'label' => t("$base_title => Node"),
-			        'real field' => 'nid',
-			        'base' => 'node',
-			        'base field' => 'nid'
-			      ),
-			    );
+            'group' => $base_title,
+            'title' => $base_title . 'Node',
+            'help' => "Links $base_title to it's node.",
+            'relationship' => array(
+              'handler' => 'views_handler_relationship',
+              'title' => t("$base_title => Node"),
+              'label' => t("$base_title => Node"),
+              'real field' => 'nid',
+              'base' => 'node',
+              'base field' => 'nid'
+            ),
+          );
 
           // Add Chado fields to a node-based view
           // This will only be done with relationships
           $base_field = $base_table . '_id';
           $data['node'][$base_field] = array(
-			      'group' => $base_title,
-			      'title' => $base_title,
-			      'help' => "Links node to chado $base_title.",
-			      'relationship' => array(
-			        'handler' => 'views_handler_relationship',
-			        'title' => t("Node => $base_title"),
-			        'label' => t("Node => $base_title"),
-			        'real field' => 'nid',
-			        'base' => $linker_table,
-			        'base field' => 'nid'
-			      ),
-			    );
+            'group' => $base_title,
+            'title' => $base_title,
+            'help' => "Links node to chado $base_title.",
+            'relationship' => array(
+              'handler' => 'views_handler_relationship',
+              'title' => t("Node => $base_title"),
+              'label' => t("Node => $base_title"),
+              'real field' => 'nid',
+              'base' => $linker_table,
+              'base field' => 'nid'
+            ),
+          );
 
         }
       }

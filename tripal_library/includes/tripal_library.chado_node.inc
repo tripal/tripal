@@ -436,9 +436,17 @@ function tripal_library_node_view($node, $view_mode, $langcode) {
  * @param $node
  */
 function tripal_library_node_presave($node) {
-  // if this is a chado_library and the $node->library object is set then we
-  // are syncing and we want to set the node title to be the same as the node name
-  if ($node->type == 'chado_library' and property_exists($node, 'library')) {
-    $node->title = $node->library->name;
+  switch ($node->type) {
+    case 'chado_library':
+      // for a form submission the fields part of the node object
+      // but for a sync the feilds are in an object of the node
+      if(property_exists($node, 'library')) {
+        // set the title
+        $node->title = $node->name;
+      } 
+      else {
+        // the title field is already in the form
+      }
+      break;
   }
 }

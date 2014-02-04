@@ -565,7 +565,7 @@ function tripal_core_chado_node_sync_records($base_table, $max_sync = FALSE, $or
         $new_node->type = 'chado_' . $base_table;
         $new_node->uid = $user->uid;
         $new_node->{$base_table_id} = $record->{$base_table_id};
-        $new_node->library = $record;
+        $new_node->$base_table = $record;
 
         // TODO: should we get rid of this hook and use hook_node_presave() instead?
         // allow base module to set additional fields as needed

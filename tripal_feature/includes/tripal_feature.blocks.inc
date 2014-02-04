@@ -42,6 +42,7 @@ function tripal_feature_block_info() {
 
   return $blocks;
 }
+
 /**
  *
  *
@@ -55,59 +56,59 @@ function tripal_feature_block_view($delta = '') {
 
     $block = array();
     switch ($delta) {
-    	case 'references':
-    	  $block['subject'] = t('References');
-    	  $block['content'] = theme('tripal_feature_references', $node);
-    	  break;
-    	case 'base':
-    	  $block['subject'] = t('Feature Details');
-    	  $block['content'] = theme('tripal_feature_base', $node);
-    	  break;
-    	case 'synonyms':
-    	  $block['subject'] = t('Synonyms');
-    	  $block['content'] = theme('tripal_feature_synonyms', $node);
-    	  break;
-    	case 'properties':
-    	  $block['subject'] = t('Properties');
-    	  $block['content'] = theme('tripal_feature_properties', $node);
-    	  break;
-    	case 'terms':
-    	  $block['subject'] = t('Annotated Terms');
-    	  $block['content'] = theme('tripal_feature_terms', $node);
-    	  break;
-    	case 'sequence':
-    	  $block['subject'] = t('Sequence');
-    	  $block['content'] = theme('tripal_feature_sequence', $node);
-    	  break;
-    	case 'featureloc_sequences':
-    	  $block['subject'] = t('Formatted Sequences');
-    	  $block['content'] = theme('tripal_feature_featureloc_sequences', $node);
-    	  break;
-    	case 'alignments':
-    	  $block['subject'] = t('Alignments');
-    	  $block['content'] = theme('tripal_feature_alignments', $node);
-    	  break;
-    	case 'relationships':
-    	  $block['subject'] = t('Relationships');
-    	  $block['content'] = theme('tripal_feature_relationships', $node);
-    	  break;
-    	case 'org_feature_counts':
-    	  $block['subject'] = t('Feature Type Summary');
-    	  $block['content'] = theme('tripal_organism_feature_counts', array('node' => $node));
-    	  break;
-    	case 'org_feature_browser':
-    	  $block['subject'] = t('Feature Browser');
-    	  $block['content'] = theme('tripal_organism_feature_browser', array('node' => $node));
-    	  break;
-    	case 'library_feature_browser':
-    	  $block['subject'] = t('Library Feature Browser');
-    	  $block['content'] = theme('tripal_library_feature_browser', $node);
-    	  break;
-    	case 'analysis_feature_browser':
-    	  $block['subject'] = t('Analysis Feature Browser');
-    	  $block['content'] = theme('tripal_analysis_feature_browser', $node);
-    	  break;
-    	default :
+      case 'references':
+        $block['subject'] = t('References');
+        $block['content'] = theme('tripal_feature_references', $node);
+        break;
+      case 'base':
+        $block['subject'] = t('Feature Details');
+        $block['content'] = theme('tripal_feature_base', $node);
+        break;
+      case 'synonyms':
+        $block['subject'] = t('Synonyms');
+        $block['content'] = theme('tripal_feature_synonyms', $node);
+        break;
+      case 'properties':
+        $block['subject'] = t('Properties');
+        $block['content'] = theme('tripal_feature_properties', $node);
+        break;
+      case 'terms':
+        $block['subject'] = t('Annotated Terms');
+        $block['content'] = theme('tripal_feature_terms', $node);
+        break;
+      case 'sequence':
+        $block['subject'] = t('Sequence');
+        $block['content'] = theme('tripal_feature_sequence', $node);
+        break;
+      case 'featureloc_sequences':
+        $block['subject'] = t('Formatted Sequences');
+        $block['content'] = theme('tripal_feature_featureloc_sequences', $node);
+        break;
+      case 'alignments':
+        $block['subject'] = t('Alignments');
+        $block['content'] = theme('tripal_feature_alignments', $node);
+        break;
+      case 'relationships':
+        $block['subject'] = t('Relationships');
+        $block['content'] = theme('tripal_feature_relationships', $node);
+        break;
+      case 'org_feature_counts':
+        $block['subject'] = t('Feature Type Summary');
+        $block['content'] = theme('tripal_organism_feature_counts', array('node' => $node));
+        break;
+      case 'org_feature_browser':
+        $block['subject'] = t('Feature Browser');
+        $block['content'] = theme('tripal_organism_feature_browser', array('node' => $node));
+        break;
+      case 'library_feature_browser':
+        $block['subject'] = t('Library Feature Browser');
+        $block['content'] = theme('tripal_library_feature_browser', $node);
+        break;
+      case 'analysis_feature_browser':
+        $block['subject'] = t('Analysis Feature Browser');
+        $block['content'] = theme('tripal_analysis_feature_browser', $node);
+        break;
+      default :
     }
     return $block;
   }

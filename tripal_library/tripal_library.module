@@ -62,7 +62,7 @@ function tripal_library_menu() {
     'title' => 'Libraries',
     'description' => 'Any biological library. Examples of genomic libraries include BAC, cDNA, FOSMID, etc.',
     'page callback' => 'tripal_library_admin_libraries_listing',
-    'access arguments' => array('administer tripal libraries'),
+    'access arguments' => array('administer tripal library'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -71,7 +71,7 @@ function tripal_library_menu() {
     'description' => 'Basic Description of Tripal Library Module Functionality',
     'page callback' => 'theme',
     'page arguments' => array('tripal_library_help'),
-    'access arguments' => array('administer tripal libraries'),
+    'access arguments' => array('administer tripal library'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
   );
@@ -81,7 +81,7 @@ function tripal_library_menu() {
     'description' => 'Configure the Tripal Library module',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_library_admin'),
-    'access arguments' => array('administer tripal libraries'),
+    'access arguments' => array('administer tripal library'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 5
   );
@@ -99,7 +99,7 @@ function tripal_library_menu() {
     'title' => 'Enable Library Administrative View',
     'page callback' => 'tripal_views_admin_enable_view',
     'page arguments' => array('tripal_library_admin_libraries', 'admin/tripal/chado/tripal_library'),
-    'access arguments' => array('administer tripal libraries'),
+    'access arguments' => array('administer tripal library'),
     'type' => MENU_CALLBACK,
   );
 

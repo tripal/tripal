@@ -48,7 +48,7 @@ function tripal_contact_requirements($phase) {
  */
 function tripal_contact_install() {
 
-	// create the module's data directory
+  // create the module's data directory
   tripal_create_moddir('tripal_contact');
 
   // add the contactprop table to Chado

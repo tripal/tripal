@@ -613,17 +613,36 @@ function tripal_analysis_node_view($node, $view_mode, $langcode) {
  * @param $node
  */
 function tripal_analysis_node_presave($node) {
-  // If this is an analysis of some type it will should have thre three required
+  // If this is an analysis of some type it will should have three required
   // fields for the Chado analysis table: program, programversion and sourcename.
-  // So we will set the title for any node that has these three fields
+  // So we will set the title for any node that has these three fields. Some extension
+  // modules will use this module as a type of "inherited" class, so we don't know
+  // for sure when type of analysis we have.
   if (property_exists($node, 'program') and
-  property_exists($node, 'programversion') and
-  property_exists($node, 'sourcename')) {
-    if ($node->analysisname) {
-      $node->title = $node->analysisname;
+      property_exists($node, 'programversion') and
+      property_exists($node, 'sourcename')) {
+    $name = '';
+    $program = '';
+    $programversion = '';
+    $sourcename = '';
+    if (property_exists($node, 'analysis')) {
+      $name           = $node->analysis->name;
+      $program        = $node->analysis->program;
+      $programversion = $node->analysis->programversion;
+      $sourcename     = $node->analysis->sourcename;
     }
     else {
-      $node->title = "$node->program ($node->programversion) $node->sourcename";
+      $name           = $node->analysisname;
+      $program        = $node->program;
+      $programversion = $node->programversion;
+      $sourcename     = $node->sourcename;
+    }
+    // now construct the title
+    if ($name) {
+      $node->title = $name;
+    }
+    else {
+      $node->title = "$program ($programversion) $sourcename";
     }
   }
 }

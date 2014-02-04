@@ -630,9 +630,31 @@ function tripal_feature_node_presave($node) {
   // set the title to ensure it is always unique
   switch ($node->type) {
     case 'chado_feature':
-      $values = array('organism_id' => $node->organism_id);
+      // for a form submission the fields part of the node object
+      // but for a sync the feilds are in an object of the node
+      $name = '';
+      $uname = '';
+      $type = ''; 
+      $organism_id = null;
+      if(property_exists($node, 'feature')) {
+        $organism_id = $node->feature->organism_id;
+        $name        = $node->feature->name;
+        $uname       = $node->feature->uniquname;
+        $type_id     = $node->feature->type_id;
+        $values = array('cvterm_id' => $type_id);
+        $ftype = tripal_core_chado_select('cv', array('name'), $values);
+        $type = $ftype[0]->name;
+        
+      }
+      else {
+        $organism_id = $node->organism_id;
+        $name = $node->name;
+        $uname = $node->uniquname;
+        $type = $node->feature_type;
+      }
+      $values = array('organism_id' => $organism_id);
       $organism = tripal_core_chado_select('organism', array('genus', 'species'), $values);
-      $node->title = $node->fname . ', ' . $node->uniquename . ' (' . $node->feature_type . ') ' . $organism[0]->genus . ' ' . $organism[0]->species;
+      $node->title = $fname . ', ' . $uniquename . ' (' . $type . ') ' . $organism[0]->genus . ' ' . $organism[0]->species;
       break;
   }
 }

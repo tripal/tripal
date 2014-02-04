@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @defgroup tripal_library_api Organism API
+ * @defgroup tripal_organism_api Organism API
  * @ingroup tripal_api
  * @{
  * Provides an application programming interface (API) to manage organisms
