@@ -118,6 +118,7 @@
  *     - nodetype_plural: the non-translated plural title of this node type
  *     - select_options: must be an array where the [key] is a valid cvterm_id and
  *       the [value] is the human-readable name of the option. This is generated from the cv_name/id by default
+ *     - base_name_field: the field in your base table you want to be used as the name of the record
  *
  * @ingroup tripal_chado_node_api
  */
@@ -129,6 +130,12 @@ function chado_node_relationships_form(&$form, &$form_state, $details) {
   $details['fieldset_title'] = (isset($details['fieldset_title'])) ? $details['fieldset_title'] : 'Relationships';
   $details['additional_instructions'] = (isset($details['additional_instructions'])) ? $details['additional_instructions'] : '';
   $details['nodetype_plural']  = (isset($details['nodetype_plural'])) ? $details['nodetype_plural'] : $details['nodetype'] . 's';
+  $details['base_name_field'] = (isset($details['base_name_field'])) ? $details['base_name_field'] : 'uniquename';
+
+  // Some relationship tables don't have a rank
+  // thus we need to first check this table has a rank before trying to set it
+  $table_schema = tripal_core_get_chado_table_schema($details['relationship_table']);
+  $details['table_has_rank'] = (isset($table_schema['fields']['rank'])) ? TRUE : FALSE;
 
   // Get Property Types for the Select List
   if (isset($details['select_options'])) {
@@ -215,7 +222,11 @@ function chado_node_relationships_form(&$form, &$form_state, $details) {
   }
   else {
     $existing_rels = chado_query(
-      "SELECT rel.*, base1.uniquename as object_name, base2.uniquename as subject_name, cvterm.name as type_name
+      "SELECT
+          rel.*,
+          base1.".$details['base_name_field']." as object_name,
+          base2.".$details['base_name_field']." as subject_name,
+          cvterm.name as type_name
         FROM {".$details['relationship_table']."} rel
         LEFT JOIN {".$details['base_table']."} base1 ON base1.".$details['base_foreign_key']." = rel.object_id
         LEFT JOIN {".$details['base_table']."} base2 ON base2.".$details['base_foreign_key']." = rel.subject_id
@@ -263,51 +274,53 @@ function chado_node_relationships_form(&$form, &$form_state, $details) {
   foreach ($existing_rels as $relationship) {
     if (array_key_exists($relationship->type_id, $type_options)) {
 
+      $rank = (isset($relationship->rank)) ? $relationship->rank : 0;
+
       $form['relationships']['relationship_table'][$relationship->type_id]['#type'] = 'markup';
       $form['relationships']['relationship_table'][$relationship->type_id]['#type'] = '';
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['#type'] = 'markup';
-      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['#value'] = '';
+      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['#type'] = 'markup';
+      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['#value'] = '';
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['object_id'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['object_id'] = array(
         '#type' => 'hidden',
         '#value' => $relationship->object_id
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['subject_id'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['subject_id'] = array(
         '#type' => 'hidden',
         '#value' => $relationship->subject_id
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['type_id'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['type_id'] = array(
         '#type' => 'hidden',
         '#value' => $relationship->type_id
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['object_name'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['object_name'] = array(
         '#type' => 'markup',
         '#markup' => $relationship->object_name
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['type_name'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['type_name'] = array(
         '#type' => 'markup',
         '#markup' => $relationship->type_name
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['subject_name'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['subject_name'] = array(
         '#type' => 'markup',
         '#markup' => $relationship->subject_name
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['rank'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['rank'] = array(
         '#type' => 'markup',
-        '#markup' => $relationship->rank
+        '#markup' => $rank
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->rank]['rel_action'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['rel_action'] = array(
         '#type' => 'submit',
         '#value' => t('Remove'),
-        '#name' => "rel_remove-".$relationship->type_id.'-'.$relationship->rank,
+        '#name' => "rel_remove-".$relationship->type_id.'-'.$rank,
         '#ajax' => array(
           'callback' => 'chado_node_relationships_form_ajax_update',
           'wrapper' => 'tripal-generic-edit-relationships-table',
@@ -401,6 +414,7 @@ function chado_node_relationships_form(&$form, &$form_state, $details) {
 function chado_node_relationships_form_add_button_validate($form, &$form_state) {
 
   $details = unserialize($form_state['values']['relationship_table']['details']);
+  $details['base_name_field'] = (isset($details['base_name_field'])) ? $details['base_name_field'] : 'uniquename';
 
   // At least one of the participants must be the current node
   if (!($form_state['values']['relationship_table']['new']['subject_is_current'] OR $form_state['values']['relationship_table']['new']['object_is_current'])) {
@@ -429,7 +443,7 @@ function chado_node_relationships_form_add_button_validate($form, &$form_state) 
     $result = tripal_core_chado_select(
       $details['base_table'],
       array($details['base_foreign_key']),
-      array('uniquename' => $form_state['values']['relationship_table']['new']['subject_name'])
+      array($details['base_name_field'] => $form_state['values']['relationship_table']['new']['subject_name'])
     );
     if (!isset($result[0])) {
       form_set_error('subject_name', 'The subject must be the unique name of an
@@ -445,7 +459,7 @@ function chado_node_relationships_form_add_button_validate($form, &$form_state) 
     $result = tripal_core_chado_select(
       $details['base_table'],
       array($details['base_foreign_key']),
-      array('uniquename' => $form_state['values']['relationship_table']['new']['object_name'])
+      array($details['base_name_field'] => $form_state['values']['relationship_table']['new']['object_name'])
     );
     if (!isset($result[0])) {
       form_set_error('object_name', 'The object must be the unique name of an
@@ -638,10 +652,13 @@ function chado_node_relationships_form_create_relationship_formstate_array($form
 function theme_chado_node_relationships_form_table($variables) {
   $element = $variables['element'];
 
+  $details = unserialize($element['details']['#value']);
+  $details['base_name_field'] = (isset($details['base_name_field'])) ? $details['base_name_field'] : 'uniquename';
+
   $header = array(
-    'object_name' => t('Object Unique Name'),
+    'object_name' => t('Object ' . $details['base_name_field']),
     'type_name' => t('Type'),
-    'subject_name' => t('Subject Unique Name'),
+    'subject_name' => t('Subject ' . $details['base_name_field']),
     'rank' => t('Rank'),
     'rel_action' => t('Action')
   );
@@ -741,6 +758,11 @@ function chado_node_relationships_form_update_relationships($node, $details, $re
   $current_id = $details['foreignkey_value'];
 
   if (isset($node->relationship_table) AND ($current_id > 0)) {
+
+    // determine whether there is a rank in this relationship table
+    $form_details = unserialize($node->relationship_table['details']);
+    $has_rank = $form_details['table_has_rank'];
+
     // First remove existing relationships links
     tripal_core_chado_delete($relationship_table, array('subject_id' => $current_id));
     tripal_core_chado_delete($relationship_table, array('object_id' => $current_id));
@@ -758,8 +780,7 @@ function chado_node_relationships_form_update_relationships($node, $details, $re
         $values = array(
           'subject_id' => $element['subject_id'],
           'type_id' => $type_id,
-          'object_id' => $element['object_id'],
-          'rank' => $rank
+          'object_id' => $element['object_id']
         );
 
         // Set the current id if not already
@@ -771,16 +792,18 @@ function chado_node_relationships_form_update_relationships($node, $details, $re
           $values['object_id'] = $current_id;
         }
 
-        // Ensure that the rank is Set & Current
-        $rank_select = tripal_core_get_max_chado_rank(
-          $relationship_table,
-          array(
-            'subject_id' => $values['subject_id'],
-            'type_id' => $values['type_id'],
-            'object_id' => $values['object_id'],
-          )
-        );
-        $values['rank'] = $rank_select + 1;
+        if ($has_rank) {
+          // Ensure that the rank is Set & Current
+          $rank_select = tripal_core_get_max_chado_rank(
+            $relationship_table,
+            array(
+              'subject_id' => $values['subject_id'],
+              'type_id' => $values['type_id'],
+              'object_id' => $values['object_id'],
+            )
+          );
+          $values['rank'] = $rank_select + 1;
+        }
 
         // add relationship
         $success_link = tripal_core_chado_insert(

@@ -91,7 +91,7 @@ function chado_contact_form(&$node, $form_state) {
     }
     if (!$description) {
       $contactprop = tripal_contact_get_property($contact->contact_id, 'contact_description');
-      $description = $contactprop->value;
+      $description = (isset($contactprop->value)) ? $contactprop->value : '';
     }
 
     // set the contact_id in the form
@@ -188,8 +188,6 @@ function chado_contact_form(&$node, $form_state) {
     }
   }
 
-  // D7 @TODO: Properties API doesn't handle Exclude
-  $exclude = array('contact_description');
   $details = array(
     'property_table' => 'contactprop',
     'base_foreign_key' => 'contact_id',
@@ -198,6 +196,33 @@ function chado_contact_form(&$node, $form_state) {
     'select_options' => $select_options
   );
   chado_node_properties_form($form, $form_state, $details);
+
+  // RELATIONSHIPS FORM
+  //---------------------------------------------
+  // We want to use the contact_relationship_types cv if there are any terms available
+  // and if not, to default to the relationship ontology
+  $cv_result = tripal_core_chado_select('cv',array('cv_id'),array('name' => 'contact_relationship_types'));
+  $cv_id = $cv_result[0]->cv_id;
+  $select_options = tripal_cv_get_cvterm_options($cv_id);
+  if (empty($select_options)) {
+    $cv_result = tripal_core_chado_select('cv',array('cv_id'),array('name' => 'relationship'));
+    $cv_id = $cv_result[0]->cv_id;
+    $select_options = tripal_cv_get_cvterm_options($cv_id);
+  }
+  // D7 @TODO: tell tripal admin's about this
+
+  $details = array(
+    'relationship_table' => 'contact_relationship', // the name of the _relationship table
+    'base_table' => 'contact',                      // the name of your chado base table
+    'base_foreign_key' => 'contact_id',             // the name of the key in your base chado table
+    'base_key_value' => $contact_id,                // the value of example_id for this record
+    'nodetype' => 'contact',                        // the human-readable name of your node type
+    'cv_name' => 'contact_relationship_types',      // the cv.name of the cv governing example_relationship.type_id
+    'base_name_field' => 'name',                    // the base table field you want to be used as the name
+    'select_options' => $select_options
+  );
+  // Adds the form elements to your current form
+  chado_node_relationships_form($form, $form_state, $details);
 
   return $form;
 }
@@ -340,14 +365,26 @@ function chado_contact_insert($node) {
     }
     $contact_id = $contact['contact_id'];
 
-    // now add in the properties
+      // Add the description property
+    $properties = chado_node_properties_form_retreive($node);
+    $contact_descrip_id = tripal_cv_get_cvterm_by_name('contact_description', NULL, 'tripal_contact');
+    $properties[$contact_descrip_id->cvterm_id][0] = $node->description;
+
+    // * Properties Form *
     $details = array(
       'property_table' => 'contactprop',
       'base_table' => 'contact',
       'foreignkey_name' => 'contact_id',
       'foreignkey_value' => $contact_id
     );
-    chado_node_properties_form_update_properties($node, $details);
+    chado_node_properties_form_update_properties($node, $details, $properties);
+
+    // * Relationships Form *
+    $details = array(
+      'relationship_table' => 'contact_relationship',  // name of the _relationship table
+      'foreignkey_value' => $contact_id                // value of the contact_id key
+    );
+    chado_node_relationships_form_update_relationships($node, $details);
   }
   else {
     $contact_id = $node->contact_id;
@@ -402,6 +439,11 @@ function chado_contact_update($node) {
     return;
   }
 
+  // Add the description property
+  $properties = chado_node_properties_form_retreive($node);
+  $contact_descrip_id = tripal_cv_get_cvterm_by_name('contact_description', NULL, 'tripal_contact');
+  $properties[$contact_descrip_id->cvterm_id][0] = $node->description;
+
   // now add in the properties by first removing any the contact
   // already has and adding the ones we have
   $details = array(
@@ -410,10 +452,14 @@ function chado_contact_update($node) {
     'foreignkey_name' => 'contact_id',
     'foreignkey_value' => $contact_id
   );
-  chado_node_properties_form_update_properties($node, $details);
+  chado_node_properties_form_update_properties($node, $details, $properties);
 
-  // add in the description as a separate property
-  tripal_contact_update_property($contact_id, 'contact_description', $node->description, 1);
+  // * Relationships Form *
+  $details = array(
+    'relationship_table' => 'contact_relationship',  // name of the _relationship table
+    'foreignkey_value' => $contact_id                // value of the contact_id key
+  );
+  chado_node_relationships_form_update_relationships($node, $details);
 }
 
 

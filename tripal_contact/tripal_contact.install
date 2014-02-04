@@ -58,7 +58,11 @@ function tripal_contact_install() {
   $obo_path = drupal_realpath(drupal_get_path('module', 'tripal_contact') . '/files/tcontact.obo');
   $obo_id = tripal_cv_add_obo_ref('Tripal Contacts', $obo_path);
   tripal_cv_submit_obo_job($obo_id);
-  
+
+  // Add cvterms for relationship types
+  tripal_contact_add_cvs();
+  tripal_contact_add_cvterms();
+
   /*
   // Install our custom block visibility settings per node type
   $query = db_insert('block_node_type')
@@ -83,6 +87,19 @@ function tripal_contact_uninstall() {
     ->condition('delta', 'contbase')
     ->execute();
     */
+}
+
+function tripal_contact_add_cvs() {
+
+  tripal_cv_add_cv(
+    'contact_relationship_types',
+    'Contains Types of relationships between contacts.'
+  );
+
+}
+
+function tripal_contact_add_cvterms() {
+
 }
 
 /**

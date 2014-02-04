@@ -174,7 +174,7 @@ function chado_example_form($node, &$form_state) {
     'base_foreign_key' => 'example_id',             // the name of the key in your base chado table
     'base_key_value' => $example_id,                // the value of example_id for this record
     'nodetype' => 'example',                        // the human-readable name of your node type
-    'cv_id' => 'example_relationship_types'         // the cv.name of the cv governing example_relationship.type_id
+    'cv_name' => 'example_relationship_types'         // the cv.name of the cv governing example_relationship.type_id
   );
   // Adds the form elements to your current form
   chado_node_relationships_form($form, $form_state, $details);
