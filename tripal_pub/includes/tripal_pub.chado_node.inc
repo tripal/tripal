@@ -245,19 +245,41 @@ function chado_pub_form($node, $form_state) {
     }
   }
 
-  // D7 @TODO: Properties API doesn't handle exclude
-  $exclude = array("Citation");
-
   $details = array(
     'property_table' => 'pubprop',
     'base_foreign_key' => 'pub_id',
     'base_key_value' => $pub_id,
     'cv_name' => 'tripal_pub',
     'select_options' => $select_options,
-    'exclude'=> array('Citation')
   );
   chado_node_properties_form($form, $form_state, $details);
 
+  // RELATIONSHIPS FORM
+  //---------------------------------------------
+  // We want to use the contact_relationship_types cv if there are any terms available
+  // and if not, to default to the relationship ontology
+  $cv_result = tripal_core_chado_select('cv',array('cv_id'),array('name' => 'pub_relationship_types'));
+  $cv_id = $cv_result[0]->cv_id;
+  $select_options = tripal_cv_get_cvterm_options($cv_id);
+  if (empty($select_options)) {
+    $cv_result = tripal_core_chado_select('cv',array('cv_id'),array('name' => 'relationship'));
+    $cv_id = $cv_result[0]->cv_id;
+    $select_options = tripal_cv_get_cvterm_options($cv_id);
+  }
+  // D7 @TODO: tell tripal admin's about this
+
+  $details = array(
+    'relationship_table' => 'pub_relationship', // the name of the _relationship table
+    'base_table' => 'pub',                      // the name of your chado base table
+    'base_foreign_key' => 'pub_id',             // the name of the key in your base chado table
+    'base_key_value' => $pub_id,                // the value of example_id for this record
+    'nodetype' => 'pub',                        // the human-readable name of your node type
+    'cv_name' => 'pub_relationship_types',      // the cv.name of the cv governing example_relationship.type_id
+    'base_name_field' => 'title',               // the base table field you want to be used as the name
+    'select_options' => $select_options
+  );
+  // Adds the form elements to your current form
+  chado_node_relationships_form($form, $form_state, $details);
   return $form;
 
 }
@@ -537,7 +559,6 @@ function chado_pub_insert($node) {
 
     // get the properties from the form
     $properties = chado_node_properties_form_retreive($node);
-    ddl($properties, 'clean properties');
 
     // get the list of properties for easy lookup (without doing lots of database queries
     $properties_list = array();
@@ -655,7 +676,6 @@ function chado_pub_insert($node) {
 
     // now add in the properties
     // Only adds in those not used in the pub record
-    ddl($properties, 'properties before update');
     $details = array(
       'property_table' => 'pubprop',
       'base_table' => 'pub',
@@ -663,6 +683,13 @@ function chado_pub_insert($node) {
       'foreignkey_value' => $pub_id
     );
     chado_node_properties_form_update_properties($node, $details, $properties);
+
+    // * Relationships Form *
+    $details = array(
+      'relationship_table' => 'pub_relationship',  // name of the _relationship table
+      'foreignkey_value' => $pub_id                // value of the pub_id key
+    );
+    chado_node_relationships_form_update_relationships($node, $details);
 
     // add in any database cross-references
     foreach ($cross_refs as $index => $ref) {
@@ -851,6 +878,13 @@ function chado_pub_update($node) {
   );
   chado_node_properties_form_update_properties($node, $details, $properties);
 
+  // * Relationships Form *
+  $details = array(
+    'relationship_table' => 'pub_relationship',  // name of the _relationship table
+    'foreignkey_value' => $pub_id                // value of the pub_id key
+  );
+  chado_node_relationships_form_update_relationships($node, $details);
+
   // add in any database cross-references after first removing
   tripal_core_chado_delete('pub_dbxref', array('pub_id' => $pub_id));
   foreach ($cross_refs as $index => $ref) {
@@ -940,46 +974,46 @@ function chado_pub_delete(&$node) {
  */
 function tripal_pub_node_view($node, $view_mode, $langcode) {
   switch ($node->type) {
-    case 'chado_pub':
-      // Show feature browser and counts
-      if ($view_mode == 'full') {
-        $node->content['tripal_pub_authors'] = array(
-          '#value' => theme('tripal_pub_authors', array('node' => $node)),
-        );
-        $node->content['tripal_pub_base'] = array(
-          '#value' => theme('tripal_pub_base', array('node' => $node)),
-        );
-        $node->content['tripal_pub_featuremaps'] = array(
-          '#value' => theme('tripal_pub_featuremaps', array('node' => $node)),
-        );
-        $node->content['tripal_pub_features'] = array(
-          '#value' => theme('tripal_pub_features', array('node' => $node)),
-        );
-        $node->content['tripal_pub_libraries'] = array(
-          '#value' => theme('tripal_pub_libraries', array('node' => $node)),
-        );
-        $node->content['tripal_pub_projects'] = array(
-          '#value' => theme('tripal_pub_projects', array('node' => $node)),
-        );
-        $node->content['tripal_pub_properties'] = array(
-          '#value' => theme('tripal_pub_properties', array('node' => $node)),
-        );
-        $node->content['tripal_pub_references'] = array(
-          '#value' => theme('tripal_pub_references', array('node' => $node)),
-        );
-        $node->content['tripal_pub_relationships'] = array(
-          '#value' => theme('tripal_pub_relationships', array('node' => $node)),
-        );
-        $node->content['tripal_pub_stocks'] = array(
-          '#value' => theme('tripal_pub_stocks', array('node' => $node)),
-        );
-      }
-      if ($view_mode == 'teaser') {
-        $node->content['tripal_pub_teaser'] = array(
-          '#value' => theme('tripal_pub_teaser', array('node' => $node)),
-        );
-      }
-      break;
+  	case 'chado_pub':
+  	  // Show feature browser and counts
+  	  if ($view_mode == 'full') {
+  	    $node->content['tripal_pub_authors'] = array(
+  	      '#value' => theme('tripal_pub_authors', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_pub_base'] = array(
+  	      '#value' => theme('tripal_pub_base', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_pub_featuremaps'] = array(
+  	      '#value' => theme('tripal_pub_featuremaps', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_pub_features'] = array(
+  	      '#value' => theme('tripal_pub_features', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_pub_libraries'] = array(
+  	      '#value' => theme('tripal_pub_libraries', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_pub_projects'] = array(
+  	      '#value' => theme('tripal_pub_projects', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_pub_properties'] = array(
+  	      '#value' => theme('tripal_pub_properties', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_pub_references'] = array(
+  	      '#value' => theme('tripal_pub_references', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_pub_relationships'] = array(
+  	      '#value' => theme('tripal_pub_relationships', array('node' => $node)),
+  	    );
+  	    $node->content['tripal_pub_stocks'] = array(
+  	      '#value' => theme('tripal_pub_stocks', array('node' => $node)),
+  	    );
+  	  }
+  	  if ($view_mode == 'teaser') {
+  	    $node->content['tripal_pub_teaser'] = array(
+  	      '#value' => theme('tripal_pub_teaser', array('node' => $node)),
+  	    );
+  	  }
+  	  break;
   }
 }
 /**

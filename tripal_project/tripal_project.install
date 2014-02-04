@@ -50,6 +50,7 @@ function tripal_project_install() {
   // create the module's data directory
   tripal_create_moddir('tripal_project');
 
+  tripal_project_add_cvs();
   tripal_project_add_cvterms();
 }
 
@@ -87,10 +88,16 @@ function tripal_project_schema() {
 }
 
 /**
- * 
+ *
  */
 function tripal_project_add_cvs() {
   tripal_cv_add_cv('project_property', 'Contains properties for projects');
+
+  // Add cv for relationship types
+  tripal_cv_add_cv(
+    'project_relationship_types',
+    'Contains Types of relationships between projects.'
+  );
 }
 /**
  *
@@ -102,12 +109,12 @@ function tripal_project_add_cvterms() {
   // description in the projectprop table.
   tripal_cv_add_cvterm(
     array(
-      'name' => 'Project Description', 
+      'name' => 'Project Description',
       'def'  => 'Description of a project'
     ),
     'project_property', 0, 1, 'tripal'
   );
-  
+
   tripal_cv_add_cvterm(
     array(
       'name' => 'Project Type',
@@ -146,7 +153,7 @@ function tripal_project_update_7000() {
   if (!$success) {
     throw new DrupalUpdateException('Failed to move project properties to new project_property CV.');
   }
-  
+
   // add in new CVterms
   tripal_project_add_cvterms();
 }
