@@ -192,8 +192,9 @@
   background-color: #cce3ff;
   margin-top: 10px;
   margin-bottom: 10px;
-  border: 1px solid #888888 !important;
+  border: 1px solid #888888;
   min-height: 50px;
+  clear: both;
 }
 
 .tripal-site-admin-message {
@@ -207,4 +208,5 @@
   background-image: none;
   background-color: #cce3ff;
   color: black;
+  clear: both;
 }
