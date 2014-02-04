@@ -573,3 +573,23 @@ function tripal_contact_node_view($node, $view_mode, $langcode) {
       break;
   }
 }
+
+/**
+ *
+ * @param $node
+ */
+function tripal_contact_node_presave($node) {
+  switch ($node->type) {
+    case 'chado_contact':
+      // for a form submission the fields part of the node object
+      // but for a sync the feilds are in an object of the node
+      if(property_exists($node, 'contact')) {
+        // set the title
+        $node->title = $node->contact->name;
+      }
+      else {
+        // the title is an element of the form and does not need to be set
+      }
+      break;
+  }
+}

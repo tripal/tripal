@@ -29,7 +29,7 @@ if (count($object_rels) > 0 or count($subject_rels) > 0) { ?>
     // first add in the subject relationships.  
     foreach ($subject_rels as $rel_type => $rels){
       foreach ($rels as $obj_type => $objects){ ?>
-        <p>This <?php print $contact->type_id->name;?> is <?php print $rel_type ?> the following <b><?php print $obj_type ?></b> contact(s): <?php
+        <p>This <?php print strtolower($contact->type_id->name);?>  <b><?php print $rel_type ?></b> with the following <?php print strtolower($obj_type) ?> contact(s): <?php
          
         // the $headers array is an array of fields to use as the colum headers.
         // additional documentation can be found here
