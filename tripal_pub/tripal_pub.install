@@ -56,6 +56,9 @@ function tripal_pub_install() {
   $obo_id = tripal_cv_add_obo_ref('Tripal Publication', $obo_path);
   tripal_cv_submit_obo_job($obo_id);
 
+  tripal_pub_add_cvs();
+  tripal_pub_add_cvterms();
+
   // add the custom tables
   tripal_pub_add_custom_tables();
 
@@ -204,4 +207,31 @@ function tripal_pub_add_custom_tables() {
     ),
   );
   tripal_core_create_custom_table('pubauthor_contact', $schema, TRUE);
+}
+
+/**
+ *
+ */
+function tripal_project_add_cvs() {
+
+  // Add cv for relationship types
+  tripal_cv_add_cv(
+    'pub_relationship_types',
+    'Contains Types of relationships between publications.'
+  );
+}
+/**
+ *
+ */
+function tripal_project_add_cvterms() {
+
+}
+
+/**
+ * This is the required update for tripal_contact when upgrading from Drupal core API 6.x.
+ */
+function tripal_pub_update_7000() {
+
+  tripal_pub_add_cvs();
+  tripal_pub_add_cvterms();
 }
