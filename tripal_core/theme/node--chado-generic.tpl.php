@@ -5,26 +5,17 @@
 $ttype = $variables['type'];
 $ttype = preg_replace('/chado_/','', $ttype);
 
-// get the template settings
-$template_settings = theme_get_setting('tripal');
-
-// toggle the sidebar if desired
-$no_sidebar = 0;
-if (is_array($template_settings['tripal_no_sidebar']) and 
-   $template_settings['tripal_no_sidebar'][$ttype]) {
-  $no_sidebar = 1;
-}
-
 if ($teaser) { 
   print theme('tripal_' . $ttype . '_teaser', $variables); 
 } 
 else { ?>
 
+
 <script type="text/javascript">
 (function ($) {
   Drupal.behaviors.<?php print $ttype?>Behavior = {
     attach: function (context, settings){ 
-      $(".tripal-info-box").hide();
+      $(".tripal-data-block").hide();
  
       // iterate through all of the info boxes and add their titles
       // to the table of contents
@@ -32,13 +23,13 @@ else { ?>
         var parent = $(this).parent();
         var id = $(parent).attr('id');
         var title = $(this).text();
-        $('#tripal_<?php print $ttype?>_toc_list').append('<li><a href="#'+id+'" class="tripal_<?php print $ttype?>_toc_item">'+title+'</a></li>');
+        $('#tripal_<?php print $ttype?>_toc_list').append('<div class="tripal_toc_list_item"><a href="#'+id+'" class="tripal_<?php print $ttype?>_toc_item">'+title+'</a></div>');
       });
 
       // when a title in the table of contents is clicked, then
       // show the corresponding item in the details box
       $(".tripal_<?php print $ttype?>_toc_item").click(function(){
-        $(".tripal-info-box").hide();
+        $(".tripal-data-block").hide();
         href = $(this).attr('href');
         if(href.match(/^#/)){
            //alert("correct: " + href);
@@ -48,7 +39,7 @@ else { ?>
           href = tmp;
           //alert("fixed: " + href);
         }
-        $(href).fadeIn('slow');
+        $(href).parent().fadeIn('slow');
 
         return false;
       }); 
@@ -60,10 +51,12 @@ else { ?>
         block = window.location.href.match(/[\?|\&]block=(.+)/)
       }
       if(block != null){
-        $("#tripal_<?php print $ttype?>-"+block[1]+"-box").show();
+        var parent =  $("#tripal_<?php print $ttype?>-"+block[1]+"-box").parent();
+        parent.show();
       }
       else {
-        $("#tripal_<?php print $ttype?>-base-box").show();
+        var parent = $("#tripal_<?php print $ttype?>-base-box").parent();
+        parent.show();
       }
     }
   };
@@ -81,7 +74,7 @@ else { ?>
   <table id="tripal-contents-table">
     <tr class="tripal-contents-table-tr">
       <td nowrap class="tripal-contents-table-td tripal-contents-table-td-toc"  align="left">
-        <ul id="tripal_<?php print $ttype?>_toc_list" class="tripal_toc_list">
+        <div id="tripal_<?php print $ttype?>_toc_list" class="tripal_toc_list">
         
          <!-- Resource Links CCK elements --><?php
          if(property_exists($node, 'field_resource_links')) {
@@ -93,7 +86,7 @@ else { ?>
            }
          }
          ?> 
-          </ul>
+          </div>
         </td>
         <td class="tripal-contents-table-td-data" align="left" width="100%">
          <!-- Resource Blocks CCK elements --> <?php

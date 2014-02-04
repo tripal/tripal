@@ -548,18 +548,42 @@ function tripal_core_node_view_alter(&$build) {
   $cache = cache_get("theme_registry:$theme", 'cache');
   $node = $build['#node'];
   
-  foreach ($build as $key => $value) {
-    // for tripal templates do some customizations
-    if (preg_match('/^tripal_/', $key)) {
+  // if we are looking at a Tripal node template then we want to
+  // make some changes to each block of content so that we can associate
+  // a table of contents and add administrator and curator messages
+  if (preg_match('/chado_/', $node->type)) {
+  
+    // iterate through all the elements of the $build array and for those
+    // with a '#value' add some extra <div> tags
+    foreach ($build as $key => $value) {
       
-      // add in some default div's, id's and classes
-      // that can be consistent regardless of customizations to templates
-      //$build[$key]['#value'] = "<div id=\"$key-block\" class=\"tripal-info-box\">" . $build[$key]['#value'] . '</div>';
+      // only examine elements without a '#' prefix
+      if (!preg_match('/^#/', $key)) {
 
-      // get the template path
-      $path = '';
-      if (array_key_exists($key, $cache->data)) {
-        $path = $cache->data[$key]['path'];
+        // get the template path
+        $path = '';
+        if (array_key_exists($key, $cache->data) and array_key_exists('path', $cache->data[$key])) {
+          
+          $path = $cache->data[$key]['path'] . '/' . $key . '.tpl.php';
+          $path = theme('tripal_admin_message', array('message' => "Administrators, you can
+            customize the way the content above is presented.  Tripal provides a template
+            file for each block of content.  To customize, copy the template file to your
+            site's default theme and edit.  Currently, the content above is provided by
+            this template:
+            <br><br>$path
+          "));
+        }
+        
+        // if this element has a #value child then add our div box        
+        if (array_key_exists('#value', $build[$key])) {
+          $build[$key]['#value'] = "
+            <div id=\"$key-tripal-data-block\" class=\"tripal-data-block\">" . 
+              $build[$key]['#value'] . 
+              $path .
+            "</div>";
+  
+
+        }
       }
     }
   }
