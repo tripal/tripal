@@ -69,12 +69,8 @@ $organism = tripal_core_expand_chado_vars($organism,'field','organism.comment');
       array(
         'data' => 'Organism ID',
         'header' => TRUE,
-        'class' => 'tripal-site-admin-only-noimg'
       ),
-      array(
-        'data' => $organism->organism_id,
-        'class' => 'tripal-site-admin-only-noimg'
-      ),
+       $organism->organism_id,
     );
   }
 
@@ -87,6 +83,7 @@ $organism = tripal_core_expand_chado_vars($organism,'field','organism.comment');
     'rows' => $rows, 
     'attributes' => array(
       'id' => 'tripal_organism-table-base',
+      'class' => 'tripal-organism-data-table tripal-data-table',
     ), 
     'sticky' => FALSE,
     'caption' => '',
