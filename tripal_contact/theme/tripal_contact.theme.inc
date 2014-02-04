@@ -5,31 +5,28 @@
  * @ingroup tripal_contact
  */
 function tripal_contact_preprocess_tripal_contact_relationships(&$variables) {
-  // we want to provide a new variable that contains the matched contacts.
   $contact = $variables['node']->contact;
+  
+   // expand the contact object to include the contact relationships.
+  $options = array(
+    'return_array' => 1,
+    // we don't want to fully recurse we only need information about the
+    // relationship type and the object and subject contacts (including contact type)
+    'include_fk' => array(
+      'type_id' => 1,
+      'object_id' => array(
+        'type_id' => 1,
+      ),
+      'subject_id'  => array(
+        'type_id' => 1,
+      ),
+    ),
+  );
+  $contact = tripal_core_expand_chado_vars($contact, 'table', 'contact_relationship', $options);
 
-  // normally we would use tripal_core_expand_chado_vars to expand our
-  // organism object and add in the relationships, however whan a large
-  // number of relationships are present this significantly slows the
-  // query, therefore we will manually perform the query
-  $sql = "
-    SELECT C.name, C.contact_id, CP.nid, CVT.name as rel_type
-    FROM {contact_relationship} PR
-      INNER JOIN {contact} C              ON PR.object_id  = C.contact_id
-      INNER JOIN {cvterm} CVT             ON PR.type_id    = CVT.cvterm_id
-      LEFT  JOIN public.chado_contact CP  ON C.contact_id  = CP.contact_id
-    WHERE PR.subject_id = :contact_id
-  ";
-  $as_subject = chado_query($sql, array(':contact_id' => $contact->contact_id));
-  $sql = "
-    SELECT C.name, C.contact_id, CP.nid, CVT.name as rel_type
-    FROM {contact_relationship} PR
-      INNER JOIN {contact} C              ON PR.subject_id = C.contact_id
-      INNER JOIN {cvterm} CVT             ON PR.type_id    = CVT.cvterm_id
-      LEFT  JOIN public.chado_contact CP  ON C.contact_id  = CP.contact_id
-    WHERE PR.object_id = :contact_id
-  ";
-  $as_object = chado_query($sql, array(':contact_id' => $contact->contact_id));
+  // get the subject relationships
+  $srelationships = $contact->contact_relationship->subject_id;
+  $orelationships = $contact->contact_relationship->object_id;
 
   // combine both object and subject relationshisp into a single array
   $relationships = array();
@@ -37,36 +34,55 @@ function tripal_contact_preprocess_tripal_contact_relationships(&$variables) {
   $relationships['subject'] = array();
 
   // iterate through the object relationships
-  while ($relationship = $as_object->fetchObject()) {
+  if ($orelationships) {
+    foreach ($orelationships as $relationship) {
+      $rel = new stdClass();
+      $rel->record = $relationship;
+       
+      // get the relationship and child types
+      $rel_type = t(preg_replace('/_/', " ", $relationship->type_id->name));
+      $child_type = $relationship->subject_id->type_id->name;
+       
+      // get the node id of the subject
+      $sql = "SELECT nid FROM {chado_contact} WHERE contact_id = :contact_id";
+      $n = db_query($sql, array(':contact_id' => $relationship->subject_id->contact_id))->fetchObject();
+      if ($n) {
+        $rel->record->nid = $n->nid;
+      }
 
-    // get the relationship and child types
-    $rel_type = t(preg_replace('/_/', " ", $relationship->rel_type));
-    $sub_type = t(preg_replace('/_/', " ", $relationship->sub_type));
-
-    if (!array_key_exists($rel_type, $relationships['object'])) {
-      $relationships['object'][$rel_type] = array();
+      if (!array_key_exists($rel_type, $relationships['object'])) {
+        $relationships['object'][$rel_type] = array();
+      }
+      if (!array_key_exists($child_type, $relationships['object'][$rel_type])) {
+        $relationships['object'][$rel_type][$child_type] = array();
+      }
+      $relationships['object'][$rel_type][$child_type][] = $rel;
     }
-    if (!array_key_exists($sub_type, $relationships['object'][$rel_type])) {
-      $relationships['object'][$rel_type][$sub_type] = array();
-    }
-    $relationships['object'][$rel_type][$sub_type][] = $relationship;
   }
 
   // now add in the subject relationships
-  while ($relationship = $as_subject->fetchObject()) {
-
-    // get the relationship and child types
-    $rel_type = t(preg_replace('/_/', " ", $relationship->rel_type));
-    $obj_type = t(preg_replace('/_/', " ", $relationship->obj_type));
-
-    if (!array_key_exists($rel_type, $relationships['subject'])) {
-      $relationships['subject'][$rel_type] = array();
+  if ($srelationships) {
+    foreach ($srelationships as $relationship) {
+      $rel = new stdClass();
+      $rel->record = $relationship;
+      $rel_type = t(preg_replace('/_/', " ", $relationship->type_id->name));
+      $parent_type = $relationship->object_id->type_id->name;
+       
+      // get the node id of the subject
+      $sql = "SELECT nid FROM {chado_contact} WHERE contact_id = :contact_id";
+      $n = db_query($sql, array(':contact_id' => $relationship->object_id->contact_id))->fetchObject();
+      if ($n) {
+        $rel->record->nid = $n->nid;
+      }
+       
+      if (!array_key_exists($rel_type, $relationships['subject'])) {
+        $relationships['subject'][$rel_type] = array();
+      }
+      if (!array_key_exists($parent_type, $relationships['subject'][$rel_type])) {
+        $relationships['subject'][$rel_type][$parent_type] = array();
+      }
+      $relationships['subject'][$rel_type][$parent_type][] = $rel;
     }
-    if (!array_key_exists($obj_type, $relationships['subject'][$rel_type])) {
-      $relationships['subject'][$rel_type][$obj_type] = array();
-    }
-    $relationships['subject'][$rel_type][$obj_type][] = $relationship;
   }
-
   $contact->all_relationships = $relationships;
 }

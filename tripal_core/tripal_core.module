@@ -565,6 +565,6 @@ function tripal_core_node_view_alter(&$build) {
       array('message' => $message)
     );
   }
-  dpm($build);
-  dpm($cache);
+//  dpm($build);
+//  dpm($cache);
 }
