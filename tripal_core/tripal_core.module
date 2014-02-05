@@ -553,7 +553,7 @@ function tripal_core_views_api() {
 function tripal_core_node_view_alter(&$build) {
   global $theme;
   
-  dpm($build);
+  //dpm($build);
   
   // if the $build['tripal_toc'] element is not present, then this is not
   // a full node view so we do not want to alter 
