@@ -505,6 +505,16 @@ function tripal_organism_node_view($node, $view_mode, $langcode) {
           '#tripal_toc_title' => 'Overview',
           '#weight' => -100,
         );
+        $node->content['tripal_organism_properties'] = array(
+          '#markup'  => theme('tripal_organism_properties', array('node' => $node)),
+          '#tripal_toc_id'    => 'properties',
+          '#tripal_toc_title' => 'Properties',
+        );
+        $node->content['tripal_organism_references'] = array(
+          '#markup'  => theme('tripal_organism_references', array('node' => $node)),
+          '#tripal_toc_id'    => 'references',
+          '#tripal_toc_title' => 'Cross References',
+        );
       }
       if ($view_mode == 'teaser') {
         $node->content['tripal_organism_teaser'] = array(

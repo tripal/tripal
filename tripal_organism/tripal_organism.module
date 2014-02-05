@@ -151,6 +151,16 @@ function tripal_organism_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_organism_base',
       'path' => "$path/theme/tripal_organism",
     ),
+    'tripal_organism_properties' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_organism_properties',
+      'path' => "$path/theme/tripal_organism",
+    ),
+    'tripal_organism_references' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_organism_references',
+      'path' => "$path/theme/tripal_organism",
+    ),
     'tripal_organism_teaser' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_organism_teaser',
