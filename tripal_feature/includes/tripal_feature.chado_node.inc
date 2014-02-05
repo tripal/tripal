@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  *  Provide information to drupal about the node types that we're creating
  *  in this module
@@ -34,13 +34,13 @@ function tripal_feature_node_info() {
 }
 /**
  * Implementation of hook_form
- * 
+ *
  * @param  $node
  * @param  $param
- * 
- * @return 
+ *
+ * @return
  *   Drupal form array
- *   
+ *
  * @ingroup tripal_feature
  */
 function chado_feature_form($node, &$form_state) {
@@ -61,13 +61,13 @@ function chado_feature_form($node, &$form_state) {
   $uniquename   = '';
   $fname        = '';
   $feature_type = '';
-  $organism_id  = '';  
+  $organism_id  = '';
   $residues     = '';
   $is_obsolete  = '';
   $analyses     = '';
   $references   = '';
   $synonyms     = '';
-  
+
   // if we are editing an existing node then the feature is already part of the node
   if (property_exists($node, 'feature')) {
     $feature = $node->feature;
@@ -79,23 +79,23 @@ function chado_feature_form($node, &$form_state) {
     $organism_id  = $feature->organism_id->organism_id;
     $residues     = $feature->residues;
     $is_obsolete  = $feature->is_obsolete;
-    
+
     // get the synonyms from a previous post
     $synonyms = '';
     if(property_exists($node, 'synonyms')) {
       $synonyms = $node->synonyms;
     }
-    
+
     // get synonyms from the database if we don't already have them
     if (!$synonyms) {
       $options = array('return_array' => 1);
       $feature = tripal_core_expand_chado_vars($feature, 'table', 'feature_synonym', $options);
-      $feature_synonyms = $feature->feature_synonym;      
+      $feature_synonyms = $feature->feature_synonym;
       foreach ($feature_synonyms as $index => $synonym) {
         $synonyms .= $synonym->synonym_id->name . "\n";
       }
     }
-    // keep track of the feature id 
+    // keep track of the feature id
     $form['feature_id'] = array(
       '#type' => 'value',
       '#value' => $feature_id,
@@ -215,14 +215,14 @@ function chado_feature_form($node, &$form_state) {
 
 /**
  * Implementation of hook_validate
- * 
+ *
  * This validation is being used for three activities:
  *   CASE A: Update a node that exists in both drupal and chado
  *   CASE B: Synchronizing a node from chado to drupal
  *   CASE C: Inserting a new node that exists in niether drupal nor chado
  *
  * @param $node
- *  
+ *
  *
  * @ingroup tripal_feature
  */
@@ -230,14 +230,14 @@ function chado_feature_validate($node, $form, &$form_state) {
   // remove surrounding white-space on submitted values
   $node->uniquename   = trim($node->uniquename);
   $node->fname        = trim($node->fname);
-  $node->feature_type = trim($node->feature_type); 
+  $node->feature_type = trim($node->feature_type);
   $node->residues     = trim($node->residues);
-  
+
   // if this is a delete then don't validate
   if($node->op == 'Delete') {
     return;
   }
-  
+
   // we are syncing if we do not have a node ID but we do have a feature_id. We don't
   // need to validate during syncing so just skip it.
   if (is_null($node->nid) and property_exists($node, 'feature_id') and $node->feature_id != 0) {
@@ -246,13 +246,13 @@ function chado_feature_validate($node, $form, &$form_state) {
 
   // Validating for an update
   if (property_exists($node, 'nid')) {
-    
+
     // make sure the feature type is a real sequence ontology term
     $type = tripal_cv_get_cvterm_by_name($node->feature_type, NULL, 'sequence');
     if (!$type) {
       form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
     }
-    
+
     // if this is an update, we want to make sure that a different feature for
     // the organism doesn't already have this uniquename. We don't want to give
     // two sequences the same uniquename
@@ -277,13 +277,13 @@ function chado_feature_validate($node, $form, &$form_state) {
   }
   // Validating for an insert
   else {
-      
+
     // make sure the feature type is a real sequence ontology term
     $type = tripal_cv_get_cvterm_by_name($node->feature_type, NULL, 'sequence');
     if (!$type) {
       form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
     }
-    
+
     // if this is an insert then we just need to make sure this name doesn't
     // already exist for this organism if it does then we need to throw an error
     $sql = "
@@ -373,6 +373,15 @@ function chado_feature_insert($node) {
     $obsolete = 'TRUE';
   }
 
+  // get the feature type id
+  $values = array(
+    'cv_id' => array(
+      'name' => 'sequence'
+    ),
+    'name' => $node->feature_type
+  );
+  $type = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
+
   $feature_id = '';
 
   // if there is an feature_id in the $node object then this must be a sync so
@@ -396,10 +405,10 @@ function chado_feature_insert($node) {
       array('%values' => print_r($values, TRUE)), WATCHDOG_WARNING);
       return;
     }
-    $feature_id = $feature->feature_id;
+    $feature_id = $feature['feature_id'];
 
     // add the genbank accession and synonyms
-    chado_feature_add_synonyms($node->synonyms, $node->feature_id);
+    chado_feature_add_synonyms($node->synonyms, $feature_id);
   }
   else {
     $feature_id = $node->feature_id;
@@ -634,27 +643,27 @@ function tripal_feature_node_presave($node) {
       // but for a sync the feilds are in an object of the node
       $name = '';
       $uname = '';
-      $type = ''; 
+      $type = '';
       $organism_id = null;
       if(property_exists($node, 'feature')) {
         $organism_id = $node->feature->organism_id;
         $name        = $node->feature->name;
-        $uname       = $node->feature->uniquname;
+        $uname       = $node->feature->uniquename;
         $type_id     = $node->feature->type_id;
         $values = array('cvterm_id' => $type_id);
         $ftype = tripal_core_chado_select('cv', array('name'), $values);
         $type = $ftype[0]->name;
-        
+
       }
       else {
         $organism_id = $node->organism_id;
         $name = $node->name;
-        $uname = $node->uniquname;
+        $uname = $node->uniquename;
         $type = $node->feature_type;
       }
       $values = array('organism_id' => $organism_id);
       $organism = tripal_core_chado_select('organism', array('genus', 'species'), $values);
-      $node->title = $fname . ', ' . $uniquename . ' (' . $type . ') ' . $organism[0]->genus . ' ' . $organism[0]->species;
+      $node->title = $name . ', ' . $uname . ' (' . $type . ') ' . $organism[0]->genus . ' ' . $organism[0]->species;
       break;
   }
 }
@@ -669,7 +678,7 @@ function tripal_feature_node_insert($node) {
   // know the feature_id in the presave
   switch ($node->type) {
     case 'chado_feature':
-      if (!$node->feature_id) {
+      if (!property_exists($node,'feature_id')) {
         $sql = "SELECT * FROM {chado_feature} WHERE nid = :nid";
         $chado_feature = db_query($sql, array(':nid' => $node->nid))->fetchObject();
         $node->feature_id = $chado_feature->feature_id;
