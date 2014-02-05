@@ -30,23 +30,30 @@ else {
           if(block != null){
             $(".tripal-data-block").hide().filter("#" + block[1] + "-tripal-data-block").show();
           }
+          // remove the 'active' class from the links section, as it doesn't
+          // make sense for this layout
+          $("a.active").removeClass('active');
         }
       };
     })(jQuery);
   </script>
   
-  <div id="tripal_<?php print $node_type?>_content" class="tripal-contents"> 
-    <table id="tripal-contents-table">
+  <div id="tripal_<?php print $node_type?>_contents" class="tripal-contents">
+    <table id ="tripal-<?php print $node_type?>-contents-table" class="tripal-contents-table">
       <tr class="tripal-contents-table-tr">
         <td nowrap class="tripal-contents-table-td tripal-contents-table-td-toc"  align="left"><?php
         
           // print the table of contents. It's found in the content array 
           print $content['tripal_toc']['#markup'];
           
-          // remove the table of contents so it doesn't show up in the 
-          // data section with the $content array is rendered
-          unset($content['tripal_toc']); ?>
+          // we may want to add the links portion of the contents to the sidebar
+          //print render($content['links']);
           
+          // remove the table of contents and links so thye doent show up in the 
+          // data section when the rest of the $content array is rendered
+          unset($content['tripal_toc']);
+          unset($content['links']); ?>
+
         </td>
         <td class="tripal-contents-table-td-data" align="left" width="100%"> <?php
          

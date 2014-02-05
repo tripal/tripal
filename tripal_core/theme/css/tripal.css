@@ -29,7 +29,10 @@
   width: 100%;
 }
 
-#tripal-contents_table {
+.tripal-contents-links {
+}
+
+.tripal-contents_table {
   padding: 0px !important;
   margin:  0px !important;
 }
@@ -42,7 +45,7 @@
  * the table settings. 
  */
  
-#tripal-contents-table tbody {
+.tripal-contents-table tbody {
   padding: 0px !important;
   margin:  0px !important;
   border:  none !important;
@@ -116,7 +119,6 @@
    margin:  0;
    width: 100%;
 }
-
 .tripal-data-block-title {
   font-size: 1.5em;
   padding-bottom: 5px;

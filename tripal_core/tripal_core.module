@@ -553,6 +553,8 @@ function tripal_core_views_api() {
 function tripal_core_node_view_alter(&$build) {
   global $theme;
   
+  //dpm($build);
+  
   // if the $build['tripal_toc'] element is not present, then this is not
   // a full node view so we do not want to alter 
   if (!array_key_exists('tripal_toc', $build)) {
@@ -571,50 +573,46 @@ function tripal_core_node_view_alter(&$build) {
 
     // iterate through all the elements of the $build array and for those
     // that are wanting to provide content for this node
-    $markup_list = array();
+    $markup = array();
     foreach ($build as $key => $value) {
 
       // examine elements without a '#' prefix as these should be adding 
-      // contents to the page. Skip the table of contents and any teasers
-      if (!preg_match('/^#/', $key) and $key != 'tripal_toc') {
+      // contents to the page. Skip the table of contents and links as those
+      // will be placed elsewhere
+      if (!preg_match('/^#/', $key) and $key != 'tripal_toc' and $key != 'links') {
+        $markup = '';
         
         // find the markup. Some fields will have a '#markup' and others, such
         // as CCK elements may have a set of '#markup' elements organized by 
         // numerical keys. 
         if (array_key_exists('#markup', $build[$key]) and trim($build[$key]['#markup'])) {
-          $markup_list[$key][] = $build[$key]['#markup'];
+          $markup = $build[$key]['#markup'];
         }
         // For backwards copmatibility we should support the '#value' element as well.
         elseif (array_key_exists('#value', $build[$key]) and trim($build[$key]['#value'])) {
-          $markup_list[$key][] = $build[$key]['#markup'];
+          $markup = $build[$key]['#markup'];
         }
-        else {
-          // we don't have a '#markup' field so look to see if this is a CCK
-          // element with numerical fields and a '#markup' inside
-          foreach ($value as $subkey => $subvalue) {
-            if (is_array($subvalue) and array_key_exists('#markup', $value[$subkey]) and trim($value[$subkey]['#markup'])) {
-              $markup_list[$key][] = $value[$subkey]['#markup'];
-            }
-          }
+        
+        // if we have no '#markup' field then this element has not yet
+        // been rendered.  Let's render it and substitute that for markup
+        if (!$markup) {
+          $markup = trim(render($build[$key]));
+          $build[$key] = array(
+            '#markup' => $markup,
+          );
         }
-      }
-    }
-
-    // if we have markup for this node then format it for display with Tripal
-    // basically, we just wrap it with a container, give it a title, and
-    // build the table of contents for the page.  The user theme can handle
-    // how to display it.  The default tripal node template will handle it 
-    // by default.
-    foreach ($markup_list as $key => $markup) {
-      foreach ($markup as $i => $html_text) {
-        $is_teaser = FALSE;
+        
+        // if we still don't have markup then skip this one
+        if (!$markup) {
+          continue;
+        }
 
         // intialize the item title, key and id
         $toc_item_title = $key;
         $toc_item_id    = $key;
         $toc_item_link  = '';
         
-        // BUILD THE TEMPLATE PATH
+        // FIND THE TEMPLATE PATH
         // get the template path so we can put it in an admin message box
         $path = '';
         if (array_key_exists($key, $cache->data) and array_key_exists('path', $cache->data[$key])) {
@@ -629,7 +627,7 @@ function tripal_core_node_view_alter(&$build) {
             Currently, the content above is provided by this template: <br><br>$path")
           );
         }
-  
+
         // BUILD THE TOC LINKS
         // get the title for the table of contents.  Tripal templates should
         // have a '#tripal_toc_title' element in the build array
@@ -638,14 +636,6 @@ function tripal_core_node_view_alter(&$build) {
         }
         if (array_key_exists('#tripal_toc_id', $build[$key])) {
           $toc_item_id = $build[$key]['#tripal_toc_id'];
-        }
-        
-        // for any content items that have more than one entry (such
-        // as CCK fields with unlimited values, we want to add the index to the
-        // id 
-        if($i > 0) {
-          $toc_item_id .= '-' . $i;
-          $toc_item_title .= '-' . $i;
         }
         $toc_item_link = "<div class=\"tripal_toc_list_item\"><a id=\"$toc_item_id\" class=\"tripal_toc_list_item_link\" href=\"?block=$toc_item_id\">$toc_item_title</a></div>";
         
@@ -662,19 +652,13 @@ function tripal_core_node_view_alter(&$build) {
         $updated_markup = "
           <div id=\"$toc_item_id-tripal-data-block\" class=\"tripal-data-block\">
             <div class=\"$toc_item_id-tripal-data-block-title tripal-data-block-title\">$toc_item_title</div>  
-              $html_text  
+              $markup
               $path 
             </div>
           </div>
         ";
         
-        // subtitute back in the #markup into the correct field.
-        if (array_key_exists($i, $build[$key])) {
-          $build[$key][$i]['#markup'] = $updated_markup;
-        }
-        else {
-          $build[$key]['#markup'] = $updated_markup;
-        }
+        $build[$key]['#markup'] = $updated_markup;
       }
     }
   }
