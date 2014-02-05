@@ -90,7 +90,7 @@ function chado_feature_form($node, &$form_state) {
     if (!$synonyms) {
       $options = array('return_array' => 1);
       $feature = tripal_core_expand_chado_vars($feature, 'table', 'feature_synonym', $options);
-      $feature_synonyms = $feature->feature_synonym;
+      $feature_synonyms = (isset($feature->feature_synonym)) ? $feature->feature_synonym : array();
       foreach ($feature_synonyms as $index => $synonym) {
         $synonyms .= $synonym->synonym_id->name . "\n";
       }
@@ -646,13 +646,11 @@ function tripal_feature_node_presave($node) {
       $type = '';
       $organism_id = null;
       if(property_exists($node, 'feature')) {
-        $organism_id = $node->feature->organism_id;
+        $organism_id = $node->feature->organism_id->organism_id;
         $name        = $node->feature->name;
         $uname       = $node->feature->uniquename;
-        $type_id     = $node->feature->type_id;
-        $values = array('cvterm_id' => $type_id);
-        $ftype = tripal_core_chado_select('cv', array('name'), $values);
-        $type = $ftype[0]->name;
+        $type_id     = $node->feature->type_id->cvterm_id;
+        $type        = $node->feature->type_id->name;
 
       }
       else {
@@ -787,7 +785,7 @@ function tripal_feature_node_view($node, $view_mode, $langcode) {
           '#tripal_toc_title' => 'Analyses',
         );
         $node->content['tripal_feature_featurepos'] = array(
-          '#markup' => theme('tripal_feature_featurepos', array('node' => $node)),          
+          '#markup' => theme('tripal_feature_featurepos', array('node' => $node)),
           '#tripal_toc_id'    => 'featurepos',
           '#tripal_toc_title' => 'Maps',
         );
