@@ -184,6 +184,16 @@ function chado_library_form($node, &$form_state) {
   // Adds the form elements to your current form
   chado_node_properties_form($form, $form_state, $details);
 
+  // ADDITIONAL DBXREFS FORM
+  //---------------------------------------------
+  $details = array(
+    'linking_table' => 'library_dbxref',  // the name of the _dbxref table
+    'base_foreign_key' => 'library_id',   // the name of the key in your base chado table
+    'base_key_value' => $library_id       // the value of library_id for this record
+  );
+  // Adds the form elements to your current form
+  chado_node_additional_dbxrefs_form($form, $form_state, $details);
+
   return $form;
 }
 /**
@@ -262,6 +272,14 @@ function chado_library_insert($node) {
     );
     chado_node_properties_form_update_properties($node, $details, $properties);
 
+    // * Additional DBxrefs Form *
+    $details = array(
+      'linking_table' => 'library_dbxref',   // the name of your _dbxref table
+      'foreignkey_name' => 'library_id',     // the name of the key in your base table
+      'foreignkey_value' => $library_id      // the value of the library_id key
+    );
+    chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
+
   }
   else {
     $library_id = $node->library_id;
@@ -321,6 +339,15 @@ function chado_library_update($node) {
     'foreignkey_value' => $library_id    // the value of the library_id key
   );
   chado_node_properties_form_update_properties($node, $details, $properties);
+
+  // * Additional DBxrefs Form *
+  $details = array(
+    'linking_table' => 'library_dbxref',   // the name of your _dbxref table
+    'foreignkey_name' => 'library_id',     // the name of the key in your base table
+    'foreignkey_value' => $library_id      // the value of the library_id key
+  );
+  chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
+
 }
 /**
  *  When a node is requested by the user this function is called to allow us
