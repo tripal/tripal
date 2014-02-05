@@ -134,7 +134,7 @@ function chado_pub_form($node, $form_state) {
   }
   // if we are re constructing the form from a failed validation or ajax callback
   // then use the $form_state['values'] values
-  if (array_key_exists('values', $form_state)) {
+  if (array_key_exists('values', $form_state) and isset($form_state['values']['pubtitle'])) {
     $title        = $form_state['values']['pubtitle'];
     $pyear        = $form_state['values']['pyear'];
     $uniquename   = $form_state['values']['uniquename'];
@@ -280,6 +280,17 @@ function chado_pub_form($node, $form_state) {
   );
   // Adds the form elements to your current form
   chado_node_relationships_form($form, $form_state, $details);
+
+  // ADDITIONAL DBXREFS FORM
+  //---------------------------------------------
+  $details = array(
+    'linking_table' => 'pub_dbxref',  // the name of the _dbxref table
+    'base_foreign_key' => 'pub_id',   // the name of the key in your base chado table
+    'base_key_value' => $pub_id       // the value of pub_id for this record
+  );
+  // Adds the form elements to your current form
+  chado_node_additional_dbxrefs_form($form, $form_state, $details);
+
   return $form;
 
 }
@@ -700,6 +711,14 @@ function chado_pub_insert($node) {
         array('%ref' => $ref), WATCHDOG_ERROR);
       }
     }
+
+    // * Additional DBxrefs Form *
+    $details = array(
+      'linking_table' => 'pub_dbxref',   // the name of your _dbxref table
+      'foreignkey_name' => 'pub_id',     // the name of the key in your base table
+      'foreignkey_value' => $pub_id      // the value of the pub_id key
+    );
+    chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
   }
   else {
     $pub_id = $node->pub_id;
@@ -895,6 +914,14 @@ function chado_pub_update($node) {
       array('%ref' => $ref), WATCHDOG_ERROR);
     }
   }
+
+  // * Additional DBxrefs Form *
+  $details = array(
+    'linking_table' => 'pub_dbxref',   // the name of your _dbxref table
+    'foreignkey_name' => 'pub_id',     // the name of the key in your base table
+    'foreignkey_value' => $pub_id      // the value of the pub_id key
+  );
+  chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
 }
 
 
