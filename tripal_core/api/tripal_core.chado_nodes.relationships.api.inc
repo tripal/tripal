@@ -356,6 +356,7 @@ function chado_node_relationships_form(&$form, &$form_state, $details) {
 
   $form['relationships']['relationship_table']['new']['object_name'] = array(
     '#type' => 'textfield',
+    '#autocomplete_path' => 'tripal_ajax/relationship_nodeform/'.$details['base_table'].'/'.$details['base_name_field'].'/name_to_id'
   );
 
   $form['relationships']['relationship_table']['new']['object_is_current'] = array(
@@ -370,6 +371,7 @@ function chado_node_relationships_form(&$form, &$form_state, $details) {
 
   $form['relationships']['relationship_table']['new']['subject_name'] = array(
     '#type' => 'textfield',
+    '#autocomplete_path' => 'tripal_ajax/relationship_nodeform/'.$details['base_table'].'/'.$details['base_name_field'].'/name_to_id'
   );
 
   $form['relationships']['relationship_table']['new']['subject_is_current'] = array(
@@ -422,6 +424,25 @@ function chado_node_relationships_form_add_button_validate($form, &$form_state) 
 
   $details = unserialize($form_state['values']['relationship_table']['details']);
 
+  // First deal with autocomplete fields
+  // extract the base_id assuming '(###) NAME FIELD'
+  if (!empty($form_state['values']['relationship_table']['new']['subject_name'])) {
+    if (preg_match('/\((\d+)\) .*/', $form_state['values']['relationship_table']['new']['subject_name'], $matches)) {
+      $form_state['values']['relationship_table']['new']['subject_id'] = $matches[1];
+    }
+    else {
+      form_set_error('subject_name', 'You need to select the subject from the autocomplete drop-down');
+    }
+  }
+  if (!empty($form_state['values']['relationship_table']['new']['object_name'])) {
+    if (preg_match('/\((\d+)\) .*/', $form_state['values']['relationship_table']['new']['object_name'], $matches)) {
+      $form_state['values']['relationship_table']['new']['object_id'] = $matches[1];
+    }
+    else {
+      form_set_error('object_name', 'You need to select the subject from the autocomplete drop-down');
+    }
+  }
+
   // At least one of the participants must be the current node
   if (!($form_state['values']['relationship_table']['new']['subject_is_current'] OR $form_state['values']['relationship_table']['new']['object_is_current'])) {
     // If the checkbox isn't set then check to see if either has the same uniquename as the node
@@ -448,15 +469,15 @@ function chado_node_relationships_form_add_button_validate($form, &$form_state) 
   if (!($form_state['values']['relationship_table']['new']['subject_is_current'])) {
     $result = tripal_core_chado_select(
       $details['base_table'],
-      array($details['base_foreign_key']),
-      array($details['base_name_field'] => $form_state['values']['relationship_table']['new']['subject_name'])
+      array($details['base_name_field']),
+      array($details['base_foreign_key'] => $form_state['values']['relationship_table']['new']['subject_id'])
     );
     if (!isset($result[0])) {
       form_set_error('subject_name', 'The subject must be the unique name of an
         existing '.$details['nodetype'].' unless the "Current '.$details['nodetype'].'" checkbox is selected');
     }
     else {
-      $form_state['values']['relationship_table']['new']['subject_id'] = $result[0]->{$details['base_foreign_key']};
+      $form_state['values']['relationship_table']['new']['subject_name'] = $result[0]->{$details['base_name_field']};
     }
   }
 
@@ -464,15 +485,15 @@ function chado_node_relationships_form_add_button_validate($form, &$form_state) 
   if (!($form_state['values']['relationship_table']['new']['object_is_current'])) {
     $result = tripal_core_chado_select(
       $details['base_table'],
-      array($details['base_foreign_key']),
-      array($details['base_name_field'] => $form_state['values']['relationship_table']['new']['object_name'])
+      array($details['base_name_field']),
+      array($details['base_foreign_key'] => $form_state['values']['relationship_table']['new']['object_id'])
     );
     if (!isset($result[0])) {
       form_set_error('object_name', 'The object must be the unique name of an
         existing '.$details['nodetype'].' unless the "Current '.$details['nodetype'].'" checkbox is selected');
     }
     else {
-      $form_state['values']['relationship_table']['new']['object_id'] = $result[0]->{$details['base_foreign_key']};
+      $form_state['values']['relationship_table']['new']['object_name'] = $result[0]->{$details['base_name_field']};
     }
   }
 
@@ -810,4 +831,30 @@ function chado_node_relationships_form_update_relationships($node, $details, $re
       }
     }
   }
+}
+
+/**
+ * Handles autocomplete for subject & object id
+ *
+ * @param $string
+ *    The part of the string already typed in the textfield
+ */
+function chado_node_relationships_name_to_id_callback($base_table, $name_field, $string) {
+  $matches = array();
+
+  $base_key = $base_table.'_id';
+
+  $result = db_select('chado.'.$base_table, 'b')
+    ->fields('b', array($base_key, $name_field))
+    ->condition($name_field, '%' . db_like($string) . '%', 'LIKE')
+    ->execute();
+
+  // save the query to matches
+  foreach ($result as $row) {
+    $key = '('.$row->{$base_key}.') '.substr($row->{$name_field},0,50) . '...';
+    $matches[$key] = check_plain($row->{$name_field});
+  }
+
+  // return for JS
+  drupal_json_output($matches);
 }

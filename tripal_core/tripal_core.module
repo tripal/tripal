@@ -383,6 +383,14 @@ function tripal_core_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  // Relationshi API autocomplete callback
+  $items['tripal_ajax/relationship_nodeform/%/%/name_to_id'] = array(
+    'page callback' => 'chado_node_relationships_name_to_id_callback',
+    'page arguments' => array(2,3),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+
   return $items;
 }
 
@@ -453,7 +461,7 @@ function tripal_core_theme($existing, $type, $theme, $path) {
       'function' => 'theme_chado_node_relationships_form_table',
       'render element' => 'element',
     ),
-    
+
     // Admin messages theme
     // --------------------------------
     'tripal_admin_message' => array(
@@ -539,7 +547,7 @@ function tripal_core_views_api() {
  * After the node is built, we want to add instructions to each
  * content section letting the administrator know which template
  * they can customize
- * 
+ *
  * @param unknown $build
  */
 function tripal_core_node_view_alter(&$build) {
@@ -547,23 +555,23 @@ function tripal_core_node_view_alter(&$build) {
 
   $cache = cache_get("theme_registry:$theme", 'cache');
   $node = $build['#node'];
-  
+
   // if we are looking at a Tripal node template then we want to
   // make some changes to each block of content so that we can associate
   // a table of contents and add administrator and curator messages
   if (preg_match('/chado_/', $node->type)) {
-  
+
     // iterate through all the elements of the $build array and for those
     // with a '#value' add some extra <div> tags
     foreach ($build as $key => $value) {
-      
+
       // only examine elements without a '#' prefix
       if (!preg_match('/^#/', $key)) {
 
         // get the template path
         $path = '';
         if (array_key_exists($key, $cache->data) and array_key_exists('path', $cache->data[$key])) {
-          
+
           $path = $cache->data[$key]['path'] . '/' . $key . '.tpl.php';
           $path = theme('tripal_admin_message', array('message' => "Administrators, you can
             customize the way the content above is presented.  Tripal provides a template
@@ -573,15 +581,15 @@ function tripal_core_node_view_alter(&$build) {
             <br><br>$path
           "));
         }
-        
-        // if this element has a #value child then add our div box        
+
+        // if this element has a #value child then add our div box
         if (array_key_exists('#value', $build[$key])) {
           $build[$key]['#value'] = "
-            <div id=\"$key-tripal-data-block\" class=\"tripal-data-block\">" . 
-              $build[$key]['#value'] . 
+            <div id=\"$key-tripal-data-block\" class=\"tripal-data-block\">" .
+              $build[$key]['#value'] .
               $path .
             "</div>";
-  
+
 
         }
       }

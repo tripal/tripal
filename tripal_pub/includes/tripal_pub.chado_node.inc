@@ -275,7 +275,7 @@ function chado_pub_form($node, $form_state) {
     'base_key_value' => $pub_id,                // the value of example_id for this record
     'nodetype' => 'pub',                        // the human-readable name of your node type
     'cv_name' => 'pub_relationship_types',      // the cv.name of the cv governing example_relationship.type_id
-    'base_name_field' => 'title',               // the base table field you want to be used as the name
+    'base_name_field' => 'uniquename',          // the base table field you want to be used as the name
     'select_options' => $select_options
   );
   // Adds the form elements to your current form
