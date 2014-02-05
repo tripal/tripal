@@ -671,7 +671,6 @@ function theme_chado_node_relationships_form_table($variables) {
     'object_name' => t('Object ' . $details['base_name_field']),
     'type_name' => t('Type'),
     'subject_name' => t('Subject ' . $details['base_name_field']),
-    'rank' => t('Rank'),
     'rel_action' => t('Action')
   );
 

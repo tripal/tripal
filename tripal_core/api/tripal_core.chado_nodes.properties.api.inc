@@ -511,7 +511,7 @@ function chado_node_properties_form(&$form, &$form_state, $details) {
       To add additional properties to the drop down. ' . $details['additional_instructions']),
     '#prefix' => "<div id='properties-fieldset'>",
     '#suffix' => '</div>',
-    '#weight'      => 10
+    '#weight'      => 8
   );
 
   // this form element is a tree, so that we don't puke all of the values into then node variable
@@ -685,7 +685,8 @@ function chado_node_properties_form(&$form, &$form_state, $details) {
   );
 
   $form['properties']['property_table']['new']['value'] = array(
-    '#type' => 'textfield',
+    '#type' => 'textarea',
+    '#rows' => 1,
   );
 
   // add button
@@ -883,7 +884,6 @@ function theme_chado_node_properties_form_table($variables) {
   $header = array(
     'type' => t('Type'),
     'value' => t('Value'),
-    'rank' => t('Rank'),
     'property_action' => t('Actions'),
   );
 
