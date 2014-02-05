@@ -154,7 +154,7 @@ function tripal_cv_menu() {
   );
   $items['admin/tripal/chado/tripal_cv/cvterm/auto_name/%/%'] = array(
     'page callback' => 'tripal_cv_cvterm_name_autocomplete',
-    'page arguments' => array(5, 6),
+    'page arguments' => array(6, 7),
     'access arguments' => array('administer controlled vocabularies'),
     'type' => MENU_CALLBACK,
   );

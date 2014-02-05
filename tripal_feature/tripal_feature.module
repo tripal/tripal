@@ -182,7 +182,6 @@ function tripal_feature_menu() {
     'weight' =>  10
   );
 
-
   /** Loaders */
   $items['admin/tripal/loaders/fasta_loader'] = array(
     'title' => 'Multi-FASTA file Loader',
