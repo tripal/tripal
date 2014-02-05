@@ -17,18 +17,16 @@ if ($enabled) {
       <div class="tripal_organism-info-box-title tripal-info-box-title">Data Type Summary</div>
       <div class="tripal_organism-info-box-desc tripal-info-box-desc">The following data types are currently present for this organism</div> <?php
       // let admins know they can customize the terms that appear in the list
-      if (user_access('access administration pages')) { 
-         print theme('tripal_admin_message', array('message' => "
-           Administrators, you can customize the types of terms that appear in this report by 
-           navigating to the " . l('Tripal feature configuration page', 'admin/tripal/chado/tripal_feature/configuration') . "
-           opening the section \"Feature Summary Report\" and adding the list of
-           terms you want to appear in the list. You can rename terms as well.  To disable this report and 
-           remove it from the list of resources, navigate to the " . 
-           l('Tripal feature configuration page', 'admin/tripal/tripal_feature/configuration') . "
-           and hide the \"Feature Summary\". To refresh the data,re-populate the " .
-           l('organism_feature_count', 'admin/tripal/schema/mviews') . " materialized view.")
-         ); 
-      }?>
+      print theme('tripal_admin_message', array('message' => "
+        Administrators, you can customize the types of terms that appear in this report by 
+        navigating to the " . l('Tripal feature configuration page', 'admin/tripal/chado/tripal_feature/configuration') . "
+        opening the section \"Feature Summary Report\" and adding the list of
+        terms you want to appear in the list. You can rename terms as well.  To disable this report and 
+        remove it from the list of resources, navigate to the " . 
+        l('Tripal feature configuration page', 'admin/tripal/tripal_feature/configuration') . "
+        and hide the \"Feature Summary\". To refresh the data,re-populate the " .
+        l('organism_feature_count', 'admin/tripal/schema/mviews') . " materialized view.")
+      ); ?>
       <table id="tripal_organism-table-feature_counts" class="tripal_organism-table tripal-table tripal-table-horz">     
         <tr class="tripal_organism-table-odd-row tripal-table-even-row">
           <th>Feature Type</th>

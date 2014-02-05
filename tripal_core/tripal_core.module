@@ -576,9 +576,9 @@ function tripal_core_node_view_alter(&$build) {
           $path = theme('tripal_admin_message', array('message' => "Administrators, you can
             customize the way the content above is presented.  Tripal provides a template
             file for each block of content.  To customize, copy the template file to your
-            site's default theme and edit.  Currently, the content above is provided by
-            this template:
-            <br><br>$path
+            site's default theme, edit then " . 
+            l('clear the Drupal cache', 'admin/config/development/performance', array('attributes' => array('target' => '_blank'))) . ".  
+            Currently, the content above is provided by this template: <br><br>$path
           "));
         }
 
@@ -595,7 +595,4 @@ function tripal_core_node_view_alter(&$build) {
       }
     }
   }
-
-  //dpm($build);
-  //dpm($cache);
 }

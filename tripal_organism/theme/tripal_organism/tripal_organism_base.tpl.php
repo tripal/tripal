@@ -67,10 +67,14 @@ $organism = tripal_core_expand_chado_vars($organism,'field','organism.comment');
     // Organism ID
     $rows[] = array(
       array(
-        'data' => 'Organism ID',
+        'data'   => 'Organism ID',
         'header' => TRUE,
+        'class'  => 'tripal-site-admin-only-table-row',
       ),
-       $organism->organism_id,
+      array(
+       'data'  => $organism->organism_id,
+       'class' => 'tripal-site-admin-only-table-row',
+      ),
     );
   }
 

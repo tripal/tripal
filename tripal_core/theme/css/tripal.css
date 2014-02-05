@@ -201,12 +201,9 @@
    padding: 10px 10px 10px 55px;
    font-style: italic;
 }
-/**
- * When when no tripal logo image is wanted 
- */
-.tripal-site-admin-only-noimg {
-  background-image: none;
+
+.tripal-site-admin-only-table-row {
   background-color: #cce3ff;
+  border: 1px solid #888888;
   color: black;
-  clear: both;
 }

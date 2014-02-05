@@ -72,8 +72,12 @@ $description = $libprop->value;
       array(
         'data' => 'Library ID',
         'header' => TRUE
+        'class' => 'tripal-site-admin-only-table-row',
       ),
-      $library->library_id,
+      array(
+        'data' => $library->library_id,
+        'class' => 'tripal-site-admin-only-table-row',
+      ),
     );
   }
   

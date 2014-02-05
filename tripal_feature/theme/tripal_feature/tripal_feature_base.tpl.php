@@ -71,8 +71,12 @@ $feature  = $variables['node']->feature;  ?>
       array(
         'data' => 'Feature ID',
         'header' => TRUE,
+        'class' => 'tripal-site-admin-only-table-row',
       ),
-      $feature->feature_id
+      array(
+        'data' => $feature->feature_id,
+        'class' => 'tripal-site-admin-only-table-row',
+      ),
     );
   }
   // Is Obsolete Row
