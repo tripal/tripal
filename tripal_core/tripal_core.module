@@ -553,7 +553,7 @@ function tripal_core_views_api() {
 function tripal_core_node_view_alter(&$build) {
   global $theme;
   
-  //dpm($build);
+  dpm($build);
   
   // if the $build['tripal_toc'] element is not present, then this is not
   // a full node view so we do not want to alter 
@@ -580,6 +580,53 @@ function tripal_core_node_view_alter(&$build) {
       // contents to the page. Skip the table of contents and links as those
       // will be placed elsewhere
       if (!preg_match('/^#/', $key) and $key != 'tripal_toc' and $key != 'links') {
+        
+        // intialize the item title, key and id
+        $toc_item_title = $key;
+        $toc_item_id    = $key;
+        $toc_item_link  = '';
+        
+        // FIND THE TEMPLATE PATH
+        // get the template path so we can put it in an admin message box
+        $path = '';
+        if (array_key_exists($key, $cache->data) and array_key_exists('path', $cache->data[$key])) {
+        
+          $path = $cache->data[$key]['path'] . '/' . $key . '.tpl.php';
+        
+          $path = theme('tripal_admin_message', array('message' => "Administrators, you can
+            customize the way the content above is presented.  Tripal provides a template
+            file for each block of content.  To customize, copy the template file to your
+            site's default theme, edit then " .
+            l('clear the Drupal cache', 'admin/config/development/performance', array('attributes' => array('target' => '_blank'))) . ".
+            Currently, the content above is provided by this template: <br><br>$path")
+          );
+        }
+        
+        // BUILD THE TOC LINKS
+        // get the title for the table of contents.  Tripal templates should
+        // have a '#tripal_toc_title' element in the build array
+        if (array_key_exists('#tripal_toc_title', $build[$key])) {
+          $toc_item_title = $build[$key]['#tripal_toc_title'];
+        }
+        // other elements in the $build array may just have a '#title' element,
+        if (array_key_exists('#title', $build[$key])) {
+          $toc_item_title = $build[$key]['#title'];
+        }
+        $toc_item_title = ucwords($toc_item_title);
+        
+        if (array_key_exists('#tripal_toc_id', $build[$key])) {
+          $toc_item_id = $build[$key]['#tripal_toc_id'];
+        }
+        $toc_item_link = "<div class=\"tripal_toc_list_item\"><a id=\"$toc_item_id\" class=\"tripal_toc_list_item_link\" href=\"?block=$toc_item_id\">$toc_item_title</a></div>";
+        
+        // next check the database. If the title has been overridden then
+        // we want to use that value
+        $weight = 10;
+        if (array_key_exists('#weight', $build[$key])) {
+          $weight = $build[$key]['#weight'];
+        }
+        $toc[$weight][] = $toc_item_link;
+        
         $markup = '';
         
         // find the markup. Some fields will have a '#markup' and others, such
@@ -607,45 +654,6 @@ function tripal_core_node_view_alter(&$build) {
           continue;
         }
 
-        // intialize the item title, key and id
-        $toc_item_title = $key;
-        $toc_item_id    = $key;
-        $toc_item_link  = '';
-        
-        // FIND THE TEMPLATE PATH
-        // get the template path so we can put it in an admin message box
-        $path = '';
-        if (array_key_exists($key, $cache->data) and array_key_exists('path', $cache->data[$key])) {
-        
-          $path = $cache->data[$key]['path'] . '/' . $key . '.tpl.php';
-          
-          $path = theme('tripal_admin_message', array('message' => "Administrators, you can
-            customize the way the content above is presented.  Tripal provides a template
-            file for each block of content.  To customize, copy the template file to your
-            site's default theme, edit then " .
-            l('clear the Drupal cache', 'admin/config/development/performance', array('attributes' => array('target' => '_blank'))) . ".
-            Currently, the content above is provided by this template: <br><br>$path")
-          );
-        }
-
-        // BUILD THE TOC LINKS
-        // get the title for the table of contents.  Tripal templates should
-        // have a '#tripal_toc_title' element in the build array
-        if (array_key_exists('#tripal_toc_title', $build[$key])) {
-          $toc_item_title = $build[$key]['#tripal_toc_title'];
-        }
-        if (array_key_exists('#tripal_toc_id', $build[$key])) {
-          $toc_item_id = $build[$key]['#tripal_toc_id'];
-        }
-        $toc_item_link = "<div class=\"tripal_toc_list_item\"><a id=\"$toc_item_id\" class=\"tripal_toc_list_item_link\" href=\"?block=$toc_item_id\">$toc_item_title</a></div>";
-        
-        // next check the database. If the title has been overridden then 
-        // we want to use that value
-        $weight = 10;
-        if (array_key_exists('#weight', $build[$key])) {
-          $weight = $build[$key]['#weight'];
-        }
-        $toc[$weight][] = $toc_item_link;
     
         // CREATE THE DATA BLOCK
         // add a surrounding <div> box around the content
