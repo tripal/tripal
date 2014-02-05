@@ -242,6 +242,10 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
           }
         }
 
+        // if either the template_id or priority are 0 then we need to make the link
+        // point to the letter o instead (drupal menu can't have 0)
+        $path_template_id = ($template_id > 0) ? $template_id : 'O';
+        $path_priority = ($priority > 0) ? $priority : 'O';
         $form['records']['records-data'][$priority] = array(
           'title' => array(
             '#type' => 'item',
@@ -275,12 +279,12 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
           ),
           'submit-edit_record' => array(
             '#type' => 'link',
-            '#href' => str_replace(array('%template','%priority','%action'), array($template_id, $priority,'edit_record'), $record_href_template),
+            '#href' => str_replace(array('%template','%priority','%action'), array($path_template_id, $path_priority,'edit_record'), $record_href_template),
             '#title' => 'Edit',
           ),
           'submit-delete_record' => array(
             '#type' => 'link',
-            '#href' => str_replace(array('%template','%priority','%action'), array($template_id, $priority,'delete_record'), $record_href_template),
+            '#href' => str_replace(array('%template','%priority','%action'), array($path_template_id, $path_priority,'delete_record'), $record_href_template),
             '#options' => array(
               'query' => array(
                 'record_name' => $table_array['record_id'],
@@ -292,7 +296,7 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
           ),
           'submit-duplicate_record' => array(
             '#type' => 'link',
-            '#href' => str_replace(array('%template','%priority','%action'), array($template_id, $priority,'duplicate_record'), $record_href_template),
+            '#href' => str_replace(array('%template','%priority','%action'), array($path_template_id, $path_priority,'duplicate_record'), $record_href_template),
             '#options' => array(
               'query' => array(
                 'record_name' => $table_array['record_id'],
@@ -304,7 +308,7 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
           ),
           'submit-add_field' => array(
             '#type' => 'link',
-            '#href' => str_replace(array('%template','%priority','%action'), array($template_id, $priority,'add_field'), $record_href_template),
+            '#href' => str_replace(array('%template','%priority','%action'), array($path_template_id, $path_priority,'add_field'), $record_href_template),
             '#title' => 'Add Field',
           ),
         );
@@ -334,6 +338,11 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
             }
           }
 
+          // if either the template_id or priority are 0 then we need to make the link
+          // point to the letter o instead (drupal menu can't have 0)
+          $path_template_id = ($template_id > 0) ? $template_id : 'O';
+          $path_priority = ($priority > 0) ? $priority : 'O';
+          $path_field_index = ($field_index > 0) ? $field_index : 'O';
           $form['fields']['fields-data'][$i] = array(
             'record_id' => array(
               '#type' => 'item',
@@ -382,12 +391,12 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
             ),
             'edit_submit' => array(
               '#type' => 'link',
-              '#href' => str_replace(array('%template','%priority', '%field', '%action'), array($template_id, $priority, $field_index, 'edit_field'), $field_href_template),
+              '#href' => str_replace(array('%template','%priority', '%field', '%action'), array($path_template_id, $path_priority, $path_field_index, 'edit_field'), $field_href_template),
               '#title' => "Edit",
             ),
             'delete_submit' => array(
               '#type' => 'link',
-              '#href' => str_replace(array('%template','%priority', '%field', '%action'), array($template_id, $priority, $field_index,'delete_field'), $field_href_template),
+              '#href' => str_replace(array('%template','%priority', '%field', '%action'), array($path_template_id, $path_priority, $path_field_index,'delete_field'), $field_href_template),
               '#options' => array(
                 'query' => array(
                   'record_name' => $table_array['record_id'],
