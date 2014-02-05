@@ -10,7 +10,10 @@ $pager_id = 3;
 $options = array(  
   'return_array' => 1,
   'order_by' => array('name' => 'ASC'),
-  'pager' => array('limit' => $num_results_per_page, 'element' => $pager_id),
+  'pager' => array(
+    'limit' => $num_results_per_page, 
+    'element' => $pager_id
+  ),
   'include_fk' => array(
     'type_id' => 1    
   ),
@@ -20,44 +23,76 @@ $organism = tripal_core_expand_chado_vars($organism, 'table', 'stock', $options)
 $stocks = $organism->stock;
 
 // create the pager.  
-global $pager_total_items;
-$pager = theme('pager', array(), $num_results_per_page, $pager_id, array('block' => 'stocks'));
-$total_features = $pager_total_items[$pager_id];
+// the total number of records for the paged query is stored in a session variable
+$total_records = $_SESSION['chado_pager'][$pager_id]['total_records'];
 
  
 if (count($stocks) > 0) { ?>
   <div id="tripal_organism-stocks-box" class="tripal_organism-info-box tripal-info-box">
     <div class="tripal_organism-info-box-title tripal-info-box-title">Stocks</div>
-    <div class="tripal_organism-info-box-desc tripal-info-box-desc">This organism is associated with <?php print number_format($total_features) ?> stock(s):</div>
+    <div class="tripal_organism-info-box-desc tripal-info-box-desc">This organism is associated with <?php print number_format($total_records) ?> stock(s):</div> <?php 
     
-    <table id="tripal_organism-table-stocks" class="tripal_organism-table tripal-table tripal-table-horz">     
-      <tr class="tripal_organism-table-odd-row tripal-table-even-row">
-        <th>Name</th>
-        <th>Type</th>
-      </tr> <?php
-      foreach ($stocks as $stock){ 
-        $class = 'tripal_organism-table-odd-row tripal-table-odd-row';
-        if ($i % 2 == 0 ) {
-          $class = 'tripal_organism-table-odd-row tripal-table-even-row';
-        } ?>
-        <tr class="<?php print $class ?>">
-          <td><?php
-            $name = $stock->name;
-            if (!$stock->name) {
-              $name = $stock->uniquename;
-            }
-            if ($stock->nid) {    
-              print l($name, "node/$stock->nid", array('attributes' => array('target' => '_blank')));        
-            } else {
-              print $name;
-            }?>
-          </td>
-          <td><?php print $stock->type_id->name?></td>
-        </tr><?php
-        $i++;  
-      } ?>
-    </table>
-    <?php print $pager ?>
+    // the $headers array is an array of fields to use as the colum headers. 
+    // additional documentation can be found here 
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    // This table for the analysis has a vertical header (down the first column)
+    // so we do not provide headers here, but specify them in the $rows array below.
+    $headers = array('Name', 'Type');
+    
+    // the $rows array contains an array of rows where each row is an array
+    // of values for each column of the table in that row.  Additional documentation
+    // can be found here:
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7 
+    $rows = array();
+    
+    foreach ($stocks as $stock){
+      $name = $stock->name;
+      if (!$name) {
+        $name = $stock->uniquename;
+      }
+      if ($stock->nid) {    
+        $name = l($name, "node/$stock->nid", array('attributes' => array('target' => '_blank')));
+      }
+
+      $rows[] = array(
+        $name,
+        $stock->type_id->name
+      );
+    }
+    // the $table array contains the headers and rows array as well as other
+    // options for controlling the display of the table.  Additional
+    // documentation can be found here:
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $table = array(
+      'header' => $headers,
+      'rows' => $rows,
+      'attributes' => array(
+        'id' => 'tripal_organism-table-stocks',
+      ),
+      'sticky' => FALSE,
+      'caption' => '',
+      'colgroups' => array(),
+      'empty' => '',
+    );
+    // once we have our table array structure defined, we call Drupal's theme_table()
+    // function to generate the table.
+    print theme_table($table);
+    
+    // the $pager array values that control the behavior of the pager.  For
+    // documentation on the values allows in this array see:
+    // https://api.drupal.org/api/drupal/includes!pager.inc/function/theme_pager/7
+    // here we add the paramter 'block' => 'features'. This is because
+    // the pager is not on the default block that appears. When the user clicks a
+    // page number we want the browser to re-appear with the page is loaded.
+    $pager = array(
+      'tags' => array(),
+      'element' => $pager_id,
+      'parameters' => array(
+        'block' => 'stocks'
+      ),
+      'quantity' => $num_results_per_page,
+    );
+    print theme_pager($pager);  ?>
   </div> <?php
 } 
 

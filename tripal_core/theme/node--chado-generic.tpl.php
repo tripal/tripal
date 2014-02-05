@@ -63,14 +63,7 @@ else { ?>
 })(jQuery);
 </script>
 
-<div id="tripal_<?php print $ttype?>_content" class="tripal-contents"> <?php 
-  if ($page['tripal_sidebar']) { ?>
-    <div id="tripal-sidebar" class="column sidebar">
-      <div class="section">
-        <?php print render($page["chado_" . $ttype . " _toc"]); ?>
-      </div>
-    </div><?php 
-  } ?>
+<div id="tripal_<?php print $ttype?>_content" class="tripal-contents"> 
   <table id="tripal-contents-table">
     <tr class="tripal-contents-table-tr">
       <td nowrap class="tripal-contents-table-td tripal-contents-table-td-toc"  align="left">
