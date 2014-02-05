@@ -70,12 +70,10 @@ if (user_access('access administration pages')) {
       'header' => TRUE,
       'class'  => 'tripal-site-admin-only-table-row',
     ),
-    array(
-      'data'  => $library->library_id,
-      'class' => 'tripal-site-admin-only-table-row',
-    ),
+    $library->uniquename,
   );
 }
+
 
 // the $table array contains the headers and rows array as well as other
 // options for controlling the display of the table.  Additional

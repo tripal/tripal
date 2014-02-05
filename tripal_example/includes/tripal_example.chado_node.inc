@@ -583,7 +583,6 @@ function tripal_example_node_view($node, $view_mode, $langcode) {
         //  '#tripal_toc_id'    => 'base',
         //  '#tripal_toc_title' => 'Details',
         //);
-
         // we can add other templates as well.
         //$node->content['tripal_example_properties'] = array(
         //  '#markup' => theme('tripal_example_properties', array('node' => $node)),

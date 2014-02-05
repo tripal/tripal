@@ -510,7 +510,8 @@ function chado_node_properties_form(&$form, &$form_state, $details) {
       clicking the add button on the right. To remove a property, click the remove button.
       To add additional properties to the drop down. ' . $details['additional_instructions']),
     '#prefix' => "<div id='properties-fieldset'>",
-    '#suffix' => '</div>'
+    '#suffix' => '</div>',
+    '#weight'      => 10
   );
 
   // this form element is a tree, so that we don't puke all of the values into then node variable

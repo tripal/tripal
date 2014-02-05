@@ -31,6 +31,10 @@ function tripal_organism_install() {
 
   // create the directory where image files will be stored.  We create this
   tripal_create_mod_subdir('tripal_organism', '/images');
+
+  // cvs & cvterms
+  tripal_organism_add_cvs();
+  tripal_organism_add_cvterms();
 }
 
 /**
@@ -97,4 +101,28 @@ function tripal_organism_requirements($phase) {
     }
   }
   return $requirements;
+}
+
+/**
+ *
+ */
+function tripal_organism_add_cvs() {
+
+  tripal_cv_add_cv('organism_property', 'Contains properties for organisms');
+
+}
+/**
+ *
+ */
+function tripal_organism_add_cvterms() {
+
+}
+
+/**
+ * This is the required update for tripal_organism when upgrading from Drupal core API 6.x.
+ */
+function tripal_organism_update_7000() {
+
+  tripal_organism_add_cvs();
+  tripal_organism_add_cvterms();
 }
