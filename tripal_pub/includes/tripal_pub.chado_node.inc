@@ -986,7 +986,7 @@ function tripal_pub_node_view($node, $view_mode, $langcode) {
           '#markup' => theme('tripal_pub_base', array('node' => $node)),
           '#tripal_toc_id'    => 'base',
           '#tripal_toc_title' => 'Details',
-          '#weight' => 0
+          '#weight' => -100,
         );
         $node->content['tripal_pub_featuremaps'] = array(
           '#markup' => theme('tripal_pub_featuremaps', array('node' => $node)),

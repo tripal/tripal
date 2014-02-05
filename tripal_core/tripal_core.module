@@ -658,11 +658,11 @@ function tripal_core_node_view_alter(&$build) {
         //-----------------------
         // set the weight of the TOC item and add it to our $toc array
         // for building of the TOC below
-        $weight = 10;
+        $weight = 0;
         if (array_key_exists('#weight', $build[$key])) {
           $weight = $build[$key]['#weight'];
         }
-        $toc[$weight][] = $toc_item_link;
+        $toc[$weight][$toc_item_title] = $toc_item_link;
     
         //-----------------------
         // CREATE THE DATA BLOCK
@@ -678,6 +678,7 @@ function tripal_core_node_view_alter(&$build) {
         ";
         
         $build[$key]['#markup'] = $updated_markup;
+        $build[$key]['#weight'] = $weight;
       }
     }
   }
@@ -685,15 +686,17 @@ function tripal_core_node_view_alter(&$build) {
   //-----------------------
   // BUILD THE TABLE OF CONTENTS LINKS
   //-----------------------
-  $toc_html = '';
+  // first sort the links numerically by their weight
   ksort($toc, SORT_NUMERIC);
+  $toc_html = '';
   foreach ($toc as $weight => $links) {
-    foreach ($links as $index => $toc_item_link) {
+    // for links in the same weight, sort them alphabetically
+    ksort($links);
+    foreach ($links as $toc_item_title => $toc_item_link) {
       $toc_html .= $toc_item_link;
     }
   }
   $build['tripal_toc']['#markup'] = "<div id=\"$node->type-tripal-toc-block\" class=\"tripal-toc-block\">$toc_html</div>";
-  
   //dpm($cache);
   //dpm($build);
 }

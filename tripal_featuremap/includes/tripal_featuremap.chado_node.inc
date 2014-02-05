@@ -50,7 +50,7 @@ function chado_featuremap_form($node, &$form_state) {
   //
   // set form field defaults
   $featuremap_id = NULL;
-  $title = '';
+  $fmapname = '';
   $description = '';
   $unittype_id = '';
 
@@ -61,7 +61,7 @@ function chado_featuremap_form($node, &$form_state) {
     $featuremap_id = $featuremap->featuremap_id;
 
     // get form defaults
-    $title       = $featuremap->name;
+    $fmapname    = $featuremap->name;
     $description = $featuremap->description;
     $unittype_id = $featuremap->unittype_id->cvterm_id;
 
@@ -74,24 +74,24 @@ function chado_featuremap_form($node, &$form_state) {
   // if we are re constructing the form from a failed validation or ajax callback
   // then use the $form_state['values'] values
   if (array_key_exists('values', $form_state)) {
-    $title       = $form_state['values']['title'];
+    $fmapname       = $form_state['values']['fmapname'];
     $description = $form_state['values']['description'];
     $unittype_id = $form_state['values']['unittype_id'];
   }
   // if we are re building the form from after submission (from ajax call) then
   // the values are in the $form_state['input'] array
   if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
-    $title       = $form_state['input']['title'];
+    $fmapname       = $form_state['input']['fmapname'];
     $description = $form_state['input']['description'];
     $unittype_id = $form_state['input']['unittype_id'];
   }
 
-  $form['title']= array(
+  $form['fmapname']= array(
     '#type'          => 'textfield',
     '#title'         => t('Map Name'),
     '#description'   => t('Please enter a name for this map'),
     '#required'      => TRUE,
-    '#default_value' => $title,
+    '#default_value' => $fmapname,
     '#maxlength'     => 255
   );
   $form['description']= array(
@@ -146,7 +146,7 @@ function chado_featuremap_form($node, &$form_state) {
  * @ingroup tripal_featuremap
  */
 function chado_featuremap_validate($node, $form, &$form_state) {
-  $node->title          = trim($node->title);
+  $node->fmapname          = trim($node->fmapname);
   $node->description    = trim($node->description);
 
   // if this is a delete then don't validate
@@ -171,14 +171,14 @@ function chado_featuremap_validate($node, $form, &$form_state) {
       SELECT * FROM {featuremap}
       WHERE name = :name AND NOT featuremap_id = :featuremap_id
     ";
-    $featuremap = chado_query($sql, array(':name' => $node->title, ':featuremap_id' => $node->featuremap_id))->fetchObject();
+    $featuremap = chado_query($sql, array(':name' => $node->fmapname, ':featuremap_id' => $node->featuremap_id))->fetchObject();
   }
   else {
     $sql = "SELECT * FROM {featuremap} WHERE name = :name";
-    $featuremap = chado_query($sql, array(':name' => $node->title))->fetchObject();
+    $featuremap = chado_query($sql, array(':name' => $node->fmapname))->fetchObject();
   }
   if ($featuremap) {
-    form_set_error('title', t('The unique map name already exists. Please choose another'));
+    form_set_error('fmapname', t('The unique map name already exists. Please choose another'));
   }
 }
 
@@ -247,7 +247,7 @@ function chado_featuremap_node_access($node, $op, $account) {
  */
 function chado_featuremap_insert($node) {
 
-  $node->title          = trim($node->title);
+  $node->fmapname          = trim($node->fmapname);
   $node->description    = trim($node->description);
 
   // if there is an featuremap_id in the $node object then this must be a sync so
@@ -256,7 +256,7 @@ function chado_featuremap_insert($node) {
   if (!property_exists($node, 'featuremap_id')) {
 
     $values = array(
-      'name'        => $node->title,
+      'name'        => $node->fmapname,
       'description' => $node->description,
       'unittype_id' => $node->unittype_id
     );
@@ -319,7 +319,7 @@ function chado_featuremap_insert($node) {
  */
 function chado_featuremap_update($node) {
 
-  $node->title          = trim($node->title);
+  $node->fmapname          = trim($node->fmapname);
   $node->description    = trim($node->description);
 
   $featuremap_id = chado_get_id_for_node('featuremap', $node->nid) ;
@@ -329,7 +329,7 @@ function chado_featuremap_update($node) {
     'featuremap_id' => $featuremap_id,
   );
   $values = array(
-    'name' => $node->title,
+    'name' => $node->fmapname,
     'description' => $node->description,
     'unittype_id' => $node->unittype_id
   );
@@ -424,15 +424,18 @@ function chado_featuremap_delete(&$node) {
  * @param $node
  */
 function tripal_featuremap_node_presave($node) {
-  if ($node->type == 'chado_featuremap') {
-    // for a form submission the fields part of the node object
-    // but for a sync the feilds are in an object of the node
-    if(property_exists($node, 'featuremap')) {
-      $node->title = $node->featuremap->name;
-    }
-    else {
-      // the title is already set in the form
-    }
+  switch ($node->type) {
+    case 'chado_featuremap':
+      // for a form submission the 'fmapname' field will be set,
+      // for a sync, we must pull from the featuremap object
+      if(property_exists($node, 'fmapname')) {
+        // set the title
+        $node->title = $node->fmapname;
+      }
+      else {
+        $node->title = $node->featuremap->name;
+      }
+      break;
   }
 }
 /**
@@ -448,7 +451,7 @@ function tripal_featuremap_node_view($node, $view_mode, $langcode) {
           '#markup' => theme('tripal_featuremap_base', array('node' => $node)),
           '#tripal_toc_id'    => 'base',
           '#tripal_toc_title' => 'Details',
-          '#weight' => 0,
+          '#weight' => -100,
         );
         $node->content['tripal_featuremap_featurepos'] = array(
           '#markup' => theme('tripal_featuremap_featurepos', array('node' => $node)),

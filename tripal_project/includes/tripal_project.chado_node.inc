@@ -467,7 +467,7 @@ function tripal_project_node_view($node, $view_mode, $langcode) {
           '#markup' => theme('tripal_project_base', array('node' => $node)),
           '#tripal_toc_id'    => 'base',
           '#tripal_toc_title' => 'Details',
-          '#weight' => 0,
+          '#weight' => -100,
         );
         $node->content['tripal_project_contact'] = array(
           '#markup' => theme('tripal_project_contact', array('node' => $node)),

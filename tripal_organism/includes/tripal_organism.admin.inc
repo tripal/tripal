@@ -45,101 +45,10 @@ function tripal_organism_admin() {
   $form['nothing'] = array(
     '#markup' => t('There are currently no settings to configure.')
   );
-  //get_tripal_organism_admin_form_reindex_set($form);
-  //get_tripal_organism_admin_form_taxonomy_set($form);
 
   return system_settings_form($form);
 }
 
-/**
- *
- *
- * @ingroup tripal_organism
- */
-function get_tripal_organism_admin_form_taxonomy_set(&$form) {
-  $form['taxonify'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Assign Drupal Taxonomy to Organism Features')
-  );
-
-  // get the list of libraries
-  $sql = "SELECT * FROM {Organism} ORDER BY genus,species";
-  $org_rset = chado_query($sql);
-
-  // iterate through all of the libraries
-  $org_boxes = array();
-  foreach ($org_rset as $organism) {
-    $org_boxes[$organism->organism_id] = "$organism->genus $organism->species";
-  }
-
-  $form['taxonify']['description'] = array(
-    '#type' => 'item',
-    '#value' => t(
-      "Drupal allows for assignment of \"taxonomy\" or catagorical terms to " .
-      "nodes. These terms allow for advanced filtering during searching. This option allows " .
-      "for setting taxonomy only for features that belong to the selected organisms below.  All " .
-      "other features will be unaffected.  To set taxonomy for all features in the site see the Feature Administration page."),
-    '#weight' => 1,
-  );
-
-  $form['taxonify']['tx-organisms'] = array(
-    '#title'       => t('Organisms'),
-    '#type'        => t('checkboxes'),
-    '#description' => t("Check the organisms whose features you want to reset taxonomy.  Note: this list contains all organisms, even those that may not be synced."),
-    '#required'    => FALSE,
-    '#prefix'      => '<div id="lib_boxes">',
-    '#suffix'      => '</div>',
-    '#options'     => $org_boxes,
-    '#weight'      => 2
-  );
-  $form['taxonify']['tx-button'] = array(
-    '#type' => 'submit',
-    '#value' => t('Set Feature Taxonomy'),
-    '#weight'      => 3
-  );
-}
-/**
- *
- * @ingroup tripal_organism
- */
-function get_tripal_organism_admin_form_reindex_set(&$form) {
-  // define the fieldsets
-  $form['reindex'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Reindex Organism Features')
-  );
-
-  // get the list of libraries
-  $sql = "SELECT * FROM {Organism} ORDER BY genus,species";
-  $org_rset = chado_query($sql);
-
-  // iterate through all of the libraries
-  $org_boxes = array();
-  foreach ($org_rset as $organism) {
-    $org_boxes[$organism->organism_id] = "$organism->genus $organism->species";
-  }
-  $form['reindex']['description'] = array(
-    '#type' => 'item',
-    '#value' => t("This option allows for reindexing of only those features that belong to the selected organisms below. All other features will be unaffected.  To reindex all features in the site see the Feature Administration page."),
-    '#weight' => 1,
-  );
-
-  $form['reindex']['re-organisms'] = array(
-    '#title'       => t('Organisms'),
-    '#type'        => t('checkboxes'),
-    '#description' => t("Check the organisms whose features you want to reindex. Note: this list contains all organisms, even those that may not be synced."),
-    '#required'    => FALSE,
-    '#prefix'      => '<div id="lib_boxes">',
-    '#suffix'      => '</div>',
-    '#options'     => $org_boxes,
-    '#weight' => 2,
-  );
-  $form['reindex']['re-button'] = array(
-    '#type' => 'submit',
-    '#value' => t('Reindex Features'),
-    '#weight' => 3,
-  );
-}
 
 /**
  *

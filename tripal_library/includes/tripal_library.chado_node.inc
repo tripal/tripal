@@ -51,7 +51,7 @@ function chado_library_form($node, &$form_state) {
   //
   // set form field defaults
   $library_id = NULL;
-  $title = '';
+  $libraryname = '';
   $uniquename = '';
   $library_type = '';
   $organism_id = '';
@@ -62,7 +62,7 @@ function chado_library_form($node, &$form_state) {
     $library = $node->library;
     $library_id = $library->library_id;
 
-    $title        = $library->name;
+    $libraryname  = $library->name;
     $uniquename   = $library->uniquename;
     $library_type = $library->type_id->cvterm_id;
     $organism_id  = $library->organism_id->organism_id;
@@ -80,7 +80,7 @@ function chado_library_form($node, &$form_state) {
   // if we are re constructing the form from a failed validation or ajax callback
   // then use the $form_state['values'] values
   if (array_key_exists('values', $form_state)) {
-    $title        = $form_state['values']['title'];
+    $libraryname  = $form_state['values']['libraryname'];
     $uniquename   = $form_state['values']['uniquename'];
     $library_type = $form_state['values']['library_type'];
     $organism_id  = $form_state['values']['organism_id'];
@@ -89,20 +89,19 @@ function chado_library_form($node, &$form_state) {
   // if we are re building the form from after submission (from ajax call) then
   // the values are in the $form_state['input'] array
   if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
-    $title        = $form_state['input']['title'];
+    $libraryname  = $form_state['input']['libraryname'];
     $uniquename   = $form_state['input']['uniquename'];
     $library_type = $form_state['input']['library_type'];
     $organism_id  = $form_state['input']['organism_id'];
     $description  = $form_state['input']['description'];
   }
 
-  $form['title']= array(
+  $form['libraryname']= array(
     '#type'          => 'textfield',
     '#title'         => t('Library Name'),
     '#description'   => t('Please enter the name for this library. Library names should be recognizable but do not need to be unique.'),
     '#required'      => TRUE,
-    '#default_value' => $title,
-    '#weight'        => 1
+    '#default_value' => $libraryname,
   );
 
   $form['uniquename']= array(
@@ -111,7 +110,6 @@ function chado_library_form($node, &$form_state) {
     '#description'   => t('Please enter a unique name for this library. This can be any value used to uniquely identify a library.'),
     '#required'      => TRUE,
     '#default_value' => $uniquename,
-    '#weight'        => 2
   );
 
   // get the list of library types
@@ -136,7 +134,6 @@ function chado_library_form($node, &$form_state) {
     '#required'    => TRUE,
     '#default_value' => $library_type,
     '#options'     => $types,
-    '#weight'      => 3
   );
 
   // get the list of organisms
@@ -157,7 +154,6 @@ function chado_library_form($node, &$form_state) {
     '#required'    => TRUE,
     '#default_value' => $organism_id,
     '#options'     => $organisms,
-    '#weight'      => 4,
   );
 
   $form['description']= array(
@@ -166,7 +162,6 @@ function chado_library_form($node, &$form_state) {
     '#description'   => t('A brief description of the library'),
     '#required'      => TRUE,
     '#default_value' => $description,
-    '#weight'        => 5
   );
 
   // PROPERTIES FORM
@@ -198,7 +193,7 @@ function chado_library_form($node, &$form_state) {
  */
 function chado_library_validate($node, $form, &$form_state) {
 
-  $node->title       = trim($node->title);
+  $node->libraryname = trim($node->libraryname);
   $node->uniquename  = trim($node->uniquename);
   $node->description = trim($node->description);
 
@@ -230,7 +225,7 @@ function chado_library_validate($node, $form, &$form_state) {
  */
 function chado_library_insert($node) {
 
-  $node->title       = trim($node->title);
+  $node->libraryname = trim($node->libraryname);
   $node->uniquename  = trim($node->uniquename);
   $node->description = trim($node->description);
 
@@ -239,7 +234,7 @@ function chado_library_insert($node) {
   // we do need to proceed with the rest of the insert
   if (!property_exists($node, 'library_id')) {
     $values = array(
-      'name' => $node->title,
+      'name' => $node->libraryname,
       'uniquename' => $node->uniquename,
       'organism_id' => $node->organism_id,
       'type_id' => $node->library_type,
@@ -290,7 +285,7 @@ function chado_library_insert($node) {
  */
 function chado_library_update($node) {
 
-  $node->title       = trim($node->title);
+  $node->libraryname = trim($node->libraryname);
   $node->uniquename  = trim($node->uniquename);
   $node->description = trim($node->description);
 
@@ -299,8 +294,9 @@ function chado_library_update($node) {
   $match = array(
     'library_id' => $library_id,
   );
+  
   $values = array(
-    'name'        => $node->title,
+    'name'        => $node->libraryname,
     'uniquename'  => $node->uniquename,
     'organism_id' => $node->organism_id,
     'type_id'     => $node->library_type,
@@ -435,7 +431,7 @@ function tripal_library_node_view($node, $view_mode, $langcode) {
           '#markup' => theme('tripal_library_base', array('node' => $node)),
           '#tripal_toc_id'    => 'base',
           '#tripal_toc_title' => 'Details',
-          '#weight' => 0,
+          '#weight' => -100,
         );
         $node->content['tripal_library_properties'] = array(
           '#markup' => theme('tripal_library_properties', array('node' => $node)),
@@ -495,16 +491,17 @@ function tripal_library_node_view($node, $view_mode, $langcode) {
  * @param $node
  */
 function tripal_library_node_presave($node) {
+  
   switch ($node->type) {
     case 'chado_library':
-      // for a form submission the fields part of the node object
-      // but for a sync the feilds are in an object of the node
-      if(property_exists($node, 'library')) {
+      // for a form submission the 'libraryname' field will be set,
+      // for a sync, we must pull from the library object
+      if(property_exists($node, 'libraryname')) {
         // set the title
-        $node->title = $node->name;
+        $node->title = $node->libraryname;
       }
       else {
-        // the title field is already in the form
+        $node->title = $node->library->name;
       }
       break;
   }
