@@ -179,6 +179,17 @@ function chado_organism_insert($node) {
       return;
     }
     $organism_id = $organism['organism_id'];
+
+    if ($organism_id) {
+      // * Properties Form *
+      $details = array(
+        'property_table' => 'organismprop',   // the name of the prop table
+        'base_table' => 'organism',           // the name of your chado base table
+        'foreignkey_name' => 'organism_id',   // the name of the key in your base table
+        'foreignkey_value' => $organism_id    // the value of the example_id key
+      );
+      chado_node_properties_form_update_properties($node, $details);
+    }
   }
   else {
     $organism_id = $node->organism_id;
@@ -211,12 +222,14 @@ function chado_organism_update($node) {
   $node->common_name  = trim($node->common_name);
   $node->description  = trim($node->description);
 
+  $organism_id = chado_get_id_for_node('organism', $node->nid);
+
   if ($node->revision) {
     // there is no way to handle revisions in Chado but leave
     // this here just to make not we've addressed it.
   }
   $match = array(
-    'organism_id' => chado_get_id_for_node('organism', $node->nid),
+    'organism_id' => $organism_id,
   );
   $values = array(
     'genus' => $node->genus,
@@ -229,6 +242,15 @@ function chado_organism_update($node) {
 
   // add the image
   chado_organism_add_image($node);
+
+  // * Properties Form *
+  $details = array(
+    'property_table' => 'organismprop',   // the name of the prop table
+    'base_table' => 'organism',           // the name of your chado base table
+    'foreignkey_name' => 'organism_id',   // the name of the key in your base table
+    'foreignkey_value' => $organism_id    // the value of the example_id key
+  );
+  chado_node_properties_form_update_properties($node, $details);
 }
 /**
  * Delete organism from both drupal and chado databases. Check dependency before
@@ -262,7 +284,7 @@ function chado_organism_delete($node) {
   $check_lib = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
   $sql = "SELECT stock_id FROM {stock} WHERE organism_id = :organism_id";
   $check_stock = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
-  
+
   if (!$check_lib && !$check_feature && !$check_stock) {
     tripal_core_chado_delete('organism', array('organism_id' => $organism_id));
   }
@@ -333,6 +355,7 @@ function chado_organism_form($node, $form_state) {
       '#type' => 'value',
       '#value' => $organism->organism_id,
     );
+    $organism_id = $organism->organism_id;
   }
   else {
     // get form defaults
@@ -342,6 +365,8 @@ function chado_organism_form($node, $form_state) {
     $common_name    = property_exists($node, 'common_name')    ? property_exists($node, 'common_name')    : '';
     $description    = property_exists($node, 'description')    ? property_exists($node, 'description')    : '';
     $organism_image = property_exists($node, 'organism_image') ? property_exists($node, 'organism_image') : '';
+
+    $organism_id = NULL;
   }
 
   $form['genus']= array(
@@ -380,6 +405,18 @@ function chado_organism_form($node, $form_state) {
     '#description' => 'Add an image for this organism',
     '#progress_indicator' => 'bar',
   );
+
+  // PROPERTIES FORM
+  //---------------------------------------------
+  $details = array(
+    'property_table' => 'organismprop',      // the name of the prop table
+    'base_foreign_key' => 'organism_id',     // the name of the key in your base chado table
+    'base_key_value' => $organism_id,        // the value of organism_id for this record
+    'cv_name' => 'organism_property'         // the cv.name of the cv governing organismprop.type_id
+  );
+  // Adds the form elements to your current form
+  chado_node_properties_form($form, $form_state, $details);
+
   return $form;
 }
 
@@ -418,7 +455,7 @@ function tripal_organism_node_presave($node) {
       if(property_exists($node, 'organism')) {
         // set the title
         $node->title = $node->organism->genus . " " . $node->organism->species;
-      } 
+      }
       else {
         // set the title
         $node->title = $node->genus  . " " . $node->species;
