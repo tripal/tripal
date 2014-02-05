@@ -581,28 +581,13 @@ function tripal_core_node_view_alter(&$build) {
       // will be placed elsewhere
       if (!preg_match('/^#/', $key) and $key != 'tripal_toc' and $key != 'links') {
         
-        // intialize the item title, key and id
+        //-----------------------
+        // INITIALIZE THE CONTENT VARIABLES
+        //-----------------------
         $toc_item_title = $key;
         $toc_item_id    = $key;
         $toc_item_link  = '';
         
-        // FIND THE TEMPLATE PATH
-        // get the template path so we can put it in an admin message box
-        $path = '';
-        if (array_key_exists($key, $cache->data) and array_key_exists('path', $cache->data[$key])) {
-        
-          $path = $cache->data[$key]['path'] . '/' . $key . '.tpl.php';
-        
-          $path = theme('tripal_admin_message', array('message' => "Administrators, you can
-            customize the way the content above is presented.  Tripal provides a template
-            file for each block of content.  To customize, copy the template file to your
-            site's default theme, edit then " .
-            l('clear the Drupal cache', 'admin/config/development/performance', array('attributes' => array('target' => '_blank'))) . ".
-            Currently, the content above is provided by this template: <br><br>$path")
-          );
-        }
-        
-        // BUILD THE TOC LINKS
         // get the title for the table of contents.  Tripal templates should
         // have a '#tripal_toc_title' element in the build array
         if (array_key_exists('#tripal_toc_title', $build[$key])) {
@@ -618,15 +603,11 @@ function tripal_core_node_view_alter(&$build) {
           $toc_item_id = $build[$key]['#tripal_toc_id'];
         }
         $toc_item_link = "<div class=\"tripal_toc_list_item\"><a id=\"$toc_item_id\" class=\"tripal_toc_list_item_link\" href=\"?block=$toc_item_id\">$toc_item_title</a></div>";
+
         
-        // next check the database. If the title has been overridden then
-        // we want to use that value
-        $weight = 10;
-        if (array_key_exists('#weight', $build[$key])) {
-          $weight = $build[$key]['#weight'];
-        }
-        $toc[$weight][] = $toc_item_link;
-        
+        //-----------------------
+        // GET THE MARKUP FOR EACH ELEMENT
+        //-----------------------
         $markup = '';
         
         // find the markup. Some fields will have a '#markup' and others, such
@@ -653,9 +634,39 @@ function tripal_core_node_view_alter(&$build) {
         if (!$markup) {
           continue;
         }
-
+        
+        //-----------------------
+        // FIND THE TEMPLATE PATH
+        //-----------------------
+        // get the template path so we can put it in an admin message box
+        $path = '';
+        if (array_key_exists($key, $cache->data) and array_key_exists('path', $cache->data[$key])) {
+        
+          $path = $cache->data[$key]['path'] . '/' . $key . '.tpl.php';
+        
+          $path = theme('tripal_admin_message', array('message' => "Administrators, you can
+            customize the way the content above is presented.  Tripal provides a template
+            file for each block of content.  To customize, copy the template file to your
+            site's default theme, edit then " .
+            l('clear the Drupal cache', 'admin/config/development/performance', array('attributes' => array('target' => '_blank'))) . ".
+            Currently, the content above is provided by this template: <br><br>$path")
+          );
+        }
+        
+        //-----------------------
+        // SET THE WEIGHTS FOR THE TOC ELEMENTS
+        //-----------------------
+        // set the weight of the TOC item and add it to our $toc array
+        // for building of the TOC below
+        $weight = 10;
+        if (array_key_exists('#weight', $build[$key])) {
+          $weight = $build[$key]['#weight'];
+        }
+        $toc[$weight][] = $toc_item_link;
     
+        //-----------------------
         // CREATE THE DATA BLOCK
+        //-----------------------
         // add a surrounding <div> box around the content
         $updated_markup = "
           <div id=\"$toc_item_id-tripal-data-block\" class=\"tripal-data-block\">
@@ -671,7 +682,9 @@ function tripal_core_node_view_alter(&$build) {
     }
   }
   
+  //-----------------------
   // BUILD THE TABLE OF CONTENTS LINKS
+  //-----------------------
   $toc_html = '';
   ksort($toc, SORT_NUMERIC);
   foreach ($toc as $weight => $links) {
