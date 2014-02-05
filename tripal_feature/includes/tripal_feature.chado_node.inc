@@ -90,7 +90,7 @@ function chado_feature_form($node, &$form_state) {
     if (!$synonyms) {
       $options = array('return_array' => 1);
       $feature = tripal_core_expand_chado_vars($feature, 'table', 'feature_synonym', $options);
-      $feature_synonyms = $feature->feature_synonym;
+      $feature_synonyms = (isset($feature->feature_synonym)) ? $feature->feature_synonym : array();
       foreach ($feature_synonyms as $index => $synonym) {
         $synonyms .= $synonym->synonym_id->name . "\n";
       }
@@ -103,7 +103,7 @@ function chado_feature_form($node, &$form_state) {
   }
   // if we are re constructing the form from a failed validation or ajax callback
   // then use the $form_state['values'] values
-  if (array_key_exists('values', $form_state)) {
+  if (array_key_exists('values', $form_state) and isset($form_state['values']['uniquename'])) {
     $uniquename   = $form_state['values']['uniquename'];
     $fname        = $form_state['values']['fname'];
     $feature_type = $form_state['values']['feature_type'];
@@ -210,6 +210,28 @@ function chado_feature_form($node, &$form_state) {
     '#default_value' => $checked,
     '#description' => t('Check this box if this sequence should be retired'),
   );
+
+  // PROPERTIES FORM
+  //---------------------------------------------
+  $details = array(
+    'property_table' => 'featureprop',      // the name of the prop table
+    'base_foreign_key' => 'feature_id',     // the name of the key in your base chado table
+    'base_key_value' => $feature_id,        // the value of feature_id for this record
+    'cv_name' => 'feature_property'         // the cv.name of the cv governing featureprop.type_id
+  );
+  // Adds the form elements to your current form
+  chado_node_properties_form($form, $form_state, $details);
+
+  // ADDITIONAL DBXREFS FORM
+  //---------------------------------------------
+  $details = array(
+    'linking_table' => 'feature_dbxref',  // the name of the _dbxref table
+    'base_foreign_key' => 'feature_id',   // the name of the key in your base chado table
+    'base_key_value' => $feature_id       // the value of feature_id for this record
+  );
+  // Adds the form elements to your current form
+  chado_node_additional_dbxrefs_form($form, $form_state, $details);
+
   return $form;
 }
 
@@ -409,6 +431,24 @@ function chado_feature_insert($node) {
 
     // add the genbank accession and synonyms
     chado_feature_add_synonyms($node->synonyms, $feature_id);
+
+    // * Properties Form *
+    $details = array(
+      'property_table' => 'featureprop',   // the name of the prop table
+      'base_table' => 'feature',           // the name of your chado base table
+      'foreignkey_name' => 'feature_id',   // the name of the key in your base table
+      'foreignkey_value' => $feature_id    // the value of the feature_id key
+    );
+    chado_node_properties_form_update_properties($node, $details);
+
+    // * Additional DBxrefs Form *
+    $details = array(
+      'linking_table' => 'feature_dbxref',   // the name of your _dbxref table
+      'foreignkey_name' => 'feature_id',     // the name of the key in your base table
+      'foreignkey_value' => $feature_id      // the value of the feature_id key
+    );
+    chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
+
   }
   else {
     $feature_id = $node->feature_id;
@@ -475,6 +515,24 @@ function chado_feature_update($node) {
 
     // add the genbank synonyms
     chado_feature_add_synonyms($node->synonyms, $feature_id);
+
+    // * Properties Form *
+    $details = array(
+      'property_table' => 'featureprop',   // the name of the prop table
+      'base_table' => 'feature',           // the name of your chado base table
+      'foreignkey_name' => 'feature_id',   // the name of the key in your base table
+      'foreignkey_value' => $feature_id    // the value of the feature_id key
+    );
+    chado_node_properties_form_update_properties($node, $details);
+
+    // * Additional DBxrefs Form *
+    $details = array(
+      'linking_table' => 'feature_dbxref',   // the name of your _dbxref table
+      'foreignkey_name' => 'feature_id',     // the name of the key in your base table
+      'foreignkey_value' => $feature_id      // the value of the feature_id key
+    );
+    chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
+
   }
   else {
     drupal_set_message(t('Unable to update feature.'), 'warning');
@@ -660,6 +718,7 @@ function tripal_feature_node_presave($node) {
         $ftype = tripal_core_chado_select('cv', array('name'), $values);
         $type = $ftype[0]->name;
       }
+     
       $values = array('organism_id' => $organism_id);
       $organism = tripal_core_chado_select('organism', array('genus', 'species'), $values);
       $node->title = "$name, $uname ($type) " . $organism[0]->genus . ' ' . $organism[0]->species;
@@ -786,7 +845,7 @@ function tripal_feature_node_view($node, $view_mode, $langcode) {
         $node->content['tripal_feature_base'] = array(
           '#markup' => theme('tripal_feature_base', array('node' => $node)),
           '#tripal_toc_id'    => 'base',
-          '#tripal_toc_title' => 'Details',
+          '#tripal_toc_title' => 'Overview',
           '#weight' => -100,
         );
         $node->content['tripal_feature_featurepos'] = array(

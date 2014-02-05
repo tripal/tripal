@@ -475,7 +475,7 @@ function tripal_organism_node_view($node, $view_mode, $langcode) {
         $node->content['tripal_organism_base'] = array(
           '#markup'  => theme('tripal_organism_base', array('node' => $node)),
           '#tripal_toc_id'    => 'base',
-          '#tripal_toc_title' => 'Details',
+          '#tripal_toc_title' => 'Overview',
           '#weight' => -100,
         );
       }

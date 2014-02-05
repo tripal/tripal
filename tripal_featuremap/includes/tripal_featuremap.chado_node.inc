@@ -450,7 +450,7 @@ function tripal_featuremap_node_view($node, $view_mode, $langcode) {
         $node->content['tripal_featuremap_base'] = array(
           '#markup' => theme('tripal_featuremap_base', array('node' => $node)),
           '#tripal_toc_id'    => 'base',
-          '#tripal_toc_title' => 'Details',
+          '#tripal_toc_title' => 'Overview',
           '#weight' => -100,
         );
         $node->content['tripal_featuremap_featurepos'] = array(

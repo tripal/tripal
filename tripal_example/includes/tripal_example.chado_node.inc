@@ -581,7 +581,7 @@ function tripal_example_node_view($node, $view_mode, $langcode) {
         //$node->content['tripal_example_base'] = array(
         //  '#markup' => theme('tripal_example_base', array('node' => $node)),
         //  '#tripal_toc_id'    => 'base',
-        //  '#tripal_toc_title' => 'Details',
+        //  '#tripal_toc_title' => 'Overview',
         //  '#weight' => -100,
         //);
         // we can add other templates as well.

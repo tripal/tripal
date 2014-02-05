@@ -150,7 +150,7 @@ function chado_node_additional_dbxrefs_form(&$form, &$form_state, $details) {
       remove a database reference, click the remove button. ' . $details['additional_instructions']),
     '#prefix' => "<div id='addtl-dbxrefs-fieldset'>",
     '#suffix' => '</div>',
-    '#weight'      => 10
+    '#weight'      => 9
   );
 
   // this form element is a tree, so that we don't puke all of the values into then node variable
