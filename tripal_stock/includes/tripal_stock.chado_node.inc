@@ -852,52 +852,52 @@ function tripal_stock_node_view($node, $view_mode, $langcode) {
     case 'chado_stock':
       if ($view_mode == 'full') {
         $node->content['tripal_stock_base'] = array(
-          '#value' => theme('tripal_stock_base', array('node' => $node)),
+          '#markup' => theme('tripal_stock_base', array('node' => $node)),
           '#tripal_toc_id'    => 'base',
           '#tripal_toc_title' => 'Details',
           '#weight' => 0,
         );
         $node->content['tripal_stock_collections'] = array(
-          '#value' => theme('tripal_stock_collections', array('node' => $node)),
+          '#markup' => theme('tripal_stock_collections', array('node' => $node)),
           '#tripal_toc_id'    => 'collections',
           '#tripal_toc_title' => 'Stock Collections',
         );
         $node->content['tripal_stock_properties'] = array(
-          '#value' => theme('tripal_stock_properties', array('node' => $node)),
+          '#markup' => theme('tripal_stock_properties', array('node' => $node)),
           '#tripal_toc_id'    => 'properties',
           '#tripal_toc_title' => 'Properties',
         );
         $node->content['tripal_stock_references'] = array(
-          '#value' => theme('tripal_stock_references', array('node' => $node)),
+          '#markup' => theme('tripal_stock_references', array('node' => $node)),
           '#tripal_toc_id'    => 'references',
           '#tripal_toc_title' => 'References',
         );
         $node->content['tripal_stock_relationships'] = array(
-          '#value' => theme('tripal_stock_relationships', array('node' => $node)),
+          '#markup' => theme('tripal_stock_relationships', array('node' => $node)),
           '#tripal_toc_id'    => 'relationships',
           '#tripal_toc_title' => 'Relationships',
         );
         $node->content['tripal_stock_synonyms'] = array(
-          '#value' => theme('tripal_stock_synonyms', array('node' => $node)),
+          '#markup' => theme('tripal_stock_synonyms', array('node' => $node)),
           '#tripal_toc_id'    => 'synonyms',
           '#tripal_toc_title' => 'Synonyms',
         );
         $node->content['tripal_stock_publications'] = array(
-          '#value' => theme('tripal_stock_publications', array('node' => $node)),
+          '#markup' => theme('tripal_stock_publications', array('node' => $node)),
           '#tripal_toc_id'    => 'publications',
           '#tripal_toc_title' => 'Publications',
         );
       }
       if ($view_mode == 'teaser') {
         $node->content['tripal_stock_teaser'] = array(
-          '#value' => theme('tripal_stock_teaser', array('node' => $node)),
+          '#markup' => theme('tripal_stock_teaser', array('node' => $node)),
         );
       }
       break;
     case 'chado_organism':
       if ($view_mode == 'full') {
         $node->content['tripal_organism_stocks'] = array(
-          '#value' => theme('tripal_organism_stocks', array('node' => $node)),
+          '#markup' => theme('tripal_organism_stocks', array('node' => $node)),
           '#tripal_toc_id'    => 'stocks',
           '#tripal_toc_title' => 'Stocks',
         );

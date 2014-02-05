@@ -445,35 +445,35 @@ function tripal_featuremap_node_view($node, $view_mode, $langcode) {
       // Show feature browser and counts
       if ($view_mode == 'full') {
         $node->content['tripal_featuremap_base'] = array(
-          '#value' => theme('tripal_featuremap_base', array('node' => $node)),
+          '#markup' => theme('tripal_featuremap_base', array('node' => $node)),
           '#tripal_toc_id'    => 'base',
           '#tripal_toc_title' => 'Details',
           '#weight' => 0,
         );
         $node->content['tripal_featuremap_featurepos'] = array(
-          '#value' => theme('tripal_featuremap_featurepos', array('node' => $node)),
+          '#markup' => theme('tripal_featuremap_featurepos', array('node' => $node)),
           '#tripal_toc_id'    => 'featurepos',
           '#tripal_toc_title' => 'Map Features',
         );
         $node->content['tripal_featuremap_properties'] = array(
-          '#value' => theme('tripal_featuremap_properties', array('node' => $node)),
+          '#markup' => theme('tripal_featuremap_properties', array('node' => $node)),
           '#tripal_toc_id'    => 'properties',
           '#tripal_toc_title' => 'Properties',
         );
         $node->content['tripal_featuremap_publication'] = array(
-          '#value' => theme('tripal_featuremap_publication', array('node' => $node)),
+          '#markup' => theme('tripal_featuremap_publication', array('node' => $node)),
           '#tripal_toc_id'    => 'publications',
           '#tripal_toc_title' => 'Publications',
         );
         $node->content['tripal_featuremap_references'] = array(
-          '#value' => theme('tripal_featuremap_references', array('node' => $node)),
+          '#markup' => theme('tripal_featuremap_references', array('node' => $node)),
           '#tripal_toc_id'    => 'references',
           '#tripal_toc_title' => 'Cross References',
         );
       }
       if ($view_mode == 'teaser') {
         $node->content['tripal_featuremap_teaser'] = array(
-          '#value' => theme('tripal_featuremap_teaser', array('node' => $node)),
+          '#markup' => theme('tripal_featuremap_teaser', array('node' => $node)),
         );
       }
       break;

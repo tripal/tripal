@@ -579,24 +579,24 @@ function tripal_example_node_view($node, $view_mode, $langcode) {
         // there is always a base template.  This is the template that
         // is first shown when the example node type is first displayed
         //$node->content['tripal_example_base'] = array(
-        //  '#value' => theme('tripal_example_base', array('node' => $node)),
+        //  '#markup' => theme('tripal_example_base', array('node' => $node)),
         //  '#tripal_toc_id'    => 'base',
         //  '#tripal_toc_title' => 'Details',
         //);
 
         // we can add other templates as well.
         //$node->content['tripal_example_properties'] = array(
-        //  '#value' => theme('tripal_example_properties', array('node' => $node)),
+        //  '#markup' => theme('tripal_example_properties', array('node' => $node)),
         //  '#tripal_toc_id'    => 'properties',
         //  '#tripal_toc_title' => 'Properties',
         //);
         //$node->content['tripal_example_publications'] = array(
-        //  '#value' => theme('tripal_example_publications', array('node' => $node)),
+        //  '#markup' => theme('tripal_example_publications', array('node' => $node)),
         //  '#tripal_toc_id'    => 'publications',
         //  '#tripal_toc_title' => 'Publications',
         //);
         //$node->content['tripal_example_references'] = array(
-        //  '#value' => theme('tripal_example_references', array('node' => $node)),
+        //  '#markup' => theme('tripal_example_references', array('node' => $node)),
         //  '#tripal_toc_id'    => 'references',
         //  '#tripal_toc_title' => 'Cross References',
         //);
