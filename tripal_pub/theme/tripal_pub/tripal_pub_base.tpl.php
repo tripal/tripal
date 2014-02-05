@@ -206,9 +206,13 @@ if (count($urls) > 0) {
       $rows[] = array(
         array(
           'data' => 'Pub ID',
-          'header' => TRUE
+          'header' => TRUE,
+          'class' => 'tripal-site-admin-only-table-row',
         ),
-        $pub->pub_id
+        array(
+          'data' => $pub->pub_id,
+          'class' => 'tripal-site-admin-only-table-row',
+        ),
       );
     }
     // Is Obsolete Row

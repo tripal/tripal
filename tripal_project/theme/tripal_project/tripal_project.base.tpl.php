@@ -54,9 +54,13 @@ else {
     $rows[] = array(
       array(
         'data' => 'Project ID',
-        'header' => TRUE
+        'header' => TRUE,
+        'class' => 'tripal-site-admin-only-table-row',
       ),
-      $project->project_id
+      array(
+        'data' => $project->project_id,
+        'class' => 'tripal-site-admin-only-table-row',
+      ),
     );
   }
   // the $table array contains the headers and rows array as well as other

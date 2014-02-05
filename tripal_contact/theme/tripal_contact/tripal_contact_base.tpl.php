@@ -40,9 +40,13 @@ $contact = $variables['node']->contact; ?>
     $rows[] = array(
       array(
         'data' => 'Contact ID',
-        'header' => TRUE
+        'header' => TRUE,
+        'class' => 'tripal-site-admin-only-table-row',
       ),
-      $contact->contact_id
+      array(
+        'data' => $contact->contact_id,
+        'class' => 'tripal-site-admin-only-table-row',
+      ),
     );
   }
   

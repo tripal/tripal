@@ -78,9 +78,13 @@ $analysis = tripal_core_expand_chado_vars($analysis,'field','analysis.descriptio
     $rows[] = array(
       array(
         'data' => 'Analysis ID',
-        'header' => TRUE
+        'header' => TRUE,
+        'class' => 'tripal-site-admin-only-table-row',
       ),
-      $analysis->analysis_id
+      array(
+        'data' => $analysis->analysis_id,
+        'class' => 'tripal-site-admin-only-table-row',
+      ),
     );
   }
   // the $table array contains the headers and rows array as well as other

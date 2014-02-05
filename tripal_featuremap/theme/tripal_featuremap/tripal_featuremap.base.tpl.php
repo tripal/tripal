@@ -45,9 +45,13 @@ $featuremap = tripal_core_expand_chado_vars($featuremap, 'field', 'featuremap.de
     $rows[] = array(
       array(
         'data' => 'Feature Map ID',
-        'header' => TRUE
+        'header' => TRUE,
+        'class' => 'tripal-site-admin-only-table-row',
       ),
-      $featuremap->featuremap_id
+      array(
+        'data' => $featuremap->featuremap_id,
+        'class' => 'tripal-site-admin-only-table-row',
+      ),
     );
   }
 

@@ -67,9 +67,13 @@ $stock = tripal_core_expand_chado_vars($stock, 'field', 'stock.uniquename');
     $rows[] = array(
       array(
         'data' => 'Stock ID',
-        'header' => TRUE
+        'header' => TRUE,
+        'class' => 'tripal-site-admin-only-table-row',
       ),
-      $stock->stock_id
+      array(
+        'data' => $stock->stock_id,
+        'class' => 'tripal-site-admin-only-table-row',
+      ),
     );
   }
   // Is Obsolete Row
