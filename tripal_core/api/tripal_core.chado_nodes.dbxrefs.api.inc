@@ -149,7 +149,8 @@ function chado_node_additional_dbxrefs_form(&$form, &$form_state, $details) {
       as many database references as desired by clicking the add button on the right.  To
       remove a database reference, click the remove button. ' . $details['additional_instructions']),
     '#prefix' => "<div id='addtl-dbxrefs-fieldset'>",
-    '#suffix' => '</div>'
+    '#suffix' => '</div>',
+    '#weight'      => 10
   );
 
   // this form element is a tree, so that we don't puke all of the values into then node variable
