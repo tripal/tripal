@@ -73,7 +73,7 @@ function chado_featuremap_form($node, &$form_state) {
   }
   // if we are re constructing the form from a failed validation or ajax callback
   // then use the $form_state['values'] values
-  if (array_key_exists('values', $form_state)) {
+  if (array_key_exists('values', $form_state) and isset($form_state['values']['title'])) {
     $title       = $form_state['values']['title'];
     $description = $form_state['values']['description'];
     $unittype_id = $form_state['values']['unittype_id'];
@@ -137,6 +137,16 @@ function chado_featuremap_form($node, &$form_state) {
     'additional_instructions' => $instructions
   );
   chado_node_properties_form($form, $form_state, $details);
+
+  // ADDITIONAL DBXREFS FORM
+  //---------------------------------------------
+  $details = array(
+    'linking_table' => 'featuremap_dbxref',  // the name of the _dbxref table
+    'base_foreign_key' => 'featuremap_id',   // the name of the key in your base chado table
+    'base_key_value' => $featuremap_id       // the value of featuremap_id for this record
+  );
+  // Adds the form elements to your current form
+  chado_node_additional_dbxrefs_form($form, $form_state, $details);
 
   return $form;
 }
@@ -296,6 +306,15 @@ function chado_featuremap_insert($node) {
       'foreignkey_value' => $featuremap_id
     );
     chado_node_properties_form_update_properties($node, $details, $properties);
+
+    // * Additional DBxrefs Form *
+    $details = array(
+      'linking_table' => 'featuremap_dbxref',   // the name of your _dbxref table
+      'foreignkey_name' => 'featuremap_id',     // the name of the key in your base table
+      'foreignkey_value' => $featuremap_id      // the value of the featuremap_id key
+    );
+    chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
+
   }
   else {
     $featuremap_id = $node->featuremap_id;
@@ -367,6 +386,14 @@ function chado_featuremap_update($node) {
     'foreignkey_value' => $featuremap_id
   );
   chado_node_properties_form_update_properties($node, $details, $properties);
+
+  // * Additional DBxrefs Form *
+  $details = array(
+    'linking_table' => 'featuremap_dbxref',   // the name of your _dbxref table
+    'foreignkey_name' => 'featuremap_id',     // the name of the key in your base table
+    'foreignkey_value' => $featuremap_id      // the value of the featuremap_id key
+  );
+  chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
 
 }
 /**
