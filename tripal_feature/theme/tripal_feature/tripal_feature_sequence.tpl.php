@@ -39,8 +39,6 @@ $feature = $variables['node']->feature;
 $featureloc_sequences = $feature->featureloc_sequences;
 
 if ($residues or count($featureloc_sequences) > 0) { ?>
-  <div id="tripal_feature-sequence-box" class="tripal_feature-info-box tripal-info-box">
-  <div class="tripal_feature-info-box-title tripal-info-box-title">Sequence</div>
   <div class="tripal_feature-info-box-desc tripal-info-box-desc"></div> <?php
   
   // show the alignment sequences first as they are colored with child features
@@ -56,6 +54,5 @@ if ($residues or count($featureloc_sequences) > 0) { ?>
       // format the sequence to break every 100 residues
       print preg_replace("/(.{50})/","\\1<br>",$feature->residues); ?>  
     </pre> <?php 
-  } ?>
-  </div> <?php 
+  } 
 }

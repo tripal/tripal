@@ -114,12 +114,10 @@
 .tripal-data-block {
    padding: 0;
    margin:  0;
-}
-.tripal-info-box {
    width: 100%;
 }
 
-.tripal-info-box-title {
+.tripal-data-block-title {
   font-size: 1.5em;
   padding-bottom: 5px;
 }

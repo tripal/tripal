@@ -34,12 +34,6 @@ function tripal_organism_block_info() {
   $blocks['base']['info'] = t('Tripal Organism Details');
   $blocks['base']['cache'] = DRUPAL_NO_CACHE;
 
-  $blocks['description']['info'] = t('Tripal Organism Description');
-  $blocks['description']['cache'] = DRUPAL_NO_CACHE;
-
-  $blocks['image']['info'] = t('Tripal Organism Image');
-  $blocks['image']['cache'] = DRUPAL_NO_CACHE;
-
   return $blocks;
 
 }
@@ -58,14 +52,6 @@ function tripal_organism_block_view($delta = '') {
       case 'base':
         $block['subject'] = t('Organism Details');
         $block['content'] = theme('tripal_organism_base', $node);
-        break;
-      case 'description':
-        $block['subject'] = t('Organism Description');
-        $block['content'] = theme('tripal_organism_description', $node);
-        break;
-      case 'image':
-        $block['subject'] = t('Organism Image');
-        $block['content'] = theme('tripal_organism_image', $node);
         break;
       default:
     }
@@ -163,16 +149,6 @@ function tripal_organism_theme($existing, $type, $theme, $path) {
     'tripal_organism_base' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_organism_base',
-      'path' => "$path/theme/tripal_organism",
-    ),
-    'tripal_organism_description' => array(
-      'variables' => array('node' => NULL),
-      'template' => 'tripal_organism_description',
-      'path' => "$path/theme/tripal_organism",
-    ),
-    'tripal_organism_image' => array(
-      'variables' => array('node' => NULL),
-      'template' => 'tripal_organism_image',
       'path' => "$path/theme/tripal_organism",
     ),
     'tripal_organism_teaser' => array(

@@ -436,7 +436,10 @@ function tripal_organism_node_view($node, $view_mode, $langcode) {
       // Show feature browser and counts
       if ($view_mode == 'full') {
         $node->content['tripal_organism_base'] = array(
-          '#value' => theme('tripal_organism_base', array('node' => $node)),
+          '#value'  => theme('tripal_organism_base', array('node' => $node)),
+          '#weight' => 0,
+          '#tripal_toc_id'    => 'base',
+          '#tripal_toc_title' => 'Details',
         );
       }
       if ($view_mode == 'teaser') {

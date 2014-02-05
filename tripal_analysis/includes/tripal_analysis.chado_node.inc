@@ -595,9 +595,13 @@ function tripal_analysis_node_view($node, $view_mode, $langcode) {
       if ($view_mode == 'full') {
         $node->content['tripal_analysis_base'] = array(
           '#value' => theme('tripal_analysis_base', array('node' => $node)),
+          '#tripal_toc_id'    => 'base',
+          '#tripal_toc_title' => 'Details',
         );
         $node->content['tripal_analysis_properties'] = array(
           '#value' => theme('tripal_analysis_properties', array('node' => $node)),
+          '#tripal_toc_id'    => 'properties',
+          '#tripal_toc_title' => 'Properties',
         );
       }
       if ($view_mode == 'teaser') {

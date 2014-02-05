@@ -32,69 +32,66 @@ if (count($project_pubs) > 0 ) {
 $total_records = $_SESSION['chado_pager'][$element]['total_records'];
 
 if(count($projects) > 0){ ?>
-  <div id="tripal_pub-projects-box" class="tripal_pub-info-box tripal-info-box">
-    <div class="tripal_pub-info-box-title tripal-info-box-title">Projects</div>
-    <div class="tripal_pub-info-box-desc tripal-info-box-desc">This publication contains information about <?php print number_format($total_records) ?> projects:</div> <?php 
+  <div class="tripal_pub-info-box-desc tripal-info-box-desc">This publication contains information about <?php print number_format($total_records) ?> projects:</div> <?php 
 
-    // the $headers array is an array of fields to use as the colum headers.
-    // additional documentation can be found here
-    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-    $headers = array('Project Name', 'Description');
-    
-    // the $rows array contains an array of rows where each row is an array
-    // of values for each column of the table in that row.  Additional documentation
-    // can be found here:
-    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-    $rows = array();
-    
-    foreach ($projects as $project){
-       $project_name = $project->name;
-       if (property_exists($project, 'nid')) {
-         $project_name = l($project_name, 'node/' . $project->nid, array('attributes' => array('target' => '_blank')));
-       }
-       $description =  substr($project->description, 0, 200);
-       if (strlen($project->description) > 200) {
-         $description .= "... " . l("[more]", 'node/' . $project->nid, array('attributes' => array('target' => '_blank')));
-       } 
-       $rows[] = array(
-         $project_name,
-         $description
-       );
-    }
-    // the $table array contains the headers and rows array as well as other
-    // options for controlling the display of the table.  Additional
-    // documentation can be found here:
-    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-    $table = array(
-      'header' => $headers,
-      'rows' => $rows,
-      'attributes' => array(
-        'id' => 'tripal_pub-table-projects',
-      ),
-      'sticky' => FALSE,
-      'caption' => '',
-      'colgroups' => array(),
-      'empty' => '',
-    );
-    // once we have our table array structure defined, we call Drupal's theme_table()
-    // function to generate the table.
-    print theme_table($table);
-    
-    // the $pager array values that control the behavior of the pager.  For
-    // documentation on the values allows in this array see:
-    // https://api.drupal.org/api/drupal/includes!pager.inc/function/theme_pager/7
-    // here we add the paramter 'block' => 'projects'. This is because
-    // the pager is not on the default block that appears. When the user clicks a
-    // page number we want the browser to re-appear with the page is loaded.
-    $pager = array(
-      'tags' => array(),
-      'element' => $element,
-      'parameters' => array(
-        'block' => 'projects'
-      ),
-      'quantity' => $num_per_page,
-    );
-    print theme_pager($pager); ?>
-  </div><?php 
-}?>
+  // the $headers array is an array of fields to use as the colum headers.
+  // additional documentation can be found here
+  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+  $headers = array('Project Name', 'Description');
+  
+  // the $rows array contains an array of rows where each row is an array
+  // of values for each column of the table in that row.  Additional documentation
+  // can be found here:
+  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+  $rows = array();
+  
+  foreach ($projects as $project){
+     $project_name = $project->name;
+     if (property_exists($project, 'nid')) {
+       $project_name = l($project_name, 'node/' . $project->nid, array('attributes' => array('target' => '_blank')));
+     }
+     $description =  substr($project->description, 0, 200);
+     if (strlen($project->description) > 200) {
+       $description .= "... " . l("[more]", 'node/' . $project->nid, array('attributes' => array('target' => '_blank')));
+     } 
+     $rows[] = array(
+       $project_name,
+       $description
+     );
+  }
+  // the $table array contains the headers and rows array as well as other
+  // options for controlling the display of the table.  Additional
+  // documentation can be found here:
+  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+  $table = array(
+    'header' => $headers,
+    'rows' => $rows,
+    'attributes' => array(
+      'id' => 'tripal_pub-table-projects',
+    ),
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => array(),
+    'empty' => '',
+  );
+  // once we have our table array structure defined, we call Drupal's theme_table()
+  // function to generate the table.
+  print theme_table($table);
+  
+  // the $pager array values that control the behavior of the pager.  For
+  // documentation on the values allows in this array see:
+  // https://api.drupal.org/api/drupal/includes!pager.inc/function/theme_pager/7
+  // here we add the paramter 'block' => 'projects'. This is because
+  // the pager is not on the default block that appears. When the user clicks a
+  // page number we want the browser to re-appear with the page is loaded.
+  $pager = array(
+    'tags' => array(),
+    'element' => $element,
+    'parameters' => array(
+      'block' => 'projects'
+    ),
+    'quantity' => $num_per_page,
+  );
+  print theme_pager($pager);  
+}
 

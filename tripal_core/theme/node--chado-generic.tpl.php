@@ -2,92 +2,60 @@
 // Purpose: This template provides a generic layout for all Tripal nodes (page)
 
 // get the template type of node (e.g. if type == chado_organism then template type == organism)
-$ttype = $variables['type'];
-$ttype = preg_replace('/chado_/','', $ttype);
-
-if ($teaser) { 
-  print theme('tripal_' . $ttype . '_teaser', $variables); 
-} 
-else { ?>
-
+$node_type = $variables['type']; ?>
 
 <script type="text/javascript">
 (function ($) {
-  Drupal.behaviors.<?php print $ttype?>Behavior = {
+  Drupal.behaviors.<?php print $node_type?>Behavior = {
     attach: function (context, settings){ 
-      $(".tripal-data-block").hide();
+      // hide all but the first data block 
+      $(".tripal-data-block").hide().filter(":first-child").show();
  
-      // iterate through all of the info boxes and add their titles
-      // to the table of contents
-      $(".tripal-info-box-title").each(function(){
-        var parent = $(this).parent();
-        var id = $(parent).attr('id');
-        var title = $(this).text();
-        $('#tripal_<?php print $ttype?>_toc_list').append('<div class="tripal_toc_list_item"><a href="#'+id+'" class="tripal_<?php print $ttype?>_toc_item">'+title+'</a></div>');
-      });
-
-      // when a title in the table of contents is clicked, then
-      // show the corresponding item in the details box
-      $(".tripal_<?php print $ttype?>_toc_item").click(function(){
-        $(".tripal-data-block").hide();
-        href = $(this).attr('href');
-        if(href.match(/^#/)){
-           //alert("correct: " + href);
-        }
-        else{
-          tmp = href.replace(/^.*?#/, "#");
-          href = tmp;
-          //alert("fixed: " + href);
-        }
-        $(href).parent().fadeIn('slow');
-
+      // when a title in the table of contents is clicked, then 
+      // show the corresponding item in the details box 
+      $(".tripal_toc_list_item_link").click(function(){
+        var id = $(this).attr('id') + "-tripal-data-block";
+        $(".tripal-data-block").hide().filter("#"+ id).show();
         return false;
       }); 
 
-      // we want the base details to show up when the page is first shown 
-      // unless we're using the feature browser then we want that page to show
+      // if a ?block= is specified in the URL then we want to show the
+      // requested block
       var block = window.location.href.match(/[\?|\&]block=(.+?)\&/)
       if(block == null){
         block = window.location.href.match(/[\?|\&]block=(.+)/)
       }
       if(block != null){
-        var parent =  $("#tripal_<?php print $ttype?>-"+block[1]+"-box").parent();
-        parent.show();
-      }
-      else {
-        var parent = $("#tripal_<?php print $ttype?>-base-box").parent();
-        parent.show();
+        $(".tripal-data-block").hide().filter("#" + block[1] + "-tripal-data-block").show();
       }
     }
   };
 })(jQuery);
 </script>
 
-<div id="tripal_<?php print $ttype?>_content" class="tripal-contents"> 
+<div id="tripal_<?php print $node_type?>_content" class="tripal-contents"> 
   <table id="tripal-contents-table">
     <tr class="tripal-contents-table-tr">
-      <td nowrap class="tripal-contents-table-td tripal-contents-table-td-toc"  align="left">
-        <div id="tripal_<?php print $ttype?>_toc_list" class="tripal_toc_list">
-        
-         <!-- Resource Links CCK elements --><?php
-         if(property_exists($node, 'field_resource_links')) {
-           for($i = 0; $i < count($node->field_resource_links); $i++){
-             if($node->field_resource_links[$i]['value']){
-               $matches = preg_split("/\|/",$node->field_resource_links[$i]['value']);?>
-               <li><a href="<?php print $matches[1] ?>" target="_blank"><?php print $matches[0] ?></a></li><?php
-             }
-           }
-         }
-         ?> 
-          </div>
-        </td>
-        <td class="tripal-contents-table-td-data" align="left" width="100%">
+      <td nowrap class="tripal-contents-table-td tripal-contents-table-td-toc"  align="left"><?php
+        print $content['tripal_toc']['#value'] ?>
+          
+          <!-- Resource Links CCK elements --><?php
+          if(property_exists($node, 'field_resource_links')) {
+            for($i = 0; $i < count($node->field_resource_links); $i++){
+              if($node->field_resource_links[$i]['value']){
+                $matches = preg_split("/\|/",$node->field_resource_links[$i]['value']);?>
+                <li><a href="<?php print $matches[1] ?>" target="_blank"><?php print $matches[0] ?></a></li><?php
+              }
+            }
+          } ?> 
+      </td>
+      <td class="tripal-contents-table-td-data" align="left" width="100%">
          <!-- Resource Blocks CCK elements --> <?php
          if (property_exists($node, 'field_resource_titles')) {
            for ($i = 0; $i < count($node->field_resource_titles); $i++){
              if ($node->field_resource_titles[$i]['value']){ ?>
-               <div id="tripal_<?php print $ttype?>-resource_<?php print $i?>-box" class="tripal_<?php print $ttype?>-info-box tripal-info-box">
-                 <div class="tripal_<?php print $ttype?>-info-box-title tripal-info-box-title"><?php print $node->field_resource_titles[$i]['value'] ?></div>
+               <div id="tripal_<?php print $node_type?>-resource_<?php print $i?>-box" class="tripal_<?php print $node_type?>-info-box tripal-info-box">
+                 <div class="tripal_<?php print $node_type?>-info-box-title tripal-info-box-title"><?php print $node->field_resource_titles[$i]['value'] ?></div>
                  <?php print $node->field_resource_blocks[$i]['value']; ?>
                </div> <?php
              }
@@ -96,7 +64,7 @@ else { ?>
          <!-- Let modules add more content -->
          <?php
            foreach ($content as $key => $values) {
-             if (array_key_exists('#value', $values)) {
+             if (array_key_exists('#value', $values) and $key != 'tripal_toc') {
                print $content[$key]['#value'];
              }
            }
@@ -105,6 +73,5 @@ else { ?>
     </tr>
   </table>
 </div> 
-<?php 
-} ?>
+
 

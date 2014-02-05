@@ -9,61 +9,58 @@ $library_features = $feature->library_feature;
 
 
 if (count($library_features) > 0) {?>
-  <div id="tripal_feature-library_list-box" class="tripal_feature-info-box tripal-info-box">
-    <div class="tripal_feature-info-box-title tripal-info-box-title">Libraries</div>
-    <div class="tripal_feature-info-box-desc tripal-info-box-desc">The following libraries are associated with this feature.</div> <?php 
+  <div class="tripal_feature-info-box-desc tripal-info-box-desc">The following libraries are associated with this feature.</div> <?php 
+  
+  // the $headers array is an array of fields to use as the colum headers. 
+  // additional documentation can be found here 
+  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+  // This table for the analysis has a vertical header (down the first column)
+  // so we do not provide headers here, but specify them in the $rows array below.
+  $headers = array('Library Name', 'Type');
+  
+  // the $rows array contains an array of rows where each row is an array
+  // of values for each column of the table in that row.  Additional documentation
+  // can be found here:
+  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7 
+  $rows = array();
+  foreach ($library_features as $library_feature){ 
     
-    // the $headers array is an array of fields to use as the colum headers. 
-    // additional documentation can be found here 
-    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-    // This table for the analysis has a vertical header (down the first column)
-    // so we do not provide headers here, but specify them in the $rows array below.
-    $headers = array('Library Name', 'Type');
-    
-    // the $rows array contains an array of rows where each row is an array
-    // of values for each column of the table in that row.  Additional documentation
-    // can be found here:
-    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7 
-    $rows = array();
-    foreach ($library_features as $library_feature){ 
-      
-      $libname = $library_feature->library_id->name;
-      if ($library_feature->library_id->nid) {
-        $libname = l($libname, "node/" . $library_feature->library_id->nid, array('attributes' => array('target' => '_blank')));
-      }
-      
-      $typename = $library_feature->library_id->type_id->name;
-      if ($typename == 'cdna_library') {
-        $typename = 'cDNA';
-      }
-      else if ($typename == 'bac_library') {
-        $typename = 'BAC';
-      }
-      
-      $rows[] = array(
-        $libname,
-        $typename
-      );      
+    $libname = $library_feature->library_id->name;
+    if ($library_feature->library_id->nid) {
+      $libname = l($libname, "node/" . $library_feature->library_id->nid, array('attributes' => array('target' => '_blank')));
     }
     
-    // the $table array contains the headers and rows array as well as other
-    // options for controlling the display of the table.  Additional
-    // documentation can be found here:
-    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-    $table = array(
-      'header' => $headers,
-      'rows' => $rows,
-      'attributes' => array(
-        'id' => 'tripal_feature-table-libraries',
-      ),
-      'sticky' => FALSE,
-      'caption' => '',
-      'colgroups' => array(),
-      'empty' => '',
-    );
+    $typename = $library_feature->library_id->type_id->name;
+    if ($typename == 'cdna_library') {
+      $typename = 'cDNA';
+    }
+    else if ($typename == 'bac_library') {
+      $typename = 'BAC';
+    }
     
-    // once we have our table array structure defined, we call Drupal's theme_table()
-    // function to generate the table.
-    print theme_table($table); ?>  
-  </div><?php
+    $rows[] = array(
+      $libname,
+      $typename
+    );      
+  }
+  
+  // the $table array contains the headers and rows array as well as other
+  // options for controlling the display of the table.  Additional
+  // documentation can be found here:
+  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+  $table = array(
+    'header' => $headers,
+    'rows' => $rows,
+    'attributes' => array(
+      'id' => 'tripal_feature-table-libraries',
+    ),
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => array(),
+    'empty' => '',
+  );
+  
+  // once we have our table array structure defined, we call Drupal's theme_table()
+  // function to generate the table.
+  print theme_table($table); 
 }

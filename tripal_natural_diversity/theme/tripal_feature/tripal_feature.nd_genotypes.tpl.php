@@ -67,147 +67,144 @@ $total_records = $_SESSION['chado_pager'][$feature_pager_id]['total_records'];
 
 // now iterate through the feature genotypes and print a paged table.
 if (count($feature_genotypes) > 0) { ?>
-  <div id="tripal_feature-nd_genotypes-box" class="tripal_feature-info-box tripal-info-box">
-    <div class="tripal_feature-info-box-title tripal-info-box-title">Genotypes</div>
-    <div class="tripal_feature-info-box-desc tripal-info-box-desc">This following <?php print number_format($total_records) ?> genotype(s) have been recorded for this feature.</div> <?php 
+  <div class="tripal_feature-info-box-desc tripal-info-box-desc">This following <?php print number_format($total_records) ?> genotype(s) have been recorded for this feature.</div> <?php 
 
-    // the $headers array is an array of fields to use as the colum headers.
-    // additional documentation can be found here
-    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-    $headers = array('Name', 'Type', 'Genotype', 'Details', 'Germplasm', 'Project');
+  // the $headers array is an array of fields to use as the colum headers.
+  // additional documentation can be found here
+  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+  $headers = array('Name', 'Type', 'Genotype', 'Details', 'Germplasm', 'Project');
 
-    // the $rows array contains an array of rows where each row is an array
-    // of values for each column of the table in that row.  Additional documentation
-    // can be found here:
-    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-    $rows = array();
+  // the $rows array contains an array of rows where each row is an array
+  // of values for each column of the table in that row.  Additional documentation
+  // can be found here:
+  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+  $rows = array();
+  
+  foreach ($feature_genotypes as $feature_genotype) {
+    $project_names = 'N/A';
+    $stock_names   = 'N/A';
     
-    foreach ($feature_genotypes as $feature_genotype) {
-      $project_names = 'N/A';
-      $stock_names   = 'N/A';
-      
-      // get the genotype from the feature_genotype record
-      $genotype = $feature_genotype->genotype_id;
+    // get the genotype from the feature_genotype record
+    $genotype = $feature_genotype->genotype_id;
 
-      // build the name for displaying the genotype. Use the uniquename by default
-      // unless a name exists
-      $name = $genotype->uniquename;
-      if ($genotype->name){
-        $name = $genotype->name;
+    // build the name for displaying the genotype. Use the uniquename by default
+    // unless a name exists
+    $name = $genotype->uniquename;
+    if ($genotype->name){
+      $name = $genotype->name;
+    }
+    
+    // build the genotype type for display
+    $type = 'N/A';
+    if ($genotype->type_id) {
+      $type = ucwords(preg_replace('/_/', ' ', $genotype->type_id->name));
+    }
+
+    // build the genotype properties
+    $options = array('return_array' => 1);
+    $genotype = tripal_core_expand_chado_vars($genotype, 'table', 'genotypeprop', $options);
+    $properties = $genotype->genotypeprop;
+    $details = '';
+    if(count($properties) > 0) {
+      foreach ($properties as $property){
+        $details .=  ucwords(preg_replace('/_/', ' ', $property->type_id->name)) . ': ' . $property->value . '<br>';
       }
-      
-      // build the genotype type for display
-      $type = 'N/A';
-      if ($genotype->type_id) {
-        $type = ucwords(preg_replace('/_/', ' ', $genotype->type_id->name));
-      }
+      $details = substr($details, 0, -4); // remove trailing <br>
+    }
 
-      // build the genotype properties
-      $options = array('return_array' => 1);
-      $genotype = tripal_core_expand_chado_vars($genotype, 'table', 'genotypeprop', $options);
-      $properties = $genotype->genotypeprop;
-      $details = '';
-      if(count($properties) > 0) {
-        foreach ($properties as $property){
-          $details .=  ucwords(preg_replace('/_/', ' ', $property->type_id->name)) . ': ' . $property->value . '<br>';
-        }
-        $details = substr($details, 0, -4); // remove trailing <br>
-      }
+    // get the nd_experiment_genotype records and if any
+    $values = array('genotype_id' => $genotype->genotype_id);
+    $nd_experiment_genotype = tripal_core_generate_chado_var('nd_experiment_genotype', $values);
+    if ($nd_experiment_genotype) {
+      $nd_experiment    = $nd_experiment_genotype->nd_experiment_id;
+      $nd_experiment_id = $nd_experiment_genotype->nd_experiment_id->nd_experiment_id;
 
-      // get the nd_experiment_genotype records and if any
-      $values = array('genotype_id' => $genotype->genotype_id);
-      $nd_experiment_genotype = tripal_core_generate_chado_var('nd_experiment_genotype', $values);
-      if ($nd_experiment_genotype) {
-        $nd_experiment    = $nd_experiment_genotype->nd_experiment_id;
-        $nd_experiment_id = $nd_experiment_genotype->nd_experiment_id->nd_experiment_id;
-
-        // expand the nd_experiment object to incldue the nd_experiment_stock table
-        $values = array('nd_experiment_id' => $nd_experiment_id);
-        $options = array(
-          'return_array' => 1,
-          'include_fk' => array(
-            'stock_id' => array(
-              'type_id' => 1
-            )
-          ),
-        );
-        $nd_experiment = tripal_core_expand_chado_vars($nd_experiment, 'table', 'nd_experiment_stock', $options);
-        $nd_experiment_stocks = $nd_experiment->nd_experiment_stock;
-        if (count($nd_experiment_stocks) > 0) {
-          $stock_names = '';
-          foreach ($nd_experiment_stocks as $nd_experiment_stock) {
-            $stock = $nd_experiment_stock->stock_id;
-            $stock_name = $stock->name . ' (' . $stock->uniquename . ')';
-            if (property_exists($stock, 'nid')) {
-              $stock_name = l($stock_name, 'node/' . $stock->nid);
-            }
-            $stock_names .= $stock_name . '<br>';
-          }
-          $stock_names = substr($stock_names, 0, -4); // remove trailing <br>
-        }
-        
-        // expand the nd_experiment object to incldue the nd_experiment_project table
-        $values = array('nd_experiment_id' => $nd_experiment_id);
-        $options = array('return_array' => 1);
-        $nd_experiment = tripal_core_expand_chado_vars($nd_experiment, 'table', 'nd_experiment_project', $options);
-        $nd_experiment_projects = $nd_experiment->nd_experiment_project;
-        if (count($nd_experiment_projects) > 0) {
-          $project_names = '';
-          foreach ($nd_experiment_projects as $nd_experiment_project) {
-            $project = $nd_experiment_project->project_id;
-            $project_name = $project->name;
-            if (property_exists($project, 'nid')) {
-              $project_name = l($project_name, "node/" . $project->nid, array('attributes' => array('target' => '_blank')));
-            }
-            $project_names .= $project_name . '<br>';
-          }
-          $project_names = substr($project_names, 0, -4); // remove trailing <br>
-        }
-      }
-
-      $rows[] = array(
-        $name,
-        $type,
-        $genotype->description,
-        $details,
-        $stock_names,
-        $project_names,
+      // expand the nd_experiment object to incldue the nd_experiment_stock table
+      $values = array('nd_experiment_id' => $nd_experiment_id);
+      $options = array(
+        'return_array' => 1,
+        'include_fk' => array(
+          'stock_id' => array(
+            'type_id' => 1
+          )
+        ),
       );
-    } 
-    
-    // the $table array contains the headers and rows array as well as other
-    // options for controlling the display of the table.  Additional
-    // documentation can be found here:
-    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-    $table = array(
-      'header' => $headers,
-      'rows' => $rows,
-      'attributes' => array(
-        'id' => 'tripal_natural_diversity-table-genotypes',
-      ),
-      'sticky' => FALSE,
-      'caption' => '',
-      'colgroups' => array(),
-      'empty' => '',
+      $nd_experiment = tripal_core_expand_chado_vars($nd_experiment, 'table', 'nd_experiment_stock', $options);
+      $nd_experiment_stocks = $nd_experiment->nd_experiment_stock;
+      if (count($nd_experiment_stocks) > 0) {
+        $stock_names = '';
+        foreach ($nd_experiment_stocks as $nd_experiment_stock) {
+          $stock = $nd_experiment_stock->stock_id;
+          $stock_name = $stock->name . ' (' . $stock->uniquename . ')';
+          if (property_exists($stock, 'nid')) {
+            $stock_name = l($stock_name, 'node/' . $stock->nid);
+          }
+          $stock_names .= $stock_name . '<br>';
+        }
+        $stock_names = substr($stock_names, 0, -4); // remove trailing <br>
+      }
+      
+      // expand the nd_experiment object to incldue the nd_experiment_project table
+      $values = array('nd_experiment_id' => $nd_experiment_id);
+      $options = array('return_array' => 1);
+      $nd_experiment = tripal_core_expand_chado_vars($nd_experiment, 'table', 'nd_experiment_project', $options);
+      $nd_experiment_projects = $nd_experiment->nd_experiment_project;
+      if (count($nd_experiment_projects) > 0) {
+        $project_names = '';
+        foreach ($nd_experiment_projects as $nd_experiment_project) {
+          $project = $nd_experiment_project->project_id;
+          $project_name = $project->name;
+          if (property_exists($project, 'nid')) {
+            $project_name = l($project_name, "node/" . $project->nid, array('attributes' => array('target' => '_blank')));
+          }
+          $project_names .= $project_name . '<br>';
+        }
+        $project_names = substr($project_names, 0, -4); // remove trailing <br>
+      }
+    }
+
+    $rows[] = array(
+      $name,
+      $type,
+      $genotype->description,
+      $details,
+      $stock_names,
+      $project_names,
     );
-    // once we have our table array structure defined, we call Drupal's theme_table()
-    // function to generate the table.
-    print theme_table($table); 
-    
-    // the $pager array values that control the behavior of the pager.  For
-    // documentation on the values allows in this array see:
-    // https://api.drupal.org/api/drupal/includes!pager.inc/function/theme_pager/7
-    // here we add the paramter 'block' => 'features'. This is because
-    // the pager is not on the default block that appears. When the user clicks a
-    // page number we want the browser to re-appear with the page is loaded.
-    $pager = array(
-      'tags' => array(),
-      'element' => $feature_pager_id,
-      'parameters' => array(
-        'block' => 'genotypes'
-      ),
-      'quantity' => $num_results_per_page,
-    );
-    print theme_pager($pager); ?>
-  </div> <?php
+  } 
+  
+  // the $table array contains the headers and rows array as well as other
+  // options for controlling the display of the table.  Additional
+  // documentation can be found here:
+  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+  $table = array(
+    'header' => $headers,
+    'rows' => $rows,
+    'attributes' => array(
+      'id' => 'tripal_natural_diversity-table-genotypes',
+    ),
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => array(),
+    'empty' => '',
+  );
+  // once we have our table array structure defined, we call Drupal's theme_table()
+  // function to generate the table.
+  print theme_table($table); 
+  
+  // the $pager array values that control the behavior of the pager.  For
+  // documentation on the values allows in this array see:
+  // https://api.drupal.org/api/drupal/includes!pager.inc/function/theme_pager/7
+  // here we add the paramter 'block' => 'features'. This is because
+  // the pager is not on the default block that appears. When the user clicks a
+  // page number we want the browser to re-appear with the page is loaded.
+  $pager = array(
+    'tags' => array(),
+    'element' => $feature_pager_id,
+    'parameters' => array(
+      'block' => 'genotypes'
+    ),
+    'quantity' => $num_results_per_page,
+  );
+  print theme_pager($pager); 
 }

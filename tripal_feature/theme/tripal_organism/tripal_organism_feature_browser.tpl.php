@@ -57,101 +57,95 @@ foreach ($results as $result) {
 // only show this block if it is enabled
 if ($enabled) { 
   if (count($features) > 0) { ?>
-    <div id="tripal_organism-feature_browser-box" class="tripal_organism-info-box tripal-info-box">
-      <div class="tripal_organism-info-box-title tripal-info-box-title">Feature Browser</div>
-      <div class="tripal_organism-info-box-desc tripal-info-box-desc">The following browser provides a quick view for new visitors.  Use the searching mechanism to find specific features.</div> <?php
-      
-      // the $headers array is an array of fields to use as the colum headers.
-      // additional documentation can be found here
-      // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-      $headers = array('Feature Name' ,'Unique Name', 'Type');
-      
-      // the $rows array contains an array of rows where each row is an array
-      // of values for each column of the table in that row.  Additional documentation
-      // can be found here:
-      // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-      $rows = array();
-      
-      // let admins know they can customize the terms that appear in the list
-      print theme('tripal_admin_message', array('message' => "
-        Administrators, you can specify the feature types that should appear in 
-        this browser or remove it from the list of resources by navigating to the ". 
-        l("Tripal feature settings page", "admin/tripal/chado/tripal_feature/configuration", array('attributes' => array('target' => '_blank')))
-      ));
-      
-      foreach ($features as $feature){
-        $fname =  $feature->name;
-        if (property_exists($feature, 'nid')) {
-          $fname =   l($fname, "node/$feature->nid", array('attributes' => array('target' => '_blank')));
-        }
-        $rows[] = array(
-          $fname,
-          $feature->uniquename,
-          $feature->type_id->name
-        );
-      } 
-      // the $table array contains the headers and rows array as well as other
-      // options for controlling the display of the table.  Additional
-      // documentation can be found here:
-      // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-      $table = array(
-        'header' => $headers,
-        'rows' => $rows,
-        'attributes' => array(
-          'id' => 'tripal_organism-table-features',
-        ),
-        'sticky' => FALSE,
-        'caption' => '',
-        'colgroups' => array(),
-        'empty' => '',
+    <div class="tripal_organism-info-box-desc tripal-info-box-desc">The following browser provides a quick view for new visitors.  Use the searching mechanism to find specific features.</div> <?php
+    
+    // the $headers array is an array of fields to use as the colum headers.
+    // additional documentation can be found here
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $headers = array('Feature Name' ,'Unique Name', 'Type');
+    
+    // the $rows array contains an array of rows where each row is an array
+    // of values for each column of the table in that row.  Additional documentation
+    // can be found here:
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $rows = array();
+    
+    // let admins know they can customize the terms that appear in the list
+    print theme('tripal_admin_message', array('message' => "
+      Administrators, you can specify the feature types that should appear in 
+      this browser or remove it from the list of resources by navigating to the ". 
+      l("Tripal feature settings page", "admin/tripal/chado/tripal_feature/configuration", array('attributes' => array('target' => '_blank')))
+    ));
+    
+    foreach ($features as $feature){
+      $fname =  $feature->name;
+      if (property_exists($feature, 'nid')) {
+        $fname =   l($fname, "node/$feature->nid", array('attributes' => array('target' => '_blank')));
+      }
+      $rows[] = array(
+        $fname,
+        $feature->uniquename,
+        $feature->type_id->name
       );
-      // once we have our table array structure defined, we call Drupal's theme_table()
-      // function to generate the table.
-      print theme_table($table);
-      
-      // the $pager array values that control the behavior of the pager.  For 
-      // documentation on the values allows in this array see:
-      // https://api.drupal.org/api/drupal/includes!pager.inc/function/theme_pager/7
-      // here we add the paramter 'block' => 'feature_browser'. This is because
-      // the pager is not on the default block that appears. When the user clicks a
-      // page number we want the browser to re-appear with the page is loaded.
-      $pager = array(
-        'tags' => array(),
-        'element' => $element,
-        'parameters' => array(
-          'block' => 'feature_browser'
-        ),
-        'quantity' => $num_per_page,
-      );
-      print theme_pager($pager); ?>
-    </div> <?php
+    } 
+    // the $table array contains the headers and rows array as well as other
+    // options for controlling the display of the table.  Additional
+    // documentation can be found here:
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $table = array(
+      'header' => $headers,
+      'rows' => $rows,
+      'attributes' => array(
+        'id' => 'tripal_organism-table-features',
+      ),
+      'sticky' => FALSE,
+      'caption' => '',
+      'colgroups' => array(),
+      'empty' => '',
+    );
+    // once we have our table array structure defined, we call Drupal's theme_table()
+    // function to generate the table.
+    print theme_table($table);
+    
+    // the $pager array values that control the behavior of the pager.  For 
+    // documentation on the values allows in this array see:
+    // https://api.drupal.org/api/drupal/includes!pager.inc/function/theme_pager/7
+    // here we add the paramter 'block' => 'feature_browser'. This is because
+    // the pager is not on the default block that appears. When the user clicks a
+    // page number we want the browser to re-appear with the page is loaded.
+    $pager = array(
+      'tags' => array(),
+      'element' => $element,
+      'parameters' => array(
+        'block' => 'feature_browser'
+      ),
+      'quantity' => $num_per_page,
+    );
+    print theme_pager($pager); 
   } 
   else {  ?>
-    <div id="tripal_organism-feature_browser-box" class="tripal_organism-info-box tripal-info-box">
-      <div class="tripal_organism-info-box-title tripal-info-box-title">Feature Browser</div>
-      <p>There are no results.</p><?php
-      print theme('tripal_admin_message', array('message' => "
-        Administrators, perform the following to show features in this browser:
-        <ul>
-          <li>Load features for this organism using the " .
-            l("FASTA loader", 'admin/tripal/loaders/fasta_loader') . ",  ".
-            l("GFF Loader",   'admin/tripal/loaders/gff3_load') . " or ".
-            l("Bulk Loader",  'admin/tripal/loaders/bulk'). "</li>
-          <li>Sync the features that should have pages using the ".
-            l("Sync features page", 'admin/tripal/chado/tripal_feature/sync'). "</li>
-          <li>Return to this page to browse features.</li>
-          <li>Ensure the user " .
-           l("has permission", 'admin/people/permissions') . " to view the feature content</li>
-        </ul>
-        <br>
-        <br>
-        You can specify the feature types
-        that should appear in this browser or remove it from the list of resources by navigating to the " . 
-        l("Tripal feature settings page", "admin/tripal/chado/tripal_feature/configuration", array('attributes' => array('target' => '_blank')))  . "
-        </p>
-        The feature browser will not appear to site visitors unless features are present. "
-      )); ?>
-    </div><?php
+    <p>There are no results.</p><?php
+    print theme('tripal_admin_message', array('message' => "
+      Administrators, perform the following to show features in this browser:
+      <ul>
+        <li>Load features for this organism using the " .
+          l("FASTA loader", 'admin/tripal/loaders/fasta_loader') . ",  ".
+          l("GFF Loader",   'admin/tripal/loaders/gff3_load') . " or ".
+          l("Bulk Loader",  'admin/tripal/loaders/bulk'). "</li>
+        <li>Sync the features that should have pages using the ".
+          l("Sync features page", 'admin/tripal/chado/tripal_feature/sync'). "</li>
+        <li>Return to this page to browse features.</li>
+        <li>Ensure the user " .
+         l("has permission", 'admin/people/permissions') . " to view the feature content</li>
+      </ul>
+      <br>
+      <br>
+      You can specify the feature types
+      that should appear in this browser or remove it from the list of resources by navigating to the " . 
+      l("Tripal feature settings page", "admin/tripal/chado/tripal_feature/configuration", array('attributes' => array('target' => '_blank')))  . "
+      </p>
+      The feature browser will not appear to site visitors unless features are present. "
+    ));
   }
 }
 

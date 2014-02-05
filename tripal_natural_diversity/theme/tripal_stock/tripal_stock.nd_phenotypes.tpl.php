@@ -66,95 +66,92 @@ if (count($nd_experiment_stocks) > 0) {
 }
 
 if (count($phenotypes) > 0) {?>
-  <div id="tripal_stock-phenotypes-box" class="tripal_stock-info-box tripal-info-box">
-    <div class="tripal_stock-info-box-title tripal-info-box-title">Phenotypes</div>
-    <div class="tripal_stock-info-box-desc tripal-info-box-desc">This following phenotypes have been recorded for this stock.</div><?php 
+  <div class="tripal_stock-info-box-desc tripal-info-box-desc">This following phenotypes have been recorded for this stock.</div><?php 
 
-    // the $headers array is an array of fields to use as the colum headers.
-    // additional documentation can be found here
-    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-    $headers = array('Phenotypes', 'Project');
+  // the $headers array is an array of fields to use as the colum headers.
+  // additional documentation can be found here
+  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+  $headers = array('Phenotypes', 'Project');
 
-    // the $rows array contains an array of rows where each row is an array
-    // of values for each column of the table in that row.  Additional documentation
-    // can be found here:
-    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-    $rows = array();
-    
-    // iterate through the nd_experiment_stock records and get 
-    // each experiment and the associated phenotypes
-    foreach ($phenotypes as $nd_experiment_id => $phenotype){
+  // the $rows array contains an array of rows where each row is an array
+  // of values for each column of the table in that row.  Additional documentation
+  // can be found here:
+  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+  $rows = array();
+  
+  // iterate through the nd_experiment_stock records and get 
+  // each experiment and the associated phenotypes
+  foreach ($phenotypes as $nd_experiment_id => $phenotype){
 
-      $details = '';
+    $details = '';
 
-      if ($phenotype->name) { 
-        $details .= "Name: $phenotype->name<br>";
-      }
-      
-      // add in the attribute type pheonotypes values are stored qualitatively or quantitatively. 
-      // If qualitatively the cvalue_id will link to a type. If quantitative we
-      // use the value column
-      $details .= ucwords(preg_replace('/_/', ' ', $phenotype->attr_id->name)) . ': ';
-      if ($phenotype->cvalue_id) { 
-        $details .= ucwords(preg_replace('/_/', ' ', $phenotype->cvalue_id->name)) . '<br>';
-      }
-      else { 
-        $details .= $phenotype->value . '<br>';
-      }  
-      
-      // get the observable unit and add it to the details
-      if ($phenotype->observable_id) { 
-        $details .= "Observable Unit: " . ucwords(preg_replace('/_/', ' ', $phenotype->observable_id->name)) . '<br>';
-      }
-      
-      // get the evidence unit and add it to the details
-      if ($phenotype->assay_id) { 
-        $details .= "Evidence: " .  ucwords(preg_replace('/_/', ' ', $phenotype->assay_id->name)) . '<br>';
-      }
-      
-      // Get the project for this experiment. For each nd_experiment_id there should only be one project
-      // but the database does not constrain that there only be one project so just in case we get them all
-      $projects = array();
-      $values = array('nd_experiment_id' => $nd_experiment_stock->nd_experiment_id->nd_experiment_id);
-      $nd_experiment_project = tripal_core_generate_chado_var('nd_experiment_project', $values, $options);
-      $nd_experiment_projects = $nd_experiment_project;
-      foreach ($nd_experiment_projects as $nd_experiment_project) {
-        // we do have a project record, so add it to our $phenotypes array for display below
-        $projects = $nd_experiment_project->project_id;
-      }
-      $pnames = 'N/A';
-      foreach ($projects as $project) {
-        $project = $project->project_id;
-        $name = $project->name;
-        if (property_exists($project, 'nid')) {
-          $name = l($name, "node/" . $project->nid, array('attributes' => array('target' => '_blank')));
-        }
-        $pnames .= $name . '<br>';
-      }
-      $pnames = substr($pnames, 0, -4); // remove trailing <br>
-      
-      $rows[] = array(
-         $details,
-         $pnames,
-      );
+    if ($phenotype->name) { 
+      $details .= "Name: $phenotype->name<br>";
     }
-    // the $table array contains the headers and rows array as well as other
-    // options for controlling the display of the table.  Additional
-    // documentation can be found here:
-    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-    $table = array(
-      'header' => $headers,
-      'rows' => $rows,
-      'attributes' => array(
-        'id' => 'tripal_natural_diversity-table-phenotypes',
-      ),
-      'sticky' => FALSE,
-      'caption' => '',
-      'colgroups' => array(),
-      'empty' => '',
+    
+    // add in the attribute type pheonotypes values are stored qualitatively or quantitatively. 
+    // If qualitatively the cvalue_id will link to a type. If quantitative we
+    // use the value column
+    $details .= ucwords(preg_replace('/_/', ' ', $phenotype->attr_id->name)) . ': ';
+    if ($phenotype->cvalue_id) { 
+      $details .= ucwords(preg_replace('/_/', ' ', $phenotype->cvalue_id->name)) . '<br>';
+    }
+    else { 
+      $details .= $phenotype->value . '<br>';
+    }  
+    
+    // get the observable unit and add it to the details
+    if ($phenotype->observable_id) { 
+      $details .= "Observable Unit: " . ucwords(preg_replace('/_/', ' ', $phenotype->observable_id->name)) . '<br>';
+    }
+    
+    // get the evidence unit and add it to the details
+    if ($phenotype->assay_id) { 
+      $details .= "Evidence: " .  ucwords(preg_replace('/_/', ' ', $phenotype->assay_id->name)) . '<br>';
+    }
+    
+    // Get the project for this experiment. For each nd_experiment_id there should only be one project
+    // but the database does not constrain that there only be one project so just in case we get them all
+    $projects = array();
+    $values = array('nd_experiment_id' => $nd_experiment_stock->nd_experiment_id->nd_experiment_id);
+    $nd_experiment_project = tripal_core_generate_chado_var('nd_experiment_project', $values, $options);
+    $nd_experiment_projects = $nd_experiment_project;
+    foreach ($nd_experiment_projects as $nd_experiment_project) {
+      // we do have a project record, so add it to our $phenotypes array for display below
+      $projects = $nd_experiment_project->project_id;
+    }
+    $pnames = 'N/A';
+    foreach ($projects as $project) {
+      $project = $project->project_id;
+      $name = $project->name;
+      if (property_exists($project, 'nid')) {
+        $name = l($name, "node/" . $project->nid, array('attributes' => array('target' => '_blank')));
+      }
+      $pnames .= $name . '<br>';
+    }
+    $pnames = substr($pnames, 0, -4); // remove trailing <br>
+    
+    $rows[] = array(
+       $details,
+       $pnames,
     );
-    // once we have our table array structure defined, we call Drupal's theme_table()
-    // function to generate the table.
-    print theme_table($table); ?> 
-  </div><?php
+  }
+  // the $table array contains the headers and rows array as well as other
+  // options for controlling the display of the table.  Additional
+  // documentation can be found here:
+  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+  $table = array(
+    'header' => $headers,
+    'rows' => $rows,
+    'attributes' => array(
+      'id' => 'tripal_natural_diversity-table-phenotypes',
+    ),
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => array(),
+    'empty' => '',
+  );
+  // once we have our table array structure defined, we call Drupal's theme_table()
+  // function to generate the table.
+  print theme_table($table); 
 }

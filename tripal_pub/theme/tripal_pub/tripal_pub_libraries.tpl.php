@@ -32,70 +32,67 @@ if (count($library_pubs) > 0 ) {
 $total_records = $_SESSION['chado_pager'][$element]['total_records'];
 
 if(count($libraries) > 0){ ?>
-  <div id="tripal_pub-libraries-box" class="tripal_pub-info-box tripal-info-box">
-    <div class="tripal_pub-info-box-title tripal-info-box-title">Libraries</div>
-    <div class="tripal_pub-info-box-desc tripal-info-box-desc">This publication contains information about <?php print number_format($total_records) ?> libraries:</div> <?php 
+  <div class="tripal_pub-info-box-desc tripal-info-box-desc">This publication contains information about <?php print number_format($total_records) ?> libraries:</div> <?php 
 
-    // the $headers array is an array of fields to use as the colum headers.
-    // additional documentation can be found here
-    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-    $headers = array('Library Name', 'Unique Name', 'Organism');
-    
-    // the $rows array contains an array of rows where each row is an array
-    // of values for each column of the table in that row.  Additional documentation
-    // can be found here:
-    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-    $rows = array();
-    
-    foreach ($libraries as $library){
-       $library_name = $library->name;
-       if (property_exists($library, 'nid')) {
-         $library_name = l($library_name, 'node/' . $library->nid, array('attributes' => array('target' => '_blank')));
-       }
-       $organism = '<i>' . $library->organism_id->genus . ' ' . $library->organism_id->species . '</i>';
-       if (property_exists($library->organism_id, 'nid')) {
-         $organism = l($organism, 'node/' . $library->organism_id->nid, array('attributes' => array('target' => '_blank')));
-       }
-       $rows[] = array(
-         $library_name,
-         $library->uniquename,
-         $organism,
-       );
-    }
-    // the $table array contains the headers and rows array as well as other
-    // options for controlling the display of the table.  Additional
-    // documentation can be found here:
-    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-    $table = array(
-      'header' => $headers,
-      'rows' => $rows,
-      'attributes' => array(
-        'id' => 'tripal_pub-table-libraries',
-      ),
-      'sticky' => FALSE,
-      'caption' => '',
-      'colgroups' => array(),
-      'empty' => '',
-    );
-    // once we have our table array structure defined, we call Drupal's theme_table()
-    // function to generate the table.
-    print theme_table($table);
-    
-    // the $pager array values that control the behavior of the pager.  For
-    // documentation on the values allows in this array see:
-    // https://api.drupal.org/api/drupal/includes!pager.inc/function/theme_pager/7
-    // here we add the paramter 'block' => 'libraries'. This is because
-    // the pager is not on the default block that appears. When the user clicks a
-    // page number we want the browser to re-appear with the page is loaded.
-    $pager = array(
-      'tags' => array(),
-      'element' => $element,
-      'parameters' => array(
-        'block' => 'libraries'
-      ),
-      'quantity' => $num_per_page,
-    );
-    print theme_pager($pager); ?>
-  </div><?php 
-}?>
+  // the $headers array is an array of fields to use as the colum headers.
+  // additional documentation can be found here
+  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+  $headers = array('Library Name', 'Unique Name', 'Organism');
+  
+  // the $rows array contains an array of rows where each row is an array
+  // of values for each column of the table in that row.  Additional documentation
+  // can be found here:
+  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+  $rows = array();
+  
+  foreach ($libraries as $library){
+     $library_name = $library->name;
+     if (property_exists($library, 'nid')) {
+       $library_name = l($library_name, 'node/' . $library->nid, array('attributes' => array('target' => '_blank')));
+     }
+     $organism = '<i>' . $library->organism_id->genus . ' ' . $library->organism_id->species . '</i>';
+     if (property_exists($library->organism_id, 'nid')) {
+       $organism = l($organism, 'node/' . $library->organism_id->nid, array('attributes' => array('target' => '_blank')));
+     }
+     $rows[] = array(
+       $library_name,
+       $library->uniquename,
+       $organism,
+     );
+  }
+  // the $table array contains the headers and rows array as well as other
+  // options for controlling the display of the table.  Additional
+  // documentation can be found here:
+  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+  $table = array(
+    'header' => $headers,
+    'rows' => $rows,
+    'attributes' => array(
+      'id' => 'tripal_pub-table-libraries',
+    ),
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => array(),
+    'empty' => '',
+  );
+  // once we have our table array structure defined, we call Drupal's theme_table()
+  // function to generate the table.
+  print theme_table($table);
+  
+  // the $pager array values that control the behavior of the pager.  For
+  // documentation on the values allows in this array see:
+  // https://api.drupal.org/api/drupal/includes!pager.inc/function/theme_pager/7
+  // here we add the paramter 'block' => 'libraries'. This is because
+  // the pager is not on the default block that appears. When the user clicks a
+  // page number we want the browser to re-appear with the page is loaded.
+  $pager = array(
+    'tags' => array(),
+    'element' => $element,
+    'parameters' => array(
+      'block' => 'libraries'
+    ),
+    'quantity' => $num_per_page,
+  );
+  print theme_pager($pager); 
+}
 

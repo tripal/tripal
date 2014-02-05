@@ -391,21 +391,34 @@ function tripal_library_node_view($node, $view_mode, $langcode) {
       if ($view_mode == 'full') {
         $node->content['tripal_library_base'] = array(
           '#value' => theme('tripal_library_base', array('node' => $node)),
+          '#tripal_toc_id'    => 'base',
+          '#tripal_toc_title' => 'Details',
+          '#weight' => 0,
         );
         $node->content['tripal_library_properties'] = array(
           '#value' => theme('tripal_library_properties', array('node' => $node)),
+          '#tripal_toc_id'    => 'properties',
+          '#tripal_toc_title' => 'Properties',
         );
         $node->content['tripal_library_publications'] = array(
           '#value' => theme('tripal_library_publications', array('node' => $node)),
+          '#tripal_toc_id'    => 'publications',
+          '#tripal_toc_title' => 'Publications',
         );
         $node->content['tripal_library_references'] = array(
           '#value' => theme('tripal_library_references', array('node' => $node)),
+          '#tripal_toc_id'    => 'references',
+          '#tripal_toc_title' => 'References',
         );
         $node->content['tripal_library_synonyms'] = array(
           '#value' => theme('tripal_library_synonyms', array('node' => $node)),
+          '#tripal_toc_id'    => 'synonyms',
+          '#tripal_toc_title' => 'Synonyms',
         );
         $node->content['tripal_library_terms'] = array(
           '#value' => theme('tripal_library_terms', array('node' => $node)),
+          '#tripal_toc_id'    => 'terms',
+          '#tripal_toc_title' => 'Annotated Terms',
         );
       }
       if ($view_mode == 'teaser') {
@@ -418,6 +431,8 @@ function tripal_library_node_view($node, $view_mode, $langcode) {
       if ($view_mode == 'full') {
         $node->content['tripal_organism.libraries'] = array(
           '#value' => theme('tripal_organism.libraries', array('node' => $node)),
+          '#tripal_toc_id'    => 'libraries',
+          '#tripal_toc_title' => 'Libraries',
         );
       }
       break;
@@ -425,6 +440,8 @@ function tripal_library_node_view($node, $view_mode, $langcode) {
       if ($view_mode == 'full') {
         $node->content['tripal_feature.libraries'] = array(
           '#value' => theme('tripal_feature.libraries', array('node' => $node)),
+          '#tripal_toc_id'    => 'libraries',
+          '#tripal_toc_title' => 'Libraries',
         );
       }
       break;

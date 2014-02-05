@@ -142,6 +142,8 @@ function tripal_phenotype_node_view($node, $view_mode, $langcode) {
       if ($view_mode == 'full') {
         $node->content['tripal_feature_phenotypes'] = array(
           '#value' => theme('tripal_feature_phenotypes', array('node' => $node)),
+          '#tripal_toc_id'    => 'phenotypes',
+          '#tripal_toc_title' => 'Phenotypes',
         );
       }
       break;

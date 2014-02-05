@@ -20,69 +20,65 @@ if ($project->description) {
 else {
   $projectprop = tripal_project_get_property($project->project_id, 'Project Description');
   $description = $projectprop->value;
-}
+} ?>
 
-?>
-<div id="tripal_project-base-box" class="tripal_project-info-box tripal-info-box">
-  <div class="tripal_project-info-box-title tripal-info-box-title">Project Details</div>
-  <div class="tripal_project-info-box-desc tripal-info-box-desc"></div><?php 
+<div class="tripal_project-info-box-desc tripal-info-box-desc"></div><?php 
 
-  // the $headers array is an array of fields to use as the colum headers. 
-  // additional documentation can be found here 
-  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  // This table for the project has a vertical header (down the first column)
-  // so we do not provide headers here, but specify them in the $rows array below.
-  $headers = array();
-  
-  // the $rows array contains an array of rows where each row is an array
-  // of values for each column of the table in that row.  Additional documentation
-  // can be found here:
-  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7 
-  $rows = array();
+// the $headers array is an array of fields to use as the colum headers. 
+// additional documentation can be found here 
+// https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+// This table for the project has a vertical header (down the first column)
+// so we do not provide headers here, but specify them in the $rows array below.
+$headers = array();
 
-  // Project Name row
+// the $rows array contains an array of rows where each row is an array
+// of values for each column of the table in that row.  Additional documentation
+// can be found here:
+// https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7 
+$rows = array();
+
+// Project Name row
+$rows[] = array(
+  array(
+    'data' => 'Project Name',
+    'header' => TRUE
+  ),
+  $project->name
+);
+// allow site admins to see the feature ID
+if (user_access('access administration pages')) {
+  // Project ID
   $rows[] = array(
     array(
-      'data' => 'Project Name',
-      'header' => TRUE
+      'data' => 'Project ID',
+      'header' => TRUE,
+      'class' => 'tripal-site-admin-only-table-row',
     ),
-    $project->name
-  );
-  // allow site admins to see the feature ID
-  if (user_access('access administration pages')) {
-    // Project ID
-    $rows[] = array(
-      array(
-        'data' => 'Project ID',
-        'header' => TRUE,
-        'class' => 'tripal-site-admin-only-table-row',
-      ),
-      array(
-        'data' => $project->project_id,
-        'class' => 'tripal-site-admin-only-table-row',
-      ),
-    );
-  }
-  // the $table array contains the headers and rows array as well as other
-  // options for controlling the display of the table.  Additional
-  // documentation can be found here:
-  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $table = array(
-    'header' => $headers,
-    'rows' => $rows,
-    'attributes' => array(
-      'id' => 'tripal_project-table-base',
+    array(
+      'data' => $project->project_id,
+      'class' => 'tripal-site-admin-only-table-row',
     ),
-    'sticky' => FALSE,
-    'caption' => '',
-    'colgroups' => array(),
-    'empty' => '',
   );
-  
-  // once we have our table array structure defined, we call Drupal's theme_table()
-  // function to generate the table.
-  print theme_table($table);
-  if ($description) { ?>
-    <div style="text-align: justify"><?php print $description; ?></div> <?php  
-  } ?>
-</div>
+}
+// the $table array contains the headers and rows array as well as other
+// options for controlling the display of the table.  Additional
+// documentation can be found here:
+// https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+$table = array(
+  'header' => $headers,
+  'rows' => $rows,
+  'attributes' => array(
+    'id' => 'tripal_project-table-base',
+  ),
+  'sticky' => FALSE,
+  'caption' => '',
+  'colgroups' => array(),
+  'empty' => '',
+);
+
+// once we have our table array structure defined, we call Drupal's theme_table()
+// function to generate the table.
+print theme_table($table);
+if ($description) { ?>
+  <div style="text-align: justify"><?php print $description; ?></div> <?php  
+} 
