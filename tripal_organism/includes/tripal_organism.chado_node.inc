@@ -477,15 +477,15 @@ function chado_organism_load($nodes) {
 function tripal_organism_node_presave($node) {
   switch ($node->type) {
     case 'chado_organism':
-      // for a form submission the fields part of the node object
-      // but for a sync the feilds are in an object of the node
-      if(property_exists($node, 'organism')) {
+      // for a form submission the 'genus' field will be set,
+      // for a sync, we must pull from the organism object
+      if(property_exists($node, 'genus')) {
         // set the title
-        $node->title = $node->organism->genus . " " . $node->organism->species;
+        $node->title = $node->genus  . " " . $node->species;
       }
       else {
         // set the title
-        $node->title = $node->genus  . " " . $node->species;
+        $node->title = $node->organism->genus . " " . $node->organism->species;
       }
       break;
   }
@@ -501,9 +501,9 @@ function tripal_organism_node_view($node, $view_mode, $langcode) {
       if ($view_mode == 'full') {
         $node->content['tripal_organism_base'] = array(
           '#markup'  => theme('tripal_organism_base', array('node' => $node)),
-          '#weight' => 0,
           '#tripal_toc_id'    => 'base',
-          '#tripal_toc_title' => 'Details',
+          '#tripal_toc_title' => 'Overview',
+          '#weight' => -100,
         );
       }
       if ($view_mode == 'teaser') {

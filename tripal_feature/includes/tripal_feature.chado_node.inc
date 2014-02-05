@@ -697,29 +697,35 @@ function tripal_feature_node_presave($node) {
   // set the title to ensure it is always unique
   switch ($node->type) {
     case 'chado_feature':
-      // for a form submission the fields part of the node object
-      // but for a sync the feilds are in an object of the node
+      // for a form submission the fields are part of the node object
+      // but for a sync the fields are in an object of the node
       $name = '';
       $uname = '';
       $type = '';
       $organism_id = null;
-      if(property_exists($node, 'feature')) {
-        $organism_id = $node->feature->organism_id->organism_id;
-        $name        = $node->feature->name;
-        $uname       = $node->feature->uniquename;
-        $type_id     = $node->feature->type_id->cvterm_id;
-        $type        = $node->feature->type_id->name;
-
+      if(property_exists($node, 'uniquename')) {
+        $organism_id = $node->organism_id;
+        $name        = $node->name;
+        $uname       = $node->uniquename;
+        $type        = $node->feature_type;
       }
       else {
-        $organism_id = $node->organism_id;
-        $name = $node->name;
-        $uname = $node->uniquename;
-        $type = $node->feature_type;
+        $organism_id = $node->feature->organism_id;
+        $name        = $node->feature->name;
+        $uname       = $node->feature->uniquename;
+        $type_id     = $node->feature->type_id;
+        $values = array('cvterm_id' => $type_id);
+        $ftype = tripal_core_chado_select('cv', array('name'), $values);
+        $type = $ftype[0]->name;
       }
+     
       $values = array('organism_id' => $organism_id);
       $organism = tripal_core_chado_select('organism', array('genus', 'species'), $values);
-      $node->title = $name . ', ' . $uname . ' (' . $type . ') ' . $organism[0]->genus . ' ' . $organism[0]->species;
+      $node->title = "$name, $uname ($type) " . $organism[0]->genus . ' ' . $organism[0]->species;
+      
+      if ($name == $uname) {
+        $node->title = "$name ($type) " . $organism[0]->genus . ' ' . $organism[0]->species; 
+      }
       break;
   }
 }
@@ -826,12 +832,6 @@ function tripal_feature_node_view($node, $view_mode, $langcode) {
     case 'chado_feature':
       // Show feature browser and counts
       if ($view_mode == 'full') {
-        $node->content['tripal_feature_base'] = array(
-          '#markup' => theme('tripal_feature_base', array('node' => $node)),
-          '#tripal_toc_id'    => 'base',
-          '#tripal_toc_title' => 'Details',
-          '#weight' => 0,
-        );
         $node->content['tripal_feature_alignments'] = array(
           '#markup' => theme('tripal_feature_alignments', array('node' => $node)),
           '#tripal_toc_id'    => 'alignments',
@@ -842,8 +842,14 @@ function tripal_feature_node_view($node, $view_mode, $langcode) {
           '#tripal_toc_id'    => 'analyses',
           '#tripal_toc_title' => 'Analyses',
         );
+        $node->content['tripal_feature_base'] = array(
+          '#markup' => theme('tripal_feature_base', array('node' => $node)),
+          '#tripal_toc_id'    => 'base',
+          '#tripal_toc_title' => 'Overview',
+          '#weight' => -100,
+        );
         $node->content['tripal_feature_featurepos'] = array(
-          '#markup' => theme('tripal_feature_featurepos', array('node' => $node)),
+          '#markup' => theme('tripal_feature_featurepos', array('node' => $node)),          
           '#tripal_toc_id'    => 'featurepos',
           '#tripal_toc_title' => 'Maps',
         );

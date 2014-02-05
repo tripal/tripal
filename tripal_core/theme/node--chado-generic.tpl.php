@@ -17,7 +17,7 @@ else {
           // show the corresponding item in the details box 
           $(".tripal_toc_list_item_link").click(function(){
             var id = $(this).attr('id') + "-tripal-data-block";
-            $(".tripal-data-block").hide().filter("#"+ id).show();
+            $(".tripal-data-block").hide().filter("#"+ id).fadeIn('fast');
             return false;
           }); 
     

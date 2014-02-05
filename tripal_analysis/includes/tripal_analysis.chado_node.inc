@@ -596,7 +596,8 @@ function tripal_analysis_node_view($node, $view_mode, $langcode) {
         $node->content['tripal_analysis_base'] = array(
           '#markup' => theme('tripal_analysis_base', array('node' => $node)),
           '#tripal_toc_id'    => 'base',
-          '#tripal_toc_title' => 'Details',
+          '#tripal_toc_title' => 'Overview',
+          '#weight' => -100,
         );
         $node->content['tripal_analysis_properties'] = array(
           '#markup' => theme('tripal_analysis_properties', array('node' => $node)),
@@ -617,36 +618,38 @@ function tripal_analysis_node_view($node, $view_mode, $langcode) {
  * @param $node
  */
 function tripal_analysis_node_presave($node) {
+  $name = '';
+  $program = '';
+  $programversion = '';
+  $sourcename = '';
+  
   // If this is an analysis of some type it will should have three required
   // fields for the Chado analysis table: program, programversion and sourcename.
   // So we will set the title for any node that has these three fields. Some extension
   // modules will use this module as a type of "inherited" class, so we don't know
-  // for sure when type of analysis we have.
+  // for sure when type of analysis we have.  If this is a sync then 
   if (property_exists($node, 'program') and
       property_exists($node, 'programversion') and
       property_exists($node, 'sourcename')) {
-    $name = '';
-    $program = '';
-    $programversion = '';
-    $sourcename = '';
-    if (property_exists($node, 'analysis')) {
-      $name           = $node->analysis->name;
-      $program        = $node->analysis->program;
-      $programversion = $node->analysis->programversion;
-      $sourcename     = $node->analysis->sourcename;
-    }
-    else {
-      $name           = $node->analysisname;
-      $program        = $node->program;
-      $programversion = $node->programversion;
-      $sourcename     = $node->sourcename;
-    }
+    $name           = $node->analysisname;
+    $program        = $node->program;
+    $programversion = $node->programversion;
+    $sourcename     = $node->sourcename;
     // now construct the title
+    $node->title = "$program ($programversion) $sourcename";
     if ($name) {
       $node->title = $name;
     }
-    else {
-      $node->title = "$program ($programversion) $sourcename";
+  }
+  else if (property_exists($node, 'analysis')) {
+    $name           = $node->analysis->name;
+    $program        = $node->analysis->program;
+    $programversion = $node->analysis->programversion;
+    $sourcename     = $node->analysis->sourcename;
+    // now construct the title
+    $node->title = "$program ($programversion) $sourcename";
+    if ($name) {
+      $node->title = $name;
     }
   }
 }

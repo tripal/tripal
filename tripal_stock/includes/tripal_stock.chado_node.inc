@@ -786,17 +786,30 @@ function tripal_stock_node_presave($node) {
       // for a form submission the fields part of the node object
       // but for a sync the feilds are in an object of the node
       $organism_id = null;
-      if(property_exists($node, 'stock')) {
-        $organism_id = $node->stock->organism_id;
+      $sname = '';
+      $uniquename = '';
+      $type = '';
+      if(property_exists($node, 'organism_id')) {
+        $organism_id = $node->organism_id;
+        $sname       = $node->sname;
+        $uniquename  = $node->uniquename;
+        $type_id     = $node->type_id;
+        $values = array('cvterm_id' => $node->type_id);
+        $cvterm = tripal_core_chado_select('cvterm', array('name'), $values);
+        $type = $cvterm[0]->name;
       }
       else {
-        $organism_id = $node->organism_id;
+        $organism_id = $node->stock->organism_id;
+        $sname       = $node->stock->name;
+        $uniquename  = $node->stock->uniquename;
+        $type        = $node->stock->type_id->name;
       }
       $values = array('organism_id' => $organism_id);
       $organism = tripal_core_chado_select('organism', array('genus','species'), $values);
-      $values = array('cvterm_id' => $node->type_id);
-      $cvterm = tripal_core_chado_select('cvterm', array('name'), $values);
-      $node->title = $node->sname . ', ' . $node->uniquename . ' (' . $cvterm[0]->name . ') ' . $organism[0]->genus . ' ' . $organism[0]->species;
+      $node->title = "$sname, $uniquename ($type) " . $organism[0]->genus . ' ' . $organism[0]->species;
+      if ($name == $uname) {
+        $node->title = "$sname ($type) " . $organism[0]->genus . ' ' . $organism[0]->species;
+      }
       break;
   }
 }
@@ -854,8 +867,8 @@ function tripal_stock_node_view($node, $view_mode, $langcode) {
         $node->content['tripal_stock_base'] = array(
           '#markup' => theme('tripal_stock_base', array('node' => $node)),
           '#tripal_toc_id'    => 'base',
-          '#tripal_toc_title' => 'Details',
-          '#weight' => 0,
+          '#tripal_toc_title' => 'Overview',
+          '#weight' => -100,
         );
         $node->content['tripal_stock_collections'] = array(
           '#markup' => theme('tripal_stock_collections', array('node' => $node)),

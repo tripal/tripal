@@ -60,7 +60,7 @@ function chado_contact_form(&$node, $form_state) {
   // set form field defaults
   $contact_id  = null;
   $type_id     = 0;
-  $title       = '';
+  $contactname       = '';
   $description = '';
 
   // if we are editing an existing node then the contact is already part of the node
@@ -70,7 +70,7 @@ function chado_contact_form(&$node, $form_state) {
 
     // get form defaults
     $type_id     = $contact->type_id->cvterm_id;
-    $title       = $contact->name;
+    $contactname       = $contact->name;
 
     // get the contact default values.  When this module was first created
     // the contact description was incorrectly stored in the $node->body field.
@@ -104,14 +104,14 @@ function chado_contact_form(&$node, $form_state) {
   // then use the $form_state['values'] values
   if (array_key_exists('values', $form_state)) {
     $type_id     = $form_state['values']['type_id'];
-    $title       = $form_state['values']['title'];
+    $contactname       = $form_state['values']['contactname'];
     $description = $form_state['values']['description'];
   }
   // if we are re building the form from after submission (from ajax call) then
   // the values are in the $form_state['input'] array
   if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
     $type_id     = $form_state['input']['type_id'];
-    $title       = $form_state['input']['title'];
+    $contactname       = $form_state['input']['contactname'];
     $description = $form_state['input']['description'];
   }
 
@@ -146,12 +146,12 @@ function chado_contact_form(&$node, $form_state) {
     '#default_value' => $type_id,
   );
 
-  $form['title']= array(
+  $form['contactname']= array(
     '#type'          => 'textfield',
     '#title'         => t('Contact Name'),
     '#description'   => t('Enter the name of this contact'),
     '#required'      => TRUE,
-    '#default_value' => $title,
+    '#default_value' => $contactname,
     '#maxlength'     => 255,
   );
 
@@ -234,7 +234,7 @@ function chado_contact_form(&$node, $form_state) {
  */
 function chado_contact_validate($node, $form, &$form_state) {
   // remove surrounding white-space on submitted values
-  $node->title          = trim($node->title);
+  $node->contactname          = trim($node->contactname);
   $node->description    = trim($node->description);
 
   // if this is a delete then don't validate
@@ -256,11 +256,11 @@ function chado_contact_validate($node, $form, &$form_state) {
     $contact = $result[0];
 
     // if the name has changed make sure it doesn't conflict with an existing name
-    if ($contact->name != $node->title) {
-      $values = array('name' => $node->title);
+    if ($contact->name != $node->contactname) {
+      $values = array('name' => $node->contactname);
       $result = tripal_core_chado_select('contact', array('contact_id'), $values);
       if ($result and count($result) > 0) {
-        form_set_error('title', 'Cannot update the contact with this contact name. A contact with this name already exists.');
+        form_set_error('contactname', 'Cannot update the contact with this contact name. A contact with this name already exists.');
         return;
       }
     }
@@ -269,11 +269,11 @@ function chado_contact_validate($node, $form, &$form_state) {
   else {
     // The unique constraint for the chado contact table is: name
     $values = array(
-      'name' => $node->title,
+      'name' => $node->contactname,
     );
     $contact = tripal_core_chado_select('contact', array('contact_id'), $values);
     if ($contact and count($contact) > 0) {
-      form_set_error('title', 'Cannot add the contact with this name. A contact with these values already exists.');
+      form_set_error('contactname', 'Cannot add the contact with this name. A contact with these values already exists.');
       return;
     }
   }
@@ -343,7 +343,7 @@ function chado_contact_node_access($node, $op, $account ) {
 function chado_contact_insert($node) {
 
   // remove surrounding white-space on submitted values
-  $node->title          = trim($node->title);
+  $node->contactname          = trim($node->contactname);
   $node->description    = trim($node->description);
 
   // if there is a contact_id in the $node object then this must be a sync so
@@ -352,7 +352,7 @@ function chado_contact_insert($node) {
   if (!property_exists($node, 'contact_id')) {
     // insert and then get the newly inserted contact record
     $values = array(
-      'name'           => $node->title,
+      'name'           => $node->contactname,
       'description'    => '',
       'type_id'        => $node->type_id,
     );
@@ -418,7 +418,7 @@ function chado_contact_insert($node) {
 */
 function chado_contact_update($node) {
   // remove surrounding white-space on submitted values
-  $node->title          = trim($node->title);
+  $node->contactname          = trim($node->contactname);
   $node->description    = trim($node->description);
 
   $contact_id = chado_get_id_for_node('contact', $node->nid) ;
@@ -428,7 +428,7 @@ function chado_contact_update($node) {
     'contact_id' => $contact_id,
   );
   $values = array(
-    'name' => $node->title,
+    'name' => $node->contactname,
     'description' => '',
     'type_id' => $node->type_id
   );
@@ -555,8 +555,8 @@ function tripal_contact_node_view($node, $view_mode, $langcode) {
         $node->content['tripal_contact_base'] = array(
           '#markup' => theme('tripal_contact_base', array('node' => $node)),
           '#tripal_toc_id'    => 'base',
-          '#tripal_toc_title' => 'Details',
-          '#weight' => 0,
+          '#tripal_toc_title' => 'Overview',
+          '#weight' => -100,
         );
         $node->content['tripal_contact_properties'] = array(
           '#markup' => theme('tripal_contact_properties', array('node' => $node)),
@@ -590,14 +590,14 @@ function tripal_contact_node_view($node, $view_mode, $langcode) {
 function tripal_contact_node_presave($node) {
   switch ($node->type) {
     case 'chado_contact':
-      // for a form submission the fields part of the node object
-      // but for a sync the feilds are in an object of the node
-      if(property_exists($node, 'contact')) {
+      // for a form submission the 'contactname' field will be set,
+      // for a sync, we must pull from the contact object
+      if(property_exists($node, 'contactname')) {
         // set the title
-        $node->title = $node->contact->name;
+        $node->title = $node->contactname;
       }
       else {
-        // the title is an element of the form and does not need to be set
+        $node->title = $node->contact->name;
       }
       break;
   }

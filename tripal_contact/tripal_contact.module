@@ -191,7 +191,7 @@ function tripal_contact_block_view($delta = '') {
     $block = array();
     switch ($delta) {
       case 'contbase':
-        $block['subject'] = t('Details');
+        $block['subject'] = t('Overview');
         $block['content'] = array(
           '#theme' => 'tripal_contact_base',
           '#nodes' => $node,
