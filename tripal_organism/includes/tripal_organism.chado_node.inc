@@ -121,11 +121,10 @@ function chado_organism_validate($node, $form, &$form_state) {
     $result = chado_query($sql, $args)->fetchObject();
     if ($result) {
       form_set_error('genus', t("Update cannot proceed. The organism genus
-      '$node->genus' and species '$node->species' is already present in the database."));
-      watchdog('tripal_organism',
-      'Update organism: genus and species already exists: %values',
-      array('%values' => "genus = $node->genus, species = $node->species"),
-      WATCHDOG_WARNING);
+        '$node->genus' and species '$node->species' is already present in the database."));
+      tripal_core_report_error('tripal_organism', TRIPAL_WARNING,
+        'Update organism: genus and species already exists: %values',
+        array('%values' => "genus = $node->genus, species = $node->species"));
     }
   }
   // Validating for an insert
@@ -138,10 +137,9 @@ function chado_organism_validate($node, $form, &$form_state) {
     if (sizeof($organism) > 0) {
       form_set_error('genus', 'Cannot add the organism with this genus and species.
         The organism already exists.');
-      watchdog('tripal_organism',
-      'Insert organism: genus and species already exists: %values',
-      array('%values' => "genus = $node->genus, species = $node->species"),
-      WATCHDOG_WARNING);
+      tripal_core_report_error('tripal_organism', TRIPAL_WARNING,
+        'Insert organism: genus and species already exists: %values',
+        array('%values' => "genus = $node->genus, species = $node->species"));
     }
   }
 }
@@ -174,8 +172,8 @@ function chado_organism_insert($node) {
     $organism = tripal_core_chado_insert('organism', $values);
     if (!$organism) {
       drupal_set_message(t('Unable to add organism.', 'warning'));
-      watchdog('tripal_organism', 'Insert Organism: Unable to create organism where values:%values',
-      array('%values' => print_r($values, TRUE)), WATCHDOG_ERROR);
+      tripal_core_report_error('tripal_organism', TRIPAL_ERROR, 'Insert Organism: Unable to create organism where values:%values',
+      array('%values' => print_r($values, TRUE)));
       return;
     }
     $organism_id = $organism['organism_id'];

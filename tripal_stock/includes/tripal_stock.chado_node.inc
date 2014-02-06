@@ -56,9 +56,7 @@ function chado_stock_load($nodes) {
     // get the stock details from chado
     $stock_id = chado_get_id_for_node('stock', $node->nid);
     if (empty($stock_id)) {
-      tripal_core_report_error(
-        'tripal_stock',
-        TRIPAL_ERROR,
+      tripal_core_report_error('tripal_stock', TRIPAL_ERROR,
         'Unable to retrieve stock_id for %title (NID = %nid).',
         array('%title' => $node->title, '%nid' => $node->nid)
       );
@@ -484,11 +482,9 @@ function chado_stock_insert($node) {
           $dbxref_status = tripal_core_chado_insert('dbxref', $values);
           if (!$dbxref_status) {
             drupal_set_message(t('Unable to add database reference to this stock.'), 'warning');
-            watchdog('tripal_stock',
+            tripal_core_report_error('tripal_stock', TRIPAL_WARNING,
               'Insert Stock: Unable to create dbxref where values:%values',
-              array('%values' => print_r($values, TRUE)),
-              WATCHDOG_WARNING
-            );
+              array('%values' => print_r($values, TRUE)));
           }
         }
         else {
@@ -580,11 +576,9 @@ function chado_stock_insert($node) {
   }
   else {
     drupal_set_message(t('Error during stock creation.'), 'error');
-    watchdog('tripal_stock',
+    tripal_core_report_error('tripal_stock', TRIPAL_WARNING,
       'Insert Stock: Unable to create stock where values:%values',
-      array('%values' => print_r($values, TRUE)),
-      WATCHDOG_WARNING
-    );
+      array('%values' => print_r($values, TRUE)));
     return FALSE;
   }
 }
@@ -653,11 +647,9 @@ function chado_stock_update($node) {
         }
         else {
           drupal_set_message(t('Unable to find stock to Update'), 'error');
-          watchdog(
-            'tripal_stock',
+          tripal_core_report_error('tripal_stock', TRIPAL_ERROR,
             'Stock Update: Unable to find stock to update using values: %values',
-            array('%values', print_r($values, TRUE)),
-            WATCHDOG_ERROR
+            array('%values', print_r($values, TRUE))
           );
           return FALSE;
         }
@@ -665,12 +657,9 @@ function chado_stock_update($node) {
     }
 
     if (!$dbxref_status) {
-      watchdog(
-        'tripal_stock',
+      tripal_core_report_error('tripal_stock', TRIPAL_WARNING,
         'Stock Update: Unable to %mode main stock dbxref with values: %values',
-        array('%values' => print_r($values, TRUE), '%mode' => $dbxref_mode),
-        WATCHDOG_WARNING
-      );
+        array('%values' => print_r($values, TRUE), '%mode' => $dbxref_mode));
     }
   }
 
@@ -695,11 +684,9 @@ function chado_stock_update($node) {
 
   if (!$status) {
     drupal_set_message(t('Unable to update stock'), 'error');
-    watchdog(
-      'tripal_stock',
+    tripal_core_report_error('tripal_stock', TRIPAL_ERROR,
       'Stock Update: Unable to update stock using match values: %mvalues and update values: %uvalues',
-      array('%mvalues' => print_r(array('stock_id' => $node->stock_id), TRUE), '%uvalues' => print_r($update_values, TRUE)),
-      WATCHDOG_ERROR
+      array('%mvalues' => print_r(array('stock_id' => $node->stock_id), TRUE), '%uvalues' => print_r($update_values, TRUE))
     );
   }
   else {

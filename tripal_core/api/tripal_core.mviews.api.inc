@@ -111,7 +111,8 @@ function tripal_add_mview($name, $modulename, $schema_arr, $query, $comment = NU
   $mv_table = $schema_arr['table'];
 
   if (!$mv_table) {
-     watchdog('tripal_core', 'Must have a table name when creating an mview.', array(), WATCHDOG_ERROR);
+     tripal_core_report_error('tripal_core', TRIPAL_ERROR, 
+       'Must have a table name when creating an mview.', array());
      return NULL;
   }
 

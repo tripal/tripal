@@ -1133,10 +1133,10 @@ function tripal_bulk_loader_edit_template_record_form_submit($form, &$form_state
     }
     else {
       drupal_set_message(t('Unable to Save Template!'), 'error');
-      watchdog('T_bulk_loader',
+      tripal_core_report_error('T_bulk_loader',
+        TRIPAL_ERROR,
         'Unable to save bulk loader template: %template',
-        array('%template' => print_r($form_state['storage']['template'], TRUE)),
-        WATCHDOG_ERROR
+        array('%template' => print_r($form_state['storage']['template'], TRUE))
       );
     }
   }
@@ -2212,10 +2212,10 @@ function tripal_bulk_loader_template_field_form_submit($form, &$form_state) {
     }
     else {
       drupal_set_message(t('Unable to Save Template!'), 'error');
-      watchdog('T_bulk_loader',
+      tripal_core_report_error('T_bulk_loader',
+        TRIPAL_ERROR,
         'Unable to save bulk loader template: %template',
-        array('%template' => print_r($form_state['storage']['template'], TRUE)),
-        WATCHDOG_ERROR
+        array('%template' => print_r($form_state['storage']['template'], TRUE))
       );
     }
   }

@@ -280,7 +280,7 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
  */
 function tripal_cv_obo_quiterror($message) {
 
-  watchdog("T_obo_loader", $message, array(), WATCHDOG_ERROR);;
+  tripal_core_report_error("T_obo_loader", TRIPAL_ERROR, $message, array());
   exit;
 
 }
@@ -808,7 +808,7 @@ function tripal_cv_obo_parse($obo_file, &$header, $jobid) {
         $options = array('statement_name' => 'ins_tripalobotemp_all');
         $success = tripal_core_chado_insert('tripal_obo_temp', $values, $options);
         if (!$success) {
-          watchdog('T_obo_loader', "ERROR: Cannot insert stanza into temporary table.", array(), 'error');
+          tripal_core_report_error('T_obo_loader', "ERROR: Cannot insert stanza into temporary table.", array(), 'error');
           exit;
         }
 
@@ -857,7 +857,7 @@ function tripal_cv_obo_parse($obo_file, &$header, $jobid) {
     $options = array('statement_name' => 'ins_tripalobotemp_all');
     tripal_core_chado_insert('tripal_obo_temp', $values, $options);
     if (!$success) {
-      watchdog('T_obo_loader', "ERROR: Cannot insert stanza into temporary table.", array(), 'error');
+      tripal_core_report_error('T_obo_loader', "ERROR: Cannot insert stanza into temporary table.", array(), 'error');
       exit;
     }
     $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
@@ -881,7 +881,7 @@ function tripal_cv_obo_add_cvterm_dbxref($cvterm, $xref) {
 
   if (!$accession) {
     tripal_cv_obo_quiterror();
-    watchdog("T_obo_loader", "Cannot add a dbxref without an accession: '$xref'", NULL, WATCHDOG_WARNING);
+    tripal_core_report_error("T_obo_loader", TRIPAL_WARNING, "Cannot add a dbxref without an accession: '$xref'", NULL);
     return FALSE;
   }
 

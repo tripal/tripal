@@ -162,8 +162,8 @@ function tripal_pub_PMID_search_init($search_str, $retmax){
   $rfh = fopen($query_url, "r");
   if (!$rfh) {
     drupal_set_message('Could not perform Pubmed query. Cannot connect to Entrez.', 'error');
-    watchdog('tpub_import', "Could not perform Pubmed query. Cannot connect to Entrez.",
-              array(), WATCHDOG_ERROR);
+    tripal_core_report_error('tpub_pubmed', TRIPAL_ERROR, "Could not perform Pubmed query. Cannot connect to Entrez.",
+              array());
     return 0;
   }
 
@@ -241,8 +241,8 @@ $retmod = 'null', $start = 0, $limit = 10, $args = array()){
   $rfh = fopen($fetch_url, "r");
   if (!$rfh) {
     drupal_set_message('ERROR: Could not perform PubMed query.', 'error');
-    watchdog('tpub_import', "Could not perform PubMed query: %fetch_url.",
-              array('%fetch_url' => $fetch_url), WATCHDOG_ERROR);
+    tripal_core_report_error('tpub_pubmed', TRIPAL_ERROR, "Could not perform PubMed query: %fetch_url.",
+              array('%fetch_url' => $fetch_url));
     return '';
   }
   $results = '';
@@ -285,7 +285,7 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
       switch ($element) {
         case 'ERROR':
           $xml->read(); // get the value for this element
-          watchdog('tripal_pub', "Error: %err", array('%err' => $xml->value), WATCHDOG_ERROR);
+          tripal_core_report_error('tpub_pubmed', TRIPAL_ERROR, "Error: %err", array('%err' => $xml->value));
           break;
         case 'PMID':
           // thre are multiple places where a PMID is present in the XML and
@@ -507,8 +507,8 @@ function tripal_pub_PMID_parse_publication_type($xml, &$pub) {
             // see if this we can find the name using a synonym
             $pub_cvterm = tripal_cv_get_cvterm_by_synonym($value, NULL, 'tripal_pub');
             if (!$pub_cvterm) {
-              watchdog('tpub_pubmed', 'Cannot find a valid vocabulary term for the publication type: "%term".',
-              array('%term' => $value), WATCHDOG_ERROR);
+              tripal_core_report_error('tpub_pubmed', TRIPAL_ERROR, 'Cannot find a valid vocabulary term for the publication type: "%term".',
+              array('%term' => $value));
             }
           }
           else {

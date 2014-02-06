@@ -145,8 +145,8 @@ function tripal_featuremap_add_featuremap_dbxref($featuremap_id, $featuremap_dbx
   $options = array('statement_name' => 'ins_featuremapdbxref_dbpu');
   $results = tripal_core_chado_insert('featuremap_dbxref', $values, $options);
   if (!$results) {
-    watchdog('t_featuremap', "Cannot add map dbxref: %db:%accession.",
-      array('%db' => $dbname, '%accession' => $accession). WATCHDOG_ERROR);
+    tripal_core_report_error('t_featuremap', TRIPAL_ERROR, "Cannot add map dbxref: %db:%accession.",
+      array('%db' => $dbname, '%accession' => $accession));
     return FALSE;
   }
   return $results;

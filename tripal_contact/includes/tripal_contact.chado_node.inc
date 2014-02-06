@@ -359,8 +359,9 @@ function chado_contact_insert($node) {
     $contact = tripal_core_chado_insert('contact', $values);
     if (!$contact) {
       drupal_set_message(t('Unable to add contact.', 'warning'));
-      watchdog('tripal_contact', 'Insert contact: Unable to create contact where values: %values',
-      array('%values' => print_r($values, TRUE)), WATCHDOG_ERROR);
+      tripal_core_report_error('tripal_contact', TRIPAL_ERROR, 
+        'Insert contact: Unable to create contact where values: %values',
+        array('%values' => print_r($values, TRUE)));
       return;
     }
     $contact_id = $contact['contact_id'];
@@ -435,7 +436,8 @@ function chado_contact_update($node) {
   $status = tripal_core_chado_update('contact', $match, $values);
   if (!$status) {
     drupal_set_message("Error updating contact", "error");
-    watchdog('t_contact', "Error updating contact", array(), WATCHDOG_ERROR);
+    tripal_core_report_error('tripal_contact', TRIPAL_ERROR, 
+      "Error updating contact", array());
     return;
   }
 

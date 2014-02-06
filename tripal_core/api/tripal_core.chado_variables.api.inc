@@ -210,9 +210,10 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
   // get description for the current table----------------------------------------------------------
   $table_desc = tripal_core_get_chado_table_schema($table);
   if (!$table_desc or count($table_desc) == 0) {
-    watchdog('tripal_core', "tripal_core_generate_chado_var: The table '%table' has not been defined. " .
-             "and cannot be expanded. If this is a custom table, please add it using the Tripal " .
-             "custom table interface.", array('%table' => $table), WATCHDOG_ERROR);
+    tripal_core_report_error('tripal_core', TRIPAL_ERROR, 
+      "tripal_core_generate_chado_var: The table '%table' has not been defined. " .
+      "and cannot be expanded. If this is a custom table, please add it using the Tripal " .
+      "custom table interface.", array('%table' => $table));
     if ($return_array) {
       return array();
     }
@@ -499,7 +500,8 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
 
   // make sure we have a value
   if (!$object) {
-    watchdog('tripal_core', 'Cannot pass non array as argument, $object, to tripal_core_expand_chado_vars function.', array(), WATCHDOG_ERROR);
+    tripal_core_report_error('tripal_core', TRIPAL_ERROR, 
+      'Cannot pass non array as argument, $object, to tripal_core_expand_chado_vars function.', array());
     return $object;
   }
 
@@ -546,8 +548,9 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
         }
       }
       else {
-        watchdog('tripal_core', 'tripal_core_expand_chado_vars: Field (%field) not in the right format. " .
-          "It should be <tablename>.<fieldname>', WATCHDOG_ERROR);
+        tripal_core_report_error('tripal_core', TRIPAL_ERROR, 
+          'tripal_core_expand_chado_vars: Field (%field) not in the right format. " .
+          "It should be <tablename>.<fieldname>');
       }
       break;
     case "table": //--------------------------------------------------------------------------------
@@ -626,10 +629,10 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
         // if we did not expand this table we should return a message that the foreign table
         // could not be expanded
         if (!$did_expansion) {
-          watchdog('tripal_core', 'tripal_core_expand_chado_vars: Could not expand table, %table. It is ' .
+          tripal_core_report_error('tripal_core', TRIPAL_ERROR, 'tripal_core_expand_chado_vars: Could not expand table, %table. It is ' .
             'not in a foreign key relationship with the base object nor with any other expanded table. ' .
             'Check the table definition to ensure that a proper foreign key relationship is present.',
-            array('%table' => $foreign_table), WATCHDOG_ERROR);
+            array('%table' => $foreign_table));
         }
       }
       break;
@@ -649,8 +652,8 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
           $object = $node;
         }
         else {
-          watchdog('tripal_core', 'tripal_core_expand_chado_vars: No node matches the nid (%nid) supplied.',
-            array('%nid' => $object->nid), WATCHDOG_ERROR);
+          tripal_core_report_error('tripal_core', TRIPAL_ERROR, 'tripal_core_expand_chado_vars: No node matches the nid (%nid) supplied.',
+            array('%nid' => $object->nid));
         } //end of if node
       }
       else {
@@ -667,8 +670,8 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
       }
       break;
     default:
-      watchdog('tripal_core', 'tripal_core_expand_chado_vars: Unrecognized type (%type). Should be one of "field", "table", "node".',
-        array('%type' => $type), WATCHDOG_ERROR);
+      tripal_core_report_error('tripal_core', TRIPAL_ERROR, 'tripal_core_expand_chado_vars: Unrecognized type (%type). Should be one of "field", "table", "node".',
+        array('%type' => $type));
       return FALSE;
   }
 
@@ -695,11 +698,9 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
     else {
       // if there is an expandable array then we've reached the base object
       // if we get here and don't have anything expanded then something went wrong
-      //      watchdog(
-      //        'tripal_core',
+      //      tripal_core_report_error('tripal_core', TRIPAL_ERROR,
       //        'tripal_core_expand_chado_vars: Unable to expand the %type %to_expand',
       //        array('%type'=>$type, '%to_expand'=>$to_expand),
-      //        WATCHDOG_ERROR
       //      );
     } //end of it we've reached the base object
   }

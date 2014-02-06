@@ -423,8 +423,8 @@ function chado_feature_insert($node) {
     $feature = tripal_core_chado_insert('feature', $values);
     if (!$feature) {
       drupal_set_message(t('Unable to add feature.'), 'warning');
-      watchdog('tripal_feature', 'Insert feature: Unable to create feature where values: %values',
-      array('%values' => print_r($values, TRUE)), WATCHDOG_WARNING);
+      tripal_core_report_error('tripal_feature', TRIPAL_WARNING, 'Insert feature: Unable to create feature where values: %values',
+      array('%values' => print_r($values, TRUE)));
       return;
     }
     $feature_id = $feature['feature_id'];
@@ -536,10 +536,9 @@ function chado_feature_update($node) {
   }
   else {
     drupal_set_message(t('Unable to update feature.'), 'warning');
-    watchdog('tripal_feature',
-    'Update feature: Unable to update feature where values: %values',
-    array('%values' => print_r($values, TRUE)),
-    WATCHDOG_WARNING
+    tripal_core_report_error('tripal_feature', TRIPAL_WARNING,
+     'Update feature: Unable to update feature where values: %values',
+     array('%values' => print_r($values, TRUE))
     );
   }
 
@@ -596,7 +595,7 @@ function chado_feature_add_synonyms($synonyms, $feature_id) {
   // remove any old synonyms
   $feature_syn_dsql = "DELETE FROM {feature_synonym} WHERE feature_id = :feature_id";
   if (!chado_query($feature_syn_dsql, array(':feature_id' => $feature_id))) {
-    watchdog('tripal_feature', "Could not remove synonyms from feature. ", array(), WATCHDOG_ERROR);
+    tripal_core_report_error('tripal_feature', TRIPAL_ERROR, "Could not remove synonyms from feature. ", array());
     return;
   }
 
@@ -627,7 +626,7 @@ function chado_feature_add_synonyms($synonyms, $feature_id) {
           )
       ";
       if (!chado_query($synonym_isql, array(':name' => $syn, ':synonym_sgml' => $syn))) {
-        watchdog('tripal_feature', "Could not add synonym. ", array(), WATCHDOG_WARNING);
+        tripal_core_report_error('tripal_feature', "Could not add synonym. ", array(), TRIPAL_WARNING);
         return;
       }
       // now get the synonym we just added
@@ -641,7 +640,7 @@ function chado_feature_add_synonyms($synonyms, $feature_id) {
       VALUES (:synonym_id, :feature_id, :pub_id)";
     $args = array(':synonym_id' => $synonym->synonym_id, ':feature_id' => $feature_id, ':pub_id'=> 1);
     if (!chado_query($feature_syn_isql, $args)) {
-      watchdog('tripal_feature', "Could not associate synonym with feature. ", array(), WATCHDOG_WARNING);
+      tripal_core_report_error('tripal_feature', "Could not associate synonym with feature. ", array(), TRIPAL_WARNING);
       return;
     }
   }
@@ -782,7 +781,7 @@ function tripal_feature_get_feature_url($node, $url_alias = NULL) {
   $values = array('feature_id' => $node->feature_id);
   $feature = tripal_core_chado_select('feature', array('*'), $values);
   if (!$feature) {
-    watchdog('trp-seturl', "Cannot find feature when setting URL alias for feature: %id", array('%id' => $node->feature_id), WATCHDOG_ERROR);
+    tripal_core_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find feature when setting URL alias for feature: %id", array('%id' => $node->feature_id));
     return FALSE;
   }
   $feature = (object) $feature[0];
@@ -791,7 +790,7 @@ function tripal_feature_get_feature_url($node, $url_alias = NULL) {
   $values = array('organism_id' => $feature->organism_id);
   $organism  = tripal_core_chado_select('organism', array('*'), $values);
   if (!$organism) {
-    watchdog('trp-seturl', "Cannot find organism when setting URL alias for feature: %id", array('%id' => $node->feature_id), WATCHDOG_ERROR);
+    tripal_core_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find organism when setting URL alias for feature: %id", array('%id' => $node->feature_id));
     return FALSE;
   }
   $genus = preg_replace('/\s/', '_', strtolower($organism[0]->genus));
@@ -801,7 +800,7 @@ function tripal_feature_get_feature_url($node, $url_alias = NULL) {
   $values = array('cvterm_id' => $feature->type_id);
   $cvterm = tripal_core_chado_select('cvterm', array('name'), $values);
   if (!$cvterm) {
-    watchdog('trp-seturl', "Cannot find type when setting URL alias for feature: %id", array('%id' => $node->feature_id), WATCHDOG_ERROR);
+    tripal_core_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find type when setting URL alias for feature: %id", array('%id' => $node->feature_id));
     return FALSE;
   }
   $type = preg_replace('/\s/', '_', $cvterm[0]->name);
@@ -817,7 +816,7 @@ function tripal_feature_get_feature_url($node, $url_alias = NULL) {
   // the dst field of the url_alias table is only 128 characters long.
   // if this is the case then simply return the node URL, we can't set this one
   if (strlen($url_alias) > 128) {
-    watchdog('trp-seturl', "Cannot set alias longer than 128 characters: %alias.", array('%alias' => $url_alias), WATCHDOG_ERROR);
+    tripal_core_report_error('trp-seturl', TRIPAL_ERROR, "Cannot set alias longer than 128 characters: %alias.", array('%alias' => $url_alias));
     return "node/" . $node->nid;
   }
 

@@ -120,8 +120,8 @@ function tripal_contact_add_contact($name, $description, $type, $properties) {
   if (count($contact) == 0) {
     $cvterm = tripal_cv_get_cvterm_by_name($type, NULL, 'tripal_contact');
     if (!$cvterm) {
-      watchdog('tripal_contact',"Cannot find contact type '%type'",
-        array('%type' => $type), WATCHDOG_ERROR);
+      tripal_core_report_error('tripal_contact', TRIPAL_ERROR, "Cannot find contact type '%type'",
+        array('%type' => $type));
       return FALSE;
     }
     $values =  array(
@@ -132,7 +132,7 @@ function tripal_contact_add_contact($name, $description, $type, $properties) {
     $options = array('statement_name' => 'ins_contact_nadety');
     $contact = tripal_core_chado_insert('contact', $values, $options);
     if (!$contact) {
-      watchdog('tripal_contact','Could not add the contact', array(), WATCHDOG_ERROR);
+      tripal_core_report_error('tripal_contact', TRIPAL_ERROR, 'Could not add the contact', array());
       return FALSE;
     }
   }
@@ -150,7 +150,8 @@ function tripal_contact_add_contact($name, $description, $type, $properties) {
   foreach ($properties as $key => $value) {
     $success = tripal_contact_insert_property($contact['contact_id'], $key,$value, TRUE);
     if (!$success) {
-      watchdog('tripal_contact',"Could not add the contact property '%prop'", array('%prop' => $key), WATCHDOG_ERROR);
+      tripal_core_report_error('tripal_contact', TRIPAL_ERROR,
+        "Could not add the contact property '%prop'", array('%prop' => $key));
       return FALSE;
     }
   }

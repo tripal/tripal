@@ -186,7 +186,7 @@ function tripal_stock_set_urls($na = NULL, $job = NULL) {
       db_query('DEALLOCATE "del_url_alias_by_src"');
       db_query('DEALLOCATE "ins_url_alias_nisrds"');
       db_query("ROLLBACK");
-      watchdog('trp-seturl', "Failed Removing URL Alias: %src", array('%src' => $src), WATCHDOG_ERROR);
+      tripal_core_report_error('trp-seturl', TRIPAL_ERROR, "Failed Removing URL Alias: %src", array('%src' => $src));
       return;
     }
     $success = db_query("EXECUTE ins_url_alias_nisrds(:src, :dst)", array(':src' => $src, ':dst' => $dst));
@@ -194,7 +194,7 @@ function tripal_stock_set_urls($na = NULL, $job = NULL) {
       db_query('DEALLOCATE "del_url_alias_by_src"');
       db_query('DEALLOCATE "ins_url_alias_nisrds"');
       db_query("ROLLBACK");
-      watchdog('trp-seturl', "Failed Adding URL Alias: %dst", array('%dst' => $dst), WATCHDOG_ERROR);
+      tripal_core_report_error('trp-seturl', TRIPAL_ERROR, "Failed Adding URL Alias: %dst", array('%dst' => $dst));
       return;
     }
 
@@ -247,7 +247,7 @@ function tripal_stock_get_stock_url($node, $url_alias = NULL) {
   $options = array('statement_name' => 'sel_stock_id');
   $stock = tripal_core_chado_select('stock', array('*'), $values, $options);
   if (!$stock) {
-    watchdog('trp-seturl', "Cannot find stock when setting URL alias for stock: %id", array('%id' => $node->stock_id), WATCHDOG_ERROR);
+    tripal_core_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find stock when setting URL alias for stock: %id", array('%id' => $node->stock_id));
     return FALSE;
   }
   $stock = (object) $stock[0];
@@ -257,7 +257,7 @@ function tripal_stock_get_stock_url($node, $url_alias = NULL) {
   $options = array('statement_name' => 'sel_organism_id');
   $organism  = tripal_core_chado_select('organism', array('*'), $values, $options);
   if (!$organism) {
-    watchdog('trp-seturl', "Cannot find organism when setting URL alias for stock: %id", array('%id' => $node->stock_id), WATCHDOG_ERROR);
+    tripal_core_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find organism when setting URL alias for stock: %id", array('%id' => $node->stock_id));
     return FALSE;
   }
   $genus = preg_replace('/\s/', '_', strtolower($organism[0]->genus));
@@ -268,7 +268,7 @@ function tripal_stock_get_stock_url($node, $url_alias = NULL) {
   $options = array('statement_name' => 'sel_cvterm_id');
   $cvterm = tripal_core_chado_select('cvterm', array('name'), $values, $options);
   if (!$cvterm) {
-    watchdog('trp-seturl', "Cannot find type when setting URL alias for stock: %id", array('%id' => $node->stock_id), WATCHDOG_ERROR);
+    tripal_core_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find type when setting URL alias for stock: %id", array('%id' => $node->stock_id));
     return FALSE;
   }
   $type = preg_replace('/\s/', '_', $cvterm[0]->name);
@@ -284,247 +284,9 @@ function tripal_stock_get_stock_url($node, $url_alias = NULL) {
   // the dst field of the url_alias table is only 128 characters long.
   // if this is the case then simply return the node URL, we can't set this one
   if (strlen($url_alias) > 128) {
-    watchdog('trp-seturl', "Cannot set alias longer than 128 characters: %alias.", array('%alias' => $url_alias), WATCHDOG_ERROR);
+    tripal_core_report_error('trp-seturl', TRIPAL_ERROR, "Cannot set alias longer than 128 characters: %alias.", array('%alias' => $url_alias));
     return "node/" . $node->nid;
   }
 
   return $url_alias;
-}
-/**
- *
- *
- * @ingroup tripal_stock
- */
-function tripal_stock_sync_stocks($max_sync = 0, $organism_id = NULL,
-  $stock_types = NULL, $job_id = NULL) {
-  //print "Syncing stocks (max of $max_sync)\n";
-  $i = 0;
-
-  // get the list of available sequence ontology terms for which
-  // we will build drupal pages from stocks in chado.  If a stock
-  // is not one of the specified typse we won't build a node for it.
-  if (!$stock_types) {
-    $allowed_types = variable_get('chado_sync_stock_types', '');
-  }
-  else {
-    $allowed_types = $stock_types;
-  }
-  $args = array();
-  $i = 0;
-  if ($allowed_types) {
-    $allowed_types = preg_replace("/[\s\n\r]+/", " ", $allowed_types);
-    print "Looking for stocks of type: $allowed_types\n";
-
-    $so_terms = split(' ', $allowed_types);
-    $where_cvt = "";
-    foreach ($so_terms as $term) {
-      $where_cvt .= "CVT.name = :cvterm$i OR ";
-      $args[":cvterm$i"] = $term;
-    }
-    $where_cvt = drupal_substr($where_cvt, 0, drupal_strlen($where_cvt)-3);  # strip trailing 'OR'
-    $i++;
-  }
-  else {
-    $where_cvt = '1=1';
-  }
-
-  // get the list of organisms that are synced and only include stocks from
-  // those organisms
-  $orgs = tripal_organism_get_synced();
-  $where_org = "";
-  $i = 0;
-  foreach ($orgs as $org) {
-    if ($organism_id) {
-      if ($org->organism_id and $org->organism_id == $organism_id) {
-        $where_org .= "S.organism_id = :organism_id$i OR ";
-        $args[":organism_id$i"] = $org->organism_id;
-      }
-    }
-    else {
-      if ($org->organism_id) {
-        $where_org .= "S.organism_id = :organism_id$i OR ";
-        $args[":organism_id$i"] = $org->organism_id;
-      }
-    }
-    $i++;
-  }
-  $where_org = drupal_substr($where_org, 0, drupal_strlen($where_org)-3);  # strip trailing 'OR'
-
-  // use this SQL statement to get the stocks that we're going to upload
-  $sql = "
-    SELECT stock_id
-    FROM {stock} S
-      INNER JOIN {cvterm} CVT ON S.type_id = CVT.cvterm_id
-    WHERE ($where_cvt) AND ($where_org)
-    ORDER BY stock_id
-  ";
-
-  // get the list of stocks
-  $results = chado_query($sql, $args);
-
-  // load into ids array
-  $count = 0;
-  $ids = array();
-  while ($id = $results->fetchObject()) {
-    $ids[$count] = $id->stock_id;
-    $count++;
-  }
-
-  // make sure our vocabularies are set before proceeding
-//  tripal_stock_set_vocabulary();
-
-  // pre-create the SQL statement that will be used to check
-  // if a stock has already been synced.  We skip stocks
-  // that have been synced
-  $sql = "SELECT * FROM {chado_stock} WHERE stock_id = :stock_id";
-
-  // Iterate through stocks that need to be synced
-  $interval = intval($count * 0.01);
-  if ($interval < 1) {
-    $interval = 1;
-  }
-  $num_ids = sizeof($ids);
-  $i = 0;
-  foreach ($ids as $stock_id) {
-    // update the job status every 1% stocks
-    if ($job_id and $i % $interval == 0) {
-      tripal_job_set_progress($job_id, intval(($i/$count)*100));
-    }
-    // if we have a maximum number to sync then stop when we get there
-    // if not then just continue on
-    if ($max_sync and $i == $max_sync) {
-      return '';
-    }
-    if (!db_query($sql, array(':stock_id' => $stock_id))->fetchObject()) {
-
-      // parsing all the stocks can cause memory overruns
-      // we are not sure why PHP does not clean up the memory as it goes
-      // to avoid this problem we will call this script through an
-      // independent system call
-      print ($i + 1) . " of $num_ids Syncing stock id: $stock_id\n";
-      // $cmd = "php " . drupal_get_path('module', 'tripal_stock') . "/includes/tripal_stock.sync_stocks.inc -f $stock_id -t chado_stock";
-      // print "$cmd\n";
-      // system($cmd);
-      tripal_stock_sync_stock($stock_id);
-
-    }
-    $i++;
-  }
-
-  return '';
-}
-
-/**
- *
- *
- * @ingroup tripal_stock
- */
-function tripal_stock_sync_stock($stock_id) {
-
-print "\tSyncing stock $stock_id\n";
-
-global $user;
-  $create_node = 1;   // set to 0 if the node exists and we just sync and not create
-
-  // get the accession prefix
-  $aprefix = variable_get('chado_stock_accession_prefix', 'SID');
-
-  // if we don't have a stock_id then return
-  if (!$stock_id) {
-    drupal_set_message(t("Please provide a stock_id to sync"));
-    return '';
-  }
-
-  // get information about this stock
-  $fsql = "
-     SELECT S.*, O.genus, O.species,CVT.name as cvname
-     FROM {stock} S
-       INNER JOIN {cvterm} CVT ON S.type_id = CVT.cvterm_id
-       INNER JOIN {organism} O ON S.organism_id = O.organism_ID
-    WHERE S.stock_id = :stock_id
-   ";
-  $stock = chado_query($fsql, array(':stock_id' => $stock_id))->fetchObject();
-
-  // check to make sure that we don't have any nodes with this stock name as a title
-  // but without a corresponding entry in the chado_stock table if so then we want to
-  // clean up that node.  (If a node is found we don't know if it belongs to our stock or
-  // not since stocks can have the same name/title.)
-  $tsql =  "SELECT * FROM {node} N WHERE title = :title";
-  $cnsql = "SELECT * FROM {chado_stock} WHERE nid =:nid";
-  $nodes = db_query($tsql, array(':title' => $stock->name));
-  // cycle through all nodes that may have this title
-  while ($node = $nodes->fetchObject()) {
-    $stock_nid = db_query($cnsql, array(':nid' => $node->nid))->fetchObject();
-    if (!$stock_nid) {
-      drupal_set_message(t("%stock_id: A node is present but the chado_stock entry is missing... correcting", array('%stock_id' => $stock_id)));
-      node_delete($node->nid);
-    }
-  }
-
-  // check if this stock already exists in the chado_stock table.
-  // if we have a chado stock, we want to check to see if we have a node
-  $cfsql = "SELECT * FROM {chado_stock} WHERE stock_id = :stock_id";
-  $nsql =  "SELECT * FROM {node} N WHERE nid = :nid";
-  $chado_stock = db_query($cfsql, array(':stock_id' => $stock->stock_id))->fetchObject();
-  if ($chado_stock) {
-    drupal_set_message(t("%stock_id: A chado_stock entry exists", array('%stock_id' => $stock_id)));
-    $node = db_query($nsql, array(':nid' => $chado_stock->nid))->fetchObject();
-    if (!$node) {
-      // if we have a chado_stock but not a node then we have a problem and
-      // need to cleanup
-      drupal_set_message(t("%stock_id: The node is missing, but has a chado_stock entry... correcting", array('%stock_id' => $stock_id)));
-      $df_sql = "DELETE FROM {chado_stock} WHERE stock_id = :stock_id";
-      db_query($df_sql, array(':stock_id' => $stock_id));
-    }
-    else {
-      drupal_set_message(t("%stock_id: A corresponding node exists", array('%stock_id' => $stock_id)));
-      $create_node = 0;
-    }
-  }
-
-  // if we've encountered an error then just return.
-  //if ($error_msg = db_error()) {
-    //print "$error_msg\n";
-    //return '';
-  //}
-
-  // if a drupal node does not exist for this stock then we want to
-  // create one.  Note that the node_save call in this block
-  // will call the hook_submit function which
-  if ($create_node) {
-    // get the organism for this stock
-    $sql = "SELECT * FROM {organism} WHERE organism_id = :organism_id";
-    $organism = chado_query($sql, array(':organism_id' => $stock->organism_id))->fetchObject();
-
-    drupal_set_message(t("%stock_id: Creating node $stock->name", array('%stock_id' => $stock_id)));
-    $new_node = new stdClass();
-    $new_node->type = 'chado_stock';
-    $new_node->uid = $user->uid;
-    $new_node->title = "$stock->name, $stock->uniquename ($stock->cvname) $organism->genus $organism->species";
-    $new_node->sname = "$stock->name";
-    $new_node->uniquename = "$stock->uniquename";
-    $new_node->type_id = $stock->type_id;
-    $new_node->organism_id = $stock->organism_id;
-    $new_node->stock_id = $stock->stock_id;
-    $new_node->chado_stock_exists = TRUE;
-
-    // validate the node and if okay then submit
-    node_validate($new_node);
-    if ($errors = form_get_errors()) {
-      print "Error encountered validating new node. Cannot sync: $msg\n";
-      foreach ($errors as $key => $msg) {
-        watchdog('trp-fsync', "%msg", array('%msg' => $msg), WATCHDOG_ERROR);
-      }
-      exit;
-    }
-    else {
-      $node = node_submit($new_node);
-      node_save($node);
-    }
-  }
-  else {
-    $node = $chado_stock;
-  }
-
-  return '';
 }

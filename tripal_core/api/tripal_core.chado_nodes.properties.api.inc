@@ -214,8 +214,8 @@ $cv_name, $value, $update_if_present = 0) {
   $options = array();
   $term = tripal_core_chado_select('cvterm', array('cvterm_id'), $values, $options);
   if (!$term or count($term) == 0) {
-    watchdog('tripal_core', "Cannot find property '%prop_name' in vocabulary '%cvname'.",
-    array('%prop_name' => $property, '%cvname' => $cv_name), WATCHDOG_ERROR);
+    tripal_core_report_error('tripal_core', TRIPAL_ERROR, "Cannot find property '%prop_name' in vocabulary '%cvname'.",
+    array('%prop_name' => $property, '%cvname' => $cv_name));
     return FALSE;
   }
 
@@ -995,14 +995,10 @@ function chado_node_properties_form_update_properties($node, $details, $retrieve
         );
 
         if (!$success) {
-          watchdog(
-            'tripal_' . $details['base_table'],
+          tripal_core_report_error('tripal_' . $details['base_table'], TRIPAL_ERROR,
             $details['base_table'] . ' Insert: Unable to insert property type_id %cvterm with value %value.',
-            array('%cvterm' => $type_id, '%value' => $value),
-            WATCHDOG_ERROR
-          );
+            array('%cvterm' => $type_id, '%value' => $value));
         }
-
       }
     }
   }

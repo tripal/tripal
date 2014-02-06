@@ -390,8 +390,8 @@ function chado_analysis_insert($node) {
     $analysis = tripal_core_chado_insert('analysis', $values);
     if (!$analysis) {
       drupal_set_message(t('Unable to add analysis.', 'warning'));
-      watchdog('tripal_analysis', 'Insert analysis: Unable to create analysis where values:%values',
-      array('%values' => print_r($values, TRUE)), WATCHDOG_ERROR);
+      tripal_core_report_error('tripal_analysis', TRIPAL_ERROR, 'Insert analysis: Unable to create analysis where values:%values',
+        array('%values' => print_r($values, TRUE)));
       return;
     }
     $analysis_id = $analysis['analysis_id'];
@@ -500,8 +500,8 @@ function chado_analysis_update($node) {
   $status = tripal_core_chado_update('analysis', $match, $values);
   if (!$status) {
     drupal_set_message(t('Unable to update analysis.', 'warning'));
-    watchdog('tripal_analysis', 'Update analysis: Unable to update analysis where values: %values',
-    array('%values' => print_r($values, TRUE)), WATCHDOG_ERROR);
+    tripal_core_report_error('tripal_analysis', TRIPAL_ERROR, 'Update analysis: Unable to update analysis where values: %values',
+    array('%values' => print_r($values, TRUE)));
   }
 
   // now add in the properties by first removing any the analysis

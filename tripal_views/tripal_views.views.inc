@@ -342,10 +342,9 @@ function tripal_views_views_data() {
 
         // warn if deprecated method of relationship addition was used (ie: through handlers)
         if (isset($data[$base_table][$base_field]['relationship'])) {
-          watchdog('tripal_views',
+          tripal_core_report_error('tripal_views', TRIPAL_NOTICE,
             'DEPRECATED: Currently using tripal_views_handlers to store relationship for %base => %left when you should be using tripal_views_joins.',
-            array('%base' => $base_table, '%left' => $left_table),
-            WATCHDOG_NOTICE);
+            array('%base' => $base_table, '%left' => $left_table));
         }
         // add relationship entry
         $fake_field = $base_field . '_to_' . $left_table;

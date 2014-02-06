@@ -273,8 +273,8 @@ function chado_featuremap_insert($node) {
     $featuremap = tripal_core_chado_insert('featuremap', $values);
     if(!$featuremap) {
       drupal_set_message(t('Unable to add featuremap.', 'warning'));
-      watchdog('tripal_featuremap', 'Unable to create feature map where values: %values',
-      array('%values' => print_r($values, TRUE)), WATCHDOG_WARNING);
+      tripal_core_report_error('tripal_featuremap', TRIPAL_WARNING, 'Unable to create feature map where values: %values',
+      array('%values' => print_r($values, TRUE)));
       return;
     }
     $featuremap_id = $featuremap['featuremap_id'];
@@ -293,8 +293,8 @@ function chado_featuremap_insert($node) {
         $featuremap_dbxref = tripal_featuremap_add_featuremap_dbxref($featuremap_id, $value);
         if (!$featuremap_dbxref) {
           drupal_set_message("Error cannot add featuremap cross reference: $value", "error");
-          watchdog('t_featuremap', "Error cannot add featuremap cross reference: %ref",
-          array('%ref' => $value), WATCHDOG_ERROR);
+          tripal_core_report_error('t_featuremap', TRIPAL_ERROR, "Error cannot add featuremap cross reference: %ref",
+          array('%ref' => $value));
         }
       }
       unset($properties[$map_dbxref_cvterm_id]);
@@ -355,7 +355,7 @@ function chado_featuremap_update($node) {
   $status = tripal_core_chado_update('featuremap', $match, $values);
   if (!$status) {
     drupal_set_message("Error updating map", "error");
-    watchdog('t_featuremap', "Error updating map", array(), WATCHDOG_ERROR);
+    tripal_core_report_error('t_featuremap', TRIPAL_ERROR, "Error updating map", array());
     return;
   }
 
@@ -373,8 +373,8 @@ function chado_featuremap_update($node) {
       $featuremap_dbxref = tripal_featuremap_add_featuremap_dbxref($featuremap_id, $value);
       if (!$featuremap_dbxref) {
         drupal_set_message("Error cannot add featuremap cross reference: $value", "error");
-        watchdog('t_featuremap', "Error cannot add featuremap cross reference: %ref",
-        array('%ref' => $value), WATCHDOG_ERROR);
+        tripal_core_report_error('t_featuremap', TRIPAL_ERROR, "Error cannot add featuremap cross reference: %ref",
+        array('%ref' => $value));
       }
     }
     unset($properties[$map_dbxref_cvterm_id]);

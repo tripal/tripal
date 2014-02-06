@@ -45,7 +45,7 @@ function tripal_stock_get_stock_by_stock_id($stock_id) {
     return node_load($r->nid);
   }
   else {
-    watchdog('tripal_stock', 'tripal_stock_get_stock_by_stock_id(!stock_id): no stock with that stock_id is sync\'d with drupal', array('!stock_id' => $stock_id), WATCHDOG_WARNING);
+    tripal_core_report_error('tripal_stock', TRIPAL_WARNING, 'tripal_stock_get_stock_by_stock_id(!stock_id): no stock with that stock_id is sync\'d with drupal', array('!stock_id' => $stock_id));
   }
 
   return 0;

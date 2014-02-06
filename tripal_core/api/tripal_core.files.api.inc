@@ -45,7 +45,7 @@ function tripal_create_moddir($module_name) {
                "behave correctly without this directory.  Please  create " .
                "the directory manually or fix the problem and reinstall.";
     drupal_set_message(check_plain(t($message)), 'error');
-    watchdog('tripal_core', $message, array(), WATCHDOG_ERROR);
+    tripal_core_report_error('tripal_core', TRIPAL_ERROR, $message, array());
   }
 }
 
@@ -66,7 +66,7 @@ function tripal_create_mod_subdir($module_name, $path) {
   if (!file_prepare_directory($sub_dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
     $message = "Cannot create directory $sub_dir. ";
     drupal_set_message(check_plain(t($message)), 'error');
-    watchdog('tripal_core', $message, array(), WATCHDOG_ERROR);
+    tripal_core_report_error('tripal_core', TRIPAL_ERROR, $message, array());
   }
 }
 

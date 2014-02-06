@@ -120,7 +120,8 @@ function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
     }
     catch (Exception $e) {
       $error = $e->getMessage();
-      watchdog('tripal_core', "Error adding custom table: @message", array('@message' => $error), WATCHDOG_ERROR);
+      tripal_core_report_error('tripal_core', TRIPAL_ERROR, 
+        "Error adding custom table: @message", array('@message' => $error));
       drupal_set_message("Could not add custom table. $error.", "error");
       return FALSE;
     }
@@ -138,8 +139,9 @@ function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
     }
     catch (Exception $e) {
       $error = $e->getMessage();
-      watchdog('tripal_core', "Error adding custom table: @message",
-        array('@message' => $error), WATCHDOG_ERROR);
+      tripal_core_report_error('tripal_core', TRIPAL_ERROR, 
+        "Error adding custom table: @message",
+        array('@message' => $error));
       drupal_set_message("Could not add custom table. $error.", "error");
       return FALSE;
     }
@@ -157,8 +159,9 @@ function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
   }
   $success = drupal_write_record('tripal_custom_tables', $record);
   if (!$success) {
-    watchdog('tripal_core', "Error adding custom table %table_name.",
-      array('%table_name' => $table), WATCHDOG_ERROR);
+    tripal_core_report_error('tripal_core', TRIPAL_ERROR, 
+      "Error adding custom table %table_name.",
+      array('%table_name' => $table));
     drupal_set_message(t("Could not add custom table %table_name.
       Please check the schema array.", array('%table_name' => $table)), 'error');
     return FALSE;
@@ -184,8 +187,8 @@ function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
         }
         catch (Exception $e) {
           $error = $e->getMessage();
-          watchdog('tripal_core', "Error, could not add foreign key contraint to custom table: %error",
-            array('%error' => $error), WATCHDOG_ERROR);
+          tripal_core_report_error('tripal_core', TRIPAL_ERROR, "Error, could not add foreign key contraint to custom table: %error",
+            array('%error' => $error));
           drupal_set_message("Could not add foreign key contraint to table: $error", 'error');
           return FALSE;
         }

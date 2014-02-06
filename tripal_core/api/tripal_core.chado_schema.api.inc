@@ -27,8 +27,8 @@
 
 /**
  * Check that any given Chado table exists.  This function
- * is necessary because Drupa's db_table_exists function
- * hardcodes the 'public'
+ * is necessary because Drupa's db_table_exists will not
+ * look in any other schema but the one were Drupal is installed
  *
  * @return
  *   TRUE/FALSE depending upon whether it exists
@@ -271,9 +271,9 @@ function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FA
 }
 
 /**
- * Retrieves the list tables in the Chado schema.  By default it only retursn
- * the default Chado tables, but may also return custom tables added to the
- * Chado schema as well.
+ * Retrieves the list of tables in the Chado schema.  By default it only returns
+ * the default Chado tables, but can return custom tables added to the
+ * Chado schema if requested
  *
  * @param $include_custom
  *   Optional.  Set as TRUE to include any custom tables created in the

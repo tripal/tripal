@@ -261,8 +261,8 @@ function chado_example_insert($node) {
     //$example = tripal_core_chado_select('example', array('*'), $values);
     //if (!$example) {
     //  drupal_set_message(t('Unable to add example.'), 'warning');
-    //  watchdog('tripal_example', 'Insert example: Unable to create example where values: %values',
-    //  array('%values' => print_r($values, TRUE)), WATCHDOG_WARNING);
+    //  tripal_core_report_error('tripal_example', TRIPAL_WARNING, 'Insert example: Unable to create example where values: %values',
+    //    array('%values' => print_r($values, TRUE)));
     //  return;
     //}
 
@@ -346,8 +346,8 @@ function chado_example_update($node) {
 
   //if (!$status) {
   //  drupal_set_message(t('Unable to update example.'), 'warning');
-  //  watchdog('tripal_example', 'Update example: Unable to update example where values: %values',
-  //    array('%values' => print_r($values, TRUE)), WATCHDOG_WARNING);
+  //  tripal_core_report_error('tripal_example', TRIPAL_WARNING, 'Update example: Unable to update example where values: %values',
+  //    array('%values' => print_r($values, TRUE)));
   //}
 
   // * Properties Form *

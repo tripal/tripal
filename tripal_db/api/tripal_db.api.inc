@@ -56,19 +56,15 @@ function tripal_db_get_db($select_values) {
     return $results[0];
   }
   elseif (empty($results)) {
-    watchdog('tripal_cdb',
+    tripal_core_report_error('tripal_db', TRIPAL_WARNING,
       'tripal_db_get_db: No db matches criteria values:%values',
-      array('%values' => print_r($select_values, TRUE)),
-      WATCHDOG_WARNING
-    );
+      array('%values' => print_r($select_values, TRUE)));
     return FALSE;
   }
   else {
-    watchdog('tripal_db',
+    tripal_core_report_error('tripal_db', TRIPAL_WARNING,
       'tripal_db_get_db: 2+ dbs match criteria values:%values',
-      array('%values' => print_r($select_values, TRUE)),
-      WATCHDOG_WARNING
-    );
+      array('%values' => print_r($select_values, TRUE)));
   }
 
 }
@@ -221,18 +217,16 @@ function tripal_db_get_dbxref($select_values) {
     return $dbxref;
   }
   elseif (empty($results)) {
-    watchdog('tripal_db',
+    tripal_core_report_error('tripal_db', TRIPAL_WARNING,
       'tripal_db_get_dbxref: No dbxref matches criteria values:%values',
       array('%values' => print_r($select_values, TRUE)),
-      WATCHDOG_WARNING
     );
     return FALSE;
   }
   else {
-    watchdog('tripal_db',
+    tripal_core_report_error('tripal_db', TRIPAL_WARNING,
       'tripal_db_get_dbxref: 2+ dbxrefs match criteria values:%values',
       array('%values' => print_r($select_values, TRUE)),
-      WATCHDOG_WARNING
     );
   }
 
@@ -309,7 +303,7 @@ function tripal_db_add_db($dbname, $description = '', $url = '',
     $ins_options = array('statement_name' => 'ins_db_nadeurur');
     $success = tripal_core_chado_insert('db', $ins_values, $ins_options);
     if (!$success) {
-      watchdog('tripal_db', "Cannot create db '$dbname'.", NULL, WATCHDOG_WARNING);
+      tripal_core_report_error('tripal_db', TRIPAL_WARNING, "Cannot create db '$dbname'.", NULL);
       return 0;
     }
     $result = tripal_core_chado_select('db', array('*'), $sel_values, $sel_options);
@@ -319,7 +313,7 @@ function tripal_db_add_db($dbname, $description = '', $url = '',
     $upd_options = array('statement_name' => 'upd_db_nadeurur');
     $success = tripal_core_chado_update('db', $sel_values, $ins_values, $upd_options);
     if (!$success) {
-      watchdog('tripal_db', "Cannot update db '$dbname'.", NULL, WATCHDOG_WARNING);
+      tripal_core_report_error('tripal_db', TRIPAL_WARNING, "Cannot update db '$dbname'.", NULL);
       return 0;
     }
     $result = tripal_core_chado_select('db', array('*'), $sel_values, $sel_options);
@@ -354,7 +348,7 @@ function tripal_db_add_dbxref($db_id, $accession, $version = '', $description = 
   if (!$result) {
     $success = tripal_core_chado_insert('dbxref', $ins_values);
     if (!$success) {
-      watchdog('tripal_cv', "Failed to insert the dbxref record $accession", NULL, WATCHDOG_WARNING);
+      tripal_core_report_error('tripal_cv', TRIPAL_WARNING, "Failed to insert the dbxref record $accession", NULL);
       return 0;
     }
     $result = tripal_core_chado_select('dbxref', array('*'), $sel_values);
@@ -384,7 +378,7 @@ function tripal_db_add_dbxref_link($linking_table, $dbxref_id, $foreignkey_name,
   if (!$result) {
     $success = tripal_core_chado_insert($linking_table, $values);
     if (!$success) {
-      watchdog('tripal_db', "Failed to insert the $linking_table record $accession", NULL, WATCHDOG_WARNING);
+      tripal_core_report_error('tripal_db', TRIPAL_WARNING, "Failed to insert the $linking_table record $accession", NULL);
       return 0;
     }
     $result = tripal_core_chado_select($linking_table, array('*'), $values);

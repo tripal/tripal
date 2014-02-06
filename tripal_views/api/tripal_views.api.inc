@@ -289,7 +289,7 @@ function tripal_views_integration_add_entry($defn_array) {
   $no_errors = TRUE;
 
   if (empty($defn_array['table'])) {
-    watchdog('tripal_views','Recieved integration with no tablename: %defn', array('%defn' => print_r($defn_array,TRUE)), WATCHDOG_WARNING);
+    tripal_core_report_error('tripal_views', TRIPAL_WARNING, 'Recieved integration with no tablename: %defn', array('%defn' => print_r($defn_array,TRUE)));
     $no_errors = FALSE;
     return $no_errors;
   }
@@ -645,7 +645,8 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
   );
   // Add fields
   if (!isset($schema['fields'])) {
-    watchdog('tripal_views', 'There are no fields defined for %table in the Chado Schema API.', array('%table' => $table_name), WATCHDOG_NOTICE);
+    tripal_core_report_error('tripal_views', TRIPAL_NOTICE, 
+      'There are no fields defined for %table in the Chado Schema API.', array('%table' => $table_name));
     return FALSE;
   }
   foreach ($schema['fields'] as $field_name => $field_schema) {
@@ -841,8 +842,8 @@ function tripal_views_clone_integration($table_name, $new_priority = NULL, $temp
   $setup_id = $setup_id->fetchObject();
 
   if (empty($setup_id)) {
-    watchdog('tripal_views','Unable to clone the setup for %table in order to add the following field to the integration: %field.',
-      array('%table' => $table_name, '%field' => print_r($field_array,TRUE)),WATCHDOG_ERROR);
+    tripal_core_report_error('tripal_views', TRIPAL_ERROR, 'Unable to clone the setup for %table in order to add the following field to the integration: %field.',
+      array('%table' => $table_name, '%field' => print_r($field_array,TRUE)));
     return FALSE;
   }
   else {

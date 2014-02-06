@@ -990,7 +990,7 @@ function tripal_bulk_loader_regex_tranform_values($values, $table_data, $line) {
     return $values;
   }
 
-  //watchdog('T_bulk_loader','Regex Transformation:<pre>'.print_r($table_data['regex_transform'], TRUE).'</pre>', array(), TRIPAL_NOTICE);
+  //tripal_core_report_error('T_bulk_loader', TRIPAL_NOTICE,'Regex Transformation:<pre>'.print_r($table_data['regex_transform'], TRUE).'</pre>', array());
 
   foreach ($table_data['regex_transform'] as $field => $regex_array) {
     if (!array_key_exists('replace', $regex_array) or

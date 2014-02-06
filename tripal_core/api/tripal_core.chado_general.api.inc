@@ -86,7 +86,7 @@ function tripal_core_set_globals() {
  *     - TRIPAL_DEBUG: Debug-level messages.
  * @param $options
  *   An array of options. Some available options include:
- *     - print: prints the error message to the screen. Useful when display is the command-line
+ *     - print: prints the error message to the terminal screen. Useful when display is the command-line
  *
  * @ingroup tripal_chado_api
  */

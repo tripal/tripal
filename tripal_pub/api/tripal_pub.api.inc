@@ -495,8 +495,8 @@ function tripal_pub_add_pub_dbxref($pub_id, $pub_dbxref) {
   $options = array('statement_name' => 'ins_pubdbxref_dbpu');
   $results = tripal_core_chado_insert('pub_dbxref', $values, $options);
   if (!$results) {
-    watchdog('tripal_pub', "Cannot add publication dbxref: %db:%accession.",
-    array('%db' => $dbname, '%accession' => $accession). WATCHDOG_ERROR);
+    tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "Cannot add publication dbxref: %db:%accession.",
+    array('%db' => $dbname, '%accession' => $accession));
     return FALSE;
   }
   return $results;
@@ -685,15 +685,15 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     if(count($results) == 1) {
       $pub_id = $results[0];
       if ($pub_id and !$update_if_exists) {
-        //watchdog('tripal_pub', "A publication with this Dbxref already exists... Skipping: %dbxref",
-        //array('%dbxref' => $pub_details['Publication Dbxref']), WATCHDOG_WARNING);
+        //tripal_core_report_error('tripal_pub', TRIPAL_WARNING, "A publication with this Dbxref already exists... Skipping: %dbxref",
+        //array('%dbxref' => $pub_details['Publication Dbxref']));
         $action = 'skipped';
         return $pub_id;
       }
     }
     elseif (count($results) > 1) {
-      watchdog('tripal_pub', "There are two publications with this accession: %db:%accession. Cannot determine which to update.",
-      array('%db' => $dbname, '%accession' => $accession), WATCHDOG_ERROR);
+      tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "There are two publications with this accession: %db:%accession. Cannot determine which to update.",
+      array('%db' => $dbname, '%accession' => $accession));
       $action = 'error';
       return FALSE;
     }
@@ -708,17 +708,17 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     if (count($results) == 1) {
       $pub_id = $results[0];
       if ($pub_id and !$update_if_exists) {
-        watchdog('tripal_pub', "The publication with the same title, type and year already exists. Skipping. ".
-            " Title: '%title'. Type: '%type'. Year: '%year'",
-            array('%title' => $pub_details['Title'], '%type' => $pub_details['Publication Type'], '%year' => $pub_details['Year']), WATCHDOG_WARNING);
+        tripal_core_report_error('tripal_pub', TRIPAL_WARNING, "The publication with the same title, type and year already exists. Skipping. ".
+          " Title: '%title'. Type: '%type'. Year: '%year'",
+          array('%title' => $pub_details['Title'], '%type' => $pub_details['Publication Type'], '%year' => $pub_details['Year']));
         $action = 'skipped';
         return $pub_id;
       }
     }
     elseif (count($results) > 1) {
-      watchdog('tripal_pub', "The publication with the same title, type and year is present multiple times. Cannot ".
+      tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "The publication with the same title, type and year is present multiple times. Cannot ".
         "determine which to use.  Title: '%title'. Type: '%type'. Year: '%year'",
-      array('%title' => $pub_details['Title'], '%type' => $pub_details['Publication Type'], '%year' => $pub_details['Year']), WATCHDOG_ERROR);
+      array('%title' => $pub_details['Title'], '%type' => $pub_details['Publication Type'], '%year' => $pub_details['Year']));
       $action = 'error';
       return FALSE;
     }
@@ -733,13 +733,13 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     }
   }
   else {
-    watchdog('tripal_pub', "The Publication Type is a required property but is missing", array(), WATCHDOG_ERROR);
+    tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "The Publication Type is a required property but is missing", array());
     $action = 'error';
     return FALSE;
   }
   if (!$pub_type) {
-    watchdog('tripal_pub', "Cannot find publication type: '%type'",
-    array('%type' => $pub_details['Publication Type'][0]), WATCHDOG_ERROR);
+    tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "Cannot find publication type: '%type'",
+    array('%type' => $pub_details['Publication Type'][0]));
     $action = 'error';
     return FALSE;
   }
@@ -761,8 +761,8 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     $options = array('statement_name' => 'ins_pub_tivoseispypaunty');
     $pub = tripal_core_chado_insert('pub', $values, $options);
     if (!$pub) {
-      watchdog('tripal_pub', "Cannot insert the publication with title: %title",
-      array('%title' => $pub_details['Title']), WATCHDOG_ERROR);
+      tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "Cannot insert the publication with title: %title",
+      array('%title' => $pub_details['Title']));
       $action = 'error';
       return FALSE;
     }
@@ -776,8 +776,8 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     $options = array('statement_name' => 'up_pub_tivoseispypaunty');
     $success = tripal_core_chado_update('pub', $match, $values, $options);
     if (!$success) {
-      watchdog('tripal_pub', "Cannot update the publication with title: %title",
-      array('%title' => $pub_details['Title']), WATCHDOG_ERROR);
+      tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "Cannot update the publication with title: %title",
+      array('%title' => $pub_details['Title']));
       $action = 'error';
       return FALSE;
     }
@@ -812,7 +812,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
       $cvterm = tripal_cv_get_cvterm_by_synonym($key, NULL, 'tripal_pub');
     }
     if (!$cvterm) {
-      watchdog('tripal_pub', "Cannot find term: '%prop'. Skipping.", array('%prop' => $key), WATCHDOG_ERROR);
+      tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "Cannot find term: '%prop'. Skipping.", array('%prop' => $key));
       continue;
     }
 
@@ -843,8 +843,8 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
       $success = tripal_core_insert_property('pub', $pub_id, $key, 'tripal_pub', $value, TRUE);
     }
     if (!$success) {
-      watchdog('tripal_pub', "Cannot add property '%prop' to publication. Skipping.",
-      array('%prop' => $key), WATCHDOG_ERROR);
+      tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "Cannot add property '%prop' to publication. Skipping.",
+      array('%prop' => $key));
       continue;
     }
   }
@@ -918,7 +918,7 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
         $options = array('statement_name' => 'ins_pubauthorcontact_puco');
         $pubauthor_contact = tripal_core_chado_insert('pubauthor_contact', $values, $options);
         if (!$pubauthor_contact) {
-          watchdog('tripal_pub', "Cannot link pub authro and contact.", array(), WATCHDOG_ERROR);
+          tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "Cannot link pub authro and contact.", array());
         }
       }
     }
@@ -1083,8 +1083,8 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
   if ($citation) {
     $citation = tripal_core_expand_chado_vars($citation, 'field', 'pubprop.value', $options);
     if (count($citation) > 1) {
-      watchdog('tripal_pub', "Publication has multiple citations already: %pub_id",
-      array('%pub_id' => $pubid), WATCHDOG_ERROR);
+      tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "Publication has multiple citations already: %pub_id",
+      array('%pub_id' => $pubid));
       return FALSE;
     }
     elseif (count($citation) == 1 and $skip_existing == TRUE) {
@@ -1122,8 +1122,8 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
   $authors = tripal_core_generate_chado_var('pubprop', $values);
   $authors = tripal_core_expand_chado_vars($authors, 'field', 'pubprop.value', $options);
   if (count($authors) > 1) {
-   watchdog('tripal_pub', "Publication has multiple author lists. It should have only one list: %pub_id",
-   array('%pub_id' => $pubid), WATCHDOG_ERROR);
+   tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "Publication has multiple author lists. It should have only one list: %pub_id",
+   array('%pub_id' => $pubid));
    return FALSE;
   }
   else if (trim($authors->value)) {
@@ -1261,8 +1261,8 @@ function tripal_pub_create_citation($pub) {
       }
     }
     if (!$pub_type) {
-      watchdog('tripal_pub', "Cannot generate citation for publication type: %types",
-        array('%types' => print_r($pub['Publication Type'], TRUE)), WATCHDOG_ERROR);
+      tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "Cannot generate citation for publication type: %types",
+        array('%types' => print_r($pub['Publication Type'], TRUE)));
       return FALSE;
     }
   }
