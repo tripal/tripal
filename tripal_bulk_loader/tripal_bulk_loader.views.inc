@@ -1,4 +1,10 @@
 <?php
+/**
+ * @file
+ * Provides Drupal views integration excluding default views.
+ *
+ * @ingroup tripal_bulk_loader
+ */
 
 /**
  * Generates a dynamic data array for Views
@@ -11,6 +17,8 @@
  * @return a data array formatted for the Views module
  *
  * D7 @todo: Add support for materialized views relationships using the new method
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_views_data() {
   $data = array();

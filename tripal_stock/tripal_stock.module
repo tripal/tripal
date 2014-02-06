@@ -9,7 +9,7 @@
  * @defgroup tripal_stock Stock Module
  * @ingroup tripal_modules
  * @{
- * Provides functions for managing chado stocks including creating details pages for each stock
+ * Integrates the Chado Stock module with Drupal Nodes & Views
  *
  * The Tripal Stock Module provides functionality for adding, editing, deleting and accessing chado
  * stocks. The stock module was designed to store information about stock collections in a
@@ -46,7 +46,7 @@ function tripal_stock_menu() {
     'access arguments' => array('access chado_stock content'),
     'type' => MENU_LOCAL_TASK,
   );
-  
+
   //Administrative settings menu-----------------
   $items['admin/tripal/chado/tripal_stock'] = array(
     'title' => 'Stocks',
@@ -229,7 +229,7 @@ function tripal_stock_views_api() {
  */
 function tripal_stock_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
-  
+
   $items = array(
 
     // property edit forms function templates
@@ -245,7 +245,7 @@ function tripal_stock_theme($existing, $type, $theme, $path) {
       'variables' => array('form'),
       'function' => 'theme_tripal_stock_edit_ALL_relationships_form',
     ),
-    
+
     // tripal_stock templates
     'node__chado_stock' => array(
       'template' => 'node--chado-generic',
@@ -475,11 +475,11 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
     foreach ($orelationships as $relationship) {
       $rel = new stdClass();
       $rel->record = $relationship;
-       
+
       // get the relationship and child types
       $rel_type = t(preg_replace('/_/', " ", $relationship->type_id->name));
       $child_type = $relationship->subject_id->type_id->name;
-       
+
       // get the node id of the subject
       $sql = "SELECT nid FROM {chado_stock} WHERE stock_id = :stock_id";
       $n = db_query($sql, array(':stock_id' => $relationship->subject_id->stock_id))->fetchObject();
@@ -504,14 +504,14 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
       $rel->record = $relationship;
       $rel_type = t(preg_replace('/_/', " ", $relationship->type_id->name));
       $parent_type = $relationship->object_id->type_id->name;
-       
+
       // get the node id of the subject
       $sql = "SELECT nid FROM {chado_stock} WHERE stock_id = :stock_id";
       $n = db_query($sql, array(':stock_id' => $relationship->object_id->stock_id))->fetchObject();
       if ($n) {
         $rel->record->nid = $n->nid;
       }
-       
+
       if (!array_key_exists($rel_type, $relationships['subject'])) {
         $relationships['subject'][$rel_type] = array();
       }

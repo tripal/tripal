@@ -1,21 +1,29 @@
 <?php
 
 /**
- * @defgroup tripal_analysis Analysis Module
- * @ingroup tripal_modules
- * @{
- * Provides functions for managing chado analysis' including creating details pages for each one
- * @}
+ * @file
+ * Contains basic functionality for the analysis module.
+ *
+ * @ingroup tripal_analysis
  */
 
 require_once 'api/tripal_analysis.api.inc';
+require_once 'api/tripal_analysis.schema.api.inc';
+
 require_once 'includes/tripal_analysis_privacy.inc';
 require_once 'includes/tripal_analysis.admin.inc';
 require_once 'includes/tripal_analysis.chado_node.inc';
-require_once "api/tripal_analysis.schema.api.inc";
-
 
 /**
+ * @defgroup tripal_analysis Analysis Module
+ * @ingroup tripal_modules
+ * @{
+ * Integrates the Chado Analysis module with Drupal Nodes & Views
+ * @}
+ */
+
+/**
+ * Implements hook_init().
  * Add tripal javascript to page headers
  *
  * @ingroup tripal_analysis
@@ -76,8 +84,10 @@ function tripal_analysis_menu() {
 }
 
 /**
- * Implements hook_help()
+ * Implements hook_help().
  * Purpose: Adds a help page to the module list
+ *
+ * @ingroup tripal_analysis
  */
 function tripal_analysis_help ($path, $arg) {
   if ($path == 'admin/help#tripal_analysis') {
@@ -86,6 +96,7 @@ function tripal_analysis_help ($path, $arg) {
 }
 
 /**
+ *  Implements hook_permission().
  *  Set the permission types that the chado module uses.  Essentially we
  *  want permissionis that protect creation, editing and deleting of chado
  *  data objects
@@ -167,7 +178,7 @@ function tripal_analysis_theme($existing, $type, $theme, $path) {
   return $items;
 }
 /**
- *
+ * Implements hook_block_info().
  *
  * @ingroup tripal_analysis
  */
@@ -182,7 +193,7 @@ function tripal_analysis_block_info() {
 }
 
 /**
- *
+ * Implements hook_block_view().
  *
  * @ingroup tripal_analysis
  */
@@ -211,8 +222,8 @@ function tripal_analysis_block_view($delta = '') {
 
 
 /**
- * Implements hook_views_api()
- * Purpose: Essentially this hook tells drupal that there is views support for
+ * Implements hook_views_api().
+ * Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_analysis.views.inc where all the
  *  views integration code is
  *
@@ -220,16 +231,14 @@ function tripal_analysis_block_view($delta = '') {
  */
 function tripal_analysis_views_api() {
   return array(
-    'api' => 2.0,
+    'api' => 3.0,
   );
 }
 
 /**
- * Implementation of hook_form_alter()
+ * Implementation of hook_form_alter().
  *
- * @param $form
- * @param $form_state
- * @param $form_id
+ * @ingroup tripal_analysis
  */
 function tripal_analysis_form_alter(&$form, &$form_state, $form_id) {
   // turn of preview button for insert/updates

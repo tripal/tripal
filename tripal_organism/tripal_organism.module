@@ -8,7 +8,7 @@ require_once "includes/tripal_organism.chado_node.inc";
  * @defgroup tripal_organism Organism Module
  * @ingroup tripal_modules
  * @{
- * Provides functions for managing chado organisms including creating details pages for each one
+ * Integrates the Chado Organism module with Drupal Nodes & Views
  * @}
  */
 

@@ -6,37 +6,37 @@ include('views/handlers/tripal_views_handler_area_action_links.inc');
 /**
  * @file
  * Tripal Views Integration
- *
- * @defgroup views Views Integration
- * @{
- * Provide rules for formatting and composition of fields
- * @}
- *
+ */
+
+/**
  * @defgroup views_handlers Views Integration Handlers
  * @ingroup views
  * @{
  * Provide rules for formatting and composition of fields
  * @}
- *
+ */
+/**
  * @defgroup views_field_handlers Views Field Handlers
  * @ingroup views_handlers
  * @{
  * Provide rules for formatting and composition of fields
  * @}
- *
- *
+ */
+/**
  * @defgroup views_filter_handlers Views Filter Handlers
  * @ingroup views_handlers
  * @{
  * Provide the ability to filter based on specified data
  * @}
- *
+ */
+/**
  * @defgroup views_sort_handlers Views Sort Handlers
  * @ingroup views_handlers
  * @{
  * Provide methods describing how specific data should be sorted
  * @}
- *
+ */
+/**
  * @defgroup views_argument_handlers Views Arguement Handlers
  * @ingroup views_handlers
  * @{

@@ -1,4 +1,10 @@
 <?php
+/**
+ * @file
+ * Provides general functions for the tripal bulk loader.
+ *
+ * @ingroup tripal_bulk_loader
+ */
 
 /**
  * @defgroup tripal_bulk_loader Tripal Bulk Loader Module
@@ -23,7 +29,7 @@ include('includes/tripal_bulk_loader.admin.templates.inc');
 include('api/tripal_bulk_loader.api.templates.inc');
 
 /**
- * Implements hook_init
+ * Implements hook_init().
  * Used to add stylesheets and javascript files to the header
  *
  * @ingroup tripal_bulk_loader
@@ -35,7 +41,7 @@ function tripal_bulk_loader_init() {
 }
 
 /**
- * Implements hook_menu
+ * Implements hook_menu().
  *
  * @ingroup tripal_bulk_loader
  */
@@ -226,16 +232,29 @@ function tripal_bulk_loader_menu() {
   return $items;
 }
 
+/**
+ * Implements hook_to_arg().
+ * Ensures the arguement for the bulk loader templates path is correct
+ *
+ * @ingroup tripal_bulk_loader
+ */
 function tblid_to_arg($arg, $map, $index) {
   if (preg_match('/^(\d+|O)$/', $arg)) {
     return $arg;
   }
 }
 
+/**
+ * Implements hook_load() for the menu system.
+ *
+ * Ensures that a number is passed to the form. We use the letter o in our path instead
+ * of the number 0 because the drupal menu system has a bug that doesn't allow 0 as
+ * the only character in the path.
+ *
+ * @ingroup tripal_bulk_loader
+ */
 function tblid_load($tblid_id) {
-  // We use the letter o in our path instead of the number 0
-  // because the drupal menu system has a bug that doesn't allow 0 as the only
-  // character in the path.
+
   if (preg_match('/O/',$tblid_id)) {
     // This ensures that the number 0 is sent to the form as the correct arg
     return 0;
@@ -246,13 +265,13 @@ function tblid_load($tblid_id) {
 }
 
 /**
- * Implements hook_views_api()
+ * Implements hook_views_api().
  *
- * Purpose: Essentially this hook tells drupal that there is views support for
- *  for this module which then includes tripal_views.views.inc where all the
- *  views integration code is
+ * Essentially this hook tells drupal that there is views support for
+ * for this module which then includes tripal_views.views.inc where all the
+ * views integration code is.
  *
- * @ingroup tripal_views
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_views_api() {
   return array(
@@ -261,7 +280,7 @@ function tripal_bulk_loader_views_api() {
 }
 
 /**
- * Implements hook_theme
+ * Implements hook_theme().
  *
  * @ingroup tripal_bulk_loader
  */
@@ -296,7 +315,7 @@ function tripal_bulk_loader_theme() {
 }
 
 /**
- * Implements hook_perm
+ * Implements hook_permission().
  *
  * @ingroup tripal_bulk_loader
  */

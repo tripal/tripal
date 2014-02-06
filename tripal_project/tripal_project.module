@@ -8,7 +8,7 @@ require('includes/tripal_project.chado_node.inc');
  * @defgroup tripal_project Project Module
  * @ingroup tripal_modules
  * @{
- * Provides functions for managing chado projects including creating details pages for each one
+ * Integrates the Chado Project tables with Drupal Nodes & Views
  * @}
  */
 

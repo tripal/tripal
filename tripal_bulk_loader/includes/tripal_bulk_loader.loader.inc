@@ -2,7 +2,9 @@
 
 /**
  * @file
- * @todo Add file header description
+ * Handles the actual loading of data.
+ *
+ * @ingroup tripal_bulk_loader
  */
 
 /**
@@ -1161,6 +1163,11 @@ function tripal_bulk_loader_progress_file_track_job($job_id, $record_added, $lin
   }
 }
 
+/**
+ * Used to throw a hopefully human-readable error.
+ *
+ * @ingroup tripal_bulk_loader
+ */
 function tripal_bulk_loader_throw_error($msg, $args, $severity) {
   $options = array('print' => TRUE);
   if ($severity == TRIPAL_NOTICE OR $severity == TRIPAL_INFO OR $severity == TRIPAL_DEBUG) {
@@ -1176,6 +1183,11 @@ function tripal_bulk_loader_throw_error($msg, $args, $severity) {
   );
 }
 
+/**
+ * Finishes the loading job by setting variables and exiting.
+ *
+ * @ingroup tripal_bulk_loader
+ */
 function tripal_bulk_loader_finish_loading($nid, $loaded_without_errors) {
 
   // set the status of the job (in the node not the tripal jobs)

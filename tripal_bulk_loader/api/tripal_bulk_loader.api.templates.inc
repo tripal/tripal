@@ -1,5 +1,12 @@
 <?php
 /**
+ * @file
+ * Provides functions for hooking into bulk loader functionality.
+ *
+ * @ingroup tripal_bulk_loader
+ */
+
+/**
  * @defgroup tripal_bulk_loader_api Tripal Bulk Loader Module API
  * @ingroup tripal_api
  * @{
