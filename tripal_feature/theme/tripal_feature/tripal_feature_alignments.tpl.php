@@ -58,7 +58,7 @@ $feature = $variables['node']->feature;
 $alignments = $feature->all_featurelocs;
 
 if(count($alignments) > 0){ ?>
-  <div class="tripal_feature-info-box-desc tripal-info-box-desc">The following features are aligned</div><?php
+  <div class="tripal_feature-data-block-desc tripal-data-block-desc">The following features are aligned</div><?php
   
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here

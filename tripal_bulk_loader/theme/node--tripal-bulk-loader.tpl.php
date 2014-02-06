@@ -2,7 +2,7 @@
   <div class="tripal_bulk_loader-info-box-title tripal-info-box-title">
     <?php if ($teaser) { print l($node->title, 'node/'.$node->nid); } ?>
   </div>
-  <div class="tripal_bulk_loader-info-box-desc tripal-info-box-desc"></div>
+  <div class="tripal_bulk_loader-data-block-desc tripal-data-block-desc"></div>
 
   <table id="tripal_bulk_loader-base-table" class="tripal_bulk_loader-table tripal-table tripal-table-vert">
     <tr class="tripal_bulk_loader-table-odd-row tripal-table-odd-row">

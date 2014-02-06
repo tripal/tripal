@@ -20,7 +20,7 @@ if ($contactprops) {
 
 
 if (count($properties) > 0) { ?>
-  <div class="tripal_contact-info-box-desc tripal-info-box-desc">Additional information about this contact:</div><?php
+  <div class="tripal_contact-data-block-desc tripal-data-block-desc">Additional information about this contact:</div><?php
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7

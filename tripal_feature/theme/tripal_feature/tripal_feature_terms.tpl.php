@@ -15,7 +15,7 @@ if ($terms) {
 }
 
 if (count($s_terms) > 0) { ?>
-  <div class="tripal_feature-info-box-desc tripal-info-box-desc">The following terms have been associated with this <?php print $node->feature->type_id->name ?>:</div>  <?php
+  <div class="tripal_feature-data-block-desc tripal-data-block-desc">The following terms have been associated with this <?php print $node->feature->type_id->name ?>:</div>  <?php
   
   // iterate through each term
   $i = 0;

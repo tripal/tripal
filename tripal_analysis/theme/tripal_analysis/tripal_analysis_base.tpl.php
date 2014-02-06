@@ -2,7 +2,7 @@
 $analysis = $variables['node']->analysis;
 $analysis = tripal_core_expand_chado_vars($analysis,'field','analysis.description'); ?>
 
-<div class="tripal__analysis-info-box-desc tripal-info-box-desc"></div><?php 
+<div class="tripal__analysis-data-block-desc tripal-data-block-desc"></div><?php 
   
 // the $headers array is an array of fields to use as the colum headers. 
 // additional documentation can be found here 

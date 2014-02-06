@@ -7,7 +7,7 @@ $main_db_reference = $stock->dbxref_id;
 $stock = tripal_core_expand_chado_vars($stock, 'field', 'stock.description');
 $stock = tripal_core_expand_chado_vars($stock, 'field', 'stock.uniquename'); ?>
 
-<div class="tripal_stock-info-box-desc tripal-info-box-desc"></div> <?php  
+<div class="tripal_stock-data-block-desc tripal-data-block-desc"></div> <?php  
 
 // the $headers array is an array of fields to use as the colum headers. 
 // additional documentation can be found here 

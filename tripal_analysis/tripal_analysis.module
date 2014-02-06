@@ -29,8 +29,7 @@ require_once 'includes/tripal_analysis.chado_node.inc';
  * @ingroup tripal_analysis
  */
 function tripal_analysis_init() {
-  drupal_add_js(drupal_get_path('module', 'tripal_analysis') . '/theme/js/tripal_analysis.js');
-  drupal_add_css(drupal_get_path('module', 'tripal_analysis') . '/theme/css/tripal_analysis.css');
+
 }
 
 

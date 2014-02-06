@@ -265,7 +265,7 @@ function tripal_stock_theme($existing, $type, $theme, $path) {
     ),
     'tripal_stock_publications' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_stock.publications',
+      'template' => 'tripal_stock_publications',
       'path' => "$path/theme/tripal_stock",
     ),
     'tripal_stock_references' => array(

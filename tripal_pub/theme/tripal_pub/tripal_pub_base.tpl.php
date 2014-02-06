@@ -84,7 +84,7 @@ if (count($urls) > 0) {
   $url = $urls[0]->value; 
 }?>
 
-<div class="tripal_pub-info-box-desc tripal-info-box-desc"></div> <?php 
+<div class="tripal_pub-data-block-desc tripal-data-block-desc"></div> <?php 
 
 // to simplify the template, we have a subdirectory named 'pub_types'.  This directory
 // should have include files each specific to a publication type. If the type is 

@@ -51,43 +51,6 @@ span.tripal_feature-featureloc_sequence-intron {
    background-image: url('../images/type_color6.png');
  
 }
-/* information tables on the feature pages */
-table.tripal_feature-relationships-subject-table th {
-   background-color: #EEEEEE;
-   text-align: left;
-}
-table.tripal_feature-relationships-object-table th {
-   background-color: #EEEEEE;
-   text-align: left;
-}
-table.tripal_feature-locations-table th {
-   background-color: #EEEEEE;
-   text-align: left;
-}
-table.tripal_feature-references-table th {
-   background-color: #EEEEEE;
-   text-align: left;
-
-}
-/* feature relationship edit form */
-#tripal-feature-edit-ALL-relationships-form .form-item,
-#tripal-feature-edit-ALL-db-references-form .form-item {
-   float: left;
-   margin: 0 10px 0 0;
-   
-}
-#tripal-feature-edit-ALL-db-references-form .form-submit {
-   float: none;
-   display: block;
-}
-.tripal_feature-obsolete {
-   color: red;
-   font-weight: bold;
-   font-style: italic;
-   padding-bottom: 15px; 
-   text-align: center;
-}
-
 
 /* 
  * Sequence Retrieval Form

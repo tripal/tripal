@@ -1,7 +1,7 @@
 <?php
 $contact = $variables['node']->contact; ?>
 
-<div class="tripal_contact-info-box-desc tripal-info-box-desc"></div> <?php
+<div class="tripal_contact-data-block-desc tripal-data-block-desc"></div> <?php
 
 // the $headers array is an array of fields to use as the colum headers. 
 // additional documentation can be found here 

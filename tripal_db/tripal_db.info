@@ -1,9 +1,9 @@
 name = Tripal DB
-description = The database module for the Tripal package that integrates Drupal and GMOD chado. This module provides support for managing and viewing external databases.
+description = Supports the database cross-reference tables of Chado by providing pages for viewing and editing of databases and their cross-references. Table list at: http://gmod.org/wiki/Chado_General_Module.
 core = 7.x
 project = tripal_db
 package = Tripal
-version = 7.x-2.0-beta1
+version = 7.x-2.0a
 configure = admin/tripal/chado/tripal_db
 
 dependencies[] = tripal_core

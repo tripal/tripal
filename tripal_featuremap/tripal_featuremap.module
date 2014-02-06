@@ -18,8 +18,7 @@ require('includes/tripal_featuremap.chado_node.inc');
  * @ingroup tripal_featuremap
  */
 function tripal_featuremap_init() {
-  drupal_add_css(drupal_get_path('module', 'tripal_featuremap') . '/theme/css/tripal_featuremap.css');
-  drupal_add_js(drupal_get_path('module', 'tripal_featuremap') . '/theme/js/tripal_featuremap.js');
+
 }
 
 
@@ -179,36 +178,36 @@ function tripal_featuremap_theme($existing, $type, $theme, $path) {
     ),
     'tripal_featuremap_base' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_featuremap.base',
+      'template' => 'tripal_featuremap_base',
       'path' => "$path/theme/tripal_featuremap",
     ),
     'tripal_featuremap_properties' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_featuremap.properties',
+      'template' => 'tripal_featuremap_properties',
       'path' => "$path/theme/tripal_featuremap",
     ),
     'tripal_featuremap_featurepos' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_featuremap.featurepos',
+      'template' => 'tripal_featuremap_featurepos',
       'path' => "$path/theme/tripal_featuremap",
     ),
     'tripal_featuremap_publication' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_featuremap.publication',
+      'template' => 'tripal_featuremap_publication',
       'path' => "$path/theme/tripal_featuremap",
     ),
     'tripal_featuremap_references' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_featuremap.references',
+      'template' => 'tripal_featuremap_references',
       'path' => "$path/theme/tripal_featuremap",
     ),
     'tripal_featuremap_help' => array(
-      'template' => 'tripal_featuremap.help',
+      'template' => 'tripal_featuremap_help',
       'variables' =>  array(NULL),
       'path' => "$path/theme",
     ),
     'tripal_featuremap_teaser' => array(
-      'template' => 'tripal_featuremap.teaser',
+      'template' => 'tripal_featuremap_teaser',
       'variables' =>  array(NULL),
       'path' => "$path/theme/tripal_featuremap",
     ),

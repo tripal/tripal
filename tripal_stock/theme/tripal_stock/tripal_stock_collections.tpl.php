@@ -7,7 +7,7 @@ $stock = tripal_core_expand_chado_vars($stock, 'table', 'stockcollection_stock',
 $collections = $stock->stockcollection_stock;
 
 if (count($collections) > 0) {?>
-  <div class="tripal_stock-info-box-desc tripal-info-box-desc">This stock is found in the following collections.</div> <?php 
+  <div class="tripal_stock-data-block-desc tripal-data-block-desc">This stock is found in the following collections.</div> <?php 
   
   // the $headers array is an array of fields to use as the colum headers. 
   // additional documentation can be found here 
