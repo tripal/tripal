@@ -17,7 +17,7 @@ $feature_phenotypes = $feature->feature_phenotype;
 
 if(count($feature_phenotypes) > 0){ ?>
   
-  <div class="tripal_feature-info-box-desc tripal-info-box-desc">The feature is associated with the following phenotypes</div><?php
+  <div class="tripal_feature-data-block-desc tripal-data-block-desc">The feature is associated with the following phenotypes</div><?php
 
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here

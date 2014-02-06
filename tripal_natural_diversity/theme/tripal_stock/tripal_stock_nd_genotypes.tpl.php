@@ -102,7 +102,7 @@ $total_records = $_SESSION['chado_pager'][$stock_pager_id]['total_records'];
 
 // now iterate through the feature genotypes and print a paged table.
 if (count($genotypes) > 0) { ?>
-  <div class="tripal_feature-info-box-desc tripal-info-box-desc">The following <?php print number_format($total_records) ?> genotype(s) have been recorded for this feature.</div> <?php 
+  <div class="tripal_feature-data-block-desc tripal-data-block-desc">The following <?php print number_format($total_records) ?> genotype(s) have been recorded for this feature.</div> <?php 
 
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here

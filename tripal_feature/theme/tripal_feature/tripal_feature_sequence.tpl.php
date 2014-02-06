@@ -39,7 +39,7 @@ $feature = $variables['node']->feature;
 $featureloc_sequences = $feature->featureloc_sequences;
 
 if ($residues or count($featureloc_sequences) > 0) { ?>
-  <div class="tripal_feature-info-box-desc tripal-info-box-desc"></div> <?php
+  <div class="tripal_feature-data-block-desc tripal-data-block-desc"></div> <?php
   
   // show the alignment sequences first as they are colored with child features
   if(count($featureloc_sequences) > 0){

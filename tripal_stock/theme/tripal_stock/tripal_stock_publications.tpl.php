@@ -8,7 +8,7 @@ $stock_pubs = $stock->stock_pub;
 
 
 if (count($stock_pubs) > 0) { ?>
-  <div class="tripal_stock_pub-info-box-desc tripal-info-box-desc"></div> <?php 
+  <div class="tripal_stock_pub-data-block-desc tripal-data-block-desc"></div> <?php 
 
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here

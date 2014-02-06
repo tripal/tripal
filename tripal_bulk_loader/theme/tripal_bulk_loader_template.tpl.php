@@ -37,7 +37,7 @@
 
 <div id="tripal_bulk_loader-base-box" class="tripal_bulk_loader-info-box tripal-info-box">
   <div class="tripal_bulk_loader-info-box-title tripal-info-box-title">Template Description</div>
-  <div class="tripal_bulk_loader-info-box-desc tripal-info-box-desc"></div>
+  <div class="tripal_bulk_loader-data-block-desc tripal-data-block-desc"></div>
 
 <?php if (sizeof($constants)) { ?>
   <table id="tripal_bulk_loader-template_constant-table" class="tripal_bulk_loader-table tripal-table tripal-table-vert">

@@ -23,7 +23,7 @@ $object_rels = $all_relationships['object'];
 $subject_rels = $all_relationships['subject'];
 
 if (count($object_rels) > 0 or count($subject_rels) > 0) { ?>
-  <div class="tripal_project-info-box-desc tripal-info-box-desc">This project is related to the following other projects:</div> <?php
+  <div class="tripal_project-data-block-desc tripal-data-block-desc">This project is related to the following other projects:</div> <?php
 
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here

@@ -28,7 +28,7 @@ $total_records = $_SESSION['chado_pager'][$pager_id]['total_records'];
 
  
 if (count($stocks) > 0) { ?>
-  <div class="tripal_organism-info-box-desc tripal-info-box-desc">This organism is associated with <?php print number_format($total_records) ?> stock(s):</div> <?php 
+  <div class="tripal_organism-data-block-desc tripal-data-block-desc">This organism is associated with <?php print number_format($total_records) ?> stock(s):</div> <?php 
   
   // the $headers array is an array of fields to use as the colum headers. 
   // additional documentation can be found here 

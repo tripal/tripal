@@ -13,7 +13,7 @@ foreach ($terms as $term) {
 }
 
 if (count($s_terms) > 0) { ?>
-  <div class="tripal_library-info-box-desc tripal-info-box-desc">The following terms have been associated with this <?php print $node->library->type_id->name ?>:</div>  <?php
+  <div class="tripal_library-data-block-desc tripal-data-block-desc">The following terms have been associated with this <?php print $node->library->type_id->name ?>:</div>  <?php
   
   // iterate through each term
   $i = 0;

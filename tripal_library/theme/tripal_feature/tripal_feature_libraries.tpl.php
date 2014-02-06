@@ -9,7 +9,7 @@ $library_features = $feature->library_feature;
 
 
 if (count($library_features) > 0) {?>
-  <div class="tripal_feature-info-box-desc tripal-info-box-desc">The following libraries are associated with this feature.</div> <?php 
+  <div class="tripal_feature-data-block-desc tripal-data-block-desc">The following libraries are associated with this feature.</div> <?php 
   
   // the $headers array is an array of fields to use as the colum headers. 
   // additional documentation can be found here 

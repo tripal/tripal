@@ -22,7 +22,7 @@ else {
   $description = $projectprop->value;
 } ?>
 
-<div class="tripal_project-info-box-desc tripal-info-box-desc"></div><?php 
+<div class="tripal_project-data-block-desc tripal-data-block-desc"></div><?php 
 
 // the $headers array is an array of fields to use as the colum headers. 
 // additional documentation can be found here 

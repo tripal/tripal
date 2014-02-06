@@ -15,7 +15,7 @@ if (count($pub_dbxrefs) > 0 ) {
 }
 
 if(count($references) > 0){ ?>
-  <div class="tripal_pub-info-box-desc tripal-info-box-desc">This publication is also available in the following databases:</div><?php 
+  <div class="tripal_pub-data-block-desc tripal-data-block-desc">This publication is also available in the following databases:</div><?php 
   
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here

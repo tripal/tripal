@@ -7,7 +7,7 @@ $project = tripal_core_expand_chado_vars($project,'table','project_contact', arr
 $project_contacts = $project->project_contact;
 
 if (count($project_contacts) > 0) { ?>
-  <div class="tripal_project-info-box-desc tripal-info-box-desc">The following indivuals or groups have particpated in development or execution of this project</div><?php     
+  <div class="tripal_project-data-block-desc tripal-data-block-desc">The following indivuals or groups have particpated in development or execution of this project</div><?php     
   
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here

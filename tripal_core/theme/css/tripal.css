@@ -8,7 +8,7 @@
  * |-----------------------------------------------|
  * |  .tripal-contents                             |
  * | |-------------------------------------------| |
- * | | #tripal-contents-table                    | |
+ * | | .tripal-contents-table                    | |
  * | |        |                                  | |
  * | |        |                                  | |
  * | | TOC    |          Data                    | |
@@ -100,11 +100,11 @@
  * 'tripal-info-box-desc' 
  *
  * |-----------------------------------------------|
- * |  .tripal-info-box                             |
+ * |  .tripal-data-block                           |
  * | |-------------------------------------------| |
- * | | .tripal-info-box-title                    | |
+ * | | .tripal-data-block-title                  | |
  * | |-------------------------------------------| |
- * | | .tripal-info-box-desc                     | |
+ * | | .tripal-data-block-desc                   | |
  * | |-------------------------------------------| |
  * |                                               |
  * | (Block data goes here)                        |

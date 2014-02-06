@@ -32,7 +32,7 @@ if (count($library_pubs) > 0 ) {
 $total_records = $_SESSION['chado_pager'][$element]['total_records'];
 
 if(count($libraries) > 0){ ?>
-  <div class="tripal_pub-info-box-desc tripal-info-box-desc">This publication contains information about <?php print number_format($total_records) ?> libraries:</div> <?php 
+  <div class="tripal_pub-data-block-desc tripal-data-block-desc">This publication contains information about <?php print number_format($total_records) ?> libraries:</div> <?php 
 
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here

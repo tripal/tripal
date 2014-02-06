@@ -1,14 +1,14 @@
 <?php
-$project = $variables['node']->project;
+$library = $variables['node']->library;
 
-// expand project to include pubs 
+// expand library to include pubs 
 $options = array('return_array' => 1);
-$project = tripal_core_expand_chado_vars($project, 'table', 'project_pub', $options);
-$project_pubs = $project->project_pub; 
+$library = tripal_core_expand_chado_vars($library, 'table', 'library_pub', $options);
+$library_pubs = $library->library_pub; 
 
 
-if (count($project_pubs) > 0) { ?>
-  <div class="tripal_project_pub-info-box-desc tripal-info-box-desc"></div> <?php 
+if (count($library_pubs) > 0) { ?>
+  <div class="tripal_library_pub-data-block-desc tripal-data-block-desc"></div> <?php 
 
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
@@ -21,8 +21,8 @@ if (count($project_pubs) > 0) { ?>
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
   $rows = array();
   
-  foreach ($project_pubs as $project_pub) {
-    $pub = $project_pub->pub_id;
+  foreach ($library_pubs as $library_pub) {
+    $pub = $library_pub->pub_id;
     $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.title');
     $citation = $pub->title;  // use the title as the default citation
     
@@ -68,7 +68,7 @@ if (count($project_pubs) > 0) { ?>
     'header' => $headers,
     'rows' => $rows,
     'attributes' => array(
-      'id' => 'tripal_project-table-publications',
+      'id' => 'tripal_library-table-publications',
     ),
     'sticky' => FALSE,
     'caption' => '',
@@ -78,5 +78,5 @@ if (count($project_pubs) > 0) { ?>
   
   // once we have our table array structure defined, we call Drupal's theme_table()
   // function to generate the table.
-  print theme_table($table); 
+  print theme_table($table);
 }

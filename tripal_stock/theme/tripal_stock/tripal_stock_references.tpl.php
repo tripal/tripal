@@ -26,7 +26,7 @@ if (count($stock_dbxrefs) > 0 ) {
 
 
 if(count($references) > 0){ ?>
-  <div class="tripal_stock-info-box-desc tripal-info-box-desc">External references for this <?php print $stock->type_id->name ?></div><?php
+  <div class="tripal_stock-data-block-desc tripal-data-block-desc">External references for this <?php print $stock->type_id->name ?></div><?php
    
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here

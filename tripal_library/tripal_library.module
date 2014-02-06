@@ -142,36 +142,36 @@ function tripal_library_theme($existing, $type, $theme, $path) {
     // tripal_library templates
     'tripal_library_base' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_library.base',
+      'template' => 'tripal_library_base',
       'path' => "$path/theme/tripal_library",
     ),
     'tripal_library_properties' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_library.properties',
+      'template' => 'tripal_library_properties',
       'path' => "$path/theme/tripal_library",
     ),
     'tripal_library_publications' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_library.publications',
+      'template' => 'tripal_library_publications',
       'path' => "$path/theme/tripal_library",
     ),
     'tripal_library_references' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_library.references',
+      'template' => 'tripal_library_references',
       'path' => "$path/theme/tripal_library",
     ),
     'tripal_library_synonyms' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_library.synonyms',
+      'template' => 'tripal_library_synonyms',
       'path' => "$path/theme/tripal_library",
     ),
     'tripal_library_terms' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_library.terms',
+      'template' => 'tripal_library_terms',
       'path' => "$path/theme/tripal_library",
     ),
     'tripal_library_help' => array(
-      'template' => 'tripal_library.help',
+      'template' => 'tripal_library_help',
       'variables' =>  array(NULL),
       'path' => "$path/theme",
     ),
@@ -179,21 +179,21 @@ function tripal_library_theme($existing, $type, $theme, $path) {
     // teaser
     'tripal_library_teaser' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_library.teaser',
+      'template' => 'tripal_library_teaser',
       'path' => "$path/theme/tripal_library",
     ),
     
     // tripal_organism templates
     'tripal_organism_libraries' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_organism.libraries',
+      'template' => 'tripal_organism_libraries',
       'path' => "$path/theme/tripal_organism",
     ),
     
     // tripal_feature templates
     'tripal_feature_libraries' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_feature.libraries',
+      'template' => 'tripal_feature_libraries',
       'path' => "$path/theme/tripal_feature",
     ),
     

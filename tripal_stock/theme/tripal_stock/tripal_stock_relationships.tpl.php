@@ -23,7 +23,7 @@ $object_rels = $all_relationships['object'];
 $subject_rels = $all_relationships['subject'];
 
 if (count($object_rels) > 0 or count($subject_rels) > 0) { ?>
-  <div class="tripal_stock-info-box-desc tripal-info-box-desc"></div> <?php
+  <div class="tripal_stock-data-block-desc tripal-data-block-desc"></div> <?php
   
   // first add in the subject relationships.  
   foreach ($subject_rels as $rel_type => $rels){

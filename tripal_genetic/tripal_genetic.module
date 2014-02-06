@@ -91,16 +91,16 @@ function tripal_genetic_theme($existing, $type, $theme, $path) {
   $items = array(
     'tripal_feature_genotypes' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_feature.genotypes',
+      'template' => 'tripal_feature_genotypes',
       'path' => "$path/theme/tripal_feature",
     ),
     'tripal_stock_genotypes' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_stock.genotypes',
+      'template' => 'tripal_stock_genotypes',
       'path' => "$path/theme/tripal_stock",
     ),
     'tripal_genetic_help' => array(
-      'template' => 'tripal_genetic.help',
+      'template' => 'tripal_genetic_help',
       'variables' =>  array(NULL),
       'path' => "$path/theme/",
     ),

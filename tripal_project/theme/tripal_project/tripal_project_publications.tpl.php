@@ -1,14 +1,14 @@
 <?php
-$featuremap = $variables['node']->featuremap;
+$project = $variables['node']->project;
 
-// expand featuremap to include pubs 
+// expand project to include pubs 
 $options = array('return_array' => 1);
-$featuremap = tripal_core_expand_chado_vars($featuremap, 'table', 'featuremap_pub', $options);
-$featuremap_pubs = $featuremap->featuremap_pub; 
+$project = tripal_core_expand_chado_vars($project, 'table', 'project_pub', $options);
+$project_pubs = $project->project_pub; 
 
 
-if (count($featuremap_pubs) > 0) { ?>
-  <div class="tripal_featuremap_pub-info-box-desc tripal-info-box-desc"></div> <?php 
+if (count($project_pubs) > 0) { ?>
+  <div class="tripal_project_pub-data-block-desc tripal-data-block-desc"></div> <?php 
 
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
@@ -21,8 +21,8 @@ if (count($featuremap_pubs) > 0) { ?>
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
   $rows = array();
   
-  foreach ($featuremap_pubs as $featuremap_pub) {
-    $pub = $featuremap_pub->pub_id;
+  foreach ($project_pubs as $project_pub) {
+    $pub = $project_pub->pub_id;
     $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.title');
     $citation = $pub->title;  // use the title as the default citation
     
@@ -41,14 +41,14 @@ if (count($featuremap_pubs) > 0) { ?>
     }
     
     // if the publication is synced then link to it
-    if (property_exists($pub, 'nid')) {
+    if ($pub->nid) {
       // replace the title with a link
       $link = l($pub->title, 'node/' . $pub->nid ,array('attributes' => array('target' => '_blank')));
       $patterns = array(
-        '/(\()/', '/(\))/', 
+        '/(\()/', '/(\))/',
         '/(\])/', '/(\[)/',
         '/(\{)/', '/(\})/',
-        '/(\+)/', '/(\.)/', '/(\?)/', 
+        '/(\+)/', '/(\.)/', '/(\?)/',
       );
       $fixed_title = preg_replace($patterns, "\\\\$1", $pub->title);
       $citation = preg_replace('/' . $fixed_title . '/', $link, $citation);
@@ -68,7 +68,7 @@ if (count($featuremap_pubs) > 0) { ?>
     'header' => $headers,
     'rows' => $rows,
     'attributes' => array(
-      'id' => 'tripal_featuremap-table-publications',
+      'id' => 'tripal_project-table-publications',
     ),
     'sticky' => FALSE,
     'caption' => '',
@@ -78,5 +78,5 @@ if (count($featuremap_pubs) > 0) { ?>
   
   // once we have our table array structure defined, we call Drupal's theme_table()
   // function to generate the table.
-  print theme_table($table);  
+  print theme_table($table); 
 }

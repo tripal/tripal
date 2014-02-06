@@ -27,7 +27,7 @@ if (is_array($pubprops)) {
 $keywords = array(); 
 
 if (count($properties)) { ?>
-  <div class="tripal_pub-info-box-desc tripal-info-box-desc">Additional details for this publication include:</div> <?php 
+  <div class="tripal_pub-data-block-desc tripal-data-block-desc">Additional details for this publication include:</div> <?php 
 
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here

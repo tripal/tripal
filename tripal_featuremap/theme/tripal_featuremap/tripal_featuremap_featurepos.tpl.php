@@ -38,7 +38,7 @@ $total_features = $_SESSION['chado_pager'][$featurepos_pager_id]['total_records'
 
 
 if(count($feature_positions) > 0){ ?>
-  <div class="tripal_featuremap-info-box-desc tripal-info-box-desc">This map contains <?php print number_format($total_features) ?> features:</div> <?php 
+  <div class="tripal_featuremap-data-block-desc tripal-data-block-desc">This map contains <?php print number_format($total_features) ?> features:</div> <?php 
   
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here

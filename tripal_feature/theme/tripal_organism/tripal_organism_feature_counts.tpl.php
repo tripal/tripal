@@ -13,7 +13,7 @@ if(property_exists($organism, 'feature_counts')) {
 // only show this block if it is enabled
 if ($enabled) { 
   if (count($types) > 0){ ?>
-    <div class="tripal_organism-info-box-desc tripal-info-box-desc">The following data types are currently present for this organism</div> <?php
+    <div class="tripal_organism-data-block-desc tripal-data-block-desc">The following data types are currently present for this organism</div> <?php
     // let admins know they can customize the terms that appear in the list
     print theme('tripal_admin_message', array('message' => "
       Administrators, you can customize the types of terms that appear in this report by 
@@ -48,7 +48,7 @@ if ($enabled) {
    } 
    else { 
     if (user_access('access administration pages')) { ?>
-      <div class="tripal_organism-info-box-desc tripal-info-box-desc">The following data types are currently present for this organism</div> <?php 
+      <div class="tripal_organism-data-block-desc tripal-data-block-desc">The following data types are currently present for this organism</div> <?php 
       print theme('tripal_admin_message', array('message' => "
          Administrators, to view the feature type report:
          <ul>
