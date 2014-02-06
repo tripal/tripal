@@ -24,7 +24,7 @@
  *
  * @ingroup tripal_custom_tables_api
  */
-function tripal_core_edit_custom_table($table_id, $table_name, $schema, $skip_creation = 1) {
+function chado_edit_custom_table($table_id, $table_name, $schema, $skip_creation = 1) {
 
   // Create a new record
   $record = new stdClass();
@@ -63,7 +63,7 @@ function tripal_core_edit_custom_table($table_id, $table_name, $schema, $skip_cr
       }
 
       // re-create the table
-      if (!tripal_core_create_custom_table ($table_name, $schema)) {
+      if (!chado_create_custom_table ($table_name, $schema)) {
         drupal_set_message(t("Could not create the custom table. Check Drupal error report logs."));
       }
       else {
@@ -99,7 +99,7 @@ function tripal_core_edit_custom_table($table_id, $table_name, $schema, $skip_cr
  *
  * @ingroup tripal_custom_tables_api
  */
-function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
+function chado_create_custom_table($table, $schema, $skip_creation = 1) {
   global $databases;
   $created = 0;
   $recreated = 0;
@@ -120,7 +120,7 @@ function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
     }
     catch (Exception $e) {
       $error = $e->getMessage();
-      tripal_core_report_error('tripal_core', TRIPAL_ERROR, 
+      tripal_report_error('tripal_core', TRIPAL_ERROR,
         "Error adding custom table: @message", array('@message' => $error));
       drupal_set_message("Could not add custom table. $error.", "error");
       return FALSE;
@@ -139,7 +139,7 @@ function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
     }
     catch (Exception $e) {
       $error = $e->getMessage();
-      tripal_core_report_error('tripal_core', TRIPAL_ERROR, 
+      tripal_report_error('tripal_core', TRIPAL_ERROR,
         "Error adding custom table: @message",
         array('@message' => $error));
       drupal_set_message("Could not add custom table. $error.", "error");
@@ -159,7 +159,7 @@ function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
   }
   $success = drupal_write_record('tripal_custom_tables', $record);
   if (!$success) {
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR, 
+    tripal_report_error('tripal_core', TRIPAL_ERROR,
       "Error adding custom table %table_name.",
       array('%table_name' => $table));
     drupal_set_message(t("Could not add custom table %table_name.
@@ -187,7 +187,7 @@ function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
         }
         catch (Exception $e) {
           $error = $e->getMessage();
-          tripal_core_report_error('tripal_core', TRIPAL_ERROR, "Error, could not add foreign key contraint to custom table: %error",
+          tripal_report_error('tripal_core', TRIPAL_ERROR, "Error, could not add foreign key contraint to custom table: %error",
             array('%error' => $error));
           drupal_set_message("Could not add foreign key contraint to table: $error", 'error');
           return FALSE;
@@ -218,7 +218,7 @@ function tripal_core_create_custom_table($table, $schema, $skip_creation = 1) {
  *
  * @ingroup tripal_custom_tables_api
  */
-function tripal_custom_tables_get_table_id($table_name) {
+function chado_get_custom_table_id($table_name) {
   if (db_table_exists('tripal_custom_tables')) {
     $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_name = :table_name";
     $results = db_query($sql, array(':table_name' => $table_name));

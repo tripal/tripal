@@ -95,7 +95,7 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $pr
  *
  * @ingroup tripal_jobs_api
  */
-function tripal_jobs_check_running() {
+function tripal_is_job_running() {
 
   // iterate through each job that has not ended
   // and see if it is still running. If it is not
@@ -137,7 +137,7 @@ function tripal_jobs_check_running() {
  *
  * @ingroup tripal_jobs_api
  */
-function tripal_jobs_get_start_time($job) {
+function tripal_get_job_start($job) {
 
   if ($job->start_time > 0) {
     $start = format_date($job->start_time);
@@ -164,7 +164,7 @@ function tripal_jobs_get_start_time($job) {
  *
  * @ingroup tripal_jobs_api
  */
-function tripal_jobs_get_end_time($job) {
+function tripal_get_job_end($job) {
 
   if ($job->end_time > 0) {
     $end = format_date($job->end_time);
@@ -185,7 +185,7 @@ function tripal_jobs_get_end_time($job) {
  *
  * @ingroup tripal_jobs_api
  */
-function tripal_jobs_rerun($job_id, $goto_jobs_page = TRUE) {
+function tripal_rerun_job($job_id, $goto_jobs_page = TRUE) {
   global $user;
 
   $user_id = $user->uid;
@@ -217,7 +217,7 @@ function tripal_jobs_rerun($job_id, $goto_jobs_page = TRUE) {
  *
  * @ingroup tripal_jobs_api
  */
-function tripal_jobs_cancel($job_id, $redirect = TRUE) {
+function tripal_cancel_job($job_id, $redirect = TRUE) {
   $sql = "SELECT * FROM {tripal_jobs} WHERE job_id = :job_id";
   $results = db_query($sql, array(':job_id' => $job_id));
   $job = $results->fetchObject();
@@ -255,12 +255,12 @@ function tripal_jobs_cancel($job_id, $redirect = TRUE) {
  *
  * @ingroup tripal_jobs_api
  */
-function tripal_jobs_launch($do_parallel = 0, $job_id = NULL) {
+function tripal_launch_job($do_parallel = 0, $job_id = NULL) {
 
   // first check if any jobs are currently running
   // if they are, don't continue, we don't want to have
   // more than one job script running at a time
-  if (!$do_parallel and tripal_jobs_check_running()) {
+  if (!$do_parallel and tripal_is_job_running()) {
     print "Jobs are still running. Use the --parallel=1 option with the Drush command to run jobs in parallel.";
     return;
   }
@@ -327,7 +327,7 @@ function tripal_jobs_launch($do_parallel = 0, $job_id = NULL) {
  *
  * @ingroup tripal_core
  */
-function tripal_job_set_progress($job_id, $percentage) {
+function tripal_set_job_progress($job_id, $percentage) {
 
   if (preg_match("/^(\d+|100)$/", $percentage)) {
     $record = new stdClass();
@@ -351,7 +351,7 @@ function tripal_job_set_progress($job_id, $percentage) {
  *
  * @ingroup tripal_jobs_api
  */
-function tripal_get_module_active_jobs($modulename) {
+function tripal_get_active_jobs($modulename) {
   $sql =  "SELECT * FROM {tripal_jobs} TJ " .
            "WHERE TJ.end_time IS NULL and TJ.modulename = :modulename ";
   $results = db_query($sql, array(':modulename' => $modulename));
@@ -369,6 +369,6 @@ function tripal_get_module_active_jobs($modulename) {
  *
  * @ingroup tripal_jobs_api
  */
-function tripal_jobs_get_submit_date($job) {
+function tripal_get_job_submit_date($job) {
   return format_date($job->submit_date);
 }

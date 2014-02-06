@@ -62,6 +62,8 @@ require_once "api/tripal_core.mviews.api.inc";
 require_once "api/tripal_core.files.api.inc";
 require_once "api/tripal_core.jobs.api.inc";
 
+require_once 'api/tripal_core.DEPRECATED.inc';
+
 // INCLUDES -------------------------------------
 require_once "includes/jobs.inc";
 require_once "includes/mviews.inc";
@@ -69,8 +71,24 @@ require_once "includes/custom_tables.inc";
 require_once "includes/chado_install.inc";
 require_once "includes/form_elements.inc";
 
-
 tripal_core_set_globals();
+/**
+ * This function is used to set the global Chado variables
+ * @ingroup tripal_chado_api
+ */
+function tripal_core_set_globals() {
+  // these global variables are meant to be accessed by all Tripal
+  // modules to find the chado version installed and if Chado is local.
+  // these variables are stored as globals rather than using the drupal_set_variable
+  // functions because the Drupal functions make databaes queries and for long
+  // running loaders we don't want those queries repeatedly.
+  $GLOBALS["chado_is_installed"]  = tripal_core_is_chado_installed();
+  if ($GLOBALS["chado_is_installed"]) {
+    $GLOBALS["chado_is_local"]      = tripal_core_is_chado_local();
+    $GLOBALS["chado_version"]       = tripal_core_get_chado_version();
+    $GLOBALS["exact_chado_version"] = tripal_core_get_chado_version(TRUE);
+  }
+}
 
 /**
  * Implements hook_init().
@@ -547,11 +565,11 @@ function tripal_core_views_api() {
  */
 function tripal_core_node_view_alter(&$build) {
   global $theme;
-  
+
   //dpm($build);
-  
+
   // if the $build['tripal_toc'] element is not present, then this is not
-  // a full node view so we do not want to alter 
+  // a full node view so we do not want to alter
   if (!array_key_exists('tripal_toc', $build)) {
     return;
   }
@@ -560,7 +578,7 @@ function tripal_core_node_view_alter(&$build) {
   $node = $build['#node'];
   $toc = array();
   $toc_html = '';
-  
+
   // if we are looking at a Tripal node template then we want to
   // make some changes to each block of content so that we can associate
   // a table of contents and add administrator and curator messages
@@ -571,18 +589,18 @@ function tripal_core_node_view_alter(&$build) {
     $markup = array();
     foreach ($build as $key => $value) {
 
-      // examine elements without a '#' prefix as these should be adding 
+      // examine elements without a '#' prefix as these should be adding
       // contents to the page. Skip the table of contents and links as those
       // will be placed elsewhere
       if (!preg_match('/^#/', $key) and $key != 'tripal_toc' and $key != 'links') {
-        
+
         //-----------------------
         // INITIALIZE THE CONTENT VARIABLES
         //-----------------------
         $toc_item_title = $key;
         $toc_item_id    = $key;
         $toc_item_link  = '';
-        
+
         // get the title for the table of contents.  Tripal templates should
         // have a '#tripal_toc_title' element in the build array
         if (array_key_exists('#tripal_toc_title', $build[$key])) {
@@ -593,21 +611,21 @@ function tripal_core_node_view_alter(&$build) {
           $toc_item_title = $build[$key]['#title'];
         }
         $toc_item_title = ucwords($toc_item_title);
-        
+
         if (array_key_exists('#tripal_toc_id', $build[$key])) {
           $toc_item_id = $build[$key]['#tripal_toc_id'];
         }
         $toc_item_link = "<div class=\"tripal_toc_list_item\"><a id=\"$toc_item_id\" class=\"tripal_toc_list_item_link\" href=\"?block=$toc_item_id\">$toc_item_title</a></div>";
 
-        
+
         //-----------------------
         // GET THE MARKUP FOR EACH ELEMENT
         //-----------------------
         $markup = '';
-        
+
         // find the markup. Some fields will have a '#markup' and others, such
-        // as CCK elements may have a set of '#markup' elements organized by 
-        // numerical keys. 
+        // as CCK elements may have a set of '#markup' elements organized by
+        // numerical keys.
         if (array_key_exists('#markup', $build[$key]) and trim($build[$key]['#markup'])) {
           $markup = $build[$key]['#markup'];
         }
@@ -615,7 +633,7 @@ function tripal_core_node_view_alter(&$build) {
         elseif (array_key_exists('#value', $build[$key]) and trim($build[$key]['#value'])) {
           $markup = $build[$key]['#markup'];
         }
-        
+
         // if we have no '#markup' field then this element has not yet
         // been rendered.  Let's render it and substitute that for markup
         if (!$markup) {
@@ -624,21 +642,21 @@ function tripal_core_node_view_alter(&$build) {
             '#markup' => $markup,
           );
         }
-        
+
         // if we still don't have markup then skip this one
         if (!$markup) {
           continue;
         }
-        
+
         //-----------------------
         // FIND THE TEMPLATE PATH
         //-----------------------
         // get the template path so we can put it in an admin message box
         $path = '';
         if (array_key_exists($key, $cache->data) and array_key_exists('path', $cache->data[$key])) {
-        
+
           $path = $cache->data[$key]['path'] . '/' . $key . '.tpl.php';
-        
+
           $path = theme('tripal_admin_message', array('message' => "Administrators, you can
             customize the way the content above is presented.  Tripal provides a template
             file for each block of content.  To customize, copy the template file to your
@@ -647,7 +665,7 @@ function tripal_core_node_view_alter(&$build) {
             Currently, the content above is provided by this template: <br><br>$path")
           );
         }
-        
+
         //-----------------------
         // SET THE WEIGHTS FOR THE TOC ELEMENTS
         //-----------------------
@@ -658,26 +676,26 @@ function tripal_core_node_view_alter(&$build) {
           $weight = $build[$key]['#weight'];
         }
         $toc[$weight][$toc_item_title] = $toc_item_link;
-    
+
         //-----------------------
         // CREATE THE DATA BLOCK
         //-----------------------
         // add a surrounding <div> box around the content
         $updated_markup = "
           <div id=\"$toc_item_id-tripal-data-block\" class=\"tripal-data-block\">
-            <div class=\"$toc_item_id-tripal-data-block-title tripal-data-block-title\">$toc_item_title</div>  
+            <div class=\"$toc_item_id-tripal-data-block-title tripal-data-block-title\">$toc_item_title</div>
               $markup
-              $path 
+              $path
             </div>
           </div>
         ";
-        
+
         $build[$key]['#markup'] = $updated_markup;
         $build[$key]['#weight'] = $weight;
       }
     }
   }
-  
+
   //-----------------------
   // BUILD THE TABLE OF CONTENTS LINKS
   //-----------------------
@@ -701,10 +719,10 @@ function tripal_core_node_view_alter(&$build) {
  * @ingroup tripal_core
  */
 function tripal_core_node_view($node, $view_mode, $langcode) {
-  
+
   // if this node type is a chado-based node (i.e. Tripal node)
   // the we want to add a table of contents to it's content list
-  // this table of contents will be an empty 
+  // this table of contents will be an empty
   if (preg_match('/^chado_/', $node->type)) {
     // Show feature browser and counts
     if ($view_mode == 'full') {

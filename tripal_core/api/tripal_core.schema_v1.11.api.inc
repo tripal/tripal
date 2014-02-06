@@ -14,10 +14,10 @@
  * the Drupal-style array definition for any table, use the following function
  * call:
  *
- *   $table_desc = tripal_core_get_chado_table_schema($table)
+ *   $table_desc = chado_get_schema($table)
  *
  * where the variable $table contains the name of the table you want to
- * retireve.  The tripal_core_get_chado_table_schema function determines the appropriate version of
+ * retireve.  The chado_get_schema function determines the appropriate version of
  * Chado and uses the Drupal hook infrastructure to call the appropriate
  * hook function to retrieve the table schema.
  *
@@ -30,9 +30,9 @@
 /**
  * Implements hook_chado_schema_v1_11_acquisition()
  * Purpose: To describe the structure of 'acquisition' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'acquisition' table
@@ -119,9 +119,9 @@ function tripal_core_chado_schema_v1_11_acquisition() {
 /**
  * Implements hook_chado_schema_v1_11_acquisition_relationship()
  * Purpose: To describe the structure of 'acquisition_relationship' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'acquisition_relationship' table
@@ -202,9 +202,9 @@ function tripal_core_chado_schema_v1_11_acquisition_relationship() {
 /**
  * Implements hook_chado_schema_v1_11_acquisitionprop()
  * Purpose: To describe the structure of 'acquisitionprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'acquisitionprop' table
@@ -276,9 +276,9 @@ function tripal_core_chado_schema_v1_11_acquisitionprop() {
 /**
  * Implements hook_chado_schema_v1_11_analysis()
  * Purpose: To describe the structure of 'analysis' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'analysis' table
@@ -367,9 +367,9 @@ function tripal_core_chado_schema_v1_11_analysis() {
  * Purpose: To describe the structure of 'analysisprop' to tripal.  This table doesn't
  * exist in Chado v1.1 (it does in v1.2), so we need to describe it here
  *
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'analysisprop' table
@@ -435,9 +435,9 @@ function tripal_core_chado_schema_v1_11_analysisprop() {
 /**
  * Implements hook_chado_schema_v1_11_analysisfeature()
  * Purpose: To describe the structure of 'analysisfeature' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'analysisfeature' table
@@ -520,9 +520,9 @@ function tripal_core_chado_schema_v1_11_analysisfeature() {
 /**
  * Implements hook_chado_schema_v1_11_arraydesign()
  * Purpose: To describe the structure of 'arraydesign' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'arraydesign' table
@@ -665,9 +665,9 @@ function tripal_core_chado_schema_v1_11_arraydesign() {
 /**
  * Implements hook_chado_schema_v1_11_arraydesignprop()
  * Purpose: To describe the structure of 'arraydesignprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'arraydesignprop' table
@@ -739,9 +739,9 @@ function tripal_core_chado_schema_v1_11_arraydesignprop() {
 /**
  * Implements hook_chado_schema_v1_11_assay()
  * Purpose: To describe the structure of 'assay' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'assay' table
@@ -849,9 +849,9 @@ function tripal_core_chado_schema_v1_11_assay() {
 /**
  * Implements hook_chado_schema_v1_11_assay_biomaterial()
  * Purpose: To describe the structure of 'assay_biomaterial' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'assay_biomaterial' table
@@ -933,9 +933,9 @@ function tripal_core_chado_schema_v1_11_assay_biomaterial() {
 /**
  * Implements hook_chado_schema_v1_11_assay_project()
  * Purpose: To describe the structure of 'assay_project' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'assay_project' table
@@ -997,9 +997,9 @@ function tripal_core_chado_schema_v1_11_assay_project() {
 /**
  * Implements hook_chado_schema_v1_11_assayprop()
  * Purpose: To describe the structure of 'assayprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'assayprop' table
@@ -1071,9 +1071,9 @@ function tripal_core_chado_schema_v1_11_assayprop() {
 /**
  * Implements hook_chado_schema_v1_11_biomaterial()
  * Purpose: To describe the structure of 'biomaterial' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'biomaterial' table
@@ -1155,9 +1155,9 @@ function tripal_core_chado_schema_v1_11_biomaterial() {
 /**
  * Implements hook_chado_schema_v1_11_biomaterial_dbxref()
  * Purpose: To describe the structure of 'biomaterial_dbxref' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'biomaterial_dbxref' table
@@ -1219,9 +1219,9 @@ function tripal_core_chado_schema_v1_11_biomaterial_dbxref() {
 /**
  * Implements hook_chado_schema_v1_11_biomaterial_relationship()
  * Purpose: To describe the structure of 'biomaterial_relationship' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'biomaterial_relationship' table
@@ -1292,9 +1292,9 @@ function tripal_core_chado_schema_v1_11_biomaterial_relationship() {
 /**
  * Implements hook_chado_schema_v1_11_biomaterial_treatment()
  * Purpose: To describe the structure of 'biomaterial_treatment' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'biomaterial_treatment' table
@@ -1378,9 +1378,9 @@ function tripal_core_chado_schema_v1_11_biomaterial_treatment() {
 /**
  * Implements hook_chado_schema_v1_11_biomaterialprop()
  * Purpose: To describe the structure of 'biomaterialprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'biomaterialprop' table
@@ -1452,9 +1452,9 @@ function tripal_core_chado_schema_v1_11_biomaterialprop() {
 /**
  * Implements hook_chado_schema_v1_11_cell_line()
  * Purpose: To describe the structure of 'cell_line' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'cell_line' table
@@ -1520,9 +1520,9 @@ function tripal_core_chado_schema_v1_11_cell_line() {
 /**
  * Implements hook_chado_schema_v1_11_cell_line_cvterm()
  * Purpose: To describe the structure of 'cell_line_cvterm' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'cell_line_cvterm' table
@@ -1595,9 +1595,9 @@ function tripal_core_chado_schema_v1_11_cell_line_cvterm() {
 /**
  * Implements hook_chado_schema_v1_11_cell_line_cvtermprop()
  * Purpose: To describe the structure of 'cell_line_cvtermprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'cell_line_cvtermprop' table
@@ -1663,9 +1663,9 @@ function tripal_core_chado_schema_v1_11_cell_line_cvtermprop() {
 /**
  * Implements hook_chado_schema_v1_11_cell_line_dbxref()
  * Purpose: To describe the structure of 'cell_line_dbxref' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'cell_line_dbxref' table
@@ -1726,9 +1726,9 @@ function tripal_core_chado_schema_v1_11_cell_line_dbxref() {
 /**
  * Implements hook_chado_schema_v1_11_cell_line_feature()
  * Purpose: To describe the structure of 'cell_line_feature' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'cell_line_feature' table
@@ -1795,9 +1795,9 @@ function tripal_core_chado_schema_v1_11_cell_line_feature() {
 /**
  * Implements hook_chado_schema_v1_11_cell_line_library()
  * Purpose: To describe the structure of 'cell_line_library' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'cell_line_library' table
@@ -1864,9 +1864,9 @@ function tripal_core_chado_schema_v1_11_cell_line_library() {
 /**
  * Implements hook_chado_schema_v1_11_cell_line_pub()
  * Purpose: To describe the structure of 'cell_line_pub' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'cell_line_pub' table
@@ -1922,9 +1922,9 @@ function tripal_core_chado_schema_v1_11_cell_line_pub() {
 /**
  * Implements hook_chado_schema_v1_11_cell_line_relationship()
  * Purpose: To describe the structure of 'cell_line_relationship' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'cell_line_relationship' table
@@ -1986,9 +1986,9 @@ function tripal_core_chado_schema_v1_11_cell_line_relationship() {
 /**
  * Implements hook_chado_schema_v1_11_cell_line_synonym()
  * Purpose: To describe the structure of 'cell_line_synonym' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'cell_line_synonym' table
@@ -2065,9 +2065,9 @@ function tripal_core_chado_schema_v1_11_cell_line_synonym() {
 /**
  * Implements hook_chado_schema_v1_11_cell_lineprop()
  * Purpose: To describe the structure of 'cell_lineprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'cell_lineprop' table
@@ -2133,9 +2133,9 @@ function tripal_core_chado_schema_v1_11_cell_lineprop() {
 /**
  * Implements hook_chado_schema_v1_11_cell_lineprop_pub()
  * Purpose: To describe the structure of 'cell_lineprop_pub' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'cell_lineprop_pub' table
@@ -2191,9 +2191,9 @@ function tripal_core_chado_schema_v1_11_cell_lineprop_pub() {
 /**
  * Implements hook_chado_schema_v1_11_channel()
  * Purpose: To describe the structure of 'channel' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'channel' table
@@ -2236,9 +2236,9 @@ function tripal_core_chado_schema_v1_11_channel() {
 /**
  * Implements hook_chado_schema_v1_11_contact()
  * Purpose: To describe the structure of 'contact' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'contact' table
@@ -2293,9 +2293,9 @@ function tripal_core_chado_schema_v1_11_contact() {
 /**
  * Implements hook_chado_schema_v1_11_contact_relationship()
  * Purpose: To describe the structure of 'contact_relationship' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'contact_relationship' table
@@ -2366,9 +2366,9 @@ function tripal_core_chado_schema_v1_11_contact_relationship() {
 /**
  * Implements hook_chado_schema_v1_11_control()
  * Purpose: To describe the structure of 'control' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'control' table
@@ -2459,9 +2459,9 @@ function tripal_core_chado_schema_v1_11_control() {
 /**
  * Implements hook_chado_schema_v1_11_cv()
  * Purpose: To describe the structure of 'cv' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'cv' table
@@ -2505,9 +2505,9 @@ function tripal_core_chado_schema_v1_11_cv() {
 /**
  * Implements hook_chado_schema_v1_11_cvterm()
  * Purpose: To describe the structure of 'cvterm' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'cvterm' table
@@ -2595,9 +2595,9 @@ function tripal_core_chado_schema_v1_11_cvterm() {
 /**
  * Implements hook_chado_schema_v1_11_cvterm_dbxref()
  * Purpose: To describe the structure of 'cvterm_dbxref' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'cvterm_dbxref' table
@@ -2664,9 +2664,9 @@ function tripal_core_chado_schema_v1_11_cvterm_dbxref() {
 /**
  * Implements hook_chado_schema_v1_11_cvterm_relationship()
  * Purpose: To describe the structure of 'cvterm_relationship' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'cvterm_relationship' table
@@ -2732,9 +2732,9 @@ function tripal_core_chado_schema_v1_11_cvterm_relationship() {
 /**
  * Implements hook_chado_schema_v1_11_cvtermpath()
  * Purpose: To describe the structure of 'cvtermpath' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'cvtermpath' table
@@ -2818,9 +2818,9 @@ function tripal_core_chado_schema_v1_11_cvtermpath() {
 /**
  * Implements hook_chado_schema_v1_11_cvtermprop()
  * Purpose: To describe the structure of 'cvtermprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'cvtermprop' table
@@ -2889,9 +2889,9 @@ function tripal_core_chado_schema_v1_11_cvtermprop() {
 /**
  * Implements hook_chado_schema_v1_11_cvtermsynonym()
  * Purpose: To describe the structure of 'cvtermsynonym' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'cvtermsynonym' table
@@ -2950,9 +2950,9 @@ function tripal_core_chado_schema_v1_11_cvtermsynonym() {
 /**
  * Implements hook_chado_schema_v1_11_db()
  * Purpose: To describe the structure of 'db' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'db' table
@@ -3007,9 +3007,9 @@ function tripal_core_chado_schema_v1_11_db() {
 /**
  * Implements hook_chado_schema_v1_11_dbxref()
  * Purpose: To describe the structure of 'dbxref' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'dbxref' table
@@ -3080,9 +3080,9 @@ function tripal_core_chado_schema_v1_11_dbxref() {
 /**
  * Implements hook_chado_schema_v1_11_dbxrefprop()
  * Purpose: To describe the structure of 'dbxrefprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'dbxrefprop' table
@@ -3155,9 +3155,9 @@ function tripal_core_chado_schema_v1_11_dbxrefprop() {
 /**
  * Implements hook_chado_schema_v1_11_eimage()
  * Purpose: To describe the structure of 'eimage' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'eimage' table
@@ -3203,9 +3203,9 @@ function tripal_core_chado_schema_v1_11_eimage() {
 /**
  * Implements hook_chado_schema_v1_11_element()
  * Purpose: To describe the structure of 'element' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'element' table
@@ -3293,9 +3293,9 @@ function tripal_core_chado_schema_v1_11_element() {
 /**
  * Implements hook_chado_schema_v1_11_element_relationship()
  * Purpose: To describe the structure of 'element_relationship' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'element_relationship' table
@@ -3379,9 +3379,9 @@ function tripal_core_chado_schema_v1_11_element_relationship() {
 /**
  * Implements hook_chado_schema_v1_11_elementresult()
  * Purpose: To describe the structure of 'elementresult' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'elementresult' table
@@ -3451,9 +3451,9 @@ function tripal_core_chado_schema_v1_11_elementresult() {
 /**
  * Implements hook_chado_schema_v1_11_elementresult_relationship()
  * Purpose: To describe the structure of 'elementresult_relationship' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'elementresult_relationship' table
@@ -3537,9 +3537,9 @@ function tripal_core_chado_schema_v1_11_elementresult_relationship() {
 /**
  * Implements hook_chado_schema_v1_11_environment()
  * Purpose: To describe the structure of 'environment' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'environment' table
@@ -3585,9 +3585,9 @@ function tripal_core_chado_schema_v1_11_environment() {
 /**
  * Implements hook_chado_schema_v1_11_environment_cvterm()
  * Purpose: To describe the structure of 'environment_cvterm' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'environment_cvterm' table
@@ -3649,9 +3649,9 @@ function tripal_core_chado_schema_v1_11_environment_cvterm() {
 /**
  * Implements hook_chado_schema_v1_11_expression()
  * Purpose: To describe the structure of 'expression' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'expression' table
@@ -3699,9 +3699,9 @@ function tripal_core_chado_schema_v1_11_expression() {
 /**
  * Implements hook_chado_schema_v1_11_expression_cvterm()
  * Purpose: To describe the structure of 'expression_cvterm' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'expression_cvterm' table
@@ -3777,9 +3777,9 @@ function tripal_core_chado_schema_v1_11_expression_cvterm() {
 /**
  * Implements hook_chado_schema_v1_11_expression_cvtermprop()
  * Purpose: To describe the structure of 'expression_cvtermprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'expression_cvtermprop' table
@@ -3851,9 +3851,9 @@ function tripal_core_chado_schema_v1_11_expression_cvtermprop() {
 /**
  * Implements hook_chado_schema_v1_11_expression_image()
  * Purpose: To describe the structure of 'expression_image' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'expression_image' table
@@ -3915,9 +3915,9 @@ function tripal_core_chado_schema_v1_11_expression_image() {
 /**
  * Implements hook_chado_schema_v1_11_expression_pub()
  * Purpose: To describe the structure of 'expression_pub' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'expression_pub' table
@@ -3979,9 +3979,9 @@ function tripal_core_chado_schema_v1_11_expression_pub() {
 /**
  * Implements hook_chado_schema_v1_11_expressionprop()
  * Purpose: To describe the structure of 'expressionprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'expressionprop' table
@@ -4053,9 +4053,9 @@ function tripal_core_chado_schema_v1_11_expressionprop() {
 /**
  * Implements hook_chado_schema_v1_11_feature()
  * Purpose: To describe the structure of 'feature' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'feature' table
@@ -4198,9 +4198,9 @@ function tripal_core_chado_schema_v1_11_feature() {
 /**
  * Implements hook_chado_schema_v1_11_feature_cvterm()
  * Purpose: To describe the structure of 'feature_cvterm' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'feature_cvterm' table
@@ -4287,9 +4287,9 @@ function tripal_core_chado_schema_v1_11_feature_cvterm() {
 /**
  * Implements hook_chado_schema_v1_11_feature_cvterm_dbxref()
  * Purpose: To describe the structure of 'feature_cvterm_dbxref' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'feature_cvterm_dbxref' table
@@ -4351,9 +4351,9 @@ function tripal_core_chado_schema_v1_11_feature_cvterm_dbxref() {
 /**
  * Implements hook_chado_schema_v1_11_feature_cvterm_pub()
  * Purpose: To describe the structure of 'feature_cvterm_pub' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'feature_cvterm_pub' table
@@ -4415,9 +4415,9 @@ function tripal_core_chado_schema_v1_11_feature_cvterm_pub() {
 /**
  * Implements hook_chado_schema_v1_11_feature_cvtermprop()
  * Purpose: To describe the structure of 'feature_cvtermprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'feature_cvtermprop' table
@@ -4489,9 +4489,9 @@ function tripal_core_chado_schema_v1_11_feature_cvtermprop() {
 /**
  * Implements hook_chado_schema_v1_11_feature_dbxref()
  * Purpose: To describe the structure of 'feature_dbxref' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'feature_dbxref' table
@@ -4558,9 +4558,9 @@ function tripal_core_chado_schema_v1_11_feature_dbxref() {
 /**
  * Implements hook_chado_schema_v1_11_feature_expression()
  * Purpose: To describe the structure of 'feature_expression' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'feature_expression' table
@@ -4636,9 +4636,9 @@ function tripal_core_chado_schema_v1_11_feature_expression() {
 /**
  * Implements hook_chado_schema_v1_11_feature_expressionprop()
  * Purpose: To describe the structure of 'feature_expressionprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'feature_expressionprop' table
@@ -4710,9 +4710,9 @@ function tripal_core_chado_schema_v1_11_feature_expressionprop() {
 /**
  * Implements hook_chado_schema_v1_11_feature_genotype()
  * Purpose: To describe the structure of 'feature_genotype' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'feature_genotype' table
@@ -4801,9 +4801,9 @@ function tripal_core_chado_schema_v1_11_feature_genotype() {
 /**
  * Implements hook_chado_schema_v1_11_feature_phenotype()
  * Purpose: To describe the structure of 'feature_phenotype' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'feature_phenotype' table
@@ -4865,9 +4865,9 @@ function tripal_core_chado_schema_v1_11_feature_phenotype() {
 /**
  * Implements hook_chado_schema_v1_11_feature_pub()
  * Purpose: To describe the structure of 'feature_pub' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'feature_pub' table
@@ -4929,9 +4929,9 @@ function tripal_core_chado_schema_v1_11_feature_pub() {
 /**
  * Implements hook_chado_schema_v1_11_feature_pubprop()
  * Purpose: To describe the structure of 'feature_pubprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'feature_pubprop' table
@@ -5000,9 +5000,9 @@ function tripal_core_chado_schema_v1_11_feature_pubprop() {
 /**
  * Implements hook_chado_schema_v1_11_feature_relationship()
  * Purpose: To describe the structure of 'feature_relationship' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'feature_relationship' table
@@ -5083,9 +5083,9 @@ function tripal_core_chado_schema_v1_11_feature_relationship() {
 /**
  * Implements hook_chado_schema_v1_11_feature_relationship_pub()
  * Purpose: To describe the structure of 'feature_relationship_pub' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'feature_relationship_pub' table
@@ -5147,9 +5147,9 @@ function tripal_core_chado_schema_v1_11_feature_relationship_pub() {
 /**
  * Implements hook_chado_schema_v1_11_feature_relationshipprop()
  * Purpose: To describe the structure of 'feature_relationshipprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'feature_relationshipprop' table
@@ -5221,9 +5221,9 @@ function tripal_core_chado_schema_v1_11_feature_relationshipprop() {
 /**
  * Implements hook_chado_schema_v1_11_feature_relationshipprop_pub()
  * Purpose: To describe the structure of 'feature_relationshipprop_pub' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'feature_relationshipprop_pub' table
@@ -5285,9 +5285,9 @@ function tripal_core_chado_schema_v1_11_feature_relationshipprop_pub() {
 /**
  * Implements hook_chado_schema_v1_11_feature_synonym()
  * Purpose: To describe the structure of 'feature_synonym' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'feature_synonym' table
@@ -5373,9 +5373,9 @@ function tripal_core_chado_schema_v1_11_feature_synonym() {
 /**
  * Implements hook_chado_schema_v1_11_featureloc()
  * Purpose: To describe the structure of 'featureloc' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'featureloc' table
@@ -5490,9 +5490,9 @@ function tripal_core_chado_schema_v1_11_featureloc() {
 /**
  * Implements hook_chado_schema_v1_11_featureloc_pub()
  * Purpose: To describe the structure of 'featureloc_pub' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'featureloc_pub' table
@@ -5554,9 +5554,9 @@ function tripal_core_chado_schema_v1_11_featureloc_pub() {
 /**
  * Implements hook_chado_schema_v1_11_featuremap()
  * Purpose: To describe the structure of 'featuremap' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'featuremap' table
@@ -5610,9 +5610,9 @@ function tripal_core_chado_schema_v1_11_featuremap() {
 /**
  * Implements hook_chado_schema_v1_11_featuremap_pub()
  * Purpose: To describe the structure of 'featuremap_pub' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'featuremap_pub' table
@@ -5670,9 +5670,9 @@ function tripal_core_chado_schema_v1_11_featuremap_pub() {
 /**
  * Implements hook_chado_schema_v1_11_featurepos()
  * Purpose: To describe the structure of 'featurepos' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'featurepos' table
@@ -5743,9 +5743,9 @@ function tripal_core_chado_schema_v1_11_featurepos() {
 /**
  * Implements hook_chado_schema_v1_11_featureprop()
  * Purpose: To describe the structure of 'featureprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'featureprop' table
@@ -5821,9 +5821,9 @@ function tripal_core_chado_schema_v1_11_featureprop() {
 /**
  * Implements hook_chado_schema_v1_11_featureprop_pub()
  * Purpose: To describe the structure of 'featureprop_pub' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'featureprop_pub' table
@@ -5885,9 +5885,9 @@ function tripal_core_chado_schema_v1_11_featureprop_pub() {
 /**
  * Implements hook_chado_schema_v1_11_featurerange()
  * Purpose: To describe the structure of 'featurerange' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'featurerange' table
@@ -5982,9 +5982,9 @@ function tripal_core_chado_schema_v1_11_featurerange() {
 /**
  * Implements hook_chado_schema_v1_11_genotype()
  * Purpose: To describe the structure of 'genotype' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'genotype' table
@@ -6038,9 +6038,9 @@ function tripal_core_chado_schema_v1_11_genotype() {
 /**
  * Implements hook_chado_schema_v1_11_library()
  * Purpose: To describe the structure of 'library' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'library' table
@@ -6142,9 +6142,9 @@ function tripal_core_chado_schema_v1_11_library() {
 /**
  * Implements hook_chado_schema_v1_11_library_cvterm()
  * Purpose: To describe the structure of 'library_cvterm' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'library_cvterm' table
@@ -6220,9 +6220,9 @@ function tripal_core_chado_schema_v1_11_library_cvterm() {
 /**
  * Implements hook_chado_schema_v1_11_library_dbxref()
  * Purpose: To describe the structure of 'library_dbxref' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'library_dbxref' table
@@ -6289,9 +6289,9 @@ function tripal_core_chado_schema_v1_11_library_dbxref() {
 /**
  * Implements hook_chado_schema_v1_11_library_feature()
  * Purpose: To describe the structure of 'library_feature' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'library_feature' table
@@ -6353,9 +6353,9 @@ function tripal_core_chado_schema_v1_11_library_feature() {
 /**
  * Implements hook_chado_schema_v1_11_library_pub()
  * Purpose: To describe the structure of 'library_pub' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'library_pub' table
@@ -6417,9 +6417,9 @@ function tripal_core_chado_schema_v1_11_library_pub() {
 /**
  * Implements hook_chado_schema_v1_11_library_synonym()
  * Purpose: To describe the structure of 'library_synonym' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'library_synonym' table
@@ -6505,9 +6505,9 @@ function tripal_core_chado_schema_v1_11_library_synonym() {
 /**
  * Implements hook_chado_schema_v1_11_libraryprop()
  * Purpose: To describe the structure of 'libraryprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'libraryprop' table
@@ -6579,9 +6579,9 @@ function tripal_core_chado_schema_v1_11_libraryprop() {
 /**
  * Implements hook_chado_schema_v1_11_libraryprop_pub()
  * Purpose: To describe the structure of 'libraryprop_pub' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'libraryprop_pub' table
@@ -6643,9 +6643,9 @@ function tripal_core_chado_schema_v1_11_libraryprop_pub() {
 /**
  * Implements hook_chado_schema_v1_11_magedocumentation()
  * Purpose: To describe the structure of 'magedocumentation' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'magedocumentation' table
@@ -6714,9 +6714,9 @@ function tripal_core_chado_schema_v1_11_magedocumentation() {
 /**
  * Implements hook_chado_schema_v1_11_mageml()
  * Purpose: To describe the structure of 'mageml' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'mageml' table
@@ -6756,9 +6756,9 @@ function tripal_core_chado_schema_v1_11_mageml() {
 /**
  * Implements hook_chado_schema_v1_11_materialized_view()
  * Purpose: To describe the structure of 'materialized_view' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'materialized_view' table
@@ -6831,9 +6831,9 @@ function tripal_core_chado_schema_v1_11_materialized_view() {
 /**
  * Implements hook_chado_schema_v1_11_organism()
  * Purpose: To describe the structure of 'organism' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'organism' table
@@ -6903,9 +6903,9 @@ function tripal_core_chado_schema_v1_11_organism() {
 /**
  * Implements hook_chado_schema_v1_11_organism_dbxref()
  * Purpose: To describe the structure of 'organism_dbxref' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'organism_dbxref' table
@@ -6967,9 +6967,9 @@ function tripal_core_chado_schema_v1_11_organism_dbxref() {
 /**
  * Implements hook_chado_schema_v1_11_organismprop()
  * Purpose: To describe the structure of 'organismprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'organismprop' table
@@ -7041,9 +7041,9 @@ function tripal_core_chado_schema_v1_11_organismprop() {
 /**
  * Implements hook_chado_schema_v1_11_phendesc()
  * Purpose: To describe the structure of 'phendesc' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'phendesc' table
@@ -7134,9 +7134,9 @@ function tripal_core_chado_schema_v1_11_phendesc() {
 /**
  * Implements hook_chado_schema_v1_11_phenotype()
  * Purpose: To describe the structure of 'phenotype' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'phenotype' table
@@ -7213,9 +7213,9 @@ function tripal_core_chado_schema_v1_11_phenotype() {
 /**
  * Implements hook_chado_schema_v1_11_phenotype_comparison()
  * Purpose: To describe the structure of 'phenotype_comparison' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'phenotype_comparison' table
@@ -7329,9 +7329,9 @@ function tripal_core_chado_schema_v1_11_phenotype_comparison() {
 /**
  * Implements hook_chado_schema_v1_11_phenotype_comparison_cvterm()
  * Purpose: To describe the structure of 'phenotype_comparison_cvterm' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'phenotype_comparison_cvterm' table
@@ -7408,9 +7408,9 @@ function tripal_core_chado_schema_v1_11_phenotype_comparison_cvterm() {
 /**
  * Implements hook_chado_schema_v1_11_phenotype_cvterm()
  * Purpose: To describe the structure of 'phenotype_cvterm' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'phenotype_cvterm' table
@@ -7478,9 +7478,9 @@ function tripal_core_chado_schema_v1_11_phenotype_cvterm() {
 /**
  * Implements hook_chado_schema_v1_11_phenstatement()
  * Purpose: To describe the structure of 'phenstatement' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'phenstatement' table
@@ -7575,9 +7575,9 @@ function tripal_core_chado_schema_v1_11_phenstatement() {
 /**
  * Implements hook_chado_schema_v1_11_phylonode()
  * Purpose: To describe the structure of 'phylonode' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'phylonode' table
@@ -7675,9 +7675,9 @@ function tripal_core_chado_schema_v1_11_phylonode() {
 /**
  * Implements hook_chado_schema_v1_11_phylonode_dbxref()
  * Purpose: To describe the structure of 'phylonode_dbxref' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'phylonode_dbxref' table
@@ -7739,9 +7739,9 @@ function tripal_core_chado_schema_v1_11_phylonode_dbxref() {
 /**
  * Implements hook_chado_schema_v1_11_phylonode_organism()
  * Purpose: To describe the structure of 'phylonode_organism' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'phylonode_organism' table
@@ -7802,9 +7802,9 @@ function tripal_core_chado_schema_v1_11_phylonode_organism() {
 /**
  * Implements hook_chado_schema_v1_11_phylonode_pub()
  * Purpose: To describe the structure of 'phylonode_pub' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'phylonode_pub' table
@@ -7866,9 +7866,9 @@ function tripal_core_chado_schema_v1_11_phylonode_pub() {
 /**
  * Implements hook_chado_schema_v1_11_phylonode_relationship()
  * Purpose: To describe the structure of 'phylonode_relationship' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'phylonode_relationship' table
@@ -7953,9 +7953,9 @@ function tripal_core_chado_schema_v1_11_phylonode_relationship() {
 /**
  * Implements hook_chado_schema_v1_11_phylonodeprop()
  * Purpose: To describe the structure of 'phylonodeprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'phylonodeprop' table
@@ -8029,9 +8029,9 @@ function tripal_core_chado_schema_v1_11_phylonodeprop() {
 /**
  * Implements hook_chado_schema_v1_11_phylotree()
  * Purpose: To describe the structure of 'phylotree' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'phylotree' table
@@ -8105,9 +8105,9 @@ function tripal_core_chado_schema_v1_11_phylotree() {
 /**
  * Implements hook_chado_schema_v1_11_phylotree_pub()
  * Purpose: To describe the structure of 'phylotree_pub' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'phylotree_pub' table
@@ -8169,9 +8169,9 @@ function tripal_core_chado_schema_v1_11_phylotree_pub() {
 /**
  * Implements hook_chado_schema_v1_11_project()
  * Purpose: To describe the structure of 'project' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'project' table
@@ -8216,9 +8216,9 @@ function tripal_core_chado_schema_v1_11_project() {
 /**
  * Implements hook_chado_schema_v1_11_protocol()
  * Purpose: To describe the structure of 'protocol' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'protocol' table
@@ -8312,9 +8312,9 @@ function tripal_core_chado_schema_v1_11_protocol() {
 /**
  * Implements hook_chado_schema_v1_11_protocolparam()
  * Purpose: To describe the structure of 'protocolparam' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'protocolparam' table
@@ -8393,9 +8393,9 @@ function tripal_core_chado_schema_v1_11_protocolparam() {
 /**
  * Implements hook_chado_schema_v1_11_pub()
  * Purpose: To describe the structure of 'pub' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'pub' table
@@ -8500,9 +8500,9 @@ function tripal_core_chado_schema_v1_11_pub() {
 /**
  * Implements hook_chado_schema_v1_11_pub_dbxref()
  * Purpose: To describe the structure of 'pub_dbxref' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'pub_dbxref' table
@@ -8569,9 +8569,9 @@ function tripal_core_chado_schema_v1_11_pub_dbxref() {
 /**
  * Implements hook_chado_schema_v1_11_pub_relationship()
  * Purpose: To describe the structure of 'pub_relationship' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'pub_relationship' table
@@ -8642,9 +8642,9 @@ function tripal_core_chado_schema_v1_11_pub_relationship() {
 /**
  * Implements hook_chado_schema_v1_11_pubauthor()
  * Purpose: To describe the structure of 'pubauthor' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'pubauthor' table
@@ -8717,9 +8717,9 @@ function tripal_core_chado_schema_v1_11_pubauthor() {
 /**
  * Implements hook_chado_schema_v1_11_pubprop()
  * Purpose: To describe the structure of 'pubprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'pubprop' table
@@ -8790,9 +8790,9 @@ function tripal_core_chado_schema_v1_11_pubprop() {
 /**
  * Implements hook_chado_schema_v1_11_quantification()
  * Purpose: To describe the structure of 'quantification' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'quantification' table
@@ -8893,9 +8893,9 @@ function tripal_core_chado_schema_v1_11_quantification() {
 /**
  * Implements hook_chado_schema_v1_11_quantification_relationship()
  * Purpose: To describe the structure of 'quantification_relationship' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'quantification_relationship' table
@@ -8966,9 +8966,9 @@ function tripal_core_chado_schema_v1_11_quantification_relationship() {
 /**
  * Implements hook_chado_schema_v1_11_quantificationprop()
  * Purpose: To describe the structure of 'quantificationprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'quantificationprop' table
@@ -9040,9 +9040,9 @@ function tripal_core_chado_schema_v1_11_quantificationprop() {
 /**
  * Implements hook_chado_schema_v1_11_stock()
  * Purpose: To describe the structure of 'stock' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'stock' table
@@ -9151,9 +9151,9 @@ function tripal_core_chado_schema_v1_11_stock() {
 /**
  * Implements hook_chado_schema_v1_11_stock_cvterm()
  * Purpose: To describe the structure of 'stock_cvterm' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'stock_cvterm' table
@@ -9229,9 +9229,9 @@ function tripal_core_chado_schema_v1_11_stock_cvterm() {
 /**
  * Implements hook_chado_schema_v1_11_stock_dbxref()
  * Purpose: To describe the structure of 'stock_dbxref' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'stock_dbxref' table
@@ -9298,9 +9298,9 @@ function tripal_core_chado_schema_v1_11_stock_dbxref() {
 /**
  * Implements hook_chado_schema_v1_11_stock_genotype()
  * Purpose: To describe the structure of 'stock_genotype' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'stock_genotype' table
@@ -9362,9 +9362,9 @@ function tripal_core_chado_schema_v1_11_stock_genotype() {
 /**
  * Implements hook_chado_schema_v1_11_stock_pub()
  * Purpose: To describe the structure of 'stock_pub' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'stock_pub' table
@@ -9426,9 +9426,9 @@ function tripal_core_chado_schema_v1_11_stock_pub() {
 /**
  * Implements hook_chado_schema_v1_11_stock_relationship()
  * Purpose: To describe the structure of 'stock_relationship' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'stock_relationship' table
@@ -9509,9 +9509,9 @@ function tripal_core_chado_schema_v1_11_stock_relationship() {
 /**
  * Implements hook_chado_schema_v1_11_stock_relationship_pub()
  * Purpose: To describe the structure of 'stock_relationship_pub' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'stock_relationship_pub' table
@@ -9573,9 +9573,9 @@ function tripal_core_chado_schema_v1_11_stock_relationship_pub() {
 /**
  * Implements hook_chado_schema_v1_11_stockcollection()
  * Purpose: To describe the structure of 'stockcollection' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'stockcollection' table
@@ -9652,9 +9652,9 @@ function tripal_core_chado_schema_v1_11_stockcollection() {
 /**
  * Implements hook_chado_schema_v1_11_stockcollection_stock()
  * Purpose: To describe the structure of 'stockcollection_stock' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'stockcollection_stock' table
@@ -9716,9 +9716,9 @@ function tripal_core_chado_schema_v1_11_stockcollection_stock() {
 /**
  * Implements hook_chado_schema_v1_11_stockcollectionprop()
  * Purpose: To describe the structure of 'stockcollectionprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'stockcollectionprop' table
@@ -9790,9 +9790,9 @@ function tripal_core_chado_schema_v1_11_stockcollectionprop() {
 /**
  * Implements hook_chado_schema_v1_11_stockprop()
  * Purpose: To describe the structure of 'stockprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'stockprop' table
@@ -9864,9 +9864,9 @@ function tripal_core_chado_schema_v1_11_stockprop() {
 /**
  * Implements hook_chado_schema_v1_11_stockprop_pub()
  * Purpose: To describe the structure of 'stockprop_pub' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'stockprop_pub' table
@@ -9928,9 +9928,9 @@ function tripal_core_chado_schema_v1_11_stockprop_pub() {
 /**
  * Implements hook_chado_schema_v1_11_study()
  * Purpose: To describe the structure of 'study' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'study' table
@@ -10012,9 +10012,9 @@ function tripal_core_chado_schema_v1_11_study() {
 /**
  * Implements hook_chado_schema_v1_11_study_assay()
  * Purpose: To describe the structure of 'study_assay' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'study_assay' table
@@ -10076,9 +10076,9 @@ function tripal_core_chado_schema_v1_11_study_assay() {
 /**
  * Implements hook_chado_schema_v1_11_studydesign()
  * Purpose: To describe the structure of 'studydesign' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'studydesign' table
@@ -10127,9 +10127,9 @@ function tripal_core_chado_schema_v1_11_studydesign() {
 /**
  * Implements hook_chado_schema_v1_11_studydesignprop()
  * Purpose: To describe the structure of 'studydesignprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'studydesignprop' table
@@ -10201,9 +10201,9 @@ function tripal_core_chado_schema_v1_11_studydesignprop() {
 /**
  * Implements hook_chado_schema_v1_11_studyfactor()
  * Purpose: To describe the structure of 'studyfactor' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'studyfactor' table
@@ -10269,9 +10269,9 @@ function tripal_core_chado_schema_v1_11_studyfactor() {
 /**
  * Implements hook_chado_schema_v1_11_studyfactorvalue()
  * Purpose: To describe the structure of 'studyfactorvalue' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'studyfactorvalue' table
@@ -10342,9 +10342,9 @@ function tripal_core_chado_schema_v1_11_studyfactorvalue() {
 /**
  * Implements hook_chado_schema_v1_11_studyprop()
  * Purpose: To describe the structure of 'studyprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'studyprop' table
@@ -10416,9 +10416,9 @@ function tripal_core_chado_schema_v1_11_studyprop() {
 /**
  * Implements hook_chado_schema_v1_11_studyprop_feature()
  * Purpose: To describe the structure of 'studyprop_feature' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'studyprop_feature' table
@@ -10490,9 +10490,9 @@ function tripal_core_chado_schema_v1_11_studyprop_feature() {
 /**
  * Implements hook_chado_schema_v1_11_synonym()
  * Purpose: To describe the structure of 'synonym' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'synonym' table
@@ -10551,9 +10551,9 @@ function tripal_core_chado_schema_v1_11_synonym() {
 /**
  * Implements hook_chado_schema_v1_11_tableinfo()
  * Purpose: To describe the structure of 'tableinfo' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'tableinfo' table
@@ -10621,9 +10621,9 @@ function tripal_core_chado_schema_v1_11_tableinfo() {
 /**
  * Implements hook_chado_schema_v1_11_treatment()
  * Purpose: To describe the structure of 'treatment' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'treatment' table

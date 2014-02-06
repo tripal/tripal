@@ -13,7 +13,7 @@
  *
  * Generic Queries to a specifc chado table:
  *
- * tripal_core_chado_select( [table name], [columns to select], [specify record to select], [options*] )
+ * chado_select_record( [table name], [columns to select], [specify record to select], [options*] )
  * This function allows you to select various columns from the specified chado table. Although
  * you can only select from a single table, you can specify the record to select using values
  * from related tables through use of a nested array. For example, the following code shows
@@ -33,14 +33,14 @@
  *         'is_obsolete' => 0
  *      ),
  *   );
- *   $result = tripal_core_chado_select(
+ *   $result = chado_select_record(
  *      'feature',                      // table to select from
  *      array('name', 'uniquename'),    // columns to select
  *      $values                         // record to select (see variable defn. above)
  *   );
  * @endcode
  *
- * tripal_core_chado_insert( [table name], [values to insert], [options*] )
+ * chado_insert_record( [table name], [values to insert], [options*] )
  * This function allows you to insert a single record into a specific table. The values to
  * insert are specified using an associative array where the keys are the column names to
  * insert into and they point to the value to be inserted into that column. If the column
@@ -65,13 +65,13 @@
  *         'is_obsolete' => 0
  *      ),
  *   );
- *   $result = tripal_core_chado_insert(
+ *   $result = chado_insert_record(
  *     'feature',             // table to insert into
  *     $values                // values to insert
  *   );
  * @endcode
  *
- * tripal_core_chado_update( [table name], [specify record to update], [values to change], [options*] )
+ * chado_update_record( [table name], [specify record to update], [values to change], [options*] )
  * This function allows you to update records in a specific chado table. The record(s)
  * you wish to update are specified the same as in the select function above and
  * the values to be update are specified the same as the values to be inserted were. For
@@ -103,10 +103,10 @@
  *     'is_obsolete' => 0
  *   ),
  * );
- *   $result = tripal_core_chado_update('feature',$umatch,$uvalues);
+ *   $result = chado_update_record('feature',$umatch,$uvalues);
  * @endcode
  *
- * tripal_core_chado_delete( [table name], [specify records to delete], [options*] )
+ * chado_delete_record( [table name], [specify records to delete], [options*] )
  * This function allows you to delete records from a specific chado table. The record(s)
  * to delete are specified the same as the record to select/update was above. For example,
  * the following code will delete all genes from the organism Citrus sinensis.
@@ -124,7 +124,7 @@
  *         'is_obsolete' => 0
  *      ),
  *   );
- *   $result = tripal_core_chado_select(
+ *   $result = chado_select_record(
  *      'feature',                      // table to select from
  *      $values                         // records to delete (see variable defn. above)
  *   );
@@ -153,7 +153,7 @@
  * @endcode
  *
  * If you are going to need more then a couple fields, you might want to use the
- * Chado Variables API (specifically tripal_core_generate_chado_var()) to select all
+ * Chado Variables API (specifically chado_generate_var()) to select all
  * of the common fields needed including following foreign keys.
  */
 
@@ -199,7 +199,7 @@
  *         'is_obsolete' => 0
  *      ),
  *   );
- *   $result = tripal_core_chado_insert('feature',$values);
+ *   $result = chado_insert_record('feature',$values);
  * @endcode
  * The above code inserts a record into the feature table.  The $values array is
  * nested such that the organism is selected by way of the organism_id foreign
@@ -209,19 +209,19 @@
  *
  * @ingroup tripal_chado_query_api
  */
-function tripal_core_chado_insert($table, $values, $options = array()) {
+function chado_insert_record($table, $values, $options = array()) {
 
   $print_errors = (isset($options['print_errors'])) ? $options['print_errors'] : FALSE;
 
   if (!is_array($values)) {
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR,
+    tripal_report_error('tripal_core', TRIPAL_ERROR,
       'Cannot pass non array as values for inserting.', array(),
       array('print' => $print_errors)
     );
     return FALSE;
   }
   if (count($values)==0) {
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR,
+    tripal_report_error('tripal_core', TRIPAL_ERROR,
       'Cannot pass an empty array as values for inserting.',
       array(),array('print' => $print_errors)
     );
@@ -251,10 +251,10 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
   }
 
   // get the table description
-  $table_desc = tripal_core_get_chado_table_schema($table);
+  $table_desc = chado_get_schema($table);
   if (empty($table_desc)) {
-    tripal_core_report_error('tripal_core', TRIPAL_WARNING,
-      'tripal_core_chado_insert; There is no table description for !table_name',
+    tripal_report_error('tripal_core', TRIPAL_WARNING,
+      'chado_insert_record; There is no table description for !table_name',
       array('!table_name' => $table), array('print' => $print_errors)
     );
   }
@@ -266,8 +266,8 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
     // make sure the field is in the table description. If not then return an error
     // message
     if (!array_key_exists($field, $table_desc['fields'])) {
-      tripal_core_report_error('tripal_core', TRIPAL_ERROR,
-        "tripal_core_chado_insert; The field '%field' does not exist " .
+      tripal_report_error('tripal_core', TRIPAL_ERROR,
+        "chado_insert_record; The field '%field' does not exist " .
           "for the table '%table'.  Cannot perform insert. Values: %array",
         array('%field' => $field, '%table' => $table, '%array' => print_r($values, 1)),
         array('print' => $print_errors)
@@ -277,18 +277,18 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
 
     if (is_array($value)) {
       // select the value from the foreign key relationship for this value
-      $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value);
+      $results = chado_schema_get_foreign_key($table_desc, $field, $value);
 
       if (sizeof($results) > 1) {
-        tripal_core_report_error('tripal_core', TRIPAL_ERROR,
-          'tripal_core_chado_insert: Too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
+        tripal_report_error('tripal_core', TRIPAL_ERROR,
+          'chado_insert_record: Too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
           array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)),
           array('print' => $print_errors)
         );
       }
       elseif (sizeof($results) < 1) {
-        tripal_core_report_error('tripal_core', TRIPAL_DEBUG,
-          'tripal_core_chado_insert: no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)',
+        tripal_report_error('tripal_core', TRIPAL_DEBUG,
+          'chado_insert_record: no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)',
           array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)),
           array('print' => $print_errors)
         );
@@ -326,9 +326,9 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
           }
         }
         // now check the constraint
-        if (tripal_core_chado_select($table, $ukselect_cols, $ukselect_vals)) {
-          tripal_core_report_error('tripal_core', TRIPAL_ERROR,
-            "tripal_core_chado_insert; Cannot insert duplicate record into $table table: !values",
+        if (chado_select_record($table, $ukselect_cols, $ukselect_vals)) {
+          tripal_report_error('tripal_core', TRIPAL_ERROR,
+            "chado_insert_record; Cannot insert duplicate record into $table table: !values",
             array('!values' => print_r($values, TRUE)), array('print' => $print_errors)
           );
           return FALSE;
@@ -341,9 +341,9 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
       $pkey = $table_desc['primary key'][0];
       if (array_key_exists($pkey, $insert_values)) {
         $coptions = array();
-        if (tripal_core_chado_select($table, array($pkey), array($pkey => $insert_values[$pkey]), $coptions)) {
-          tripal_core_report_error('tripal_core', TRIPAL_ERROR,
-            'tripal_core_chado_insert; Cannot insert duplicate primary key into !table table: !values',
+        if (chado_select_record($table, array($pkey), array($pkey => $insert_values[$pkey]), $coptions)) {
+          tripal_report_error('tripal_core', TRIPAL_ERROR,
+            'chado_insert_record; Cannot insert duplicate primary key into !table table: !values',
             array('!table' => $table, '!values' => print_r($values, TRUE)),
             array('print' => $print_errors)
           );
@@ -355,8 +355,8 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
     // make sure required fields have a value
     if (!is_array($table_desc['fields'])) {
       $table_desc['fields'] = array();
-      tripal_core_report_error('tripal_core', TRIPAL_WARNING,
-        "tripal_core_chado_insert; %table missing fields: \n %schema",
+      tripal_report_error('tripal_core', TRIPAL_WARNING,
+        "chado_insert_record; %table missing fields: \n %schema",
         array('%table' => $table, '%schema' => print_r($table_desc, 1)),
         array('print' => $print_errors)
       );
@@ -368,8 +368,8 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
           !array_key_exists($field, $insert_values) and
           !array_key_exists('default', $def) and
           strcmp($def['type'], serial) != 0) {
-        tripal_core_report_error('tripal_core', TRIPAL_ERROR,
-          "tripal_core_chado_insert; Field %table.%field cannot be NULL: %values",
+        tripal_report_error('tripal_core', TRIPAL_ERROR,
+          "chado_insert_record; Field %table.%field cannot be NULL: %values",
           array('%table' => $table, '%field' => $field, '%values' => print_r($values, 1)),
           array('print' => $print_errors)
         );
@@ -407,8 +407,8 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
         $results = chado_query($sql);
         $value = $results->fetchField();
         if (!$value) {
-          tripal_core_report_error('tripal_core', TRIPAL_ERROR,
-            "tripal_core_chado_insert; not able to retrieve primary key after insert: %sql",
+          tripal_report_error('tripal_core', TRIPAL_ERROR,
+            "chado_insert_record; not able to retrieve primary key after insert: %sql",
             array('%sql' => $sql),
             array('print' => $print_errors)
           );
@@ -423,8 +423,8 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
     return TRUE;
   }
   else {
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR,
-      'tripal_core_chado_insert; Cannot insert record into "%table": %values',
+    tripal_report_error('tripal_core', TRIPAL_ERROR,
+      'chado_insert_record; Cannot insert record into "%table": %values',
       array('%table' => $table, '%values' => print_r($values, 1)),
       array('print' => $print_errors)
     );
@@ -485,7 +485,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
      'is_obsolete' => 0
    ),
  );
- *   $result = tripal_core_chado_update('feature',$umatch,$uvalues);
+ *   $result = chado_update_record('feature',$umatch,$uvalues);
  * @endcode
  * The above code species that a feature with a given uniquename, organism_id,
  * and type_id (the unique constraint for the feature table) will be updated.
@@ -497,19 +497,19 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
  *
  * @ingroup tripal_chado_query_api
  */
-function tripal_core_chado_update($table, $match, $values, $options = NULL) {
+function chado_update_record($table, $match, $values, $options = NULL) {
 
   $print_errors = (isset($options['print_errors'])) ? $options['print_errors'] : FALSE;
 
   if (!is_array($values)) {
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR,
+    tripal_report_error('tripal_core', TRIPAL_ERROR,
       'Cannot pass non array as values for updating.',
       array(), array('print' => $print_errors)
     );
     return FALSE;
   }
   if (count($values)==0) {
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR,
+    tripal_report_error('tripal_core', TRIPAL_ERROR,
       'Cannot pass an empty array as values for updating.',
       array(), array('print' => $print_errors)
     );
@@ -517,14 +517,14 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
   }
 
   if (!is_array($match)) {
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR,
+    tripal_report_error('tripal_core', TRIPAL_ERROR,
       'Cannot pass non array as values for matching.',
       array(), array('print' => $print_errors)
     );
     return FALSE;
   }
   if (count($match)==0) {
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR,
+    tripal_report_error('tripal_core', TRIPAL_ERROR,
       'Cannot pass an empty array as values for matching.',
       array(), array('print' => $print_errors)
     );
@@ -546,7 +546,7 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
 
 
   // get the table description
-  $table_desc = tripal_core_get_chado_table_schema($table);
+  $table_desc = chado_get_schema($table);
 
   // if the user wants us to return the record then we need to get the
   // unique primary key if one exists.  That way we can add it to the
@@ -561,7 +561,7 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
         $stmt_suffix .= substr($field, 0, 2);
       }
       $options2 = array();
-      $results = tripal_core_chado_select($table, $columns, $match, $options2);
+      $results = chado_select_record($table, $columns, $match, $options2);
       if (count($results) > 0) {
         foreach ($results as $index => $pkey) {
           $pkeys[] = $pkey;
@@ -573,17 +573,17 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
   // get the values needed for matching in the SQL statement
   foreach ($match as $field => $value) {
     if (is_array($value)) {
-      $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value);
+      $results = chado_schema_get_foreign_key($table_desc, $field, $value);
       if (sizeof($results) > 1) {
-        tripal_core_report_error('tripal_core', TRIPAL_ERROR,
-          'tripal_core_chado_update: When trying to find record to update, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
+        tripal_report_error('tripal_core', TRIPAL_ERROR,
+          'chado_update_record: When trying to find record to update, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
           array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)),
           array('print' => $print_errors)
         );
       }
       elseif (sizeof($results) < 1) {
-        tripal_core_report_error('tripal_core', TRIPAL_DEBUG,
-          'tripal_core_chado_update: When trying to find record to update, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)',
+        tripal_report_error('tripal_core', TRIPAL_DEBUG,
+          'chado_update_record: When trying to find record to update, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)',
           array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)),
           array('print' => $print_errors)
         );
@@ -602,17 +602,17 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
     if (is_array($value)) {
       $foreign_options = array();
       // select the value from the foreign key relationship for this value
-      $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
+      $results = chado_schema_get_foreign_key($table_desc, $field, $value, $foreign_options);
       if (sizeof($results) > 1) {
-        tripal_core_report_error('tripal_core', TRIPAL_ERROR,
-          'tripal_core_chado_update: When trying to find update values, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
+        tripal_report_error('tripal_core', TRIPAL_ERROR,
+          'chado_update_record: When trying to find update values, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
           array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)),
           array('print' => $print_errors)
         );
       }
       elseif (sizeof($results) < 1) {
-        tripal_core_report_error('tripal_core', TRIPAL_DEBUG,
-          'tripal_core_chado_update: When trying to find update values, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)',
+        tripal_report_error('tripal_core', TRIPAL_DEBUG,
+          'chado_update_record: When trying to find update values, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)',
           array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)),
           array('print' => $print_errors)
         );
@@ -672,8 +672,8 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
     return TRUE;
   }
   else {
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR,
-      "tripal_core_chado_update: Cannot update record in %table table.  \nMatch: %match \nValues: %values",
+    tripal_report_error('tripal_core', TRIPAL_ERROR,
+      "chado_update_record: Cannot update record in %table table.  \nMatch: %match \nValues: %values",
       array('%table' => table, '%match' => print_r($match,TRUE), '%values' => print_r($values, 1)),
       array('print' => $print_errors)
     );
@@ -726,7 +726,7 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
      'is_obsolete' => 0
    ),
  );
- *   $result = tripal_core_chado_update('feature', $umatch, $uvalues);
+ *   $result = chado_update_record('feature', $umatch, $uvalues);
  * @endcode
  * The above code species that a feature with a given uniquename, organism_id,
  * and type_id (the unique constraint for the feature table) will be deleted.
@@ -738,15 +738,15 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
  *
  * @ingroup tripal_chado_query_api
  */
-function tripal_core_chado_delete($table, $match, $options = NULL) {
+function chado_delete_record($table, $match, $options = NULL) {
 
   if (!is_array($match)) {
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR, 
+    tripal_report_error('tripal_core', TRIPAL_ERROR,
       'Cannot pass non array as values for matching.', array());
     return FALSE;
   }
   if (count($match)==0) {
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR, 
+    tripal_report_error('tripal_core', TRIPAL_ERROR,
       'Cannot pass an empty array as values for matching.', array());
     return FALSE;
   }
@@ -760,7 +760,7 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
   $delete_matches = array();  // contains the values for the where clause
 
   // get the table description
-  $table_desc = tripal_core_get_chado_table_schema($table);
+  $table_desc = chado_get_schema($table);
   $fields = $table_desc['fields'];
 
   // get the values needed for matching in the SQL statement
@@ -772,14 +772,14 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
         $delete_matches[$field] = $value;
       }
       else {
-        $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value);
+        $results = chado_schema_get_foreign_key($table_desc, $field, $value);
         if (sizeof($results) > 1) {
-          tripal_core_report_error('tripal_core', TRIPAL_ERROR, 
-            'tripal_core_chado_delete: When trying to find record to delete, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)', 
+          tripal_report_error('tripal_core', TRIPAL_ERROR,
+            'chado_delete_record: When trying to find record to delete, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
             array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)));
         }
         elseif (sizeof($results) < 1) {
-          //tripal_core_report_error('tripal_core', TRIPAL_ERROR, 'tripal_core_chado_delete: When trying to find record to delete, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)));
+          //tripal_report_error('tripal_core', TRIPAL_ERROR, 'chado_delete_record: When trying to find record to delete, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)));
         }
         else {
           $delete_matches[$field] = $results[0];
@@ -827,7 +827,7 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
     return TRUE;
   }
   else {
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR, 
+    tripal_report_error('tripal_core', TRIPAL_ERROR,
       "Cannot delete record in $table table.  Match:" . print_r($match, 1) . ". Values: " . print_r($values, 1), array());
     return FALSE;
   }
@@ -910,7 +910,7 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
  *        'name' => 'ASC'
  *     ),
  *   );
- *   $result = tripal_core_chado_select('feature',$columns,$values,$options);
+ *   $result = chado_select_record('feature',$columns,$values,$options);
  * @endcode
  * The above code selects a record from the feature table using the three fields
  * that uniquely identify a feature.  The $columns array simply lists the columns
@@ -922,24 +922,24 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
  *
  * @ingroup tripal_chado_query_api
  */
-function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
+function chado_select_record($table, $columns, $values, $options = NULL) {
 
   $print_errors = (isset($options['print_errors'])) ? $options['print_errors'] : FALSE;
 
   if (!is_array($values)) {
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR, 'Cannot pass non array as values for selecting.',
+    tripal_report_error('tripal_core', TRIPAL_ERROR, 'Cannot pass non array as values for selecting.',
       array(), array('print' => $print_errors)
     );
     return FALSE;
   }
   if (!is_array($columns)) {
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR, 'Cannot pass non array as columns for selecting.',
+    tripal_report_error('tripal_core', TRIPAL_ERROR, 'Cannot pass non array as columns for selecting.',
       array(), array('print' => $print_errors)
     );
     return FALSE;
   }
   if (count($columns)==0) {
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR, 'Cannot pass an empty array as columns for selecting.',
+    tripal_report_error('tripal_core', TRIPAL_ERROR, 'Cannot pass an empty array as columns for selecting.',
       array(), array('print' => $print_errors)
     );
     return FALSE;
@@ -975,16 +975,16 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
 
   // check that our columns and values arguments are proper arrays
   if (!is_array($columns)) {
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR,
-      'tripal_core_chado_select; the $columns argument must be an array. Columns:%columns',
+    tripal_report_error('tripal_core', TRIPAL_ERROR,
+      'chado_select_record; the $columns argument must be an array. Columns:%columns',
       array('%columns' => print_r($columns, TRUE)),
       array('print' => $print_errors)
     );
     return FALSE;
   }
   if (!is_array($values)) {
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR,
-      'tripal_core_chado_select; the $values argument must be an array. Values:%values',
+    tripal_report_error('tripal_core', TRIPAL_ERROR,
+      'chado_select_record; the $values argument must be an array. Values:%values',
       array('%values' => print_r($values, TRUE)),
       array('print' => $print_errors)
     );
@@ -992,7 +992,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   }
 
   // get the table description
-  $table_desc = tripal_core_get_chado_table_schema($table);
+  $table_desc = chado_get_schema($table);
   $select = '';
   $from = '';
   $where = array();
@@ -1058,14 +1058,14 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
         // and there is no default value then we cannot check if the record
         // is a duplicate so return FALSE
         else {
-          tripal_core_report_error('tripal_core', TRIPAL_ERROR,
-            'tripal_core_chado_select: There is no value for %field thus we cannot check if this record is unique',
+          tripal_report_error('tripal_core', TRIPAL_ERROR,
+            'chado_select_record: There is no value for %field thus we cannot check if this record is unique',
             array('%field' => $field), array('print' => $print_errors));
           return FALSE;
         }
       }
 
-      $results = tripal_core_chado_select($table, $new_columns, $new_values, $new_options);
+      $results = chado_select_record($table, $new_columns, $new_values, $new_options);
       // if we have a duplicate record then return the results
       if (count($results) > 0) {
         $has_results = 1;
@@ -1086,8 +1086,8 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
     // make sure the field is in the table description. If not then return an error
     // message
     if (!array_key_exists($field, $table_desc['fields'])) {
-      tripal_core_report_error('tripal_core', TRIPAL_ERROR,
-        'tripal_core_chado_select: The field "%field" does not exist for the table "%table".  Cannot perform query. Values: %array',
+      tripal_report_error('tripal_core', TRIPAL_ERROR,
+        'chado_select_record: The field "%field" does not exist for the table "%table".  Cannot perform query. Values: %array',
         array('%field' => $field, '%table' => $table, '%array' => print_r($values, 1)),
         array('print' => $print_errors)
       );
@@ -1108,7 +1108,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
           'regex_columns' => $options['regex_columns'],
         );
 
-        $results = tripal_core_chado_get_foreign_key($table_desc, $field, $value, $foreign_options);
+        $results = chado_schema_get_foreign_key($table_desc, $field, $value, $foreign_options);
         if (!$results or count($results)==0) {
           return array();
         }
@@ -1258,7 +1258,7 @@ function chado_query($sql, $args = array()) {
 
   // Args should be an array
   if (!is_array($args)) {
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR,
+    tripal_report_error('tripal_core', TRIPAL_ERROR,
       'chado_query; Need to pass an array to chado_query, "%value" passed instead. Query: %query',
       array('%value' => $args, '%query' => $sql)
     );
@@ -1276,9 +1276,9 @@ function chado_query($sql, $args = array()) {
     // and those calls do not reference a schema, therefore, any tables with featureloc
     // must automaticaly have the chado schema set as active to find
     if(preg_match('/chado.featureloc/i', $sql)) {
-      $previous_db = tripal_db_set_active('chado') ;
+      $previous_db = chado_set_active('chado') ;
       $results = db_query($sql, $args);
-      tripal_db_set_active($previous_db);
+      chado_set_active($previous_db);
     }
     // for all other tables we should have everything in scope so just run the query
     else {
@@ -1288,9 +1288,9 @@ function chado_query($sql, $args = array()) {
   // if Chado is not local to the Drupal database then we have to
   // switch to another database
   else {
-    $previous_db = tripal_db_set_active('chado') ;
+    $previous_db = chado_set_active('chado') ;
     $results = db_query($sql, $args);
-    tripal_db_set_active($previous_db);
+    chado_set_active($previous_db);
   }
 
   return $results;
@@ -1333,7 +1333,7 @@ function chado_pager_query($query, $args, $limit, $element, $count_query = '') {
   // We calculate the total of pages as ceil(items / limit).
   $results = chado_query($count_query, $args);
   if (!$results) {
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR,
+    tripal_report_error('tripal_core', TRIPAL_ERROR,
       "chado_pager_query(): Query failed: %cq", array('%cq' => $count_query));
     return;
   }
@@ -1352,8 +1352,8 @@ function chado_pager_query($query, $args, $limit, $element, $count_query = '') {
 /**
  * Gets the value of a foreign key relationship
  *
- * This function is used by tripal_core_chado_select, tripal_core_chado_insert,
- * and tripal_core_chado_update to iterate through the associate array of
+ * This function is used by chado_select_record, chado_insert_record,
+ * and chado_update_record to iterate through the associate array of
  * values that gets passed to each of those routines.  The values array
  * is nested where foreign key contraints are used to specify a value that.  See
  * documentation for any of those functions for further information.
@@ -1367,7 +1367,7 @@ function chado_pager_query($query, $args, $limit, $element, $count_query = '') {
  *  An associative array containing the values
  * @param $options
  *  An associative array of additional options where the key is the option
- *  and the value is the value of that option. These options are passed on to tripal_core_chado_select.
+ *  and the value is the value of that option. These options are passed on to chado_select_record.
  *
  * Additional Options Include:
  *  - case_insensitive_columns
@@ -1385,7 +1385,7 @@ function chado_pager_query($query, $args, $limit, $element, $count_query = '') {
  *     'genus' => 'Citrus',
  *     'species' => 'sinensis',
  *   );
- *   $value = tripal_core_chado_get_foreign_key('feature', 'organism_id',$values);
+ *   $value = chado_schema_get_foreign_key('feature', 'organism_id',$values);
  *
  * @endcode
  * The above code selects a record from the feature table using the three fields
@@ -1397,7 +1397,7 @@ function chado_pager_query($query, $args, $limit, $element, $count_query = '') {
  *
  * @ingroup tripal_chado_query_api
  */
-function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $options = NULL) {
+function chado_schema_get_foreign_key($table_desc, $field, $values, $options = NULL) {
 
   // set defaults for options. If we don't set defaults then
   // we get memory leaks when we try to access the elements
@@ -1426,7 +1426,7 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
           . "implemented and defined this foreign key when it wasn't supposed to. Modules "
           . "this hook was implemented in: " . implode(', ',
         module_implements("chado_" . $table_desc['table'] . "_schema")) . ".";
-        tripal_core_report_error('tripal_core', $message);
+        tripal_report_error('tripal_core', $message);
         drupal_set_message(check_plain($message), 'error');
         continue;
       }
@@ -1440,7 +1440,7 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
           // the column name of the foreign key matches the field we want
           // so this is the right relationship.  Now we want to select
           $select_cols = array($right);
-          $result = tripal_core_chado_select($table, $select_cols, $values, $options);
+          $result = chado_select_record($table, $select_cols, $values, $options);
           $fields = array();
           if ($result and count($result) > 0) {
             foreach ($result as $obj) {
@@ -1462,7 +1462,7 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
        key referrs to (<foreign table>) and then implement
        hook_chado_chado_schema_v<version>_<foreign table>(). See
        tripal_feature_chado_v1_2_schema_feature for an example. Chado version: $version");
-    tripal_core_report_error('tripal_core', $message);
+    tripal_report_error('tripal_core', $message);
     drupal_set_message(check_plain($message), 'error');
   }
 

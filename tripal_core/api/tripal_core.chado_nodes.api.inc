@@ -11,7 +11,7 @@
  * it easier for new Tripal modules to implement drupal node types and to centralize the
  * maintenance effort as much as possible.
  *
- * A generic sync form has been created. See tripal_core_chado_node_sync_form() for
+ * A generic sync form has been created. See chado_node_sync_form() for
  * instructions on how to implement this form in your module.
  *
  * Many of the base chado tables also have associated prop, _dbxref and _relationship
@@ -19,7 +19,7 @@
  * implement this functionality you call the mini-form from your module node form and
  * then call the associated update functions from both your hook_insert and hook_update.
  * The functions of interest are as follows:
- *   - chado_node_properties_form() and chado_node_properties_form_update_properties()
+ *   - chado_add_node_form_properties() and chado_update_node_form_properties()
  *     to provide an interface for adding/removing properties
  *   - tripal_core_additional_dbxrefs_form() and tripal_core_additional_dbxrefs_form_update_dbxrefs()
  *     to provide an interface for adding/removing additional database references
@@ -38,7 +38,7 @@
  *   TRUE if it is linked to a node and FALSE otherwise
  *
  * @ingroup tripal_chado_node_api
- */
+ *
 function tripal_core_is_tripal_node_type($chado_table) {
   $linking_table = 'chado_' . $chado_table;
   if (db_table_exists($linking_table)) {
@@ -48,6 +48,7 @@ function tripal_core_is_tripal_node_type($chado_table) {
     return FALSE;
   }
 }
+*/
 
 /**
  * Sync'ing chado records with Drupal by creating nodes
@@ -65,7 +66,7 @@ function tripal_core_is_tripal_node_type($chado_table) {
       'title' => ' Sync',
       'description' => 'Sync examples from Chado with Drupal',
       'page callback' => 'drupal_get_form',
-      'page arguments' => array('tripal_core_chado_node_sync_form', $module_name, $linking_table),
+      'page arguments' => array('chado_node_sync_form', $module_name, $linking_table),
       'access arguments' => array('administer tripal examples'),
       'type' => MENU_LOCAL_TASK,
       'weight' => 0
@@ -146,7 +147,7 @@ function tripal_core_is_tripal_node_type($chado_table) {
     tripal_add_job(
       $title,                                   // the title of the job -be descriptive
       $module,                                  // the name of your module
-      'tripal_core_chado_node_sync_records',    // the chado node api sync function
+      'chado_node_sync_records',    // the chado node api sync function
       $job_args,                                // an array with the arguments to pass to the above function
       $user->uid                                // the user who submitted the job
     );
@@ -183,7 +184,7 @@ function tripal_core_is_tripal_node_type($chado_table) {
  *
  * @ingroup tripal_chado_node_api
  */
-function tripal_core_chado_node_sync_form($form, &$form_state) {
+function chado_node_sync_form($form, &$form_state) {
   $form = array();
 
   if (isset($form_state['build_info']['args'][0])) {
@@ -260,7 +261,7 @@ function tripal_core_chado_node_sync_form($form, &$form_state) {
   if (array_key_exists('checkboxes', $args['sync_filters'])) {
     // get the base schema
     $base_table = $args['base_table'];
-    $table_info = tripal_core_get_chado_table_schema($base_table);
+    $table_info = chado_get_schema($base_table);
 
     // if the base table does not have a primary key or has more than one then
     // we can't proceed, otherwise, generate the checkboxes
@@ -353,7 +354,7 @@ function tripal_core_chado_node_sync_form($form, &$form_state) {
  *
  * @ingroup tripal_chado_node_api
  */
-function tripal_core_chado_node_sync_form_submit($form, $form_state) {
+function chado_node_sync_form_submit($form, $form_state) {
 
   global $user;
 
@@ -411,13 +412,13 @@ function tripal_core_chado_node_sync_form_submit($form, $form_state) {
     );
 
     $title = "Sync " . $args['record_type_title']['plural'];
-    tripal_add_job($title, $module, 'tripal_core_chado_node_sync_records', $job_args, $user->uid);
+    tripal_add_job($title, $module, 'chado_node_sync_records', $job_args, $user->uid);
   }
   if (preg_match('/^Clean up orphaned/', $form_state['values']['op'])) {
     $module = $form_state['chado_node_api']['hook_prefix'];
     $base_table = $form_state['chado_node_api']['base_table'];
     $job_args = array($base_table);
-    tripal_add_job($form_state['values']['op'], $module, 'tripal_core_chado_node_cleanup_orphaned', $job_args, $user->uid);
+    tripal_add_job($form_state['values']['op'], $module, 'chado_cleanup_orphaned_nodes', $job_args, $user->uid);
   }
 }
 
@@ -426,7 +427,7 @@ function tripal_core_chado_node_sync_form_submit($form, $form_state) {
  *
  * @ingroup tripal_chado_node_api
  */
-function tripal_core_chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = FALSE,
+function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = FALSE,
     $types = array(), $ids = array(), $job_id = NULL) {
 
   global $user;
@@ -464,7 +465,7 @@ function tripal_core_chado_node_sync_records($base_table, $max_sync = FALSE, $or
 
   // If Organism is supplied
   if ($organism_id) {
-    $organism = tripal_core_chado_select('organism', array('*'), array('organism_id' => $organism_id));
+    $organism = chado_select_record('organism', array('*'), array('organism_id' => $organism_id));
     $restrictions .= "  Organism: " . $organism[0]->genus . " " . $organism[0]->species . "\n";
 
     $select[] = 'organism.*';
@@ -545,7 +546,7 @@ function tripal_core_chado_node_sync_records($base_table, $max_sync = FALSE, $or
       if ($job_id and $i % $interval == 0) {
         $percent = sprintf("%.2f", ($i / $count) * 100);
         print "Parsing Line $line_num (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\n";
-        tripal_job_set_progress($job_id, intval(($i/$count)*100));
+        tripal_set_job_progress($job_id, intval(($i/$count)*100));
       }
 
       // Check if it is in the chado linking table (ie: check to see if it is already linked to a node)
@@ -614,7 +615,7 @@ function tripal_core_chado_node_sync_records($base_table, $max_sync = FALSE, $or
  *
  * @ingroup tripal_chado_node_api
  */
-function tripal_core_chado_node_cleanup_orphaned($table, $job_id = NULL) {
+function chado_cleanup_orphaned_nodes($table, $job_id = NULL) {
   $count = 0;
 
   // build the SQL statments needed to check if nodes point to valid analyses
@@ -654,7 +655,7 @@ function tripal_core_chado_node_cleanup_orphaned($table, $job_id = NULL) {
 
     // update the job status every 1% analyses
     if ($job_id and $i % $interval == 0) {
-      tripal_job_set_progress($job_id, intval(($i / $count) * 100));
+      tripal_set_job_progress($job_id, intval(($i / $count) * 100));
     }
 
     // see if the node exits, if not remove the entry from the chado_$table table
@@ -689,7 +690,7 @@ function tripal_core_chado_node_cleanup_orphaned($table, $job_id = NULL) {
 
     // update the job status every 1% libraries
     if ($job_id and $i % $interval == 0) {
-      tripal_job_set_progress($job_id, intval(($i / $count) * 100));
+      tripal_set_job_progress($job_id, intval(($i / $count) * 100));
     }
 
     // check to see if the node has a corresponding entry

@@ -34,7 +34,7 @@
  *   A string containing a description of the materialized view
  *
  * @ingroup tripal_mviews_api
- */
+ *
 function tripal_add_legacy_mview($name, $modulename, $mv_table, $mv_specs, $indexed,
   $query, $special_index, $comment = NULL) {
 
@@ -74,9 +74,9 @@ function tripal_add_legacy_mview($name, $modulename, $mv_table, $mv_specs, $inde
 
   // add the table to the database
   $sql = "CREATE TABLE {$mv_table} ($mv_specs); $index";
-  $previous_db = tripal_db_set_active('chado');  // use chado database
+  $previous_db = chado_set_active('chado');  // use chado database
   $results = db_query($sql);
-  tripal_db_set_active($previous_db);  // now use drupal database
+  chado_set_active($previous_db);  // now use drupal database
   if ($results) {
     drupal_set_message(t("View '%name' created", array('%name' => $name)));
   }
@@ -84,6 +84,8 @@ function tripal_add_legacy_mview($name, $modulename, $mv_table, $mv_specs, $inde
     drupal_set_message(t("Failed to create the materialized view table: '%mv_table'", array('%mv_table' => $mv_table)), 'error');
   }
 }
+*/
+
 /**
  * Add a materialized view to the chado database to help speed data access. This
  * function supports the older style where postgres column specifications
@@ -111,7 +113,7 @@ function tripal_add_mview($name, $modulename, $schema_arr, $query, $comment = NU
   $mv_table = $schema_arr['table'];
 
   if (!$mv_table) {
-     tripal_core_report_error('tripal_core', TRIPAL_ERROR, 
+     tripal_report_error('tripal_core', TRIPAL_ERROR,
        'Must have a table name when creating an mview.', array());
      return NULL;
   }
@@ -135,7 +137,7 @@ function tripal_add_mview($name, $modulename, $schema_arr, $query, $comment = NU
       chado_query($sql);
     }
     // create the table
-    if (!tripal_core_create_custom_table ($mv_table, $schema_arr, 0)) {
+    if (!chado_create_custom_table ($mv_table, $schema_arr, 0)) {
       drupal_set_message(t("Could not create the materialized view. Check Drupal error report logs."), 'error');
     }
     else {
@@ -220,13 +222,13 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
 
   // if we are going to create the table then we must first drop it if it exists
   if ($create_table) {
-    $previous_db = tripal_db_set_active('chado');  // use chado database
+    $previous_db = chado_set_active('chado');  // use chado database
     if (db_table_exists($mview->mv_table)) {
       $sql = "DROP TABLE :table_name";
       db_query($sql, array(':table_name' => $mview->mv_table));
       drupal_set_message(t("View '%name' dropped", array('%name' => $name)));
     }
-    tripal_db_set_active($previous_db);  // now use drupal database
+    chado_set_active($previous_db);  // now use drupal database
   }
 
   // update the record to the tripal_mviews table and if successful
@@ -247,7 +249,7 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
     // re-create the table differently depending on if it the traditional method
     // or the Drupal Schema API method
     if ($create_table and $mv_schema) {
-      if (!tripal_core_create_custom_table($mv_table, $schema_arr, 0)) {
+      if (!chado_create_custom_table($mv_table, $schema_arr, 0)) {
         drupal_set_message(t("Could not create the materialized view. Check Drupal error report logs."));
       }
       else {
@@ -307,8 +309,6 @@ function tripal_mviews_get_mview_id($view_name) {
 /**
  * Does the specified action for the specified Materialized View
  *
- * @param $op
- *   The action to be taken. One of update or delete
  * @param $mview_id
  *   The unique ID of the materialized view for the action to be performed on
  * @param $redirect
@@ -316,7 +316,7 @@ function tripal_mviews_get_mview_id($view_name) {
  *
  * @ingroup tripal_core
  */
-function tripal_mviews_action($op, $mview_id, $redirect = FALSE) {
+function tripal_add_populate_mview($mview_id, $redirect = FALSE) {
   global $user;
 
   if (!$mview_id) {
@@ -329,27 +329,52 @@ function tripal_mviews_action($op, $mview_id, $redirect = FALSE) {
   $mview = $results->fetchObject();
 
   // add a job or perform the action based on the given operation
-  if ($op == 'update') {
-    $args = array("$mview_id");
-    tripal_add_job("Populate materialized view '$mview->name'", 'tripal_core',
-       'tripal_update_mview', $args, $user->uid);
+  $args = array("$mview_id");
+  tripal_add_job("Populate materialized view '$mview->name'", 'tripal_core',
+     'tripal_populate_mview', $args, $user->uid);
+
+  // Redirect the user
+  if ($redirect) {
+    drupal_goto("admin/tripal/mviews");
+  }
+}
+
+/**
+ * Does the specified action for the specified Materialized View
+ *
+ * @param $op
+ *   The action to be taken. One of update or delete
+ * @param $mview_id
+ *   The unique ID of the materialized view for the action to be performed on
+ * @param $redirect
+ *   TRUE/FALSE depending on whether you want to redirect the user to admin/tripal/mviews
+ *
+ * @ingroup tripal_core
+ */
+function tripal_delete_mview($mview_id, $redirect = FALSE) {
+  global $user;
+
+  if (!$mview_id) {
+    return '';
   }
 
+  // get this mview details
+  $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id";
+  $results = db_query($sql, array(':mview_id' => $mview_id));
+  $mview = $results->fetchObject();
+
   // if op is to delete then do so
-  if ($op == 'delete') {
+  // remove the mview from the tripal_mviews table
+  $sql = "DELETE FROM {tripal_mviews} WHERE mview_id = $mview_id";
+  db_query($sql);
 
-    // remove the mview from the tripal_mviews table
-    $sql = "DELETE FROM {tripal_mviews} WHERE mview_id = $mview_id";
-    db_query($sql);
+  // does the table already exist?
+  $mview_exists = db_table_exists('chado.' . $mview->mv_table);
 
-    // does the table already exist?
-    $mview_exists = db_table_exists('chado.' . $mview->mv_table);
-
-    // drop the table from chado if it exists
-    if ($mview_exists) {
-      $sql = "DROP TABLE {" . $mview->mv_table . "}";
-      chado_query($sql);
-    }
+  // drop the table from chado if it exists
+  if ($mview_exists) {
+    $sql = "DROP TABLE {" . $mview->mv_table . "}";
+    chado_query($sql);
   }
 
   // Redirect the user
@@ -369,7 +394,7 @@ function tripal_mviews_action($op, $mview_id, $redirect = FALSE) {
  *
  * @ingroup tripal_mviews_api
  */
-function tripal_update_mview($mview_id) {
+function tripal_populate_mview($mview_id) {
   $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id ";
   $results = db_query($sql, array(':mview_id' => $mview_id));
   $mview = $results->fetchObject();
@@ -378,10 +403,10 @@ function tripal_update_mview($mview_id) {
     // that may leave parts of the site unfunctional
     $transaction = db_transaction();
     try {
-      $previous_db = tripal_db_set_active('chado');  // use chado database
+      $previous_db = chado_set_active('chado');  // use chado database
       $success = db_query("DELETE FROM {" . $mview->mv_table . "}");
       $success = db_query("INSERT INTO {" . $mview->mv_table . "} ($mview->query)");
-      tripal_db_set_active($previous_db);  // now use drupal database
+      chado_set_active($previous_db);  // now use drupal database
       // if success get the number of results and update the table record
       if ($success) {
         $sql = "SELECT count(*) as cnt FROM {" . $mview->mv_table . "}";

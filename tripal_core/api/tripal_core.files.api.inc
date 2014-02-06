@@ -10,18 +10,6 @@
  */
 
 /**
- * This function is a substitute for Drupal 6's file_directory_path()
- * function which no longer exists in Drupal 7.  However, the function
- * call is useful because it's more intitutive. So this wrapper was created
- * to mimic the behavior of the old function.
- *
- * @return
- *   the public directory where tripal files are housed: sites/default/files/tripal
- */
-function tripal_file_directory_path() {
-  return variable_get('file_public_path', conf_path() . '/files/tripal');
-}
-/**
  * This function is typically used in the '.install' file for a Tripal module
  * Each module should call this function during installation to create
  * the module data directory which is sites/default/files/tripal/[module_name]
@@ -29,61 +17,58 @@ function tripal_file_directory_path() {
  * for storing files.
  *
  * @param $module_name
- *   the name of the module being installed.
- *
- * @returns
- *   nothing
- *
- * @ingroup tripal_files_api
- */
-function tripal_create_moddir($module_name) {
-
-  // make the data directory for this module
-  $data_dir = tripal_file_directory_path() . "/$module_name";
-  if (!file_prepare_directory($data_dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
-    $message = "Cannot create directory $data_dir. This module may not " .
-               "behave correctly without this directory.  Please  create " .
-               "the directory manually or fix the problem and reinstall.";
-    drupal_set_message(check_plain(t($message)), 'error');
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR, $message, array());
-  }
-}
-
-/**
- * This function creates directories inside of the module's
- * Data directory.
- *
- * @param $module_name
+ *   the name of the module being installed
  * @param $path
+ *   Optional sub-path to create
  */
-function tripal_create_mod_subdir($module_name, $path) {
+function tripal_create_files_dir($module_name, $path = FALSE) {
+
+  // if the path is not supplied then assume they want to create the base files directory
+  // for the specified module
+  if (!$path) {
+    // make the data directory for this module
+    $data_dir = tripal_get_files_dir() . "/$module_name";
+    if (!file_prepare_directory($data_dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
+      $message = "Cannot create directory $data_dir. This module may not " .
+                 "behave correctly without this directory.  Please  create " .
+                 "the directory manually or fix the problem and reinstall.";
+      drupal_set_message(check_plain(t($message)), 'error');
+      tripal_report_error('tripal_core', TRIPAL_ERROR, $message, array());
+    }
+  }
 
   // make sure the module data directory exists
-  tripal_create_moddir($module_name);
+  tripal_create_files_dir($module_name);
 
   // now make sure the sub dir exists
-  $sub_dir = tripal_file_directory_path() . $module_name . $path;
+  $sub_dir = tripal_get_files_dir() . $module_name . $path;
   if (!file_prepare_directory($sub_dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
     $message = "Cannot create directory $sub_dir. ";
     drupal_set_message(check_plain(t($message)), 'error');
-    tripal_core_report_error('tripal_core', TRIPAL_ERROR, $message, array());
+    tripal_report_error('tripal_core', TRIPAL_ERROR, $message, array());
   }
 }
 
 /**
  * Each Tripal module has a unique data directory which was creatd using the
- * tripal_create_moddir function during installation.  This function
+ * tripal_create_files_dir function during installation.  This function
  * retrieves the directory path.
  *
  * @param $module_name
- *   The name of the module
+ *   (Optional) The name of the module.
  *
  * @returns
  *   The path within the Drupal installation where the data directory resides
  *
  * @ingroup tripal_files_api
  */
-function tripal_get_moddir($module_name) {
-  $data_dir = tripal_file_directory_path() . "/$module_name";
+function tripal_get_files_dir($module_name = FALSE) {
+
+  $data_dir = variable_get('file_public_path', conf_path() . '/files/tripal');
+
+  if ($module_name) {
+    $data_dir .= "/$module_name";
+  }
+
   return $data_dir;
 }

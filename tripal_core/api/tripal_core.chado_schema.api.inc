@@ -16,10 +16,10 @@
  * the Drupal-style array definition for any table, use the following function
  * call:
  *
- *   $table_desc = tripal_core_get_chado_table_schema($table)
+ *   $table_desc = chado_get_schema($table)
  *
  * where the variable $table contains the name of the table you want to
- * retireve.  The tripal_core_get_chado_table_schema function determines the appropriate version of
+ * retireve.  The chado_get_schema function determines the appropriate version of
  * Chado and uses the Drupal hook infrastructure to call the appropriate
  * hook function to retrieve the table schema.
  * @}
@@ -67,7 +67,7 @@ function chado_table_exists($table) {
  *
  * @ingroup tripal_chado_schema_api
  */
-function tripal_core_schema_exists($schema) {
+function chado_dbschema_exists($schema) {
 
   // check that the chado schema now exists
   $sql = "
@@ -94,7 +94,7 @@ function tripal_core_schema_exists($schema) {
  *
  * @ingroup tripal_chado_schema_api
  */
-function tripal_core_chado_schema_exists() {
+function chado_is_local() {
 
   // This is postgresql-specific code to check the existence of the chado schema
   // @coder-ignore: acting on pg_catalog schema rather then drupal schema therefore, table prefixing does not apply
@@ -125,7 +125,7 @@ function tripal_core_chado_schema_exists() {
  *
  * @ingroup tripal_chado_schema_api
  */
-function tripal_core_is_chado_installed() {
+function chado_is_installed() {
   global $databases;
 
   // first check if chado is in the $databases variable of the settings.php file
@@ -134,28 +134,7 @@ function tripal_core_is_chado_installed() {
   }
 
   // check to make sure the chado schema exists
-  return tripal_core_chado_schema_exists();
-}
-
-/**
- * Check whether chado is installed local to the Drupal database
- * in its own Chado schema.
- *
- * @return
- *   TRUE/FALSE depending upon whether chado is local.
- *
- * @ingroup tripal_chado_schema_api
- */
-function tripal_core_is_chado_local() {
-  global $databases, $db_type;
-
-  // first check if chado is in the $databases variable of the settings.php file
-  if (array_key_exists('chado', $databases)) {
-    return FALSE;
-  }
-
-  // check to make sure the chado schema exists
-  return tripal_core_chado_schema_exists();
+  return chado_is_local();
 }
 
 /**
@@ -181,14 +160,14 @@ function tripal_core_is_chado_local() {
  *
  * @ingroup tripal_chado_schema_api
  */
-function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FALSE) {
+function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
 
   global $databases;
   $version = '';
   $is_local = 0;
 
   // check that Chado is installed if not return 'uninstalled as the version'
-  $chado_exists = tripal_core_chado_schema_exists();
+  $chado_exists = chado_is_local();
   if (!$chado_exists) {
     // if it's not in the drupal database check to see if it's specified in the $db_url
     // in the settings.php
@@ -198,9 +177,9 @@ function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FA
       return 'not installed';
     }
     $is_local = 0;
-    $previous_db = tripal_db_set_active('chado');
+    $previous_db = chado_set_active('chado');
     $prop_exists = db_table_exists('chadoprop');
-    tripal_db_set_active($previous_db);
+    chado_set_active($previous_db);
   }
   else {
     $is_local = 1;
@@ -221,9 +200,9 @@ function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FA
       WHERE CV.name = 'chado_properties' and CVT.name = 'version'
     ";
     if (!$is_local) {
-      $previous_db = tripal_db_set_active('chado');
+      $previous_db = chado_set_active('chado');
       $results = db_query($sql);
-      tripal_db_set_active($previous_db);
+      chado_set_active($previous_db);
     }
     else {
       $results = chado_query($sql);
@@ -285,7 +264,7 @@ function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FA
  *
  * @ingroup tripal_chado_schema_api
  */
-function tripal_core_get_chado_tables($include_custom = NULL) {
+function chado_get_table_names($include_custom = NULL) {
 
   // first get the chado version that is installed
   $v = $GLOBALS["chado_version"];
@@ -330,7 +309,7 @@ function tripal_core_get_chado_tables($include_custom = NULL) {
  *
  * @ingroup tripal_chado_schema_api
  */
-function tripal_core_get_chado_table_schema($table) {
+function chado_get_schema($table) {
 
   // first get the chado version that is installed
   $v = $GLOBALS["chado_version"];
@@ -341,7 +320,7 @@ function tripal_core_get_chado_table_schema($table) {
 
   // if the table_arr is empty then maybe this is a custom table
   if (!is_array($table_arr) or count($table_arr) == 0) {
-    $table_arr = tripal_get_chado_custom_schema($table);
+    $table_arr = chado_get_custom_table_schema($table);
   }
 
   return $table_arr;
@@ -359,7 +338,7 @@ function tripal_core_get_chado_table_schema($table) {
  *
  * @ingroup tripal_chado_schema_api
  */
-function tripal_get_chado_custom_schema($table) {
+function chado_get_custom_table_schema($table) {
 
   $sql = "SELECT schema FROM {tripal_custom_tables} WHERE table_name = :table_name";
   $results = db_query($sql, array(':table_name' => $table));

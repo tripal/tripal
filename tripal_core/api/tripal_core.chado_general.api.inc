@@ -20,7 +20,7 @@ require_once "tripal_core.schema_v1.11.api.inc";
  * foreign keys also nested.  The only fields that are not included are text
  * fields (which may be very large) or many-to-many foreign key relationships.
  * However, these fields and relationships can be expanded using the
- * tripal_core_expand_chado_vars.
+ * chado_expand_var.
  *
  * When a row from a chado table is selected using these two functions, it provides
  * a way for users who want to cutomize Drupal template files to access all data
@@ -43,25 +43,6 @@ define('TRIPAL_WARNING',4);
 define('TRIPAL_NOTICE',5);
 define('TRIPAL_INFO',6);
 define('TRIPAL_DEBUG',7);
-
-
-/**
- * This function is used to set the global Chado variables
- * @ingroup tripal_chado_api
- */
-function tripal_core_set_globals() {
-  // these global variables are meant to be accessed by all Tripal
-  // modules to find the chado version installed and if Chado is local.
-  // these variables are stored as globals rather than using the drupal_set_variable
-  // functions because the Drupal functions make databaes queries and for long
-  // running loaders we don't want those queries repeatedly.
-  $GLOBALS["chado_is_installed"]  = tripal_core_is_chado_installed();
-  if ($GLOBALS["chado_is_installed"]) {
-    $GLOBALS["chado_is_local"]      = tripal_core_is_chado_local();
-    $GLOBALS["chado_version"]       = tripal_core_get_chado_version();
-    $GLOBALS["exact_chado_version"] = tripal_core_get_chado_version(TRUE);
-  }
-}
 
 /**
  * Provide better error notice for Tripal
@@ -90,7 +71,7 @@ function tripal_core_set_globals() {
  *
  * @ingroup tripal_chado_api
  */
-function tripal_core_report_error($type, $severity, $message, $variables = array(), $options = array()) {
+function tripal_report_error($type, $severity, $message, $variables = array(), $options = array()) {
 
   // Get human-readable severity string
   $severity_string = '';
@@ -137,16 +118,16 @@ function tripal_core_report_error($type, $severity, $message, $variables = array
  * Get chado id for a node. E.g, if you want to get 'analysis_id' from the
  * 'analysis' table for a synced 'chado_analysis' node, (the same for
  * organisms and features):
- * $analysis_id = chado_get_id_for_node ('analysis', $node->nid)
- * $organism_id = chado_get_id_for_node ('organism', $node->nid)
- * $feature_id  = chado_get_id_for_node ('feature', $node->nid)
+ * $analysis_id = chado_get_id_from_nid ('analysis', $node->nid)
+ * $organism_id = chado_get_id_from_nid ('organism', $node->nid)
+ * $feature_id  = chado_get_id_from_nid ('feature', $node->nid)
  *
  * @param $table
  * @param $nid
  *
  * @ingroup tripal_chado_api
  */
-function chado_get_id_for_node($table, $nid) {
+function chado_get_id_from_nid($table, $nid) {
   $sql = "SELECT " . $table . "_id as id FROM {chado_$table} WHERE nid = :nid";
   return db_query($sql, array(':nid' => $nid))->fetchField();
 }
@@ -154,14 +135,14 @@ function chado_get_id_for_node($table, $nid) {
 /**
  *  Get node id for a chado feature/organism/analysis. E.g, if you want to
  *  get the node id for an analysis, use:
- *  $nid = chado_get_node_id ('analysis', $analysis_id)
+ *  $nid = chado_get_nid_from_id ('analysis', $analysis_id)
  *  Likewise,
- *  $nid = chado_get_node_id ('organism', $organism_id)
- *  $nid = chado_get_node_id ('feature', $feature_id)
+ *  $nid = chado_get_nid_from_id ('organism', $organism_id)
+ *  $nid = chado_get_nid_from_id ('feature', $feature_id)
  *
  *  @ingroup tripal_chado_api
  */
-function chado_get_node_id($table, $id) {
+function chado_get_nid_from_id($table, $id) {
   $sql = "SELECT nid FROM {chado_$table} WHERE " . $table . "_id = :" . $table . "_id";
   return db_query($sql, array(":" . $table . "_id" => $id))->fetchField();
 }
@@ -169,7 +150,7 @@ function chado_get_node_id($table, $id) {
 /**
  * Set the Tripal Database
  *
- * The tripal_db_set_active function is used to prevent namespace collisions
+ * The chado_set_active function is used to prevent namespace collisions
  * when chado and drupal are installed in the same database but in different
  * schemas.  It is also used for backwards compatibility with older versions
  * of tripal or in cases where chado is located outside of the Drupal database.
@@ -177,7 +158,7 @@ function chado_get_node_id($table, $id) {
  *
  * @ingroup tripal_chado_api
  */
-function tripal_db_set_active($dbname  = 'default') {
+function chado_set_active($dbname  = 'default') {
   global $databases, $active_db;
 
   if ($dbname ) {
@@ -218,7 +199,7 @@ function tripal_db_set_active($dbname  = 'default') {
  *
  * @ingroup tripal_chado_api
  */
-function tripal_core_get_max_chado_rank($tablename, $where_options) {
+function chado_get_table_max_rank($tablename, $where_options) {
 
   $where_clauses = array();
   $where_args = array();
@@ -248,24 +229,24 @@ function tripal_core_get_max_chado_rank($tablename, $where_options) {
 }
 
 /**
- * Use this function to encapsulate text intended to be 
+ * Use this function to encapsulate text intended to be
  * visible only by the site administrator. A small tripal logo
  * appears alongside the text.  Do not call this function directly, but
  * rather, use the theme() function:
- * 
+ *
  *   theme('tripal_admin_message', array('message' => $my_message));
- * 
+ *
  * @param $message
  *   The message to be displayed to the site administrator
- * 
+ *
  * @ingroup tripal_chado_api
  */
 function theme_tripal_admin_message($variables) {
-  
+
   $message = $variables['message'];
-  
+
   if (!user_access('access administration pages')) {
-    return ''; 
+    return '';
   }
   return "
     <div class=\"tripal-site-admin-only\">
