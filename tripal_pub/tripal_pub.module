@@ -14,7 +14,10 @@ require_once "includes/importers/tripal_pub.AGL.inc";
  * @defgroup tripal_pub Publication Module
  * @ingroup tripal_modules
  * @{
- * The Tripal Publication module allows you to search the PubMed databse for academic articles,
+ * Integrates the Chado Publication module with Drupal Nodes & Views, as well as, provides
+ * the ability to import publication from PubMed
+ *
+ * The Tripal Publication module allows you to search the PubMed database for academic articles,
  * that relate to user specified topic\s. As well, it allows management of publications so that
  * a user can enter specified details regarding a desired publication. This allows all of the important
  * information that is unique to a Academic Publication to be stored for access.

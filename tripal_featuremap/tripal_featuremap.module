@@ -4,7 +4,7 @@
  * @defgroup tripal_featuremap Feature Map Module
  * @ingroup tripal_modules
  * @{
- * Provides functions for managing chado maps including creating details pages for each map
+ * Integrates the Chado Map module with Drupal Nodes & Views
  * @}
  */
 
@@ -116,7 +116,7 @@ function tripal_featuremap_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 2
   );
-  
+
   $items['admin/tripal/chado/tripal_featuremap/sync'] = array(
     'title' => ' Sync',
     'description' => 'Sync featuremaps from Chado with Drupal',

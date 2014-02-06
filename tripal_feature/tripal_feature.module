@@ -4,7 +4,7 @@
  * @defgroup tripal_feature Feature Module
  * @ingroup tripal_modules
  * @{
- * Provides functions for managing chado features including creating details pages for each feature
+ * Integrates the Chado Sequence module with Drupal Nodes & Views
  * @}
  */
 
@@ -135,7 +135,7 @@ function tripal_feature_menu() {
     'access arguments' => array('access chado_feature content'),
     'type' => MENU_LOCAL_TASK,
   );
-  
+
   // the administative settings menu
   $items['admin/tripal/chado/tripal_feature'] = array(
     'title' => 'Features',
