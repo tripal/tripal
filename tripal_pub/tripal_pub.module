@@ -27,8 +27,7 @@ require_once "includes/importers/tripal_pub.AGL.inc";
  * @ingroup tripal_pub
  */
 function tripal_pub_init() {
-  drupal_add_css(drupal_get_path('module', 'tripal_pub') . '/theme/css/tripal_pub.css');
-  drupal_add_js(drupal_get_path('module', 'tripal_pub') . '/theme/js/tripal_pub.js');
+
 }
 
 /**

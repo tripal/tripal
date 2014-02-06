@@ -18,9 +18,6 @@ require_once "includes/tripal_organism.chado_node.inc";
  */
 function tripal_organism_init() {
 
-  // add the jGCharts JS and CSS
-  drupal_add_css(drupal_get_path('module', 'tripal_organism') . '/theme/css/tripal_organism.css');
-  drupal_add_js(drupal_get_path('module', 'tripal_organism') . '/theme/js/tripal_organism.js');
 }
 
 

@@ -37,8 +37,6 @@ function tripal_contact_views_api() {
  * @ingroup tripal_contact
  */
 function tripal_contact_init() {
-  drupal_add_js(drupal_get_path('module', 'tripal_contact') . '/theme/js/tripal_contact.js');
-  drupal_add_css(drupal_get_path('module', 'tripal_contact') . '/theme/css/tripal_contact.css');
 
 }
 

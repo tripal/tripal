@@ -1,9 +1,14 @@
 name = Tripal Core
-description = The core module for the Tripal package that integrates Drupal and GMOD chado. This module provides common support for all Tripal modules.
+description = Provides support for all Tripal modules and includes the Tripal API, jobs management, materialized views, Chado installation and custom tables.
 core = 7.x
 project = tripal_core
 package = Tripal
-version = 7.x-2.0-beta1
+version = 7.x-2.0a
 configure = admin/tripal
 
-dependencies[] = views
+stylesheets[all][] = theme/css/tripal.css
+scripts[]          = theme/js/tripal.js
+
+dependencies[]     = views
+dependencies[]     = path
+dependencies[]     = search

@@ -124,7 +124,7 @@ function tripal_views_views_pre_render(&$view) {
 
   // Add css if tripal admin tagged view
   if ($view->tag == 'tripal admin') {
-    $tripal_admin_view_css = drupal_get_path('module', 'tripal_views') . '/theme/tripal_views_admin_views.css';
+    $tripal_admin_view_css = drupal_get_path('module', 'tripal_views') . '/theme/css/tripal_views_admin_views.css';
     drupal_add_css($tripal_admin_view_css);
   }
 

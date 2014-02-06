@@ -1,9 +1,9 @@
 name = Tripal Views
-description = This module provides integration with Drupal Views. Other Tripal modules may have an optional dependency with this module and once enabled Views support becomes active for those modules.  This module provides a way to integrate Materialized Views and Chado Tables with Views. It also integrates the Views Data Export module to allow for downloads of Views into Excel, CSV and FASTA formats.
+description = Integrates all Chado tables with Drupal Views and provides basic searching for administrators and site visitors and provides a range of flexibility for creating custom pages without the need for programming.
 core = 7.x
 project = tripal_core
 package = Tripal
-version = 7.x-2.0-beta1
+version = 7.x-2.0a
 configure = admin/tripal/views-integration
 
 files[] = views/handlers/tripal_views_handler_filter_textarea.inc

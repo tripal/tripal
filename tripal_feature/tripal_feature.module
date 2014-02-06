@@ -25,8 +25,7 @@ require_once "includes/tripal_feature.blocks.inc";
  * @ingroup tripal_feature
  */
 function tripal_feature_init() {
-  drupal_add_css(drupal_get_path('module', 'tripal_feature') . '/theme/css/tripal_feature.css');
-  drupal_add_js(drupal_get_path('module', 'tripal_feature') . '/theme/js/tripal_feature.js');
+
 }
 
 /**

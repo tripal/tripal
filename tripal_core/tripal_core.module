@@ -81,11 +81,6 @@ tripal_core_set_globals();
 function tripal_core_init() {
   global $base_url;
 
-  // add javascript files
-  drupal_add_js(drupal_get_path('module', 'tripal_core') . '/theme/js/tripal.js');
-  drupal_add_css(drupal_get_path('module', 'tripal_core') . '/theme/css/tripal.css');
-
-
   // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist, and
   // only if the chado database is present.
   if ($GLOBALS["chado_is_installed"]) {

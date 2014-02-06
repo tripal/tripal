@@ -18,8 +18,7 @@ require('includes/tripal_featuremap.chado_node.inc');
  * @ingroup tripal_featuremap
  */
 function tripal_featuremap_init() {
-  drupal_add_css(drupal_get_path('module', 'tripal_featuremap') . '/theme/css/tripal_featuremap.css');
-  drupal_add_js(drupal_get_path('module', 'tripal_featuremap') . '/theme/js/tripal_featuremap.js');
+
 }
 
 

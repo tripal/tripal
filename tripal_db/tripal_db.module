@@ -21,9 +21,6 @@ require_once "includes/tripal_db.admin.inc";
  */
 function tripal_db_init() {
 
-  // add the tripal_db JS and CSS
-  drupal_add_css(drupal_get_path('module', 'tripal_db') . '/theme/css/tripal_db.css');
-  drupal_add_js(drupal_get_path('module', 'tripal_db') . '/theme/js/tripal_db.js');
 }
 /**
  *
