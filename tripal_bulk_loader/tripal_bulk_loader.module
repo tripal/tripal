@@ -227,8 +227,21 @@ function tripal_bulk_loader_menu() {
 }
 
 function tblid_to_arg($arg, $map, $index) {
-  if (preg_match('/^\d+$/', $arg)) {
+  if (preg_match('/^(\d+|O)$/', $arg)) {
     return $arg;
+  }
+}
+
+function tblid_load($tblid_id) {
+  // We use the letter o in our path instead of the number 0
+  // because the drupal menu system has a bug that doesn't allow 0 as the only
+  // character in the path.
+  if (preg_match('/O/',$tblid_id)) {
+    // This ensures that the number 0 is sent to the form as the correct arg
+    return 0;
+  }
+  else {
+    return $tblid_id;
   }
 }
 
