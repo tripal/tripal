@@ -3,6 +3,8 @@
 /**
  * @file
  * All functions in this file pertain to administrative management of bulk loader templates
+ *
+ * @ingroup tripal_bulk_loader
  */
 
 /**
@@ -1389,6 +1391,8 @@ function tripal_bulk_loader_duplicate_template_record_form_submit($form, &$form_
 
 /**
  * Determine default values needed for add/edit field form
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_template_field_form_default_values($mode, &$form_state) {
   $v = array();

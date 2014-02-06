@@ -2,11 +2,13 @@
 
 /**
  * @file
- * Tripal Bulk Loader Node functionality (jobs)
+ * Tripal Bulk Loader Node functionality (jobs).
+ *
+ * @ingroup tripal_bulk_loader
  */
 
 /**
- * Implements hook_node_info
+ * Implements hook_node_info().
  *
  * @ingroup tripal_bulk_loader
  */
@@ -24,7 +26,7 @@ function tripal_bulk_loader_node_info() {
 }
 
 /**
- * Implements node_form
+ * Implements hook_form().
  * Used to gather the extra details stored with a Bulk Loading Job Node
  *
  * @ingroup tripal_bulk_loader
@@ -111,9 +113,10 @@ function tripal_bulk_loader_form($node, $form_state) {
 
 
 /**
- * Implements node_load
+ * Implements hook_load().
  *
  * D7 Changes: now loads all $nodes at once so need to add loops
+ *
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_load($nodes) {
@@ -212,7 +215,9 @@ function tripal_bulk_loader_load($nodes) {
 }
 
 /**
- * Implements hook_node_presave()
+ * Implements hook_node_presave().
+ * Acts on all node types.
+ *
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_node_presave($node) {
@@ -228,10 +233,11 @@ function tripal_bulk_loader_node_presave($node) {
 
 
 /**
- * Implements node_insert
+ * Implements hook_insert().
  * Insert the data from the node form on Create content
  *
  * D7 Changes: seems to need db_insert; not recommended to change $node
+ *
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_insert($node) {
@@ -250,7 +256,7 @@ function tripal_bulk_loader_insert($node) {
 }
 
 /**
- * Implements node_delete
+ * Implements hook_delete().
  * Deletes the data when the delete button on the node form is clicked
  *
  * @ingroup tripal_bulk_loader
@@ -268,10 +274,9 @@ function tripal_bulk_loader_delete($node) {
 }
 
 /**
- * Implements node_update
+ * Implements hook_update().
  * Updates the data submitted by the node form on edit
  *
- * D7 Changes: db_update is much easier
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_update($node) {

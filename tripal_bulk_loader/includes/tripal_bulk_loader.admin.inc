@@ -3,8 +3,15 @@
 /**
  * @file
  * Bulk Loader Administration (Miscellaneous)
+ *
+ * @ingroup tripal_bulk_loader
  */
 
+/**
+ * Landing page for bulk loader admin. Ensures views are enabled and if not provides links to do so.
+ *
+ * @ingroup tripal_bulk_loader
+ */
 function tripal_bulk_loader_admin_jobs_listing() {
   $output = '';
 

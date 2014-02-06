@@ -1,6 +1,15 @@
 <?php
 /**
+ * @file
+ * Defines the tripal bulk loader default views.
+ *
+ * @ingroup tripal_bulk_loader
+ */
+
+/**
  * Implements hook_views_default_views().
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_views_default_views() {
   $views = array();
@@ -17,7 +26,9 @@ function tripal_bulk_loader_views_default_views() {
 }
 
 /**
- * Default Admin Vire for job management
+ * Default Admin View for job management
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_defaultview_admin_job_listing() {
 
@@ -269,6 +280,8 @@ function tripal_bulk_loader_defaultview_admin_job_listing() {
 
 /**
  * Default Admin View for template management
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_defaultview_admin_template_listing() {
 

@@ -1,11 +1,16 @@
 <?php
 /**
  * @file
- * @todo Add file header description
+ * Install/Uninstalls, Enables/Disables this module.
+ *
+ * @ingroup tripal_bulk_loader
  */
 
 /**
+ * Implements hook_disable().
  * Disable default views when module is disabled
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_disable() {
 
@@ -19,12 +24,14 @@ function tripal_bulk_loader_disable() {
 }
 
 /**
- * Implements hook_schema
+ * Implements hook_schema().
  *
  * Creates the following tables in the Drupal database:
  *  - tripal_bulk_loader: Stores extra details for bulk loading jobs (nodes)
  *  - tripal_bulk_loader_template: Stores all loading templates
  *  - tripal_bulk_loader_inserted: Keeps track of all records inserted for a given bulk loading job
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_schema() {
   $schema = array();
@@ -170,8 +177,12 @@ function tripal_bulk_loader_schema() {
 }
 
 /**
+ * Implements hook_update_N().
+ *
  * Update schema for version 6.x-0.3.1b-1.5
  * - Add the tripal_bulk_loader_constants table
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_update_6150() {
 
@@ -184,9 +195,13 @@ function tripal_bulk_loader_update_6150() {
 }
 
 /**
+ * Implements hook_update_N().
+ *
  * Update schema for version 6.x-0.3.1b-1.5
  * - Add the tripal_bulk_loader_constants.group_id column
  *   to allow multiple sets of constants per job
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_update_6151() {
 
@@ -205,6 +220,11 @@ function tripal_bulk_loader_update_6151() {
   return 'Added support for multiple sets of loader-specific constants.';
 }
 
+/**
+ * Implements hook_update_N().
+ *
+ * @ingroup tripal_bulk_loader
+ */
 function tripal_bulk_loader_update_6152() {
 
   db_add_field(
@@ -222,8 +242,12 @@ function tripal_bulk_loader_update_6152() {
 }
 
 /**
+ * Implements hook_update_N().
+ *
  * Update to 7.x-2.0
  * -Cast tripal_bulk_loader.template_id to int field
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_update_7201() {
 
@@ -265,6 +289,8 @@ function tripal_bulk_loader_update_7201() {
 
 /**
  * Implementation of hook_requirements().
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_requirements($phase) {
   $requirements = array();

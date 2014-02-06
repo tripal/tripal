@@ -1,12 +1,16 @@
 <?php
 
 /**
- *  @file
- *  Implements drush integration for this module
+ * @file
+ * Implements drush integration for this module
+ *
+ * @ingroup tripal_bulk_loader
  */
 
 /**
  * Implements hook_drush_command().
+ *
+ * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_drush_command() {
   $items = array();
@@ -65,6 +69,8 @@ function tripal_bulk_loader_drush_command() {
 /**
  * Code ran for the tripal-loader-progress drush command
  * Display the progress of any running tripal bulk loading job.
+ *
+ * @ingroup tripal_bulk_loader
  */
 function drush_tripal_bulk_loader_tripal_loader_progress() {
 
@@ -97,6 +103,8 @@ function drush_tripal_bulk_loader_tripal_loader_progress() {
  *
  * @param $nid
  *   The Node ID of the bulk Loading Job
+ *
+ * @ingroup tripal_bulk_loader
  */
 function drush_tripal_bulk_loader_tripal_loader_view ($nid) {
   $node = node_load($nid);
@@ -116,6 +124,8 @@ function drush_tripal_bulk_loader_tripal_loader_view ($nid) {
  *
  * @param $nid
  *   The Node ID of the bulk Loading Job
+ *
+ * @ingroup tripal_bulk_loader
  */
 function drush_tripal_bulk_loader_tripal_loader_cancel ($nid) {
   $node = node_load($nid);
@@ -128,6 +138,8 @@ function drush_tripal_bulk_loader_tripal_loader_cancel ($nid) {
  *
  * @param $nid
  *   The Node ID of the bulk Loading Job
+ *
+ * @ingroup tripal_bulk_loader
  */
 function drush_tripal_bulk_loader_tripal_loader_submit ($nid) {
   global $user;
@@ -164,6 +176,8 @@ function drush_tripal_bulk_loader_tripal_loader_submit ($nid) {
  *
  * @param $nid
  *   The Node ID of the bulk Loading Job
+ *
+ * @ingroup tripal_bulk_loader
  */
 function drush_tripal_bulk_loader_tripal_loader_revert ($nid) {
 

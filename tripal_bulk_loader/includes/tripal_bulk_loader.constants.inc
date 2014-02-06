@@ -1,7 +1,9 @@
 <?php
 /**
  * @file
- * @todo Add file header description
+ * Manages the constants form added to the tripal bulk loader node form
+ *
+ * @ingroup tripal_bulk_loader
  */
 
 /**
