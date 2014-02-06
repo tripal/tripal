@@ -723,7 +723,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
  * Validate the user input for creating a new property
  * Called by the add button in chado_add_node_form_properties
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_core
  */
 function chado_update_node_form_properties_add_button_validate($form, &$form_state) {
 
@@ -752,7 +752,7 @@ function chado_update_node_form_properties_add_button_validate($form, &$form_sta
  * Create an array of properties in the form state. This array will then be
  * used to rebuild the form in subsequent builds
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_core
  */
 function chado_add_node_form_properties_add_button_submit(&$form, &$form_state) {
 
@@ -795,7 +795,7 @@ function chado_add_node_form_properties_add_button_submit(&$form, &$form_state) 
  *
  * Called by the many remove buttons in chado_add_node_form_properties
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_core
  */
 function chado_add_node_form_properties_remove_button_validate($form, $form_state) {
   // No Validation needed for remove
@@ -805,7 +805,7 @@ function chado_add_node_form_properties_remove_button_validate($form, $form_stat
  * Remove the correct property from the form
  * Called by the many remove buttons in chado_add_node_form_properties
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_core
  */
 function chado_add_node_form_properties_remove_button_submit(&$form, &$form_state) {
 
@@ -828,6 +828,8 @@ function chado_add_node_form_properties_remove_button_submit(&$form, &$form_stat
 
 /**
  * Ajax function which returns the section of the form to be re-rendered
+ *
+ * @ingroup tripal_core
  */
 function chado_add_node_form_properties_ajax_update($form, $form_state) {
   return $form['properties']['property_table'];
@@ -849,7 +851,7 @@ function chado_add_node_form_properties_ajax_update($form, $form_state) {
  *   ),
  * );
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_core
  */
 function chado_add_node_form_properties_create_property_formstate_array($form, &$form_state) {
 
