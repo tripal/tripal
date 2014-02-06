@@ -1,10 +1,16 @@
 <?php
+/**
+ * @file
+ * Provides functions for managing analysis'.
+ *
+ * @ingroup tripal_analysis
+ */
 
 /**
  * @defgroup tripal_analysis_api Analysis Module API
  * @ingroup tripal_api
  * @{
- * API functions relating to Analysis'
+ * Provides an interface for specialized analysis modules to extend the basic functionality.
  * @}
  */
 
@@ -38,6 +44,7 @@ function tripal_analysis_api_unregister_child($modulename) {
       db_query($sql, array(':modname' => $modulename));
   }
 }
+
 /**
  * Retrieve properties of a given type for a given analysis
  *
@@ -51,7 +58,7 @@ function tripal_analysis_api_unregister_child($modulename) {
  * @return
  *    An analysis chado variable with the specified properties expanded
  *
- * @ingroup tripal_analysis_api_api
+ * @ingroup tripal_analysis_api
  */
 function tripal_analysis_api_get_property($analysis_id, $property, $cvname = 'tripal') {
   return tripal_core_get_property('analysis', $analysis_id, $property, $cvname);
@@ -74,7 +81,7 @@ function tripal_analysis_api_get_property($analysis_id, $property, $cvname = 'tr
  * @return
  *   True of success, False otherwise
  *
- * @ingroup tripal_analysis_api_api
+ * @ingroup tripal_analysis_api
  */
 function tripal_analysis_api_insert_property($analysis_id, $property, $value, $update_if_present = 0, $cvname = 'tripal') {
     return tripal_core_insert_property('analysis', $analysis_id, $property, $cvname, $value, $update_if_present);
@@ -100,7 +107,7 @@ function tripal_analysis_api_insert_property($analysis_id, $property, $value, $u
  * @return
  *   True of success, False otherwise
  *
- * @ingroup tripal_analysis_api_api
+ * @ingroup tripal_analysis_api
  */
 function tripal_analysis_api_update_property($analysis_id, $property, $value, $insert_if_missing = 0, $cvname = 'tripal') {
   return tripal_core_update_property('analysis', $analysis_id, $property, $cvname, $value, $insert_if_missing);
@@ -122,7 +129,7 @@ function tripal_analysis_api_update_property($analysis_id, $property, $value, $i
  * @return
  *   True of success, False otherwise
  *
- * @ingroup tripal_analysis_api_api
+ * @ingroup tripal_analysis_api
  */
 function tripal_analysis_api_delete_property($analysis_id, $property, $cvname = 'tripal') {
   return tripal_core_delete_property('analysis', $analysis_id, $property, $cvname);
@@ -137,7 +144,7 @@ function tripal_analysis_api_delete_property($analysis_id, $property, $cvname = 
  * @return
  *   node of analysis on success, null otherwise
  *
- * @ingroup tripal_analysis_api_api
+ * @ingroup tripal_analysis_api
  */
 function tripal_analysis_api_get_node($analysis_id) {
   $sql = "SELECT *

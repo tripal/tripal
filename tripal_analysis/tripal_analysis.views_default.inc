@@ -1,7 +1,16 @@
 <?php
 
 /**
+ * @file
+ * Contains the default views for the analysis module.
+ *
+ * @ingroup tripal_analysis
+ */
+
+/**
  * Implements hook_views_default_views().
+ *
+ * @ingroup tripal_analysis
  */
 function tripal_analysis_views_default_views() {
   $views = array();
@@ -12,6 +21,11 @@ function tripal_analysis_views_default_views() {
   return $views;
 }
 
+/**
+ * Defines the analysis admin default view.
+ *
+ * @ingroup tripal_analysis
+ */
 function tripal_analysis_defaultvalue_admin_analysis() {
 
   $view = new view();

@@ -1,11 +1,16 @@
 <?php
 /**
  * @file
- * Implements hooks from the Schema API
+ * Implements hooks from the Schema API.
+ *
+ * @ingroup tripal_analysis
  */
 
 /**
+ * Implements hook_disable().
  * Disable default views when module is disabled
+ *
+ * @ingroup tripal_analysis
  */
 function tripal_analysis_disable() {
 
@@ -20,6 +25,8 @@ function tripal_analysis_disable() {
 
 /**
  * Implementation of hook_requirements().
+ *
+ * @ingroup tripal_analysis
  */
 function tripal_analysis_requirements($phase) {
   $requirements = array();
@@ -38,6 +45,8 @@ function tripal_analysis_requirements($phase) {
 
 /**
  * Implementation of hook_install().
+ *
+ * @ingroup tripal_analysis
  */
 function tripal_analysis_install() {
 
@@ -56,12 +65,18 @@ function tripal_analysis_install() {
 
 /**
  * Implementation of hook_uninstall().
+ *
+ * @ingroup tripal_analysis
  */
 function tripal_analysis_uninstall() {
 
 }
+
 /**
- * 
+ * Create a legacy custom chado table (analysisfeatureprop) to store properties of
+ * analysisfeature links.
+ *
+ * @ingroup tripal_analysis
  */
 function tripal_analysis_create_analysisfeatureprop() {
 
@@ -83,8 +98,11 @@ function tripal_analysis_create_analysisfeatureprop() {
     chado_query($sql);
   }
 }
-/*
+
+/**
+ * Adds controlled vocabulary terms needed by this module.
  *
+ * @ingroup tripal_analysis
  */
 function tripal_analysis_add_cvterms() {
 
@@ -113,13 +131,15 @@ function tripal_analysis_add_cvterms() {
 }
 
 /**
- * Implementation of hook_schema() creates two tables.
+ * Implementation of hook_schema().
  *
  * - chado_analysis table
  *     stores nodes that are also saved in the analysis table of chado database.
  * - tripal_analysis table
  *     stores the sub-module names, such as tripal_analysis_blast, that are registered
  *     with this module.
+ *
+ * @ingroup tripal_analysis
  */
 function tripal_analysis_schema() {
 
@@ -173,9 +193,10 @@ function tripal_analysis_schema() {
   return $schema;
 }
 
-/*
+/**
+ * Creates a view showing hte link between an organism & it's analysis through associated features.
  *
- * @ingroup tripal_network
+ * @ingroup tripal_analysis
  */
 function tripal_analysis_add_mview_analysis_organism() {
   $view_name = 'analysis_organism';
@@ -229,3 +250,4 @@ function tripal_analysis_add_mview_analysis_organism() {
   // add the view
   tripal_add_mview($view_name, 'tripal_analysis', $schema, $sql, $comment);
 }
+

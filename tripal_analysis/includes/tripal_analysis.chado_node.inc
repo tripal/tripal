@@ -1,5 +1,13 @@
 <?php
 /**
+ * @file
+ * Implements Drupal Node hooks to create the chado_analysis node content type.
+ *
+ * @ingroup tripal_analysis
+ */
+
+/**
+ * Implements hook_node_info().
  * Provide information to drupal about the node types that we're creating
  * in this module
  *
@@ -30,9 +38,11 @@ function tripal_analysis_node_info() {
   );
   return $nodes;
 }
+
 /**
- *  When editing or creating a new node of type 'chado_analysis' we need
- *  a form.  This function creates the form that will be used for this.
+ * Implements hook_form().
+ * When editing or creating a new node of type 'chado_analysis' we need
+ * a form.  This function creates the form that will be used for this.
  *
  * @ingroup tripal_analysis
  */
@@ -235,7 +245,9 @@ function chado_analysis_form($node, &$form_state) {
 
   return $form;
 }
+
 /**
+ * Implements hook_validate().
  * Validates the user input before creating an analysis node
  *
  * @ingroup tripal_analysis
@@ -346,9 +358,10 @@ function tripal_analysis_validate($node, $form, &$form_state) {
 }
 
 /**
- *  When a new chado_analysis node is created we also need to add information
- *  to our chado_analysis table.  This function is called on insert of a new
- *  node of type 'chado_analysis' and inserts the necessary information.
+ * Implements hook_insert().
+ * When a new chado_analysis node is created we also need to add information
+ * to our chado_analysis table.  This function is called on insert of a new
+ * node of type 'chado_analysis' and inserts the necessary information.
  *
  * @ingroup tripal_analysis
  */
@@ -427,10 +440,8 @@ function chado_analysis_insert($node) {
 }
 
 /**
- * Removes analysis from the chado database
- *
- * @param $node
- *   The node object specifying which chado record to delete
+ * Implements hook_delete().
+ * Removes analysis from the chado database.
  *
  * @ingroup tripal_analysis
  */
@@ -456,10 +467,8 @@ function chado_analysis_delete($node) {
 }
 
 /**
+ * Implements hook_update().
  * Update analyses
- *
- * @param $node
- *   The updated node object
  *
  * @ingroup tripal_analysis
  */
@@ -514,9 +523,11 @@ function chado_analysis_update($node) {
   );
   chado_node_properties_form_update_properties($node, $details);
 }
+
 /**
- *  When a node is requested by the user this function is called to allow us
- *  to add auxiliary data to the node object.
+ * Implements hook_load().
+ * When a node is requested by the user this function is called to allow us
+ * to add auxiliary data to the node object.
  *
  * @ingroup tripal_analysis
  */
@@ -537,7 +548,7 @@ function chado_analysis_load($nodes) {
 }
 
 /**
- * Implement hook_access().
+ * Implements hook_access().
  *
  * This hook allows node modules to limit access to the node types they define.
  *
@@ -584,7 +595,10 @@ function chado_analysis_node_access($node, $op, $account) {
   }
   return NULL;
 }
+
 /**
+ * Implements hook_node_view().
+ * Called for all node types.
  *
  * @ingroup tripal_analysis
  */
@@ -613,21 +627,24 @@ function tripal_analysis_node_view($node, $view_mode, $langcode) {
       break;
   }
 }
+
 /**
+ * Implements hook_node_presave().
+ * Called for all node types.
  *
- * @param $node
+ * @ingroup tripal_analysis
  */
 function tripal_analysis_node_presave($node) {
   $name = '';
   $program = '';
   $programversion = '';
   $sourcename = '';
-  
+
   // If this is an analysis of some type it will should have three required
   // fields for the Chado analysis table: program, programversion and sourcename.
   // So we will set the title for any node that has these three fields. Some extension
   // modules will use this module as a type of "inherited" class, so we don't know
-  // for sure when type of analysis we have.  If this is a sync then 
+  // for sure when type of analysis we have.  If this is a sync then
   if (property_exists($node, 'program') and
       property_exists($node, 'programversion') and
       property_exists($node, 'sourcename')) {

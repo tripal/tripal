@@ -2,11 +2,15 @@
 
 /**
  * @file
- * Contains functions displaying administrative pages and forms
+ * Contains functions displaying administrative pages and forms.
+ *
+ * @ingroup tripal_analysis
  */
 
 /**
+ * Landing page for administration. Ensures Views are enabled & if not provides links to do so.
  *
+ * @ingroup tripal_analysis
  */
 function tripal_analysis_admin_analysis_view() {
   $output = '';
@@ -94,10 +98,6 @@ function tripal_analysis_admin() {
   return system_settings_form($form);
 }
 
-
-
-
-
 /**
  * Validate the administrative form
  * @todo Stephen: Why is validate used rather then submit?
@@ -149,3 +149,4 @@ function tripal_analysis_admin_validate($form, &$form_state) {
     }
   }
 }
+
