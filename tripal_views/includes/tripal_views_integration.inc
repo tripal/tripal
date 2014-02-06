@@ -1292,7 +1292,8 @@ function tripal_views_integration_ajax_join_field($form, $form_state) {
     return $form['view_setup_table'][$field]['column-3'][$join_field];
   }
   else {
-    tripal_core_report_error('tripal_views', TRIPAL_ERROR 'Tripal Views Integration Ajax failed due to being unable to determine which row needs updating', array());
+    tripal_core_report_error('tripal_views', TRIPAL_ERROR, 
+      'Tripal Views Integration Ajax failed due to being unable to determine which row needs updating', array());
     return $form;
   }
 }

@@ -219,15 +219,13 @@ function tripal_db_get_dbxref($select_values) {
   elseif (empty($results)) {
     tripal_core_report_error('tripal_db', TRIPAL_WARNING,
       'tripal_db_get_dbxref: No dbxref matches criteria values:%values',
-      array('%values' => print_r($select_values, TRUE)),
-    );
+      array('%values' => print_r($select_values, TRUE)));
     return FALSE;
   }
   else {
     tripal_core_report_error('tripal_db', TRIPAL_WARNING,
       'tripal_db_get_dbxref: 2+ dbxrefs match criteria values:%values',
-      array('%values' => print_r($select_values, TRUE)),
-    );
+      array('%values' => print_r($select_values, TRUE)));
   }
 
 }

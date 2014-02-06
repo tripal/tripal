@@ -61,15 +61,13 @@ function tripal_cv_get_cv($select_values) {
   elseif (empty($results)) {
     tripal_core_report_error('tripal_cv', TRIPAL_WARNING,
       'tripal_cv_get_cv: No cv matches criteria values:%values',
-      array('%values' => print_r($select_values, TRUE)),
-    );
+      array('%values' => print_r($select_values, TRUE)));
     return FALSE;
   }
   else {
     tripal_core_report_error('tripal_cv', TRIPAL_WARNING,
       'tripal_cv_get_cv: 2+ cvs match criteria values:%values',
-      array('%values' => print_r($select_values, TRUE)),
-    );
+      array('%values' => print_r($select_values, TRUE)));
   }
 
 }

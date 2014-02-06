@@ -356,7 +356,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     $sql = "SELECT * FROM {cv} WHERE name = :cvname";
     $cv = chado_query($sql, array(':cvname' => 'sequence'))->fetchObject();
     if (!$tripal_core_report_error) {   
-      tripal_core_report_error('T_gff3_loader', TRIPAL_ERROR "Cannot find the 'sequence' ontology", 
+      tripal_core_report_error('T_gff3_loader', TRIPAL_ERROR, "Cannot find the 'sequence' ontology", 
         array());
       return '';
     }
