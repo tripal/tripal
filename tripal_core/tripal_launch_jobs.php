@@ -44,7 +44,7 @@ fwrite($stdout, "Tripal Job Launcher\n");
 fwrite($stdout, "Running as user ' . $username . '\n");
 fwrite($stdout, "-------------------\n");
 
-tripal_jobs_launch($do_parallel);
+tripal_launch_job($do_parallel);
 
 /**
  * Print out the usage instructions if they are not followed correctly

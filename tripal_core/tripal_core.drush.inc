@@ -169,7 +169,7 @@ function tripal_core_drush_command() {
 }
 
 /**
- * 
+ *
  * @param $username
  */
 function drush_tripal_core_set_user($username) {
@@ -198,21 +198,21 @@ function drush_tripal_core_set_user($username) {
  */
 function drush_tripal_core_tripal_jobs_launch($username) {
   $parallel = drush_get_option('parallel');
-  $job_id = drush_get_option('job_id');  
-  
+  $job_id = drush_get_option('job_id');
+
   drush_tripal_core_set_user($username);
 
   if ($parallel) {
     drush_print("Tripal Job Launcher (in parallel)");
     drush_print("Running as user '$username'");
     drush_print("-------------------");
-    tripal_jobs_launch($parallel, $job_id);
+    tripal_launch_job($parallel, $job_id);
   }
   else {
     drush_print("Tripal Job Launcher");
     drush_print("Running as user '$username'");
     drush_print("-------------------");
-    tripal_jobs_launch(0, $job_id);
+    tripal_launch_job(0, $job_id);
   }
 }
 
@@ -223,8 +223,8 @@ function drush_tripal_core_tripal_jobs_launch($username) {
  */
 function drush_tripal_core_tripal_jobs_rerun($username, $job_id) {
 
-  drush_tripal_core_set_user($username);  
-  $new_job_id = tripal_jobs_rerun($job_id, FALSE);
+  drush_tripal_core_set_user($username);
+  $new_job_id = tripal_rerun_job($job_id, FALSE);
   drush_tripal_core_tripal_jobs_launch($username, $new_job_id);
 
 }
@@ -236,12 +236,12 @@ function drush_tripal_core_tripal_jobs_rerun($username, $job_id) {
  */
 function drush_tripal_core_tripal_jobs_current() {
   $sql =  "
-    SELECT * 
-    FROM {tripal_jobs} TJ 
-    WHERE TJ.end_time IS NULL and NOT TJ.start_time IS NULL 
+    SELECT *
+    FROM {tripal_jobs} TJ
+    WHERE TJ.end_time IS NULL and NOT TJ.start_time IS NULL
   ";
   $jobs = db_query($sql);
-  
+
   foreach ($jobs as $job) {
     $job_pid = $job->pid;
     $output = "Name: " . $job->job_name . "\n" .
@@ -279,7 +279,7 @@ function drush_tripal_core_tripal_update_mview() {
     if ($table_name) {
       // if table_name supplied use that to get mview_id
       $sql = "SELECT mview_id FROM {tripal_mviews} WHERE mv_table = :mv_table";
-      $results = db_query($sql, array(':mv_table' => $table_name));      
+      $results = db_query($sql, array(':mv_table' => $table_name));
       $r = $resuls->fetchObject();
       if (!$r->mview_id) {
         drush_set_error('No Materialized View associated with that table_name.');
@@ -292,7 +292,7 @@ function drush_tripal_core_tripal_update_mview() {
   }
 
   drush_print('Updating the Materialized View with ID=' . $mview_id);
-  $status = tripal_update_mview($mview_id);
+  $status = tripal_populate_mview($mview_id);
   if ($status) {
     drush_log('Materialized View Updated', 'ok');
   }
@@ -319,7 +319,7 @@ function drush_tripal_core_tripal_chadotable_desc($table_name) {
   $section = drush_get_option('section');
 
   drush_print("Schema API Description for $table_name:");
-  $desc = tripal_core_get_chado_table_schema($table_name);
+  $desc = chado_get_schema($table_name);
 
   if (!empty($section)) {
     drush_print("$section = " . print_r($desc[$section], TRUE));
@@ -368,5 +368,5 @@ function drush_tripal_core_tripal_node_sync($module) {
  *  The name of a module with nodes associated with it. For example, feature
  */
 function drush_tripal_core_tripal_node_clean($module) {
-  tripal_core_chado_node_cleanup_orphaned($module, 0);
+  chado_cleanup_orphaned_nodes($module, 0);
 }

@@ -106,9 +106,9 @@ function runjob($sitename, $username) {
     fwrite($stdout, "'$username' is not a valid Drupal username. exiting...\n");
     exit;
   }
-  
+
   global $user;
   $user = user_load($u->uid);
 
-  tripal_jobs_launch();
+  tripal_launch_job();
 }

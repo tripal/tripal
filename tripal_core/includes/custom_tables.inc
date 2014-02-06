@@ -365,10 +365,10 @@ function tripal_custom_tables_form_submit($form, &$form_state) {
 
 
   if (strcmp($action, 'Edit') == 0) {
-    tripal_core_edit_custom_table($table_id, $schema_arr['table'], $schema_arr, $skip_creation);
+    chado_edit_custom_table($table_id, $schema_arr['table'], $schema_arr, $skip_creation);
   }
   elseif (strcmp($action, 'Add') == 0) {
-    tripal_core_create_custom_table($schema_arr['table'], $schema_arr, $skip_creation);
+    chado_create_custom_table($schema_arr['table'], $schema_arr, $skip_creation);
   }
   else {
     drupal_set_message(t("No action performed."));

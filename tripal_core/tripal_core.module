@@ -82,11 +82,11 @@ function tripal_core_set_globals() {
   // these variables are stored as globals rather than using the drupal_set_variable
   // functions because the Drupal functions make databaes queries and for long
   // running loaders we don't want those queries repeatedly.
-  $GLOBALS["chado_is_installed"]  = tripal_core_is_chado_installed();
+  $GLOBALS["chado_is_installed"]  = chado_is_installed();
   if ($GLOBALS["chado_is_installed"]) {
-    $GLOBALS["chado_is_local"]      = tripal_core_is_chado_local();
-    $GLOBALS["chado_version"]       = tripal_core_get_chado_version();
-    $GLOBALS["exact_chado_version"] = tripal_core_get_chado_version(TRUE);
+    $GLOBALS["chado_is_local"]      = chado_is_local();
+    $GLOBALS["chado_version"]       = chado_get_version();
+    $GLOBALS["exact_chado_version"] = chado_get_version(TRUE);
   }
 }
 
@@ -241,7 +241,7 @@ function tripal_core_menu() {
   $items['admin/tripal/tripal_jobs/cancel/%'] = array(
     'title' => 'Jobs',
     'description' => 'Cancel a pending job',
-    'page callback' => 'tripal_jobs_cancel',
+    'page callback' => 'tripal_cancel_job',
     'page arguments' => array(4),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
@@ -249,7 +249,7 @@ function tripal_core_menu() {
   $items['admin/tripal/tripal_jobs/rerun/%'] = array(
     'title' => 'Jobs',
     'description' => 'Re-run an existing job.',
-    'page callback' => 'tripal_jobs_rerun',
+    'page callback' => 'tripal_rerun_job',
     'page arguments' => array(4),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
@@ -461,17 +461,17 @@ function tripal_core_theme($existing, $type, $theme, $path) {
     // --------------------------------
     // Properties Node Form
     'chado_node_properties_form_table' => array(
-      'function' => 'theme_chado_node_properties_form_table',
+      'function' => 'theme_chado_add_node_form_properties',
       'render element' => 'element',
     ),
     // Additional Dbxrefs Nore Form
     'chado_node_additional_dbxrefs_form_table' => array(
-      'function' => 'theme_chado_node_additional_dbxrefs_form_table',
+      'function' => 'theme_chado_add_node_form_dbxrefs_table',
       'render element' => 'element',
     ),
     // Relationships Nore Form
     'chado_node_relationships_form_table' => array(
-      'function' => 'theme_chado_node_relationships_form_table',
+      'function' => 'theme_chado_add_node_form_relationships_tables',
       'render element' => 'element',
     ),
 
@@ -487,7 +487,7 @@ function tripal_core_theme($existing, $type, $theme, $path) {
 
 /**
  * Implements hook_job_describe_args().
- * Describes the arguements for the tripal_update_mview job to allow for greater
+ * Describes the arguements for the tripal_populate_mview job to allow for greater
  * readability in the jobs details pages.
  *
  * @param $callback
@@ -503,7 +503,7 @@ function tripal_core_theme($existing, $type, $theme, $path) {
  */
 function tripal_core_job_describe_args($callback, $args) {
   $new_args = array();
-  if ($callback == 'tripal_update_mview') {
+  if ($callback == 'tripal_populate_mview') {
     // get this mview details
     $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id ";
     $results = db_query($sql, array(':mview_id' => $args[0]));

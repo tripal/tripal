@@ -13,11 +13,11 @@
 function tripal_core_chado_load_form() {
 
   // we want to force the version of Chado to be set properly
-  $real_version = tripal_core_get_chado_version(TRUE);
+  $real_version = chado_get_version(TRUE);
 
   // get the effective version.  Pass true as second argument
   // to warn the user if the current version is not compatible
-  $version = tripal_core_get_chado_version(FALSE, TRUE);  
+  $version = chado_get_version(FALSE, TRUE);
 
   $form['current_version'] = array(
     '#type' => 'item',
@@ -78,13 +78,13 @@ function tripal_core_chado_load_form_submit($form, &$form_state) {
 function tripal_core_install_chado($action) {
 
   $vsql = "
-    INSERT INTO {chadoprop} (type_id, value) 
+    INSERT INTO {chadoprop} (type_id, value)
       VALUES (
-       (SELECT cvterm_id 
-        FROM {cvterm} CVT 
-          INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id 
-         WHERE CV.name = 'chado_properties' AND CVT.name = 'version'), 
-       :version) 
+       (SELECT cvterm_id
+        FROM {cvterm} CVT
+          INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+         WHERE CV.name = 'chado_properties' AND CVT.name = 'version'),
+       :version)
   ";
 
   if ($action == 'Install Chado v1.2') {
@@ -172,19 +172,19 @@ function tripal_core_install_chado($action) {
 function tripal_core_reset_chado_schema() {
 
   // drop current chado and chado-related schema
-  if (tripal_core_schema_exists('chado')) {
+  if (chado_dbschema_exists('chado')) {
     print "Dropping existing 'chado' schema\n";
     db_query("drop schema chado cascade");
   }
-  if (tripal_core_schema_exists('genetic_code')) {
+  if (chado_dbschema_exists('genetic_code')) {
     print "Dropping existing 'genetic_code' schema\n";
     db_query("drop schema genetic_code cascade");
   }
-  if (tripal_core_schema_exists('so')) {
+  if (chado_dbschema_exists('so')) {
     print "Dropping existing 'so' schema\n";
     db_query("drop schema so cascade");
   }
-  if (tripal_core_schema_exists('frange')) {
+  if (chado_dbschema_exists('frange')) {
     print "Dropping existing 'frange' schema\n";
     db_query("drop schema frange cascade");
   }
@@ -192,7 +192,7 @@ function tripal_core_reset_chado_schema() {
   // create the new chado schema
   print "Creating 'chado' schema\n";
   db_query("create schema chado");
-  if (tripal_core_schema_exists('chado')) {
+  if (chado_dbschema_exists('chado')) {
     // before creating the plpgsql language let's check to make sure
     // it doesn't already exists
     $sql = "SELECT COUNT(*) FROM pg_language WHERE lanname = 'plpgsql'";
@@ -216,8 +216,8 @@ function tripal_core_reset_chado_schema() {
  * @ingroup tripal_core
  */
 function tripal_core_install_sql($sql_file) {
-  
-  $chado_local = tripal_core_schema_exists('chado');
+
+  $chado_local = chado_dbschema_exists('chado');
 
   if ($chado_local) {
     db_query("set search_path to chado");
@@ -368,7 +368,7 @@ function tripal_core_install_sql($sql_file) {
 
       if (!$result) {
         $error  = pg_last_error();
-        print "FAILED. Line  $i, $in_string\n$error:\n$query\n\n";        
+        print "FAILED. Line  $i, $in_string\n$error:\n$query\n\n";
         tripal_core_chado_install_done();
         $success = 0;
         return $success;

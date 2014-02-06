@@ -111,7 +111,7 @@ function tripal_jobs_report() {
 
   // run the following function which will
   // change the status of jobs that have errored out
-  tripal_jobs_check_running();
+  tripal_is_job_running();
 
   $job_status = '';
   $job_name = '';
@@ -161,9 +161,9 @@ function tripal_jobs_report() {
   // iterate through the jobs and build the table rows
   $rows = array();
   foreach ($jobs as $job) {
-    $submit = tripal_jobs_get_submit_date($job);
-    $start = tripal_jobs_get_start_time($job);
-    $end = tripal_jobs_get_end_time($job);
+    $submit = tripal_get_job_submit_date($job);
+    $start = tripal_get_job_start($job);
+    $end = tripal_get_job_end($job);
     $cancel_link = '';
     if ($job->start_time == 0 and $job->end_time == 0) {
       $cancel_link = "<a href=\"" . url("admin/tripal/tripal_jobs/cancel/" . $job->job_id) . "\">Cancel</a><br />";
@@ -269,9 +269,9 @@ function tripal_jobs_view($job_id) {
   }
 
   // make our start and end times more legible
-  $job->submit_date = tripal_jobs_get_submit_date($job);
-  $job->start_time = tripal_jobs_get_start_time($job);
-  $job->end_time = tripal_jobs_get_end_time($job);
+  $job->submit_date = tripal_get_job_submit_date($job);
+  $job->start_time = tripal_get_job_start($job);
+  $job->end_time = tripal_get_job_end($job);
 
   // construct the table headers
   $header = array('Detail', 'Value');
