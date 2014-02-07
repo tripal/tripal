@@ -1,9 +1,13 @@
 <?php
+/**
+ * @file
+ * Project Default Views
+ */
 
 /**
+ * Implements hook_views_default_views().
  *
- *
- *
+ * @ingroup tripal_project
  */
 function tripal_project_views_default_views() {
   $views = array();
@@ -14,6 +18,11 @@ function tripal_project_views_default_views() {
   return $views;
 }
 
+/**
+ * Project administration view
+ *
+ * @ingroup tripal_project
+ */
 function tripal_project_defaultview_admin_projects() {
 
   $view = new view();

@@ -1,8 +1,15 @@
 <?php
-require('api/tripal_project.api.inc');
-require('theme/tripal_project.theme.inc');
-require('includes/tripal_project.admin.inc');
-require('includes/tripal_project.chado_node.inc');
+/**
+ * @file
+ * Integrates the Chado Project tables with Drupal Nodes & Views
+ */
+
+require 'api/tripal_project.api.inc';
+
+require 'theme/tripal_project.theme.inc';
+
+require 'includes/tripal_project.admin.inc';
+require 'includes/tripal_project.chado_node.inc';
 
 /**
  * @defgroup tripal_project Project Module
@@ -13,23 +20,22 @@ require('includes/tripal_project.chado_node.inc');
  */
 
 /**
- * Implements hook_views_api()
+ * Implements hook_views_api().
  *
- * Purpose: Essentially this hook tells drupal that there is views support for
+ * Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_project.views.inc where all the
  *  views integration code is
  *
  * @ingroup tripal_project
- *
  */
 function tripal_project_views_api() {
   return array(
-      'api' => 2.0,
+      'api' => 3.0,
   );
 }
 
 /**
- * Implements hook_menu
+ * Implements hook_menu().
  *
  * @ingroup tripal_project
  */
@@ -83,8 +89,10 @@ function tripal_project_menu() {
 }
 
 /**
- * Implements hook_help()
- * Purpose: Adds a help page to the module list
+ * Implements hook_help().
+ * Adds a help page to the module list
+ *
+ * @ingroup tripal_project
  */
 function tripal_project_help ($path, $arg) {
   if ($path == 'admin/help#tripal_project') {
@@ -93,11 +101,10 @@ function tripal_project_help ($path, $arg) {
 }
 
 /**
- * Implements hook_perm()
+ * Implements hook_permission()
  *
  *  This function sets the permission for the user to access the information in the database.
  *  This includes creating, inserting, deleting and updating of information in the database
- *
  *
  * @ingroup tripal_project
  */
@@ -126,9 +133,9 @@ function tripal_project_permission() {
   );
 }
 
-
-
 /**
+ *  Implements hook_theme().
+ *
  *  We need to let drupal know about our theme functions and their arguments.
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module
@@ -185,6 +192,7 @@ function tripal_project_theme($existing, $type, $theme, $path) {
 }
 
 /**
+ * Implements hook_block_info().
  *
  * @ingroup tripal_project
  */
@@ -207,7 +215,9 @@ function tripal_project_block_info() {
 
   return $blocks;
 }
+
 /**
+ * Implements hook_block_view().
  *
  * @ingroup tripal_project
  */
@@ -246,11 +256,13 @@ function tripal_project_block_view($delta = '') {
 }
 
 /**
- * Implementation of hook_form_alter()
+ * Implementation of hook_form_alter().
  *
  * @param $form
  * @param $form_state
  * @param $form_id
+ *
+ * @ingroup tripal_project
  */
 function tripal_project_form_alter(&$form, &$form_state, $form_id) {
   // turn of preview button for insert/updates
