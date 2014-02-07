@@ -1,8 +1,13 @@
 <?php
+/**
+ * @file
+ * Describe phenotype default views
+ */
 
 /**
+ * Implements hook_views_default_views().
  *
- *
+ * @ingroup tripal_phenotype
  */
 function tripal_phenotype_views_default_views() {
   $views = array();
@@ -13,6 +18,11 @@ function tripal_phenotype_views_default_views() {
   return $views;
 }
 
+/**
+ * Default phenotype administration view
+ *
+ * @ingroup tripal_phenotype
+ */
 function tripal_phenotype_defaultview_admin_phenotypes() {
 
   $view = new view();
