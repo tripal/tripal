@@ -48,7 +48,7 @@ function tripal_project_requirements($phase) {
 function tripal_project_install() {
 
   // create the module's data directory
-  tripal_create_moddir('tripal_project');
+  tripal_create_files_dir('tripal_project');
 
   tripal_project_add_cvs();
   tripal_project_add_cvterms();
@@ -149,7 +149,7 @@ function tripal_project_update_7000() {
   $values = array(
     'name'  => 'Project Description',
   );
-  tripal_core_chado_update('cvterm', $match, $values);
+  chado_update_record('cvterm', $match, $values);
   if (!$success) {
     throw new DrupalUpdateException('Failed to move project properties to new project_property CV.');
   }

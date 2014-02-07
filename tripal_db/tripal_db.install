@@ -45,7 +45,7 @@ function tripal_db_requirements($phase) {
 function tripal_db_install() {
 
   // create the module's data directory
-  tripal_create_moddir('tripal_db');
+  tripal_create_files_dir('tripal_db');
 
 }
 

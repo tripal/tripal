@@ -45,7 +45,7 @@ function tripal_stock_get_stock_by_stock_id($stock_id) {
     return node_load($r->nid);
   }
   else {
-    tripal_core_report_error('tripal_stock', TRIPAL_WARNING, 'tripal_stock_get_stock_by_stock_id(!stock_id): no stock with that stock_id is sync\'d with drupal', array('!stock_id' => $stock_id));
+    tripal_report_error('tripal_stock', TRIPAL_WARNING, 'tripal_stock_get_stock_by_stock_id(!stock_id): no stock with that stock_id is sync\'d with drupal', array('!stock_id' => $stock_id));
   }
 
   return 0;
@@ -111,7 +111,7 @@ function tripal_stock_get_all_stocks() {
  */
 function tripal_stock_get_stocks($values) {
 
-  $stock_ids = tripal_core_chado_select('stock', array('stock_id'), $values);
+  $stock_ids = chado_select_record('stock', array('stock_id'), $values);
 
   // Change from stock_ids to nodes-----------------------------------
   $stock_ids = array_filter($stock_ids);
@@ -176,7 +176,7 @@ function tripal_stock_get_stocks_by_stockprop($stockprop_values, $stock_values) 
   }
 
   //get stock_ids from stockprop table
-  $stock_ids = tripal_core_chado_select('stockprop', array('stock_id'), $stockprop_values);
+  $stock_ids = chado_select_record('stockprop', array('stock_id'), $stockprop_values);
 
   // Change from stock_ids to nodes-----------------------------------
   $stock_ids = array_filter($stock_ids);
@@ -216,7 +216,7 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
   );
 
   // where name_identifier = stock.name-------------------------------
-  $current_stocks = tripal_core_chado_select('stock', array('stock_id'),
+  $current_stocks = chado_select_record('stock', array('stock_id'),
     array(
       'name' => $name,
       'organism_id' => $organism_id,
@@ -231,7 +231,7 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
   }
 
   // where name_identifier = stock.uniquename-------------------------------
-  $current_stocks = tripal_core_chado_select('stock', array('stock_id'),
+  $current_stocks = chado_select_record('stock', array('stock_id'),
     array(
       'uniquename' => $name,
       'organism_id' => $organism_id,
@@ -247,7 +247,7 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
 
   // where name_identifier = dbxref.accession-------------------------------
   // linked to stock through stock.dbxref
-  $current_stocks = tripal_core_chado_select('stock', array('stock_id'),
+  $current_stocks = chado_select_record('stock', array('stock_id'),
     array(
       'dbxref_id' => array(
         'accession' => $name,
@@ -264,7 +264,7 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
   }
 
   // linked to stock through stock_dbxref?
-  $current_stocks = tripal_core_chado_select('stock_dbxref', array('stock_id'),
+  $current_stocks = chado_select_record('stock_dbxref', array('stock_id'),
     array(
       'dbxref_id' => array(
         'accession' => $name,
@@ -285,7 +285,7 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
 
   // where name_identifier = stockprop.value-------------------------------
   // where type='synonym'
-  $current_stocks = tripal_core_chado_select('stockprop', array('stock_id'),
+  $current_stocks = chado_select_record('stockprop', array('stock_id'),
     array(
       'stock_id' => array(
         'organism_id' => $organism_id,

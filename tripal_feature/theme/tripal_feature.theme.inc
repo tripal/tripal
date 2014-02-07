@@ -18,7 +18,7 @@ function tripal_feature_preprocess_tripal_feature_sequence(&$variables) {
     ),
   );
 
-  $feature = tripal_core_expand_chado_vars($feature, 'table', 'featureloc', $options);
+  $feature = chado_expand_var($feature, 'table', 'featureloc', $options);
 
   // because there are two foriegn keys in the featureloc table with the feature table
   // we have to access the records for each by specifying the field name after the table name:
@@ -75,7 +75,7 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
       ),
     )
   );
-  $feature = tripal_core_expand_chado_vars($feature, 'table', 'featureloc', $options);
+  $feature = chado_expand_var($feature, 'table', 'featureloc', $options);
 
   // get alignments as child
   $cfeaturelocs = $feature->featureloc->feature_id;
@@ -138,7 +138,7 @@ function tripal_feature_preprocess_tripal_feature_alignments(&$variables) {
   foreach ($mfeaturelocs as $featureloc) {
     // get more information about the right feature
     $select = array('feature_id' => $featureloc->right_srcfeature_id);
-    $rfeature = tripal_core_generate_chado_var('feature', $select);
+    $rfeature = chado_generate_var('feature', $select);
     // now add to the list
     $alignment = new stdClass();
     $alignment->record = $featureloc;
@@ -209,7 +209,7 @@ function tripal_feature_get_feature_relationships($feature) {
       ),
     ),
   );
-  $feature = tripal_core_expand_chado_vars($feature, 'table', 'feature_relationship', $options);
+  $feature = chado_expand_var($feature, 'table', 'feature_relationship', $options);
 
   // get the subject relationships
   $srelationships = $feature->feature_relationship->subject_id;
@@ -224,7 +224,7 @@ function tripal_feature_get_feature_relationships($feature) {
       'feature_id' => 1,
     ),
   );
-  $feature = tripal_core_expand_chado_vars($feature, 'table', 'featureloc', $options);
+  $feature = chado_expand_var($feature, 'table', 'featureloc', $options);
   $cfeaturelocs = $feature->featureloc->feature_id;
   if (!$cfeaturelocs) {
     $cfeaturelocs = array();

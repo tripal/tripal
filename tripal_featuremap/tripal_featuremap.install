@@ -43,7 +43,7 @@ function tripal_featuremap_requirements($phase) {
  */
 function tripal_featuremap_install() {
   // create the module's data directory
-  tripal_create_moddir('tripal_featuremap');
+  tripal_create_files_dir('tripal_featuremap');
 
   // add the featuremapprop table to Chado
   tripal_featuremap_add_custom_tables();
@@ -303,7 +303,7 @@ function tripal_featuremap_add_custom_tables(){
       ),
     ),
   );
-  tripal_core_create_custom_table('featuremapprop', $schema, TRUE);
+  chado_create_custom_table('featuremapprop', $schema, TRUE);
 
   // add the featuremap_dbxref table to Chado
   $schema = array (
@@ -355,7 +355,7 @@ function tripal_featuremap_add_custom_tables(){
     ),
     'referring_tables' => NULL,
   );
-  tripal_core_create_custom_table('featuremap_dbxref', $schema, TRUE);
+  chado_create_custom_table('featuremap_dbxref', $schema, TRUE);
 
   $schema = array (
     'table' => 'featureposprop',
@@ -415,5 +415,5 @@ function tripal_featuremap_add_custom_tables(){
       ),
     ),
   );
-  tripal_core_create_custom_table('featureposprop', $schema, TRUE);
+  chado_create_custom_table('featureposprop', $schema, TRUE);
 }

@@ -102,7 +102,7 @@ function tripal_cv_add_cv_form_fields(&$form, $form_state, $cv_id = NULL) {
 
   if ($cv_id) {
     $values = array('cv_id' => $cv_id);
-    $result = tripal_core_chado_select('cv', array('*'), $values);
+    $result = chado_select_record('cv', array('*'), $values);
     $cv = $result[0];
     $default_name = $cv->name;
     $default_desc = $cv->definition;
@@ -169,7 +169,7 @@ function tripal_cv_form_fields_validate($form, &$form_state) {
 
   // make sure the cv name is unique
   $values = array('name' => $name);
-  $results = tripal_core_chado_select('cv', array('cv_id'), $values);
+  $results = chado_select_record('cv', array('cv_id'), $values);
   if (count($results) > 0 and $results[0]->cv_id != $cv_id) {
     form_set_error('name', 'The vocabulary name must be unique');
   }
@@ -188,7 +188,7 @@ function tripal_cv_cv_add_form_submit($form, &$form_state) {
     'name' => $name,
     'definition' => $desc,
   );
-  $success = tripal_core_chado_insert('cv', $values);
+  $success = chado_insert_record('cv', $values);
   if ($success) {
     drupal_set_message(t("Controlled vocabulary added"));
   }
@@ -213,7 +213,7 @@ function tripal_cv_cv_edit_form_submit($form, &$form_state) {
   );
   if (strcmp($op, 'Update')==0) {
     $match = array('cv_id' => $cv_id);
-    $success = tripal_core_chado_update('cv', $match, $values);
+    $success = chado_update_record('cv', $match, $values);
     if ($success) {
       drupal_set_message(t("Controlled vocabulary updated"));
     }
@@ -223,7 +223,7 @@ function tripal_cv_cv_edit_form_submit($form, &$form_state) {
   }
   if (strcmp($op, 'Delete')==0) {
     $match = array('cv_id' => $cv_id);
-    $success = tripal_core_chado_delete('cv', $match);
+    $success = chado_delete_record('cv', $match);
     if ($success) {
       drupal_set_message(t("Controlled vocabulary deleted"));
     }

@@ -303,7 +303,7 @@ function tripal_views_integration_form($form, $form_state, $arg) {
   );
 
   // build the form element for the Chado tables
-  $chado_tables = tripal_core_get_chado_tables(TRUE);
+  $chado_tables = chado_get_table_names(TRUE);
   $chado_tables = array_merge(array('Select'), $chado_tables);
   $default = '';
   if ($setup_id) {
@@ -479,7 +479,7 @@ function tripal_views_integration_form($form, $form_state, $arg) {
       $columns = explode(",", $mview->mv_specs);
     }
     else {
-      $table_desc = tripal_core_get_chado_table_schema($table_name);
+      $table_desc = chado_get_schema($table_name);
       if ($table_desc) {
         $fields = $table_desc['fields'];
         // iterate through the columns and build the format
@@ -535,7 +535,7 @@ function tripal_views_integration_form($form, $form_state, $arg) {
     );
 
     // get the list of chado tables to join on
-    $chado_join_tables = tripal_core_get_chado_tables(TRUE);
+    $chado_join_tables = chado_get_table_names(TRUE);
     $chado_join_tables = array_merge(array('Select a Join Table'), $chado_join_tables);
 
     // get list of all handlers
@@ -844,7 +844,7 @@ function tripal_views_integration_form($form, $form_state, $arg) {
     );
 
     $base_field_options = array('Select the Base Column');
-    $table_desc = tripal_core_get_chado_table_schema($table_name);
+    $table_desc = chado_get_schema($table_name);
     foreach ($table_desc['fields'] as $column => $def) {
       $base_field_options[$column] = $column;
     }
@@ -938,7 +938,7 @@ function tripal_views_integration_form($form, $form_state, $arg) {
       $columns = array();
       if ($result->left_table) {
         // get the table description
-        $table_desc = tripal_core_get_chado_table_schema($result->left_table);
+        $table_desc = chado_get_schema($result->left_table);
         foreach ($table_desc['fields'] as $column => $def) {
           $columns[$column] = $column;
         }
@@ -1292,7 +1292,7 @@ function tripal_views_integration_ajax_join_field($form, $form_state) {
     return $form['view_setup_table'][$field]['column-3'][$join_field];
   }
   else {
-    tripal_core_report_error('tripal_views', TRIPAL_ERROR, 
+    tripal_report_error('tripal_views', TRIPAL_ERROR, 
       'Tripal Views Integration Ajax failed due to being unable to determine which row needs updating', array());
     return $form;
   }

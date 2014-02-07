@@ -49,7 +49,7 @@ function tripal_pub_install() {
   global $base_path;
 
   // create the module's data directory
-  tripal_create_moddir('tripal_pub');
+  tripal_create_files_dir('tripal_pub');
 
   // add loading of the the tripal pub ontology to the job queue
   $obo_path =  drupal_realpath(drupal_get_path('module', 'tripal_pub') . '/files/tpub.obo');
@@ -206,7 +206,7 @@ function tripal_pub_add_custom_tables() {
       ),
     ),
   );
-  tripal_core_create_custom_table('pubauthor_contact', $schema, TRUE);
+  chado_create_custom_table('pubauthor_contact', $schema, TRUE);
 }
 
 /**

@@ -3,9 +3,9 @@
 /**
  * Implements hook_chado_schema_v1_11_analysisfeatureprop()
  * Purpose: To describe the structure of 'analysisfeatureprop' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the 'analysisfeatureprop' table

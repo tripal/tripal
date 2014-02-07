@@ -130,7 +130,7 @@ function drush_tripal_bulk_loader_tripal_loader_view ($nid) {
 function drush_tripal_bulk_loader_tripal_loader_cancel ($nid) {
   $node = node_load($nid);
   db_query("UPDATE {tripal_bulk_loader} SET job_status='%s' WHERE nid=%d", 'Job Cancelled', $node->nid);
-  tripal_jobs_cancel($node->job_id,FALSE);
+  tripal_cancel_job($node->job_id,FALSE);
 }
 
 /**
@@ -146,7 +146,7 @@ function drush_tripal_bulk_loader_tripal_loader_submit ($nid) {
 
   if ($node->job_id) {
     //Re-submit Tripal Job
-    tripal_jobs_rerun($node->job_id);
+    tripal_rerun_job($node->job_id);
     db_query("UPDATE {tripal_bulk_loader} SET job_status='%s' WHERE nid=%d", 'Submitted to Queue', $nid);
   }
   else {

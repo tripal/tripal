@@ -44,7 +44,7 @@ function tripal_stock_requirements($phase) {
  */
 function tripal_stock_install() {
   // create the module's data directory
-  tripal_create_moddir('tripal_stock');
+  tripal_create_files_dir('tripal_stock');
 }
 
 /**

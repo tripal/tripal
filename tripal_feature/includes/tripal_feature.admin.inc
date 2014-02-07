@@ -433,7 +433,7 @@ function tripal_features_set_taxonomy($max_sync = 0, $job_id = NULL) {
 
   // update the job status every 1% features
   if ($job_id and $i % $interval == 0) {
-    tripal_job_set_progress($job_id, intval(($i/$count)*100));
+    tripal_set_job_progress($job_id, intval(($i/$count)*100));
   }
   print "$i of $count: ";
   $node = db_query($nsql, array(':nid' => $chado_feature->nid))->fetchObject();

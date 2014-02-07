@@ -280,7 +280,7 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
  */
 function tripal_cv_obo_quiterror($message) {
 
-  tripal_core_report_error("T_obo_loader", TRIPAL_ERROR, $message, array());
+  tripal_report_error("T_obo_loader", TRIPAL_ERROR, $message, array());
   exit;
 
 }
@@ -312,7 +312,7 @@ function tripal_cv_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid) {
     // update the job status every interval
     if ($jobid and $i % $interval == 0) {
       $complete = ($i / $count) * 33.33333333;
-      tripal_job_set_progress($jobid, intval($complete + 33.33333333));
+      tripal_set_job_progress($jobid, intval($complete + 33.33333333));
       printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));
     }
 
@@ -328,7 +328,7 @@ function tripal_cv_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid) {
     else {
       $complete = 33.33333333;
     }
-    tripal_job_set_progress($jobid, intval($complete + 33.33333333));
+    tripal_set_job_progress($jobid, intval($complete + 33.33333333));
     printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));
   }
   return 1;
@@ -368,7 +368,7 @@ function tripal_cv_obo_process_terms($defaultcv, $jobid = NULL, &$newcvs, $defau
     // update the job status every interval
     if ($jobid and $i % $interval == 0) {
       $complete = ($i / $count) * 33.33333333;
-      tripal_job_set_progress($jobid, intval($complete + 66.666666));
+      tripal_set_job_progress($jobid, intval($complete + 66.666666));
       printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));
     }
 
@@ -388,7 +388,7 @@ function tripal_cv_obo_process_terms($defaultcv, $jobid = NULL, &$newcvs, $defau
     else {
       $complete = 33.33333333;
     }
-    tripal_job_set_progress($jobid, intval($complete + 66.666666));
+    tripal_set_job_progress($jobid, intval($complete + 66.666666));
     printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));
   }
 
@@ -621,13 +621,13 @@ function tripal_cv_obo_add_relationship($cvterm, $defaultcv, $rel,
     'object_id'  => $objcvterm->cvterm_id
   );
   $options = array('statement_name' => 'sel_cvtermrelationship_tysuob');
-  $result = tripal_core_chado_select('cvterm_relationship', array('*'), $values, $options);
+  $result = chado_select_record('cvterm_relationship', array('*'), $values, $options);
   if (count($result) == 0) {
     $options = array(
       'statement_name' => 'ins_cvtermrelationship_tysuob',
       'return_record' => FALSE
     );
-    $success = tripal_core_chado_insert('cvterm_relationship', $values, $options);
+    $success = chado_insert_record('cvterm_relationship', $values, $options);
     if (!$success) {
       tripal_cv_obo_quiterror("Cannot add term relationship: '$cvterm->name' $rel '$objcvterm->name'");
     }
@@ -643,7 +643,7 @@ function tripal_cv_obo_add_relationship($cvterm, $defaultcv, $rel,
 function tripal_cv_obo_get_term($id) {
   $values = array('id' => $id);
   $options = array('statement_name' => 'sel_tripalobotemp_id');
-  $result = tripal_core_chado_select('tripal_obo_temp', array('stanza'), $values, $options);
+  $result = chado_select_record('tripal_obo_temp', array('stanza'), $values, $options);
   if (count($result) == 0) {
     return FALSE;
   }
@@ -679,7 +679,7 @@ function tripal_cv_obo_add_synonyms($term, $cvterm) {
         ),
       );
       $options = array('statement_name' => 'sel_cvterm_nacv', 'is_updlicate' => 1);
-      $results = tripal_core_chado_select('cvterm', array('*'), $values, $options);
+      $results = chado_select_record('cvterm', array('*'), $values, $options);
 
       // if it doesn't exist then add it
       if (!$results) {
@@ -705,7 +705,7 @@ function tripal_cv_obo_add_synonyms($term, $cvterm) {
         'synonym' => $def
       );
       $options = array('statement_name' => 'sel_cvtermsynonym_cvsy');
-      $results = tripal_core_chado_select('cvtermsynonym', array('*'), $values, $options);
+      $results = chado_select_record('cvtermsynonym', array('*'), $values, $options);
       if (count($results) == 0) {
         $values = array(
           'cvterm_id' => $cvterm->cvterm_id,
@@ -716,7 +716,7 @@ function tripal_cv_obo_add_synonyms($term, $cvterm) {
           'statement_name' => 'ins_cvtermsynonym_cvsy',
           'return_record' => FALSE
         );
-        $success = tripal_core_chado_insert('cvtermsynonym', $values, $options);
+        $success = chado_insert_record('cvtermsynonym', $values, $options);
         if (!$success) {
           tripal_cv_obo_quiterror("Failed to insert the synonym for term: $name ($def)");
         }
@@ -775,7 +775,7 @@ function tripal_cv_obo_parse($obo_file, &$header, $jobid) {
     if ($jobid and $intv_read >= $interval) {
       $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
       print "Parsing Line $line_num (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
-      tripal_job_set_progress($jobid, intval(($num_read / $filesize) * 33.33333333));
+      tripal_set_job_progress($jobid, intval(($num_read / $filesize) * 33.33333333));
       $intv_read = 0;
     }
 
@@ -806,9 +806,9 @@ function tripal_cv_obo_parse($obo_file, &$header, $jobid) {
           'type' => $type,
         );
         $options = array('statement_name' => 'ins_tripalobotemp_all');
-        $success = tripal_core_chado_insert('tripal_obo_temp', $values, $options);
+        $success = chado_insert_record('tripal_obo_temp', $values, $options);
         if (!$success) {
-          tripal_core_report_error('T_obo_loader', "ERROR: Cannot insert stanza into temporary table.", array(), 'error');
+          tripal_report_error('T_obo_loader', "ERROR: Cannot insert stanza into temporary table.", array(), 'error');
           exit;
         }
 
@@ -855,14 +855,14 @@ function tripal_cv_obo_parse($obo_file, &$header, $jobid) {
       'type' => $type,
     );
     $options = array('statement_name' => 'ins_tripalobotemp_all');
-    tripal_core_chado_insert('tripal_obo_temp', $values, $options);
+    chado_insert_record('tripal_obo_temp', $values, $options);
     if (!$success) {
-      tripal_core_report_error('T_obo_loader', "ERROR: Cannot insert stanza into temporary table.", array(), 'error');
+      tripal_report_error('T_obo_loader', "ERROR: Cannot insert stanza into temporary table.", array(), 'error');
       exit;
     }
     $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
     print "Parsing Line $line_num (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
-    tripal_job_set_progress($jobid, intval(($num_read / $filesize) * 33.33333333));
+    tripal_set_job_progress($jobid, intval(($num_read / $filesize) * 33.33333333));
   }
   return $default_db;
 }
@@ -881,7 +881,7 @@ function tripal_cv_obo_add_cvterm_dbxref($cvterm, $xref) {
 
   if (!$accession) {
     tripal_cv_obo_quiterror();
-    tripal_core_report_error("T_obo_loader", TRIPAL_WARNING, "Cannot add a dbxref without an accession: '$xref'", NULL);
+    tripal_report_error("T_obo_loader", TRIPAL_WARNING, "Cannot add a dbxref without an accession: '$xref'", NULL);
     return FALSE;
   }
 
@@ -909,13 +909,13 @@ function tripal_cv_obo_add_cvterm_dbxref($cvterm, $xref) {
     'dbxref_id' => $dbxref->dbxref_id,
   );
   $options = array('statement_name' => 'sel_cvtermdbxref_cvdb');
-  $result = tripal_core_chado_select('cvterm_dbxref', array('*'), $values, $options);
+  $result = chado_select_record('cvterm_dbxref', array('*'), $values, $options);
   if (count($result) == 0) {
     $ins_options = array(
       'statement_name' => 'ins_cvtermdbxref_cvdb',
       'return_record' => FALSE
     );
-    $result = tripal_core_chado_insert('cvterm_dbxref', $values, $ins_options);
+    $result = chado_insert_record('cvterm_dbxref', $values, $ins_options);
     if (!$result) {
       tripal_cv_obo_quiterror("Cannot add cvterm_dbxref: $xref");
       return FALSE;
@@ -943,7 +943,7 @@ function tripal_cv_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
     'cv_id' => $cv->cv_id,
   );
   $options = array('statement_name' => 'sel_cvterm_nacv_na');
-  $results = tripal_core_chado_select('cvterm', array('*'), $values, $options);
+  $results = chado_select_record('cvterm', array('*'), $values, $options);
   if (count($results) == 0) {
     $term = array(
       'name' => $property,
@@ -965,7 +965,7 @@ function tripal_cv_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
   if ($rank == 0) {
     $values = array('cvterm_id' => $cvterm->cvterm_id);
     $options = array('statement_name' => 'del_cvtermprop_cv');
-    $success = tripal_core_chado_delete('cvtermprop', $values, $options);
+    $success = chado_delete_record('cvtermprop', $values, $options);
     if (!$success) {
        tripal_cv_obo_quiterror("Could not remove existing properties to update property $property for term\n");
        return FALSE;
@@ -983,7 +983,7 @@ function tripal_cv_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
     'statement_name' => 'ins_cvtermprop_cvtyvara',
     'return_record' => FALSE,
   );
-  $result = tripal_core_chado_insert('cvtermprop', $values, $options);
+  $result = chado_insert_record('cvtermprop', $values, $options);
   if (!$result) {
     tripal_cv_obo_quiterror("Could not add property $property for term\n");
     return FALSE;
@@ -1004,7 +1004,7 @@ function tripal_cv_obo_add_dbxref($db_id, $accession, $version='', $description=
     'accession' => $accession,
   );
   $options = array('statement_name' => 'sel_dbxref_idac');
-  $result = tripal_core_chado_select('dbxref', array('dbxref_id'), $values, $options);
+  $result = chado_select_record('dbxref', array('dbxref_id'), $values, $options);
   if (count($result) == 0) {
     $ins_values = array(
       'db_id'       => $db_id,
@@ -1016,12 +1016,12 @@ function tripal_cv_obo_add_dbxref($db_id, $accession, $version='', $description=
       'statement_name' => 'ins_dbxref_idacvede',
       'return_record' => FALSE
     );
-    $result = tripal_core_chado_insert('dbxref', $ins_values, $ins_options);
+    $result = chado_insert_record('dbxref', $ins_values, $ins_options);
     if (!$result) {
       tripal_cv_obo_quiterror("Failed to insert the dbxref record $accession");
       return FALSE;
     }
-    $result = tripal_core_chado_select('dbxref', array('dbxref_id'), $values, $options);
+    $result = chado_select_record('dbxref', array('dbxref_id'), $values, $options);
   }
   return $result[0];
 }

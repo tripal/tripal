@@ -26,7 +26,7 @@
  * @ingroup tripal_project_api
  */
 function tripal_project_get_property($project_id, $property) {
-  return tripal_core_get_property('project', $project_id, $property, 'project_property');
+  return chado_get_property('project', $project_id, $property, 'project_property');
 }
 
 /**
@@ -47,7 +47,7 @@ function tripal_project_get_property($project_id, $property) {
  * @ingroup tripal_project_api
  */
 function tripal_project_insert_property($project_id, $property, $value, $update_if_present = 0) {
-  return tripal_core_insert_property('project', $project_id, $property, 'project_property', $value, $update_if_present);
+  return chado_insert_property('project', $project_id, $property, 'project_property', $value, $update_if_present);
 }
 
 /**
@@ -71,7 +71,7 @@ function tripal_project_insert_property($project_id, $property, $value, $update_
  * @ingroup tripal_project_api
  */
 function tripal_project_update_property($project_id, $property, $value, $insert_if_missing = 0) {
-  return tripal_core_update_property('project', $project_id, $property, 'project_property', $value, $insert_if_missing);
+  return chado_update_property('project', $project_id, $property, 'project_property', $value, $insert_if_missing);
 }
 /**
  * Delete a given property
@@ -90,5 +90,5 @@ function tripal_project_update_property($project_id, $property, $value, $insert_
  * @ingroup tripal_project_api
  */
 function tripal_project_delete_property($project_id, $property) {
-  return tripal_core_delete_property('project', $project_id, $property, 'project_property');
+  return chado_delete_property('project', $project_id, $property, 'project_property');
 }

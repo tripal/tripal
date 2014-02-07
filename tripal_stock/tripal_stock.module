@@ -459,7 +459,7 @@ function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
       ),
     ),
   );
-  $stock = tripal_core_expand_chado_vars($stock, 'table', 'stock_relationship', $options);
+  $stock = chado_expand_var($stock, 'table', 'stock_relationship', $options);
 
   // get the subject relationships
   $srelationships = $stock->stock_relationship->subject_id;

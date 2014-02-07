@@ -51,7 +51,7 @@ function tripal_analysis_requirements($phase) {
 function tripal_analysis_install() {
 
   // create the module's data directory
-  tripal_create_moddir('tripal_analysis');
+  tripal_create_files_dir('tripal_analysis');
 
   // we may need the analysisfeatureprop table if it doesn't already exist
   tripal_analysis_create_analysisfeatureprop();

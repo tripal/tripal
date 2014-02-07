@@ -308,14 +308,14 @@ function tripal_cv_form_alter(&$form, &$form_state, $form_id) {
  *
  * @ingroup tripal_db
  */
-function tripal_cv_theme() {
-  $theme_path = drupal_get_path('module', 'tripal_cv') . '/theme';
-  $items = array(
-    'tripal_cv_admin' => array(
-      'template' => 'tripal_cv_admin',
-      'arguments' =>  array(NULL),
-      'path' => $theme_path,
-    ),
+function tripal_cv_theme($existing, $type, $theme, $path) {
+ 
+ $items = array(
+    'tripal_cv_help' => array(
+      'template' => 'tripal_cv_help',
+      'variables' =>  array(NULL),
+      'path' => "$path/theme/"
+    )
   );
 
   return $items;

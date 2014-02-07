@@ -120,7 +120,7 @@ function chado_library_form($node, &$form_state) {
   );
   $columns = array('cvterm_id','name');
   $options = array('order_by' => array('name' => 'ASC'));
-  $lib_types = tripal_core_chado_select('cvterm', $columns, $values, $options);
+  $lib_types = chado_select_record('cvterm', $columns, $values, $options);
   $types = array();
   $types[''] = '';
   foreach($lib_types as $type) {
@@ -168,7 +168,7 @@ function chado_library_form($node, &$form_state) {
   //---------------------------------------------
   // Generate our own select list so we can desclude the description since it has it's
   // own form element above
-  $cv_result = tripal_core_chado_select('cv',array('cv_id'),array('name' => 'library_property'));
+  $cv_result = chado_select_record('cv',array('cv_id'),array('name' => 'library_property'));
   $cv_id = $cv_result[0]->cv_id;
   $select_options = tripal_cv_get_cvterm_options($cv_id);
   $descrip_id = array_search('Library Description', $select_options);
@@ -182,7 +182,7 @@ function chado_library_form($node, &$form_state) {
     'select_options' => $select_options
   );
   // Adds the form elements to your current form
-  chado_node_properties_form($form, $form_state, $details);
+  chado_add_node_form_properties($form, $form_state, $details);
 
   // ADDITIONAL DBXREFS FORM
   //---------------------------------------------
@@ -192,7 +192,7 @@ function chado_library_form($node, &$form_state) {
     'base_key_value' => $library_id       // the value of library_id for this record
   );
   // Adds the form elements to your current form
-  chado_node_additional_dbxrefs_form($form, $form_state, $details);
+  chado_add_node_form_dbxrefs($form, $form_state, $details);
 
   return $form;
 }
@@ -249,7 +249,7 @@ function chado_library_insert($node) {
       'organism_id' => $node->organism_id,
       'type_id' => $node->library_type,
     );
-    $library = tripal_core_chado_insert('library', $values);
+    $library = chado_insert_record('library', $values);
     if (!$library) {
       drupal_set_message(t('Unable to add library.', 'warning'));
       watchdog('tripal_library', 'Insert library: Unable to create library where values: %values',
@@ -260,7 +260,7 @@ function chado_library_insert($node) {
 
     // * Properties Form *
     // add the description property
-    $properties = chado_node_properties_form_retreive($node);
+    $properties = chado_retrieve_node_form_properties($node);
     $descrip_id = tripal_cv_get_cvterm_by_name('Library Description', NULL, 'library_property');
     $properties[$descrip_id->cvterm_id][0] = $node->description;
 
@@ -270,7 +270,7 @@ function chado_library_insert($node) {
       'foreignkey_name' => 'library_id',   // the name of the key in your base table
       'foreignkey_value' => $library_id    // the value of the library_id key
     );
-    chado_node_properties_form_update_properties($node, $details, $properties);
+    chado_update_node_form_properties($node, $details, $properties);
 
     // * Additional DBxrefs Form *
     $details = array(
@@ -278,7 +278,7 @@ function chado_library_insert($node) {
       'foreignkey_name' => 'library_id',     // the name of the key in your base table
       'foreignkey_value' => $library_id      // the value of the library_id key
     );
-    chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
+    chado_update_node_form_dbxrefs($node, $details);
 
   }
   else {
@@ -287,7 +287,7 @@ function chado_library_insert($node) {
 
   // Make sure the entry for this library doesn't already exist in the
   // chado_library table if it doesn't exist then we want to add it.
-  $check_org_id = chado_get_id_for_node('library', $node->nid);
+  $check_org_id = chado_get_id_from_nid('library', $node->nid);
   if (!$check_org_id) {
     $record = new stdClass();
     $record->nid = $node->nid;
@@ -308,7 +308,7 @@ function chado_library_update($node) {
   $node->description = trim($node->description);
 
   // update the library record
-  $library_id = chado_get_id_for_node('library', $node->nid);
+  $library_id = chado_get_id_from_nid('library', $node->nid);
   $match = array(
     'library_id' => $library_id,
   );
@@ -319,7 +319,7 @@ function chado_library_update($node) {
     'organism_id' => $node->organism_id,
     'type_id'     => $node->library_type,
   );
-  $status = tripal_core_chado_update('library', $match, $values);
+  $status = chado_update_record('library', $match, $values);
   if (!$status) {
     drupal_set_message(t('Unable to update library.', 'warning'));
     watchdog('tripal_library', 'Update library: Unable to update library where values: %values',
@@ -328,7 +328,7 @@ function chado_library_update($node) {
 
   // * Properties Form *
   // add the description property
-  $properties = chado_node_properties_form_retreive($node);
+  $properties = chado_retrieve_node_form_properties($node);
   $descrip_id = tripal_cv_get_cvterm_by_name('Library Description', NULL, 'library_property');
   $properties[$descrip_id->cvterm_id][0] = $node->description;
 
@@ -338,7 +338,7 @@ function chado_library_update($node) {
     'foreignkey_name' => 'library_id',   // the name of the key in your base table
     'foreignkey_value' => $library_id    // the value of the library_id key
   );
-  chado_node_properties_form_update_properties($node, $details, $properties);
+  chado_update_node_form_properties($node, $details, $properties);
 
   // * Additional DBxrefs Form *
   $details = array(
@@ -346,7 +346,7 @@ function chado_library_update($node) {
     'foreignkey_name' => 'library_id',     // the name of the key in your base table
     'foreignkey_value' => $library_id      // the value of the library_id key
   );
-  chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
+  chado_update_node_form_dbxrefs($node, $details);
 
 }
 /**
@@ -359,13 +359,13 @@ function chado_library_load($nodes) {
 
   foreach ($nodes as $nid => $node) {
     // get the feature details from chado
-    $library_id = chado_get_id_for_node('library', $node->nid);
+    $library_id = chado_get_id_from_nid('library', $node->nid);
 
     $values = array('library_id' => $library_id);
-    $library = tripal_core_generate_chado_var('library', $values);
+    $library = chado_generate_var('library', $values);
 
     // the uniquename field is a text field so we need to expand it
-    $library = tripal_core_expand_chado_vars($library, 'field', 'library.uniquename');
+    $library = chado_expand_var($library, 'field', 'library.uniquename');
 
     $nodes[$nid]->library = $library;
   }
@@ -377,7 +377,7 @@ function chado_library_load($nodes) {
  */
 function chado_library_delete(&$node) {
 
-  $library_id = chado_get_id_for_node('library', $node->nid);
+  $library_id = chado_get_id_from_nid('library', $node->nid);
 
   // if we don't have a library id for this node then this isn't a node of
   // type chado_library or the entry in the chado_library table was lost.

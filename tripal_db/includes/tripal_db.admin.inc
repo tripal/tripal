@@ -145,7 +145,7 @@ function tripal_db_add_db_form_fields(&$form, $form_state, $dbid = NULL) {
   // get the default values from the database first
   if ($dbid) {
     $values = array('db_id' => $dbid);
-    $result = tripal_core_chado_select('db', array('*'), $values);
+    $result = chado_select_record('db', array('*'), $values);
     $db = $result[0];
     $default_db = $db->name;
     $default_desc = $db->description;
@@ -229,7 +229,7 @@ function tripal_db_form_fields_validate($form, &$form_state) {
 
   // make sure the database name is unique
   $values = array('name' => $name);
-  $results = tripal_core_chado_select('db', array('db_id'), $values);
+  $results = chado_select_record('db', array('db_id'), $values);
   if (count($results) > 0 and $results[0]->db_id != $dbid) {
     form_set_error('name', 'The database name must be unique');
   }
@@ -254,7 +254,7 @@ function tripal_db_db_add_form_submit($form, &$form_state) {
     'url' => $url,
     'urlprefix' => $urlp,
   );
-  $success = tripal_core_chado_insert('db', $values);
+  $success = chado_insert_record('db', $values);
   if ($success) {
     drupal_set_message(t("External database added"));
   }
@@ -288,7 +288,7 @@ function tripal_db_db_edit_form_submit($form, &$form_state) {
 
   if (strcmp($op, 'Update')==0) {
     $match = array('db_id' => $dbid);
-    $success = tripal_core_chado_update('db', $match, $values);
+    $success = chado_update_record('db', $match, $values);
     if ($success) {
       drupal_set_message(t("External database updated"));
     }
@@ -298,7 +298,7 @@ function tripal_db_db_edit_form_submit($form, &$form_state) {
   }
   if (strcmp($op, 'Delete')==0) {
     $match = array('db_id' => $dbid);
-    $success = tripal_core_chado_delete('db', $match);
+    $success = chado_delete_record('db', $match);
     if ($success) {
       drupal_set_message(t("External database deleted"));
     }

@@ -103,7 +103,7 @@ function tripal_stock_sync_form_submit($form, &$form_state) {
   $job_args = array(0, $organism_id, $stock_types);
 
   if ($organism_id) {
-    $organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $organism_id));
+    $organism = chado_select_record('organism', array('genus', 'species'), array('organism_id' => $organism_id));
     $title = "Sync stocks for " .  $organism[0]->genus . " " . $organism[0]->species;
   }
   else {
@@ -186,7 +186,7 @@ function tripal_stock_set_urls($na = NULL, $job = NULL) {
       db_query('DEALLOCATE "del_url_alias_by_src"');
       db_query('DEALLOCATE "ins_url_alias_nisrds"');
       db_query("ROLLBACK");
-      tripal_core_report_error('trp-seturl', TRIPAL_ERROR, "Failed Removing URL Alias: %src", array('%src' => $src));
+      tripal_report_error('trp-seturl', TRIPAL_ERROR, "Failed Removing URL Alias: %src", array('%src' => $src));
       return;
     }
     $success = db_query("EXECUTE ins_url_alias_nisrds(:src, :dst)", array(':src' => $src, ':dst' => $dst));
@@ -194,14 +194,14 @@ function tripal_stock_set_urls($na = NULL, $job = NULL) {
       db_query('DEALLOCATE "del_url_alias_by_src"');
       db_query('DEALLOCATE "ins_url_alias_nisrds"');
       db_query("ROLLBACK");
-      tripal_core_report_error('trp-seturl', TRIPAL_ERROR, "Failed Adding URL Alias: %dst", array('%dst' => $dst));
+      tripal_report_error('trp-seturl', TRIPAL_ERROR, "Failed Adding URL Alias: %dst", array('%dst' => $dst));
       return;
     }
 
     // update the job status every 1% stocks
     if ($job and $num_set % $num_per_interval == 0) {
       $percent = ($num_set / $num_nodes) * 100;
-      tripal_job_set_progress($job, intval($percent));
+      tripal_set_job_progress($job, intval($percent));
       $percent = sprintf("%.2f", $percent);
       print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
 
@@ -209,7 +209,7 @@ function tripal_stock_set_urls($na = NULL, $job = NULL) {
     $num_set++;
   }
   $percent = ($num_set / $num_nodes) * 100;
-  tripal_job_set_progress($job, intval($percent));
+  tripal_set_job_progress($job, intval($percent));
   $percent = sprintf("%.2f", $percent);
   print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
   print "\nDone. Set " . number_format($num_set) . " URLs\n";
@@ -245,9 +245,9 @@ function tripal_stock_get_stock_url($node, $url_alias = NULL) {
   // get the stock
   $values = array('stock_id' => $node->stock_id);
   $options = array('statement_name' => 'sel_stock_id');
-  $stock = tripal_core_chado_select('stock', array('*'), $values, $options);
+  $stock = chado_select_record('stock', array('*'), $values, $options);
   if (!$stock) {
-    tripal_core_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find stock when setting URL alias for stock: %id", array('%id' => $node->stock_id));
+    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find stock when setting URL alias for stock: %id", array('%id' => $node->stock_id));
     return FALSE;
   }
   $stock = (object) $stock[0];
@@ -255,9 +255,9 @@ function tripal_stock_get_stock_url($node, $url_alias = NULL) {
   // get the organism
   $values = array('organism_id' => $stock->organism_id);
   $options = array('statement_name' => 'sel_organism_id');
-  $organism  = tripal_core_chado_select('organism', array('*'), $values, $options);
+  $organism  = chado_select_record('organism', array('*'), $values, $options);
   if (!$organism) {
-    tripal_core_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find organism when setting URL alias for stock: %id", array('%id' => $node->stock_id));
+    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find organism when setting URL alias for stock: %id", array('%id' => $node->stock_id));
     return FALSE;
   }
   $genus = preg_replace('/\s/', '_', strtolower($organism[0]->genus));
@@ -266,9 +266,9 @@ function tripal_stock_get_stock_url($node, $url_alias = NULL) {
   // get the type
   $values = array('cvterm_id' => $stock->type_id);
   $options = array('statement_name' => 'sel_cvterm_id');
-  $cvterm = tripal_core_chado_select('cvterm', array('name'), $values, $options);
+  $cvterm = chado_select_record('cvterm', array('name'), $values, $options);
   if (!$cvterm) {
-    tripal_core_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find type when setting URL alias for stock: %id", array('%id' => $node->stock_id));
+    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find type when setting URL alias for stock: %id", array('%id' => $node->stock_id));
     return FALSE;
   }
   $type = preg_replace('/\s/', '_', $cvterm[0]->name);
@@ -284,7 +284,7 @@ function tripal_stock_get_stock_url($node, $url_alias = NULL) {
   // the dst field of the url_alias table is only 128 characters long.
   // if this is the case then simply return the node URL, we can't set this one
   if (strlen($url_alias) > 128) {
-    tripal_core_report_error('trp-seturl', TRIPAL_ERROR, "Cannot set alias longer than 128 characters: %alias.", array('%alias' => $url_alias));
+    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot set alias longer than 128 characters: %alias.", array('%alias' => $url_alias));
     return "node/" . $node->nid;
   }
 

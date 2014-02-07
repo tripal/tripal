@@ -7,4 +7,3 @@ version = 7.x-2.0a
 configure = admin/tripal/chado/tripal_db
 
 dependencies[] = tripal_core
-dependencies[] = tripal_views

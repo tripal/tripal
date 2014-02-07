@@ -18,7 +18,7 @@ function tripal_project_preprocess_tripal_project_relationships(&$variables) {
       'subject_project_id' => 1,
     ),
   );
-  $project = tripal_core_expand_chado_vars($project, 'table', 'project_relationship', $options);
+  $project = chado_expand_var($project, 'table', 'project_relationship', $options);
   
   // get the subject relationships
   $srelationships = $project->project_relationship->subject_project_id;

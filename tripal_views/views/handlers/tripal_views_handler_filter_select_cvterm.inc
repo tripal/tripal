@@ -24,7 +24,7 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
     if (isset($this->options['show_all'])) {
       $cv_id = variable_get('chado_' . $this->view->base_table . '_cv', NULL);
       if ($cv_id) {
-        $results = tripal_core_chado_select('cvterm', array('cvterm_id', 'name'), array('cv_id' => $cv_id));
+        $results = chado_select_record('cvterm', array('cvterm_id', 'name'), array('cv_id' => $cv_id));
         if (empty($results)) {
           $results = array();
         }
@@ -47,7 +47,7 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
         $resource = chado_query($sql);
         $cvterms = array();
         foreach ($resource as $r) {
-          $results = tripal_core_chado_select('cvterm', array('cvterm_id', 'name'), array('cv_id' => $r->cv_id));
+          $results = chado_select_record('cvterm', array('cvterm_id', 'name'), array('cv_id' => $r->cv_id));
           if (empty($results)) {
             $results = array();
           }

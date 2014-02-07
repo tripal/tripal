@@ -39,7 +39,7 @@ function tripal_feature_analysis_get_property($analysis_id = NULL, $feature_id =
   // check that the incoming arguments are correct
   if (($analysis_id and !$feature_id) or
     (!$analysis_id and $feature_id)) {
-      tripal_core_report_error('tripal_feature', TRIPAL_WARNING,
+      tripal_report_error('tripal_feature', TRIPAL_WARNING,
       'tripal_feature_analysis_get_property: Both an analysis ID and feature ID should be specified',
       array());
   }
@@ -48,12 +48,12 @@ function tripal_feature_analysis_get_property($analysis_id = NULL, $feature_id =
   if (!$analysisfeature_id) {
     $columns = array('analysisfeature_id');
     $values = array('analysis_id' => $analysis_id, 'feature_id' => $feature_id);
-    $result = tripal_core_chado_select('analysisfeature', $columns, $values);
+    $result = chado_select_record('analysisfeature', $columns, $values);
     $analysisfeature_id = $result[0]->analysisfeature_id;
   }
 
   // get the property.
-  return tripal_core_get_property('analysisfeature', $analysisfeature_id, $property, $cv_name);
+  return chado_get_property('analysisfeature', $analysisfeature_id, $property, $cv_name);
 }
 
 /**
@@ -92,7 +92,7 @@ function tripal_feature_analysis_insert_property($analysis_id = NULL, $feature_i
   // check that the incoming arguments are correct
   if (($analysis_id and !$feature_id) or
       (!$analysis_id and $feature_id)) {
-    tripal_core_report_error('tripal_feature', TRIPAL_WARNING,
+    tripal_report_error('tripal_feature', TRIPAL_WARNING,
       'tripal_feature_analysis_insert_property: Both an analysis ID and feature ID should be specified',
       array());
   }
@@ -101,15 +101,15 @@ function tripal_feature_analysis_insert_property($analysis_id = NULL, $feature_i
   if (!$analysisfeature_id) {
     $columns = array('analysisfeature_id');
     $values = array('analysis_id' => $analysis_id, 'feature_id' => $feature_id);
-    $result = tripal_core_chado_select('analysisfeature', $columns, $values);
+    $result = chado_select_record('analysisfeature', $columns, $values);
     $analysisfeature_id = $result[0]->analysisfeature_id;
   }
 
   // insert the property.
-  $success = tripal_core_insert_property('analysisfeature', $analysisfeature_id,
+  $success = chado_insert_property('analysisfeature', $analysisfeature_id,
     $property, $cv_name, $value, $update_if_present);
   if (!$success) {
-     tripal_core_report_error('tripal_feature', TRIPAL_WARNING,
+     tripal_report_error('tripal_feature', TRIPAL_WARNING,
       'tripal_feature_analysis_insert_property: Failed to insert analysis feature property',
        array());
      return FALSE;
@@ -160,7 +160,7 @@ function tripal_feature_analysis_update_property($analysis_id = NULL, $feature_i
   // check that the incoming arguments are correct
   if (($analysis_id and !$feature_id) or
     (!$analysis_id and $feature_id)) {
-      tripal_core_report_error('tripal_feature', TRIPAL_WARNING,
+      tripal_report_error('tripal_feature', TRIPAL_WARNING,
       'tripal_feature_analysis_update_property: Both an analysis ID and feature ID should be specified',
       array());
   }
@@ -169,12 +169,12 @@ function tripal_feature_analysis_update_property($analysis_id = NULL, $feature_i
   if (!$analysisfeature_id) {
     $columns = array('analysisfeature_id');
     $values = array('analysis_id' => $analysis_id, 'feature_id' => $feature_id);
-    $result = tripal_core_chado_select('analysisfeature', $columns, $values);
+    $result = chado_select_record('analysisfeature', $columns, $values);
     $analysisfeature_id = $result[0]->analysisfeature_id;
   }
 
   // update the property.
-  return tripal_core_update_property('analysisfeature', $analysisfeature_id, $property, $cv_name, $value, $insert_if_missing);
+  return chado_update_property('analysisfeature', $analysisfeature_id, $property, $cv_name, $value, $insert_if_missing);
 }
 
 /**
@@ -199,7 +199,7 @@ function tripal_feature_analysis_update_property_by_id($analysisfeatureprop_id,
   $property, $value, $cv_name = 'tripal') {
 
     // update the property.
-    return tripal_core_update_property_by_id('analysisfeature',
+    return chado_update_propertyID('analysisfeature',
       $analysisfeatureprop_id, $property, $cv_name, $value);
 }
 /**
@@ -239,7 +239,7 @@ function tripal_feature_analysis_delete_property($analysis_id = NULL, $feature_i
   // check that the incoming arguments are correct
   if (($analysis_id and !$feature_id) or
     (!$analysis_id and $feature_id)) {
-      tripal_core_report_error('tripal_feature', TRIPAL_WARNING,
+      tripal_report_error('tripal_feature', TRIPAL_WARNING,
       'tripal_feature_analysis_delete_property: Both an analysis ID and feature ID should be specified',
         array());
   }
@@ -248,12 +248,12 @@ function tripal_feature_analysis_delete_property($analysis_id = NULL, $feature_i
   if (!$analysisfeature_id) {
     $columns = array('analysisfeature_id');
     $values = array('analysis_id' => $analysis_id, 'feature_id' => $feature_id);
-    $result = tripal_core_chado_select('analysisfeature', $columns, $values);
+    $result = chado_select_record('analysisfeature', $columns, $values);
     $analysisfeature_id = $result[0]->analysisfeature_id;
   }
 
   // get the property.
-  return tripal_core_delete_property('analysisfeature', $analysisfeature_id, $property, $cv_name);
+  return chado_delete_property('analysisfeature', $analysisfeature_id, $property, $cv_name);
 }
 /**
  * Delete a property using the analysisfeatureprop_id
@@ -268,7 +268,7 @@ function tripal_feature_analysis_delete_property($analysis_id = NULL, $feature_i
  */
 function tripal_feature_analysis_delete_property_by_id($analysisfeatureprop_id) {
   // get the property.
-  return tripal_core_delete_property_by_id('analysisfeature', $analysisfeatureprop_id);
+  return chado_delete_propertyID('analysisfeature', $analysisfeatureprop_id);
 }
 /**
  * Retrieve properties of a given type for a given feature
@@ -287,7 +287,7 @@ function tripal_feature_analysis_delete_property_by_id($analysisfeatureprop_id) 
  * @ingroup tripal_feature_api
  */
 function tripal_feature_get_property($feature_id, $property, $cv_name='tripal') {
-  return tripal_core_get_property('feature', $feature_id, $property, $cv_name);
+  return chado_get_property('feature', $feature_id, $property, $cv_name);
 }
 
 /**
@@ -312,7 +312,7 @@ function tripal_feature_get_property($feature_id, $property, $cv_name='tripal') 
  */
 function tripal_feature_insert_property($feature_id, $property, $value,
   $update_if_present = 0, $cv_name = 'tripal') {
-  return tripal_core_insert_property('feature', $feature_id, $property,
+  return chado_insert_property('feature', $feature_id, $property,
     $cv_name, $value, $update_if_present);
 }
 /**
@@ -341,7 +341,7 @@ function tripal_feature_insert_property($feature_id, $property, $value,
  */
 function tripal_feature_update_property($feature_id, $property,
   $value, $insert_if_missing = 0, $cv_name = 'tripal') {
-    return tripal_core_update_property('feature', $feature_id, $property, $cv_name, $value, $insert_if_missing);
+    return chado_update_property('feature', $feature_id, $property, $cv_name, $value, $insert_if_missing);
 }
 
 /**
@@ -364,7 +364,7 @@ function tripal_feature_update_property($feature_id, $property,
  */
 function tripal_feature_update_property_by_id($featureprop_id, $property,
   $value, $cv_name = 'tripal') {
-    return tripal_core_update_property_by_id('feature', $featureprop_id, $property, $cv_name, $value);
+    return chado_update_propertyID('feature', $featureprop_id, $property, $cv_name, $value);
 }
 
 /**
@@ -388,7 +388,7 @@ function tripal_feature_update_property_by_id($featureprop_id, $property,
  * @ingroup tripal_feature_api
  */
 function tripal_feature_delete_property($feature_id, $property, $cv_name='tripal') {
-  return tripal_core_delete_property('feature', $feature_id, $property, $cv_name);
+  return chado_delete_property('feature', $feature_id, $property, $cv_name);
 }
 /**
  * Delete a given feature property using the featureprop_id
@@ -402,7 +402,7 @@ function tripal_feature_delete_property($feature_id, $property, $cv_name='tripal
  * @ingroup tripal_feature_api
  */
 function tripal_feature_delete_property_by_id($featureprop_id) {
-  return tripal_core_delete_property_by_id('feature', $featureprop_id);
+  return chado_delete_propertyID('feature', $featureprop_id);
 }
 
 /**
@@ -512,7 +512,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
       ';
       $status = tripal_core_chado_prepare('feature_rel_get_object', $psql, array('int', 'text'));
       if (!$status) {
-        tripal_core_report_error('tripal_feature', TRIPAL_ERROR, "init: not able to prepare SQL statement '%name'",
+        tripal_report_error('tripal_feature', TRIPAL_ERROR, "init: not able to prepare SQL statement '%name'",
           array('%name' => 'feature_by_subject'));
       }
       $sql = "EXECUTE feature_rel_get_object(:feature_id, :relationship)";
@@ -534,7 +534,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
       ';
       $status = tripal_core_chado_prepare('feature_rel_get_subject', $psql, array('int', 'text'));
       if (!$status) {
-        tripal_core_report_error('tripal_feature', TRIPAL_ERROR, "init: not able to prepare SQL statement '%name'",
+        tripal_report_error('tripal_feature', TRIPAL_ERROR, "init: not able to prepare SQL statement '%name'",
           array('%name' => 'feature_by_object'));
       }
       $sql = "EXECUTE feature_rel_get_subject(:feature_id, :relationship)";
@@ -634,7 +634,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
     ';
     $status = tripal_core_chado_prepare('sequence_by_parent', $psql, array('int', 'int', 'int'));
     if (!$status) {
-      tripal_core_report_error('tripal_feature', TRIPAL_ERROR,
+      tripal_report_error('tripal_feature', TRIPAL_ERROR,
         "init: not able to prepare SQL statement '%name'",
         array('%name' => 'sequence_by_parent'));
     }
@@ -653,7 +653,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
             ORDER BY FL.fmin ASC';
     $status = tripal_core_chado_prepare('sub_features', $psql, array('int', 'int'));
     if (!$status) {
-      tripal_core_report_error('tripal_feature', TRIPAL_ERROR,
+      tripal_report_error('tripal_feature', TRIPAL_ERROR,
         "init: not able to prepare SQL statement '%name'",
         array('%name' => 'ssub_features'));
     }
@@ -667,7 +667,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
             WHERE FR.object_id = $1 and PF.feature_id = $2';
     $status = tripal_core_chado_prepare('count_sub_features', $psql, array('int', 'int'));
     if (!$status) {
-      tripal_core_report_error('tripal_feature', TRIPAL_ERROR,
+      tripal_report_error('tripal_feature', TRIPAL_ERROR,
         "init: not able to prepare SQL statement '%name'",
         array('%name' => 'count_sub_features'));
     }
@@ -853,12 +853,12 @@ function tripal_feature_add_dbxref($feature_id, $dbname, $accession) {
   // make sure the db exists. If it doesn't, then add it
   $values = array('name' => $dbname);
   $options = array('statement_name' => 'sel_db_na');
-  $db = tripal_core_chado_select('db', array('db_id'), $values, $options);
+  $db = chado_select_record('db', array('db_id'), $values, $options);
   if (!$db or count($db) == 0) {
     $options = array('statement_name' => 'ins_db_na');
-    $success = tripal_core_chado_insert('db', $values, $options);
+    $success = chado_insert_record('db', $values, $options);
       if (!$success) {
-      tripal_core_report_error('tripal_feature', TRIPAL_WARNING, 'tripal_feature_add_dbxref: The feature dbxref entry for feature, %feature_id, " .
+      tripal_report_error('tripal_feature', TRIPAL_WARNING, 'tripal_feature_add_dbxref: The feature dbxref entry for feature, %feature_id, " .
         "could not be added because the database, %dbname, does not exist and cannot be added.',
         array('%feature_id' => $feature_id, '%dbname' => $dbname));
       return FALSE;
@@ -876,13 +876,13 @@ function tripal_feature_add_dbxref($feature_id, $dbname, $accession) {
     'feature_id' => $feature_id,
   );
   $options = array('statement_name' => 'sel_featuredbxref_dbfe');
-  $xref = tripal_core_chado_select('feature_dbxref', array('feature_dbxref_id'), $values, $options);
+  $xref = chado_select_record('feature_dbxref', array('feature_dbxref_id'), $values, $options);
   if (count($xref) == 0) {
     // if the record doesn't exist then add it.
     $options = array('statement_name' => 'ins_featuredbxref_dbfe');
-    $success = tripal_core_chado_insert('feature_dbxref', $values, $options);
+    $success = chado_insert_record('feature_dbxref', $values, $options);
     if (!$success) {
-      tripal_core_report_error('tripal_feature', TRIPAL_WARNING, 'tripal_feature_add_dbxref: The feature dbxref entry for feature, %feature_id, ' .
+      tripal_report_error('tripal_feature', TRIPAL_WARNING, 'tripal_feature_add_dbxref: The feature dbxref entry for feature, %feature_id, ' .
         'could not be added: %db:%accession.', array('%feature_id' => $feature_id, '%db' => $dbname,
         '%accession' => $accession));
       return FALSE;
@@ -911,12 +911,12 @@ function tripal_feature_add_cvterm($feature_id, $cvname, $cvterm) {
   // make sure the cv exists. If it doesn't, then add it
   $values = array('name' => $cvname);
   $options = array('statement_name' => 'sel_cv_na');
-  $cv = tripal_core_chado_select('cv', array('cv_id'), $values, $options);
+  $cv = chado_select_record('cv', array('cv_id'), $values, $options);
   if (!$cv or count($cv) == 0) {
     $options = array('statement_name' => 'ins_cv_na');
-    $success = tripal_core_chado_insert('cv', $values, $options);
+    $success = chado_insert_record('cv', $values, $options);
       if (!$success) {
-      tripal_core_report_error('tripal_feature', TRIPAL_WARNING, 'tripal_feature_add_cvterm: The feature cvterm entry for feature, %feature_id, " .
+      tripal_report_error('tripal_feature', TRIPAL_WARNING, 'tripal_feature_add_cvterm: The feature cvterm entry for feature, %feature_id, " .
         "could not be added because the CV, %cvname, does not exist and cannot be added.',
         array('%feature_id' => $feature_id, '%cvname' => $cvname));
       return FALSE;
@@ -935,13 +935,13 @@ function tripal_feature_add_cvterm($feature_id, $cvname, $cvterm) {
     'pub_id' => 1,
   );
   $options = array('statement_name' => 'sel_featuredcvterm_cvfepu');
-  $xref = tripal_core_chado_select('feature_cvterm', array('feature_cvterm_id'), $values, $options);
+  $xref = chado_select_record('feature_cvterm', array('feature_cvterm_id'), $values, $options);
   if (count($xref) == 0) {
     // if the record doesn't exist then add it.
     $options = array('statement_name' => 'ins_featurecvterm_cvfepu');
-    $success = tripal_core_chado_insert('feature_cvterm', $values, $options);
+    $success = chado_insert_record('feature_cvterm', $values, $options);
     if (!$success) {
-      tripal_core_report_error('tripal_feature', TRIPAL_WARNING, 'tripal_feature_add_cvterm: The feature cvterm entry for feature, %feature_id, ' .
+      tripal_report_error('tripal_feature', TRIPAL_WARNING, 'tripal_feature_add_cvterm: The feature cvterm entry for feature, %feature_id, ' .
         'could not be added: %cvterm.', array('%feature_id' => $feature_id, '%cvterm' => $cvterm));
       return FALSE;
     }

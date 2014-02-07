@@ -21,7 +21,7 @@
  * @ingroup tripal_library_api
  */
 function tripal_library_get_property($library_id, $property) {
-  return tripal_core_get_property('library', $library_id, $property, 'library_property');
+  return chado_get_property('library', $library_id, $property, 'library_property');
 }
 
 /**
@@ -42,7 +42,7 @@ function tripal_library_get_property($library_id, $property) {
  * @ingroup tripal_library_api
  */
 function tripal_library_insert_property($library_id, $property, $value, $update_if_present = 0) {
-  return tripal_core_insert_property('library', $library_id, $property, 'library_property', $value, $update_if_present);
+  return chado_insert_property('library', $library_id, $property, 'library_property', $value, $update_if_present);
 }
 
 /**
@@ -66,7 +66,7 @@ function tripal_library_insert_property($library_id, $property, $value, $update_
  * @ingroup tripal_library_api
  */
 function tripal_library_update_property($library_id, $property, $value, $insert_if_missing = 0) {
-  return tripal_core_update_property('library', $library_id, $property, 'library_property', $value, $insert_if_missing);
+  return chado_update_property('library', $library_id, $property, 'library_property', $value, $insert_if_missing);
 }
 /**
  * Delete a given property
@@ -85,5 +85,5 @@ function tripal_library_update_property($library_id, $property, $value, $insert_
  * @ingroup tripal_library_api
  */
 function tripal_library_delete_property($library_id, $property) {
-  return tripal_core_delete_property('library', $library_id, $property, 'library_property');
+  return chado_delete_property('library', $library_id, $property, 'library_property');
 }

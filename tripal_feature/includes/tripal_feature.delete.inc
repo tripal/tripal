@@ -132,9 +132,9 @@ function tripal_feature_delete_features($organism_id, $analysis_id, $seq_type,
     else {
       $match['name'] = $names;
     }
-    $num_deletes = tripal_core_chado_select('feature', array('count(*) as cnt'), $match);
+    $num_deletes = chado_select_record('feature', array('count(*) as cnt'), $match);
     print "Deleting " . $num_deletes[0]->cnt . " features\n";
-    tripal_core_chado_delete('feature', $match);
+    chado_delete_record('feature', $match);
   }
 
   // if the user has provided an analysis_id then handle that separately
@@ -154,9 +154,9 @@ function tripal_feature_delete_features($organism_id, $analysis_id, $seq_type,
         ),
       );
     }
-    $num_deletes = tripal_core_chado_select('feature', array('count(*) as cnt'), $match);
+    $num_deletes = chado_select_record('feature', array('count(*) as cnt'), $match);
     print "Deleting " . $num_deletes[0]->cnt . " features\n";
-    tripal_core_chado_delete('feature', $match);
+    chado_delete_record('feature', $match);
   }
 
   print "Removing orphaned feature pages\n";

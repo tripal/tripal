@@ -329,7 +329,7 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
               // so we need to get it.
               $fk_priority = $form_state['storage']['record2priority'][$field['foreign key']];
               $fk_table = $form_state['storage']['template'][$fk_priority]['table'];
-              $tbl_description = tripal_core_get_chado_table_schema($table_array['table']);
+              $tbl_description = chado_get_schema($table_array['table']);
               foreach ($tbl_description['foreign keys'] as $key_table => $key_array) {
                 foreach ($key_array['columns'] as $left_field => $right_field) {
                   if ($key_table == $fk_table and $left_field == $field['field']) {
@@ -849,7 +849,7 @@ function tripal_bulk_loader_edit_template_record_form($form, $form_state) {
   }
 
   // Tables and default table
-  $tables = tripal_core_get_chado_tables(TRUE);
+  $tables = chado_get_table_names(TRUE);
   if (isset($form_state['values']['chado_table'])) {
     $table = $form_state['values']['chado_table'];
   }
@@ -1135,7 +1135,7 @@ function tripal_bulk_loader_edit_template_record_form_submit($form, &$form_state
     }
     else {
       drupal_set_message(t('Unable to Save Template!'), 'error');
-      tripal_core_report_error('T_bulk_loader',
+      tripal_report_error('T_bulk_loader',
         TRIPAL_ERROR,
         'Unable to save bulk loader template: %template',
         array('%template' => print_r($form_state['storage']['template'], TRUE))
@@ -1529,7 +1529,7 @@ function tripal_bulk_loader_template_field_form_default_values($mode, &$form_sta
   }
 
   // Chado Tables and default table
-  $tables = tripal_core_get_chado_tables(TRUE);
+  $tables = chado_get_table_names(TRUE);
   if (isset($form_state['values']['chado_table'])) {
     if (!preg_match('/^' . current($tables) . '$/', $form_state['values']['chado_table'])) {
       $table = $form_state['values']['chado_table'];
@@ -1550,7 +1550,7 @@ function tripal_bulk_loader_template_field_form_default_values($mode, &$form_sta
 
   // Chado fields
   $chado_fields = array();
-  $table_description = tripal_core_get_chado_table_schema($table);
+  $table_description = chado_get_schema($table);
   foreach ($table_description['fields'] as $field_name => $field_array) {
     $chado_fields[$field_name] = $field_name;
   }
@@ -1670,7 +1670,7 @@ function tripal_bulk_loader_template_field_form_default_values($mode, &$form_sta
         }
       }
       // now add in the remaining fields of the referring record's table.
-      $fk_description = tripal_core_get_chado_table_schema($fk_table);
+      $fk_description = chado_get_schema($fk_table);
       foreach ($fk_description['fields'] as $fk_field_name => $fk_farray) {
         // don't include the FK field it's included above
         if (in_array('Foreign Key', $ref_chado_fields)) {
@@ -2216,7 +2216,7 @@ function tripal_bulk_loader_template_field_form_submit($form, &$form_state) {
     }
     else {
       drupal_set_message(t('Unable to Save Template!'), 'error');
-      tripal_core_report_error('T_bulk_loader',
+      tripal_report_error('T_bulk_loader',
         TRIPAL_ERROR,
         'Unable to save bulk loader template: %template',
         array('%template' => print_r($form_state['storage']['template'], TRUE))

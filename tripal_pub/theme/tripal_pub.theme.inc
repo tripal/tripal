@@ -22,7 +22,7 @@ function tripal_pub_preprocess_tripal_pub_relationships(&$variables) {
       ),
     ),
   );
-  $pub = tripal_core_expand_chado_vars($pub, 'table', 'pub_relationship', $options);
+  $pub = chado_expand_var($pub, 'table', 'pub_relationship', $options);
 
   // get the subject relationships
   $srelationships = $pub->pub_relationship->subject_id;

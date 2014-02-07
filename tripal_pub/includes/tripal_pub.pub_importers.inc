@@ -76,12 +76,12 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
   
   // make sure the tripal_pub and tripal_contact ontologies are loaded
   $values = array('name' => 'tripal_pub');
-  $tpub_cv = tripal_core_chado_select('cv', array('cv_id'), $values);
+  $tpub_cv = chado_select_record('cv', array('cv_id'), $values);
   if (count($tpub_cv) == 0) {
     drupal_set_message(t('Before importing publications you must first ') . l(t('load the Tripal Pub Ontology'), 'admin/tripal/tripal_cv/obo_loader'), 'error');
   }
   $values = array('name' => 'tripal_contact');
-  $tpub_cv = tripal_core_chado_select('cv', array('cv_id'), $values);
+  $tpub_cv = chado_select_record('cv', array('cv_id'), $values);
   if (count($tpub_cv) == 0) {
     drupal_set_message(t('If you want to create contact pages for authors, you must first ') . l(t('load the Tripal Contact Ontology'), 'admin/tripal/tripal_cv/obo_loader'), 'error');
   }
@@ -313,7 +313,7 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
   $values = array(
     'name' => $supported_dbs,
   );
-  $dbs = tripal_core_chado_select('db', array('*'), $values);
+  $dbs = chado_select_record('db', array('*'), $values);
   foreach ($dbs as $index => $db) {
     $remote_dbs[$db->name] = $db->description;
   };

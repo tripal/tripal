@@ -44,7 +44,7 @@ function tripal_cv_requirements($phase) {
 function tripal_cv_install() {
 
   // create the module's data directory
-  tripal_create_moddir('tripal_cv');
+  tripal_create_files_dir('tripal_cv');
 
   // add the cv_root_mview
   tripal_cv_add_cv_root_mview();

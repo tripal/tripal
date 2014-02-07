@@ -43,7 +43,7 @@ function tripal_feature_requirements($phase) {
  */
 function tripal_feature_install() {
   // create the module's data directory
-  tripal_create_moddir('tripal_feature');
+  tripal_create_files_dir('tripal_feature');
 
   // add the materialized view
   tripal_feature_add_organism_count_mview();

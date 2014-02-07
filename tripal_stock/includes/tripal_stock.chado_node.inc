@@ -54,9 +54,9 @@ function chado_stock_load($nodes) {
   $new_nodes = array();
   foreach ($nodes as $nid => $node) {
     // get the stock details from chado
-    $stock_id = chado_get_id_for_node('stock', $node->nid);
+    $stock_id = chado_get_id_from_nid('stock', $node->nid);
     if (empty($stock_id)) {
-      tripal_core_report_error('tripal_stock', TRIPAL_ERROR,
+      tripal_report_error('tripal_stock', TRIPAL_ERROR,
         'Unable to retrieve stock_id for %title (NID = %nid).',
         array('%title' => $node->title, '%nid' => $node->nid)
       );
@@ -65,7 +65,7 @@ function chado_stock_load($nodes) {
 
       // build the variable with all the stock details
       $values = array('stock_id' => $stock_id);
-      $stock = tripal_core_generate_chado_var('stock', $values);
+      $stock = chado_generate_var('stock', $values);
 
       // by default, the titles are saved using the unique constraint.  We will
       // keep it the same, but remove the duplicate name if the unique name and name
@@ -131,7 +131,7 @@ function chado_stock_form($node, $form_state) {
       // Check to see if it's excluded and expand it if so
       if (isset($node->expandable_fields)) {
         if (in_array($field_name, $node->expandable_fields)) {
-          $node = tripal_core_expand_chado_vars($node, 'field', $field_name);
+          $node = chado_expand_var($node, 'field', $field_name);
         }
       }
     }
@@ -303,7 +303,7 @@ function chado_stock_form($node, $form_state) {
     'base_key_value' => $stock_id,
     'cv_id' => variable_get('chado_stock_prop_types_cv', FALSE)
   );
-  chado_node_properties_form($form, $form_state, $details);
+  chado_add_node_form_properties($form, $form_state, $details);
 
   // ADDITIONAL DBXREFS FORM
   //---------------------------------------------
@@ -313,7 +313,7 @@ function chado_stock_form($node, $form_state) {
     'base_foreign_key' => 'stock_id',
     'base_key_value' => $stock_id
   );
-  chado_node_additional_dbxrefs_form($form, $form_state, $details);
+  chado_add_node_form_dbxrefs($form, $form_state, $details);
 
   // RELATIONSHIPS FORM
   //---------------------------------------------
@@ -326,7 +326,7 @@ function chado_stock_form($node, $form_state) {
     'nodetype' => 'stock',
     'cv_id' => variable_get('chado_stock_relationship_cv', 0)
   );
-  chado_node_relationships_form($form, $form_state, $details);
+  chado_add_node_form_relationships($form, $form_state, $details);
 
   return $form;
 }
@@ -479,10 +479,10 @@ function chado_stock_insert($node) {
         if (!tripal_core_chado_select('dbxref', array('dbxref_id'), $values)) {
           $values['description'] = $node->db_description;
           $values['version'] = '1';
-          $dbxref_status = tripal_core_chado_insert('dbxref', $values);
+          $dbxref_status = chado_insert_record('dbxref', $values);
           if (!$dbxref_status) {
             drupal_set_message(t('Unable to add database reference to this stock.'), 'warning');
-            tripal_core_report_error('tripal_stock', TRIPAL_WARNING,
+            tripal_report_error('tripal_stock', TRIPAL_WARNING,
               'Insert Stock: Unable to create dbxref where values:%values',
               array('%values' => print_r($values, TRUE)));
           }
@@ -507,7 +507,7 @@ function chado_stock_insert($node) {
         'description' => $node->stock_description,
         'type_id' => $node->type_id
       );
-      $stock = tripal_core_chado_insert('stock', $values);
+      $stock = chado_insert_record('stock', $values);
     }
     // create a stock without a dbxref
     else {
@@ -518,7 +518,7 @@ function chado_stock_insert($node) {
         'description' => $node->stock_description,
         'type_id'     => $node->type_id
       );
-      $stock = tripal_core_chado_insert('stock', $values);
+      $stock = chado_insert_record('stock', $values);
     }
 
     if (is_array($stock)) {
@@ -538,7 +538,7 @@ function chado_stock_insert($node) {
         'foreignkey_name' => 'stock_id',
         'foreignkey_value' => $stock_id
       );
-      chado_node_properties_form_update_properties($node, $details);
+      chado_update_node_form_properties($node, $details);
 
       // Now add the additional references
       $details = array(
@@ -546,14 +546,14 @@ function chado_stock_insert($node) {
         'foreignkey_name' => 'stock_id',
         'foreignkey_value' => $stock_id
       );
-      chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
+      chado_update_node_form_dbxrefs($node, $details);
 
       // Now add in relationships
       $details = array(
         'relationship_table' => 'stock_relationship',
         'foreignkey_value' => $node->stock_id
       );
-      chado_node_relationships_form_update_relationships($node, $details);
+      chado_update_node_form_relationships($node, $details);
     }
   } //end of adding stock to chado
   else {
@@ -576,7 +576,7 @@ function chado_stock_insert($node) {
   }
   else {
     drupal_set_message(t('Error during stock creation.'), 'error');
-    tripal_core_report_error('tripal_stock', TRIPAL_WARNING,
+    tripal_report_error('tripal_stock', TRIPAL_WARNING,
       'Insert Stock: Unable to create stock where values:%values',
       array('%values' => print_r($values, TRUE)));
     return FALSE;
@@ -610,7 +610,7 @@ function chado_stock_update($node) {
     $dbxref_present = TRUE;
     if ($node->accession) {
       $dbxref_mode = '';
-      $stock = tripal_core_chado_select(
+      $stock = chado_select_record(
         'stock',
         array('dbxref_id', 'type_id'),
         array('stock_id' => $node->stock_id)
@@ -622,7 +622,7 @@ function chado_stock_update($node) {
           'accession' => $node->accession,
           'description' => $node->db_description
         );
-        $dbxref_status = tripal_core_chado_update(
+        $dbxref_status = chado_update_record(
           'dbxref',
           array('dbxref_id' => $stock[0]->dbxref_id),
           $values
@@ -639,7 +639,7 @@ function chado_stock_update($node) {
             'description' => $node->db_description,
             'version' => '1',
           );
-          $dbxref_status = tripal_core_chado_insert(
+          $dbxref_status = chado_insert_record(
             'dbxref',
             $values
           );
@@ -647,7 +647,7 @@ function chado_stock_update($node) {
         }
         else {
           drupal_set_message(t('Unable to find stock to Update'), 'error');
-          tripal_core_report_error('tripal_stock', TRIPAL_ERROR,
+          tripal_report_error('tripal_stock', TRIPAL_ERROR,
             'Stock Update: Unable to find stock to update using values: %values',
             array('%values', print_r($values, TRUE))
           );
@@ -657,7 +657,7 @@ function chado_stock_update($node) {
     }
 
     if (!$dbxref_status) {
-      tripal_core_report_error('tripal_stock', TRIPAL_WARNING,
+      tripal_report_error('tripal_stock', TRIPAL_WARNING,
         'Stock Update: Unable to %mode main stock dbxref with values: %values',
         array('%values' => print_r($values, TRUE), '%mode' => $dbxref_mode));
     }
@@ -679,12 +679,12 @@ function chado_stock_update($node) {
       );
     }
   }
-  $status = tripal_core_chado_update('stock', array('stock_id' => $node->stock_id), $update_values);
+  $status = chado_update_record('stock', array('stock_id' => $node->stock_id), $update_values);
 
 
   if (!$status) {
     drupal_set_message(t('Unable to update stock'), 'error');
-    tripal_core_report_error('tripal_stock', TRIPAL_ERROR,
+    tripal_report_error('tripal_stock', TRIPAL_ERROR,
       'Stock Update: Unable to update stock using match values: %mvalues and update values: %uvalues',
       array('%mvalues' => print_r(array('stock_id' => $node->stock_id), TRUE), '%uvalues' => print_r($update_values, TRUE))
     );
@@ -692,7 +692,7 @@ function chado_stock_update($node) {
   else {
     // set the URL for this stock page
     $values = array('stock_id' => $node->stock_id);
-    $stock = tripal_core_chado_select('stock', array('*'), $values);
+    $stock = chado_select_record('stock', array('*'), $values);
   }
 
   // now update the properties
@@ -704,7 +704,7 @@ function chado_stock_update($node) {
       'foreignkey_name' => 'stock_id',
       'foreignkey_value' => $node->stock_id
     );
-    chado_node_properties_form_update_properties($node, $details);
+    chado_update_node_form_properties($node, $details);
 
   }
 
@@ -715,7 +715,7 @@ function chado_stock_update($node) {
       'foreignkey_name' => 'stock_id',
       'foreignkey_value' => $node->stock_id
     );
-    chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
+    chado_update_node_form_dbxrefs($node, $details);
   }
 
   // now update relationships
@@ -724,7 +724,7 @@ function chado_stock_update($node) {
       'relationship_table' => 'stock_relationship',
       'foreignkey_value' => $node->stock_id
     );
-    chado_node_relationships_form_update_relationships($node, $details);
+    chado_update_node_form_relationships($node, $details);
   }
 }
 
@@ -782,7 +782,7 @@ function tripal_stock_node_presave($node) {
         $uniquename  = $node->uniquename;
         $type_id     = $node->type_id;
         $values = array('cvterm_id' => $node->type_id);
-        $cvterm = tripal_core_chado_select('cvterm', array('name'), $values);
+        $cvterm = chado_select_record('cvterm', array('name'), $values);
         $type = $cvterm[0]->name;
       }
       else {
@@ -792,7 +792,7 @@ function tripal_stock_node_presave($node) {
         $type        = $node->stock->type_id->name;
       }
       $values = array('organism_id' => $organism_id);
-      $organism = tripal_core_chado_select('organism', array('genus','species'), $values);
+      $organism = chado_select_record('organism', array('genus','species'), $values);
       $node->title = "$sname, $uniquename ($type) " . $organism[0]->genus . ' ' . $organism[0]->species;
       if ($name == $uname) {
         $node->title = "$sname ($type) " . $organism[0]->genus . ' ' . $organism[0]->species;

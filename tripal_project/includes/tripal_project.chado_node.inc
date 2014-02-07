@@ -139,7 +139,7 @@ function chado_project_form(&$node, $form_state) {
   // because we want to use the property to replace the project.description field as it is
   // only 255 characters which isn't large enough. We don't want the user to set it
   // as a property even though it will be stored as a property.
-  $cv_result = tripal_core_chado_select('cv',array('cv_id'),array('name' => 'project_property'));
+  $cv_result = chado_select_record('cv',array('cv_id'),array('name' => 'project_property'));
   $cv_id = $cv_result[0]->cv_id;
   $select_options = tripal_cv_get_cvterm_options($cv_id);
   $descrip_id = array_search('Project Description', $select_options);
@@ -154,17 +154,17 @@ function chado_project_form(&$node, $form_state) {
     'additional_instructions' => $instructions,
     'select_options' => $select_options
   );
-  chado_node_properties_form($form, $form_state, $details);
+  chado_add_node_form_properties($form, $form_state, $details);
 
   // RELATIONSHIPS FORM
   //---------------------------------------------
   // We want to use the contact_relationship_types cv if there are any terms available
   // and if not, to default to the relationship ontology
-  $cv_result = tripal_core_chado_select('cv',array('cv_id'),array('name' => 'project_relationship_types'));
+  $cv_result = chado_select_record('cv',array('cv_id'),array('name' => 'project_relationship_types'));
   $cv_id = $cv_result[0]->cv_id;
   $select_options = tripal_cv_get_cvterm_options($cv_id);
   if (empty($select_options)) {
-    $cv_result = tripal_core_chado_select('cv',array('cv_id'),array('name' => 'relationship'));
+    $cv_result = chado_select_record('cv',array('cv_id'),array('name' => 'relationship'));
     $cv_id = $cv_result[0]->cv_id;
     $select_options = tripal_cv_get_cvterm_options($cv_id);
   }
@@ -183,7 +183,7 @@ function chado_project_form(&$node, $form_state) {
     'select_options' => $select_options
   );
   // Adds the form elements to your current form
-  chado_node_relationships_form($form, $form_state, $details);
+  chado_add_node_form_relationships($form, $form_state, $details);
 
   return $form;
 
@@ -246,7 +246,7 @@ function chado_project_insert($node) {
       'name' => $node->title,
       'description' => '',
     );
-    $project = tripal_core_chado_insert('project', $values);
+    $project = chado_insert_record('project', $values);
     if (!$project) {
       drupal_set_message(t('Unable to add project.', 'warning'));
       watchdog('tripal_project', 'Insert project: Unable to create project where values:%values',
@@ -257,7 +257,7 @@ function chado_project_insert($node) {
 
     // * Properties Form *
     // Add the description property
-    $properties = chado_node_properties_form_retreive($node);
+    $properties = chado_retrieve_node_form_properties($node);
     $descrip_id = tripal_cv_get_cvterm_by_name('Project Description', NULL, 'project_property');
     $properties[$descrip_id->cvterm_id][0] = $node->description;
 
@@ -267,14 +267,14 @@ function chado_project_insert($node) {
       'foreignkey_name' => 'project_id',
       'foreignkey_value' => $project_id
     );
-    chado_node_properties_form_update_properties($node, $details, $properties);
+    chado_update_node_form_properties($node, $details, $properties);
 
     // * Relationships Form *
     $details = array(
       'relationship_table' => 'project_relationship',  // name of the _relationship table
       'foreignkey_value' => $project_id                // value of the example_id key
     );
-    chado_node_relationships_form_update_relationships($node, $details);
+    chado_update_node_form_relationships($node, $details);
 
   }
   else {
@@ -283,7 +283,7 @@ function chado_project_insert($node) {
 
   // Make sure the entry for this project doesn't already exist in the
   // chado_project table if it doesn't exist then we want to add it.
-  $check_org_id = chado_get_id_for_node('project', $node->nid);
+  $check_org_id = chado_get_id_from_nid('project', $node->nid);
   if (!$check_org_id) {
     $record = new stdClass();
     $record->nid = $node->nid;
@@ -306,7 +306,7 @@ function chado_project_insert($node) {
  */
 function chado_project_delete($node) {
 
-  $project_id = chado_get_id_for_node('project', $node->nid);
+  $project_id = chado_get_id_from_nid('project', $node->nid);
 
   // if we don't have a project id for this node then this isn't a node of
   // type chado_project or the entry in the chado_project table was lost.
@@ -344,13 +344,13 @@ function chado_project_update($node) {
   $node->description = trim($node->description);
 
   // update the project and the description
-  $project_id = chado_get_id_for_node('project', $node->nid) ;
+  $project_id = chado_get_id_from_nid('project', $node->nid) ;
   $match = array('project_id' => $project_id);
   $values = array(
     'name' => $node->title,
     'description' => '',
   );
-  $status = tripal_core_chado_update('project', $match, $values);
+  $status = chado_update_record('project', $match, $values);
   if (!$status) {
     drupal_set_message(t('Unable to update project.', 'warning'));
     watchdog('tripal_project', 'Update project: Unable to update project where values: %values',
@@ -359,7 +359,7 @@ function chado_project_update($node) {
 
   // * Properties Form *
   // Add the description property
-  $properties = chado_node_properties_form_retreive($node);
+  $properties = chado_retrieve_node_form_properties($node);
   $descrip_id = tripal_cv_get_cvterm_by_name('Project Description', NULL, 'project_property');
   $properties[$descrip_id->cvterm_id][0] = $node->description;
 
@@ -369,14 +369,14 @@ function chado_project_update($node) {
     'foreignkey_name' => 'project_id',
     'foreignkey_value' => $project_id
   );
-  chado_node_properties_form_update_properties($node, $details, $properties);
+  chado_update_node_form_properties($node, $details, $properties);
 
   // * Relationships Form *
   $details = array(
     'relationship_table' => 'project_relationship',  // name of the _relationship table
     'foreignkey_value' => $project_id                // value of the example_id key
   );
-  chado_node_relationships_form_update_relationships($node, $details);
+  chado_update_node_form_relationships($node, $details);
 }
 
 /**
@@ -395,10 +395,10 @@ function chado_project_load($nodes) {
 
   foreach ($nodes as $nid => $node) {
     // get the feature details from chado
-    $project_id = chado_get_id_for_node('project', $node->nid);
+    $project_id = chado_get_id_from_nid('project', $node->nid);
 
     $values = array('project_id' => $project_id);
-    $project = tripal_core_generate_chado_var('project', $values);
+    $project = chado_generate_var('project', $values);
 
     $nodes[$nid]->project = $project;
   }

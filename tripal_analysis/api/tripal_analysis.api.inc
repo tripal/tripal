@@ -61,7 +61,7 @@ function tripal_analysis_api_unregister_child($modulename) {
  * @ingroup tripal_analysis_api
  */
 function tripal_analysis_api_get_property($analysis_id, $property, $cvname = 'tripal') {
-  return tripal_core_get_property('analysis', $analysis_id, $property, $cvname);
+  return chado_get_property('analysis', $analysis_id, $property, $cvname);
 }
 
 /**
@@ -84,7 +84,7 @@ function tripal_analysis_api_get_property($analysis_id, $property, $cvname = 'tr
  * @ingroup tripal_analysis_api
  */
 function tripal_analysis_api_insert_property($analysis_id, $property, $value, $update_if_present = 0, $cvname = 'tripal') {
-    return tripal_core_insert_property('analysis', $analysis_id, $property, $cvname, $value, $update_if_present);
+    return chado_insert_property('analysis', $analysis_id, $property, $cvname, $value, $update_if_present);
 }
 
 /**
@@ -110,7 +110,7 @@ function tripal_analysis_api_insert_property($analysis_id, $property, $value, $u
  * @ingroup tripal_analysis_api
  */
 function tripal_analysis_api_update_property($analysis_id, $property, $value, $insert_if_missing = 0, $cvname = 'tripal') {
-  return tripal_core_update_property('analysis', $analysis_id, $property, $cvname, $value, $insert_if_missing);
+  return chado_update_property('analysis', $analysis_id, $property, $cvname, $value, $insert_if_missing);
 }
 
 /**
@@ -132,7 +132,7 @@ function tripal_analysis_api_update_property($analysis_id, $property, $value, $i
  * @ingroup tripal_analysis_api
  */
 function tripal_analysis_api_delete_property($analysis_id, $property, $cvname = 'tripal') {
-  return tripal_core_delete_property('analysis', $analysis_id, $property, $cvname);
+  return chado_delete_property('analysis', $analysis_id, $property, $cvname);
 }
 
 /**

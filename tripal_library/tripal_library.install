@@ -43,7 +43,7 @@ function tripal_library_requirements($phase) {
 function tripal_library_install() {
 
   // create the module's data directory
-  tripal_create_moddir('tripal_library');
+  tripal_create_files_dir('tripal_library');
 
   // add the materialized view
   tripal_library_add_mview_library_feature_count();
@@ -237,7 +237,7 @@ function tripal_library_update_7000() {
   $values = array(
     'name' => 'library_type'
   );
-  $success = tripal_core_chado_update('cv', $match, $values);
+  $success = chado_update_record('cv', $match, $values);
   if (!$success) {
     throw new DrupalUpdateException('Failed to rename tripal_library_types CV.');
   }
@@ -257,7 +257,7 @@ function tripal_library_update_7000() {
     'cv_id' => $cv->cv_id,
     'name' => 'Library Description',
   );
-  tripal_core_chado_update('cvterm', $match, $values);
+  chado_update_record('cvterm', $match, $values);
   if (!$success) {
     throw new DrupalUpdateException('Failed to move library properties to new library_property CV.');
   }

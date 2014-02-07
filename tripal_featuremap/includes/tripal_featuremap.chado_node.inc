@@ -57,7 +57,7 @@ function chado_featuremap_form($node, &$form_state) {
   // if we are editing an existing node then the featuremap is already part of the node
   if (property_exists($node, 'featuremap')) {
     $featuremap = $node->featuremap;
-    $featuremap = tripal_core_expand_chado_vars($featuremap, 'field', 'featuremap.description');
+    $featuremap = chado_expand_var($featuremap, 'field', 'featuremap.description');
     $featuremap_id = $featuremap->featuremap_id;
 
     // get form defaults
@@ -110,7 +110,7 @@ function chado_featuremap_form($node, &$form_state) {
   );
   $columns = array('cvterm_id','name');
   $options = array('order_by' => array('name' => 'ASC'));
-  $featuremap_units = tripal_core_chado_select('cvterm', $columns, $values, $options);
+  $featuremap_units = chado_select_record('cvterm', $columns, $values, $options);
   $units = array();
   $units[''] = '';
   foreach($featuremap_units as $unit) {
@@ -136,7 +136,7 @@ function chado_featuremap_form($node, &$form_state) {
     'fieldset_name' => 'Additional Details',
     'additional_instructions' => $instructions
   );
-  chado_node_properties_form($form, $form_state, $details);
+  chado_add_node_form_properties($form, $form_state, $details);
 
   // ADDITIONAL DBXREFS FORM
   //---------------------------------------------
@@ -146,7 +146,7 @@ function chado_featuremap_form($node, &$form_state) {
     'base_key_value' => $featuremap_id       // the value of featuremap_id for this record
   );
   // Adds the form elements to your current form
-  chado_node_additional_dbxrefs_form($form, $form_state, $details);
+  chado_add_node_form_dbxrefs($form, $form_state, $details);
 
   return $form;
 }
@@ -270,19 +270,19 @@ function chado_featuremap_insert($node) {
       'description' => $node->description,
       'unittype_id' => $node->unittype_id
     );
-    $featuremap = tripal_core_chado_insert('featuremap', $values);
+    $featuremap = chado_insert_record('featuremap', $values);
     if(!$featuremap) {
       drupal_set_message(t('Unable to add featuremap.', 'warning'));
-      tripal_core_report_error('tripal_featuremap', TRIPAL_WARNING, 'Unable to create feature map where values: %values',
+      tripal_report_error('tripal_featuremap', TRIPAL_WARNING, 'Unable to create feature map where values: %values',
       array('%values' => print_r($values, TRUE)));
       return;
     }
     $featuremap_id = $featuremap['featuremap_id'];
 
     // now add in the properties
-    $properties = chado_node_properties_form_retreive($node);
+    $properties = chado_retrieve_node_form_properties($node);
     // We need to deal with the 'Map Dbxref' property specially
-    $cvterm = tripal_core_chado_select(
+    $cvterm = chado_select_record(
       'cvterm',
       array('cvterm_id'),
       array('name' => 'Map Dbxref', 'cv_id' => array('name' => 'featuremap_property'))
@@ -293,7 +293,7 @@ function chado_featuremap_insert($node) {
         $featuremap_dbxref = tripal_featuremap_add_featuremap_dbxref($featuremap_id, $value);
         if (!$featuremap_dbxref) {
           drupal_set_message("Error cannot add featuremap cross reference: $value", "error");
-          tripal_core_report_error('t_featuremap', TRIPAL_ERROR, "Error cannot add featuremap cross reference: %ref",
+          tripal_report_error('t_featuremap', TRIPAL_ERROR, "Error cannot add featuremap cross reference: %ref",
           array('%ref' => $value));
         }
       }
@@ -305,7 +305,7 @@ function chado_featuremap_insert($node) {
       'foreignkey_name' => 'featuremap_id',
       'foreignkey_value' => $featuremap_id
     );
-    chado_node_properties_form_update_properties($node, $details, $properties);
+    chado_update_node_form_properties($node, $details, $properties);
 
     // * Additional DBxrefs Form *
     $details = array(
@@ -313,7 +313,7 @@ function chado_featuremap_insert($node) {
       'foreignkey_name' => 'featuremap_id',     // the name of the key in your base table
       'foreignkey_value' => $featuremap_id      // the value of the featuremap_id key
     );
-    chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
+    chado_update_node_form_dbxrefs($node, $details);
 
   }
   else {
@@ -322,7 +322,7 @@ function chado_featuremap_insert($node) {
 
   // Make sure the entry for this featuremap doesn't already exist in the
   // chado_featuremap table if it doesn't exist then we want to add it.
-  $check_org_id = chado_get_id_for_node('featuremap', $node->nid);
+  $check_org_id = chado_get_id_from_nid('featuremap', $node->nid);
   if (!$check_org_id) {
     $record = new stdClass();
     $record->nid = $node->nid;
@@ -341,7 +341,7 @@ function chado_featuremap_update($node) {
   $node->fmapname          = trim($node->fmapname);
   $node->description    = trim($node->description);
 
-  $featuremap_id = chado_get_id_for_node('featuremap', $node->nid) ;
+  $featuremap_id = chado_get_id_from_nid('featuremap', $node->nid) ;
 
   // update the map record
   $match = array(
@@ -352,17 +352,17 @@ function chado_featuremap_update($node) {
     'description' => $node->description,
     'unittype_id' => $node->unittype_id
   );
-  $status = tripal_core_chado_update('featuremap', $match, $values);
+  $status = chado_update_record('featuremap', $match, $values);
   if (!$status) {
     drupal_set_message("Error updating map", "error");
-    tripal_core_report_error('t_featuremap', TRIPAL_ERROR, "Error updating map", array());
+    tripal_report_error('t_featuremap', TRIPAL_ERROR, "Error updating map", array());
     return;
   }
 
   // Update the properties
-  $properties = chado_node_properties_form_retreive($node);
+  $properties = chado_retrieve_node_form_properties($node);
   // We need to deal with the 'Map Dbxref' property specially
-  $cvterm = tripal_core_chado_select(
+  $cvterm = chado_select_record(
     'cvterm',
     array('cvterm_id'),
     array('name' => 'Map Dbxref', 'cv_id' => array('name' => 'featuremap_property'))
@@ -373,7 +373,7 @@ function chado_featuremap_update($node) {
       $featuremap_dbxref = tripal_featuremap_add_featuremap_dbxref($featuremap_id, $value);
       if (!$featuremap_dbxref) {
         drupal_set_message("Error cannot add featuremap cross reference: $value", "error");
-        tripal_core_report_error('t_featuremap', TRIPAL_ERROR, "Error cannot add featuremap cross reference: %ref",
+        tripal_report_error('t_featuremap', TRIPAL_ERROR, "Error cannot add featuremap cross reference: %ref",
         array('%ref' => $value));
       }
     }
@@ -385,7 +385,7 @@ function chado_featuremap_update($node) {
     'foreignkey_name' => 'featuremap_id',
     'foreignkey_value' => $featuremap_id
   );
-  chado_node_properties_form_update_properties($node, $details, $properties);
+  chado_update_node_form_properties($node, $details, $properties);
 
   // * Additional DBxrefs Form *
   $details = array(
@@ -393,7 +393,7 @@ function chado_featuremap_update($node) {
     'foreignkey_name' => 'featuremap_id',     // the name of the key in your base table
     'foreignkey_value' => $featuremap_id      // the value of the featuremap_id key
   );
-  chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
+  chado_update_node_form_dbxrefs($node, $details);
 
 }
 /**
@@ -405,13 +405,13 @@ function chado_featuremap_update($node) {
 function chado_featuremap_load($nodes) {
   foreach ($nodes as $nid => $node) {
     // get the feature details from chado
-    $featuremap_id = chado_get_id_for_node('featuremap', $node->nid);
+    $featuremap_id = chado_get_id_from_nid('featuremap', $node->nid);
 
     $values = array('featuremap_id' => $featuremap_id);
-    $featuremap = tripal_core_generate_chado_var('featuremap', $values);
+    $featuremap = chado_generate_var('featuremap', $values);
 
     // expand the description field as it is needed by the form
-    $featuremap = tripal_core_expand_chado_vars($featuremap, 'field', 'featuremap.description');
+    $featuremap = chado_expand_var($featuremap, 'field', 'featuremap.description');
 
     $nodes[$nid]->featuremap = $featuremap;
   }
@@ -423,7 +423,7 @@ function chado_featuremap_load($nodes) {
  */
 function chado_featuremap_delete(&$node) {
 
-  $featuremap_id = chado_get_id_for_node('featuremap', $node->nid);
+  $featuremap_id = chado_get_id_from_nid('featuremap', $node->nid);
 
   // if we don't have a map id for this node then this isn't a node of
   // type chado_featuremap or the entry in the chado_featuremap table was lost.

@@ -74,7 +74,7 @@ function chado_analysis_form($node, &$form_state) {
   // if we are editing an existing node then the analysis is already part of the node
   if (property_exists($node, 'analysis')) {
     $analysis = $node->analysis;
-    $analysis = tripal_core_expand_chado_vars($analysis, 'field', 'analysis.description');
+    $analysis = chado_expand_var($analysis, 'field', 'analysis.description');
     $analysis_id = $analysis->analysis_id;
 
     // get form defaults
@@ -241,7 +241,7 @@ function chado_analysis_form($node, &$form_state) {
     'fieldset_title' => 'Properties',
     'additional_instructions' => $instructions
   );
-  chado_node_properties_form($form, $form_state, $details);
+  chado_add_node_form_properties($form, $form_state, $details);
 
   return $form;
 }
@@ -292,13 +292,13 @@ function tripal_analysis_validate($node, $form, &$form_state) {
 
     // get the existing node
     $values = array('analysis_id' => $node->analysis_id);
-    $result = tripal_core_chado_select('analysis', array('*'), $values);
+    $result = chado_select_record('analysis', array('*'), $values);
     $analysis = $result[0];
 
     // if the name has changed make sure it doesn't conflict with an existing name
     if ($analysis->name != $node->analysisname) {
       $values = array('name' => $node->analysisname);
-      $result = tripal_core_chado_select('analysis', array('analysis_id'), $values);
+      $result = chado_select_record('analysis', array('analysis_id'), $values);
       if ($result and count($result) > 0) {
         form_set_error('analysisname', 'Cannot update the analysis with this analysis name. An analysis with this name already exists.');
         return;
@@ -314,7 +314,7 @@ function tripal_analysis_validate($node, $form, &$form_state) {
         'programversion' => $node->programversion,
         'sourcename' => $node->sourcename,
       );
-      $result = tripal_core_chado_select('analysis', array('analysis_id'), $values);
+      $result = chado_select_record('analysis', array('analysis_id'), $values);
       if ($result and count($result) > 0) {
         if ($analysis->program != $node->program) {
           $field = 'program';
@@ -338,7 +338,7 @@ function tripal_analysis_validate($node, $form, &$form_state) {
       'programversion' => $node->programversion,
       'sourcename' => $node->sourcename,
     );
-    $analysis = tripal_core_chado_select('analysis', array('analysis_id'), $values);
+    $analysis = chado_select_record('analysis', array('analysis_id'), $values);
     if ($analysis and count($analysis) > 0) {
       form_set_error('program', 'Cannot add the analysis with this program,
         program version and source name. An analysis with these values already exists.');
@@ -349,7 +349,7 @@ function tripal_analysis_validate($node, $form, &$form_state) {
     // for the analysis table but we use the analysis name for the Drupal node
     // title, so it should be unique
     $values = array('name' => $node->analysisname);
-    $result = tripal_core_chado_select('analysis', array('analysis_id'), $values);
+    $result = chado_select_record('analysis', array('analysis_id'), $values);
     if ($result and count($result) > 0) {
       form_set_error('analysisname', 'Cannot add the analysis with this analysis name. An analysis with this name already exists.');
       return;
@@ -400,10 +400,10 @@ function chado_analysis_insert($node) {
       'sourceuri'      => $node->sourceuri,
       'timeexecuted'   => $timestamp
     );
-    $analysis = tripal_core_chado_insert('analysis', $values);
+    $analysis = chado_insert_record('analysis', $values);
     if (!$analysis) {
       drupal_set_message(t('Unable to add analysis.', 'warning'));
-      tripal_core_report_error('tripal_analysis', TRIPAL_ERROR, 'Insert analysis: Unable to create analysis where values:%values',
+      tripal_report_error('tripal_analysis', TRIPAL_ERROR, 'Insert analysis: Unable to create analysis where values:%values',
         array('%values' => print_r($values, TRUE)));
       return;
     }
@@ -416,7 +416,7 @@ function chado_analysis_insert($node) {
       'foreignkey_name' => 'analysis_id',
       'foreignkey_value' => $analysis_id
     );
-    chado_node_properties_form_update_properties($node, $details);
+    chado_update_node_form_properties($node, $details);
   }
   else {
     $analysis_id = $node->analysis_id;
@@ -424,7 +424,7 @@ function chado_analysis_insert($node) {
 
   // Make sure the entry for this analysis doesn't already exist in the
   // chado_analysis table if it doesn't exist then we want to add it.
-  $check_org_id = chado_get_id_for_node('analysis', $node->nid);
+  $check_org_id = chado_get_id_from_nid('analysis', $node->nid);
   if (!$check_org_id) {
     $record = new stdClass();
     $record->nid = $node->nid;
@@ -446,7 +446,7 @@ function chado_analysis_insert($node) {
  * @ingroup tripal_analysis
  */
 function chado_analysis_delete($node) {
-  $analysis_id = chado_get_id_for_node('analysis', $node->nid);
+  $analysis_id = chado_get_id_from_nid('analysis', $node->nid);
 
   // if we don't have an analysis id for this node then this isn't a node of
   // type chado_analysis or the entry in the chado_analysis table was lost.
@@ -490,7 +490,7 @@ function chado_analysis_update($node) {
   $timestamp = $month . '/' . $day . '/' . $year;
 
   // update the record in Chado
-  $analysis_id = chado_get_id_for_node('analysis', $node->nid);
+  $analysis_id = chado_get_id_from_nid('analysis', $node->nid);
   $match = array(
     'analysis_id' => $node->analysis_id,
   );
@@ -506,10 +506,10 @@ function chado_analysis_update($node) {
     'timeexecuted'   => $timestamp,
     'analysis_id'    => $analysis_id
   );
-  $status = tripal_core_chado_update('analysis', $match, $values);
+  $status = chado_update_record('analysis', $match, $values);
   if (!$status) {
     drupal_set_message(t('Unable to update analysis.', 'warning'));
-    tripal_core_report_error('tripal_analysis', TRIPAL_ERROR, 'Update analysis: Unable to update analysis where values: %values',
+    tripal_report_error('tripal_analysis', TRIPAL_ERROR, 'Update analysis: Unable to update analysis where values: %values',
     array('%values' => print_r($values, TRUE)));
   }
 
@@ -521,7 +521,7 @@ function chado_analysis_update($node) {
     'foreignkey_name' => 'analysis_id',
     'foreignkey_value' => $analysis_id
   );
-  chado_node_properties_form_update_properties($node, $details);
+  chado_update_node_form_properties($node, $details);
 }
 
 /**
@@ -535,14 +535,14 @@ function chado_analysis_load($nodes) {
 
   foreach ($nodes as $nid => $node) {
     // find the analysis and add in the details
-    $analysis_id = chado_get_id_for_node('analysis', $nid);
+    $analysis_id = chado_get_id_from_nid('analysis', $nid);
 
     // build the analysis variable
     $values = array('analysis_id' => $analysis_id);
-    $analysis = tripal_core_generate_chado_var('analysis', $values);
+    $analysis = chado_generate_var('analysis', $values);
 
     // add in the description field
-    $analysis = tripal_core_expand_chado_vars($analysis, 'field', 'analysis.description');
+    $analysis = chado_expand_var($analysis, 'field', 'analysis.description');
     $nodes[$nid]->analysis = $analysis;
   }
 }

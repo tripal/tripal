@@ -290,7 +290,7 @@ function tripal_feature_theme($existing, $type, $theme, $path) {
     'tripal_feature_help' => array(
       'template' => 'tripal_feature_help',
       'variables' =>  array(NULL),
-      'path' => drupal_get_path('module', 'tripal_feature') . '/theme'
+      'path' => "$path/theme/"
     ),
 
     // template for the organism page
@@ -357,8 +357,8 @@ function tripal_feature_load_featurelocs($feature_id, $side = 'as_parent', $aggr
   while ($loc = $flresults->fetchObject()) {
     // if a drupal node exists for this feature then add the nid to the
     // results object
-    $loc->fnid = chado_get_node_id('feature', $loc->feature_id);
-    $loc->snid = chado_get_node_id('feature', $loc->src_feature_id);
+    $loc->fnid = chado_get_nid_from_id('feature', $loc->feature_id);
+    $loc->snid = chado_get_nid_from_id('feature', $loc->src_feature_id);
     // add the result to the array
     $featurelocs[$i++] = $loc;
   }
@@ -977,7 +977,7 @@ function tripal_feature_job_describe_args($callback, $args) {
   $new_args = array();
   if ($callback == 'tripal_feature_load_fasta') {
     $new_args['FASTA file'] = $args[0];
-    $organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $args[1]));
+    $organism = chado_select_record('organism', array('genus', 'species'), array('organism_id' => $args[1]));
     $new_args['Organism'] = $organism[0]->genus . " " . $organism[0]->species;
     $new_args['Sequence Type'] = $args[2];
     $new_args['Name Match Type'] = $args[14];
@@ -991,7 +991,7 @@ function tripal_feature_job_describe_args($callback, $args) {
 
     // add in the database reference arguments
     if ($args[7]) {
-      $db = tripal_core_chado_select('db', array('name'), array('db_id' => $args[7]));
+      $db = chado_select_record('db', array('name'), array('db_id' => $args[7]));
     }
     $new_args['Database Reference'] = $db[0]->name;
     $new_args['Accession RE'] = $args[6];
@@ -999,13 +999,13 @@ function tripal_feature_job_describe_args($callback, $args) {
 
     // add in the analysis
     if ($args[13]) {
-      $analysis = tripal_core_chado_select('analysis', array('name'), array('analysis_id' => $args[13]));
+      $analysis = chado_select_record('analysis', array('name'), array('analysis_id' => $args[13]));
     }
     $new_args['Analysis'] = $analysis[0]->name;
   }
   if ($callback == 'tripal_feature_delete_features') {
     if ($args[0]) {
-      $organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $args[0]));
+      $organism = chado_select_record('organism', array('genus', 'species'), array('organism_id' => $args[0]));
       $new_args['Organism'] = $organism[0]->genus . " " . $organism[0]->species;
     }
     else {
@@ -1013,7 +1013,7 @@ function tripal_feature_job_describe_args($callback, $args) {
     }
 
     if ($args[1]) {
-      $analysis = tripal_core_chado_select('analysis', array('name'), array('analysis_id' => $args[1]));
+      $analysis = chado_select_record('analysis', array('name'), array('analysis_id' => $args[1]));
       $new_args['Analysis'] = $analysis[0]->name;
     }
     else {
@@ -1028,9 +1028,9 @@ function tripal_feature_job_describe_args($callback, $args) {
   elseif ($callback == 'tripal_feature_load_gff3') {
 
     $new_args['GFF File'] = $args[0];
-    $organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $args[1]));
+    $organism = chado_select_record('organism', array('genus', 'species'), array('organism_id' => $args[1]));
     $new_args['Organism'] = $organism[0]->genus . " " . $organism[0]->species;
-    $analysis = tripal_core_chado_select('analysis', array('name'), array('analysis_id' => $args[2]));
+    $analysis = chado_select_record('analysis', array('name'), array('analysis_id' => $args[2]));
     $new_args['Analysis'] = $analysis[0]->name;
     $new_args['Use a Transaction'] = ($args[7] == 1) ? "Yes" : "No";
     $new_args['Import only new features'] = ($args[3] == 1) ? "Yes" : "No";
@@ -1038,7 +1038,7 @@ function tripal_feature_job_describe_args($callback, $args) {
     $new_args['Import all and replace'] = ($args[5] == 1) ? "Yes" : "No";
     $new_args['Delete features'] = ($args[6] == 1) ? "Yes" : "No";
     if ($args[8]) {
-      $target_organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $args[8]));
+      $target_organism = chado_select_record('organism', array('genus', 'species'), array('organism_id' => $args[8]));
       $new_args['Target organism'] = $target_organism[0]->genus . " " . $target_organism[0]->species;
     }
     else {

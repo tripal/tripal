@@ -86,7 +86,7 @@ function tripal_bulk_loader_add_loader_job_form_submit($form, $form_state) {
     }
   }
   elseif (preg_match('/Re-Submit Job/', $form_state['values']['op'])) {
-    tripal_jobs_rerun($form_state['values']['job_id']);
+    tripal_rerun_job($form_state['values']['job_id']);
     $success = db_update('tripal_bulk_loader')->fields(array(
         'job_status' => 'Submitted to Queue'
       ))->condition('nid',$form_state['values']['nid'])->execute();
@@ -95,7 +95,7 @@ function tripal_bulk_loader_add_loader_job_form_submit($form, $form_state) {
     $success = db_update('tripal_bulk_loader')->fields(array(
         'job_status' => 'Job Cancelled'
       ))->condition('nid',$form_state['values']['nid'])->execute();
-    tripal_jobs_cancel($form_state['values']['job_id']);
+    tripal_cancel_job($form_state['values']['job_id']);
   }
   elseif (preg_match('/Revert/', $form_state['values']['op'])) {
 
@@ -230,7 +230,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
         // out what field we're joining on.  For templates created using a
         // previous version it was assumed that the FK field was always the field to join
         if (!array_key_exists('foreign field', $field_array)) {
-          $tbl_description = tripal_core_get_chado_table_schema($record_array['table']);
+          $tbl_description = chado_get_schema($record_array['table']);
           foreach ($tbl_description['foreign keys'] as $key_table => $key_array) {
             if ($key_table == $fk_table) {
               foreach ($key_array['columns'] as $left_field => $right_field) {
@@ -392,7 +392,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
         // and had a group percentage of 50% then the job progress would be
         // (2*100 + 50%) / 3 = 250%/3 = 83%
         $job_progress = round(((($group_index - 1) * 100) + $group_progress) / $total_num_groups);
-        tripal_job_set_progress($node->job_id, $job_progress);
+        tripal_set_job_progress($node->job_id, $job_progress);
       }
 
       $data = $default_data;
@@ -503,7 +503,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   }
 
   // get the table description
-  $table_desc = tripal_core_get_chado_table_schema($table);
+  $table_desc = chado_get_schema($table);
   if (!$table_desc) {
     $msg = "Tripal does not know about the table named '%table'. If this is a custom table,
       please define it first";
@@ -610,7 +610,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
      $table_data['select_if_duplicate'] == 1 or
      $table_data['update_if_duplicate'] == 1) {
     $options = array('is_duplicate' => TRUE, 'print_errors' => TRUE);
-    $duplicate = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, $options);
+    $duplicate = chado_select_record($table, array_keys($table_desc['fields']), $values, $options);
 
     // if this is a duplicate then substitute the values in the table_data array so
     // that for future records that may depend on this one, they can get the values needed
@@ -662,7 +662,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     else {
       $options = array();
     }
-    // Skip tripal_core_chado_insert() built-in validation?
+    // Skip chado_insert_record() built-in validation?
     if (variable_get('tripal_bulk_loader_skip_validation', FALSE)) {
       $options['skip_validation'] = TRUE;
     }
@@ -697,17 +697,17 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       }
       if (!empty($match)) {
         // Now we need to check if it already exists via a select
-        $results = tripal_core_chado_select($table, array_keys($table_desc['fields']), $match, array('print_errors' => TRUE));
+        $results = chado_select_record($table, array_keys($table_desc['fields']), $match, array('print_errors' => TRUE));
         // If not then insert
         if (empty($results)) {
           $options['statement_name'] = 'ins_'.$options['statement_name'];
           $options['print_errors'] = TRUE;
-          $record = tripal_core_chado_insert($table, $values, $options);
+          $record = chado_insert_record($table, $values, $options);
         }
         else {
           $options['return_record'] = TRUE;
           $options['print_errors'] = TRUE;
-          $record = tripal_core_chado_update($table, $match, $values, $options);
+          $record = chado_update_record($table, $match, $values, $options);
         }
       }
       else {
@@ -722,7 +722,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     }
     else {
       $options['print_errors'] = TRUE;
-      $record = tripal_core_chado_insert($table, $values, $options);
+      $record = chado_insert_record($table, $values, $options);
     }
 
     // if the insert was not successful
@@ -790,7 +790,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
     // get the matches for this select
     $matches = array();
     if (is_array($values) and count($values) > 0) {
-      $matches = tripal_core_chado_select($table, array_keys($table_desc['fields']), $values, array('print_errors' => TRUE));
+      $matches = chado_select_record($table, array_keys($table_desc['fields']), $values, array('print_errors' => TRUE));
     }
     // if the record doesn't exist and it's not optional then generate an error
     if (count($matches) == 0) {
@@ -913,7 +913,7 @@ function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $dat
 
       // if the field in the Referral records is in a FK relationship with
       // this field then we can simply keep the value we have
-      $tbl_description = tripal_core_get_chado_table_schema($table_array['table']);
+      $tbl_description = chado_get_schema($table_array['table']);
       if ($tbl_description and
           array_key_exists('foreign keys', $tbl_description) and
           array_key_exists($foreign_table, $tbl_description['foreign keys']) and
@@ -928,7 +928,7 @@ function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $dat
       else {
         // if the current value of the referral records is a non-array then this
         // is the primary key, we can use it to select the value we need.
-        $fk_description = tripal_core_get_chado_table_schema($foreign_table);
+        $fk_description = chado_get_schema($foreign_table);
         if (!is_array($foreign_values)) {
           // if we have a value then use it to get the field we need
           if ($foreign_values) {
@@ -936,7 +936,7 @@ function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $dat
             $columns = array($foreign_field);
             $options = array('statement_name' => 'pk_' . $foreign_table);
             $options['print_errors'] = TRUE;
-            $record  = tripal_core_chado_select($foreign_table, $columns, $fvalues, $options);
+            $record  = chado_select_record($foreign_table, $columns, $fvalues, $options);
             if ($record) {
               $values[$field] = $record[0]->$foreign_field;
             }
@@ -957,7 +957,7 @@ function tripal_bulk_loader_add_foreignkey_to_values($table_array, $values, $dat
           $columns = array($foreign_field);
           $options = array('statement_name' => 'blk_' . $nid . $priority . $foreign_table);
           $options['print_errors'] = TRUE;
-          $record  = tripal_core_chado_select($foreign_table, $columns, $fvalues, $options);
+          $record  = chado_select_record($foreign_table, $columns, $fvalues, $options);
           if ($record) {
             $values[$field] = $record[0]->$foreign_field;
           }
@@ -1174,7 +1174,7 @@ function tripal_bulk_loader_throw_error($msg, $args, $severity) {
     unset($options['print']);
   }
 
-  tripal_core_report_error(
+  tripal_report_error(
     'tripal_bulk',
     $severity,
     $msg,

@@ -181,7 +181,7 @@ function tripal_cv_add_cvterm_form_fields(&$form, $form_state, $cv_id = 0, $cvte
   // get default values
   if ($cvterm_name) {
     $values = array('cv_id' => $cv_id, 'name' => $cvterm_name);
-    $cvterm = tripal_core_generate_chado_var('cvterm', $values);
+    $cvterm = chado_generate_var('cvterm', $values);
     $name = $cvterm->name;
     $definition = $cvterm->definition;
     $is_relationship = $cvterm->is_relationshiptype;
@@ -227,7 +227,7 @@ function tripal_cv_add_cvterm_form_fields(&$form, $form_state, $cv_id = 0, $cvte
   $values = array();
   $columns = array('db_id', 'name');
   $options = array('order_by' => array('name' => 'ASC'));
-  $results = tripal_core_chado_select('db', $columns, $values, $options);
+  $results = chado_select_record('db', $columns, $values, $options);
   $dbs = array();
   $dbs[] = '';
   foreach ($results as $db) {
@@ -274,7 +274,7 @@ function tripal_cv_cvterm_edit_form_validate($form, &$form_state) {
   // make sure the cv term name is unique for this vocabulary
   if ($step == 1) {
     $values = array('name' => $name, 'cv_id' => $cv_id);
-    $results = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
+    $results = chado_select_record('cvterm', array('cvterm_id'), $values);
     foreach ($results as $r) {
       if ($r->cvterm_id != $cvterm_id) {
         form_set_error('name', 'The term name must be unique for this vocabulary. Another term with this name already exists.');
@@ -294,28 +294,28 @@ function tripal_cv_cvterm_add_form_validate($form, &$form_state) {
   $accession = array_key_exists('accession', $form_state['values']) ? $form_state['values']['accession'] : '';
 
   $values = array('cv_id' => $cv_id);
-  $results = tripal_core_chado_select('cv', array('name'), $values);
+  $results = chado_select_record('cv', array('name'), $values);
   if (!$results or count($results) == 0) {
     form_set_error('cv_id', 'The controlled vocabulary does not exist');
   }
 
   // make sure the DB exists
   $values = array('db_id' => $db_id);
-  $results = tripal_core_chado_select('db', array('name'), $values);
+  $results = chado_select_record('db', array('name'), $values);
   if (!$results or count($results) == 0) {
     form_set_error('db_id', 'The database name does not exist');
   }
 
   // make sure the cv term name is unique for this vocabulary
   $values = array('name' => $name, 'cv_id' => $cv_id);
-  $results = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
+  $results = chado_select_record('cvterm', array('cvterm_id'), $values);
   if (count($results) > 0) {
     form_set_error('name', 'The term name must be unique for this vocabulary. Another term with this name already exists.');
   }
 
   // make sure this accession is unique for the database
   $values = array('accession' => $accession, 'db_id' => $db_id);
-  $results = tripal_core_chado_select('dbxref', array('dbxref_id'), $values);
+  $results = chado_select_record('dbxref', array('dbxref_id'), $values);
   if (count($results) > 0 ) {
     form_set_error('accession', 'The accession is not uniuqe for this vocabulary\'s database.');
   }
@@ -352,7 +352,7 @@ function tripal_cv_cvterm_edit_form_submit($form, &$form_state) {
 
       // get the original cvterm_id
       $values = array('name' => $name, 'cv_id' => $cv_id);
-      $results = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
+      $results = chado_select_record('cvterm', array('cvterm_id'), $values);
       $cvterm = $results[0];
 
       $form_state['storage']['cv_id'] = $cv_id;
@@ -367,12 +367,12 @@ function tripal_cv_cvterm_edit_form_submit($form, &$form_state) {
       if ($op == 'Update') {
         // get the cv
         $values = array('cv_id' => $cv_id);
-        $results = tripal_core_chado_select('cv', array('name'), $values);
+        $results = chado_select_record('cv', array('name'), $values);
         $cv = $results[0];
 
         // get the db
         $values = array('db_id' => $db_id);
-        $results = tripal_core_chado_select('db', array('name'), $values);
+        $results = chado_select_record('db', array('name'), $values);
         $db = $results[0];
 
         // now add the term
@@ -394,7 +394,7 @@ function tripal_cv_cvterm_edit_form_submit($form, &$form_state) {
       }
       if ($op == 'Delete') {
         $values = array('cvterm_id' => $cvterm_id);
-        $success = tripal_core_chado_delete('cvterm', $values);
+        $success = chado_delete_record('cvterm', $values);
         if ($success) {
           drupal_set_message('Term deleted successfully.');
         }
@@ -423,12 +423,12 @@ function tripal_cv_cvterm_add_form_submit($form, &$form_state) {
 
   // get the database
   $values = array('db_id' => $db_id);
-  $results = tripal_core_chado_select('db', array('name'), $values);
+  $results = chado_select_record('db', array('name'), $values);
   $db = $results[0];
 
   // get the cv
   $values = array('cv_id' => $cv_id);
-  $results = tripal_core_chado_select('cv', array('name'), $values);
+  $results = chado_select_record('cv', array('name'), $values);
   $cv = $results[0];
 
   // now add the term

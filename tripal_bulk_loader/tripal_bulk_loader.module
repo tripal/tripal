@@ -405,7 +405,7 @@ function tripal_bulk_loader_progess_file_get_progress($job_id, $update_progress 
 
       // update the progress of the job
       if ($update_progress AND ($percent != 0 OR $percent != 100)) {
-        tripal_job_set_progress($job_id, round($total_percent, 0));
+        tripal_set_job_progress($job_id, round($total_percent, 0));
       }
     }
   }

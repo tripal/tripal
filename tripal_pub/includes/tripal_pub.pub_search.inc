@@ -45,8 +45,8 @@ function tripal_pub_search_page() {
           'name' => 'Citation',
         ),
       );
-      $citation_rec = tripal_core_generate_chado_var('pubprop', $values);
-      $citation_rec = tripal_core_expand_chado_vars($citation_rec, 'field', 'pubprop.value');
+      $citation_rec = chado_generate_var('pubprop', $values);
+      $citation_rec = chado_expand_var($citation_rec, 'field', 'pubprop.value');
 
       // if we have the citation then use it, otherwise, just use the title
       $title = htmlspecialchars($pub->title);
@@ -499,7 +499,7 @@ function tripal_pub_get_search_results($search_array, $limit) {
 
     // get the scope type
     $values = array('cvterm_id' => $type_id);
-    $cvterm = tripal_core_chado_select('cvterm', array('name'), $values);
+    $cvterm = chado_select_record('cvterm', array('name'), $values);
     $type_name = '';
     if (count($cvterm) > 0) {
       $type_name = $cvterm[0]->name;

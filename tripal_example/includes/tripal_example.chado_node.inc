@@ -114,7 +114,7 @@ function chado_example_form($node, &$form_state) {
   // if we are editing an existing node then the example is already part of the node
   if (property_exists($node, 'example')) {
     // $example = $node->example;
-    // $example = tripal_core_expand_chado_vars($example, 'field', 'example.residues');
+    // $example = chado_expand_var($example, 'field', 'example.residues');
     // $example_id   = $example->example_id;
     // $uniquename   = $example->uniquename;
 
@@ -150,7 +150,7 @@ function chado_example_form($node, &$form_state) {
     'cv_name' => 'example_property_types'   // the cv.name of the cv governing exampleprop.type_id
   );
   // Adds the form elements to your current form
-  chado_node_properties_form($form, $form_state, $details);
+  chado_add_node_form_properties($form, $form_state, $details);
 
   // ADDITIONAL DBXREFS FORM
   //---------------------------------------------
@@ -162,7 +162,7 @@ function chado_example_form($node, &$form_state) {
     'base_key_value' => $example_id       // the value of example_id for this record
   );
   // Adds the form elements to your current form
-  chado_node_additional_dbxrefs_form($form, $form_state, $details);
+  chado_add_node_form_dbxrefs($form, $form_state, $details);
 
   // RELATIONSHIPS FORM
   //---------------------------------------------
@@ -177,7 +177,7 @@ function chado_example_form($node, &$form_state) {
     'cv_name' => 'example_relationship_types'         // the cv.name of the cv governing example_relationship.type_id
   );
   // Adds the form elements to your current form
-  chado_node_relationships_form($form, $form_state, $details);
+  chado_add_node_form_relationships($form, $form_state, $details);
 
   // return the form
   return $form;
@@ -258,10 +258,10 @@ function chado_example_insert($node) {
     //  'uniquename' => $node->uniquename,
     //  'residues' => $residues,
     //);
-    //$example = tripal_core_chado_select('example', array('*'), $values);
+    //$example = chado_select_record('example', array('*'), $values);
     //if (!$example) {
     //  drupal_set_message(t('Unable to add example.'), 'warning');
-    //  tripal_core_report_error('tripal_example', TRIPAL_WARNING, 'Insert example: Unable to create example where values: %values',
+    //  tripal_report_error('tripal_example', TRIPAL_WARNING, 'Insert example: Unable to create example where values: %values',
     //    array('%values' => print_r($values, TRUE)));
     //  return;
     //}
@@ -281,7 +281,7 @@ function chado_example_insert($node) {
       //   'foreignkey_name' => 'example_id',   // the name of the key in your base table
       //   'foreignkey_value' => $example_id    // the value of the example_id key
       // );
-      // chado_node_properties_form_update_properties($node, $details);
+      // chado_update_node_form_properties($node, $details);
 
       // * Additional DBxrefs Form *
       // If you implemented the dbxrefs form in chado_example_form then you need to
@@ -291,7 +291,7 @@ function chado_example_insert($node) {
       //   'foreignkey_name' => 'example_id',     // the name of the key in your base table
       //   'foreignkey_value' => $example_id      // the value of the example_id key
       // );
-      // chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
+      // chado_update_node_form_dbxrefs($node, $details);
 
       // * Relationships Form *
       // If you implemented the relationships form in chado_example_form then you need to
@@ -300,7 +300,7 @@ function chado_example_insert($node) {
       //   'relationship_table' => 'example_relationship',  // name of the _relationship table
       //   'foreignkey_value' => $example_id                // value of the example_id key
       // );
-      // chado_node_relationships_form_update_relationships($node, $details);
+      // chado_update_node_form_relationships($node, $details);
     }
   }
   else {
@@ -310,7 +310,7 @@ function chado_example_insert($node) {
 
   // Make sure the entry for this example doesn't already exist in the
   // chado_example table if it doesn't exist then we want to add it.
-  // $check_org_id = chado_get_id_for_node('example', $node->nid);
+  // $check_org_id = chado_get_id_from_nid('example', $node->nid);
   //if (!$check_org_id) {
   //  $record = new stdClass();
   //  $record->nid = $node->nid;
@@ -334,7 +334,7 @@ function chado_example_update($node) {
   // be sure to always trim text fields
   // $node->uniquename   = trim($node->uniquename);
 
-  // use the tripal_core_chado_update() function to update the record
+  // use the chado_update_record() function to update the record
   //$match = array(
   //'example_id' => $example_id,
   //);
@@ -342,11 +342,11 @@ function chado_example_update($node) {
   //  'uniquename' => $node->uniquename,
   //);
   //$options = array('return_record' => TRUE);
-  //$status = tripal_core_chado_update('example', $match, $values, $options);
+  //$status = chado_update_record('example', $match, $values, $options);
 
   //if (!$status) {
   //  drupal_set_message(t('Unable to update example.'), 'warning');
-  //  tripal_core_report_error('tripal_example', TRIPAL_WARNING, 'Update example: Unable to update example where values: %values',
+  //  tripal_report_error('tripal_example', TRIPAL_WARNING, 'Update example: Unable to update example where values: %values',
   //    array('%values' => print_r($values, TRUE)));
   //}
 
@@ -359,7 +359,7 @@ function chado_example_update($node) {
   //   'foreignkey_name' => 'example_id',   // the name of the key in your base table
   //   'foreignkey_value' => $example_id    // the value of the example_id key
   // );
-  // chado_node_properties_form_update_properties($node, $details);
+  // chado_update_node_form_properties($node, $details);
 
   // * Additional DBxrefs Form *
   // If you implemented the dbxrefs form in chado_example_form then you need to
@@ -369,7 +369,7 @@ function chado_example_update($node) {
   //   'foreignkey_name' => 'example_id',     // the name of the key in your base table
   //   'foreignkey_value' => $example_id      // the value of the example_id key
   // );
-  // chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
+  // chado_update_node_form_dbxrefs($node, $details);
 
   // * Relationships Form *
   // If you implemented the relationships form in chado_example_form then you need to
@@ -378,7 +378,7 @@ function chado_example_update($node) {
   //   'relationship_table' => 'example_relationship',  // name of the _relationship table
   //   'foreignkey_value' => $example_id                // value of the example_id key
   // );
-  // chado_node_relationships_form_update_relationships($node, $details);
+  // chado_update_node_form_relationships($node, $details);
 
 }
 /**
@@ -394,7 +394,7 @@ function chado_example_update($node) {
 function chado_example_delete($node) {
 
   // get the example id from the node
-  //$example_id  = chado_get_id_for_node('example', $node->nid);
+  //$example_id  = chado_get_id_from_nid('example', $node->nid);
 
   // if we don't have a example id for this node then this isn't a node of
   // type chado_example or the entry in the chado_example table was lost.
@@ -435,21 +435,21 @@ function chado_example_load($nodes) {
   // them all
   foreach ($nodes as $nid => $node) {
     // find the example and add in the details
-    //$example_id = chado_get_id_for_node('example', $nid);
+    //$example_id = chado_get_id_from_nid('example', $nid);
 
-    // build the example variable by using the tripal_core_generate_chado_var() function
+    // build the example variable by using the chado_generate_var() function
     //$values = array('example_id' => $example_id);
-    //$example = tripal_core_generate_chado_var('example', $values);
+    //$example = chado_generate_var('example', $values);
 
     // for fields in the table that are of type 'text' you may want to include those
     // by default, the tripal_core_generate_chado_var does not include text fields as
     // they may be very large and including a large text field can slow the page load.
     // If you know a text field will never be large and it is important for the
     // other functions that will see the node to have access to a field you can
-    // include it here using the tripal_core_expand_chado_vars() function.  In most
+    // include it here using the chado_expand_var() function.  In most
     // cases it is probably best to let the end-user decide if text fields should
     // be included by using this function in the templates.
-    //$example = tripal_core_expand_chado_vars($example, 'field', 'example.residues');
+    //$example = chado_expand_var($example, 'field', 'example.residues');
 
     // add the new example object to this node.
     //$nodes[$nid]->example = $example;

@@ -22,7 +22,7 @@ function tripal_contact_preprocess_tripal_contact_relationships(&$variables) {
       ),
     ),
   );
-  $contact = tripal_core_expand_chado_vars($contact, 'table', 'contact_relationship', $options);
+  $contact = chado_expand_var($contact, 'table', 'contact_relationship', $options);
 
   // get the subject relationships
   $srelationships = $contact->contact_relationship->subject_id;

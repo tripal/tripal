@@ -232,7 +232,7 @@ function tripal_pub_import_publications_by_import_id($import_id, $job_id = NULL)
       print "Syncing contacts with Drupal...\n";
       tripal_contact_sync_contacts();
     }
-    tripal_job_set_progress($job_id, '100');
+    tripal_set_job_progress($job_id, '100');
   }
   catch (Exception $e) {
     print "\n"; // make sure we start errors on new line
@@ -466,7 +466,7 @@ function tripal_pub_add_pub_dbxref($pub_id, $pub_dbxref) {
     'pub_id' => $pub_id,
   );
   $options = array('statement_name' => 'sel_pubdbxref_dbpu');
-  $results = tripal_core_chado_select('pub_dbxref', array('*'), $values, $options);
+  $results = chado_select_record('pub_dbxref', array('*'), $values, $options);
 
   // if the pub_dbxref record  exist then we don't need to re-add it.
   if(count($results) > 0) {
@@ -482,7 +482,7 @@ function tripal_pub_add_pub_dbxref($pub_id, $pub_dbxref) {
     'db_id' => $db->db_id,
   );
   $dbxoptions = array('statement_name' => 'sel_dbxref_acdb');
-  $results = tripal_core_chado_select('dbxref', array('dbxref_id'), $dbxvalues, $dbxoptions);
+  $results = chado_select_record('dbxref', array('dbxref_id'), $dbxvalues, $dbxoptions);
   // if the accession doesn't exist then add it
   if(count($results) == 0){
     $dbxref = tripal_db_add_dbxref($db->db_id, $accession);
@@ -493,9 +493,9 @@ function tripal_pub_add_pub_dbxref($pub_id, $pub_dbxref) {
 
   // now add the record
   $options = array('statement_name' => 'ins_pubdbxref_dbpu');
-  $results = tripal_core_chado_insert('pub_dbxref', $values, $options);
+  $results = chado_insert_record('pub_dbxref', $values, $options);
   if (!$results) {
-    tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "Cannot add publication dbxref: %db:%accession.",
+    tripal_report_error('tripal_pub', TRIPAL_ERROR, "Cannot add publication dbxref: %db:%accession.",
     array('%db' => $dbname, '%accession' => $accession));
     return FALSE;
   }
@@ -535,7 +535,7 @@ function tripal_pub_get_pubs_by_dbxref($pub_dbxref) {
     ),
     );
     $options = array('statement_name' => 'sel_pubdbxref_db');
-    $results = tripal_core_chado_select('pub_dbxref', array('pub_id'), $values, $options);
+    $results = chado_select_record('pub_dbxref', array('pub_id'), $values, $options);
     foreach ($results as $index => $pub) {
       $return[] = $pub->pub_id;
     }
@@ -593,7 +593,7 @@ function tripal_pub_get_pubs_by_title_type_pyear_series($title, $type = NULL, $p
     'statement_name' => 'sel_pub_' . $stmnt_suffix,
     'case_insensitive_columns' => array('title', 'series_name'),
   );
-  $results = tripal_core_chado_select('pub', array('pub_id'), $values, $options);
+  $results = chado_select_record('pub', array('pub_id'), $values, $options);
 
   // iterate through any matches and pull out the pub_id
   foreach ($results as $index => $pub) {
@@ -634,7 +634,7 @@ function tripal_pub_get_pub_by_uniquename($name) {
     'statement_name' => 'sel_pub_un',
     'case_insensitive_columns' => array('uniquename'),
   );
-  $results = tripal_core_chado_select('pub', array('pub_id'), $values, $options);
+  $results = chado_select_record('pub', array('pub_id'), $values, $options);
 
   // iterate through any matches and pull out the pub_id
   foreach ($results as $index => $pub) {
@@ -692,7 +692,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
       }
     }
     elseif (count($results) > 1) {
-      tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "There are two publications with this accession: %db:%accession. Cannot determine which to update.",
+      tripal_report_error('tripal_pub', TRIPAL_ERROR, "There are two publications with this accession: %db:%accession. Cannot determine which to update.",
       array('%db' => $dbname, '%accession' => $accession));
       $action = 'error';
       return FALSE;
@@ -708,7 +708,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     if (count($results) == 1) {
       $pub_id = $results[0];
       if ($pub_id and !$update_if_exists) {
-        tripal_core_report_error('tripal_pub', TRIPAL_WARNING, "The publication with the same title, type and year already exists. Skipping. ".
+        tripal_report_error('tripal_pub', TRIPAL_WARNING, "The publication with the same title, type and year already exists. Skipping. ".
           " Title: '%title'. Type: '%type'. Year: '%year'",
           array('%title' => $pub_details['Title'], '%type' => $pub_details['Publication Type'], '%year' => $pub_details['Year']));
         $action = 'skipped';
@@ -716,7 +716,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
       }
     }
     elseif (count($results) > 1) {
-      tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "The publication with the same title, type and year is present multiple times. Cannot ".
+      tripal_report_error('tripal_pub', TRIPAL_ERROR, "The publication with the same title, type and year is present multiple times. Cannot ".
         "determine which to use.  Title: '%title'. Type: '%type'. Year: '%year'",
       array('%title' => $pub_details['Title'], '%type' => $pub_details['Publication Type'], '%year' => $pub_details['Year']));
       $action = 'error';
@@ -733,12 +733,12 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     }
   }
   else {
-    tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "The Publication Type is a required property but is missing", array());
+    tripal_report_error('tripal_pub', TRIPAL_ERROR, "The Publication Type is a required property but is missing", array());
     $action = 'error';
     return FALSE;
   }
   if (!$pub_type) {
-    tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "Cannot find publication type: '%type'",
+    tripal_report_error('tripal_pub', TRIPAL_ERROR, "Cannot find publication type: '%type'",
     array('%type' => $pub_details['Publication Type'][0]));
     $action = 'error';
     return FALSE;
@@ -759,9 +759,9 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   // if there is no pub_id then we need to do an insert.
   if (!$pub_id) {
     $options = array('statement_name' => 'ins_pub_tivoseispypaunty');
-    $pub = tripal_core_chado_insert('pub', $values, $options);
+    $pub = chado_insert_record('pub', $values, $options);
     if (!$pub) {
-      tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "Cannot insert the publication with title: %title",
+      tripal_report_error('tripal_pub', TRIPAL_ERROR, "Cannot insert the publication with title: %title",
       array('%title' => $pub_details['Title']));
       $action = 'error';
       return FALSE;
@@ -774,9 +774,9 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   if ($pub_id and $update_if_exists) {
     $match = array('pub_id' => $pub_id);
     $options = array('statement_name' => 'up_pub_tivoseispypaunty');
-    $success = tripal_core_chado_update('pub', $match, $values, $options);
+    $success = chado_update_record('pub', $match, $values, $options);
     if (!$success) {
-      tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "Cannot update the publication with title: %title",
+      tripal_report_error('tripal_pub', TRIPAL_ERROR, "Cannot update the publication with title: %title",
       array('%title' => $pub_details['Title']));
       $action = 'error';
       return FALSE;
@@ -812,7 +812,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
       $cvterm = tripal_cv_get_cvterm_by_synonym($key, NULL, 'tripal_pub');
     }
     if (!$cvterm) {
-      tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "Cannot find term: '%prop'. Skipping.", array('%prop' => $key));
+      tripal_report_error('tripal_pub', TRIPAL_ERROR, "Cannot find term: '%prop'. Skipping.", array('%prop' => $key));
       continue;
     }
 
@@ -832,18 +832,18 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
         // if the key is an integer then this array is a simple list and
         // we will insert using the primary key. Otheriwse, use the new key
         if(is_int($subkey)) {
-          $success = tripal_core_insert_property('pub', $pub_id, $key, 'tripal_pub', $subvalue, FALSE);
+          $success = chado_insert_property('pub', $pub_id, $key, 'tripal_pub', $subvalue, FALSE);
         }
         else {
-          $success = tripal_core_insert_property('pub', $pub_id, $subkey, 'tripal_pub', $subvalue, FALSE);
+          $success = chado_insert_property('pub', $pub_id, $subkey, 'tripal_pub', $subvalue, FALSE);
         }
       }
     }
     else {
-      $success = tripal_core_insert_property('pub', $pub_id, $key, 'tripal_pub', $value, TRUE);
+      $success = chado_insert_property('pub', $pub_id, $key, 'tripal_pub', $value, TRUE);
     }
     if (!$success) {
-      tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "Cannot add property '%prop' to publication. Skipping.",
+      tripal_report_error('tripal_pub', TRIPAL_ERROR, "Cannot add property '%prop' to publication. Skipping.",
       array('%prop' => $key));
       continue;
     }
@@ -899,7 +899,7 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
       'suffix' => $author['Suffix'],
     );
     $options = array('statement_name' => 'ins_pubauthor_idrasugisu');
-    $pubauthor = tripal_core_chado_insert('pubauthor', $values, $options);
+    $pubauthor = chado_insert_record('pubauthor', $values, $options);
 
     // if the user wants us to create a contact for each author then do it.
     if ($do_contact) {
@@ -916,9 +916,9 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
           'contact_id' => $contact['contact_id'],
         );
         $options = array('statement_name' => 'ins_pubauthorcontact_puco');
-        $pubauthor_contact = tripal_core_chado_insert('pubauthor_contact', $values, $options);
+        $pubauthor_contact = chado_insert_record('pubauthor_contact', $values, $options);
         if (!$pubauthor_contact) {
-          tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "Cannot link pub authro and contact.", array());
+          tripal_report_error('tripal_pub', TRIPAL_ERROR, "Cannot link pub authro and contact.", array());
         }
       }
     }
@@ -940,7 +940,7 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
  * @ingroup tripal_pub_api
  */
 function tripal_pub_get_property($pub_id, $property) {
-  return tripal_core_get_property('pub', $pub_id, $property, 'tripal_pub');
+  return chado_get_property('pub', $pub_id, $property, 'tripal_pub');
 }
 
 /**
@@ -961,7 +961,7 @@ function tripal_pub_get_property($pub_id, $property) {
  * @ingroup tripal_pub_api
  */
 function tripal_pub_insert_property($pub_id, $property, $value, $update_if_present = 0) {
-  return tripal_core_insert_property('pub', $pub_id, $property, 'tripal_pub', $value, $update_if_present);
+  return chado_insert_property('pub', $pub_id, $property, 'tripal_pub', $value, $update_if_present);
 }
 
 /**
@@ -985,7 +985,7 @@ function tripal_pub_insert_property($pub_id, $property, $value, $update_if_prese
  * @ingroup tripal_pub_api
  */
 function tripal_pub_update_property($pub_id, $property, $value, $insert_if_missing = 0) {
-  return tripal_core_update_property('pub', $pub_id, $property, 'tripal_pub', $value, $insert_if_missing);
+  return chado_update_property('pub', $pub_id, $property, 'tripal_pub', $value, $insert_if_missing);
 }
 /**
  * Delete a given property
@@ -1004,7 +1004,7 @@ function tripal_pub_update_property($pub_id, $property, $value, $insert_if_missi
  * @ingroup tripal_pub_api
  */
 function tripal_pub_delete_property($pub_id, $property) {
-  return tripal_core_delete_property('pub', $pub_id, $property, 'tripal_pub');
+  return chado_delete_property('pub', $pub_id, $property, 'tripal_pub');
 }
 
 
@@ -1034,12 +1034,12 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
   // get the publication
   // ---------------------------------
   $values = array('pub_id' => $pub_id);
-  $pub = tripal_core_generate_chado_var('pub', $values);
+  $pub = chado_generate_var('pub', $values);
 
   // expand the title
-  $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.title');
-  $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.volumetitle');
-  $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.uniquename');
+  $pub = chado_expand_var($pub, 'field', 'pub.title');
+  $pub = chado_expand_var($pub, 'field', 'pub.volumetitle');
+  $pub = chado_expand_var($pub, 'field', 'pub.uniquename');
   $pub_array = array();
   if (trim($pub->title)) {
     $pub_array['Title'] = $pub->title;
@@ -1079,11 +1079,11 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
       'name' => 'Citation',
     ),
   );
-  $citation = tripal_core_generate_chado_var('pubprop', $values);
+  $citation = chado_generate_var('pubprop', $values);
   if ($citation) {
-    $citation = tripal_core_expand_chado_vars($citation, 'field', 'pubprop.value', $options);
+    $citation = chado_expand_var($citation, 'field', 'pubprop.value', $options);
     if (count($citation) > 1) {
-      tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "Publication has multiple citations already: %pub_id",
+      tripal_report_error('tripal_pub', TRIPAL_ERROR, "Publication has multiple citations already: %pub_id",
       array('%pub_id' => $pubid));
       return FALSE;
     }
@@ -1102,9 +1102,9 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
       'name' => 'Publication Type',
     ),
   );
-  $ptypes = tripal_core_generate_chado_var('pubprop', $values, $options);
+  $ptypes = chado_generate_var('pubprop', $values, $options);
   if ($ptypes) {
-    $ptypes = tripal_core_expand_chado_vars($ptypes, 'field', 'pubprop.value', $options);
+    $ptypes = chado_expand_var($ptypes, 'field', 'pubprop.value', $options);
     foreach ($ptypes as $ptype) {
      $pub_array['Publication Type'][] = $ptype->value;
     }
@@ -1119,10 +1119,10 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
       'name' => 'Authors',
     ),
   );
-  $authors = tripal_core_generate_chado_var('pubprop', $values);
-  $authors = tripal_core_expand_chado_vars($authors, 'field', 'pubprop.value', $options);
+  $authors = chado_generate_var('pubprop', $values);
+  $authors = chado_expand_var($authors, 'field', 'pubprop.value', $options);
   if (count($authors) > 1) {
-   tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "Publication has multiple author lists. It should have only one list: %pub_id",
+   tripal_report_error('tripal_pub', TRIPAL_ERROR, "Publication has multiple author lists. It should have only one list: %pub_id",
    array('%pub_id' => $pubid));
    return FALSE;
   }
@@ -1261,7 +1261,7 @@ function tripal_pub_create_citation($pub) {
       }
     }
     if (!$pub_type) {
-      tripal_core_report_error('tripal_pub', TRIPAL_ERROR, "Cannot generate citation for publication type: %types",
+      tripal_report_error('tripal_pub', TRIPAL_ERROR, "Cannot generate citation for publication type: %types",
         array('%types' => print_r($pub['Publication Type'], TRUE)));
       return FALSE;
     }

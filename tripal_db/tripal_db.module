@@ -132,14 +132,14 @@ function tripal_db_views_api() {
  *
  * @ingroup tripal_db
  */
-function tripal_db_theme() {
-  $theme_path = drupal_get_path('module', 'tripal_db') . '/theme';
-  $items = array(
-    'tripal_db_admin' => array(
-      'template' => 'tripal_db_admin',
-      'arguments' =>  array(NULL),
-      'path' => $theme_path,
-    ),
+function tripal_db_theme($existing, $type, $theme, $path) {
+ 
+ $items = array(
+    'tripal_db_help' => array(
+      'template' => 'tripal_db_help',
+      'variables' =>  array(NULL),
+      'path' => "$path/theme/"
+    )
   );
   return $items;
 }

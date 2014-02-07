@@ -226,7 +226,7 @@ function tripal_organism_job_describe_args($callback, $args) {
 
   $new_args = array();
   if ($callback == 'tripal_organism_sync_organisms') {
-    $organism = tripal_core_chado_select('organism', array('genus', 'species'), array('organism_id' => $args[0]));
+    $organism = chado_select_record('organism', array('genus', 'species'), array('organism_id' => $args[0]));
     $new_args['Organism'] = $organism[0]->genus . " " . $organism[0]->species;
   }
   return $new_args;

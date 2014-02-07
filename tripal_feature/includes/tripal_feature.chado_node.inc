@@ -71,7 +71,7 @@ function chado_feature_form($node, &$form_state) {
   // if we are editing an existing node then the feature is already part of the node
   if (property_exists($node, 'feature')) {
     $feature = $node->feature;
-    $feature = tripal_core_expand_chado_vars($feature, 'field', 'feature.residues');
+    $feature = chado_expand_var($feature, 'field', 'feature.residues');
     $feature_id   = $feature->feature_id;
     $uniquename   = $feature->uniquename;
     $fname        = $feature->name;
@@ -89,7 +89,7 @@ function chado_feature_form($node, &$form_state) {
     // get synonyms from the database if we don't already have them
     if (!$synonyms) {
       $options = array('return_array' => 1);
-      $feature = tripal_core_expand_chado_vars($feature, 'table', 'feature_synonym', $options);
+      $feature = chado_expand_var($feature, 'table', 'feature_synonym', $options);
       $feature_synonyms = (isset($feature->feature_synonym)) ? $feature->feature_synonym : array();
       foreach ($feature_synonyms as $index => $synonym) {
         $synonyms .= $synonym->synonym_id->name . "\n";
@@ -142,7 +142,7 @@ function chado_feature_form($node, &$form_state) {
   );
   // get the sequence ontology CV ID
   $values = array('name' => 'sequence');
-  $cv = tripal_core_chado_select('cv', array('cv_id'), $values);
+  $cv = chado_select_record('cv', array('cv_id'), $values);
   $cv_id = $cv[0]->cv_id;
 
   $form['feature_type'] = array(
@@ -220,7 +220,7 @@ function chado_feature_form($node, &$form_state) {
     'cv_name' => 'feature_property'         // the cv.name of the cv governing featureprop.type_id
   );
   // Adds the form elements to your current form
-  chado_node_properties_form($form, $form_state, $details);
+  chado_add_node_form_properties($form, $form_state, $details);
 
   // ADDITIONAL DBXREFS FORM
   //---------------------------------------------
@@ -230,7 +230,7 @@ function chado_feature_form($node, &$form_state) {
     'base_key_value' => $feature_id       // the value of feature_id for this record
   );
   // Adds the form elements to your current form
-  chado_node_additional_dbxrefs_form($form, $form_state, $details);
+  chado_add_node_form_dbxrefs($form, $form_state, $details);
 
   return $form;
 }
@@ -402,7 +402,7 @@ function chado_feature_insert($node) {
     ),
     'name' => $node->feature_type
   );
-  $type = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
+  $type = chado_select_record('cvterm', array('cvterm_id'), $values);
 
   $feature_id = '';
 
@@ -420,10 +420,10 @@ function chado_feature_insert($node) {
       'type_id' => $type[0]->cvterm_id,
       'md5checksum' => md5($residues)
     );
-    $feature = tripal_core_chado_insert('feature', $values);
+    $feature = chado_insert_record('feature', $values);
     if (!$feature) {
       drupal_set_message(t('Unable to add feature.'), 'warning');
-      tripal_core_report_error('tripal_feature', TRIPAL_WARNING, 'Insert feature: Unable to create feature where values: %values',
+      tripal_report_error('tripal_feature', TRIPAL_WARNING, 'Insert feature: Unable to create feature where values: %values',
       array('%values' => print_r($values, TRUE)));
       return;
     }
@@ -439,7 +439,7 @@ function chado_feature_insert($node) {
       'foreignkey_name' => 'feature_id',   // the name of the key in your base table
       'foreignkey_value' => $feature_id    // the value of the feature_id key
     );
-    chado_node_properties_form_update_properties($node, $details);
+    chado_update_node_form_properties($node, $details);
 
     // * Additional DBxrefs Form *
     $details = array(
@@ -447,7 +447,7 @@ function chado_feature_insert($node) {
       'foreignkey_name' => 'feature_id',     // the name of the key in your base table
       'foreignkey_value' => $feature_id      // the value of the feature_id key
     );
-    chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
+    chado_update_node_form_dbxrefs($node, $details);
 
   }
   else {
@@ -456,7 +456,7 @@ function chado_feature_insert($node) {
 
   // Make sure the entry for this feature doesn't already exist in the
   // chado_feature table if it doesn't exist then we want to add it.
-  $check_org_id = chado_get_id_for_node('feature', $node->nid);
+  $check_org_id = chado_get_id_from_nid('feature', $node->nid);
   if (!$check_org_id) {
     $record = new stdClass();
     $record->nid = $node->nid;
@@ -492,9 +492,9 @@ function chado_feature_update($node) {
     ),
     'name' => $node->feature_type
   );
-  $type = tripal_core_chado_select('cvterm', array('cvterm_id'), $values);
+  $type = chado_select_record('cvterm', array('cvterm_id'), $values);
 
-  $feature_id = chado_get_id_for_node('feature', $node->nid) ;
+  $feature_id = chado_get_id_from_nid('feature', $node->nid) ;
 
   if (sizeof($type) > 0) {
     $match = array(
@@ -511,7 +511,7 @@ function chado_feature_update($node) {
       'md5checksum' => md5($residues)
     );
     $options = array('return_record' => TRUE);
-    $status = tripal_core_chado_update('feature', $match, $values, $options);
+    $status = chado_update_record('feature', $match, $values, $options);
 
     // add the genbank synonyms
     chado_feature_add_synonyms($node->synonyms, $feature_id);
@@ -523,7 +523,7 @@ function chado_feature_update($node) {
       'foreignkey_name' => 'feature_id',   // the name of the key in your base table
       'foreignkey_value' => $feature_id    // the value of the feature_id key
     );
-    chado_node_properties_form_update_properties($node, $details);
+    chado_update_node_form_properties($node, $details);
 
     // * Additional DBxrefs Form *
     $details = array(
@@ -531,12 +531,12 @@ function chado_feature_update($node) {
       'foreignkey_name' => 'feature_id',     // the name of the key in your base table
       'foreignkey_value' => $feature_id      // the value of the feature_id key
     );
-    chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
+    chado_update_node_form_dbxrefs($node, $details);
 
   }
   else {
     drupal_set_message(t('Unable to update feature.'), 'warning');
-    tripal_core_report_error('tripal_feature', TRIPAL_WARNING,
+    tripal_report_error('tripal_feature', TRIPAL_WARNING,
      'Update feature: Unable to update feature where values: %values',
      array('%values' => print_r($values, TRUE))
     );
@@ -551,7 +551,7 @@ function chado_feature_update($node) {
  */
 function chado_feature_delete($node) {
 
-  $feature_id  = chado_get_id_for_node('feature', $node->nid);
+  $feature_id  = chado_get_id_from_nid('feature', $node->nid);
 
   // if we don't have a library id for this node then this isn't a node of
   // type chado_library or the entry in the chado_library table was lost.
@@ -595,7 +595,7 @@ function chado_feature_add_synonyms($synonyms, $feature_id) {
   // remove any old synonyms
   $feature_syn_dsql = "DELETE FROM {feature_synonym} WHERE feature_id = :feature_id";
   if (!chado_query($feature_syn_dsql, array(':feature_id' => $feature_id))) {
-    tripal_core_report_error('tripal_feature', TRIPAL_ERROR, "Could not remove synonyms from feature. ", array());
+    tripal_report_error('tripal_feature', TRIPAL_ERROR, "Could not remove synonyms from feature. ", array());
     return;
   }
 
@@ -626,7 +626,7 @@ function chado_feature_add_synonyms($synonyms, $feature_id) {
           )
       ";
       if (!chado_query($synonym_isql, array(':name' => $syn, ':synonym_sgml' => $syn))) {
-        tripal_core_report_error('tripal_feature', "Could not add synonym. ", array(), TRIPAL_WARNING);
+        tripal_report_error('tripal_feature', "Could not add synonym. ", array(), TRIPAL_WARNING);
         return;
       }
       // now get the synonym we just added
@@ -640,7 +640,7 @@ function chado_feature_add_synonyms($synonyms, $feature_id) {
       VALUES (:synonym_id, :feature_id, :pub_id)";
     $args = array(':synonym_id' => $synonym->synonym_id, ':feature_id' => $feature_id, ':pub_id'=> 1);
     if (!chado_query($feature_syn_isql, $args)) {
-      tripal_core_report_error('tripal_feature', "Could not associate synonym with feature. ", array(), TRIPAL_WARNING);
+      tripal_report_error('tripal_feature', "Could not associate synonym with feature. ", array(), TRIPAL_WARNING);
       return;
     }
   }
@@ -656,11 +656,11 @@ function chado_feature_load($nodes) {
 
   foreach ($nodes as $nid => $node) {
     // find the feature and add in the details
-    $feature_id = chado_get_id_for_node('feature', $nid);
+    $feature_id = chado_get_id_from_nid('feature', $nid);
 
     // build the feature variable
     $values = array('feature_id' => $feature_id);
-    $feature = tripal_core_generate_chado_var('feature', $values);
+    $feature = chado_generate_var('feature', $values);
     $nodes[$nid]->feature = $feature;
 
     // by default, the titles are saved using the unique constraint.  We will
@@ -714,12 +714,12 @@ function tripal_feature_node_presave($node) {
         $uname       = $node->feature->uniquename;
         $type_id     = $node->feature->type_id;
         $values = array('cvterm_id' => $type_id);
-        $ftype = tripal_core_chado_select('cv', array('name'), $values);
+        $ftype = chado_select_record('cv', array('name'), $values);
         $type = $ftype[0]->name;
       }
      
       $values = array('organism_id' => $organism_id);
-      $organism = tripal_core_chado_select('organism', array('genus', 'species'), $values);
+      $organism = chado_select_record('organism', array('genus', 'species'), $values);
       $node->title = "$name, $uname ($type) " . $organism[0]->genus . ' ' . $organism[0]->species;
       
       if ($name == $uname) {
@@ -779,18 +779,18 @@ function tripal_feature_get_feature_url($node, $url_alias = NULL) {
 
   // get the feature
   $values = array('feature_id' => $node->feature_id);
-  $feature = tripal_core_chado_select('feature', array('*'), $values);
+  $feature = chado_select_record('feature', array('*'), $values);
   if (!$feature) {
-    tripal_core_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find feature when setting URL alias for feature: %id", array('%id' => $node->feature_id));
+    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find feature when setting URL alias for feature: %id", array('%id' => $node->feature_id));
     return FALSE;
   }
   $feature = (object) $feature[0];
 
   // get the organism
   $values = array('organism_id' => $feature->organism_id);
-  $organism  = tripal_core_chado_select('organism', array('*'), $values);
+  $organism  = chado_select_record('organism', array('*'), $values);
   if (!$organism) {
-    tripal_core_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find organism when setting URL alias for feature: %id", array('%id' => $node->feature_id));
+    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find organism when setting URL alias for feature: %id", array('%id' => $node->feature_id));
     return FALSE;
   }
   $genus = preg_replace('/\s/', '_', strtolower($organism[0]->genus));
@@ -798,9 +798,9 @@ function tripal_feature_get_feature_url($node, $url_alias = NULL) {
 
   // get the type
   $values = array('cvterm_id' => $feature->type_id);
-  $cvterm = tripal_core_chado_select('cvterm', array('name'), $values);
+  $cvterm = chado_select_record('cvterm', array('name'), $values);
   if (!$cvterm) {
-    tripal_core_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find type when setting URL alias for feature: %id", array('%id' => $node->feature_id));
+    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find type when setting URL alias for feature: %id", array('%id' => $node->feature_id));
     return FALSE;
   }
   $type = preg_replace('/\s/', '_', $cvterm[0]->name);
@@ -816,7 +816,7 @@ function tripal_feature_get_feature_url($node, $url_alias = NULL) {
   // the dst field of the url_alias table is only 128 characters long.
   // if this is the case then simply return the node URL, we can't set this one
   if (strlen($url_alias) > 128) {
-    tripal_core_report_error('trp-seturl', TRIPAL_ERROR, "Cannot set alias longer than 128 characters: %alias.", array('%alias' => $url_alias));
+    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot set alias longer than 128 characters: %alias.", array('%alias' => $url_alias));
     return "node/" . $node->nid;
   }
 

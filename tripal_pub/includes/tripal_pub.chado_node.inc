@@ -65,9 +65,9 @@ function chado_pub_form($node, $form_state) {
   // if we are editing an existing node then the pub is already part of the node
   if (property_exists($node, 'pub')) {
     $pub = $node->pub;
-    $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.title');
-    $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.volumetitle');
-    $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.uniquename');
+    $pub = chado_expand_var($pub, 'field', 'pub.title');
+    $pub = chado_expand_var($pub, 'field', 'pub.volumetitle');
+    $pub = chado_expand_var($pub, 'field', 'pub.uniquename');
     $pub_id = $pub->pub_id;
 
     $title       = $pub->title;
@@ -252,17 +252,17 @@ function chado_pub_form($node, $form_state) {
     'cv_name' => 'tripal_pub',
     'select_options' => $select_options,
   );
-  chado_node_properties_form($form, $form_state, $details);
+  chado_add_node_form_properties($form, $form_state, $details);
 
   // RELATIONSHIPS FORM
   //---------------------------------------------
   // We want to use the contact_relationship_types cv if there are any terms available
   // and if not, to default to the relationship ontology
-  $cv_result = tripal_core_chado_select('cv',array('cv_id'),array('name' => 'pub_relationship_types'));
+  $cv_result = chado_select_record('cv',array('cv_id'),array('name' => 'pub_relationship_types'));
   $cv_id = $cv_result[0]->cv_id;
   $select_options = tripal_cv_get_cvterm_options($cv_id);
   if (empty($select_options)) {
-    $cv_result = tripal_core_chado_select('cv',array('cv_id'),array('name' => 'relationship'));
+    $cv_result = chado_select_record('cv',array('cv_id'),array('name' => 'relationship'));
     $cv_id = $cv_result[0]->cv_id;
     $select_options = tripal_cv_get_cvterm_options($cv_id);
   }
@@ -279,7 +279,7 @@ function chado_pub_form($node, $form_state) {
     'select_options' => $select_options
   );
   // Adds the form elements to your current form
-  chado_node_relationships_form($form, $form_state, $details);
+  chado_add_node_form_relationships($form, $form_state, $details);
 
   // ADDITIONAL DBXREFS FORM
   //---------------------------------------------
@@ -289,7 +289,7 @@ function chado_pub_form($node, $form_state) {
     'base_key_value' => $pub_id       // the value of pub_id for this record
   );
   // Adds the form elements to your current form
-  chado_node_additional_dbxrefs_form($form, $form_state, $details);
+  chado_add_node_form_dbxrefs($form, $form_state, $details);
 
   return $form;
 
@@ -328,7 +328,7 @@ function chado_pub_validate($node, $form, &$form_state) {
   // get the type of publication
   $values = array('cvterm_id' => $type_id);
   $options = array('statement_name' => 'sel_pub_ty');
-  $cvterm = tripal_core_chado_select('cvterm', array('name'), $values, $options);
+  $cvterm = chado_select_record('cvterm', array('name'), $values, $options);
   if (count($cvterm) == 0) {
     $message = t('Invalid publication type.');
     form_set_error('type_id', $message);
@@ -391,7 +391,7 @@ function chado_pub_validate($node, $form, &$form_state) {
     $values = array('pub_id' => $pub_id);
     $columns = array('title', 'pyear', 'type_id', 'series_name');
     $options = array('statement_name' => 'sel_pub_id');
-    $pub = tripal_core_chado_select('pub', $columns, $values, $options);
+    $pub = chado_select_record('pub', $columns, $values, $options);
 
     // if the title, type,  year or series_name have changed then check the pub
     // to see if it is a duplicate of another
@@ -569,7 +569,7 @@ function chado_pub_insert($node) {
     $cross_refs = array(); // stores any cross references for this publication
 
     // get the properties from the form
-    $properties = chado_node_properties_form_retreive($node);
+    $properties = chado_retrieve_node_form_properties($node);
 
     // get the list of properties for easy lookup (without doing lots of database queries
     $properties_list = array();
@@ -677,7 +677,7 @@ function chado_pub_insert($node) {
       'publisher'   => substr($publisher, 0, 255),
       'pubplace'    => substr($pubplace, 0, 255),
     );
-    $pub = tripal_core_chado_insert('pub', $values);
+    $pub = chado_insert_record('pub', $values);
     if (!$pub) {
       drupal_set_message("Error inserting publication", "error");
       watchdog('tripal_pub', "Error inserting publication", array(), WATCHDOG_ERROR);
@@ -693,14 +693,14 @@ function chado_pub_insert($node) {
       'foreignkey_name' => 'pub_id',
       'foreignkey_value' => $pub_id
     );
-    chado_node_properties_form_update_properties($node, $details, $properties);
+    chado_update_node_form_properties($node, $details, $properties);
 
     // * Relationships Form *
     $details = array(
       'relationship_table' => 'pub_relationship',  // name of the _relationship table
       'foreignkey_value' => $pub_id                // value of the pub_id key
     );
-    chado_node_relationships_form_update_relationships($node, $details);
+    chado_update_node_form_relationships($node, $details);
 
     // add in any database cross-references
     foreach ($cross_refs as $index => $ref) {
@@ -718,7 +718,7 @@ function chado_pub_insert($node) {
       'foreignkey_name' => 'pub_id',     // the name of the key in your base table
       'foreignkey_value' => $pub_id      // the value of the pub_id key
     );
-    chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
+    chado_update_node_form_dbxrefs($node, $details);
   }
   else {
     $pub_id = $node->pub_id;
@@ -726,7 +726,7 @@ function chado_pub_insert($node) {
 
   // Make sure the entry for this pub doesn't already exist in the
   // chado_pub table if it doesn't exist then we want to add it.
-  $check_org_id = chado_get_id_for_node('pub', $node->nid);
+  $check_org_id = chado_get_id_from_nid('pub', $node->nid);
   if (!$check_org_id) {
     $record = new stdClass();
     $record->nid = $node->nid;
@@ -762,13 +762,13 @@ function chado_pub_update($node) {
   $pub_arr = array();
 
   // get the publication ID for this publication
-  $pub_id = chado_get_id_for_node('pub', $node->nid) ;
+  $pub_id = chado_get_id_from_nid('pub', $node->nid) ;
 
   $properties = array(); // stores all of the properties we need to add
   $cross_refs = array(); // stores any cross references for this publication
 
   // get the properties from the form
-  $properties = chado_node_properties_form_retreive($node);
+  $properties = chado_retrieve_node_form_properties($node);
 
   // get the list of properties for easy lookup (without doing lots of database queries
   $properties_list = array();
@@ -880,7 +880,7 @@ function chado_pub_update($node) {
     'publisher'   => substr($publisher, 0, 255),
     'pubplace'    => substr($pubplace, 0, 255),
   );
-  $status = tripal_core_chado_update('pub', $match, $values);
+  $status = chado_update_record('pub', $match, $values);
   if (!$status) {
     drupal_set_message("Error updating publication", "error");
     watchdog('tripal_pub', "Error updating publication", array(), WATCHDOG_ERROR);
@@ -895,17 +895,17 @@ function chado_pub_update($node) {
     'foreignkey_name' => 'pub_id',
     'foreignkey_value' => $pub_id
   );
-  chado_node_properties_form_update_properties($node, $details, $properties);
+  chado_update_node_form_properties($node, $details, $properties);
 
   // * Relationships Form *
   $details = array(
     'relationship_table' => 'pub_relationship',  // name of the _relationship table
     'foreignkey_value' => $pub_id                // value of the pub_id key
   );
-  chado_node_relationships_form_update_relationships($node, $details);
+  chado_update_node_form_relationships($node, $details);
 
   // add in any database cross-references after first removing
-  tripal_core_chado_delete('pub_dbxref', array('pub_id' => $pub_id));
+  chado_delete_record('pub_dbxref', array('pub_id' => $pub_id));
   foreach ($cross_refs as $index => $ref) {
     $pub_dbxref = tripal_pub_add_pub_dbxref($pub_id, trim($ref));
     if (!$pub_dbxref) {
@@ -921,7 +921,7 @@ function chado_pub_update($node) {
     'foreignkey_name' => 'pub_id',     // the name of the key in your base table
     'foreignkey_value' => $pub_id      // the value of the pub_id key
   );
-  chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details);
+  chado_update_node_form_dbxrefs($node, $details);
 }
 
 
@@ -940,17 +940,17 @@ function chado_pub_load($nodes) {
 
   foreach ($nodes as $nid => $node) {
     // find the pub and add in the details
-    $pub_id = chado_get_id_for_node('pub', $nid);
+    $pub_id = chado_get_id_from_nid('pub', $nid);
 
     // get the pub
     $values = array('pub_id' => $pub_id);
-    $pub = tripal_core_generate_chado_var('pub', $values);
+    $pub = chado_generate_var('pub', $values);
 
     // expand the 'text' fields as those aren't included by default
     // and they really shouldn't be so large to cause problems
-    $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.title');
-    $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.volumetitle');
-    $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.uniquename');
+    $pub = chado_expand_var($pub, 'field', 'pub.title');
+    $pub = chado_expand_var($pub, 'field', 'pub.volumetitle');
+    $pub = chado_expand_var($pub, 'field', 'pub.uniquename');
 
     // set the URL path
     $nodes[$nid]->path = "pub/$pub_id";
@@ -971,7 +971,7 @@ function chado_pub_load($nodes) {
  */
 function chado_pub_delete(&$node) {
 
-  $pub_id = chado_get_id_for_node('pub', $node->nid);
+  $pub_id = chado_get_id_from_nid('pub', $node->nid);
 
   // if we don't have a pub id for this node then this isn't a node of
   // type chado_pub or the entry in the chado_pub table was lost.
@@ -1076,7 +1076,7 @@ function tripal_pub_node_insert($node) {
   // so the nodeapi function ensures that the URL path is set after insert or update
   // of the node and when the node is loaded if it hasn't yet been set.
   if ($node->type == 'chado_pub') {
-    $pub_id = chado_get_id_for_node('pub', $node->nid);
+    $pub_id = chado_get_id_from_nid('pub', $node->nid);
     tripal_pub_set_pub_url($node, $pub_id);
   }
 }
@@ -1096,7 +1096,7 @@ function tripal_pub_node_load($nodes, $types) {
   if (count(array_intersect(array('chado_pub'), $types))) {
     foreach ($nodes as $nid => $node) {
       if ($node->type == 'chado_pub' and !property_exists($node, 'path')) {
-        $pub_id = chado_get_id_for_node('pub', $node->nid);
+        $pub_id = chado_get_id_from_nid('pub', $node->nid);
         $path = tripal_pub_set_pub_url($node, $pub_id);
       }
     }
@@ -1114,7 +1114,7 @@ function tripal_pub_node_update($node) {
   // so the nodeapi function ensures that the URL path is set after insert or update
   // of the node and when the node is loaded if it hasn't yet been set.
   if ($node->type == 'chado_pub') {
-    $pub_id = chado_get_id_for_node('pub', $node->nid);
+    $pub_id = chado_get_id_from_nid('pub', $node->nid);
     tripal_pub_set_pub_url($node, $pub_id);
   }
 }

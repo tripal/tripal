@@ -289,7 +289,7 @@ function tripal_views_integration_add_entry($defn_array) {
   $no_errors = TRUE;
 
   if (empty($defn_array['table'])) {
-    tripal_core_report_error('tripal_views', TRIPAL_WARNING, 'Recieved integration with no tablename: %defn', array('%defn' => print_r($defn_array,TRUE)));
+    tripal_report_error('tripal_views', TRIPAL_WARNING, 'Recieved integration with no tablename: %defn', array('%defn' => print_r($defn_array,TRUE)));
     $no_errors = FALSE;
     return $no_errors;
   }
@@ -590,7 +590,7 @@ function tripal_views_integration_remove_entry_by_setup_id($setup_id) {
  */
 function tripal_views_integrate_all_chado_tables() {
 
-  $tables = tripal_core_get_chado_tables(TRUE);
+  $tables = chado_get_table_names(TRUE);
 
   $base_tables = array(
     'acquisition', 'analysis', 'assay', 'biomaterial', 'contact', 'cv', 'cvterm',
@@ -631,7 +631,7 @@ function tripal_views_integrate_all_chado_tables() {
 function tripal_views_get_integration_array_for_chado_table($table_name, $base_table = TRUE, $priority = 9) {
 
   // Get the schema for this table (via the chado schema api)
-  $schema = tripal_core_get_chado_table_schema($table_name);
+  $schema = chado_get_schema($table_name);
 
   // Base definition array
   $defn_array = array(
@@ -645,7 +645,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
   );
   // Add fields
   if (!isset($schema['fields'])) {
-    tripal_core_report_error('tripal_views', TRIPAL_NOTICE, 
+    tripal_report_error('tripal_views', TRIPAL_NOTICE, 
       'There are no fields defined for %table in the Chado Schema API.', array('%table' => $table_name));
     return FALSE;
   }
@@ -781,7 +781,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
     foreach ($schema['referring_tables'] as $referring_table) {
 
       // D7 @todo: fix referring_tables in schema to list the keys like foreign keys does
-      $referring_schema = tripal_core_get_chado_table_schema($referring_table);
+      $referring_schema = chado_get_schema($referring_table);
       $referring_schema_fk_columns = $referring_schema['foreign keys'][$table_name]['columns'];
       foreach ($referring_schema_fk_columns as $left_field => $right_field) {
         $defn_array['fields'][$right_field]['joins'][ $referring_table ] = array(
@@ -842,7 +842,7 @@ function tripal_views_clone_integration($table_name, $new_priority = NULL, $temp
   $setup_id = $setup_id->fetchObject();
 
   if (empty($setup_id)) {
-    tripal_core_report_error('tripal_views', TRIPAL_ERROR, 'Unable to clone the setup for %table in order to add the following field to the integration: %field.',
+    tripal_report_error('tripal_views', TRIPAL_ERROR, 'Unable to clone the setup for %table in order to add the following field to the integration: %field.',
       array('%table' => $table_name, '%field' => print_r($field_array,TRUE)));
     return FALSE;
   }

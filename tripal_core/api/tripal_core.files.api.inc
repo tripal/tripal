@@ -12,9 +12,8 @@
 /**
  * This function is typically used in the '.install' file for a Tripal module
  * Each module should call this function during installation to create
- * the module data directory which is sites/default/files/tripal/[module_name]
- * for default Drupal settings.  This directory can then be used by the module
- * for storing files.
+ * the module data directory which is sites/default/files/tripal/[module_name].
+ * This directory can then be used by the module for storing files.
  *
  * @param $module_name
  *   the name of the module being installed
@@ -36,21 +35,23 @@ function tripal_create_files_dir($module_name, $path = FALSE) {
       tripal_report_error('tripal_core', TRIPAL_ERROR, $message, array());
     }
   }
-
-  // make sure the module data directory exists
-  tripal_create_files_dir($module_name);
-
-  // now make sure the sub dir exists
-  $sub_dir = tripal_get_files_dir() . $module_name . $path;
-  if (!file_prepare_directory($sub_dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
-    $message = "Cannot create directory $sub_dir. ";
-    drupal_set_message(check_plain(t($message)), 'error');
-    tripal_report_error('tripal_core', TRIPAL_ERROR, $message, array());
+  else {
+    // make sure the module data directory exists, we make a recursive call
+    // but without the path
+    tripal_create_files_dir($module_name);
+  
+    // now make sure the sub dir exists
+    $sub_dir = tripal_get_files_dir() . $module_name . $path;
+    if (!file_prepare_directory($sub_dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
+      $message = "Cannot create directory $sub_dir. ";
+      drupal_set_message(check_plain(t($message)), 'error');
+      tripal_report_error('tripal_core', TRIPAL_ERROR, $message, array());
+    }
   }
 }
 
 /**
- * Each Tripal module has a unique data directory which was creatd using the
+ * Each Tripal module has a unique data directory which was created using the
  * tripal_create_files_dir function during installation.  This function
  * retrieves the directory path.
  *

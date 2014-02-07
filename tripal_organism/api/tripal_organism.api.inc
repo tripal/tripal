@@ -81,7 +81,7 @@ function tripal_organism_get_image_url($organism, $nid = NULL) {
   // then look for the image with the node ID in the name. If we don't find that then
   // no image tag is generated
   $base_path = realpath('.');
-  $image_dir = tripal_get_moddir('tripal_organism') . "/images";
+  $image_dir = tripal_get_files_dir('tripal_organism') . "/images";
   $image_name =  $organism->genus . "_" . $organism->species . ".jpg";
 
   if (file_exists("$base_path/$image_dir/$image_name")) {

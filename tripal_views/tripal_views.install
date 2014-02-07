@@ -33,7 +33,7 @@ function tripal_views_requirements($phase) {
 function tripal_views_install() {
 
   // create the module's data directory
-  tripal_create_moddir('tripal_views');
+  tripal_create_files_dir('tripal_views');
 
   // we want views to pick up our changes
   views_invalidate_cache();

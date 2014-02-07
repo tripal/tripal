@@ -124,7 +124,7 @@ function tripal_organism_reindex_features($organism_id = NULL, $job_id = NULL) {
   foreach ($ids as $feature_id) {
     // update the job status every 1% features
     if ($job_id and $i % $interval == 0) {
-      tripal_job_set_progress($job_id , intval(($i/$count)*100));
+      tripal_set_job_progress($job_id , intval(($i/$count)*100));
     }
     $i++;
   }
@@ -169,7 +169,7 @@ function tripal_organism_taxonify_features($organism_id = NULL, $job_id = NULL) 
   foreach ($ids as $feature_id) {
     // update the job status every 1% features
     if ($job_id and $i % $interval == 0) {
-      tripal_job_set_progress($job_id, intval(($i/$count)*100));
+      tripal_set_job_progress($job_id, intval(($i/$count)*100));
     }
     $node = db_query($nsql, array(':feature_id' => $feature_id))->fetchObject();
     tripal_feature_set_taxonomy($node, $feature_id);

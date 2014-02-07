@@ -49,7 +49,7 @@ function tripal_contact_requirements($phase) {
 function tripal_contact_install() {
 
   // create the module's data directory
-  tripal_create_moddir('tripal_contact');
+  tripal_create_files_dir('tripal_contact');
 
   // add the contactprop table to Chado
   tripal_contact_add_custom_tables();
@@ -201,7 +201,7 @@ function tripal_contact_add_custom_tables(){
       ),
     ),
   );
-  tripal_core_create_custom_table('contactprop', $schema, TRUE);
+  chado_create_custom_table('contactprop', $schema, TRUE);
 }
 
 /**

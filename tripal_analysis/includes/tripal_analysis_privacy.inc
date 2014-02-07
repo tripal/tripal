@@ -85,7 +85,7 @@ function tripal_analysis_set_feature_permission($analysis_id, $nid) {
   foreach ($feature_nids AS $fnid) {
     if ($idx_iterations % $interval == 0) {
       $percentage = (int) ($idx_iterations / ($counter + 1) * 100);
-      tripal_job_set_progress($job_id, $percentage);
+      tripal_set_job_progress($job_id, $percentage);
       print $percentage . "% ";
     }
 

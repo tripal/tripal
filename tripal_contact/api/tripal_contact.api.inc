@@ -21,7 +21,7 @@
  * @ingroup tripal_contact_api
  */
 function tripal_contact_get_property($contact_id, $property) {
-  return tripal_core_get_property('contact', $contact_id, $property, 'tripal_contact');
+  return chado_get_property('contact', $contact_id, $property, 'tripal_contact');
 }
 
 /**
@@ -42,7 +42,7 @@ function tripal_contact_get_property($contact_id, $property) {
  * @ingroup tripal_contact_api
  */
 function tripal_contact_insert_property($contact_id, $property, $value, $update_if_present = 0) {
-  return tripal_core_insert_property('contact', $contact_id, $property, 'tripal_contact', $value, $update_if_present);
+  return chado_insert_property('contact', $contact_id, $property, 'tripal_contact', $value, $update_if_present);
 }
 
 /**
@@ -66,7 +66,7 @@ function tripal_contact_insert_property($contact_id, $property, $value, $update_
  * @ingroup tripal_contact_api
  */
 function tripal_contact_update_property($contact_id, $property, $value, $insert_if_missing = 0) {
-  return tripal_core_update_property('contact', $contact_id, $property, 'tripal_contact', $value, $insert_if_missing);
+  return chado_update_property('contact', $contact_id, $property, 'tripal_contact', $value, $insert_if_missing);
 }
 /**
  * Delete a given property
@@ -85,7 +85,7 @@ function tripal_contact_update_property($contact_id, $property, $value, $insert_
  * @ingroup tripal_contact_api
  */
 function tripal_contact_delete_property($contact_id, $property) {
-  return tripal_core_delete_property('contact', $contact_id, $property, 'tripal_contact');
+  return chado_delete_property('contact', $contact_id, $property, 'tripal_contact');
 }
 
 /**
@@ -115,12 +115,12 @@ function tripal_contact_add_contact($name, $description, $type, $properties) {
   // check to see if this contact name already exists.
   $values =  array('name' => $name);
   $options = array('statement_name' => 'sel_contact_na');
-  $contact = tripal_core_chado_select('contact', array('contact_id'), $values, $options);
+  $contact = chado_select_record('contact', array('contact_id'), $values, $options);
 
   if (count($contact) == 0) {
     $cvterm = tripal_cv_get_cvterm_by_name($type, NULL, 'tripal_contact');
     if (!$cvterm) {
-      tripal_core_report_error('tripal_contact', TRIPAL_ERROR, "Cannot find contact type '%type'",
+      tripal_report_error('tripal_contact', TRIPAL_ERROR, "Cannot find contact type '%type'",
         array('%type' => $type));
       return FALSE;
     }
@@ -130,9 +130,9 @@ function tripal_contact_add_contact($name, $description, $type, $properties) {
       'type_id' => $cvterm->cvterm_id,
     );
     $options = array('statement_name' => 'ins_contact_nadety');
-    $contact = tripal_core_chado_insert('contact', $values, $options);
+    $contact = chado_insert_record('contact', $values, $options);
     if (!$contact) {
-      tripal_core_report_error('tripal_contact', TRIPAL_ERROR, 'Could not add the contact', array());
+      tripal_report_error('tripal_contact', TRIPAL_ERROR, 'Could not add the contact', array());
       return FALSE;
     }
   }
@@ -150,7 +150,7 @@ function tripal_contact_add_contact($name, $description, $type, $properties) {
   foreach ($properties as $key => $value) {
     $success = tripal_contact_insert_property($contact['contact_id'], $key,$value, TRUE);
     if (!$success) {
-      tripal_core_report_error('tripal_contact', TRIPAL_ERROR,
+      tripal_report_error('tripal_contact', TRIPAL_ERROR,
         "Could not add the contact property '%prop'", array('%prop' => $key));
       return FALSE;
     }
