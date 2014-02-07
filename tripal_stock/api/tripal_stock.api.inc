@@ -53,7 +53,7 @@ function tripal_stock_get_stock_by_stock_id($stock_id) {
 }
 
 /**
- * Purpose: Returns all stocks currently sync'd with drupal
+ * Returns all stocks currently sync'd with drupal
  *
  * @return
  *   An array of node objects keyed by stock_id
@@ -129,7 +129,7 @@ function tripal_stock_get_stocks($values) {
 }
 
 /**
- * Purpose: Retrieve stocks based on associated stock properties
+ * Retrieve stocks based on associated stock properties
  *
  * @param $stockprop_values
  *   An array of column_name => value where column_name is any column in the stockprop table
@@ -194,7 +194,7 @@ function tripal_stock_get_stocks_by_stockprop($stockprop_values, $stock_values) 
 }
 
 /**
- * Purpose: Return all stocks with a given name identifier
+ * Return all stocks with a given name identifier
  *  which might match stock.name, stock.uniquename, dbxref.accession,
  *  stockprop.value where stockprop.type='synonym'
  *
@@ -320,4 +320,3 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
 
   return $stocks;
 }
-
