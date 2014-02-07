@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Contains function relating to drush-integration of this module.
@@ -10,6 +9,8 @@
  *
  * @return
  *   The first line of description when executing the help for a given command
+ *
+ * @ingroup tripal_drush
  */
 function tripal_feature_drush_help($command) {
   switch ($command) {
@@ -23,6 +24,8 @@ function tripal_feature_drush_help($command) {
  *
  * @return
  *   And array of command descriptions
+ *
+ * @ingroup tripal_drush
  */
 function tripal_feature_drush_command() {
   $items = array();
@@ -63,16 +66,16 @@ function tripal_feature_drush_command() {
 }
 
 /**
- * Executes jobs in the Tripal Jobs Queue
+ * Retrieves the sequence of the indicated features
  *
- * NOTE: The following code is executed when drush 'trpjob-run' or 'drush tripal-launch-jobs' is called
+ * @ingroup tripal_drush
  */
 function drush_tripal_feature_tripal_get_sequence() {
 
-  $org_commonname = drush_get_option('org');  
+  $org_commonname = drush_get_option('org');
   $genus = drush_get_option('genus');
   $species = drush_get_option('species');
-  $analysis_name = drush_get_option('analysis');  
+  $analysis_name = drush_get_option('analysis');
   $type = drush_get_option('type');
   $feature_name = drush_get_option('name');
   $upstream = drush_get_option('up');
@@ -88,15 +91,18 @@ function drush_tripal_feature_tripal_get_sequence() {
     print "Please specify both 'relationship' and a 'rel_part' arguments. Both must be used together\n";
     return;
   }
-    
-  tripal_feature_seq_extract_get_features($org_commonname, $genus, $species, $analysis_name, 
-    $type, $feature_name, $upstream, $downstream, $output_format, $derive_from_parent, 
+
+  tripal_feature_seq_extract_get_features($org_commonname, $genus, $species, $analysis_name,
+    $type, $feature_name, $upstream, $downstream, $output_format, $derive_from_parent,
     $aggregate, $child, $relationship, $rel_part);
 }
-/*
- * 
+
+/**
+ * Sync Chado Features with Drupal (ie: create nodes)
+ *
+ * @ingroup tripal_drush
  */
 function drush_tripal_feature_sync() {
-  $feature_id = drush_get_option('id');  
+  $feature_id = drush_get_option('id');
   tripal_feature_sync_feature($feature_id);
 }

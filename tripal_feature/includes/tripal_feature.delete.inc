@@ -1,9 +1,14 @@
 <?php
 /**
  * @file
- * @todo Add file header description
+ * Administration Interface for deleting multiple features
  */
 
+/**
+ * A form for indicating the features to delete
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_delete_form() {
   // get the list of organisms
   $sql = "SELECT * FROM {organism} ORDER BY genus, species";
@@ -69,6 +74,11 @@ function tripal_feature_delete_form() {
   return $form;
 }
 
+/**
+ * Validation for the delete features form
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_delete_form_validate($form, &$form_state) {
   $organism_id   = $form_state['values']['organism_id'];
   $seq_type      = trim($form_state['values']['seq_type']);
@@ -89,7 +99,7 @@ function tripal_feature_delete_form_validate($form, &$form_state) {
         LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
       WHERE cv.name = :cvname and (CVT.name = :name or CVTS.synonym = :synonym)
     ";
-    $cvterm = chado_query($cvtermsql, 
+    $cvterm = chado_query($cvtermsql,
       array(':cvname' => 'sequence', ':name' => $seq_type, ':synonym' => $seq_type))->fetchObject();
     if (!$cvterm) {
       form_set_error('seq_type', t("The Sequence Ontology (SO) term selected for the " .
@@ -98,6 +108,11 @@ function tripal_feature_delete_form_validate($form, &$form_state) {
   }
 }
 
+/**
+ * Submit for the delete features form
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_delete_form_submit($form, &$form_state) {
   global $user;
 
@@ -113,7 +128,25 @@ function tripal_feature_delete_form_submit($form, &$form_state) {
     'tripal_feature_delete_features', $args, $user->uid);
 }
 
-
+/**
+ * Function to actually delete the features indicated
+ *
+ * @param $organism_id
+ *   (Optional) The organism_id of the features to delete
+ * @param $analysis_id
+ *   (Optional) The analysis_id of the features to delete
+ * @param $seq_type
+ *   (Optional) The cvterm.name of the feature types to delete
+ * @param $is_unique
+ *   (Optional) A Boolean stating whether the names are unique (ie: feature.uniquename)
+ *   or not (ie: feature.name)
+ * @param $feature_names
+ *   (Optional) A space separated list of the names of features to delete
+ * @param $job
+ *   The tripal_job id
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_delete_features($organism_id, $analysis_id, $seq_type,
   $is_unique, $feature_names, $job = NULL) {
 
@@ -163,17 +196,29 @@ function tripal_feature_delete_features($organism_id, $analysis_id, $seq_type,
   tripal_features_cleanup(array(), $user->uid);
 }
 
+/**
+ * Function to delete features based on an analysis passed in. This has not yet been
+ * implemented in the form
+ *
+ * @todo: Implement this functionality and then add back in the form field
+ *
+ * @param $organism_id
+ *   (Optional) The organism_id of the features to delete
+ * @param $analysis_id
+ *   (Optional) The analysis_id of the features to delete
+ * @param $seq_type
+ *   (Optional) The cvterm.name of the feature types to delete
+ * @param $is_unique
+ *   (Optional) A Boolean stating whether the names are unique (ie: feature.uniquename)
+ *   or not (ie: feature.name)
+ * @param $feature_names
+ *   (Optional) A space separated list of the names of features to delete
+ * @param $job
+ *   The tripal_job id
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_delete_by_analysis($organism_id, $analysis_id, $seq_type,
   $is_unique, $feature_names, $job = NULL) {
 
 }
-
-
-
-
-
-
-
-
-
-

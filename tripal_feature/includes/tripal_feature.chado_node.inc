@@ -1,6 +1,13 @@
 <?php
 /**
- *  Provide information to drupal about the node types that we're creating
+ * @file
+ * Implementation of hooks to create a feature content type
+ */
+
+/**
+ * Implements hook_node_info().
+ *
+ * Provide information to drupal about the node types that we're creating
  *  in this module
  *
  * @ingroup tripal_feature
@@ -32,14 +39,9 @@ function tripal_feature_node_info() {
   );
   return $nodes;
 }
+
 /**
- * Implementation of hook_form
- *
- * @param  $node
- * @param  $param
- *
- * @return
- *   Drupal form array
+ * Implementation of hook_form().
  *
  * @ingroup tripal_feature
  */
@@ -236,15 +238,12 @@ function chado_feature_form($node, &$form_state) {
 }
 
 /**
- * Implementation of hook_validate
+ * Implementation of hook_validate().
  *
  * This validation is being used for three activities:
  *   CASE A: Update a node that exists in both drupal and chado
  *   CASE B: Synchronizing a node from chado to drupal
  *   CASE C: Inserting a new node that exists in niether drupal nor chado
- *
- * @param $node
- *
  *
  * @ingroup tripal_feature
  */
@@ -325,9 +324,8 @@ function chado_feature_validate($node, $form, &$form_state) {
   }
 }
 
-
 /**
- * Implement hook_access().
+ * Implement hook_node_access().
  *
  * This hook allows node modules to limit access to the node types they define.
  *
@@ -374,7 +372,10 @@ function chado_feature_node_access($node, $op, $account) {
   }
   return NULL;
 }
+
 /**
+ * Implements hook_insert().
+ *
  *  When a new chado_feature node is created we also need to add information
  *  to our chado_feature table.  This function is called on insert of a new node
  *  of type 'chado_feature' and inserts the necessary information.
@@ -467,7 +468,7 @@ function chado_feature_insert($node) {
 }
 
 /**
- *
+ * Implements hook_update().
  *
  * @ingroup tripal_feature
  */
@@ -544,8 +545,9 @@ function chado_feature_update($node) {
 
 
 }
+
 /**
- *
+ * Implements hook_delete().
  *
  * @ingroup tripal_feature
  */
@@ -579,7 +581,12 @@ function chado_feature_delete($node) {
 }
 
 /**
+ * Add synonyms to a feature
  *
+ * @param $synonyms
+ *   A string containing synonyms separated by a return character
+ * @param $feature_id
+ *   The feature to attach the synonyms to
  *
  * @ingroup tripal_feature
  */
@@ -647,7 +654,9 @@ function chado_feature_add_synonyms($synonyms, $feature_id) {
 }
 
 /**
- *  When a node is requested by the user this function is called to allow us
+ * Implements hook_load().
+ *
+ * When a node is requested by the user this function is called to allow us
  *  to add auxiliary data to the node object.
  *
  * @ingroup tripal_feature
@@ -687,7 +696,10 @@ function chado_feature_load($nodes) {
     }
   }
 }
+
 /**
+ * Implements hook_node_presave().
+ * Acts on all content types.
  *
  * @ingroup tripal_feature
  */
@@ -717,19 +729,21 @@ function tripal_feature_node_presave($node) {
         $ftype = chado_select_record('cv', array('name'), $values);
         $type = $ftype[0]->name;
       }
-     
+
       $values = array('organism_id' => $organism_id);
       $organism = chado_select_record('organism', array('genus', 'species'), $values);
       $node->title = "$name, $uname ($type) " . $organism[0]->genus . ' ' . $organism[0]->species;
-      
+
       if ($name == $uname) {
-        $node->title = "$name ($type) " . $organism[0]->genus . ' ' . $organism[0]->species; 
+        $node->title = "$name ($type) " . $organism[0]->genus . ' ' . $organism[0]->species;
       }
       break;
   }
 }
 
 /**
+ * Implements hook_node_insert().
+ * Acts on all content types.
  *
  * @ingroup tripal_feature
  */
@@ -755,7 +769,9 @@ function tripal_feature_node_insert($node) {
       break;
   }
 }
+
 /**
+ * Return the url alias for a feature
  *
  * @param $node
  *   A node object containing at least the feature_id and nid
@@ -765,6 +781,8 @@ function tripal_feature_node_insert($node) {
  *   and [type].  These placeholders will be substituted for actual values.
  *   If this parameter is not provided then the value of the
  *   chado_feature_url_string Drupal variable will be used.
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_get_feature_url($node, $url_alias = NULL) {
 
@@ -822,7 +840,10 @@ function tripal_feature_get_feature_url($node, $url_alias = NULL) {
 
   return $url_alias;
 }
+
 /**
+ * Implements hook_node_view().
+ * Acts on all content types.
  *
  * @ingroup tripal_feature
  */
@@ -848,7 +869,7 @@ function tripal_feature_node_view($node, $view_mode, $langcode) {
           '#weight' => -100,
         );
         $node->content['tripal_feature_featurepos'] = array(
-          '#markup' => theme('tripal_feature_featurepos', array('node' => $node)),          
+          '#markup' => theme('tripal_feature_featurepos', array('node' => $node)),
           '#tripal_toc_id'    => 'featurepos',
           '#tripal_toc_title' => 'Maps',
         );
@@ -918,7 +939,10 @@ function tripal_feature_node_view($node, $view_mode, $langcode) {
       break;
   }
 }
+
 /**
+ * Implements hook_node_update().
+ * Acts on all content types.
  *
  * @ingroup tripal_feature
  */

@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Further describe some of the feature tables to the tripal schema
+ */
 
 /**
  * Implements hook_chado_schema_v1_2_tripal_gff_temp()

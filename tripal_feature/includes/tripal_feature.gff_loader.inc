@@ -1,9 +1,9 @@
 <?php
 /**
  * @file
- * @todo Add file header description
+ * Provides gff3 loading functionality. Creates features based on their specification
+ * in a GFF3 file.
  */
-
 
 /**
  * @defgroup gff3_loader GFF3 Feature Loader
@@ -14,7 +14,7 @@
  */
 
 /**
- *
+ * The form to submit a GFF3 loading job
  *
  * @ingroup gff3_loader
  */
@@ -43,7 +43,7 @@ function tripal_feature_gff3_load_form() {
     '#required'    => TRUE,
     '#options'     => $organisms,
   );
-  
+
   // get the list of analyses
   $sql = "SELECT * FROM {analysis} ORDER BY name";
   $org_rset = chado_query($sql);
@@ -55,7 +55,7 @@ function tripal_feature_gff3_load_form() {
   $form['analysis_id'] = array(
    '#title'       => t('Analysis'),
    '#type'        => t('select'),
-   '#description' => t("Choose the analysis to which these features are associated. 
+   '#description' => t("Choose the analysis to which these features are associated.
        Why specify an analysis for a data load?  All data comes
        from some place, even if downloaded from Genbank. By specifying
        analysis details for all data imports it allows an end user to reproduce the
@@ -63,45 +63,45 @@ function tripal_feature_gff3_load_form() {
    '#required'    => TRUE,
    '#options'     => $analyses,
   );
-    
+
   $form['line_number']= array(
     '#type'          => 'textfield',
     '#title'         => t('Start Line Number'),
-    '#description'   => t('Enter the line number in the GFF file where you would like to begin processing.  The 
+    '#description'   => t('Enter the line number in the GFF file where you would like to begin processing.  The
       first line is line number 1.  This option is useful for examining loading problems with large GFF files.'),
     '#size' => 10,
   );
-  
+
   $form['landmark_type'] = array(
     '#title'       => t('Landmark Type'),
     '#type'        => t('textfield'),
     '#description' => t("Optional. Use this field to specify a Sequence Ontology type
-       for the landmark sequences in the GFF fie (e.g. 'chromosome'). If the GFF file 
-       contains a '##sequence-region' line that describes the landmark sequences to 
+       for the landmark sequences in the GFF fie (e.g. 'chromosome'). If the GFF file
+       contains a '##sequence-region' line that describes the landmark sequences to
        which all others are aligned and a type is provided here then the features
        will be created if they do not already exist.  If they do exist then this
        field is not used."),
-  ); 
+  );
 
   $form['alt_id_attr'] = array(
     '#title'       => t('ID Attribute'),
     '#type'        => t('textfield'),
-    '#description' => t("Optional. Sometimes lines in the GFF file are missing the 
-      required ID attribute that specifies the unique name of the feature.  If so, 
+    '#description' => t("Optional. Sometimes lines in the GFF file are missing the
+      required ID attribute that specifies the unique name of the feature.  If so,
       you may specify an the name of an existing  attribute to use for the name."),
   );
-  
+
   $form['import_options'] = array(
     '#type' => 'fieldset',
     '#title' => t('Import Options'),
     '#collapsed' => TRUE
   );
-    
+
   $form['import_options']['use_transaction']= array(
     '#type' => 'checkbox',
     '#title' => t('Use a transaction'),
     '#required' => FALSE,
-    '#description' => t('Use a database transaction when loading the GFF file.  If an error occurs 
+    '#description' => t('Use a database transaction when loading the GFF file.  If an error occurs
       the entire datset loaded prior to the failure will be rolled back and will not be available
       in the database.  If this option is unchecked and failure occurs all records up to the point
       of failure will be present in the database.'),
@@ -141,8 +141,8 @@ function tripal_feature_gff3_load_form() {
     '#type' => 'checkbox',
     '#title' => t('Create organism'),
     '#required' => FALSE,
-    '#description' => t('The Tripal GFF loader supports the "organism" attribute. This allows features of a 
-       different organism to be aligned to the landmark sequence of another species.  The format of the 
+    '#description' => t('The Tripal GFF loader supports the "organism" attribute. This allows features of a
+       different organism to be aligned to the landmark sequence of another species.  The format of the
        attribute is "organism=[genus]:[species]", where [genus] is the organism\'s genus and [species] is the
        species name. Check this box to automatically add the organism to the database if it does not already exists.
        Otherwise lines with an oraganism attribute where the organism is not present in the database will be skipped.'),
@@ -155,11 +155,11 @@ function tripal_feature_gff3_load_form() {
   );
   $form['targets']['adesc'] = array(
     '#type' => 'markup',
-    '#value' => t("When alignments are represented in the GFF file (e.g. such as 
+    '#value' => t("When alignments are represented in the GFF file (e.g. such as
        alignments of cDNA sequences to a whole genome, or blast matches), they are
-       represented using two feature types: 'match' (or cDNA_match, EST_match, etc.) 
+       represented using two feature types: 'match' (or cDNA_match, EST_match, etc.)
        and 'match_part'.  These features may also have a 'Target' attribute to
-       specify the sequence that is being aligned.  
+       specify the sequence that is being aligned.
        However, the organism to which the aligned sequence belongs may not be present in the
        GFF file.  Here you can specify the organism and feature type of the target sequences.
        The options here will apply to all targets unless the organism and type are explicity
@@ -168,11 +168,11 @@ function tripal_feature_gff3_load_form() {
   $form['targets']['target_organism_id'] = array(
     '#title'       => t('Target Organism'),
     '#type'        => t('select'),
-    '#description' => t("Optional. Choose the organism to which target sequences belong. 
-      Select this only if target sequences belong to a different organism than the 
-      one specified above. And only choose an organism here if all of the target sequences 
-      belong to the same species.  If the targets in the GFF file belong to multiple 
-      different species then the organism must be specified using the 'target_organism=genus:species' 
+    '#description' => t("Optional. Choose the organism to which target sequences belong.
+      Select this only if target sequences belong to a different organism than the
+      one specified above. And only choose an organism here if all of the target sequences
+      belong to the same species.  If the targets in the GFF file belong to multiple
+      different species then the organism must be specified using the 'target_organism=genus:species'
       attribute in the GFF file."),
     '#options'     => $organisms,
   );
@@ -180,7 +180,7 @@ function tripal_feature_gff3_load_form() {
     '#title'       => t('Target Type'),
     '#type'        => t('textfield'),
     '#description' => t("Optional. If the unique name for a target sequence is not unique (e.g. a protein
-       and an mRNA have the same name) then you must specify the type for all targets in the GFF file. If 
+       and an mRNA have the same name) then you must specify the type for all targets in the GFF file. If
        the targets are of different types then the type must be specified using the 'target_type=type' attribute
        in the GFF file. This must be a valid Sequence Ontology (SO) term."),
   );
@@ -203,7 +203,7 @@ function tripal_feature_gff3_load_form() {
 }
 
 /**
- *
+ * Validate the GFF3 loading job form
  *
  * @ingroup gff3_loader
  */
@@ -223,8 +223,8 @@ function tripal_feature_gff3_load_form_validate($form, &$form_state) {
   $line_number   = trim($form_state['values']['line_number']);
   $landmark_type   = trim($form_state['values']['landmark_type']);
   $alt_id_attr   = trim($form_state['values']['alt_id_attr']);
-  
-  
+
+
 
   // check to see if the file is located local to Drupal
   $gff_file = trim($gff_file);
@@ -245,13 +245,14 @@ function tripal_feature_gff3_load_form_validate($form, &$form_state) {
       ($remove   AND ($update   OR $refresh  OR $add_only))) {
     form_set_error('add_only', t("Please select only one checkbox from the import options section"));
   }
-  
+
   if ($line_number and !is_numeric($line_number) or $line_number < 0) {
     form_set_error('line_number', t("Please provide an integer line number greater than zero."));
-  }   
+  }
 }
 
 /**
+ * Submit the GFF3 loading job
  *
  * @ingroup gff3_loader
  */
@@ -273,13 +274,13 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
   $landmark_type   = trim($form_state['values']['landmark_type']);
   $alt_id_attr   = trim($form_state['values']['alt_id_attr']);
   $create_organism = $form_state['values']['create_organism'];
-  
-    
-  $args = array($gff_file, $organism_id, $analysis_id, $add_only, 
-    $update, $refresh, $remove, $use_transaction, $target_organism_id, 
-    $target_type, $create_target, $line_number, $landmark_type, $alt_id_attr, 
+
+
+  $args = array($gff_file, $organism_id, $analysis_id, $add_only,
+    $update, $refresh, $remove, $use_transaction, $target_organism_id,
+    $target_type, $create_target, $line_number, $landmark_type, $alt_id_attr,
     $create_organism);
-    
+
   $type = '';
   if ($add_only) {
     $type = 'import only new features';
@@ -301,22 +302,41 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
 }
 
 /**
+ * Actually load a GFF3 file. This is the function called by tripal jobs
  *
+ * @param $gff_file
+ * @param $organism_id
+ * @param $analysis_id
+ * @param $add_only
+ * @param $update
+ * @param $refresh
+ * @param $remove
+ * @param $use_transaction
+ *   Whether or not to use a transaction. Default is yes (TRUE)
+ * @param $target_organism_id
+ * @param $target_type
+ * @param $create_target
+ * @param $start_line
+ * @param $landmark_type
+ * @param $alt_id_attr
+ * @param $create_organism
+ * @param $job
+ *  The tripal job
  *
  * @ingroup gff3_loader
  */
-function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id, 
-  $add_only = 0, $update = 0, $refresh = 0, $remove = 0, $use_transaction = 1, 
-  $target_organism_id = NULL, $target_type = NULL,  $create_target = 0, 
-  $start_line = 1, $landmark_type = '', $alt_id_attr = '', $create_organism = FALSE, 
-  $job = NULL) {     
+function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
+  $add_only = 0, $update = 0, $refresh = 0, $remove = 0, $use_transaction = 1,
+  $target_organism_id = NULL, $target_type = NULL,  $create_target = 0,
+  $start_line = 1, $landmark_type = '', $alt_id_attr = '', $create_organism = FALSE,
+  $job = NULL) {
 
-  $ret = array(); 
+  $ret = array();
 
   // empty the temp table
   $sql = "DELETE FROM {tripal_gff_temp}";
   chado_query($sql);
-  
+
   // begin the transaction
   $transaction = null;
   if ($use_transaction) {
@@ -335,36 +355,36 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       $dfile = $gff_file;
     }
     if (!file_exists($dfile)) {
-      tripal_report_error('T_gff3_loader', TRIPAL_ERROR, "Cannot find the file: %dfile", 
+      tripal_report_error('T_gff3_loader', TRIPAL_ERROR, "Cannot find the file: %dfile",
         array('%dfile' => $dfile));
       return 0;
     }
-  
+
     print "Opening $gff_file\n";
-  
+
     //$lines = file($dfile,FILE_SKIP_EMPTY_LINES);
     $fh = fopen($dfile, 'r');
     if (!$fh) {
-      tripal_report_error('T_gff3_loader', TRIPAL_ERROR, "cannot open file: %dfile", 
+      tripal_report_error('T_gff3_loader', TRIPAL_ERROR, "cannot open file: %dfile",
         array('%dfile' => $dfile));
       return 0;
     }
     $filesize = filesize($dfile);
-  
+
     // get the controlled vocaubulary that we'll be using.  The
     // default is the 'sequence' ontology
     $sql = "SELECT * FROM {cv} WHERE name = :cvname";
     $cv = chado_query($sql, array(':cvname' => 'sequence'))->fetchObject();
-    if (!$tripal_core_report_error) {   
-      tripal_report_error('T_gff3_loader', TRIPAL_ERROR, "Cannot find the 'sequence' ontology", 
+    if (!$tripal_core_report_error) {
+      tripal_report_error('T_gff3_loader', TRIPAL_ERROR, "Cannot find the 'sequence' ontology",
         array());
       return '';
     }
-  
+
     // get the organism for which this GFF3 file belongs
     $sql = "SELECT * FROM {organism} WHERE organism_id = :organism_id";
     $organism = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
-  
+
     $interval = intval($filesize * 0.0001);
     if ($interval == 0) {
       $interval = 1;
@@ -373,7 +393,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     $line_num = 0;
     $num_read = 0;
     $intv_read = 0;
-    
+
     // prepare the statement used to get the cvterm for each feature.
     $sel_cvterm_sql = "
       SELECT CVT.cvterm_id, CVT.cv_id, CVT.name, CVT.definition,
@@ -381,22 +401,22 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       FROM {cvterm} CVT
         INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
         LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
-      WHERE CV.cv_id = :cv_id and 
+      WHERE CV.cv_id = :cv_id and
        (lower(CVT.name) = lower(:name) or lower(CVTS.synonym) = lower(:synonym))
      ";
-  
+
     // iterate through each line of the GFF file
     print "Parsing Line $line_num (0.00%). Memory: " . number_format(memory_get_usage()) . " bytes\r";
     while ($line = fgets($fh)) {
       $line_num++;
       $size = drupal_strlen($line);
       $num_read += $size;
-      $intv_read += $size; 
-      
+      $intv_read += $size;
+
       if ($line_num < $start_line) {
         continue;
-      }    
-      
+      }
+
       // update the job status every 1% features
       if ($job and $intv_read >= $interval) {
         $intv_read = 0;
@@ -404,13 +424,13 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         print "Parsing Line $line_num (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
         tripal_set_job_progress($job, intval(($num_read / $filesize) * 100));
       }
-        
+
       // check to see if we have FASTA section, if so then set the variable
       // to start parsing
       if (preg_match('/^##FASTA/i', $line)) {
         if ($remove) {
           // we're done because this is a delete operation so break out of the loop.
-          break;         
+          break;
         }
         tripal_feature_load_gff3_fasta($fh, $interval, $num_read, $intv_read, $line_num, $filesize, $job);
         continue;
@@ -424,7 +444,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           $result = chado_query($sel_cvterm_sql, array(':cv_id' => $cv->cv_id, ':name' => $landmark_type, ':synonym' => $landmark_type));
           $cvterm = $result->fetchObject();
           if (!$cvterm) {
-            tripal_report_error('T_gff3_loader', TRIPAL_ERROR, 'cannot find feature type \'%landmark_type\' on line %line_num of the GFF file', 
+            tripal_report_error('T_gff3_loader', TRIPAL_ERROR, 'cannot find feature type \'%landmark_type\' on line %line_num of the GFF file',
               array('%landmark_type' => $landmark_type, '%line_num' => $line_num));
             return '';
           }
@@ -433,25 +453,25 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         }
         continue;
       }
-      
+
       // skip comments
       if (preg_match('/^#/', $line)) {
         continue;
       }
-      
+
       // skip empty lines
       if (preg_match('/^\s*$/', $line)) {
         continue;
-      }    
-  
+      }
+
       // get the columns
       $cols = explode("\t", $line);
       if (sizeof($cols) != 9) {
-        tripal_report_error('T_gff3_loader', TRIPAL_ERROR, 'improper number of columns on line %line_num', 
+        tripal_report_error('T_gff3_loader', TRIPAL_ERROR, 'improper number of columns on line %line_num',
           array('%line_num' => $line_num));
         return '';
       }
-      
+
       // get the column values
       $landmark = $cols[0];
       $source   = $cols[1];
@@ -461,8 +481,8 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       $score    = $cols[5];
       $strand   = $cols[6];
       $phase    = $cols[7];
-      $attrs    = explode(";", $cols[8]);  // split by a semicolon 
-      
+      $attrs    = explode(";", $cols[8]);  // split by a semicolon
+
       // ready the start and stop for chado.  Chado expects these positions
       // to be zero-based, so we substract 1 from the fmin
       $fmin = $start - 1;
@@ -471,7 +491,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         $fmin = $end - 1;
         $fmax = $start;
       }
-      
+
       // format the strand for chado
       if (strcmp($strand, '.') == 0) {
         $strand = 0;
@@ -484,16 +504,16 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       }
       if (strcmp($phase, '.') == 0) {
         $phase = '';
-      }    
+      }
       $result = chado_query($sel_cvterm_sql, array(':cv_id' => $cv->cv_id, ':name' => $type, ':synonym' => $type));
-  
+
       $cvterm = $result->fetchObject();
       if (!$cvterm) {
-        tripal_report_error('T_gff3_loader', TRIPAL_ERROR, 'cannot find feature term \'%type\' on line %line_num of the GFF file', 
+        tripal_report_error('T_gff3_loader', TRIPAL_ERROR, 'cannot find feature term \'%type\' on line %line_num of the GFF file',
           array('%type' => $type, '%line_num' => $line_num));
         return '';
       }
-       
+
       // break apart each of the attributes
       $tags = array();
       $attr_name = '';
@@ -504,15 +524,15 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       $attr_fmax_partial = 'f';
       $attr_is_obsolete = 'f';
       $attr_is_analysis = 'f';
-      $attr_others = '';       
+      $attr_others = '';
       $residues = '';
-      
+
       // the organism to which a feature belongs can be set in the GFF
-      // file using the 'organism' attribute.  By default we 
+      // file using the 'organism' attribute.  By default we
       // set the $feature_organism variable to the default organism for the landmark
-      $attr_organism = ''; 
+      $attr_organism = '';
       $feature_organism = $organism;
-  
+
       foreach ($attrs as $attr) {
         $attr = rtrim($attr);
         $attr = ltrim($attr);
@@ -520,27 +540,27 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           continue;
         }
         if (!preg_match('/^[^\=]+\=.+$/', $attr)) {
-          tripal_report_error('T_gff3_loader', TRIPAL_ERROR, 'Attribute is not correctly formatted on line %line_num: %attr', 
+          tripal_report_error('T_gff3_loader', TRIPAL_ERROR, 'Attribute is not correctly formatted on line %line_num: %attr',
             array('%line_num' => $line_num, '%attr' => $attr));
           return '';
         }
-  
+
         // break apart each tag
         $tag = preg_split("/=/", $attr, 2);  // split by equals sign
-        
+
         // multiple instances of an attribute are separated by commas
         $tag_name = $tag[0];
         if (!array_key_exists($tag_name, $tags)) {
           $tags[$tag_name] = array();
         }
         $tags[$tag_name] = array_merge($tags[$tag_name], explode(",", $tag[1]));  // split by comma
-        
-        
+
+
         // replace the URL escape codes for each tag
         for ($i = 0; $i < count($tags[$tag_name]); $i++) {
           $tags[$tag_name][$i] = urldecode($tags[$tag_name][$i]);
         }
-        
+
         // get the name and ID tags
         $skip_feature = 0;  // if there is a problem with any of the attributes this variable gets set
         if (strcmp($tag_name, 'ID') == 0) {
@@ -556,20 +576,20 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
             $values = array(
               'genus' => $org_matches[1],
               'species' => $org_matches[2],
-            ); 
+            );
             $org = chado_select_record('organism', array("*"), $values);
             if (count($org) == 0) {
               if ($create_organism) {
                 $feature_organism = (object) chado_insert_record('organism', $values);
                 if (!$feature_organism) {
                   tripal_report_error('T_gff3_loader', TRIPAL_ERROR, "Could not add the organism, '%org', from line %line. Skipping this line. ",
-                    array('%org' => $attr_organism, '%line' => $line_num)); 
-                  $skip_feature = 1; 
+                    array('%org' => $attr_organism, '%line' => $line_num));
+                  $skip_feature = 1;
                 }
-              } 
+              }
               else {
                 tripal_report_error('T_gff3_loader', TRIPAL_ERROR, "The organism attribute '%org' on line %line does not exist. Skipping this line. ",
-                  array('%org' => $attr_organism, '%line' => $line_num)); 
+                  array('%org' => $attr_organism, '%line' => $line_num));
                 $skip_feature = 1;
               }
             }
@@ -577,13 +597,13 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
               // we found the organism in the database so use it
               $feature_organism = $org[0];
             }
-          } 
+          }
           else {
             tripal_report_error('T_gff3_loader', TRIPAL_ERROR, "The organism attribute '%org' on line %line is not properly formated. It " .
-              "should be of the form: organism=Genus:species.  Skipping this line.", 
+              "should be of the form: organism=Genus:species.  Skipping this line.",
               array('%org' => $attr_organism, '%line' => $line_num));
-            $skip_feature = 1;  
-          }        
+            $skip_feature = 1;
+          }
         }
         // get the list of non-reserved attributes
         elseif (strcmp($tag_name, 'Alias') != 0        and strcmp($tag_name, 'Parent') != 0 and
@@ -597,18 +617,18 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           }
         }
       }
-      
+
       if ($skip_line) {
         continue;
       }
-  
+
       // if neither name nor uniquename are provided then generate one
       if (!$attr_uniquename and !$attr_name) {
         // check if an alternate ID field is suggested, if so, then use
         // that for the name
         if (array_key_exists($alt_id_attr, $tags)) {
           $attr_uniquename = $tags[$alt_id_attr][0];
-          $attr_name = $attr_uniquename;  
+          $attr_name = $attr_uniquename;
         }
         // if the row has a parent then generate a uniquename using the parent name
         // add the date to the name in the event there are more than one child with
@@ -624,21 +644,21 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           $date = getdate();
           $attr_uniquename = $date[0] . "-$type-$landmark:" . ($fmin + 1) . ".." . $fmax;
           $attr_name = $type;
-        }      
+        }
       }
-  
+
       // if a name is not specified then use the unique name as the name
       if (strcmp($attr_name, '')==0) {
         $attr_name = $attr_uniquename;
       }
-  
+
       // if an ID attribute is not specified then use the attribute name plus the date
       if (!$attr_uniquename) {
         $date = getdate();
         $attr_uniquename = $attr_name . '-' . $date[0];
       }
-  
-      // make sure the landmark sequence exists in the database.  If the user 
+
+      // make sure the landmark sequence exists in the database.  If the user
       // has not specified a landmark type (and it's not requiredin the GFF foramt)
       // then We don't know the type of the landmark so we'll hope that it's unique across
       // all types for the orgnaism. Only do this test if the landmark and the feature are
@@ -647,15 +667,15 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         $select = array(
           'organism_id' => $organism->organism_id,
           'uniquename'  => $landmark,
-        );      
+        );
         $columns = array('count(*) as num_landmarks');
         if ($landmark_type) {
           $select['type_id'] = array(
             'name' => $landmark_type,
           );
-        }      
-        $count = chado_select_record('feature', $columns, $select);        
-        if (!$count or count($count) == 0 or $count[0]->num_landmarks == 0) {        
+        }
+        $count = chado_select_record('feature', $columns, $select);
+        if (!$count or count($count) == 0 or $count[0]->num_landmarks == 0) {
           // now look for the landmark using the name rather than uniquename.
           $select = array(
             'organism_id' => $organism->organism_id,
@@ -667,7 +687,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
               'name' => $landmark_type,
             );
           }
-          $count = chado_select_record('feature', $columns, $select); 
+          $count = chado_select_record('feature', $columns, $select);
           if (!$count or count($count) == 0 or $count[0]->num_landmarks == 0) {
             tripal_report_error('T_gff3_loader', TRIPAL_ERROR, "The landmark '%landmark' cannot be found for this organism (%species) " .
                   "Please add the landmark and then retry the import of this GFF3 " .
@@ -677,17 +697,17 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           elseif ($count[0]->num_landmarks > 1) {
             tripal_report_error('T_gff3_loader', TRIPAL_ERROR, "The landmark '%landmark' has more than one entry for this organism (%species) " .
                   "Cannot continue", array('%landmark' => $landmark, '%species' => $organism->genus . " " . $organism->species));
-            return '';  
+            return '';
           }
-  
+
         }
         if ($count[0]->num_landmarks > 1) {
           tripal_report_error('T_gff3_loader', TRIPAL_ERROR, "The landmark '%landmark' is not unique for this organism. " .
                 "The features cannot be associated", array('%landmark' => $landmark));
           return '';
-        }  
+        }
       }
-  
+
       // if the option is to remove or refresh then we want to remove
       // the feature from the database.
       if ($remove or $refresh) {
@@ -700,23 +720,23 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         );
         $result = chado_delete_record('feature', $match);
         if (!$result) {
-          tripal_report_error('T_gff3_loader', TRIPAL_ERROR, "cannot delete feature %attr_uniquename", 
+          tripal_report_error('T_gff3_loader', TRIPAL_ERROR, "cannot delete feature %attr_uniquename",
             array('%attr_uniquename' => $attr_uniquename));
         }
         $feature = 0;
         unset($result);
       }
-  
+
       // add or update the feature and all properties
       if ($update or $refresh or $add_only) {
-  
+
         // add/update the feature
         $feature = tripal_feature_load_gff3_feature($feature_organism, $analysis_id, $cvterm,
           $attr_uniquename, $attr_name, $residues, $attr_is_analysis,
-          $attr_is_obsolete, $add_only, $score);  
+          $attr_is_obsolete, $add_only, $score);
 
         if ($feature) {
-          
+
           // add a record for this feature to the tripal_gff_temp table for
           // later lookup
           $values = array(
@@ -727,7 +747,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           );
           // make sure this record doesn't already exist in oru temp table
           $results = chado_select_record('tripal_gff_temp', array('*'), $values);
-  
+
           if (count($results) == 0) {
             $result = chado_insert_record('tripal_gff_temp', $values);
             if (!$result) {
@@ -742,7 +762,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
               $landmark, $fmin, $fmax, $strand, $phase, $attr_fmin_partial,
               $attr_fmax_partial, $attr_residue_info, $attr_locgroup);
           }
-          
+
           // add any aliases for this feature
           if (array_key_exists('Alias', $tags)) {
             tripal_feature_load_gff3_alias($feature, $tags['Alias']);
@@ -759,10 +779,10 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           if (array_key_exists('Parent', $tags)) {
             tripal_feature_load_gff3_parents($feature, $cvterm, $tags['Parent'], $feature_organism->organism_id, $fmin);
           }
-          
+
           // add target relationships
           if (array_key_exists('Target', $tags)) {
-            tripal_feature_load_gff3_target($feature, $tags, $target_organism_id, $target_type, $create_target, $attr_locgroup);          
+            tripal_feature_load_gff3_target($feature, $tags, $target_organism_id, $target_type, $create_target, $attr_locgroup);
           }
           // add gap information.  This goes in simply as a property
           if (array_key_exists('Gap', $tags)) {
@@ -791,39 +811,39 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
               }
             }
           }
-          
+
         }
       }
     }
-  
+
     if (!$remove) {
       print "\nSetting ranks of children...\n";
-      
+
       // get features in a relationship that are also children of an alignment
       $sql = "
-        SELECT DISTINCT F.feature_id, F.organism_id, F.type_id, 
-          F.uniquename, FL.strand 
-        FROM {tripal_gff_temp} TGT 
+        SELECT DISTINCT F.feature_id, F.organism_id, F.type_id,
+          F.uniquename, FL.strand
+        FROM {tripal_gff_temp} TGT
           INNER JOIN {feature} F                ON TGT.feature_id = F.feature_id
           INNER JOIN {feature_relationship} FR  ON FR.object_id   = TGT.feature_id
-          INNER JOIN {cvterm} CVT               ON CVT.cvterm_id  = FR.type_id  
-          INNER JOIN {featureloc} FL            ON FL.feature_id  = F.feature_id    
+          INNER JOIN {cvterm} CVT               ON CVT.cvterm_id  = FR.type_id
+          INNER JOIN {featureloc} FL            ON FL.feature_id  = F.feature_id
         WHERE CVT.name = 'part_of'
       ";
       $parents = chado_query($sql);
-      
+
       // build and prepare the SQL for selecting the children relationship
       $sel_gffchildren_sql = "
         SELECT DISTINCT FR.feature_relationship_id, FL.fmin, FR.rank
         FROM {feature_relationship} FR
           INNER JOIN {featureloc} FL on FL.feature_id = FR.subject_id
         WHERE FR.object_id = :feature_id ORDER BY FL.fmin ASC
-      ";            
-      
+      ";
+
       // now set the rank of any parent/child relationships.  The order is based
       // on the fmin.  The start rank is 1.  This allows features with other
       // relationships to be '0' (the default), and doesn't interfer with the
-      // ordering defined here.  
+      // ordering defined here.
       $num_recs = $parents->rowCount();
       $i = 1;
       $interval = intval($num_recs * 0.0001);
@@ -832,36 +852,36 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       }
       $percent = sprintf("%.2f", ($i / $num_recs) * 100);
       print "Setting $i of $num_recs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
-      
+
       while ($parent = $parents->fetchObject()) {
-        
+
         if ($i % $interval == 0) {
           $percent = sprintf("%.2f", ($i / $num_recs) * 100);
           print "Setting $i of $num_recs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
         }
-        
+
         // get the children
         $result = chado_query($sel_gffchildren_sql, array(':feature_id' => $parent->feature_id));
-        
+
         // build an array of the children
         $children = array();
         while ($child = $result->fetchObject()) {
-           $children[] = $child;  
+           $children[] = $child;
         }
-        
+
         // the children list comes sorted in ascending fmin
-        // but if the parent is on the reverse strand we need to 
+        // but if the parent is on the reverse strand we need to
         // reverse the order of the children.
         if ($parent->strand == -1) {
           arsort($children);
-        }    
-    
+        }
+
         // first set the ranks to a negative number so that we don't
-        // get a duplicate error message when we try to change any of them    
+        // get a duplicate error message when we try to change any of them
         $rank = -1;
         foreach ($children as $child) {
           $match = array('feature_relationship_id' => $child->feature_relationship_id);
-          $values = array('rank' => $rank);      
+          $values = array('rank' => $rank);
           chado_update_record('feature_relationship', $match, $values);
           $rank--;
         }
@@ -869,7 +889,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         $rank = 0;
         foreach ($children as $child) {
           $match = array('feature_relationship_id' => $child->feature_relationship_id);
-          $values = array('rank' => $rank); 
+          $values = array('rank' => $rank);
           //print "Was: " . $child->rank . " now $rank ($parent->strand)\n"     ;
           chado_update_record('feature_relationship', $match, $values);
           $rank++;
@@ -894,8 +914,13 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   print "\nDone\n";
   return 1;
 }
+
 /**
+ * Load the derives from attribute for a gff3 feature
  *
+ * @param $feature
+ * @param $subject
+ * @param $organism
  *
  * @ingroup gff3_loader
  */
@@ -906,13 +931,13 @@ function tripal_feature_load_gff3_derives_from($feature, $subject, $organism) {
     'organism_id' => $organism->organism_id,
     'uniquename' => $subject,
   );
-  $result = chado_select_record('tripal_gff_temp', array('type_name'), $values);   
+  $result = chado_select_record('tripal_gff_temp', array('type_name'), $values);
   if (count($result) == 0) {
     tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Cannot find subject type for feature in 'derives_from' relationship: %subject", array('%subject' => $subject));
-     return ''; 
+     return '';
   }
   $subject_type = $result[0]->type_name;
-  
+
   // get the subject feature
   $match = array(
     'organism_id' => $organism->organism_id,
@@ -922,7 +947,7 @@ function tripal_feature_load_gff3_derives_from($feature, $subject, $organism) {
       'cv_id' => array(
         'name' => 'sequence'
       ),
-    ),      
+    ),
   );
   $sfeature = chado_select_record('feature', array('feature_id'), $match);
   if (count($sfeature)==0) {
@@ -952,12 +977,19 @@ function tripal_feature_load_gff3_derives_from($feature, $subject, $organism) {
   // finally insert the relationship if it doesn't exist
   $ret = chado_insert_record('feature_relationship', $values);
   if (!$ret) {
-    tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Could not add 'Derives_from' relationship for $feature->uniquename and $subject", 
+    tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Could not add 'Derives_from' relationship for $feature->uniquename and $subject",
       array());
   }
 }
+
 /**
+ * Load the parents for a gff3 feature
  *
+ * @param $feature
+ * @param $cvterm
+ * @param $parents
+ * @param $organism_id
+ * @param $fmin
  *
  * @ingroup gff3_loader
  */
@@ -983,10 +1015,10 @@ function tripal_feature_load_gff3_parents($feature, $cvterm, $parents, $organism
       'organism_id' => $organism_id,
       'uniquename' => $parent,
     );
-    $result = chado_select_record('tripal_gff_temp', array('type_name'), $values);    
+    $result = chado_select_record('tripal_gff_temp', array('type_name'), $values);
     if (count($result) == 0) {
       tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Cannot find parent: %parent", array('%parent' => $parent));
-       return '';  
+       return '';
     }
     $parent_type = $result[0]->type_name;
 
@@ -1023,24 +1055,26 @@ function tripal_feature_load_gff3_parents($feature, $cvterm, $parents, $organism
         );
         $result = chado_insert_record('feature_relationship', $values);
         if (!$result) {
-          tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Failed to insert feature relationship '$uname' ($type) $rel_type '$parent' ($parent_type)", 
+          tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Failed to insert feature relationship '$uname' ($type) $rel_type '$parent' ($parent_type)",
             array());
         }
       }
     }
     else {
-      tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Cannot establish relationship '$uname' ($type) $rel_type '$parent' ($parent_type): Cannot find the parent", 
-        array());      
+      tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Cannot establish relationship '$uname' ($type) $rel_type '$parent' ($parent_type): Cannot find the parent",
+        array());
     }
   }
 }
 
 /**
+ * Load the dbxref attribute for a feature
  *
+ * @param $feature
+ * @param $dbxrefs
  *
  * @ingroup gff3_loader
  */
-
 function tripal_feature_load_gff3_dbxref($feature, $dbxrefs) {
 
   // iterate through each of the dbxrefs
@@ -1080,7 +1114,7 @@ function tripal_feature_load_gff3_dbxref($feature, $dbxrefs) {
 
     // now check to see if the accession exists
     $values = array(
-      'accession' => $accession, 
+      'accession' => $accession,
       'db_id' => $db->db_id
     );
     $dbxref = chado_select_record('dbxref', array('dbxref_id'), $values);
@@ -1089,12 +1123,12 @@ function tripal_feature_load_gff3_dbxref($feature, $dbxrefs) {
     if (sizeof($dbxref) == 0) {
       $values = array(
         'db_id' => $db->db_id,
-        'accession' => $accession, 
+        'accession' => $accession,
         'version' => ''
       );
       $ret = chado_insert_record('dbxref', $values);
       $values = array(
-        'accession' => $accession, 
+        'accession' => $accession,
         'db_id' => $db->db_id
       );
       $dbxref = chado_select_record('dbxref', array('dbxref_id'), $values);
@@ -1103,7 +1137,7 @@ function tripal_feature_load_gff3_dbxref($feature, $dbxrefs) {
 
     // check to see if this feature dbxref already exists
     $values = array(
-      'dbxref_id' => $dbxref->dbxref_id, 
+      'dbxref_id' => $dbxref->dbxref_id,
       'feature_id' => $feature->feature_id
     );
     $fdbx = chado_select_record('feature_dbxref', array('feature_dbxref_id'), $values);
@@ -1124,8 +1158,12 @@ function tripal_feature_load_gff3_dbxref($feature, $dbxrefs) {
   }
   return 1;
 }
+
 /**
+ * Load the cvterms for a feature. Assumes there is a dbxref.accession matching a cvterm.name
  *
+ * @param $feature
+ * @param $dbxrefs
  *
  * @ingroup gff3_loader
  */
@@ -1152,7 +1190,7 @@ function tripal_feature_load_gff3_ontology($feature, $dbxrefs) {
     $db = $db[0];
 
     // now check to see if the accession exists
-    $dbxref = chado_select_record('dbxref', array('dbxref_id'), 
+    $dbxref = chado_select_record('dbxref', array('dbxref_id'),
       array('accession' => $accession, 'db_id' => $db->db_id));
     if (sizeof($dbxref) == 0) {
       tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Accession, $accession is missing for reference: $dbname:$accession", array());
@@ -1198,8 +1236,12 @@ function tripal_feature_load_gff3_ontology($feature, $dbxrefs) {
   }
   return 1;
 }
+
 /**
+ * Load any aliases for a feature
  *
+ * @param $feature
+ * @param $aliases
  *
  * @ingroup gff3_loader
  */
@@ -1208,7 +1250,7 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
   // make sure we have a 'synonym_type' vocabulary
   $select = array('name' => 'synonym_type');
   $results = chado_select_record('cv', array('*'), $select);
-  
+
   if (count($results) == 0) {
     // insert the 'synonym_type' vocabulary
     $values = array(
@@ -1225,7 +1267,7 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
     if (count($results) > 0) {
       $syncv = $results[0];
     }
-  } 
+  }
   else {
     $syncv = $results[0];
   }
@@ -1237,7 +1279,7 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
         'name' => 'synonym_type'
      ),
   );
-  $result = chado_select_record('cvterm', array('*'), $select);  
+  $result = chado_select_record('cvterm', array('*'), $select);
   if (count($result) == 0) {
     $term = array(
       'name' => 'exact',
@@ -1250,11 +1292,11 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
       tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Cannot add synonym type: internal:$type", array());
       return 0;
     }
-  } 
-  else { 
+  }
+  else {
     $syntype = $result[0];
   }
- 
+
   // iterate through all of the aliases and add each one
   foreach ($aliases as $alias) {
 
@@ -1264,7 +1306,7 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
        'name' => $alias,
        'type_id' => $syntype->cvterm_id,
     );
-    $result = chado_select_record('synonym', array('*'), $select);    
+    $result = chado_select_record('synonym', array('*'), $select);
     if (count($result) == 0) {
       $values = array(
          'name' => $alias,
@@ -1280,16 +1322,16 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
       $synonym = $result[0];
     }
     else {
-      $synonym = $result[0];  
+      $synonym = $result[0];
     }
 
     // check to see if we have a NULL publication in the pub table.  If not,
     // then add one.
     $select = array('uniquename' => 'null');
-    $result = chado_select_record('pub', array('*'), $select);    
+    $result = chado_select_record('pub', array('*'), $select);
     if (count($result) == 0) {
       $pub_sql = "
-        INSERT INTO {pub} (uniquename,type_id) 
+        INSERT INTO {pub} (uniquename,type_id)
         VALUES (:uname,
           (SELECT cvterm_id
            FROM {cvterm} CVT
@@ -1301,9 +1343,9 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
       if (!$status) {
         tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Cannot prepare statement 'ins_pub_uniquename_typeid", array());
         return 0;
-      } 
+      }
 
-      // insert the null pub 
+      // insert the null pub
       $result = chado_query($pub_sql, array(':uname' => 'null', ':type_id' => 'null'))->fetchObject();
       if (!$result) {
         tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Cannot add null publication needed for setup of alias", array());
@@ -1313,7 +1355,7 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
       $pub = $result[0];
     }
     else {
-      $pub = $result[0];  
+      $pub = $result[0];
     }
 
     // check to see if the synonym exists in the feature_synonym table
@@ -1325,14 +1367,14 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
     );
     $columns = array('feature_synonym_id');
     $result = chado_select_record('feature_synonym', $columns, $values);
-    if (count($result) == 0) {      
+    if (count($result) == 0) {
       $values = array(
          'synonym_id' => $synonym->synonym_id,
          'feature_id' => $feature->feature_id,
          'pub_id' => $pub->pub_id,
-      );  
-      $success = chado_insert_record('feature_synonym', $values);   
-     
+      );
+      $success = chado_insert_record('feature_synonym', $values);
+
       if (!$success) {
         tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Cannot add alias $alias to feature synonym table", array());
         return 0;
@@ -1343,7 +1385,18 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
 }
 
 /**
+ * Create the feature record & link it to it's analysis
  *
+ * @param $organism
+ * @param $analysis_id
+ * @param $cvterm
+ * @param $uniquename
+ * @param $name
+ * @param $residues
+ * @param $is_analysis
+ * @param $is_obsolete
+ * @param $add_only
+ * @param $score
  *
  * @ingroup gff3_loader
  */
@@ -1370,10 +1423,10 @@ function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uni
     $is_obsolete = 'TRUE';
   }
   if (strcmp($is_analysis, 'f')==0 or $is_analysis == 0) {
-    $is_analysis = 'FALSE'; 
+    $is_analysis = 'FALSE';
   }
   if (strcmp($is_analysis, 't')==0 or $is_analysis == 1) {
-    $is_analysis = 'TRUE'; 
+    $is_analysis = 'TRUE';
   }
 
   // insert the feature if it does not exist otherwise perform an update
@@ -1403,7 +1456,7 @@ function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uni
       'md5checksum' => md5($residues),
       'is_analysis' => $is_analysis,
       'is_obsolete' => $is_obsolete,
-    );    
+    );
     $match = array(
       'organism_id' => $organism->organism_id,
       'uniquename' => $uniquename,
@@ -1423,7 +1476,7 @@ function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uni
 
   // get the newly added feature
   $columns = array('feature_id', 'name', 'uniquename', 'seqlen', 'organism_id', 'type_id');
-  $result = chado_select_record('feature', $columns, $fselect);  
+  $result = chado_select_record('feature', $columns, $fselect);
   $feature = $result[0];
 
   // add the analysisfeature entry to the analysisfeature table if it doesn't already exist
@@ -1436,10 +1489,10 @@ function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uni
     // if a score is available then set that to be the significance field
     if (strcmp($score, '.') != 0) {
       $af_values['significance'] = $score;
-    } 
+    }
     if (!tripal_core_chado_insert('analysisfeature', $af_values)) {
       tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Could not add analysisfeature record: $analysis_id, $feature->feature_id", array());
-    }    
+    }
   }
   else {
     // if a score is available then set that to be the significance field
@@ -1461,13 +1514,29 @@ function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uni
 }
 
 /**
+ * Insert the location of the feature
  *
+ * @param $feature
+ * @param $organism
+ * @param $landmark
+ * @param $fmin
+ * @param $fmax
+ * @param $strand
+ * @param $phase
+ * @param $is_fmin_partial
+ * @param $is_fmax_partial
+ * @param $residue_info
+ * @param $locgroup
+ * @param $landmark_type_id
+ * @param $landmark_organism_id
+ * @param $create_landmark
+ * @param $landmark_is_target
  *
  * @ingroup gff3_loader
  */
 function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fmin,
-  $fmax, $strand, $phase, $is_fmin_partial, $is_fmax_partial, $residue_info, $locgroup, 
-  $landmark_type_id = '', $landmark_organism_id = '', $create_landmark = 0, 
+  $fmax, $strand, $phase, $is_fmin_partial, $is_fmax_partial, $residue_info, $locgroup,
+  $landmark_type_id = '', $landmark_organism_id = '', $create_landmark = 0,
   $landmark_is_target = 0) {
 
   $select = array(
@@ -1476,7 +1545,7 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
   );
   if ($landmark_type_id) {
     $select['type_id'] = $landmark_type_id;
-  }  
+  }
   $results = chado_select_record('feature', array('feature_id'), $select);
 
   $srcfeature = '';
@@ -1489,7 +1558,7 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
     );
     if ($landmark_type_id) {
       $select['type_id'] = $landmark_type_id;
-    } 
+    }
     $results = chado_select_record('feature', array('feature_id'), $select);
     if (count($results) == 0) {
        // if the landmark is the target feature in a matched alignment then try one more time to
@@ -1498,11 +1567,11 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
          $select = array('uniquename' => $landmark);
          $results = chado_select_record('feature', array('feature_id'), $select);
          if (count($results) == 1) {
-           $srcfeature = $results[0]; 
+           $srcfeature = $results[0];
          }
        }
 
-       if (!$srcfeature) {       
+       if (!$srcfeature) {
          // we couldn't find the landmark feature, so if the user has requested we create it then do so
          // but only if we have a type id
          if ($create_landmark and $landmark_type_id) {
@@ -1514,41 +1583,41 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
             );
             $results = chado_insert_record('feature', $values);
             if (!$results) {
-              tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Cannot find landmark feature: '%landmark', nor could it be inserted", 
+              tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Cannot find landmark feature: '%landmark', nor could it be inserted",
                 array('%landmark' => $landmark));
-              return 0;  
-            }  
+              return 0;
+            }
             $srcfeature = new stdClass();
             $srcfeature->feature_id = $results['feature_id'];
-         } 
+         }
          else {
-           tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Cannot find unique landmark feature: '%landmark'.", 
+           tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Cannot find unique landmark feature: '%landmark'.",
              array('%landmark' => $landmark));
            return 0;
-         } 
-       }        
-    } 
+         }
+       }
+    }
     elseif (count($results) > 1) {
-       tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "multiple landmarks exist with the name: '%landmark'.  Cannot 
-         resolve which one to use. Cannot add the feature location record", 
+       tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "multiple landmarks exist with the name: '%landmark'.  Cannot
+         resolve which one to use. Cannot add the feature location record",
          array('%landmark' => $landmark));
-       return 0;    
-    } 
+       return 0;
+    }
     else {
       $srcfeature = $results[0];
-    }   
+    }
   }
   elseif (count($results) > 1) {
-    tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "multiple landmarks exist with the name: '%landmark'.  Cannot 
-      resolve which one to use. Cannot add the feature location record", 
+    tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "multiple landmarks exist with the name: '%landmark'.  Cannot
+      resolve which one to use. Cannot add the feature location record",
       array('%landmark' => $landmark));
-    return 0;  
+    return 0;
   }
   else {
     $srcfeature = $results[0];
-  }    
+  }
 
-  // TODO: create an attribute that recognizes the residue_info,locgroup, 
+  // TODO: create an attribute that recognizes the residue_info,locgroup,
   //  is_fmin_partial and is_fmax_partial, right now these are
   //  hardcoded to be false and 0 below.
 
@@ -1562,7 +1631,7 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
        'rank' => 'ASC'
     ),
   );
- 
+
   $locrecs = chado_select_record('featureloc', array('*'), $select, $options);
 
   foreach ($locrecs as $featureloc) {
@@ -1570,14 +1639,14 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
     // is not known (according to chado table field descriptions).  If it's null then just skip this entry
     if (!$featureloc->srcfeature_id) {
       continue;
-    }    
+    }
     $select = array('feature_id' => $featureloc->srcfeature_id);
     $columns = array('feature_id', 'name');
-    $locsfeature = chado_select_record('feature', $columns, $select);   
-    
+    $locsfeature = chado_select_record('feature', $columns, $select);
+
     // the source feature name and at least the fmin and fmax must be the same
     // for an update of the featureloc, otherwise we'll insert a new record.
-    if (strcmp($locsfeature[0]->name, $landmark)==0 and 
+    if (strcmp($locsfeature[0]->name, $landmark)==0 and
        ($featureloc->fmin == $fmin or $featureloc->fmax == $fmax)) {
       $match = array('featureloc_id' => $featureloc->featureloc_id);
       $values = array();
@@ -1622,11 +1691,11 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
        'strand'          => $strand,
        'residue_info'    => $residue_info,
        'locgroup'        => $locgroup,
-       'rank'            => $rank 
+       'rank'            => $rank
     );
     if ($phase) {
       $values['phase'] = $phase;
-    }    
+    }
     $success = chado_insert_record('featureloc', $values);
     if (!$success) {
       tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Failed to insert featureloc", array());
@@ -1636,8 +1705,13 @@ function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fm
   }
   return 1;
 }
+
 /**
+ * Load a preoprty (featurepop) for the feature
  *
+ * @param $feature
+ * @param $property
+ * @param $value
  *
  * @ingroup gff3_loader
  */
@@ -1659,17 +1733,17 @@ function tripal_feature_load_gff3_property($feature, $property, $value) {
       'name' => $property,
       'namespace' => 'feature_property',
       'is_obsolete' => 0,
-    );    
+    );
     $cvterm = (object) tripal_cv_add_cvterm($term, 'feature_property', 0, 0);
     if (!$cvterm) {
       tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Cannot add cvterm, $property", array());
-      return 0;  
+      return 0;
     }
-  } 
+  }
   else {
     $cvterm = $result[0];
   }
-  
+
 
   // check to see if the property already exists for this feature
   // if it does but the value is unique then increment the rank and add it.
@@ -1708,26 +1782,36 @@ function tripal_feature_load_gff3_property($feature, $property, $value) {
   }
 }
 
-/*
- * 
+/**
+ * Load the FASTA sequences at the bottom of a GFF3 file
+ *
+ * @param $fh
+ * @param $interval
+ * @param $num_read
+ * @param $intv_read
+ * @param $line_num
+ * @param $filesize
+ * @param $job
+ *
+ * @ingroup gff3_loader
  */
 function tripal_feature_load_gff3_fasta($fh, $interval, &$num_read, &$intv_read, &$line_num, $filesize, $job) {
   print "\nLoading FASTA sequences\n";
   $residues = '';
   $id = NULL;
-  
+
   $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
   print "Parsing Line $line_num (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
   // iterate through the remaining lines of the file
   while ($line = fgets($fh)) {
-    
+
     $line_num++;
-    $size = drupal_strlen($line);   
+    $size = drupal_strlen($line);
     $num_read += $size;
-    $intv_read += $size; 
-    
-    $line = trim($line);      
-    
+    $intv_read += $size;
+
+    $line = trim($line);
+
     // update the job status every 1% features
     if ($job and $intv_read >= $interval) {
       $intv_read = 0;
@@ -1735,17 +1819,17 @@ function tripal_feature_load_gff3_fasta($fh, $interval, &$num_read, &$intv_read,
       print "Parsing Line $line_num (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
       tripal_set_job_progress($job, intval(($num_read / $filesize) * 100));
     }
-    
+
     // if we encounter a definition line then get the name, uniquename,
     // accession and relationship subject from the definition line
     if (preg_match('/^>/', $line)) {
-      
-      // if we are beginning a new sequence then save to the database the last one we just finished.     
+
+      // if we are beginning a new sequence then save to the database the last one we just finished.
       if ($id) {
         $values = array('uniquename' => $id);
-        $result = chado_select_record('tripal_gff_temp', array('*'), $values); 
+        $result = chado_select_record('tripal_gff_temp', array('*'), $values);
         if (count($result) == 0) {
-          tripal_report_error('T_gff3_loader', TRIPAL_WARNING, 'Cannot find feature to assign FASTA sequence: %uname', 
+          tripal_report_error('T_gff3_loader', TRIPAL_WARNING, 'Cannot find feature to assign FASTA sequence: %uname',
              array('%uname' => $id));
         }
         else {
@@ -1756,7 +1840,7 @@ function tripal_feature_load_gff3_fasta($fh, $interval, &$num_read, &$intv_read,
           chado_update_record('feature', $match, $values);
         }
       }
-      
+
       // get the feature ID for this ID from the tripal_gff_temp table
       $id = preg_replace('/^>(.*)$/', '\1', $line);
       $residues = '';
@@ -1764,13 +1848,13 @@ function tripal_feature_load_gff3_fasta($fh, $interval, &$num_read, &$intv_read,
     else {
       $residues .= trim($line);
     }
-  } 
-  
+  }
+
   // add in the last sequence
   $values = array('uniquename' => $id);
-  $result = chado_select_record('tripal_gff_temp', array('*'), $values); 
+  $result = chado_select_record('tripal_gff_temp', array('*'), $values);
   if (count($result) == 0) {
-    tripal_report_error('T_gff3_loader', TRIPAL_WARNING, 'Cannot find feature to assign FASTA sequence: %uname', 
+    tripal_report_error('T_gff3_loader', TRIPAL_WARNING, 'Cannot find feature to assign FASTA sequence: %uname',
        array('%uname' => $id));
   }
   else {
@@ -1783,24 +1867,33 @@ function tripal_feature_load_gff3_fasta($fh, $interval, &$num_read, &$intv_read,
 
 }
 
-/*
- * 
+/**
+ * Load the target attribute of a gff3 record
+ *
+ * @param $feature
+ * @param $tags
+ * @param $target_organism_id
+ * @param $target_type
+ * @param $create_target
+ * @param $attr_locgroup
+ *
+ * @ingroup gff3_loader
  */
 function tripal_feature_load_gff3_target($feature, $tags, $target_organism_id, $target_type, $create_target, $attr_locgroup) {
   // format is: "target_id start end [strand]", where strand is optional and may be "+" or "-"
   $matched = preg_match('/^(.*?)\s+(\d+)\s+(\d+)(\s+[\+|\-])*$/', trim($tags['Target'][0]), $matches);
-  
+
   // the organism and type of the target may also be specified as an attribute. If so, then get that
   // information
   $gff_target_organism = array_key_exists('target_organism', $tags) ? $tags['target_organism'][0] : '';
   $gff_target_type = array_key_exists('target_type', $tags) ? $tags['target_type'][0] : '';
-  
-  // if we have matches and the Target is in the correct format then load the alignment 
+
+  // if we have matches and the Target is in the correct format then load the alignment
   if ($matched) {
-    $target_feature = $matches[1]; 
-    $start = $matches[2]; 
-    $end = $matches[3]; 
-    // if we have an optional strand, convert it to a numeric value. 
+    $target_feature = $matches[1];
+    $start = $matches[2];
+    $end = $matches[3];
+    // if we have an optional strand, convert it to a numeric value.
     if ($matches[4]) {
       if (preg_match('/^\+$/', trim($matches[4]))) {
         $target_strand = 1;
@@ -1815,14 +1908,14 @@ function tripal_feature_load_gff3_target($feature, $tags, $target_organism_id, $
     else {
        $target_strand = 0;
     }
-    
+
     $target_fmin = $start - 1;
     $target_fmax = $end;
     if ($end < $start) {
       $target_fmin = $end - 1;
       $target_fmax = $start;
     }
-    
+
     // default the target organism to be the value passed into the function, but if the GFF
     // file species the target organism then use that instead.
     $t_organism_id = $target_organism_id;
@@ -1839,19 +1932,19 @@ function tripal_feature_load_gff3_target($feature, $tags, $target_organism_id, $
           $t_organism_id = $torganism[0]->organism_id;
         }
         else {
-          tripal_report_error('T_gff3_loader', TRIPAL_WARNING, "Cannot find organism for target %target.", 
+          tripal_report_error('T_gff3_loader', TRIPAL_WARNING, "Cannot find organism for target %target.",
             array('%target' => $gff_target_organism));
-          $t_organism_id = '';                                   
+          $t_organism_id = '';
         }
       }
       else {
-        tripal_report_error('T_gff3_loader', TRIPAL_WARNING, "The target_organism attribute is improperly formatted: %target. 
-          It should be target_organism=genus:species.", 
+        tripal_report_error('T_gff3_loader', TRIPAL_WARNING, "The target_organism attribute is improperly formatted: %target.
+          It should be target_organism=genus:species.",
           array('%target' => $gff_target_organism));
-        $t_organism_id = '';                
+        $t_organism_id = '';
       }
-    }  
-  
+    }
+
     // default the target type to be the value passed into the function, but if the GFF file
     // species the target type then use that instead
     $t_type_id = '';
@@ -1867,9 +1960,9 @@ function tripal_feature_load_gff3_target($feature, $tags, $target_organism_id, $
         $t_type_id = $type[0]->cvterm_id;
       }
       else {
-        tripal_report_error('T_gff3_loader', TRIPAL_ERROR, "The target type does not exist in the sequence ontology: %type. ", 
+        tripal_report_error('T_gff3_loader', TRIPAL_ERROR, "The target type does not exist in the sequence ontology: %type. ",
           array('%type' => $target_type));
-        exit;  
+        exit;
       }
     }
     if ($gff_target_type) {
@@ -1879,7 +1972,7 @@ function tripal_feature_load_gff3_target($feature, $tags, $target_organism_id, $
            'name' => 'sequence',
         )
       );
-      
+
       // get the cvterm_id for the target type
       $type = chado_select_record('cvterm', array('cvterm_id'), $values);
       if (count($type) == 1) {
@@ -1891,7 +1984,7 @@ function tripal_feature_load_gff3_target($feature, $tags, $target_organism_id, $
           SELECT CVTS.cvterm_id
           FROM {cvtermsynonym} CVTS
             INNER JOIN {cvterm} CVT ON CVT.cvterm_id = CVTS.cvterm_id
-            INNER JOIN {cv} CV      ON CV.cv_id = CVT.cv_id 
+            INNER JOIN {cv} CV      ON CV.cv_id = CVT.cv_id
           WHERE CV.name = 'sequence' and CVTS.synonym = :synonym
         ";
         $synonym = chado_query($sql, array(':synonym' => $gff_target_type))->fetchObject();
@@ -1899,22 +1992,22 @@ function tripal_feature_load_gff3_target($feature, $tags, $target_organism_id, $
           $t_type_id = $synonym->cvterm_id;
         }
         else {
-          tripal_report_error('T_gff3_loader', TRIPAL_WARNING, "The target_type attribute does not exist in the sequence ontology: %type. ", 
+          tripal_report_error('T_gff3_loader', TRIPAL_WARNING, "The target_type attribute does not exist in the sequence ontology: %type. ",
             array('%type' => $gff_target_type));
           $t_type_id = '';
         }
       }
-    }                       
-    
+    }
+
     // we want to add a featureloc record that uses the target feature as the srcfeature (landmark)
     // and the landmark as the feature.
-    tripal_feature_load_gff3_featureloc($feature, $organism, $target_feature, $target_fmin, 
-      $target_fmax, $target_strand, $phase, $attr_fmin_partial, $attr_fmax_partial, $attr_residue_info, 
-      $attr_locgroup, $t_type_id, $t_organism_id, $create_target, TRUE); 
+    tripal_feature_load_gff3_featureloc($feature, $organism, $target_feature, $target_fmin,
+      $target_fmax, $target_strand, $phase, $attr_fmin_partial, $attr_fmax_partial, $attr_residue_info,
+      $attr_locgroup, $t_type_id, $t_organism_id, $create_target, TRUE);
   }
   // the target attribute is not correctly formatted
   else {
     tripal_report_error('T_gff3_loader', TRIPAL_ERROR, "Could not add 'Target' alignment as it is improperly formatted:  '%target'",
-      array('%target' => $tags['Target'][0]));            
+      array('%target' => $tags['Target'][0]));
   }
 }
