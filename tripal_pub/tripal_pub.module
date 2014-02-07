@@ -303,9 +303,11 @@ function tripal_pub_views_api() {
 }
 
 /**
- * Implement hook_permissions().
+ * Implement hook_permission().
+ *
+ * @ingroup tripal_pub
  */
-function tripal_pub_permissions() {
+function tripal_pub_permission() {
   return array(
     'access chado_pub content' => array(
       'title' => t('View Publications'),

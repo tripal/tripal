@@ -13,7 +13,9 @@ require_once('includes/tripal_natural_diversity.admin.inc');
  */
 
 /**
- *  Set the permission types that the chado module uses.  Essentially we
+ * Implements hook_permission().
+ *
+ * Set the permission types that the chado module uses.  Essentially we
  *  want permissionis
  *
  * @ingroup tripal_natural_diversity

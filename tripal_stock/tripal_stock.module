@@ -119,7 +119,7 @@ function cs_node_load($nid) {
 }
 
 /**
- * Implementation of hook_perm().
+ * Implementation of hook_permission().
  *
  * Purpose: Set the permission types that the chado stock module uses
  *
@@ -128,7 +128,7 @@ function cs_node_load($nid) {
  *
  * @ingroup tripal_stock
  */
-function tripal_stock_permissions() {
+function tripal_stock_permission() {
   return array(
     'access chado_stock content' => array(
       'title' => t('View Stocks'),

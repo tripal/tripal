@@ -46,13 +46,15 @@ function tripal_featuremap_help($path, $arg) {
 
 
 /**
+ * Implements hook_permission().
+ *
  * Set the permission types that the chado module uses.  Essentially we
  * want permissionis that protect creation, editing and deleting of chado
  * data objects
  *
  * @ingroup tripal_featuremap
  */
-function tripal_featuremap_permissions() {
+function tripal_featuremap_permission() {
   return array(
     'access chado_featuremap content' => array(
       'title' => t('View Maps'),

@@ -97,7 +97,9 @@ function tripal_db_help ($path, $arg) {
 
 
 /**
- *  Set the permission types that the chado module uses.  Essentially we
+ * Implements hook_permission().
+ *
+ * Set the permission types that the chado module uses.  Essentially we
  *  want permissionis that protect creation, editing and deleting of chado
  *  data objects
  *
@@ -133,7 +135,7 @@ function tripal_db_views_api() {
  * @ingroup tripal_db
  */
 function tripal_db_theme($existing, $type, $theme, $path) {
- 
+
  $items = array(
     'tripal_db_help' => array(
       'template' => 'tripal_db_help',

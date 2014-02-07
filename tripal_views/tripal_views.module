@@ -163,8 +163,9 @@ function tripal_views_help ($path, $arg) {
 }
 
 /**
- * Implements hook_permissions()
- * Purpose: Set the permission types that the chado module uses.
+ * Implements hook_permissions().
+ *
+ * Set the permission types that the chado module uses.
  *
  * @ingroup tripal_views
  */

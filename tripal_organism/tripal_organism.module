@@ -173,12 +173,13 @@ function tripal_organism_theme($existing, $type, $theme, $path) {
 }
 
 /**
-  *  Set the permission types that the chado module uses.  Essentially we
+  * Implements hook_permission().
+  *
+  * Set the permission types that the chado module uses.  Essentially we
   *  want permissionis that protect creation, editing and deleting of chado
   *  data objects
   *
-  *
-  @ingroup tripal_organism
+  * @ingroup tripal_organism
   */
 function tripal_organism_permission() {
   return array(

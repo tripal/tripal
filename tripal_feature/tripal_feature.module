@@ -69,13 +69,15 @@ function tripal_feature_help($path, $arg) {
 
 
 /**
+ * Implements hook_permission().
+ *
  *  Set the permission types that the chado module uses.  Essentially we
  *  want permissionis that protect creation, editing and deleting of chado
  *  data objects
  *
  * @ingroup tripal_feature
  */
-function tripal_feature_permissions() {
+function tripal_feature_permission() {
   return array(
     'access chado_feature content' => array(
       'title' => t('View Features'),

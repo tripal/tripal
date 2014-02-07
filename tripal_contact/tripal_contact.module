@@ -227,11 +227,11 @@ function tripal_contact_block_view($delta = '') {
 }
 
 /**
- * Implement hook_permissions().
+ * Implement hook_permission().
  *
  * @ingroup tripal_contact
  */
-function tripal_contact_permissions() {
+function tripal_contact_permission() {
   return array(
     'access chado_contact content' => array(
       'title' => t('View Contacts'),
