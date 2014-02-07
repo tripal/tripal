@@ -1,7 +1,13 @@
 <?php
+/**
+ * @file
+ * Administration of the natural diversity module
+ */
 
 /**
+ * Admin Launchpad
  *
+ * @ingroup tripal_natural_diversity
  */
 function tripal_natural_diversity_admin_natdiv_view() {
   $output = '';

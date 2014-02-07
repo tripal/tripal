@@ -1,12 +1,13 @@
 <?php
 /**
  * @file
- * 
+ * Adds to the tripal schema description.
+ *
  * This file contains hooks for specifying the natural diversity tables
  * when Chado v1.11 is installed.  This is only useful for some specific
  * sites that required the ND tables before they were released.  These
  * files should not be needed for most sites as the ND tables are now part
- * of Chado v1.2. However these hooks remain here for backwards compatibility. 
+ * of Chado v1.2. However these hooks remain here for backwards compatibility.
  */
 
 /**
