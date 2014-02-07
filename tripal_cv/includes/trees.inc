@@ -1,8 +1,7 @@
 <?php
-
 /**
  * @file
- * @todo Stephen describe this file
+ * Functions for rendering term tree's
  */
 
 /**
@@ -113,7 +112,7 @@ function tripal_cv_show_browser() {
  * With these three components (materialized view, a 'div' box with proper CSS class and ID, and a hook_cv_tree)
  * a tree will be created on the page.  There is no need to call this function directly.
  *
- * @ingroup tripal_cv
+ * @ingroup tripal_cv_api
  */
 function tripal_cv_tree($tree_id) {
   // parse out the tripal module name from the chart_id to find out
@@ -135,8 +134,8 @@ function tripal_cv_tree($tree_id) {
   return drupal_json($json_array);
 }
 
-
 /**
+ * Update the JSON tree describing a tree
  *
  * @ingroup tripal_cv
  */
@@ -237,7 +236,7 @@ function tripal_cv_init_tree($cv_id, $cnt_table = NULL, $fk_column = NULL,
 }
 
 /**
- *  Generates SON needed for jsTree -expanding a term to view children
+ *  Generates JSON needed for jsTree -expanding a term to view children
  *
  *  This function returns the JSON array for the jsTree
  *    jQuery code when expanding a term to view it's children.
@@ -329,7 +328,8 @@ function tripal_cv_get_term_children($cvterm_id, $cnt_table = NULL,
 }
 
 /**
- * @todo Stephen: describe what this function does
+ * Initilizes term tree browser
+ *
  * @ingroup tripal_cv
  */
 function tripal_cv_init_browser($cv_id) {

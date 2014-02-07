@@ -1,6 +1,11 @@
 <?php
 /**
- * Purpose: Provides the actual "Select CV" form on the Update/Delete Controlled
+ * @file
+ * Provides a form for creating & editing chado controlled vocabularies
+ */
+
+/**
+ * Provides the actual "Select CV" form on the Update/Delete Controlled
  *   Vocabulary page. This form also triggers the edit javascript
  * @todo Modify this form to use Drupal AJAX
  *
@@ -68,12 +73,11 @@ function tripal_cv_cv_edit_form($form, &$form_state) {
   }
   return $form;
 }
+
 /**
+ * Form to add contolled vocabularies
  *
- * @param $form
- * @param $form_state
- *
- * @ingroup tripal_db
+ * @ingroup tripal_cv
  */
 function tripal_cv_cv_add_form($form, $form_state) {
 
@@ -87,13 +91,11 @@ function tripal_cv_cv_add_form($form, $form_state) {
   );
   return $form;
 }
+
 /**
+ * Form fields in common between the cv add & edit form.
  *
- * @param $form
- * @param $form_state
- * @param $cv_id
- *
- * @ingroup tripal_db
+ * @ingroup tripal_cv
  */
 function tripal_cv_add_cv_form_fields(&$form, $form_state, $cv_id = NULL) {
 
@@ -136,28 +138,24 @@ function tripal_cv_add_cv_form_fields(&$form, $form_state, $cv_id = NULL) {
 
 /**
  * Validation fucntion for tripal_cv_cv_add_form
- * @param $form
- * @param $form_state
  *
  * @ingroup tripal_cv
  */
 function tripal_cv_cv_add_form_validate($form, &$form_state) {
   tripal_cv_form_fields_validate($form, $form_state);
 }
+
 /**
  * Validation fucntion for tripal_cv_cv_edit_form
- * @param unknown_type $form
- * @param unknown_type $form_state
  *
  * @ingroup tripal_cv
  */
 function tripal_cv_cv_edit_form_validate($form, &$form_state) {
   tripal_cv_form_fields_validate($form, $form_state);
 }
+
 /**
- * Genetic validation form for shared fields of both the edit and add forms
- * @param $form
- * @param $form_state
+ * Generic validation form for shared fields of both the edit and add forms
  *
  * @ingroup tripal_cv
  */
@@ -174,10 +172,11 @@ function tripal_cv_form_fields_validate($form, &$form_state) {
     form_set_error('name', 'The vocabulary name must be unique');
   }
 }
+
 /**
+ * Submit cv add form
  *
- * @param $form
- * @param $form_state
+ * @ingroup tripal_cv
  */
 function tripal_cv_cv_add_form_submit($form, &$form_state) {
 
@@ -196,10 +195,11 @@ function tripal_cv_cv_add_form_submit($form, &$form_state) {
     drupal_set_message(t("Failed to add controlled vocabulary."));
   }
 }
+
 /**
+ * Submit cv edit form
  *
- * @param unknown_type $form
- * @param unknown_type $form_state
+ * @ingroup tripal_cv
  */
 function tripal_cv_cv_edit_form_submit($form, &$form_state) {
   $name  = array_key_exists('name', $form_state['values'])       ? trim($form_state['values']['name']) : '';
@@ -235,6 +235,7 @@ function tripal_cv_cv_edit_form_submit($form, &$form_state) {
 
 /**
  * Ajax callback for the tripal_cv_form
+ *
  * @ingroup tripal_cv
  */
 function tripal_cv_edit_form_ajax($form, $form_state) {

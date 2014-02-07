@@ -1,5 +1,10 @@
 <?php
- /**
+/**
+ * @file
+ * Provides a form for updating controlled vocabularies path
+ */
+
+/**
  * Form for re-doing the cvterm path
  *
  * @ingroup tripal_cv
@@ -20,7 +25,7 @@ function tripal_cv_cvtermpath_form() {
     '#title' => t('Controlled Vocabulary/Ontology Name'),
     '#type' => 'select',
     '#options' => $cvs,
-    '#description' => t('The Chado cvtermpath is a database table that provides lineage for ontology terms 
+    '#description' => t('The Chado cvtermpath is a database table that provides lineage for ontology terms
       and is useful for quickly finding any ancestor parent of a term.  This table must be populated for each
       ontology.  Select a controlled vocabulary for which you would like to upate the cvtermpath.'),
   );
@@ -38,7 +43,8 @@ function tripal_cv_cvtermpath_form() {
   );
 
   return $form;
-} 
+}
+
 /**
  * Cvterm path form submit
  *

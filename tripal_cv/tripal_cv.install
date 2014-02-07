@@ -6,7 +6,10 @@
  */
 
 /**
+ * Implements hook_disable().
  * Disable default views when module is disabled
+ *
+ * @ingroup tripal_cv
  */
 function tripal_cv_disable() {
 
@@ -21,6 +24,8 @@ function tripal_cv_disable() {
 
 /**
  * Implementation of hook_requirements().
+ *
+ * @ingroup tripal_cv
  */
 function tripal_cv_requirements($phase) {
   $requirements = array();
@@ -36,6 +41,7 @@ function tripal_cv_requirements($phase) {
   }
   return $requirements;
 }
+
 /**
  * Implementation of hook_install().
  *
@@ -51,10 +57,11 @@ function tripal_cv_install() {
 
   // add defaults to the tables that correlate OBO files/references with a chado CV
   tripal_cv_add_obo_defaults();
-  
+
   // create the temp table we will use for loading OBO files
   tripal_cv_create_tripal_obo_temp();
 }
+
 /**
  * Implementation of hook_uninstall().
  *
@@ -68,14 +75,17 @@ function tripal_cv_uninstall() {
     db_query($sql);
   }
 }
+
 /**
+ * Creates a temporary table to store obo details while loading an obo file
  *
+ * @ingroup tripal_cv
  */
 function tripal_cv_create_tripal_obo_temp() {
   // the tripal_obo_temp table is used for temporary housing of records when loading OBO files
-  // we create it here using plain SQL because we want it to be in the chado schema but we 
-  // do not want to use the Tripal Custom Table API because we don't want it to appear in the 
-  // list of custom tables.  It needs to be available for the Tripal Chado API so we create it 
+  // we create it here using plain SQL because we want it to be in the chado schema but we
+  // do not want to use the Tripal Custom Table API because we don't want it to appear in the
+  // list of custom tables.  It needs to be available for the Tripal Chado API so we create it
   // here and then define it in the tripal_cv/api/tripal_cv.schema.api.inc
   if (!db_table_exists('chado.tripal_obo_temp')) {
     $sql = "
@@ -84,7 +94,7 @@ function tripal_cv_create_tripal_obo_temp() {
         stanza text NOT NULL,
         type character varying(50) NOT NULL,
         CONSTRAINT tripal_obo_temp_uq0 UNIQUE (id)
-      );      
+      );
     ";
     chado_query($sql);
     $sql = "CREATE INDEX tripal_obo_temp_idx0 ON {tripal_obo_temp} USING btree (id)";
@@ -93,6 +103,7 @@ function tripal_cv_create_tripal_obo_temp() {
     chado_query($sql);
   }
 }
+
 /**
  * Implementation of hook_schema().
  *
@@ -121,12 +132,13 @@ function tripal_cv_schema() {
     ),
     'primary key' => array('obo_id'),
   );
-  
+
 
   return $schema;
 }
 
 /**
+ * Add a materialized view of root terms for all chado cvs. This is needed for viewing cv trees
  *
  * @ingroup tripal_cv
  */
@@ -174,7 +186,6 @@ function tripal_cv_add_cv_root_mview() {
   // Create the MView
   tripal_add_mview($mv_name, 'tripal_cv', $schema, $sql, $comment);
 }
-
 
 /**
  * Add's defaults to the tripal_cv_obo table

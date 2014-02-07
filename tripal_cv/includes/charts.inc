@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Tripal API for generating a Google Chart of count data
@@ -123,7 +122,7 @@
  * With these three components (materialized view, a 'div' box with proper CSS class and ID, and a hook_cv_chart)
  * a chart will be created on the page.  There is no need to call this function directly.
  *
- * @ingroup tripal_cv
+ * @ingroup tripal_cv_api
  */
 function tripal_cv_chart($chart_id) {
   // parse out the tripal module name from the chart_id to find out
@@ -183,7 +182,7 @@ function tripal_cv_chart($chart_id) {
   * @return
   *   An array that has the settings needed for Google Charts to creat the chart.
   *
-  * @ingroup tripal_cv
+  * @ingroup tripal_cv_api
   */
 function tripal_cv_count_chart($cnt_table, $fk_column,
   $cnt_column, $filter = NULL, $title = '', $type = 'p3', $size='300x75') {

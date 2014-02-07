@@ -1,4 +1,9 @@
 <?php
+/**
+ * @file
+ * Provides functions for managing chado controlled vocabularies which are used ubiquitously
+ * throughout chado.
+ */
 
 /**
  * @defgroup tripal_cv Controlled Vocabulary Module
@@ -9,18 +14,16 @@
  * @}
  */
 
-require_once "includes/charts.inc";
-require_once "includes/trees.inc";
-require_once "includes/obo_loader.inc";
-require_once "api/tripal_cv.api.inc";
+require_once 'api/tripal_cv.api.inc';
+require_once 'api/tripal_cv.schema.api.inc';
 
-require_once "includes/cv_form.inc";
-require_once "includes/cvterm_form.inc";
-require_once "includes/cvtermpath_form.inc";
-
-require_once "includes/tripal_cv_admin.inc";
-
-require_once "api/tripal_cv.schema.api.inc";
+require_once 'includes/tripal_cv_admin.inc';
+require_once 'includes/charts.inc';
+require_once 'includes/trees.inc';
+require_once 'includes/obo_loader.inc';
+require_once 'includes/cv_form.inc';
+require_once 'includes/cvterm_form.inc';
+require_once 'includes/cvtermpath_form.inc';
 
 /**
  * Implements hook_init().
@@ -175,7 +178,7 @@ function tripal_cv_menu() {
     'access arguments' => array('administer controlled vocabularies'),
     'type' => MENU_CALLBACK,
   );
-  
+
   /*
    * Charts
   */
@@ -186,7 +189,7 @@ function tripal_cv_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK
   );
-  
+
 
   /*
    * Menu items for working with CV Trees
@@ -236,8 +239,8 @@ function tripal_cv_menu() {
 }
 
 /**
- * Implements hook_help()
- * Purpose: Adds a help page to the module list
+ * Implements hook_help().
+ * Adds a help page to the module list
  */
 function tripal_cv_help ($path, $arg) {
   if ($path == 'admin/help#tripal_cv') {
@@ -246,6 +249,8 @@ function tripal_cv_help ($path, $arg) {
 }
 
 /**
+ * Implements hook_permission().
+ *
  *  Set the permission types that the chado module uses.  Essentially we
  *  want permissionis that protect creation, editing and deleting of chado
  *  data objects
@@ -262,20 +267,22 @@ function tripal_cv_permission() {
 }
 
 /**
- * Implements hook_views_api()
- * Purpose: Essentially this hook tells drupal that there is views support for
+ * Implements hook_views_api().
+ * Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_cv.views.inc where all the
  *  views integration code is
  *
  * @ingroup tripal_cv
  */
 function tripal_cv_views_api() {
-  return array('api' => 2.0);
+  return array('api' => 3.0);
 }
 
 /**
  * Implements hook_coder_ignore().
  * Defines the path to the file (tripal_cv.coder_ignores.txt) where ignore rules for coder are stored
+ *
+ * @ingroup tripal_cv
  */
 function tripal_cv_coder_ignore() {
   return array(
@@ -284,8 +291,11 @@ function tripal_cv_coder_ignore() {
   );
 }
 
-/*
+/**
+ * Implements hook_form_alter().
+ * Alter Forms
  *
+ * @ingroup tripal_cv
  */
 function tripal_cv_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == "tripal_cv_cvterm_form") {
@@ -302,14 +312,15 @@ function tripal_cv_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /**
- *  We need to let drupal know about our theme functions and their arguments.
+ * Implements hook_theme().
+ * We need to let drupal know about our theme functions and their arguments.
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module
  *
- * @ingroup tripal_db
+ * @ingroup tripal_cv
  */
 function tripal_cv_theme($existing, $type, $theme, $path) {
- 
+
  $items = array(
     'tripal_cv_help' => array(
       'template' => 'tripal_cv_help',

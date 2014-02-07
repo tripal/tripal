@@ -1,7 +1,12 @@
 <?php
+/**
+ * @file
+ * This module provides a set of functions to simplify working with
+ * controlled vocabularies.
+ */
 
 /**
- * @defgroup tripal_cv_api Ccontrolled Vocabulary API
+ * @defgroup tripal_cv_api Controlled Vocabulary API
  * @ingroup tripal_api
  * This module provides a set of functions to simplify working with
  * controlled vocabularies.  Most of the API functions deal with retrieving
@@ -17,7 +22,7 @@
  */
 
 /**
- * Purpose: To retrieve a chado controlled vocabulary object
+ * Retrieves a chado controlled vocabulary object
  *
  * @param $select_values
  *   An array meant to uniquely select a given controlled vocabulary
@@ -72,25 +77,6 @@ function tripal_cv_get_cv($select_values) {
 
 }
 
-// Purpose: To retrieve a chado cv object
-// @param $where_options
-//   @code
-//        array(
-//                          <column_name> => array(
-//                            'type' => <type of column: INT/STRING>,
-//                            'value' => <the vlaue you want to filter on>,
-//                            'exact' => <if TRUE use =; if FALSE use ~>,
-//                          )
-//        )
-// @endcode
-//
-// @return
-//   Chado cv object with all fields from the chado cv table
-//
-// @ingroup tripal_cv_api
-//
-//function tripal_cv_get_cv ($where_options)
-
 /**
  * Retrieve a cv given the cv name
  *
@@ -128,6 +114,7 @@ function tripal_cv_get_cv_by_id($cv_id) {
 
   return $r;
 }
+
 /**
  * Retrieve the cv id for the specified CV by name
  *
@@ -154,8 +141,6 @@ function tripal_cv_get_cv_id($cv_name) {
  * Create an options array to be used in a form element which provides a
  * list of all chado cvs
  *
- * NOTE: This function is deprecated as of Tripal v1.0
- *
  * @return
  *   An array(cv_id => name) for each cv in the chado cv table
  *
@@ -173,6 +158,7 @@ function tripal_cv_get_cv_options() {
   return $options;
 
 }
+
 /**
  * Retrieve a chado cvterm object with a given name
  *
@@ -196,6 +182,7 @@ function tripal_cv_get_cvterm_by_id($cvterm_id) {
   }
   return $r[0];
 }
+
 /**
  * Retrieve a chado cvterm object with a given name
  *
@@ -243,7 +230,7 @@ function tripal_cv_get_cvterm_by_name($name, $cv_id = NULL, $cv_name = 'tripal')
     return FALSE;
   }
   if (count($r) > 1) {
-    tripal_report_error('tripal_cv', TRIPAL_ERROR, 
+    tripal_report_error('tripal_cv', TRIPAL_ERROR,
       "Cannot find a unique term for the term '%name' in the vocabulary '%cv'. Multiple entries exist for this name",
       array('%name' => $name, '%cv' => $cv_name ? $cv_name : $cv_id));
     return FALSE;
@@ -304,6 +291,7 @@ function tripal_cv_get_cvterm_by_synonym($synonym, $cv_id = NULL, $cv_name = 'tr
   $cvterm = chado_select_record('cvterm', array('*'), $values, $options);
   return $cvterm[0];
 }
+
 /**
  * Create an options array to be used in a form element
  *   which provides a list of all chado cvterms
@@ -427,7 +415,9 @@ function tripal_cv_add_cv($name, $definition) {
 }
 
 /**
- *  Add's a CV term to the cvterm table.  If the parent CV does not exist then
+ *  Add's a CV term to the cvterm table.
+ *
+ *  If the parent CV does not exist then
  *  that too is added to the CV table.  If the cvterm is a relationship term
  *  then the $is_relationship argument should be set.  The function will try
  *  to first find the relationship in the relationship ontology for updating and
@@ -755,8 +745,9 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
 
 /**
  * This function allows other modules to programatically
- * submit an ontology for loading into Chado.  This function
- * will add a job to the Jobs subsystem for parsing the ontology.
+ * submit an ontology for loading into Chado.
+ *
+ * This function will add a job to the Jobs subsystem for parsing the ontology.
  * You can either pass a known OBO ID to the function or the URL
  * or full path the the ontology file.  If a URL or file name is
  * passed then the $obo_name argument must also be provided.  If
@@ -783,7 +774,6 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
  *
  * @ingroup tripal_cv_api
  */
-
 function tripal_cv_submit_obo_job($obo_id = NULL, $obo_name = NULL, $obo_url = NULL, $obo_file = NULL) {
   global $user;
 

@@ -1,7 +1,13 @@
 <?php
+/**
+ * @file
+ * Provides administration of controlled vocabularies & their terms.
+ */
 
 /**
  * Provide landing page to the new admin pages
+ *
+ * @ingroup tripal_cv
  */
 function tripal_cv_admin_cv_listing() {
   $output = '';

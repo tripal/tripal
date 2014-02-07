@@ -1,9 +1,13 @@
 <?php
+/**
+ * @file
+ * Provides a form for creating & editing chado controlled vocabularies
+ */
 
 /**
+ * Form for editing cvterms
  *
- * @param $form
- * @param $form_state
+ * @ingroup tripal_cv
  */
 function tripal_cv_cvterm_edit_form($form, &$form_state) {
 
@@ -122,10 +126,11 @@ function tripal_cv_cvterm_edit_form($form, &$form_state) {
   }
   return $form;
 }
+
 /**
+ * Form for adding cvterms
  *
- * @param $form
- * @param $form_state
+ * @ingroup tripal_cv
  */
 function tripal_cv_cvterm_add_form($form, &$form_state) {
   $cv_id = 0;
@@ -162,12 +167,9 @@ function tripal_cv_cvterm_add_form($form, &$form_state) {
 }
 
 /**
+ * Form fields in common between add/edit forms
  *
- * @param $form
- * @param $form_state
- * @param $cv_id
- *
- * @ingroup tripal_db
+ * @ingroup tripal_cv
  */
 function tripal_cv_add_cvterm_form_fields(&$form, $form_state, $cv_id = 0, $cvterm_name = '') {
 
@@ -258,9 +260,9 @@ function tripal_cv_add_cvterm_form_fields(&$form, $form_state, $cv_id = 0, $cvte
 }
 
 /**
+ * Validate cvterm edit form
  *
- * @param $form
- * @param $form_state
+ * @ingroup tripal_cv
  */
 function tripal_cv_cvterm_edit_form_validate($form, &$form_state) {
   $cv_id = array_key_exists('cv_id', $form_state['values']) ? $form_state['values']['cv_id'] : '';
@@ -282,10 +284,11 @@ function tripal_cv_cvterm_edit_form_validate($form, &$form_state) {
     }
   }
 }
+
 /**
+ * Validate cv add form
  *
- * @param $form
- * @param $form_state
+ * @ingroup tripal_cv
  */
 function tripal_cv_cvterm_add_form_validate($form, &$form_state) {
   $cv_id = array_key_exists('cv_id', $form_state['values']) ? $form_state['values']['cv_id'] : '';
@@ -322,9 +325,8 @@ function tripal_cv_cvterm_add_form_validate($form, &$form_state) {
 
 }
 
-
 /**
- * Purpose: Adds terms to an existing controlled vocabulary
+ * Edits existing controlled vocabulary terms
  *
  * @ingroup tripal_cv
  */
@@ -407,9 +409,9 @@ function tripal_cv_cvterm_edit_form_submit($form, &$form_state) {
 }
 
 /**
+ * Adds new terms to an existing cv
  *
- * @param unknown_type $form
- * @param unknown_type $form_state
+ * @ingroup tripal_cv
  */
 function tripal_cv_cvterm_add_form_submit($form, &$form_state) {
   $cv_id = array_key_exists('cv_id', $form_state['values']) ? $form_state['values']['cv_id'] : '';
@@ -448,8 +450,10 @@ function tripal_cv_cvterm_add_form_submit($form, &$form_state) {
     drupal_set_message('Could not add term. Check Drupal recent logs for error messages.', 'error');
   }
 }
+
 /**
  * Ajax callback for the tripal_cv_form
+ *
  * @ingroup tripal_cv
  */
 function tripal_cv_cvterm_edit_form_ajax($form, $form_state) {

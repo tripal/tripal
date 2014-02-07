@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Describes some chado tables to the tripal schema api
+ */
 
 /**
  * Implements hook_chado_schema_v1_2_tripal_obo_temp()
@@ -11,7 +15,6 @@
  *    An array describing the 'tripal_obo_temp' table
  *
  * @ingroup tripal_chado_v1.2_schema_api
- *
  */
 function tripal_cv_chado_schema_v1_2_tripal_obo_temp() {
   $schema = array(

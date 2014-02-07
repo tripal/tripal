@@ -1,6 +1,13 @@
 <?php
 /**
+ * @file
+ * Describes default cv views
+ */
+
+/**
  * Implements hook_views_default_views().
+ *
+ * @ingroup tripal_cv
  */
 function tripal_cv_views_default_views() {
   $views = array();
@@ -18,6 +25,8 @@ function tripal_cv_views_default_views() {
 
 /**
  * Default Admin View for cv management
+ *
+ * @ingroup tripal_cv
  */
 function tripal_cv_defaultview_admin_cvs_listing() {
 
@@ -206,6 +215,8 @@ $handler->display->display_options['tab_options']['weight'] = '0';
 
 /**
  * Default Admin View for cvterm management
+ *
+ * @ingroup tripal_cv
  */
 function tripal_cv_defaultview_admin_cvterms_listing() {
 

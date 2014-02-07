@@ -1,5 +1,10 @@
 <?php
 /**
+ * @file
+ * Functions to aid in loading ontologies into the chado cv module
+ */
+
+/**
  * @defgroup tripal_obo_loader Ontology Loader
  * @ingroup tripal_cv
  * @{
@@ -8,10 +13,10 @@
  */
 
 /**
- * Purpose: Provides the form to load an already existing controlled
+ * Provides the form to load an already existing controlled
  *  Vocabulary into chado
  *
-  * @ingroup tripal_obo_loader
+ * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_form($form, &$form_state) {
 
@@ -89,10 +94,10 @@ function tripal_cv_obo_form($form, &$form_state) {
 }
 
 /**
- * Purpose: The submit function for the load ontology form. It registers a
+ * The submit function for the load ontology form. It registers a
  *   tripal job to run the obo_loader.php script
  *
-   * @ingroup tripal_obo_loader
+ * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_form_submit($form, &$form_state) {
   $obo_id =  $form_state['values']['obo_id'];
@@ -211,8 +216,6 @@ function tripal_cv_load_update_cvtermpath($newcvs, $jobid) {
   }
 }
 
-
-
 /**
  *
  * @ingroup tripal_obo_loader
@@ -285,8 +288,10 @@ function tripal_cv_obo_quiterror($message) {
 
 }
 
-/*
+/**
  *
+ *
+ * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid) {
   $sql = "SELECT * FROM {tripal_obo_temp} WHERE type = 'Typedef' ";
@@ -333,6 +338,7 @@ function tripal_cv_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid) {
   }
   return 1;
 }
+
 /**
  *
  * @ingroup tripal_obo_loader
@@ -927,6 +933,7 @@ function tripal_cv_obo_add_cvterm_dbxref($cvterm, $xref) {
 
 /**
  * Add property to CVterm
+ *
  * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
@@ -991,9 +998,9 @@ function tripal_cv_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
   return TRUE;
 }
 
-
 /**
  * Add Database Reference
+ *
  * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_add_dbxref($db_id, $accession, $version='', $description='') {
@@ -1025,4 +1032,3 @@ function tripal_cv_obo_add_dbxref($db_id, $accession, $version='', $description=
   }
   return $result[0];
 }
-
