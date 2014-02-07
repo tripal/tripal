@@ -322,11 +322,19 @@ function tripal_core_menu() {
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/schema/mviews/action/%/%'] = array(
+  $items['admin/tripal/schema/mviews/action/update/%'] = array(
     'title' => 'Create Materialized View',
     'description' => 'Materialized views are used to improve speed of large or complex queries.',
-    'page callback' => 'tripal_mviews_action',
-    'page arguments' => array(5, 6, "1"),
+    'page callback' => 'tripal_add_populate_mview',
+    'page arguments' => array(6, "1"),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/schema/mviews/action/delete/%'] = array(
+    'title' => 'Create Materialized View',
+    'description' => 'Materialized views are used to improve speed of large or complex queries.',
+    'page callback' => 'tripal_delete_mview',
+    'page arguments' => array(6, "1"),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );
