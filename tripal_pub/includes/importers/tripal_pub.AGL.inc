@@ -1,9 +1,23 @@
 <?php
 /**
+ * @file
+ * @stephen
+ */
+
+/**
+ * @stephen
  *
+ * @param $form
+ * @param $form_state
+ * @param $num_criteria
+ *
+ * @return
+ *   The form (drupal form api)
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_remote_alter_form_AGL($form, $form_state, $num_criteria = 1) {
-  
+
   // So far we haven't been able to get AGL to filter results to only
   // include pubs by the XX number days in the past.  So, we will
   // change the 'days' element to be the year to query
@@ -16,8 +30,17 @@ function tripal_pub_remote_alter_form_AGL($form, $form_state, $num_criteria = 1)
   }
   return $form;
 }
+
 /**
+ * @stephen
  *
+ * @param $form
+ * @param $form_state
+ *
+ * @return
+ *  The form (drupal form api)
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_remote_validate_form_AGL($form, $form_state) {
   $days =  trim($form_state['values']["days"]);
@@ -43,8 +66,18 @@ function tripal_pub_remote_validate_form_AGL($form, $form_state) {
   }
   return $form;
 }
+
 /**
+ * @stephen
  *
+ * @param $search_array
+ * @param $num_to_retrieve
+ * @param $page
+ *
+ * @return
+ *
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
   // get some values from the serach array
@@ -324,7 +357,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
     "author"   => "u=1003",
     "abstract" => "u=62",
     "id"       => "u=12",
-    "year"     => "u=30 r=o", 
+    "year"     => "u=30 r=o",
     "journal"  => "u=1033"
   );
   yaz_ccl_conf($yazc, $fields);
@@ -339,10 +372,10 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
     );
   }
   $search_str = $cclresult["rpn"];
- 
-  // get the total number of records 
+
+  // get the total number of records
   $total_records = tripal_pub_AGL_count($yazc, $search_str);
-  
+
   // get the pubs in the specified rang
   $start = $page * $num_to_retrieve;
   $results = tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $total_records);
@@ -352,8 +385,20 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
 
   return $results;
 }
+
 /**
- * 
+ * @stephen
+ *
+ * @param $yazc
+ * @param $search_str
+ * @param $start
+ * @param $num_to_retrieve
+ * @param $total_records
+ *
+ * @return
+ *
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $total_records) {
   yaz_range($yazc, 1, $total_records);
@@ -376,7 +421,7 @@ function tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $tot
   if ($start + $num_to_retrieve > $total_records) {
     $num_to_retrieve = $total_records - $start;
   }
-  
+
   $pubs = array();
   for($i = $start; $i < $start + $num_to_retrieve; $i++) {
     $pub_xml = yaz_record($yazc, $i + 1, 'xml; charset=marc-8,utf-8');
@@ -389,10 +434,20 @@ function tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $tot
     'pubs'          => $pubs,
   );
 }
-/*
+
+/**
  * This function is used as the callback function when used with the
- * tripal_pager_callback function.  This function returns a count of
- * the dataset to be paged.
+ * tripal_pager_callback function.
+ *
+ * @stephen
+ *
+ * @param $yazc
+ * @param $search_str
+ *
+ * @return
+ * a count of the dataset to be paged.
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_AGL_count($yazc, $search_str) {
 
@@ -427,11 +482,19 @@ function tripal_pub_AGL_count($yazc, $search_str) {
   return $count;
 }
 
-
-/*
+/**
+ * Parse publication XML for a single publication
+ *
  * Description of XML format:
  * http://www.loc.gov/marc/bibliographic/bdsummary.html
  *
+ * @param $pub_xml
+ *  A string containing the XML for a single publications
+ *
+ * @return
+ *  An array containing the details of the publication
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_AGL_parse_pubxml($pub_xml) {
   $pub = array();
@@ -469,9 +532,9 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
           break;
         case '008':  // fixed length data elements
           $month = array(
-            '01' => 'Jan', '02' => 'Feb', '03' => 'Mar', 
-            '04' => 'Apr', '05' => 'May', '06' => 'Jun', 
-            '07' => 'Jul', '08' => 'Aug', '09' => 'Sep', 
+            '01' => 'Jan', '02' => 'Feb', '03' => 'Mar',
+            '04' => 'Apr', '05' => 'May', '06' => 'Jun',
+            '07' => 'Jul', '08' => 'Aug', '09' => 'Sep',
             '10' => 'Oct', '11' => 'Nov', '12' => 'Dec'
             );
             $date0 = substr($value, 0, 6);  // date entered on file
@@ -809,7 +872,7 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
     $pub['Authors'] = $authors;
   }
   else {
-    $pub['Authors'] = $pub['Author List'];  
+    $pub['Authors'] = $pub['Author List'];
   }
 
   // build the citation
@@ -819,9 +882,15 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
   return $pub;
 }
 
-/*
+/**
+ * @stephen
+ *
+ * @param $xml
+ *
+ * @return
  *
  *
+ * @ingroup tripal_pub
  */
 function tripal_pub_remote_search_AGL_get_subfield($xml) {
   $codes = array();
@@ -842,9 +911,16 @@ function tripal_pub_remote_search_AGL_get_subfield($xml) {
   return $codes;
 }
 
-/*
+/**
+ * @stephen
+ *
+ * @param $xml
+ * @param $ind1
+ *
+ * @return
  *
  *
+ * @ingroup tripal_pub
  */
 function tripal_pub_remote_search_AGL_get_author($xml, $ind1) {
   $author = array();

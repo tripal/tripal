@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Contains function relating to drush-integration of this module.
@@ -10,6 +9,8 @@
  *
  * @return
  *   The first line of description when executing the help for a given command
+ *
+ * @ingroup tripal_drush
  */
 function tripal_pub_drush_help($command) {
   switch ($command) {
@@ -23,6 +24,8 @@ function tripal_pub_drush_help($command) {
  *
  * @return
  *   And array of command descriptions
+ *
+ * @ingroup tripal_drush
  */
 function tripal_pub_drush_command() {
   $items = array();
@@ -37,7 +40,7 @@ function tripal_pub_drush_command() {
     'examples' => array(
       'Standard example' => 'drush tripal-pubs-import',
       'Standard example' => 'drush -l http://[site url] tripal-pubs-import --report=[email]. Where [site url] is the URL of the website and [email] is the email address of the recipient to receive the HTML report',
-      'Import single publication' => 'drush tripal-pub-import --dbxref=PMID:23582642',  
+      'Import single publication' => 'drush tripal-pub-import --dbxref=PMID:23582642',
   ),
     'aliases' => array('tpubs-import'),
   );
@@ -63,6 +66,7 @@ function tripal_pub_drush_command() {
 /**
  * Imports publications into Chado
  *
+ * @ingroup tripal_drush
  */
 function drush_tripal_pub_tripal_pubs_import() {
   $create_contacts = drush_get_option('create_contacts');
@@ -84,9 +88,11 @@ function drush_tripal_pub_tripal_pubs_import() {
     tripal_pub_import_publications($do_report, $update);
   }
 }
+
 /**
  * Imports publications into Chado
  *
+ * @ingroup tripal_drush
  */
 function drush_tripal_pub_tripal_pubs_update() {
   $create_contacts = drush_get_option('create_contacts');
