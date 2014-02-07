@@ -1,7 +1,13 @@
 <?php
+/**
+ * @file
+ * Describe default genetic views
+ */
 
 /**
  * Implements hook_views_default_views().
+ *
+ * @ingroup tripal_genetic
  */
 function tripal_genetic_views_default_views() {
   $views = array();
@@ -12,6 +18,11 @@ function tripal_genetic_views_default_views() {
   return $views;
 }
 
+/**
+ * Describes the default administration genetic view
+ *
+ * @ingroup tripal_genetic
+ */
 function tripal_genetic_defaultviews_admin_genotypes() {
 
   $view = new view();
