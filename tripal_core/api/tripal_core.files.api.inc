@@ -1,5 +1,11 @@
 <?php
 /**
+ * @file
+ * Provides an application programming interface (API) for managing files within
+ * the Tripal data directory structure.
+ */
+
+/**
  * @defgroup tripal_files_api Files API
  * @ingroup tripal_core_api
  * @{
@@ -19,6 +25,8 @@
  *   the name of the module being installed
  * @param $path
  *   Optional sub-path to create
+ *
+ * @ingroup tripal_files_api
  */
 function tripal_create_files_dir($module_name, $path = FALSE) {
 

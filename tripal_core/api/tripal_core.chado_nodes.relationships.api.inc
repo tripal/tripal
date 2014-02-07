@@ -419,7 +419,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
  * Validate the user input for creating a new relationship
  * Called by the add button in chado_add_node_form_relationships
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_core
  */
 function chado_add_node_form_relationships_add_button_validate($form, &$form_state) {
 
@@ -524,7 +524,7 @@ function chado_add_node_form_relationships_add_button_validate($form, &$form_sta
  * Create an array of additional relationships in the form state. This array will then be
  * used to rebuild the form in subsequent builds
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_core
  */
 function chado_add_node_form_relationships_add_button_submit(&$form, &$form_state) {
 
@@ -575,7 +575,7 @@ function chado_add_node_form_relationships_add_button_submit(&$form, &$form_stat
  *
  * Called by the many remove buttons in chado_add_node_form_relationships
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_core
  */
 function chado_add_node_form_relationships_form_remove_button_validate($form, $form_state) {
   // No Validation needed for remove
@@ -585,7 +585,7 @@ function chado_add_node_form_relationships_form_remove_button_validate($form, $f
  * Remove the correct relationship from the form
  * Called by the many remove buttons in chado_add_node_form_relationships
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_core
  */
 function chado_add_node_form_relationships_remove_button_submit(&$form, &$form_state) {
 
@@ -609,7 +609,7 @@ function chado_add_node_form_relationships_remove_button_submit(&$form, &$form_s
 /**
  * Ajax function which returns the section of the form to be re-rendered
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_core
  */
 function chado_add_node_form_relationships_ajax_update($form, $form_state) {
   return $form['relationships']['relationship_table'];
@@ -631,7 +631,7 @@ function chado_add_node_form_relationships_ajax_update($form, $form_state) {
  *   ),
  * );
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_core
  */
 function chado_add_node_form_relationships_create_relationship_formstate_array($form, &$form_state) {
 
@@ -838,6 +838,8 @@ function chado_update_node_form_relationships($node, $details, $retrieved_relati
  *
  * @param $string
  *    The part of the string already typed in the textfield
+ *
+ * @ingroup tripal_core
  */
 function chado_add_node_form_relationships_name_to_id_callback($base_table, $name_field, $string) {
   $matches = array();

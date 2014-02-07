@@ -1,5 +1,10 @@
 <?php
 /**
+ * @file
+ * Provides an API to manage custom tables in Chado.
+ */
+
+/**
  * @defgroup tripal_custom_tables_api Custom Tables API
  * @ingroup tripal_core_api
  * @{

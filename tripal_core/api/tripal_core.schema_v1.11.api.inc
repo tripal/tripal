@@ -1,5 +1,10 @@
 <?php
 /**
+ * @file
+ * Describes the chado tables in version 1.11
+ */
+
+/**
  * @defgroup tripal_schema_v1_11_api Chado v1.11 Schema API
  * @ingroup tripal_chado_schema_api
  * @{

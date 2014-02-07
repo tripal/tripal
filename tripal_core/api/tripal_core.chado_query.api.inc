@@ -1,4 +1,9 @@
 <?php
+/**
+ * @file
+ * Provides an API for querying of chado including inserting, updating, deleting and
+ * selecting from chado.
+ */
 
 /**
  * @defgroup tripal_chado_query_api Chado Query API
@@ -1395,7 +1400,7 @@ function chado_pager_query($query, $args, $limit, $element, $count_query = '') {
  * species.  The cvterm is also specified using its foreign key and the cv_id
  * for the cvterm is nested as well.
  *
- * @ingroup tripal_chado_query_api
+ * @ingroup tripal_core
  */
 function chado_schema_get_foreign_key($table_desc, $field, $values, $options = NULL) {
 

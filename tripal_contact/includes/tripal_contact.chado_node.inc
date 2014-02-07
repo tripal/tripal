@@ -1,9 +1,16 @@
 <?php
 /**
- * Implementation of hook_tripal_contact_node_info().
+ * @file
+ * Implements drupal node hooks.
  *
+ * @ingroup tripal_contact
+ */
+
+/**
+ * Implementation of hook_node_info().
  * This node_info, is a simple node that describes the functionallity of the module.
  *
+ * @ingroup tripal_contact
  */
 function tripal_contact_node_info() {
 
@@ -31,10 +38,9 @@ function tripal_contact_node_info() {
     ),
   );
 }
+
 /**
- * Implementation of tripal_contact_form().
- *
- *
+ * Implementation of hook_form().
  *
  *  @parm $node
  *    The node that is created when the database is initialized
@@ -46,6 +52,7 @@ function tripal_contact_node_info() {
  *  @return $form
  *    The information that was enterd allong with
  *
+ * @ingroup tripal_contact
  */
 function chado_contact_form(&$node, $form_state) {
   $form = array();
@@ -228,7 +235,8 @@ function chado_contact_form(&$node, $form_state) {
 }
 
 /**
- *  validates submission of form when adding or updating a contact node
+ * Implements hook_validate().
+ * Validates submission of form when adding or updating a contact node.
  *
  * @ingroup tripal_contact
  */
@@ -280,7 +288,7 @@ function chado_contact_validate($node, $form, &$form_state) {
 }
 
 /**
- * Implement hook_access().
+ * Implements hook_access().
  *
  * This hook allows node modules to limit access to the node types they define.
  *
@@ -300,6 +308,7 @@ function chado_contact_validate($node, $form, &$form_state) {
  *  access.  The only exception is when the $op == 'create'.  We will always
  *  return TRUE if the permission is set.
  *
+ * @ingroup tripal_contact
  */
 function chado_contact_node_access($node, $op, $account ) {
   if ($op == 'create') {
@@ -330,7 +339,7 @@ function chado_contact_node_access($node, $op, $account ) {
 
 
 /**
- * Implementation of tripal_contact_insert().
+ * Implements of hook_insert().
  *
  * This function inserts user entered information pertaining to the contact instance into the
  * 'contactauthor', 'contactprop', 'chado_contact', 'contact' talble of the database.
@@ -338,7 +347,7 @@ function chado_contact_node_access($node, $op, $account ) {
  *  @parm $node
  *    Then node which contains the information stored within the node-ID
  *
- *
+ * @ingroup tripal_contact
  */
 function chado_contact_insert($node) {
 
@@ -404,19 +413,18 @@ function chado_contact_insert($node) {
   return TRUE;
 }
 
-/*
+/**
+ * Implements hook_update
  *
-* Implements hook_update
-*
-* The purpose of the function is to allow the module to take action when an edited node is being
-* updated. It updates any name changes to the database tables that werec reated upon registering a contact.
-* As well, the database will be changed, so the user changed information will be saved to the database.
-*
-* @param $node
-*   The node being updated
-*
-* @ingroup tripal_contact
-*/
+ * The purpose of the function is to allow the module to take action when an edited node is being
+ * updated. It updates any name changes to the database tables that werec reated upon registering a contact.
+ * As well, the database will be changed, so the user changed information will be saved to the database.
+ *
+ * @param $node
+ *   The node being updated
+ *
+ * @ingroup tripal_contact
+ */
 function chado_contact_update($node) {
   // remove surrounding white-space on submitted values
   $node->contactname          = trim($node->contactname);
@@ -466,8 +474,7 @@ function chado_contact_update($node) {
 
 
 /**
- * Implementation of tripal_contact_load().
- *
+ * Implements hook_load().
  *
  * @param $node
  *   The node that is to be accessed from the database
@@ -475,6 +482,7 @@ function chado_contact_update($node) {
  * @return $node
  *   The node with the information to be loaded into the database
  *
+ * @ingroup tripal_contact
  */
 function chado_contact_load($nodes) {
 
@@ -510,7 +518,7 @@ function chado_contact_load($nodes) {
 }
 
 /**
- * Implementation of tripal_contact_delete().
+ * Implements hook_delete().
  *
  * This function takes a node and if the delete button has been chosen by the user, the contact
  * and it's details will be removed.Following,given the node-ID, the instance will be deleted from
@@ -519,6 +527,7 @@ function chado_contact_load($nodes) {
  *  @parm $node
  *    Then node which contains the information stored within the node-ID
  *
+ * @ingroup tripal_contact
  */
 function chado_contact_delete(&$node) {
 
@@ -546,8 +555,9 @@ function chado_contact_delete(&$node) {
 
 
 /**
+ * Implements hook_node_view().
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_contact
  */
 function tripal_contact_node_view($node, $view_mode, $langcode) {
   switch ($node->type) {
@@ -586,8 +596,9 @@ function tripal_contact_node_view($node, $view_mode, $langcode) {
 }
 
 /**
+ * Implements hook_node_presave().
  *
- * @param $node
+ * @ingroup tripal_contact
  */
 function tripal_contact_node_presave($node) {
   switch ($node->type) {

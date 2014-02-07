@@ -1,12 +1,13 @@
 <?php
-
 /**
  * @file
- * Form elements used for tripal views
+ * Form elements used Various places in Tripal
  */
 
 /**
- * Register form elements
+ * Register form elements.
+ *
+ * @ingroup tripal_core
  */
 function tripal_core_element_info() {
   $elements = array();
@@ -32,8 +33,9 @@ function tripal_core_element_info() {
 }
 
 /**
- * Upload File and keep track of previously uploaded files
- * Form element description
+ * Upload File and keep track of previously uploaded files.
+ *
+ * @ingroup tripal_core
  */
 function expand_file_upload_combo($element, $form_state, $complete_form) {
 
@@ -76,9 +78,10 @@ function expand_file_upload_combo($element, $form_state, $complete_form) {
   return $element;
 }
 
-
 /**
- * Theme the file upload combo form element
+ * Theme the file upload combo form element.
+ *
+ * @ingroup tripal_core
  */
 function theme_file_upload_combo($variables) {
   $element = $variables['element'];
@@ -93,9 +96,10 @@ function theme_file_upload_combo($variables) {
   return $output;
 }
 
-
 /**
- * Validate all content passed into the file upload combo form element
+ * Validate all content passed into the file upload combo form element.
+ *
+ * @ingroup tripal_core
  */
 function file_upload_combo_value_callback($element, $input = FALSE, &$form_state) {
   $values = array();
@@ -151,7 +155,9 @@ function file_upload_combo_value_callback($element, $input = FALSE, &$form_state
 }
 
 /**
- * Form element description
+ * Retrieve Sequence bases form element.
+ *
+ * @ingroup tripal_core
  */
 function expand_sequence_combo($element, $form_state, $complete_form) {
 
@@ -189,7 +195,9 @@ function expand_sequence_combo($element, $form_state, $complete_form) {
 
 /**
  * Validate all content passed into the sequence combo form element
- * D7 @todo: test/fix this callback
+ * D7 @todo: test/fix this callback.
+ *
+ * @ingroup tripal_core
  */
 function sequence_combo_value_callback($element, $input = FALSE, &$form_state) {
   $upstream = $form['values'][$element['#name']]['upstream'];
@@ -212,7 +220,9 @@ function sequence_combo_value_callback($element, $input = FALSE, &$form_state) {
 }
 
 /**
- * Theme the file sequence form element
+ * Theme the file sequence form element.
+ *
+ * @ingroup tripal_core
  */
 function theme_sequence_combo($variables) {
   $element = $variables['element'];

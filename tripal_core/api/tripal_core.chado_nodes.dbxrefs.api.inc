@@ -356,7 +356,7 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
  * Validate the user input for creating a new dbxref
  * Called by the add button in chado_add_node_form_dbxrefs
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_core
  */
 function chado_add_node_form_dbxrefs_add_button_validate($form, &$form_state) {
 
@@ -385,7 +385,7 @@ function chado_add_node_form_dbxrefs_add_button_validate($form, &$form_state) {
  * Create an array of additional dbxrefs in the form state. This array will then be
  * used to rebuild the form in subsequent builds
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_core
  */
 function chado_add_node_form_dbxrefs_add_button_submit(&$form, &$form_state) {
 
@@ -416,7 +416,7 @@ function chado_add_node_form_dbxrefs_add_button_submit(&$form, &$form_state) {
  *
  * Called by the many remove buttons in chado_add_node_form_dbxrefs
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_core
  */
 function chado_add_node_form_dbxrefs_remove_button_validate($form, $form_state) {
   // No Validation needed for remove
@@ -426,7 +426,7 @@ function chado_add_node_form_dbxrefs_remove_button_validate($form, $form_state) 
  * Remove the correct dbxref from the form
  * Called by the many remove buttons in chado_add_node_form_dbxrefs
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_core
  */
 function chado_add_node_form_dbxrefs_remove_button_submit(&$form, &$form_state) {
 
@@ -450,7 +450,7 @@ function chado_add_node_form_dbxrefs_remove_button_submit(&$form, &$form_state) 
 /**
  * Ajax function which returns the section of the form to be re-rendered
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_core
  */
 function chado_add_node_form_dbxrefs_ajax_update($form, $form_state) {
   return $form['addtl_dbxrefs']['dbxref_table'];
@@ -472,7 +472,7 @@ function chado_add_node_form_dbxrefs_ajax_update($form, $form_state) {
  *   ),
  * );
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_core
  */
 function chado_add_node_form_dbxrefs_create_dbxref_formstate_array($form, &$form_state) {
 

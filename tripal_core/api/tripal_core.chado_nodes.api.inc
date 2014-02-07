@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * API to handle much of the common functionality implemented when creating a drupal node type.
+ */
 
 /**
  * @defgroup tripal_chado_node_api Chado Node API
@@ -21,34 +25,13 @@
  * The functions of interest are as follows:
  *   - chado_add_node_form_properties() and chado_update_node_form_properties()
  *     to provide an interface for adding/removing properties
- *   - tripal_core_additional_dbxrefs_form() and tripal_core_additional_dbxrefs_form_update_dbxrefs()
+ *   - chado_add_node_form_dbxrefs() and chado_update_node_form_dbxrefs()
  *     to provide an interface for adding/removing additional database references
- *   - tripal_core_relationships_form() and tripal_core_relationships_form_update_relationships()
+ *   - chado_add_node_form_relationships() and chado_update_node_form_relationships()
  *     to provide an interface for adding/removing relationships between chado records
  *     from your base table
  * @}
  */
-
-/**
- * Determine whether a given chado table is directly linked to a node
- *
- * @param $chado_table
- *   The name of a chado table to check (ie: feature)
- * @return
- *   TRUE if it is linked to a node and FALSE otherwise
- *
- * @ingroup tripal_chado_node_api
- *
-function tripal_core_is_tripal_node_type($chado_table) {
-  $linking_table = 'chado_' . $chado_table;
-  if (db_table_exists($linking_table)) {
-    return TRUE;
-  }
-  else {
-    return FALSE;
-  }
-}
-*/
 
 /**
  * Sync'ing chado records with Drupal by creating nodes
@@ -352,7 +335,7 @@ function chado_node_sync_form($form, &$form_state) {
 /**
  * Generic Sync Form Submit
  *
- * @ingroup tripal_chado_node_api
+ * @ingroup tripal_core
  */
 function chado_node_sync_form_submit($form, $form_state) {
 

@@ -45,36 +45,37 @@
 
 // APPLICATION PROGRAMMER INTERFACE -------------
 // Chado API
-require_once "api/tripal_core.chado_general.api.inc";
+require_once 'api/tripal_core.chado_general.api.inc';
 require_once 'api/tripal_core.chado_query.api.inc';
 require_once 'api/tripal_core.chado_variables.api.inc';
 require_once 'api/tripal_core.chado_schema.api.inc';
-require_once "api/tripal_core.chado_nodes.api.inc";
-require_once "api/tripal_core.chado_nodes.properties.api.inc";
-require_once "api/tripal_core.chado_nodes.dbxrefs.api.inc";
-require_once "api/tripal_core.chado_nodes.relationships.api.inc";
+require_once 'api/tripal_core.chado_nodes.api.inc';
+require_once 'api/tripal_core.chado_nodes.properties.api.inc';
+require_once 'api/tripal_core.chado_nodes.dbxrefs.api.inc';
+require_once 'api/tripal_core.chado_nodes.relationships.api.inc';
 
 // Table API
-require_once "api/tripal_core.custom_tables.api.inc";
-require_once "api/tripal_core.mviews.api.inc";
+require_once 'api/tripal_core.custom_tables.api.inc';
+require_once 'api/tripal_core.mviews.api.inc';
 
 // Miscellaneous API
-require_once "api/tripal_core.files.api.inc";
-require_once "api/tripal_core.jobs.api.inc";
+require_once 'api/tripal_core.files.api.inc';
+require_once 'api/tripal_core.jobs.api.inc';
 
 require_once 'api/tripal_core.DEPRECATED.inc';
 
 // INCLUDES -------------------------------------
-require_once "includes/jobs.inc";
-require_once "includes/mviews.inc";
-require_once "includes/custom_tables.inc";
-require_once "includes/chado_install.inc";
-require_once "includes/form_elements.inc";
+require_once 'includes/jobs.inc';
+require_once 'includes/mviews.inc';
+require_once 'includes/custom_tables.inc';
+require_once 'includes/chado_install.inc';
+require_once 'includes/form_elements.inc';
 
 tripal_core_set_globals();
 /**
  * This function is used to set the global Chado variables
- * @ingroup tripal_chado_api
+ *
+ * @ingroup tripal_core
  */
 function tripal_core_set_globals() {
   // these global variables are meant to be accessed by all Tripal

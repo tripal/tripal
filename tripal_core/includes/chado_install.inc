@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Functions to install chado schema through Drupal
@@ -59,7 +58,7 @@ function tripal_core_chado_load_form() {
 }
 
 /**
- * Submit Load Chado Schema 1.11 Form
+ * Submit Load Chado Schema Form
  *
  * @ingroup tripal_core
  */

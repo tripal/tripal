@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Contains functions used to install/uninstall tripal_core.

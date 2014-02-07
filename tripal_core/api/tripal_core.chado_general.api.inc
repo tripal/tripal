@@ -1,13 +1,18 @@
 <?php
+/**
+ * @file
+ * Provides an application programming interface (API) to manage data withing the Chado database.
+ */
 
-require_once "tripal_core.schema_v1.2.api.inc";
-require_once "tripal_core.schema_v1.11.api.inc";
+require_once 'tripal_core.schema_v1.2.api.inc';
+require_once 'tripal_core.schema_v1.11.api.inc';
 
 /**
  * @defgroup tripal_chado_api Chado API
  * @ingroup tripal_core_api
  * @{
  * Provides an application programming interface (API) to manage data withing the Chado database.
+ *
  * This includes functions for selecting, inserting, updating and deleting records
  * in Chado tables.  The functions will ensure proper integrity contraints are met
  * for inserts and updates.

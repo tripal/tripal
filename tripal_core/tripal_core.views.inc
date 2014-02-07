@@ -1,8 +1,14 @@
 <?php
+/**
+ * @file
+ * Integrates many of the core database tables with drupal views
+ */
 
 /**
  * Describe various Tripal Core systems to Views
- *   for the creation of administrative views
+ *   for the creation of administrative views.
+ *
+ * @ingroup tripal_core
  */
 function tripal_core_views_data() {
   $data = array();
@@ -26,6 +32,8 @@ function tripal_core_views_data() {
  *   Previously generated tripal_core views data array
  * return
  *   $data array with job management system described
+ *
+ * @ingroup tripal_core
  */
 function tripal_core_views_data_jobs($data) {
 
@@ -287,6 +295,8 @@ function tripal_core_views_data_jobs($data) {
  *   Previously generated tripal_core views data array
  * return
  *   $data array with custom tables management described
+ *
+ * @ingroup tripal_core
  */
 function tripal_core_views_data_custom_tables($data) {
 
@@ -362,6 +372,8 @@ function tripal_core_views_data_custom_tables($data) {
  *   Previously generated tripal_core views data array
  * return
  *   $data array with custom tables management described
+ *
+ * @ingroup tripal_core
  */
 function tripal_core_views_data_mviews($data) {
 

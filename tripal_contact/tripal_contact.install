@@ -2,16 +2,16 @@
 
 /**
  * @file
- * This file contains all the functions which describe and implement drupal database tables
- * needed by this module. This module was developed by Chad N.A. Krilow and Lacey-Anne Sanderson,
- * University of Saskatchewan.
+ * Handles install, uninstall, disable and enable functionality including database tables.
  *
- * The contact manamgenet module allows you to sync data in a chado/Tripal instance with
- * multiple contact/mysql instances as well as manage and create such contact instances
+ * @ingroup tripal_contact
  */
 
 /**
+ * Implements hook_disable().
  * Disable default views when module is disabled
+ *
+ * @ingroup tripal_contact
  */
 function tripal_contact_disable() {
 
@@ -27,6 +27,7 @@ function tripal_contact_disable() {
 /**
  * Implementation of hook_requirements().
  *
+ * @ingroup tripal_contact
  */
 function tripal_contact_requirements($phase) {
   $requirements = array();
@@ -45,6 +46,8 @@ function tripal_contact_requirements($phase) {
 
 /**
  * Implementation of hook_install().
+ *
+ * @ingroup tripal_contact
  */
 function tripal_contact_install() {
 
@@ -78,6 +81,8 @@ function tripal_contact_install() {
 
 /**
  * Implementation of hook_uninstall().
+ *
+ * @ingroup tripal_contact
  */
 function tripal_contact_uninstall() {
   /*
@@ -89,6 +94,11 @@ function tripal_contact_uninstall() {
     */
 }
 
+/**
+ * Adds any cvs needed by this module.
+ *
+ * @ingroup tripal_contact
+ */
 function tripal_contact_add_cvs() {
 
   tripal_cv_add_cv(
@@ -98,12 +108,19 @@ function tripal_contact_add_cvs() {
 
 }
 
+/**
+ * Adds any cvterms needed by this module.
+ *
+ * @ingroup tripal_contact
+ */
 function tripal_contact_add_cvterms() {
 
 }
 
 /**
  * Implementation of hook_schema().
+ *
+ * @ingroup tripal_contact
  */
 function tripal_contact_schema() {
   $schema['chado_contact'] = array(
@@ -138,9 +155,11 @@ function tripal_contact_schema() {
   return $schema;
 }
 
-
-/*
+/**
+ * Add any custom tables needed by this module.
+ * - Contactprop: keep track of properties of contact
  *
+ * @ingroup tripal_contact
  */
 function tripal_contact_add_custom_tables(){
   $schema = array (
@@ -206,9 +225,12 @@ function tripal_contact_add_custom_tables(){
 
 /**
  * This is the required update for tripal_contact when upgrading from Drupal core API 6.x.
+ *
+ * @ingroup tripal_contact
  */
 function tripal_contact_update_7000() {
 
   tripal_contact_add_cvs();
   tripal_contact_add_cvterms();
+
 }
