@@ -1,5 +1,14 @@
 <?php
+/**
+ * @file
+ * Admin launchpad
+ */
 
+/**
+ * Admin launchpad
+ *
+ * @ingroup tripal_library
+ */
 function tripal_library_admin_libraries_listing() {
   $output = '';
 
@@ -44,14 +53,3 @@ function tripal_library_admin() {
 
   return system_settings_form($form);
 }
-
-
-
-/**
- *
- * @ingroup tripal_library
- */
-function tripal_library_admin_validate($form, &$form_state) {
-  
-}
-

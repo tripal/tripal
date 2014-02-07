@@ -1,11 +1,14 @@
 <?php
 /**
  * @file
- * @todo Add file header description
+ * Installation of the library module
  */
 
 /**
+ * Implements hook_disable().
  * Disable default views when module is disabled
+ *
+ * @ingroup tripal_library
  */
 function tripal_library_disable() {
 
@@ -20,6 +23,8 @@ function tripal_library_disable() {
 
 /**
  * Implementation of hook_requirements().
+ *
+ * @ingroup tripal_library
  */
 function tripal_library_requirements($phase) {
   $requirements = array();
@@ -35,6 +40,7 @@ function tripal_library_requirements($phase) {
   }
   return $requirements;
 }
+
 /**
  * Implementation of hook_install().
  *
@@ -101,6 +107,8 @@ function tripal_library_schema() {
 }
 
 /**
+ * Adds a materialized view keeping track of the type of features associated with each library
+ *
  * @ingroup tripal_library
  */
 function tripal_library_add_mview_library_feature_count(){
@@ -152,18 +160,23 @@ function tripal_library_add_mview_library_feature_count(){
 
 /**
  * Adds new CV's used by this module
+ *
+ * @ingroup tripal_library
  */
 function tripal_library_add_cvs(){
   tripal_cv_add_cv(
-    'library_property', 
+    'library_property',
     'Contains properties for libraries'
   );
   tripal_cv_add_cv(
-    'library_type', 
+    'library_type',
     'Contains terms for types of libraries (e.g. BAC, cDNA, FOSMID, etc).'
   );
 }
+
 /**
+ * Adds cvterms needed for the library module
+ *
  * @ingroup tripal_library
  */
 function tripal_library_add_cvterms() {
@@ -173,7 +186,7 @@ function tripal_library_add_cvterms() {
   // description in the libraryprop table.
   tripal_cv_add_cvterm(
      array(
-       'name' => 'Library Description', 
+       'name' => 'Library Description',
        'def' => 'Description of a library'
      ),
     'library_property', 0, 1, 'tripal'
@@ -224,10 +237,12 @@ function tripal_library_add_cvterms() {
 }
 
 /**
- * This is the required update for tripal_library when upgrading from Drupal core API 6.x. 
+ * This is the required update for tripal_library when upgrading from Drupal core API 6.x.
+ *
+ * @ingroup tripal_library
  */
 function tripal_library_update_7000() {
-  
+
   // the library types were formerly in a vocabulary named 'tripal_library_types'.
   // rename that to just be 'library_type'
   $cv = tripal_cv_get_cv_by_name('tripal_library_types');
@@ -241,11 +256,11 @@ function tripal_library_update_7000() {
   if (!$success) {
     throw new DrupalUpdateException('Failed to rename tripal_library_types CV.');
   }
-  
-  
-  // For Tripal in Drupal 6 the library_description cvterm was stored in the 
+
+
+  // For Tripal in Drupal 6 the library_description cvterm was stored in the
   // 'tripal' CV.  It should be stored in the new library_property CV that
-  // is added by this module for Tripal 2.0 and Drupal 7.  So, we need to 
+  // is added by this module for Tripal 2.0 and Drupal 7.  So, we need to
   // reset the CV ID for that term and rename the term to 'Library Description'
   tripal_library_add_cvs();
   $cv = tripal_cv_get_cv_by_name('library_property');
