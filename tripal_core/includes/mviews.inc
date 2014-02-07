@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Contains functions for viewing and editing of Materialized Views
@@ -7,7 +6,18 @@
  */
 
 /**
+ * @defgroup tripal_mviews Tripal Materialized Views
+ * @ingroup tripal_core
+ * @{
+ * Contains functions for viewing and editing of Materialized Views
+ * on a Tripal website.
+ * @}
+ */
+
+/**
  * Provides a landing page for tripal jobs admin
+ *
+ * @ingroup tripal_mviews
  */
 function tripal_mview_admin_view() {
   $output = '';
@@ -39,14 +49,13 @@ function tripal_mview_admin_view() {
   return $output;
 }
 
-
 /**
  * A template function which returns markup to display details for the current materialized view
  *
  * @param $mview_id
  *  The unique ID of the materialized view to render
  *
- * @ingroup tripal_core
+ * @ingroup tripal_mviews
  */
 function tripal_mview_report($mview_id) {
 
@@ -120,7 +129,7 @@ function tripal_mview_report($mview_id) {
 /**
  * A template function to render a listing of all Materialized Views
  *
- * @ingroup tripal_core
+ * @ingroup tripal_mviews
  */
 function tripal_mviews_report() {
   $header = array('', 'MView Name', 'Last Update', 'Status', 'Description', '');
@@ -190,7 +199,7 @@ function tripal_mviews_report() {
  * @return
  *   A form array (Form API)
  *
- * @ingroup tripal_core
+ * @ingroup tripal_mviews
  */
 function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
   if (!$mview_id) {
@@ -434,7 +443,7 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
  * Validate the Create/Edit Materialized View Form
  * Implements hook_form_validate().
  *
- * @ingroup tripal_core
+ * @ingroup tripal_mviews
  */
 function tripal_mviews_form_validate($form, &$form_state) {
   $action = $form_state['values']['action'];
@@ -494,7 +503,7 @@ function tripal_mviews_form_validate($form, &$form_state) {
  * Submit the Create/Edit Materialized View Form
  * Implements hook_form_submit().
  *
- * @ingroup tripal_core
+ * @ingroup tripal_mviews
  */
 function tripal_mviews_form_submit($form, &$form_state) {
 

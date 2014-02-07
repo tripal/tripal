@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * This API generates objects containing the full details of a record(s) in chado.
+ */
 
 /**
  * @defgroup tripal_chado_variables_api Chado Variables API

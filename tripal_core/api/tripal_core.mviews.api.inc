@@ -1,5 +1,10 @@
 <?php
 /**
+ * @file
+ * Provides an application programming interface (API) to manage materialized views in Chado.
+ */
+
+/**
  * @defgroup tripal_mviews_api Materalized Views API
  * @ingroup tripal_core_api
  * @{
@@ -314,7 +319,7 @@ function tripal_mviews_get_mview_id($view_name) {
  * @param $redirect
  *   TRUE/FALSE depending on whether you want to redirect the user to admin/tripal/mviews
  *
- * @ingroup tripal_core
+ * @ingroup tripal_mviews_api
  */
 function tripal_add_populate_mview($mview_id, $redirect = FALSE) {
   global $user;
@@ -349,7 +354,7 @@ function tripal_add_populate_mview($mview_id, $redirect = FALSE) {
  * @param $redirect
  *   TRUE/FALSE depending on whether you want to redirect the user to admin/tripal/mviews
  *
- * @ingroup tripal_core
+ * @ingroup tripal_mviews_api
  */
 function tripal_delete_mview($mview_id, $redirect = FALSE) {
   global $user;

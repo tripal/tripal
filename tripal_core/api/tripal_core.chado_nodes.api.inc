@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * API to handle much of the common functionality implemented when creating a drupal node type.
+ */
 
 /**
  * @defgroup tripal_chado_node_api Chado Node API

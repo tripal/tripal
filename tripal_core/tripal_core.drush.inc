@@ -1,8 +1,14 @@
 <?php
-
 /**
  * @file
  * Contains function relating to drush-integration of this module.
+ */
+
+/**
+ * @defgroup tripal_drush Tripal Drush Integration
+ * @{
+ * Contains function relating to drush-integration of various tripal modules.
+ * @}
  */
 
 /**
@@ -10,6 +16,8 @@
  *
  * @return
  *   The first line of description when executing the help for a given command
+ *
+ * @ingroup tripal_drush
  */
 function tripal_core_drush_help($command) {
   switch ($command) {
@@ -39,6 +47,8 @@ function tripal_core_drush_help($command) {
  *
  * @return
  *   And array of command descriptions
+ *
+ * @ingroup tripal_drush
  */
 function tripal_core_drush_command() {
   $items = array();
@@ -169,8 +179,9 @@ function tripal_core_drush_command() {
 }
 
 /**
+ * Set the user to run a drush job.
  *
- * @param $username
+ * @ingroup tripal_drush
  */
 function drush_tripal_core_set_user($username) {
   if ($username) {
@@ -195,6 +206,8 @@ function drush_tripal_core_set_user($username) {
  * Executes jobs in the Tripal Jobs Queue
  *
  * NOTE: The following code is executed when drush 'trpjob-run' or 'drush tripal-launch-jobs' is called
+ *
+ * @ingroup tripal_drush
  */
 function drush_tripal_core_tripal_jobs_launch($username) {
   $parallel = drush_get_option('parallel');
@@ -220,6 +233,8 @@ function drush_tripal_core_tripal_jobs_launch($username) {
  * Executes jobs in the Tripal Jobs Queue
  *
  * NOTE: The following code is executed when drush 'trpjob-run' or 'drush tripal-launch-jobs' is called
+ *
+ * @ingroup tripal_drush
  */
 function drush_tripal_core_tripal_jobs_rerun($username, $job_id) {
 
@@ -233,6 +248,8 @@ function drush_tripal_core_tripal_jobs_rerun($username, $job_id) {
  * Prints details about the current running job
  *
  * NOTE: The following code is executed when 'drush trpjob-curr' or 'drush tripal-current-job' is called
+ *
+ * @ingroup tripal_drush
  */
 function drush_tripal_core_tripal_jobs_current() {
   $sql =  "
@@ -269,6 +286,8 @@ function drush_tripal_core_tripal_jobs_current() {
  *   The name of the table storing the materialized view (tripal_mview.mv_table)
  *
  * Note: Either $mview_id OR $table_name is required
+ *
+ * @ingroup tripal_drush
  */
 function drush_tripal_core_tripal_update_mview() {
   $mview_id = drush_get_option('mview_id');
@@ -303,6 +322,8 @@ function drush_tripal_core_tripal_update_mview() {
 
 /**
  * Returns the current version of chado
+ *
+ * @ingroup tripal_drush
  */
 function drush_tripal_core_tripal_chado_version() {
   $version = $GLOBALS["exact_chado_version"];
@@ -314,6 +335,8 @@ function drush_tripal_core_tripal_chado_version() {
  *
  * @param $table_name
  *  The name of the table to return the description of
+ *
+ * @ingroup tripal_drush
  */
 function drush_tripal_core_tripal_chadotable_desc($table_name) {
   $section = drush_get_option('section');
@@ -334,6 +357,8 @@ function drush_tripal_core_tripal_chadotable_desc($table_name) {
  *
  * @param $module
  *  The name of a module with nodes associated with it. For example, feature
+ *
+ * @ingroup tripal_drush
  */
 function drush_tripal_core_tripal_node_sync($module) {
   switch ($module) {
@@ -366,6 +391,8 @@ function drush_tripal_core_tripal_node_sync($module) {
  *
  * @param $module
  *  The name of a module with nodes associated with it. For example, feature
+ *
+ * @ingroup tripal_drush
  */
 function drush_tripal_core_tripal_node_clean($module) {
   chado_cleanup_orphaned_nodes($module, 0);

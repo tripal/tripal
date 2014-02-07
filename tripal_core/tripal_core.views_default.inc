@@ -1,7 +1,13 @@
 <?php
+/**
+ * @file
+ * Describes core default views
+ */
 
 /**
+ * Describes core default views
  *
+ * @ingroup tripal_core
  */
 function tripal_core_views_default_views() {
   $views = array();
@@ -18,6 +24,11 @@ function tripal_core_views_default_views() {
   return $views;
 }
 
+/**
+ * Describes the jobs administration view.
+ *
+ * @ingroup tripal_core
+ */
 function tripal_core_admin_defaultview_jobs() {
 
   $view = new view();
@@ -290,6 +301,11 @@ function tripal_core_admin_defaultview_jobs() {
   return $view;
 }
 
+/**
+ * Describes the custom tables administration view.
+ *
+ * @ingroup tripal_core
+ */
 function tripal_core_admin_defaultview_custom_tables() {
 
   $view = new view();
@@ -407,6 +423,11 @@ function tripal_core_admin_defaultview_custom_tables() {
   return $view;
 }
 
+/**
+ * Describes the materialized views administration view.
+ *
+ * @ingroup tripal_core
+ */
 function tripal_core_admin_defaultview_mviews() {
 
   $view = new view();

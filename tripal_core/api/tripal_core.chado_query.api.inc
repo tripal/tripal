@@ -1,4 +1,9 @@
 <?php
+/**
+ * @file
+ * Provides an API for querying of chado including inserting, updating, deleting and
+ * selecting from chado.
+ */
 
 /**
  * @defgroup tripal_chado_query_api Chado Query API

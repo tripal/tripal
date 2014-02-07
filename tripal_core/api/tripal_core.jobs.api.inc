@@ -1,5 +1,11 @@
 <?php
 /**
+ * @file
+ * Tripal offers a job management subsystem for managing tasks that may require an extended period of time for
+ * completion.
+ */
+
+/**
  * @defgroup tripal_jobs_api Jobs API
  * @ingroup tripal_core_api
  * @{

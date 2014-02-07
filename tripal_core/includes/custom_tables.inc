@@ -1,15 +1,25 @@
 <?php
-
 /**
  * @file
  * Contains functions for creating, editing and deleting custom tables
  * on the Tripal website.
  *
- * @ingroup tripal_core
+ * @ingroup tripal_custom_tables
  */
 
 /**
- * Provides a landing page for tripal jobs admin
+ * @defgroup tripal_custom_tables Custom Chado Tables
+ * @ingroup tripal_core
+ * @{
+ * Contains functions for creating, editing and deleting custom tables
+ * on the Tripal website.
+ * @}
+ */
+
+/**
+ * Provides a landing page for administrating custom tables.
+ *
+ * @ingroup tripal_custom_tables
  */
 function tripal_custom_table_admin_view() {
   $output = '';
@@ -42,20 +52,22 @@ function tripal_custom_table_admin_view() {
 }
 
 /**
+ * Renders the tripal_custom_tables_form.
  *
+ * @ingroup tripal_custom_tables
  */
 function tripal_custom_table_new_page() {
   $output = drupal_render(drupal_get_form('tripal_custom_tables_form'));
   return $output;
-
 }
+
 /**
  * A template function which returns markup to display details for the custom table
  *
  * @param $table_id
  *  The unique ID of the custom table
  *
- * @ingroup tripal_core
+ * @ingroup tripal_custom_tables
  */
 function tripal_custom_table_view($table_id) {
 
@@ -101,7 +113,7 @@ function tripal_custom_table_view($table_id) {
 /**
  * A template function to render a listing of all Custom tables
  *
- * @ingroup tripal_core
+ * @ingroup tripal_custom_tables
  */
 function tripal_custom_tables_list() {
   $header = array('', 'Table Name', 'Description');
@@ -140,7 +152,7 @@ function tripal_custom_tables_list() {
 }
 
 /**
- * A Form to Create/Edit a Custom table
+ * A Form to Create/Edit a Custom table.
  *
  * @param $form_state
  *   The current state of the form (Form API)
@@ -150,7 +162,7 @@ function tripal_custom_tables_list() {
  * @return
  *   A form array (Form API)
  *
- * @ingroup tripal_core
+ * @ingroup tripal_custom_tables
  */
 function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL) {
 
@@ -287,10 +299,10 @@ array (
 }
 
 /**
- * Validate the Create/Edit custom table form
- * Implements hook_form_validate().
+ * Implements hook_validate().
+ * Validate the Create/Edit custom table form.
  *
- * @ingroup tripal_core
+ * @ingroup tripal_custom_tables
  */
 function tripal_custom_tables_form_validate($form, &$form_state) {
   $action = $form_state['values']['action'];
@@ -344,7 +356,7 @@ function tripal_custom_tables_form_validate($form, &$form_state) {
  * Submit the Create/Edit Custom table form
  * Implements hook_form_submit().
  *
- * @ingroup tripal_core
+ * @ingroup tripal_custom_tables
  */
 function tripal_custom_tables_form_submit($form, &$form_state) {
 
@@ -376,6 +388,7 @@ function tripal_custom_tables_form_submit($form, &$form_state) {
 
   return '';
 }
+
 /**
  * Does the specified action for the specified custom table
  *
@@ -386,7 +399,7 @@ function tripal_custom_tables_form_submit($form, &$form_state) {
  * @param $redirect
  *   TRUE/FALSE depending on whether you want to redirect the user to admin/tripal/custom_tables
  *
- * @ingroup tripal_core
+ * @ingroup tripal_custom_tables
  */
 function tripal_custom_tables_action($op, $table_id, $redirect = FALSE) {
   global $user;
