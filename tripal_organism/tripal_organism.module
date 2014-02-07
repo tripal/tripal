@@ -1,8 +1,13 @@
 <?php
+/**
+ * @file
+ * Integrates the Chado Organism module with Drupal Nodes & Views
+ */
 
-require_once "api/tripal_organism.api.inc";
-require_once "includes/tripal_organism.admin.inc";
-require_once "includes/tripal_organism.chado_node.inc";
+require_once 'api/tripal_organism.api.inc';
+
+require_once 'includes/tripal_organism.admin.inc';
+require_once 'includes/tripal_organism.chado_node.inc';
 
 /**
  * @defgroup tripal_organism Organism Module
@@ -13,16 +18,7 @@ require_once "includes/tripal_organism.chado_node.inc";
  */
 
 /**
- *
- * @ingroup tripal_organism
- */
-function tripal_organism_init() {
-
-}
-
-
-
-/**
+ * Implements hook_block_info().
  *
  * @ingroup tripal_organism
  */
@@ -34,7 +30,9 @@ function tripal_organism_block_info() {
   return $blocks;
 
 }
+
 /**
+ * Implements hook_block_view().
  *
  * @ingroup tripal_organism
  */
@@ -55,8 +53,11 @@ function tripal_organism_block_view($delta = '') {
     return $block;
   }
 }
+
 /**
- *  Menu items are automatically added for the new node types created
+ *  Implements hook_menu().
+ *
+ * Menu items are automatically added for the new node types created
  *  by this module to the 'Create Content' Navigation menu item.  This function
  *  adds more menu items needed for this module.
  *
@@ -117,8 +118,10 @@ function tripal_organism_menu() {
 }
 
 /**
- * Implements hook_help()
- * Purpose: Adds a help page to the module list
+ * Implements hook_help().
+ * Adds a help page to the module list
+ *
+ * @ingroup tripal_organism
  */
 function tripal_organism_help ($path, $arg) {
   if ($path == 'admin/help#tripal_organism') {
@@ -127,6 +130,8 @@ function tripal_organism_help ($path, $arg) {
 }
 
 /**
+ *  Implements hook_theme().
+ *
  *  We need to let drupal know about our theme functions and their arguments.
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module
@@ -205,9 +210,11 @@ function tripal_organism_permission() {
     ),
   );
 }
+
 /**
- * Implements hook_views_api()
- * Purpose: Essentially this hook tells drupal that there is views support for
+ * Implements hook_views_api().
+ *
+ * Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_db.views.inc where all the
  *  views integration code is
  *
@@ -215,11 +222,12 @@ function tripal_organism_permission() {
  */
 function tripal_organism_views_api() {
   return array(
-    'api' => 2.0,
+    'api' => 3.0,
   );
 }
+
 /**
- *
+ * Implements hook_job_describe_args().
  *
  * @ingroup tripal_organism
  */
@@ -235,11 +243,13 @@ function tripal_organism_job_describe_args($callback, $args) {
 
 
 /**
- * Implementation of hook_form_alter()
+ * Implementation of hook_form_alter().
  *
  * @param $form
  * @param $form_state
  * @param $form_id
+ *
+ * @ingroup tripal_organism
  */
 function tripal_organism_form_alter(&$form, &$form_state, $form_id) {
   // turn of preview button for insert/updates

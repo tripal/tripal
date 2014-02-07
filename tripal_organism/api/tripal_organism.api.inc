@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Provides an application programming interface (API) to manage organisms
+ */
 
 /**
  * @defgroup tripal_organism_api Organism API
@@ -9,22 +13,28 @@
  */
 
 /**
- * Purpose: Return a given organism object using the nid
+ * Return a given organism object using the nid
  *
- * @return organism object created by node load
+ * @param $nid
+ *  The node id (nid) of the organism node of interest
+ *
+ * @return
+ *  organism object created by node load
  *
  * @ingroup tripal_organism_api
  */
 function tripal_organism_get_organism_by_nid($nid) {
-
   return node_load($nid);
-
 }
 
 /**
- * Purpose: Return a given organism object using the organism id
+ * Return a given organism object using the organism id
  *
- * @return organism object created by node load
+ * @param $organism_id
+ *   The chado organism.organism_id of the organism of interest
+ *
+ * @return
+ *   organism object created by node load
  *
  * @ingroup tripal_organism_api
  */
@@ -44,7 +54,11 @@ function tripal_organism_get_organism_by_organism_id($organism_id) {
 }
 
 /**
- *  Returns a list of organisms that are currently synced with Drupal
+ * Returns a list of organisms that are currently synced with Drupal
+ *
+ * @return
+ *   An array of organisms sync'd with Drupal where each value is an organism table record
+ *
  * @ingroup tripal_organism_api
  */
 function tripal_organism_get_synced() {
@@ -65,13 +79,20 @@ function tripal_organism_get_synced() {
     $org = chado_query($csql, $args)->fetchObject();
     $org_list[] = $org;
   }
+
   return $org_list;
 }
 
 /**
+ * Return the URL for the organism image
  *
  * @param $organism
+ *   An organism table record
  * @param $nid
+ *   (Optional) the node id of the organism node. if not supplied it will be looked up
+ *
+ * @return
+ *   The fully qualified url to the image
  */
 function tripal_organism_get_image_url($organism, $nid = NULL) {
   $url = '';

@@ -1,6 +1,13 @@
 <?php
 /**
- *  Provide information to drupal about the node types that we're creating
+ * @file
+ * Implements the organims node content type
+ */
+
+/**
+ *  Implements hook_node_info().
+ *
+ * Provide information to drupal about the node types that we're creating
  *  in this module
  *
  * @ingroup tripal_organism
@@ -30,8 +37,9 @@ function tripal_organism_node_info() {
   );
   return $nodes;
 }
+
 /**
- * Implement hook_access().
+ * Implement hook_node_access().
  *
  * This hook allows node modules to limit access to the node types they define.
  *
@@ -78,267 +86,10 @@ function chado_organism_node_access($node, $op, $account) {
   }
   return NULL;
 }
-/**
- * Implementation of hook_validate
- *
- * @param $node
- * @param $form
- * @param $form_state
- *
- *  @ingroup tripal_organism
- */
-function chado_organism_validate($node, $form, &$form_state) {
-  // remove any white space around values
-  $node->genus        = trim($node->genus);
-  $node->species      = trim($node->species);
-  $node->abbreviation = trim($node->abbreviation);
-  $node->common_name  = trim($node->common_name);
-  $node->description  = trim($node->description);
-
-
-  // if this is a delete then don't validate
-  if($node->op == 'Delete') {
-    return;
-  }
-
-  // we are syncing if we do not have a node ID but we do have a organism_id. We don't
-  // need to validate during syncing so just skip it.
-  if (is_null($node->nid) and property_exists($node, 'organism_id') and $node->organism_id != 0) {
-    return;
-  }
-
-  // Validating for an update
-  if (property_exists($node, 'organism_id')) {
-    $sql = "
-      SELECT *
-      FROM {organism} O
-      WHERE
-        genus = :genus AND
-        species = :species AND NOT
-        organism_id = :organism_id
-    ";
-    $args = array(':genus' => $node->genus, ':species' => $node->species, ':organism_id' => $node->organism_id);
-    $result = chado_query($sql, $args)->fetchObject();
-    if ($result) {
-      form_set_error('genus', t("Update cannot proceed. The organism genus
-        '$node->genus' and species '$node->species' is already present in the database."));
-      tripal_report_error('tripal_organism', TRIPAL_WARNING,
-        'Update organism: genus and species already exists: %values',
-        array('%values' => "genus = $node->genus, species = $node->species"));
-    }
-  }
-  // Validating for an insert
-  else {
-    $values = array(
-      'genus' => $node->genus,
-      'species' => $node->species,
-    );
-    $organism = chado_select_record('organism', array('organism_id'), $values);
-    if (sizeof($organism) > 0) {
-      form_set_error('genus', 'Cannot add the organism with this genus and species.
-        The organism already exists.');
-      tripal_report_error('tripal_organism', TRIPAL_WARNING,
-        'Insert organism: genus and species already exists: %values',
-        array('%values' => "genus = $node->genus, species = $node->species"));
-    }
-  }
-}
-/**
- *  When a new chado_organism node is created we also need to add information
- *  to our chado_organism table.  This function is called on insert of a new node
- *  of type 'chado_organism' and inserts the necessary information.
- *
- * @ingroup tripal_organism
- */
-function chado_organism_insert($node) {
-  // remove any white space around values
-  $node->genus        = trim($node->genus);
-  $node->species      = trim($node->species);
-  $node->abbreviation = trim($node->abbreviation);
-  $node->common_name  = trim($node->common_name);
-  $node->description  = trim($node->description);
-
-  // if there is an organism_id in the $node object then this must be a sync so
-  // we can skip adding the organism as it is already there, although
-  // we do need to proceed with the rest of the insert
-  if (!property_exists($node,'organism_id')) {
-    $values = array(
-      'genus'        => $node->genus,
-      'species'      => $node->species,
-      'abbreviation' => $node->abbreviation,
-      'common_name'  => $node->common_name,
-      'comment'      => $node->description
-    );
-    $organism = chado_insert_record('organism', $values);
-    if (!$organism) {
-      drupal_set_message(t('Unable to add organism.', 'warning'));
-      tripal_report_error('tripal_organism', TRIPAL_ERROR, 'Insert Organism: Unable to create organism where values:%values',
-      array('%values' => print_r($values, TRUE)));
-      return;
-    }
-    $organism_id = $organism['organism_id'];
-
-    if ($organism_id) {
-      // * Properties Form *
-      $details = array(
-        'property_table' => 'organismprop',   // the name of the prop table
-        'base_table' => 'organism',           // the name of your chado base table
-        'foreignkey_name' => 'organism_id',   // the name of the key in your base table
-        'foreignkey_value' => $organism_id    // the value of the example_id key
-      );
-      chado_update_node_form_properties($node, $details);
-
-      // * Additional DBxrefs Form *
-      $details = array(
-        'linking_table' => 'organism_dbxref',   // the name of your _dbxref table
-        'foreignkey_name' => 'organism_id',     // the name of the key in your base table
-        'foreignkey_value' => $organism_id      // the value of the organism_id key
-      );
-      chado_update_node_form_dbxrefs($node, $details);
-
-    }
-  }
-  else {
-    $organism_id = $node->organism_id;
-  }
-
-  // Make sure the entry for this organism doesn't already exist in the
-  // chado_organism table if it doesn't exist then we want to add it.
-  $check_org_id = chado_get_id_from_nid('organism', $node->nid);
-  if (!$check_org_id) {
-    $record = new stdClass();
-    $record->nid = $node->nid;
-    $record->vid = $node->vid;
-    $record->organism_id = $organism_id;
-    drupal_write_record('chado_organism', $record);
-  }
-
-  // add the image
-  chado_organism_add_image($node);
-}
-/**
- * Update organisms
- *
- * @ingroup tripal_organism
- */
-function chado_organism_update($node) {
-  // remove any white space around values
-  $node->genus        = trim($node->genus);
-  $node->species      = trim($node->species);
-  $node->abbreviation = trim($node->abbreviation);
-  $node->common_name  = trim($node->common_name);
-  $node->description  = trim($node->description);
-
-  $organism_id = chado_get_id_from_nid('organism', $node->nid);
-
-  if ($node->revision) {
-    // there is no way to handle revisions in Chado but leave
-    // this here just to make not we've addressed it.
-  }
-  $match = array(
-    'organism_id' => $organism_id,
-  );
-  $values = array(
-    'genus' => $node->genus,
-    'species' => $node->species,
-    'abbreviation' => $node->abbreviation,
-    'common_name' => $node->common_name,
-    'comment' => $node->description
-  );
-  $org_status = chado_update_record('organism', $match, $values);
-
-  // add the image
-  chado_organism_add_image($node);
-
-  // * Properties Form *
-  $details = array(
-    'property_table' => 'organismprop',   // the name of the prop table
-    'base_table' => 'organism',           // the name of your chado base table
-    'foreignkey_name' => 'organism_id',   // the name of the key in your base table
-    'foreignkey_value' => $organism_id    // the value of the example_id key
-  );
-  chado_update_node_form_properties($node, $details);
-
-  // * Additional DBxrefs Form *
-  $details = array(
-    'linking_table' => 'organism_dbxref',   // the name of your _dbxref table
-    'foreignkey_name' => 'organism_id',     // the name of the key in your base table
-    'foreignkey_value' => $organism_id      // the value of the organism_id key
-  );
-  chado_update_node_form_dbxrefs($node, $details);
-}
-/**
- * Delete organism from both drupal and chado databases. Check dependency before
- * deleting from chado.
- *
- * @ingroup tripal_organism
- */
-function chado_organism_delete($node) {
-  $organism_id = chado_get_id_from_nid('organism', $node->nid);
-
-  // if we don't have an organism id for this node then this isn't a node of
-  // type chado_organism or the entry in the chado_organism table was lost.
-  if (!$organism_id) {
-    return;
-  }
-
-  // Remove data from the {chado_organism}, {node}, and {node_revisions} tables
-  $sql_del = "DELETE FROM {chado_organism} WHERE nid = :nid AND vid = :vid";
-  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
-  $sql_del = "DELETE FROM {node} WHERE nid = :nid AND vid = :vid";
-  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
-  $sql_del = "DELETE FROM {node_revision} WHERE nid = ':nid' AND vid = ':vid'";
-  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
-
-  // Test dependency before deleting from chado database. If a library or
-  // feature depends on this organism, don't delete it
-
-  $sql = "SELECT feature_id FROM {feature} WHERE organism_id = :organism_id";
-  $check_feature = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
-  $sql = "SELECT library_id FROM {library} WHERE organism_id = :organism_id";
-  $check_lib = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
-  $sql = "SELECT stock_id FROM {stock} WHERE organism_id = :organism_id";
-  $check_stock = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
-
-  if (!$check_lib && !$check_feature && !$check_stock) {
-    chado_delete_record('organism', array('organism_id' => $organism_id));
-  }
-  else {
-    drupal_set_message(t("Warning: other data depends on this organism. The organism page was removed from this site but the organism was removed from Chado."), 'warning');
-  }
-}
 
 /**
+ *  Implement hook_form().
  *
- *
- * @ingroup tripal_organism
- */
-function chado_organism_add_image($node) {
-  // check to see if a file was uploaded. If so then copy it to the images
-  // directory for display with the organism
-  if (isset($_FILES['files']) &&
-  $_FILES['files']['name']['organism_image'] &&
-  is_uploaded_file($_FILES['files']['tmp_name']['organism_image'])) {
-
-    // make sure the destination directory exists
-    $dest = tripal_get_files_dir() . "/tripal_organism/images";
-    file_prepare_directory($dest, FILE_CREATE_DIRECTORY);
-
-    // now move the file
-    $validators = array('file_validate_is_image' => array());
-    $destination = "public://tripal/tripal_organism/images/";
-    $file = file_save_upload('organism_image', $validators, $destination);
-    if (!$file) {
-      drupal_set_message(t("Organism image was not uploaded."));
-    }
-    else {
-      file_move($file, $destination . "/" . $node->nid . ".jpg", FILE_EXISTS_REPLACE);
-    }
-  }
-}
-
-
-/**
  *  When editing or creating a new node of type 'chado_organism' we need
  *  a form.  This function creates the form that will be used for this.
  *
@@ -446,6 +197,279 @@ function chado_organism_form($node, $form_state) {
 }
 
 /**
+ * Implementation of hook_validate().
+ *
+ * @param $node
+ * @param $form
+ * @param $form_state
+ *
+ * @ingroup tripal_organism
+ */
+function chado_organism_validate($node, $form, &$form_state) {
+  // remove any white space around values
+  $node->genus        = trim($node->genus);
+  $node->species      = trim($node->species);
+  $node->abbreviation = trim($node->abbreviation);
+  $node->common_name  = trim($node->common_name);
+  $node->description  = trim($node->description);
+
+
+  // if this is a delete then don't validate
+  if($node->op == 'Delete') {
+    return;
+  }
+
+  // we are syncing if we do not have a node ID but we do have a organism_id. We don't
+  // need to validate during syncing so just skip it.
+  if (is_null($node->nid) and property_exists($node, 'organism_id') and $node->organism_id != 0) {
+    return;
+  }
+
+  // Validating for an update
+  if (property_exists($node, 'organism_id')) {
+    $sql = "
+      SELECT *
+      FROM {organism} O
+      WHERE
+        genus = :genus AND
+        species = :species AND NOT
+        organism_id = :organism_id
+    ";
+    $args = array(':genus' => $node->genus, ':species' => $node->species, ':organism_id' => $node->organism_id);
+    $result = chado_query($sql, $args)->fetchObject();
+    if ($result) {
+      form_set_error('genus', t("Update cannot proceed. The organism genus
+        '$node->genus' and species '$node->species' is already present in the database."));
+      tripal_report_error('tripal_organism', TRIPAL_WARNING,
+        'Update organism: genus and species already exists: %values',
+        array('%values' => "genus = $node->genus, species = $node->species"));
+    }
+  }
+  // Validating for an insert
+  else {
+    $values = array(
+      'genus' => $node->genus,
+      'species' => $node->species,
+    );
+    $organism = chado_select_record('organism', array('organism_id'), $values);
+    if (sizeof($organism) > 0) {
+      form_set_error('genus', 'Cannot add the organism with this genus and species.
+        The organism already exists.');
+      tripal_report_error('tripal_organism', TRIPAL_WARNING,
+        'Insert organism: genus and species already exists: %values',
+        array('%values' => "genus = $node->genus, species = $node->species"));
+    }
+  }
+}
+
+/**
+ *  Implements hook_insert().
+ *
+ *  When a new chado_organism node is created we also need to add information
+ *  to our chado_organism table.  This function is called on insert of a new node
+ *  of type 'chado_organism' and inserts the necessary information.
+ *
+ * @ingroup tripal_organism
+ */
+function chado_organism_insert($node) {
+  // remove any white space around values
+  $node->genus        = trim($node->genus);
+  $node->species      = trim($node->species);
+  $node->abbreviation = trim($node->abbreviation);
+  $node->common_name  = trim($node->common_name);
+  $node->description  = trim($node->description);
+
+  // if there is an organism_id in the $node object then this must be a sync so
+  // we can skip adding the organism as it is already there, although
+  // we do need to proceed with the rest of the insert
+  if (!property_exists($node,'organism_id')) {
+    $values = array(
+      'genus'        => $node->genus,
+      'species'      => $node->species,
+      'abbreviation' => $node->abbreviation,
+      'common_name'  => $node->common_name,
+      'comment'      => $node->description
+    );
+    $organism = chado_insert_record('organism', $values);
+    if (!$organism) {
+      drupal_set_message(t('Unable to add organism.', 'warning'));
+      tripal_report_error('tripal_organism', TRIPAL_ERROR, 'Insert Organism: Unable to create organism where values:%values',
+      array('%values' => print_r($values, TRUE)));
+      return;
+    }
+    $organism_id = $organism['organism_id'];
+
+    if ($organism_id) {
+      // * Properties Form *
+      $details = array(
+        'property_table' => 'organismprop',   // the name of the prop table
+        'base_table' => 'organism',           // the name of your chado base table
+        'foreignkey_name' => 'organism_id',   // the name of the key in your base table
+        'foreignkey_value' => $organism_id    // the value of the example_id key
+      );
+      chado_update_node_form_properties($node, $details);
+
+      // * Additional DBxrefs Form *
+      $details = array(
+        'linking_table' => 'organism_dbxref',   // the name of your _dbxref table
+        'foreignkey_name' => 'organism_id',     // the name of the key in your base table
+        'foreignkey_value' => $organism_id      // the value of the organism_id key
+      );
+      chado_update_node_form_dbxrefs($node, $details);
+
+    }
+  }
+  else {
+    $organism_id = $node->organism_id;
+  }
+
+  // Make sure the entry for this organism doesn't already exist in the
+  // chado_organism table if it doesn't exist then we want to add it.
+  $check_org_id = chado_get_id_from_nid('organism', $node->nid);
+  if (!$check_org_id) {
+    $record = new stdClass();
+    $record->nid = $node->nid;
+    $record->vid = $node->vid;
+    $record->organism_id = $organism_id;
+    drupal_write_record('chado_organism', $record);
+  }
+
+  // add the image
+  chado_organism_add_image($node);
+}
+
+/**
+ * Implements hook_update().
+ *
+ * @ingroup tripal_organism
+ */
+function chado_organism_update($node) {
+  // remove any white space around values
+  $node->genus        = trim($node->genus);
+  $node->species      = trim($node->species);
+  $node->abbreviation = trim($node->abbreviation);
+  $node->common_name  = trim($node->common_name);
+  $node->description  = trim($node->description);
+
+  $organism_id = chado_get_id_from_nid('organism', $node->nid);
+
+  if ($node->revision) {
+    // there is no way to handle revisions in Chado but leave
+    // this here just to make not we've addressed it.
+  }
+  $match = array(
+    'organism_id' => $organism_id,
+  );
+  $values = array(
+    'genus' => $node->genus,
+    'species' => $node->species,
+    'abbreviation' => $node->abbreviation,
+    'common_name' => $node->common_name,
+    'comment' => $node->description
+  );
+  $org_status = chado_update_record('organism', $match, $values);
+
+  // add the image
+  chado_organism_add_image($node);
+
+  // * Properties Form *
+  $details = array(
+    'property_table' => 'organismprop',   // the name of the prop table
+    'base_table' => 'organism',           // the name of your chado base table
+    'foreignkey_name' => 'organism_id',   // the name of the key in your base table
+    'foreignkey_value' => $organism_id    // the value of the example_id key
+  );
+  chado_update_node_form_properties($node, $details);
+
+  // * Additional DBxrefs Form *
+  $details = array(
+    'linking_table' => 'organism_dbxref',   // the name of your _dbxref table
+    'foreignkey_name' => 'organism_id',     // the name of the key in your base table
+    'foreignkey_value' => $organism_id      // the value of the organism_id key
+  );
+  chado_update_node_form_dbxrefs($node, $details);
+}
+
+/**
+ * Implements hook_delete().
+ *
+ * Delete organism from both drupal and chado databases. Check dependency before
+ * deleting from chado.
+ *
+ * @ingroup tripal_organism
+ */
+function chado_organism_delete($node) {
+  $organism_id = chado_get_id_from_nid('organism', $node->nid);
+
+  // if we don't have an organism id for this node then this isn't a node of
+  // type chado_organism or the entry in the chado_organism table was lost.
+  if (!$organism_id) {
+    return;
+  }
+
+  // Remove data from the {chado_organism}, {node}, and {node_revisions} tables
+  $sql_del = "DELETE FROM {chado_organism} WHERE nid = :nid AND vid = :vid";
+  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  $sql_del = "DELETE FROM {node} WHERE nid = :nid AND vid = :vid";
+  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+  $sql_del = "DELETE FROM {node_revision} WHERE nid = ':nid' AND vid = ':vid'";
+  db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
+
+  // Test dependency before deleting from chado database. If a library or
+  // feature depends on this organism, don't delete it
+
+  $sql = "SELECT feature_id FROM {feature} WHERE organism_id = :organism_id";
+  $check_feature = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
+  $sql = "SELECT library_id FROM {library} WHERE organism_id = :organism_id";
+  $check_lib = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
+  $sql = "SELECT stock_id FROM {stock} WHERE organism_id = :organism_id";
+  $check_stock = chado_query($sql, array(':organism_id' => $organism_id))->fetchObject();
+
+  if (!$check_lib && !$check_feature && !$check_stock) {
+    chado_delete_record('organism', array('organism_id' => $organism_id));
+  }
+  else {
+    drupal_set_message(t("Warning: other data depends on this organism. The organism page was removed from this site but the organism was removed from Chado."), 'warning');
+  }
+}
+
+/**
+ * Add an image to an organims node
+ *
+ * @param $node
+ *   The node to add an image to
+ *
+ * The file is specified in the $_FILES array created by Drupal
+ *
+ * @ingroup tripal_organism
+ */
+function chado_organism_add_image($node) {
+  // check to see if a file was uploaded. If so then copy it to the images
+  // directory for display with the organism
+  if (isset($_FILES['files']) &&
+  $_FILES['files']['name']['organism_image'] &&
+  is_uploaded_file($_FILES['files']['tmp_name']['organism_image'])) {
+
+    // make sure the destination directory exists
+    $dest = tripal_get_files_dir() . "/tripal_organism/images";
+    file_prepare_directory($dest, FILE_CREATE_DIRECTORY);
+
+    // now move the file
+    $validators = array('file_validate_is_image' => array());
+    $destination = "public://tripal/tripal_organism/images/";
+    $file = file_save_upload('organism_image', $validators, $destination);
+    if (!$file) {
+      drupal_set_message(t("Organism image was not uploaded."));
+    }
+    else {
+      file_move($file, $destination . "/" . $node->nid . ".jpg", FILE_EXISTS_REPLACE);
+    }
+  }
+}
+
+/**
+ *  Implements hook_load().
+ *
  *  When a node is requested by the user this function is called to allow us
  *  to add auxiliary data to the node object.
  *
@@ -469,11 +493,14 @@ function chado_organism_load($nodes) {
 }
 
 /**
+ * Implements hook_node_presave(). Acts on all content types.
  *
  * @param $node
+ *  The node to be saved
+ *
+ * @ingroup tripal_organism
  */
 function tripal_organism_node_presave($node) {
- print_r($node->organism);
   switch ($node->type) {
     case 'chado_organism':
       // for a form submission the 'genus' field will be set,
@@ -489,9 +516,11 @@ function tripal_organism_node_presave($node) {
       break;
   }
 }
+
 /**
+ * Implements hook_node_view().
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_organism
  */
 function tripal_organism_node_view($node, $view_mode, $langcode) {
   switch ($node->type) {

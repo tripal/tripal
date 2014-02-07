@@ -1,8 +1,13 @@
 <?php
+/**
+ * @file
+ * Organism default views
+ */
 
 /**
+ * Implements hook_views_default_views().
  *
- *
+ * @ingroup tripal_organism
  */
 function tripal_organism_views_default_views() {
   $views = array();
@@ -13,6 +18,11 @@ function tripal_organism_views_default_views() {
   return $views;
 }
 
+/**
+ * Describe the organism administration view.
+ *
+ * @ingroup tripal_organism
+ */
 function tripal_organism_admin_defaultview_organisms() {
 
   $view = new view();
