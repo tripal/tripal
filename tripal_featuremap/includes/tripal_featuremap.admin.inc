@@ -1,7 +1,13 @@
 <?php
+/**
+ * @file
+ * Administration of feature maps
+ */
 
 /**
  * Admin launchpad
+ *
+ * @ingroup tripal_featuremap
  */
 function tripal_featuremap_admin_featuremaps_listing() {
   $output = '';
@@ -47,13 +53,3 @@ function tripal_featuremap_admin() {
 
   return system_settings_form($form);
 }
-
-
-/**
- *
- * @ingroup tripal_featuremap
- */
-function tripal_featuremap_admin_validate($form, &$form_state) {
-
-}
-

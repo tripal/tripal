@@ -1,11 +1,14 @@
 <?php
 /**
  * @file
- * @todo Add file header description
+ * Handles installation of the feature map module
  */
 
 /**
+ * Implements hook_disable().
  * Disable default views when module is disabled
+ *
+ * @ingroup tripal_featuremap
  */
 function tripal_featuremap_disable() {
 
@@ -20,6 +23,8 @@ function tripal_featuremap_disable() {
 
 /**
  * Implementation of hook_requirements().
+ *
+ * @ingroup tripal_featuremap
  */
 function tripal_featuremap_requirements($phase) {
   $requirements = array();
@@ -102,20 +107,22 @@ function tripal_featuremap_schema() {
 }
 
 /**
+ * Add cvs needed by the featuremap module
  *
+ * @ingroup tripal_featuremap
  */
 function tripal_featuremap_add_cvs() {
-  
+
   tripal_cv_add_cv(
-    'featuremap_units', 
+    'featuremap_units',
     'Contains map unit types for the unittype_id column of the featuremap table.'
   );
-  
+
   tripal_cv_add_cv(
-    'featurepos_property', 
+    'featurepos_property',
     'Contains terms map properties.'
   );
-  
+
   tripal_cv_add_cv(
     'featuremap_property',
     'Contains positional types for the feature positions'
@@ -123,7 +130,9 @@ function tripal_featuremap_add_cvs() {
 }
 
 /**
+ * Add cv terms needed by the featuremap module
  *
+ * @ingroup tripal_featuremap
  */
 function tripal_featuremap_add_cvterms() {
 
@@ -163,7 +172,7 @@ function tripal_featuremap_add_cvterms() {
      ),
      'featuremap_units', 0, 1, 'tripal'
    );
-   
+
    // featurepos properties
    tripal_cv_add_cvterm(
      array(
@@ -240,8 +249,13 @@ function tripal_featuremap_add_cvterms() {
 
 }
 
-/*
+/**
+ * Add custom tables needed by the feature map module
+ *  - featuremapprop
+ *  - featuremap_dbxref
+ *  - featureposprop
  *
+ * @ingroup tripal_featuremap
  */
 function tripal_featuremap_add_custom_tables(){
   // add the featuremaprop table to Chado

@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Provides an application programming interface (API) to manage chado feature maps
+ */
 
 /**
  * @defgroup tripal_featuremap_api Feature Map API
@@ -69,6 +73,7 @@ function tripal_featuremap_insert_property($featuremap_id, $property, $value, $u
 function tripal_featuremap_update_property($featuremap_id, $property, $value, $insert_if_missing = 0) {
   return chado_update_property('featuremap', $featuremap_id, $property, 'featuremap_property', $value, $insert_if_missing);
 }
+
 /**
  * Delete a given property
  *
@@ -89,8 +94,16 @@ function tripal_featuremap_delete_property($featuremap_id, $property) {
   return chado_delete_property('featuremap', $featuremap_id, $property, 'featuremap_property');
 }
 
-/*
+/**
+ * Add a dbxref to the featuremap_dbxref table
  *
+ * @param $featuremap_id
+ *  The id of the featuremap of interest
+ * @param $featuremap_dbxref
+ *  A string describing the dbxref with the db name separated from the dbxref accession
+ *  by a colon (:)
+ *
+ * @ingroup tripal_featuremap_api
  */
 function tripal_featuremap_add_featuremap_dbxref($featuremap_id, $featuremap_dbxref) {
 
