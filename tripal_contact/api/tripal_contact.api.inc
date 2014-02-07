@@ -1,5 +1,12 @@
 <?php
 /**
+ * @file
+ * Functions to interact with contacts.
+ *
+ * @ingroup tripal_contact
+ */
+
+/**
  * @defgroup tripal_contact_api Contact Module API
  * @ingroup tripal_api
  * @{
@@ -68,6 +75,7 @@ function tripal_contact_insert_property($contact_id, $property, $value, $update_
 function tripal_contact_update_property($contact_id, $property, $value, $insert_if_missing = 0) {
   return tripal_core_update_property('contact', $contact_id, $property, 'tripal_contact', $value, $insert_if_missing);
 }
+
 /**
  * Delete a given property
  *
@@ -108,7 +116,6 @@ function tripal_contact_delete_property($contact_id, $property) {
  *   returned
  *
  * @ingroup tripal_contact_api
- *
  */
 function tripal_contact_add_contact($name, $description, $type, $properties) {
 

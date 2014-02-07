@@ -1,7 +1,15 @@
 <?php
+/**
+ * @file
+ * Define default views for contacts.
+ *
+ * @ingroup tripal_contact
+ */
 
 /**
+ * Implements hook_views_default_views().
  *
+ * @ingroup tripal_contact
  */
 function tripal_contact_views_default_views() {
   $views = array();
@@ -13,7 +21,9 @@ function tripal_contact_views_default_views() {
 }
 
 /**
+ * Define the default view for contact administration.
  *
+ * @ingroup tripal_contact
  */
 function tripal_contact_defaultview_admin_contacts() {
 

@@ -1,7 +1,16 @@
 <?php
+/**
+ * @file
+ * Handle administration of contacts.
+ *
+ * @ingroup tripal_contact
+ */
 
 /**
+ * Launchpage for contact administration. Makes sure views are enabled and if not provides
+ * links to enable them.
  *
+ * @ingroup tripal_contact
  */
 function tripal_contact_admin_contact_view() {
   $output = '';
@@ -33,7 +42,6 @@ function tripal_contact_admin_contact_view() {
   return $output;
 }
 
-
 /**
  * Administrative settings form
  *
@@ -51,19 +59,20 @@ function tripal_contact_admin() {
 
 
 /**
+ * Reindex nodes for drupal search
  *
  * @ingroup tripal_contact
  */
 function get_tripal_contact_admin_form_reindex_set(&$form) {
 
- 
+
 }
+
 /**
+ * Validate the contact settings form.
  *
  * @ingroup tripal_contact
  */
 function tripal_contact_admin_validate($form, &$form_state) {
-  global $user;  // we need access to the user info
-  $job_args = array();
-}
 
+}
