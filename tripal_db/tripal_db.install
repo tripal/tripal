@@ -1,12 +1,14 @@
 <?php
-
 /**
  * @file
  * Contains functions related to the installation of this module
  */
 
 /**
+ * Implements hook_disable().
  * Disable default views when module is disabled
+ *
+ * @ingroup tripal_db
  */
 function tripal_db_disable() {
 
@@ -21,6 +23,8 @@ function tripal_db_disable() {
 
 /**
  * Implementation of hook_requirements().
+ *
+ * @ingroup tripal_db
  */
 function tripal_db_requirements($phase) {
   $requirements = array();

@@ -1,7 +1,11 @@
 <?php
+/**
+ * @file
+ * Provides an application programming interface (API) to manage references to
+ * external databases
+ */
 
 /**
-
  * @defgroup tripal_db_api Database Reference API
  * @ingroup tripal_api
  * @{
@@ -10,7 +14,7 @@
  */
 
 /**
- * Purpose: To retrieve a chado database object
+ * To retrieve a chado database object
  *
  * @param $select_values
  *   An array meant to uniquely select a given database
@@ -70,7 +74,7 @@ function tripal_db_get_db($select_values) {
 }
 
 /**
- * Purpose: To retrieve a chado db object
+ * To retrieve a chado db object
  *
  * @param $db_id
  *   db.db_id
@@ -86,7 +90,7 @@ function tripal_db_get_db_by_db_id($db_id) {
 }
 
 /**
- * Purpose: To retrieve a chado db object
+ * To retrieve a chado db object
  *
  * @param $name
  *   db.name
@@ -112,21 +116,8 @@ function tripal_db_get_db_by_name($name) {
   }
 }
 
-// Purpose: To retrieve a chado db object
-//
-// @params where_options: array(
-//                          <column_name> => array(
-//                            'type' => <type of column: INT/**STRING>,
-//                            'value' => <the vlaue you want to filter on>,
-//                            'exact' => <if TRUE use =; if FALSE use ~>,
-//                          )
-//        )
-// @return chado db object with all fields from the chado db table
-//
-//function tripal_db_get_db ($where_options) {
-
 /**
- * Purpose: Create an options array to be used in a form element
+ * Create an options array to be used in a form element
  *   which provides a list of all chado dbs
  *
  * @return
@@ -147,21 +138,8 @@ function tripal_db_get_db_options() {
 
 }
 
-// Purpose: To retrieve a chado dbxref object
-//
-// @param where_options: array(
-//                          <column_name> => array(
-//                            'type' => <type of column: INT/**STRING>,
-//                            'value' => <the vlaue you want to filter on>,
-//                            'exact' => <if TRUE use =; if FALSE use ~>,
-//                          )
-//        )
-// @return chado dbxref object with all fields from the chado dbxref table
-//
-//function tripal_db_get_dbxref ($where_options) {
-
 /**
- * Purpose: To retrieve a chado database reference object
+ * To retrieve a chado database reference object
  *
  * @param $select_values
  *   An array meant to uniquely select a given database reference
@@ -321,7 +299,9 @@ function tripal_db_add_db($dbname, $description = '', $url = '',
   return $result[0];
 
 }
+
 /**
+ * Add a database reference
  *
  * @ingroup tripal_db_api
  */
@@ -361,7 +341,9 @@ function tripal_db_add_dbxref($db_id, $accession, $version = '', $description = 
 }
 
 /**
+ * Add a record to a database reference linking table (ie: feature_dbxref)
  *
+ * @ingroup tripal_db_api
  */
 function tripal_db_add_dbxref_link($linking_table, $dbxref_id, $foreignkey_name, $foreignkey_id) {
 

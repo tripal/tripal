@@ -97,6 +97,7 @@ function tripal_analysis_help ($path, $arg) {
 
 /**
  *  Implements hook_permission().
+ *
  *  Set the permission types that the chado module uses.  Essentially we
  *  want permissionis that protect creation, editing and deleting of chado
  *  data objects
