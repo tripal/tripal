@@ -1,10 +1,15 @@
 <?php
-
 /**
  * @file
+ * Contains tripal_views_handler_filter_no_results
+ */
+
+/**
  * This filter ensures that when a page is first loaded, there are no results (ie: the
  * query is not run). This imitates an advanced search form allowing users to fist
  * enter other filter values and then retrieve results.
+ *
+ * @ingroup tripal_views
  */
 class tripal_views_handler_filter_no_results extends views_handler_filter {
 
@@ -16,7 +21,7 @@ class tripal_views_handler_filter_no_results extends views_handler_filter {
   }
 
   /**
-   * Defines the options form (form available to admin when they add a field to a view)
+   * {@inheritdoc}
    */
   function options_form(&$form, &$form_state) {
 
@@ -46,6 +51,9 @@ class tripal_views_handler_filter_no_results extends views_handler_filter {
 
   }
 
+  /**
+   * {@inheritdoc}
+   */
   function query() {
     global $base_url;
     $jquery_loaded = FALSE;

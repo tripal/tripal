@@ -1,14 +1,13 @@
 <?php
-
 /**
  * @file
  * Functions related to installing/uninstalling this module
  */
 
-
 /**
  * Implementation of hook_requirements().
  *
+ * @ingroup tripal_views
  */
 function tripal_views_requirements($phase) {
   $requirements = array();
@@ -74,6 +73,8 @@ function tripal_views_get_schemas() {
  *   - Add priority field to tripal_views
  *   - Add handler field to tripal_views_join
  *   - Add tripal_views_field table to keep track of fields for views integration
+ *
+ * @ingroup tripal_views
  */
 function tripal_views_update_6040() {
 
@@ -131,6 +132,8 @@ function tripal_views_update_6040() {
  * Tripal Views Update for 7.x-2.0
  *   - Add relationship_only field to tripal_views_join
  *   - Add relationship_handler field to tripal_views_join
+ *
+ * @ingroup tripal_views
  */
 function tripal_views_update_7020() {
 

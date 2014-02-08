@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * API functions for Tripal Views Integration
@@ -169,6 +168,8 @@ function tripal_views_is_lightest_priority_setup($setup_id, $table_name) {
  *   The machine-name of the view to be enabled
  * @param $redirect_link
  *   The path to redirect to. FALSE if no redirect needed
+ *
+ * @ingroup tripal_views_api
  */
 function tripal_views_admin_enable_view($view_name, $redirect_link = FALSE) {
 
@@ -193,6 +194,8 @@ function tripal_views_admin_enable_view($view_name, $redirect_link = FALSE) {
  *   The machine-name of the view to be enabled
  * @param $redirect_link
  *   The path to redirect to. FALSE if no redirect needed
+ *
+ * @ingroup tripal_views_api
  */
 function tripal_views_admin_disable_view($view_name, $redirect_link = FALSE) {
 
@@ -212,6 +215,8 @@ function tripal_views_admin_disable_view($view_name, $redirect_link = FALSE) {
 
 /**
  * Purpose: Deletes ALL Tripal Views Integrations.
+ *
+ * @ingroup tripal_views_api
  */
 function tripal_views_delete_all_integrations() {
 
@@ -224,12 +229,13 @@ function tripal_views_delete_all_integrations() {
 
 }
 
-
 /**
  * Rebuilds all the default integrations
  *
  * @param $delete_first
  *   If TRUE then all integrations are first deleted.
+ *
+ * @ingroup tripal_views_api
  */
 function tripal_views_rebuild_views_integrations($delete_first = FALSE) {
 
@@ -645,7 +651,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
   );
   // Add fields
   if (!isset($schema['fields'])) {
-    tripal_report_error('tripal_views', TRIPAL_NOTICE, 
+    tripal_report_error('tripal_views', TRIPAL_NOTICE,
       'There are no fields defined for %table in the Chado Schema API.', array('%table' => $table_name));
     return FALSE;
   }

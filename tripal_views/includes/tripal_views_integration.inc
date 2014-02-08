@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Functions related to the UI for integrating tables with views
@@ -13,7 +12,7 @@
  * @return
  *    a themed HTML table
  *
- * @ingroup tripal_views_integration
+ * @ingroup tripal_views
  */
 function tripal_views_integration_setup_list() {
   $output = '';
@@ -127,7 +126,7 @@ function tripal_views_integration_setup_list() {
  * @param $setup_id
  *    the unique setup id for the integrated table
  *
- * @ingroup tripal_views_integration
+ * @ingroup tripal_views
  */
 function tripal_views_integration_delete($setup_id) {
 
@@ -142,7 +141,7 @@ function tripal_views_integration_delete($setup_id) {
  *   function is meant to be called from a menu item. After completion it
  *   redirects the user to the views intergation page.
  *
- * @ingroup tripal_views_integration
+ * @ingroup tripal_views
  */
 function tripal_views_integration_delete_all_form ($form, $form_state) {
 
@@ -184,7 +183,7 @@ function tripal_views_integration_delete_all_form ($form, $form_state) {
  *   function is meant to be called from a menu item. After completion it
  *   redirects the user to the views intergation page.
  *
- * @ingroup tripal_views_integration
+ * @ingroup tripal_views
  */
 function tripal_views_integration_delete_all_form_submit ($form, &$form_state) {
 
@@ -212,7 +211,7 @@ function tripal_views_integration_delete_all_form_submit ($form, &$form_state) {
  * D7 @todo: Add ability to manage custom fields
  * D7 @todo: Update relationship handler to work with the new tripal_views_join method
  *
- * @ingroup tripal_views_integration
+ * @ingroup tripal_views
  */
 function tripal_views_integration_form($form, $form_state, $arg) {
 
@@ -994,7 +993,6 @@ function tripal_views_integration_form($form, $form_state, $arg) {
   return $form;
 }
 
-
 /**
  * Purpose: validates the tripal_views_integration_form after submission
  *
@@ -1004,7 +1002,7 @@ function tripal_views_integration_form($form, $form_state, $arg) {
  * @param $form_state
  *    The form state pbject which is passed automatically by drupal
  *
- * @ingroup tripal_views_integration
+ * @ingroup tripal_views
  */
 function tripal_views_integration_form_validate($form, &$form_state) {
   $name_array = explode(" ", $form_state['values']['row_name']);
@@ -1039,7 +1037,7 @@ function tripal_views_integration_form_validate($form, &$form_state) {
  * @param $form_state
  *    The form state pbject which is passed automatically by drupal
  *
- * @ingroup tripal_views_integration
+ * @ingroup tripal_views
  */
 function tripal_views_integration_form_submit($form, &$form_state) {
   $name = $form_state['values']['row_name'];
@@ -1196,7 +1194,7 @@ function tripal_views_integration_form_submit($form, &$form_state) {
  * @return
  *   Returns an array of handler names
  *
- * @ingroup tripal_views_integration
+ * @ingroup tripal_views
  */
 function tripal_views_integration_discover_handlers() {
 
@@ -1273,6 +1271,8 @@ function tripal_views_integration_discover_handlers() {
 /*
  * Ajax Callback: Tripal Views Integration Form
  * Replaces the entire fields table when the table or materialized view is set/changed
+ *
+ * @ingroup tripal_views
  */
 function tripal_views_integration_ajax_view_setup_table($form, $form_state) {
   return $form['view_setup_table'];
@@ -1281,6 +1281,8 @@ function tripal_views_integration_ajax_view_setup_table($form, $form_state) {
 /*
  * Ajax Callback: Tripal Views Integration Form
  * Replaces the join db field dropdown when the join table dropdown is changed
+ *
+ * @ingroup tripal_views
  */
 function tripal_views_integration_ajax_join_field($form, $form_state) {
 
@@ -1292,7 +1294,7 @@ function tripal_views_integration_ajax_join_field($form, $form_state) {
     return $form['view_setup_table'][$field]['column-3'][$join_field];
   }
   else {
-    tripal_report_error('tripal_views', TRIPAL_ERROR, 
+    tripal_report_error('tripal_views', TRIPAL_ERROR,
       'Tripal Views Integration Ajax failed due to being unable to determine which row needs updating', array());
     return $form;
   }

@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Basic Tripal Views functionality
+ */
 
 /**
  * @defgroup tripal_views Tripal Views Module
@@ -8,14 +12,14 @@
  * @}
  */
 
-require_once "tripal_views.views.inc";
+require_once 'tripal_views.views.inc';
 
-require_once "includes/tripal_views_integration.inc";
-require_once "includes/tripal_views_integration_port.inc";
+require_once 'includes/tripal_views_integration.inc';
+require_once 'includes/tripal_views_integration_port.inc';
 
 /**
- * Implements hook_menu()
- * Purpose: this hook provides details about new menu items added by this module
+ * Implements hook_menu().
+ * This hook provides details about new menu items added by this module
  *
  * @ingroup tripal_views
  */
@@ -136,6 +140,8 @@ function tripal_views_menu() {
 
 /**
  * Implements hook_init().
+ *
+ * @ingroup tripal_views
  */
 function tripal_views_init() {
 
@@ -153,8 +159,10 @@ function tripal_views_init() {
 }
 
 /**
- * Implements hook_help()
- * Purpose: Adds a help page to the module list
+ * Implements hook_help().
+ * Adds a help page to the module list
+ *
+ * @ingroup tripal_views
  */
 function tripal_views_help ($path, $arg) {
   if ($path == 'admin/help#tripal_views') {
@@ -179,7 +187,7 @@ function tripal_views_permission() {
 }
 
 /**
- * Implements hook_views_api()
+ * Implements hook_views_api().
  *
  * Purpose: Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_views.views.inc where all the
@@ -194,9 +202,9 @@ function tripal_views_views_api() {
 }
 
 /**
- * Implements hook_theme()
+ * Implements hook_theme().
  *
- * Purpose: this hook provides details about themable objects added by
+ * This hook provides details about themable objects added by
  *   this module
  *
  * @ingroup tripal_views
@@ -225,6 +233,8 @@ function tripal_views_theme($existing, $type, $theme, $path) {
 /**
  * Implements hook_coder_ignore().
  * Defines the path to the file (tripal_views.coder_ignores.txt) where ignore rules for coder are stored
+ *
+ * @ingroup tripal_views
  */
 function tripal_views_coder_ignore() {
   return array(
@@ -236,6 +246,8 @@ function tripal_views_coder_ignore() {
 /**
  * A landing page for all views of chado content. Simply lists all menu items that
  * are children of it.
+ *
+ * @ingroup tripal_views
  */
 function tripal_views_biological_data_page() {
   $output = '';
@@ -253,25 +265,11 @@ function tripal_views_biological_data_page() {
   return $output;
 }
 
-/*
+/**
+ * Admin launchpad
  *
+ * @ingroup tripal_views
  */
-function tripal_views_form_alter($form, $form_state, $form_id) {
-  if ($form_id == "tripal_views_integration_form") {
-    // updating the form through the ahah callback sets the action of
-    // the form to the ahah callback URL. We need to set it back
-    // to the normal form URL
-    /**
-    if (isset($form_state['input']['setup_id'])) {
-      $form['#action'] = url("admin/tripal/views/integration/edit/" . $form_state['input']['setup_id']);
-    }
-    else {
-      $form['#action'] = url("admin/tripal/views/integration/new");
-    }
-    */
-  }
-}
-
 function tripal_views_admin_integration_view() {
   $output = '';
 
