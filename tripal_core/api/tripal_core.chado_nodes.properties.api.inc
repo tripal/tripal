@@ -118,7 +118,7 @@
  *
  * @ingroup tripal_chado_node_api
  */
-function chado_get_property($basetable, $record_id, $property, $cv_name) {
+function chado_get_property($basetable, $record_id, $property, $cv_name, $property_id = FALSE) {
   // get the foreign key for this property table
   $table_desc = chado_get_schema($basetable . 'prop');
   $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
@@ -134,6 +134,11 @@ function chado_get_property($basetable, $record_id, $property, $cv_name) {
       'is_obsolete' => 0
     ),
   );
+  // if we have the unique property_id make sure to add that to the values
+  if ($property_id) {
+    $property_pkey = $table_desc['primary key'][0];
+    $values[$property_pkey] = $property_id;
+  }
   $results = chado_generate_var($basetable . 'prop', $values);
   if ($results) {
     $results = chado_expand_var($results, 'field', $basetable . 'prop.value');
@@ -272,10 +277,10 @@ $cv_name, $value, $update_if_present = 0) {
  * @ingroup tripal_chado_node_api
  */
 function chado_update_property($basetable, $record_id, $property,
-$cv_name, $value, $insert_if_missing = 0) {
+$cv_name, $value, $insert_if_missing = FALSE, $property_id = FALSE) {
 
   // first see if the property is missing (we can't update a missing property
-  $prop = chado_get_property($basetable, $record_id, $property, $cv_name);
+  $prop = chado_get_property($basetable, $record_id, $property, $cv_name, $property_id);
   if (count($prop)==0) {
     if ($insert_if_missing) {
       return chado_insert_property($basetable, $record_id, $property, $cv_name, $value);
@@ -299,11 +304,29 @@ $cv_name, $value, $insert_if_missing = 0) {
       'name' => $property,
     ),
   );
+  // If we have the unique property_id, make sure to use it in the match to ensure
+  // we get the exact record. Doesn't rely on there only being one property of that type
+  if ($property_id) {
+    $property_pkey = $table_desc['primary key'][0];
+    $match = array(
+      $property_pkey => $property_id
+    );
+  }
 
   // construct the array of values to be updated
   $values = array(
     'value' => $value,
   );
+  // If we have the unique property_id then we can also update the type
+  // thus add it to the values to be updated
+  if ($property_id) {
+    $values['type_id'] = array(
+      'cv_id' => array(
+        'name' => $cv_name,
+      ),
+      'name' => $property,
+    );
+  }
 
   return chado_update_record($basetable . 'prop', $match, $values);
 }
@@ -393,34 +416,6 @@ function chado_delete_property($basetable, $record_id, $property, $cv_name) {
       ),
       'name' => $property,
     ),
-  );
-
-  return chado_delete_record($basetable . 'prop', $match);
-}
-
-/**
- * Deletes a property using the property ID
- *
- * @param $basetable
- *   The base table for which the property should be deleted. Thus to deleted a property
- *   for a feature the basetable=feature and property is deleted from featureprop
- * @param $record_id
- *   The primary key of the basetable to delete a property for. This should be in integer.
- *
- * @return
- *   Return True on Delete and False otherwise
- *
- * @ingroup tripal_chado_node_api
- */
-function chado_delete_propertyID($basetable, $record_id) {
-
-  // get the foreign key for this property table
-  $table_desc = chado_get_schema($basetable . 'prop');
-  $pkcol = $table_desc['primary key'][0];
-
-  // construct the array that will match the exact record to update
-  $match = array(
-    $pkcol => $record_id,
   );
 
   return chado_delete_record($basetable . 'prop', $match);
