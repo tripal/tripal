@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Implement the project node content type
+ */
 
 /**
  * Implementation of hook_node_info().
@@ -6,7 +10,6 @@
  * This node_info, is a simple node that describes the functionallity of the module. It specifies
  * that the title(Project Name) and body(Description) set to true so that they information can be
  * entered
- *
  *
  * @ingroup tripal_project
  */
@@ -35,6 +38,7 @@ function tripal_project_node_info() {
     ),
   );
 }
+
 /**
  * Implementation of hook_form().
  *
@@ -188,8 +192,10 @@ function chado_project_form(&$node, $form_state) {
   return $form;
 
 }
+
 /**
- *  validates submission of form when adding or updating a project node
+ * Implements hook_validate().
+ * Validates submission of form when adding or updating a project node
  *
  * @ingroup tripal_project
  */
@@ -224,12 +230,12 @@ function chado_project_validate($node, $form, &$form_state) {
     form_set_error('title', t('The unique project name already exists. Please choose another'));
   }
 }
+
 /**
  * Implementation of hook_insert().
  *
  *  @parm $node
  *    Then node that has the information stored within, accessed given the nid
- *
  *
  * @ingroup tripal_project
  */
@@ -294,13 +300,11 @@ function chado_project_insert($node) {
 }
 
 /**
- *
  * Implementation of hook_delete().
  *
  * @param $node
- * The node which is to be deleted, only chado project and chado_project need to be dealt with
- * since the drupal node is deleted automagically
- *
+ *  The node which is to be deleted, only chado project and chado_project need to be dealt with
+ *  since the drupal node is deleted automagically
  *
  * @ingroup tripal_project
  */
@@ -334,7 +338,6 @@ function chado_project_delete($node) {
  * @param $node
  *  The node which is to have its containing information updated when the user modifies information
  *  pertaining to the specific project
- *
  *
  * @ingroup tripal_project
  */
@@ -380,14 +383,10 @@ function chado_project_update($node) {
 }
 
 /**
- * Implementation of node_load().
+ * Implementation of hook_load().
  *
  * @param $node
  *   The node that is to have its containing information loaded
- *
- * @return $node
- *   The node, containing the loaded project with the current nid
- *
  *
  * @ingroup tripal_project
  */
@@ -406,7 +405,7 @@ function chado_project_load($nodes) {
 }
 
 /**
- * Implement hook_access().
+ * Implement hook_node_access().
  *
  * This hook allows node modules to limit access to the node types they define.
  *
@@ -454,9 +453,11 @@ function chado_project_node_access($node, $op, $account) {
   }
   return NULL;
 }
+
 /**
+ * Implements hook_node_view().
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_project
  */
 function tripal_project_node_view($node, $view_mode, $langcode) {
   switch ($node->type) {

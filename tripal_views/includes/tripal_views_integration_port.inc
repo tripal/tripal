@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * This file contains the UI to import/export tripal views integration setups
@@ -7,19 +6,29 @@
  */
 
 /**
- * The form to export a particular tripal views integration
+ * Form: The form to export a particular tripal views integration
+ *
+ * No submit is needed since the setup_id is in the path and the export code is
+ * rendered based on that
+ *
+ * @param $form_state
+ *   The state of the form
+ * @param $setup_id
+ *   The tripal views integration setup id
+ *
+ * @ingroup tripal_views
  */
 function tripal_views_integration_export_form($form_state, $setup_id) {
   $form = array();
 
   $defn_array = tripal_views_integration_export_entry($setup_id);
-  
+
   $t = var_export($defn_array, TRUE);
   $t = preg_replace("/\n\s+array/", "array", $t); // move array( to previous line
   $t = preg_replace("/true/", "TRUE", $t); // upper case true
   $t = preg_replace("/false/", "FALSE", $t); // upper case false
-  $t = preg_replace("/array\(/", "array (", $t); // put a space between array and paren   
-        
+  $t = preg_replace("/array\(/", "array (", $t); // put a space between array and paren
+
   $form['export'] = array(
     '#type' => 'textarea',
     '#title' => 'Export',
@@ -33,7 +42,9 @@ function tripal_views_integration_export_form($form_state, $setup_id) {
 }
 
 /**
- * Imports a tripal views integration
+ * Form: Imports a tripal views integration
+ *
+ * @ingroup tripal_views
  */
 function tripal_views_integration_import_form() {
   $form = array();
@@ -76,7 +87,12 @@ function tripal_views_integration_import_form() {
 }
 
 /**
- * Imports a tripal views integration
+ * Submit: Imports a tripal views integration
+ *
+ * @param $form
+ * @param $form_state
+ *
+ * @ingroup tripal_views
  */
 function tripal_views_integration_import_form_submit($form, &$form_state) {
 

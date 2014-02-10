@@ -1,7 +1,13 @@
 <?php
+/**
+ * @file
+ * Administration of publications
+ */
 
 /**
+ * Admin launchpad
  *
+ * @ingroup tripal_pub
  */
 function tripal_pub_admin_pub_view() {
   $output = '';
@@ -33,7 +39,6 @@ function tripal_pub_admin_pub_view() {
   return $output;
 }
 
-
 /**
  * Administrative settings form
  *
@@ -41,17 +46,17 @@ function tripal_pub_admin_pub_view() {
  */
 function tripal_pub_admin() {
   $form = array();
-  
+
   // -----------------------------------------
   // add in the fields for selecting which fields are used when search for pubs
   $form['searching'] = array(
     '#type' => 'fieldset',
     '#title' => t('Searching Options'),
-    '#description' => t("The list of checkboxes below indicate which fields a user 
-      can search with when using the publication search tool.  Check the fields that you want 
+    '#description' => t("The list of checkboxes below indicate which fields a user
+      can search with when using the publication search tool.  Check the fields that you want
       to allow users to search with.  Click the 'Save configuration' button below to save changes."),
   );
-  
+
   // get publication properties list
   $properties = array();
   $properties[] = 'Any Field';
@@ -79,7 +84,7 @@ function tripal_pub_admin() {
   );
 
   // -----------------------------------------
-  // add the field set for syncing publications 
+  // add the field set for syncing publications
   $form['import'] = array(
     '#type' => 'fieldset',
     '#title' => t('Import Settings'),
@@ -136,7 +141,7 @@ function tripal_pub_admin() {
     '#type' => 'select',
     '#title' => t('Publication Type'),
     '#options' => $pub_types,
-    '#description' => t('Please set a default publiation type used for manual entry of a new 
+    '#description' => t('Please set a default publiation type used for manual entry of a new
       publication.  This is useful in the event that someone is manually adding the same
       publication type repetitively'),
     '#default_value' => $d_type_id
@@ -145,8 +150,8 @@ function tripal_pub_admin() {
   return system_settings_form($form);
 }
 
-
 /**
+ * Validate the admin settings form
  *
  * @ingroup tripal_pub
  */
@@ -171,9 +176,18 @@ function tripal_pub_admin_validate($form, &$form_state) {
 
 }
 
-
 /**
+ * Set the URL for a publication
  *
+ * @param $node
+ *   The publication node from pub_load().
+ * @param $pub_id
+ *   The chado pub_id of the publication to set the url for
+ *
+ * @return
+ *   The url alias set
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_set_pub_url($node, $pub_id) {
 

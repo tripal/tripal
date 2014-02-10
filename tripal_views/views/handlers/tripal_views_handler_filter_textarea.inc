@@ -1,17 +1,19 @@
 <?php
-
 /**
  * @file
- * Purpose: This Handler provides a file upload field by extending the
+ * Contants tripal_views_handler_filter_textarea Filter Handler
+ */
+
+/**
+ * This Handler provides a file upload field by extending the
  * views_handler_filter object.
  *
- * @ingroup tripal_views_integration
+ * @ingroup tripal_views
  */
 class tripal_views_handler_filter_textarea extends views_handler_filter {
 
   /**
-   * Defines the value field in both the views filter options form
-   *   and the exposed form
+   * {@inheritdoc}
    */
   function value_form(&$form, &$form_state) {
     parent::value_form($form, $form_state);
@@ -28,7 +30,7 @@ class tripal_views_handler_filter_textarea extends views_handler_filter {
   }
 
   /**
-   * Ensures the textarea field gets rendered when the filter is exposed.
+   * {@inheritdoc}
    */
   function exposed_form(&$form, &$form_state) {
 
@@ -53,7 +55,7 @@ class tripal_views_handler_filter_textarea extends views_handler_filter {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   function query() {
 

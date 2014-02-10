@@ -622,12 +622,18 @@ function tripal_update_mview($mview_id) {
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by @see chado_delete_property().
+ * This function is considered to be no easier to use than chado_delete_record directly
+ * @see chado_delete_record().
  */
-function tripal_core_delete_property_by_id($basetable, $record_id) {
-  //New API Function
-  // D7 @todo: change parameters
-  return chado_delete_property($basetable, $record_id);
+function tripal_core_delete_property_by_id($basetable, $property_id) {
+
+  // construct the array that will match the exact record to update
+  $match = array(
+    $basetable.'prop_id' => $property_id,
+  );
+
+  return chado_delete_record($basetable.'prop', $match);
+
 }
 
 /**
@@ -680,8 +686,7 @@ $cv_name, $value, $update_if_present = 0) {
 function tripal_core_update_property_by_id($basetable, $record_id, $property,
 $cv_name, $value) {
   //New API Function
-  // D7 @todo: change parameters
-  return chado_update_property($basetable, $record_id, $property, $cv_name, $value);
+  return chado_update_property($basetable, FALSE, $property, $cv_name, $value, FALSE, $record_id);
 }
 
 /**

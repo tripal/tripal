@@ -1,7 +1,19 @@
 <?php
+/**
+ * @file
+ * Contains tripal_views_handler_area_action_links Area Handler
+ */
 
+/**
+ * Provides an area for adding action links to a view.
+ *
+ * @ingroup tripal_views
+ */
 class tripal_views_handler_area_action_links extends views_handler_area {
 
+  /**
+   * {@inheritdoc}
+   */
   function option_definition() {
     $options = parent::option_definition();
 
@@ -20,6 +32,9 @@ class tripal_views_handler_area_action_links extends views_handler_area {
     return $options;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
 
@@ -103,6 +118,9 @@ class tripal_views_handler_area_action_links extends views_handler_area {
 
   }
 
+  /**
+   * {@inheritdoc}
+   */
   function options_submit(&$form, &$form_state) {
     parent::options_submit($form, $form_state);
     ddl($form_state, 'form state in submit');
@@ -119,6 +137,9 @@ class tripal_views_handler_area_action_links extends views_handler_area {
     $this->options['link-4']['path-4'] = $form_state['values']['options']['link-4']['path-4'];
   }
 
+  /**
+   * {@inheritdoc}
+   */
   function render($empty = FALSE) {
     if (!$empty || !empty($this->options['empty'])) {
       $output = '<ul class="action-links">';

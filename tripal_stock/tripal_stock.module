@@ -1,9 +1,15 @@
 <?php
-
 /**
  * @file
- * Implements Tripal Stock Module hooks
+ * Basic functionality for stocks
  */
+
+require_once 'api/tripal_stock.api.inc';
+
+require_once 'theme/tripal_stock.theme.inc';
+
+require_once 'includes/tripal_stock.admin.inc';
+require_once 'includes/tripal_stock.chado_node.inc';
 
 /**
  * @defgroup tripal_stock Stock Module
@@ -21,15 +27,10 @@
  * Stock Module see the GMOD Wiki Page (http://gmod.org/wiki/Chado_Stock_Module)
  * @}
  */
-require_once("includes/tripal_stock.admin.inc");
-require_once("includes/tripal_stock.sync_stocks.inc");
-require_once("includes/other_module_api_functions.inc");
-require_once("includes/tripal_stock.chado_node.inc");
-
-require_once("api/tripal_stock.api.inc");
 
 /**
- * Implements hook_menu(): Adds menu items for the tripal_stock
+ * Implements hook_menu().
+ * Adds menu items for the tripal_stock
  *
  * @return
  *   Menu definitions for the tripal_stock
@@ -94,7 +95,7 @@ function tripal_stock_menu() {
 /**
  * Implements Menu wildcard_load hook
  *
- * Purpose: Allows the node ID of a chado stock to be dynamically
+ * Allows the node ID of a chado stock to be dynamically
  *   pulled from the path. The node is loaded from this node ID
  *   and supplied to the page as an arguement. This is an example
  *   of dynamic argument replacement using wildcards in the path.
@@ -119,9 +120,8 @@ function cs_node_load($nid) {
 }
 
 /**
- * Implementation of hook_permission().
- *
- * Purpose: Set the permission types that the chado stock module uses
+ * Implements hook_permission().
+ * Set the permission types that the chado stock module uses
  *
  * @return
  *   Listing of the possible permission catagories
@@ -154,7 +154,7 @@ function tripal_stock_permission() {
 }
 
 /**
- * Implement hook_access().
+ * Implement hook_node_access().
  *
  * This hook allows node modules to limit access to the node types they define.
  *
@@ -202,7 +202,7 @@ function chado_stock_node_access($node, $op, $account) {
 }
 
 /**
- * Implements hook_views_api()
+ * Implements hook_views_api().
  *
  * Purpose: Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_stock.views.inc where all the
@@ -215,12 +215,13 @@ function chado_stock_node_access($node, $op, $account) {
  */
 function tripal_stock_views_api() {
   return array(
-    'api' => 2.0,
+    'api' => 3.0,
   );
 }
 
 /**
- * Implements hook_theme(): Register themeing functions for this module
+ * Implements hook_theme().
+ * Register themeing functions for this module
  *
  * @return
  *   An array of themeing functions to register
@@ -318,9 +319,12 @@ function tripal_stock_theme($existing, $type, $theme, $path) {
   );
   return $items;
 }
+
 /**
- * Implements hook_help()
- * Purpose: Adds a help page to the module list
+ * Implements hook_help().
+ * Adds a help page to the module list
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_help ($path, $arg) {
   if ($path == 'admin/help#tripal_stock') {
@@ -329,6 +333,8 @@ function tripal_stock_help ($path, $arg) {
 }
 
 /**
+ * Implements hook_block_info().
+ *
  * @ingroup tripal_stock
  */
 function tripal_stock_block_info() {
@@ -364,7 +370,9 @@ function tripal_stock_block_info() {
 
   return $blocks;
 }
+
 /**
+ * Implements hook_block_view().
  *
  * @ingroup tripal_stock
  */
@@ -431,105 +439,13 @@ function tripal_stock_block_view($delta = '') {
   }
 }
 
-/**
- *
- *
- * @ingroup tripal_stock
- */
-function tripal_stock_preprocess_tripal_stock_relationships(&$variables) {
-  // we want to provide a new variable that contains the matched stocks.
-  $stock = $variables['node']->stock;
-
-  // expand the stock object to include the stock relationships.
-  $options = array(
-    'return_array' => 1,
-    'order_by' => array('rank' => 'ASC'),
-    // we don't want to fully recurse we only need information about the
-    // relationship type and the object and subject stocks (including stock type
-    // and organism)
-    'include_fk' => array(
-      'type_id' => 1,
-      'object_id' => array(
-        'type_id' => 1,
-        'organism_id' => 1
-      ),
-      'subject_id'  => array(
-        'type_id' => 1,
-        'organism_id' => 1
-      ),
-    ),
-  );
-  $stock = chado_expand_var($stock, 'table', 'stock_relationship', $options);
-
-  // get the subject relationships
-  $srelationships = $stock->stock_relationship->subject_id;
-  $orelationships = $stock->stock_relationship->object_id;
-
-  // combine both object and subject relationshisp into a single array
-  $relationships = array();
-  $relationships['object'] = array();
-  $relationships['subject'] = array();
-
-  // iterate through the object relationships
-  if ($orelationships) {
-    foreach ($orelationships as $relationship) {
-      $rel = new stdClass();
-      $rel->record = $relationship;
-
-      // get the relationship and child types
-      $rel_type = t(preg_replace('/_/', " ", $relationship->type_id->name));
-      $child_type = $relationship->subject_id->type_id->name;
-
-      // get the node id of the subject
-      $sql = "SELECT nid FROM {chado_stock} WHERE stock_id = :stock_id";
-      $n = db_query($sql, array(':stock_id' => $relationship->subject_id->stock_id))->fetchObject();
-      if ($n) {
-        $rel->record->nid = $n->nid;
-      }
-
-      if (!array_key_exists($rel_type, $relationships['object'])) {
-        $relationships['object'][$rel_type] = array();
-      }
-      if (!array_key_exists($child_type, $relationships['object'][$rel_type])) {
-        $relationships['object'][$rel_type][$child_type] = array();
-      }
-      $relationships['object'][$rel_type][$child_type][] = $rel;
-    }
-  }
-
-  // now add in the subject relationships
-  if ($srelationships) {
-    foreach ($srelationships as $relationship) {
-      $rel = new stdClass();
-      $rel->record = $relationship;
-      $rel_type = t(preg_replace('/_/', " ", $relationship->type_id->name));
-      $parent_type = $relationship->object_id->type_id->name;
-
-      // get the node id of the subject
-      $sql = "SELECT nid FROM {chado_stock} WHERE stock_id = :stock_id";
-      $n = db_query($sql, array(':stock_id' => $relationship->object_id->stock_id))->fetchObject();
-      if ($n) {
-        $rel->record->nid = $n->nid;
-      }
-
-      if (!array_key_exists($rel_type, $relationships['subject'])) {
-        $relationships['subject'][$rel_type] = array();
-      }
-      if (!array_key_exists($parent_type, $relationships['subject'][$rel_type])) {
-        $relationships['subject'][$rel_type][$parent_type] = array();
-      }
-      $relationships['subject'][$rel_type][$parent_type][] = $rel;
-    }
-  }
-  $stock->all_relationships = $relationships;
-
-}
-
 /*
  * Uses the value provided in the $id argument to find all stocks that match
  * that ID by name, stockname or synonym.  If it matches uniquenly to a single
  * stock it will redirect to that stock page, otherwise, a list of matching
  * stocks is shown.
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_match_stocks_page($id) {
 
@@ -544,7 +460,6 @@ function tripal_stock_match_stocks_page($id) {
   if (preg_match('/^stock\//', $url_alias)) {
     drupal_goto($id);
   }
-
 
   $sql = "
     SELECT
@@ -596,11 +511,13 @@ function tripal_stock_match_stocks_page($id) {
 }
 
 /**
- * Implementation of hook_form_alter()
+ * Implementation of hook_form_alter().
  *
  * @param $form
  * @param $form_state
  * @param $form_id
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_form_alter(&$form, &$form_state, $form_id) {
   // turn of preview button for insert/updates

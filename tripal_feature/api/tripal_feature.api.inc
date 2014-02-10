@@ -204,8 +204,8 @@ function tripal_feature_analysis_update_property_by_id($analysisfeatureprop_id,
   $property, $value, $cv_name = 'tripal') {
 
     // update the property.
-    return chado_update_propertyID('analysisfeature',
-      $analysisfeatureprop_id, $property, $cv_name, $value);
+    return chado_update_property('analysisfeature',
+      NULL, $property, $cv_name, $value, FALSE, $analysisfeatureprop_id);
 }
 
 /**
@@ -274,8 +274,14 @@ function tripal_feature_analysis_delete_property($analysis_id = NULL, $feature_i
  * @ingroup tripal_feature_api
  */
 function tripal_feature_analysis_delete_property_by_id($analysisfeatureprop_id) {
-  // get the property.
-  return chado_delete_propertyID('analysisfeature', $analysisfeatureprop_id);
+
+  // construct the array that will match the exact record to update
+  $match = array(
+    'analysisfeatureprop_id' => $analysisfeatureprop_id,
+  );
+
+  return chado_delete_record('analysisfeatureprop', $match);
+
 }
 
 /**
@@ -373,7 +379,7 @@ function tripal_feature_update_property($feature_id, $property,
  */
 function tripal_feature_update_property_by_id($featureprop_id, $property,
   $value, $cv_name = 'tripal') {
-    return chado_update_propertyID('feature', $featureprop_id, $property, $cv_name, $value);
+    return chado_update_property('feature', NULL, $property, $cv_name, $value, FALSE, $featureprop_id);
 }
 
 /**
@@ -412,7 +418,14 @@ function tripal_feature_delete_property($feature_id, $property, $cv_name='tripal
  * @ingroup tripal_feature_api
  */
 function tripal_feature_delete_property_by_id($featureprop_id) {
-  return chado_delete_propertyID('feature', $featureprop_id);
+
+  // construct the array that will match the exact record to update
+  $match = array(
+    'featureprop_id' => $featureprop_id,
+  );
+
+  return chado_delete_record('featureprop', $match);
+
 }
 
 /**

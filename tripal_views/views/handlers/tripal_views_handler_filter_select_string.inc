@@ -1,17 +1,19 @@
 <?php
-
 /**
  * @file
- * Purpose: This Handler provides a generic select list for any chado field that is a string
+ * Contains tripal_views_handler_filter_select_string Filter Handler
+ */
+
+/**
+ * This Handler provides a generic select list for any chado field that is a string
  *  The select list includes all distinct values for that field.
  *
- * @ingroup views_filter_handlers
- * @ingroup tripal_core
+ * @ingroup tripal_views
  */
 class tripal_views_handler_filter_select_string extends views_handler_filter_string {
 
   /**
-   * Define our new options (needed for export!)
+   * {@inheritdoc}
    */
   function options_definition() {
     $options = parent::option_definition();
@@ -95,6 +97,9 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
     return $options;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   function expose_form(&$form, &$form_state) {
     parent::expose_form($form, $form_state);
 
@@ -141,7 +146,7 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
   }
 
   /**
-   * Set values for my options
+   * {@inheritdoc}
    */
   function expose_submit($form, &$form_state) {
     $this->options['expose']['values_form_type'] = $form_state['values']['options']['expose']['values_form_type'];
@@ -151,7 +156,7 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
   }
 
   /**
-   * Assign defaults for our new options
+   * {@inheritdoc}
    */
   function expose_options() {
     $this->options['expose']['values_form_type'] = 'textfield';
@@ -160,10 +165,9 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
     $this->options['expose']['max_length'] = 40;
   }
 
- /**
-  * Defines the value field in both the views filter options form
-  *   and the exposed form
-  */
+  /**
+   * {@inheritdoc}
+   */
   function value_form(&$form, &$form_state) {
     parent::value_form($form, $form_state);
 
@@ -195,7 +199,7 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
   }
 
   /**
-   * Ensure the value form gets exposed correctly
+   * {@inheritdoc}
    */
   function exposed_form(&$form, &$form_state) {
     parent::exposed_form($form, $form_state);
@@ -207,9 +211,9 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
     }
   }
 
- /**
-  * Adds this filter to the where clause of the views query
-  */
+  /**
+   * {@inheritdoc}
+   */
   function query() {
 
     // make optional

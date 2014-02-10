@@ -1,10 +1,13 @@
 <?php
+/**
+ * @file
+ * Implements the pub node content type
+ */
 
 /**
- * Implementation of hook_tripal_pub_node_info().
+ * Implements hook_node_info().
  *
- * This node_info, is a simple node that describes the functionallity of the module.
- *
+ * @ingroup tripal_pub
  */
 function tripal_pub_node_info() {
 
@@ -34,10 +37,10 @@ function tripal_pub_node_info() {
 }
 
 /**
- * This is the chado_pub node form callback. The arguments
- * are out of order from a typical form because it's a defined callback
+ * Implements hook_form().
+ *
+ * @ingroup tripal_pub
  */
-
 function chado_pub_form($node, $form_state) {
   $form = array();
 
@@ -294,8 +297,11 @@ function chado_pub_form($node, $form_state) {
   return $form;
 
 }
-/*
+
+/**
+ * Implements hook_validate().
  *
+ * @ingroup tripal_pub
  */
 function chado_pub_validate($node, $form, &$form_state) {
 
@@ -414,9 +420,14 @@ function chado_pub_validate($node, $form, &$form_state) {
     chado_pub_validate_check_uniquename($uniquename);
   }
 }
+
 /**
+ * Validate the publication uniquename. To be called from hook_validate().
  *
- * @param unknown $uniquename
+ * @param $uniquename
+ *  The uniquename of the publication
+ *
+ * @ingroup tripal_pub
  */
 function chado_pub_validate_check_uniquename($uniquename, $pub_id = NULL) {
 
@@ -432,8 +443,22 @@ function chado_pub_validate_check_uniquename($uniquename, $pub_id = NULL) {
     form_set_error('uniquename', $message);
   }
 }
+
 /**
+ * Check for duplicate publications. To be called from hook_validate().
  *
+ * @param $title
+ *   The title of the publication
+ * @param $pyear
+ *   The year the publication was published
+ * @param $series_name
+ *   The series name of the publication
+ * @param $cvterm
+ *   The type of publication
+ * @param $pub_id
+ *   the unique id of the publication
+ *
+ * @ingroup tripal_pub
  */
 function chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvterm, $pub_id = NULL) {
 
@@ -484,9 +509,8 @@ function chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvter
   }
 }
 
-
 /**
- * Implement hook_access().
+ * Implement hook_node_access().
  *
  * This hook allows node modules to limit access to the node types they define.
  *
@@ -506,8 +530,9 @@ function chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvter
  *  access.  The only exception is when the $op == 'create'.  We will always
  *  return TRUE if the permission is set.
  *
+ * @ingroup tripal_pub
  */
-function chado_pub_node_access($node, $op, $account ) {
+function chado_pub_node_access($node, $op, $account) {
   if ($op == 'create') {
     if (!user_access('create chado_pub content', $account)) {
       return FALSE;
@@ -533,20 +558,10 @@ function chado_pub_node_access($node, $op, $account ) {
   return NULL;
 }
 
-
-
-
-
 /**
- * Implementation of tripal_pub_insert().
+ * Implements hook_insert().
  *
- * This function inserts user entered information pertaining to the Publication instance into the
- * 'pubauthor', 'pubprop', 'chado_pub', 'pub' talble of the database.
- *
- *  @parm $node
- *    Then node which contains the information stored within the node-ID
- *
- *
+ * @ingroup tripal_pub
  */
 function chado_pub_insert($node) {
 
@@ -737,19 +752,18 @@ function chado_pub_insert($node) {
 
 }
 
-/*
+/**
+ * Implements hook_update().
  *
-* Implements hook_update
-*
-* The purpose of the function is to allow the module to take action when an edited node is being
-* updated. It updates any name changes to the database tables that werec reated upon registering a Publication.
-* As well, the database will be changed, so the user changed information will be saved to the database.
-*
-* @param $node
-*   The node being updated
-*
-* @ingroup tripal_pub
-*/
+ * The purpose of the function is to allow the module to take action when an edited node is being
+ * updated. It updates any name changes to the database tables that werec reated upon registering a Publication.
+ * As well, the database will be changed, so the user changed information will be saved to the database.
+ *
+ * @param $node
+ *   The node being updated
+ *
+ * @ingroup tripal_pub
+ */
 function chado_pub_update($node) {
   $title        = trim($node->pubtitle);
   $pyear        = trim($node->pyear);
@@ -924,17 +938,16 @@ function chado_pub_update($node) {
   chado_update_node_form_dbxrefs($node, $details);
 }
 
-
 /**
- * Implementation of tripal_pub_load().
- *
+ * Implements hook_load().
  *
  * @param $node
- *   The node that is to be accessed from the database
+ *   The node that is to be loaded
  *
  * @return $node
  *   The node with the information to be loaded into the database
  *
+ * @ingroup tripal_pub
  */
 function chado_pub_load($nodes) {
 
@@ -959,15 +972,16 @@ function chado_pub_load($nodes) {
 }
 
 /**
- * Implementation of tripal_pub_delete().
+ * Implements hook_delete().
  *
  * This function takes a node and if the delete button has been chosen by the user, the publication
  * and it's details will be removed.Following,given the node-ID, the instance will be deleted from
  * the 'chado_pub' table.
  *
- *  @parm $node
- *    Then node which contains the information stored within the node-ID
+ * @parm $node
+ *    Then node to be deleted
  *
+ * @ingroup tripal_pub
  */
 function chado_pub_delete(&$node) {
 
@@ -993,11 +1007,10 @@ function chado_pub_delete(&$node) {
   chado_query("DELETE FROM {pub} WHERE pub_id = :pub_id", array(':pub_id' => $pub_id));
 }
 
-
-
 /**
+ * Implements hook_node_view(). Acts on all content types.
  *
- * @ingroup tripal_feature
+ * @ingroup tripal_pub
  */
 function tripal_pub_node_view($node, $view_mode, $langcode) {
   switch ($node->type) {
@@ -1064,35 +1077,41 @@ function tripal_pub_node_view($node, $view_mode, $langcode) {
       break;
   }
 }
+
 /**
+ * Implements hook_node_insert(). Acts on all content types.
  *
- * @param $node
+ * We want the publications to always have a URL of http://[base url]/pub/[pub id]
+ * where [pub id] is the Chado publication ID.  This will allow for easy linking
+ * into the publication without needing to know the node.  Of course if you know the
+ * node that will still work too (e.g. http://[base url]/node/[node id]
+ * so the nodeapi function ensures that the URL path is set after insert or update
+ * of the node and when the node is loaded if it hasn't yet been set.
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_node_insert($node) {
-  // we want the publications to always have a URL of http://[base url]/pub/[pub id]
-  // where [pub id] is the Chado publication ID.  This will allow for easy linking
-  // into the publication without needing to know the node.  Of course if you know the
-  // node that will still work too (e.g. http://[base url]/node/[node id]
-  // so the nodeapi function ensures that the URL path is set after insert or update
-  // of the node and when the node is loaded if it hasn't yet been set.
+
   if ($node->type == 'chado_pub') {
     $pub_id = chado_get_id_from_nid('pub', $node->nid);
     tripal_pub_set_pub_url($node, $pub_id);
   }
 }
+
 /**
+ * Implements hook_node_load(). Acts on all content types.
  *
- * @param $node
- * @param $types
+ * We want the publications to always have a URL of http://[base url]/pub/[pub id]
+ * where [pub id] is the Chado publication ID.  This will allow for easy linking
+ * into the publication without needing to know the node.  Of course if you know the
+ * node that will still work too (e.g. http://[base url]/node/[node id]
+ * so the nodeapi function ensures that the URL path is set after insert or update
+ * of the node and when the node is loaded if it hasn't yet been set.
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_node_load($nodes, $types) {
 
-  // we want the publications to always have a URL of http://[base url]/pub/[pub id]
-  // where [pub id] is the Chado publication ID.  This will allow for easy linking
-  // into the publication without needing to know the node.  Of course if you know the
-  // node that will still work too (e.g. http://[base url]/node/[node id]
-  // so the nodeapi function ensures that the URL path is set after insert or update
-  // of the node and when the node is loaded if it hasn't yet been set.
   if (count(array_intersect(array('chado_pub'), $types))) {
     foreach ($nodes as $nid => $node) {
       if ($node->type == 'chado_pub' and !property_exists($node, 'path')) {
@@ -1102,17 +1121,21 @@ function tripal_pub_node_load($nodes, $types) {
     }
   }
 }
+
 /**
+ * Implements hook_node_update(). Acts on all content types.
  *
- * @param $node
+ * We want the publications to always have a URL of http://[base url]/pub/[pub id]
+ * where [pub id] is the Chado publication ID.  This will allow for easy linking
+ * into the publication without needing to know the node.  Of course if you know the
+ * node that will still work too (e.g. http://[base url]/node/[node id]
+ * so the nodeapi function ensures that the URL path is set after insert or update
+ * of the node and when the node is loaded if it hasn't yet been set.
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_node_update($node) {
-  // we want the publications to always have a URL of http://[base url]/pub/[pub id]
-  // where [pub id] is the Chado publication ID.  This will allow for easy linking
-  // into the publication without needing to know the node.  Of course if you know the
-  // node that will still work too (e.g. http://[base url]/node/[node id]
-  // so the nodeapi function ensures that the URL path is set after insert or update
-  // of the node and when the node is loaded if it hasn't yet been set.
+
   if ($node->type == 'chado_pub') {
     $pub_id = chado_get_id_from_nid('pub', $node->nid);
     tripal_pub_set_pub_url($node, $pub_id);

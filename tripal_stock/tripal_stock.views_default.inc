@@ -1,8 +1,13 @@
 <?php
+/**
+ * @file
+ * Describes stock default views.
+ */
 
 /**
+ * Implements hook_views_default_views().
  *
- *
+ * @ingroup tripal_stock
  */
 function tripal_stock_views_default_views() {
   $views = array();
@@ -13,6 +18,11 @@ function tripal_stock_views_default_views() {
   return $views;
 }
 
+/**
+ * Default stock administration view
+ *
+ * @ingroup tripal_stock
+ */
 function tripal_stock_defaultview_admin_stocks() {
 
   $view = new view();

@@ -1,17 +1,14 @@
 <?php
-
 /**
  * @file
- * This file contains all the functions which describe and implement drupal database tables
- * needed by this module. This module was developed by Chad N.A. Krilow and Lacey-Anne Sanderson,
- * University of Saskatchewan.
- *
- * The project manamgenet module allows you to sync data in a chado/Tripal instance with
- * multiple project/mysql instances as well as manage and create such project instances
+ * Installation of the publication module
  */
 
 /**
+ * Implements hook_disable().
  * Disable default views when module is disabled
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_disable() {
 
@@ -26,6 +23,8 @@ function tripal_pub_disable() {
 
 /**
  * Implementation of hook_requirements().
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_requirements($phase) {
   $requirements = array();
@@ -44,6 +43,8 @@ function tripal_pub_requirements($phase) {
 
 /**
  * Implementation of hook_install().
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_install() {
   global $base_path;
@@ -66,13 +67,17 @@ function tripal_pub_install() {
 
 /**
  * Implementation of hook_uninstall().
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_uninstall() {
 
 }
 
 /**
+ * Implements hook_enable().
  *
+ * @ingroup tripal_pub
  */
 function tripal_pub_enable() {
   // make sure we have our supported databases
@@ -82,9 +87,10 @@ function tripal_pub_enable() {
   variable_set('tripal_pub_supported_dbs', array('PMID', 'AGL'));
 }
 
-
 /**
  * Implementation of hook_schema().
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_schema() {
 
@@ -161,9 +167,11 @@ function tripal_pub_schema() {
   return $schema;
 }
 
-
-/*
+/**
+ * Add custom table related to publications
+ *  - pubauthor_contact
  *
+ * @ingroup tripal_pub
  */
 function tripal_pub_add_custom_tables() {
   $schema = array (
@@ -210,7 +218,9 @@ function tripal_pub_add_custom_tables() {
 }
 
 /**
+ * Add cvs related to publications
  *
+ * @ingroup tripal_pub
  */
 function tripal_pub_add_cvs() {
 
@@ -220,8 +230,11 @@ function tripal_pub_add_cvs() {
     'Contains Types of relationships between publications.'
   );
 }
+
 /**
+ * Add cvterms related to publications
  *
+ * @ingroup tripal_pub
  */
 function tripal_pub_add_cvterms() {
 
@@ -229,6 +242,8 @@ function tripal_pub_add_cvterms() {
 
 /**
  * This is the required update for tripal_contact when upgrading from Drupal core API 6.x.
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_update_7000() {
 

@@ -5,7 +5,13 @@
  */
 
 /**
+ * @stephen
  *
+ * @param $form
+ * @param $form_state
+ * @param $num_criteria
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_remote_alter_form_PMID($form, $form_state, $num_criteria = 1) {
   // PubMed doesn't have an 'Abstract' field, so we need to convert the criteria
@@ -18,7 +24,15 @@ function tripal_pub_remote_alter_form_PMID($form, $form_state, $num_criteria = 1
 }
 
 /**
+ * Validate the pub med form
  *
+ * @param $form
+ * @param $form_state
+ *
+ * @return
+ *   The form (drupal form api)
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_remote_validate_form_PMID($form, $form_state) {
   $num_criteria = $form_state['values']['num_criteria'];
@@ -32,8 +46,15 @@ function tripal_pub_remote_validate_form_PMID($form, $form_state) {
   }
   return $form;
 }
+
 /**
+ * @stephen
  *
+ * @param $search_array
+ * @param $num_to_retrieve
+ * @param $page
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $page) {
   // convert the terms list provicded by the caller into a string with words
@@ -144,8 +165,13 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $page) {
   );
 }
 
-/*
+/**
+ * @stephen
  *
+ * @param $search_str
+ * @param $retmax
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_PMID_search_init($search_str, $retmax){
 
@@ -208,8 +234,18 @@ function tripal_pub_PMID_search_init($search_str, $retmax){
   return $result;
 }
 
-/*
+/**
+ * @stephen
  *
+ * @param $query_key
+ * @param $web_env
+ * @param $rettype
+ * @param $retmod
+ * @param $start
+ * @param $limit
+ * @param $args
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_PMID_fetch($query_key, $web_env, $rettype = 'null',
 $retmod = 'null', $start = 0, $limit = 10, $args = array()){
@@ -267,6 +303,14 @@ $retmod = 'null', $start = 0, $limit = 10, $args = array()){
  *
  * Information about PubMed's citation format can be found here
  * http://www.nlm.nih.gov/bsd/policy/cit_format.html
+ *
+ * @param $pub_xml
+ *  An XML string describing a single publication
+ *
+ * @return
+ *  An array describing the publication
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_PMID_parse_pubxml($pub_xml) {
   $pub = array();
@@ -360,8 +404,13 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
   return $pub;
 }
 
-/*
+/**
+ * @stephen
  *
+ * @param $xml
+ * @param $pub
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_PMID_parse_medline_journal_info($xml, &$pub) {
   while ($xml->read()) {
@@ -395,8 +444,13 @@ function tripal_pub_PMID_parse_medline_journal_info($xml, &$pub) {
   }
 }
 
-/*
+/**
+ * @stephen
  *
+ * @param $xml
+ * @param $pub
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_PMID_parse_article($xml, &$pub) {
 
@@ -481,12 +535,20 @@ function tripal_pub_PMID_parse_article($xml, &$pub) {
     }
   }
 }
-/*
+
+/**
+ * @stephen
+ *
  * A full list of publication types can be found here:
  * http://www.nlm.nih.gov/mesh/pubtypes.html.
  *
  * The Tripal Pub ontology doesn't yet have terms for all of the
  * publication types so we store the value in the 'publication_type' term.
+ *
+ * @param $xml
+ * @param $pub
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_PMID_parse_publication_type($xml, &$pub) {
 
@@ -521,8 +583,14 @@ function tripal_pub_PMID_parse_publication_type($xml, &$pub) {
     }
   }
 }
-/*
+
+/**
+ * @stephen
  *
+ * @param $xml
+ * @param $pub
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_PMID_parse_abstract($xml, &$pub) {
   $abstract = '';
@@ -562,8 +630,14 @@ function tripal_pub_PMID_parse_abstract($xml, &$pub) {
     }
   }
 }
-/*
+
+/**
+ * @stephen
  *
+ * @param $xml
+ * @param $pub
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_PMID_parse_pagination($xml, &$pub) {
   while ($xml->read()) {
@@ -587,8 +661,14 @@ function tripal_pub_PMID_parse_pagination($xml, &$pub) {
     }
   }
 }
-/*
+
+/**
+ * @stephen
  *
+ * @param $xml
+ * @param $pub
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_PMID_parse_journal($xml, &$pub) {
 
@@ -631,8 +711,14 @@ function tripal_pub_PMID_parse_journal($xml, &$pub) {
     }
   }
 }
-/*
+
+/**
+ * @stephen
  *
+ * @param $xml
+ * @param $pub
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_PMID_parse_journal_issue($xml, &$pub) {
 
@@ -684,10 +770,15 @@ function tripal_pub_PMID_parse_journal_issue($xml, &$pub) {
   }
 }
 
-/*
+/**
+ * @stephen
  *
+ * @param $xml
+ * @param $element_name
+ *
+ * @ingroup tripal_pub
  */
-function tripal_pub_PMID_parse_date ($xml, $element_name) {
+function tripal_pub_PMID_parse_date($xml, $element_name) {
   $date = array();
 
   while ($xml->read()) {
@@ -724,8 +815,14 @@ function tripal_pub_PMID_parse_date ($xml, $element_name) {
     }
   }
 }
-/*
+
+/**
+ * @stephen
  *
+ * @param $xml
+ * @param $pub
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_PMID_parse_authorlist($xml, &$pub) {
   $num_authors = 0;
@@ -797,9 +894,19 @@ function tripal_pub_PMID_parse_authorlist($xml, &$pub) {
   }
 }
 
-/*
+/**
+ * Get the name of the language based on an abbreviation
+ *
  * Language abbreviations were obtained here:
  * http://www.nlm.nih.gov/bsd/language_table.html
+ *
+ * @param $lang_abbr
+ *   The abbreviation of the language to return
+ *
+ * @return
+ *   The full name of the language
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_remote_search_get_language($lang_abbr) {
   $languages = array(
