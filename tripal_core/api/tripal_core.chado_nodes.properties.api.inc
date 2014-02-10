@@ -332,56 +332,6 @@ $cv_name, $value, $insert_if_missing = FALSE, $property_id = FALSE) {
 }
 
 /**
- * Update a property for a given base table record.  This function should be
- * used if multiple records of the same property will be present. Also, use this
- * function to change the property name of an existing property.
- *
- * @param $basetable
- *   The base table for which the property should be updated. The property table
- *   is constructed using  a combination of the base table name and the suffix
- *   'prop' (e.g. basetable = feature then property tabie is featureprop).
- * @param $record_id
- *   The primary key of the base table. This should be in integer.
- *   For example, if the basetable is 'feature' then the $record_id should be the featureprop_id
- * @param $property
- *   The cvterm name of property to be updated
- * @param $cv_name
- *   The name of the cv that the above cvterm is part of
- * @param $value
- *   The value of the property to be inserted (can be empty)
- *
- * @return
- *   Return True on Update/Insert and False otherwise
- *
- * @ingroup tripal_chado_node_api
- */
-function chado_update_propertyID($basetable, $record_id, $property,
-$cv_name, $value) {
-
-  // get the primary key for this property table
-  $table_desc = chado_get_schema($basetable . 'prop');
-  $pkcol = $table_desc['primary key'][0];
-
-  // construct the array that will match the exact record to update
-  $match = array(
-    $pkcol => $record_id,
-  );
-
-  // construct the array of values to be updated
-  $values = array(
-    'type_id' => array(
-      'cv_id' => array(
-        'name' => $cv_name,
-      ),
-      'name' => $property,
-    ),
-    'value' => $value,
-  );
-
-  return chado_update_record($basetable . 'prop', $match, $values);
-}
-
-/**
  * Deletes a property for a given base table record using the property name
  *
  * @param $basetable
