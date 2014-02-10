@@ -1,7 +1,11 @@
 <?php
+/**
+ * @file
+ *  Describes the feature blocks to drupal
+ */
 
 /**
- *
+ * Implements hook_block().
  *
  * @ingroup tripal_feature
  */
@@ -44,7 +48,7 @@ function tripal_feature_block_info() {
 }
 
 /**
- *
+ * Implements hook_block_view().
  *
  * @ingroup tripal_feature
  */

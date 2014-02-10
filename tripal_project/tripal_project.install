@@ -1,17 +1,14 @@
 <?php
-
 /**
  * @file
- * This file contains all the functions which describe and implement drupal database tables
- * needed by this module. This module was developed by Chad N.A. Krilow and Lacey-Anne Sanderson,
- * University of Saskatchewan.
- *
- * The project manamgenet module allows you to sync data in a chado/Tripal instance with
- * multiple project/mysql instances as well as manage and create such project instances
+ * Install the tripal project
  */
 
 /**
+ * Implements hook_disable().
  * Disable default views when module is disabled
+ *
+ * @ingroup tripal_project
  */
 function tripal_project_disable() {
 
@@ -27,6 +24,7 @@ function tripal_project_disable() {
 /**
  * Implementation of hook_requirements().
  *
+ * @ingroup tripal_project
  */
 function tripal_project_requirements($phase) {
   $requirements = array();
@@ -42,8 +40,11 @@ function tripal_project_requirements($phase) {
   }
   return $requirements;
 }
+
 /**
  * Implementation of hook_install().
+ *
+ * @ingroup tripal_project
  */
 function tripal_project_install() {
 
@@ -56,6 +57,8 @@ function tripal_project_install() {
 
 /**
  * Implementation of hook_uninstall().
+ *
+ * @ingroup tripal_project
  */
 function tripal_project_uninstall() {
 
@@ -63,6 +66,8 @@ function tripal_project_uninstall() {
 
 /**
  * Implementation of hook_schema().
+ *
+ * @ingroup tripal_project
  */
 function tripal_project_schema() {
   $schema['chado_project'] = array(
@@ -88,7 +93,9 @@ function tripal_project_schema() {
 }
 
 /**
+ * Add cvs pertaining to projects
  *
+ * @ingroup tripal_project
  */
 function tripal_project_add_cvs() {
   tripal_cv_add_cv('project_property', 'Contains properties for projects');
@@ -99,8 +106,11 @@ function tripal_project_add_cvs() {
     'Contains Types of relationships between projects.'
   );
 }
+
 /**
+ * Add cvterms pertaining to projects
  *
+ * @ingroup tripal_project
  */
 function tripal_project_add_cvterms() {
 
@@ -133,6 +143,8 @@ function tripal_project_add_cvterms() {
 
 /**
  * This is the required update for tripal_project when upgrading from Drupal core API 6.x.
+ *
+ * @ingroup tripal_project
  */
 function tripal_project_update_7000() {
 

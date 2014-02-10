@@ -1,51 +1,14 @@
 <?php
-
-include('api/tripal_views.api.inc');
-include('views/handlers/tripal_views_handler_area_action_links.inc');
-
 /**
  * @file
  * Tripal Views Integration
  */
 
-/**
- * @defgroup views_handlers Views Integration Handlers
- * @ingroup views
- * @{
- * Provide rules for formatting and composition of fields
- * @}
- */
-/**
- * @defgroup views_field_handlers Views Field Handlers
- * @ingroup views_handlers
- * @{
- * Provide rules for formatting and composition of fields
- * @}
- */
-/**
- * @defgroup views_filter_handlers Views Filter Handlers
- * @ingroup views_handlers
- * @{
- * Provide the ability to filter based on specified data
- * @}
- */
-/**
- * @defgroup views_sort_handlers Views Sort Handlers
- * @ingroup views_handlers
- * @{
- * Provide methods describing how specific data should be sorted
- * @}
- */
-/**
- * @defgroup views_argument_handlers Views Arguement Handlers
- * @ingroup views_handlers
- * @{
- * Provide the ability to filter pased on arguments in the path of the view
- * @}
- */
+include 'api/tripal_views.api.inc';
+include 'views/handlers/tripal_views_handler_area_action_links.inc';
 
 /**
- * Implements hook_views_handlers()
+ * Implements hook_views_handlers().
  *
  * Purpose: Register all custom handlers with views
  *   where a handler describes either "the type of field",
@@ -105,7 +68,7 @@ function tripal_views_views_handlers() {
 }
 
 /**
- * Implements hook_views_pre_render
+ * Implements hook_views_pre_render().
  *
  * Purpose: Intercepts the view after the query has been executed
  *   All the results are stored in $view->result
@@ -131,9 +94,10 @@ function tripal_views_views_pre_render(&$view) {
 }
 
 /**
+ * Implements hook_views_date().
  * Generates a dynamic data array for Views
  *
- * Purpose: This function is a hook used by the Views module. It populates and
+ * This function is a hook used by the Views module. It populates and
  *   returns a data array that specifies for the Views module the base table,
  *   the tables it joins with and handlers.  The data array is populated
  *   using the data stored in the tripal_views tables.
@@ -370,7 +334,9 @@ function tripal_views_views_data() {
 }
 
 /**
+ * Describes the tripal views integration tables to views for the administration views
  *
+ * @ingroup tripal_views
  */
 function tripal_views_views_data_tripal_views_tables($data) {
 
@@ -607,12 +573,14 @@ function tripal_views_views_data_alter(&$data) {
 
 /**
  * Implementation of hook_views_pre_view().
+ *
+ * Merge the $_GET and $_POST into the $_GET. This is because
+ * Views and Views Data Export modules only uses the $_GET variable but
+ * file uploads require $_POST. We need to make sure these two modules
+ * have access to everything needed for this view to work properly.
+ *
+ * @ingroup tripal_views
  */
 function tripal_views_views_pre_view(&$view, &$display_id, &$args) {
-
-  // merge the $_GET and $_POST into the $_GET. This is because
-  // Views and Views Data Export modules only uses the $_GET variable but
-  // file uploads require $_POST. We need to make sure these two modules
-  // have access to everything needed for this view to work properly
   $_GET = array_merge($_GET, $_POST);
 }

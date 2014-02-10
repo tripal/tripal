@@ -1,13 +1,14 @@
 <?php
-
-
 /**
  * Install the tripal stock module including it's content type
  * @file
  */
 
 /**
+ * Implements hook_disable().
  * Disable default views when module is disabled
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_disable() {
 
@@ -23,6 +24,7 @@ function tripal_stock_disable() {
 /**
  * Implementation of hook_requirements().
  *
+ * @ingroup tripal_stock
  */
 function tripal_stock_requirements($phase) {
   $requirements = array();
@@ -41,6 +43,8 @@ function tripal_stock_requirements($phase) {
 
 /**
  * Implementation of hook_install().
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_install() {
   // create the module's data directory
@@ -49,14 +53,17 @@ function tripal_stock_install() {
 
 /**
  * Implementation of hook_uninstall().
+ *
+ * @ingroup tripal_stock
  */
-
 function tripal_stock_uninstall() {
 
 }
 
 /**
  * Implementation of hook_schema().
+ *
+ * @ingroup tripal_stock
  */
 function tripal_stock_schema() {
   $schema['chado_stock'] = array(

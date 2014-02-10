@@ -1,23 +1,20 @@
 <?php
-
 /**
  *  @file
  *  This file contains the basic functions for views integration of
- *  chado/tripal organism tables. Supplementary functions can be found in
- *  ./views/
- *
- *  Documentation on views integration can be found at
- *  http://views2.logrus.com/doc/html/index.html.
+ *  chado/tripal feature tables
  */
 
 /**
- * Implements hook_views_handlers()
+ * Implements hook_views_handlers().
  *
  * Purpose: Register all custom handlers with views
  *   where a handler describes either "the type of field",
  *   "how a field should be filtered", "how a field should be sorted"
  *
  * @return: An array of handler definitions
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_views_handlers() {
   return array(

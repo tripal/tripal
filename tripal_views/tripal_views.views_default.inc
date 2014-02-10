@@ -1,7 +1,10 @@
 <?php
+/**
+ * Describes default views for tripal views integrations
+ */
 
 /**
- *
+ * Implements hook_views_default_views().
  *
  * @ingroup tripal_views
  */
@@ -14,6 +17,11 @@ function tripal_views_views_default_views() {
   return $views;
 }
 
+/**
+ * Default integrations administration view
+ *
+ * @ingroup tripal_views
+ */
 function tripal_views_defaultview_admin_integrations() {
 
   $view = new view();

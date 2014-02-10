@@ -1,7 +1,14 @@
 <?php
+/**
+ * @file
+ * Installation of the phenotype module
+ */
 
 /**
+ * Implements hook_disable().
  * Disable default views when module is disabled
+ *
+ * @ingroup tripal_phenotype
  */
 function tripal_phenotype_disable() {
 

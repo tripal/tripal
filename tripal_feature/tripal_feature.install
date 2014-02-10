@@ -1,11 +1,15 @@
 <?php
 /**
  * @file
- * @todo Add file header description
+ * Installation of the feature module
  */
 
 /**
+ * Implements hook_disable().
+ *
  * Disable default views when module is disabled
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_disable() {
 
@@ -19,7 +23,9 @@ function tripal_feature_disable() {
 }
 
 /**
- * Implementation of hook_requirements().
+ * Implements hook_requirements().
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_requirements($phase) {
   $requirements = array();
@@ -37,7 +43,7 @@ function tripal_feature_requirements($phase) {
 }
 
 /**
- * Implementation of hook_install().
+ * Implements hook_install().
  *
  * @ingroup tripal_feature
  */
@@ -47,13 +53,13 @@ function tripal_feature_install() {
 
   // add the materialized view
   tripal_feature_add_organism_count_mview();
-  
+
   // create the temp table we will use for loading GFF files
   tripal_cv_create_tripal_gff_temp();
 }
 
 /**
- * Implementation of hook_uninstall().
+ * Implements hook_uninstall().
  *
  * @ingroup tripal_feature
  */
@@ -62,7 +68,9 @@ function tripal_feature_uninstall() {
 }
 
 /**
- * 
+ * Create a temporary table used for loading gff3 files
+ *
+ * @ingroup tripal_feature
  */
 function tripal_cv_create_tripal_gff_temp() {
   // the tripal_obo_temp table is used for temporary housing of records when loading OBO files
@@ -137,6 +145,7 @@ function tripal_feature_schema() {
 };
 
 /**
+ * Creates a materialized view that stores the type & number of features per organism
  *
  * @ingroup tripal_feature
  */

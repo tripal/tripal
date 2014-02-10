@@ -1,5 +1,10 @@
 <?php
 /**
+ * @file
+ * Provides an application programming interface (API) for working with features
+ */
+
+/**
  * @defgroup tripal_feature_api Feature API
  * @ingroup tripal_api
  * @{
@@ -202,6 +207,7 @@ function tripal_feature_analysis_update_property_by_id($analysisfeatureprop_id,
     return chado_update_property('analysisfeature',
       NULL, $property, $cv_name, $value, FALSE, $analysisfeatureprop_id);
 }
+
 /**
  * Delete an analysis feature property using the property name.  Use this
  * when a property only exists once for a given analysis feature.  When more
@@ -255,6 +261,7 @@ function tripal_feature_analysis_delete_property($analysis_id = NULL, $feature_i
   // get the property.
   return chado_delete_property('analysisfeature', $analysisfeature_id, $property, $cv_name);
 }
+
 /**
  * Delete a property using the analysisfeatureprop_id
  *
@@ -276,6 +283,7 @@ function tripal_feature_analysis_delete_property_by_id($analysisfeatureprop_id) 
   return chado_delete_record('analysisfeatureprop', $match);
 
 }
+
 /**
  * Retrieve properties of a given type for a given feature
  *
@@ -321,6 +329,7 @@ function tripal_feature_insert_property($feature_id, $property, $value,
   return chado_insert_property('feature', $feature_id, $property,
     $cv_name, $value, $update_if_present);
 }
+
 /**
  * Update a feature property using the property name. Only use this
  * if the property is unique and only exist once for the feature.
@@ -396,6 +405,7 @@ function tripal_feature_update_property_by_id($featureprop_id, $property,
 function tripal_feature_delete_property($feature_id, $property, $cv_name='tripal') {
   return chado_delete_property('feature', $feature_id, $property, $cv_name);
 }
+
 /**
  * Delete a given feature property using the featureprop_id
  *
@@ -449,6 +459,7 @@ function tripal_feature_reverse_complement($sequence) {
   $seq = str_replace("B", "v", $seq);
   return strtoupper($seq);
 }
+
 /**
  * Retrieves the sequence for a feature.
  *
@@ -844,11 +855,9 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
   return $residues;
 }
 
-
-
-/*
+/**
  * This function adds an entry to the feature_dbxref table.
-  *
+ *
  * @param $feature_id
  *   The numeric feature_if of the feature
  * @param $dbname
@@ -904,9 +913,9 @@ function tripal_feature_add_dbxref($feature_id, $dbname, $accession) {
   return TRUE;
 }
 
-/*
+/**
  * This function adds an entry to the feature_cvterm table.
-  *
+ *
  * @param $feature_id
  *   The numeric feature_if of the feature
  * @param $cvname
@@ -963,9 +972,18 @@ function tripal_feature_add_cvterm($feature_id, $cvname, $cvterm) {
 }
 
 /**
+ * Returns a fasta record for the passed in feature
  *
+ * @param $feature
+ *   A single feature object containing all the fields from the chado.feature table
+ * @param $desc
+ *   A string containing any additional details you want added to the definition line of
+ *   the fasta record.
  *
- * @ingroup tripal_feature
+ * Note: the feature accession and name separated by a | will be added
+ *   before the description but on the same line
+ *
+ * @ingroup tripal_feature_api
  */
 function tripal_feature_return_fasta($feature, $desc) {
   $fasta  = ">" . variable_get('chado_feature_accession_prefix', 'FID') . "$feature->feature_id|$feature->name";

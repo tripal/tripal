@@ -1,8 +1,13 @@
 <?php
+/**
+ * @file
+ * Describes library default views
+ */
 
 /**
+ * Implements hook_views_default_views().
  *
- *
+ * @ingroup tripal_library
  */
 function tripal_library_views_default_views() {
   $views = array();
@@ -13,6 +18,11 @@ function tripal_library_views_default_views() {
   return $views;
 }
 
+/**
+ * Default administration library view
+ *
+ * @ingroup tripal_library
+ */
 function tripal_library_admin_defaultviews_library() {
 
   $view = new view();

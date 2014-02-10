@@ -1,11 +1,13 @@
 <?php
 /**
  * @file
- * @todo Add file header description
+ * Administration of projects
  */
 
 /**
+ * Admin launchpad
  *
+ * @ingroup tripal_project
  */
 function tripal_project_admin_project_view() {
   $output = '';
@@ -37,10 +39,11 @@ function tripal_project_admin_project_view() {
   return $output;
 }
 /**
- * 
- * @param $form_state
+ * Project settings
+ *
+ * @ingroup tripal_project
  */
-function tripal_project_admin($form_state) {
+function tripal_project_admin($form, $form_state) {
   $form = array();
 
   $form['nothing'] = array(
@@ -51,6 +54,7 @@ function tripal_project_admin($form_state) {
 }
 
 /**
+ * Validate project settings
  *
  * @ingroup tripal_project
  */

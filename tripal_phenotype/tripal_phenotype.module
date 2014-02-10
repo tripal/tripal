@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Basic functionality for the phenotype module
+ */
 
 /**
  * @defgroup tripal_phenotype Phenotype Module
@@ -26,6 +30,8 @@ function tripal_phenotype_permission() {
 }
 
 /**
+ *  Implements hook_menu().
+ *
  *  Menu items are automatically added for the new node types created
  *  by this module to the 'Create Content' Navigation menu item.  This function
  *  adds more menu items needed for this module.
@@ -65,6 +71,8 @@ function tripal_phenotype_menu() {
 }
 
 /**
+ *  Implements hook_theme().
+ *
  *  We need to let drupal know about our theme functions and their arguments.
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module
@@ -90,8 +98,9 @@ function tripal_phenotype_theme($existing, $type, $theme, $path) {
 }
 
 /**
- * Implements hook_views_api()
- * Purpose: Essentially this hook tells drupal that there is views support for
+ * Implements hook_views_api().
+ *
+ * Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_phenotype.views.inc where all the
  *  views integration code is
  *
@@ -103,6 +112,11 @@ function tripal_phenotype_views_api() {
   );
 }
 
+/**
+ * Admin Launchpad
+ *
+ * @ingroup tripal_phenotype
+ */
 function tripal_phenotype_admin_phenotypes_listing() {
   $output = '';
 
@@ -134,6 +148,7 @@ function tripal_phenotype_admin_phenotypes_listing() {
 }
 
 /**
+ * Implements hook_node_view().
  *
  * @ingroup tripal_phenotype
  */

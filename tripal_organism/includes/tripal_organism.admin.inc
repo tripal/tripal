@@ -1,7 +1,13 @@
 <?php
+/**
+ * @file
+ * Administration of organisms
+ */
 
 /**
+ * Admin launchpad
  *
+ * @ingroup tripal_organism
  */
 function tripal_organism_admin_organism_view() {
   $output = '';
@@ -51,6 +57,7 @@ function tripal_organism_admin() {
 
 
 /**
+ * Validate the organism settings form
  *
  * @ingroup tripal_organism
  */
@@ -93,8 +100,13 @@ function tripal_organism_admin_validate($form, &$form_state) {
   }
 }
 
-
 /**
+ * Add a job to reindex the features associated with an organism for drupal search
+ *
+ * @param $organism_id
+ *  The organism_id of the organism to re-index features of
+ * @param $job_id
+ *  (optional) specify a tripal job_id to create
  *
  * @ingroup tripal_organism
  */
@@ -129,7 +141,14 @@ function tripal_organism_reindex_features($organism_id = NULL, $job_id = NULL) {
     $i++;
   }
 }
+
 /**
+ * Add a tripal job to add drupal taxonomy to organisms
+ *
+ * @param $organism_id
+ *  The organism_id of the organism to add taxonomy to
+ * @param $job_id
+ *  (optional) specify a tripal job_id to create
  *
  * @ingroup tripal_organism
  */

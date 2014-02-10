@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Integrates the Chado Map module with Drupal Nodes & Views
+ */
 
 /**
  * @defgroup tripal_featuremap Feature Map Module
@@ -8,26 +12,23 @@
  * @}
  */
 
-require('api/tripal_featuremap.api.inc');
-require('theme/tripal_featuremap.theme.inc');
-require('includes/tripal_featuremap.admin.inc');
-require('includes/tripal_featuremap.chado_node.inc');
+require 'api/tripal_featuremap.api.inc';
+
+require 'theme/tripal_featuremap.theme.inc';
+
+require 'includes/tripal_featuremap.admin.inc';
+require 'includes/tripal_featuremap.chado_node.inc';
 
 /**
- *
- * @ingroup tripal_featuremap
- */
-function tripal_featuremap_init() {
-
-}
-
-
-/**
+ * Implements hook_help().
  * Display help and module information
- * @param path which path of the site we're displaying help
- * @param arg array that holds the current path as would be returned from arg()
- * function
- * @return help text for the path
+ *
+ * @param path
+ *   which path of the site we're displaying help
+ * @param arg
+ *   array that holds the current path as would be returned from arg() function
+ * @return
+ *  help text for the path
  *
  * @ingroup tripal_featuremap
  */
@@ -42,8 +43,6 @@ function tripal_featuremap_help($path, $arg) {
   }
   return $output;
 }
-
-
 
 /**
  * Implements hook_permission().
@@ -80,6 +79,8 @@ function tripal_featuremap_permission() {
 }
 
 /**
+ * Implements hook_menu().
+ *
  * Menu items are automatically added for the new node types created
  * by this module to the 'Create Content' Navigation menu item.  This function
  * adds more menu items needed for this module.
@@ -148,21 +149,24 @@ function tripal_featuremap_menu() {
 }
 
 /**
- * Implements hook_views_api()
- * Purpose: Essentially this hook tells drupal that there is views support for
- *  for this module which then includes tripal_db.views.inc where all the
+ * Implements hook_views_api().
+ *
+ * Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_featuremap.views.inc where all the
  *  views integration code is
  *
  * @ingroup tripal_featuremap
  */
 function tripal_featuremap_views_api() {
   return array(
-    'api' => 2.0,
+    'api' => 3.0,
   );
 }
 
 /**
- *  We need to let drupal know about our theme functions and their arguments.
+ * Implements hook_theme().
+ *
+ * We need to let drupal know about our theme functions and their arguments.
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module
  *
@@ -218,7 +222,9 @@ function tripal_featuremap_theme($existing, $type, $theme, $path) {
 }
 
 /**
- * @ingroup tripal_library
+ * Implements hook_block_info().
+ *
+ * @ingroup tripal_featuremap
  */
 function tripal_featuremap_block_info() {
 
@@ -239,8 +245,11 @@ function tripal_featuremap_block_info() {
 
   return $blocks;
 }
+
 /**
- * @ingroup tripal_library
+ * Implements hook_block_view().
+ *
+ * @ingroup tripal_featuremap
  */
 function tripal_featuremap_block_view($delta = '') {
 
@@ -277,20 +286,13 @@ function tripal_featuremap_block_view($delta = '') {
 }
 
 /**
- *
- * @ingroup tripal_featuremap
- */
-function tripal_featuremap_cron() {
-
-}
-
-
-/**
  * Implementation of hook_form_alter()
  *
  * @param $form
  * @param $form_state
  * @param $form_id
+ *
+ * @ingroup tripal_featuremap
  */
 function tripal_featuremap_form_alter(&$form, &$form_state, $form_id) {
   // turn of preview button for insert/updates
@@ -298,4 +300,3 @@ function tripal_featuremap_form_alter(&$form, &$form_state, $form_id) {
     $form['actions']['preview']['#access'] = FALSE;
   }
 }
-

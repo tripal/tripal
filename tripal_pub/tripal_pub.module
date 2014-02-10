@@ -1,14 +1,20 @@
 <?php
+/**
+ * @file
+ * Basic functionality of the pub module
+ */
 
-require_once "api/tripal_pub.api.inc";
-require_once "theme/tripal_pub.theme.inc";
-require_once "includes/tripal_pub.admin.inc";
-require_once "includes/tripal_pub.chado_node.inc";
-require_once "includes/tripal_pub.pub_importers.inc";
-require_once "includes/tripal_pub.pub_search.inc";
-require_once "includes/tripal_pub.pub_citation.inc";
-require_once "includes/importers/tripal_pub.PMID.inc";
-require_once "includes/importers/tripal_pub.AGL.inc";
+require_once 'api/tripal_pub.api.inc';
+
+require_once 'theme/tripal_pub.theme.inc';
+
+require_once 'includes/tripal_pub.admin.inc';
+require_once 'includes/tripal_pub.chado_node.inc';
+require_once 'includes/tripal_pub.pub_importers.inc';
+require_once 'includes/tripal_pub.pub_search.inc';
+require_once 'includes/tripal_pub.pub_citation.inc';
+require_once 'includes/importers/tripal_pub.PMID.inc';
+require_once 'includes/importers/tripal_pub.AGL.inc';
 
 /**
  * @defgroup tripal_pub Publication Module
@@ -24,24 +30,17 @@ require_once "includes/importers/tripal_pub.AGL.inc";
  * @}
  */
 
-
 /**
+ * Implements hook_menu().
  *
- * @ingroup tripal_pub
- */
-function tripal_pub_init() {
-
-}
-
-/**
- * Tripal-Publication-Menu
- *
- * Implements hook_menu(): Adds menu items for the tripal_pub module menu. This section
+ * Adds menu items for the tripal_pub module menu. This section
  * gives the outline for the main menu of the Tripal-Publication module
  *
  * @return
  *   An array of menu items that is visible within the Drupal Menu, returned as soon
  *   as the program is ran
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_menu() {
   $items = array();
@@ -181,14 +180,14 @@ function tripal_pub_menu() {
   return $items;
 }
 
-
 /**
- * Implements hook_theme(): Register themeing functions for this module
- *
+ * Implements hook_theme().
+ * Register themeing functions for this module
  *
  * @return
  *   An array of themeing functions to register
  *
+ * @ingroup tripal_pub
  */
 function tripal_pub_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
@@ -279,8 +278,10 @@ function tripal_pub_theme($existing, $type, $theme, $path) {
 }
 
 /**
- * Implements hook_help()
- * Purpose: Adds a help page to the module list
+ * Implements hook_help().
+ * Adds a help page to the module list
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_help ($path, $arg) {
   if ($path == 'admin/help#tripal_pub') {
@@ -289,8 +290,9 @@ function tripal_pub_help ($path, $arg) {
 }
 
 /**
- * Implements hook_views_api()
- * Purpose: Essentially this hook tells drupal that there is views support for
+ * Implements hook_views_api().
+ *
+ * Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_db.views.inc where all the
  *  views integration code is
  *
@@ -332,11 +334,10 @@ function tripal_pub_permission() {
   );
 }
 
-
-
-
 /**
+ * Implements hook_mail().
  *
+ * @ingroup tripal_pub
  */
 function tripal_pub_mail($key, &$message, $params) {
   $language = $message['language'];
@@ -358,13 +359,14 @@ function tripal_pub_mail($key, &$message, $params) {
   }
 }
 
-
 /**
- * Implementation of hook_form_alter()
+ * Implementation of hook_form_alter().
  *
  * @param $form
  * @param $form_state
  * @param $form_id
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_form_alter(&$form, &$form_state, $form_id) {
   // turn of preview button for insert/updates
@@ -391,9 +393,12 @@ function tripal_pub_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /**
+ * Implements hook_job_describe_args().
  *
  * @param $callback
  * @param $args
+ *
+ * @ingroup tripal_pub
  */
 function tripal_pub_job_describe_args($callback, $args) {
 

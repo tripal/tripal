@@ -1,14 +1,16 @@
 <?php
-
 /**
  * @file
- * Purpose: This Handler provides a select list for the type field
+ * Contains tripal_views_handler_filter_select_cvterm
+ */
+
+/**
+ * This Handler provides a select list for the type field
  *
  *  NOTE: This handler only works when applied to the type_id field in the base_table of
  *  this view.
  *
- * @ingroup views_filter_handlers
- * @ingroup tripal_core
+ * @ingroup tripal_views
  */
 class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_filter_select_string {
 

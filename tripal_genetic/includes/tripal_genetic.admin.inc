@@ -1,5 +1,14 @@
 <?php
+/**
+ * @file
+ * Provides administration of chado genetic data
+ */
 
+/**
+ * Administration launchpad
+ *
+ * @ingroup tripal_genetic
+ */
 function tripal_genetic_admin_genetics_listing() {
   $output = '';
 

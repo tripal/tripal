@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Integrates the Chado Library module with Drupal Nodes & Views
+ */
 
 /**
  * @defgroup tripal_library Library Module
@@ -8,22 +12,23 @@
  * @}
  */
 
-require('api/tripal_library.api.inc');
-require('theme/tripal_library.theme.inc');
-require('includes/tripal_library.admin.inc');
-require('includes/tripal_library.chado_node.inc');
+require 'api/tripal_library.api.inc';
 
+require 'theme/tripal_library.theme.inc';
 
-
+require 'includes/tripal_library.admin.inc';
+require 'includes/tripal_library.chado_node.inc';
 
 /**
+ * Implements hook_permission().
+ *
  * Set the permission types that the chado module uses.  Essentially we
  * want permissionis that protect creation, editing and deleting of chado
  * data objects
  *
  * @ingroup tripal_library
  */
-function tripal_library_permisssions() {
+function tripal_library_permisssion() {
   return array(
     'access chado_library content' => array(
       'title' => t('View Libraries'),
@@ -49,6 +54,8 @@ function tripal_library_permisssions() {
 }
 
 /**
+ * Implements hook_menu().
+ *
  * Menu items are automatically added for the new node types created
  * by this module to the 'Create Content' Navigation menu item.  This function
  * adds more menu items needed for this module.
@@ -107,8 +114,9 @@ function tripal_library_menu() {
 }
 
 /**
- * Implements hook_views_api()
- * Purpose: Essentially this hook tells drupal that there is views support for
+ * Implements hook_views_api().
+ *
+ * Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_db.views.inc where all the
  *  views integration code is
  *
@@ -116,13 +124,14 @@ function tripal_library_menu() {
  */
 function tripal_library_views_api() {
   return array(
-    'api' => 2.0,
+    'api' => 3.0,
   );
 }
 
-
 /**
- *  We need to let drupal know about our theme functions and their arguments.
+ *  Implements hook_theme().
+ *
+ * We need to let drupal know about our theme functions and their arguments.
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module
  *
@@ -202,15 +211,20 @@ function tripal_library_theme($existing, $type, $theme, $path) {
 }
 
 /**
- * Implements hook_help()
- * Purpose: Adds a help page to the module list
+ * Implements hook_help().
+ * Adds a help page to the module list
+ *
+ * @ingroup tripal_library
  */
 function tripal_library_help ($path, $arg) {
   if ($path == 'admin/help#tripal_library') {
     return theme('tripal_library_help', array());
   }
 }
+
 /**
+ * Implements hook_block_info().
+ *
  * @ingroup tripal_library
  */
 function tripal_library_block_info() {
@@ -238,7 +252,10 @@ function tripal_library_block_info() {
 
   return $blocks;
 }
+
 /**
+ * Implements hook_block_view().
+ *
  * @ingroup tripal_library
  */
 function tripal_library_block_view($delta = '') {
@@ -284,20 +301,13 @@ function tripal_library_block_view($delta = '') {
 }
 
 /**
- *
- * @ingroup tripal_library
- */
-function tripal_library_cron() {
-
-}
-
-
-/**
- * Implementation of hook_form_alter()
+ * Implementation of hook_form_alter().
  *
  * @param $form
  * @param $form_state
  * @param $form_id
+ *
+ * @ingroup tripal_library
  */
 function tripal_library_form_alter(&$form, &$form_state, $form_id) {
   // turn of preview button for insert/updates

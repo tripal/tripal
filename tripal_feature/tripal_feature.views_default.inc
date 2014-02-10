@@ -1,7 +1,13 @@
 <?php
+/**
+ * @file
+ * Describe default feature views
+ */
 
 /**
+ * Implements hook_views_default_views().
  *
+ * @ingroup tripal_feature
  */
 function tripal_feature_views_default_views() {
   $views = array();
@@ -12,6 +18,11 @@ function tripal_feature_views_default_views() {
   return $views;
 }
 
+/**
+ * The default feature administration view
+ *
+ * @ingroup tripal_feature
+ */
 function tripal_feature_defaultview_admin_features() {
 
   $view = new view();

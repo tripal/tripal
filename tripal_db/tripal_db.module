@@ -1,7 +1,11 @@
 <?php
+/**
+ * @file
+ * General functions for the db module
+ */
 
-require_once "api/tripal_db.api.inc";
-require_once "includes/tripal_db.admin.inc";
+require_once 'api/tripal_db.api.inc';
+require_once 'includes/tripal_db.admin.inc';
 
 /**
  * @defgroup tripal_db Database Reference Module
@@ -16,13 +20,7 @@ require_once "includes/tripal_db.admin.inc";
  */
 
 /**
- *
- * @ingroup tripal_db
- */
-function tripal_db_init() {
-
-}
-/**
+ * Implements hook_menu().
  *
  * @ingroup tripal_db
  */
@@ -86,7 +84,8 @@ function tripal_db_menu() {
 }
 
 /**
- * Implements hook_help()
+ * Implements hook_help().
+ (
  * Purpose: Adds a help page to the module list
  */
 function tripal_db_help ($path, $arg) {
@@ -94,7 +93,6 @@ function tripal_db_help ($path, $arg) {
     return theme('tripal_db_help', array());
   }
 }
-
 
 /**
  * Implements hook_permission().
@@ -108,26 +106,28 @@ function tripal_db_help ($path, $arg) {
 function tripal_db_permission() {
   return array(
     'administer db cross-references' => array(
-      'title' => t('Administer the list of external databases used for data cross-references.'),
-      'description' => t('Allows the user to add, edit or delete databases stored in the Chado database.'),
+      'title' => t('Administer External Database Cross-references.'),
+      'description' => t('Allows the user to add, edit or delete external databases references stored in the Chado database.'),
     ),
   );
 }
 
 /**
- * Implements hook_views_api()
- * Purpose: Essentially this hook tells drupal that there is views support for
+ * Implements hook_views_api().
+ *
+ * Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_db.views.inc where all the
  *  views integration code is
  *
  * @ingroup tripal_db
  */
 function tripal_db_views_api() {
-  return array('api' => 2.0);
+  return array('api' => 3.0);
 }
 
-
 /**
+ *  Implements hook_theme().
+ *
  *  We need to let drupal know about our theme functions and their arguments.
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module

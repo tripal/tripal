@@ -1,7 +1,13 @@
 <?php
+/**
+ * @file
+ * Default feature map views
+ */
 
 /**
+ * Implements hook_views_default_views().
  *
+ * @ingroup tripal_featuremap
  */
 function tripal_featuremap_views_default_views() {
   $views = array();
@@ -12,6 +18,11 @@ function tripal_featuremap_views_default_views() {
   return $views;
 }
 
+/**
+ * Describes the default featuremap admin view
+ *
+ * @ingroup tripal_featuremap
+ */
 function tripal_featuremap_defaultview_admin_featuremaps() {
 
   $view = new view();

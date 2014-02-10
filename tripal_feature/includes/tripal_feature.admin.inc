@@ -1,12 +1,13 @@
 <?php
-
 /**
  * @file
- * @todo Add file header description
+ * Administration of features
  */
 
 /**
+ * Launchpad for feature administration.
  *
+ * @ingroup tripal_feature
  */
 function tripal_feature_admin_feature_view() {
   $output = '';
@@ -38,9 +39,8 @@ function tripal_feature_admin_feature_view() {
   return $output;
 }
 
-
 /**
- *
+ * Feature Settings page
  *
  * @ingroup tripal_feature
  */
@@ -178,7 +178,7 @@ function tripal_feature_admin() {
 }
 
 /**
- *
+ * Validate the feature settings forms
  *
  * @ingroup tripal_feature
  */
@@ -220,9 +220,8 @@ function tripal_feature_admin_validate($form, &$form_state) {
 
 }
 
-
 /**
- *
+ * Form: Reindex feature nodes for the drupal search
  *
  * @ingroup tripal_feature
  */
@@ -250,7 +249,7 @@ function get_tripal_feature_admin_form_reindex_set(&$form) {
 }
 
 /**
- *
+ * Form: Set taxonomy for features
  *
  * @ingroup tripal_feature
  */
@@ -297,8 +296,9 @@ function get_tripal_feature_admin_form_taxonomy_set(&$form) {
 }
 
 /**
+ * Form: Set the definition of titles for features
  *
- * @param $form
+ * @ingroup tripal_feature
  */
 function get_tripal_feature_admin_form_title_set(&$form) {
 
@@ -333,12 +333,13 @@ function get_tripal_feature_admin_form_title_set(&$form) {
     '#default_value' => variable_get('chado_feature_title', 'unique_constraint'),
   );
 }
+
 /**
+ * Form: Set the URL definition for feature nodes
  *
- * @param $form
+ * @ingroup tripal_feature
  */
 function get_tripal_feature_admin_form_url_set(&$form) {
-
 
   $form['url'] = array(
     '#type' => 'fieldset',
@@ -401,7 +402,7 @@ function get_tripal_feature_admin_form_url_set(&$form) {
 }
 
 /**
- *
+ * Set feature taxonomy
  *
  * @ingroup tripal_feature
  */
@@ -444,7 +445,7 @@ function tripal_features_set_taxonomy($max_sync = 0, $job_id = NULL) {
 }
 
 /**
- *
+ * Set taxonomy for a single feature
  *
  * @ingroup tripal_feature
  */
@@ -550,7 +551,6 @@ function tripal_feature_set_taxonomy($node, $feature_id) {
 
 }
 
-
 /**
  *  This function is an extension of the chado_feature_view by providing
  *  the markup for the feature object THAT WILL BE INDEXED.
@@ -610,9 +610,8 @@ function theme_tripal_feature_search_results($node) {
   return $content;
 }
 
-
 /**
- *
+ * Set the vocabulary to use taxonomy terms from
  *
  * @ingroup tripal_feature
  */

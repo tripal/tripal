@@ -1,17 +1,19 @@
 <?php
-
 /**
  * @file
- * Purpose: This Handler provides a file upload field by extending the
+ * Contains tripal_views_handler_filter_file_upload filter handler
+ */
+
+/**
+ * This Handler provides a file upload field by extending the
  * views_handler_filter object.
  *
- * @ingroup tripal_views_integration
+ * @ingroup tripal_views
  */
 class tripal_views_handler_filter_file_upload extends views_handler_filter {
 
   /**
-   * Defines the value field in both the views filter options form
-   *   and the exposed form
+   * {@inheritdoc}
    */
   function value_form(&$form, &$form_state) {
     parent::value_form($form, $form_state);
@@ -28,8 +30,7 @@ class tripal_views_handler_filter_file_upload extends views_handler_filter {
   }
 
   /**
-   * Ensures the upload field gets rendered when the filter is exposed. It also
-   * changes the form type from a GET to a POST so that file uploads will work.
+   * {@inheritdoc}
    */
   function exposed_form(&$form, &$form_state) {
 
@@ -57,7 +58,7 @@ class tripal_views_handler_filter_file_upload extends views_handler_filter {
   }
 
   /**
-   * Add the where clause
+   * {@inheritdoc}
    */
   function query() {
     $this->ensure_my_table();

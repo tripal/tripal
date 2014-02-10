@@ -1,7 +1,14 @@
 <?php
+/**
+ * @file
+ * Installation of the tripal genetic module
+ */
 
 /**
+ * Implements hook_disable().
  * Disable default views when module is disabled
+ *
+ * @ingroup tripal_genetic
  */
 function tripal_genetic_disable() {
 

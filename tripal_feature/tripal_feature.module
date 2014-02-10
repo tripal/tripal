@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Basic functionality for the tripal module
+ */
 
 /**
  * @defgroup tripal_feature Feature Module
@@ -8,30 +12,23 @@
  * @}
  */
 
-require_once "api/tripal_feature.api.inc";
-require_once "api/tripal_feature.schema.api.inc";
-require_once "theme/tripal_feature.theme.inc";
-require_once "includes/tripal_feature.admin.inc";
-require_once "includes/tripal_feature.fasta_loader.inc";
-require_once "includes/tripal_feature.gff_loader.inc";
-require_once "includes/tripal_feature.seq_extract.inc";
-require_once "includes/tripal_feature.delete.inc";
-require_once "includes/tripal_feature.chado_node.inc";
-require_once "includes/tripal_feature.blocks.inc";
+require_once 'api/tripal_feature.api.inc';
+require_once 'api/tripal_feature.schema.api.inc';
 
+require_once 'theme/tripal_feature.theme.inc';
 
-/**
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_init() {
-
-}
+require_once 'includes/tripal_feature.admin.inc';
+require_once 'includes/tripal_feature.fasta_loader.inc';
+require_once 'includes/tripal_feature.gff_loader.inc';
+require_once 'includes/tripal_feature.seq_extract.inc';
+require_once 'includes/tripal_feature.delete.inc';
+require_once 'includes/tripal_feature.chado_node.inc';
+require_once 'includes/tripal_feature.blocks.inc';
 
 /**
- * Implements hook_views_api()
+ * Implements hook_views_api().
  *
- * Purpose: Essentially this hook tells drupal that there is views support for
+ * Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_db.views.inc where all the
  *  views integration code is
  *
@@ -39,11 +36,13 @@ function tripal_feature_init() {
  */
 function tripal_feature_views_api() {
   return array(
-    'api' => 2.0,
+    'api' => 3.0,
   );
 }
 
 /**
+ * Implements hook_help().
+ *
  * Display help and module information
  *
  * @param
@@ -65,8 +64,6 @@ function tripal_feature_help($path, $arg) {
   }
   return $output;
 }
-
-
 
 /**
  * Implements hook_permission().
@@ -102,9 +99,10 @@ function tripal_feature_permission() {
   );
 }
 
-
 /**
- *  Menu items are automatically added for the new node types created
+ * Implements hook_menu().
+ *
+ * Menu items are automatically added for the new node types created
  *  by this module to the 'Create Content' Navigation menu item.  This function
  *  adds more menu items needed for this module.
  *
@@ -212,8 +210,11 @@ function tripal_feature_menu() {
 
   return $items;
 }
+
 /**
- *  We need to let drupal know about our theme functions and their arguments.
+ * Implements hook_theme().
+ *
+ * We need to let drupal know about our theme functions and their arguments.
  *  We create theme functions to allow users of the module to customize the
  *  look and feel of the output generated in this module
  *
@@ -323,9 +324,15 @@ function tripal_feature_theme($existing, $type, $theme, $path) {
   return $items;
 }
 
-
 /**
+ * Load the locations for a given feature
  *
+ * @param $feature_id
+ *   The feature to look up locations for
+ * @param $side
+ *   Whether the feature is the scrfeature, 'as_parent', or feature, 'as_child'
+ * @param $aggregate
+ *   Whether or not to get the locations for related features
  *
  * @ingroup tripal_feature
  */
@@ -382,16 +389,31 @@ function tripal_feature_load_featurelocs($feature_id, $side = 'as_parent', $aggr
   usort($featurelocs, 'tripal_feature_sort_locations');
   return $featurelocs;
 }
+
 /**
- *  used to sort the feature locs by start position
+ * Used to sort the feature locs by start position
+ *
+ * @param $a
+ *   One featureloc record (as an object)
+ * @param $b
+ *   The other featureloc record (as an object)
+ *
+ * @return
+ *   Which feature location comes first
  *
  * @ingroup tripal_feature
  */
 function tripal_feature_sort_locations($a, $b) {
   return strnatcmp($a->fmin, $b->fmin);
 }
+
 /**
+ * Get the relationships for a feature.
  *
+ * @param $feature_id
+ *   The feature to get relationships for
+ * @param $side
+ *   The side of the relationship this feature is (ie: 'as_subject' or 'as_object')
  *
  * @ingroup tripal_feature
  */
@@ -443,8 +465,15 @@ function tripal_feature_load_relationships($feature_id, $side = 'as_subject') {
   }
   return $relationships;
 }
+
 /**
+ * Get features related to the current feature to a given depth. Recursive function.
  *
+ * @param $feature_id
+ * @param $substitute
+ * @param $levels
+ * @param $base_type_id
+ * @param $depth
  *
  * @ingroup tripal_feature
  */
@@ -462,8 +491,12 @@ function tripal_feature_get_aggregate_relationships($feature_id, $substitute=1,
   return tripal_feature_load_relationships($feature_id, 'as_object');
 
 }
+
 /**
+ * Get the sequence this feature is located on
  *
+ * @param $feature_id
+ * @param $featurelocs
  *
  * @ingroup tripal_feature
  */
@@ -595,31 +628,30 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
   }
   return $floc_sequences;
 }
+
 /**
+ * This function is for features that align through an intermediate such
+ * as 'EST_match' or 'match'.  This occurs in the case where two sequences
+ * align but where one does not align perfectly.  Some ESTs may be in a contig
+ * but not all of the EST.  Portions may overhang and not be included in the
+ * consensus if quality is bad.
+ * For example:
+ *    Feature 1: Contig --------------------
+ *    Feature 2: EST_match           -------
+ *    Feature 3: EST                 ---------
  *
+ * The feature provided to the function will always be the feature 1.  The
+ * featureloc columns prefixed with 'right' (e.g. right_fmin) belong to the
+ * alignment of feature 3 with feature 2
+ *
+ * Features may align to more than one feature and are not matches. We do
+ * not want to include these, so we have to filter on the SO terms:
+ * match, or %_match
  *
  * @ingroup tripal_feature
  */
 function tripal_feature_get_matched_alignments($feature) {
-  // This function is for features that align through an intermediate such
-  // as 'EST_match' or 'match'.  This occurs in the case where two sequences
-  // align but where one does not align perfectly.  Some ESTs may be in a contig
-  // but not all of the EST.  Portions may overhang and not be included in the
-  // consensus if quality is bad.
-  // For example:
-  //
-  //    Feature 1: Contig --------------------
-  //    Feature 2: EST_match           -------
-  //    Feature 3: EST                 ---------
-  //
-  // The feature provided to the function will always be the feature 1.  The
-  // featureloc columns prefixed with 'right' (e.g. right_fmin) belong to the
-  // alignment of feature 3 with feature 2
-  //
-  // Features may align to more than one feature and are not matches. We do
-  // not want to include these, so we have to filter on the SO terms:
-  // match, or %_match
-  //
+
    $sql = "
      SELECT
        FL1.featureloc_id    as left_featureloc_id,
@@ -668,8 +700,12 @@ function tripal_feature_get_matched_alignments($feature) {
    }
    return $featurelocs;
 }
+
 /**
+ * Load the arguments for the organism feature counts browser
  *
+ * @param $organism
+ *  The organism of interest
  *
  * @ingroup tripal_feature
  */
@@ -751,7 +787,7 @@ function tripal_feature_load_organism_feature_counts($organism) {
 }
 
 /**
- *  used to sort the list of relationship parts by start position
+ * Used to sort the list of relationship parts by start position
  *
  * @ingroup tripal_feature
  */
@@ -768,7 +804,7 @@ function tripal_feature_sort_rel_parts_by_start($a, $b) {
 }
 
 /**
- *  used to sort the list of relationship parts by start position
+ * Used to sort the list of relationship parts by start position
  *
  * @ingroup tripal_feature
  */
@@ -781,7 +817,11 @@ function tripal_feature_sort_rel_parts_by_end($a, $b) {
 }
 
 /**
+ * Returns the marked up fasta sequence for the described feature
  *
+ * @param $sequence
+ * @param $parts
+ * @param $defline
  *
  * @ingroup tripal_feature
  */
@@ -868,11 +908,12 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
   return $newseq;
 }
 
-
-
-
 /**
- *
+ * The CV module will create the JSON array necessary for buillding a
+ * pie chart using jgChart and Google Charts.  We have to pass to it
+ * a table that contains count information, tell it which column
+ * contains the cvterm_id and provide a filter for getting the
+ * results we want from the table.
  *
  * @ingroup tripal_feature
  */
@@ -896,11 +937,6 @@ function tripal_feature_cv_chart($chart_id) {
 
   $organism_id = preg_replace("/^tripal_feature_cv_chart_(\d+)$/", "$1", $chart_id);
 
-  // The CV module will create the JSON array necessary for buillding a
-  // pie chart using jgChart and Google Charts.  We have to pass to it
-  // a table that contains count information, tell it which column
-  // contains the cvterm_id and provide a filter for getting the
-  // results we want from the table.
   $options = array(
     count_mview      => 'organism_feature_count',
     cvterm_id_column => 'cvterm_id',
@@ -912,17 +948,16 @@ function tripal_feature_cv_chart($chart_id) {
 }
 
 /**
- *
+ * The CV module will create the JSON array necessary for buillding a
+ * pie chart using jgChart and Google Charts.  We have to pass to it
+ * a table that contains count information, tell it which column
+ * contains the cvterm_id and provide a filter for getting the
+ * results we want from the table.
  *
  * @ingroup tripal_feature
  */
 function tripal_feature_cv_tree($tree_id) {
 
-  // The CV module will create the JSON array necessary for buillding a
-  // pie chart using jgChart and Google Charts.  We have to pass to it
-  // a table that contains count information, tell it which column
-  // contains the cvterm_id and provide a filter for getting the
-  // results we want from the table.
   $organism_id = preg_replace("/^tripal_feature_cv_tree_(\d+)$/", "$1", $tree_id);
   $options = array(
     cv_id            => tripal_cv_get_cv_id('sequence'),
@@ -936,7 +971,7 @@ function tripal_feature_cv_tree($tree_id) {
 }
 
 /**
- *
+ * Delete the drupal taxonomy associated with our features
  *
  * @ingroup tripal_feature
  */
@@ -970,7 +1005,8 @@ function tripal_feature_del_vocabulary() {
 }
 
 /**
- *
+ * Implements hook_job_describe_args() in order to describe the various feature jobs
+ * to the tripal jobs interface.
  *
  * @ingroup tripal_feature
  */
@@ -1058,7 +1094,11 @@ function tripal_feature_job_describe_args($callback, $args) {
 
 /**
  * Implements hook_coder_ignore().
- * Defines the path to the file (tripal_core.coder_ignores.txt) where ignore rules for coder are stored
+ *
+ * Defines the path to the file (tripal_core.coder_ignores.txt) where ignore rules for
+ * coder are stored
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_coder_ignore() {
   return array(
@@ -1072,6 +1112,8 @@ function tripal_feature_coder_ignore() {
  * that ID by name, featurename or synonym.  If it matches uniquenly to a single
  * feature it will redirect to that feature page, otherwise, a list of matching
  * features is shown.
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_match_features_page($id) {
 
@@ -1152,6 +1194,8 @@ function tripal_feature_match_features_page($id) {
  * @param $form
  * @param $form_state
  * @param $form_id
+ *
+ * @ingroup tripal_feature
  */
 function tripal_feature_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == "tripal_feature_seq_extract_form") {

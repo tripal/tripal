@@ -1,11 +1,11 @@
 <?php
-
 /**
  * @file Stock Node Functionality
  */
 
 /**
- * Implements hook_node_info(): registers a stock node type
+ * Implements hook_node_info().
+ * Registers a stock node type
  *
  * @return
  *   An array describing various details of the node
@@ -37,7 +37,8 @@ function tripal_stock_node_info() {
 }
 
 /**
- * Implements hook_load(): Prepares the chado_stock node
+ * Implements hook_load().
+ * Prepares the chado_stock node
  *
  * @param $node
  *   The basic node containing all variables common to all nodes
@@ -100,9 +101,9 @@ function chado_stock_load($nodes) {
   return $new_nodes;
 }
 
-
 /**
- * Implements hook_form(): Creates the main Add/Edit/Delete Form for chado stocks
+ * Implements hook_form().
+ * Creates the main Add/Edit/Delete Form for chado stocks
  *
  * Parts to be added by this form
  *     name,
@@ -332,7 +333,8 @@ function chado_stock_form($node, $form_state) {
 }
 
 /**
- * Implements hook_validate(): Validate the input from the chado_stock node form
+ * Implements hook_validate().
+ * Validate the input from the chado_stock node form
  *
  * @param $node
  *   The current node including fields with the form element names and submitted values
@@ -448,9 +450,9 @@ function chado_stock_validate(&$node, $form, &$form_state) {
   }
 }
 
-
 /**
- * Implements hook_insert(): Inserts data from chado_stock_form() into drupal and chado
+ * Implements hook_insert().
+ * Inserts data from chado_stock_form() into drupal and chado
  *
  * @param $node
  *   The current node including fields with the form element names and submitted values
@@ -584,7 +586,8 @@ function chado_stock_insert($node) {
 }
 
 /**
- * Implements hook_update(): Handles Editing/Updating of main stock info
+ * Implements hook_update().
+ * Handles Editing/Updating of main stock info
  *
  * NOTE: Currently just writes over all old data
  *
@@ -729,7 +732,8 @@ function chado_stock_update($node) {
 }
 
 /**
- * Implements hook_delete(): Handles deleting of chado_stocks
+ * Implements hook_delete().
+ * Handles deleting of chado_stocks
  *
  * NOTE: Currently deletes data -no undo or record-keeping functionality
  *
@@ -752,6 +756,8 @@ function chado_stock_delete($node) {
 
 /**
  * Used by Tripal Chado Node API during sync'ing of nodes
+ *
+ * @ingroup tripal_stock
  */
 function chado_stock_chado_node_sync_create_new_node($new_node, $record) {
 
@@ -764,6 +770,8 @@ function chado_stock_chado_node_sync_create_new_node($new_node, $record) {
 }
 
 /**
+ * Implements hook_node_presave(). Acts on all content types.
+ *
  * @ingroup tripal_stock
  */
 function tripal_stock_node_presave($node) {
@@ -802,6 +810,8 @@ function tripal_stock_node_presave($node) {
 }
 
 /**
+ * Implements hook_node_insert(). Acts on all content types.
+ *
  * @ingroup tripal_stock
  */
 function tripal_stock_node_insert($node) {
@@ -825,6 +835,8 @@ function tripal_stock_node_insert($node) {
 }
 
 /**
+ * Implements hook_node_update(). Acts on all content types.
+ *
  * @ingroup tripal_stock
  */
 function tripal_stock_node_update($node) {
@@ -844,6 +856,8 @@ function tripal_stock_node_update($node) {
 }
 
 /**
+ * Implements hook_node_view(). Acts on all content types.
+ *
  * @ingroup tripal_stock
  */
 function tripal_stock_node_view($node, $view_mode, $langcode) {

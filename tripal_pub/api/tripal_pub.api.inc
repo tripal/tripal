@@ -1,5 +1,10 @@
 <?php
 /**
+ * @file
+ * Provides an application programming interface (API) to manage chado publications
+ */
+
+/**
  * @defgroup tripal_pub_api Publication Module API
  * @ingroup tripal_api
  * @{
@@ -7,7 +12,7 @@
  * @}
  */
 
-/*
+/**
  * Retrieves a list of publications as an associated array where
  *  keys correspond directly with Tripal Pub CV terms.
  *
@@ -61,7 +66,15 @@ function tripal_pub_get_remote_search_results($remote_db, $search_array, $num_to
   }
   return $pubs;
 }
-/*
+
+/**
+ * @stephen
+ *
+ * @param $dbxref
+ *
+ * @return
+ *
+ *
  * @ingroup tripal_pub_api
  */
 function tripal_pub_get_raw_data($dbxref) {
@@ -94,7 +107,14 @@ function tripal_pub_get_raw_data($dbxref) {
   }
   return 'Invalid DB xref';
 }
-/*
+
+/**
+ * @stephen
+ *
+ * @param $do_contact
+ * @param $dbxref
+ * @param $db
+ *
  * @ingroup tripal_pub_api
  */
 function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db = NULL) {
@@ -181,9 +201,14 @@ function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db
   }
   print "Done.\n";
 }
+
 /**
+ * @stephen
  *
- * @param $pub_importer_id
+ * @param $import_id
+ * @param $job_id
+ *
+ * @ingroup tripal_pub_api
  */
 function tripal_pub_import_publications_by_import_id($import_id, $job_id = NULL) {
   print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
@@ -243,7 +268,13 @@ function tripal_pub_import_publications_by_import_id($import_id, $job_id = NULL)
   }
   print "Done.\n";
 }
-/*
+
+/**
+ * @stephen
+ *
+ * @param $report_email
+ * @param $do_update
+ *
  * @ingroup tripal_pub_api
  */
 function tripal_pub_import_publications($report_email = FALSE, $do_update = FALSE) {
@@ -331,7 +362,14 @@ function tripal_pub_import_publications($report_email = FALSE, $do_update = FALS
   }
   print "Done.\n";
 }
-/*
+
+/**
+ * @stephen
+ *
+ * @param $pub_dbxref
+ * @param $do_contact
+ * @param $do_update
+ *
  * @ingroup tripal_pub_api
  */
 function tripal_pub_import_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_update) {
@@ -390,11 +428,17 @@ function tripal_pub_import_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_updat
 
   print "Done.\n";
 }
+
 /**
+ * @stephen
  *
  * @param $pubs
  * @param $do_contact
  * @param $update
+ *
+ * @return
+ *
+ * @ingroup tripal_pub_api
  */
 function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE) {
   $report = array();
@@ -439,8 +483,18 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE) {
   print "\n";
   return $report;
 }
+
 /**
  * Adds a dbxref record to a publication
+ *
+ * @stephen
+ *
+ * @param $pub_id
+ * @param $pub_dbxref
+ *
+ * @return
+ *
+ * @ingroup tripal_pub_api
  */
 function tripal_pub_add_pub_dbxref($pub_id, $pub_dbxref) {
 
@@ -501,6 +555,7 @@ function tripal_pub_add_pub_dbxref($pub_id, $pub_dbxref) {
   }
   return $results;
 }
+
 /**
  * Returns the list of publications that are assigned the database
  * cross-reference provided
@@ -516,7 +571,6 @@ function tripal_pub_add_pub_dbxref($pub_id, $pub_dbxref) {
  *   is returned.
  *
  * @ingroup tripal_pub_api
- *
  */
 function tripal_pub_get_pubs_by_dbxref($pub_dbxref) {
 
@@ -542,6 +596,7 @@ function tripal_pub_get_pubs_by_dbxref($pub_dbxref) {
   }
   return $return;
 }
+
 /**
  * Returns the list of publications that match a given title, type and year
  *
@@ -550,7 +605,7 @@ function tripal_pub_get_pubs_by_dbxref($pub_dbxref) {
  * @param type
  *   Optional. The publication type. The value of this field should come from
  *   the Tripal Pub vocabulary. This should be the type name (e.g. cvterm.name)
- * @param year
+ * @param pyear
  *   Optional. The year the publication was published.
  * @param series_name
  *   Optional.  The name of the series (e.g. Journal name)
@@ -561,7 +616,6 @@ function tripal_pub_get_pubs_by_dbxref($pub_dbxref) {
  *   is returned.
  *
  * @ingroup tripal_pub_api
- *
  */
 function tripal_pub_get_pubs_by_title_type_pyear_series($title, $type = NULL, $pyear = NULL, $series_name = NULL) {
 
@@ -601,6 +655,7 @@ function tripal_pub_get_pubs_by_title_type_pyear_series($title, $type = NULL, $p
   }
   return $return;
 }
+
 /**
  * Returns the list of publications that match a given title, type and year
  *
@@ -620,7 +675,6 @@ function tripal_pub_get_pubs_by_title_type_pyear_series($title, $type = NULL, $p
  *   is returned.
  *
  * @ingroup tripal_pub_api
- *
  */
 function tripal_pub_get_pub_by_uniquename($name) {
 
@@ -642,6 +696,7 @@ function tripal_pub_get_pub_by_uniquename($name) {
   }
   return $return;
 }
+
 /**
  * Adds a new publication to the Chado, along with all properties and
  * database cross-references. If the publication does not already exist
@@ -670,6 +725,7 @@ function tripal_pub_get_pub_by_uniquename($name) {
  *   the $action variable is set to 'inserted'.  If the function failes then the
  *   $action variable is set to 'error'
  *
+ * @ingroup tripal_pub_api
  */
 function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE, $update_if_exists = FALSE) {
   $pub_id = 0;
@@ -852,8 +908,14 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   return $pub_id;
 }
 
-/*
+/**
+ * @stephen
  *
+ * @param $pub_id
+ * @param $authors
+ * @param $do_contact
+ *
+ * @ingroup tripal_pub_api
  */
 function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
   $rank = 0;
@@ -987,6 +1049,7 @@ function tripal_pub_insert_property($pub_id, $property, $value, $update_if_prese
 function tripal_pub_update_property($pub_id, $property, $value, $insert_if_missing = 0) {
   return chado_update_property('pub', $pub_id, $property, 'tripal_pub', $value, $insert_if_missing);
 }
+
 /**
  * Delete a given property
  *
@@ -1007,8 +1070,6 @@ function tripal_pub_delete_property($pub_id, $property) {
   return chado_delete_property('pub', $pub_id, $property, 'tripal_pub');
 }
 
-
-
 /**
  * This function generates an array suitable for use with the
  * tripal_pub_create_citation function for any publication
@@ -1024,8 +1085,9 @@ function tripal_pub_delete_property($pub_id, $property) {
  * @return
  *   An array suitable for the trpial_pub_create_citation function. On
  *   failure returns FALSE.
+ *
+ * @ingroup tripal_pub_api
  */
-
 function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
 
   $options = array('return_array' => 1);
@@ -1197,7 +1259,6 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
   return $pub_array;
 }
 
-
 /**
  * This function generates citations for publications.  It requires
  * an array structure with keys being the terms in the Tripal
@@ -1222,6 +1283,8 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
  *
  * @return
  *   A text string containing the citation
+ *
+ * @ingroup tripal_pub_api
  */
 function tripal_pub_create_citation($pub) {
   $citation = '';

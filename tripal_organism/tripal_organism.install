@@ -1,12 +1,14 @@
 <?php
-
 /**
  * @file
  * Functions pertaining to the install/uninstall of this module
  */
 
 /**
+ * Implements hook_disable().
  * Disable default views when module is disabled
+ *
+ * @ingroup tripal_organism
  */
 function tripal_organism_disable() {
 
@@ -87,6 +89,7 @@ function tripal_organism_uninstall() {
 /**
  * Implementation of hook_requirements().
  *
+ * @ingroup tripal_organism
  */
 function tripal_organism_requirements($phase) {
   $requirements = array();
@@ -104,15 +107,18 @@ function tripal_organism_requirements($phase) {
 }
 
 /**
+ * Add cvterms related to organisms
  *
+ * @ingroup tripal_organism
  */
 function tripal_organism_add_cvs() {
-
   tripal_cv_add_cv('organism_property', 'Contains properties for organisms');
-
 }
+
 /**
+ * Add cvterms pertaining to organisms
  *
+ * @ingroup tripal_organism
  */
 function tripal_organism_add_cvterms() {
 
@@ -120,6 +126,8 @@ function tripal_organism_add_cvterms() {
 
 /**
  * This is the required update for tripal_organism when upgrading from Drupal core API 6.x.
+ *
+ * @ingroup tripal_organism
  */
 function tripal_organism_update_7000() {
 

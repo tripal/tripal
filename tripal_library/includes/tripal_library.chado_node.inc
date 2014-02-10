@@ -1,6 +1,12 @@
 <?php
+/**
+ * @file
+ * Implements the library node content type
+ */
 
 /**
+ * Implements hook_node_info().
+ *
  * Provide information to drupal about the node types that we're creating
  * in this module
  *
@@ -33,7 +39,9 @@ function tripal_library_node_info() {
 }
 
 /**
- *  When editing or creating a new node of type 'chado_library' we need
+ *  Implements hook_form().
+ *
+ * When editing or creating a new node of type 'chado_library' we need
  *  a form.  This function creates the form that will be used for this.
  *
  * @ingroup tripal_library
@@ -196,8 +204,11 @@ function chado_library_form($node, &$form_state) {
 
   return $form;
 }
+
 /**
- *  validates submission of form when adding or updating a library node
+ * Implements hook_validate().
+ *
+ * Validates submission of form when adding or updating a library node
  *
  * @ingroup tripal_library
  */
@@ -226,7 +237,10 @@ function chado_library_validate($node, $form, &$form_state) {
     form_set_error('uniquename', t('The unique library name already exists. Please choose another'));
   }
 }
+
 /**
+ *  Implements hook_insert().
+ *
  *  When a new chado_library node is created we also need to add information
  *  to our chado_library table.  This function is called on insert of a new node
  *  of type 'chado_library' and inserts the necessary information.
@@ -296,8 +310,9 @@ function chado_library_insert($node) {
     drupal_write_record('chado_library', $record);
   }
 }
+
 /**
- * Update nodes
+ * Implements hook_update().
  *
  * @ingroup tripal_library
  */
@@ -312,7 +327,7 @@ function chado_library_update($node) {
   $match = array(
     'library_id' => $library_id,
   );
-  
+
   $values = array(
     'name'        => $node->libraryname,
     'uniquename'  => $node->uniquename,
@@ -349,7 +364,10 @@ function chado_library_update($node) {
   chado_update_node_form_dbxrefs($node, $details);
 
 }
+
 /**
+ *  Implements hook_load().
+ *
  *  When a node is requested by the user this function is called to allow us
  *  to add auxiliary data to the node object.
  *
@@ -372,7 +390,10 @@ function chado_library_load($nodes) {
 }
 
 /**
+ * Implements hook_delete().
+ *
  * Delete data from drupal and chado databases when a node is deleted
+ *
  * @ingroup tripal_library
  */
 function chado_library_delete(&$node) {
@@ -400,7 +421,7 @@ function chado_library_delete(&$node) {
 }
 
 /**
- * Implement hook_access().
+ * Implement hook_node_access().
  *
  * This hook allows node modules to limit access to the node types they define.
  *
@@ -446,7 +467,10 @@ function chado_library_node_access($node, $op, $account) {
   }
   return NULL;
 }
+
 /**
+ * Implements hook_node_view(). Acts on all content types
+ *
  * @ingroup tripal_library
  */
 function tripal_library_node_view($node, $view_mode, $langcode) {
@@ -514,11 +538,12 @@ function tripal_library_node_view($node, $view_mode, $langcode) {
 }
 
 /**
+ * Implements hook_node_presave(). Acts on all node content types.
  *
- * @param $node
+ * @ingroup tripal_library
  */
 function tripal_library_node_presave($node) {
-  
+
   switch ($node->type) {
     case 'chado_library':
       // for a form submission the 'libraryname' field will be set,

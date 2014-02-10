@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Basic functionality for the genetic
+ */
 
 /**
  * @defgroup tripal_genetic Genetic Module
@@ -8,10 +12,12 @@
  * @}
  */
 
-require('api/tripal_genetic.api.inc');
-require('theme/tripal_genetic.theme.inc');
-require('includes/tripal_genetic.schema.inc');
-require('includes/tripal_genetic.admin.inc');
+require 'api/tripal_genetic.api.inc';
+
+require 'theme/tripal_genetic.theme.inc';
+
+require 'includes/tripal_genetic.schema.inc';
+require 'includes/tripal_genetic.admin.inc';
 
 /**
  * Implements hook_permission().
@@ -29,7 +35,10 @@ function tripal_genetic_permission() {
     ),
   );
 }
+
 /**
+ *  Implements hook_menu().
+ *
  *  Menu items are automatically added for the new node types created
  *  by this module to the 'Create Content' Navigation menu item.  This function
  *  adds more menu items needed for this module.
@@ -69,8 +78,9 @@ function tripal_genetic_menu() {
 }
 
 /**
- * Implements hook_views_api()
- * Purpose: Essentially this hook tells drupal that there is views support for
+ * Implements hook_views_api().
+ *
+ * Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_genetic.views.inc where all the
  *  views integration code is
  *
@@ -111,7 +121,7 @@ function tripal_genetic_theme($existing, $type, $theme, $path) {
 }
 
 /**
- * Implements hook_nodeapi().
+ * Implements hook_node_view(). Acts on all content types
  *
  * @ingroup tripal_genetic
  */

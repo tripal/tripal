@@ -1,7 +1,13 @@
 <?php
+/**
+ * @file
+ * Provide administration of dbs & dbxrefs
+ */
 
 /**
+ * Launchpad for database reference administration
  *
+ * @ingroup tripal_db
  */
 function tripal_db_admin_db_listing() {
   $output = '';
@@ -40,9 +46,8 @@ function tripal_db_admin_db_listing() {
 }
 
 /**
- *
- * @param $form
- * @param $form_state
+ * Form to edit existing databases.
+ * Implements hook_form().
  *
  * @ingroup tripal_db
  */
@@ -108,10 +113,10 @@ function tripal_db_db_edit_form($form, &$form_state) {
   }
   return $form;
 }
+
 /**
- *
- * @param $form
- * @param $form_state
+ * Form to add new databases.
+ * Implements hook_form().
  *
  * @ingroup tripal_db
  */
@@ -127,11 +132,9 @@ function tripal_db_db_add_form($form, $form_state) {
   );
   return $form;
 }
+
 /**
- *
- * @param $form
- * @param $form_state
- * @param $dbid
+ * Fields commmon between the add/edit forms
  *
  * @ingroup tripal_db
  */
@@ -195,28 +198,24 @@ function tripal_db_add_db_form_fields(&$form, $form_state, $dbid = NULL) {
 
 /**
  * Validation fucntion for tripal_db_db_add_form
- * @param $form
- * @param $form_state
  *
  * @ingroup tripal_db
  */
 function tripal_db_db_add_form_validate($form, &$form_state) {
   tripal_db_form_fields_validate($form, $form_state);
 }
+
 /**
  * Validation fucntion for tripal_db_db_edit_form
- * @param unknown_type $form
- * @param unknown_type $form_state
  *
  * @ingroup tripal_db
  */
 function tripal_db_db_edit_form_validate($form, &$form_state) {
   tripal_db_form_fields_validate($form, $form_state);
 }
+
 /**
- * Genetic validation form for shared fields of both the edit and add forms
- * @param $form
- * @param $form_state
+ * Generic form validation for shared fields of both the edit and add forms
  *
  * @ingroup tripal_db
  */
@@ -234,10 +233,9 @@ function tripal_db_form_fields_validate($form, &$form_state) {
     form_set_error('name', 'The database name must be unique');
   }
 }
+
 /**
- *
- * @param $form
- * @param $form_state
+ * Submit for add db form
  *
  * @ingroup tripal_db
  */
@@ -264,9 +262,7 @@ function tripal_db_db_add_form_submit($form, &$form_state) {
 }
 
 /**
- *
- * @param $form
- * @param $form_state
+ * Submit for edit db form
  *
  * @ingroup tripal_db
  */
@@ -307,8 +303,10 @@ function tripal_db_db_edit_form_submit($form, &$form_state) {
     }
   }
 }
+
 /**
  * Ajax callback for the tripal_db_form
+ *
  * @ingroup tripal_db
  */
 function tripal_db_edit_form_ajax($form, $form_state) {

@@ -1,5 +1,10 @@
 <?php
 /**
+ * @file
+ * Provides an application programming interface (API) to manage libraries
+ */
+
+/**
  * @defgroup tripal_library_api Library API
  * @ingroup tripal_api
  * @{
@@ -68,6 +73,7 @@ function tripal_library_insert_property($library_id, $property, $value, $update_
 function tripal_library_update_property($library_id, $property, $value, $insert_if_missing = 0) {
   return chado_update_property('library', $library_id, $property, 'library_property', $value, $insert_if_missing);
 }
+
 /**
  * Delete a given property
  *

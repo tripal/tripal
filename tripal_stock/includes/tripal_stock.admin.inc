@@ -1,11 +1,13 @@
 <?php
 /**
  * @file
- * @todo Add file header description
+ * Administration of stocks
  */
 
 /**
+ * Admin launchpad
  *
+ * @ingroup tripal_stock
  */
 function tripal_stock_admin_stock_view() {
   $output = '';
@@ -37,9 +39,8 @@ function tripal_stock_admin_stock_view() {
   return $output;
 }
 
-
 /**
- * Purpose: Provide administration options for chado_stocks
+ * Provide administration options for chado_stocks
  *
  * @return
  *   Form array (as described by the drupal form api)
@@ -96,8 +97,9 @@ function tripal_stock_admin_validate($form, &$form_state) {
 }
 
 /**
+ * Form: Set the title type to be used for all stocks
  *
- * @param $form
+ * @ingroup tripal_stock
  */
 function get_tripal_stock_admin_form_title_set(&$form) {
 
@@ -132,9 +134,11 @@ function get_tripal_stock_admin_form_title_set(&$form) {
     '#default_value' => variable_get('chado_stock_title', 'unique_constraint'),
   );
 }
+
 /**
+ * Form: Set UR for stocks
  *
- * @param  $form
+ * @ingroup tripal_stock
  */
 function get_tripal_stock_admin_form_url_set(&$form) {
 
@@ -197,9 +201,11 @@ function get_tripal_stock_admin_form_url_set(&$form) {
     '#value' => t('Set Stock URLs'),
   );
 }
+
 /**
+ * Set Controlled vocabularies used in stock tables
  *
- * @param $form
+ * @ingroup tripal_stock
  */
 function get_tripal_stock_admin_form_vocabulary_set(&$form) {
 

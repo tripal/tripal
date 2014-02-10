@@ -1,16 +1,19 @@
 <?php
-
 /**
  * @file
- * A chado wrapper for the views_handler_field.
- *
+ * Contains tripal_views_handler_field_sequence
+ */
+
+/**
  * Handles display of sequence data.  If will aggregate sequences that need
  * to be aggregated (e.g. coding sequences) and provide
+ *
+ * @ingroup tripal_views
  */
 class tripal_views_handler_field_sequence extends views_handler_field {
 
   /**
-   * Defines the options form (form available to admin when they add a field to a view)
+   * {@inheritdoc}
    */
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
@@ -69,8 +72,8 @@ class tripal_views_handler_field_sequence extends views_handler_field {
   }
 
   /**
-  * We need to add a few fields to our query
-  */
+   * {@inheritdoc}
+   */
   function query() {
     parent::query();
 
@@ -85,8 +88,10 @@ class tripal_views_handler_field_sequence extends views_handler_field {
   }
 
   /**
-  * Prior to display of results we want to format the sequence
-  */
+   * {@inheritdoc}
+   *
+   * Prior to display of results we want to format the sequence
+   */
   function render($values) {
     $residues = '';
 
@@ -259,6 +264,5 @@ class tripal_views_handler_field_sequence extends views_handler_field {
     } */
     return $residues;
   }
-
 
 }
