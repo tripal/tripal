@@ -34,9 +34,45 @@
  */
 
 /**
- * Sync'ing chado records with Drupal by creating nodes
+ * Get chado id for a node. E.g, if you want to get 'analysis_id' from the
+ * 'analysis' table for a synced 'chado_analysis' node, (the same for
+ * organisms and features):
+ * $analysis_id = chado_get_id_from_nid ('analysis', $node->nid)
+ * $organism_id = chado_get_id_from_nid ('organism', $node->nid)
+ * $feature_id  = chado_get_id_from_nid ('feature', $node->nid)
  *
- * How to Use:
+ * @param $table
+ * @param $nid
+ *
+ * @ingroup tripal_chado_node_api
+ */
+function chado_get_id_from_nid($table, $nid) {
+  $sql = "SELECT " . $table . "_id as id FROM {chado_$table} WHERE nid = :nid";
+  return db_query($sql, array(':nid' => $nid))->fetchField();
+}
+
+/**
+ *  Get node id for a chado feature/organism/analysis. E.g, if you want to
+ *  get the node id for an analysis, use:
+ *  $nid = chado_get_nid_from_id ('analysis', $analysis_id)
+ *  Likewise,
+ *  $nid = chado_get_nid_from_id ('organism', $organism_id)
+ *  $nid = chado_get_nid_from_id ('feature', $feature_id)
+ *
+ *  @ingroup tripal_chado_node_api
+ */
+function chado_get_nid_from_id($table, $id) {
+  $sql = "SELECT nid FROM {chado_$table} WHERE " . $table . "_id = :" . $table . "_id";
+  return db_query($sql, array(":" . $table . "_id" => $id))->fetchField();
+}
+
+/**
+ * Generic Sync Form to aid in sync'ing (create drupal nodes linking to chado content)
+ * any chado node type.
+ *
+ * To use this you need to add a call to it from your hook_menu() and
+ * add some additional information to your hook_node_info(). The Following code gives an
+ * example of how this might be done:
  * @code
 
   function modulename_menu() {
@@ -58,7 +94,7 @@
     return $items;
   }
 
-  modulename_node_info() {
+  function modulename_node_info() {
     return array(
       'chado_example' => array(
         'name' => t('example'),
@@ -89,81 +125,12 @@
       ),
     );
   }
-
-  // Create New Node
-  // @param $new_node: a basic new node object
-  // @param $record: the record object from chado specifying the biological data for this node
-  function chado_example_chado_node_sync_create_new_node($new_node, $record) {
-
-    // Add relevant chado details to the new node object
-    // This really only needs to be the fields from the node used during node creation
-    // including values used to generate the title, etc.
-    // All additional chado data will be added via nodetype_load when the node is later used
-    $new_node->uniquename = $record->uniquename;
-
-    return $new_node;
-  }
-
-  // Alter the sync form (optional)
-  function chado_example_chado_node_sync_form($form, $form_state) {
-
-    // Change or add to the form array as needed
-    // Any changes should be made in accordance with the Drupal Form API
-
-    return $form;
-  }
-
-  // Bypass chado node api sync form submit (optional)
-  // Allows you to use this function as your own submit
-  function chado_example_chado_node_sync_form ($form, $form_state) {
-
-    global $user;
-
-    $job_args = array(
-      $base_table,      // the base chado table (ie: feature)
-      $max_sync,        // the maximum number of records to sync or FALSE for sync all that match
-      $organism_id,     // the organism_id to restrict records to or FALSE if not to restrict by organism_id
-      $types            // A string with the cvterm.name of the types to restrict to separated by |||
-    );
-
-    // You should register a tripal job
-    tripal_add_job(
-      $title,                                   // the title of the job -be descriptive
-      $module,                                  // the name of your module
-      'chado_node_sync_records',    // the chado node api sync function
-      $job_args,                                // an array with the arguments to pass to the above function
-      $user->uid                                // the user who submitted the job
-    );
-
-  }
-
-
-  // Alter the query for the chado database which gets the chado records to be sync'd (optional)
-  // @param $select: an array of select clauses
-  // @param $joins: an array of joins (ie: a single join could be 'LEFT JOIN {chadotable} alias ON base.id=alias.id')
-  // @param $where_clauses: an array of where clauses which will all be AND'ed together. Use :placeholders for values.
-  // @param $where_args: an associative array of arguments to be subbed in to the where clause
-  //           where the key = :placeholder and the value is the actual argument to be subbed in
-  function chado_example_chado_node_sync_select_query (&$select, &$joins, &$where_clauses, &$where_args) {
-
-    // You can add fields to be selected
-    $select[] = 'example.myfavfield';
-
-    // Or joins to important tables
-    $joins[] = 'LEFT JOIN {exampleprop} PROP ON PROP.example_id=EXAMPLE.example_id';
-
-    // Or filter the query using where clauses
-    $where_clauses[] = 'example.myfavfield = :favvalue';
-    $where_args[':favvalue'] = 'awesome-ness';
-  }
-
  * @endcode
  *
- * @ingroup tripal_chado_node_api
- */
-
-/**
- * Generic Sync Form
+ * For more information on how you can override some of this behaviour while still
+ * benifiting from as much of the common architecture as possible see the following
+ * functions: hook_chado_node_sync_create_new_node(), hook_chado_node_sync_form(),
+ * hook_chado_node_sync_select_query().
  *
  * @ingroup tripal_chado_node_api
  */
@@ -697,4 +664,123 @@ function chado_cleanup_orphaned_nodes($table, $job_id = NULL) {
   print "\t$deleted nodes did not have corresponding chado_$table entries.\n";
 
   return '';
+}
+
+/**
+ * Create New Node
+ *
+ * Note: For your own module, replace hook in the function name with the machine-name of
+ * your chado node type (ie: chado_feature).
+ *
+ * @param $new_node:
+ *   a basic new node object
+ * @param $record:
+ *   the record object from chado specifying the biological data for this node
+ *
+ * @return
+ *   A node object containing all the fields necessary to create a new node during sync
+ *
+ * @ingroup tripal_chado_node_api
+ */
+function hook_chado_node_sync_create_new_node($new_node, $record) {
+
+  // Add relevant chado details to the new node object
+  // This really only needs to be the fields from the node used during node creation
+  // including values used to generate the title, etc.
+  // All additional chado data will be added via nodetype_load when the node is later used
+  $new_node->uniquename = $record->uniquename;
+
+  return $new_node;
+}
+
+/**
+ * Alter the sync form (optional)
+ *
+ * This might be necessary if you need additional filtering options for choosing which
+ * chado records to sync or even if you just want to further customize the help text
+ * provided by the form.
+ *
+ * Note: For your own module, replace hook in the function name with the machine-name of
+ * your chado node type (ie: chado_feature).
+ *
+ * @ingroup tripal_chado_node_api
+ */
+function hook_chado_node_sync_form($form, $form_state) {
+
+  // Change or add to the form array as needed
+  // Any changes should be made in accordance with the Drupal Form API
+
+  return $form;
+}
+
+/**
+ * Bypass chado node api sync form submit (optional). Allows you to use this function
+ * as your own submit.
+ *
+ * This might be necessary if you want to add additional arguements to the tripal job or
+ * to call your own sync'ing function if the generic chado_node_sync_records() is not
+ * sufficient.
+ *
+ * Note: For your own module, replace hook in the function name with the machine-name of
+ * your chado node type (ie: chado_feature).
+ *
+ * @ingroup tripal_chado_node_api
+ */
+function hook_chado_node_sync_form_submit ($form, $form_state) {
+
+  global $user;
+
+  $job_args = array(
+    $base_table,      // the base chado table (ie: feature)
+    $max_sync,        // the maximum number of records to sync or FALSE for sync all that match
+    $organism_id,     // the organism_id to restrict records to or FALSE if not to restrict by organism_id
+    $types            // A string with the cvterm.name of the types to restrict to separated by |||
+  );
+
+  // You should register a tripal job
+  tripal_add_job(
+    $title,                                   // the title of the job -be descriptive
+    $module,                                  // the name of your module
+    'chado_node_sync_records',    // the chado node api sync function
+    $job_args,                                // an array with the arguments to pass to the above function
+    $user->uid                                // the user who submitted the job
+  );
+
+}
+
+
+/**
+ * Alter the query for the chado database which gets the chado records to be sync'd (optional)
+ *
+ * This might be necessary if you need fields from other chado tables to create your node
+ * or if your chado node type only supports a subset of a given table (ie: a germplasm node
+ * type might only support node creation for cerain types of stock records in which case
+ * you would need to filter the results to only those types).
+ *
+ * Note: For your own module, replace hook in the function name with the machine-name of
+ * your chado node type (ie: chado_feature).
+ *
+ * @param $select:
+ *   An array of select clauses
+ * @param $joins:
+ *   An array of joins (ie: a single join could be 'LEFT JOIN {chadotable} alias ON base.id=alias.id')
+ * @param $where_clauses:
+ *   An array of where clauses which will all be AND'ed together. Use :placeholders for values.
+ * @param $where_args:
+ *   An associative array of arguments to be subbed in to the where clause where the
+ *   key = :placeholder and the value is the actual argument to be subbed in.
+ *
+ * @ingroup tripal_chado_node_api
+ */
+function hook_chado_node_sync_select_query (&$select, &$joins, &$where_clauses, &$where_args) {
+
+  // You can add fields to be selected
+  $select[] = 'example.myfavfield';
+
+  // Or joins to important tables
+  $joins[] = 'LEFT JOIN {exampleprop} PROP ON PROP.example_id=EXAMPLE.example_id';
+
+  // Or filter the query using where clauses
+  $where_clauses[] = 'example.myfavfield = :favvalue';
+  $where_args[':favvalue'] = 'awesome-ness';
 }
