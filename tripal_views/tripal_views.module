@@ -12,9 +12,12 @@
  * @}
  */
 
+require_once 'api/tripal_views.api.inc';
+
 require_once 'tripal_views.views.inc';
 
 require_once 'includes/tripal_views_integration.inc';
+require_once 'includes/tripal_views_integration_UI.inc';
 require_once 'includes/tripal_views_integration_port.inc';
 
 /**

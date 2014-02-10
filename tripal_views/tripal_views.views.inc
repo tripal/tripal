@@ -4,7 +4,6 @@
  * Tripal Views Integration
  */
 
-include 'api/tripal_views.api.inc';
 include 'views/handlers/tripal_views_handler_area_action_links.inc';
 
 /**
