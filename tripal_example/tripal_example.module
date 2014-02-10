@@ -1,1 +1,246 @@
 <?php
+
+/**
+ * @file
+ * This file contains all Drupal hooks for the module other than any
+ * node hooks and block hooks. Those go in the [module name].chado_node.inc file
+ * and [module_name].blocks.inc respectively
+ *
+ */
+
+/* 
+// include any files that might be required
+require('api/tripal_example.api.inc');
+require('theme/tripal_example.theme.inc');
+require('includes/tripal_example.admin.inc');
+require('includes/tripal_example.chado_node.inc');
+*/
+
+
+
+
+/**
+ * Set the permission types that the chado module uses.  Essentially we
+ * want permissionis that protect creation, editing and deleting of chado
+ * data objects
+ *
+ * @ingroup tripal_example
+ */
+function tripal_example_permisssions() {
+  /*
+  return array(
+    'access chado_example content' => array(
+      'title' => t('View Examples'),
+      'description' => t('Allow users to view example pages.'),
+    ),
+    'create chado_example content' => array(
+      'title' => t('Create Examples'),
+      'description' => t('Allow users to create new example pages.'),
+    ),
+    'delete chado_example content' => array(
+      'title' => t('Delete Examples'),
+      'description' => t('Allow users to delete example pages.'),
+    ),
+    'edit chado_example content' => array(
+      'title' => t('Edit Examples'),
+      'description' => t('Allow users to edit example pages.'),
+    ),
+    'adminster tripal example' => array(
+      'title' => t('Administer Examples'),
+      'description' => t('Allow users to administer all examples.'),
+    ),
+  );
+  */
+}
+
+/**
+ * Menu items are automatically added for the new node types created
+ * by this module to the 'Create Content' Navigation menu item.  This function
+ * adds more menu items needed for this module.
+ *
+ * @ingroup tripal_example
+ */
+function tripal_example_menu() {
+  $items = array();
+  
+  /*
+  // The administative settings menu
+  $items['admin/tripal/chado/tripal_example'] = array(
+    'title' => 'Examples',
+    'description' => 'Any example.',
+    'page callback' => 'tripal_example_admin_examples_listing',
+    'access arguments' => array('administer tripal example'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['admin/tripal/chado/tripal_example/help'] = array(
+    'title' => 'Help',
+    'description' => 'Basic Description of Tripal Library Module Functionality',
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_example_help'),
+    'access arguments' => array('administer tripal example'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10
+  );
+
+  $items['admin/tripal/chado/tripal_example/configuration'] = array(
+    'title' => 'Settings',
+    'description' => 'Configure the Tripal Library module',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_example_admin'),
+    'access arguments' => array('administer tripal example'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 5
+  );
+  $items['admin/tripal/chado/tripal_example/sync'] = array(
+    'title' => ' Sync',
+    'description' => 'Create pages on this site for examples stored in Chado',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_core_chado_node_sync_form', 'tripal_example', 'chado_example'),
+    'access arguments' => array('administer tripal example'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2
+  );
+
+  $items['admin/tripal/chado/tripal_example/views/examples/enable'] = array(
+    'title' => 'Enable Library Administrative View',
+    'page callback' => 'tripal_views_admin_enable_view',
+    'page arguments' => array('tripal_example_admin_examples', 'admin/tripal/chado/tripal_example'),
+    'access arguments' => array('administer tripal example'),
+    'type' => MENU_CALLBACK,
+  );
+  */
+
+  return $items;
+}
+
+/**
+ * Implements hook_views_api()
+ * Purpose: Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_db.views.inc where all the
+ *  views integration code is
+ *
+ * @ingroup tripal_example
+ */
+function tripal_example_views_api() {
+  return array(
+    'api' => 3.0,
+  );
+}
+
+
+/**
+ *  We need to let drupal know about our theme functions and their arguments.
+ *  We create theme functions to allow users of the module to customize the
+ *  look and feel of the output generated in this module
+ *
+ * @ingroup tripal_example
+ */
+function tripal_example_theme($existing, $type, $theme, $path) {
+  $core_path = drupal_get_path('module', 'tripal_core');
+
+  /*
+  $items = array(
+    'node__chado_example' => array(
+      'template' => 'node--chado-generic',
+      'render element' => 'node',
+      'base hook' => 'node',
+      'path' => "$core_path/theme",
+    ),
+
+    // tripal_example templates
+    'tripal_example_base' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_example_base',
+      'path' => "$path/theme/tripal_example",
+    ),
+    'tripal_example_properties' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_example_properties',
+      'path' => "$path/theme/tripal_example",
+    ),
+    'tripal_example_publications' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_example_publications',
+      'path' => "$path/theme/tripal_example",
+    ),
+    'tripal_example_references' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_example_references',
+      'path' => "$path/theme/tripal_example",
+    ),
+    'tripal_example_synonyms' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_example_synonyms',
+      'path' => "$path/theme/tripal_example",
+    ),
+    'tripal_example_terms' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_example_terms',
+      'path' => "$path/theme/tripal_example",
+    ),
+    'tripal_example_help' => array(
+      'template' => 'tripal_example_help',
+      'variables' =>  array(NULL),
+      'path' => "$path/theme",
+    ),
+
+    // teaser
+    'tripal_example_teaser' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_example_teaser',
+      'path' => "$path/theme/tripal_example",
+    ),
+
+    // tripal_organism templates
+    'tripal_organism_examples' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_organism_examples',
+      'path' => "$path/theme/tripal_organism",
+    ),
+
+    // tripal_feature templates
+    'tripal_feature_examples' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_feature_examples',
+      'path' => "$path/theme/tripal_feature",
+    ),
+
+  );
+  */
+  return $items;
+}
+
+/**
+ * Implements hook_help()
+ * Purpose: Adds a help page to the module list
+ */
+function tripal_example_help ($path, $arg) {
+  if ($path == 'admin/help#tripal_example') {
+    return theme('tripal_example_help', array());
+  }
+}
+
+
+/**
+ *
+ * @ingroup tripal_example
+ */
+function tripal_example_cron() {
+
+}
+
+
+/**
+ * Implementation of hook_form_alter()
+ *
+ * @param $form
+ * @param $form_state
+ * @param $form_id
+ */
+function tripal_example_form_alter(&$form, &$form_state, $form_id) {
+  // turn of preview button for insert/updates
+  if ($form_id == "chado_example_node_form") {
+    $form['actions']['preview']['#access'] = FALSE;
+  }
+}

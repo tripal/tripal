@@ -31,7 +31,7 @@ function tripal_example_node_info() {
   // to recrords in Chado.  Syncing is the process of creating Drupal nodes
   // and linking them to the appropriate record.
   //  'chado_node_api' => array(
-  //    'base_table' => 'example',       // the base table name (e.g. feature, library, contact)
+  //    'base_table' => 'example',       // the base table name (e.g. feature, example, contact)
   //    'hook_prefix' => 'chado_example',// the node type hook prefix
   //    'record_type_title' => array(
   //      'singular' => t('Library'),    // how to refer to the record
@@ -474,12 +474,22 @@ function chado_example_load($nodes) {
  */
 function tripal_example_node_presave($node) {
 
-  // set the title to ensure it is always unique
-  //switch ($node->type) {
-  //  case 'chado_example':
-  //    $node->title = $node->uniquename;
-  //    break;
-  //}
+  /*
+  // set the node title
+  switch ($node->type) {
+    case 'chado_example':
+      // for a form submission the 'examplename' field will be set,
+      // for a sync, we must pull from the example object
+      if(property_exists($node, 'examplename')) {
+        // set the title
+        $node->title = $node->examplename;
+      }
+      else {
+        $node->title = $node->example->name;
+      }
+      break;
+  }
+  */
 }
 
 /**
