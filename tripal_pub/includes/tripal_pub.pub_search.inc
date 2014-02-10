@@ -1,11 +1,14 @@
 <?php
 /**
  * @file
- * Functions related to searching remote publication databases
+ * 
+ * Functions responsible for creating the publication search form that 
+ * allows a user of the site to search for publications that are currently 
+ * in Chado.
  */
 
 /**
- * @stephen
+ * The page that contains the publication search form and the results for the search
  *
  * @ingroup tripal_pub
  */
@@ -448,35 +451,14 @@ function tripal_pub_search_form_submit($form, &$form_state) {
     unset($_SESSION['tripal_pub_search_form']);
   }
 }
-
 /**
- * AHAH callback
+ * Builds the SQL statement need to search Chado for the publications
+ * that match the user supplied criteria
  *
- * @ingroup tripal_pub
- */
-function tripal_pub_search_page_update_criteria($action, $i) {
-  $status = TRUE;
-
-  // prepare and render the form
-  $form = tripal_core_ahah_prepare_form();
-  $data = theme('tripal_pub_search_form', $form);
-
-  // bind javascript events to the new objects that will be returned
-  // so that AHAH enabled elements will work.
-  $settings = tripal_core_ahah_bind_events();
-
-  // return the updated JSON
-  drupal_json(
-  array(
-      'status'   => $status,
-      'data'     => $data,
-      'settings' => $settings,
-  )
-  );
-}
-
-/**
- * @stephen
+ * @param $search_array
+ *   An array of search criteria provided by the user
+ * @param $limit
+ *   The numbe of records to retrieve
  *
  * @ingroup tripal_pub
  */
@@ -591,6 +573,11 @@ function tripal_pub_get_search_results($search_array, $limit) {
 
 /**
  * Ajax callback to update the form
+ * 
+ * @param $form
+ *   The form array
+ * @param $form_state
+ *   The form state array
  *
  * @ingroup tripal_pub
  */

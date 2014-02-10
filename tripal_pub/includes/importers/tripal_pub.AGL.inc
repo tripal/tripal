@@ -1,15 +1,24 @@
 <?php
 /**
  * @file
- * @stephen
+ * This file provides support for importing and parsing of results from the 
+ * USDA National Agricultural Library (AGL) database.  The functions here are used by
+ * both the publication importer setup form and the publication importer.
+ * 
+ * The USDA AGL database uses a YAZ protocol for querying and retrieving records.
+ * 
  */
 
 /**
- * @stephen
+ * A hook for altering the publication importer form.  It Changes the 
+ * 'Days' element to 'Year' and removes the 'Journal Name' filter.
  *
  * @param $form
+ *   The Drupal form array
  * @param $form_state
+ *   The form state array
  * @param $num_criteria
+ *   The number of criteria the user currently has added to the form
  *
  * @return
  *   The form (drupal form api)
@@ -32,11 +41,13 @@ function tripal_pub_remote_alter_form_AGL($form, $form_state, $num_criteria = 1)
 }
 
 /**
- * @stephen
+ * A hook for providing additional validation of importer setup form.
  *
  * @param $form
+ *   The Drupal form array
  * @param $form_state
- *
+ *   The form state array
+ *  
  * @return
  *  The form (drupal form api)
  *
@@ -68,14 +79,19 @@ function tripal_pub_remote_validate_form_AGL($form, $form_state) {
 }
 
 /**
- * @stephen
+ * A hook for performing the search on the AGL database.
  *
  * @param $search_array
+ *   An array containing the serach criteria for the serach
  * @param $num_to_retrieve
+ *   Indicates the maximum number of publications to retrieve from the remote
+ *   database
  * @param $page
+ *   Indicates the page to retrieve.  This corresponds to a paged table, where
+ *   each page has $num_to_retrieve publications.
  *
  * @return
- *
+ *  An array of publications.
  *
  * @ingroup tripal_pub
  */
@@ -387,16 +403,23 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
 }
 
 /**
- * @stephen
+ * Retreives a range of publications from AGL
  *
  * @param $yazc
+ *   The YAZC connection object.
  * @param $search_str
+ *   The search string to use for searching.
  * @param $start
+ *   The start of the range
  * @param $num_to_retrieve
+ *   The number of publications to retrieve
  * @param $total_records
- *
+ *   The total number of records in the dataset.  This value should have 
+ *   been retrieved by tripal_pub_AGL_count() function.
+ *   
  * @return
- *
+ *  An array containing the total_records in the dataaset, the search string
+ *  and an array of the publications that were retreived.
  *
  * @ingroup tripal_pub
  */
@@ -436,16 +459,15 @@ function tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $tot
 }
 
 /**
- * This function is used as the callback function when used with the
- * tripal_pager_callback function.
- *
- * @stephen
+ * Retreives the total number of publications that match the search string.
  *
  * @param $yazc
+ *   The YAZC connection object.
  * @param $search_str
- *
+ *   The search string to use for searching.
+ *   
  * @return
- * a count of the dataset to be paged.
+ *   a count of the total number of publications that match the search string
  *
  * @ingroup tripal_pub
  */
@@ -883,12 +905,12 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
 }
 
 /**
- * @stephen
+ * Used for parsing of the XML results to get a set of subfields 
  *
  * @param $xml
- *
+ *   The XMl object to read
  * @return
- *
+ *   An array of codes and their values
  *
  * @ingroup tripal_pub
  */
@@ -912,11 +934,14 @@ function tripal_pub_remote_search_AGL_get_subfield($xml) {
 }
 
 /**
- * @stephen
+ * Used for parsing of the XML results to get details about an author 
  *
  * @param $xml
+ *   The XML object to read
  * @param $ind1
- *
+ *   Indicates how an author record is stored; 0 means given name is first
+ *   1 means surname is first, 3 means a family name is given
+ *   
  * @return
  *
  *

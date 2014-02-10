@@ -70,10 +70,16 @@ function tripal_pub_importers_list() {
 }
 
 /**
- * @stephen
+ * Creates the page that contains the publication importer setup form and 
+ * test results.
  *
  * @param $action
+ *   The action to perform
  * @param $pub_import_id
+ *   The importer ID
+ *   
+ * @return
+ *   The HTML for the importer setup page
  *
  * @ingroup tripal_pub
  */
@@ -200,14 +206,19 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
 }
 
 /**
- * Provides the form to search pubmed
- *
- * @stephen
+ * The form used for creating publication importers.
  *
  * @param $form
+ *   The Drupal form
  * @param $form_state
+ *   The form state
  * @param $pub_import_id
+ *   The publication importer ID
  * @param $action
+ *   The action to perform
+ *   
+ * @return
+ *   A form array
  *
  * @ingroup tripal_pub
  */
@@ -400,12 +411,20 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
 }
 
 /**
- * @stephen
+ * A helper function for the importer setup form that adds the criteria to 
+ * the form that belong to the importer.
  *
  * @param $form
+ *   The form
  * @param $form_state
+ *   The form state
  * @param $num_criteria
+ *   The number of criteria that exist for the importer
  * @param $criteria
+ *   An array containing the criteria
+ *
+ *@return
+ *  A form array
  *
  * @ingroup tripal_pub
  */
