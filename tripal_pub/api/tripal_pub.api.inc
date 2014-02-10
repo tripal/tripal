@@ -68,12 +68,18 @@ function tripal_pub_get_remote_search_results($remote_db, $search_array, $num_to
 }
 
 /**
- * @stephen
+ * This function is used to perfom a query using one of the supported databases
+ * and return the raw query results. This may be XML or some other format 
+ * as provided by the database.
  *
  * @param $dbxref
- *
+ *   The unique database ID for the record to retrieve.  This value must
+ *   be of the format DB_NAME:ACCESSION where DB_NAME is the name of the 
+ *   database (e.g. PMID or AGL) and the ACCESSION is the unique identifier
+ *   for the record in the database.
+ *   
  * @return
- *
+ *   Returns the raw output wrapped in an HTML textarea element
  *
  * @ingroup tripal_pub_api
  */
@@ -109,12 +115,23 @@ function tripal_pub_get_raw_data($dbxref) {
 }
 
 /**
- * @stephen
+ * Updates publication records with the most recent data in the remote
+ * database.
  *
  * @param $do_contact
+ *   Set to TRUE if authors should automatically have a contact record added
+ *   to Chado. Contacts are added using the name provided by the remote
+ *   database.
  * @param $dbxref
+ *   The unique database ID for the record to update.  This value must
+ *   be of the format DB_NAME:ACCESSION where DB_NAME is the name of the 
+ *   database (e.g. PMID or AGL) and the ACCESSION is the unique identifier
+ *   for the record in the database.
  * @param $db
- *
+ *   The name of the remote database to update.  If this value is provided and 
+ *   no dbxref then all of the publications currently in the Chado database
+ *   for this remote database will be updated.
+ *   
  * @ingroup tripal_pub_api
  */
 function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db = NULL) {
@@ -203,10 +220,12 @@ function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db
 }
 
 /**
- * @stephen
+ * Imports all publications for a given publication import setup. 
  *
  * @param $import_id
+ *   The ID of the import setup to use
  * @param $job_id
+ *   The jobs management job_id for the job if this function is run as a job.
  *
  * @ingroup tripal_pub_api
  */
@@ -270,11 +289,15 @@ function tripal_pub_import_publications_by_import_id($import_id, $job_id = NULL)
 }
 
 /**
- * @stephen
+ * Imports all publications for all active import setups.
  *
  * @param $report_email
+ *   A list of email address, separated by commas, that should be notified
+ *   once importing has completed
  * @param $do_update
- *
+ *   If set to TRUE then publications that already exist in the Chado database
+ *   will be updated, whereas if FALSE only new publications will be added
+ *   
  * @ingroup tripal_pub_api
  */
 function tripal_pub_import_publications($report_email = FALSE, $do_update = FALSE) {
@@ -364,12 +387,20 @@ function tripal_pub_import_publications($report_email = FALSE, $do_update = FALS
 }
 
 /**
- * @stephen
+ * Imports a singe publication specified by a remote database cross reference.
  *
  * @param $pub_dbxref
+ *   The unique database ID for the record to update.  This value must
+ *   be of the format DB_NAME:ACCESSION where DB_NAME is the name of the 
+ *   database (e.g. PMID or AGL) and the ACCESSION is the unique identifier
+ *   for the record in the database.
  * @param $do_contact
+ *   Set to TRUE if authors should automatically have a contact record added
+ *   to Chado. 
  * @param $do_update
- *
+ *   If set to TRUE then the publication will be updated if it already exists
+ *   in the database.
+ *   
  * @ingroup tripal_pub_api
  */
 function tripal_pub_import_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_update) {
@@ -430,13 +461,22 @@ function tripal_pub_import_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_updat
 }
 
 /**
- * @stephen
+ * Adds publications that have been retrieved from a remote database and 
+ * consolidated into an array of details.
  *
  * @param $pubs
+ *   An array containing a list of publications to add to Chado.  The
+ *   array contains a set of details for the publication.
  * @param $do_contact
+ *   Set to TRUE if authors should automatically have a contact record added
+ *   to Chado. 
  * @param $update
- *
+ *   If set to TRUE then publications that already exist in the Chado database
+ *   will be updated, whereas if FALSE only new publications will be added
+ *   
  * @return
+ *   Returns an array containing the number of publications that were
+ *   inserted, updated, skipped and which had an error during import.
  *
  * @ingroup tripal_pub_api
  */
@@ -485,12 +525,14 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE) {
 }
 
 /**
- * Adds a dbxref record to a publication
- *
- * @stephen
+ * Adds a database cross-reference to a publication
  *
  * @param $pub_id
+ *   The ID of the publication   
  * @param $pub_dbxref
+ *   The cross reference.  This value must be of the format DB_NAME:ACCESSION 
+ *   where DB_NAME is the name of the database and the 
+ *   ACCESSION is the unique identifier for the record in the database.
  *
  * @return
  *
@@ -515,8 +557,8 @@ function tripal_pub_add_pub_dbxref($pub_id, $pub_dbxref) {
       'accession' => $accession,
       'db_id' => array(
         'name' => $dbname,
-  ),
-  ),
+      ),
+    ),
     'pub_id' => $pub_id,
   );
   $options = array('statement_name' => 'sel_pubdbxref_dbpu');
@@ -909,12 +951,16 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
 }
 
 /**
- * @stephen
+ * Add one or more authors to a publication
  *
  * @param $pub_id
+ *   The publication ID of the pub in Chado.
  * @param $authors
+ *   An array of authors.  Each author should have a set of keys/value pairs
+ *   describing the author.
  * @param $do_contact
- *
+ *   Optional. Set to TRUE if a contact entry should be added to the Chado contact table
+ *   for authors of the publication.
  * @ingroup tripal_pub_api
  */
 function tripal_pub_add_authors($pub_id, $authors, $do_contact) {

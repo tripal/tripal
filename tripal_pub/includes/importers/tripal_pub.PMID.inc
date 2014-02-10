@@ -1,15 +1,26 @@
 <?php
 /**
  * @file
- * Tripal Pub PubMed Interface
+ * This file provides support for importing and parsing of results from the 
+ * NCBI PubMed database.  The functions here are used by
+ * both the publication importer setup form and the publication importer.
+ * 
  */
 
+
 /**
- * @stephen
+ * A hook for altering the publication importer form.  It Changes the 
+ * 'Abstract' filter to be 'Abstract/Title'.
  *
  * @param $form
+ *   The Drupal form array
  * @param $form_state
+ *   The form state array
  * @param $num_criteria
+ *   The number of criteria the user currently has added to the form
+ *
+ * @return
+ *   The form (drupal form api)
  *
  * @ingroup tripal_pub
  */
@@ -24,13 +35,15 @@ function tripal_pub_remote_alter_form_PMID($form, $form_state, $num_criteria = 1
 }
 
 /**
- * Validate the pub med form
+ * A hook for providing additional validation of importer setup form.
  *
  * @param $form
+ *   The Drupal form array
  * @param $form_state
- *
+ *   The form state array
+ *  
  * @return
- *   The form (drupal form api)
+ *  The form (drupal form api)
  *
  * @ingroup tripal_pub
  */
@@ -48,11 +61,19 @@ function tripal_pub_remote_validate_form_PMID($form, $form_state) {
 }
 
 /**
- * @stephen
+ * A hook for performing the search on the PubMed database.
  *
  * @param $search_array
+ *   An array containing the serach criteria for the serach
  * @param $num_to_retrieve
+ *   Indicates the maximum number of publications to retrieve from the remote
+ *   database
  * @param $page
+ *   Indicates the page to retrieve.  This corresponds to a paged table, where
+ *   each page has $num_to_retrieve publications.
+ *
+ * @return
+ *  An array of publications.
  *
  * @ingroup tripal_pub
  */
@@ -166,10 +187,16 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $page) {
 }
 
 /**
- * @stephen
+ * Initailizes a PubMed Search using a given search string
  *
  * @param $search_str
+ *   The PubMed Search string
  * @param $retmax
+ *   The maximum number of records to return
+ *   
+ * @return 
+ *   An array containing the Count, WebEnv and QueryKey as return
+ *   by PubMed's esearch utility
  *
  * @ingroup tripal_pub
  */
@@ -235,20 +262,32 @@ function tripal_pub_PMID_search_init($search_str, $retmax){
 }
 
 /**
- * @stephen
+ * Retreives from PubMed a set of publications from the
+ * previously initiated query.
  *
  * @param $query_key
+ *   The esearch QueryKey
  * @param $web_env
+ *   The esearch WebEnv
  * @param $rettype
+ *   The efetch return type 
  * @param $retmod
+ *   The efetch return mode
  * @param $start
+ *   The start of the range to retrieve
  * @param $limit
+ *   The number of publications to retrieve
  * @param $args
+ *   Any additional arguments to add the efetch query URL
+ *   
+ * @return
+ *  An array containing the total_records in the dataaset, the search string
+ *  and an array of the publications that were retreived.
  *
  * @ingroup tripal_pub
  */
 function tripal_pub_PMID_fetch($query_key, $web_env, $rettype = 'null',
-$retmod = 'null', $start = 0, $limit = 10, $args = array()){
+  $retmod = 'null', $start = 0, $limit = 10, $args = array()){
 
   // repeat the search performed previously (using WebEnv & QueryKey) to retrieve
   // the PMID's within the range specied.  The PMIDs will be returned as a text list
@@ -292,7 +331,7 @@ $retmod = 'null', $start = 0, $limit = 10, $args = array()){
   return $results;
 }
 
-/*
+/**
  * This function parses the XML containing details of a publication and
  * converts it into an associative array of where keys are Tripal Pub
  * ontology terms and the values are extracted from the XML. The
@@ -405,10 +444,13 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
 }
 
 /**
- * @stephen
+ * Parses the section from the XML returned from PubMed that contains
+ * information about the Journal 
  *
  * @param $xml
+ *   The XML to parse
  * @param $pub
+ *   The publication object to which additional details will be added
  *
  * @ingroup tripal_pub
  */
@@ -445,10 +487,13 @@ function tripal_pub_PMID_parse_medline_journal_info($xml, &$pub) {
 }
 
 /**
- * @stephen
+ * Parses the section from the XML returned from PubMed that contains
+ * information about an article.
  *
  * @param $xml
+ *   The XML to parse
  * @param $pub
+ *   The publication object to which additional details will be added
  *
  * @ingroup tripal_pub
  */
@@ -537,7 +582,8 @@ function tripal_pub_PMID_parse_article($xml, &$pub) {
 }
 
 /**
- * @stephen
+ * Parses the section from the XML returned from PubMed that contains
+ * information about a publication
  *
  * A full list of publication types can be found here:
  * http://www.nlm.nih.gov/mesh/pubtypes.html.
@@ -546,7 +592,9 @@ function tripal_pub_PMID_parse_article($xml, &$pub) {
  * publication types so we store the value in the 'publication_type' term.
  *
  * @param $xml
+ *   The XML to parse
  * @param $pub
+ *   The publication object to which additional details will be added
  *
  * @ingroup tripal_pub
  */
@@ -585,10 +633,13 @@ function tripal_pub_PMID_parse_publication_type($xml, &$pub) {
 }
 
 /**
- * @stephen
+ * Parses the section from the XML returned from PubMed that contains
+ * information about the abstract
  *
  * @param $xml
+ *   The XML to parse
  * @param $pub
+ *   The publication object to which additional details will be added
  *
  * @ingroup tripal_pub
  */
@@ -632,10 +683,13 @@ function tripal_pub_PMID_parse_abstract($xml, &$pub) {
 }
 
 /**
- * @stephen
+ * Parses the section from the XML returned from PubMed that contains
+ * information about pagination
  *
  * @param $xml
+ *   The XML to parse
  * @param $pub
+ *   The publication object to which additional details will be added
  *
  * @ingroup tripal_pub
  */
@@ -663,10 +717,13 @@ function tripal_pub_PMID_parse_pagination($xml, &$pub) {
 }
 
 /**
- * @stephen
+ * Parses the section from the XML returned from PubMed that contains
+ * information about a journal
  *
  * @param $xml
+ *   The XML to parse
  * @param $pub
+ *   The publication object to which additional details will be added
  *
  * @ingroup tripal_pub
  */
@@ -713,10 +770,13 @@ function tripal_pub_PMID_parse_journal($xml, &$pub) {
 }
 
 /**
- * @stephen
+ * Parses the section from the XML returned from PubMed that contains
+ * information about a journal issue
  *
  * @param $xml
+ *   The XML to parse
  * @param $pub
+ *   The publication object to which additional details will be added
  *
  * @ingroup tripal_pub
  */
@@ -771,10 +831,13 @@ function tripal_pub_PMID_parse_journal_issue($xml, &$pub) {
 }
 
 /**
- * @stephen
+ * Parses the section from the XML returned from PubMed that contains
+ * information regarding to dates
  *
  * @param $xml
- * @param $element_name
+ *   The XML to parse
+ * @param $pub
+ *   The publication object to which additional details will be added
  *
  * @ingroup tripal_pub
  */
@@ -817,10 +880,13 @@ function tripal_pub_PMID_parse_date($xml, $element_name) {
 }
 
 /**
- * @stephen
+ * Parses the section from the XML returned from PubMed that contains
+ * information about the author list for a publication
  *
  * @param $xml
+ *   The XML to parse
  * @param $pub
+ *   The publication object to which additional details will be added
  *
  * @ingroup tripal_pub
  */
