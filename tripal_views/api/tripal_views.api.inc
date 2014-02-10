@@ -86,83 +86,84 @@ function mymodule_admin_landing_page() {
  * One of the main ways the Tripal View API is likely to be used is if your module needs
  * to create it's own tripal views integration. You might need to do this for any number of
  * reasons but the following examples are thought to be the most common:
+ *
  *   1) Your module wants to add handlers with better functionality to fields it has more
  *       knowledge of than the general integration for all tables
  * @code
- mymodule_views_data() {
+   mymodule_views_data() {
 
-  // First check that your integration has not already been added
-  // When selecting a priority, do not choose -10 or -9 and make sure it is below 0
-  // so that individual sites still have the ability to override it, if needed
-  $table_name = 'my_chado_table';
-  $priority = -5;
-  if (!tripal_views_is_integrated($table_name, $priority)) {
+    // First check that your integration has not already been added
+    // When selecting a priority, do not choose -10 or -9 and make sure it is below 0
+    // so that individual sites still have the ability to override it, if needed
+    $table_name = 'my_chado_table';
+    $priority = -5;
+    if (!tripal_views_is_integrated($table_name, $priority)) {
 
-    // If you really only need to tweak an existing integration you can clone it
-    // If you want to clone the integration that is currently taking priority
-    // then use tripal_views_get_table_lightest_priority() as below
-    $lightest_priority = tripal_views_get_table_lightest_priority($table_name);
-    $setup_id = tripal_views_clone_integration($table_name, $priority, $lightest_priority);
+      // If you really only need to tweak an existing integration you can clone it
+      // If you want to clone the integration that is currently taking priority
+      // then use tripal_views_get_table_lightest_priority() as below
+      $lightest_priority = tripal_views_get_table_lightest_priority($table_name);
+      $setup_id = tripal_views_clone_integration($table_name, $priority, $lightest_priority);
 
-    // And then make a few changes
-    // First get the definition array created via the clone above
-    $defn_array = tripal_views_integration_export_entry($setup_id);
+      // And then make a few changes
+      // First get the definition array created via the clone above
+      $defn_array = tripal_views_integration_export_entry($setup_id);
 
-    // Then make some changes to the array here
+      // Then make some changes to the array here
 
-    // And finally save the changes to the integration
-    tripal_views_integration_update_entry($setup_id, $defn_array);
+      // And finally save the changes to the integration
+      tripal_views_integration_update_entry($setup_id, $defn_array);
+
+    }
 
   }
-
-}
  * @endcode
  *   2) Your module creates a chado table that is not already integrated.
  * @code
-mymodule_views_data() {
+  mymodule_views_data() {
 
-  // First check that your integration has not already been added
-  // When selecting a priority, do not choose 10 or 9 and make sure it is below 0
-  // so that individual sites still have the ability to override it, if needed
-  $table_name = 'my_chado_table';
-  $priority = 5;
-  if (!tripal_views_is_integrated($table_name, $priority)) {
+    // First check that your integration has not already been added
+    // When selecting a priority, do not choose 10 or 9 and make sure it is below 0
+    // so that individual sites still have the ability to override it, if needed
+    $table_name = 'my_chado_table';
+    $priority = 5;
+    if (!tripal_views_is_integrated($table_name, $priority)) {
 
-    // Describe your table using a large array as specified by tripal_views_integration_add_entry().
-    $defn_array = array(
-      'table' => $table_name, //tablename or materialized view name
-      'name' => 'My Chado Table', // Human readable name
-      'type' => 'chado', //either chado or mview depending on tablename
-      'description' => 'Create a listing from my chado table.', //description seen when creating a view of this type
-      'priority' => $priority, //For Base tripal modules: 10; custom modules: 9 to 0;
-      'base_table' => TRUE //either TRUE or FALSE depending on whether the current table should show up in the add view list
-      'fields' => array(
-        'feature_id' => array(
-          'name' => 'feature_id', //field name in database
-          'title' => 'Feature ID', //human-readable name -seen in Views UI
-          'description' => 'This is the unique identifier for features', //help/description seen in Views UI
-          'type' => 'int', // the type of field
-          'handlers' => array(  //possible keys are field, filter, sort, argument, relationship
-            'field' => array(
-              'name' => 'chado_views_handler_numeric' //name of handler
+      // Describe your table using a large array as specified by tripal_views_integration_add_entry().
+      $defn_array = array(
+        'table' => $table_name, //tablename or materialized view name
+        'name' => 'My Chado Table', // Human readable name
+        'type' => 'chado', //either chado or mview depending on tablename
+        'description' => 'Create a listing from my chado table.', //description seen when creating a view of this type
+        'priority' => $priority, //For Base tripal modules: 10; custom modules: 9 to 0;
+        'base_table' => TRUE //either TRUE or FALSE depending on whether the current table should show up in the add view list
+        'fields' => array(
+          'feature_id' => array(
+            'name' => 'feature_id', //field name in database
+            'title' => 'Feature ID', //human-readable name -seen in Views UI
+            'description' => 'This is the unique identifier for features', //help/description seen in Views UI
+            'type' => 'int', // the type of field
+            'handlers' => array(  //possible keys are field, filter, sort, argument, relationship
+              'field' => array(
+                'name' => 'chado_views_handler_numeric' //name of handler
+              ),
+              'filter' => array( ... ),
+              ...
             ),
-            'filter' => array( ... ),
-            ...
-          ),
-          'join' => array( //describe a table that joins to this one via this field
-            'table' => 'featureprop', //table to join to
-            'field' => 'feature_id', //field in above table (featureprop)
-            'handler' => 'views_handler_join_chado_aggregator', //handler to use
-          ),
-        )
-      ),
-    );
-    // Actually create the entry
-    tripal_views_integration_add_entry($defn_array);
+            'join' => array( //describe a table that joins to this one via this field
+              'table' => 'featureprop', //table to join to
+              'field' => 'feature_id', //field in above table (featureprop)
+              'handler' => 'views_handler_join_chado_aggregator', //handler to use
+            ),
+          )
+        ),
+      );
+      // Actually create the entry
+      tripal_views_integration_add_entry($defn_array);
+
+    }
 
   }
-
-}
  * @endcode
  * @}
  */
