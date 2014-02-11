@@ -13,6 +13,7 @@ function tripal_organism_views_default_views() {
   $views = array();
 
   $view = tripal_organism_admin_defaultview_organisms();
+  $view = tripal_views_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   return $views;

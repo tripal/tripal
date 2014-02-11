@@ -16,6 +16,7 @@ function tripal_analysis_views_default_views() {
   $views = array();
 
   $view = tripal_analysis_defaultvalue_admin_analysis();
+  $view = tripal_views_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   return $views;

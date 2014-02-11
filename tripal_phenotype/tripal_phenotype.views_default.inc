@@ -13,6 +13,7 @@ function tripal_phenotype_views_default_views() {
   $views = array();
 
   $view = tripal_phenotype_defaultview_admin_phenotypes();
+  $view = tripal_views_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   return $views;

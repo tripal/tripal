@@ -14,10 +14,12 @@ function tripal_db_views_default_views() {
 
   // Default Tripal Admin View: DB
   $view = tripal_db_defaultview_admin_db_listing();
+  $view = tripal_views_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   // Default Tripal Admin View: DB References
   $view = tripal_db_defaultview_admin_dbxref_listing();
+  $view = tripal_views_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   return $views;

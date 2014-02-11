@@ -13,6 +13,7 @@ function tripal_feature_views_default_views() {
   $views = array();
 
   $view = tripal_feature_defaultview_admin_features();
+  $view = tripal_views_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   return $views;

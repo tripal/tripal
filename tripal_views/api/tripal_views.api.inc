@@ -282,6 +282,106 @@ function tripal_views_admin_disable_view($view_name, $redirect_link = FALSE) {
 }
 
 /**
+ * Remove any drupal fields from a chado-based default view definition if chado is external.
+ * This ensures compatibility with an external chado database.
+ *
+ * You should be calling this function in your hook_views_default_views(). This function
+ * will only remove drupal tables if chado is external; thus you do not need to worry about
+ * checking yourself. For example, the following is a good hook_views_default_views():
+ * @code
+ function mymodule_views_default_views() {
+  $views = array();
+
+  // NOTE: <VIEW-TYPE> describes the type of view:
+  //     - 'admin' for views used for administration of your module
+  //     - 'search' for views used to search data
+  //     - 'list' for views used primarily as data listings
+
+  // <VIEW-HUMAN-READABLE-NAME>
+  $view = mymodule_defaultview_<VIEW-TYPE>_<VIEW-MACHINE-NAME>();
+  $view = tripal_views_make_view_compatible_with_external($view);
+  $views[$view->name] = $view;
+
+  // <VIEW-HUMAN-READABLE-NAME>
+  $view = mymodule_defaultview_<VIEW-TYPE>_<VIEW-MACHINE-NAME>();
+  $view = tripal_views_make_view_compatible_with_external($view);
+  $views[$view->name] = $view;
+
+  return $views;
+}
+
+function mymodule_defaultview_<VIEW-TYPE>_<VIEW-MACHINE-NAME>() {
+  // PASTE VIEWS EXPORT CODE HERE
+  return $view;
+}
+
+function mymodule_defaultview_<VIEW-TYPE>_<VIEW-MACHINE-NAME>() {
+  // PASTE VIEWS EXPORT CODE HERE
+  return $view;
+}
+ * @endcode
+ * Notice that the actual views export code is in a separate function. This makes your
+ * hook_views_default_views() more readable.
+ *
+ * NOTE: Currently assumes all tables not in the tripal views integration tables are Drupal tables.
+ *
+ * @param $view
+ *   The default view definition object
+ * @return
+ *   The default view with all relationships, fields, filters, sorts, arguements for
+ *   Drupal tables removed.
+ */
+function tripal_views_make_view_compatible_with_external($view) {
+  $remove_table = array();
+
+  // First check that the base table for the view is a chado table
+  // If it's not then don't do any filtering
+  $setup_id = tripal_views_is_integrated($view->base_table);
+  if (!$setup_id) {
+    return $view;
+  }
+
+  // IF chado is external then remove all config relating to drupal tables
+  if (!chado_is_local()) {
+
+    // Iterate through all displays
+    foreach ($view->display as $display_name => $display) {
+      $display_options = $display->handler->display->display_options;
+
+      $sections = array('fields', 'filters', 'sorts', 'relationships');
+      foreach ($sections as $section) {
+        $display_options[$section] = (isset($display_options[$section])) ? $display_options[$section] : array();
+        foreach ($display_options[$section] as $key => $defn) {
+          // If the table has not already been encountered; check if it's in tripal_views
+          if (!isset($remove_table[ $defn['table'] ])) {
+            // If the table is view then this is a general handler; thus keep
+            if ($defn['table'] == 'views') {
+              $remove_table[ $defn['table'] ] = FALSE;
+            }
+            // If this table is integrated then it is chado; thus keep
+            $setup_id = tripal_views_is_integrated($defn['table']);
+            if ($setup_id) {
+              $remove_table[ $defn['table'] ] = FALSE;
+            }
+            else {
+              $remove_table[ $defn['table'] ] = TRUE;
+            }
+          }
+
+          // Based on the $remove_table array, unset this field if its from a drupal table
+          if ($remove_table[ $defn['table'] ]) {
+            unset($view->display[$display_name]->handler->display->display_options[$section][$key]);
+          }
+        }
+      }
+
+    }
+  }
+
+  return $view;
+}
+
+/**
  * Retrieve the priority of the lightest priority for a given table.
  *
  * NOTE: Uses lightest priority (drupal-style) where the range is from -10 to 10

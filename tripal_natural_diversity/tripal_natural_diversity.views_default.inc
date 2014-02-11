@@ -14,18 +14,22 @@ function tripal_natural_diversity_views_default_views() {
 
   // Experiment Listing
   $view = tripal_natural_diversity_defaultview_admin_natdiv_exp();
+  $view = tripal_views_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   // List geolocations
   $view = tripal_natural_diversity_defaultview_admin_geolocations();
+  $view = tripal_views_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   // List protocols
   $view = tripal_natural_diversity_defaultview_admin_protocols();
+  $view = tripal_views_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   // List Reagents
   $view = tripal_natural_diversity_defaultview_admin_reagents();
+  $view = tripal_views_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   return $views;
