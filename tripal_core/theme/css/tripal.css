@@ -1,8 +1,8 @@
 /**
  * The Tripal generic node template (node--chado-generc.tpl.php)
- * has an outer div box with class 'tripal-contents' and with an inner 
+ * has an outer div box with class 'tripal-contents' and with an inner
  * table with an id of 'tripal-contents-table'.  The table has a single
- * row with two columns.  The smaller left column houses the table of 
+ * row with two columns.  The smaller left column houses the table of
  * contents (TOC) for the node data.  The larger right column houses the data:
  *
  * |-----------------------------------------------|
@@ -42,9 +42,9 @@
  * the table is meant for organizing the sidebar and contents so they don't
  * slip and slide around as would happen with div boxes that were floated.
  * Therefore, we use !important to keep the default theme from overrideing
- * the table settings. 
+ * the table settings.
  */
- 
+
 .tripal-contents-table tbody {
   padding: 0px !important;
   margin:  0px !important;
@@ -57,7 +57,7 @@
   border:  none !important;
   background-color: transparent !important;
 }
-.tripal-contents-table-td-toc { 
+.tripal-contents-table-td-toc {
   border-right: 1px solid #CCCCCC !important;
   margin:  0px !important;
   padding: 0px !important;
@@ -65,7 +65,7 @@
   text-align: left !important;
   vertical-align: top !important;
 }
-.tripal-contents-table-td-data { 
+.tripal-contents-table-td-data {
   border: none !important;
   margin:  0px !important;
   padding: 0px 0px 0px 20px !important;
@@ -76,7 +76,7 @@
 
 /**
  * The table of contents is an unordered list. The following can are used
- * to style the list 
+ * to style the list
  */
 .tripal_toc_list {
 
@@ -93,11 +93,11 @@
  * Column. Initially, the JavaScript hids all "blocks" except for the "Details"
  * block.  There will be as many blocks as there are TOC links.
  *
- * By default, all blocks have the following layout that consists of a 
+ * By default, all blocks have the following layout that consists of a
  * container div box with the class 'tripal-info-box', a div box to house the
  * block title with the class 'tripal-info-box-title', and a div box to
- * house a brief description about the block with the class 
- * 'tripal-info-box-desc' 
+ * house a brief description about the block with the class
+ * 'tripal-info-box-desc'
  *
  * |-----------------------------------------------|
  * |  .tripal-data-block                           |
@@ -129,7 +129,7 @@
 }
 
 /**
- * Within the block data 
+ * Within the block data
  */
  .tripal-data-table {
    margin-top: 0px;
@@ -139,7 +139,7 @@
 /******************************************************************************
  * The teaser appears anywhere that a small snippet of the content is required.
  * When any node in Drupal is published to the home page a teaser is used.
- * Teasers can also be used in views to provide lists of content. The 
+ * Teasers can also be used in views to provide lists of content. The
  * teaser template is similar to the block but with the following sections and
  * classes
  *
@@ -168,33 +168,45 @@
 
 /**
  * some nodes such as the organism node may have images. This class
- * is used to format any image that appears in the teaser 
+ * is used to format any image that appears in the teaser
  */
 .tripal-teaser-img {
-  width: 100px; 
-  float: left; 
-  padding-right: 10px; 
+  width: 100px;
+  float: left;
+  padding-right: 10px;
   padding-bottom: 5px;
 }
 
 /******************************************************************************
  * Administrative CSS classes
  *****************************************************************************/
- 
+
  /**
-  * This class is used when providing hints or other instructions to the 
+  * This class is used when providing hints or other instructions to the
   * site administrator
-  */ 
- 
-.tripal-site-admin-only {
+  */
+
+div.messages.tripal-site-admin-only{
   background-image: url("../images/TripalLogo-sm.png");
   background-repeat: no-repeat;
   background-color: #cce3ff;
   margin-top: 10px;
   margin-bottom: 10px;
-  border: 1px solid #888888;
+  border: 1px solid #7DA1D4;
   min-height: 50px;
   clear: both;
+}
+
+.tripal-serverity-string {
+  font-weight: bold;
+}
+
+.tripal-serverity-string.critical, .tripal-serverity-string.error {
+  color: #FF0000;
+}
+
+.tripal-serverity-string.warning {
+  color: #FF8000;
 }
 
 .tripal-site-admin-message {
@@ -204,6 +216,6 @@
 
 .tripal-site-admin-only-table-row {
   background-color: #cce3ff;
-  border: 1px solid #888888;
+  border: 1px solid #7DA1D4;
   color: black;
 }

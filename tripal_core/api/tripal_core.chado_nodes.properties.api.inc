@@ -136,7 +136,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
       $property_options = array();
       $property_options[] = 'Select a Property';
       $sql = "
-        SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition
+        SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition, CV.cv_id as cv_id
         FROM  {cvterm} CVT
           INNER JOIN {cv} CV ON CVT.cv_id = CV.cv_id
         WHERE
@@ -147,12 +147,17 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
       $prop_types = chado_query($sql, array(':cv_name' => $details['cv_name']));
       while ($prop = $prop_types->fetchObject()) {
         $property_options[$prop->cvterm_id] = $prop->name;
+        $details['cv_id'] = $prop->cv_id;
+      }
+      if (!isset($details['cv_id'])) {
+        $result = chado_select_record('cv',array('cv_id'),array('name' => $details['cv_name']));
+        $details['cv_id'] = $result[0]->cv_id;
       }
     } elseif (isset($details['cv_id'])) {
       $property_options = array();
       $property_options[] = 'Select a Property';
       $sql = "
-        SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition
+        SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition, CV.name as cv_name
         FROM  {cvterm} CVT
           INNER JOIN {cv} CV ON CVT.cv_id = CV.cv_id
         WHERE
@@ -163,8 +168,42 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
       $prop_types = chado_query($sql, array(':cv_id' => $details['cv_id']));
       while ($prop = $prop_types->fetchObject()) {
         $property_options[$prop->cvterm_id] = $prop->name;
+        $details['cv_name'] = $prop->cv_name;
+      }
+      if (!isset($details['cv_name'])) {
+        $result = chado_select_record('cv',array('name'),array('cv_id' => $details['cv_id']));
+        $details['cv_name'] = $result[0]->name;
       }
     }
+  }
+
+  // Tell tripal administrators how to add terms to the property types drop down.
+  if (empty($property_options)) {
+    $tripal_message = tripal_set_message(
+      t('There are currently no proeprty types! To add additional properties to the drop
+        down list, you need to <a href="@cvtermlink">add a controlled vocabulary term</a>
+        to the %cv_name controlled vocabulary.',
+        array(
+          '%cv_name' => $details['cv_name'],
+          '@cvtermlink' => url('admin/tripal/chado/tripal_cv/cv/'.$details['cv_id'].'/cvterm/add')
+        )
+      ),
+      TRIPAL_WARNING,
+      array('return_html' => TRUE)
+    );
+  }
+  else {
+    $tripal_message = tripal_set_message(
+      t('To add additional properties to the drop down list, you need to <a href="@cvtermlink">add
+        a controlled vocabulary term</a> to the %cv_name controlled vocabulary.',
+        array(
+          '%cv_name' => $details['cv_name'],
+          '@cvtermlink' => url('admin/tripal/chado/tripal_cv/cv/'.$details['cv_id'].'/cvterm/add')
+        )
+      ),
+      TRIPAL_INFO,
+      array('return_html' => TRUE)
+    );
   }
 
   // the fieldset of the property elements
@@ -173,11 +212,16 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     '#title' => t($details['fieldset_title']),
     '#description' => t('You may add additional properties by selecting a property type
       from the dropdown and adding text. You may add as many properties as desired by
-      clicking the add button on the right. To remove a property, click the remove button.
-      To add additional properties to the drop down. ' . $details['additional_instructions']),
+      clicking the add button on the right. To remove a property, click the remove button.'
+      . $details['additional_instructions']),
     '#prefix' => "<div id='properties-fieldset'>",
     '#suffix' => '</div>',
     '#weight'      => 8
+  );
+
+  $form['properties']['admin_message'] = array(
+    '#type' => 'markup',
+    '#markup' => $tripal_message
   );
 
   // this form element is a tree, so that we don't puke all of the values into then node variable

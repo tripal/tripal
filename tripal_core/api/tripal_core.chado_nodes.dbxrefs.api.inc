@@ -140,6 +140,19 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
     }
   }
 
+  // Tell tripal administrators how to add terms to the property types drop down.
+  $importance = (empty($db_options)) ? TRIPAL_WARNING : TRIPAL_INFO;
+  $tripal_message = tripal_set_message(
+    t('To add databases to the drop down list, you need to <a href="@dblink">add
+      an external database reference</a>.',
+      array(
+        '@dblink' => url('admin/tripal/chado/tripal_db/add')
+      )
+    ),
+    $importance,
+    array('return_html' => TRUE)
+  );
+
   // the fieldset of the dbxref elements
   $form['addtl_dbxrefs'] = array(
     '#type' => 'fieldset',
@@ -151,6 +164,11 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
     '#prefix' => "<div id='addtl-dbxrefs-fieldset'>",
     '#suffix' => '</div>',
     '#weight'      => 9
+  );
+
+  $form['addtl_dbxrefs']['admin_message'] = array(
+    '#type' => 'markup',
+    '#markup' => $tripal_message
   );
 
   // this form element is a tree, so that we don't puke all of the values into then node variable
