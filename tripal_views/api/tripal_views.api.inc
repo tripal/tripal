@@ -8,12 +8,281 @@
  * @defgroup tripal_views_api Tripal Views Module API
  * @ingroup tripal_api
  * @{
- * Provides functions for Tripal Views Integrations
+ * Provides functions to help extension modules add their own tripal views integrations
+ * as well as functions for managing default views.
+ *
+ * Managing Default Views:
+ *
+ * When you create administrative default views (or really any default view) you really
+ * have no way to ensure that the site administrator keeps these views enabled. In some
+ * cases this is a good thing and provides the site administrator the ability to disable
+ * views that don't apply to their particular installation or to replace your default view
+ * with a custom view of their own. But in other cases, particularily for administration
+ * views, you want to gaurd against accidental disabling of your views.
+ *
+ * One way to do this is to add a landing page using a heook_menu() definition to a custom
+ * callback returning HTML. You can use this page to render the view if it is enabled but
+ * provide logic to display a message if the view is disabled. Furthermore, it's often
+ * helpful to provide a link allowing site administrators to enable the view from your
+ * page rather than expecting them to go to the views administration UI. This is done for
+ * all the administration views provided by Tripal. The following is an example of how to
+ * achomplish this functionality for your own module:
+ * @code
+function mymodule_menu() {
+  $items = array();
+
+  // Create the landing page
+  $items['admin/tripal/<PATH-TO-YOUR-LANDING-PAGE>'] = array(
+    'title' => 'MyModule Administration',
+    'description' => 'Administration of my module.',
+    'page callback' => 'mymodule_admin_landing_page',
+    'access arguments' => array('<YOUR-PERMISSION-KEY>'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  // Create one of these for each of your default views
+  $items['admin/tripal/<PATH-TO-YOUR-ADMIN-SECTION>/views/<VIEW-MACHINE-NAME>/enable'] = array(
+    'title' => 'Enable <VIEW-HUMAN-READABLE-NAME>',
+    'page callback' => 'tripal_views_admin_enable_view',
+    'page arguments' => array('<VIEW-MACHINE-NAME>', '<PATH-TO-REDIRECT-TO-AFTERWARDS>'),
+    'access arguments' => array('<YOUR-PERMISSION-KEY>'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+function mymodule_admin_landing_page() {
+
+  // Get the View Embed Code
+  // This function will return FALSE if your view is not enabled
+  $view_code = views_embed_view('<VIEW-MACHINE-NAME>', '<DISPLAY-MACHINE-NAME');
+  // If your view is enabled then embed it in this page by returning the embed code
+  if (isset($view_code)) {
+    $output .= $view_code;
+  }
+  else {
+    // Provide the landing page with links to the menu item created in hook_menu to
+    // to enable your view
+    $output .= '<p>The My Module module uses primarily views to provide an '
+      . 'administrative interface. Currently one or more views needed for this '
+      . 'administrative interface are disabled. <strong>Click each of the following links to '
+      . 'enable the pertinent views</strong>:</p>';
+    $output .= '<ul>';
+    // NOTE: <URL-FROM-MENU-TO-ENABLE-VIEW> is
+    // admin/tripal/<PATH-TO-YOUR-ADMIN-SECTION>/views/<VIEW-MACHINE-NAME>/enable
+    // from above hook_menu().
+    $output .= '<li>' . l('<VIEW-HUMAN-RADABLE-NAME>', '<URL-FROM-MENU-TO-ENABLE-VIEW>') . '</li>';
+    $output .= '</ul>';
+  }
+
+  return $output;
+}
+
+ * @endcode
+ *
+ * Adding your own Tripal Views Integrations:
+ *
+ * One of the main ways the Tripal View API is likely to be used is if your module needs
+ * to create it's own tripal views integration. You might need to do this for any number of
+ * reasons but the following examples are thought to be the most common:
+ *
+ *   1) Your module wants to add handlers with better functionality to fields it has more
+ *       knowledge of than the general integration for all tables
+ * @code
+   mymodule_views_data() {
+
+    // First check that your integration has not already been added
+    // When selecting a priority, do not choose -10 or -9 and make sure it is below 0
+    // so that individual sites still have the ability to override it, if needed
+    $table_name = 'my_chado_table';
+    $priority = -5;
+    if (!tripal_views_is_integrated($table_name, $priority)) {
+
+      // If you really only need to tweak an existing integration you can clone it
+      // If you want to clone the integration that is currently taking priority
+      // then use tripal_views_get_table_lightest_priority() as below
+      $lightest_priority = tripal_views_get_table_lightest_priority($table_name);
+      $setup_id = tripal_views_clone_integration($table_name, $priority, $lightest_priority);
+
+      // And then make a few changes
+      // First get the definition array created via the clone above
+      $defn_array = tripal_views_integration_export_entry($setup_id);
+
+      // Then make some changes to the array here
+
+      // And finally save the changes to the integration
+      tripal_views_integration_update_entry($setup_id, $defn_array);
+
+    }
+
+  }
+ * @endcode
+ *   2) Your module creates a chado table that is not already integrated.
+ * @code
+  mymodule_views_data() {
+
+    // First check that your integration has not already been added
+    // When selecting a priority, do not choose 10 or 9 and make sure it is below 0
+    // so that individual sites still have the ability to override it, if needed
+    $table_name = 'my_chado_table';
+    $priority = 5;
+    if (!tripal_views_is_integrated($table_name, $priority)) {
+
+      // Describe your table using a large array as specified by tripal_views_integration_add_entry().
+      $defn_array = array(
+        'table' => $table_name, //tablename or materialized view name
+        'name' => 'My Chado Table', // Human readable name
+        'type' => 'chado', //either chado or mview depending on tablename
+        'description' => 'Create a listing from my chado table.', //description seen when creating a view of this type
+        'priority' => $priority, //For Base tripal modules: 10; custom modules: 9 to 0;
+        'base_table' => TRUE //either TRUE or FALSE depending on whether the current table should show up in the add view list
+        'fields' => array(
+          'feature_id' => array(
+            'name' => 'feature_id', //field name in database
+            'title' => 'Feature ID', //human-readable name -seen in Views UI
+            'description' => 'This is the unique identifier for features', //help/description seen in Views UI
+            'type' => 'int', // the type of field
+            'handlers' => array(  //possible keys are field, filter, sort, argument, relationship
+              'field' => array(
+                'name' => 'chado_views_handler_numeric' //name of handler
+              ),
+              'filter' => array( ... ),
+              ...
+            ),
+            'join' => array( //describe a table that joins to this one via this field
+              'table' => 'featureprop', //table to join to
+              'field' => 'feature_id', //field in above table (featureprop)
+              'handler' => 'views_handler_join_chado_aggregator', //handler to use
+            ),
+          )
+        ),
+      );
+      // Actually create the entry
+      tripal_views_integration_add_entry($defn_array);
+
+    }
+
+  }
+ * @endcode
  * @}
  */
 
 /**
- * Retrieve the priority of the lightest priority for a given table
+ * Programatically enable view
+ *
+ * This should be used in a hook_menu definition as the callback to provide a link
+ * to enable the view (first example). It can also be called directly if needed (second example).
+ * @code
+// Create a URL that when the user navigates there, a given view will be enabled.
+// You will still need to provide a link to this menu item somewhere appropriate (ie: an admin landing page).
+function mymodule_menu() {
+  $items = array();
+
+  // Create one of these for each of your default views
+  $items['admin/tripal/<PATH-TO-YOUR-ADMIN-SECTION>/views/<VIEW-MACHINE-NAME>/enable'] = array(
+    'title' => 'Enable <VIEW-HUMAN-READABLE-NAME>',
+    'page callback' => 'tripal_views_admin_enable_view',
+    'page arguments' => array('<VIEW-MACHINE-NAME>', '<PATH-TO-REDIRECT-TO-AFTERWARDS>'),
+    'access arguments' => array('<YOUR-PERMISSION-KEY>'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+// Call this function directly to disable a view
+// The example shows enabling your own default view when your module is enabled.
+// This might be useful if you disable your view when your module is disabled.
+function mymodule_enable() {
+
+  $view_name = '<VIEW-MACHINE-NAME>';
+  tripal_views_admin_enable_view($view_name);
+
+}
+ * @endcode
+ *
+ * @param $view_name
+ *   The machine-name of the view to be enabled
+ * @param $redirect_link
+ *   The path to redirect to. FALSE if no redirect needed
+ *
+ * @ingroup tripal_views_api
+ */
+function tripal_views_admin_enable_view($view_name, $redirect_link = FALSE) {
+
+  $status = variable_get('views_defaults', array());
+  if (isset($status[$view_name])) {
+    $status[$view_name] = FALSE;
+    variable_set('views_defaults', $status);
+    drupal_set_message("Successfully Enabled $view_name");
+  }
+  else {
+    drupal_set_message("Unable to find a view by the name of '$view_name'. Unable to enable this view.",'error');
+  }
+  if ($redirect_link) {
+    drupal_goto($redirect_link);
+  }
+}
+
+/**
+ * Programatically disable view.
+ *
+ * This should be used in a hook_menu definition as the callback to provide a link
+ * to disable the view (first example). It can also be called directly if needed (second example).
+ * @code
+// Create a URL that when the user navigates there, a given view will be disabled.
+// You will still need to provide a link to this menu item somewhere appropriate.
+function mymodule_menu() {
+  $items = array();
+
+  // Create one of these for each of your default views
+  $items['admin/tripal/<PATH-TO-YOUR-ADMIN-SECTION>/views/<VIEW-MACHINE-NAME>/disable'] = array(
+    'title' => 'Disable <VIEW-HUMAN-READABLE-NAME>',
+    'page callback' => 'tripal_views_admin_disable_view',
+    'page arguments' => array('<VIEW-MACHINE-NAME>', '<PATH-TO-REDIRECT-TO-AFTERWARDS>'),
+    'access arguments' => array('<YOUR-PERMISSION-KEY>'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+// Call this function directly to disable a view
+// The example shows disabling your own default view when your module is uninstalled
+function mymodule_uninstall() {
+
+  $view_name = '<VIEW-MACHINE-NAME>';
+  tripal_views_admin_disable_view($view_name);
+
+}
+ * @endcode
+ *
+ * @param $view_name
+ *   The machine-name of the view to be enabled
+ * @param $redirect_link
+ *   The path to redirect to. FALSE if no redirect needed
+ *
+ * @ingroup tripal_views_api
+ */
+function tripal_views_admin_disable_view($view_name, $redirect_link = FALSE) {
+
+  $status = variable_get('views_defaults', array());
+  if (isset($status[$view_name])) {
+    $status[$view_name] = TRUE;
+    variable_set('views_defaults', $status);
+    drupal_set_message("Disabled $view_name");
+  }
+  else {
+    drupal_set_message("Unable to find a view by the name of '$view_name'. Unable to disable this view.",'error');
+  }
+  if ($redirect_link) {
+    drupal_goto($redirect_link);
+  }
+}
+
+/**
+ * Retrieve the priority of the lightest priority for a given table.
  *
  * NOTE: Uses lightest priority (drupal-style) where the range is from -10 to 10
  * and -10 is of highest priority.
@@ -44,7 +313,7 @@ function tripal_views_get_table_lightest_priority($table_name) {
 }
 
 /**
- * Retrieve the views integration setup with the lightest priority for a given table
+ * Retrieve the views integration setup_id with the lightest priority for a given table
  *
  * NOTE: Uses lightest priority (drupal-style) where the range is from -10 to 10
  * and -10 is of highest priority.
@@ -73,7 +342,7 @@ function tripal_views_get_lightest_priority_setup($table_name) {
 }
 
 /**
- * Retrieve the views integration setup with the given priority/table combination
+ * Retrieve the views integration setup_id with the given priority/table combination.
  *
  * @param $table_name
  *   The name of the table to retrieve the setup ID for. This can be either a materialized
@@ -101,7 +370,7 @@ function tripal_views_get_setup_id($table_name, $priority) {
 }
 
 /**
- * Check to see if this table already has an integration record with the given priority
+ * Check to see if this table already has an integration record with the given priority.
  *
  * @param $table_name
  *   The name of the table to check for integration
@@ -138,7 +407,8 @@ function tripal_views_is_integrated($table_name, $priority = NULL) {
 }
 
 /**
- * Checks if you are dealing with the lightest priority setup for a given table
+ * Checks if you are dealing with the lightest priority setup for a given table. This is a
+ * good way to determine whether your modules integration is being used by views.
  *
  * @param $setup_id
  *   The ID of the setup to check (is this setup the lightest one?)
@@ -162,75 +432,13 @@ function tripal_views_is_lightest_priority_setup($setup_id, $table_name) {
 }
 
 /**
- * Programatically enable view
+ * Rebuilds all the default integrations.
  *
- * @param $view_name
- *   The machine-name of the view to be enabled
- * @param $redirect_link
- *   The path to redirect to. FALSE if no redirect needed
- *
- * @ingroup tripal_views_api
- */
-function tripal_views_admin_enable_view($view_name, $redirect_link = FALSE) {
-
-  $status = variable_get('views_defaults', array());
-  if (isset($status[$view_name])) {
-    $status[$view_name] = FALSE;
-    variable_set('views_defaults', $status);
-    drupal_set_message("Successfully Enabled $view_name");
-  }
-  else {
-    drupal_set_message("Unable to find a view by the name of '$view_name'. Unable to enable this view.",'error');
-  }
-  if ($redirect_link) {
-    drupal_goto($redirect_link);
-  }
-}
-
-/**
- * Programatically disable view
- *
- * @param $view_name
- *   The machine-name of the view to be enabled
- * @param $redirect_link
- *   The path to redirect to. FALSE if no redirect needed
- *
- * @ingroup tripal_views_api
- */
-function tripal_views_admin_disable_view($view_name, $redirect_link = FALSE) {
-
-  $status = variable_get('views_defaults', array());
-  if (isset($status[$view_name])) {
-    $status[$view_name] = TRUE;
-    variable_set('views_defaults', $status);
-    drupal_set_message("Disabled $view_name");
-  }
-  else {
-    drupal_set_message("Unable to find a view by the name of '$view_name'. Unable to disable this view.",'error');
-  }
-  if ($redirect_link) {
-    drupal_goto($redirect_link);
-  }
-}
-
-/**
- * Purpose: Deletes ALL Tripal Views Integrations.
- *
- * @ingroup tripal_views_api
- */
-function tripal_views_delete_all_integrations() {
-
-  db_query("DELETE FROM {tripal_views}");
-  db_query("DELETE FROM {tripal_views_field}");
-  db_query("DELETE FROM {tripal_views_handlers}");
-  db_query("DELETE FROM {tripal_views_join}");
-
-  drupal_set_message("Successfully deleted all views integration.");
-
-}
-
-/**
- * Rebuilds all the default integrations
+ * This essentially clears the cache in case you mess up the integrations in your site.
+ * This should not be used during module development since it really only rebuilds the
+ * integrations described by all enabled modules in the site and if $delete_first is
+ * TRUE it can delete custom integrations created by site administrators which will not
+ * make your module popular.
  *
  * @param $delete_first
  *   If TRUE then all integrations are first deleted.
@@ -248,7 +456,12 @@ function tripal_views_rebuild_views_integrations($delete_first = FALSE) {
 }
 
 /**
- * Add views integration records into the tripal_views* tables
+ * Add views integration records into the tripal_views* tables.
+ *
+ * This is the programatic way to add your own integrations to the tripal views integrations
+ * list. Keep in mind that the priority set in your $defn_array needs to be lighter than
+ * any existing integrations to be used by views and that it should still be below 0
+ * in order to allow site administrators to override it should they need to.
  *
  * @param $defn_array
  *   An array describing the structure and fields of the table
@@ -473,7 +686,12 @@ function tripal_views_integration_add_entry($defn_array) {
 }
 
 /**
- * Export Views integration records
+ * Export Views integration records.
+ *
+ * This is a great way to create your own integration since it returns an already defined
+ * integration in array form that you can modify. After modifications simply set the
+ * priority to something lighter (but still below 0) than any existing integrations
+ * and use tripal_views_integration_add_entry() to add it to the list of integrations.
  *
  * @param $setup_id
  *   The unique setup id of the tripal views integration
@@ -537,7 +755,13 @@ function tripal_views_integration_export_entry($setup_id) {
 }
 
 /**
- * Removes a View Integration Entry
+ * Removes a View Integration Entry when you only know the table the integration was
+ * created for and the priority.
+ *
+ * This should only be used to remove integrations created by your own module (possibly
+ * on uninstall of your module). To override existing integrations simply create your own
+ * integration with a lighter priority using tripal_views_clone_integration() or
+ * tripal_views_integration_export_entry() to create a template.
  *
  * @param $table_name
  *   The name of the table to remove a views integration entry for
@@ -571,7 +795,12 @@ function tripal_views_integration_remove_entry_by_table_name($table_name, $prior
 }
 
 /**
- * Removes a View Integration Entry
+ * Removes a View Integration Entry when you know the setup_id
+ *
+ * This should only be used to remove integrations created by your own module (possibly
+ * on uninstall of your module). To override existing integrations simply create your own
+ * integration with a lighter priority using tripal_views_clone_integration() or
+ * tripal_views_integration_export_entry() to create a template.
  *
  * @param $setup_id
  *   The setup ID of the views integration entry to remove
@@ -589,222 +818,9 @@ function tripal_views_integration_remove_entry_by_setup_id($setup_id) {
 }
 
 /**
- * Integrate all chado tables in the schema api.  This integration only occurs
- * once and sets all Chado tables to a priority of 10
- *
- * @ingroup tripal_views_api
- */
-function tripal_views_integrate_all_chado_tables() {
-
-  $tables = chado_get_table_names(TRUE);
-
-  $base_tables = array(
-    'acquisition', 'analysis', 'assay', 'biomaterial', 'contact', 'cv', 'cvterm',
-    'db', 'dbxref', 'environment', 'expression', 'feature', 'featuremap', 'genotype',
-    'library', 'nd_experiment', 'nd_geolocation', 'nd_protocol', 'nd_reagent',
-    'organism', 'phendesc', 'phenotype', 'phenstatement', 'phylonode', 'phylotree',
-    'project', 'protocol', 'pub', 'stock', 'study', 'synonym'
-  );
-
-  foreach ($tables as $tablename) {
-
-    $priority = 10;
-    if (!tripal_views_is_integrated($tablename, $priority)) {
-      if (in_array($tablename, $base_tables)) {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
-      }
-      else {
-        $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE, $priority);
-      }
-      if ($table_integration_array) {
-        tripal_views_integration_add_entry($table_integration_array);
-      }
-    }
-  }
-}
-
-/**
- * Returns the array needed to integrate a given chado table with views
- *
- * @param $tablename
- *   The table to generate the tripal views integration array for
- * @return
- *   The tripal views integration array which is the parameter for
- *   tripal_views_integration_add_entry($defn_array)
- *
- * @ingroup tripal_views_api
- */
-function tripal_views_get_integration_array_for_chado_table($table_name, $base_table = TRUE, $priority = 9) {
-
-  // Get the schema for this table (via the chado schema api)
-  $schema = chado_get_schema($table_name);
-
-  // Base definition array
-  $defn_array = array(
-    'table' => $table_name,
-    'type' => 'chado',
-    'name' => 'Chado ' . ucwords(str_replace('_', ' ', $table_name)),
-    'description' => (!empty($schema['description'])) ? $schema['description'] : ' ',
-    'priority' => $priority,
-    'base_table' => $base_table,
-    'fields' => array(),
-  );
-  // Add fields
-  if (!isset($schema['fields'])) {
-    tripal_report_error('tripal_views', TRIPAL_NOTICE,
-      'There are no fields defined for %table in the Chado Schema API.', array('%table' => $table_name));
-    return FALSE;
-  }
-  foreach ($schema['fields'] as $field_name => $field_schema) {
-
-    // Base field definition
-    if (!empty($field_name) && !empty($field_schema['type'])) {
-      $defn_array['fields'][$field_name] = array(
-        'name' => $field_name,
-        'title' => ucwords(str_replace('_', ' ', $field_name)),
-        'type' => $field_schema['type'],
-        'description' => (isset($field_schema['description'])) ? $field_schema['description'] : ucwords(str_replace('_', ' ', $field_name)),
-        'handlers' => array(),
-        'joins' => array()
-      );
-
-      // Add handlers based on type
-      if (preg_match('/^int/', $field_schema['type'])) {
-        $defn_array['fields'][$field_name]['handlers'] = array(
-          /** D6
-          'field' => array('name' => 'chado_views_handler_field_numeric'),
-          'filter' => array('name' => 'chado_views_handler_filter_numeric'),
-          'sort' => array('name' => 'chado_views_handler_sort'),
-          */
-          'field' => array('name' => 'views_handler_field_numeric'),
-          'filter' => array('name' => 'views_handler_filter_numeric'),
-          'sort' => array('name' => 'views_handler_sort'),
-        );
-      }
-      elseif (preg_match('/^serial/', $field_schema['type'])) {
-        $defn_array['fields'][$field_name]['handlers'] = array(
-          /** D6
-          'field' => array('name' => 'chado_views_handler_field_numeric'),
-          'filter' => array('name' => 'chado_views_handler_filter_numeric'),
-          'sort' => array('name' => 'chado_views_handler_sort'),
-          */
-          'field' => array('name' => 'views_handler_field_numeric'),
-          'filter' => array('name' => 'views_handler_filter_numeric'),
-          'sort' => array('name' => 'views_handler_sort'),
-        );
-        $defn_array['fields'][$field_name]['type'] = 'int';
-      }
-      elseif (preg_match('/^varchar/', $field_schema['type'])) {
-        $defn_array['fields'][$field_name]['handlers'] = array(
-          /** D6
-          'field' => array('name' => 'chado_views_handler_field'),
-          'filter' => array('name' => 'chado_views_handler_filter_string'),
-          'sort' => array('name' => 'chado_views_handler_sort'),
-          */
-          'field' => array('name' => 'views_handler_field'),
-          'filter' => array('name' => 'views_handler_filter_string'),
-          'sort' => array('name' => 'views_handler_sort'),
-        );
-      }
-      elseif (preg_match('/^text/', $field_schema['type'])) {
-        $defn_array['fields'][$field_name]['handlers'] = array(
-          /** D6
-          'field' => array('name' => 'chado_views_handler_field'),
-          'filter' => array('name' => 'chado_views_handler_filter_string'),
-          'sort' => array('name' => 'chado_views_handler_sort'),
-          */
-          'field' => array('name' => 'views_handler_field'),
-          'filter' => array('name' => 'views_handler_filter_string'),
-          'sort' => array('name' => 'views_handler_sort'),
-        );
-      }
-      elseif (preg_match('/^boolean/', $field_schema['type'])) {
-        $defn_array['fields'][$field_name]['handlers'] = array(
-          /**
-          'field' => array('name' => 'chado_views_handler_field_boolean'),
-          'filter' => array('name' => 'chado_views_handler_filter_boolean_operator'),
-          'sort' => array('name' => 'chado_views_handler_sort'),
-          */
-          'field' => array('name' => 'views_handler_field_boolean'),
-          'filter' => array('name' => 'views_handler_filter_boolean_operator'),
-          'sort' => array('name' => 'views_handler_sort'),
-        );
-      }
-      elseif (preg_match('/^datetime/', $field_schema['type'])) {
-        $defn_array['fields'][$field_name]['handlers'] = array(
-          /** D6
-          'field' => array('name' => 'chado_views_handler_field_date'),
-          'filter' => array('name' => 'chado_views_handler_filter_date'),
-          'sort' => array('name' => 'views_handler_sort_date'),
-          */
-          'field' => array('name' => 'views_handler_field_date'),
-          'filter' => array('name' => 'views_handler_filter_date'),
-          'sort' => array('name' => 'views_handler_sort_date'),
-        );
-      }
-      else {
-        $defn_array['fields'][$field_name]['handlers'] = array(
-          /** D6
-          'field' => array('name' => 'chado_views_handler_field'),
-          'filter' => array('name' => 'chado_views_handler_filter_string'),
-          'sort' => array('name' => 'chado_views_handler_sort'),
-          */
-          'field' => array('name' => 'views_handler_field'),
-          'filter' => array('name' => 'views_handler_filter_string'),
-          'sort' => array('name' => 'views_handler_sort'),
-        );
-      }
-
-      // Specify specialty handlers
-      if ($field_name == 'type_id' OR $field_name == 'cvterm_id') {
-        $defn_array['fields'][$field_name]['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_cvterm';
-      }
-      if (preg_match('/name/',$field_name)) {
-        $defn_array['fields'][$field_name]['handlers']['filter']['name'] = 'tripal_views_handler_filter_select_string';
-      }
-    }
-  }
-
-  // Add Joins & Relationships for foreign keys to fields
-  if (!isset($schema['foreign keys'])) {
-    $schema['foreign keys'] = array();
-  }
-  foreach ($schema['foreign keys'] as $foreign_key_schema) {
-    foreach ($foreign_key_schema['columns'] as $left_field => $right_field) {
-      // Join
-      $defn_array['fields'][$left_field]['joins'][ $foreign_key_schema['table'] ] = array(
-        'table' => $foreign_key_schema['table'],
-        'field' => $right_field,
-        /**D6 'handler' => 'views_handler_join_chado_aggregator'*/
-        'handler' => 'views_handler_join',
-        'relationship_handler' => 'views_handler_relationship',
-      );
-    }
-  }
-
-  // Add in reverse relationships
-  if (isset($schema['referring_tables'])) {
-    foreach ($schema['referring_tables'] as $referring_table) {
-
-      // D7 @todo: fix referring_tables in schema to list the keys like foreign keys does
-      $referring_schema = chado_get_schema($referring_table);
-      $referring_schema_fk_columns = $referring_schema['foreign keys'][$table_name]['columns'];
-      foreach ($referring_schema_fk_columns as $left_field => $right_field) {
-        $defn_array['fields'][$right_field]['joins'][ $referring_table ] = array(
-          'table' => $referring_table,
-          'field' => $left_field,
-          'relationship_handler' => 'views_handler_relationship',
-          'relationship_only' => 1
-        );
-      }
-    }
-  }
-
-  return $defn_array;
-}
-
-/**
- * Clone an integration
+ * Clone an integration. This is often a great way to create your own module-specific
+ * integration while still benifiting from an existing (or even the lightest priority)
+ * integration.
  *
  * @param $table_name
  *   The table for which you'd like to clone an integration
@@ -1021,7 +1037,8 @@ function tripal_views_add_field_to_integration($table_name, $priority, $field) {
 }
 
 /**
- * Remove a join from an integration
+ * Remove a join from an integration. This is usually done after cloning an existing
+ * integration using tripal_views_clone_integration().
  *
  * @param $setup_id
  *   The setup_id of the integration to delete the join from

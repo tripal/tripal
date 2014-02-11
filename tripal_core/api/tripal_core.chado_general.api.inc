@@ -40,118 +40,6 @@ require_once 'tripal_core.schema_v1.11.api.inc';
  *
  */
 
-// Globals used by Tripals Error catching functions
-// Should match those defined by watchdog
-define('TRIPAL_CRITICAL',2);
-define('TRIPAL_ERROR',3);
-define('TRIPAL_WARNING',4);
-define('TRIPAL_NOTICE',5);
-define('TRIPAL_INFO',6);
-define('TRIPAL_DEBUG',7);
-
-/**
- * Provide better error notice for Tripal
- * @param $type
- *   The catagory to which this message belongs. Can be any string, but the general
- *   practice is to use the name of the module.
- * @param $message
- *   The message to store in the log. Keep $message translatable by not concatenating
- *   dynamic values into it! Variables in the message should be added by using placeholder
- *   strings alongside the variables argument to declare the value of the placeholders.
- *   See t() for documentation on how $message and $variables interact.
- * @param $variables
- *   Array of variables to replace in the message on display or NULL if message is
- *   already translated or not possible to translate.
- * @param $severity
- *   The severity of the message; one of the following values:
- *     - TRIPAL_CRITICAL: Critical conditions.
- *     - TRIPAL_ERROR: Error conditions.
- *     - TRIPAL_WARNING: Warning conditions.
- *     - TRIPAL_NOTICE: (default) Normal but significant conditions.
- *     - TRIPAL_INFO: Informational messages.
- *     - TRIPAL_DEBUG: Debug-level messages.
- * @param $options
- *   An array of options. Some available options include:
- *     - print: prints the error message to the terminal screen. Useful when display is the command-line
- *
- * @ingroup tripal_chado_api
- */
-function tripal_report_error($type, $severity, $message, $variables = array(), $options = array()) {
-
-  // Get human-readable severity string
-  $severity_string = '';
-  switch ($severity) {
-    case TRIPAL_CRITICAL:
-      $severity_string = 'CRITICAL';
-      break;
-    case TRIPAL_ERROR:
-      $severity_string = 'ERROR';
-      break;
-    case TRIPAL_WARNING:
-      $severity_string = 'WARNING';
-      break;
-    case TRIPAL_NOTICE:
-      $severity_string = 'NOTICE';
-      break;
-    case TRIPAL_INFO:
-      $severity_string = 'INFO';
-      break;
-    case TRIPAL_DEBUG:
-      $severity_string = 'DEBUG';
-      break;
-  }
-
-  // Send to watchdog
-  try {
-    watchdog($type, $message, $variables, $severity);
-  }
-  catch (Exception $e) {
-    print "CRITICAL (TRIPAL_CORE): Unable to register error message with watchdog";
-    $options['print'] = TRUE;
-  }
-
-  // If print option supplied then print directly to the screen
-  if (isset($options['print'])) {
-    if (sizeof($variables) > 0) {
-      $message = str_replace(array_keys($variables), $variables, $message);
-    }
-    print $severity_string . ' (' . strtoupper($type) . '):' . $message . "\n";
-  }
-}
-
-/**
- * Get chado id for a node. E.g, if you want to get 'analysis_id' from the
- * 'analysis' table for a synced 'chado_analysis' node, (the same for
- * organisms and features):
- * $analysis_id = chado_get_id_from_nid ('analysis', $node->nid)
- * $organism_id = chado_get_id_from_nid ('organism', $node->nid)
- * $feature_id  = chado_get_id_from_nid ('feature', $node->nid)
- *
- * @param $table
- * @param $nid
- *
- * @ingroup tripal_chado_api
- */
-function chado_get_id_from_nid($table, $nid) {
-  $sql = "SELECT " . $table . "_id as id FROM {chado_$table} WHERE nid = :nid";
-  return db_query($sql, array(':nid' => $nid))->fetchField();
-}
-
-/**
- *  Get node id for a chado feature/organism/analysis. E.g, if you want to
- *  get the node id for an analysis, use:
- *  $nid = chado_get_nid_from_id ('analysis', $analysis_id)
- *  Likewise,
- *  $nid = chado_get_nid_from_id ('organism', $organism_id)
- *  $nid = chado_get_nid_from_id ('feature', $feature_id)
- *
- *  @ingroup tripal_chado_api
- */
-function chado_get_nid_from_id($table, $id) {
-  $sql = "SELECT nid FROM {chado_$table} WHERE " . $table . "_id = :" . $table . "_id";
-  return db_query($sql, array(":" . $table . "_id" => $id))->fetchField();
-}
-
 /**
  * Set the Tripal Database
  *
@@ -234,27 +122,275 @@ function chado_get_table_max_rank($tablename, $where_options) {
 }
 
 /**
- * Use this function to encapsulate text intended to be
- * visible only by the site administrator. A small tripal logo
- * appears alongside the text.  Do not call this function directly, but
- * rather, use the theme() function:
+ * Retrieve a property for a given base table record
  *
- *   theme('tripal_admin_message', array('message' => $my_message));
+ * @param $basetable
+ *   The base table for which the property should be retrieved. Thus to retrieve a property
+ *   for a feature the basetable=feature and property is retrieved from featureprop
+ * @param $record_id
+ *   The foriegn key field of the base table. This should be in integer.
+ * @param $property
+ *   The cvterm name describing the type of properties to be retrieved
+ * @param $cv_name
+ *   The name of the cv that the above cvterm is part of
  *
- * @param $message
- *   The message to be displayed to the site administrator
+ * @return
+ *   An array in the same format as that generated by the function
+ *   chado_generate_var().  If only one record is returned it
+ *   is a single object.  If more than one record is returned then it is an array
+ *   of objects
  *
  * @ingroup tripal_chado_api
  */
-function theme_tripal_admin_message($variables) {
+function chado_get_property($basetable, $record_id, $property, $cv_name, $property_id = FALSE) {
+  // get the foreign key for this property table
+  $table_desc = chado_get_schema($basetable . 'prop');
+  $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
 
-  $message = $variables['message'];
-
-  if (!user_access('access administration pages')) {
-    return '';
+  // construct the array of values to be selected
+  $values = array(
+    $fkcol => $record_id,
+    'type_id' => array(
+      'cv_id' => array(
+        'name' => $cv_name,
+      ),
+      'name' => $property,
+      'is_obsolete' => 0
+    ),
+  );
+  // if we have the unique property_id make sure to add that to the values
+  if ($property_id) {
+    $property_pkey = $table_desc['primary key'][0];
+    $values[$property_pkey] = $property_id;
   }
-  return "
-    <div class=\"tripal-site-admin-only\">
-      <div class=\"tripal-site-admin-message\">$message</div>
-    </div>";
+  $results = chado_generate_var($basetable . 'prop', $values);
+  if ($results) {
+    $results = chado_expand_var($results, 'field', $basetable . 'prop.value');
+  }
+
+  return $results;
+}
+
+/**
+ * Insert a property for a given base table.  By default if the property already
+ * exists a new property is added with the next available rank.  If
+ * $update_if_present argument is specified then the record will be updated if it
+ * exists rather than adding a new property.
+ *
+ * @param $basetable
+ *   The base table for which the property should be inserted. Thus to insert a property
+ *   for a feature the basetable=feature and property is inserted into featureprop
+ * @param $record_id
+ *   The foriegn key value of the base table. This should be in integer.
+ * @param $property
+ *   The cvterm name describing the type of properties to be inserted
+ * @param $cv_name
+ *   The name of the cv that the above cvterm is part of
+ * @param $value
+ *   The value of the property to be inserted (can be empty)
+ * @param $update_if_present
+ *   A boolean indicating whether an existing record should be updated. If the
+ *   property already exists and this value is not specified or is zero then
+ *   a new property will be added with the next largest rank.
+ *
+ * @return
+ *   Return True on Insert/Update and False otherwise
+ *
+ * @ingroup tripal_chado_api
+ */
+function chado_insert_property($basetable, $record_id, $property,
+$cv_name, $value, $update_if_present = 0) {
+
+  // first see if the property already exists, if the user want's to update
+  // then we can do that, but otherwise we want to increment the rank and
+  // insert
+  $props = chado_get_property($basetable, $record_id, $property, $cv_name);
+  if (!is_array($props) and $props) {
+    $props = array($props);
+  }
+
+  $rank = 0;
+  if (count($props) > 0) {
+    if ($update_if_present) {
+      return chado_update_property($basetable, $record_id, $property, $cv_name, $value);
+    }
+    else {
+      // iterate through the properties returned and check to see if the
+      // property with this value already exists if not, get the largest rank
+      // and insert the same property but with this new value
+      foreach ($props as $p) {
+        if ($p->rank > $rank) {
+          $rank = $p->rank;
+        }
+        if (strcmp($p->value, $value) == 0) {
+          return TRUE;
+        }
+      }
+      // now add 1 to the rank
+      $rank++;
+    }
+  }
+
+  // make sure the cvterm exists.  Otherwise we'll get an error with
+  // prepared statements not matching
+  $values = array(
+    'cv_id' => array(
+      'name' => $cv_name,
+    ),
+    'name' => $property,
+  );
+
+  $options = array();
+  $term = chado_select_record('cvterm', array('cvterm_id'), $values, $options);
+  if (!$term or count($term) == 0) {
+    tripal_report_error('tripal_core', TRIPAL_ERROR, "Cannot find property '%prop_name' in vocabulary '%cvname'.",
+    array('%prop_name' => $property, '%cvname' => $cv_name));
+    return FALSE;
+  }
+
+  // get the foreign key for this property table
+  $table_desc = chado_get_schema($basetable . 'prop');
+  $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
+
+  // construct the array of values to be inserted
+  $values = array(
+    $fkcol => $record_id,
+    'type_id' => array(
+      'cv_id' => array(
+        'name' => $cv_name,
+      ),
+      'name' => $property,
+    ),
+    'value' => $value,
+    'rank' => $rank,
+  );
+
+  $options = array();
+  $result = chado_insert_record($basetable . 'prop', $values, $options);
+  return $result;
+}
+
+/**
+ * Update a property for a given base table record and property name.  This
+ * function should be used only if one record of the property will be present.
+ * If the property name can have multiple entries (with increasing rank) then
+ * use the function named chado_update_propertyID
+ *
+ * @param $basetable
+ *   The base table for which the property should be updated. The property table
+ *   is constructed using  a combination of the base table name and the suffix
+ *   'prop' (e.g. basetable = feature then property tabie is featureprop).
+ * @param $record_id
+ *   The foreign key of the basetable to update a property for. This should be in integer.
+ *   For example, if the basetable is 'feature' then the $record_id should be the feature_id
+ * @param $property
+ *   The cvterm name of property to be updated
+ * @param $cv_name
+ *   The name of the cv that the above cvterm is part of
+ * @param $value
+ *   The value of the property to be inserted (can be empty)
+ * @param $insert_if_missing
+ *   A boolean indicating whether a record should be inserted if one doesn't exist to update
+ *
+ * Note: The property to be updated is select via the unique combination of $record_id and
+ * $property and then it is updated with the supplied value
+ *
+ * @return
+ *   Return True on Update/Insert and False otherwise
+ *
+ * @ingroup tripal_chado_api
+ */
+function chado_update_property($basetable, $record_id, $property,
+$cv_name, $value, $insert_if_missing = FALSE, $property_id = FALSE) {
+
+  // first see if the property is missing (we can't update a missing property
+  $prop = chado_get_property($basetable, $record_id, $property, $cv_name, $property_id);
+  if (count($prop)==0) {
+    if ($insert_if_missing) {
+      return chado_insert_property($basetable, $record_id, $property, $cv_name, $value);
+    }
+    else {
+      return FALSE;
+    }
+  }
+
+  // get the foreign key for this property table
+  $table_desc = chado_get_schema($basetable . 'prop');
+  $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
+
+  // construct the array that will match the exact record to update
+  $match = array(
+    $fkcol => $record_id,
+    'type_id' => array(
+      'cv_id' => array(
+        'name' => $cv_name,
+      ),
+      'name' => $property,
+    ),
+  );
+  // If we have the unique property_id, make sure to use it in the match to ensure
+  // we get the exact record. Doesn't rely on there only being one property of that type
+  if ($property_id) {
+    $property_pkey = $table_desc['primary key'][0];
+    $match = array(
+      $property_pkey => $property_id
+    );
+  }
+
+  // construct the array of values to be updated
+  $values = array(
+    'value' => $value,
+  );
+  // If we have the unique property_id then we can also update the type
+  // thus add it to the values to be updated
+  if ($property_id) {
+    $values['type_id'] = array(
+      'cv_id' => array(
+        'name' => $cv_name,
+      ),
+      'name' => $property,
+    );
+  }
+
+  return chado_update_record($basetable . 'prop', $match, $values);
+}
+
+/**
+ * Deletes a property for a given base table record using the property name
+ *
+ * @param $basetable
+ *   The base table for which the property should be deleted. Thus to deleted a property
+ *   for a feature the basetable=feature and property is deleted from featureprop
+ * @param $record_id
+ *   The primary key of the basetable to delete a property for. This should be in integer.
+ * @param $property
+ *   The cvterm name describing the type of property to be deleted
+ * @param $cv_name
+ *   The name of the cv that the above cvterm is part of
+ *
+ * Note: The property to be deleted is select via the unique combination of $record_id and $property
+ *
+ * @return
+ *   Return True on Delete and False otherwise
+ *
+ * @ingroup tripal_chado_api
+ */
+function chado_delete_property($basetable, $record_id, $property, $cv_name) {
+
+  // get the foreign key for this property table
+  $table_desc = chado_get_schema($basetable . 'prop');
+  $fkcol = key($table_desc['foreign keys'][$basetable]['columns']);
+
+  // construct the array that will match the exact record to update
+  $match = array(
+    $fkcol => $record_id,
+    'type_id' => array(
+      'cv_id' => array(
+        'name' => $cv_name,
+      ),
+      'name' => $property,
+    ),
+  );
+
+  return chado_delete_record($basetable . 'prop', $match);
 }

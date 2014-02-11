@@ -6,7 +6,7 @@
  */
 
 /**
- * @defgroup tripal_files_api Files API
+ * @defgroup tripal_files_api Tripal Files API
  * @ingroup tripal_core_api
  * @{
  * Provides an application programming interface (API) for managing files within
@@ -47,7 +47,7 @@ function tripal_create_files_dir($module_name, $path = FALSE) {
     // make sure the module data directory exists, we make a recursive call
     // but without the path
     tripal_create_files_dir($module_name);
-  
+
     // now make sure the sub dir exists
     $sub_dir = tripal_get_files_dir() . $module_name . $path;
     if (!file_prepare_directory($sub_dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {

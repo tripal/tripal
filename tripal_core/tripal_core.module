@@ -4,36 +4,6 @@
  * The Tripal Core module
  */
 
- /**
- * @defgroup tripal_modules Tripal Modules
- * @{
- * All documented functions for the various Tripal Modules excluding API functions and Views Integration functions.
- * @}
- */
-
-/**
- * @defgroup tripal_api Tripal API
- * @{
- * Provides an application programming interface (API) for Tripal
- *
- * The Tripal API currently provides generic insert/update/select functions for all chado content as
- * well as some module specific functions that insert/update/delete/select specific chado content.
- *
- * This API is currently in its infancy and some necessary functions might be missing. If you find
- * a missing function that you think should be included go to the sourceforge feature request
- * page and request it's inclusion in the API. Such feature requests with a working function
- * definition will be given priority.
- * @}
- */
-
- /**
- * @defgroup tripal_core_api Core Module API
- * @ingroup tripal_api
- * @{
- * Functions providing support for all Tripal modules.
- * @}
- */
-
 /**
  * @defgroup tripal_core Tripal Core Module
  * @ingroup tripal_modules
@@ -61,6 +31,7 @@ require_once 'api/tripal_core.mviews.api.inc';
 // Miscellaneous API
 require_once 'api/tripal_core.files.api.inc';
 require_once 'api/tripal_core.jobs.api.inc';
+require_once 'api/tripal_core.tripal.api.inc';
 
 require_once 'api/tripal_core.DEPRECATED.inc';
 

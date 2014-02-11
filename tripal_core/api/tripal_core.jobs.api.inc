@@ -6,7 +6,7 @@
  */
 
 /**
- * @defgroup tripal_jobs_api Jobs API
+ * @defgroup tripal_jobs_api Tripal Jobs API
  * @ingroup tripal_core_api
  * @{
  * Tripal offers a job management subsystem for managing tasks that may require an extended period of time for
