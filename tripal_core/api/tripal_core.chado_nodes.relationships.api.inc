@@ -147,6 +147,17 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
   }
   else {
     if (isset($details['cv_name'])) {
+      // make sure the cv_name is real
+      $result = chado_select_record('cv',array('cv_id'),array('name' => $details['cv_name']));
+      if (count($result) == 0) {
+        drupal_set_message("Cannot add relationship elements to the form. The CV name, '" . $details['cv_name'] . "', does not exists", "error");
+        tripal_report_error('tcrels_form', TRIPAL_ERROR, "Cannot add relationship elements to the form. The CV named, '%name',
+          cannot be found.", array('%name' => $details['cv_name']));
+        return;
+      }
+      // add the cv_id option to the details array
+      $details['cv_id'] = $result[0]->cv_id;
+      
       $type_options = array();
       $type_options[] = 'Select a Property';
       $sql = "
@@ -163,11 +174,19 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
         $type_options[$prop->cvterm_id] = $prop->name;
         $details['cv_id'] = $prop->cv_id;
       }
-      if (!isset($details['cv_id'])) {
-        $result = chado_select_record('cv',array('cv_id'),array('name' => $details['cv_name']));
-        $details['cv_id'] = $result[0]->cv_id;
+    } 
+    elseif (isset($details['cv_id'])) {
+      // make sure the cv_id is real
+      $result = chado_select_record('cv', array('name'), array('cv_id' => $details['cv_id']));
+      if (count($result) == 0) {
+        drupal_set_message("Cannot add relationships elements to the form. The CV ID, '" . $details['cv_id'] . "', does not exist", "error");
+        tripal_report_error('tcprops_form', TRIPAL_ERROR, "Cannot add relationship elements to the form. The CV ID, '%id',
+          cannot be found.", array('%id' => $details['cv_id']));
+        return;
       }
-    } elseif (isset($details['cv_id'])) {
+      // add the cv_name option to the details array
+      $details['cv_name'] = $result[0]->name;
+      
       $type_options = array();
       $type_options[] = 'Select a Property';
       $sql = "
@@ -183,10 +202,6 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
       while ($prop = $prop_types->fetchObject()) {
         $type_options[$prop->cvterm_id] = $prop->name;
         $details['cv_name'] = $prop->cv_name;
-      }
-      if (!isset($details['cv_name'])) {
-        $result = chado_select_record('cv',array('name'),array('cv_id' => $details['cv_id']));
-        $details['cv_name'] = $result[0]->name;
       }
     }
   }
