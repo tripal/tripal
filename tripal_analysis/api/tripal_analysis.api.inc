@@ -22,7 +22,7 @@
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_analysis_api_register_child($modulename) {
+function tripal_analysis_register_child($modulename) {
   $sql = "SELECT * FROM {tripal_analysis_api} WHERE modulename = :modname";
   if (!db_query($sql, array(':modname' => $modulename))->fetchField()) {
     $sql = "INSERT INTO {tripal_analysis_api} (modulename) VALUES (:modname)";
@@ -38,7 +38,7 @@ function tripal_analysis_api_register_child($modulename) {
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_analysis_api_unregister_child($modulename) {
+function tripal_analysis_unregister_child($modulename) {
   if (db_table_exists('tripal_analysis_api')) {
       $sql = "DELETE FROM {tripal_analysis_api} WHERE modulename = :modname";
       db_query($sql, array(':modname' => $modulename));
@@ -60,7 +60,7 @@ function tripal_analysis_api_unregister_child($modulename) {
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_analysis_api_get_property($analysis_id, $property, $cvname = 'tripal') {
+function tripal_analysis_get_property($analysis_id, $property, $cvname = 'tripal') {
   return chado_get_property('analysis', $analysis_id, $property, $cvname);
 }
 
@@ -83,7 +83,7 @@ function tripal_analysis_api_get_property($analysis_id, $property, $cvname = 'tr
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_analysis_api_insert_property($analysis_id, $property, $value, $update_if_present = 0, $cvname = 'tripal') {
+function tripal_analysis_insert_property($analysis_id, $property, $value, $update_if_present = 0, $cvname = 'tripal') {
     return chado_insert_property('analysis', $analysis_id, $property, $cvname, $value, $update_if_present);
 }
 
@@ -109,7 +109,7 @@ function tripal_analysis_api_insert_property($analysis_id, $property, $value, $u
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_analysis_api_update_property($analysis_id, $property, $value, $insert_if_missing = 0, $cvname = 'tripal') {
+function tripal_analysis_update_property($analysis_id, $property, $value, $insert_if_missing = 0, $cvname = 'tripal') {
   return chado_update_property('analysis', $analysis_id, $property, $cvname, $value, $insert_if_missing);
 }
 
@@ -131,7 +131,7 @@ function tripal_analysis_api_update_property($analysis_id, $property, $value, $i
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_analysis_api_delete_property($analysis_id, $property, $cvname = 'tripal') {
+function tripal_analysis_delete_property($analysis_id, $property, $cvname = 'tripal') {
   return chado_delete_property('analysis', $analysis_id, $property, $cvname);
 }
 
@@ -146,7 +146,7 @@ function tripal_analysis_api_delete_property($analysis_id, $property, $cvname = 
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_analysis_api_get_node($analysis_id) {
+function tripal_analysis_get_node($analysis_id) {
   $sql = "SELECT *
            FROM {chado_analysis} CA
               INNER JOIN {node} N on CA.nid = N.nid
