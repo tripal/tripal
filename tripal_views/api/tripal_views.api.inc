@@ -604,7 +604,7 @@ function tripal_views_rebuild_views_integrations($delete_first = FALSE) {
  *
  * @ingroup tripal_views_api
  */
-function tripal_views_integration_add_entry($defn_array) {
+function tripal_views_integration_add_entry($defn_array, $setup_id = FALSE) {
   $no_errors = TRUE;
 
   if (empty($defn_array['table'])) {
@@ -621,6 +621,9 @@ function tripal_views_integration_add_entry($defn_array) {
     'priority' => $defn_array['priority'],
     'base_table' => $defn_array['base_table'],
   );
+  if ($setup_id) {
+    $view_record['setup_id'] = $setup_id;
+  }
   if ($defn_array['type'] == 'mview') {
     // D7 TODO: Check DBTNG changes work
     $mview = db_query("SELECT mview_id FROM {tripal_mviews} WHERE mv_table=:table", array(':table' => $defn_array['table']));
@@ -915,6 +918,26 @@ function tripal_views_integration_remove_entry_by_setup_id($setup_id) {
     db_query('DELETE FROM {tripal_views_handlers} WHERE setup_id=:setup', array(':setup' => $setup_id));
     db_query('DELETE FROM {tripal_views_join} WHERE setup_id=:setup', array(':setup' => $setup_id));
 
+}
+
+/**
+ * Update an existing Views Intregration Entry.
+ * This essentially removes and then re-adds the integration.
+ *
+ * @param $setup_id
+ *   The setup ID of the views integration entry to update
+ * @param $defn_array
+ *   An array describing the structure and fields of the table as is used in
+ *   tripal_views_integration_add_entry().
+ *
+ * @ingroup tripal_views_api
+ */
+function tripal_views_integration_update_entry($setup_id, $defn_array) {
+
+  tripal_views_integration_remove_entry_by_setup_id($setup_id);
+
+  $defn_array['additional_content'] = TRUE;
+  tripal_views_integration_add_entry($def_array, $setup_id);
 }
 
 /**
