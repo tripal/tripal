@@ -128,6 +128,13 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
  *         The default is FALSE.
  */
 function tripal_set_message($message, $importance = TRIPAL_INFO, $options = array()) {
+  global $user;
+
+  // Only show the message to the administrator user (uid=1)
+  // thus if the current user is not the administrator then return nothing
+  if ($user->uid > 1) {
+    return '';
+  }
 
   // set defaults
   $options['return_html'] = (isset($options['return_html'])) ? $options['return_html'] : FALSE;
