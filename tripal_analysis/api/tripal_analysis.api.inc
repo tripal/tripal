@@ -23,9 +23,9 @@
  * @ingroup tripal_analysis_api
  */
 function tripal_analysis_register_child($modulename) {
-  $sql = "SELECT * FROM {tripal_analysis_api} WHERE modulename = :modname";
+  $sql = "SELECT * FROM {tripal_analysis} WHERE modulename = :modname";
   if (!db_query($sql, array(':modname' => $modulename))->fetchField()) {
-    $sql = "INSERT INTO {tripal_analysis_api} (modulename) VALUES (:modname)";
+    $sql = "INSERT INTO {tripal_analysis} (modulename) VALUES (:modname)";
     db_query($sql, array(':modname' => $modulename));
   }
 }
@@ -39,8 +39,8 @@ function tripal_analysis_register_child($modulename) {
  * @ingroup tripal_analysis_api
  */
 function tripal_analysis_unregister_child($modulename) {
-  if (db_table_exists('tripal_analysis_api')) {
-      $sql = "DELETE FROM {tripal_analysis_api} WHERE modulename = :modname";
+  if (db_table_exists('tripal_analysis')) {
+      $sql = "DELETE FROM {tripal_analysis} WHERE modulename = :modname";
       db_query($sql, array(':modname' => $modulename));
   }
 }
