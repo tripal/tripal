@@ -138,8 +138,7 @@ function chado_featuremap_form($node, &$form_state) {
   $instructions = t('To add additional properties to the drop down. ' . l("Add terms to the featuremap_property vocabulary", "admin/tripal/chado/tripal_cv/cvterm/add") . ".");
   $details = array(
     'property_table' => 'featuremapprop',
-    'base_foreign_key' => 'featuremap_id',
-    'base_key_value' => $featuremap_id,
+    'chado_id' => $featuremap_id,
     'cv_name' => 'featuremap_property',
     'fieldset_name' => 'Additional Details',
     'additional_instructions' => $instructions

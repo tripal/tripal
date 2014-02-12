@@ -145,8 +145,7 @@ function chado_example_form($node, &$form_state) {
   // from it through your node form then add this section to your own node form
   $details = array(
     'property_table' => 'exampleprop',      // the name of the prop table
-    'base_foreign_key' => 'example_id',     // the name of the key in your base chado table
-    'base_key_value' => $example_id,        // the value of example_id for this record
+    'chado_id' => $example_id,              // the value of example_id for this record
     'cv_name' => 'example_property_types'   // the cv.name of the cv governing exampleprop.type_id
   );
   // Adds the form elements to your current form

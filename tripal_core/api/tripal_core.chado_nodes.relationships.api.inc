@@ -106,7 +106,7 @@
  *   An array defining details needed by this form. Required Keys are:
  *     - relationship_table: the name of the relationship table (ie: feature_relationship)
  *     - base_table: the name of the base table (ie: feature)
- *     - base_foreign_key: the name of the foreign key linking this table to the non-relationship table (ie: feature_id)
+ *     - base_foreign_key: the name of the foreign key in the relationship table field linking this table to the non-relationship table (ie: feature_id)
  *     - base_key_value: the value of the base_foreign_key for the current form (ie: 999 if the feature_id=999)
  *     - nodetype: the non-translated singular title of this node type
  *   One of the following:
@@ -126,6 +126,50 @@
  */
 function chado_add_node_form_relationships(&$form, &$form_state, $details) {
 
+  // make sure the property table exists before proceeding.
+  if (!chado_table_exists($details['relationship_table'])) {
+    drupal_set_message("Cannot add relationship elements to the form. The relationship table, '" .
+      $details['relationship_table'] . "', does not exists", "error");
+    tripal_report_error('tcprops_form', TRIPAL_ERROR, "Cannot add relationship elements to the form.
+      The relationship table, '%name', cannot be found.", array('%name' => $details['relationship_table']));
+    return;
+  }
+  
+  // make sure the specified cv exists
+  if (isset($details['cv_name'])) {
+    // make sure the cv_name is real
+    $result = chado_select_record('cv',array('cv_id'),array('name' => $details['cv_name']));
+    if (count($result) == 0) {
+      drupal_set_message("Cannot add relationship elements to the form. The CV name, '" .
+          $details['cv_name'] . "', does not exists", "error");
+          tripal_report_error('tcprops_form', TRIPAL_ERROR, "Cannot add relationship elements to the form.
+        The CV named, '%name', cannot be found.", array('%name' => $details['cv_name']));
+          return;
+    }
+    // add the cv_id option to the details array
+    $details['cv_id'] = $result[0]->cv_id;
+  }
+  elseif (isset($details['cv_id'])) {
+    // make sure the cv_id is real
+    $result = chado_select_record('cv', array('name'), array('cv_id' => $details['cv_id']));
+    if (count($result) == 0) {
+      drupal_set_message("Cannot add relationship elements to the form. The CV ID, '" .
+          $details['cv_id'] . "', does not exist", "error");
+          tripal_report_error('tcprops_form', TRIPAL_ERROR, "Cannot add relationship elements
+        to the form. The CV ID, '%id', cannot be found.", array('%id' => $details['cv_id']));
+          return;
+    }
+    // add the cv_name option to the details array
+    $details['cv_name'] = $result[0]->name;
+  }
+  else {
+    drupal_set_message("Please provide either a 'cv_name' or 'cv_id' as an
+        option for adding relationship to the form", "error");
+    tripal_report_error('tcprops_form', TRIPAL_ERROR, "Please provide either a
+        'cv_name' or 'cv_id' as an option for adding relationship to the form", array());
+    return;
+  }
+  
   $form_state['rebuild'] = TRUE;
 
   // Set Defaults for optional fields
@@ -147,17 +191,6 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
   }
   else {
     if (isset($details['cv_name'])) {
-      // make sure the cv_name is real
-      $result = chado_select_record('cv',array('cv_id'),array('name' => $details['cv_name']));
-      if (count($result) == 0) {
-        drupal_set_message("Cannot add relationship elements to the form. The CV name, '" . $details['cv_name'] . "', does not exists", "error");
-        tripal_report_error('tcrels_form', TRIPAL_ERROR, "Cannot add relationship elements to the form. The CV named, '%name',
-          cannot be found.", array('%name' => $details['cv_name']));
-        return;
-      }
-      // add the cv_id option to the details array
-      $details['cv_id'] = $result[0]->cv_id;
-      
       $type_options = array();
       $type_options[] = 'Select a Property';
       $sql = "
@@ -176,17 +209,6 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
       }
     } 
     elseif (isset($details['cv_id'])) {
-      // make sure the cv_id is real
-      $result = chado_select_record('cv', array('name'), array('cv_id' => $details['cv_id']));
-      if (count($result) == 0) {
-        drupal_set_message("Cannot add relationships elements to the form. The CV ID, '" . $details['cv_id'] . "', does not exist", "error");
-        tripal_report_error('tcprops_form', TRIPAL_ERROR, "Cannot add relationship elements to the form. The CV ID, '%id',
-          cannot be found.", array('%id' => $details['cv_id']));
-        return;
-      }
-      // add the cv_name option to the details array
-      $details['cv_name'] = $result[0]->name;
-      
       $type_options = array();
       $type_options[] = 'Select a Property';
       $sql = "
@@ -209,7 +231,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
   // Tell tripal administrators how to add terms to the property types drop down.
   if (empty($type_options)) {
     $tripal_message = tripal_set_message(
-      t('There are currently no proeprty types! To add additional properties to the drop
+      t('There are currently no property types! To add additional properties to the drop
         down list, you need to <a href="@cvtermlink">add a controlled vocabulary term</a>
         to the %cv_name controlled vocabulary.',
         array(
@@ -227,7 +249,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
         a controlled vocabulary term</a> to the %cv_name controlled vocabulary.',
         array(
           '%cv_name' => $details['cv_name'],
-          '@cvtermlink' => url('admin/tripal/chado/tripal_cv/cv/'.$details['cv_id'].'/cvterm/add')
+          '@cvtermlink' => url('admin/tripal/chado/tripal_cv/cv/' . $details['cv_id'] . '/cvterm/add')
         )
       ),
       TRIPAL_INFO,
@@ -294,9 +316,9 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
           base2.".$details['base_name_field']." as subject_name,
           cvterm.name as type_name
         FROM {".$details['relationship_table']."} rel
-        LEFT JOIN {".$details['base_table']."} base1 ON base1.".$details['base_foreign_key']." = rel.".$details['object_field_name']."
-        LEFT JOIN {".$details['base_table']."} base2 ON base2.".$details['base_foreign_key']." = rel.".$details['subject_field_name']."
-        LEFT JOIN {cvterm} cvterm ON cvterm.cvterm_id = rel.type_id
+          LEFT JOIN {".$details['base_table']."} base1 ON base1.".$details['base_foreign_key']." = rel.".$details['object_field_name']."
+          LEFT JOIN {".$details['base_table']."} base2 ON base2.".$details['base_foreign_key']." = rel.".$details['subject_field_name']."
+          LEFT JOIN {cvterm} cvterm ON cvterm.cvterm_id = rel.type_id
         WHERE rel.".$details['object_field_name']." = :base_key_value
             OR rel.".$details['subject_field_name']." = :base_key_value",
         array(':base_key_value' => $details['base_key_value'])

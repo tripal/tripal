@@ -152,8 +152,7 @@ function chado_project_form(&$node, $form_state) {
   $instructions = t('To add properties to the drop down list, you must ' . l("add terms to the project_property vocabulary", "admin/tripal/chado/tripal_cv/cvterm/add") . ".");
   $details = array(
     'property_table' => 'projectprop',
-    'base_foreign_key' => 'project_id',
-    'base_key_value' => $project_id,
+    'chado_id' => $project_id,
     'cv_name' => 'project_property',
     'additional_instructions' => $instructions,
     'select_options' => $select_options

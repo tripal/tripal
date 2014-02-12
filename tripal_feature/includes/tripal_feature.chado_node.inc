@@ -217,8 +217,7 @@ function chado_feature_form($node, &$form_state) {
   //---------------------------------------------
   $details = array(
     'property_table' => 'featureprop',      // the name of the prop table
-    'base_foreign_key' => 'feature_id',     // the name of the key in your base chado table
-    'base_key_value' => $feature_id,        // the value of feature_id for this record
+    'chado_id' => $feature_id,              // the value of feature_id for this record
     'cv_name' => 'feature_property'         // the cv.name of the cv governing featureprop.type_id
   );
   // Adds the form elements to your current form

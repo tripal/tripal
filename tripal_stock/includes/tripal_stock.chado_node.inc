@@ -300,15 +300,13 @@ function chado_stock_form($node, $form_state) {
   //---------------------------------------------
   $details = array(
     'property_table' => 'stockprop',
-    'base_foreign_key' => 'stock_id',
-    'base_key_value' => $stock_id,
+    'chado_id' => $stock_id,
     'cv_id' => variable_get('chado_stock_prop_types_cv', FALSE)
   );
   chado_add_node_form_properties($form, $form_state, $details);
 
   // ADDITIONAL DBXREFS FORM
   //---------------------------------------------
-
   $details = array(
     'linking_table' => 'stock_dbxref',
     'base_foreign_key' => 'stock_id',
@@ -318,7 +316,6 @@ function chado_stock_form($node, $form_state) {
 
   // RELATIONSHIPS FORM
   //---------------------------------------------
-
   $details = array(
     'relationship_table' => 'stock_relationship',
     'base_table' => 'stock',

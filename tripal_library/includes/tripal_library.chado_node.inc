@@ -184,8 +184,7 @@ function chado_library_form($node, &$form_state) {
 
   $details = array(
     'property_table' => 'libraryprop',      // the name of the prop table
-    'base_foreign_key' => 'library_id',     // the name of the key in your base chado table
-    'base_key_value' => $library_id,        // the value of library_id for this record
+    'chado_id' => $library_id,              // the value of library_id for this record
     'cv_name' => 'library_property',        // the cv.name of the cv governing libraryprop.type_id
     'select_options' => $select_options
   );

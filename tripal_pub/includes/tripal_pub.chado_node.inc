@@ -250,8 +250,7 @@ function chado_pub_form($node, $form_state) {
 
   $details = array(
     'property_table' => 'pubprop',
-    'base_foreign_key' => 'pub_id',
-    'base_key_value' => $pub_id,
+    'chado_id' => $pub_id,
     'cv_name' => 'tripal_pub',
     'select_options' => $select_options,
   );
@@ -260,13 +259,11 @@ function chado_pub_form($node, $form_state) {
   // RELATIONSHIPS FORM
   //---------------------------------------------
   // We want to use the contact_relationship_types cv if there are any terms available
-  // and if not, to default to the relationship ontology
+  // and if not, then default to the relationship ontology
   $cv_result = chado_select_record('cv',array('cv_id'),array('name' => 'pub_relationship_types'));
-  $cv_id = $cv_result[0]->cv_id;
-  $select_options = tripal_cv_get_cvterm_options($cv_id);
-  if (empty($select_options)) {
-    $cv_result = chado_select_record('cv',array('cv_id'),array('name' => 'relationship'));
+  if (count($cv_result) > 0) {
     $cv_id = $cv_result[0]->cv_id;
+    $cv_name = 'pub_relationship_types';
     $select_options = tripal_cv_get_cvterm_options($cv_id);
   }
   // D7 @TODO: tell tripal admin's about this
@@ -277,7 +274,7 @@ function chado_pub_form($node, $form_state) {
     'base_foreign_key' => 'pub_id',             // the name of the key in your base chado table
     'base_key_value' => $pub_id,                // the value of example_id for this record
     'nodetype' => 'pub',                        // the human-readable name of your node type
-    'cv_name' => 'pub_relationship_types',      // the cv.name of the cv governing example_relationship.type_id
+    'cv_name' => $cv_name,                      // the cv.name of the cv containing the properties
     'base_name_field' => 'uniquename',          // the base table field you want to be used as the name
     'select_options' => $select_options
   );

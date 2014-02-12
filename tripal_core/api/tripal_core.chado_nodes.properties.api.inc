@@ -32,8 +32,8 @@
 
     $details = array(
       'property_table' => 'example_property',      // the name of the table linking additional properties to this node
-      'base_foreign_key' => 'example_id',          // key to link to the chado content created by this node
-      'base_key_value' => $example_id,             // the value of the above key
+      'chado_id_field' => 'example_id',          // key to link to the chado content created by this node
+      'chado_id' => $example_id,             // the value of the above key
       'cv_name' => 'example_prop_cv',              // the name of the cv governing the _prop.type_id
       'fieldset_title' => 'Additional References', // the non-translated title for this fieldset
       'additional_instructions' => ''              // a non-stranslated string providing additional instructions
@@ -105,28 +105,82 @@
  * @param $form_state
  *   The corresponding form_state array for the form
  * @param $details
- *   An array defining details needed by this form. Required Keys are:
- *     - property_table: the name of the property linking table (ie: featureprop)
- *     - base_foreign_key: the name of the foreign key linking this table to the non-property table (ie: feature_id)
- *     - base_key_value: the value of the base_foreign_key for the current form (ie: 999 if the feature_id=999)
- *   Require ONE of the following:
- *     The controlled vocabulary governing the property types
- *       -cv_id: the unique key from the cv table
- *       -cv_name: the cv.name field uniquely identifying the controlled vocab
+ *   An array defining details used by this form. 
+ *   Required keys that are always required:
+ *     - property_table: the name of the property table (e.g.: featureprop, stockprop, etc.)
+ *   Required keys for forms that update a record.
+ *     - chado_id: the id of the record to which properties will be associated (e.g.: if a
+ *       feature has a feature_id of 999 and we want to associate properties for that feature 
+ *       then the chado_id option should be 999)
+ *   Require ONE of the following to identify the controlled vocabulary containing the properties to use:
+ *     -cv_id: the unique key from the cv table
+ *     -cv_name: the cv.name field uniquely identifying the controlled vocabulary
  *   Optional keys include:
- *     - fieldset_title: the non-translated title for this fieldset
- *     - additional_instructions: a non-translated string providing additional instructions
- *     - select_options: must be an array where the [key] is a valid cvterm_id and
- *       the [value] is the human-readable name of the option. This is generated from the cv_name/id by default
+ *     - chado_id_field: the foreign key field that links properties to the
+ *       chado_id record. If this value is not specified it is determined using the
+ *       traditional Chado naming scheme for property tables. 
  *
  * @ingroup tripal_chado_node_api
  */
 function chado_add_node_form_properties(&$form, &$form_state, $details) {
 
+  // make sure the property table exists before proceeding.
+  if (!chado_table_exists($details['property_table'])) {
+    drupal_set_message("Cannot add property elements to the form. The property table, '" . 
+      $details['property_table'] . "', does not exists", "error");
+    tripal_report_error('tcprops_form', TRIPAL_ERROR, "Cannot add property elements to the form. 
+      The property table, '%name', cannot be found.", array('%name' => $details['property_table']));
+    return;
+  }
+  
+  // if the chado_id_field is not specified then set it using the
+  // typical chado naming scheme
+  if (!array_key_exists('chado_id_field', $details)) {
+    $chado_id_table = preg_replace('/prop$/', '', $details['property_table']);
+    $chado_id_field = $chado_id_table . '_id';
+    $details['chado_id_field'] = $chado_id_field;
+  }
+  
+  // make sure the specified cv exists
+  if (isset($details['cv_name'])) {
+    // make sure the cv_name is real
+    $result = chado_select_record('cv',array('cv_id'),array('name' => $details['cv_name']));
+    if (count($result) == 0) {
+      drupal_set_message("Cannot add property elements to the form. The CV name, '" .
+        $details['cv_name'] . "', does not exists", "error");
+      tripal_report_error('tcprops_form', TRIPAL_ERROR, "Cannot add property elements to the form.
+        The CV named, '%name', cannot be found.", array('%name' => $details['cv_name']));
+      return;
+    }
+    // add the cv_id option to the details array
+    $details['cv_id'] = $result[0]->cv_id;
+  }
+  elseif (isset($details['cv_id'])) {
+    // make sure the cv_id is real
+    $result = chado_select_record('cv', array('name'), array('cv_id' => $details['cv_id']));
+    if (count($result) == 0) {
+      drupal_set_message("Cannot add property elements to the form. The CV ID, '" .
+        $details['cv_id'] . "', does not exist", "error");
+      tripal_report_error('tcprops_form', TRIPAL_ERROR, "Cannot add property elements
+        to the form. The CV ID, '%id', cannot be found.", array('%id' => $details['cv_id']));
+      return;
+    }
+    // add the cv_name option to the details array
+    $details['cv_name'] = $result[0]->name;
+  }
+  else {
+    drupal_set_message("Please provide either a 'cv_name' or 'cv_id' as an 
+        option for adding properties to the form", "error");
+    tripal_report_error('tcprops_form', TRIPAL_ERROR, "Please provide either a 
+        'cv_name' or 'cv_id' as an option for adding properties to the form", array());
+    return;
+  }
+
   // Set Defaults for optional fields
   $details['fieldset_title'] = 'Properties';
   $details['additional_instructions'] = '';
 
+  
   // Get Property Types for the Select List
   if (isset($details['select_options'])) {
     $property_options = $details['select_options'];
@@ -137,17 +191,6 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     // if the vocabulary name is provided in the details then use that to
     // get the terms 
     if (isset($details['cv_name'])) {
-      // make sure the cv_name is real
-      $result = chado_select_record('cv',array('cv_id'),array('name' => $details['cv_name']));
-      if (count($result) == 0) {
-        drupal_set_message("Cannot add property elements to the form. The CV name, '" . $details['cv_name'] . "', does not exists", "error");
-        tripal_report_error('tcprops_form', TRIPAL_ERROR, "Cannot add property elements to the form. The CV named, '%name',
-          cannot be found.", array('%name' => $details['cv_name']));
-        return;
-      }
-      // add the cv_id option to the details array
-      $details['cv_id'] = $result[0]->cv_id;
-      
       $property_options = array();
       $property_options[] = 'Select a Property';
       $sql = "
@@ -162,22 +205,10 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
       $prop_types = chado_query($sql, array(':cv_name' => $details['cv_name']));
       while ($prop = $prop_types->fetchObject()) {
         $property_options[$prop->cvterm_id] = $prop->name;
-        $details['cv_id'] = $prop->cv_id;
       }
     } 
     // if the cv_id is set in the $details array then use that to get the terms
-    elseif (isset($details['cv_id'])) {
-      // make sure the cv_id is real
-      $result = chado_select_record('cv', array('name'), array('cv_id' => $details['cv_id']));
-      if (count($result) == 0) {
-        drupal_set_message("Cannot add property elements to the form. The CV ID, '" . $details['cv_id'] . "', does not exist", "error");
-        tripal_report_error('tcprops_form', TRIPAL_ERROR, "Cannot add property elements to the form. The CV ID, '%id',
-          cannot be found.", array('%id' => $details['cv_id']));
-        return;
-      }
-      // add the cv_name option to the details array
-      $details['cv_name'] = $result[0]->name;
-      
+    elseif (isset($details['cv_id'])) {      
       $property_options = array();
       $property_options[] = 'Select a Property';
       $sql = "
@@ -193,8 +224,6 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
       while ($prop = $prop_types->fetchObject()) {
         $property_options[$prop->cvterm_id] = $prop->name;
       }
-      
-
     }
   }
 
@@ -206,7 +235,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
         to the %cv_name controlled vocabulary.',
         array(
           '%cv_name' => $details['cv_name'],
-          '@cvtermlink' => url('admin/tripal/chado/tripal_cv/cv/'.$details['cv_id'].'/cvterm/add')
+          '@cvtermlink' => url('admin/tripal/chado/tripal_cv/cv/' . $details['cv_id'] . '/cvterm/add')
         )
       ),
       TRIPAL_WARNING,
@@ -219,7 +248,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
         a controlled vocabulary term</a> to the %cv_name controlled vocabulary.',
         array(
           '%cv_name' => $details['cv_name'],
-          '@cvtermlink' => url('admin/tripal/chado/tripal_cv/cv/'.$details['cv_id'].'/cvterm/add')
+          '@cvtermlink' => url('admin/tripal/chado/tripal_cv/cv/' . $details['cv_id'] . '/cvterm/add')
         )
       ),
       TRIPAL_INFO,
@@ -282,10 +311,10 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
         INNER JOIN {cvterm} CVT ON CVT.cvterm_id = PP.type_id
         INNER JOIN {cv} CV      ON CVT.cv_id     = CV.cv_id
         WHERE
-        PP." . $details['base_foreign_key'] . " = :base_key_value AND
+        PP." . $details['chado_id_field'] . " = :chado_id AND
         CV.name = '" .$details['cv_name']. "'
         ORDER BY CVT.name, PP.rank",
-         array(':base_key_value' => $details['base_key_value'])
+         array(':chado_id' => $details['chado_id'])
       );
     } elseif (isset($details['cv_id'])) {
       $existing_properties = chado_query(
@@ -294,10 +323,10 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
         INNER JOIN {cvterm} CVT ON CVT.cvterm_id = PP.type_id
         INNER JOIN {cv} CV      ON CVT.cv_id     = CV.cv_id
         WHERE
-        PP." . $details['base_foreign_key'] . " = :base_key_value AND
+        PP." . $details['chado_id_field'] . " = :chado_id AND
         CV.cv_id = '" .$details['cv_id']. "'
         ORDER BY CVT.name, PP.rank",
-         array(':base_key_value' => $details['base_key_value'])
+         array(':chado_id' => $details['chado_id'])
       );
     }
   }
@@ -508,7 +537,7 @@ function chado_add_node_form_properties_add_button_submit(&$form, &$form_state) 
   $rank = chado_get_table_max_rank(
     $details['property_table'],
     array(
-      $details['base_foreign_key'] => $details['base_key_value'],
+      $details['chado_id_field'] => $details['chado_id'],
       'type_id' => $property['type_id']
     )
   );

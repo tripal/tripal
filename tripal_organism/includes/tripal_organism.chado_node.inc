@@ -176,8 +176,7 @@ function chado_organism_form($node, $form_state) {
   //---------------------------------------------
   $details = array(
     'property_table' => 'organismprop',      // the name of the prop table
-    'base_foreign_key' => 'organism_id',     // the name of the key in your base chado table
-    'base_key_value' => $organism_id,        // the value of organism_id for this record
+    'chado_id' => $organism_id,              // the value of organism_id for this record
     'cv_name' => 'organism_property'         // the cv.name of the cv governing organismprop.type_id
   );
   // Adds the form elements to your current form

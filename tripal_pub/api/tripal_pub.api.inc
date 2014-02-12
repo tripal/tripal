@@ -9,6 +9,9 @@
  * @ingroup tripal_api
  * @{
  * Provides an application programming interface (API) to manage chado publications
+ * 
+ * @stephen add documentation here for how to add a new importer.
+ * 
  * @}
  */
 

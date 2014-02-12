@@ -197,8 +197,7 @@ function chado_contact_form(&$node, $form_state) {
 
   $details = array(
     'property_table' => 'contactprop',
-    'base_foreign_key' => 'contact_id',
-    'base_key_value' => $contact_id,
+    'chado_id' => 'contact_id',
     'cv_name' => 'tripal_contact',
     'select_options' => $select_options
   );
