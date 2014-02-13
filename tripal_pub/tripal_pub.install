@@ -254,8 +254,11 @@ function tripal_pub_update_7000() {
     'pub_relationship_types',
     'Contains Types of relationships between publications.')
   ";
-  $success = db_query($sql);
-  if (!$success) {
-    throw new DrupalUpdateException('Failed to add pub_relationship_types CV');
+  try {
+    db_query($sql);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to add pub_relationship_types CV: '. $error);
   }
 }

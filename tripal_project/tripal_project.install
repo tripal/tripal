@@ -148,8 +148,11 @@ function tripal_project_update_7000() {
       name = 'project_description' AND
       cv_id = (SELECT cv_id FROM chado.cv WHERE name = 'tripal')
   ";
-  $success = db_query($sql);
-  if (!$success) {
-    throw new DrupalUpdateException('Failed to move project properties to new project_property CV.');
+  try {
+    db_query($sql);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to change project_description property type to the project_property CV and update the name: '. $error);
   }
 }

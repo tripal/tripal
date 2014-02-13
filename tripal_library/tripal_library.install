@@ -247,9 +247,12 @@ function tripal_library_update_7000() {
   // rename that to just be 'library_type'. We cannot use the Tripal API calls 
   // because during upgrade the tripal_core should also be disabled
   $sql = "UPDATE chado.cv SET name = 'library_type' WHERE name = 'tripal_library_types'";
-  $success = db_query($sql);
-  if (!$success) {
-    throw new DrupalUpdateException('Failed to rename tripal_library_types CV.');
+  try {
+    db_query($sql);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to change the vocabulary from tripal_library_types to library_type: '. $error);
   }
   
   // add the library_property CV
@@ -257,9 +260,12 @@ function tripal_library_update_7000() {
     'library_property',
     'Contains properties for libraries.')
   ";
-  $success = db_query($sql);
-  if (!$success) {
-    throw new DrupalUpdateException('Failed to add library_property CV');
+  try {
+    db_query($sql);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to add library_property CV: '. $error);
   }
   
   // add the library_type CV
@@ -267,9 +273,12 @@ function tripal_library_update_7000() {
     'library_type',
     'Contains terms for types of libraries (e.g. BAC, cDNA, FOSMID, etc).')
   ";
-  $success = db_query($sql);
-  if (!$success) {
-    throw new DrupalUpdateException('Failed to add library_type CV');
+  try {
+    db_query($sql);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to add library_type CV: '. $error);
   }
   
   // For Tripal in Drupal 6 the library_description cvterm was stored in the
@@ -287,8 +296,11 @@ function tripal_library_update_7000() {
       name = 'library_description' AND
       cv_id = (SELECT cv_id FROM chado.cv WHERE name = 'tripal')
   ";
-  $success = db_query($sql); 
-  if (!$success) {
-    throw new DrupalUpdateException('Failed to move library properties to new library_property CV.');
+  try {
+    db_query($sql);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to change library_description property type to the library_property CV and update the name: '. $error);
   }
 }

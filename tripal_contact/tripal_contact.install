@@ -237,8 +237,11 @@ function tripal_contact_update_7000() {
     'contact_relationship_types',
     'Contains Types of relationships between contacts.')
   ";
-  $success = db_query($sql);
-  if (!$success) {
-    throw new DrupalUpdateException('Failed to add contact_relationship_types CV');
+  try {
+    db_query($sql);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to add contact_relationship_types CV: '. $error);
   }
 }

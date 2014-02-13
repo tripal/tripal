@@ -138,8 +138,11 @@ function tripal_organism_update_7000() {
     'organism_property',
     'Contains properties for organisms.')
   ";
-  $success = db_query($sql);
-  if (!$success) {
-    throw new DrupalUpdateException('Failed to add organism_property CV');
+  try {
+    db_query($sql);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to add organism_property CV: '. $error);
   }
 }
