@@ -166,7 +166,7 @@ function tripal_library_add_mview_library_feature_count(){
 function tripal_library_add_cvs(){
   tripal_cv_add_cv(
     'library_property',
-    'Contains properties for libraries'
+    'Contains properties for libraries.'
   );
   tripal_cv_add_cv(
     'library_type',
@@ -252,8 +252,25 @@ function tripal_library_update_7000() {
     throw new DrupalUpdateException('Failed to rename tripal_library_types CV.');
   }
   
-  // add new CVs
-  tripal_library_add_cvs();
+  // add the library_property CV
+  $sql = "INSERT INTO chado.cv (name, definition) VALUES (
+    'library_property',
+    'Contains properties for libraries.')
+  ";
+  $success = db_query($sql);
+  if (!$success) {
+    throw new DrupalUpdateException('Failed to add library_property CV');
+  }
+  
+  // add the library_type CV
+  $sql = "INSERT INTO chado.cv (name, definition) VALUES (
+    'library_type',
+    'Contains terms for types of libraries (e.g. BAC, cDNA, FOSMID, etc).')
+  ";
+  $success = db_query($sql);
+  if (!$success) {
+    throw new DrupalUpdateException('Failed to add library_type CV');
+  }
   
   // For Tripal in Drupal 6 the library_description cvterm was stored in the
   // 'tripal' CV.  It should be stored in the new library_property CV that
