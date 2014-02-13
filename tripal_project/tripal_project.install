@@ -134,15 +134,18 @@ function tripal_project_add_cvterms() {
 function tripal_project_update_7000() {
   
   // add the project_property CV
-  $sql = "INSERT INTO chado.cv (name, definition) VALUES (
-    'project_property','Contains properties for projects.')
-  ";
   try {
-    db_query($sql);
+    $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'project_property'")->fetchObject();
+    if (!$check->cv_id) {
+      $sql = "INSERT INTO chado.cv (name, definition) VALUES (
+        'project_property','Contains properties for projects.')
+      ";
+      db_query($sql);
+    }
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to add project_property CV: '. $error);
+    throw new DrupalUpdateException('Failed to add project_property vocabulary: '. $error);
   }
 
   // For Tripal in Drupal 6 the project_description cvterm was stored in the

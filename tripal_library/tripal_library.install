@@ -246,9 +246,12 @@ function tripal_library_update_7000() {
   // the library types were formerly in a vocabulary named 'tripal_library_types'.
   // rename that to just be 'library_type'. We cannot use the Tripal API calls 
   // because during upgrade the tripal_core should also be disabled
-  $sql = "UPDATE chado.cv SET name = 'library_type' WHERE name = 'tripal_library_types'";
   try {
-    db_query($sql);
+    $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'library_type'")->fetchObject();
+    if (!$check->cv_id) {
+      $sql = "UPDATE chado.cv SET name = 'library_type' WHERE name = 'tripal_library_types'";
+      db_query($sql);
+    }
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
@@ -256,29 +259,35 @@ function tripal_library_update_7000() {
   }
   
   // add the library_property CV
-  $sql = "INSERT INTO chado.cv (name, definition) VALUES (
-    'library_property',
-    'Contains properties for libraries.')
-  ";
   try {
-    db_query($sql);
+    $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'library_property'")->fetchObject();
+    if (!$check->cv_id) {
+      $sql = "INSERT INTO chado.cv (name, definition) VALUES (
+        'library_property',
+        'Contains properties for libraries.')
+      ";
+      db_query($sql);
+    }
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to add library_property CV: '. $error);
+    throw new DrupalUpdateException('Failed to add library_property vocabulary: '. $error);
   }
   
   // add the library_type CV
-  $sql = "INSERT INTO chado.cv (name, definition) VALUES (
-    'library_type',
-    'Contains terms for types of libraries (e.g. BAC, cDNA, FOSMID, etc).')
-  ";
   try {
-    db_query($sql);
+    $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'library_type'")->fetchObject();
+    if (!$check->cv_id) {
+      $sql = "INSERT INTO chado.cv (name, definition) VALUES (
+        'library_type',
+        'Contains terms for types of libraries (e.g. BAC, cDNA, FOSMID, etc).')
+      ";  
+      db_query($sql);
+    }
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to add library_type CV: '. $error);
+    throw new DrupalUpdateException('Failed to add library_type vocabulary: '. $error);
   }
   
   // For Tripal in Drupal 6 the library_description cvterm was stored in the
