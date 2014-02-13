@@ -244,35 +244,33 @@ function tripal_library_add_cvterms() {
 function tripal_library_update_7000() {
 
   // the library types were formerly in a vocabulary named 'tripal_library_types'.
-  // rename that to just be 'library_type'
-  $cv = tripal_cv_get_cv_by_name('tripal_library_types');
-  $match = array(
-    'cv_id' => $cv->cv_id
-  );
-  $values = array(
-    'name' => 'library_type'
-  );
-  $success = chado_update_record('cv', $match, $values);
+  // rename that to just be 'library_type'. We cannot use the Tripal API calls 
+  // because during upgrade the tripal_core should also be disabled
+  $sql = "UPDATE chado.cv SET name = 'library_type' WHERE name = 'tripal_library_types'";
+  $success = db_query($sql);
   if (!$success) {
     throw new DrupalUpdateException('Failed to rename tripal_library_types CV.');
   }
-
-
+  
+  // add new CVs
+  tripal_library_add_cvs();
+  
   // For Tripal in Drupal 6 the library_description cvterm was stored in the
   // 'tripal' CV.  It should be stored in the new library_property CV that
   // is added by this module for Tripal 2.0 and Drupal 7.  So, we need to
-  // reset the CV ID for that term and rename the term to 'Library Description'
-  tripal_library_add_cvs();
-  $cv = tripal_cv_get_cv_by_name('library_property');
-  $cvterm = tripal_cv_get_cvterm_by_name('library_description');
-  $match = array(
-    'cvterm_id' => $cvterm->cvterm_id,
-  );
-  $values = array(
-    'cv_id' => $cv->cv_id,
-    'name' => 'Library Description',
-  );
-  chado_update_record('cvterm', $match, $values);
+  // reset the CV ID for that term and rename the term to 'Library Description' 
+  // We cannot use the Tripal API calls'because during upgrade the tripal_core 
+  // should also be disabled
+  $sql = "
+    UPDATE chado.cvterm 
+    SET 
+      name = 'Library Description',
+      cv_id = (SELECT cv_id FROM chado.cv WHERE name = 'library_property')
+    WHERE 
+      name = 'library_description' AND
+      cv_id = (SELECT cv_id FROM chado.cv WHERE name = 'tripal')
+  ";
+  $success = db_query($sql); 
   if (!$success) {
     throw new DrupalUpdateException('Failed to move library properties to new library_property CV.');
   }

@@ -152,16 +152,18 @@ function tripal_project_update_7000() {
   // 'tripal' CV.  It should be stored in the new project_property CV that
   // is added by this module for Tripal 2.0 and Drupal 7.  So, we need to
   // reset the CV ID for that term and rename the term to 'Project Description'
-  tripal_project_add_cvs();
-  $cv = tripal_cv_get_cv_by_name('project_property');
-  $cvterm = tripal_cv_get_cvterm_by_name('project_description', $cv->cv_id);
-  $match = array(
-    'cvterm_id' => $cvterm->cvterm_id,
-  );
-  $values = array(
-    'name'  => 'Project Description',
-  );
-  chado_update_record('cvterm', $match, $values);
+  // We cannot use the Tripal API calls'because during upgrade the tripal_core
+  // should also be disabled
+  $sql = "
+    UPDATE chado.cvterm CVT
+    SET
+      name = 'Project Description',
+      cv_id = (SELECT cv_id FROM chado.cv WHERE name = 'project_property')
+    WHERE
+      name = 'project_description' AND
+      cv_id = (SELECT cv_id FROM chado.cv WHERE name = 'tripal')
+  ";
+  $success = db_query($sql);
   if (!$success) {
     throw new DrupalUpdateException('Failed to move project properties to new project_property CV.');
   }
