@@ -247,6 +247,15 @@ function tripal_pub_add_cvterms() {
  */
 function tripal_pub_update_7000() {
 
-  tripal_pub_add_cvs();
-  tripal_pub_add_cvterms();
+  // add the new pub_relationship_types vocabulary
+  // We cannot use the Tripal API calls in the 7000 update 
+  // because during upgrade the tripal_core should also be disabled
+  $sql = "INSERT INTO chado.cv (name, definition) VALUES (
+    'pub_relationship_types',
+    'Contains Types of relationships between publications.')
+  ";
+  $success = db_query($sql);
+  if (!$success) {
+    throw new DrupalUpdateException('Failed to add pub_relationship_types CV');
+  }
 }

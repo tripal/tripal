@@ -259,8 +259,8 @@ function tripal_library_update_7000() {
   // 'tripal' CV.  It should be stored in the new library_property CV that
   // is added by this module for Tripal 2.0 and Drupal 7.  So, we need to
   // reset the CV ID for that term and rename the term to 'Library Description' 
-  // We cannot use the Tripal API calls'because during upgrade the tripal_core 
-  // should also be disabled
+  // We cannot use the Tripal API calls in the 7000 update 
+  // because during upgrade the tripal_core should also be disabled
   $sql = "
     UPDATE chado.cvterm 
     SET 

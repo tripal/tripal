@@ -230,7 +230,15 @@ function tripal_contact_add_custom_tables(){
  */
 function tripal_contact_update_7000() {
 
-  tripal_contact_add_cvs();
-  tripal_contact_add_cvterms();
-
+  // add the new contact_relationship_types vocabulary
+  // We cannot use the Tripal API calls in the 7000 update 
+  // because during upgrade the tripal_core should also be disabled
+  $sql = "INSERT INTO chado.cv (name, definition) VALUES (
+    'contact_relationship_types',
+    'Contains Types of relationships between contacts.')
+  ";
+  $success = db_query($sql);
+  if (!$success) {
+    throw new DrupalUpdateException('Failed to add contact_relationship_types CV');
+  }
 }

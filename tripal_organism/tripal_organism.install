@@ -131,6 +131,15 @@ function tripal_organism_add_cvterms() {
  */
 function tripal_organism_update_7000() {
 
-  tripal_organism_add_cvs();
-  tripal_organism_add_cvterms();
+  // add the new organism_property vocabulary
+  // We cannot use the Tripal API calls in the 7000 update 
+  // because during upgrade the tripal_core should also be disabled
+  $sql = "INSERT INTO chado.cv (name, definition) VALUES (
+    'organism_property',
+    'Contains properties for organisms.')
+  ";
+  $success = db_query($sql);
+  if (!$success) {
+    throw new DrupalUpdateException('Failed to add organism_property CV');
+  }
 }
