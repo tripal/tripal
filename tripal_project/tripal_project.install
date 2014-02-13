@@ -132,6 +132,18 @@ function tripal_project_add_cvterms() {
  * @ingroup tripal_project
  */
 function tripal_project_update_7000() {
+  
+  // add the project_property CV
+  $sql = "INSERT INTO chado.cv (name, definition) VALUES (
+    'project_property','Contains properties for projects.')
+  ";
+  try {
+    db_query($sql);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to add project_property CV: '. $error);
+  }
 
   // For Tripal in Drupal 6 the project_description cvterm was stored in the
   // 'tripal' CV.  It should be stored in the new project_property CV that
