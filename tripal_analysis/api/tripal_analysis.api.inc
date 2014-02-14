@@ -44,3 +44,30 @@ function tripal_analysis_unregister_child($modulename) {
       db_query($sql, array(':modname' => $modulename));
   }
 }
+
+/**
+ * Get the analysis node same as node_load would but allowing different arguements
+ *
+ * @param $itentifier
+ *   an array with the key stating what the identifier is. Supported keys (only on of the
+ *   following unique keys is required):
+ *    - analysis_id: the chado analysis.analysis_id primary key
+ *    - nid: the drupal node.nid primary key
+ * @return
+ *   the analysis node matching the passed in identifier
+ */
+function chado_get_analysis($identifier) {
+
+  // If the analysis_id is passed in then use it to get the nid
+  if (isset($identifier['analysis_id'])) {
+    $identifier['nid'] = chado_get_nid_from_id('analysis', $identifier['analysis_id']);
+  }
+
+  // Using the nid, get the node
+  if (isset($identifier['nid'])) {
+    return node_load($identifier['nid']);
+  }
+
+  // If there is neither the nid or analysis_id then return FALSE to indicate we failed
+  return FALSE;
+}
