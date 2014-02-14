@@ -776,7 +776,7 @@ function tripal_stock_node_presave($node) {
   switch ($node->type) {
     case 'chado_stock':
       // for a form submission the fields part of the node object
-      // but for a sync the feilds are in an object of the node
+      // but for a sync the fields are in an object of the node
       $organism_id = null;
       $sname = '';
       $uniquename = '';
@@ -799,55 +799,9 @@ function tripal_stock_node_presave($node) {
       $values = array('organism_id' => $organism_id);
       $organism = chado_select_record('organism', array('genus','species'), $values);
       $node->title = "$sname, $uniquename ($type) " . $organism[0]->genus . ' ' . $organism[0]->species;
-      if ($name == $uname) {
+      if ($name == $uniquename) {
         $node->title = "$sname ($type) " . $organism[0]->genus . ' ' . $organism[0]->species;
       }
-      break;
-  }
-}
-
-/**
- * Implements hook_node_insert(). Acts on all content types.
- *
- * @ingroup tripal_stock
- */
-function tripal_stock_node_insert($node) {
-  switch ($node->type) {
-    case 'chado_stock':
-      if (!$node->stock_id) {
-        $sql = "SELECT * FROM {chado_stock} WHERE nid = :nid";
-        $chado_stock = db_query($sql, array(':nid' => $node->nid))->fetchObject();
-        $node->stock_id = $chado_stock->stock_id;
-      }
-
-      // remove any previous alias
-      db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
-
-      // set the URL for this stock page
-      $url_alias = tripal_stock_get_stock_url($node);
-      $path_alias = array("source" => "node/$node->nid", "alias" => $url_alias);
-      path_save($path_alias);
-      break;
-  }
-}
-
-/**
- * Implements hook_node_update(). Acts on all content types.
- *
- * @ingroup tripal_stock
- */
-function tripal_stock_node_update($node) {
-
-  switch ($node->type) {
-    case 'chado_stock':
-
-      // remove any previous alias
-      db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
-
-      // set the URL for this stock page
-      $url_alias = tripal_stock_get_stock_url($node);
-      $path_alias = array("source" => "node/$node->nid", "alias" => $url_alias);
-      path_save($path_alias);
       break;
   }
 }
@@ -915,4 +869,120 @@ function tripal_stock_node_view($node, $view_mode, $langcode) {
       }
       break;
   }
+}
+
+/**
+ * Implements hook_node_insert().
+ * Acts on all content types.
+ *
+ * @ingroup tripal_stock
+ */
+function tripal_stock_node_insert($node) {
+
+  // set the URL path after inserting.  We do it here because we do not
+  // know the stock_id in the presave
+  switch ($node->type) {
+    case 'chado_stock':
+
+      // remove any previous alias
+      db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
+
+      // set the URL for this stock page
+      $url_alias = tripal_stock_get_stock_url($node);
+      $path_alias = array("source" => "node/$node->nid", "alias" => $url_alias);
+      path_save($path_alias);
+      break;
+  }
+}
+
+/**
+ * Implements hook_node_update().
+ * Acts on all content types.
+ *
+ * @ingroup tripal_stock
+ */
+function tripal_stock_node_update($node) {
+
+  // add items to other nodes, build index and search results
+  switch ($node->type) {
+    case 'chado_stock':
+      // remove any previous alias
+      db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
+
+      // set the URL for this stock page
+      $url_alias = tripal_stock_get_stock_url($node);
+      $path_alias = array("source" => "node/$node->nid", "alias" => $url_alias);
+      path_save($path_alias);
+      break;
+  }
+}
+/**
+ * Return the url alias for a stock
+ *
+ * @param $node
+ *   A node object containing at least the stock_id and nid
+ * @param $url_alias
+ *   Optional.  This should be the URL alias syntax string that contains
+ *   placeholders such as [id], [genus], [species], [name], [uniquename],
+ *   and [type].  These placeholders will be substituted for actual values.
+ *   If this parameter is not provided then the value of the
+ *   chado_stock_url_string Drupal variable will be used.
+ *
+ * @ingroup tripal_stock
+ */
+function tripal_stock_get_stock_url($node, $url_alias = NULL) {
+
+  // get the starting URL alias
+  if(!$url_alias) {
+    $url_alias = variable_get('chado_stock_url_string', '/stock/[genus]/[species]/[type]/[uniquename]');
+    if (!$url_alias) {
+      $url_alias = '/stock/[genus]/[species]/[type]/[uniquename]';
+    }
+    $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash
+  }
+
+  // get the stock
+  $values = array('stock_id' => $node->stock_id);
+  $stock = chado_select_record('stock', array('*'), $values);
+  if (!$stock) {
+    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find stock when setting URL alias for stock: %id", array('%id' => $node->stock_id));
+    return FALSE;
+  }
+  $stock = (object) $stock[0];
+
+  // get the organism
+  $values = array('organism_id' => $stock->organism_id);
+  $organism  = chado_select_record('organism', array('*'), $values);
+  if (!$organism) {
+    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find organism when setting URL alias for stock: %id", array('%id' => $node->stock_id));
+    return FALSE;
+  }
+  $genus = preg_replace('/\s/', '_', strtolower($organism[0]->genus));
+  $species = preg_replace('/\s/', '_', strtolower($organism[0]->species));
+
+  // get the type
+  $values = array('cvterm_id' => $stock->type_id);
+  $cvterm = chado_select_record('cvterm', array('name'), $values);
+  if (!$cvterm) {
+    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find type when setting URL alias for stock: %id", array('%id' => $node->stock_id));
+    return FALSE;
+  }
+  $type = preg_replace('/\s/', '_', $cvterm[0]->name);
+
+  // now substitute in the values
+  $url_alias = preg_replace('/\[id\]/', $stock->stock_id, $url_alias);
+  $url_alias = preg_replace('/\[genus\]/', $genus, $url_alias);
+  $url_alias = preg_replace('/\[species\]/', $species, $url_alias);
+  $url_alias = preg_replace('/\[type\]/', $type, $url_alias);
+  $url_alias = preg_replace('/\[name\]/', $stock->name, $url_alias);
+  $url_alias = preg_replace('/\[uniquename\]/', $stock->uniquename, $url_alias);
+
+  // the dst field of the url_alias table is only 128 characters long.
+  // if this is the case then simply return the node URL, we can't set this one
+  if (strlen($url_alias) > 128) {
+    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot set alias longer than 128 characters: %alias.", array('%alias' => $url_alias));
+    return "node/" . $node->nid;
+  }
+
+  return $url_alias;
 }

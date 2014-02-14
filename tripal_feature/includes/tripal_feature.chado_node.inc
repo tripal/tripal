@@ -749,12 +749,29 @@ function tripal_feature_node_insert($node) {
   // know the feature_id in the presave
   switch ($node->type) {
     case 'chado_feature':
-      if (!property_exists($node,'feature_id')) {
-        $sql = "SELECT * FROM {chado_feature} WHERE nid = :nid";
-        $chado_feature = db_query($sql, array(':nid' => $node->nid))->fetchObject();
-        $node->feature_id = $chado_feature->feature_id;
-      }
 
+      // remove any previous alias
+      db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
+
+      // set the URL for this feature page
+      $url_alias = tripal_feature_get_feature_url($node);
+      $path_alias = array("source" => "node/$node->nid", "alias" => $url_alias);
+      path_save($path_alias);
+      break;
+  }
+}
+
+/**
+ * Implements hook_node_update().
+ * Acts on all content types.
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_feature_node_update($node) {
+
+  // add items to other nodes, build index and search results
+  switch ($node->type) {
+    case 'chado_feature':
       // remove any previous alias
       db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
 
@@ -931,24 +948,4 @@ function tripal_feature_node_view($node, $view_mode, $langcode) {
   }
 }
 
-/**
- * Implements hook_node_update().
- * Acts on all content types.
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_node_update($node) {
 
-  // add items to other nodes, build index and search results
-  switch ($node->type) {
-    case 'chado_feature':
-      // remove any previous alias
-      db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
-
-      // set the URL for this feature page
-      $url_alias = tripal_feature_get_feature_url($node);
-      $path_alias = array("source" => "node/$node->nid", "alias" => $url_alias);
-      path_save($path_alias);
-      break;
-  }
-}

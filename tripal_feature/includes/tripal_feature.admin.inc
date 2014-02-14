@@ -63,7 +63,7 @@ function tripal_feature_admin() {
        '#type' => 'fieldset',
        '#title' => t('Feature Browser'),
        '#collapsible' => TRUE,
-       '#collapsed' => TRUE,
+       '#collapsed' => FALSE,
     );
     $allowedoptions1  = array(
       'show_feature_browser' => "Show the feature browser on the organism page. The browser loads when page loads. This may be slow for large sites.",
@@ -125,7 +125,7 @@ function tripal_feature_admin() {
        '#type' => 'fieldset',
        '#title' => t('Feature Summary Report'),
        '#collapsible' => TRUE,
-       '#collapsed' => TRUE,
+       '#collapsed' => FALSE,
     );
     $allowedoptions2 ['show_feature_summary'] = "Show the feature summary on the organism page. The summary loads when page loads.";
     $allowedoptions2 ['hide_feature_summary'] = "Hide the feature summary on the organism page. Disables the feature summary.";
@@ -306,7 +306,7 @@ function get_tripal_feature_admin_form_title_set(&$form) {
     '#type' => 'fieldset',
     '#title' => t('Feature Page Titles'),
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+    '#collapsed' => FALSE,
   );
   $form['title']['desc'] = array(
     '#type'        => 'markup',
@@ -345,7 +345,7 @@ function get_tripal_feature_admin_form_url_set(&$form) {
     '#type' => 'fieldset',
     '#title' => t('Feature URL Path'),
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+    '#collapsed' => FALSE,
   );
 
   $options = array(
