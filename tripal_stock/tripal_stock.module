@@ -5,6 +5,7 @@
  */
 
 require_once 'api/tripal_stock.api.inc';
+//require_once 'api/tripal_stock.DEPRECATED.inc';
 
 require_once 'theme/tripal_stock.theme.inc';
 

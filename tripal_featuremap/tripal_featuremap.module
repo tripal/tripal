@@ -12,12 +12,13 @@
  * @}
  */
 
-require 'api/tripal_featuremap.api.inc';
+require_once 'api/tripal_featuremap.api.inc';
+//require_once 'api/tripal_featuremap.DEPRECATED.inc';
 
-require 'theme/tripal_featuremap.theme.inc';
+require_once 'theme/tripal_featuremap.theme.inc';
 
-require 'includes/tripal_featuremap.admin.inc';
-require 'includes/tripal_featuremap.chado_node.inc';
+require_once 'includes/tripal_featuremap.admin.inc';
+require_once 'includes/tripal_featuremap.chado_node.inc';
 
 /**
  * Implements hook_help().

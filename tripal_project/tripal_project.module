@@ -4,12 +4,13 @@
  * Integrates the Chado Project tables with Drupal Nodes & Views
  */
 
-require 'api/tripal_project.api.inc';
+require_once 'api/tripal_project.api.inc';
+//require_once 'api/tripal_project.DEPRECATED.inc';
 
-require 'theme/tripal_project.theme.inc';
+require_once 'theme/tripal_project.theme.inc';
 
-require 'includes/tripal_project.admin.inc';
-require 'includes/tripal_project.chado_node.inc';
+require_once 'includes/tripal_project.admin.inc';
+require_once 'includes/tripal_project.chado_node.inc';
 
 /**
  * @defgroup tripal_project Project Module
