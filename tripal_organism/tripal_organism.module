@@ -5,6 +5,7 @@
  */
 
 require_once 'api/tripal_organism.api.inc';
+//require_once 'api/tripal_organism.DEPRECATED.inc';
 
 require_once 'includes/tripal_organism.admin.inc';
 require_once 'includes/tripal_organism.chado_node.inc';

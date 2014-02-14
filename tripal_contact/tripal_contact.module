@@ -14,12 +14,13 @@
  * @}
  */
 
-require 'api/tripal_contact.api.inc';
+require_once 'api/tripal_contact.api.inc';
+// require_once 'api/tripal_contact.DEPRECATED.inc';
 
-require 'theme/tripal_contact.theme.inc';
+require_once 'theme/tripal_contact.theme.inc';
 
-require 'includes/tripal_contact.admin.inc';
-require 'includes/tripal_contact.chado_node.inc';
+require_once 'includes/tripal_contact.admin.inc';
+require_once 'includes/tripal_contact.chado_node.inc';
 
 /**
  * Implements hook_views_api().

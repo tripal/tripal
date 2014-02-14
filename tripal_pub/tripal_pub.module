@@ -5,6 +5,7 @@
  */
 
 require_once 'api/tripal_pub.api.inc';
+//require_once 'api/tripal_pub.DEPRECATED.inc';
 
 require_once 'theme/tripal_pub.theme.inc';
 

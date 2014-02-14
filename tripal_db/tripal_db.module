@@ -5,6 +5,8 @@
  */
 
 require_once 'api/tripal_db.api.inc';
+//require_once 'api/tripal_db.DEPRECATED.inc';
+
 require_once 'includes/tripal_db.admin.inc';
 
 /**

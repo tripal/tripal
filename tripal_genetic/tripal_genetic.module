@@ -12,12 +12,12 @@
  * @}
  */
 
-require 'api/tripal_genetic.api.inc';
+require_once 'api/tripal_genetic.api.inc';
 
-require 'theme/tripal_genetic.theme.inc';
+require_once 'theme/tripal_genetic.theme.inc';
 
-require 'includes/tripal_genetic.schema.inc';
-require 'includes/tripal_genetic.admin.inc';
+require_once 'includes/tripal_genetic.schema.inc';
+require_once 'includes/tripal_genetic.admin.inc';
 
 /**
  * Implements hook_permission().
