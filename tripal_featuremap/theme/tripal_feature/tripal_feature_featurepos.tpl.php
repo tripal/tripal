@@ -33,7 +33,6 @@ $feature = tripal_core_expand_chado_vars($feature, 'table', 'featurepos', $optio
 // the function call above will try to expand both and will create an array of matches for each FK.
 // we only want to show the map that this feature belongs to
 $map_positions = $feature->featurepos->map_feature_id;
-dpm($feature);
 
 // the total number of records for the paged query is stored in a session variable
 $total_records = chado_pager_get_count($featurepos_pager_id);
