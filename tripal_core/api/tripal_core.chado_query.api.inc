@@ -1355,7 +1355,7 @@ function chado_query($sql, $args = array()) {
  * @param $limit
  *   The number of query results to display per page.
  * @param $element
- *   An optional integer to distinguish between multiple pagers on one page.
+ *   An numeric identifier used to distinguish between multiple pagers on one page.
  * @param $count_query
  *   An SQL query used to count matching records.
  *
@@ -1366,10 +1366,10 @@ function chado_query($sql, $args = array()) {
  * @ingroup tripal_chado_query_api
  */
 function chado_pager_query($query, $args, $limit, $element, $count_query = '') {
-
   // get the page and offset for the pager
   $page = isset($_GET['page']) ? $_GET['page'] : '0';
   $offset = $limit * $page;
+  $q = $_GET['q'];
 
   // Construct a count query if none was given.
   if (!isset($count_query)) {
@@ -1387,13 +1387,33 @@ function chado_pager_query($query, $args, $limit, $element, $count_query = '') {
   $total_records = $results->fetchField();
 
   // set a session variable for storing the total number of records
-  $_SESSION['chado_pager'][$element]['total_records'] = $total_records;
+  $GLOBALS['chado_pager'][$q][$element]['total_records'] = $total_records;
 
   pager_default_initialize($total_records, $limit, $element);
 
   $query .= ' LIMIT ' . (int) $limit . ' OFFSET ' . (int) $offset;
   $results = chado_query($query, $args);
   return $results;
+}
+/**
+ * A function to retrieve the total number of records for a pager that
+ * was generated using the chado_pager_query() function
+ * 
+ * @param $element
+ *   The $element argument that was passed to the chado_pager_query function
+ *   
+ * @ingroup tripal_chado_query_api
+ */
+function chado_pager_get_count($element) {
+  $q = $_GET['q'];
+  
+  if (array_key_exists($q, $_SESSION['chado_pager']) and 
+      array_key_exists($element, $_SESSION['chado_pager'][$q])) {
+    return $GLOBALS['chado_pager'][$q][$element]['total_records'];
+  }
+  else {
+    return 0;
+  }
 }
 
 /**

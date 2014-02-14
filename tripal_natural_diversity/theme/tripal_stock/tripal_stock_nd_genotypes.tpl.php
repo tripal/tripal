@@ -98,7 +98,7 @@ if (count($nd_experiment_stocks) > 0) {
 }
 
 // the total number of records for the paged query is stored in a session variable
-$total_records = $_SESSION['chado_pager'][$stock_pager_id]['total_records'];
+$total_records = chado_pager_get_count($stock_pager_id);
 
 // now iterate through the feature genotypes and print a paged table.
 if (count($genotypes) > 0) { ?>

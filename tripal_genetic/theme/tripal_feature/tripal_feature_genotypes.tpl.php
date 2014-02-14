@@ -40,7 +40,7 @@ $feature = tripal_core_expand_chado_vars($feature, 'table', 'feature_genotype', 
 $feature_genotypes = $feature->feature_genotype->feature_id;
 
 // the total number of records for the paged query is stored in a session variable
-$total_records = $_SESSION['chado_pager'][$feature_pager_id]['total_records'];
+$total_records = chado_pager_get_count($feature_pager_id);
 
 // now iterate through the feature genotypes and print a paged table.
 if (count($feature_genotypes) > 0) {?>

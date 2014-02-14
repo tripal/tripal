@@ -345,7 +345,7 @@ function tripal_stock_block_info() {
   $blocks['properties']['info'] = t('Tripal Stock Properties');
   $blocks['properties']['cache'] = 'BLOCK_NO_CACHE';
 
-  $blocks['references']['info'] = t('Tripal Stock References');
+  $blocks['references']['info'] = t('Tripal Stock Cross References');
   $blocks['references']['cache'] = 'BLOCK_NO_CACHE';
 
   $blocks['relationships_as_object']['info'] = t('Tripal Stock Relationships');
@@ -396,7 +396,7 @@ function tripal_stock_block_view($delta = '') {
         break;
 
       case 'references':
-        $block['subject'] = t('References');
+        $block['subject'] = t('Cross References');
         $block['content'] = theme('tripal_stock_references', $node);
         break;
 

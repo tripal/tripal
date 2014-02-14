@@ -41,7 +41,7 @@ function tripal_pub_search_page() {
     // get the list of publications from the remote database using the search criteria.
     $pubs = tripal_pub_get_search_results($search_array, $limit);
     $page = isset($_GET['page']) ? $_GET['page'] : '0';
-    $total_records = $_SESSION['chado_pager'][0]['total_records'];
+    $total_records = chado_pager_get_count(0);
     $total_pages = (int) ($total_records / $limit) + 1;
 
     // iterate through the results and construct the table displaying the publications
