@@ -23,7 +23,7 @@ function tripal_contact_get_property($contact_id, $property) {
     )
   );
 
-  return FALSE;
+  return chado_get_property('contact', $contact_id, $property, 'tripal_contact');;
 }
 
 /**
@@ -45,7 +45,7 @@ function tripal_contact_insert_property($contact_id, $property, $value, $update_
     )
   );
 
-  return FALSE;
+  return chado_insert_property('contact', $contact_id, $property, 'tripal_contact', $value, $update_if_present);
 }
 
 /**
@@ -67,7 +67,7 @@ function tripal_contact_update_property($contact_id, $property, $value, $insert_
     )
   );
 
-  return FALSE;
+  return chado_update_property('contact', $contact_id, $property, 'tripal_contact', $value, $insert_if_missing);
 }
 
 /**
@@ -89,7 +89,7 @@ function tripal_contact_delete_property($contact_id, $property) {
     )
   );
 
-  return FALSE;
+  return chado_delete_property('contact', $contact_id, $property, 'tripal_contact');
 }
 
 /**
@@ -111,5 +111,10 @@ function tripal_contact_add_contact($name, $description, $type, $properties) {
     )
   );
 
-  return FALSE;
+  return chado_insert_contact(array(
+    'name' => $name,
+    'description' => $description,
+    'type_name' => $type,
+    'properties' => $properties
+  ));
 }

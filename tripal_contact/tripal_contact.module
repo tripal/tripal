@@ -15,7 +15,7 @@
  */
 
 require_once 'api/tripal_contact.api.inc';
-// require_once 'api/tripal_contact.DEPRECATED.inc';
+require_once 'api/tripal_contact.DEPRECATED.inc';
 
 require_once 'theme/tripal_contact.theme.inc';
 
