@@ -22,8 +22,7 @@ $options = array(
 $organism = tripal_core_expand_chado_vars($organism, 'table', 'stock', $options);
 $stocks = $organism->stock;
 
-// create the pager.  
-// the total number of records for the paged query is stored in a session variable
+// get the total number of records
 $total_records = chado_pager_get_count($pager_id);
 
  

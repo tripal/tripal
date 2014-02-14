@@ -33,7 +33,7 @@ $featuremap = tripal_core_expand_chado_vars($featuremap, 'table', 'featurepos', 
 $feature_positions = $featuremap->featurepos;
 
 
-// the total number of records for the paged query is stored in a session variable
+// get the total number of records
 $total_features = chado_pager_get_count($featurepos_pager_id);
 
 

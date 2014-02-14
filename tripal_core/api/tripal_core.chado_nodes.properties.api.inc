@@ -306,7 +306,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
   else {
     if (isset($details['cv_name'])) {
       $existing_properties = chado_query(
-        "SELECT PP.".$details['property_table']."_id property_id, CVT.cvterm_id as type_id, CVT.name as type_name, CVT.definition, PP.value, PP.rank
+        "SELECT PP.".$details['property_table']."_id as property_id, CVT.cvterm_id as type_id, CVT.name as type_name, CVT.definition, PP.value, PP.rank
         FROM {" . $details['property_table'] . "} PP
         INNER JOIN {cvterm} CVT ON CVT.cvterm_id = PP.type_id
         INNER JOIN {cv} CV      ON CVT.cv_id     = CV.cv_id
