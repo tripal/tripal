@@ -50,64 +50,13 @@ function tripal_stock_admin_stock_view() {
 function tripal_stock_admin() {
   $form = array();
 
-  get_tripal_stock_admin_form_title_set($form);
-  get_tripal_stock_admin_form_url_set($form);
-  get_tripal_stock_admin_form_vocabulary_set($form);
-  get_tripal_stock_admin_form_cleanup_set($form);
 
-
-  return system_settings_form($form);
-
-}
-
-/**
- * Implements hook_form_validate(): Validates user input
- *
- * @param $form
- *   An array describing the form that was rendered
- * @param $form_state
- *   An array describing the current state of the form including user input
- *
- * @ingroup tripal_stock
- */
-function tripal_stock_admin_validate($form, &$form_state) {
-  global $user;  // we need access to the user info
-  $job_args = array();
-
-  variable_set('chado_stock_types_cv', $form_state['values']['stock_types_cv']);
-  variable_set('chado_stock_prop_types_cv', $form_state['values']['stock_prop_types_cv']);
-  variable_set('chado_stock_relationship_cv', $form_state['values']['stock_relationship_cv']);
-  variable_set('chado_stock_url_string', $form_state['values']['chado_stock_url_string']);
-
-  switch ($form_state['values']['op']) {
-    case  t('Set Controlled Vacabularies') :
-      break;
-
-    case t('Clean up orphaned stocks') :
-      tripal_add_job('Cleanup orphaned stocks', 'tripal_stock',
-         'tripal_stock_cleanup', $job_args, $user->uid);
-      break;
-
-    case t('Set Stock URLs') :
-      tripal_add_job('Set Stock URLs', 'tripal_stock',
-        'tripal_stock_set_urls', $job_args, $user->uid);
-      break;
-  }
-
-}
-
-/**
- * Form: Set the title type to be used for all stocks
- *
- * @ingroup tripal_stock
- */
-function get_tripal_stock_admin_form_title_set(&$form) {
-
+  // STOCK PAGE TITLES CONFIGURATION
   $form['title'] = array(
     '#type' => 'fieldset',
     '#title' => t('Stock Page Titles'),
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+    '#collapsed' => FALSE,
   );
   $form['title']['desc'] = array(
     '#type'  => 'markup',
@@ -133,20 +82,14 @@ function get_tripal_stock_admin_form_title_set(&$form) {
     '#options'       => $options,
     '#default_value' => variable_get('chado_stock_title', 'unique_constraint'),
   );
-}
+  
 
-/**
- * Form: Set UR for stocks
- *
- * @ingroup tripal_stock
- */
-function get_tripal_stock_admin_form_url_set(&$form) {
-
+  // STOCK URL CONFIGURATION
   $form['url'] = array(
     '#type' => 'fieldset',
     '#title' => t('Stock URL Path'),
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+    '#collapsed' => FALSE,
   );
 
   $options = array(
@@ -200,61 +143,42 @@ function get_tripal_stock_admin_form_url_set(&$form) {
     '#type' => 'submit',
     '#value' => t('Set Stock URLs'),
   );
+
+  return system_settings_form($form);
+
 }
 
 /**
- * Set Controlled vocabularies used in stock tables
+ * Implements hook_form_validate(): Validates user input
+ *
+ * @param $form
+ *   An array describing the form that was rendered
+ * @param $form_state
+ *   An array describing the current state of the form including user input
  *
  * @ingroup tripal_stock
  */
-function get_tripal_stock_admin_form_vocabulary_set(&$form) {
+function tripal_stock_admin_validate($form, &$form_state) {
+  global $user;  // we need access to the user info
+  $job_args = array();
 
-  $form['set_cv'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Set Stock Controlled Vocabularies'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-  );
+  variable_set('chado_stock_types_cv', $form_state['values']['stock_types_cv']);
+  variable_set('chado_stock_prop_types_cv', $form_state['values']['stock_prop_types_cv']);
+  variable_set('chado_stock_relationship_cv', $form_state['values']['stock_relationship_cv']);
+  variable_set('chado_stock_url_string', $form_state['values']['chado_stock_url_string']);
 
-  $form['set_cv']['message'] = array(
-       '#value' => t("This setting allows you to set which chado controlled vocabularies (cv)"
-              ." are used. Cvs are used to control user input for the type of stock,"
-        ." any properties they enter for a stock & the types of relationships"
-        ." between stocks. Only cvs already loaded into chado can be selected here.")
-  );
+  switch ($form_state['values']['op']) {
+    case  t('Set Controlled Vacabularies') :
+      break;
 
-  // get the list of CVs for the next form element
-  $sql = "SELECT * FROM {cv} ORDER BY name";
-  $results = chado_query($sql);
-  $cv_options = array();
-  while ($r = $results->fetchObject()) {
-    $cv_options[$r->cv_id] = $r->name;
+    case t('Clean up orphaned stocks') :
+      tripal_add_job('Cleanup orphaned stocks', 'tripal_stock',
+         'tripal_stock_cleanup', $job_args, $user->uid);
+      break;
+
+    case t('Set Stock URLs') :
+      tripal_add_job('Set Stock URLs', 'tripal_stock',
+        'tripal_stock_set_urls', $job_args, $user->uid);
+      break;
   }
-
-  $form['set_cv']['stock_types_cv'] = array(
-   '#type' => 'select',
-   '#title' => t('Controlled Vocabulary governing Stock Types'),
-   '#options' => $cv_options,
-   '#default_value' => variable_get('chado_stock_types_cv', 0)
-  );
-
-  $form['set_cv']['stock_prop_types_cv'] = array(
-   '#type' => 'select',
-   '#title' => t('Controlled Vocabulary governing Types of Stock Properties'),
-   '#description' => t("This cv must contain a cvterm entry where name='synonym'."),
-   '#options' => $cv_options,
-   '#default_value' => variable_get('chado_stock_prop_types_cv', 0)
-  );
-
-  $form['set_cv']['stock_relationship_cv'] = array(
-   '#type' => 'select',
-   '#title' => t('Controlled Vocabulary governing Types of Relationsips between Stocks'),
-   '#options' => $cv_options,
-   '#default_value' => variable_get('chado_stock_relationship_cv', 0)
-  );
-
-  $form['set_cv']['button'] = array(
-    '#type' => 'submit',
-    '#value' => t('Set Controlled Vacabularies')
-  );
 }

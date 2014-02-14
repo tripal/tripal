@@ -27,7 +27,7 @@ $options = array(
   ),
   'fk_include' => array(
     'genotype_id' => 1
-  );
+  ),
 );
 $stock = tripal_core_expand_chado_vars($stock, 'table', 'stock_genotype', $options); 
 $stock_genotypes = $stock->stock_genotype;
