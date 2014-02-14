@@ -9,7 +9,7 @@ $organism = tripal_core_expand_chado_vars($organism,'field','organism.comment');
 $image = '';
 $image_url = tripal_organism_get_image_url($organism, $node->nid); 
 if ($image_url) {
-  $image = "<img src=\"$image_url\">";
+  $image = "<img class=\"tripal-organism-img\" src=\"$image_url\">";
 }
 
 // the $headers array is an array of fields to use as the colum headers. 

@@ -1407,8 +1407,8 @@ function chado_pager_query($query, $args, $limit, $element, $count_query = '') {
 function chado_pager_get_count($element) {
   $q = $_GET['q'];
   
-  if (array_key_exists($q, $_SESSION['chado_pager']) and 
-      array_key_exists($element, $_SESSION['chado_pager'][$q])) {
+  if (array_key_exists($q, $GLOBALS['chado_pager']) and 
+      array_key_exists($element, $GLOBALS['chado_pager'][$q])) {
     return $GLOBALS['chado_pager'][$q][$element]['total_records'];
   }
   else {

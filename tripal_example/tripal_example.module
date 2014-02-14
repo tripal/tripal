@@ -239,8 +239,12 @@ function tripal_example_cron() {
  * @param $form_id
  */
 function tripal_example_form_alter(&$form, &$form_state, $form_id) {
-  // turn of preview button for insert/updates
+
   if ($form_id == "chado_example_node_form") {
+    // turn of preview button for insert/updates
     $form['actions']['preview']['#access'] = FALSE;
+    
+    //remove the body field
+    unset($form['body']);
   }
 }
