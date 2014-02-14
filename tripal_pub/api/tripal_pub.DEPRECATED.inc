@@ -309,7 +309,7 @@ function tripal_pub_get_property($pub_id, $property) {
     )
   );
 
-  return FALSE;
+  return chado_get_property('pub', $pub_id, $property, 'tripal_pub');
 }
 
 /**
@@ -331,7 +331,7 @@ function tripal_pub_insert_property($pub_id, $property, $value, $update_if_prese
     )
   );
 
-  return FALSE;
+  return chado_insert_property('pub', $pub_id, $property, 'tripal_pub', $value, $update_if_present);
 }
 
 /**
@@ -353,7 +353,7 @@ function tripal_pub_update_property($pub_id, $property, $value, $insert_if_missi
     )
   );
 
-  return FALSE;
+  return chado_update_property('pub', $pub_id, $property, 'tripal_pub', $value, $insert_if_missing);
 }
 
 /**
@@ -375,7 +375,7 @@ function tripal_pub_delete_property($pub_id, $property) {
     )
   );
 
-  return FALSE;
+  return chado_delete_property('pub', $pub_id, $property, 'tripal_pub');
 }
 
 /**
