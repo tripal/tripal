@@ -494,7 +494,7 @@ function tripal_library_node_view($node, $view_mode, $langcode) {
         $node->content['tripal_library_references'] = array(
           '#markup' => theme('tripal_library_references', array('node' => $node)),
           '#tripal_toc_id'    => 'references',
-          '#tripal_toc_title' => 'References',
+          '#tripal_toc_title' => 'Cross References',
         );
         $node->content['tripal_library_synonyms'] = array(
           '#markup' => theme('tripal_library_synonyms', array('node' => $node)),

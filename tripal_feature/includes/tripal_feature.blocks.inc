@@ -61,7 +61,7 @@ function tripal_feature_block_view($delta = '') {
     $block = array();
     switch ($delta) {
       case 'references':
-        $block['subject'] = t('References');
+        $block['subject'] = t('Cross References');
         $block['content'] = theme('tripal_feature_references', $node);
         break;
       case 'base':

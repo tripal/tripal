@@ -881,7 +881,7 @@ function tripal_stock_node_view($node, $view_mode, $langcode) {
         $node->content['tripal_stock_references'] = array(
           '#markup' => theme('tripal_stock_references', array('node' => $node)),
           '#tripal_toc_id'    => 'references',
-          '#tripal_toc_title' => 'References',
+          '#tripal_toc_title' => 'Cross References',
         );
         $node->content['tripal_stock_relationships'] = array(
           '#markup' => theme('tripal_stock_relationships', array('node' => $node)),

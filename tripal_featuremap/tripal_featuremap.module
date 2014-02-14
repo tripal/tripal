@@ -283,7 +283,7 @@ function tripal_featuremap_block_view($delta = '') {
         $block['content'] = theme('tripal_featuremap_publication', $node);
         break;
       case 'maprefs':
-        $block['subject'] = t('References');
+        $block['subject'] = t('Cross References');
         $block['content'] = theme('tripal_featuremap_references', $node);
         break;
       default :
