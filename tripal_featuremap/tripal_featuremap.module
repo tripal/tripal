@@ -13,7 +13,7 @@
  */
 
 require_once 'api/tripal_featuremap.api.inc';
-//require_once 'api/tripal_featuremap.DEPRECATED.inc';
+require_once 'api/tripal_featuremap.DEPRECATED.inc';
 
 require_once 'theme/tripal_featuremap.theme.inc';
 
@@ -218,13 +218,6 @@ function tripal_featuremap_theme($existing, $type, $theme, $path) {
       'variables' =>  array(NULL),
       'path' => "$path/theme/tripal_featuremap",
     ),
-    
-    // templates for the chado_feature node type
-    'tripal_feature_featurepos' => array(
-      'arguments' => array('node' => NULL),
-      'template' => 'tripal_feature_featurepos',
-      'path' => "$path/theme/tripal_feature",
-    ),
   );
   return $items;
 }
@@ -284,7 +277,7 @@ function tripal_featuremap_block_view($delta = '') {
         $block['content'] = theme('tripal_featuremap_publication', $node);
         break;
       case 'maprefs':
-        $block['subject'] = t('Cross References');
+        $block['subject'] = t('References');
         $block['content'] = theme('tripal_featuremap_references', $node);
         break;
       default :
