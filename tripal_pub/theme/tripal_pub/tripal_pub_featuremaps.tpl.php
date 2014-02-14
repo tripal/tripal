@@ -29,7 +29,7 @@ if (count($featuremap_pubs) > 0 ) {
 }
 
 // the total number of records for the paged query is stored in a session variable
-$total_records = $_SESSION['chado_pager'][$element]['total_records'];
+$total_records = chado_pager_get_count($element);
 
 if(count($featuremaps) > 0){ ?>
   <div class="tripal_pub-data-block-desc tripal-data-block-desc">This publication contains information about <?php print number_format($total_records) ?> maps:</div> <?php 

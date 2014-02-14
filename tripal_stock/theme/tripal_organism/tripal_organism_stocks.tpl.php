@@ -24,7 +24,7 @@ $stocks = $organism->stock;
 
 // create the pager.  
 // the total number of records for the paged query is stored in a session variable
-$total_records = $_SESSION['chado_pager'][$pager_id]['total_records'];
+$total_records = chado_pager_get_count($pager_id);
 
  
 if (count($stocks) > 0) { ?>

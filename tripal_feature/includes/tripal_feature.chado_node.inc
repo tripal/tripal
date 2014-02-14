@@ -864,11 +864,6 @@ function tripal_feature_node_view($node, $view_mode, $langcode) {
           '#tripal_toc_title' => 'Overview',
           '#weight' => -100,
         );
-        $node->content['tripal_feature_featurepos'] = array(
-          '#markup' => theme('tripal_feature_featurepos', array('node' => $node)),
-          '#tripal_toc_id'    => 'featurepos',
-          '#tripal_toc_title' => 'Maps',
-        );
         $node->content['tripal_feature_properties'] = array(
           '#markup' => theme('tripal_feature_properties', array('node' => $node)),
           '#tripal_toc_id'    => 'properties',

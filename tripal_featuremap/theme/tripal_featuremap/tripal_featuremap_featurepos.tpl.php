@@ -34,7 +34,7 @@ $feature_positions = $featuremap->featurepos;
 
 
 // the total number of records for the paged query is stored in a session variable
-$total_features = $_SESSION['chado_pager'][$featurepos_pager_id]['total_records'];
+$total_features = chado_pager_get_count($featurepos_pager_id);
 
 
 if(count($feature_positions) > 0){ ?>

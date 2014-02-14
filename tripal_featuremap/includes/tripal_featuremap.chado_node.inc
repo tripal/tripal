@@ -524,5 +524,14 @@ function tripal_featuremap_node_view($node, $view_mode, $langcode) {
         );
       }
       break;
+    case 'chado_feature':
+      if ($view_mode == 'full') {
+        $node->content['tripal_feature_featurepos'] = array(
+          '#markup' => theme('tripal_feature_featurepos', array('node' => $node)),
+          '#tripal_toc_id'    => 'featurepos',
+          '#tripal_toc_title' => 'Maps',
+        );
+      }
+      break;
   }
 }
