@@ -23,7 +23,7 @@ function tripal_project_get_property($project_id, $property) {
     )
   );
 
-  return FALSE;
+  return chado_get_property('project', $project_id, $property, 'project_property');
 }
 
 /**
@@ -45,7 +45,7 @@ function tripal_project_insert_property($project_id, $property, $value, $update_
     )
   );
 
-  return FALSE;
+  return chado_insert_property('project', $project_id, $property, 'project_property', $value, $update_if_present);
 }
 
 /**
@@ -67,7 +67,7 @@ function tripal_project_update_property($project_id, $property, $value, $insert_
     )
   );
 
-  return FALSE;
+  return chado_update_property('project', $project_id, $property, 'project_property', $value, $insert_if_missing);
 }
 
 /**
@@ -89,5 +89,5 @@ function tripal_project_delete_property($project_id, $property) {
     )
   );
 
-  return FALSE;
+  return chado_delete_property('project', $project_id, $property, 'project_property');
 }

@@ -23,7 +23,7 @@ function tripal_library_get_property($library_id, $property) {
     )
   );
 
-  return FALSE;
+  return chado_get_property('library', $library_id, $property, 'library_property');
 }
 
 /**
@@ -45,7 +45,7 @@ function tripal_library_insert_property($library_id, $property, $value, $update_
     )
   );
 
-  return FALSE;
+  return chado_insert_property('library', $library_id, $property, 'library_property', $value, $update_if_present);
 }
 
 /**
@@ -67,7 +67,7 @@ function tripal_library_update_property($library_id, $property, $value, $insert_
     )
   );
 
-  return FALSE;
+  return chado_update_property('library', $library_id, $property, 'library_property', $value, $insert_if_missing);
 }
 
 /**
@@ -89,5 +89,5 @@ function tripal_library_delete_property($library_id, $property) {
     )
   );
 
-  return FALSE;
+  return chado_delete_property('library', $library_id, $property, 'library_property');
 }
