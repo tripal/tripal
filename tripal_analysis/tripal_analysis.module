@@ -9,6 +9,7 @@
 
 require_once 'api/tripal_analysis.api.inc';
 require_once 'api/tripal_analysis.schema.api.inc';
+require_once 'api/tripal_analysis.DEPRECATED.inc';
 
 require_once 'includes/tripal_analysis_privacy.inc';
 require_once 'includes/tripal_analysis.admin.inc';
