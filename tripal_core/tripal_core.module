@@ -645,7 +645,8 @@ function tripal_core_node_view_alter(&$build) {
             site's default theme, edit then " .
             l('clear the Drupal cache', 'admin/config/development/performance', array('attributes' => array('target' => '_blank'))) . ".
             Currently, the content above is provided by this template: <br><br>$path",
-            TRIPAL_INFO, array('return_html' => 1)
+            TRIPAL_INFO, 
+            array('return_html' => 1)
           );
         }
 

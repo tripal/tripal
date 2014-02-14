@@ -14,52 +14,82 @@ if(property_exists($organism, 'feature_counts')) {
 if ($enabled) { 
   if (count($types) > 0){ ?>
     <div class="tripal_organism-data-block-desc tripal-data-block-desc">The following data types are currently present for this organism</div> <?php
+    
     // let admins know they can customize the terms that appear in the list
-    print theme('tripal_admin_message', array('message' => "
-      Administrators, you can customize the types of terms that appear in this report by 
-      navigating to the " . l('Tripal feature configuration page', 'admin/tripal/chado/tripal_feature/configuration') . "
+    print tripal_set_message("
+      Administrators, you can customize the types of terms that appear in this report by navigating to the " . 
+      l('Tripal feature configuration page', 'admin/tripal/chado/tripal_feature/configuration', array('attributes' => array('target' => '_blank'))) . "
       opening the section \"Feature Summary Report\" and adding the list of
-      terms you want to appear in the list. You can rename terms as well.  To disable this report and 
-      remove it from the list of resources, navigate to the " . 
-      l('Tripal feature configuration page', 'admin/tripal/tripal_feature/configuration') . "
-      and hide the \"Feature Summary\". To refresh the data,re-populate the " .
-      l('organism_feature_count', 'admin/tripal/schema/mviews') . " materialized view.")
-    ); ?>
-    <table id="tripal_organism-table-feature_counts" class="tripal_organism-table tripal-table tripal-table-horz">     
-      <tr class="tripal_organism-table-odd-row tripal-table-even-row">
-        <th>Feature Type</th>
-        <th>Count</th>
-      </tr> <?php
-      for ($j = 0; $j < count($types); $j++) {
-        $type = $types[$j];
-        $name = $names[$j];
-        $class = 'tripal_organism-table-odd-row tripal-table-odd-row';
-        if ($i % 2 == 0 ) {
-         $class = 'tripal_organism-table-even-row tripal-table-even-row';
-        }?>
-        <tr class="<?php print $class ?>">
-          <td><span title="<?php print $type->definition ?>"><?php print $name?></span></td>
-          <td><?php print number_format($type->num_features) ?></td>
-        </tr> <?php
-        $i++;  
-      } ?>
-    </table>
+      terms you want to appear in the list. You can rename terms as well. To refresh the data,re-populate the " .
+      l('organism_feature_count', 'admin/tripal/schema/mviews', array('attributes' => array('target' => '_blank'))) . " 
+      materialized view.",
+      TRIPAL_INFO,
+      array('return_html' => 1)
+    ); 
+    
+    // the $headers array is an array of fields to use as the colum headers.
+    // additional documentation can be found here
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $headers = array('Feature Type' ,'Count');
+    
+    // the $rows array contains an array of rows where each row is an array
+    // of values for each column of the table in that row.  Additional documentation
+    // can be found here:
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $rows = array();
+    
+    for ($j = 0; $j < count($types); $j++) {
+      $type = $types[$j];
+      $name = $names[$j];
+      
+      $rows[] = array(
+        "<span title=\"" . $type->definition . "\">$name</span>",
+        number_format($type->num_features),
+      );
+    } 
+    // the $table array contains the headers and rows array as well as other
+    // options for controlling the display of the table.  Additional
+    // documentation can be found here:
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $table = array(
+      'header' => $headers,
+      'rows' => $rows,
+      'attributes' => array(
+        'id' => 'tripal_organism-table-features',
+      ),
+      'sticky' => FALSE,
+      'caption' => '',
+      'colgroups' => array(),
+      'empty' => '',
+    );
+    // once we have our table array structure defined, we call Drupal's theme_table()
+    // function to generate the table.
+    print theme_table($table);
+    
+    ?>
+
     <img class="tripal_cv_chart" id="tripal_feature_cv_chart_<?php print $organism->organism_id?>" src="" border="0"><?php 
    } 
    else { 
     if (user_access('access administration pages')) { ?>
       <div class="tripal_organism-data-block-desc tripal-data-block-desc">The following data types are currently present for this organism</div> <?php 
-      print theme('tripal_admin_message', array('message' => "
+      print tripal_set_message("
          Administrators, to view the feature type report:
          <ul>
-            <li>Populate the " . l('organism_feature_count', 'admin/tripal/schema/mviews') ." materialized view</li>
+            <li>Populate the " . 
+                l('organism_feature_count', 'admin/tripal/schema/mviews', array('attributes' => array('target' => '_blank'))) ." 
+                materialized view</li>
             <li>Refresh this page</li>
          </ul> 
          To disable this report and remove it from the list of resources:
          <ul>
-           <li>Navigate to the " . l('Tripal feature configuration page', 'admin/tripal/chado/tripal_feature/configuration') ." and hide the \"Feature Summary\"</li>
+           <li>Navigate to the " . 
+               l('Tripal feature configuration page', 'admin/tripal/chado/tripal_feature/configuration', array('attributes' => array('target' => '_blank'))) ." 
+               and hide the \"Feature Summary\"</li>
           </ul>
-         </p>")
+         </p>",
+         TRIPAL_INFO,
+         array('return_html' => 1)
       );              
     }
   }
