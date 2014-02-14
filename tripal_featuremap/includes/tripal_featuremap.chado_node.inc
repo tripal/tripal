@@ -15,14 +15,11 @@
 function tripal_featuremap_node_info() {
   $nodes = array();
   $nodes['chado_featuremap'] = array(
-    'name' => t('Feature Map'),
-    'base' => 'chado_featuremap',
+    'name'        => t('Feature Map'),
+    'base'        => 'chado_featuremap',
     'description' => t('A map of features from the chado database (e.g. genetic map)'),
-    'has_title' => FALSE,
-    'title_label' => t('Feature Map'),
-    'has_body' => FALSE,
-    'body_label' => t('Feature Map Description'),
-    'locked' => TRUE,
+    'has_title'   => TRUE,
+    'locked'      => TRUE,
     'chado_node_api' => array(
       'base_table' => 'featuremap',
       'hook_prefix' => 'chado_featuremap',

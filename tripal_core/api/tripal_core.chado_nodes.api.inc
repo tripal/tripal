@@ -101,7 +101,7 @@ function chado_get_nid_from_id($table, $id) {
         'base' => 'chado_example',
         'description' => t('A Chado example is a collection of material that can be sampled and have experiments performed on it.'),
         'has_title' => TRUE,
-        'has_body' => FALSE,
+        'locked' => TRUE,
 
         // this is what differs from the regular Drupal-documented hook_node_info()
         'chado_node_api' => array(

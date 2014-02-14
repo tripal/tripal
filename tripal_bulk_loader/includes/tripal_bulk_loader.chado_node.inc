@@ -15,12 +15,11 @@
 function tripal_bulk_loader_node_info() {
   $nodes = array();
   $nodes['tripal_bulk_loader'] = array(
-      'name' => t('Bulk Loading Job'),
-      'base' => 'tripal_bulk_loader',
+      'name'        => t('Bulk Loading Job'),
+      'base'        => 'tripal_bulk_loader',
       'description' => t('A bulk loader for inserting tab-delimited data into chado database'),
-      'has_title' => TRUE,
-      'has_body' => FALSE,
-      'locked' => TRUE
+      'has_title'   => TRUE,
+      'locked'      => TRUE
   );
   return $nodes;
 }

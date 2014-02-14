@@ -16,12 +16,11 @@
 function tripal_analysis_node_info() {
   $nodes = array();
   $nodes['chado_analysis'] = array(
-    'name' => t('Analysis'),
-    'base' => 'chado_analysis',
+    'name'        => t('Analysis'),
+    'base'        => 'chado_analysis',
     'description' => t('An analysis'),
-    'has_title' => FALSE,
-    'title_label' => t('Analysis'),
-    'locked' => TRUE,
+    'has_title'   => TRUE,
+    'locked'      => TRUE,
     'chado_node_api' => array(
       'base_table' => 'analysis',
       'hook_prefix' => 'chado_analysis',
