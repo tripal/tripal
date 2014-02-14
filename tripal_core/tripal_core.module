@@ -565,12 +565,17 @@ function tripal_core_node_view_alter(&$build) {
   // make some changes to each block of content so that we can associate
   // a table of contents and add administrator and curator messages
   if (preg_match('/chado_/', $node->type)) {
-
+    
     // iterate through all the elements of the $build array and for those
     // that are wanting to provide content for this node
     $markup = array();
     foreach ($build as $key => $value) {
-
+      
+      // skip the body element as the Tripal node types do not use it
+      if ($key == 'body') {
+        continue;
+      }
+      
       // examine elements without a '#' prefix as these should be adding
       // contents to the page. Skip the table of contents and links as those
       // will be placed elsewhere

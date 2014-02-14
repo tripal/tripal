@@ -523,6 +523,7 @@ function tripal_organism_node_presave($node) {
 function tripal_organism_node_view($node, $view_mode, $langcode) {
   switch ($node->type) {
     case 'chado_organism':
+
       // Show feature browser and counts
       if ($view_mode == 'full') {
         $node->content['tripal_organism_base'] = array(

@@ -1201,6 +1201,10 @@ function tripal_feature_form_alter(&$form, &$form_state, $form_id) {
   }
   // turn off preview button for insert/updates
   if ($form_id == "chado_feature_node_form") {
+    // turn of preview button for insert/updates
     $form['actions']['preview']['#access'] = FALSE;
+    
+    //remove the body field
+    unset($form['body']);
   }
 }

@@ -8,8 +8,10 @@ $terms = $library->library_cvterm;
 
 // order the terms by CV
 $s_terms = array();
-foreach ($terms as $term) {
-  $s_terms[$term->cvterm_id->cv_id->name][] = $term;  
+if ($terms) {
+  foreach ($terms as $term) {
+    $s_terms[$term->cvterm_id->cv_id->name][] = $term;  
+  }
 }
 
 if (count($s_terms) > 0) { ?>

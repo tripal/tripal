@@ -265,8 +265,12 @@ function tripal_project_block_view($delta = '') {
  * @ingroup tripal_project
  */
 function tripal_project_form_alter(&$form, &$form_state, $form_id) {
-  // turn of preview button for insert/updates
+
   if ($form_id == "chado_project_node_form") {
+    // turn of preview button for insert/updates
     $form['actions']['preview']['#access'] = FALSE;
+    
+    //remove the body field
+    unset($form['body']);
   }
 }
