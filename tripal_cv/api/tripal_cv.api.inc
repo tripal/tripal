@@ -24,117 +24,87 @@
 /**
  * Retrieves a chado controlled vocabulary object
  *
- * @param $select_values
- *   An array meant to uniquely select a given controlled vocabulary
+ * @param $identifier
+ *   An array with the key stating what the identifier is. Supported keys (only on of the
+ *   following unique keys is required):
+ *    - cv_id: the chado cv.cv_id primary key
+ *    - name: the chado cv.name field (assume unique)
+ *    - select: an array similar to $values passed into chado_select_record(). It should
+ *      fully specify the cv record to be returned.
+ * @param $options
+ *   An array of options. Supported keys include:
+ *     - Any keys supported by chado_generate_var(). See that function definition for
+ *       additional details.
  *
  * @return
- *   Chado controlled vocabulary object
- *
- * The controlled vocabulary is selected using tripal_core_chado select and as such the
- * $select_values array parameter meant to uniquely identify the controlled vocab to be
- * returned follows the same form as when using tripal_core_chado_select directly.
- *
- * Example Usage:
- * @code
-    $select_values = array(
-      'name' => 'feature_property'
-    );
-    $cv_object = tripal_cv_get_cv($select_values);
- * @endcode
- *  The above code selects the feature_property cv and returns the following object:
- * @code
-    $cv_object = stdClass Object (
-      [cv_id] => 13
-      [name] => feature_property
-      [definition] =>
-    );
- * @endcode
- *
- * @ingroup tripal_cv_api
+ *   If unique values were passed in as an identifier then an object describing the cv
+ *   will be returned (will be a chado variable from chado_generate_var()). Otherwise,
+ *   an array of objects will be returned.
  */
-function tripal_cv_get_cv($select_values) {
+function chado_get_cv($identifiers, $options = array()) {
 
-  $columns = array(
-    'cv_id',
-    'name',
-    'definition',
+  // Error Checking of parameters
+  if (!is_array($identifiers)) {
+    tripal_report_error(
+      'tripal_cv_api',
+      TRIPAL_ERROR,
+      "chado_get_cv: The identifier passed in is expected to be an array with the key
+        matching a column name in the cv table (ie: cv_id or name). You passed in %identifier.",
+      array(
+        '%identifier'=> print_r($identifiers, TRUE)
+      )
+    );
+  }
+  elseif (empty($identifiers)) {
+    tripal_report_error(
+      'tripal_cv_api',
+      TRIPAL_ERROR,
+      "chado_get_cv: You did not pass in anything to identify the cv you want. The identifier
+        is expected to be an array with the key matching a column name in the cv table
+        (ie: cv_id or name). You passed in %identifier.",
+      array(
+        '%identifier'=> print_r($identifiers, TRUE)
+      )
+    );
+  }
+
+  // Try to get the cv
+  $cv = chado_generate_var(
+    'cv',
+    $identifiers,
+    $options
   );
-  $results = chado_select_record('cv', $columns, $select_values);
-  if (sizeof($results) == 1) {
-    return $results[0];
+
+  // Ensure the cv is singular. If it's an array then it is not singular
+  if (is_array($cv)) {
+    tripal_report_error(
+      'tripal_cv_api',
+      TRIPAL_ERROR,
+      "chado_get_cv: The identifiers you passed in were not unique. You passed in %identifier.",
+      array(
+        '%identifier'=> print_r($identifiers, TRUE)
+      )
+    );
   }
-  elseif (empty($results)) {
-    tripal_report_error('tripal_cv', TRIPAL_WARNING,
-      'tripal_cv_get_cv: No cv matches criteria values:%values',
-      array('%values' => print_r($select_values, TRUE)));
-    return FALSE;
+
+  // Report an error if $cv is FALSE since then chado_generate_var has failed
+  elseif ($cv === FALSE) {
+    tripal_report_error(
+      'tripal_cv_api',
+      TRIPAL_ERROR,
+      "chado_get_cv: chado_generate_var() failed to return a cv based on the identifiers
+        you passed in. You should check that your identifiers are correct, as well as, look
+        for a chado_generate_var error for additional clues. You passed in %identifier.",
+      array(
+        '%identifier'=> print_r($identifiers, TRUE)
+      )
+    );
   }
+
+  // Else, as far we know, everything is fine so give them their cv :)
   else {
-    tripal_report_error('tripal_cv', TRIPAL_WARNING,
-      'tripal_cv_get_cv: 2+ cvs match criteria values:%values',
-      array('%values' => print_r($select_values, TRUE)));
+    return $cv;
   }
-
-}
-
-/**
- * Retrieve a cv given the cv name
- *
- * @param $name
- *  The name of the cv to be returned
- * @return
- *   The cv object for the specified CV name
- *
- * @ingroup tripal_cv_api
- */
-function tripal_cv_get_cv_by_name($name) {
-
-  $r = chado_select_record('cv', array('*'), array('name' => $name));
-
-  return $r[0];
-}
-
-/**
- * Retrieve the cv object for the specified CV id
- *
- * NOTE: This function is deprecated.
- * @see tripal_core_chado_generate_vars()
- *
- * @param $cv_id
- *   The unique identifier for the cv to retrieve
- *
- * @return
- *   An object describing the cv
- *
- * @ingroup tripal_cv_api
- */
-function tripal_cv_get_cv_by_id($cv_id) {
-
-  $r = chado_select_record('cv', array('*'), array('cv_id' => $cv_id));
-
-  return $r;
-}
-
-/**
- * Retrieve the cv id for the specified CV by name
- *
- * NOTE: This function is deprecated.
- * @see tripal_core_chado_generate_vars()
- *
- * @param $cv_name
- *   The unique name for the cv to retrieve
- *
- * @return
- *   The numeric cv ID
- *
- * @ingroup tripal_cv_api
- */
-function tripal_cv_get_cv_id($cv_name) {
-
-  $sql = "SELECT cv_id FROM {cv} WHERE name = :name";
-  $cv = chado_query($sql, array(':name' => $cv_name))->fetchObject();
-
-  return $cv->cv_id;
 }
 
 /**
@@ -146,7 +116,7 @@ function tripal_cv_get_cv_id($cv_name) {
  *
  * @ingroup tripal_cv_api
  */
-function tripal_cv_get_cv_options() {
+function cv_get_select_options() {
 
   $results = chado_select_record('cv', array('cv_id', 'name'), array());
 
@@ -160,136 +130,127 @@ function tripal_cv_get_cv_options() {
 }
 
 /**
- * Retrieve a chado cvterm object with a given name
+ * Retrieves a chado controlled vocabulary term object
  *
- * @param $cvterm_id
- *   the cvterm.cvterm_id
+ * @param $identifier
+ *   An array with the key stating what the identifier is. Supported keys (only on of the
+ *   following unique keys is required):
+ *    - cvterm_id: the chado cv.cvterm_id primary key
+ *    - name: the chado cv.name field (assume unique)
+ *    - synonym: an array with 'name' => the name of the synonym of the cvterm you want
+ *        returned; 'cv_id' => the cv_id of the synonym; 'cv_name' => the name of the cv
+ *        of the synonym
+ * @param $options
+ *   An array of options. Supported keys include:
+ *     - Any keys supported by chado_generate_var(). See that function definition for
+ *       additional details.
  *
- * @return
- *   cvterm array or FALSE on error
- *
- * @ingroup tripal_cv_api
- */
-function tripal_cv_get_cvterm_by_id($cvterm_id) {
-  if (!is_numeric($cvterm_id)) {
-    return FALSE;
-  }
-  $values = array('cvterm_id' => $cvterm_id);
-  $options = array('statement_name' => 'sel_cvterm_id');
-  $r = chado_select_record('cvterm', array('*'), $values, $options);
-  if (!$r) {
-    return FALSE;
-  }
-  return $r[0];
-}
-
-/**
- * Retrieve a chado cvterm object with a given name
- *
- * @param $name
- *   the cvterm.name
- * @param $cv_id
- *   the cv_id of the term you are looking for
- * @param $cv_name
- *   the name of the CV
+ * NOTE: the $identifier parameter can really be any array similar to $values passed into
+ *   chado_select_record(). It should fully specify the cv record to be returned.
  *
  * @return
- *   cvterm array or FALSE on error
- *
- * @ingroup tripal_cv_api
+ *   If unique values were passed in as an identifier then an object describing the cvterm
+ *   will be returned (will be a chado variable from chado_generate_var()). Otherwise,
+ *   an array of objects will be returned.
  */
-function tripal_cv_get_cvterm_by_name($name, $cv_id = NULL, $cv_name = 'tripal') {
+function chado_get_cvterm($identifiers, $options = array()) {
 
-  if ($cv_id) {
-    $values = array(
-       'name' => $name,
-       'cv_id' => $cv_id,
+  // Error Checking of parameters
+  if (!is_array($identifiers)) {
+    tripal_report_error(
+      'tripal_cv_api',
+      TRIPAL_ERROR,
+      "chado_get_cvterm: The identifier passed in is expected to be an array with the key
+        matching a column name in the cvterm table (ie: cvterm_id or name). You passed in %identifier.",
+      array(
+        '%identifier'=> print_r($identifiers, TRUE)
+      )
     );
+  }
+  elseif (empty($identifiers)) {
+    tripal_report_error(
+      'tripal_cv_api',
+      TRIPAL_ERROR,
+      "chado_get_cvterm: You did not pass in anything to identify the cvterm you want. The identifier
+        is expected to be an array with the key matching a column name in the cvterm table
+        (ie: cvterm_id or name). You passed in %identifier.",
+      array(
+        '%identifier'=> print_r($identifiers, TRUE)
+      )
+    );
+  }
+
+  // If synonym was passed in, then process this first before calling chado_generate_var()
+  if (isset($identifier['synonym'])) {
+    $synonym = $identifier['synonym']['name'];
+
+    $values = array(
+       'synonym' => $synonym,
+    );
+    $statement = "sel_cvtermsynonym_sy";
+    if (isset($identifier['synonym']['cv_id'])) {
+      $values['cvterm_id'] = array('cv_id' => $identifier['synonym']['cv_id']);
+      $statement = "sel_cvtermsynonym_sycv";
+    }
+    if (isset($identifier['synonym']['cv_name'])) {
+      $values['cvterm_id'] = array('cv_id' => array('name' => $identifier['synonym']['cv_name']));
+      $statement = "sel_cvtermsynonym_sycv";
+    }
     $options = array(
+      'statement_name' => $statement,
       'case_insensitive_columns' => array('name')
     );
-    $r = chado_select_record('cvterm', array('*'), $values, $options);
+    $synonym = chado_select_record('cvtermsynonym', array('cvterm_id'), $values, $options);
+
+    // if the synonym doens't exist or more than one record is returned then return false
+    if (count($synonym) == 0) {
+      return FALSE;
+    }
+    if (count($synonym) > 1) {
+      return FALSE;
+    }
+
+    $identifiers = array('cvterm_id' => $synonym[0]->cvterm_id);
   }
-  elseif ($cv_name) {
-    $values = array(
-      'name' => $name,
-      'cv_id' => array(
-        'name' => $cv_name,
-      ),
+
+  // Try to get the cvterm
+  $cvterm = chado_generate_var(
+    'cvterm',
+    $identifiers,
+    $options
+  );
+
+  // Ensure the cvterm is singular. If it's an array then it is not singular
+  if (is_array($cvterm)) {
+    tripal_report_error(
+      'tripal_cv_api',
+      TRIPAL_ERROR,
+      "chado_get_cvterm: The identifiers you passed in were not unique. You passed in %identifier.",
+      array(
+        '%identifier'=> print_r($identifiers, TRUE)
+      )
     );
-    $options = array('case_insensitive_columns' => array('name'));
-    $r = chado_select_record('cvterm', array('*'), $values, $options);
   }
+
+  // Report an error if $cvterm is FALSE since then chado_generate_var has failed
+  elseif ($cvterm === FALSE) {
+    tripal_report_error(
+      'tripal_cv_api',
+      TRIPAL_ERROR,
+      "chado_get_cvterm: chado_generate_var() failed to return a cvterm based on the identifiers
+        you passed in. You should check that your identifiers are correct, as well as, look
+        for a chado_generate_var error for additional clues. You passed in %identifier.",
+      array(
+        '%identifier'=> print_r($identifiers, TRUE)
+      )
+    );
+  }
+
+  // Else, as far we know, everything is fine so give them their cvterm :)
   else {
-    $values = array('name' => $name);
-    $options = array('case_insensitive_columns' => array('name'));
-    $r = chado_select_record('cvterm', array('*'), $values, $options);
+    return $cvterm;
   }
 
-  if (!$r) {
-    return FALSE;
-  }
-  if (count($r) > 1) {
-    tripal_report_error('tripal_cv', TRIPAL_ERROR,
-      "Cannot find a unique term for the term '%name' in the vocabulary '%cv'. Multiple entries exist for this name",
-      array('%name' => $name, '%cv' => $cv_name ? $cv_name : $cv_id));
-    return FALSE;
-  }
-  if (count($r) == 0) {
-    return FALSE;
-  }
-  return $r[0];
-}
-
-/**
- * Retrieve a chado cvterm object with a given name
- *
- * @param $synonym
- *   the synonym of the term
- * @param $cv_id
- *   the cv_id of the term you are looking for
- * @param $cv_name
- *   the name of the CV
- *
- * @return
- *   cvterm object
- *
- * @ingroup tripal_cv_api
- */
-function tripal_cv_get_cvterm_by_synonym($synonym, $cv_id = NULL, $cv_name = 'tripal') {
-
-  // first find the CVTerm synonym
-  $values = array(
-     'synonym' => $synonym,
-  );
-  $statement = "sel_cvtermsynonym_sy";
-  if ($cv_id) {
-    $values['cvterm_id'] = array('cv_id' => $cv_id);
-    $statement = "sel_cvtermsynonym_sycv";
-  }
-  if ($cv_name) {
-    $values['cvterm_id'] = array('cv_id' => array('name' => $cv_name));
-    $statement = "sel_cvtermsynonym_sycv";
-  }
-  $options = array(
-    'statement_name' => $statement,
-    'case_insensitive_columns' => array('name')
-  );
-  $synonym = chado_select_record('cvtermsynonym', array('cvterm_id'), $values, $options);
-
-  // if the synonym doens't exist or more than one record is returned then return false
-  if (count($synonym) == 0) {
-    return FALSE;
-  }
-  if (count($synonym) > 1) {
-    return FALSE;
-  }
-
-  // get the cvterm
-  $values = array('cvterm_id' => $synonym[0]->cvterm_id);
-  $options = array('statement_name' => 'sel_cvterm_id');
-  $cvterm = chado_select_record('cvterm', array('*'), $values, $options);
-  return $cvterm[0];
 }
 
 /**
@@ -305,7 +266,7 @@ function tripal_cv_get_cvterm_by_synonym($synonym, $cv_id = NULL, $cv_name = 'tr
  *
  * @ingroup tripal_cv_api
  */
-function tripal_cv_get_cvterm_options($cv_id = 0) {
+function cvterm_get_select_options($cv_id = 0) {
 
   if ($cv_id > 0) {
     $results = chado_select_record('cvterm', array('cvterm_id', 'name'), array('cv_id' => $cv_id));
@@ -337,7 +298,7 @@ function tripal_cv_get_cvterm_options($cv_id = 0) {
  *
  * @ingroup tripal_cv_api
  */
-function tripal_cv_update_cvtermpath($cvid, $job_id = NULL) {
+function chado_update_cvtermpath($cvid, $job_id = NULL) {
   // TODO: need better error checking in this function
 
   // first get the controlled vocabulary name:
@@ -376,7 +337,7 @@ function tripal_cv_update_cvtermpath($cvid, $job_id = NULL) {
  *
  * @ingroup tripal_cv_api
  */
-function tripal_cv_add_cv($name, $definition) {
+function chado_insert_cv($name, $definition) {
 
   // insert/update values
   $ins_values = array(
@@ -415,7 +376,7 @@ function tripal_cv_add_cv($name, $definition) {
 }
 
 /**
- *  Add's a CV term to the cvterm table.
+ *  Add's a controlled vocabulary term to the cvterm table.
  *
  *  If the parent CV does not exist then
  *  that too is added to the CV table.  If the cvterm is a relationship term
@@ -431,35 +392,60 @@ function tripal_cv_add_cv($name, $definition) {
  *  no changes are made and the CVTerm object is returned.
  *
  * @param $term
- *   An associative array with the following keys: 'id', 'name' and 'namespace',
- *   'is_obsolete', and 'def'.  Where 'id' is the term accession, 'name' is the
- *   term name, 'namespace' is the CV name for the term, 'def' is the term
- *   definition and 'is_obsolete' is present and set to 1 if the term is defunct.
- *   The 'id' must be of the form <DB>:<ACCESSION>, where <DB> is the name of
- *   the database to which the cvterm belongs and the <ACCESSION> is the
- *   term's accession number in the database.
- * @param $defaultcv
- *   Optional. The CV name to which the term
- *   belongs.  If this arugment is null or not provided then the function tries
- *   to find a record in the CV table with the same name provided in the
- *   $term[namespace].  If this field is provided then it overrides what the
- *   value in $term[namespace]
- * @param $is_relationship
- *   If this term is a relationship term then this value should be 1.
- * @param $update
- *   By default this is set to 1.  If the term exists it is automatically updated.
- * @param $dbname
- *   In some cases the database name will not be part of the $term['id'] and it
- *   needs to be explicitly set.  Use this argument only if the database name
- *   cannot be specififed in the term ID (e.g. <DB>:<ACCESSION>).
+ *   An associative array with the following keys:
+ *    - id: the term accession. must be of the form <DB>:<ACCESSION>, where <DB> is the
+ *        name of the database to which the cvterm belongs and the <ACCESSION> is the
+ *        term's accession number in the database.
+ *    - name: the name of the term. usually meant to be human-readable.
+ *    - namespace: the CV name for the term. DEPRECATED. Please use cv_name instead.
+ *    - is_obsolete: is present and set to 1 if the term is defunct
+ *    - definition: the definition of the term
+ *    - cv_name: The CV name to which the term belongs.  If this arugment is null or not
+ *        provided then the function tries to find a record in the CV table with the same
+ *        name provided in the $term[namespace].  If this field is provided then it
+ *        overrides what the value in $term[namespace]
+ *    - is_relationship: If this term is a relationship term then this value should be 1.
+ *    _ db_name: In some cases the database name will not be part of the $term['id'] and it
+ *        needs to be explicitly set.  Use this argument only if the database name
+ *        cannot be specififed in the term ID (e.g. <DB>:<ACCESSION>).
+ * @param $options
+ *    - update_existing: By default this is TRUE.  If the term exists it is automatically updated.
  *
  * @return
  *   A CVTerm object
  *
  * @ingroup tripal_cv_api
  */
-function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 0,
-  $update = 1, $dbname = 'internal') {
+function chado_insert_cvterm($term, $options) {
+
+  // Set Defaults
+  if (isset($term['cv_name'])) {
+    $defaultcv = $term['cv_name'];
+  }
+  else {
+    $defaultcv = '_global';
+  }
+
+  if (isset($term['is_relationship'])) {
+    $is_relationship = $term['is_relationship'];
+  }
+  else {
+    $is_relationship = 0;
+  }
+
+  if (isset($term['db_name'])) {
+    $dbname = $term['db_name'];
+  }
+  else {
+    $dbname = 'internal';
+  }
+
+  if (isset($options['update_existing'])) {
+    $update = $options['update_existing'];
+  }
+  else {
+    $update = 1;
+  }
 
   // get the term properties
   $id = $term['id'];
@@ -482,8 +468,8 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
   else {
     $cvname = $defaultcv;
   }
-  if (array_key_exists('def', $term)) {
-    $definition = preg_replace('/^\"(.*)\"/', '\1', $term['def']);
+  if (array_key_exists('definition', $term)) {
+    $definition = preg_replace('/^\"(.*)\"/', '\1', $term['definition']);
   }
   else {
     $definition = '';
@@ -774,25 +760,31 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
  *
  * @ingroup tripal_cv_api
  */
-function tripal_cv_submit_obo_job($obo_id = NULL, $obo_name = NULL, $obo_url = NULL, $obo_file = NULL) {
+function tripal_submit_obo_job($obo) {
   global $user;
 
-  if ($obo_id) {
-    $sql = "SELECT * FROM {tripal_cv_obo} WHERE obo_id = :obo_id";
-    $obo = db_query($sql, array(':obo_id' => $obo_id))->fetchObject();
+  // Set Defaults
+  $obo['obo_id'] = (isset($obo['obo_id'])) ? $obo['obo_id'] : NULL;
+  $obo['name'] = (isset($obo['name'])) ? $obo['name'] : NULL;
+  $obo['url'] = (isset($obo['url'])) ? $obo['url'] : NULL;
+  $obo['file'] = (isset($obo['file'])) ? $obo['file'] : NULL;
 
-    $args = array($obo_id);
+  if ($obo['obo_id']) {
+    $sql = "SELECT * FROM {tripal_cv_obo} WHERE obo_id = :obo_id";
+    $obo = db_query($sql, array(':obo_id' => $obo['obo_id']))->fetchObject();
+
+    $args = array($obo['obo_id']);
     return tripal_add_job("Load OBO $obo->name", 'tripal_cv',
        "tripal_cv_load_obo_v1_2_id", $args, $user->uid);
   }
   else {
-    if ($obo_url) {
-      $args = array($obo_name, $obo_url);
+    if ($obo['url']) {
+      $args = array($obo['name'], $obo['url']);
       return tripal_add_job("Load OBO $obo_name", 'tripal_cv',
         "tripal_cv_load_obo_v1_2_url", $args, $user->uid);
     }
-    elseif ($obo_file) {
-      $args = array($obo_name, $obo_file);
+    elseif ($obo['file']) {
+      $args = array($obo['name'], $obo['file']);
       return tripal_add_job("Load OBO $obo_name", 'tripal_cv',
         "tripal_cv_load_obo_v1_2_file", $args, $user->uid);
     }
@@ -813,7 +805,7 @@ function tripal_cv_submit_obo_job($obo_id = NULL, $obo_name = NULL, $obo_url = N
  *
  * @ingroup tripal_cv_api
  */
-function tripal_cv_add_obo_ref($name, $path) {
+function tripal_insert_obo($name, $path) {
   $record = new stdClass;
   $record->name = $name;
   $record->path = $path;
@@ -835,7 +827,7 @@ function tripal_cv_add_obo_ref($name, $path) {
  *
  * @ingroup tripal_cv_api
  */
-function tripal_cv_cvterm_name_autocomplete($cv_id, $string = '') {
+function chado_cvterm_autocomplete($cv_id, $string = '') {
   $sql = "
     SELECT cvterm_id, name
     FROM {cvterm}

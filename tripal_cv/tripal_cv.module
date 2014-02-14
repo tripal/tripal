@@ -16,7 +16,7 @@
 
 require_once 'api/tripal_cv.api.inc';
 require_once 'api/tripal_cv.schema.api.inc';
-//require_once 'apitripal_cv.DEPRECATED.inc';
+require_once 'api/tripal_cv.DEPRECATED.inc';
 
 require_once 'includes/tripal_cv.admin.inc';
 require_once 'includes/tripal_cv.charts.inc';
