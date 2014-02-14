@@ -460,6 +460,9 @@ function chado_stock_validate(&$node, $form, &$form_state) {
  * @ingroup tripal_stock
  */
 function chado_stock_insert($node) {
+  
+  $node->uniquename   = trim($node->uniquename);
+  $node->sname        = trim($node->sname);
 
   // if there is an stock_id in the $node object then this must be a sync so
   // we can skip adding the stock to chado as it is already there, although
@@ -597,6 +600,9 @@ function chado_stock_insert($node) {
  * @ingroup tripal_stock
  */
 function chado_stock_update($node) {
+  
+  $node->uniquename   = trim($node->uniquename);
+  $node->sname        = trim($node->sname);
 
   if ($node->revision) {
     // there is no way to handle revisions in Chado but leave
@@ -799,7 +805,7 @@ function tripal_stock_node_presave($node) {
       $values = array('organism_id' => $organism_id);
       $organism = chado_select_record('organism', array('genus','species'), $values);
       $node->title = "$sname, $uniquename ($type) " . $organism[0]->genus . ' ' . $organism[0]->species;
-      if ($name == $uniquename) {
+      if ($sname == $uniquename) {
         $node->title = "$sname ($type) " . $organism[0]->genus . ' ' . $organism[0]->species;
       }
       break;

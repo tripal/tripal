@@ -28,7 +28,7 @@ if (count($project_pubs) > 0 ) {
   }
 }
 
-// the total number of records for the paged query is stored in a session variable
+// get the total number of records
 $total_records = chado_pager_get_count($element);
 
 if(count($projects) > 0){ ?>

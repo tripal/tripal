@@ -37,6 +37,10 @@
  * Techincally, we can skip including the 'nd_experiment' table when traversing the FK's 
  * because we have the nd_experiment_id value when we get the nd_experiment_stock record.
  * 
+ * When lots of genotypes are associated with a stock (e.g. thousands) then traversing
+ * the FK relationships as described above can be very slow. Ideally, we only need to
+ * show a small subset with a pager. Therefore, a list of nd_experiment_genotype_id's 
+ * are provided to this template automatically within the stock object.
  * 
  * NOTE: if the tripal_natural_diversity module is enabled this template will supercede 
  * the tripal_stock_genotypes.tpl.php template (provided by the tripal_genetic module).
@@ -46,27 +50,30 @@
 // get the current stock
 $stock = $variables['node']->stock;
 
+
 // specify the number of genotypes to show by default and the unique pager ID
 $num_results_per_page = 25;
 $stock_pager_id = 15;
 
-// get all of the nd_experiment_stock records for this stock.
+// the nd_experiment_genotype IDs get passed into this template, so we use
+// those to iterate and show a subset via a pager.  This is faster than trying
+// to traverse all of the FK relationship, especially when thousands of 
+// associations may be present.  Because the nd_experiment_id in Chado
+// can be associated with other data types it becomes slow to use the
+// chado_expand_var functions that we would normal use.
+$nd_experiment_genotype_ids = $stock->nd_experiment_genotype_ids;
+$total_records = count($nd_experiment_genotype_ids);
+
+// initialize the Drupal pager
+$current_page_num = pager_default_initialize($total_records, $num_results_per_page, $stock_pager_id);
+$offset = $num_results_per_page * $current_page_num;
+
 $genotypes = array();
-$options = array(
-  'return_array' => 1,
-  'include_fk' => array(
-    'nd_experiment_id' => 1
-  ),
-);
-$stock = tripal_core_expand_chado_vars($stock, 'table', 'nd_experiment_stock', $options);
-$nd_experiment_stocks = $stock->nd_experiment_stock;
-if (count($nd_experiment_stocks) > 0) {
+if ($total_records > 0) {
   
-  // iterate through the nd_experiment_stock records and look to see if there is
-  // an nd_experiment_genotype record. If so, then add it out $genotypes array
-  foreach ($nd_experiment_stocks as $nd_experiment_stock) {
-    $nd_experiment_id = $nd_experiment_stock->nd_experiment_id->nd_experiment_id;
-    $nd_experiment    = $nd_experiment_stock->nd_experiment_id;
+  // iterate through the nd_experiment_genotype_ids and get the genotype record
+  for ($i = $offset ; $i < $offset + $num_results_per_page; $i++) {
+    $nd_experiment_genotype_id = $nd_experiment_genotype_ids[$i];
       
     // expand the nd_experiment record to include the nd_experiment_genotype table
     // there many be many genotypes for a stock so we want to use a pager to limit 
@@ -78,31 +85,20 @@ if (count($nd_experiment_stocks) > 0) {
           'type_id' => 1,
         )
       ),
-      'pager' => array(
-        'limit' => $num_results_per_page,
-        'element' => $stock_pager_id
-      ),
     );
-    $nd_experiment = tripal_core_expand_chado_vars($nd_experiment, 'table', 'nd_experiment_genotype', $options);
-    $nd_experiment_genotypes = $nd_experiment->nd_experiment_genotype;
-    if ($nd_experiment_genotypes) {
-      // for each of the genotypes, add them to our $genotypes array so we can 
-      // display each one
-      foreach ($nd_experiment_genotypes as $nd_experiment_genotype) {
-        $genotype = $nd_experiment_genotype->genotype_id;
-        $genotypes[$genotype->genotype_id]['genotype'] = $genotype;
-        $genotypes[$genotype->genotype_id]['nd_experiment_id'] = $nd_experiment_id;
-      }
-    }
+    $values = array('nd_experiment_genotype_id' => $nd_experiment_genotype_id);
+    $nd_experiment_genotype = chado_generate_var('nd_experiment_genotype', $values);
+    $genotype = $nd_experiment_genotype->genotype_id;
+    $genotypes[$genotype->genotype_id]['genotype'] = $genotype;
+    $genotypes[$genotype->genotype_id]['nd_experiment_id'] = $nd_experiment_genotype->nd_experiment_id->nd_experiment_id;
   }
 }
 
-// the total number of records for the paged query is stored in a session variable
-$total_records = chado_pager_get_count($stock_pager_id);
-
 // now iterate through the feature genotypes and print a paged table.
 if (count($genotypes) > 0) { ?>
-  <div class="tripal_feature-data-block-desc tripal-data-block-desc">The following <?php print number_format($total_records) ?> genotype(s) have been recorded for this feature.</div> <?php 
+  <div class="tripal_feature-data-block-desc tripal-data-block-desc">
+    The following <?php print number_format($total_records) ?> genotype(s) have been recorded.
+  </div> <?php 
 
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
@@ -119,6 +115,9 @@ if (count($genotypes) > 0) { ?>
   foreach ($genotypes as $info) {
     $genotype         = $info['genotype'];
     $nd_experiment_id = $info['nd_experiment_id'];
+    
+    // get the nd_experiment record
+    $nd_experiment = chado_generate_var('nd_experiment', array('nd_experiment_id' => $nd_experiment_id));
     
     // set some defaults for project and feature names
     $project_names = 'N/A';

@@ -32,7 +32,7 @@ $options = array(
 $stock = tripal_core_expand_chado_vars($stock, 'table', 'stock_genotype', $options); 
 $stock_genotypes = $stock->stock_genotype;
 
-// the total number of records for the paged query is stored in a session variable
+// get the total number of records
 $total_records = chado_pager_get_count($stock_pager_id);
 
 // now iterate through the stock genotypes and print a paged table.
