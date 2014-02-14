@@ -242,19 +242,45 @@ function tripal_views_views_data() {
 
     // ADD THE FIELDS TO THE DATA ARRAY
     foreach ($base_fields as $column_name => $base_field) {
-      $data[$base_table][$column_name] = array(
-        'title' => t($base_field['name']),
-        'help' => t($base_field['help']),
-        'field' => array(
-          'click sortable' => TRUE,
-        ),
-      );
+      if (!isset($base_field['name'])) {
+        $data[$base_table][$column_name] = array(
+          'title' => t($column_name),
+          'help' => t($column_name),
+          'field' => array(
+            'click sortable' => TRUE,
+          ),
+        );
 
+        tripal_report_error(
+          'tripal_views',
+          TRIPAL_WARNING,
+          "The name and help were not set for %table.%column. As a consequence the column
+            name has been used... You should ensure that the 'name' and 'help' keys for
+            this field are set in the integration array (priority = %priority)",
+          array(
+            '%table'=> $base_table,
+            '%column' => $column_name,
+            '%priority' => $tvi_row->priority
+          )
+        );
+      }
+      else {
+        $data[$base_table][$column_name] = array(
+          'title' => t($base_field['name']),
+          'help' => t($base_field['help']),
+          'field' => array(
+            'click sortable' => TRUE,
+          ),
+        );
+      }
 
       // now add the handlers
       $sql = "SELECT * FROM {tripal_views_handlers} WHERE setup_id = :setup AND column_name = :column";
       $handlers = db_query($sql, array(':setup' => $setup_id, ':column' => $column_name));
+      $num_handlers = 0;
       foreach ($handlers as $handler) {
+        $num_handlers++;
+
         $data[$base_table][$column_name][$handler->handler_type]['handler'] = $handler->handler_name;
 
         // Add in any additional arguments
@@ -263,6 +289,24 @@ function tripal_views_views_data() {
           $data[$base_table][$column_name][$handler->handler_type] = array_merge($data[$base_table][$column_name][$handler->handler_type], unserialize($handler->arguments));
         }
       };
+
+      // If there were no handlers applied to the current field then warn the administrator!
+      if ($num_handlers == 0) {
+        tripal_report_error(
+          'tripal_views',
+          TRIPAL_WARNING,
+          "No handlers were registered for %table.%column. This means there is no views
+            functionality for this column. To register handlers, make sure the 'handlers'
+            key for this field is set in the integration array (priority = %priority).
+            The supported keys include 'field', 'filter', 'sort', 'relationship'. Look
+            at the tripal_views_integration_add_entry() for additional details.",
+          array(
+            '%table'=> $base_table,
+            '%column' => $column_name,
+            '%priority' => $tvi_row->priority
+          )
+        );
+      }
     }
 
     // ADD JOINS & RELATIONSHIPS TO DATA ARRAY
