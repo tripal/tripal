@@ -13,13 +13,11 @@ function tripal_pub_node_info() {
 
   return array(
     'chado_pub' => array(
-      'name' => t('Publication'),
-      'base' => 'chado_pub',
+      'name'        => t('Publication'),
+      'base'        => 'chado_pub',
       'description' => t('A publication from the Chado database'),
-      'title_label' => t('Article Title'),
-      'body_label' => t('Abstract'),
-      'has_title' => TRUE,
-      'has_body' => FALSE,
+      'has_title'   => TRUE,
+      'locked'      => TRUE,
       'chado_node_api' => array(
         'base_table' => 'pub',
         'hook_prefix' => 'chado_pub',

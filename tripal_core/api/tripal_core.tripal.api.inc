@@ -177,31 +177,4 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = arra
   else {
     drupal_set_message($full_message, 'tripal-site-admin-only');
   }
-
-}
-
-/**
- * Use this function to encapsulate text intended to be
- * visible only by the site administrator. A small tripal logo
- * appears alongside the text.  Do not call this function directly, but
- * rather, use the theme() function:
- *
- *   theme('tripal_admin_message', array('message' => $my_message));
- *
- * @param $message
- *   The message to be displayed to the site administrator
- *
- * @ingroup tripal_api
- */
-function theme_tripal_admin_message($variables) {
-
-  $message = $variables['message'];
-
-  if (!user_access('access administration pages')) {
-    return '';
-  }
-  return "
-    <div class=\"tripal-site-admin-only\">
-      <div class=\"tripal-site-admin-message\">$message</div>
-    </div>";
 }

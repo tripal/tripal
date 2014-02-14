@@ -45,12 +45,11 @@ function tripal_feature_seq_extract_page() {
   // generate the search form
   $output .= '';
   if (user_access('access administration pages')) {
-    $output .= theme('tripal_admin_message', array('message' => "
-        Administrators, the " . l('organism_feature_count', 'admin/tripal/schema/mviews') . " and
-        " . l('analysis_organism', 'admin/tripal/schema/mviews') . " materialized
+    $output .= tripal_set_message("Administrators, the " . 
+        l('organism_feature_count', 'admin/tripal/schema/mviews') . " and " .
+        l('analysis_organism', 'admin/tripal/schema/mviews') . " materialized
         views must be populated before using this form.  Those views should be re-populated
-        when new data is added."
-    ));
+        when new data is added.");
   }
   $output .= "<div id=\"tripal-feature-seq-extract-form-block\">";
   $output .= drupal_get_form('tripal_feature_seq_extract_form');

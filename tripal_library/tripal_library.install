@@ -166,7 +166,7 @@ function tripal_library_add_mview_library_feature_count(){
 function tripal_library_add_cvs(){
   tripal_cv_add_cv(
     'library_property',
-    'Contains properties for libraries'
+    'Contains properties for libraries.'
   );
   tripal_cv_add_cv(
     'library_type',
@@ -244,36 +244,72 @@ function tripal_library_add_cvterms() {
 function tripal_library_update_7000() {
 
   // the library types were formerly in a vocabulary named 'tripal_library_types'.
-  // rename that to just be 'library_type'
-  $cv = tripal_cv_get_cv_by_name('tripal_library_types');
-  $match = array(
-    'cv_id' => $cv->cv_id
-  );
-  $values = array(
-    'name' => 'library_type'
-  );
-  $success = chado_update_record('cv', $match, $values);
-  if (!$success) {
-    throw new DrupalUpdateException('Failed to rename tripal_library_types CV.');
+  // rename that to just be 'library_type'. We cannot use the Tripal API calls 
+  // because during upgrade the tripal_core should also be disabled
+  try {
+    $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'library_type'")->fetchObject();
+    if (!$check->cv_id) {
+      $sql = "UPDATE chado.cv SET name = 'library_type' WHERE name = 'tripal_library_types'";
+      db_query($sql);
+    }
   }
-
-
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to change the vocabulary from tripal_library_types to library_type: '. $error);
+  }
+  
+  // add the library_property CV
+  try {
+    $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'library_property'")->fetchObject();
+    if (!$check->cv_id) {
+      $sql = "INSERT INTO chado.cv (name, definition) VALUES (
+        'library_property',
+        'Contains properties for libraries.')
+      ";
+      db_query($sql);
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to add library_property vocabulary: '. $error);
+  }
+  
+  // add the library_type CV
+  try {
+    $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'library_type'")->fetchObject();
+    if (!$check->cv_id) {
+      $sql = "INSERT INTO chado.cv (name, definition) VALUES (
+        'library_type',
+        'Contains terms for types of libraries (e.g. BAC, cDNA, FOSMID, etc).')
+      ";  
+      db_query($sql);
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to add library_type vocabulary: '. $error);
+  }
+  
   // For Tripal in Drupal 6 the library_description cvterm was stored in the
   // 'tripal' CV.  It should be stored in the new library_property CV that
   // is added by this module for Tripal 2.0 and Drupal 7.  So, we need to
-  // reset the CV ID for that term and rename the term to 'Library Description'
-  tripal_library_add_cvs();
-  $cv = tripal_cv_get_cv_by_name('library_property');
-  $cvterm = tripal_cv_get_cvterm_by_name('library_description');
-  $match = array(
-    'cvterm_id' => $cvterm->cvterm_id,
-  );
-  $values = array(
-    'cv_id' => $cv->cv_id,
-    'name' => 'Library Description',
-  );
-  chado_update_record('cvterm', $match, $values);
-  if (!$success) {
-    throw new DrupalUpdateException('Failed to move library properties to new library_property CV.');
+  // reset the CV ID for that term and rename the term to 'Library Description' 
+  // We cannot use the Tripal API calls in the 7000 update 
+  // because during upgrade the tripal_core should also be disabled
+  $sql = "
+    UPDATE chado.cvterm 
+    SET 
+      name = 'Library Description',
+      cv_id = (SELECT cv_id FROM chado.cv WHERE name = 'library_property')
+    WHERE 
+      name = 'library_description' AND
+      cv_id = (SELECT cv_id FROM chado.cv WHERE name = 'tripal')
+  ";
+  try {
+    db_query($sql);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to change library_description property type to the library_property CV and update the name: '. $error);
   }
 }

@@ -17,12 +17,10 @@ function tripal_example_node_info() {
   $nodes = array();
 
   //$nodes['chado_example'] = array(
-  //  'name'        => t('example'),
+  //  'name'        => t('Example'),
   //  'base'        => 'chado_example',
   //  'description' => t('A example from the chado database'),
-  //  'title_label' => t('example'),
-  //  'has_title'   => FALSE,
-  //  'has_body'    => FALSE,
+  //  'has_title'   => TRUE,
   //  'locked'      => TRUE
   // This section of the node type array specifies how Tripal will sync the node
   // types with data in Chado. When Drupal creates a node it has no way of

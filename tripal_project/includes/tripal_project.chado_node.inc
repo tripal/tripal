@@ -16,13 +16,11 @@
 function tripal_project_node_info() {
   return array(
     'chado_project' => array(
-      'name' => t('Project'),
-      'base' => 'chado_project',
+      'name'        => t('Project'),
+      'base'        => 'chado_project',
       'description' => t('A project from the Chado database'),
-      'has_title' => TRUE,
-      'title_label' => t('Project Name'),
-      'had_body' => TRUE,
-      'body_label' => t('Full Description'),
+      'has_title'   => TRUE,
+      'locked'      => TRUE,
       'chado_node_api' => array(
         'base_table' => 'project',
         'hook_prefix' => 'chado_project',

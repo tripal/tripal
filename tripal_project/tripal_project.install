@@ -124,21 +124,6 @@ function tripal_project_add_cvterms() {
     ),
     'project_property', 0, 1, 'tripal'
   );
-
-  tripal_cv_add_cvterm(
-    array(
-      'name' => 'Project Type',
-      'def'  => 'The short few word description of the type of project.'
-    ),
-   'project_property', 0, 1, 'tripal'
-  );
-  tripal_cv_add_cvterm(
-    array(
-      'name' => 'Funding Source',
-      'def'  => 'The funding source for this project.'
-    ),
-    'project_property', 0, 1, 'tripal'
-  );
 }
 
 /**
@@ -147,25 +132,42 @@ function tripal_project_add_cvterms() {
  * @ingroup tripal_project
  */
 function tripal_project_update_7000() {
+  
+  // add the project_property CV
+  try {
+    $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'project_property'")->fetchObject();
+    if (!$check->cv_id) {
+      $sql = "INSERT INTO chado.cv (name, definition) VALUES (
+        'project_property','Contains properties for projects.')
+      ";
+      db_query($sql);
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to add project_property vocabulary: '. $error);
+  }
 
   // For Tripal in Drupal 6 the project_description cvterm was stored in the
   // 'tripal' CV.  It should be stored in the new project_property CV that
   // is added by this module for Tripal 2.0 and Drupal 7.  So, we need to
   // reset the CV ID for that term and rename the term to 'Project Description'
-  tripal_project_add_cvs();
-  $cv = tripal_cv_get_cv_by_name('project_property');
-  $cvterm = tripal_cv_get_cvterm_by_name('project_description', $cv->cv_id);
-  $match = array(
-    'cvterm_id' => $cvterm->cvterm_id,
-  );
-  $values = array(
-    'name'  => 'Project Description',
-  );
-  chado_update_record('cvterm', $match, $values);
-  if (!$success) {
-    throw new DrupalUpdateException('Failed to move project properties to new project_property CV.');
+  // We cannot use the Tripal API calls'because during upgrade the tripal_core
+  // should also be disabled
+  $sql = "
+    UPDATE chado.cvterm CVT
+    SET
+      name = 'Project Description',
+      cv_id = (SELECT cv_id FROM chado.cv WHERE name = 'project_property')
+    WHERE
+      name = 'project_description' AND
+      cv_id = (SELECT cv_id FROM chado.cv WHERE name = 'tripal')
+  ";
+  try {
+    db_query($sql);
   }
-
-  // add in new CVterms
-  tripal_project_add_cvterms();
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to change project_description property type to the project_property CV and update the name: '. $error);
+  }
 }

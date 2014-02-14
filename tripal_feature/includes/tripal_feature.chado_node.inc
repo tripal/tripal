@@ -19,10 +19,7 @@ function tripal_feature_node_info() {
     'name'        => t('Feature'),
     'base'        => 'chado_feature',
     'description' => t('A feature from the chado database'),
-    'has_title'   => FALSE,
-    'title_label' => t('Feature'),
-    'has_body'    => FALSE,
-    'body_label'  => t('Feature Description'),
+    'has_title'   => TRUE,
     'locked'      => TRUE,
     'chado_node_api' => array(
       'base_table' => 'feature',

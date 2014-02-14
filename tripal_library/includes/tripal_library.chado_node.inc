@@ -15,13 +15,11 @@
 function tripal_library_node_info() {
   $nodes = array();
   $nodes['chado_library'] = array(
-    'name' => t('Library'),
-    'base' => 'chado_library',
+    'name'        => t('Library'),
+    'base'        => 'chado_library',
     'description' => t('A library from the chado database'),
-    'has_title' => FALSE,
-    'title_label' => t('Library'),
-    'has_body' => FALSE,
-    'locked' => TRUE,
+    'has_title'   => TRUE,
+    'locked'      => TRUE,
     'chado_node_api' => array(
       'base_table' => 'library',
       'hook_prefix' => 'chado_library',

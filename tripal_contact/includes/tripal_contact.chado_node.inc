@@ -16,13 +16,11 @@ function tripal_contact_node_info() {
 
   return array(
     'chado_contact' => array(
-      'name' => t('Contact'),
-      'base' => 'chado_contact',
+      'name'        => t('Contact'),
+      'base'        => 'chado_contact',
       'description' => t('A contact from the Chado database'),
-      'title_label' => t('Article Title'),
-      'body_label' => t('Abstract'),
-      'has_title' => TRUE,
-      'has_body' => FALSE,
+      'has_title'   => TRUE,
+      'locked'      => TRUE,
       'chado_node_api' => array(
         'base_table' => 'contact',
         'hook_prefix' => 'chado_contact',

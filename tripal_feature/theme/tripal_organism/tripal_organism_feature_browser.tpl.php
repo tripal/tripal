@@ -71,11 +71,12 @@ if ($enabled) {
     $rows = array();
     
     // let admins know they can customize the terms that appear in the list
-    print theme('tripal_admin_message', array('message' => "
-      Administrators, you can specify the feature types that should appear in 
-      this browser or remove it from the list of resources by navigating to the ". 
-      l("Tripal feature settings page", "admin/tripal/chado/tripal_feature/configuration", array('attributes' => array('target' => '_blank')))
-    ));
+    print tripal_set_message("Administrators, you can specify the feature types ".
+      "that should appear in this browser or remove it from the list of resources ".
+      "by navigating to the ".
+      l("Tripal feature settings page", "admin/tripal/chado/tripal_feature/configuration", array('attributes' => array('target' => '_blank'))),
+      TRIPAL_INFO,
+      array('return_html' => 1));
     
     foreach ($features as $feature){
       $fname =  $feature->name;
@@ -125,7 +126,7 @@ if ($enabled) {
   } 
   else {  ?>
     <p>There are no results.</p><?php
-    print theme('tripal_admin_message', array('message' => "
+    print tripal_set_message("
       Administrators, perform the following to show features in this browser:
       <ul>
         <li>Load features for this organism using the " .
@@ -144,8 +145,9 @@ if ($enabled) {
       that should appear in this browser or remove it from the list of resources by navigating to the " . 
       l("Tripal feature settings page", "admin/tripal/chado/tripal_feature/configuration", array('attributes' => array('target' => '_blank')))  . "
       </p>
-      The feature browser will not appear to site visitors unless features are present. "
-    ));
+      The feature browser will not appear to site visitors unless features are present. ",
+      TRIPAL_INFO,
+      array('return_html' => 1));
   }
 }
 

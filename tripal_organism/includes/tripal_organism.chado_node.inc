@@ -15,12 +15,11 @@
 function tripal_organism_node_info() {
   $nodes = array();
   $nodes['chado_organism'] = array(
-    'name' => t('Organism'),
-    'base' => 'chado_organism',
+    'name'        => t('Organism'),
+    'base'        => 'chado_organism',
     'description' => t('An organism'),
-    'has_title' => FALSE,
-    'title_label' => t('Organism'),
-    'locked' => TRUE,
+    'has_title'   => TRUE,
+    'locked'      => TRUE,
     'chado_node_api' => array(
       'base_table' => 'organism',
       'hook_prefix' => 'chado_organism',

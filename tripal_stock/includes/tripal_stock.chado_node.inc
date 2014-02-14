@@ -15,11 +15,11 @@
 function tripal_stock_node_info() {
   return array(
     'chado_stock' => array(
-      'name' => t('Stock'),
-      'base' => 'chado_stock',
+      'name'        => t('Stock'),
+      'base'        => 'chado_stock',
       'description' => t('A Chado Stock is a collection of material that can be sampled and have experiments performed on it.'),
-      'has_title' => TRUE,
-      'has_body' => FALSE,
+      'has_title'   => TRUE,
+      'locked'      => TRUE,
       'chado_node_api' => array(
         'base_table' => 'stock',
         'hook_prefix' => 'chado_stock',
