@@ -23,7 +23,7 @@ function tripal_cv_get_cv($select_values) {
     )
   );
 
-  return FALSE;
+  return chado_get_cv($select_values);
 }
 
 /**
@@ -45,7 +45,7 @@ function tripal_cv_get_cv_by_name($name) {
     )
   );
 
-  return FALSE;
+  return chado_get_cv(array('name' => $name));
 }
 
 /**
@@ -67,7 +67,7 @@ function tripal_cv_get_cv_by_id($cv_id) {
     )
   );
 
-  return FALSE;
+  return chado_get_cv(array('cv_id' => $id));
 }
 
 /**
@@ -89,7 +89,13 @@ function tripal_cv_get_cv_id($cv_name) {
     )
   );
 
-  return FALSE;
+  $cv = chado_get_cv(array('name' => $cv_name));
+  if (isset($cv->cv_id)) {
+    return $cv->cv_id;
+  }
+  else {
+    return FALSE;
+  }
 }
 
 /**
@@ -111,7 +117,7 @@ function tripal_cv_get_cv_options() {
     )
   );
 
-  return FALSE;
+  return cv_get_select_options();
 }
 
 /**
@@ -133,7 +139,7 @@ function tripal_cv_get_cvterm_by_id($cvterm_id) {
     )
   );
 
-  return FALSE;
+  return chado_get_cvterm(array('cvterm_id' => $cvterm_id));
 }
 
 /**
@@ -155,7 +161,17 @@ function tripal_cv_get_cvterm_by_name($name, $cv_id = NULL, $cv_name = 'tripal')
     )
   );
 
-  return FALSE;
+  $identifiers = array('name' => $name);
+  if (isset($cv_id)) {
+    $identifiers['cv_id'] = $cv_id;
+  }
+  if (isset($cv_name)) {
+    $identifiers['cv'] = array(
+      'name' => $cv_name
+    );
+  }
+
+  return chado_get_cvterm($identifiers);
 }
 
 /**
@@ -177,7 +193,13 @@ function tripal_cv_get_cvterm_by_synonym($synonym, $cv_id = NULL, $cv_name = 'tr
     )
   );
 
-  return FALSE;
+  return chado_get_cvterm(array(
+    'synonym' => array(
+      'name' => $synonym,
+      'cv_id' => $cv_id,
+      'cv_name' => $cv_name
+    )
+  ));
 }
 
 /**
@@ -199,7 +221,7 @@ function tripal_cv_get_cvterm_options($cv_id = 0) {
     )
   );
 
-  return FALSE;
+  return cvterm_get_select_options($cv_id);
 }
 
 /**
@@ -221,7 +243,7 @@ function tripal_cv_update_cvtermpath($cvid, $job_id = NULL) {
     )
   );
 
-  return FALSE;
+  return chado_update_cvtermpath($cvid, $job_id);
 }
 
 /**
@@ -243,7 +265,7 @@ function tripal_cv_add_cv($name, $definition) {
     )
   );
 
-  return FALSE;
+  return chado_insert_cv($name, $definition);
 }
 
 /**
@@ -265,7 +287,21 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
     )
   );
 
-  return FALSE;
+  $term['cv_name'] = $defaultcv;
+  $term['db_name'] = $dbname;
+  $term['is_relationship'] = $is_relationship;
+
+  if (isset($term['def'])) {
+    $term['definition'] = $term['def'];
+    unset($term['def']);
+  }
+
+  return chado_insert_cvterm(
+    $term,
+    array(
+      'update_existing' => $update
+    )
+  );
 }
 
 /**
@@ -287,15 +323,22 @@ function tripal_cv_submit_obo_job($obo_id = NULL, $obo_name = NULL, $obo_url = N
     )
   );
 
-  return FALSE;
+  return tripal_submit_obo_job(
+    array(
+      'obo_id' => $obo_id,
+      'name' => $obo_name,
+      'url' => $obo_url,
+      'file' => $obo_file
+    )
+  );
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_insert_obo().
+ * This function has been replaced by tripal_insert_obo().
  *
- * @see chado_insert_obo().
+ * @see tripal_insert_obo().
  */
 function tripal_cv_add_obo_ref($name, $path) {
 
@@ -309,7 +352,7 @@ function tripal_cv_add_obo_ref($name, $path) {
     )
   );
 
-  return FALSE;
+  return tripal_insert_obo($name, $ref);
 }
 
 /**
@@ -331,5 +374,5 @@ function tripal_cv_cvterm_name_autocomplete($cv_id, $string = '') {
     )
   );
 
-  return FALSE;
+  return chado_cvterm_autocomplete($cv_id, $string);
 }

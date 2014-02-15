@@ -14,17 +14,7 @@
  */
 
 /**
- * To retrieve a chado database object
- *
- * @param $select_values
- *   An array meant to uniquely select a given database
- *
- * @return
- *   Chado database object
- *
- * The database is selected using tripal_core_chado select and as such the
- * $select_values array parameter meant to uniquely identify the database to be
- * returned follows the same form as when using tripal_core_chado_select directly.
+ * Retrieves a chado db object
  *
  * Example Usage:
  * @code
@@ -44,75 +34,89 @@
     );
  * @endcode
  *
+ * @param $identifier
+ *   An array with the key stating what the identifier is. Supported keys (only on of the
+ *   following unique keys is required):
+ *    - db_id: the chado cv.cv_id primary key
+ *    - name: the chado cv.name field (assume unique)
+ * @param $options
+ *   An array of options. Supported keys include:
+ *     - Any keys supported by chado_generate_var(). See that function definition for
+ *       additional details.
+ *
+ * NOTE: the $identifier parameter can really be any array similar to $values passed into
+ *   chado_select_record(). It should fully specify the db record to be returned.
+ *
+ * @return
+ *   If unique values were passed in as an identifier then an object describing the cv
+ *   will be returned (will be a chado variable from chado_generate_var()). Otherwise,
+ *   an array of objects will be returned.
+ *
  * @ingroup tripal_db_api
  */
-function tripal_db_get_db($select_values) {
+function chado_get_db($identifiers, $options = array()) {
 
-  $columns = array(
-    'db_id',
-    'name',
-    'description',
-    'urlprefix',
-    'url'
+  // Error Checking of parameters
+  if (!is_array($identifiers)) {
+    tripal_report_error(
+      'tripal_db_api',
+      TRIPAL_ERROR,
+      "chado_get_db: The identifier passed in is expected to be an array with the key
+        matching a column name in the db table (ie: db_id or name). You passed in %identifier.",
+      array(
+        '%identifier'=> print_r($identifiers, TRUE)
+      )
+    );
+  }
+  elseif (empty($identifiers)) {
+    tripal_report_error(
+      'tripal_db_api',
+      TRIPAL_ERROR,
+      "chado_get_db: You did not pass in anything to identify the db you want. The identifier
+        is expected to be an array with the key matching a column name in the db table
+        (ie: db_id or name). You passed in %identifier.",
+      array(
+        '%identifier'=> print_r($identifiers, TRUE)
+      )
+    );
+  }
+
+  // Try to get the db
+  $db = chado_generate_var(
+    'db',
+    $identifiers,
+    $options
   );
-  $results = chado_select_record('db', $columns, $select_values);
-  if (sizeof($results) == 1) {
-    return $results[0];
+
+  // Ensure the db is singular. If it's an array then it is not singular
+  if (is_array($db)) {
+    tripal_report_error(
+      'tripal_db_api',
+      TRIPAL_ERROR,
+      "chado_get_db: The identifiers you passed in were not unique. You passed in %identifier.",
+      array(
+        '%identifier'=> print_r($identifiers, TRUE)
+      )
+    );
   }
-  elseif (empty($results)) {
-    tripal_report_error('tripal_db', TRIPAL_WARNING,
-      'tripal_db_get_db: No db matches criteria values:%values',
-      array('%values' => print_r($select_values, TRUE)));
-    return FALSE;
+
+  // Report an error if $db is FALSE since then chado_generate_var has failed
+  elseif ($db === FALSE) {
+    tripal_report_error(
+      'tripal_db_api',
+      TRIPAL_ERROR,
+      "chado_get_db: chado_generate_var() failed to return a db based on the identifiers
+        you passed in. You should check that your identifiers are correct, as well as, look
+        for a chado_generate_var error for additional clues. You passed in %identifier.",
+      array(
+        '%identifier'=> print_r($identifiers, TRUE)
+      )
+    );
   }
+
+  // Else, as far we know, everything is fine so give them their db :)
   else {
-    tripal_report_error('tripal_db', TRIPAL_WARNING,
-      'tripal_db_get_db: 2+ dbs match criteria values:%values',
-      array('%values' => print_r($select_values, TRUE)));
-  }
-
-}
-
-/**
- * To retrieve a chado db object
- *
- * @param $db_id
- *   db.db_id
- * @return
- *   Chado db object with all fields from the chado db table
- *
- * @ingroup tripal_db_api
- */
-function tripal_db_get_db_by_db_id($db_id) {
-
-  $r = chado_query("SELECT * FROM {db} WHERE db_id = :db_id", array(':db_id' => $db_id ));
-  return $r->fetchObject();
-}
-
-/**
- * To retrieve a chado db object
- *
- * @param $name
- *   db.name
- * @return
- *   chado db object with all fields from the chado db table
- *
- * @ingroup tripal_db_api
- */
-function tripal_db_get_db_by_name($name) {
-
-  $values = array('name' => $name);
-  $options = array('statement_name' => 'sel_db_na');
-
-  $db = chado_select_record('db', array('*'), $values, $options);
-  if (count($db) == 1) {
-    return $db[0];
-  }
-  if (count($db) == 0) {
-    return FALSE;
-  }
-  if (count($db) > 1) {
-    return FALSE;
+    return $db;
   }
 }
 
@@ -125,7 +129,7 @@ function tripal_db_get_db_by_name($name) {
  *
  * @ingroup tripal_db_api
  */
-function tripal_db_get_db_options() {
+function db_get_select_options() {
 
   $result = chado_query("SELECT db_id, name FROM {db}");
 
@@ -139,27 +143,17 @@ function tripal_db_get_db_options() {
 }
 
 /**
- * To retrieve a chado database reference object
- *
- * @param $select_values
- *   An array meant to uniquely select a given database reference
- *
- * @return
- *   Chado database reference object
- *
- * The database reference is selected using tripal_core_chado select and as such the
- * $select_values array parameter meant to uniquely identify the database reference to be
- * returned follows the same form as when using tripal_core_chado_select directly.
+ * Retrieves a chado database reference object
  *
  * Example Usage:
  * @code
-    $select_values = array(
+    $identifiers = array(
       'accession' => 'synonym',
       'db_id' => array(
         'name' => 'SOFP'
       )
     );
-    $dbxref_object = tripal_db_get_dbxref($select_values);
+    $dbxref_object = tripal_db_get_dbxref($identifiers);
  * @endcode
  *  The above code selects the synonym database reference and returns the following object:
  * @code
@@ -176,81 +170,108 @@ function tripal_db_get_db_options() {
     );
  * @endcode
  *
+ * @param $identifier
+ *   An array with the key stating what the identifier is. Supported keys (only on of the
+ *   following unique keys is required):
+ *    - dbxref_id: the chado dbxref.dbxref_id primary key
+ *    - accession: the chado dbxref.accession field (assume unique)
+ * @param $options
+ *   An array of options. Supported keys include:
+ *     - Any keys supported by chado_generate_var(). See that function definition for
+ *       additional details.
+ *
+ * NOTE: the $identifier parameter can really be any array similar to $values passed into
+ *   chado_select_record(). It should fully specify the dbxref record to be returned.
+ *
+ * @return
+ *   If unique values were passed in as an identifier then an object describing the dbxref
+ *   will be returned (will be a chado variable from chado_generate_var()). Otherwise,
+ *   FALSE will be returned.
+ *
  * @ingroup tripal_db_api
  */
-function tripal_db_get_dbxref($select_values) {
+function chado_get_dbxref($identifiers, $options = array()) {
 
-  $columns = array(
-    'dbxref_id',
-    'db_id',
-    'accession',
-    'description',
-    'version'
+  // Error Checking of parameters
+  if (!is_array($identifiers)) {
+    tripal_report_error(
+      'tripal_db_api',
+      TRIPAL_ERROR,
+      "chado_get_dbxref: The identifier passed in is expected to be an array with the key
+        matching a column name in the dbxref table (ie: dbxref_id or name). You passed in %identifier.",
+      array(
+        '%identifier'=> print_r($identifiers, TRUE)
+      )
+    );
+  }
+  elseif (empty($identifiers)) {
+    tripal_report_error(
+      'tripal_db_api',
+      TRIPAL_ERROR,
+      "chado_get_dbxref: You did not pass in anything to identify the dbxref you want. The identifier
+        is expected to be an array with the key matching a column name in the dbxref table
+        (ie: dbxref_id or name). You passed in %identifier.",
+      array(
+        '%identifier'=> print_r($identifiers, TRUE)
+      )
+    );
+  }
+
+  // Try to get the dbxref
+  $dbxref = chado_generate_var(
+    'dbxref',
+    $identifiers,
+    $options
   );
-  $results = chado_select_record('dbxref', $columns, $select_values);
-  if (sizeof($results) == 1) {
-    $dbxref = tripal_db_add_db_to_object(array('db_id' => $results[0]->db_id), $results[0], array());
-    unset($dbxref->db_id);
 
+  // Ensure the dbxref is singular. If it's an array then it is not singular
+  if (is_array($dbxref)) {
+    tripal_report_error(
+      'tripal_db_api',
+      TRIPAL_ERROR,
+      "chado_get_dbxref: The identifiers you passed in were not unique. You passed in %identifier.",
+      array(
+        '%identifier'=> print_r($identifiers, TRUE)
+      )
+    );
+  }
+
+  // Report an error if $dbxref is FALSE since then chado_generate_var has failed
+  elseif ($dbxref === FALSE) {
+    tripal_report_error(
+      'tripal_db_api',
+      TRIPAL_ERROR,
+      "chado_get_dbxref: chado_generate_var() failed to return a dbxref based on the identifiers
+        you passed in. You should check that your identifiers are correct, as well as, look
+        for a chado_generate_var error for additional clues. You passed in %identifier.",
+      array(
+        '%identifier'=> print_r($identifiers, TRUE)
+      )
+    );
+  }
+
+  // Else, as far we know, everything is fine so give them their dbxref :)
+  else {
     return $dbxref;
   }
-  elseif (empty($results)) {
-    tripal_report_error('tripal_db', TRIPAL_WARNING,
-      'tripal_db_get_dbxref: No dbxref matches criteria values:%values',
-      array('%values' => print_r($select_values, TRUE)));
-    return FALSE;
-  }
-  else {
-    tripal_report_error('tripal_db', TRIPAL_WARNING,
-      'tripal_db_get_dbxref: 2+ dbxrefs match criteria values:%values',
-      array('%values' => print_r($select_values, TRUE)));
-  }
-
-}
-
-/**
- * Purpose: To retrieve a chado dbxref object with a given accession
- *
- * @param $accession
- *   dbxref.accession
- * @param $db_id
- *   dbxref.db_id
- * @return
- *   chado dbxref object with all fields from the chado dbxref table
- *
- * @ingroup tripal_db_api
- */
-function tripal_db_get_dbxref_by_accession($accession, $db_id=0) {
-
-  if (!empty($db_id)) {
-    $sql = "SELECT * FROM {dbxref} WHERE accession = :accession AND db_id = :db_id";
-    $r = chado_query($sql, array(':accession' => $accession, ':db_id' => $db_id));
-  }
-  else {
-    $sql = "SELECT * FROM {dbxref} WHERE accession = :accession";
-    $r = chado_query($sql, array(':accession' => $accession));
-  }
-
-  return $r->fetchObject();
 }
 
 /**
  * Adds a new database to the Chado DB table and returns the DB object.
  *
- * @param $dbname
- *   The name of the database. This name is usually used as the prefix for
- *   CV term accessions
- * @param $description
- *   Optional. A description of the database.  By default no description is required.
- * @param $url
- *   Optional. The URL for the database
- * @param $urlprefix
- *   Optional. The URL that is to be used as a prefix when constructing a link to
- *   a database term
- * @param $update
- *   Optional. Set this to '1' to force an update of the database if it
- *   already exists. The default is to not update. If the database exists
- *   then nothing is added.
+ * @param $values
+ *   An associative array of the values of the db (those to be inserted)
+ *   - name: The name of the database. This name is usually used as the prefix for
+ *     CV term accessions
+ *   - description: (Optional) A description of the database.  By default no description is required.
+ *   - url: (Optional) The URL for the database
+ *   - urlprefix: (Optional) The URL that is to be used as a prefix when constructing a
+ *     link to a database term
+ * @param $options
+ *   An associative array of options including:
+ *   - update_existing: (Optional) Set this to '1' to force an update of the database if it
+ *     already exists. The default is to not update. If the database exists
+ *     then nothing is added.
  *
  * @return
  *   An object populated with fields from the newly added database.  If the
@@ -258,8 +279,14 @@ function tripal_db_get_dbxref_by_accession($accession, $db_id=0) {
  *
  * @ingroup tripal_db_api
  */
-function tripal_db_add_db($dbname, $description = '', $url = '',
-  $urlprefix = '', $update = 0) {
+function chado_insert_db($values, $options) {
+
+  // Default Values
+  $dbname = $values['name'];
+  $description = (isset($values['description'])) ? $values['description'] : '';
+  $url = (isset($values['url'])) ? $values['url'] : '';
+  $urlprefix = (isset($values['urlprefix'])) ? $values['urlprefix'] : '';
+  $update = (isset($options['update_existing'])) ? $options['update_existing'] : TRUE;
 
   // build the values array for inserting/updating
   $ins_values = array(
@@ -303,9 +330,21 @@ function tripal_db_add_db($dbname, $description = '', $url = '',
 /**
  * Add a database reference
  *
+ * @param $values
+ *   An associative array of the values to be inserted including:
+ *    - db_id: the database_id of the database the reference is from
+ *    - accession: the accession
+ *    - version: (Optional) The version of the database reference
+ *    - description: (Optional) A description of the database reference
+ *
  * @ingroup tripal_db_api
  */
-function tripal_db_add_dbxref($db_id, $accession, $version = '', $description = '') {
+function chado_insert_dbxref($values) {
+
+  $db_id = $values['db_id'];
+  $accession = $values['accession'];
+  $version = (isset($values['version'])) ? $values['version'] : '';
+  $description = (isset($values['description'])) ? $values['description'] : '';
 
   $ins_values = array(
     'db_id'       => $db_id,
@@ -343,9 +382,21 @@ function tripal_db_add_dbxref($db_id, $accession, $version = '', $description = 
 /**
  * Add a record to a database reference linking table (ie: feature_dbxref)
  *
+ * @param: $values
+ *   An associative array describing the link
+ *    - linking_table:
+ *    - dbxref_id:
+ *    - foreignkey_name:
+ *    - foreignkey_id:
+ *
  * @ingroup tripal_db_api
  */
-function tripal_db_add_dbxref_link($linking_table, $dbxref_id, $foreignkey_name, $foreignkey_id) {
+function chado_associate_dbxref($values) {
+
+  $linking_table = $values['linking_table'];
+  $dbxref_id = $values['dbxref_id'];
+  $foreignkey_name = $values['foreignkey_name'];
+  $foreignkey_id = $values['foreignkey_id'];
 
   $values = array(
     'dbxref_id' => $dbxref_id,
