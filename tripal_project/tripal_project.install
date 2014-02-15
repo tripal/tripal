@@ -131,7 +131,7 @@ function tripal_project_add_cvterms() {
  *
  * @ingroup tripal_project
  */
-function tripal_project_update_7000() {
+function tripal_project_update_7200() {
   
   // add the project_property CV
   try {

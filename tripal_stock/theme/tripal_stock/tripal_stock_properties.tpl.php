@@ -36,7 +36,7 @@ if(count($properties) > 0){
   foreach ($properties as $property){
     $property = tripal_core_expand_chado_vars($property,'field','stockprop.value');
     $rows[] = array(
-      ucfirst(preg_replace('/_/', ' ', $property->type_id->name)),
+      array('data' => ucfirst(preg_replace('/_/', ' ', $property->type_id->name)), 'width' => '20%'),
       urldecode($property->value)
     );
   }

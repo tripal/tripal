@@ -228,7 +228,7 @@ function tripal_contact_add_custom_tables(){
  *
  * @ingroup tripal_contact
  */
-function tripal_contact_update_7000() {
+function tripal_contact_update_7200() {
 
   // add the new contact_relationship_types vocabulary
   // We cannot use the Tripal API calls in the 7000 update 

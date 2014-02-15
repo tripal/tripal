@@ -54,10 +54,10 @@ if (count($object_rels) > 0 or count($subject_rels) > 0) { ?>
           $organism_name = l("<i>" . $organism->genus . " " . $organism->species . "</i>", "node/" . $organism->nid, array('html' => TRUE));
         }
         $rows[] = array(
-          $stock_name, 
-          $object->record->object_id->uniquename,
-          $organism_name,
-          $object->record->object_id->type_id->name,
+          array('data' => $stock_name, 'width' => '30%'),
+          array('data' => $object->record->object_id->uniquename, 'width' => '30%'),
+          array('data' => $organism_name, 'width' => '30%'),
+          array('data' => $object->record->object_id->type_id->name, 'width' => '10%'),
         ); 
        } 
        // the $table array contains the headers and rows array as well as other
@@ -112,10 +112,10 @@ if (count($object_rels) > 0 or count($subject_rels) > 0) { ?>
           $organism_name = l("<i>" . $organism->genus . " " . $organism->species . "</i>", "node/" . $organism->nid, array('html' => TRUE));
         }
         $rows[] = array(
-          $stock_name, 
-          $subject->record->subject_id->uniquename,
-          $organism_name,
-          $subject->record->subject_id->type_id->name,
+          array('data' => $stock_name, 'width' => '30%'),
+          array('data' => $subject->record->subject_id->uniquename, 'width' => '30%'),
+          array('data' => $organism_name, 'width' => '30%'),
+          array('data' =>$subject->record->subject_id->type_id->name, 'width' => '10%'),
         ); 
        } 
        // the $table array contains the headers and rows array as well as other

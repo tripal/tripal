@@ -127,9 +127,8 @@ function tripal_organism_add_cvterms() {
 /**
  * This is the required update for tripal_organism when upgrading from Drupal core API 6.x.
  *
- * @ingroup tripal_organism
  */
-function tripal_organism_update_7000() {
+function tripal_organism_update_7200() {
 
   // add the new organism_property vocabulary
   // We cannot use the Tripal API calls in the 7000 update 
@@ -147,5 +146,42 @@ function tripal_organism_update_7000() {
   catch (\PDOException $e) {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to add organism_property vocabulary: '. $error);
+  }
+  
+
+  // During the upgrade from D6 to D7 the vocabulary terms assigned to organisms were
+  // copied to the field_data_taxonomyextra table rather than to the correct
+  // field_data_taxonomy_vocabulary_[vid] table. We'll move them.
+  $vid = db_query("SELECT vid FROM {taxonomy_vocabulary} WHERE name = 'Organism'")->fetchField();
+  if ($vid) {
+    try {
+      // first move from the field_data_taxonomyextra table
+      $sql = "
+        INSERT INTO {field_data_taxonomy_vocabulary_$vid}
+          (entity_type, bundle, deleted, entity_id, revision_id, language, delta, taxonomy_vocabulary_" . $vid. "_tid)
+        (SELECT entity_type, bundle, deleted, entity_id, revision_id, language, delta, taxonomyextra_tid
+         FROM field_data_taxonomyextra
+         WHERE bundle = 'chado_feature')
+      ";
+      db_query($sql);
+      $sql = "DELETE FROM field_data_taxonomyextra WHERE bundle = 'chado_organism'";
+      db_query($sql);
+
+      // next move from the field_revision_taxonomyextra table
+      $sql = "
+        INSERT INTO {field_revision_taxonomy_vocabulary_$vid}
+          (entity_type, bundle, deleted, entity_id, revision_id, language, delta, taxonomy_vocabulary_" . $vid. "_tid)
+        (SELECT entity_type, bundle, deleted, entity_id, revision_id, language, delta, taxonomyextra_tid
+         FROM field_revision_taxonomyextra
+         WHERE bundle = 'chado_feature')
+      ";
+      db_query($sql);
+      $sql = "DELETE FROM field_revision_taxonomyextra WHERE bundle = 'chado_organism'";
+      db_query($sql);
+    }
+    catch (\PDOException $e) {
+      $error = $e->getMessage();
+      throw new DrupalUpdateException('Could not move organism taxonomy terms: '. $error);
+    }
   }
 }

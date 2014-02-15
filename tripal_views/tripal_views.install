@@ -135,7 +135,7 @@ function tripal_views_update_6040() {
  *
  * @ingroup tripal_views
  */
-function tripal_views_update_7020() {
+function tripal_views_update_7200() {
 
   // Add relationship_handler to tripal_views_join
   db_add_field(

@@ -42,7 +42,7 @@ if (count($s_terms) > 0) { ?>
       } 
       
       $rows[] = array(
-        $accession,
+        array('data' => $accession, 'width' => '15%'),
         $term->cvterm_id->name
       );
     } 

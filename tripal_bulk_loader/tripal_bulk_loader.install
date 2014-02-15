@@ -249,7 +249,7 @@ function tripal_bulk_loader_update_6152() {
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_update_7201() {
+function tripal_bulk_loader_update_7200() {
 
   db_change_field(
     'tripal_bulk_loader',
