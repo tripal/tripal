@@ -20,7 +20,8 @@ $rows = array();
 $rows[] = array(
   array(
     'data' => 'Name',
-    'header' => TRUE
+    'header' => TRUE,
+    'width' => '20%',
   ),
   $contact->name,
 );

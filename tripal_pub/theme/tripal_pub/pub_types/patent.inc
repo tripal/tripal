@@ -26,7 +26,8 @@ else {
 $rows[] = array(
   array(
     'data' => 'Title',
-    'header' => TRUE
+    'header' => TRUE,
+    'width' => '20%',
   ),
   $title,
 );
@@ -77,9 +78,13 @@ if (user_access('access administration pages')) {
   $rows[] = array(
     array(
       'data' => 'Pub ID',
-      'header' => TRUE
+      'header' => TRUE,
+      'class' => 'tripal-site-admin-only-table-row',
     ),
-    $pub->pub_id
+    array(
+      'data' => $pub->pub_id,
+      'class' => 'tripal-site-admin-only-table-row',
+    ),
   );
 }
 // Is Obsolete Row

@@ -21,7 +21,8 @@ $rows = array();
 $rows[] = array(
   array(
     'data' => 'Analysis Name',
-    'header' => TRUE
+    'header' => TRUE,
+    'width' => '20%',
   ),
   $analysis->name
 );

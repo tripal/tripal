@@ -247,7 +247,6 @@ function tripal_bulk_loader_update_6152() {
  * Update to 7.x-2.0
  * -Cast tripal_bulk_loader.template_id to int field
  *
- * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_update_7200() {
 

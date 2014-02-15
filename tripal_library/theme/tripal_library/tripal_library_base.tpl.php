@@ -25,7 +25,8 @@ $rows = array();
 $rows[] = array(
   array(
     'data' => 'Library Name',
-    'header' => TRUE
+    'header' => TRUE,
+    'width' => '20%',
   ),
   $library->name
 );

@@ -41,7 +41,8 @@ $rows = array();
 $rows[] = array(
   array(
     'data' => 'Project Name',
-    'header' => TRUE
+    'header' => TRUE,
+    'width' => '20%',
   ),
   $project->name
 );

@@ -214,6 +214,7 @@ function tripal_feature_add_organism_count_mview() {
 
 /**
  * This is the required update for tripal_feature when upgrading from Drupal core API 6.x.
+ * This update may take some time to complete.
  */
 function tripal_feature_update_7200() {
   // During the upgrade from D6 to D7 the vocabulary terms assigned to features were 

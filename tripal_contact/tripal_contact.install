@@ -226,7 +226,6 @@ function tripal_contact_add_custom_tables(){
 /**
  * This is the required update for tripal_contact when upgrading from Drupal core API 6.x.
  *
- * @ingroup tripal_contact
  */
 function tripal_contact_update_7200() {
 

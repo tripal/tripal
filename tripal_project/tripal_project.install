@@ -129,7 +129,6 @@ function tripal_project_add_cvterms() {
 /**
  * This is the required update for tripal_project when upgrading from Drupal core API 6.x.
  *
- * @ingroup tripal_project
  */
 function tripal_project_update_7200() {
   

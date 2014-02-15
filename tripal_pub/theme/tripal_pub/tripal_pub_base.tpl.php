@@ -129,7 +129,8 @@ else {
   $rows[] = array(
     array(
       'data' => 'Title',
-      'header' => TRUE
+      'header' => TRUE,
+      'width' => '20%',
     ),
     $title,
   );

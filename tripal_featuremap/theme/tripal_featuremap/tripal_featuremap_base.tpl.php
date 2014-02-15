@@ -24,7 +24,8 @@ $rows = array();
 $rows[] = array(
   array(
     'data' => 'Map Name',
-    'header' => TRUE
+    'header' => TRUE,
+    'width' => '20%',
   ),
   $featuremap->name
 );

@@ -27,6 +27,7 @@ $rows[] = array(
   array(
     'data' => 'Name',
     'header' => TRUE,
+    'width' => '20%',
   ),
   $stock->name
 );

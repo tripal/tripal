@@ -29,7 +29,8 @@ $rows = array();
 $rows[] = array(
   array(
     'data' => 'Genus', 
-    'header' => TRUE
+    'header' => TRUE,
+    'width' => '20%',
   ),
   '<i>' . $organism->genus . '</i>'
 );
