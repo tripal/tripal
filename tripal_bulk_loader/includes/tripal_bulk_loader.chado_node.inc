@@ -333,29 +333,33 @@ function tripal_bulk_loader_update($node) {
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_node_access($node, $op, $account) {
-  if ($op == 'create') {
-    if (!user_access('create tripal_bulk_loader', $account)) {
-      return NODE_ACCESS_DENY;
-    }
-    return NODE_ACCESS_ALLOW;
+  $node_type = $node;
+  if (is_object($node)) {
+    $node_type = $node->type;
   }
-  if ($op == 'update') {
-    if (!user_access('edit tripal_bulk_loader', $account)) {
-      return NODE_ACCESS_DENY;
+  
+  if($node_type == 'tripal_bulk_loader') {
+    if ($op == 'create') {
+      if (!user_access('create tripal_bulk_loader', $account)) {
+        return NODE_ACCESS_DENY;
+      }
+      return NODE_ACCESS_ALLOW;
     }
-    return NODE_ACCESS_ALLOW;
-  }
-  if ($op == 'delete') {
-    if (!user_access('delete tripal_bulk_loader', $account)) {
-      return NODE_ACCESS_DENY;
+    if ($op == 'update') {
+      if (!user_access('edit tripal_bulk_loader', $account)) {
+        return NODE_ACCESS_DENY;
+      }
     }
-    return NODE_ACCESS_ALLOW;
-  }
-  if ($op == 'view') {
-    if (!user_access('access tripal_bulk_loader', $account)) {
-      return NODE_ACCESS_DENY;
+    if ($op == 'delete') {
+      if (!user_access('delete tripal_bulk_loader', $account)) {
+        return NODE_ACCESS_DENY;
+      }
     }
-    return NODE_ACCESS_ALLOW;
+    if ($op == 'view') {
+      if (!user_access('access tripal_bulk_loader', $account)) {
+        return NODE_ACCESS_DENY;
+      }
+    }
+    return NODE_ACCESS_IGNORE;
   }
-  return NODE_ACCESS_IGNORE;
 }
