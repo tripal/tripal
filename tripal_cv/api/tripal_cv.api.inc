@@ -29,17 +29,20 @@
  *   following unique keys is required):
  *    - cv_id: the chado cv.cv_id primary key
  *    - name: the chado cv.name field (assume unique)
- *    - select: an array similar to $values passed into chado_select_record(). It should
- *      fully specify the cv record to be returned.
  * @param $options
  *   An array of options. Supported keys include:
  *     - Any keys supported by chado_generate_var(). See that function definition for
  *       additional details.
  *
+ * NOTE: the $identifier parameter can really be any array similar to $values passed into
+ *   chado_select_record(). It should fully specify the cv record to be returned.
+ *
  * @return
  *   If unique values were passed in as an identifier then an object describing the cv
  *   will be returned (will be a chado variable from chado_generate_var()). Otherwise,
- *   an array of objects will be returned.
+ *   FALSE will be returned.
+ *
+ * @ingroup tripal_cv_api
  */
 function chado_get_cv($identifiers, $options = array()) {
 
@@ -146,12 +149,14 @@ function cv_get_select_options() {
  *       additional details.
  *
  * NOTE: the $identifier parameter can really be any array similar to $values passed into
- *   chado_select_record(). It should fully specify the cv record to be returned.
+ *   chado_select_record(). It should fully specify the cvterm record to be returned.
  *
  * @return
  *   If unique values were passed in as an identifier then an object describing the cvterm
  *   will be returned (will be a chado variable from chado_generate_var()). Otherwise,
- *   an array of objects will be returned.
+ *   FALSE will be returned.
+ *
+ * @ingroup tripal_cv_api
  */
 function chado_get_cvterm($identifiers, $options = array()) {
 

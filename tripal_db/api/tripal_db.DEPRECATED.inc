@@ -23,7 +23,7 @@ function tripal_db_get_db($select_values) {
     )
   );
 
-  return FALSE;
+  return chado_get_db($select_values);
 }
 
 /**
@@ -45,7 +45,7 @@ function tripal_db_get_db_by_db_id($db_id) {
     )
   );
 
-  return FALSE;
+  return chado_get_db(array('db_id' => $db_id));
 }
 
 /**
@@ -67,7 +67,7 @@ function tripal_db_get_db_by_name($name) {
     )
   );
 
-  return FALSE;
+  return chado_get_db(array('name' => $name));
 }
 
 /**
@@ -89,7 +89,7 @@ function tripal_db_get_db_options() {
     )
   );
 
-  return FALSE;
+  return db_get_select_options();
 }
 
 /**
@@ -111,7 +111,7 @@ function tripal_db_get_dbxref($select_values) {
     )
   );
 
-  return FALSE;
+  return chado_get_dbxref($select_values);
 }
 
 /**
@@ -133,7 +133,15 @@ function tripal_db_get_dbxref_by_accession($accession, $db_id=0) {
     )
   );
 
-  return FALSE;
+  $identifiers = array(
+    'accession' => $accession
+  );
+  if ($db_id > 0) {
+    $identifiers['db'] = array(
+      'db_id' => $db_id
+    );
+  }
+  return chado_get_dbxref($identifiers);
 }
 
 /**
@@ -155,7 +163,17 @@ function tripal_db_add_db($dbname, $description = '', $url = '', $urlprefix = ''
     )
   );
 
-  return FALSE;
+  return chado_insert_db(
+    array(
+      'name' => $dbname,
+      'description' => $description,
+      'url' => $url,
+      'urlprefix' => $urlprefix
+    ),
+    array(
+      'update_existing' => $update
+    )
+  );
 }
 
 /**
@@ -177,7 +195,12 @@ function tripal_db_add_dbxref($db_id, $accession, $version = '', $description = 
     )
   );
 
-  return FALSE;
+  return chado_insert_dbxref(array(
+    'db_id' => $db_id,
+    'accession' => $accession,
+    'version' => $version,
+    'description' => $description
+  ));
 }
 
 /**
@@ -199,5 +222,10 @@ function tripal_db_add_dbxref_link($linking_table, $dbxref_id, $foreignkey_name,
     )
   );
 
-  return FALSE;
+  return chado_associate_dbxref(array(
+    'linking_table' => $linking_table,
+    'dbxref_id' => $dbxref_id,
+    'foreignkey_name' => $foreignkey_name,
+    'foreignkey_id' => $foreignkey_id
+  ));
 }
