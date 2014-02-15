@@ -72,7 +72,7 @@ $rows[] = array(
 ); 
 
 // allow site admins to see the analysis ID
-if (user_access('access administration pages')) {
+if (user_access('administer tripal')) {
   // Analysis ID
   $rows[] = array(
     array(

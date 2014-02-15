@@ -64,7 +64,7 @@ if($feature->seqlen > 0) {
   );
 }
 // allow site admins to see the feature ID
-if (user_access('access administration pages')) { 
+if (user_access('administer tripal')) { 
   // Feature ID
   $rows[] = array(
     array(

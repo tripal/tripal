@@ -97,7 +97,7 @@ $rows[] = array(
   htmlspecialchars($citation->value)
 );
 // allow site admins to see the pub ID
-if (user_access('access administration pages')) {
+if (user_access('administer tripal')) {
   // Pub ID
   $rows[] = array(
     array(

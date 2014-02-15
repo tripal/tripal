@@ -61,7 +61,7 @@ $rows[] = array(
   $organism
 );
 // allow site admins to see the stock ID
-if (user_access('access administration pages')) {
+if (user_access('administer tripal')) {
   // stock ID
   $rows[] = array(
     array(

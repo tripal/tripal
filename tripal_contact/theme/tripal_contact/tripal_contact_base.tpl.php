@@ -34,7 +34,7 @@ $rows[] = array(
   $contact->type_id->name,
 );
 // allow site admins to see the contact ID
-if (user_access('access administration pages')) {
+if (user_access('administer tripal')) {
   // Pub ID
   $rows[] = array(
     array(

@@ -44,7 +44,7 @@ function tripal_feature_seq_extract_page() {
 
   // generate the search form
   $output .= '';
-  if (user_access('access administration pages')) {
+  if (user_access('administer tripal')) {
     $output .= tripal_set_message("Administrators, the " . 
         l('organism_feature_count', 'admin/tripal/schema/mviews') . " and " .
         l('analysis_organism', 'admin/tripal/schema/mviews') . " materialized
