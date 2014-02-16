@@ -5,7 +5,7 @@
  */
 
 require_once 'api/tripal_organism.api.inc';
-//require_once 'api/tripal_organism.DEPRECATED.inc';
+require_once 'api/tripal_organism.DEPRECATED.inc';
 
 require_once 'includes/tripal_organism.admin.inc';
 require_once 'includes/tripal_organism.chado_node.inc';
@@ -253,12 +253,8 @@ function tripal_organism_job_describe_args($callback, $args) {
  * @ingroup tripal_organism
  */
 function tripal_organism_form_alter(&$form, &$form_state, $form_id) {
+  // turn of preview button for insert/updates
   if ($form_id == "chado_organism_node_form") {
-    
-    // turn of preview button for insert/updates
     $form['actions']['preview']['#access'] = FALSE;
-    
-    //remove the body field
-    unset($form['body']);
   }
 }

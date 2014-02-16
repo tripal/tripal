@@ -13,73 +13,138 @@
  */
 
 /**
- * Return a given organism object using the nid
+ * Retrieves a chado organism object
  *
- * @param $nid
- *  The node id (nid) of the organism node of interest
+ * @param $identifier
+ *   An array with the key stating what the identifier is. Supported keys (only on of the
+ *   following unique keys is required):
+ *    - organism_id: the chado organism.organism_id primary key
+ *    - genus & species: the chado organism.genus field & organism.species field
+ * @param $options
+ *   An array of options. Supported keys include:
+ *     - Any keys supported by chado_generate_var(). See that function definition for
+ *       additional details.
+ *
+ * NOTE: the $identifier parameter can really be any array similar to $values passed into
+ *   chado_select_record(). It should fully specify the organism record to be returned.
  *
  * @return
- *  organism object created by node load
+ *   If unique values were passed in as an identifier then an object describing the organism
+ *   will be returned (will be a chado variable from chado_generate_var()). Otherwise,
+ *   FALSE will be returned.
  *
  * @ingroup tripal_organism_api
  */
-function tripal_organism_get_organism_by_nid($nid) {
-  return node_load($nid);
+function chado_get_organism($identifiers, $options = array()) {
+
+  // Error Checking of parameters
+  if (!is_array($identifiers)) {
+    tripal_report_error(
+      'tripal_organism_api',
+      TRIPAL_ERROR,
+      "chado_get_organism: The identifier passed in is expected to be an array with the key
+        matching a column name in the organism table (ie: organism_id or name). You passed in %identifier.",
+      array(
+        '%identifier'=> print_r($identifiers, TRUE)
+      )
+    );
+  }
+  elseif (empty($identifiers)) {
+    tripal_report_error(
+      'tripal_organism_api',
+      TRIPAL_ERROR,
+      "chado_get_organism: You did not pass in anything to identify the organism you want. The identifier
+        is expected to be an array with the key matching a column name in the organism table
+        (ie: organism_id or name). You passed in %identifier.",
+      array(
+        '%identifier'=> print_r($identifiers, TRUE)
+      )
+    );
+  }
+
+  // Try to get the organism
+  $organism = chado_generate_var(
+    'organism',
+    $identifiers,
+    $options
+  );
+
+  // Ensure the organism is singular. If it's an array then it is not singular
+  if (is_array($organism)) {
+    tripal_report_error(
+      'tripal_organism_api',
+      TRIPAL_ERROR,
+      "chado_get_organism: The identifiers you passed in were not unique. You passed in %identifier.",
+      array(
+        '%identifier'=> print_r($identifiers, TRUE)
+      )
+    );
+  }
+
+  // Report an error if $organism is FALSE since then chado_generate_var has failed
+  elseif ($organism === FALSE) {
+    tripal_report_error(
+      'tripal_organism_api',
+      TRIPAL_ERROR,
+      "chado_get_organism: chado_generate_var() failed to return a organism based on the identifiers
+        you passed in. You should check that your identifiers are correct, as well as, look
+        for a chado_generate_var error for additional clues. You passed in %identifier.",
+      array(
+        '%identifier'=> print_r($identifiers, TRUE)
+      )
+    );
+  }
+
+  // Else, as far we know, everything is fine so give them their organism :)
+  else {
+    return $organism;
+  }
 }
 
 /**
- * Return a given organism object using the organism id
+ * Returns a list of organisms that are currently synced with Drupal to use in select lists
  *
- * @param $organism_id
- *   The chado organism.organism_id of the organism of interest
- *
+ * @param $syncd_only
+ *   Whether or not to return all chado organisms or just those sync'd with drupal. Defaults
+ *   to TRUE (only sync'd organisms)
  * @return
- *   organism object created by node load
+ *   An array of organisms sync'd with Drupal where each value is the organism scientific
+ *   name and the keys are organism_id's
  *
  * @ingroup tripal_organism_api
  */
-function tripal_organism_get_organism_by_organism_id($organism_id) {
+function organism_get_select_options($syncd_only = TRUE) {
 
-  $sql = "SELECT nid FROM {chado_organism} WHERE organism_id = :organism_id";
-  $r = db_query($sql, array(':organism_id' => $organism_id))->fetchObject();
-  if (!empty($r->nid)) {
-    return node_load($r->nid);
+  if ($syncd_only) {
+    // use this SQL for getting synced organisms
+    $dsql =  "SELECT * FROM {chado_organism}";
+    $orgs = db_query($dsql);
+
+    // use this SQL statement for getting the organisms
+    $csql =  "SELECT * FROM {organism} " .
+             "WHERE organism_id = :organism_id";
+
+    $org_list = array();
+
+    // iterate through the organisms and build an array of those that are synced
+    foreach ($orgs as $org) {
+      $args = array(':organism_id' => $org->organism_id);
+      $org = chado_query($csql, $args)->fetchObject();
+      $org_list[$org->organism_id] = $org->genus . ' ' . $org->species;
+    }
   }
   else {
-    drupal_set_message(t("Function: tripal_organism_get_organism_by_organism_id() -no organism with that organism id sync'd with drupal"), 'error');
+    // use this SQL statement for getting the organisms
+    $csql =  "SELECT * FROM {organism}";
+    $orgs = chado_query($csql)->execute();
+
+    $org_list = array();
+
+    // iterate through the organisms and build an array of those that are synced
+    foreach ($orgs as $org) {
+      $org_list[$org->organism_id] = $org->genus . ' ' . $org->species;
+    }
   }
-
-  return 0;
-
-}
-
-/**
- * Returns a list of organisms that are currently synced with Drupal
- *
- * @return
- *   An array of organisms sync'd with Drupal where each value is an organism table record
- *
- * @ingroup tripal_organism_api
- */
-function tripal_organism_get_synced() {
-
-  // use this SQL for getting synced organisms
-  $dsql =  "SELECT * FROM {chado_organism}";
-  $orgs = db_query($dsql);
-
-  // use this SQL statement for getting the organisms
-  $csql =  "SELECT * FROM {Organism} " .
-           "WHERE organism_id = :organism_id";
-
-  $org_list = array();
-
-  // iterate through the organisms and build an array of those that are synced
-  foreach ($orgs as $org) {
-    $args = array(':organism_id' => $org->organism_id);
-    $org = chado_query($csql, $args)->fetchObject();
-    $org_list[] = $org;
-  }
-
   return $org_list;
 }
 
@@ -94,7 +159,7 @@ function tripal_organism_get_synced() {
  * @return
  *   The fully qualified url to the image
  */
-function tripal_organism_get_image_url($organism, $nid = NULL) {
+function organism_get_image($organism, $nid = NULL) {
   $url = '';
 
   // first look for an image with the genus/species name.  This is old-style tripal

@@ -23,7 +23,7 @@ function tripal_organism_get_organism_by_nid($nid) {
     )
   );
 
-  return FALSE;
+  return chado_get_organism(array('nid' => $nid));
 }
 
 /**
@@ -45,7 +45,7 @@ function tripal_organism_get_organism_by_organism_id($organism_id) {
     )
   );
 
-  return FALSE;
+  return chado_get_organism(array('organism_id' => $organism_id));
 }
 
 /**
@@ -67,7 +67,7 @@ function tripal_organism_get_synced() {
     )
   );
 
-  return FALSE;
+  return organism_get_select_options();
 }
 
 /**
@@ -89,5 +89,5 @@ function tripal_organism_get_image_url($organism, $nid = NULL) {
     )
   );
 
-  return FALSE;
+  return organism_get_image($organism, $nid);
 }
