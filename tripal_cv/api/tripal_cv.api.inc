@@ -847,3 +847,119 @@ function chado_cvterm_autocomplete($cv_id, $string = '') {
   }
   drupal_json_output($items);
 }
+
+/**
+ * Add a record to a cvterm linking table (ie: feature_cvterm)
+ *
+ * @param $basetable
+ *   The base table to which the cvterm should be linked/associated. Thus to associate a
+ *   cvterm to a feature the basetable=feature and cvterm_id is added to the feature_cvterm table.
+ * @param $record_id
+ *   The primary key of the basetable to associate the cvterm with. This should be in integer.
+ * @param $cvterm
+ *   An associative array describing the cvterm. Valid keys include: 'name' => the
+ *   name for the cvterm, 'cv_name' => the name of the cv the cvterm belongs to;
+ *   'cv_id' => the primary key of the cv the cvterm belongs to.
+ * @param $options
+ *   An associative array of options. Valid keys include:
+ *    - insert_cvterm: Insert the cvterm if it doesn't already exist. FALSE is the default
+ *
+ * @ingroup tripal_db_api
+ */
+function chado_associate_cvterm($basetable, $record_id, $cvterm) {
+  $linking_table = $basetable . '_cvterm';
+  $foreignkey_name = $basetable . '_id';
+
+  // Default Values
+  $options['insert_cvterm'] = (isset($options['insert_cvterm'])) ? $options['insert_cvterm'] : FALSE;
+
+  // If the cvterm_id is set then we know it already exists
+  // Otherwise, select to check
+  if (!isset($cvterm['cvterm_id'])) {
+    $values = array(
+      'name' => $cvterm['name'],
+    );
+    if (isset($cvterm['cv_id'])) {
+      $values['cv_id'] = $cvterm['cv_id'];
+    } elseif (isset($cvterm['cv_name'])) {
+      $values['cv_id'] = array(
+        'name' => $cvterm['cv_name']
+      );
+    }
+    else {
+      tripal_report_error(
+        'tripal_cv_api',
+        TRIPAL_WARNING,
+        "chado_associate_cvterm: The cvterm needs to have either the cv_name or cv_id
+          supplied. You were trying to associate a cvterm with the %base %record_id
+          and supplied the cvterm values: %cvterm.",
+        array('%base' => $basetable, '%record_id' => $record_id, '%cvterm' => print_r($cvterm,TRUE))
+      );
+      return FALSE;
+    }
+    $select = chado_select_record('cvterm',array('*'), $values);
+    if ($select) {
+      $cvterm['cvterm_id'] = $select[0]->cvterm_id;
+    }
+    elseif ($options['insert_cvterm']) {
+      // Insert the cvterm
+      $insert = chado_insert_cvterm($values);
+      if (isset($insert->cvterm_id)) {
+        $cvterm['cvterm_id'] = $insert->cvterm_id;
+      }
+      else {
+        tripal_report_error(
+          'tripal_cv_api',
+          TRIPAL_WARNING,
+          "chado_associate_cvterm: Unable to insert the cvterm using the cvterm values: %cvterm.",
+          array('%cvterm' => print_r($cvterm,TRUE))
+        );
+        return FALSE;
+      }
+    }
+    else {
+      tripal_report_error(
+        'tripal_api',
+        TRIPAL_WARNING,
+        "chado_associate_cvterm: The cvterm doesn't already exist. You supplied the cvterm values: %cvterm.",
+        array('%cvterm' => print_r($cvterm,TRUE))
+      );
+      return FALSE;
+    }
+  }
+
+  // Now add the link between the record & cvterm
+  if ($cvterm['cvterm_id'] > 0) {
+    $values = array(
+      'cvterm_id' => $cvterm['cvterm_id'],
+      $foreignkey_name => $record_id,
+      'pub_id' => 1,
+    );
+
+    $result = chado_select_record($linking_table, array('*'), $values);
+
+    // if it doesn't already exist then add it
+    if (!$result) {
+      $success = chado_insert_record($linking_table, $values);
+      if (!$success) {
+        tripal_report_error(
+          'tripal_api',
+          TRIPAL_WARNING,
+          "Failed to insert the %base record %term",
+          array('%base' => $linking_table, '%term' => $cvterm['name'])
+        );
+        return FALSE;
+      }
+      $result = chado_select_record($linking_table, array('*'), $values);
+    }
+
+    if (isset($result[0])) {
+      return $result[0];
+    }
+    else {
+      return FALSE;
+    }
+  }
+
+  return FALSE;
+}

@@ -13,422 +13,6 @@
  */
 
 /**
- * Retrieve properties from the analysisfeatureprop table for a feature.
- *
- * @param $analysis_id
- *    The analysis ID for the analysis feature. This argument is optional but
- *    if specified it must also be accompanied with a feature ID.
- * @param $feature_id
- *    The feature ID for the analysis feature. This argument is optional but
- *    if specified it must also be accompanied with an analysis ID.
- * @param $analysisfeature_id
- *    The analysis feature ID for the analysis feature. This argument is
- *    optional and can be used rather than specifying the $analysis_id and
- *    $feature_id arguments.  If all three arguments are specified (e.g.
- *    an $analysis_id, $feature_id and $analysisfeature_id, then the
- *    $analysisfeature_id is used and the other two arguments are ignored.
- * @param $property
- *    The cvterm name of the properties to retrieve
- * @param $cv_name
- *    Optional.  The name of the cv to which the property belongs.  By
- *    default this is the 'tripal' cv.
- *
- * @return
- *    An analysisfeature chado variable with the specified properties expanded
- *
- * @ingroup tripal_feature_api
- */
-function tripal_feature_analysis_get_property($analysis_id = NULL, $feature_id = NUll,
-  $analysisfeature_id = NULL, $property, $cv_name = 'tripal') {
-
-  // check that the incoming arguments are correct
-  if (($analysis_id and !$feature_id) or
-    (!$analysis_id and $feature_id)) {
-      tripal_report_error('tripal_feature', TRIPAL_WARNING,
-      'tripal_feature_analysis_get_property: Both an analysis ID and feature ID should be specified',
-      array());
-  }
-
-  // get the analysisfeature_id if one is not provided
-  if (!$analysisfeature_id) {
-    $columns = array('analysisfeature_id');
-    $values = array('analysis_id' => $analysis_id, 'feature_id' => $feature_id);
-    $result = chado_select_record('analysisfeature', $columns, $values);
-    $analysisfeature_id = $result[0]->analysisfeature_id;
-  }
-
-  // get the property.
-  return chado_get_property('analysisfeature', $analysisfeature_id, $property, $cv_name);
-}
-
-/**
- * Insert a property for an analysis feature
- *
- * @param $analysis_id
- *    The analysis ID for the analysis feature. This argument is optional but
- *    if specified it must also be accompanied with a feature ID.
- * @param $feature_id
- *    The feature ID for the analysis feature. This argument is optional but
- *    if specified it must also be accompanied with an analysis ID.
- * @param $analysisfeature_id
- *    The analysis feature ID for the analysis feature. This argument is
- *    optional and can be used rather than specifying the $analysis_id and
- *    $feature_id arguments.  If all three arguments are specified (e.g.
- *    an $analysis_id, $feature_id and $analysisfeature_id, then the
- *    $analysisfeature_id is used and the other two arguments are ignored.
- * @param $property
- *   The cvterm name of the property to insert
- * @param $value
- *   The value of the property to insert
- * @param $update_if_present
- *   A boolean indicated whether to update the record if it's already present
- * @param $cv_name
- *    Optional.  The name of the cv to which the property belongs.  By
- *    default this is the 'tripal' cv.
- *
- * @return
- *   True of success, False otherwise
- *
- * @ingroup tripal_feature_api
- */
-function tripal_feature_analysis_insert_property($analysis_id = NULL, $feature_id = NUll,
-  $analysisfeature_id = NULL, $property, $value, $update_if_present = 0, $cv_name = 'tripal') {
-
-  // check that the incoming arguments are correct
-  if (($analysis_id and !$feature_id) or
-      (!$analysis_id and $feature_id)) {
-    tripal_report_error('tripal_feature', TRIPAL_WARNING,
-      'tripal_feature_analysis_insert_property: Both an analysis ID and feature ID should be specified',
-      array());
-  }
-
-  // get the analysisfeature_id if one is not provided
-  if (!$analysisfeature_id) {
-    $columns = array('analysisfeature_id');
-    $values = array('analysis_id' => $analysis_id, 'feature_id' => $feature_id);
-    $result = chado_select_record('analysisfeature', $columns, $values);
-    $analysisfeature_id = $result[0]->analysisfeature_id;
-  }
-
-  // insert the property.
-  $success = chado_insert_property('analysisfeature', $analysisfeature_id,
-    $property, $cv_name, $value, $update_if_present);
-  if (!$success) {
-     tripal_report_error('tripal_feature', TRIPAL_WARNING,
-      'tripal_feature_analysis_insert_property: Failed to insert analysis feature property',
-       array());
-     return FALSE;
-  }
-  return $success;
-}
-
-/**
- * Update an analysis feature property using the property name. Use this
- * when a property only exists once for a given analysis feature.  When more
- * than one value can exist for the same property use the
- * tripal_feature_analysis_update_property_by_id() function.
- *
- * @param $analysis_id
- *    The analysis ID for the analysis feature. This argument is optional but
- *    if specified it must also be accompanied with a feature ID.
- * @param $feature_id
- *    The feature ID for the analysis feature. This argument is optional but
- *    if specified it must also be accompanied with an analysis ID.
- * @param $analysisfeature_id
- *    The analysis feature ID for the analysis feature. This argument is
- *    optional and can be used rather than specifying the $analysis_id and
- *    $feature_id arguments.  If all three arguments are specified (e.g.
- *    an $analysis_id, $feature_id and $analysisfeature_id, then the
- *    $analysisfeature_id is used and the other two arguments are ignored.
- * @param $property
- *   The cvterm name of the property to update
- * @param $value
- *   The value of the property to update
- * @param $insert_if_missing
- *   A boolean indicated whether to insert the record if it's absent
- * @param $cv_name
- *    Optional.  The name of the cv to which the property belongs.  By
- *    default this is the 'tripal' cv.
- *
- * Note: The property will be identified using the unique combination of the $analysis_id and $property
- * and then it will be updated with the supplied value
- *
- * @return
- *   True of success, False otherwise
- *
- * @ingroup tripal_feature_api
- */
-function tripal_feature_analysis_update_property($analysis_id = NULL, $feature_id = NUll,
-  $analysisfeature_id = NULL, $property, $value, $insert_if_missing = 0,
-  $cv_name = 'tripal') {
-
-  // check that the incoming arguments are correct
-  if (($analysis_id and !$feature_id) or
-    (!$analysis_id and $feature_id)) {
-      tripal_report_error('tripal_feature', TRIPAL_WARNING,
-      'tripal_feature_analysis_update_property: Both an analysis ID and feature ID should be specified',
-      array());
-  }
-
-  // get the analysisfeature_id if one is not provided
-  if (!$analysisfeature_id) {
-    $columns = array('analysisfeature_id');
-    $values = array('analysis_id' => $analysis_id, 'feature_id' => $feature_id);
-    $result = chado_select_record('analysisfeature', $columns, $values);
-    $analysisfeature_id = $result[0]->analysisfeature_id;
-  }
-
-  // update the property.
-  return chado_update_property('analysisfeature', $analysisfeature_id, $property, $cv_name, $value, $insert_if_missing);
-}
-
-/**
- * Update a property for an analysis feature using the analysisfeatureprop_id.
- *
- * @param $analysisfeatureprop_id
- *    The analysis feature property ID for the analysis feature.
- * @param $property
- *   The cvterm name of the property
- * @param $value
- *   The value of the property
- * @param $cv_name
- *    Optional.  The name of the cv to which the property belongs.  By
- *    default this is the 'tripal' cv.
- * *
- * @return
- *   True of success, False otherwise
- *
- * @ingroup tripal_feature_api
- */
-function tripal_feature_analysis_update_property_by_id($analysisfeatureprop_id,
-  $property, $value, $cv_name = 'tripal') {
-
-    // update the property.
-    return chado_update_property('analysisfeature',
-      NULL, $property, $cv_name, $value, FALSE, $analysisfeatureprop_id);
-}
-
-/**
- * Delete an analysis feature property using the property name.  Use this
- * when a property only exists once for a given analysis feature.  When more
- * than one value can exist for the same property use the
- * tripal_feature_analysis_delete_property_by_id() function.
- *
- * @param $analysis_id
- *    The analysis ID for the analysis feature. This argument is optional but
- *    if specified it must also be accompanied with a feature ID.
- * @param $feature_id
- *    The feature ID for the analysis feature. This argument is optional but
- *    if specified it must also be accompanied with an analysis ID.
- * @param $analysisfeature_id
- *    The analysis feature ID for the analysis feature. This argument is
- *    optional and can be used rather than specifying the $analysis_id and
- *    $feature_id arguments.  If all three arguments are specified (e.g.
- *    an $analysis_id, $feature_id and $analysisfeature_id, then the
- *    $analysisfeature_id is used and the other two arguments are ignored.
- * @param $property
- *    The cvterm name of the property to delete
- * @param $cv_name
- *    Optional.  The name of the cv to which the property belongs.  By
- *    default this is the 'tripal' cv.
- *
- * Note: The property will be identified using the unique combination of the $analysis_id and $property
- * and then it will be deleted
- *
- * @return
- *   True of success, False otherwise
- *
- * @ingroup tripal_feature_api
- */
-function tripal_feature_analysis_delete_property($analysis_id = NULL, $feature_id = NUll,
-  $analysisfeature_id = NULL, $property, $cv_name = 'tripal') {
-  // check that the incoming arguments are correct
-  if (($analysis_id and !$feature_id) or
-    (!$analysis_id and $feature_id)) {
-      tripal_report_error('tripal_feature', TRIPAL_WARNING,
-      'tripal_feature_analysis_delete_property: Both an analysis ID and feature ID should be specified',
-        array());
-  }
-
-  // get the analysisfeature_id if one is not provided
-  if (!$analysisfeature_id) {
-    $columns = array('analysisfeature_id');
-    $values = array('analysis_id' => $analysis_id, 'feature_id' => $feature_id);
-    $result = chado_select_record('analysisfeature', $columns, $values);
-    $analysisfeature_id = $result[0]->analysisfeature_id;
-  }
-
-  // get the property.
-  return chado_delete_property('analysisfeature', $analysisfeature_id, $property, $cv_name);
-}
-
-/**
- * Delete a property using the analysisfeatureprop_id
- *
- * @param $analysisfeatureprop_id
- *    The analysis feature property ID for the analysis feature.
- *
- * @return
- *   True of success, False otherwise
- *
- * @ingroup tripal_feature_api
- */
-function tripal_feature_analysis_delete_property_by_id($analysisfeatureprop_id) {
-
-  // construct the array that will match the exact record to update
-  $match = array(
-    'analysisfeatureprop_id' => $analysisfeatureprop_id,
-  );
-
-  return chado_delete_record('analysisfeatureprop', $match);
-
-}
-
-/**
- * Retrieve properties of a given type for a given feature
- *
- * @param $feature_id
- *    The feature_id of the properties you would like to retrieve
- * @param $property
- *    The cvterm name of the properties to retrieve
- * @param $cv_name
- *    Optional.  The name of the cv to which the property belongs.  By
- *    default this is the 'tripal' cv.
- *
- * @return
- *    A feature chado variable with the specified properties expanded
- *
- * @ingroup tripal_feature_api
- */
-function tripal_feature_get_property($feature_id, $property, $cv_name='tripal') {
-  return chado_get_property('feature', $feature_id, $property, $cv_name);
-}
-
-/**
- * Insert a given property
- *
- * @param $feature_id
- *   The feature_id of the property to insert
- * @param $property
- *   The cvterm name of the property to insert
- * @param $value
- *   The value of the property to insert
- * @param $update_if_present
- *   A boolean indicated whether to update the record if it's already present
- * @param $cv_name
- *    Optional.  The name of the cv to which the property belongs.  By
- *    default this is the 'tripal' cv.
- *
- * @return
- *   True of success, False otherwise
- *
- * @ingroup tripal_feature_api
- */
-function tripal_feature_insert_property($feature_id, $property, $value,
-  $update_if_present = 0, $cv_name = 'tripal') {
-  return chado_insert_property('feature', $feature_id, $property,
-    $cv_name, $value, $update_if_present);
-}
-
-/**
- * Update a feature property using the property name. Only use this
- * if the property is unique and only exist once for the feature.
- *
- * @param $feature_id
- *   The feature_id of the property to update
- * @param $property
- *   The cvterm name of the property to update
- * @param $value
- *   The value of the property to update
- * @param $insert_if_missing
- *   A boolean indicated whether to insert the record if it's absent
- * @param $cv_name
- *   Optional.  The name of the cv to which the property belongs.  By
- *   default this is the 'tripal' cv.
- *
- * Note: The property will be identified using the unique combination of the $feature_id and $property
- * and then it will be updated with the supplied value
- *
- * @return
- *   True of success, False otherwise
- *
- * @ingroup tripal_feature_api
- */
-function tripal_feature_update_property($feature_id, $property,
-  $value, $insert_if_missing = 0, $cv_name = 'tripal') {
-    return chado_update_property('feature', $feature_id, $property, $cv_name, $value, $insert_if_missing);
-}
-
-/**
- * Update a given feature property using the featureprop_id
- *
- * @param $featureprop_id
- *   The featureprop_id of the property to update
- * @param $property
- *   The cvterm name of the property
- * @param $value
- *   The value of the property
- * @param $cv_name
- *   Optional.  The name of the cv to which the property belongs.  By
- *   default this is the 'tripal' cv.
- *
- * @return
- *   True of success, False otherwise
- *
- * @ingroup tripal_feature_api
- */
-function tripal_feature_update_property_by_id($featureprop_id, $property,
-  $value, $cv_name = 'tripal') {
-    return chado_update_property('feature', NULL, $property, $cv_name, $value, FALSE, $featureprop_id);
-}
-
-/**
- * Delete a given feature property using the property name.  Only use this
- * if the property is unique and only exists once for the feature.
- *
- * @param $feature_id
- *   The feature_id of the property to delete
- * @param $property
- *   The cvterm name of the property to delete
- * @param $cv_name
- *   Optional.  The name of the cv to which the property belongs.  By
- *   default this is the 'tripal' cv.
- *
- * Note: The property will be identified using the unique combination of the $feature_id and $property
- * and then it will be deleted
- *
- * @return
- *   True of success, False otherwise
- *
- * @ingroup tripal_feature_api
- */
-function tripal_feature_delete_property($feature_id, $property, $cv_name='tripal') {
-  return chado_delete_property('feature', $feature_id, $property, $cv_name);
-}
-
-/**
- * Delete a given feature property using the featureprop_id
- *
- * @param $featureprop_id
- *   The feature_id of the property to delete
- *
- * @return
- *   True of success, False otherwise
- *
- * @ingroup tripal_feature_api
- */
-function tripal_feature_delete_property_by_id($featureprop_id) {
-
-  // construct the array that will match the exact record to update
-  $match = array(
-    'featureprop_id' => $featureprop_id,
-  );
-
-  return chado_delete_record('featureprop', $match);
-
-}
-
-/**
  * Performs a reverse compliment of a nucleotide sequence
  *
  * @param $sequence
@@ -439,7 +23,7 @@ function tripal_feature_delete_property_by_id($featureprop_id) {
  *
  * @ingroup tripal_feature_api
  */
-function tripal_feature_reverse_complement($sequence) {
+function feature_sequence_reverse_complement($sequence) {
 
   $seq = strtoupper($sequence);
   $seq = strrev($seq);
@@ -463,51 +47,56 @@ function tripal_feature_reverse_complement($sequence) {
 /**
  * Retrieves the sequence for a feature.
  *
- * @param $feature_id
- *   The feature_id of the feature for which the sequence will be retrieved
- * @param $feature_name
- *   The feature name. This will appear on the FASTA definition line
- * @param $num_bases_per_line
- *   Indicate the number of bases to use per line.  A new line will be added
- *   after the specified number of bases on each line.
- * @param $derive_from_parent
- *   Set to '1' if the sequence should be obtained from the parent to which
- *   this feature is aligned.
- * @param $aggregate
- *   Set to '1' if the sequence should only contain sub features, excluding
- *   intra sub feature sequence.  For example, set this option to obtain just
- *   the coding sequence of an mRNA.
- * @param $output_format
- *   The type of format.  Valid formats include 'fasta_html', 'fasta_txt' and
- *   'raw'.  The format 'fasta_txt' outputs line
- *   breaks as <br> tags and the entire return value is in a <span> tag
- *   with a fixed-width font definition.  'fasta_txt' outputs line breaks with
- *   windows format carriage returns (e.g. \r\n) with no other formatting. The
- *   raw format is simply the sequence with now FASTA formatting and no
- *   line breaks.
- * @param $upstream
- *   An integer specifing the number of upstream bases to include in the output
- * @param $downstream
- *   An integer specifying the number of downstream bases to include in the
- *   output.
- * @param $sub_features
- *   Only include sub features (or child features) of the types provided in the array
- * @param $relationship
- *   If a relationship name is provided (e.g. sequence_of) then any sequences that
- *   are in relationships of this type with matched sequences are also included
- * @param $rel_part
- *   If a relationship is provided in the preceeding argument then the rel_part
- *   must be either 'object' or 'subject' to indicate which side of the
- *   relationship the matched features belong
+ * @param $feature
+ *   An associative array describing the feature. Valid keys include:
+ *    - feature_id: The feature_id of the feature for which the sequence will be retrieved
+ *    - name: The feature name. This will appear on the FASTA definition line
+ * @param $options
+ *   An associative array of options. Valid keys include:
+ *    - width: Indicate the number of bases to use per line.  A new line will be added
+ *      after the specified number of bases on each line.
+ *    - derive_from_parent: Set to '1' if the sequence should be obtained from the parent
+ *      to which this feature is aligned.
+ *    - aggregate: Set to '1' if the sequence should only contain sub features, excluding
+ *      intro sub feature sequence.  For example, set this option to obtain just
+ *      the coding sequence of an mRNA.
+ *    - output_format: The type of format.  Valid formats include 'fasta_html', 'fasta_txt' and
+ *      'raw'.  The format 'fasta_txt' outputs line breaks as <br> tags and the entire
+ *      return value is in a <span> tag with a fixed-width font definition.  'fasta_txt'
+ *      outputs line breaks with windows format carriage returns (e.g. \r\n) with no other
+ *      formatting. The raw format is simply the sequence with now FASTA formatting and no
+ *      line breaks.
+ *    - num_upstream: An integer specifing the number of upstream bases to include in the output
+ *    - num_downstream: An integer specifying the number of downstream bases to include in the
+ *      output.
+ *    - sub_feature_types: Only include sub features (or child features) of the types
+ *      provided in the array
+ *    - relationship_type: If a relationship name is provided (e.g. sequence_of) then any
+ *      sequences that are in relationships of this type with matched sequences are also included
+ *    - relationship_part: If a relationship is provided in the preceeding argument then
+ *      the rel_part must be either 'object' or 'subject' to indicate which side of the
+ *      relationship the matched features belong
  *
  * @return
  *   The DNA/protein sequence formated as requested.
  *
  * @ingroup tripal_feature_api
  */
-function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
-  $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
-  $upstream, $downstream, $sub_features = array(), $relationship = '', $rel_part = '') {
+function feature_sequence_get_formatted($feature, $options) {
+
+  // Default Values
+  $feature_id = $feature['feature_id'];
+  $feature_name = $feature['name'];
+
+  $num_bases_per_line = $options['width'];
+  $derive_from_parent = $options['derive_from_parent'];
+  $aggregate = $options['aggregate'];
+  $output_format = $options['output_format'];
+  $upstream = $options['num_upstream'];
+  $downstream = $options['num_downstream'];
+  $sub_features = $options['sub_feature_types'];
+  $relationship = $options['relationship_type'];
+  $rel_part = $options['relationship_part'];
 
   // to speed things up we need to make sure we have a persistent connection
   $connection = tripal_db_persistent_chado();
@@ -856,122 +445,6 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
 }
 
 /**
- * This function adds an entry to the feature_dbxref table.
- *
- * @param $feature_id
- *   The numeric feature_if of the feature
- * @param $dbname
- *   The name of the database to which the term belongs
- * @param accession
- *   The accession of the term
- *
- * @return
- *   TRUE on success. FALSE on failure.
- *
- * @ingroup tripal_feature_api
- */
-function tripal_feature_add_dbxref($feature_id, $dbname, $accession) {
-
-  // make sure the db exists. If it doesn't, then add it
-  $values = array('name' => $dbname);
-  $options = array('statement_name' => 'sel_db_na');
-  $db = chado_select_record('db', array('db_id'), $values, $options);
-  if (!$db or count($db) == 0) {
-    $options = array('statement_name' => 'ins_db_na');
-    $success = chado_insert_record('db', $values, $options);
-      if (!$success) {
-      tripal_report_error('tripal_feature', TRIPAL_WARNING, 'tripal_feature_add_dbxref: The feature dbxref entry for feature, %feature_id, " .
-        "could not be added because the database, %dbname, does not exist and cannot be added.',
-        array('%feature_id' => $feature_id, '%dbname' => $dbname));
-      return FALSE;
-    }
-  }
-
-  // first make sure that the record doesn't already exist
-  $values = array(
-    'dbxref_id' => array(
-      'accession' => $accession,
-      'db_id' => array(
-        'name' => $dbname
-      ),
-    ),
-    'feature_id' => $feature_id,
-  );
-  $options = array('statement_name' => 'sel_featuredbxref_dbfe');
-  $xref = chado_select_record('feature_dbxref', array('feature_dbxref_id'), $values, $options);
-  if (count($xref) == 0) {
-    // if the record doesn't exist then add it.
-    $options = array('statement_name' => 'ins_featuredbxref_dbfe');
-    $success = chado_insert_record('feature_dbxref', $values, $options);
-    if (!$success) {
-      tripal_report_error('tripal_feature', TRIPAL_WARNING, 'tripal_feature_add_dbxref: The feature dbxref entry for feature, %feature_id, ' .
-        'could not be added: %db:%accession.', array('%feature_id' => $feature_id, '%db' => $dbname,
-        '%accession' => $accession));
-      return FALSE;
-    }
-  }
-  return TRUE;
-}
-
-/**
- * This function adds an entry to the feature_cvterm table.
- *
- * @param $feature_id
- *   The numeric feature_if of the feature
- * @param $cvname
- *   The name of the controlled vocabulary to which the term belongs
- * @param cvterm
- *   The name of the cvterm
- *
- * @return
- *   TRUE on success. FALSE on failure.
- *
- * @ingroup tripal_feature_api
- */
-function tripal_feature_add_cvterm($feature_id, $cvname, $cvterm) {
-
-  // make sure the cv exists. If it doesn't, then add it
-  $values = array('name' => $cvname);
-  $options = array('statement_name' => 'sel_cv_na');
-  $cv = chado_select_record('cv', array('cv_id'), $values, $options);
-  if (!$cv or count($cv) == 0) {
-    $options = array('statement_name' => 'ins_cv_na');
-    $success = chado_insert_record('cv', $values, $options);
-      if (!$success) {
-      tripal_report_error('tripal_feature', TRIPAL_WARNING, 'tripal_feature_add_cvterm: The feature cvterm entry for feature, %feature_id, " .
-        "could not be added because the CV, %cvname, does not exist and cannot be added.',
-        array('%feature_id' => $feature_id, '%cvname' => $cvname));
-      return FALSE;
-    }
-  }
-
-  // first make sure that the record doesn't already exist
-  $values = array(
-    'cvterm_id' => array(
-      'name' => $cvterm,
-      'cv_id' => array(
-        'name' => $cvname
-      ),
-    ),
-    'feature_id' => $feature_id,
-    'pub_id' => 1,
-  );
-  $options = array('statement_name' => 'sel_featuredcvterm_cvfepu');
-  $xref = chado_select_record('feature_cvterm', array('feature_cvterm_id'), $values, $options);
-  if (count($xref) == 0) {
-    // if the record doesn't exist then add it.
-    $options = array('statement_name' => 'ins_featurecvterm_cvfepu');
-    $success = chado_insert_record('feature_cvterm', $values, $options);
-    if (!$success) {
-      tripal_report_error('tripal_feature', TRIPAL_WARNING, 'tripal_feature_add_cvterm: The feature cvterm entry for feature, %feature_id, ' .
-        'could not be added: %cvterm.', array('%feature_id' => $feature_id, '%cvterm' => $cvterm));
-      return FALSE;
-    }
-  }
-  return TRUE;
-}
-
-/**
  * Returns a fasta record for the passed in feature
  *
  * @param $feature
@@ -985,10 +458,13 @@ function tripal_feature_add_cvterm($feature_id, $cvname, $cvterm) {
  *
  * @ingroup tripal_feature_api
  */
-function tripal_feature_return_fasta($feature, $desc) {
+function feature_sequence_get_fasta($feature, $desc) {
+
   $fasta  = ">" . variable_get('chado_feature_accession_prefix', 'FID') . "$feature->feature_id|$feature->name";
   $fasta .= " $desc\n";
   $fasta .= wordwrap($feature->residues, 50, "\n", TRUE);
   $fasta .= "\n\n";
+
   return $fasta;
+
 }

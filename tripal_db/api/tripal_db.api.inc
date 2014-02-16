@@ -382,43 +382,114 @@ function chado_insert_dbxref($values) {
 /**
  * Add a record to a database reference linking table (ie: feature_dbxref)
  *
- * @param: $values
- *   An associative array describing the link
- *    - linking_table:
- *    - dbxref_id:
- *    - foreignkey_name:
- *    - foreignkey_id:
+ * @param $basetable
+ *   The base table for which the dbxref should be associated. Thus to associate a dbxref
+ *   with a feature the basetable=feature and dbxref_id is added to the feature_dbxref table
+ * @param $record_id
+ *   The primary key of the basetable to associate the dbxref with. This should be in integer.
+ * @param $dbxref
+ *   An associative array describing the dbxref. Valid keys include: 'accession' => the
+ *   accession for the dbxref, 'db_name' => the name of the database the dbxref belongs to;
+ *   'db_id' => the primary key of the database the dbxref belongs to.
+ * @param $options
+ *   An associative array of options. Valid keys include:
+ *    - insert_dbxref: Insert the dbxref if it doesn't already exist. TRUE is the default
  *
  * @ingroup tripal_db_api
  */
-function chado_associate_dbxref($values) {
+function chado_associate_dbxref($basetable, $record_id, $dbxref, $options = array()) {
+  $linking_table = $basetable . '_dbxref';
+  $foreignkey_name = $basetable . '_id';
 
-  $linking_table = $values['linking_table'];
-  $dbxref_id = $values['dbxref_id'];
-  $foreignkey_name = $values['foreignkey_name'];
-  $foreignkey_id = $values['foreignkey_id'];
+  // Default Values
+  $options['insert_dbxref'] = (isset($options['insert_dbxref'])) ? $options['insert_dbxref'] : TRUE;
 
-  $values = array(
-    'dbxref_id' => $dbxref_id,
-    $foreignkey_name => $foreignkey_id
-  );
-
-  $result = chado_select_record($linking_table, array('*'), $values);
-
-  // if it doesn't already exist then add it
-  if (!$result) {
-    $success = chado_insert_record($linking_table, $values);
-    if (!$success) {
-      tripal_report_error('tripal_db', TRIPAL_WARNING, "Failed to insert the $linking_table record $accession", NULL);
-      return 0;
+  // If the dbxref_id is set then we know it already exists
+  // Otherwise, select to check
+  if (!isset($dbxref['dbxref_id'])) {
+    $values = array(
+      'accession' => $dbxref['accession'],
+    );
+    if (isset($dbxref['db_id'])) {
+      $values['db_id'] = $dbxref['db_id'];
+    } elseif (isset($dbxref['db_name'])) {
+      $values['db_id'] = array(
+        'name' => $dbxref['db_name']
+      );
     }
-    $result = chado_select_record($linking_table, array('*'), $values);
+    else {
+      tripal_report_error(
+        'tripal_db_api',
+        TRIPAL_WARNING,
+        "chado_associate_dbxref: The dbxref needs to have either the db_name or db_id
+          supplied. You were trying to associate a dbxref with the %base %record_id
+          and supplied the dbxref values: %dbxref.",
+        array('%base' => $basetable, '%record_id' => $record_id, '%dbxref' => print_r($dbxref,TRUE))
+      );
+      return FALSE;
+    }
+    $select = chado_select_record('dbxref',array('*'), $values);
+    if ($select) {
+      $dbxref['dbxref_id'] = $select[0]->dbxref_id;
+    }
+    elseif ($options['insert_dbxref']) {
+      // Insert the dbxref
+      $insert = chado_insert_dbxref($values);
+      if (isset($insert->dbxref_id)) {
+        $dbxref['dbxref_id'] = $insert->dbxref_id;
+      }
+      else {
+        tripal_report_error(
+          'tripal_db_api',
+          TRIPAL_WARNING,
+          "chado_associate_dbxref: Unable to insert the dbxref using the dbxref values: %dbxref.",
+          array('%dbxref' => print_r($dbxref,TRUE))
+        );
+        return FALSE;
+      }
+    }
+    else {
+      tripal_report_error(
+        'tripal_api',
+        TRIPAL_WARNING,
+        "chado_associate_dbxref: The dbxref doesn't already exist. You supplied the dbxref values: %dbxref.",
+        array('%dbxref' => print_r($dbxref,TRUE))
+      );
+      return FALSE;
+    }
   }
 
-  if (isset($result[0])) {
-    return $result[0];
+  // Now add the link between the record & dbxref
+  if ($dbxref['dbxref_id'] > 0) {
+    $values = array(
+      'dbxref_id' => $dbxref['dbxref_id'],
+      $foreignkey_name => $record_id
+    );
+
+    $result = chado_select_record($linking_table, array('*'), $values);
+
+    // if it doesn't already exist then add it
+    if (!$result) {
+      $success = chado_insert_record($linking_table, $values);
+      if (!$success) {
+        tripal_report_error(
+          'tripal_api',
+          TRIPAL_WARNING,
+          "Failed to insert the %base record %accession",
+          array('%base' => $linking_table, '%accession' => $dbxref['accession'])
+        );
+        return FALSE;
+      }
+      $result = chado_select_record($linking_table, array('*'), $values);
+    }
+
+    if (isset($result[0])) {
+      return $result[0];
+    }
+    else {
+      return FALSE;
+    }
   }
-  else {
-    return FALSE;
-  }
+
+  return FALSE;
 }

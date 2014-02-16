@@ -222,10 +222,12 @@ function tripal_db_add_dbxref_link($linking_table, $dbxref_id, $foreignkey_name,
     )
   );
 
-  return chado_associate_dbxref(array(
-    'linking_table' => $linking_table,
-    'dbxref_id' => $dbxref_id,
-    'foreignkey_name' => $foreignkey_name,
-    'foreignkey_id' => $foreignkey_id
-  ));
+  if (preg_match('/(\w+)_dbxref/',$linking_table,$matches)) {
+    $basetable = $matches[1];
+
+    return chado_associate_dbxref($basetable, $foreignkey_id, array('dbxref_id' => $dbxref_id));
+  }
+  else {
+    return FALSE;
+  }
 }

@@ -370,7 +370,7 @@ function tripal_feature_reverse_complement($sequence) {
     )
   );
 
-  return FALSE;
+  return feature_sequence_reverse_complement($sequence);
 }
 
 /**
@@ -392,7 +392,25 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name, $num_
     )
   );
 
-  return FALSE;
+  return feature_sequence_get_formatted(
+    // Feature
+    array(
+      'feature_id' => $feature_id,
+      'name' => $feature_name
+    ),
+    // Options
+    array(
+      'width' => $num_bases_per_line,
+      'derive_from_parent' => $derive_from_parent,
+      'aggregate' => $aggregate,
+      'output_format' => $output_format,
+      'num_upstream' => $upstream,
+      'num_downstream' => $downstream,
+      'sub_feature_types' => $sub_features,
+      'relationship_type' => $relationship,
+      'relationship_part' => $rel_part
+    )
+  );
 }
 
 /**
@@ -414,7 +432,14 @@ function tripal_feature_add_dbxref($feature_id, $dbname, $accession) {
     )
   );
 
-  return FALSE;
+  return chado_associate_dbxref(
+    'feature',
+    $feature_id,
+    array(
+      'accession' => $accession,
+      'db_name' => $dbname
+    )
+  );
 }
 
 /**
@@ -436,7 +461,14 @@ function tripal_feature_add_cvterm($feature_id, $cvname, $cvterm) {
     )
   );
 
-  return FALSE;
+  return chado_associate_cvterm(
+    'feature',
+    $feature_id,
+    array(
+      'name' => $cvterm,
+      'cv_name' => $cvname
+    )
+  );
 }
 
 /**
@@ -458,5 +490,5 @@ function tripal_feature_return_fasta($feature, $desc) {
     )
   );
 
-  return FALSE;
+  return feature_sequence_get_fasta($feature, $desc);
 }

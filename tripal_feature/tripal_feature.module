@@ -14,7 +14,7 @@
 
 require_once 'api/tripal_feature.api.inc';
 require_once 'api/tripal_feature.schema.api.inc';
-//require_once 'api/tripal_feature.DEPRECATED.inc';
+require_once 'api/tripal_feature.DEPRECATED.inc';
 
 require_once 'theme/tripal_feature.theme.inc';
 
@@ -244,6 +244,11 @@ function tripal_feature_theme($existing, $type, $theme, $path) {
     'tripal_feature_base' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_feature_base',
+      'path' => "$path/theme/tripal_feature",
+    ),
+    'tripal_feature_featurepos' => array(
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_feature_featurepos',
       'path' => "$path/theme/tripal_feature",
     ),
     'tripal_feature_sequence' => array(
@@ -1202,10 +1207,6 @@ function tripal_feature_form_alter(&$form, &$form_state, $form_id) {
   }
   // turn off preview button for insert/updates
   if ($form_id == "chado_feature_node_form") {
-    // turn of preview button for insert/updates
     $form['actions']['preview']['#access'] = FALSE;
-    
-    //remove the body field
-    unset($form['body']);
   }
 }
