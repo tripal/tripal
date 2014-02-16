@@ -394,3 +394,100 @@ function chado_delete_property($basetable, $record_id, $property, $cv_name) {
 
   return chado_delete_record($basetable . 'prop', $match);
 }
+
+/**
+ * Get all records with a given property.
+ *
+ * @param $basetable
+ *   The base table for which variables should be generated.
+ * @param $property
+ *   An array/object describing the property to select records for. It should at least
+ *   have either a type_name (if unique across cvs) or type_id. Other supported keys
+ *   include: cv_id/cv_name (of the type), value and rank
+ * @param $record
+ *   An array/object describing the base table record. This can be used to restrict the
+ *   base table records returned to a given type or organism
+ * @param $options
+ *   An array of options. Supported keys include:
+ *     - Any keys supported by chado_generate_var(). See that function definition for
+ *       additional details.
+ *
+ * @return
+ *   An array of chado variables with the given property
+ *
+ * @ingroup tripal_chado_api
+ */
+function chado_get_record_with_property($basetable, $property, $record = array(), $options = array()) {
+  $property_table = $basetable . 'prop';
+  $foreignkey_name = $basetable . '_id';
+
+  // Get paramters in the correct format
+  if (is_array($property)) {
+    $property = (object) $property;
+  }
+  if (is_object($record)) {
+    $record = (array) $record;
+  }
+
+  // Check parameters
+  if (!isset($property->type_name) AND !isset($property->type_id)) {
+    tripal_report_error(
+      'chado_api',
+      TRIPAL_ERROR,
+      "chado_get_record_with_property: You must identify the type of property you want to
+       select records for by supplying either a type_name or type_id. You identified the
+       property as %prop.",
+      array(
+        '%prop'=> print_r($property, TRUE)
+      )
+    );
+  }
+
+  // Build the select values array based on the type
+  if (isset($property->type_name)) {
+    $values = array();
+    $values['type_id'] = array(
+      'name' => $property->type_name
+    );
+
+    // If the cv is set, add that too
+    if (isset($property->cv_name)) {
+      $values['type_id']['cv_id']['name'] = $property->cv_name;
+    }
+    elseif (isset($property->cv_id)) {
+      $values['type_id']['cv_id'] = $property->cv_id;
+    }
+  }
+  elseif ($property->type_id) {
+    $values = array('type_id' => $property->type_id);
+  }
+
+  // Add the value and rank to values array if present
+  if (isset($property->value)) {
+    $values['value'] = $property->value;
+  }
+  if (isset($property->rank)) {
+    $values['rank'] = $property->rank;
+  }
+
+  // Add the record details to the values array
+  if (!empty($record)) {
+    $values[$foreignkey_name] = $record;
+  }
+
+  // Now select the ids of the properties that match
+  $select = chado_select_record($property_table, array($foreignkey_name), $values);
+
+  // For each of these ids, pull out the full base records
+  $records = array();
+  foreach ($select as $s) {
+    $id = $s->{$foreignkey_name};
+    $records[$id] = chado_generate_var(
+      $basetable,
+      array($foreignkey_name => $id),
+      $options
+    );
+  }
+
+  return $records;
+}

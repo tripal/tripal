@@ -166,7 +166,7 @@ function tripal_cv_get_cvterm_by_name($name, $cv_id = NULL, $cv_name = 'tripal')
     $identifiers['cv_id'] = $cv_id;
   }
   if (isset($cv_name)) {
-    $identifiers['cv'] = array(
+    $identifiers['cv_id'] = array(
       'name' => $cv_name
     );
   }

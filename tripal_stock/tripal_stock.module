@@ -5,7 +5,7 @@
  */
 
 require_once 'api/tripal_stock.api.inc';
-//require_once 'api/tripal_stock.DEPRECATED.inc';
+require_once 'api/tripal_stock.DEPRECATED.inc';
 
 require_once 'theme/tripal_stock.theme.inc';
 
@@ -178,35 +178,28 @@ function tripal_stock_permission() {
  * @ingroup tripal_stock
  */
 function chado_stock_node_access($node, $op, $account) {
-  $node_type = $node;
-  if (is_object($node)) {
-    $node_type = $node->type;
+  if ($op == 'create') {
+    if (!user_access('create chado_stock content', $account)) {
+      return FALSE;
+    }
+    return TRUE;
   }
-  
-  if($node_type == 'chado_stock') {
-    if ($op == 'create') {
-      if (!user_access('create chado_stock', $account)) {
-        return NODE_ACCESS_DENY;
-      }
-      return NODE_ACCESS_ALLOW;
+  if ($op == 'update') {
+    if (!user_access('edit chado_stock content', $account)) {
+      return FALSE;
     }
-    if ($op == 'update') {
-      if (!user_access('edit chado_stock', $account)) {
-        return NODE_ACCESS_DENY;
-      }
-    }
-    if ($op == 'delete') {
-      if (!user_access('delete chado_stock', $account)) {
-        return NODE_ACCESS_DENY;
-      }
-    }
-    if ($op == 'view') {
-      if (!user_access('access chado_stock', $account)) {
-        return NODE_ACCESS_DENY;
-      }
-    }
-    return NODE_ACCESS_IGNORE;
   }
+  if ($op == 'delete') {
+    if (!user_access('delete chado_stock content', $account)) {
+      return FALSE;
+    }
+  }
+  if ($op == 'view') {
+    if (!user_access('access chado_stock content', $account)) {
+      return FALSE;
+    }
+  }
+  return NULL;
 }
 
 /**
@@ -352,7 +345,7 @@ function tripal_stock_block_info() {
   $blocks['properties']['info'] = t('Tripal Stock Properties');
   $blocks['properties']['cache'] = 'BLOCK_NO_CACHE';
 
-  $blocks['references']['info'] = t('Tripal Stock Cross References');
+  $blocks['references']['info'] = t('Tripal Stock References');
   $blocks['references']['cache'] = 'BLOCK_NO_CACHE';
 
   $blocks['relationships_as_object']['info'] = t('Tripal Stock Relationships');
@@ -403,7 +396,7 @@ function tripal_stock_block_view($delta = '') {
         break;
 
       case 'references':
-        $block['subject'] = t('Cross References');
+        $block['subject'] = t('References');
         $block['content'] = theme('tripal_stock_references', $node);
         break;
 
@@ -528,11 +521,8 @@ function tripal_stock_match_stocks_page($id) {
  * @ingroup tripal_stock
  */
 function tripal_stock_form_alter(&$form, &$form_state, $form_id) {
+  // turn of preview button for insert/updates
   if ($form_id == "chado_stock_node_form") {
-    // turn of preview button for insert/updates
     $form['actions']['preview']['#access'] = FALSE;
-    
-    //remove the body field
-    unset($form['body']);
   }
 }
