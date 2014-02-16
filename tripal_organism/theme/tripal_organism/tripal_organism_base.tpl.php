@@ -29,7 +29,8 @@ $rows = array();
 $rows[] = array(
   array(
     'data' => 'Genus', 
-    'header' => TRUE
+    'header' => TRUE,
+    'width' => '20%',
   ),
   '<i>' . $organism->genus . '</i>'
 );
@@ -62,7 +63,7 @@ $rows[] = array(
 );
 
 // allow site admins to see the organism ID
-if (user_access('access administration pages')) {
+if (user_access('administer tripal')) {
   // Organism ID
   $rows[] = array(
     array(

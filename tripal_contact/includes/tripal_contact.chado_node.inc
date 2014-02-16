@@ -308,29 +308,37 @@ function chado_contact_validate($node, $form, &$form_state) {
  * @ingroup tripal_contact
  */
 function chado_contact_node_access($node, $op, $account ) {
-  if ($op == 'create') {
-    if (!user_access('create chado_contact content', $account)) {
-      return FALSE;
-    }
-    return TRUE;
+  
+  $node_type = $node;
+  if (is_object($node)) {
+    $node_type = $node->type;
   }
-
-  if ($op == 'update') {
-    if (!user_access('edit chado_contact content', $account)) {
-      return FALSE;
+  
+  if($node_type == 'chado_contact') {
+    if ($op == 'create') {
+      if (!user_access('create chado_contact content', $account)) {
+        return NODE_ACCESS_DENY;
+      }
+      return NODE_ACCESS_ALLOW;
+    }
+  
+    if ($op == 'update') {
+      if (!user_access('edit chado_contact content', $account)) {
+        return NODE_ACCESS_DENY;
+      }
+    }
+    if ($op == 'delete') {
+      if (!user_access('delete chado_contact content', $account)) {
+        return NODE_ACCESS_DENY;
+      }
+    }
+    if ($op == 'view') {
+      if (!user_access('access chado_contact content', $account)) {
+        return NODE_ACCESS_DENY;
+      }
     }
   }
-  if ($op == 'delete') {
-    if (!user_access('delete chado_contact content', $account)) {
-      return FALSE;
-    }
-  }
-  if ($op == 'view') {
-    if (!user_access('access chado_contact content', $account)) {
-      return FALSE;
-    }
-  }
-  return NULL;
+  return NODE_ACCESS_IGNORE;
 }
 
 

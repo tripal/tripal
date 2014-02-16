@@ -132,7 +132,7 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = arra
 
   // Only show the message to the administrator user (uid=1)
   // thus if the current user is not the administrator then return nothing
-  if ($user->uid > 1) {
+  if (!user_access('administer tripal')) {
     return '';
   }
 

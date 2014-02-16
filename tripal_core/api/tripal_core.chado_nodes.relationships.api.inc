@@ -438,7 +438,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
 
   $form['relationships']['relationship_table']['new']['object_name'] = array(
     '#type' => 'textfield',
-    '#autocomplete_path' => 'tripal_ajax/relationship_nodeform/'.$details['base_table'].'/'.$details['base_name_field'].'/name_to_id'
+    '#autocomplete_path' => 'tripal_ajax/relationship_nodeform/' . $details['base_table'] . '/' . $details['base_name_field'].'/name_to_id'
   );
 
   $form['relationships']['relationship_table']['new']['object_is_current'] = array(
@@ -453,12 +453,12 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
 
   $form['relationships']['relationship_table']['new']['subject_name'] = array(
     '#type' => 'textfield',
-    '#autocomplete_path' => 'tripal_ajax/relationship_nodeform/'.$details['base_table'].'/'.$details['base_name_field'].'/name_to_id'
+    '#autocomplete_path' => 'tripal_ajax/relationship_nodeform/' . $details['base_table'] . '/' . $details['base_name_field'].'/name_to_id'
   );
 
   $form['relationships']['relationship_table']['new']['subject_is_current'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Current '.$details['nodetype']),
+    '#title' => t('Current ' . $details['nodetype']),
   );
 
   $form['relationships']['relationship_table']['new']['rank'] = array(

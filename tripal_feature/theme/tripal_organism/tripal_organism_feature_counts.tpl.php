@@ -71,7 +71,7 @@ if ($enabled) {
     <img class="tripal_cv_chart" id="tripal_feature_cv_chart_<?php print $organism->organism_id?>" src="" border="0"><?php 
    } 
    else { 
-    if (user_access('access administration pages')) { ?>
+    if (user_access('administer tripal')) { ?>
       <div class="tripal_organism-data-block-desc tripal-data-block-desc">The following data types are currently present for this organism</div> <?php 
       print tripal_set_message("
          Administrators, to view the feature type report:

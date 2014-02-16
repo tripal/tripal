@@ -243,9 +243,8 @@ function tripal_pub_add_cvterms() {
 /**
  * This is the required update for tripal_contact when upgrading from Drupal core API 6.x.
  *
- * @ingroup tripal_pub
  */
-function tripal_pub_update_7000() {
+function tripal_pub_update_7200() {
 
   // add the new pub_relationship_types vocabulary
   // We cannot use the Tripal API calls in the 7000 update 

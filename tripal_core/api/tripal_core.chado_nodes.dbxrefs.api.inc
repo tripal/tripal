@@ -279,7 +279,7 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
 
       $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['dbxref_version'] = array(
         '#type' => 'markup',
-        '#markup' => $dbxref->version
+        '#markup' => $dbxref->version,
       );
 
       $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['dbxref_accession'] = array(
@@ -337,6 +337,7 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
 
   $form['addtl_dbxrefs']['dbxref_table']['new']['dbxref_version'] = array(
     '#type' => 'textfield',
+    '#size' => 10,
   );
 
   // add button

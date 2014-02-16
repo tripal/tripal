@@ -221,35 +221,35 @@ function chado_featuremap_validate($node, $form, &$form_state) {
  * @ingroup tripal_featuremap
  */
 function chado_featuremap_node_access($node, $op, $account) {
-  if ($op == 'create') {
-    if (!user_access('create chado_featuremap content', $account)) {
-      return FALSE;
-    }
-    return TRUE;
+  $node_type = $node;
+  if (is_object($node)) {
+    $node_type = $node->type;
   }
-
-  if ($op == 'update') {
-    if (!user_access('edit any chado_featuremap content', $account) &&
-    !user_access('edit own chado_featuremap content', $account)) {
-      return FALSE;
+  
+  if($node_type == 'chado_featuremap') {
+    if ($op == 'create') {
+      if (!user_access('create chado_featuremap', $account)) {
+        return NODE_ACCESS_DENY;
+      }
+      return NODE_ACCESS_ALLOW;
     }
-    if (user_access('edit own chado_featuremap content', $account) &&
-    $account->uid != $node->uid) {
-      return FALSE;
+    if ($op == 'update') {
+      if (!user_access('edit chado_featuremap', $account)) {
+        return NODE_ACCESS_DENY;
+      }
     }
+    if ($op == 'delete') {
+      if (!user_access('delete chado_featuremap', $account)) {
+        return NODE_ACCESS_DENY;
+      }
+    }
+    if ($op == 'view') {
+      if (!user_access('access chado_featuremap', $account)) {
+        return NODE_ACCESS_DENY;
+      }
+    }
+    return NODE_ACCESS_IGNORE;
   }
-
-  if ($op == 'delete') {
-    if (!user_access('delete any chado_featuremap content', $account) &&
-    !user_access('delete own chado_featuremap content', $account)) {
-      return FALSE;
-    }
-    if (user_access('delete own chado_featuremap content', $account) &&
-    $account->uid != $node->uid) {
-      return FALSE;
-    }
-  }
-  return NULL;
 }
 
 /**

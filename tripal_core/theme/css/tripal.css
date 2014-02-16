@@ -213,12 +213,12 @@ div.messages.tripal-site-admin-only{
 }
 
 .tripal-site-admin-message {
-   padding: 15px 10px 10px 70px;
-   font-style: italic;
+  padding: 15px 10px 10px 70px;
+  font-style: italic;
 }
 
 .tripal-site-admin-only-table-row {
   background-color: #cce3ff;
-  border: 1px solid #7DA1D4;
+  /* border: 1px solid #7DA1D4; */
   color: black;
 }

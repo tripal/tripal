@@ -24,7 +24,8 @@ $rows = array();
 $rows[] = array(
   array(
     'data' => 'Map Name',
-    'header' => TRUE
+    'header' => TRUE,
+    'width' => '20%',
   ),
   $featuremap->name
 );
@@ -37,7 +38,7 @@ $rows[] = array(
   $featuremap->unittype_id->name
 );
 // allow site admins to see the feature ID
-if (user_access('access administration pages')) {
+if (user_access('administer tripal')) {
   // Feature Map ID
   $rows[] = array(
     array(

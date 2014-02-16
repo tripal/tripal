@@ -26,7 +26,8 @@ else {
 $rows[] = array(
   array(
     'data' => 'Title',
-    'header' => TRUE
+    'header' => TRUE,
+    'width' => '20%',
   ),
   $title,
 );
@@ -72,14 +73,18 @@ $rows[] = array(
   htmlspecialchars($citation->value)
 );
 // allow site admins to see the pub ID
-if (user_access('access administration pages')) {
+if (user_access('administer tripal')) {
   // Pub ID
   $rows[] = array(
     array(
       'data' => 'Pub ID',
-      'header' => TRUE
+      'header' => TRUE,
+      'class' => 'tripal-site-admin-only-table-row',
     ),
-    $pub->pub_id
+    array(
+      'data' => $pub->pub_id,
+      'class' => 'tripal-site-admin-only-table-row',
+    ),
   );
 }
 // Is Obsolete Row

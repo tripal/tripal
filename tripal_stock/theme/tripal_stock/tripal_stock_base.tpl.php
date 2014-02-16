@@ -27,6 +27,7 @@ $rows[] = array(
   array(
     'data' => 'Name',
     'header' => TRUE,
+    'width' => '20%',
   ),
   $stock->name
 );
@@ -60,7 +61,7 @@ $rows[] = array(
   $organism
 );
 // allow site admins to see the stock ID
-if (user_access('access administration pages')) {
+if (user_access('administer tripal')) {
   // stock ID
   $rows[] = array(
     array(

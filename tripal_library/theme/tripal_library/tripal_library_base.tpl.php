@@ -25,7 +25,8 @@ $rows = array();
 $rows[] = array(
   array(
     'data' => 'Library Name',
-    'header' => TRUE
+    'header' => TRUE,
+    'width' => '20%',
   ),
   $library->name
 );
@@ -62,7 +63,7 @@ $rows[] = array(
 );
 
 // allow site admins to see the library ID
-if (user_access('access administration pages')) {
+if (user_access('administer tripal')) {
   // Library ID
   $rows[] = array(
     array(
