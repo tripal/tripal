@@ -12,7 +12,6 @@
  * @}
  */
 
-require_once 'api/tripal_featuremap.api.inc';
 require_once 'api/tripal_featuremap.DEPRECATED.inc';
 
 require_once 'theme/tripal_featuremap.theme.inc';
@@ -300,7 +299,7 @@ function tripal_featuremap_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == "chado_featuremap_node_form") {
     // turn of preview button for insert/updates
     $form['actions']['preview']['#access'] = FALSE;
-    
+
     //remove the body field
     unset($form['body']);
   }

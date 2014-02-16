@@ -12,7 +12,6 @@
  * @}
  */
 
-require_once 'api/tripal_library.api.inc';
 require_once 'api/tripal_library.DEPRECATED.inc';
 
 require_once 'theme/tripal_library.theme.inc';
@@ -311,11 +310,11 @@ function tripal_library_block_view($delta = '') {
  * @ingroup tripal_library
  */
 function tripal_library_form_alter(&$form, &$form_state, $form_id) {
-  
+
   if ($form_id == "chado_library_node_form") {
     // turn of preview button for insert/updates
     $form['actions']['preview']['#access'] = FALSE;
-    
+
     //remove the body field
     unset($form['body']);
   }

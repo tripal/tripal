@@ -4,7 +4,6 @@
  * Integrates the Chado Project tables with Drupal Nodes & Views
  */
 
-require_once 'api/tripal_project.api.inc';
 require_once 'api/tripal_project.DEPRECATED.inc';
 
 require_once 'theme/tripal_project.theme.inc';
@@ -270,7 +269,7 @@ function tripal_project_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == "chado_project_node_form") {
     // turn of preview button for insert/updates
     $form['actions']['preview']['#access'] = FALSE;
-    
+
     //remove the body field
     unset($form['body']);
   }

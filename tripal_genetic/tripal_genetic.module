@@ -12,8 +12,6 @@
  * @}
  */
 
-require_once 'api/tripal_genetic.api.inc';
-
 require_once 'theme/tripal_genetic.theme.inc';
 
 require_once 'includes/tripal_genetic.schema.inc';
