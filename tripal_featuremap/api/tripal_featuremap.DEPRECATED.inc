@@ -14,7 +14,7 @@
 function tripal_featuremap_get_property($featuremap_id, $property) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -36,7 +36,7 @@ function tripal_featuremap_get_property($featuremap_id, $property) {
 function tripal_featuremap_insert_property($featuremap_id, $property, $value, $update_if_present = 0) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -58,7 +58,7 @@ function tripal_featuremap_insert_property($featuremap_id, $property, $value, $u
 function tripal_featuremap_update_property($featuremap_id, $property, $value, $insert_if_missing = 0) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -80,7 +80,7 @@ function tripal_featuremap_update_property($featuremap_id, $property, $value, $i
 function tripal_featuremap_delete_property($featuremap_id, $property) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -102,7 +102,7 @@ function tripal_featuremap_delete_property($featuremap_id, $property) {
 function tripal_featuremap_add_featuremap_dbxref($featuremap_id, $featuremap_dbxref) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(

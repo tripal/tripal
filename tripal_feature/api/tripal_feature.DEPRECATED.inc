@@ -14,7 +14,7 @@
 function tripal_feature_analysis_get_property($analysis_id = NULL, $feature_id = NUll, $analysisfeature_id = NULL, $property, $cv_name = 'tripal') {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -53,7 +53,7 @@ function tripal_feature_analysis_get_property($analysis_id = NULL, $feature_id =
 function tripal_feature_analysis_insert_property($analysis_id = NULL, $feature_id = NUll, $analysisfeature_id = NULL, $property, $value, $update_if_present = 0, $cv_name = 'tripal') {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -94,7 +94,7 @@ function tripal_feature_analysis_insert_property($analysis_id = NULL, $feature_i
 function tripal_feature_analysis_update_property($analysis_id = NULL, $feature_id = NUll, $analysisfeature_id = NULL, $property, $value, $insert_if_missing = 0, $cv_name = 'tripal') {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -133,7 +133,7 @@ function tripal_feature_analysis_update_property($analysis_id = NULL, $feature_i
 function tripal_feature_analysis_update_property_by_id($analysisfeatureprop_id, $property, $value, $cv_name = 'tripal') {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -156,7 +156,7 @@ function tripal_feature_analysis_update_property_by_id($analysisfeatureprop_id, 
 function tripal_feature_analysis_delete_property($analysis_id = NULL, $feature_id = NUll, $analysisfeature_id = NULL, $property, $cv_name = 'tripal') {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -196,7 +196,7 @@ function tripal_feature_analysis_delete_property($analysis_id = NULL, $feature_i
 function tripal_feature_analysis_delete_property_by_id($analysisfeatureprop_id) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -223,7 +223,7 @@ function tripal_feature_analysis_delete_property_by_id($analysisfeatureprop_id) 
 function tripal_feature_get_property($feature_id, $property, $cv_name='tripal') {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -245,7 +245,7 @@ function tripal_feature_get_property($feature_id, $property, $cv_name='tripal') 
 function tripal_feature_insert_property($feature_id, $property, $value, $update_if_present = 0, $cv_name = 'tripal') {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -268,7 +268,7 @@ function tripal_feature_insert_property($feature_id, $property, $value, $update_
 function tripal_feature_update_property($feature_id, $property, $value, $insert_if_missing = 0, $cv_name = 'tripal') {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -290,7 +290,7 @@ function tripal_feature_update_property($feature_id, $property, $value, $insert_
 function tripal_feature_update_property_by_id($featureprop_id, $property, $value, $cv_name = 'tripal') {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -312,7 +312,7 @@ function tripal_feature_update_property_by_id($featureprop_id, $property, $value
 function tripal_feature_delete_property($feature_id, $property, $cv_name='tripal') {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -334,7 +334,7 @@ function tripal_feature_delete_property($feature_id, $property, $cv_name='tripal
 function tripal_feature_delete_property_by_id($featureprop_id) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -361,7 +361,7 @@ function tripal_feature_delete_property_by_id($featureprop_id) {
 function tripal_feature_reverse_complement($sequence) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -383,7 +383,7 @@ function tripal_feature_reverse_complement($sequence) {
 function tripal_feature_get_formatted_sequence($feature_id, $feature_name, $num_bases_per_line, $derive_from_parent, $aggregate, $output_format, $upstream, $downstream, $sub_features = array(), $relationship = '', $rel_part = '') {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -423,7 +423,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name, $num_
 function tripal_feature_add_dbxref($feature_id, $dbname, $accession) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -452,7 +452,7 @@ function tripal_feature_add_dbxref($feature_id, $dbname, $accession) {
 function tripal_feature_add_cvterm($feature_id, $cvname, $cvterm) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -481,7 +481,7 @@ function tripal_feature_add_cvterm($feature_id, $cvname, $cvterm) {
 function tripal_feature_return_fasta($feature, $desc) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(

@@ -14,7 +14,7 @@
 function tripal_stock_get_stock_by_nid($nid) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -36,7 +36,7 @@ function tripal_stock_get_stock_by_nid($nid) {
 function tripal_stock_get_stock_by_stock_id($stock_id) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -58,7 +58,7 @@ function tripal_stock_get_stock_by_stock_id($stock_id) {
 function tripal_stock_get_all_stocks() {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been completely deprecated. There are often so many
      stocks in a chado database that it is unlikely a user really wants all of them.",
@@ -89,7 +89,7 @@ function tripal_stock_get_all_stocks() {
 function tripal_stock_get_stocks($values) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -111,7 +111,7 @@ function tripal_stock_get_stocks($values) {
 function tripal_stock_get_stocks_by_stockprop($stockprop_values, $stock_values) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -146,7 +146,7 @@ function tripal_stock_get_stocks_by_stockprop($stockprop_values, $stock_values) 
 function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(

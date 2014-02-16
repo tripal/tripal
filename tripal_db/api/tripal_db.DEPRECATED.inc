@@ -14,7 +14,7 @@
 function tripal_db_get_db($select_values) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -36,7 +36,7 @@ function tripal_db_get_db($select_values) {
 function tripal_db_get_db_by_db_id($db_id) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -58,7 +58,7 @@ function tripal_db_get_db_by_db_id($db_id) {
 function tripal_db_get_db_by_name($name) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -80,7 +80,7 @@ function tripal_db_get_db_by_name($name) {
 function tripal_db_get_db_options() {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -102,7 +102,7 @@ function tripal_db_get_db_options() {
 function tripal_db_get_dbxref($select_values) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -124,7 +124,7 @@ function tripal_db_get_dbxref($select_values) {
 function tripal_db_get_dbxref_by_accession($accession, $db_id=0) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -154,7 +154,7 @@ function tripal_db_get_dbxref_by_accession($accession, $db_id=0) {
 function tripal_db_add_db($dbname, $description = '', $url = '', $urlprefix = '', $update = 0) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -186,7 +186,7 @@ function tripal_db_add_db($dbname, $description = '', $url = '', $urlprefix = ''
 function tripal_db_add_dbxref($db_id, $accession, $version = '', $description = '') {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -213,7 +213,7 @@ function tripal_db_add_dbxref($db_id, $accession, $version = '', $description = 
 function tripal_db_add_dbxref_link($linking_table, $dbxref_id, $foreignkey_name, $foreignkey_id) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(

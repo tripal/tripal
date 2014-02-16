@@ -14,7 +14,7 @@
 function tripal_library_get_property($library_id, $property) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -36,7 +36,7 @@ function tripal_library_get_property($library_id, $property) {
 function tripal_library_insert_property($library_id, $property, $value, $update_if_present = 0) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -58,7 +58,7 @@ function tripal_library_insert_property($library_id, $property, $value, $update_
 function tripal_library_update_property($library_id, $property, $value, $insert_if_missing = 0) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -80,7 +80,7 @@ function tripal_library_update_property($library_id, $property, $value, $insert_
 function tripal_library_delete_property($library_id, $property) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(

@@ -14,7 +14,7 @@
 function tripal_contact_get_property($contact_id, $property) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -36,7 +36,7 @@ function tripal_contact_get_property($contact_id, $property) {
 function tripal_contact_insert_property($contact_id, $property, $value, $update_if_present = 0) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -58,7 +58,7 @@ function tripal_contact_insert_property($contact_id, $property, $value, $update_
 function tripal_contact_update_property($contact_id, $property, $value, $insert_if_missing = 0) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -80,7 +80,7 @@ function tripal_contact_update_property($contact_id, $property, $value, $insert_
 function tripal_contact_delete_property($contact_id, $property) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -102,7 +102,7 @@ function tripal_contact_delete_property($contact_id, $property) {
 function tripal_contact_add_contact($name, $description, $type, $properties) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(

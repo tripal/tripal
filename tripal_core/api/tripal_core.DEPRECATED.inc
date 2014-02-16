@@ -14,7 +14,7 @@
 function chado_get_id_for_node($table, $node) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. The arguments have been changed slightly (ie: $nid instead of $node). Please update your code.",
     array(
@@ -37,7 +37,7 @@ function chado_get_id_for_node($table, $node) {
 function chado_get_node_id($table, $id) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -60,7 +60,7 @@ function chado_get_node_id($table, $id) {
 function tripal_core_chado_node_cleanup_orphaned($table, $job_id = NULL) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -83,7 +83,7 @@ function tripal_core_chado_node_cleanup_orphaned($table, $job_id = NULL) {
 function chado_node_additional_dbxrefs_form(&$form, &$form_state, $details) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -106,7 +106,7 @@ function chado_node_additional_dbxrefs_form(&$form, &$form_state, $details) {
 function chado_node_additional_dbxrefs_form_retreive($node) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -129,7 +129,7 @@ function chado_node_additional_dbxrefs_form_retreive($node) {
 function chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details, $retrieved_dbxrefs = FALSE) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -152,7 +152,7 @@ function chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details, $ret
 function chado_node_properties_form($form, $form_state, $details) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -175,7 +175,7 @@ function chado_node_properties_form($form, $form_state, $details) {
 function chado_node_properties_form_retreive($node) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -198,7 +198,7 @@ function chado_node_properties_form_retreive($node) {
 function chado_node_properties_form_update_properties($node, $details, $retrieved_properties = FALSE) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -221,7 +221,7 @@ function chado_node_properties_form_update_properties($node, $details, $retrieve
 function chado_node_relationships_form(&$form, &$form_state, $details) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -244,7 +244,7 @@ function chado_node_relationships_form(&$form, &$form_state, $details) {
 function chado_node_relationships_form_retreive($node) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -267,7 +267,7 @@ function chado_node_relationships_form_retreive($node) {
 function chado_node_relationships_form_update_relationships($node, $details, $retrieved_relationships = FALSE) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -290,7 +290,7 @@ function chado_node_relationships_form_update_relationships($node, $details, $re
 function tripal_core_chado_node_sync_form($form, &$form_state) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -314,7 +314,7 @@ function tripal_core_chado_node_sync_records($base_table, $max_sync = FALSE, $or
     $types = array(), $ids = array(), $job_id = NULL) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -335,7 +335,7 @@ function tripal_core_chado_node_sync_records($base_table, $max_sync = FALSE, $or
 function tripal_core_is_tripal_node_type() {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_ERROR,
     "DEPRECATED: %old_function has been completely removed since we felt there wasn't a real need for it.",
     array(
@@ -355,7 +355,7 @@ function tripal_core_is_tripal_node_type() {
 function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $options = NULL) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -378,7 +378,7 @@ function tripal_core_chado_get_foreign_key($table_desc, $field, $values, $option
 function tripal_core_chado_delete($table, $match, $options = NULL) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -401,7 +401,7 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
 function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_options = array()) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -424,7 +424,7 @@ function tripal_core_expand_chado_vars($object, $type, $to_expand, $table_option
 function tripal_core_generate_chado_var($table, $values, $base_options = array()) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -447,7 +447,7 @@ function tripal_core_generate_chado_var($table, $values, $base_options = array()
 function tripal_core_chado_insert($table, $values, $options = array()) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -469,7 +469,7 @@ function tripal_core_chado_insert($table, $values, $options = array()) {
  */
 function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -491,7 +491,7 @@ function tripal_core_chado_select($table, $columns, $values, $options = NULL) {
  */
 function tripal_core_chado_update($table, $match, $values, $options = NULL) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -513,7 +513,7 @@ function tripal_core_chado_update($table, $match, $values, $options = NULL) {
  */
 function tripal_create_moddir($module_name) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -535,7 +535,7 @@ function tripal_create_moddir($module_name) {
  */
 function tripal_create_mod_subdir($module_name, $path) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -558,7 +558,7 @@ function tripal_create_mod_subdir($module_name, $path) {
  */
 function tripal_file_directory_path() {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -580,7 +580,7 @@ function tripal_file_directory_path() {
  */
 function tripal_get_moddir($module_name) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -602,7 +602,7 @@ function tripal_get_moddir($module_name) {
  */
 function tripal_jobs_cancel($job_id, $redirect = TRUE) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -624,7 +624,7 @@ function tripal_jobs_cancel($job_id, $redirect = TRUE) {
  */
 function tripal_get_module_active_jobs($modulename) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -646,7 +646,7 @@ function tripal_get_module_active_jobs($modulename) {
  */
 function tripal_jobs_get_end_time($job) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -668,7 +668,7 @@ function tripal_jobs_get_end_time($job) {
  */
 function tripal_jobs_get_start_time($job) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -690,7 +690,7 @@ function tripal_jobs_get_start_time($job) {
  */
 function tripal_jobs_get_submit_date($job) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -712,7 +712,7 @@ function tripal_jobs_get_submit_date($job) {
  */
 function tripal_jobs_check_running() {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -734,7 +734,7 @@ function tripal_jobs_check_running() {
  */
 function tripal_jobs_launch($do_parallel = 0, $job_id = NULL) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -756,7 +756,7 @@ function tripal_jobs_launch($do_parallel = 0, $job_id = NULL) {
  */
 function tripal_jobs_rerun($job_id, $goto_jobs_page = TRUE) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -778,7 +778,7 @@ function tripal_jobs_rerun($job_id, $goto_jobs_page = TRUE) {
  */
 function tripal_job_set_progress($job_id, $percentage) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -802,7 +802,7 @@ function tripal_mviews_action($op, $mview_id, $redirect = FALSE) {
 
   if ($op == 'update') {
     tripal_report_error(
-      'tripal_api',
+      'tripal_deprecated',
       TRIPAL_NOTICE,
       "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
       array(
@@ -816,7 +816,7 @@ function tripal_mviews_action($op, $mview_id, $redirect = FALSE) {
   }
   if ($op == 'delete') {
     tripal_report_error(
-      'tripal_api',
+      'tripal_deprecated',
       TRIPAL_NOTICE,
       "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
       array(
@@ -838,7 +838,7 @@ function tripal_add_legacy_mview($name, $modulename, $mv_table, $mv_specs, $inde
   $query, $special_index, $comment) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_ERROR,
     "DEPRECATED: %old_function has been completely removed after a period of two releases
       since deprecation. Please use the new Materialized View Interface.",
@@ -858,7 +858,7 @@ function tripal_add_legacy_mview($name, $modulename, $mv_table, $mv_specs, $inde
  */
 function tripal_update_mview($mview_id) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -882,7 +882,7 @@ function tripal_update_mview($mview_id) {
 function tripal_core_delete_property_by_id($basetable, $property_id) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. This requires manual
       intervention since the arguements for the two functions are different.
@@ -911,7 +911,7 @@ function tripal_core_delete_property_by_id($basetable, $property_id) {
  */
 function tripal_core_delete_property($basetable, $record_id, $property, $cv_name) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -933,7 +933,7 @@ function tripal_core_delete_property($basetable, $record_id, $property, $cv_name
  */
 function tripal_core_get_property($basetable, $record_id, $property, $cv_name) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -955,7 +955,7 @@ function tripal_core_get_property($basetable, $record_id, $property, $cv_name) {
  */
 function tripal_get_max_chado_rank($tablename, $where_options) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -977,7 +977,7 @@ function tripal_get_max_chado_rank($tablename, $where_options) {
  */
 function get_max_chado_rank($tablename, $where_options) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -1001,7 +1001,7 @@ function get_max_chado_rank($tablename, $where_options) {
 function tripal_core_insert_property($basetable, $record_id, $property,
 $cv_name, $value, $update_if_present = 0) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -1024,7 +1024,7 @@ $cv_name, $value, $update_if_present = 0) {
 function tripal_core_update_property_by_id($basetable, $record_id, $property,
 $cv_name, $value) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. This requires manual
       intervention since the arguments have changed. Please update your code.",
@@ -1048,7 +1048,7 @@ $cv_name, $value) {
 function tripal_core_update_property($basetable, $record_id, $property,
 $cv_name, $value, $insert_if_missing = 0) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -1070,7 +1070,7 @@ $cv_name, $value, $insert_if_missing = 0) {
  */
 function tripal_core_create_custom_table(&$ret, $table, $schema, $skip_creation = 1) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Note that $ret has
       been removed from the paramters since this is not longer used in Drupal 7.
@@ -1094,7 +1094,7 @@ function tripal_core_create_custom_table(&$ret, $table, $schema, $skip_creation 
  */
 function tripal_core_edit_custom_table($table_id, $table_name, $schema, $skip_creation = 1) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -1116,7 +1116,7 @@ function tripal_core_edit_custom_table($table_id, $table_name, $schema, $skip_cr
  */
 function tripal_custom_tables_get_table_id($table_name) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -1138,7 +1138,7 @@ function tripal_custom_tables_get_table_id($table_name) {
  */
 function tripal_get_chado_custom_schema($table) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -1160,7 +1160,7 @@ function tripal_get_chado_custom_schema($table) {
  */
 function tripal_core_is_chado_installed() {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -1182,7 +1182,7 @@ function tripal_core_is_chado_installed() {
  */
 function tripal_core_get_chado_table_schema($table) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -1204,7 +1204,7 @@ function tripal_core_get_chado_table_schema($table) {
  */
 function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FALSE) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -1226,7 +1226,7 @@ function tripal_core_get_chado_version($exact = FALSE, $warn_if_unsupported = FA
  */
 function tripal_db_set_active($dbname  = 'default') {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -1248,7 +1248,7 @@ function tripal_db_set_active($dbname  = 'default') {
  */
 function tripal_core_is_chado_local() {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -1270,7 +1270,7 @@ function tripal_core_is_chado_local() {
  */
 function tripal_core_get_chado_tables($include_custom = NULL) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -1292,7 +1292,7 @@ function tripal_core_get_chado_tables($include_custom = NULL) {
  */
 function tripal_core_chado_schema_exists() {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -1314,7 +1314,7 @@ function tripal_core_chado_schema_exists() {
  */
 function tripal_core_schema_exists($schema) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -1336,7 +1336,7 @@ function tripal_core_schema_exists($schema) {
  *
 function theme_tripal_admin_message($variables) {
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
@@ -1361,7 +1361,7 @@ function theme_tripal_admin_message($variables) {
 function tripal_core_report_error($type, $severity, $message, $variables = array(), $options = array()) {
 
   tripal_report_error(
-    'tripal_api',
+    'tripal_deprecated',
     TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
