@@ -304,7 +304,7 @@ function dbxref_retrieve($identifiers, $options = array()) {
  *
  * @ingroup tripal_db_api
  */
-function chado_insert_db($values, $options) {
+function db_insert($values, $options) {
 
   // Default Values
   $dbname = $values['name'];
@@ -364,7 +364,7 @@ function chado_insert_db($values, $options) {
  *
  * @ingroup tripal_db_api
  */
-function chado_insert_dbxref($values) {
+function dbxref_insert($values) {
 
   $db_id = $values['db_id'];
   $accession = $values['accession'];
@@ -459,7 +459,7 @@ function chado_associate_dbxref($basetable, $record_id, $dbxref, $options = arra
     }
     elseif ($options['insert_dbxref']) {
       // Insert the dbxref
-      $insert = chado_insert_dbxref($values);
+      $insert = dbxref_insert($values);
       if (isset($insert->dbxref_id)) {
         $dbxref['dbxref_id'] = $insert->dbxref_id;
       }

@@ -33,7 +33,7 @@
  *
  * @ingroup tripal_contact_api
  */
-function chado_insert_contact($values) {
+function contact_insert($values) {
 
   $name = $values['name'];
   $description = $values['description'];
