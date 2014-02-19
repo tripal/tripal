@@ -184,7 +184,7 @@ function tripal_feature_menu() {
 
   /** Loaders */
   $items['admin/tripal/loaders/fasta_loader'] = array(
-    'title' => 'Multi-FASTA file Loader',
+    'title' => 'FASTA file Loader',
     'description' => 'Load sequences from a multi-FASTA file into Chado',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_feature_fasta_load_form'),

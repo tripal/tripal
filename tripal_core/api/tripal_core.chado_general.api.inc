@@ -431,15 +431,11 @@ function chado_get_record_with_property($basetable, $property, $record = array()
 
   // Check parameters
   if (!isset($property->type_name) AND !isset($property->type_id)) {
-    tripal_report_error(
-      'chado_api',
-      TRIPAL_ERROR,
+    tripal_report_error('chado_api', TRIPAL_ERROR,
       "chado_get_record_with_property: You must identify the type of property you want to
        select records for by supplying either a type_name or type_id. You identified the
        property as %prop.",
-      array(
-        '%prop'=> print_r($property, TRUE)
-      )
+      array('%prop'=> print_r($property, TRUE))
     );
   }
 
@@ -482,11 +478,8 @@ function chado_get_record_with_property($basetable, $property, $record = array()
   $records = array();
   foreach ($select as $s) {
     $id = $s->{$foreignkey_name};
-    $records[$id] = chado_generate_var(
-      $basetable,
-      array($foreignkey_name => $id),
-      $options
-    );
+    $values = array($foreignkey_name => $id);
+    $records[$id] = chado_generate_var($basetable, $values, $options);
   }
 
   return $records;

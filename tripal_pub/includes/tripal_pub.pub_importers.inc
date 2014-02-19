@@ -132,7 +132,7 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
 
       // get the list of publications from the remote database using the search criteria.
       $page = isset($_GET['page']) ? $_GET['page'] : '0';
-      $results = pub_search_remote($remote_db, $search_array, $limit, $page);
+      $results = tripal_get_remote_pubs($remote_db, $search_array, $limit, $page);
       $total_records = $results['total_records'];
       $search_str    = $results['search_str'];
       $pubs          = $results['pubs'];
@@ -706,7 +706,7 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
         // if the user wants to do the import now then do it (may time out
         // for long jobs)
         if ($form_state['values']['op'] == 'Save & Import Now') {
-          tripal_pub_import_publications($record['pub_import_id']);
+          tripal_execute_pub_importer($record['pub_import_id']);
         }
         drupal_goto('admin/tripal/chado/tripal_pub/import_list');
       }
@@ -812,7 +812,583 @@ function tripal_pub_importer_submit_job($import_id) {
 
   $args = array($import_id);
   tripal_add_job("Import publications $import->name", 'tripal_pub',
-    'tripal_pub_import_publications_by_import_id', $args, $user->uid);
+    'tripal_execute_pub_importer', $args, $user->uid);
 
   drupal_goto('admin/tripal/chado/tripal_pub/import_list');
+}
+
+/**
+ * Adds publications that have been retrieved from a remote database and
+ * consolidated into an array of details.
+ *
+ * @param $pubs
+ *   An array containing a list of publications to add to Chado.  The
+ *   array contains a set of details for the publication.
+ * @param $do_contact
+ *   Set to TRUE if authors should automatically have a contact record added
+ *   to Chado.
+ * @param $update
+ *   If set to TRUE then publications that already exist in the Chado database
+ *   will be updated, whereas if FALSE only new publications will be added
+ *
+ * @return
+ *   Returns an array containing the number of publications that were
+ *   inserted, updated, skipped and which had an error during import.
+ *
+ * @ingroup tripal_pub_api
+ */
+function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE) {
+  $report = array();
+  $report['error'] = 0;
+  $report['inserted'] = array();
+  $report['skipped'] = array();
+  $total_pubs = count($pubs);
+
+  // iterate through the publications and add each one
+  $i = 1;
+  foreach ($pubs as $pub) {
+    $memory = number_format(memory_get_usage()) . " bytes";
+    print "Processing $i of $total_pubs. Memory usage: $memory.\r";
+
+    // add the publication to Chado
+    $action = '';
+    $pub_id = tripal_pub_add_publication($pub, $action, $do_contact, $update);
+    if ($pub_id){
+      // add the publication cross reference (e.g. to PubMed)
+      if ($pub_id and $pub['Publication Dbxref']) {
+        $pub_dbxref = tripal_pub_add_pub_dbxref($pub_id, $pub['Publication Dbxref']);
+      }
+      $pub['pub_id'] = $pub_id;
+    }
+
+    switch ($action) {
+      case 'error':
+        $report['error']++;
+        break;
+      case 'inserted':
+        $report['inserted'][] = $pub;
+        break;
+      case 'updated':
+        $report['updated'][] = $pub;
+        break;
+      case 'skipped':
+        $report['skipped'][] = $pub;
+        break;
+    }
+    $i++;
+  }
+  print "\n";
+  return $report;
+}
+
+/**
+ * Adds a new publication to the Chado, along with all properties and
+ * database cross-references. If the publication does not already exist
+ * in Chado then it is added.  If it does exist nothing is done.  If
+ * the $update parameter is TRUE then the publication is updated if it exists.
+ *
+ * @param $pub_details
+ *   An associative array containing all of the details about the publication.
+ * @param $action
+ *   This variable will get set to a text value indicating the action that was
+ *   performed. The values include 'skipped', 'inserted', 'updated' or 'error'.
+ * @param $do_contact
+ *   Optional. Set to TRUE if a contact entry should be added to the Chado contact table
+ *   for authors of the publication.
+ * @param $update_if_exists
+ *   Optional.  If the publication already exists then this function will return
+ *   without adding a new publication.  However, set this value to TRUE to force
+ *   the function to pudate the publication using the $pub_details that are provided.
+ *
+ * @return
+ *   If the publication already exists, is inserted or updated then the publication
+ *   ID is returned, otherwise FALSE is returned. If the publication already exists
+ *   and $update_if_exists is not TRUE then the $action variable is set to 'skipped'.
+ *   If the publication already exists and $update_if_exists is TRUE and if the update
+ *   was successful then $action is set to 'updated'.  Otherwise on successful insert
+ *   the $action variable is set to 'inserted'.  If the function failes then the
+ *   $action variable is set to 'error'
+ *
+ * @ingroup tripal_pub_api
+ */
+function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE, $update_if_exists = FALSE) {
+  $pub_id = 0;
+
+  if (!is_array($pub_details)) {
+    return FALSE;
+  }
+
+  // before proceeding check to see if the publication already exists. If there is only one match
+  // and the $update_if_exists is NOT set then return FALSE
+  $pub_ids = chado_does_pub_exist($pub_details);
+  
+  if(count($pub_ids) == 1 and !$update_if_exists) {
+    tripal_report_error('tripal_pub', TRIPAL_NOTICE,
+     "There is a publication that is a duplicate of this publication. Cannot continue. It either ".
+     "has a matching Dbxref (e.g. PubMed ID), a non-unique citation or matches on the unique  " .
+     "constraint set by the Tripal publication module configuration page. \nCitation: %title %dbxref.\nMatching Pub id: %ids",
+       array(
+        '%title' => $pub_details['Citation'], 
+        '%dbxref' => $pub_details['Publication Dbxref'],
+        '%ids' => implode(",", $pub_ids),
+       )
+    );
+    $action = 'skipped';
+    return FALSE;
+  }
+  // if we have more than one matching pub then return an error as we don't know which to update even if
+  // update_if_exists is set to TRUE
+  if(count($pub_ids) > 1) {
+    tripal_report_error('tripal_pub', TRIPAL_NOTICE,
+      "There are %num publications that are duplicates of this publication. They either " .
+      "have a matching Dbxref (e.g. PubMed ID) or match on the unique constraint set by the Tripal publication module ".
+      "configuration page.  \nCitation: %title %dbxref.\nMatching Pub ids: %ids",
+       array(
+         '%num' => count($pub_ids), 
+         '%title' => $pub_details['Citation'], 
+         '%dbxref' => $pub_details['Publication Dbxref'],
+        '%ids' => implode(",", $pub_ids),
+       )
+    );
+    $action = 'skipped';
+    return FALSE;
+  }
+
+  // get the publication type (use the first publication type)
+  if (array_key_exists('Publication Type', $pub_details)) {
+    $pub_type = '';
+    if(is_array($pub_details['Publication Type'])) {
+      $pub_type = $pub_details['Publication Type'][0];
+    }
+    else {
+      $pub_type = $pub_details['Publication Type'];
+    }
+    $identifiers = array(
+      'name' => $pub_type,
+      'cv_id' => array(
+        'name' => 'tripal_pub'
+      ),
+    );
+    $pub_type = chado_get_cvterm($identifiers);
+  }
+  else {
+    tripal_report_error('tripal_pub', TRIPAL_ERROR, 
+      "The Publication Type is a required property but is missing", array());
+    $action = 'error';
+    return FALSE;
+  }
+  if (!$pub_type) {
+    tripal_report_error('tripal_pub', TRIPAL_ERROR, "Cannot find publication type: '%type'",
+      array('%type' => $pub_details['Publication Type'][0]));
+    $action = 'error';
+    return FALSE;
+  }
+
+  // the series name field in the pub table is only 255 characters, so we should trim just in case
+  $series_name = '';
+  if (array_key_exists('Series_Name', $pub_details)) {
+    $series_name = substr($pub_details['Series Name'], 0, 255);
+  }
+  if (array_key_exists('Journal Name', $pub_details)) {
+    $series_name = substr($pub_details['Journal Name'], 0, 255);
+  }
+
+  // build the values array for inserting or updating
+  $values = array(
+    'title'       => $pub_details['Title'],
+    'volume'      => $pub_details['Volume'],
+    'series_name' => $series_name,
+    'issue'       => $pub_details['Issue'],
+    'pyear'       => $pub_details['Year'],
+    'pages'       => $pub_details['Pages'],
+    'uniquename'  => $pub_details['Citation'],
+    'type_id'     => $pub_type->cvterm_id,
+  );
+
+  // if there is no pub_id then we need to do an insert.
+  if (!$pub_id) {
+    $options = array('statement_name' => 'ins_pub_tivoseispypaunty');
+    $pub = chado_insert_record('pub', $values, $options);
+    if (!$pub) {
+      tripal_report_error('tripal_pub', TRIPAL_ERROR, "Cannot insert the publication with title: %title",
+      array('%title' => $pub_details['Title']));
+      $action = 'error';
+      return FALSE;
+    }
+    $pub_id = $pub['pub_id'];
+    $action = 'inserted';
+  }
+
+  // if there is a pub_id and we've been told to update, then do the update
+  if ($pub_id and $update_if_exists) {
+    $match = array('pub_id' => $pub_id);
+    $options = array('statement_name' => 'up_pub_tivoseispypaunty');
+    $success = chado_update_record('pub', $match, $values, $options);
+    if (!$success) {
+      tripal_report_error('tripal_pub', TRIPAL_ERROR, "Cannot update the publication with title: %title",
+      array('%title' => $pub_details['Title']));
+      $action = 'error';
+      return FALSE;
+    }
+    $action = 'updated';
+  }
+
+  // before we add any new properties we need to remove those that are there if this
+  // is an update.  The only thing we don't want to remove are the 'Publication Dbxref'
+  if ($update_if_exists) {
+    $sql = "
+      DELETE FROM {pubprop}
+      WHERE
+        pub_id = :pub_id AND
+        NOT type_id in (
+          SELECT cvterm_id
+          FROM {cvterm}
+          WHERE name = 'Publication Dbxref'
+        )
+    ";
+    chado_query($sql, array(':pub_id' => $pub_id));
+  }
+
+  // iterate through the properties and add them
+  foreach ($pub_details as $key => $value) {
+    // the pub_details may have the raw search data (e.g. in XML from PubMed.  We'll irgnore this for now
+    if($key == 'raw') {
+      continue;
+    }
+    
+    // get the cvterm by name
+    $identifiers = array(
+      'name' => $key,
+      'cv_id' => array(
+        'name' => 'tripal_pub'
+      ),
+    );
+    $cvterm = chado_get_cvterm($identifiers);
+    
+    // if we could not find the cvterm by name then try by synonym
+    //$cvterm = tripal_cv_get_cvterm_by_name($key, NULL, 'tripal_pub');
+    if (!$cvterm) {
+      $identifiers = array(
+        'synonym' => array(
+          'name' => $key,
+          'cv_name' => 'tripal_pub'
+        )
+      );
+      $cvterm = chado_get_cvterm($identifiers);
+    }
+    if (!$cvterm) {
+      tripal_report_error('tripal_pub', TRIPAL_ERROR, "Cannot find term: '%prop'. Skipping.", array('%prop' => $key));
+      continue;
+    }
+
+    // skip details that won't be stored as properties
+    if ($key == 'Author List') {
+      tripal_pub_add_authors($pub_id, $value, $do_contact);
+      continue;
+    }
+    if ($key == 'Title' or $key == 'Volume' or $key == 'Journal Name' or $key == 'Issue' or
+    $key == 'Year' or $key == 'Pages') {
+      continue;
+    }
+
+    $success = 0;
+    if (is_array($value)) {
+      foreach ($value as $subkey => $subvalue) {
+        // if the key is an integer then this array is a simple list and
+        // we will insert using the primary key. Otheriwse, use the new key
+        if(is_int($subkey)) {
+          $success = chado_insert_property('pub', $pub_id, $key, 'tripal_pub', $subvalue, FALSE);
+        }
+        else {
+          $success = chado_insert_property('pub', $pub_id, $subkey, 'tripal_pub', $subvalue, FALSE);
+        }
+      }
+    }
+    else {
+      $success = chado_insert_property('pub', $pub_id, $key, 'tripal_pub', $value, TRUE);
+    }
+    if (!$success) {
+      tripal_report_error('tripal_pub', TRIPAL_ERROR, "Cannot add property '%prop' to publication. Skipping.",
+      array('%prop' => $key));
+      continue;
+    }
+  }
+
+  return $pub_id;
+}
+
+
+
+/**
+ * Add one or more authors to a publication
+ *
+ * @param $pub_id
+ *   The publication ID of the pub in Chado.
+ * @param $authors
+ *   An array of authors.  Each author should have a set of keys/value pairs
+ *   describing the author.
+ * @param $do_contact
+ *   Optional. Set to TRUE if a contact entry should be added to the Chado contact table
+ *   for authors of the publication.
+ * @ingroup tripal_pub_api
+ */
+function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
+  $rank = 0;
+
+  // first remove any of the existing pubauthor entires
+  $sql = "DELETE FROM {pubauthor} WHERE pub_id = :pub_id";
+  chado_query($sql, array(':pub_id' => $pub_id));
+
+  // iterate through the authors and add them to the pubauthors and contact
+  // tables of chado, then link them through the custom pubauthors_contact table
+  foreach ($authors as $author) {
+    // skip invalid author entires
+    if ($author['valid'] == 'N') {
+      continue;
+    }
+    // remove the 'valid' property as we don't have a CV term for it
+    unset($author['valid']);
+
+    // construct the contact.name field using the author information
+    $name = '';
+    $type = 'Person';
+    if ($author['Given Name']) {
+      $name .= $author['Given Name'];
+    }
+    if ($author['Surname']) {
+      $name .= ' ' . $author['Surname'];
+    }
+    if ($author['Suffix']) {
+      $name .= ' ' . $author['Suffix'];
+    }
+    if ($author['Collective']) {
+      $name = $author['Collective'];
+      $type = 'Collective';
+    }
+    $name = trim($name);
+
+    // add an entry to the pubauthors table
+    $values = array(
+      'pub_id' => $pub_id,
+      'rank' => $rank,
+      'surname' => $author['Surname'] ? substr($author['Surname'], 0, 100) : substr($author['Collective'], 0, 100),
+      'givennames' => $author['Given Name'],
+      'suffix' => $author['Suffix'],
+    );
+    $options = array('statement_name' => 'ins_pubauthor_idrasugisu');
+    $pubauthor = chado_insert_record('pubauthor', $values, $options);
+
+    // if the user wants us to create a contact for each author then do it.
+    if ($do_contact) {
+      // Add the contact
+      $contact = tripal_contact_add_contact($name, '', $type, $author);
+
+      // if we have succesfully added the contact and the pubauthor entries then we want to
+      // link them together
+      if ($contact and $pubauthor) {
+
+        // link the pubauthor entry to the contact
+        $values = array(
+          'pubauthor_id' => $pubauthor['pubauthor_id'],
+          'contact_id' => $contact['contact_id'],
+        );
+        $options = array('statement_name' => 'ins_pubauthorcontact_puco');
+        $pubauthor_contact = chado_insert_record('pubauthor_contact', $values, $options);
+        if (!$pubauthor_contact) {
+          tripal_report_error('tripal_pub', TRIPAL_ERROR, "Cannot link pub authro and contact.", array());
+        }
+      }
+    }
+    $rank++;
+  }
+}
+
+/**
+ * This function generates an array suitable for use with the
+ * tripal_pub_create_citation function for any publication
+ * already stored in the Chado tables.
+ *
+ * @param $pub_id
+ *   The publication ID
+ * @param $skip_existing
+ *   Set to TRUE to skip publications that already have a citation
+ *   in the pubprop table.  Set to FALSE to generate a citation
+ *   regardless if the citation already exists.
+ *
+ * @return
+ *   An array suitable for the trpial_pub_create_citation function. On
+ *   failure returns FALSE.
+ *
+ * @ingroup tripal_pub_api
+ */
+function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
+
+  $options = array('return_array' => 1);
+
+  // ---------------------------------
+  // get the publication
+  // ---------------------------------
+  $values = array('pub_id' => $pub_id);
+  $pub = chado_generate_var('pub', $values);
+
+  // expand the title
+  $pub = chado_expand_var($pub, 'field', 'pub.title');
+  $pub = chado_expand_var($pub, 'field', 'pub.volumetitle');
+  $pub = chado_expand_var($pub, 'field', 'pub.uniquename');
+  $pub_array = array();
+  if (trim($pub->title)) {
+    $pub_array['Title'] = $pub->title;
+  }
+  if (trim($pub->volumetitle)) {
+    $pub_array['Volume Title'] = $pub->volumetitle;
+  }
+  if (trim($pub->volume)) {
+    $pub_array['Volume'] = $pub->volume;
+  }
+  if (trim($pub->series_name)) {
+    $pub_array['Series Name'] = $pub->series_name;
+  }
+  if (trim($pub->issue)) {
+    $pub_array['Issue'] = $pub->issue;
+  }
+  if (trim($pub->pyear)) {
+    $pub_array['Year'] = $pub->pyear;
+  }
+  if (trim($pub->pages)) {
+    $pub_array['Pages'] = $pub->pages;
+  }
+  if (trim($pub->miniref)) {
+    $pub_array['Mini Ref'] = $pub->miniref;
+  }
+  if (trim($pub->uniquename)) {
+    $pub_array['Uniquename'] = $pub->uniquename;
+  }
+  $pub_array['Publication Type'][] = $pub->type_id->name;
+
+  // ---------------------------------
+  // get the citation
+  // ---------------------------------
+  $values = array(
+    'pub_id' => $pub->pub_id,
+    'type_id' => array(
+      'name' => 'Citation',
+    ),
+  );
+  $citation = chado_generate_var('pubprop', $values);
+  if ($citation) {
+    $citation = chado_expand_var($citation, 'field', 'pubprop.value', $options);
+    if (count($citation) > 1) {
+      tripal_report_error('tripal_pub', TRIPAL_ERROR, "Publication has multiple citations already: %pub_id",
+      array('%pub_id' => $pubid));
+      return FALSE;
+    }
+    elseif (count($citation) == 1 and $skip_existing == TRUE) {
+      // skip this publication, it already has a citation
+      return FALSE;
+    }
+  }
+
+  // ---------------------------------
+  // get the publication types
+  // ---------------------------------
+  $values = array(
+    'pub_id' => $pub->pub_id,
+    'type_id' => array(
+      'name' => 'Publication Type',
+    ),
+  );
+  $ptypes = chado_generate_var('pubprop', $values, $options);
+  if ($ptypes) {
+    $ptypes = chado_expand_var($ptypes, 'field', 'pubprop.value', $options);
+    foreach ($ptypes as $ptype) {
+      $pub_array['Publication Type'][] = $ptype->value;
+    }
+  }
+
+  // ---------------------------------
+  // get the authors list
+  // ---------------------------------
+  $values = array(
+    'pub_id' => $pub->pub_id,
+    'type_id' => array(
+      'name' => 'Authors',
+    ),
+  );
+  $authors = chado_generate_var('pubprop', $values);
+  $authors = chado_expand_var($authors, 'field', 'pubprop.value', $options);
+  if (count($authors) > 1) {
+    tripal_report_error('tripal_pub', TRIPAL_ERROR, "Publication has multiple author lists. It should have only one list: %pub_id",
+    array('%pub_id' => $pubid));
+    return FALSE;
+  }
+  else if (trim($authors->value)) {
+    $pub_array['Authors'] = $authors->value;
+  }
+  // if there is no 'Author's property then try to retreive authors from the pubauthor table
+  else {
+    $sql = "
+      SELECT string_agg(surname || ' ' || givennames, ', ')
+      FROM {pubauthor}
+      WHERE pub_id = :pub_id
+      GROUP BY pub_id
+    ";
+    $au = chado_query($sql, array(':pub_id' => $pub_id))->fetchField();
+    if ($au) {
+      $pub_array['Authors'] = $au;
+    }
+  }
+
+  //Get other props
+  $props = array(
+    'Journal Abbreviation',
+    'Elocation',
+    'Media Code',
+    'Conference Name',
+    'Keywords',
+    'Series Name',
+    'pISSN',
+    'Publication Date',
+    'Journal Code',
+    'Journal Alias',
+    'Journal Country',
+    'Published Location',
+    'Publication Model',
+    'Language Abbr',
+    'Alias',
+    'Publication Dbxref',
+    'Copyright',
+    'Abstract',
+    'Notes',
+    'Citation',
+    'Language',
+    'URL',
+    'eISSN',
+    'DOI',
+    'ISSN',
+    'Publication Code',
+    'Comments',
+    'Publisher',
+    'Media Alias',
+    'Original Title'
+  );
+  foreach ($props AS $prop) {
+    $sql =
+      "SELECT value FROM {pubprop}
+       WHERE type_id =
+         (SELECT cvterm_id
+          FROM {cvterm}
+          WHERE name = :cvtname AND cv_id =
+            (SELECT cv_id
+             FROM {cv}
+             WHERE name = 'tripal_pub'
+            )
+         )
+       AND pub_id = :pub_id
+    ";
+    $val = trim(chado_query($sql, array(':cvtname' => $prop, ':pub_id' => $pub->pub_id))->fetchField());
+    if ($val) {
+      $pub_array[$prop] =$val;
+    }
+  }
+  return $pub_array;
 }

@@ -427,21 +427,24 @@ function chado_pub_validate($node, $form, &$form_state) {
  *
  * @param $uniquename
  *  The uniquename of the publication
+ * @param $pub_id
+ *  If an update, provide the pub_id so we don't check for a matching
+ *  uniquename of the pub we are editing
  *
  * @ingroup tripal_pub
  */
 function chado_pub_validate_check_uniquename($uniquename, $pub_id = NULL) {
 
-  $results = tripal_pub_get_pub_by_uniquename($uniquename);
-  // make sure we don't capture our pub_id in the list (remove it)
-  foreach ($results as $index => $found_pub_id) {
-    if($found_pub_id == $pub_id){
-      unset($results[$index]);
+  // check to see if a pub exists with this uniquename
+  $pub = chado_get_publication(array('uniquename' => $uniquename));
+  if ($pub) {
+    // if a $pub_id is provided to the function then this is an update
+    // if the pub_id's don't match then a different pub with the same 
+    // uniquename already exists.
+    if ($pub->pub_id != $pub_id) {
+      $message = t('A publication with this unique citation already exists.');
+      form_set_error('uniquename', $message);
     }
-  }
-  if (count($results) > 0) {
-    $message = t('A publication with this unique citation already exists.');
-    form_set_error('uniquename', $message);
   }
 }
 
@@ -463,49 +466,34 @@ function chado_pub_validate_check_uniquename($uniquename, $pub_id = NULL) {
  */
 function chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvterm, $pub_id = NULL) {
 
-  // make sure the publication is unique using the prefereed import duplication check
+  $pub_details = array(
+    'Title' => $title,
+    'Year' => $pyear,
+    'Series Name' => $series_name,
+    'Publication Type' => $cvterm->name,
+  );
+  $pub_ids = chado_does_pub_exist($pub_details);
+  
+  // if we found only one publication and it is our publication then 
+  // return, we're good.
+  if(count($pub_ids) == 1 and !in_array($pub_id, $pub_ids)) {
+    return;
+  }
+  
+  // return an appropriate message based on the unique constraint settings
   $import_dups_check = variable_get('tripal_pub_import_duplicate_check', 'title_year_media');
   switch ($import_dups_check) {
     case 'title_year':
-      $results = tripal_pub_get_pubs_by_title_type_pyear_series($title, NULL, $pyear, NULL);
-      // make sure we don't capture our pub_id in the list (remove it)
-      foreach ($results as $index => $found_pub_id) {
-        if($found_pub_id == $pub_id){
-          unset($results[$index]);
-        }
-      }
-      if (count($results) > 0) {
-        $message = t('A publication with this title and publication year, already exists.');
-        form_set_error('pyear', $message);
-      }
+      $message = t('A publication with this title and publication year already exists.');
+      form_set_error('pyear', $message);
       break;
     case 'title_year_type':
-      $results = tripal_pub_get_pubs_by_title_type_pyear_series($title, $cvterm[0]->name, $pyear, NULL);
-
-      // make sure we don't capture our pub_id in the list (remove it)
-      foreach ($results as $index => $found_pub_id) {
-        if($found_pub_id == $pub_id){
-          unset($results[$index]);
-        }
-      }
-      if (count($results) > 0) {
-        $message = t('A publication with this title, type and publication year, already exists.');
-        form_set_error('pyear', $message);
-      }
+      $message = t('A publication with this title, type and publication year already exists.');
+      form_set_error('pyear', $message);
       break;
     case 'title_year_media':
-      $results = tripal_pub_get_pubs_by_title_type_pyear_series($title, NULL, $pyear, $series_name);
-
-      // make sure we don't capture our pub_id in the list (remove it)
-      foreach ($results as $index => $found_pub_id) {
-        if($found_pub_id == $pub_id){
-          unset($results[$index]);
-        }
-      }
-      if (count($results) > 0) {
-        $message = t('A publication with this title, media name (e.g. Journal Name) and publication year, already exists.');
-        form_set_error('pyear', $message);
-      }
+      $message = t('A publication with this title, media name (e.g. Journal Name) and publication year already exists.');
+      form_set_error('pyear', $message);
       break;
   }
 }

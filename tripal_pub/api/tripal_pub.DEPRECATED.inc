@@ -7,9 +7,9 @@
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by pub_search_remote().
+ * This function has been replaced by tripal_get_remote_pubs().
  *
- * @see pub_search_remote().
+ * @see tripal_get_remote_pubs().
  */
 function tripal_pub_get_remote_search_results($remote_db, $search_array, $num_to_retrieve, $page = 0) {
 
@@ -19,11 +19,11 @@ function tripal_pub_get_remote_search_results($remote_db, $search_array, $num_to
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_pub_get_remote_search_results',
-      '%new_function' => 'pub_search_remote'
+      '%new_function' => 'tripal_get_remote_pubs'
     )
   );
   
-  return pub_search_remote($remote_db, $search_array, $num_to_retrieve, $page);;
+  return tripal_get_remote_pubs($remote_db, $search_array, $num_to_retrieve, $page);;
 }
 
 /**
@@ -45,7 +45,7 @@ function tripal_pub_get_raw_data($dbxref) {
     )
   );
   
-  return tripal_get_remote_pub_record($dbxref);
+  return tripal_get_remote_pub($dbxref);
 }
 
 /**
@@ -63,11 +63,11 @@ function tripal_pub_update_publications($do_contact = FALSE, $dbxref = NULL, $db
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_pub_update_publications',
-      '%new_function' => 'chado_update_multiple_publications'
+      '%new_function' => 'chado_reimport_publications'
     )
   );
-
-  return FALSE;
+  
+  return chado_reimport_publications($do_contact, $dbxref, $db);
 }
 
 /**
@@ -85,11 +85,11 @@ function tripal_pub_import_publications_by_import_id($import_id, $job_id = NULL)
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_pub_import_publications_by_import_id',
-      '%new_function' => 'chado_import_multiple_publications'
+      '%new_function' => 'tripal_execute_pub_importer'
     )
   );
 
-  return FALSE;
+  return tripal_execute_pub_importer($import_id, $job_id);
 }
 
 /**
@@ -107,11 +107,11 @@ function tripal_pub_import_publications($report_email = FALSE, $do_update = FALS
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_pub_import_publications',
-      '%new_function' => 'chado_import_multiple_publications'
+      '%new_function' => 'tripal_execute_active_pub_importers'
     )
   );
 
-  return FALSE;
+  return tripal_execute_active_pub_importers($report_email, $do_update);
 }
 
 /**
@@ -133,29 +133,7 @@ function tripal_pub_import_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_updat
     )
   );
 
-  return FALSE;
-}
-
-/**
- * @deprecated Restructured API to make naming more readable and consistent.
- * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_insert_multiple_publications().
- *
- * @see chado_insert_multiple_publications().
- */
-function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE) {
-
-  tripal_report_error(
-    'tripal_api',
-    TRIPAL_NOTICE,
-    "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
-    array(
-      '%old_function'=>'tripal_pub_add_publications',
-      '%new_function' => 'chado_insert_multiple_publications'
-    )
-  );
-
-  return FALSE;
+  return tripal_import_pub_by_dbxref($pub_dbxref, $do_contact, $do_udpate);
 }
 
 /**
@@ -203,8 +181,16 @@ function tripal_pub_get_pubs_by_dbxref($pub_dbxref) {
       '%new_function' => 'chado_get_publication'
     )
   );
+  
+  $pub = chado_get_publication(array('dbxref' => $pub_dbxref));
+  if ($pub) {
+    // the original function returned an array of pub_ids
+    return array($pub->pub_id);
+  }
+  else {
+    return array();
+  }
 
-  return FALSE;
 }
 
 /**
@@ -226,7 +212,13 @@ function tripal_pub_get_pubs_by_title_type_pyear_series($title, $type = NULL, $p
     )
   );
 
-  return FALSE;
+  $pub_details = array(
+    'Title' => $title,
+    'Year' => $pyear,
+    'Series Name' => $series_name,
+    'Publication Type' => $type,
+  );
+  return chado_does_pub_exist($pub_details);
 }
 
 /**
@@ -236,7 +228,7 @@ function tripal_pub_get_pubs_by_title_type_pyear_series($title, $type = NULL, $p
  *
  * @see chado_get_publication().
  */
-function tripal_pub_get_pub_by_uniquename($name) {
+function tripal_pub_get_pub_by_uniquename($uniquenname) {
 
   tripal_report_error(
     'tripal_api',
@@ -248,52 +240,14 @@ function tripal_pub_get_pub_by_uniquename($name) {
     )
   );
 
-  return FALSE;
+  $pub = chado_get_publication(array('uniquename' => $uniquenname));
+  if ($pub) {
+    // the original version of this function returned an array of matching pub_ids
+    return array($pub->pub_id);
+  }
+  return array();
 }
 
-/**
- * @deprecated Restructured API to make naming more readable and consistent.
- * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_insert_publication().
- *
- * @see chado_insert_publication().
- */
-function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE, $update_if_exists = FALSE) {
-
-  tripal_report_error(
-    'tripal_api',
-    TRIPAL_NOTICE,
-    "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
-    array(
-      '%old_function'=>'tripal_pub_add_publication',
-      '%new_function' => 'chado_insert_publication'
-    )
-  );
-
-  return FALSE;
-}
-
-/**
- * @deprecated Restructured API to make naming more readable and consistent.
- * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_insert_multiple_pubauthors().
- *
- * @see chado_insert_multiple_pubauthors().
- */
-function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
-
-  tripal_report_error(
-    'tripal_api',
-    TRIPAL_NOTICE,
-    "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
-    array(
-      '%old_function'=>'tripal_pub_add_authors',
-      '%new_function' => 'chado_insert_multiple_pubauthors'
-    )
-  );
-
-  return FALSE;
-}
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
@@ -381,48 +335,4 @@ function tripal_pub_delete_property($pub_id, $property) {
   );
 
   return chado_delete_property('pub', $pub_id, $property, 'tripal_pub');
-}
-
-/**
- * @deprecated Restructured API to make naming more readable and consistent.
- * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_get_publication().
- *
- * @see chado_get_publication().
- */
-function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
-
-  tripal_report_error(
-    'tripal_api',
-    TRIPAL_NOTICE,
-    "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
-    array(
-      '%old_function'=>'tripal_pub_get_publication_array',
-      '%new_function' => 'chado_get_publication'
-    )
-  );
-
-  return FALSE;
-}
-
-/**
- * @deprecated Restructured API to make naming more readable and consistent.
- * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by pub_generate_citation().
- *
- * @see pub_generate_citation().
- */
-function tripal_pub_create_citation($pub) {
-
-  tripal_report_error(
-    'tripal_api',
-    TRIPAL_NOTICE,
-    "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
-    array(
-      '%old_function'=>'tripal_pub_create_citation',
-      '%new_function' => 'pub_generate_citation'
-    )
-  );
-
-  return FALSE;
 }

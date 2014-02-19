@@ -183,12 +183,10 @@ function tripal_cv_get_cvterm_by_name($name, $cv_id = NULL, $cv_name = 'tripal')
  */
 function tripal_cv_get_cvterm_by_synonym($synonym, $cv_id = NULL, $cv_name = 'tripal') {
 
-  tripal_report_error(
-    'tripal_deprecated',
-    TRIPAL_NOTICE,
+  tripal_report_error('tripal_deprecated', TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
-      '%old_function'=>'tripal_cv_get_cvterm_by_synonym',
+      '%old_function'=>'tripal_cv_get_cvterm_by_synonym', 
       '%new_function' => 'chado_get_cvterm'
     )
   );

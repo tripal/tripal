@@ -136,13 +136,12 @@ function cv_get_select_options() {
  * Retrieves a chado controlled vocabulary term object
  *
  * @param $identifier
- *   An array with the key stating what the identifier is. Supported keys (only on of the
- *   following unique keys is required):
- *    - cvterm_id: the chado cv.cvterm_id primary key
- *    - name: the chado cv.name field (assume unique)
- *    - synonym: an array with 'name' => the name of the synonym of the cvterm you want
- *        returned; 'cv_id' => the cv_id of the synonym; 'cv_name' => the name of the cv
- *        of the synonym
+ *   An array for uniquely selecting a cvterm. It is compatible with chado_generate_var 
+ *   and chado_select_record functions. To uniquely identify a cvterm, specify either 
+ *   a 'cvterm_id' key or a 'cv_id' and 'name' keys. Additionally, to find a cvterm
+ *   using a synonym, use a 'synonym' key which is an array with the following keys:
+ *  'name' (the name of the synonym) and either 'cv_id' (the cv_id of the synonym) or 
+ *  'cv_name' (the name of the cv of the synonym)
  * @param $options
  *   An array of options. Supported keys include:
  *     - Any keys supported by chado_generate_var(). See that function definition for
@@ -162,49 +161,33 @@ function chado_get_cvterm($identifiers, $options = array()) {
 
   // Error Checking of parameters
   if (!is_array($identifiers)) {
-    tripal_report_error(
-      'tripal_cv_api',
-      TRIPAL_ERROR,
+    tripal_report_error('tripal_cv_api', TRIPAL_ERROR,
       "chado_get_cvterm: The identifier passed in is expected to be an array with the key
         matching a column name in the cvterm table (ie: cvterm_id or name). You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      array('%identifier'=> print_r($identifiers, TRUE))
     );
   }
   elseif (empty($identifiers)) {
-    tripal_report_error(
-      'tripal_cv_api',
-      TRIPAL_ERROR,
+    tripal_report_error('tripal_cv_api', TRIPAL_ERROR,
       "chado_get_cvterm: You did not pass in anything to identify the cvterm you want. The identifier
         is expected to be an array with the key matching a column name in the cvterm table
         (ie: cvterm_id or name). You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      array('%identifier'=> print_r($identifiers, TRUE))
     );
   }
 
   // If synonym was passed in, then process this first before calling chado_generate_var()
-  if (isset($identifier['synonym'])) {
-    $synonym = $identifier['synonym']['name'];
+  if (array_key_exists('synonym', $identifiers)) {
+    $sname = $identifiers['synonym']['name'];
 
-    $values = array(
-       'synonym' => $synonym,
-    );
-    $statement = "sel_cvtermsynonym_sy";
-    if (isset($identifier['synonym']['cv_id'])) {
-      $values['cvterm_id'] = array('cv_id' => $identifier['synonym']['cv_id']);
-      $statement = "sel_cvtermsynonym_sycv";
+    $values = array('synonym' => $sname);
+    if (array_key_exists('cv_id', $identifiers['synonym'])) {
+      $values['cvterm_id'] = array('cv_id' => $identifiers['synonym']['cv_id']);
     }
-    if (isset($identifier['synonym']['cv_name'])) {
-      $values['cvterm_id'] = array('cv_id' => array('name' => $identifier['synonym']['cv_name']));
-      $statement = "sel_cvtermsynonym_sycv";
+    if (array_key_exists('cv_name', $identifiers['synonym'])) {
+      $values['cvterm_id'] = array('cv_id' => array('name' => $identifiers['synonym']['cv_name']));
     }
-    $options = array(
-      'statement_name' => $statement,
-      'case_insensitive_columns' => array('name')
-    );
+    $options = array('case_insensitive_columns' => array('name'));
     $synonym = chado_select_record('cvtermsynonym', array('cvterm_id'), $values, $options);
 
     // if the synonym doens't exist or more than one record is returned then return false
@@ -219,35 +202,23 @@ function chado_get_cvterm($identifiers, $options = array()) {
   }
 
   // Try to get the cvterm
-  $cvterm = chado_generate_var(
-    'cvterm',
-    $identifiers,
-    $options
-  );
+  $cvterm = chado_generate_var('cvterm', $identifiers, $options);
 
   // Ensure the cvterm is singular. If it's an array then it is not singular
   if (is_array($cvterm)) {
-    tripal_report_error(
-      'tripal_cv_api',
-      TRIPAL_ERROR,
+    tripal_report_error('tripal_cv_api', TRIPAL_ERROR,
       "chado_get_cvterm: The identifiers you passed in were not unique. You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      array('%identifier'=> print_r($identifiers, TRUE))
     );
   }
 
   // Report an error if $cvterm is FALSE since then chado_generate_var has failed
   elseif ($cvterm === FALSE) {
-    tripal_report_error(
-      'tripal_cv_api',
-      TRIPAL_ERROR,
+    tripal_report_error('tripal_cv_api', TRIPAL_ERROR,
       "chado_get_cvterm: chado_generate_var() failed to return a cvterm based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      array('%identifier'=> print_r($identifiers, TRUE))
     );
   }
 

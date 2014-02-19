@@ -37,7 +37,10 @@ define('TRIPAL_INFO',6);
 define('TRIPAL_DEBUG',7);
 
 /**
- * Provide better error notice for Tripal
+ * Provide better error notice for Tripal. If the environment variable 
+ * 'TRIPAL_DEBUG' is set to 1 then this function will add backtrace
+ * information to the message.
+ * 
  * @param $type
  *   The catagory to which this message belongs. Can be any string, but the general
  *   practice is to use the name of the module.
@@ -87,6 +90,18 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
       $severity_string = 'DEBUG';
       break;
   }
+  
+  // get the backtrace and include in the error message, but only if the
+  // TRIPAL_DEBUG environment variable is set.
+  if (getenv('TRIPAL_DEBUG') == 1) {
+    $backtrace = debug_backtrace();
+    $message .= "\nBacktrace:\n";
+    $i = 1;
+    for ($i = 1; $i < count($backtrace); $i++) {
+      $function = $backtrace[$i];
+      $message .= "  $i) " . $function['function'] . "\n";
+    }
+  }
 
   // Send to watchdog
   try {
@@ -102,7 +117,7 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
     if (sizeof($variables) > 0) {
       $message = str_replace(array_keys($variables), $variables, $message);
     }
-    print $severity_string . ' (' . strtoupper($type) . '):' . $message . "\n";
+    print $severity_string . ' (' . strtoupper($type) . '): ' . $message . "\n";
   }
 }
 

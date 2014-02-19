@@ -82,10 +82,10 @@ function drush_tripal_pub_tripal_pubs_import() {
   }
 
   if ($dbxref) {
-    tripal_pub_import_by_dbxref($dbxref, $create_contacts, $update);
+    tripal_import_pub_by_dbxref($dbxref, $create_contacts, $update);
   }
   else {
-    tripal_pub_import_publications($do_report, $update);
+    tripal_execute_active_pub_importers($do_report, $update);
   }
 }
 
@@ -99,5 +99,5 @@ function drush_tripal_pub_tripal_pubs_update() {
   $dbxref = drush_get_option('dbxref');
   $db = drush_get_option('db');
 
-  tripal_pub_update_publications($create_contacts, $dbxref, $db);
+  chado_reimport_publications($create_contacts, $dbxref, $db);
 }
