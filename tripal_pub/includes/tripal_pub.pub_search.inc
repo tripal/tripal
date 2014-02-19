@@ -39,11 +39,12 @@ function tripal_pub_search_page() {
     }
 
     // get the list of publications from the remote database using the search criteria.
-    $pubs = tripal_pub_get_search_results($search_array, $limit);
     $page = isset($_GET['page']) ? $_GET['page'] : '0';
-    $total_records = chado_pager_get_count(0);
-    $total_pages = (int) ($total_records / $limit) + 1;
-
+    $offset = $page * $limit;
+    $total_records = 0;
+    $pubs = pub_search($search_array, $offset, $limit, $total_records);
+    pager_default_initialize($total_records, $limit, 0);
+    
     // iterate through the results and construct the table displaying the publications
     $rows = array();
     $i = $page * $limit + 1;
@@ -98,7 +99,6 @@ function tripal_pub_search_page() {
     $results = theme_table($table);
 
     // generate the pager
-    pager_default_initialize($total_records, $limit);
     $pager = array(
       'tags' => array(),
       'element' => 0,
@@ -108,8 +108,7 @@ function tripal_pub_search_page() {
     $pager = theme_pager($pager);
 
     // join all to form the results
-    $output .= "<br><p><b>Found " . number_format($total_records) .
-      ". Page " . ($page + 1) . " of $total_pages. " .
+    $output .= "<p><b>Found " . number_format($total_records) .
       " Results</b></br>" . $results . $pager;
   }
   return $output;
@@ -452,125 +451,7 @@ function tripal_pub_search_form_submit($form, &$form_state) {
     unset($_SESSION['tripal_pub_search_form']);
   }
 }
-/**
- * Builds the SQL statement need to search Chado for the publications
- * that match the user supplied criteria
- *
- * @param $search_array
- *   An array of search criteria provided by the user
- * @param $limit
- *   The numbe of records to retrieve
- *
- * @ingroup tripal_pub
- */
-function tripal_pub_get_search_results($search_array, $limit) {
 
-  // build the SQL based on the criteria provided by the user
-  $select = "SELECT DISTINCT P.*, CP.nid ";
-  $from   = "FROM {pub} P
-               LEFT JOIN public.chado_pub CP on P.pub_id = CP.pub_id
-               INNER JOIN {cvterm} CVT on CVT.cvterm_id = P.type_id
-            ";
-  $where  = "WHERE (NOT P.title = 'null') "; // always exclude the dummy pub
-  $order  = "ORDER BY P.pyear DESC, P.title ASC";
-  $args = array();  // arguments for where clause
-  $join = 0;
-
-  $num_criteria = $search_array['num_criteria'];
-  $from_year    = $search_array['from_year'];
-  $to_year      = $search_array['to_year'];
-
-  for ($i = 1; $i <= $num_criteria; $i++) {
-    $value = $search_array['criteria'][$i]['search_terms'];
-    $type_id = $search_array['criteria'][$i]['scope'];
-    $mode = $search_array['criteria'][$i]['mode'];
-    $op = $search_array['criteria'][$i]['operation'];
-
-    // skip criteria with no values
-    if(!$value) {
-      continue;
-    }
-
-    // to prevent SQL injection make sure our operator is
-    // what we expect
-    if ($op and $op != "AND" and $op != "OR" and $op != 'NOT') {
-      $op = 'AND';
-    }
-    if ($op == 'NOT') {
-      $op = 'AND NOT';
-    }
-    if (!$op) {
-      $op = 'AND';
-    }
-
-    // get the scope type
-    $values = array('cvterm_id' => $type_id);
-    $cvterm = chado_select_record('cvterm', array('name'), $values);
-    $type_name = '';
-    if (count($cvterm) > 0) {
-      $type_name = $cvterm[0]->name;
-    }
-    if ($type_name == 'Title') {
-      $where .= " $op (lower(P.title) LIKE lower(:crit$i)) ";
-      $args[":crit$i"] = '%' . $value . '%';
-    }
-    elseif ($type_name == 'Year') {
-      $where .= " $op (lower(P.pyear) = lower(:crit$i)) ";
-      $args[":crit$i"] = '%' . $value . '%';
-    }
-    elseif ($type_name == 'Volume') {
-      $where .= " $op (lower(P.volume) = lower(:crit$i)) ";
-      $args[":crit$i"] = '%' . $value . '%';
-    }
-    elseif ($type_name == 'Issue') {
-      $where .= " $op (lower(P.issue) = lower(:crit$i)) ";
-      $args[":crit$i"] = '%' . $value . '%';
-    }
-    elseif ($type_name == 'Journal Name') {
-      $from .= " LEFT JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id AND PP$i.type_id = :crit$i ";
-      $where .= " $op ((lower(P.series_name) = lower(:crit$i) and CVT.name = 'Journal Article') OR
-                       (lower(PP$i.value) = lower(:crit$i))) ";
-      $args[":crit$i"] = $type_id;
-    }
-    elseif ($type_name == 'Conference Name') {
-      $from .= " LEFT JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id AND PP$i.type_id = :crit$i ";
-      $where .= " $op ((lower(P.series_name) = lower(:crit$i) and CVT.name = 'Conference Proceedings') OR
-                       (lower(PP$i.value) = lower(:crit$i))) ";
-      $args[":crit$i"] = $type_id;
-    }
-    elseif ($type_name == 'Publication Type') {
-      $where .= " $op (lower(CVT.name) = lower(:crit$i))";
-      $args[":crit$i"] = $value;
-    }
-    elseif ($type_id == 0) { //'Any Field'
-      $from .= " LEFT JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id ";
-      $where .= " $op (lower(PP$i.value)  LIKE lower(:crit$i) OR
-                       lower(P.title) LIKE lower(:crit$i) OR
-                       lower(P.volumetitle) LIKE lower(:crit$i) OR
-                       lower(P.publisher) LIKE lower(:crit$i) OR
-                       lower(P.uniquename) LIKE lower(:crit$i) OR
-                       lower(P.pubplace) LIKE lower(:crit$i) OR
-                       lower(P.miniref) LIKE lower(:crit$i) OR
-                       lower(P.series_name) LIKE lower(:crit$i)) ";
-      $args[":crit$i"] = '%' . $value . '%';
-    }
-    // for all other properties
-    else {
-      $from .= " LEFT JOIN {pubprop} PP$i ON PP$i.pub_id = P.pub_id AND PP$i.type_id = :type_id$i ";
-      $where .= " $op (lower(PP$i.value) LIKE lower(:crit$i)) ";
-      $args[":crit$i"] = '%' . $value . '%';
-      $args[":type_id$i"] = $type_id;
-    }
-  }
-  if($from_year and $to_year) {
-    $where .= " AND (P.pyear ~ '....' AND to_number(P.pyear,'9999') >= :from$i AND to_number(P.pyear,'9999') <= :to$i) ";
-    $args[":from$i"] = $from_year;
-    $args[":to$i"] = $to_year;
-  }
-  $sql = "$select $from $where $order";
-  $count = "SELECT count(*) FROM ($select $from $where $order) as t1";
-  return chado_pager_query($sql, $args, $limit, 0, $count);
-}
 
 /**
  * Ajax callback to update the form

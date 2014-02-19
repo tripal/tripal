@@ -241,9 +241,14 @@ function chado_pub_form($node, $form_state) {
   $prop_types = chado_query($sql);
   while ($prop = $prop_types->fetchObject()) {
     // add all properties except the Citation. That property is set via the uniquename field
-    if ($prop->name != 'Citation') {
-      $select_options[$prop->cvterm_id] = $prop->name;
+    if ($prop->name == 'Citation') {
+      continue;
     }
+    // Publication Dbxref's are handled by the dbxref form addition below
+    if ($prop->name == 'Publication Dbxref') {
+      continue;
+    }
+    $select_options[$prop->cvterm_id] = $prop->name;
   }
 
   $details = array(
@@ -279,6 +284,7 @@ function chado_pub_form($node, $form_state) {
   // Adds the form elements to your current form
   chado_add_node_form_relationships($form, $form_state, $details);
 
+  
   // ADDITIONAL DBXREFS FORM
   //---------------------------------------------
   $details = array(
@@ -719,9 +725,14 @@ function chado_pub_insert($node) {
     chado_update_node_form_relationships($node, $details);
 
     // add in any database cross-references
-    foreach ($cross_refs as $index => $ref) {
-      $pub_dbxref = tripal_pub_add_pub_dbxref($pub['pub_id'], trim($ref));
-      if (!$pub_dbxref) {
+    foreach ($cross_refs as $index => $ref) { 
+      $dbxref = array();
+      if(preg_match('/^(.*?):(.*?)$/', trim($ref), $matches)) {
+        $dbxref['db_name']   = $matches[1];
+        $dbxref['accession'] = $matches[2];
+      }
+      $success = chado_associate_dbxref('pub', $pub['pub_id'], $dbxref);
+      if (!$success) {
         drupal_set_message("Error cannot add publication cross reference: $ref", "error");
         watchdog('tripal_pub', "Error cannot add publication cross reference: %ref",
         array('%ref' => $ref), WATCHDOG_ERROR);
@@ -905,25 +916,30 @@ function chado_pub_update($node) {
   // now add in the properties by first removing any the publication
   // already has and adding the ones we have
   $details = array(
-    'property_table' => 'pubprop',
-    'base_table' => 'pub',
+    'property_table'  => 'pubprop',
+    'base_table'      => 'pub',
     'foreignkey_name' => 'pub_id',
-    'foreignkey_value' => $pub_id
+    'foreignkey_value'=> $pub_id
   );
   chado_update_node_form_properties($node, $details, $properties);
 
   // * Relationships Form *
   $details = array(
     'relationship_table' => 'pub_relationship',  // name of the _relationship table
-    'foreignkey_value' => $pub_id                // value of the pub_id key
+    'foreignkey_value'   => $pub_id                // value of the pub_id key
   );
   chado_update_node_form_relationships($node, $details);
 
   // add in any database cross-references after first removing
   chado_delete_record('pub_dbxref', array('pub_id' => $pub_id));
   foreach ($cross_refs as $index => $ref) {
-    $pub_dbxref = tripal_pub_add_pub_dbxref($pub_id, trim($ref));
-    if (!$pub_dbxref) {
+    $dbxref = array();
+    if(preg_match('/^(.*?):(.*?)$/', trim($ref), $matches)) {
+      $dbxref['db_name']   = $matches[1];
+      $dbxref['accession'] = $matches[2];
+    }
+    $success = chado_associate_dbxref('pub', $pub_id, $dbxref);
+    if (!$success) {
       drupal_set_message("Error cannot add publication cross reference: $ref", "error");
       watchdog('tripal_pub', "Error cannot add publication cross reference: %ref",
       array('%ref' => $ref), WATCHDOG_ERROR);

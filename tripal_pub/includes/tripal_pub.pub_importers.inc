@@ -132,7 +132,7 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
 
       // get the list of publications from the remote database using the search criteria.
       $page = isset($_GET['page']) ? $_GET['page'] : '0';
-      $results = tripal_pub_get_remote_search_results($remote_db, $search_array, $limit, $page);
+      $results = pub_search_remote($remote_db, $search_array, $limit, $page);
       $total_records = $results['total_records'];
       $search_str    = $results['search_str'];
       $pubs          = $results['pubs'];

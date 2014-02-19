@@ -22,8 +22,8 @@ function tripal_pub_get_remote_search_results($remote_db, $search_array, $num_to
       '%new_function' => 'pub_search_remote'
     )
   );
-
-  return FALSE;
+  
+  return pub_search_remote($remote_db, $search_array, $num_to_retrieve, $page);;
 }
 
 /**
@@ -44,8 +44,8 @@ function tripal_pub_get_raw_data($dbxref) {
       '%new_function' => 'chado_get_remote_pub_record'
     )
   );
-
-  return FALSE;
+  
+  return tripal_get_remote_pub_record($dbxref);
 }
 
 /**
@@ -176,8 +176,13 @@ function tripal_pub_add_pub_dbxref($pub_id, $pub_dbxref) {
       '%new_function' => 'chado_associate_dbxref'
     )
   );
-
-  return FALSE;
+ 
+  $dbxref = array();
+  if(preg_match('/^(.*?):(.*?)$/', trim($pub_dbxref), $matches)) {
+    $dbxref['db_name']   = $matches[1];
+    $dbxref['accession'] = $matches[2];
+  }
+  return chado_associate_dbxref('pub', $pub_id, $dbxref);
 }
 
 /**
