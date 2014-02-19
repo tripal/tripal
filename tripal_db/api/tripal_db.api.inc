@@ -413,9 +413,11 @@ function chado_dbxref_insert_record($values) {
  * @param $record_id
  *   The primary key of the basetable to associate the dbxref with. This should be in integer.
  * @param $dbxref
- *   An associative array describing the dbxref. Valid keys include: 'accession' => the
- *   accession for the dbxref, 'db_name' => the name of the database the dbxref belongs to;
- *   'db_id' => the primary key of the database the dbxref belongs to.
+ *   An associative array describing the dbxref. Valid keys include: 
+ *     'accession' => the accession for the dbxref, 
+ *     'db_name' => the name of the database the dbxref belongs to;
+ *     'db_id' => the db_id from the databaes table of Chado. Substitutes for 'db_name'
+ *     'dbxref_id' => the dbxref_id of the dbxref to assocaite.  Substitutes for all other keys.
  * @param $options
  *   An associative array of options. Valid keys include:
  *    - insert_dbxref: Insert the dbxref if it doesn't already exist. TRUE is the default
@@ -437,7 +439,8 @@ function chado_associate_dbxref($basetable, $record_id, $dbxref, $options = arra
     );
     if (isset($dbxref['db_id'])) {
       $values['db_id'] = $dbxref['db_id'];
-    } elseif (isset($dbxref['db_name'])) {
+    } 
+    elseif (isset($dbxref['db_name'])) {
       $values['db_id'] = array(
         'name' => $dbxref['db_name']
       );

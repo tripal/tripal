@@ -241,9 +241,14 @@ function chado_pub_form($node, $form_state) {
   $prop_types = chado_query($sql);
   while ($prop = $prop_types->fetchObject()) {
     // add all properties except the Citation. That property is set via the uniquename field
-    if ($prop->name != 'Citation') {
-      $select_options[$prop->cvterm_id] = $prop->name;
+    if ($prop->name == 'Citation') {
+      continue;
     }
+    // Publication Dbxref's are handled by the dbxref form addition below
+    if ($prop->name == 'Publication Dbxref') {
+      continue;
+    }
+    $select_options[$prop->cvterm_id] = $prop->name;
   }
 
   $details = array(
@@ -279,6 +284,7 @@ function chado_pub_form($node, $form_state) {
   // Adds the form elements to your current form
   chado_add_node_form_relationships($form, $form_state, $details);
 
+  
   // ADDITIONAL DBXREFS FORM
   //---------------------------------------------
   $details = array(
@@ -421,21 +427,24 @@ function chado_pub_validate($node, $form, &$form_state) {
  *
  * @param $uniquename
  *  The uniquename of the publication
+ * @param $pub_id
+ *  If an update, provide the pub_id so we don't check for a matching
+ *  uniquename of the pub we are editing
  *
  * @ingroup tripal_pub
  */
 function chado_pub_validate_check_uniquename($uniquename, $pub_id = NULL) {
 
-  $results = tripal_pub_get_pub_by_uniquename($uniquename);
-  // make sure we don't capture our pub_id in the list (remove it)
-  foreach ($results as $index => $found_pub_id) {
-    if($found_pub_id == $pub_id){
-      unset($results[$index]);
+  // check to see if a pub exists with this uniquename
+  $pub = chado_get_publication(array('uniquename' => $uniquename));
+  if ($pub) {
+    // if a $pub_id is provided to the function then this is an update
+    // if the pub_id's don't match then a different pub with the same 
+    // uniquename already exists.
+    if ($pub->pub_id != $pub_id) {
+      $message = t('A publication with this unique citation already exists.');
+      form_set_error('uniquename', $message);
     }
-  }
-  if (count($results) > 0) {
-    $message = t('A publication with this unique citation already exists.');
-    form_set_error('uniquename', $message);
   }
 }
 
@@ -457,49 +466,34 @@ function chado_pub_validate_check_uniquename($uniquename, $pub_id = NULL) {
  */
 function chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvterm, $pub_id = NULL) {
 
-  // make sure the publication is unique using the prefereed import duplication check
+  $pub_details = array(
+    'Title' => $title,
+    'Year' => $pyear,
+    'Series Name' => $series_name,
+    'Publication Type' => $cvterm->name,
+  );
+  $pub_ids = chado_does_pub_exist($pub_details);
+  
+  // if we found only one publication and it is our publication then 
+  // return, we're good.
+  if(count($pub_ids) == 1 and !in_array($pub_id, $pub_ids)) {
+    return;
+  }
+  
+  // return an appropriate message based on the unique constraint settings
   $import_dups_check = variable_get('tripal_pub_import_duplicate_check', 'title_year_media');
   switch ($import_dups_check) {
     case 'title_year':
-      $results = tripal_pub_get_pubs_by_title_type_pyear_series($title, NULL, $pyear, NULL);
-      // make sure we don't capture our pub_id in the list (remove it)
-      foreach ($results as $index => $found_pub_id) {
-        if($found_pub_id == $pub_id){
-          unset($results[$index]);
-        }
-      }
-      if (count($results) > 0) {
-        $message = t('A publication with this title and publication year, already exists.');
-        form_set_error('pyear', $message);
-      }
+      $message = t('A publication with this title and publication year already exists.');
+      form_set_error('pyear', $message);
       break;
     case 'title_year_type':
-      $results = tripal_pub_get_pubs_by_title_type_pyear_series($title, $cvterm[0]->name, $pyear, NULL);
-
-      // make sure we don't capture our pub_id in the list (remove it)
-      foreach ($results as $index => $found_pub_id) {
-        if($found_pub_id == $pub_id){
-          unset($results[$index]);
-        }
-      }
-      if (count($results) > 0) {
-        $message = t('A publication with this title, type and publication year, already exists.');
-        form_set_error('pyear', $message);
-      }
+      $message = t('A publication with this title, type and publication year already exists.');
+      form_set_error('pyear', $message);
       break;
     case 'title_year_media':
-      $results = tripal_pub_get_pubs_by_title_type_pyear_series($title, NULL, $pyear, $series_name);
-
-      // make sure we don't capture our pub_id in the list (remove it)
-      foreach ($results as $index => $found_pub_id) {
-        if($found_pub_id == $pub_id){
-          unset($results[$index]);
-        }
-      }
-      if (count($results) > 0) {
-        $message = t('A publication with this title, media name (e.g. Journal Name) and publication year, already exists.');
-        form_set_error('pyear', $message);
-      }
+      $message = t('A publication with this title, media name (e.g. Journal Name) and publication year already exists.');
+      form_set_error('pyear', $message);
       break;
   }
 }
@@ -719,9 +713,14 @@ function chado_pub_insert($node) {
     chado_update_node_form_relationships($node, $details);
 
     // add in any database cross-references
-    foreach ($cross_refs as $index => $ref) {
-      $pub_dbxref = tripal_pub_add_pub_dbxref($pub['pub_id'], trim($ref));
-      if (!$pub_dbxref) {
+    foreach ($cross_refs as $index => $ref) { 
+      $dbxref = array();
+      if(preg_match('/^(.*?):(.*?)$/', trim($ref), $matches)) {
+        $dbxref['db_name']   = $matches[1];
+        $dbxref['accession'] = $matches[2];
+      }
+      $success = chado_associate_dbxref('pub', $pub['pub_id'], $dbxref);
+      if (!$success) {
         drupal_set_message("Error cannot add publication cross reference: $ref", "error");
         watchdog('tripal_pub', "Error cannot add publication cross reference: %ref",
         array('%ref' => $ref), WATCHDOG_ERROR);
@@ -905,25 +904,30 @@ function chado_pub_update($node) {
   // now add in the properties by first removing any the publication
   // already has and adding the ones we have
   $details = array(
-    'property_table' => 'pubprop',
-    'base_table' => 'pub',
+    'property_table'  => 'pubprop',
+    'base_table'      => 'pub',
     'foreignkey_name' => 'pub_id',
-    'foreignkey_value' => $pub_id
+    'foreignkey_value'=> $pub_id
   );
   chado_update_node_form_properties($node, $details, $properties);
 
   // * Relationships Form *
   $details = array(
     'relationship_table' => 'pub_relationship',  // name of the _relationship table
-    'foreignkey_value' => $pub_id                // value of the pub_id key
+    'foreignkey_value'   => $pub_id                // value of the pub_id key
   );
   chado_update_node_form_relationships($node, $details);
 
   // add in any database cross-references after first removing
   chado_delete_record('pub_dbxref', array('pub_id' => $pub_id));
   foreach ($cross_refs as $index => $ref) {
-    $pub_dbxref = tripal_pub_add_pub_dbxref($pub_id, trim($ref));
-    if (!$pub_dbxref) {
+    $dbxref = array();
+    if(preg_match('/^(.*?):(.*?)$/', trim($ref), $matches)) {
+      $dbxref['db_name']   = $matches[1];
+      $dbxref['accession'] = $matches[2];
+    }
+    $success = chado_associate_dbxref('pub', $pub_id, $dbxref);
+    if (!$success) {
       drupal_set_message("Error cannot add publication cross reference: $ref", "error");
       watchdog('tripal_pub', "Error cannot add publication cross reference: %ref",
       array('%ref' => $ref), WATCHDOG_ERROR);

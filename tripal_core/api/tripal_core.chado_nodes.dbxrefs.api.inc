@@ -124,17 +124,20 @@
  */
 function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
 
-  // Set Defaults for optional fields
+  // Set defaults for optional fields
   $details['fieldset_title'] = 'Additional Database References';
   $details['additional_instructions'] = '';
 
-  // Get Property Types for the Select List
+  // Get the list of databases to display in the dropdown. 
   if (isset($details['select_options'])) {
+    // the callee has provided a list
     $db_options = $details['select_options'];
   }
   else {
+    // get the list of databases from the db table
     $db_options = array(0 => 'Select a Database');
-    $select = chado_select_record('db', array('db_id','name'), array(), array('order_by' => array('name' => 'ASC')));
+    $options = array('order_by' => array('name' => 'ASC'));
+    $select = chado_select_record('db', array('db_id','name'), array(), $options);
     foreach($select as $db) {
       $db_options[$db->db_id] = $db->name;
     }
@@ -196,16 +199,18 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
   }
   else {
     $existing_dbxrefs = chado_query(
-      "SELECT dbxref.dbxref_id, db.name as db_name, db.db_id as db_id, dbxref.accession as accession, dbxref.description as description, dbxref.version
-        FROM {dbxref} dbxref
-        LEFT JOIN {db} db ON db.db_id = dbxref.db_id
-        LEFT JOIN {".$details['linking_table']."} linking_table ON linking_table.dbxref_id = dbxref.dbxref_id
+      "SELECT 
+         db.name as db_name, db.db_id as db_id,
+         dbxref.dbxref_id, dbxref.accession as accession, 
+         dbxref.description as description, dbxref.version
+       FROM {dbxref} dbxref
+         LEFT JOIN {db} db ON db.db_id = dbxref.db_id
+         LEFT JOIN {".$details['linking_table']."} linking_table ON linking_table.dbxref_id = dbxref.dbxref_id
        WHERE linking_table.".$details['base_foreign_key']."= :base_key_value
        ORDER BY db.name ASC, dbxref.version ASC",
        array(':base_key_value' => $details['base_key_value'])
     );
   }
-
   /* The format of the $existing_dbxref's array is either:
    *
    * From the chado_additional_dbxrefs array:
@@ -238,13 +243,16 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
    * an element to the form for each one.
    */
   foreach ($existing_dbxrefs as $dbxref) {
+    
     if (array_key_exists($dbxref->db_id, $db_options)) {
 
-      // Since the version is part of the key, when it is '' we need to use something
-      // in the key to indicate this case. Otherwise, you wouldn't be able to select
-      // those elements from the array (ie: $form['addtl_dbxrefs']['dbxref_table'][9999]['']
-      // doesn't work as expected whereas $form['addtl_dbxrefs']['dbxref_table'][9999][NONE]
-      // is much better)
+      /* Since the dbxref version is part of the unique constraint, when it is 
+       * empty we need to use something in the key to indicate this case. Otherwise, 
+       * you wouldn't be able to select those elements from the array 
+       * (ie: $form['addtl_dbxrefs']['dbxref_table'][9999][''] doesn't work as 
+       * expected whereas $form['addtl_dbxrefs']['dbxref_table'][9999][NONE] 
+       * is much better)
+       */
       $version = (!empty($dbxref->version)) ? $dbxref->version : 'NONE';
 
       $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id] = array(

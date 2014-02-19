@@ -63,12 +63,13 @@ function tripal_core_exclude_field_from_feature_by_default() {
 }
 
 /**
- * Generates an object containing the full details of a record(s) in chado.
- *
- * This differs from the objects returned by chado_select_record in so far as all foreign key
- * relationships have been followed meaning you have more complete details. Thus this function
- * should be used whenever you need a full variable and chado_select_record should be used if
- * you only case about a few columns.
+ * Generates an array containing the full details of a record(s) in chado. The 
+ * returned array differs from the array returned by chado_select_record as all foreign key
+ * relationships have been followed and those data are also included. The array
+ * returned by this function can be used with chado_expand_var function to add
+ * additional FK relationships that were not included because they were not
+ * a one-to-one mapping or for fields that were excluded such as large text fields.
+ *  
  *
  * @param $table
  *   The name of the base table to generate a variable for

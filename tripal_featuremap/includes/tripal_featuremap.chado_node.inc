@@ -263,7 +263,7 @@ function chado_featuremap_node_access($node, $op, $account) {
  */
 function chado_featuremap_insert($node) {
 
-  $node->fmapname          = trim($node->fmapname);
+  $node->fmapname       = trim($node->fmapname);
   $node->description    = trim($node->description);
 
   // if there is an featuremap_id in the $node object then this must be a sync so
