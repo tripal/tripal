@@ -44,7 +44,7 @@
  *
  * @ingroup tripal_cv_api
  */
-function cv_retrieve($identifiers, $options = array()) {
+function chado_cv_retrieve($identifiers, $options = array()) {
 
   // Set Defaults
   if (!isset($options['include_fk'])) {
@@ -57,7 +57,7 @@ function cv_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "cv_retrieve: The identifier passed in is expected to be an array with the key
+      "chado_cv_retrieve: The identifier passed in is expected to be an array with the key
         matching a column name in the cv table (ie: cv_id or name). You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
@@ -68,7 +68,7 @@ function cv_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "cv_retrieve: You did not pass in anything to identify the cv you want. The identifier
+      "chado_cv_retrieve: You did not pass in anything to identify the cv you want. The identifier
         is expected to be an array with the key matching a column name in the cv table
         (ie: cv_id or name). You passed in %identifier.",
       array(
@@ -89,7 +89,7 @@ function cv_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "cv_retrieve: The identifiers you passed in were not unique. You passed in %identifier.",
+      "chado_cv_retrieve: The identifiers you passed in were not unique. You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
       )
@@ -101,7 +101,7 @@ function cv_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "cv_retrieve: chado_generate_var() failed to return a cv based on the identifiers
+      "chado_cv_retrieve: chado_generate_var() failed to return a cv based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
       array(
@@ -168,7 +168,7 @@ function cv_get_select_options() {
  *
  * @ingroup tripal_cv_api
  */
-function cvterm_retrieve($identifiers, $options = array()) {
+function chado_cvterm_retrieve($identifiers, $options = array()) {
 
   // Set Defaults
   if (!isset($options['include_fk'])) {
@@ -181,7 +181,7 @@ function cvterm_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "cvterm_retrieve: The identifier passed in is expected to be an array with the key
+      "chado_cvterm_retrieve: The identifier passed in is expected to be an array with the key
         matching a column name in the cvterm table (ie: cvterm_id or name). You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
@@ -192,7 +192,7 @@ function cvterm_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "cvterm_retrieve: You did not pass in anything to identify the cvterm you want. The identifier
+      "chado_cvterm_retrieve: You did not pass in anything to identify the cvterm you want. The identifier
         is expected to be an array with the key matching a column name in the cvterm table
         (ie: cvterm_id or name). You passed in %identifier.",
       array(
@@ -202,17 +202,25 @@ function cvterm_retrieve($identifiers, $options = array()) {
   }
 
   // If synonym was passed in, then process this first before calling chado_generate_var()
-  if (array_key_exists('synonym', $identifiers)) {
-    $sname = $identifiers['synonym']['name'];
+  if (isset($identifier['synonym'])) {
+    $synonym = $identifier['synonym']['name'];
 
-    $values = array('synonym' => $sname);
-    if (array_key_exists('cv_id', $identifiers['synonym'])) {
-      $values['cvterm_id'] = array('cv_id' => $identifiers['synonym']['cv_id']);
+    $values = array(
+       'synonym' => $synonym,
+    );
+    $statement = "sel_cvtermsynonym_sy";
+    if (isset($identifier['synonym']['cv_id'])) {
+      $values['cvterm_id'] = array('cv_id' => $identifier['synonym']['cv_id']);
+      $statement = "sel_cvtermsynonym_sycv";
     }
-    if (array_key_exists('cv_name', $identifiers['synonym'])) {
-      $values['cvterm_id'] = array('cv_id' => array('name' => $identifiers['synonym']['cv_name']));
+    if (isset($identifier['synonym']['cv_name'])) {
+      $values['cvterm_id'] = array('cv_id' => array('name' => $identifier['synonym']['cv_name']));
+      $statement = "sel_cvtermsynonym_sycv";
     }
-    $options = array('case_insensitive_columns' => array('name'));
+    $options = array(
+      'statement_name' => $statement,
+      'case_insensitive_columns' => array('name')
+    );
     $synonym = chado_select_record('cvtermsynonym', array('cvterm_id'), $values, $options);
 
     // if the synonym doens't exist or more than one record is returned then return false
@@ -232,10 +240,16 @@ function cvterm_retrieve($identifiers, $options = array()) {
     unset($identifiers['property']);
     $cvterm = chado_get_record_with_property('cvterm', $property, $identifiers, $options);
   }
+
   // Else we have a simple case and we can just use chado_generate_var to get the cvterm
   else {
+
     // Try to get the cvterm
-    $cvterm = chado_generate_var('cvterm', $identifiers, $options);
+    $cvterm = chado_generate_var(
+      'cvterm',
+      $identifiers,
+      $options
+    );
   }
 
   // Ensure the cvterm is singular. If it's an array then it is not singular
@@ -243,7 +257,7 @@ function cvterm_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "cvterm_retrieve: The identifiers you passed in were not unique. You passed in %identifier.",
+      "chado_cvterm_retrieve: The identifiers you passed in were not unique. You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
       )
@@ -255,7 +269,7 @@ function cvterm_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "cvterm_retrieve: chado_generate_var() failed to return a cvterm based on the identifiers
+      "chado_cvterm_retrieve: chado_generate_var() failed to return a cvterm based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
       array(

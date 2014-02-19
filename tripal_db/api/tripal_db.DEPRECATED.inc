@@ -7,9 +7,9 @@
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by db_retrieve().
+ * This function has been replaced by chado_db_retrieve().
  *
- * @see db_retrieve().
+ * @see chado_db_retrieve().
  */
 function tripal_db_get_db($select_values) {
 
@@ -19,19 +19,19 @@ function tripal_db_get_db($select_values) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_db_get_db',
-      '%new_function' => 'db_retrieve'
+      '%new_function' => 'chado_db_retrieve'
     )
   );
 
-  return db_retrieve($select_values);
+  return chado_db_retrieve($select_values);
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by db_retrieve().
+ * This function has been replaced by chado_db_retrieve().
  *
- * @see db_retrieve().
+ * @see chado_db_retrieve().
  */
 function tripal_db_get_db_by_db_id($db_id) {
 
@@ -41,19 +41,19 @@ function tripal_db_get_db_by_db_id($db_id) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_db_get_db_by_db_id',
-      '%new_function' => 'db_retrieve'
+      '%new_function' => 'chado_db_retrieve'
     )
   );
 
-  return db_retrieve(array('db_id' => $db_id));
+  return chado_db_retrieve(array('db_id' => $db_id));
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by db_retrieve().
+ * This function has been replaced by chado_db_retrieve().
  *
- * @see db_retrieve().
+ * @see chado_db_retrieve().
  */
 function tripal_db_get_db_by_name($name) {
 
@@ -63,11 +63,11 @@ function tripal_db_get_db_by_name($name) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_db_get_db_by_name',
-      '%new_function' => 'db_retrieve'
+      '%new_function' => 'chado_db_retrieve'
     )
   );
 
-  return db_retrieve(array('name' => $name));
+  return chado_db_retrieve(array('name' => $name));
 }
 
 /**
@@ -95,9 +95,9 @@ function tripal_db_get_db_options() {
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by db_retrieve().
+ * This function has been replaced by chado_db_retrieve().
  *
- * @see dbxref_retrieve().
+ * @see chado_dbxref_retrieve().
  */
 function tripal_db_get_dbxref($select_values) {
 
@@ -107,19 +107,19 @@ function tripal_db_get_dbxref($select_values) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_db_get_dbxref',
-      '%new_function' => 'dbxref_retrieve'
+      '%new_function' => 'chado_dbxref_retrieve'
     )
   );
 
-  return dbxref_retrieve($select_values);
+  return chado_dbxref_retrieve($select_values);
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by db_retrieve().
+ * This function has been replaced by chado_db_retrieve().
  *
- * @see dbxref_retrieve().
+ * @see chado_dbxref_retrieve().
  */
 function tripal_db_get_dbxref_by_accession($accession, $db_id=0) {
 
@@ -129,7 +129,7 @@ function tripal_db_get_dbxref_by_accession($accession, $db_id=0) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_db_get_dbxref_by_accession',
-      '%new_function' => 'dbxref_retrieve'
+      '%new_function' => 'chado_dbxref_retrieve'
     )
   );
 
@@ -141,7 +141,7 @@ function tripal_db_get_dbxref_by_accession($accession, $db_id=0) {
       'db_id' => $db_id
     );
   }
-  return dbxref_retrieve($identifiers);
+  return chado_dbxref_retrieve($identifiers);
 }
 
 /**

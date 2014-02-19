@@ -54,7 +54,7 @@
  *
  * @ingroup tripal_db_api
  */
-function db_retrieve($identifiers, $options = array()) {
+function chado_db_retrieve($identifiers, $options = array()) {
 
   // Set Defaults
   if (!isset($options['include_fk'])) {
@@ -67,7 +67,7 @@ function db_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_db_api',
       TRIPAL_ERROR,
-      "db_retrieve: The identifier passed in is expected to be an array with the key
+      "chado_db_retrieve: The identifier passed in is expected to be an array with the key
         matching a column name in the db table (ie: db_id or name). You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
@@ -78,7 +78,7 @@ function db_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_db_api',
       TRIPAL_ERROR,
-      "db_retrieve: You did not pass in anything to identify the db you want. The identifier
+      "chado_db_retrieve: You did not pass in anything to identify the db you want. The identifier
         is expected to be an array with the key matching a column name in the db table
         (ie: db_id or name). You passed in %identifier.",
       array(
@@ -99,7 +99,7 @@ function db_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_db_api',
       TRIPAL_ERROR,
-      "db_retrieve: The identifiers you passed in were not unique. You passed in %identifier.",
+      "chado_db_retrieve: The identifiers you passed in were not unique. You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
       )
@@ -111,7 +111,7 @@ function db_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_db_api',
       TRIPAL_ERROR,
-      "db_retrieve: chado_generate_var() failed to return a db based on the identifiers
+      "chado_db_retrieve: chado_generate_var() failed to return a db based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
       array(
@@ -200,7 +200,7 @@ function db_get_select_options() {
  *
  * @ingroup tripal_db_api
  */
-function dbxref_retrieve($identifiers, $options = array()) {
+function chado_dbxref_retrieve($identifiers, $options = array()) {
 
   // Set Defaults
   if (!isset($options['include_fk'])) {
@@ -213,7 +213,7 @@ function dbxref_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_db_api',
       TRIPAL_ERROR,
-      "dbxref_retrieve: The identifier passed in is expected to be an array with the key
+      "chado_dbxref_retrieve: The identifier passed in is expected to be an array with the key
         matching a column name in the dbxref table (ie: dbxref_id or name). You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
@@ -224,7 +224,7 @@ function dbxref_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_db_api',
       TRIPAL_ERROR,
-      "dbxref_retrieve: You did not pass in anything to identify the dbxref you want. The identifier
+      "chado_dbxref_retrieve: You did not pass in anything to identify the dbxref you want. The identifier
         is expected to be an array with the key matching a column name in the dbxref table
         (ie: dbxref_id or name). You passed in %identifier.",
       array(
@@ -254,7 +254,7 @@ function dbxref_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_db_api',
       TRIPAL_ERROR,
-      "dbxref_retrieve: The identifiers you passed in were not unique. You passed in %identifier.",
+      "chado_dbxref_retrieve: The identifiers you passed in were not unique. You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
       )
@@ -266,7 +266,7 @@ function dbxref_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_db_api',
       TRIPAL_ERROR,
-      "dbxref_retrieve: chado_generate_var() failed to return a dbxref based on the identifiers
+      "chado_dbxref_retrieve: chado_generate_var() failed to return a dbxref based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
       array(
@@ -413,11 +413,9 @@ function chado_dbxref_insert_record($values) {
  * @param $record_id
  *   The primary key of the basetable to associate the dbxref with. This should be in integer.
  * @param $dbxref
- *   An associative array describing the dbxref. Valid keys include: 
- *     'accession' => the accession for the dbxref, 
- *     'db_name' => the name of the database the dbxref belongs to;
- *     'db_id' => the db_id from the databaes table of Chado. Substitutes for 'db_name'
- *     'dbxref_id' => the dbxref_id of the dbxref to assocaite.  Substitutes for all other keys.
+ *   An associative array describing the dbxref. Valid keys include: 'accession' => the
+ *   accession for the dbxref, 'db_name' => the name of the database the dbxref belongs to;
+ *   'db_id' => the primary key of the database the dbxref belongs to.
  * @param $options
  *   An associative array of options. Valid keys include:
  *    - insert_dbxref: Insert the dbxref if it doesn't already exist. TRUE is the default
@@ -439,8 +437,7 @@ function chado_associate_dbxref($basetable, $record_id, $dbxref, $options = arra
     );
     if (isset($dbxref['db_id'])) {
       $values['db_id'] = $dbxref['db_id'];
-    } 
-    elseif (isset($dbxref['db_name'])) {
+    } elseif (isset($dbxref['db_name'])) {
       $values['db_id'] = array(
         'name' => $dbxref['db_name']
       );

@@ -7,9 +7,9 @@
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by cv_retrieve().
+ * This function has been replaced by chado_cv_retrieve().
  *
- * @see cv_retrieve().
+ * @see chado_cv_retrieve().
  */
 function tripal_cv_get_cv($select_values) {
 
@@ -19,19 +19,19 @@ function tripal_cv_get_cv($select_values) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_cv_get_cv',
-      '%new_function' => 'cv_retrieve'
+      '%new_function' => 'chado_cv_retrieve'
     )
   );
 
-  return cv_retrieve($select_values);
+  return chado_cv_retrieve($select_values);
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by cv_retrieve().
+ * This function has been replaced by chado_cv_retrieve().
  *
- * @see cv_retrieve().
+ * @see chado_cv_retrieve().
  */
 function tripal_cv_get_cv_by_name($name) {
 
@@ -41,19 +41,19 @@ function tripal_cv_get_cv_by_name($name) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_cv_get_cv_by_name',
-      '%new_function' => 'cv_retrieve'
+      '%new_function' => 'chado_cv_retrieve'
     )
   );
 
-  return cv_retrieve(array('name' => $name));
+  return chado_cv_retrieve(array('name' => $name));
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by cv_retrieve().
+ * This function has been replaced by chado_cv_retrieve().
  *
- * @see cv_retrieve().
+ * @see chado_cv_retrieve().
  */
 function tripal_cv_get_cv_by_id($cv_id) {
 
@@ -63,19 +63,19 @@ function tripal_cv_get_cv_by_id($cv_id) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_cv_get_cv_by_id',
-      '%new_function' => 'cv_retrieve'
+      '%new_function' => 'chado_cv_retrieve'
     )
   );
 
-  return cv_retrieve(array('cv_id' => $id));
+  return chado_cv_retrieve(array('cv_id' => $id));
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by cv_retrieve().
+ * This function has been replaced by chado_cv_retrieve().
  *
- * @see cv_retrieve().
+ * @see chado_cv_retrieve().
  */
 function tripal_cv_get_cv_id($cv_name) {
 
@@ -85,11 +85,11 @@ function tripal_cv_get_cv_id($cv_name) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_cv_get_cv_id',
-      '%new_function' => 'cv_retrieve'
+      '%new_function' => 'chado_cv_retrieve'
     )
   );
 
-  $cv = cv_retrieve(array('name' => $cv_name));
+  $cv = chado_cv_retrieve(array('name' => $cv_name));
   if (isset($cv->cv_id)) {
     return $cv->cv_id;
   }
@@ -123,9 +123,9 @@ function tripal_cv_get_cv_options() {
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by cvterm_retrieve().
+ * This function has been replaced by chado_cvterm_retrieve().
  *
- * @see cvterm_retrieve().
+ * @see chado_cvterm_retrieve().
  */
 function tripal_cv_get_cvterm_by_id($cvterm_id) {
 
@@ -135,19 +135,19 @@ function tripal_cv_get_cvterm_by_id($cvterm_id) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_cv_get_cvterm_by_id',
-      '%new_function' => 'cvterm_retrieve'
+      '%new_function' => 'chado_cvterm_retrieve'
     )
   );
 
-  return cvterm_retrieve(array('cvterm_id' => $cvterm_id));
+  return chado_cvterm_retrieve(array('cvterm_id' => $cvterm_id));
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by cvterm_retrieve().
+ * This function has been replaced by chado_cvterm_retrieve().
  *
- * @see cvterm_retrieve().
+ * @see chado_cvterm_retrieve().
  */
 function tripal_cv_get_cvterm_by_name($name, $cv_id = NULL, $cv_name = 'tripal') {
 
@@ -157,7 +157,7 @@ function tripal_cv_get_cvterm_by_name($name, $cv_id = NULL, $cv_name = 'tripal')
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_cv_get_cvterm_by_name',
-      '%new_function' => 'cvterm_retrieve'
+      '%new_function' => 'chado_cvterm_retrieve'
     )
   );
 
@@ -171,15 +171,15 @@ function tripal_cv_get_cvterm_by_name($name, $cv_id = NULL, $cv_name = 'tripal')
     );
   }
 
-  return cvterm_retrieve($identifiers);
+  return chado_cvterm_retrieve($identifiers);
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by cvterm_retrieve().
+ * This function has been replaced by chado_cvterm_retrieve().
  *
- * @see cvterm_retrieve().
+ * @see chado_cvterm_retrieve().
  */
 function tripal_cv_get_cvterm_by_synonym($synonym, $cv_id = NULL, $cv_name = 'tripal') {
 
@@ -189,11 +189,11 @@ function tripal_cv_get_cvterm_by_synonym($synonym, $cv_id = NULL, $cv_name = 'tr
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_cv_get_cvterm_by_synonym',
-      '%new_function' => 'cvterm_retrieve'
+      '%new_function' => 'chado_cvterm_retrieve'
     )
   );
 
-  return cvterm_retrieve(array(
+  return chado_cvterm_retrieve(array(
     'synonym' => array(
       'name' => $synonym,
       'cv_id' => $cv_id,
