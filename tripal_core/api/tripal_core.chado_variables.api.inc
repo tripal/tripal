@@ -160,7 +160,7 @@ function chado_generate_var($table, $values, $base_options = array()) {
   if (array_key_exists('return_array', $base_options)) {
     $return_array = 1;
   }
-  $include_fk = 0;
+  $include_fk = FALSE;
   if (array_key_exists('include_fk', $base_options)) {
     $include_fk = $base_options['include_fk'];
   }
@@ -185,6 +185,7 @@ function chado_generate_var($table, $values, $base_options = array()) {
 
   // Expandable fields without value needed for criteria--------------------------------------------
   $all->expandable_fields = array();
+  $all->expandable_foreign_keys = array();
   if (array_key_exists('referring_tables', $table_desc) and $table_desc['referring_tables']) {
     $all->expandable_tables = $table_desc['referring_tables'];
   }
@@ -253,6 +254,7 @@ function chado_generate_var($table, $values, $base_options = array()) {
     foreach ($results as $key => $object) {
       // Add empty expandable_x arrays
       $object->expandable_fields = $all->expandable_fields;
+      $object->expandable_foreign_keys = $all->expandable_foreign_keys;
       $object->expandable_tables = $all->expandable_tables;
       $object->expandable_nodes = $all->expandable_nodes;
       // add curent table
@@ -300,17 +302,20 @@ function chado_generate_var($table, $values, $base_options = array()) {
               continue;
             }
 
-            if ($include_fk) {
+            if (is_array($include_fk)) {
               // don't recurse if the callee has supplied an $fk_include list and this
               // FK table is not in the list.
               if (is_array($include_fk) and !array_key_exists($foreign_key, $include_fk)) {
-                continue;
-              }
-              // if we have the option but it is not an array then we don't recurse any furutehr
-              if (!is_array($include_fk)) {
+                $object->expandable_foreign_keys[] = $table . '.' . $foreign_key . ' => ' . $foreign_table;
                 continue;
               }
             }
+            // if we have the option but it is not an array then we don't recurse any furutehr
+            if ($include_fk === TRUE) {
+              $object->expandable_foreign_keys[] = $table . '.' . $foreign_key . ' => ' . $foreign_table;
+              continue;
+            }
+
             // get the record from the foreign table
             $foreign_values = array($primary_key => $object->{$foreign_key});
             $options = array();
@@ -330,6 +335,14 @@ function chado_generate_var($table, $values, $base_options = array()) {
                 $object->{$foreign_key}->expandable_fields
               );
               unset($object->{$foreign_key}->expandable_fields);
+            }
+            if (property_exists($object->{$foreign_key}, 'expandable_foreign_keys') and
+                is_array($object->{$foreign_key}->expandable_foreign_keys)) {
+              $object->expandable_foreign_keys = array_merge(
+                $object->expandable_foreign_keys,
+                $object->{$foreign_key}->expandable_foreign_keys
+              );
+              unset($object->{$foreign_key}->expandable_foreign_keys);
             }
             if (property_exists($object->{$foreign_key}, 'expandable_tables') and
                 is_array($object->{$foreign_key}->expandable_tables)) {
@@ -483,20 +496,33 @@ function chado_expand_var($object, $type, $to_expand, $table_options = array()) 
         $tablename = $matches[1];
         $fieldname = $matches[2];
         $table_desc = chado_get_schema($tablename);
-        $values = array();
-        foreach ($table_desc['primary key'] as $key) {
-          if(property_exists($object, $key)) {
-            $values[$key] = $object->{$key};
-          }
-        }
+
+        // BASE CASE: the field is from the current table
         if ($base_table == $tablename) {
-          //get the field
+          // Use the table description to fully describe the current object
+          // in a $values array to be used to select the field from chado
+          $values = array();
+          foreach ($table_desc['primary key'] as $key) {
+            if(property_exists($object, $key)) {
+              $values[$key] = $object->{$key};
+            }
+          }
+
+          // Retrieve the field from Chado
           $results = chado_select_record($tablename, array($fieldname), $values);
-          $object->{$fieldname} = $results[0]->{$fieldname};
-          $object->expanded = $to_expand;
+
+          // Check that the field was retrieved correctly
+          if (isset($results[0])) {
+            $object->{$fieldname} = $results[0]->{$fieldname};
+            $object->expanded = $to_expand;
+          }
+          // If it wasn't retrieved correctly, we need to warn the administrator
+
         }
+        // RECURSIVE CASE: the field is in a nested object
         else {
-          //We need to recurse -the field is in a nested object
+          // We want to look at each field and if it's an object then we want to
+          // attempt to expand the field in it via recursion
           foreach ((array) $object as $field_name => $field_value) {
             if (is_object($field_value)) {
               $object->{$field_name} = chado_expand_var(
@@ -508,22 +534,110 @@ function chado_expand_var($object, $type, $to_expand, $table_options = array()) 
           } //end of for each field in the current object
         }
       }
+      // Otherwise we weren't able to extract the parts of the field to expand
+      // Thus we will warn the administrator
       else {
         tripal_report_error('tripal_core', TRIPAL_ERROR,
           'chado_expand_var: Field (%field) not in the right format. " .
-          "It should be <tablename>.<fieldname>');
+          "It should be <tablename>.<fieldname>', array('%field' => $to_expand));
       }
       break;
+
+    case "foreign_key": //--------------------------------------------------------------------------
+      if (preg_match('/(\w+)\.(\w+) => (\w+)/', $to_expand, $matches)) {
+        $table_name = $matches[1];
+        $field_name = $matches[2];
+        $foreign_table = $matches[3];
+        $table_desc = chado_get_schema($table_name);
+
+        // BASE CASE: The foreign key is from the current table
+        if ($base_table == $table_name) {
+
+          // Get the value of the foreign key from the object
+          $field_value = $object->{$field_name};
+
+          // Get the name of the field in the foreign table using the table description
+          // For example, with the feature.type_id => cvterm.cvterm_id we need cvterm_id
+          $foreign_field_name = FALSE;
+          foreach ($table_desc['foreign keys'][$foreign_table]['columns'] as $left => $right) {
+            if ($right == $field_name) {
+              $foreign_field_name = $left;
+            }
+          }
+
+          // Check that we were able to determine the field name in the foreign table
+          if ($foreign_field_name) {
+
+            // Generate a chado variable of the foreign key
+            // For example, if the foreign key to expand is feature.type_id
+            // then we want to generate a chado cvterm variable that matches the feature.type_id
+            $foreign_var = chado_generate_var(
+              $foreign_table, // thus in the example above, generate a cvterm var
+              array($foreign_field_name => $field_value), // where the cvterm.cvterm_id = feature.type_id value
+              $table_options //pass in the same options given to this function
+            );
+
+            // Check that the foreign object was returned
+            if ($foreign_var) {
+
+              // It was so now we can add this chado variable to our current object
+              // in place of the key value
+              $object->{$field_name} = $foreign_var;
+              $object->expanded = $to_expand;
+
+            }
+            // Otherwise we weren't able to expand the foreign key
+            else {
+              tripal_report_error('tripal_core', TRIPAL_ERROR,
+                'chado_expand_var: unable to retrieve the object desribed by the foreign key
+                while trying to expand %fk.',
+                array('%fk' => $to_expand));
+            }
+          }
+          // Else we were unable to determine the field name in the foreign table
+          else {
+            tripal_report_error('tripal_core', TRIPAL_ERROR,
+              'chado_expand_var: unable to determine the field name in the table the foreign
+              key points to while trying to expand %fk.',
+              array('%fk' => $to_expand));
+          }
+
+        }
+        // RECURSIVE CASE: Check any nested objects
+        else {
+
+          foreach ((array) $object as $field_name => $field_value) {
+            if (is_object($field_value)) {
+              $object->{$field_name} = chado_expand_var(
+              $field_value,
+              'foreign_key',
+              $to_expand
+              );
+            }
+          } //end of for each field in the current object
+
+        }
+      }
+      // Otherwise we weren't able to extract the parts of the foreign key to expand
+      // Thus we will warn the administrator
+      else {
+        tripal_report_error('tripal_core', TRIPAL_ERROR,
+          'chado_expand_var: foreign_key (%fk) not in the right format. " .
+          "It should be <tablename>.<fieldname>', array('%fk' => $to_expand));
+      }
+      break;
+
     case "table": //--------------------------------------------------------------------------------
       $foreign_table = $to_expand;
 
-      // don't expand the table it already is expanded
+      // RECURSIVE BASE CASE: don't expand the table it already is expanded
       if (array_key_exists($foreign_table, $object)) {
         return $object;
       }
       $foreign_table_desc = chado_get_schema($foreign_table);
 
-      // If it's connected to the base table via a FK constraint
+      // BASE CASE: If it's connected to the base table via a FK constraint
+      // then we have all the information needed to expand it now
       if (array_key_exists($base_table, $foreign_table_desc['foreign keys'])) {
         foreach ($foreign_table_desc['foreign keys'][$base_table]['columns'] as $left => $right) {
           // if the FK value in the base table is not there then we can't expand it, so just skip it.
@@ -573,11 +687,16 @@ function chado_expand_var($object, $type, $to_expand, $table_options = array()) 
           }
         }
       }
-      // if the foreign table is not connected to the base table through a FK constraint
+      // RECURSIVE CASE: if the table is not connected directly to the current base table
+      // through a foreign key relationship, then maybe it has a relationship to
+      // one of the nested objects.
       else {
+
         // We need to recurse -the table has a relationship to one of the nested objects
+        // We assume it's a nested object if the value of the field is an object
         $did_expansion = 0;
         foreach ((array) $object as $field_name => $field_value) {
+
           // if we have a nested object ->expand the table in it
           // check to see if the $field_name is a valid chado table, we don't need
           // to call chado_expand_var on fields that aren't tables
@@ -587,6 +706,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = array()) 
             $object->{$field_name} = chado_expand_var($field_value, 'table', $foreign_table);
           }
         }
+
         // if we did not expand this table we should return a message that the foreign table
         // could not be expanded
         if (!$did_expansion) {
@@ -597,11 +717,19 @@ function chado_expand_var($object, $type, $to_expand, $table_options = array()) 
         }
       }
       break;
+
     case "node": //---------------------------------------------------------------------------------
-      //if the node to be expanded is for our base table, then just expand it
+
+      // BASE CASE: if the node to be expanded is for our base table, then just expand it
       if ($object->tablename == $to_expand) {
+
+        // Load the node based on the current objects nid (node primary key)
         $node = node_load($object->nid);
+
+        // If we have successfully loaded the node...
         if ($node) {
+
+          // Move expandable arrays from the object into the node
           $object->expanded = $to_expand;
           $node->expandable_fields = $object->expandable_fields;
           unset($object->expandable_fields);
@@ -609,16 +737,29 @@ function chado_expand_var($object, $type, $to_expand, $table_options = array()) 
           unset($object->expandable_tables);
           $node->expandable_nodes = $object->expandable_nodes;
           unset($object->expandable_nodes);
+
+          // The node becomes the base object with the obejct added to it.
+          // For example, we may start with a feature object with a name, uniquename , type, etc.
+          // After expanding we will return the node and at $node->feature you will find the original object
           $node->{$base_table} = $object;
           $object = $node;
+
         }
+        // Else we were unable to load the node
         else {
+
+          // Warn the administrator
           tripal_report_error('tripal_core', TRIPAL_ERROR, 'chado_expand_var: No node matches the nid (%nid) supplied.',
             array('%nid' => $object->nid));
         } //end of if node
+
       }
+      // RECURSIVE CASE: check to see if the node to be expanded associates with a
+      // chado table within one of the nested objects.
       else {
-        //We need to recurse -the node to expand is one of the nested objects
+
+        // We need to recurse -the node to expand is one of the nested objects
+        // We assume it's a nested object if the field value is an object
         foreach ((array) $object as $field_name => $field_value) {
           if (is_object($field_value)) {
             $object->{$field_name} = chado_expand_var(
@@ -630,41 +771,144 @@ function chado_expand_var($object, $type, $to_expand, $table_options = array()) 
         } //end of for each field in the current object
       }
       break;
+
+    // The $type to be expanded is not yet supported
     default:
       tripal_report_error('tripal_core', TRIPAL_ERROR, 'chado_expand_var: Unrecognized type (%type). Should be one of "field", "table", "node".',
         array('%type' => $type));
       return FALSE;
   }
 
-  // move extended array downwards
+  // Move expandable arrays downwards -------------------------------
+  // If the type was either table or foreign key then a new chado variable was generated
+  // this variable will have it's own expandable array's which need to be moved down
+  // and merged with the base objects expandable arrays
+
+  // Thus, check all nested objects for expandable arrays
+  // and if they have them, move them downwards
+  foreach ( (array)$object as $field_name => $field_value) {
+    if (is_object($field_value)) {
+
+      // The current nested object has expandable arrays
+      if (isset($field_value->expandable_fields)) {
+
+        // Move expandable fields downwards
+        if (isset($field_value->expandable_fields) and is_array($field_value->expandable_fields)) {
+
+          // If the current object has it's own expandable fields then merge them
+          if (isset($object->expandable_fields)) {
+            $object->expandable_fields = array_merge(
+              $object->expandable_fields,
+              $object->{$field_name}->expandable_fields
+            );
+            unset($object->{$field_name}->expandable_fields);
+
+          }
+          // Otherwise, just move the expandable fields downwards
+          else {
+            $object->expandable_fields = $object->{$field_name}->expandable_fields;
+            unset($object->{$field_name}->expandable_fields);
+          }
+
+        }
+
+        // Move expandable foreign keys downwards
+        if (isset($field_value->expandable_foreign_keys) and is_array($field_value->expandable_foreign_keys)) {
+
+          // If the current object has it's own expandable foreign keys then merge them
+          if (isset($object->expandable_foreign_keys)) {
+            $object->expandable_foreign_keys = array_merge(
+              $object->expandable_foreign_keys,
+              $object->{$field_name}->expandable_foreign_keys
+            );
+            unset($object->{$field_name}->expandable_foreign_keys);
+
+          }
+          // Otherwise, just move the expandable foreign keys downwards
+          else {
+            $object->expandable_foreign_keys = $object->{$field_name}->expandable_foreign_keys;
+            unset($object->{$field_name}->expandable_foreign_keys);
+          }
+        }
+
+        // Move expandable tables downwards
+        if (isset($field_value->expandable_tables) and is_array($field_value->expandable_tables)) {
+
+          // If the current object has it's own expandable tables then merge them
+          if (isset($object->expandable_tables)) {
+            $object->expandable_tables = array_merge(
+              $object->expandable_tables,
+              $object->{$field_name}->expandable_tables
+            );
+            unset($object->{$field_name}->expandable_tables);
+
+          }
+          // Otherwise, just move the expandable tables downwards
+          else {
+            $object->expandable_tables = $object->{$field_name}->expandable_tables;
+            unset($object->{$field_name}->expandable_tables);
+          }
+        }
+
+        // Move expandable nodes downwards
+        if (isset($field_value->expandable_nodes) and is_array($field_value->expandable_nodes)) {
+
+          // If the current object has it's own expandable tables then merge them
+          if (isset($object->expandable_nodes)) {
+            $object->expandable_nodes = array_merge(
+              $object->expandable_nodes,
+              $object->{$field_name}->expandable_nodes
+            );
+            unset($object->{$field_name}->expandable_nodes);
+
+          }
+          // Otherwise, just move the expandable tables downwards
+          else {
+            $object->expandable_nodes = $object->{$field_name}->expandable_nodes;
+            unset($object->{$field_name}->expandable_nodes);
+          }
+        }
+      }
+    }
+  }
+
+  // Move extended array downwards ----------------------------------
+  // This tells us what we have expanded (ie: that we succeeded)
+  // and is needed to remove the entry from the expandable array
+
+  // If there is no expanded field in the current object then check any of the nested objects
+  // and move it down
   if (!property_exists($object, 'expanded')) {
-    //if there's no extended field then go hunting for it
+
+    // It's a nested object if the value is an object
     foreach ( (array)$object as $field_name => $field_value) {
       if (is_object($field_value)) {
+
+        // Check if the current nested object has an expanded array
         if (isset($field_value->expanded)) {
+
+          // If so, then move it downwards
           $object->expanded = $field_value->expanded;
           unset($field_value->expanded);
         }
       }
     }
   }
-  //try again becasue now we might have moved it down
+
+  // Check again if there is an expanded field in the current object
+  // We check again because it might have been moved downwards above
   if (property_exists($object, 'expanded')) {
+
+    // If so, then remove the expanded identifier from the correct expandable array
     $expandable_name = 'expandable_' . $type . 's';
     if (property_exists($object, $expandable_name) and $object->{$expandable_name}) {
       $key_to_remove = array_search($object->expanded, $object->{$expandable_name});
       unset($object->{$expandable_name}[$key_to_remove]);
       unset($object->expanded);
+
     }
-    else {
-      // if there is an expandable array then we've reached the base object
-      // if we get here and don't have anything expanded then something went wrong
-      //      tripal_report_error('tripal_core', TRIPAL_ERROR,
-      //        'chado_expand_var: Unable to expand the %type %to_expand',
-      //        array('%type'=>$type, '%to_expand'=>$to_expand),
-      //      );
-    } //end of it we've reached the base object
   }
 
+  // Finally, Return the object!
   return $object;
 }
