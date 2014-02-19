@@ -456,7 +456,7 @@ function chado_does_pub_exist($pub_details) {
         'name' => 'tripal_pub',
       ),
     );
-    $pub_type = chado_get_cvterm($identifiers);
+    $pub_type = cvterm_retrieve($identifiers);
   }
   else {
     tripal_report_error('tripal_pub', TRIPAL_ERROR, "chado_does_pub_exist(): The Publication Type is a " .

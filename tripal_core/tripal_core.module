@@ -453,7 +453,7 @@ function tripal_core_theme($existing, $type, $theme, $path) {
     ),
     // Relationships Nore Form
     'chado_node_relationships_form_table' => array(
-      'function' => 'theme_chado_add_node_form_relationships_tables',
+      'function' => 'theme_chado_add_node_form_relationships_table',
       'render element' => 'element',
     ),
 
@@ -565,17 +565,17 @@ function tripal_core_node_view_alter(&$build) {
   // make some changes to each block of content so that we can associate
   // a table of contents and add administrator and curator messages
   if (preg_match('/chado_/', $node->type)) {
-    
+
     // iterate through all the elements of the $build array and for those
     // that are wanting to provide content for this node
     $markup = array();
     foreach ($build as $key => $value) {
-      
+
       // skip the body element as the Tripal node types do not use it
       if ($key == 'body') {
         continue;
       }
-      
+
       // examine elements without a '#' prefix as these should be adding
       // contents to the page. Skip the table of contents and links as those
       // will be placed elsewhere
@@ -650,7 +650,7 @@ function tripal_core_node_view_alter(&$build) {
             site's default theme, edit then " .
             l('clear the Drupal cache', 'admin/config/development/performance', array('attributes' => array('target' => '_blank'))) . ".
             Currently, the content above is provided by this template: <br><br>$path",
-            TRIPAL_INFO, 
+            TRIPAL_INFO,
             array('return_html' => 1)
           );
         }

@@ -13,7 +13,7 @@
  */
 
 /**
- * Retrieves a chado stock object
+ * Retrieves a chado stock variable
  *
  * @param $identifier
  *   An array with the key stating what the identifier is. Supported keys (only one of the
@@ -39,14 +39,20 @@
  *
  * @ingroup tripal_stock_api
  */
-function chado_get_stock($identifiers, $options = array()) {
+function stock_retrieve($identifiers, $options = array()) {
+
+  // Set Defaults
+  if (!isset($options['include_fk'])) {
+    // Tells chado_generate_var to only expand 1 level
+    $options['include_fk'] = array('type_id' => TRUE, 'dbxref_id' => TRUE);
+  }
 
   // Error Checking of parameters
   if (!is_array($identifiers)) {
     tripal_report_error(
       'tripal_stock_api',
       TRIPAL_ERROR,
-      "chado_get_stock: The identifier passed in is expected to be an array with the key
+      "stock_retrieve: The identifier passed in is expected to be an array with the key
         matching a column name in the stock table (ie: stock_id or name). You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
@@ -57,7 +63,7 @@ function chado_get_stock($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_stock_api',
       TRIPAL_ERROR,
-      "chado_get_stock: You did not pass in anything to identify the stock you want. The identifier
+      "stock_retrieve: You did not pass in anything to identify the stock you want. The identifier
         is expected to be an array with the key matching a column name in the stock table
         (ie: stock_id or name). You passed in %identifier.",
       array(
@@ -89,7 +95,7 @@ function chado_get_stock($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_stock_api',
       TRIPAL_ERROR,
-      "chado_get_stock: The identifiers you passed in were not unique. You passed in %identifier.",
+      "stock_retrieve: The identifiers you passed in were not unique. You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
       )
@@ -101,7 +107,7 @@ function chado_get_stock($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_stock_api',
       TRIPAL_ERROR,
-      "chado_get_stock: chado_generate_var() failed to return a stock based on the identifiers
+      "stock_retrieve: chado_generate_var() failed to return a stock based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
       array(
@@ -117,7 +123,7 @@ function chado_get_stock($identifiers, $options = array()) {
 }
 
 /**
- * Retrieves a chado stock object
+ * Retrieves a chado stock variable
  *
  * @param $identifier
  *   An array with the key stating what the identifier is. Supported keys include any
@@ -133,14 +139,20 @@ function chado_get_stock($identifiers, $options = array()) {
  *
  * @ingroup tripal_stock_api
  */
-function chado_get_multiple_stocks($identifiers, $options = array()) {
+function stock_retrieve_multiple($identifiers, $options = array()) {
+
+  // Set Defaults
+  if (!isset($options['include_fk'])) {
+    // Tells chado_generate_var to only expand 1 level
+    $options['include_fk'] = array('type_id' => TRUE, 'dbxref_id' => TRUE);
+  }
 
   // Error Checking of parameters
   if (!is_array($identifiers)) {
     tripal_report_error(
       'tripal_stock_api',
       TRIPAL_ERROR,
-      "chado_get_stock: The identifier passed in is expected to be an array with the key
+      "stock_retrieve: The identifier passed in is expected to be an array with the key
         matching a column name in the stock table (ie: stock_id or name). You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
@@ -151,7 +163,7 @@ function chado_get_multiple_stocks($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_stock_api',
       TRIPAL_ERROR,
-      "chado_get_stock: You did not pass in anything to identify the stock you want. The identifier
+      "stock_retrieve: You did not pass in anything to identify the stock you want. The identifier
         is expected to be an array with the key matching a column name in the stock table
         (ie: stock_id or name). You passed in %identifier.",
       array(
@@ -183,7 +195,7 @@ function chado_get_multiple_stocks($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_stock_api',
       TRIPAL_ERROR,
-      "chado_get_stock: chado_generate_var() failed to return a stock based on the identifiers
+      "stock_retrieve: chado_generate_var() failed to return a stock based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
       array(

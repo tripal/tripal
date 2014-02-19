@@ -7,9 +7,9 @@
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_get_cv().
+ * This function has been replaced by cv_retrieve().
  *
- * @see chado_get_cv().
+ * @see cv_retrieve().
  */
 function tripal_cv_get_cv($select_values) {
 
@@ -19,19 +19,19 @@ function tripal_cv_get_cv($select_values) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_cv_get_cv',
-      '%new_function' => 'chado_get_cv'
+      '%new_function' => 'cv_retrieve'
     )
   );
 
-  return chado_get_cv($select_values);
+  return cv_retrieve($select_values);
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_get_cv().
+ * This function has been replaced by cv_retrieve().
  *
- * @see chado_get_cv().
+ * @see cv_retrieve().
  */
 function tripal_cv_get_cv_by_name($name) {
 
@@ -41,19 +41,19 @@ function tripal_cv_get_cv_by_name($name) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_cv_get_cv_by_name',
-      '%new_function' => 'chado_get_cv'
+      '%new_function' => 'cv_retrieve'
     )
   );
 
-  return chado_get_cv(array('name' => $name));
+  return cv_retrieve(array('name' => $name));
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_get_cv().
+ * This function has been replaced by cv_retrieve().
  *
- * @see chado_get_cv().
+ * @see cv_retrieve().
  */
 function tripal_cv_get_cv_by_id($cv_id) {
 
@@ -63,19 +63,19 @@ function tripal_cv_get_cv_by_id($cv_id) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_cv_get_cv_by_id',
-      '%new_function' => 'chado_get_cv'
+      '%new_function' => 'cv_retrieve'
     )
   );
 
-  return chado_get_cv(array('cv_id' => $id));
+  return cv_retrieve(array('cv_id' => $id));
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_get_cv().
+ * This function has been replaced by cv_retrieve().
  *
- * @see chado_get_cv().
+ * @see cv_retrieve().
  */
 function tripal_cv_get_cv_id($cv_name) {
 
@@ -85,11 +85,11 @@ function tripal_cv_get_cv_id($cv_name) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_cv_get_cv_id',
-      '%new_function' => 'chado_get_cv'
+      '%new_function' => 'cv_retrieve'
     )
   );
 
-  $cv = chado_get_cv(array('name' => $cv_name));
+  $cv = cv_retrieve(array('name' => $cv_name));
   if (isset($cv->cv_id)) {
     return $cv->cv_id;
   }
@@ -123,9 +123,9 @@ function tripal_cv_get_cv_options() {
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_get_cvterm().
+ * This function has been replaced by cvterm_retrieve().
  *
- * @see chado_get_cvterm().
+ * @see cvterm_retrieve().
  */
 function tripal_cv_get_cvterm_by_id($cvterm_id) {
 
@@ -135,19 +135,19 @@ function tripal_cv_get_cvterm_by_id($cvterm_id) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_cv_get_cvterm_by_id',
-      '%new_function' => 'chado_get_cvterm'
+      '%new_function' => 'cvterm_retrieve'
     )
   );
 
-  return chado_get_cvterm(array('cvterm_id' => $cvterm_id));
+  return cvterm_retrieve(array('cvterm_id' => $cvterm_id));
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_get_cvterm().
+ * This function has been replaced by cvterm_retrieve().
  *
- * @see chado_get_cvterm().
+ * @see cvterm_retrieve().
  */
 function tripal_cv_get_cvterm_by_name($name, $cv_id = NULL, $cv_name = 'tripal') {
 
@@ -157,7 +157,7 @@ function tripal_cv_get_cvterm_by_name($name, $cv_id = NULL, $cv_name = 'tripal')
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_cv_get_cvterm_by_name',
-      '%new_function' => 'chado_get_cvterm'
+      '%new_function' => 'cvterm_retrieve'
     )
   );
 
@@ -171,27 +171,29 @@ function tripal_cv_get_cvterm_by_name($name, $cv_id = NULL, $cv_name = 'tripal')
     );
   }
 
-  return chado_get_cvterm($identifiers);
+  return cvterm_retrieve($identifiers);
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_get_cvterm().
+ * This function has been replaced by cvterm_retrieve().
  *
- * @see chado_get_cvterm().
+ * @see cvterm_retrieve().
  */
 function tripal_cv_get_cvterm_by_synonym($synonym, $cv_id = NULL, $cv_name = 'tripal') {
 
-  tripal_report_error('tripal_deprecated', TRIPAL_NOTICE,
+  tripal_report_error(
+    'tripal_deprecated',
+    TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
-      '%old_function'=>'tripal_cv_get_cvterm_by_synonym', 
-      '%new_function' => 'chado_get_cvterm'
+      '%old_function'=>'tripal_cv_get_cvterm_by_synonym',
+      '%new_function' => 'cvterm_retrieve'
     )
   );
 
-  return chado_get_cvterm(array(
+  return cvterm_retrieve(array(
     'synonym' => array(
       'name' => $synonym,
       'cv_id' => $cv_id,
@@ -247,9 +249,9 @@ function tripal_cv_update_cvtermpath($cvid, $job_id = NULL) {
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_insert_cv().
+ * This function has been replaced by cv_insert().
  *
- * @see chado_insert_cv().
+ * @see cv_insert().
  */
 function tripal_cv_add_cv($name, $definition) {
 
@@ -259,19 +261,19 @@ function tripal_cv_add_cv($name, $definition) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_cv_add_cv',
-      '%new_function' => 'chado_insert_cv'
+      '%new_function' => 'cv_insert'
     )
   );
 
-  return chado_insert_cv($name, $definition);
+  return cv_insert($name, $definition);
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_insert_cvterm().
+ * This function has been replaced by cvterm_insert().
  *
- * @see chado_insert_cvterm().
+ * @see cvterm_insert().
  */
 function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 0, $update = 1, $dbname = 'internal') {
 
@@ -281,7 +283,7 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_cv_add_cvterm',
-      '%new_function' => 'chado_insert_cvterm'
+      '%new_function' => 'cvterm_insert'
     )
   );
 
@@ -294,7 +296,7 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
     unset($term['def']);
   }
 
-  return chado_insert_cvterm(
+  return cvterm_insert(
     $term,
     array(
       'update_existing' => $update

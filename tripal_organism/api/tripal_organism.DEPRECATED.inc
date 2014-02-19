@@ -7,9 +7,9 @@
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_get_organism().
+ * This function has been replaced by organism_retrieve().
  *
- * @see chado_get_organism().
+ * @see organism_retrieve().
  */
 function tripal_organism_get_organism_by_nid($nid) {
 
@@ -19,19 +19,19 @@ function tripal_organism_get_organism_by_nid($nid) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_organism_get_organism_by_nid',
-      '%new_function' => 'chado_get_organism'
+      '%new_function' => 'organism_retrieve'
     )
   );
 
-  return chado_get_organism(array('nid' => $nid));
+  return organism_retrieve(array('nid' => $nid));
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_get_organism().
+ * This function has been replaced by organism_retrieve().
  *
- * @see chado_get_organism().
+ * @see organism_retrieve().
  */
 function tripal_organism_get_organism_by_organism_id($organism_id) {
 
@@ -41,11 +41,11 @@ function tripal_organism_get_organism_by_organism_id($organism_id) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_organism_get_organism_by_organism_id',
-      '%new_function' => 'chado_get_organism'
+      '%new_function' => 'organism_retrieve'
     )
   );
 
-  return chado_get_organism(array('organism_id' => $organism_id));
+  return organism_retrieve(array('organism_id' => $organism_id));
 }
 
 /**

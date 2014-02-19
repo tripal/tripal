@@ -969,7 +969,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
         'name' => 'tripal_pub'
       ),
     );
-    $pub_type = chado_get_cvterm($identifiers);
+    $pub_type = cvterm_retrieve($identifiers);
   }
   else {
     tripal_report_error('tripal_pub', TRIPAL_ERROR, 
@@ -1063,7 +1063,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
         'name' => 'tripal_pub'
       ),
     );
-    $cvterm = chado_get_cvterm($identifiers);
+    $cvterm = cvterm_retrieve($identifiers);
     
     // if we could not find the cvterm by name then try by synonym
     //$cvterm = tripal_cv_get_cvterm_by_name($key, NULL, 'tripal_pub');
@@ -1074,7 +1074,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
           'cv_name' => 'tripal_pub'
         )
       );
-      $cvterm = chado_get_cvterm($identifiers);
+      $cvterm = cvterm_retrieve($identifiers);
     }
     if (!$cvterm) {
       tripal_report_error('tripal_pub', TRIPAL_ERROR, "Cannot find term: '%prop'. Skipping.", array('%prop' => $key));

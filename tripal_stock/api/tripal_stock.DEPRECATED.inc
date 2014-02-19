@@ -7,9 +7,9 @@
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_get_stock().
+ * This function has been replaced by stock_retrieve().
  *
- * @see chado_get_stock().
+ * @see stock_retrieve().
  */
 function tripal_stock_get_stock_by_nid($nid) {
 
@@ -19,19 +19,19 @@ function tripal_stock_get_stock_by_nid($nid) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_stock_get_stock_by_nid',
-      '%new_function' => 'chado_get_stock'
+      '%new_function' => 'stock_retrieve'
     )
   );
 
-  return chado_get_stock(array('nid' => $nid));
+  return stock_retrieve(array('nid' => $nid));
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_get_stock().
+ * This function has been replaced by stock_retrieve().
  *
- * @see chado_get_stock().
+ * @see stock_retrieve().
  */
 function tripal_stock_get_stock_by_stock_id($stock_id) {
 
@@ -41,19 +41,19 @@ function tripal_stock_get_stock_by_stock_id($stock_id) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_stock_get_stock_by_stock_id',
-      '%new_function' => 'chado_get_stock'
+      '%new_function' => 'stock_retrieve'
     )
   );
 
-  return chado_get_stock(array('stock_id' => $stock_id));
+  return stock_retrieve(array('stock_id' => $stock_id));
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_get_multiple_stocks().
+ * This function has been replaced by stock_retrieve_multiple().
  *
- * @see chado_get_multiple_stocks().
+ * @see stock_retrieve_multiple().
  */
 function tripal_stock_get_all_stocks() {
 
@@ -82,9 +82,9 @@ function tripal_stock_get_all_stocks() {
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_get_multiple_stocks().
+ * This function has been replaced by stock_retrieve_multiple().
  *
- * @see chado_get_multiple_stocks().
+ * @see stock_retrieve_multiple().
  */
 function tripal_stock_get_stocks($values) {
 
@@ -94,19 +94,19 @@ function tripal_stock_get_stocks($values) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_stock_get_stocks',
-      '%new_function' => 'chado_get_multiple_stocks'
+      '%new_function' => 'stock_retrieve_multiple'
     )
   );
 
-  return chado_get_multiple_stocks($values);
+  return stock_retrieve_multiple($values);
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_get_stock().
+ * This function has been replaced by stock_retrieve().
  *
- * @see chado_get_stock().
+ * @see stock_retrieve().
  */
 function tripal_stock_get_stocks_by_stockprop($stockprop_values, $stock_values) {
 
@@ -116,18 +116,18 @@ function tripal_stock_get_stocks_by_stockprop($stockprop_values, $stock_values) 
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_stock_get_stocks_by_stockprop',
-      '%new_function' => 'chado_get_stock'
+      '%new_function' => 'stock_retrieve'
     )
   );
 
   $stock_values['property'] = $stockprop_values;
-  return chado_get_multiple_stocks($stock_values);
+  return stock_retrieve_multiple($stock_values);
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_get_stock().
+ * This function has been replaced by stock_retrieve().
  *
  * Return all stocks with a given name identifier
  *  which might match stock.name, stock.uniquename, dbxref.accession,
@@ -141,7 +141,7 @@ function tripal_stock_get_stocks_by_stockprop($stockprop_values, $stock_values) 
  * @return
  *   An array of stock node objects
  *
- * @see chado_get_stock().
+ * @see stock_retrieve().
  */
 function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
 
@@ -151,7 +151,7 @@ function tripal_stock_get_stock_by_name_identifier($name, $organism_id) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_stock_get_stock_by_name_identifier',
-      '%new_function' => 'chado_get_stock'
+      '%new_function' => 'stock_retrieve'
     )
   );
 
