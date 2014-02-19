@@ -22,7 +22,7 @@
  */
 
 /**
- * Retrieves a chado controlled vocabulary object
+ * Retrieves a chado controlled vocabulary variable
  *
  * @param $identifier
  *   An array with the key stating what the identifier is. Supported keys (only on of the
@@ -45,6 +45,12 @@
  * @ingroup tripal_cv_api
  */
 function chado_get_cv($identifiers, $options = array()) {
+
+  // Set Defaults
+  if (!isset($options['include_fk'])) {
+    // Tells chado_generate_var not to follow any foreign keys
+    $options['include_fk'] = array();
+  }
 
   // Error Checking of parameters
   if (!is_array($identifiers)) {
@@ -133,16 +139,20 @@ function cv_get_select_options() {
 }
 
 /**
- * Retrieves a chado controlled vocabulary term object
+ * Retrieves a chado controlled vocabulary term variable
  *
  * @param $identifier
  *   An array with the key stating what the identifier is. Supported keys (only on of the
  *   following unique keys is required):
  *    - cvterm_id: the chado cv.cvterm_id primary key
  *    - name: the chado cv.name field (assume unique)
+ *   There are also some specially handled keys. They are:
  *    - synonym: an array with 'name' => the name of the synonym of the cvterm you want
  *        returned; 'cv_id' => the cv_id of the synonym; 'cv_name' => the name of the cv
  *        of the synonym
+ *    - property: An array/object describing the property to select records for. It
+ *      should at least have either a type_name (if unique across cvs) or type_id. Other
+ *      supported keys include: cv_id/cv_name (of the type), value and rank
  * @param $options
  *   An array of options. Supported keys include:
  *     - Any keys supported by chado_generate_var(). See that function definition for
@@ -159,6 +169,12 @@ function cv_get_select_options() {
  * @ingroup tripal_cv_api
  */
 function chado_get_cvterm($identifiers, $options = array()) {
+
+  // Set Defaults
+  if (!isset($options['include_fk'])) {
+    // Tells chado_generate_var to only get the cv
+    $options['include_fk'] = array('cv_id' => TRUE);
+  }
 
   // Error Checking of parameters
   if (!is_array($identifiers)) {
@@ -218,12 +234,23 @@ function chado_get_cvterm($identifiers, $options = array()) {
     $identifiers = array('cvterm_id' => $synonym[0]->cvterm_id);
   }
 
-  // Try to get the cvterm
-  $cvterm = chado_generate_var(
-    'cvterm',
-    $identifiers,
-    $options
-  );
+  // If one of the identifiers is property then use chado_get_record_with_property()
+  if (isset($identifiers['property'])) {
+    $property = $identifiers['property'];
+    unset($identifiers['property']);
+    $cvterm = chado_get_record_with_property('cvterm', $property, $identifiers, $options);
+  }
+
+  // Else we have a simple case and we can just use chado_generate_var to get the cvterm
+  else {
+
+    // Try to get the cvterm
+    $cvterm = chado_generate_var(
+      'cvterm',
+      $identifiers,
+      $options
+    );
+  }
 
   // Ensure the cvterm is singular. If it's an array then it is not singular
   if (is_array($cvterm)) {

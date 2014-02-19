@@ -13,13 +13,17 @@
  */
 
 /**
- * Retrieves a chado organism object
+ * Retrieves a chado organism variable
  *
  * @param $identifier
  *   An array with the key stating what the identifier is. Supported keys (only on of the
  *   following unique keys is required):
  *    - organism_id: the chado organism.organism_id primary key
  *    - genus & species: the chado organism.genus field & organism.species field
+ *   There are also some specially handled keys. They are:
+ *    - property: An array/object describing the property to select records for. It
+ *      should at least have either a type_name (if unique across cvs) or type_id. Other
+ *      supported keys include: cv_id/cv_name (of the type), value and rank
  * @param $options
  *   An array of options. Supported keys include:
  *     - Any keys supported by chado_generate_var(). See that function definition for
@@ -36,6 +40,12 @@
  * @ingroup tripal_organism_api
  */
 function chado_get_organism($identifiers, $options = array()) {
+
+  // Set Defaults
+  if (!isset($options['include_fk'])) {
+    // Tells chado_generate_var not to follow any foreign keys
+    $options['include_fk'] = array();
+  }
 
   // Error Checking of parameters
   if (!is_array($identifiers)) {
@@ -62,12 +72,23 @@ function chado_get_organism($identifiers, $options = array()) {
     );
   }
 
-  // Try to get the organism
-  $organism = chado_generate_var(
-    'organism',
-    $identifiers,
-    $options
-  );
+  // If one of the identifiers is property then use chado_get_record_with_property()
+  if (isset($identifiers['property'])) {
+    $property = $identifiers['property'];
+    unset($identifiers['property']);
+    $organism = chado_get_record_with_property('organism', $property, $identifiers, $options);
+  }
+
+  // Else we have a simple case and we can just use chado_generate_var to get the analysis
+  else {
+
+    // Try to get the organism
+    $organism = chado_generate_var(
+      'organism',
+      $identifiers,
+      $options
+    );
+  }
 
   // Ensure the organism is singular. If it's an array then it is not singular
   if (is_array($organism)) {

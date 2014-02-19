@@ -14,7 +14,7 @@
  */
 
 /**
- * Retrieves a chado db object
+ * Retrieves a chado db variable
  *
  * Example Usage:
  * @code
@@ -55,6 +55,12 @@
  * @ingroup tripal_db_api
  */
 function chado_get_db($identifiers, $options = array()) {
+
+  // Set Defaults
+  if (!isset($options['include_fk'])) {
+    // Tells chado_generate_var not to follow any foreign keys
+    $options['include_fk'] = array();
+  }
 
   // Error Checking of parameters
   if (!is_array($identifiers)) {
@@ -143,7 +149,7 @@ function db_get_select_options() {
 }
 
 /**
- * Retrieves a chado database reference object
+ * Retrieves a chado database reference variable
  *
  * Example Usage:
  * @code
@@ -171,10 +177,14 @@ function db_get_select_options() {
  * @endcode
  *
  * @param $identifier
- *   An array with the key stating what the identifier is. Supported keys (only on of the
+ *   An array with the key stating what the identifier is. Supported keys (only one of the
  *   following unique keys is required):
  *    - dbxref_id: the chado dbxref.dbxref_id primary key
  *    - accession: the chado dbxref.accession field (assume unique)
+ *   There are also some specially handled keys. They are:
+ *    - property: An array/object describing the property to select records for. It
+ *      should at least have either a type_name (if unique across cvs) or type_id. Other
+ *      supported keys include: cv_id/cv_name (of the type), value and rank
  * @param $options
  *   An array of options. Supported keys include:
  *     - Any keys supported by chado_generate_var(). See that function definition for
@@ -191,6 +201,12 @@ function db_get_select_options() {
  * @ingroup tripal_db_api
  */
 function chado_get_dbxref($identifiers, $options = array()) {
+
+  // Set Defaults
+  if (!isset($options['include_fk'])) {
+    // Tells chado_generate_var not only expand the db
+    $options['include_fk'] = array('db_id' => TRUE);
+  }
 
   // Error Checking of parameters
   if (!is_array($identifiers)) {
@@ -217,12 +233,21 @@ function chado_get_dbxref($identifiers, $options = array()) {
     );
   }
 
-  // Try to get the dbxref
-  $dbxref = chado_generate_var(
-    'dbxref',
-    $identifiers,
-    $options
-  );
+  // If one of the identifiers is property then use chado_get_record_with_property()
+  if (isset($identifiers['property'])) {
+    $property = $identifiers['property'];
+    unset($identifiers['property']);
+    $dbxref = chado_get_record_with_property('dbxref', $property, $identifiers, $options);
+  }
+
+  // Else we have a simple case and we can just use chado_generate_var to get the analysis
+  else {
+    $dbxref = chado_generate_var(
+      'dbxref',
+      $identifiers,
+      $options
+    );
+  }
 
   // Ensure the dbxref is singular. If it's an array then it is not singular
   if (is_array($dbxref)) {

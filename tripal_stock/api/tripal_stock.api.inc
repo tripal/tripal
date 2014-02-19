@@ -13,7 +13,7 @@
  */
 
 /**
- * Retrieves a chado stock object
+ * Retrieves a chado stock variable
  *
  * @param $identifier
  *   An array with the key stating what the identifier is. Supported keys (only one of the
@@ -40,6 +40,12 @@
  * @ingroup tripal_stock_api
  */
 function chado_get_stock($identifiers, $options = array()) {
+
+  // Set Defaults
+  if (!isset($options['include_fk'])) {
+    // Tells chado_generate_var to only expand 1 level
+    $options['include_fk'] = array('type_id' => TRUE, 'dbxref_id' => TRUE);
+  }
 
   // Error Checking of parameters
   if (!is_array($identifiers)) {
@@ -117,7 +123,7 @@ function chado_get_stock($identifiers, $options = array()) {
 }
 
 /**
- * Retrieves a chado stock object
+ * Retrieves a chado stock variable
  *
  * @param $identifier
  *   An array with the key stating what the identifier is. Supported keys include any
@@ -134,6 +140,12 @@ function chado_get_stock($identifiers, $options = array()) {
  * @ingroup tripal_stock_api
  */
 function chado_get_multiple_stocks($identifiers, $options = array()) {
+
+  // Set Defaults
+  if (!isset($options['include_fk'])) {
+    // Tells chado_generate_var to only expand 1 level
+    $options['include_fk'] = array('type_id' => TRUE, 'dbxref_id' => TRUE);
+  }
 
   // Error Checking of parameters
   if (!is_array($identifiers)) {
