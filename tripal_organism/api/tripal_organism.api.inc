@@ -39,7 +39,7 @@
  *
  * @ingroup tripal_organism_api
  */
-function chado_get_organism($identifiers, $options = array()) {
+function organism_retrieve($identifiers, $options = array()) {
 
   // Set Defaults
   if (!isset($options['include_fk'])) {
@@ -52,7 +52,7 @@ function chado_get_organism($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_organism_api',
       TRIPAL_ERROR,
-      "chado_get_organism: The identifier passed in is expected to be an array with the key
+      "organism_retrieve: The identifier passed in is expected to be an array with the key
         matching a column name in the organism table (ie: organism_id or name). You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
@@ -63,7 +63,7 @@ function chado_get_organism($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_organism_api',
       TRIPAL_ERROR,
-      "chado_get_organism: You did not pass in anything to identify the organism you want. The identifier
+      "organism_retrieve: You did not pass in anything to identify the organism you want. The identifier
         is expected to be an array with the key matching a column name in the organism table
         (ie: organism_id or name). You passed in %identifier.",
       array(
@@ -95,7 +95,7 @@ function chado_get_organism($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_organism_api',
       TRIPAL_ERROR,
-      "chado_get_organism: The identifiers you passed in were not unique. You passed in %identifier.",
+      "organism_retrieve: The identifiers you passed in were not unique. You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
       )
@@ -107,7 +107,7 @@ function chado_get_organism($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_organism_api',
       TRIPAL_ERROR,
-      "chado_get_organism: chado_generate_var() failed to return a organism based on the identifiers
+      "organism_retrieve: chado_generate_var() failed to return a organism based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
       array(

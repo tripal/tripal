@@ -44,7 +44,7 @@
  *
  * @ingroup tripal_cv_api
  */
-function chado_get_cv($identifiers, $options = array()) {
+function cv_retrieve($identifiers, $options = array()) {
 
   // Set Defaults
   if (!isset($options['include_fk'])) {
@@ -57,7 +57,7 @@ function chado_get_cv($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "chado_get_cv: The identifier passed in is expected to be an array with the key
+      "cv_retrieve: The identifier passed in is expected to be an array with the key
         matching a column name in the cv table (ie: cv_id or name). You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
@@ -68,7 +68,7 @@ function chado_get_cv($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "chado_get_cv: You did not pass in anything to identify the cv you want. The identifier
+      "cv_retrieve: You did not pass in anything to identify the cv you want. The identifier
         is expected to be an array with the key matching a column name in the cv table
         (ie: cv_id or name). You passed in %identifier.",
       array(
@@ -89,7 +89,7 @@ function chado_get_cv($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "chado_get_cv: The identifiers you passed in were not unique. You passed in %identifier.",
+      "cv_retrieve: The identifiers you passed in were not unique. You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
       )
@@ -101,7 +101,7 @@ function chado_get_cv($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "chado_get_cv: chado_generate_var() failed to return a cv based on the identifiers
+      "cv_retrieve: chado_generate_var() failed to return a cv based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
       array(
@@ -168,7 +168,7 @@ function cv_get_select_options() {
  *
  * @ingroup tripal_cv_api
  */
-function chado_get_cvterm($identifiers, $options = array()) {
+function cvterm_retrieve($identifiers, $options = array()) {
 
   // Set Defaults
   if (!isset($options['include_fk'])) {
@@ -181,7 +181,7 @@ function chado_get_cvterm($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "chado_get_cvterm: The identifier passed in is expected to be an array with the key
+      "cvterm_retrieve: The identifier passed in is expected to be an array with the key
         matching a column name in the cvterm table (ie: cvterm_id or name). You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
@@ -192,7 +192,7 @@ function chado_get_cvterm($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "chado_get_cvterm: You did not pass in anything to identify the cvterm you want. The identifier
+      "cvterm_retrieve: You did not pass in anything to identify the cvterm you want. The identifier
         is expected to be an array with the key matching a column name in the cvterm table
         (ie: cvterm_id or name). You passed in %identifier.",
       array(
@@ -257,7 +257,7 @@ function chado_get_cvterm($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "chado_get_cvterm: The identifiers you passed in were not unique. You passed in %identifier.",
+      "cvterm_retrieve: The identifiers you passed in were not unique. You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
       )
@@ -269,7 +269,7 @@ function chado_get_cvterm($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "chado_get_cvterm: chado_generate_var() failed to return a cvterm based on the identifiers
+      "cvterm_retrieve: chado_generate_var() failed to return a cvterm based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
       array(

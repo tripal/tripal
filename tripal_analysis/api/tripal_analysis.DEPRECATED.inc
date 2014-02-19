@@ -95,9 +95,9 @@ function tripal_analysis_delete_property($analysis_id, $property, $cv_name = 'tr
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_get_analysis().
+ * This function has been replaced by analysis_retrieve().
  *
- * @see chado_get_analysis().
+ * @see analysis_retrieve().
  */
 function tripal_analysis_get_node($analysis_id) {
 
@@ -107,9 +107,9 @@ function tripal_analysis_get_node($analysis_id) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_analysis_get_node',
-      '%new_function' => 'chado_get_analysis'
+      '%new_function' => 'analysis_retrieve'
     )
   );
 
-  return chado_get_analysis(array('analysis_id' => $analysis_id));
+  return analysis_retrieve(array('analysis_id' => $analysis_id));
 }
