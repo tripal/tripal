@@ -147,9 +147,9 @@ function tripal_db_get_dbxref_by_accession($accession, $db_id=0) {
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by db_insert().
+ * This function has been replaced by chado_db_insert_record().
  *
- * @see db_insert().
+ * @see chado_db_insert_record().
  */
 function tripal_db_add_db($dbname, $description = '', $url = '', $urlprefix = '', $update = 0) {
 
@@ -159,11 +159,11 @@ function tripal_db_add_db($dbname, $description = '', $url = '', $urlprefix = ''
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_db_add_db',
-      '%new_function' => 'db_insert'
+      '%new_function' => 'chado_db_insert_record'
     )
   );
 
-  return db_insert(
+  return chado_db_insert_record(
     array(
       'name' => $dbname,
       'description' => $description,
@@ -179,9 +179,9 @@ function tripal_db_add_db($dbname, $description = '', $url = '', $urlprefix = ''
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by dbxref_insert().
+ * This function has been replaced by chado_dbxref_insert_record().
  *
- * @see dbxref_insert().
+ * @see chado_dbxref_insert_record().
  */
 function tripal_db_add_dbxref($db_id, $accession, $version = '', $description = '') {
 
@@ -191,11 +191,11 @@ function tripal_db_add_dbxref($db_id, $accession, $version = '', $description = 
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_db_add_dbxref',
-      '%new_function' => 'dbxref_insert'
+      '%new_function' => 'chado_dbxref_insert_record'
     )
   );
 
-  return dbxref_insert(array(
+  return chado_dbxref_insert_record(array(
     'db_id' => $db_id,
     'accession' => $accession,
     'version' => $version,

@@ -369,7 +369,7 @@ function chado_update_cvtermpath($cvid, $job_id = NULL) {
  *
  * @ingroup tripal_cv_api
  */
-function cv_insert($name, $definition) {
+function chado_cv_insert_record($name, $definition) {
 
   // insert/update values
   $ins_values = array(
@@ -448,7 +448,7 @@ function cv_insert($name, $definition) {
  *
  * @ingroup tripal_cv_api
  */
-function cvterm_insert($term, $options) {
+function chado_cvterm_insert_record($term, $options) {
 
   // Set Defaults
   if (isset($term['cv_name'])) {
@@ -930,7 +930,7 @@ function chado_associate_cvterm($basetable, $record_id, $cvterm) {
     }
     elseif ($options['insert_cvterm']) {
       // Insert the cvterm
-      $insert = cvterm_insert($values);
+      $insert = chado_cvterm_insert_record($values);
       if (isset($insert->cvterm_id)) {
         $cvterm['cvterm_id'] = $insert->cvterm_id;
       }

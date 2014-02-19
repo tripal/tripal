@@ -249,9 +249,9 @@ function tripal_cv_update_cvtermpath($cvid, $job_id = NULL) {
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by cv_insert().
+ * This function has been replaced by chado_cv_insert_record().
  *
- * @see cv_insert().
+ * @see chado_cv_insert_record().
  */
 function tripal_cv_add_cv($name, $definition) {
 
@@ -261,19 +261,19 @@ function tripal_cv_add_cv($name, $definition) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_cv_add_cv',
-      '%new_function' => 'cv_insert'
+      '%new_function' => 'chado_cv_insert_record'
     )
   );
 
-  return cv_insert($name, $definition);
+  return chado_cv_insert_record($name, $definition);
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by cvterm_insert().
+ * This function has been replaced by chado_cvterm_insert_record().
  *
- * @see cvterm_insert().
+ * @see chado_cvterm_insert_record().
  */
 function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 0, $update = 1, $dbname = 'internal') {
 
@@ -283,7 +283,7 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_cv_add_cvterm',
-      '%new_function' => 'cvterm_insert'
+      '%new_function' => 'chado_cvterm_insert_record'
     )
   );
 
@@ -296,7 +296,7 @@ function tripal_cv_add_cvterm($term, $defaultcv = '_global', $is_relationship = 
     unset($term['def']);
   }
 
-  return cvterm_insert(
+  return chado_cvterm_insert_record(
     $term,
     array(
       'update_existing' => $update
