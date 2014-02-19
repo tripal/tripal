@@ -304,7 +304,7 @@ function dbxref_retrieve($identifiers, $options = array()) {
  *
  * @ingroup tripal_db_api
  */
-function chado_db_insert($values, $options) {
+function db_insert($values, $options) {
 
   // Default Values
   $dbname = $values['name'];
