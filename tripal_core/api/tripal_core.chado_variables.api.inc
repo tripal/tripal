@@ -16,9 +16,9 @@
  * drupal_eval() which suppresses syntax errors and throws watchdog entries of type php. There are
  * also watchdog entries of type tripal_core stating the exact criteria evaluated. Criteria can
  * contain the following tokens:
- *   - &gt;field_name&lt;
+ *   - <field_name>
  *       Replaced by the name of the field to be excluded
- *   - &gt;field_value&lt;
+ *   - <field_value>
  *       Replaced by the value of the field in the current record
  * Also keep in mind that if your criteria doesn't contain the &gt;field_value&lt;  token then it will be
  * evaluated before the query is executed and if the field is excluded it won't be included in the
@@ -30,7 +30,7 @@
  * @ingroup tripal_chado_query_api
  */
 function tripal_core_exclude_type_by_default() {
-  return array('text' => 'strlen("&gt;field_value&lt; ") > 100');
+  return array('text' => 'strlen("<field_value> ") > 250');
 }
 
 /**
@@ -45,21 +45,21 @@ function tripal_core_exclude_type_by_default() {
  * drupal_eval() which suppresses syntax errors and throws watchdog entries of type php. There are
  * also watchdog entries of type tripal_core stating the exact criteria evaluated. Criteria can
  * contain the following tokens:
- *   - &gt;field_name&lt;
+ *   - <field_name>
  *       Replaced by the name of the field to be excluded
- *   - &gt;field_value&lt;
+ *   - <field_value>
  *       Replaced by the value of the field in the current record
- * Also keep in mind that if your criteria doesn't contain the &gt;field_value&lt;  token then it will be
+ * Also keep in mind that if your criteria doesn't contain the <field_value>  token then it will be
  * evaluated before the query is executed and if the field is excluded it won't be included in the
  * query.
  *
  * @return
- *   An array of type => criteria where the type is excluded if the criteria evaluates to TRUE
+ *   An array of field => criteria where the type is excluded if the criteria evaluates to TRUE
  *
  * @ingroup tripal_chado_query_api
  */
 function tripal_core_exclude_field_from_feature_by_default() {
-  return array();
+  return array('residues' => 'TRUE');
 }
 
 /**
@@ -184,6 +184,8 @@ function chado_generate_var($table, $values, $base_options = array()) {
   $table_columns = array_keys($table_desc['fields']);
 
   // Expandable fields without value needed for criteria--------------------------------------------
+  // Add in the default expandable arrays
+  // These are used for later expanding fields, tables, foreign keys and nodes
   $all->expandable_fields = array();
   $all->expandable_foreign_keys = array();
   if (array_key_exists('referring_tables', $table_desc) and $table_desc['referring_tables']) {
@@ -194,19 +196,40 @@ function chado_generate_var($table, $values, $base_options = array()) {
   }
   $all->expandable_nodes = array();
 
-  /*
+
   // Get fields to be removed by name.................................
+  // This gets all implementations of hook_exclude_field_from_<table>_by_default()
+  // where <table> is the current table a variable is being created for.
+
+  // This allows modules to specify that some fields should be excluded by default
+  // For example, tripal core provides a tripal_core_exclude_field_from_feature_by_default()
+  // which says that we usually don't want to include the residues field by default since
+  // it can be very large and cause performance issues.
+
+  // If a field is excluded by default it can always be expanded at a later point by calling
+  // chado_expand_var($chado_var, 'field', <field name as shown in expandable_fields array>);
+
+  // First get an array of all the fields to be removed for the current table
+  // module_invoke_all() is drupal's way of invoking all implementations of the specified
+  // hook and merging all of the results.
+
+  // $fields_to_remove should be an array with the keys matching field names
+  // and the values being strings to be executed using php_eval() to determine whether
+  // to exclude the field (evaluates to TRUE) or not (evaluates to FALSE)
   $fields_to_remove = module_invoke_all('exclude_field_from_' . $table . '_by_default');
+
+  // Now, for each field to be removed
   foreach ($fields_to_remove as $field_name => $criteria) {
-    //replace &gt;field_name&lt;  with the current field name &
-    $criteria = preg_replace('/&gt;field_name&lt; /', addslashes($field_name), $criteria);
+
+    //replace <field_name> with the current field name
+    $criteria = preg_replace('/<field_name> /', addslashes($field_name), $criteria);
     // if field_value needed we can't deal with this field yet
-    if (preg_match('/&gt;field_value&lt; /', $criteria)) {
+    if (preg_match('/<field_value> /', $criteria)) {
       break;
     }
 
     //if criteria then remove from query
-    // @coder-ignore: only module designers can populate $criteria -not security risk
+    // @coder-ignore: only module designers can populate $criteria -not a security risk
     $success = php_eval('<?php return ' . $criteria . '; ?>');
     if ($success) {
       unset($table_columns[array_search($field_name, $table_columns)]);
@@ -215,29 +238,54 @@ function chado_generate_var($table, $values, $base_options = array()) {
     }
   }
 
-  //Get fields to be removed by type................................
+  // Get fields to be removed by type................................
+  // This gets all implementations of hook_exclude_type_by_default().
+
+  // This allows modules to specify that some types of fields should be excluded by default
+  // For example, tripal core provides a tripal_core_exclude_type_by_default() which says
+  // that text fields are often very large and if they are longer than 250 characters then
+  // we want to exclude them by default
+
+  // If a field is excluded by default it can always be expanded at a later point by calling
+  // chado_expand_var($chado_var, 'field', <field name as shown in expandable_fields array>);
+
+  // First get an array of all the types of fields to be removed for the current table
+  // module_invoke_all() is drupal's way of invoking all implementations of the specified
+  // hook and merging all of the results.
+
+  // $types_to_remove should be an array with the keys matching field names
+  // and the values being strings to be executed using php_eval() to determine whether
+  // to exclude the field (evaluates to TRUE) or not (evaluates to FALSE)
+  // (ie: array('text' => 'strlen("<field_value> ") > 100');
   $types_to_remove = module_invoke_all('exclude_type_by_default');
+
+  // Get a list of all the types of fields
+  // the key is the type of field and the value is an array of fields of this type
   $field_types = array();
   foreach ($table_desc['fields'] as $field_name => $field_array) {
     $field_types[$field_array['type']][] = $field_name;
   }
+
+  // We want to use the types to remove in conjunction with our table field descriptions
+  // to determine which fields might need to be removed
   foreach ($types_to_remove as $field_type => $criteria) {
+
     // if there are fields of that type to remove
-    if (is_array($field_types[$field_type])) {
-      //replace &gt;field_name&lt;  with the current field name &
-      $criteria = preg_replace('/&gt;field_name&lt; /', addslashes($field_name), $criteria);
+    if (isset($field_types[$field_type])) {
+
+      // Do any processing needed on the php criteria
+      //replace <field_name>  with the current field name
+      $criteria = preg_replace('/<field_name> /', addslashes($field_name), $criteria);
       foreach ($field_types[$field_type] as $field_name) {
         // if field_value needed we can't deal with this field yet
-        if (preg_match('/&gt;field_value&lt; /', $criteria)) {
+        if (preg_match('/<field_value>/', $criteria)) {
           $fields_to_remove[$field_name] = $criteria;
           continue;
         }
-        // if field_value needed we can't deal with this field yet
-        if (preg_match('/&gt;field_value&lt; /', $criteria)) {
-          break;
-        }
-        //if criteria then remove from query
-        // @coder-ignore: only module designers can populate $criteria -not security risk
+
+        // if criteria then remove from query
+        // (as long as <field_value> is not needed for the criteria to be evaluated)
+        // @coder-ignore: only module designers can populate $criteria -not a security risk
         $success = php_eval('<?php return ' . $criteria . '; ?>');
         if ($success) {
           unset($table_columns[array_search($field_name, $table_columns)]);
@@ -246,7 +294,7 @@ function chado_generate_var($table, $values, $base_options = array()) {
       } //end of foreach field of that type
     }
   } //end of foreach type to be removed
-*/
+
   // get the values for the record in the current table---------------------------------------------
   $results = chado_select_record($table, $table_columns, $values, $base_options);
 
@@ -278,23 +326,39 @@ function chado_generate_var($table, $values, $base_options = array()) {
       }
 
       // remove any fields where criteria needs to be evalulated---------------------------------------
-/*      foreach ($fields_to_remove as $field_name => $criteria) {
+      // The fields to be removed can be populated by implementing either
+      // hook_exclude_field_from_<table>_by_default() where <table> is the current table
+      // OR hook_exclude_type_by_default() where there are fields of the specified type in the current table
+      // It only reaches this point if the criteria specified for whether or not to
+      // exclude the field includes <field_value> which means it has to be evaluated after
+      // the query has been executed
+      foreach ($fields_to_remove as $field_name => $criteria) {
+
+        // If the field is an object then we don't support exclusion of it
+        // For example, if the field is a foreign key
         if (!isset($object->{$field_name})) {
           break;
         }
-        $criteria = preg_replace('/&gt;field_value&lt; /', addslashes($object->{$field_name}), $criteria);
+
+        // replace <field_value> with the actual value of the field from the query
+        $criteria = preg_replace('/<field_value>/', addslashes($object->{$field_name}), $criteria);
+
+        // evaluate the criteria, if TRUE is returned then exclude the field
+        // excluded fields can be expanded later by calling
+        // chado_expand_var($var, 'field', <field name as shown in expandable_fields array>);
         $success = php_eval('<?php return ' . $criteria . '; ?>');
         if ($success) {
           unset($object->{$field_name});
           $object->expandable_fields[] = $table . '.' . $field_name;
         }
       }
-*/
+
       // recursively follow foreign key relationships nesting objects as we go------------------------
       if ($table_desc['foreign keys']) {
         foreach ($table_desc['foreign keys'] as $foreign_key_array) {
           $foreign_table = $foreign_key_array['table'];
           foreach ($foreign_key_array['columns'] as $foreign_key => $primary_key) {
+
             // Note: Foreign key is the field in the current table whereas primary_key is the field in
             // the table referenced by the foreign key
             //Dont do anything if the foreign key is empty
