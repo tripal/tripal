@@ -19,8 +19,7 @@ function tripal_feature_delete_form() {
     $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
   }
   $form['desc'] = array(
-    '#type' => 'markup',
-    '#value' => t("Use one or more of the following fields to identify sets of features to be deleted."),
+    '#markup' => t("Use one or more of the following fields to identify sets of features to be deleted."),
   );
 
   $form['feature_names']= array(

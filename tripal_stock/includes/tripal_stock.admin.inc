@@ -59,8 +59,7 @@ function tripal_stock_admin() {
     '#collapsed' => FALSE,
   );
   $form['title']['desc'] = array(
-    '#type'  => 'markup',
-    '#value' => t('Each synced stock must have a unique page title, however, stocks
+    '#markup' => t('Each synced stock must have a unique page title, however, stocks
       may have the same name if they are of different types or from different
       organisms.  Therefore, we must be sure that the page titles can uniquely
       identify the stock being viewed.  Select an option below that will

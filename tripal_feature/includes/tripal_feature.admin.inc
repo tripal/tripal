@@ -72,11 +72,10 @@ function tripal_feature_admin() {
   //      $allowedoptions ['allow_feature_browser'] = "Allow loading of the feature browsing through AJAX. For large sites the initial page load will be quick with the feature browser loading afterwards.";
 
     $form['browser']['browser_desc'] = array(
-       '#type'        => 'markup',
-       '#value' => 'A feature browser can be added to an organism page to allow users to quickly ' .
+       '#markup' => t('A feature browser can be added to an organism page to allow users to quickly ' .
           'access a feature.  This will most likely not be the ideal mechanism for accessing feature ' .
           'information, especially for large sites, but it will alow users exploring the site (such ' .
-          'as students) to better understand the data types available on the site.',
+          'as students) to better understand the data types available on the site.'),
 
     );
     $form['browser']['feature_types'] = array(
@@ -309,8 +308,7 @@ function get_tripal_feature_admin_form_title_set(&$form) {
     '#collapsed' => FALSE,
   );
   $form['title']['desc'] = array(
-    '#type'        => 'markup',
-    '#value' => t('Each synced feature must have a unique page title, however, features
+    '#markup' => t('Each synced feature must have a unique page title, however, features
                    may have the same name if they are of different types or from
                    different organisms.  Therefore, we must be sure that the
                    page titles can uniquely identify the feature being viewed.  Select
