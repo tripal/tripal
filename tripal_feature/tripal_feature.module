@@ -967,40 +967,6 @@ function tripal_feature_cv_tree($tree_id) {
 }
 
 /**
- * Delete the drupal taxonomy associated with our features
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_del_vocabulary() {
-  //include the file containing the required functions for adding taxonomy vocabs
-  module_load_include('inc', 'taxonomy', 'taxonomy.admin');
-
-  // get the vocabularies
-  $vocabularies = taxonomy_get_vocabularies();
-
-  // These taxonomic terms are hard coded because we
-  // know we have these relationships in the chado tables
-  // through foreign key relationships.  The tripal
-  // modules that correspond to these chado "modules" don't
-  // need to be installed for the taxonomy to work.
-  foreach ($vocabularies as $vocab) {
-    if ($vocab->name == 'Feature Type') {
-      taxonomy_vocabulary_delete($vocab->vid);
-    }
-    if ($vocab->name == 'Organism') {
-      taxonomy_vocabulary_delete($vocab->vid);
-    }
-    if ($vocab->name == 'Library') {
-      taxonomy_vocabulary_delete($vocab->vid);
-    }
-    if ($vocab->name == 'Analysis') {
-      taxonomy_vocabulary_delete($vocab->vid);
-    }
-  }
-
-}
-
-/**
  * Implements hook_job_describe_args() in order to describe the various feature jobs
  * to the tripal jobs interface.
  *

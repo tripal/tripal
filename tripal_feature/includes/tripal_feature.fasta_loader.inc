@@ -59,27 +59,7 @@ function tripal_feature_fasta_load_form() {
     '#description' => t('Please enter the Sequence Ontology (SO) term name that describes the sequences in the FASTA file (e.g. gene, mRNA, protein, etc...)'),
     '#autocomplete_path' => "admin/tripal/chado/tripal_cv/cvterm/auto_name/$cv_id",
   );
-
-
-  // get the list of organisms
-  $sql = "SELECT L.library_id, L.name, CVT.name as type
-         FROM {library} L
-            INNER JOIN {cvterm} CVT ON L.type_id = CVT.cvterm_id
-         ORDER BY name";
-  $lib_rset = chado_query($sql);
-  $libraries = array();
-  $libraries[''] = '';
-  while ($library = $lib_rset->fetchObject()) {
-    $libraries[$library->library_id] = "$library->name ($library->type)";
-  }
-  //   $form['library_id'] = array (
-  //     '#title'       => t('Library'),
-  //     '#type'        => t('select'),
-  //     '#description' => t("Choose the library to which these sequences are associated "),
-  //     '#required'    => FALSE,
-  //     '#options'     => $libraries,
-  //     '#weight'      => 5,
-  //   );
+  
   $form['method']= array(
     '#type' => 'radios',
     '#title' => 'Method',
@@ -410,7 +390,7 @@ function tripal_feature_fasta_load_form_submit($form, &$form_state) {
     $match_type = 'Unique name';
   }
 
-  $args = array($dfile, $organism_id, $type, $library_id, $re_name, $re_uname,
+  $args = array($dfile, $organism_id, $type, $re_name, $re_uname,
           $re_accession, $db_id, $rel_type, $re_subject, $parent_type, $method,
           $user->uid, $analysis_id, $match_type);
 
@@ -428,8 +408,6 @@ function tripal_feature_fasta_load_form_submit($form, &$form_state) {
  *  The organism_id of the organism these features are from
  * @param $type
  *  The type of features contained in the fasta file
- * @param $library_id
- *  (Optional) The library_id to associate the features with
  * @param $re_name
  *  A regular expression to extract the feature.name from the fasta header
  * @param $re_uname
@@ -460,7 +438,7 @@ function tripal_feature_fasta_load_form_submit($form, &$form_state) {
  * @ingroup fasta_loader
  */
 function tripal_feature_load_fasta($dfile, $organism_id, $type,
-  $library_id, $re_name, $re_uname, $re_accession, $db_id, $rel_type,
+  $re_name, $re_uname, $re_accession, $db_id, $rel_type,
   $re_subject, $parent_type, $method, $uid, $analysis_id,
   $match_type, $job = NULL) {
 

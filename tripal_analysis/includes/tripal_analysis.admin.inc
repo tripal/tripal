@@ -110,43 +110,6 @@ function tripal_analysis_admin() {
  * @ingroup tripal_analysis
  */
 function tripal_analysis_admin_validate($form, &$form_state) {
-  global $user;  // we need access to the user info
-  $job_args = array();
 
-  // -------------------------------------
-  // Submit the Reindex Job if selected
-  if ($form_state['values']['op'] == t('Reindex Features')) {
-    global $user;  // we need access to the user info
-    $job_args = array();
-    $analyses = $form_state['values']['re-analyses'];
-    foreach ($analyses as $analysis_id) {
-      if ($analysis_id and preg_match("/^\d+$/i", $analysis_id)) {
-        // get the analysis info
-        $sql = "SELECT * FROM {analysis} WHERE analysis_id = :analysis_id";
-        $analysis = chado_query($sql, array(':analysis_id' => $analysis_id))->fetchObject();
-        $job_args[0] = $analysis_id;
-        tripal_add_job("Reindex features for analysis: $analysis->name", 'tripal_analysis',
-             'tripal_analysis_reindex_features', $job_args, $user->uid);
-      }
-    }
-  }
-
-  // -------------------------------------
-  // Submit the Taxonomy Job if selected
-  if ($form_state['values']['op'] == t('Set Feature Taxonomy')) {
-    global $user;  // we need access to the user info
-    $job_args = array();
-    $analyses = $form_state['values']['tx-analyses'];
-    foreach ($analyses as $analysis_id) {
-      if ($analysis_id and preg_match("/^\d+$/i", $analysis_id)) {
-        // get the analysis info
-        $sql = "SELECT * FROM {analysis} WHERE analysis_id = :analysis_id";
-        $analysis = chado_query($sql, array(':analysis_id' => $analysis_id))->fetchObject();
-        $job_args[0] = $analysis_id;
-        tripal_add_job("Set taxonomy for features in analysis: $analysis->name", 'tripal_analysis',
-             'tripal_analysis_taxonify_features', $job_args, $user->uid);
-      }
-    }
-  }
 }
 
