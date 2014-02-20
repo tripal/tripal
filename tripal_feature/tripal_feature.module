@@ -246,11 +246,6 @@ function tripal_feature_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_feature_base',
       'path' => "$path/theme/tripal_feature",
     ),
-    'tripal_feature_featurepos' => array(
-      'arguments' => array('node' => NULL),
-      'template' => 'tripal_feature_featurepos',
-      'path' => "$path/theme/tripal_feature",
-    ),
     'tripal_feature_sequence' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_feature_sequence',
