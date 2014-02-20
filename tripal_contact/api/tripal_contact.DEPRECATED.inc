@@ -95,9 +95,9 @@ function tripal_contact_delete_property($contact_id, $property) {
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_contact_insert_record().
+ * This function has been replaced by tripal_insert_contact().
  *
- * @see chado_contact_insert_record().
+ * @see tripal_insert_contact().
  */
 function tripal_contact_add_contact($name, $description, $type, $properties) {
 
@@ -107,11 +107,11 @@ function tripal_contact_add_contact($name, $description, $type, $properties) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_contact_add_contact',
-      '%new_function' => 'chado_contact_insert_record'
+      '%new_function' => 'tripal_insert_contact'
     )
   );
 
-  return chado_contact_insert_record(array(
+  return tripal_insert_contact(array(
     'name' => $name,
     'description' => $description,
     'type_name' => $type,

@@ -7,6 +7,50 @@
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
+ * This function has been replaced by tripal_register_analysis_child().
+ *
+ * @see tripal_register_analysis_child().
+ */
+function tripal_analysis_register_child($modulename) {
+
+  tripal_report_error(
+    'tripal_deprecated',
+    TRIPAL_NOTICE,
+    "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
+    array(
+      '%old_function'=>'tripal_analysis_register_child',
+      '%new_function' => 'tripal_register_analysis_child'
+    )
+  );
+
+  return tripal_register_analysis_child($modulename);
+}
+
+/**
+ * @deprecated Restructured API to make naming more readable and consistent.
+ * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
+ * This function has been replaced by tripal_unregister_analysis_child().
+ *
+ * @see tripal_unregister_analysis_child().
+ */
+function tripal_analysis_unregister_child($modulename) {
+
+  tripal_report_error(
+    'tripal_deprecated',
+    TRIPAL_NOTICE,
+    "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
+    array(
+      '%old_function'=>'tripal_analysis_unregister_child',
+      '%new_function' => 'tripal_unregister_analysis_child'
+    )
+  );
+
+  return tripal_unregister_analysis_child($modulename);
+}
+
+/**
+ * @deprecated Restructured API to make naming more readable and consistent.
+ * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
  * This function has been replaced by chado_get_property().
  *
  * @see chado_get_property().
@@ -95,9 +139,9 @@ function tripal_analysis_delete_property($analysis_id, $property, $cv_name = 'tr
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_analysis_retrieve().
+ * This function has been replaced by tripal_get_analysis().
  *
- * @see chado_analysis_retrieve().
+ * @see tripal_get_analysis().
  */
 function tripal_analysis_get_node($analysis_id) {
 
@@ -107,9 +151,9 @@ function tripal_analysis_get_node($analysis_id) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_analysis_get_node',
-      '%new_function' => 'chado_analysis_retrieve'
+      '%new_function' => 'tripal_get_analysis'
     )
   );
 
-  return chado_analysis_retrieve(array('analysis_id' => $analysis_id));
+  return tripal_get_analysis(array('analysis_id' => $analysis_id));
 }

@@ -44,7 +44,7 @@
  *
  * @ingroup tripal_cv_api
  */
-function chado_cv_retrieve($identifiers, $options = array()) {
+function tripal_get_cv($identifiers, $options = array()) {
 
   // Set Defaults
   if (!isset($options['include_fk'])) {
@@ -57,7 +57,7 @@ function chado_cv_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "chado_cv_retrieve: The identifier passed in is expected to be an array with the key
+      "tripal_get_cv: The identifier passed in is expected to be an array with the key
         matching a column name in the cv table (ie: cv_id or name). You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
@@ -68,7 +68,7 @@ function chado_cv_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "chado_cv_retrieve: You did not pass in anything to identify the cv you want. The identifier
+      "tripal_get_cv: You did not pass in anything to identify the cv you want. The identifier
         is expected to be an array with the key matching a column name in the cv table
         (ie: cv_id or name). You passed in %identifier.",
       array(
@@ -89,7 +89,7 @@ function chado_cv_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "chado_cv_retrieve: The identifiers you passed in were not unique. You passed in %identifier.",
+      "tripal_get_cv: The identifiers you passed in were not unique. You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
       )
@@ -101,7 +101,7 @@ function chado_cv_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "chado_cv_retrieve: chado_generate_var() failed to return a cv based on the identifiers
+      "tripal_get_cv: chado_generate_var() failed to return a cv based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
       array(
@@ -125,7 +125,7 @@ function chado_cv_retrieve($identifiers, $options = array()) {
  *
  * @ingroup tripal_cv_api
  */
-function cv_get_select_options() {
+function tripal_get_cv_select_options() {
 
   $results = chado_select_record('cv', array('cv_id', 'name'), array());
 
@@ -168,7 +168,7 @@ function cv_get_select_options() {
  *
  * @ingroup tripal_cv_api
  */
-function chado_cvterm_retrieve($identifiers, $options = array()) {
+function tripal_get_cvterm($identifiers, $options = array()) {
 
   // Set Defaults
   if (!isset($options['include_fk'])) {
@@ -181,7 +181,7 @@ function chado_cvterm_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "chado_cvterm_retrieve: The identifier passed in is expected to be an array with the key
+      "tripal_get_cvterm: The identifier passed in is expected to be an array with the key
         matching a column name in the cvterm table (ie: cvterm_id or name). You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
@@ -192,7 +192,7 @@ function chado_cvterm_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "chado_cvterm_retrieve: You did not pass in anything to identify the cvterm you want. The identifier
+      "tripal_get_cvterm: You did not pass in anything to identify the cvterm you want. The identifier
         is expected to be an array with the key matching a column name in the cvterm table
         (ie: cvterm_id or name). You passed in %identifier.",
       array(
@@ -257,7 +257,7 @@ function chado_cvterm_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "chado_cvterm_retrieve: The identifiers you passed in were not unique. You passed in %identifier.",
+      "tripal_get_cvterm: The identifiers you passed in were not unique. You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
       )
@@ -269,7 +269,7 @@ function chado_cvterm_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_cv_api',
       TRIPAL_ERROR,
-      "chado_cvterm_retrieve: chado_generate_var() failed to return a cvterm based on the identifiers
+      "tripal_get_cvterm: chado_generate_var() failed to return a cvterm based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
       array(
@@ -298,7 +298,7 @@ function chado_cvterm_retrieve($identifiers, $options = array()) {
  *
  * @ingroup tripal_cv_api
  */
-function cvterm_get_select_options($cv_id = 0) {
+function tripal_get_cvterm_select_options($cv_id = 0) {
 
   if ($cv_id > 0) {
     $results = chado_select_record('cvterm', array('cvterm_id', 'name'), array('cv_id' => $cv_id));
@@ -330,7 +330,7 @@ function cvterm_get_select_options($cv_id = 0) {
  *
  * @ingroup tripal_cv_api
  */
-function chado_update_cvtermpath($cvid, $job_id = NULL) {
+function tripal_update_cvtermpath($cvid, $job_id = NULL) {
   // TODO: need better error checking in this function
 
   // first get the controlled vocabulary name:
@@ -369,7 +369,7 @@ function chado_update_cvtermpath($cvid, $job_id = NULL) {
  *
  * @ingroup tripal_cv_api
  */
-function chado_cv_insert_record($name, $definition) {
+function tripal_insert_cv($name, $definition) {
 
   // insert/update values
   $ins_values = array(
@@ -448,7 +448,7 @@ function chado_cv_insert_record($name, $definition) {
  *
  * @ingroup tripal_cv_api
  */
-function chado_cvterm_insert_record($term, $options) {
+function tripal_insert_cvterm($term, $options) {
 
   // Set Defaults
   if (isset($term['cv_name'])) {
@@ -859,7 +859,7 @@ function tripal_insert_obo($name, $path) {
  *
  * @ingroup tripal_cv_api
  */
-function chado_cvterm_autocomplete($cv_id, $string = '') {
+function tripal_autocomplete_cvterm($cv_id, $string = '') {
   $sql = "
     SELECT cvterm_id, name
     FROM {cvterm}
@@ -893,7 +893,7 @@ function chado_cvterm_autocomplete($cv_id, $string = '') {
  *
  * @ingroup tripal_db_api
  */
-function chado_associate_cvterm($basetable, $record_id, $cvterm) {
+function tripal_associate_cvterm($basetable, $record_id, $cvterm) {
   $linking_table = $basetable . '_cvterm';
   $foreignkey_name = $basetable . '_id';
 
@@ -917,7 +917,7 @@ function chado_associate_cvterm($basetable, $record_id, $cvterm) {
       tripal_report_error(
         'tripal_cv_api',
         TRIPAL_WARNING,
-        "chado_associate_cvterm: The cvterm needs to have either the cv_name or cv_id
+        "tripal_associate_cvterm: The cvterm needs to have either the cv_name or cv_id
           supplied. You were trying to associate a cvterm with the %base %record_id
           and supplied the cvterm values: %cvterm.",
         array('%base' => $basetable, '%record_id' => $record_id, '%cvterm' => print_r($cvterm,TRUE))
@@ -930,7 +930,7 @@ function chado_associate_cvterm($basetable, $record_id, $cvterm) {
     }
     elseif ($options['insert_cvterm']) {
       // Insert the cvterm
-      $insert = chado_cvterm_insert_record($values);
+      $insert = tripal_insert_cvterm($values);
       if (isset($insert->cvterm_id)) {
         $cvterm['cvterm_id'] = $insert->cvterm_id;
       }
@@ -938,7 +938,7 @@ function chado_associate_cvterm($basetable, $record_id, $cvterm) {
         tripal_report_error(
           'tripal_cv_api',
           TRIPAL_WARNING,
-          "chado_associate_cvterm: Unable to insert the cvterm using the cvterm values: %cvterm.",
+          "tripal_associate_cvterm: Unable to insert the cvterm using the cvterm values: %cvterm.",
           array('%cvterm' => print_r($cvterm,TRUE))
         );
         return FALSE;
@@ -948,7 +948,7 @@ function chado_associate_cvterm($basetable, $record_id, $cvterm) {
       tripal_report_error(
         'tripal_api',
         TRIPAL_WARNING,
-        "chado_associate_cvterm: The cvterm doesn't already exist. You supplied the cvterm values: %cvterm.",
+        "tripal_associate_cvterm: The cvterm doesn't already exist. You supplied the cvterm values: %cvterm.",
         array('%cvterm' => print_r($cvterm,TRUE))
       );
       return FALSE;

@@ -7,9 +7,9 @@
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_db_retrieve().
+ * This function has been replaced by tripal_get_db().
  *
- * @see chado_db_retrieve().
+ * @see tripal_get_db().
  */
 function tripal_db_get_db($select_values) {
 
@@ -19,19 +19,19 @@ function tripal_db_get_db($select_values) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_db_get_db',
-      '%new_function' => 'chado_db_retrieve'
+      '%new_function' => 'tripal_get_db'
     )
   );
 
-  return chado_db_retrieve($select_values);
+  return tripal_get_db($select_values);
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_db_retrieve().
+ * This function has been replaced by tripal_get_db().
  *
- * @see chado_db_retrieve().
+ * @see tripal_get_db().
  */
 function tripal_db_get_db_by_db_id($db_id) {
 
@@ -41,19 +41,19 @@ function tripal_db_get_db_by_db_id($db_id) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_db_get_db_by_db_id',
-      '%new_function' => 'chado_db_retrieve'
+      '%new_function' => 'tripal_get_db'
     )
   );
 
-  return chado_db_retrieve(array('db_id' => $db_id));
+  return tripal_get_db(array('db_id' => $db_id));
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_db_retrieve().
+ * This function has been replaced by tripal_get_db().
  *
- * @see chado_db_retrieve().
+ * @see tripal_get_db().
  */
 function tripal_db_get_db_by_name($name) {
 
@@ -63,19 +63,19 @@ function tripal_db_get_db_by_name($name) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_db_get_db_by_name',
-      '%new_function' => 'chado_db_retrieve'
+      '%new_function' => 'tripal_get_db'
     )
   );
 
-  return chado_db_retrieve(array('name' => $name));
+  return tripal_get_db(array('name' => $name));
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by db_get_select_options().
+ * This function has been replaced by tripal_get_db_select_options().
  *
- * @see db_get_select_options().
+ * @see tripal_get_db_select_options().
  */
 function tripal_db_get_db_options() {
 
@@ -85,19 +85,19 @@ function tripal_db_get_db_options() {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_db_get_db_options',
-      '%new_function' => 'db_get_select_options'
+      '%new_function' => 'tripal_get_db_select_options'
     )
   );
 
-  return db_get_select_options();
+  return tripal_get_db_select_options();
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_db_retrieve().
+ * This function has been replaced by tripal_get_db().
  *
- * @see chado_dbxref_retrieve().
+ * @see tripal_get_dbxref().
  */
 function tripal_db_get_dbxref($select_values) {
 
@@ -107,19 +107,19 @@ function tripal_db_get_dbxref($select_values) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_db_get_dbxref',
-      '%new_function' => 'chado_dbxref_retrieve'
+      '%new_function' => 'tripal_get_dbxref'
     )
   );
 
-  return chado_dbxref_retrieve($select_values);
+  return tripal_get_dbxref($select_values);
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_db_retrieve().
+ * This function has been replaced by tripal_get_db().
  *
- * @see chado_dbxref_retrieve().
+ * @see tripal_get_dbxref().
  */
 function tripal_db_get_dbxref_by_accession($accession, $db_id=0) {
 
@@ -129,7 +129,7 @@ function tripal_db_get_dbxref_by_accession($accession, $db_id=0) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_db_get_dbxref_by_accession',
-      '%new_function' => 'chado_dbxref_retrieve'
+      '%new_function' => 'tripal_get_dbxref'
     )
   );
 
@@ -141,15 +141,15 @@ function tripal_db_get_dbxref_by_accession($accession, $db_id=0) {
       'db_id' => $db_id
     );
   }
-  return chado_dbxref_retrieve($identifiers);
+  return tripal_get_dbxref($identifiers);
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_db_insert_record().
+ * This function has been replaced by tripal_insert_db().
  *
- * @see chado_db_insert_record().
+ * @see tripal_insert_db().
  */
 function tripal_db_add_db($dbname, $description = '', $url = '', $urlprefix = '', $update = 0) {
 
@@ -159,11 +159,11 @@ function tripal_db_add_db($dbname, $description = '', $url = '', $urlprefix = ''
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_db_add_db',
-      '%new_function' => 'chado_db_insert_record'
+      '%new_function' => 'tripal_insert_db'
     )
   );
 
-  return chado_db_insert_record(
+  return tripal_insert_db(
     array(
       'name' => $dbname,
       'description' => $description,
@@ -179,9 +179,9 @@ function tripal_db_add_db($dbname, $description = '', $url = '', $urlprefix = ''
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_dbxref_insert_record().
+ * This function has been replaced by tripal_insert_dbxref().
  *
- * @see chado_dbxref_insert_record().
+ * @see tripal_insert_dbxref().
  */
 function tripal_db_add_dbxref($db_id, $accession, $version = '', $description = '') {
 
@@ -191,11 +191,11 @@ function tripal_db_add_dbxref($db_id, $accession, $version = '', $description = 
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_db_add_dbxref',
-      '%new_function' => 'chado_dbxref_insert_record'
+      '%new_function' => 'tripal_insert_dbxref'
     )
   );
 
-  return chado_dbxref_insert_record(array(
+  return tripal_insert_dbxref(array(
     'db_id' => $db_id,
     'accession' => $accession,
     'version' => $version,
@@ -206,9 +206,9 @@ function tripal_db_add_dbxref($db_id, $accession, $version = '', $description = 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_associate_dbxref().
+ * This function has been replaced by tripal_associate_dbxref().
  *
- * @see chado_associate_dbxref().
+ * @see tripal_associate_dbxref().
  */
 function tripal_db_add_dbxref_link($linking_table, $dbxref_id, $foreignkey_name, $foreignkey_id) {
 
@@ -218,14 +218,14 @@ function tripal_db_add_dbxref_link($linking_table, $dbxref_id, $foreignkey_name,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_db_add_dbxref_link',
-      '%new_function' => 'chado_associate_dbxref'
+      '%new_function' => 'tripal_associate_dbxref'
     )
   );
 
   if (preg_match('/(\w+)_dbxref/',$linking_table,$matches)) {
     $basetable = $matches[1];
 
-    return chado_associate_dbxref($basetable, $foreignkey_id, array('dbxref_id' => $dbxref_id));
+    return tripal_associate_dbxref($basetable, $foreignkey_id, array('dbxref_id' => $dbxref_id));
   }
   else {
     return FALSE;
