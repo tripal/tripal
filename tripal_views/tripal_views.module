@@ -13,6 +13,7 @@
  */
 
 require_once 'api/tripal_views.api.inc';
+require_once 'api/tripal_views.DEPRECATED.inc';
 
 require_once 'tripal_views.views.inc';
 
