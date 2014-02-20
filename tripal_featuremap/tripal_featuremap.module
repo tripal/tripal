@@ -217,6 +217,13 @@ function tripal_featuremap_theme($existing, $type, $theme, $path) {
       'variables' =>  array(NULL),
       'path' => "$path/theme/tripal_featuremap",
     ),
+    
+    // templates for the chado_feature nodes:
+    'tripal_feature_featurepos' => array(
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_feature_featurepos',
+      'path' => "$path/theme/tripal_feature",
+    ),
   );
   return $items;
 }
