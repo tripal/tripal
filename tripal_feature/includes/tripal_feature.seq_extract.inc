@@ -98,8 +98,7 @@ function theme_tripal_feature_seq_extract_form($form) {
 
   $markup .= $table;
   $form['criteria'] = array(
-    '#type' => 'markup',
-    '#value' =>  $markup,
+    '#markup' =>  $markup,
     '#weight' => -10,
   );
   return drupal_render($form);
@@ -167,8 +166,7 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
   $form['#method'] = 'POST';
 
   $form['description'] = array(
-    '#type' => 'markup',
-    '#value' => t('Use this form to retrieve sequences in FASTA format.')
+    '#markup' => t('Use this form to retrieve sequences in FASTA format.')
   );
 
   $sql = "

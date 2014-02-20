@@ -122,6 +122,7 @@ function tripal_feature_gff3_load_form() {
     '#description' => t('Existing features will be updated and new features will be added.  Attributes
                          for a feature that are not present in the GFF but which are present in the
                          database will not be altered.'),
+    '#default_value' => 1,
   );
   $form['import_options']['refresh']= array(
     '#type' => 'checkbox',
@@ -154,8 +155,7 @@ function tripal_feature_gff3_load_form() {
     '#collapsed' => TRUE
   );
   $form['targets']['adesc'] = array(
-    '#type' => 'markup',
-    '#value' => t("When alignments are represented in the GFF file (e.g. such as
+    '#markup' => t("When alignments are represented in the GFF file (e.g. such as
        alignments of cDNA sequences to a whole genome, or blast matches), they are
        represented using two feature types: 'match' (or cDNA_match, EST_match, etc.)
        and 'match_part'.  These features may also have a 'Target' attribute to
@@ -375,9 +375,9 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     // default is the 'sequence' ontology
     $sql = "SELECT * FROM {cv} WHERE name = :cvname";
     $cv = chado_query($sql, array(':cvname' => 'sequence'))->fetchObject();
-    if (!$tripal_core_report_error) {
-      tripal_report_error('T_gff3_loader', TRIPAL_ERROR, "Cannot find the 'sequence' ontology",
-        array());
+    if (!$cv) {
+      tripal_report_error('T_gff3_loader', TRIPAL_ERROR, 
+        "Cannot find the 'sequence' ontology", array());
       return '';
     }
 
