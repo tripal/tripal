@@ -150,7 +150,7 @@ function tripal_pub_create_citations($options) {
  * @return
  *   A text string containing the citation
  *
- * @ingroup tripal_pub_api
+ * @ingroup tripal_pub
  */
 function tripal_pub_create_citation($pub) {
   $citation = '';
@@ -194,7 +194,7 @@ function tripal_pub_create_citation($pub) {
       }
     }
     if (!$pub_type) {
-      tripal_report_error('tripal_pub', TRIPAL_ERROR, 
+      tripal_report_error('tripal_pub', TRIPAL_ERROR,
         "Cannot generate citation for publication type: %types.\nTitle: %title.\nDbxref: %dbxref",
         array(
           '%types' => print_r($pub['Publication Type'], TRUE),
@@ -254,7 +254,7 @@ function tripal_pub_create_citation($pub) {
   //----------------------
   if ($pub_type == 'Review') {
     $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
-  
+
     if (array_key_exists('Journal Name', $pub)) {
       $citation .= $pub['Journal Name'] . '. ';
     }
