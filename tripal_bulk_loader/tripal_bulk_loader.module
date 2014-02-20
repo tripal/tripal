@@ -15,18 +15,19 @@
  */
 
 // Loader
-include('includes/tripal_bulk_loader.loader.inc');
+require_once 'includes/tripal_bulk_loader.loader.inc';
 
 // Node
-include('includes/tripal_bulk_loader.chado_node.inc');
-include('includes/tripal_bulk_loader.constants.inc');
+require_once 'includes/tripal_bulk_loader.chado_node.inc';
+require_once 'includes/tripal_bulk_loader.constants.inc';
 
 // Administration
-include('includes/tripal_bulk_loader.admin.inc');
-include('includes/tripal_bulk_loader.admin.templates.inc');
+require_once 'includes/tripal_bulk_loader.admin.inc';
+require_once 'includes/tripal_bulk_loader.admin.templates.inc';
 
 // API
-include('api/tripal_bulk_loader.api.templates.inc');
+require_once 'api/tripal_bulk_loader.api.templates.inc';
+require_once 'api/tripal_bulk_loader.DEPRECATED.inc';
 
 /**
  * Implements hook_init().

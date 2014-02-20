@@ -32,7 +32,7 @@
  *
  * @ingroup tripal_bulk_loader_api
  */
-function tripal_bulk_loader_is_record_name_unique($new_record_name, $template_id, $template_array = NULL, $current_priority = NULL) {
+function tripal_is_bulk_loader_record_name_unique($new_record_name, $template_id, $template_array = NULL, $current_priority = NULL) {
 
   // get the template array if it's not supplied
   if (empty($template_array)) {
@@ -72,7 +72,7 @@ function tripal_bulk_loader_is_record_name_unique($new_record_name, $template_id
  *
  * @ingroup tripal_bulk_loader_api
  */
-function tripal_bulk_loader_delete_record($delete_priority, $template_array) {
+function tripal_delete_bulk_loader_record($delete_priority, $template_array) {
 
   if (empty($template_array)) {
     drupal_set_message("Unable to delete record with a priority of $priority since the template was not supplied",'error');
@@ -106,7 +106,7 @@ function tripal_bulk_loader_delete_record($delete_priority, $template_array) {
  *
  * @ingroup tripal_bulk_loader_api
  */
-function tripal_bulk_loader_delete_field($priority, $delete_field_index, $template_array) {
+function tripal_delete_bulk_loader_field($priority, $delete_field_index, $template_array) {
 
   if (empty($template_array)) {
     drupal_set_message("Unable to delete record with a priority of $priority since the template was not supplied",'error');
