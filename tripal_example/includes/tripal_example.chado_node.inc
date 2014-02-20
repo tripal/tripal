@@ -201,8 +201,6 @@ function chado_example_form($node, &$form_state) {
  * @ingroup tripal_example
  */
 function chado_example_validate($node, $form, &$form_state) {
-  // be sure to always trim text fields
-  // $node->uniquename   = trim($node->uniquename);
 
   // if this is a delete then don't validate
   if($node->op == 'Delete') {
@@ -215,6 +213,9 @@ function chado_example_validate($node, $form, &$form_state) {
     return;
   }
 
+  // be sure to always trim text fields
+  // $node->uniquename   = trim($node->uniquename);
+  
   // Validating for an update. If the 'nid' property is present in the node then
   // this is an update and validation can be different for updates
   if (property_exists($node, 'nid')) {
@@ -484,11 +485,11 @@ function tripal_example_node_presave($node) {
     case 'chado_example':
       // for a form submission the 'examplename' field will be set,
       // for a sync, we must pull from the example object
-      if(property_exists($node, 'examplename')) {
+      if (property_exists($node, 'examplename')) {
         // set the title
         $node->title = $node->examplename;
       }
-      else {
+      else if (property_exists($node, 'example')) {
         $node->title = $node->example->name;
       }
       break;

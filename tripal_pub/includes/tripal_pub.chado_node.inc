@@ -306,13 +306,6 @@ function chado_pub_form($node, $form_state) {
  */
 function chado_pub_validate($node, $form, &$form_state) {
 
-  // get the submitted values
-  $title        = trim($node->pubtitle);
-  $pyear        = trim($node->pyear);
-  $uniquename   = trim($node->uniquename);
-  $is_obsolete  = $node->is_obsolete;
-  $type_id      = $node->type_id;
-
   // if this is a delete then don't validate
   if($node->op == 'Delete') {
     return;
@@ -324,6 +317,13 @@ function chado_pub_validate($node, $form, &$form_state) {
     return;
   }
 
+  // get the submitted values
+  $title        = trim($node->pubtitle);
+  $pyear        = trim($node->pyear);
+  $uniquename   = trim($node->uniquename);
+  $is_obsolete  = $node->is_obsolete;
+  $type_id      = $node->type_id;
+  
   $pub = array();
 
   // make sure the year is four digits

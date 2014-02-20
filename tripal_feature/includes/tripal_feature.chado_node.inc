@@ -244,11 +244,6 @@ function chado_feature_form($node, &$form_state) {
  * @ingroup tripal_feature
  */
 function chado_feature_validate($node, $form, &$form_state) {
-  // remove surrounding white-space on submitted values
-  $node->uniquename   = trim($node->uniquename);
-  $node->fname        = trim($node->fname);
-  $node->feature_type = trim($node->feature_type);
-  $node->residues     = trim($node->residues);
 
   // if this is a delete then don't validate
   if($node->op == 'Delete') {
@@ -261,6 +256,12 @@ function chado_feature_validate($node, $form, &$form_state) {
     return;
   }
 
+  // remove surrounding white-space on submitted values
+  $node->uniquename   = trim($node->uniquename);
+  $node->fname        = trim($node->fname);
+  $node->feature_type = trim($node->feature_type);
+  $node->residues     = trim($node->residues);
+  
   // Validating for an update
   if (property_exists($node, 'nid')) {
 
@@ -723,7 +724,7 @@ function tripal_feature_node_presave($node) {
         $uname       = $node->uniquename;
         $type        = $node->feature_type;
       }
-      else {
+      else if (property_exists($node, 'feature')) {
         $organism_id = $node->feature->organism_id;
         $name        = $node->feature->name;
         $uname       = $node->feature->uniquename;

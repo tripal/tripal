@@ -198,9 +198,6 @@ function chado_project_form(&$node, $form_state) {
  */
 function chado_project_validate($node, $form, &$form_state) {
 
-  $node->title = trim($node->title);
-  $node->description = trim($node->description);
-
   // if this is a delete then don't validate
   if($node->op == 'Delete') {
     return;
@@ -212,6 +209,10 @@ function chado_project_validate($node, $form, &$form_state) {
     return;
   }
 
+  // trim white space from text fields
+  $node->title = trim($node->title);
+  $node->description = trim($node->description);
+  
   $project = 0;
   // check to make sure the name on the project is unique
   // before we try to insert into chado.

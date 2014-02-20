@@ -211,14 +211,6 @@ function chado_organism_form($node, $form_state) {
  * @ingroup tripal_organism
  */
 function chado_organism_validate($node, $form, &$form_state) {
-  // remove any white space around values
-  $node->genus        = trim($node->genus);
-  $node->species      = trim($node->species);
-  $node->abbreviation = trim($node->abbreviation);
-  $node->common_name  = trim($node->common_name);
-  $node->description  = trim($node->description);
-
-
   // if this is a delete then don't validate
   if($node->op == 'Delete') {
     return;
@@ -230,6 +222,13 @@ function chado_organism_validate($node, $form, &$form_state) {
     return;
   }
 
+  // remove any white space around values
+  $node->genus        = trim($node->genus);
+  $node->species      = trim($node->species);
+  $node->abbreviation = trim($node->abbreviation);
+  $node->common_name  = trim($node->common_name);
+  $node->description  = trim($node->description);
+  
   // Validating for an update
   if (property_exists($node, 'organism_id')) {
     $sql = "
@@ -287,7 +286,7 @@ function chado_organism_insert($node) {
   // if there is an organism_id in the $node object then this must be a sync so
   // we can skip adding the organism as it is already there, although
   // we do need to proceed with the rest of the insert
-  if (!property_exists($node,'organism_id')) {
+  if (!property_exists($node, 'organism_id')) {
     $values = array(
       'genus'        => $node->genus,
       'species'      => $node->species,
@@ -508,14 +507,14 @@ function chado_organism_load($nodes) {
 function tripal_organism_node_presave($node) {
   switch ($node->type) {
     case 'chado_organism':
-      // for a form submission the 'genus' field will be set,
-      // for a sync, we must pull from the organism object
-      if(property_exists($node, 'genus')) {
-        // set the title
+      // when syncing the details are not present in the $node object
+      // as they are when submitted via the form.  Therefore, if we do
+      // not see any field values from the form, we assume this fucntion
+      // is being called for syncing, so we must set the title accordingly
+      if (property_exists($node, 'genus')) {
         $node->title = $node->genus  . " " . $node->species;
       }
-      else {
-        // set the title
+      else if (property_exists($node, 'organism')) {
         $node->title = $node->organism->genus . " " . $node->organism->species;
       }
       break;

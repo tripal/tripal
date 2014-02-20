@@ -161,8 +161,6 @@ function chado_featuremap_form($node, &$form_state) {
  * @ingroup tripal_featuremap
  */
 function chado_featuremap_validate($node, $form, &$form_state) {
-  $node->fmapname          = trim($node->fmapname);
-  $node->description    = trim($node->description);
 
   // if this is a delete then don't validate
   if($node->op == 'Delete') {
@@ -175,6 +173,10 @@ function chado_featuremap_validate($node, $form, &$form_state) {
     return;
   }
 
+  // trim white space from text fields
+  $node->fmapname       = trim($node->fmapname);
+  $node->description    = trim($node->description);
+  
   $featuremap = 0;
   // check to make sure the unique name on the map is unique
   // before we try to insert into chado. If this is an update then we will
@@ -470,11 +472,11 @@ function tripal_featuremap_node_presave($node) {
     case 'chado_featuremap':
       // for a form submission the 'fmapname' field will be set,
       // for a sync, we must pull from the featuremap object
-      if(property_exists($node, 'fmapname')) {
+      if (property_exists($node, 'fmapname')) {
         // set the title
         $node->title = $node->fmapname;
       }
-      else {
+      else if (property_exists($node, 'featuremap')) {
         $node->title = $node->featuremap->name;
       }
       break;

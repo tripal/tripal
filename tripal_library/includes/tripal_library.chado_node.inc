@@ -210,7 +210,18 @@ function chado_library_form($node, &$form_state) {
  * @ingroup tripal_library
  */
 function chado_library_validate($node, $form, &$form_state) {
-
+  // if this is a delete then don't validate
+  if($node->op == 'Delete') {
+    return;
+  }
+  
+  // we are syncing if we do not have a node ID but we do have a featuremap_id. We don't
+  // need to validate during syncing so just skip it.
+  if (is_null($node->nid) and property_exists($node, 'library_id') and $node->library_id != 0) {
+    return;
+  }
+  
+  // trim white space from text fields
   $node->libraryname = trim($node->libraryname);
   $node->uniquename  = trim($node->uniquename);
   $node->description = trim($node->description);
@@ -552,11 +563,11 @@ function tripal_library_node_presave($node) {
     case 'chado_library':
       // for a form submission the 'libraryname' field will be set,
       // for a sync, we must pull from the library object
-      if(property_exists($node, 'libraryname')) {
+      if (property_exists($node, 'libraryname')) {
         // set the title
         $node->title = $node->libraryname;
       }
-      else {
+      else if (property_exists($node, 'library')) {
         $node->title = $node->library->name;
       }
       break;

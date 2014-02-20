@@ -238,10 +238,6 @@ function chado_contact_form(&$node, $form_state) {
  * @ingroup tripal_contact
  */
 function chado_contact_validate($node, $form, &$form_state) {
-  // remove surrounding white-space on submitted values
-  $node->contactname          = trim($node->contactname);
-  $node->description    = trim($node->description);
-
   // if this is a delete then don't validate
   if($node->op == 'Delete') {
     return;
@@ -253,6 +249,11 @@ function chado_contact_validate($node, $form, &$form_state) {
     return;
   }
 
+  // remove surrounding white-space on submitted values
+  $node->contactname    = trim($node->contactname);
+  $node->description    = trim($node->description);
+  
+  
   // Validating for an update
   if (property_exists($node, 'nid')) {
     // get the existing node
@@ -610,11 +611,11 @@ function tripal_contact_node_presave($node) {
     case 'chado_contact':
       // for a form submission the 'contactname' field will be set,
       // for a sync, we must pull from the contact object
-      if(property_exists($node, 'contactname')) {
+      if (property_exists($node, 'contactname')) {
         // set the title
         $node->title = $node->contactname;
       }
-      else {
+      else if (property_exists($node, 'contact')) {
         $node->title = $node->contact->name;
       }
       break;

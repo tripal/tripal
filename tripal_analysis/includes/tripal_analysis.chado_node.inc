@@ -264,15 +264,6 @@ function chado_analysis_validate($node, $form, &$form_state) {
  * @ingroup tripal_analysis
  */
 function tripal_analysis_validate($node, $form, &$form_state) {
-  // remove surrounding white-space on submitted values
-  $node->analysisname = trim($node->analysisname);
-  $node->description = trim($node->description);
-  $node->program = trim($node->program);
-  $node->programversion = trim($node->programversion);
-  $node->algorithm = trim($node->algorithm);
-  $node->sourcename = trim($node->sourcename);
-  $node->sourceversion = trim($node->sourceversion);
-  $node->sourceuri = trim($node->sourceuri);
 
   // if this is a delete then don't validate
   if($node->op == 'Delete') {
@@ -285,6 +276,16 @@ function tripal_analysis_validate($node, $form, &$form_state) {
     return;
   }
 
+  // remove surrounding white-space on submitted values
+  $node->analysisname = trim($node->analysisname);
+  $node->description = trim($node->description);
+  $node->program = trim($node->program);
+  $node->programversion = trim($node->programversion);
+  $node->algorithm = trim($node->algorithm);
+  $node->sourcename = trim($node->sourcename);
+  $node->sourceversion = trim($node->sourceversion);
+  $node->sourceuri = trim($node->sourceuri);
+  
   // Validating for an update
   if (!is_null($node->nid)) {
 

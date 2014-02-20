@@ -342,13 +342,6 @@ function chado_stock_form($node, $form_state) {
  */
 function chado_stock_validate(&$node, $form, &$form_state) {
 
-  // remove surrounding whitespace
-  $node->uniquename = trim($node->uniquename);
-  $node->sname = trim($node->sname);
-  $node->stock_description = trim($node->stock_description);
-  $node->accession = trim($node->accession);
-  $node->db_description = trim($node->db_description);
-
   // if this is a delete then don't validate
   if($node->op == 'Delete') {
     return;
@@ -360,6 +353,13 @@ function chado_stock_validate(&$node, $form, &$form_state) {
     return;
   }
 
+  // remove surrounding whitespace
+  $node->uniquename = trim($node->uniquename);
+  $node->sname = trim($node->sname);
+  $node->stock_description = trim($node->stock_description);
+  $node->accession = trim($node->accession);
+  $node->db_description = trim($node->db_description);
+  
   $int_in_chado_sql = "SELECT count(*) as count FROM {:table} WHERE :column = :value";
   $string_in_chado_sql = "SELECT count(*) as count FROM {:table} WHERE :column = :value";
 
@@ -796,7 +796,7 @@ function tripal_stock_node_presave($node) {
         $cvterm = chado_select_record('cvterm', array('name'), $values);
         $type = $cvterm[0]->name;
       }
-      else {
+      else if (property_exists($node, 'stock')) {
         $organism_id = $node->stock->organism_id;
         $sname       = $node->stock->name;
         $uniquename  = $node->stock->uniquename;
