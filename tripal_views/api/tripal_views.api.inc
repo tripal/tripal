@@ -43,7 +43,7 @@ function mymodule_menu() {
   // Create one of these for each of your default views
   $items['admin/tripal/<PATH-TO-YOUR-ADMIN-SECTION>/views/<VIEW-MACHINE-NAME>/enable'] = array(
     'title' => 'Enable <VIEW-HUMAN-READABLE-NAME>',
-    'page callback' => 'tripal_views_admin_enable_view',
+    'page callback' => 'tripal_enable_view',
     'page arguments' => array('<VIEW-MACHINE-NAME>', '<PATH-TO-REDIRECT-TO-AFTERWARDS>'),
     'access arguments' => array('<YOUR-PERMISSION-KEY>'),
     'type' => MENU_CALLBACK,
@@ -97,22 +97,22 @@ function mymodule_admin_landing_page() {
     // so that individual sites still have the ability to override it, if needed
     $table_name = 'my_chado_table';
     $priority = -5;
-    if (!tripal_views_is_integrated($table_name, $priority)) {
+    if (!tripal_is_table_integrated($table_name, $priority)) {
 
       // If you really only need to tweak an existing integration you can clone it
       // If you want to clone the integration that is currently taking priority
-      // then use tripal_views_get_table_lightest_priority() as below
-      $lightest_priority = tripal_views_get_table_lightest_priority($table_name);
-      $setup_id = tripal_views_clone_integration($table_name, $priority, $lightest_priority);
+      // then use tripal_get_lightest_views_integration_priority() as below
+      $lightest_priority = tripal_get_lightest_views_integration_priority($table_name);
+      $setup_id = tripal_clone_views_integration($table_name, $priority, $lightest_priority);
 
       // And then make a few changes
       // First get the definition array created via the clone above
-      $defn_array = tripal_views_integration_export_entry($setup_id);
+      $defn_array = tripal_export_views_integration($setup_id);
 
       // Then make some changes to the array here
 
       // And finally save the changes to the integration
-      tripal_views_integration_update_entry($setup_id, $defn_array);
+      tripal_update_views_integration($setup_id, $defn_array);
 
     }
 
@@ -127,9 +127,9 @@ function mymodule_admin_landing_page() {
     // so that individual sites still have the ability to override it, if needed
     $table_name = 'my_chado_table';
     $priority = 5;
-    if (!tripal_views_is_integrated($table_name, $priority)) {
+    if (!tripal_is_table_integrated($table_name, $priority)) {
 
-      // Describe your table using a large array as specified by tripal_views_integration_add_entry().
+      // Describe your table using a large array as specified by tripal_add_views_integration().
       $defn_array = array(
         'table' => $table_name, //tablename or materialized view name
         'name' => 'My Chado Table', // Human readable name
@@ -159,7 +159,7 @@ function mymodule_admin_landing_page() {
         ),
       );
       // Actually create the entry
-      tripal_views_integration_add_entry($defn_array);
+      tripal_add_views_integration($defn_array);
 
     }
 
@@ -182,7 +182,7 @@ function mymodule_menu() {
   // Create one of these for each of your default views
   $items['admin/tripal/<PATH-TO-YOUR-ADMIN-SECTION>/views/<VIEW-MACHINE-NAME>/enable'] = array(
     'title' => 'Enable <VIEW-HUMAN-READABLE-NAME>',
-    'page callback' => 'tripal_views_admin_enable_view',
+    'page callback' => 'tripal_enable_view',
     'page arguments' => array('<VIEW-MACHINE-NAME>', '<PATH-TO-REDIRECT-TO-AFTERWARDS>'),
     'access arguments' => array('<YOUR-PERMISSION-KEY>'),
     'type' => MENU_CALLBACK,
@@ -197,7 +197,7 @@ function mymodule_menu() {
 function mymodule_enable() {
 
   $view_name = '<VIEW-MACHINE-NAME>';
-  tripal_views_admin_enable_view($view_name);
+  tripal_enable_view($view_name);
 
 }
  * @endcode
@@ -209,7 +209,7 @@ function mymodule_enable() {
  *
  * @ingroup tripal_views_api
  */
-function tripal_views_admin_enable_view($view_name, $redirect_link = FALSE) {
+function tripal_enable_view($view_name, $redirect_link = FALSE) {
 
   $status = variable_get('views_defaults', array());
   if (isset($status[$view_name])) {
@@ -239,7 +239,7 @@ function mymodule_menu() {
   // Create one of these for each of your default views
   $items['admin/tripal/<PATH-TO-YOUR-ADMIN-SECTION>/views/<VIEW-MACHINE-NAME>/disable'] = array(
     'title' => 'Disable <VIEW-HUMAN-READABLE-NAME>',
-    'page callback' => 'tripal_views_admin_disable_view',
+    'page callback' => 'tripal_disable_view',
     'page arguments' => array('<VIEW-MACHINE-NAME>', '<PATH-TO-REDIRECT-TO-AFTERWARDS>'),
     'access arguments' => array('<YOUR-PERMISSION-KEY>'),
     'type' => MENU_CALLBACK,
@@ -253,7 +253,7 @@ function mymodule_menu() {
 function mymodule_uninstall() {
 
   $view_name = '<VIEW-MACHINE-NAME>';
-  tripal_views_admin_disable_view($view_name);
+  tripal_disable_view($view_name);
 
 }
  * @endcode
@@ -265,7 +265,7 @@ function mymodule_uninstall() {
  *
  * @ingroup tripal_views_api
  */
-function tripal_views_admin_disable_view($view_name, $redirect_link = FALSE) {
+function tripal_disable_view($view_name, $redirect_link = FALSE) {
 
   $status = variable_get('views_defaults', array());
   if (isset($status[$view_name])) {
@@ -299,12 +299,12 @@ function tripal_views_admin_disable_view($view_name, $redirect_link = FALSE) {
 
   // <VIEW-HUMAN-READABLE-NAME>
   $view = mymodule_defaultview_<VIEW-TYPE>_<VIEW-MACHINE-NAME>();
-  $view = tripal_views_make_view_compatible_with_external($view);
+  $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   // <VIEW-HUMAN-READABLE-NAME>
   $view = mymodule_defaultview_<VIEW-TYPE>_<VIEW-MACHINE-NAME>();
-  $view = tripal_views_make_view_compatible_with_external($view);
+  $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   return $views;
@@ -331,12 +331,12 @@ function mymodule_defaultview_<VIEW-TYPE>_<VIEW-MACHINE-NAME>() {
  *   The default view with all relationships, fields, filters, sorts, arguements for
  *   Drupal tables removed.
  */
-function tripal_views_make_view_compatible_with_external($view) {
+function tripal_make_view_compatible_with_external($view) {
   $remove_table = array();
 
   // First check that the base table for the view is a chado table
   // If it's not then don't do any filtering
-  $setup_id = tripal_views_is_integrated($view->base_table);
+  $setup_id = tripal_is_table_integrated($view->base_table);
   if (!$setup_id) {
     return $view;
   }
@@ -359,7 +359,7 @@ function tripal_views_make_view_compatible_with_external($view) {
               $remove_table[ $defn['table'] ] = FALSE;
             }
             // If this table is integrated then it is chado; thus keep
-            $setup_id = tripal_views_is_integrated($defn['table']);
+            $setup_id = tripal_is_table_integrated($defn['table']);
             if ($setup_id) {
               $remove_table[ $defn['table'] ] = FALSE;
             }
@@ -397,7 +397,7 @@ function tripal_views_make_view_compatible_with_external($view) {
  *
  * @ingroup tripal_views_api
  */
-function tripal_views_get_table_lightest_priority($table_name) {
+function tripal_get_lightest_views_integration_priority($table_name) {
 
   // D7 TODO: Check DBTNG changes work
   $sql = "SELECT priority FROM {tripal_views} WHERE table_name=:table ORDER BY priority ASC";
@@ -427,7 +427,7 @@ function tripal_views_get_table_lightest_priority($table_name) {
  *
  * @ingroup tripal_views_api
  */
-function tripal_views_get_lightest_priority_setup($table_name) {
+function tripal_get_lightest_views_integration_setup($table_name) {
 
   // D7 TODO: Check DBTNG changes work
   $sql = "SELECT setup_id FROM {tripal_views} WHERE table_name=:table ORDER BY priority ASC";
@@ -455,7 +455,7 @@ function tripal_views_get_lightest_priority_setup($table_name) {
  *
  * @ingroup tripal_views_api
  */
-function tripal_views_get_setup_id($table_name, $priority) {
+function tripal_get_views_integration_setup_id($table_name, $priority) {
 
   // D7 TODO: Check DBTNG changes work
   $sql = "SELECT setup_id FROM {tripal_views} WHERE table_name=:table AND priority=:priority ORDER BY priority ASC";
@@ -484,7 +484,7 @@ function tripal_views_get_setup_id($table_name, $priority) {
  *
  * @ingroup tripal_views_api
  */
-function tripal_views_is_integrated($table_name, $priority = NULL) {
+function tripal_is_table_integrated($table_name, $priority = NULL) {
 
   if ($priority) {
     // D7 TODO: Check DBTNG changes work
@@ -519,9 +519,9 @@ function tripal_views_is_integrated($table_name, $priority = NULL) {
  *
  * @ingroup tripal_views_api
  */
-function tripal_views_is_lightest_priority_setup($setup_id, $table_name) {
+function tripal_is_lightest_priority_setup($setup_id, $table_name) {
 
-  $lightest_priority_setup_id = tripal_views_get_lightest_priority_setup($table_name);
+  $lightest_priority_setup_id = tripal_get_lightest_views_integration_setup($table_name);
   if ($lightest_priority_setup_id == $setup_id) {
     return TRUE;
   }
@@ -545,7 +545,7 @@ function tripal_views_is_lightest_priority_setup($setup_id, $table_name) {
  *
  * @ingroup tripal_views_api
  */
-function tripal_views_rebuild_views_integrations($delete_first = FALSE) {
+function tripal_rebuild_views_integrations($delete_first = FALSE) {
 
   if ($delete_first) {
     tripal_views_delete_all_integrations();
@@ -599,12 +599,12 @@ function tripal_views_rebuild_views_integrations($delete_first = FALSE) {
       )
     ),
   );
-  tripal_views_integration_add_entry($defn_array);
+  tripal_add_views_integration($defn_array);
  * @endcode
  *
  * @ingroup tripal_views_api
  */
-function tripal_views_integration_add_entry($defn_array, $setup_id = FALSE) {
+function tripal_add_views_integration($defn_array, $setup_id = FALSE) {
   $no_errors = TRUE;
 
   if (empty($defn_array['table'])) {
@@ -794,17 +794,17 @@ function tripal_views_integration_add_entry($defn_array, $setup_id = FALSE) {
  * This is a great way to create your own integration since it returns an already defined
  * integration in array form that you can modify. After modifications simply set the
  * priority to something lighter (but still below 0) than any existing integrations
- * and use tripal_views_integration_add_entry() to add it to the list of integrations.
+ * and use tripal_add_views_integration() to add it to the list of integrations.
  *
  * @param $setup_id
  *   The unique setup id of the tripal views integration
  *
  * @return
- *   A views integration definition array as used by tripal_views_integration_add_entry()
+ *   A views integration definition array as used by tripal_add_views_integration()
  *
  * @ingroup tripal_views_api
  */
-function tripal_views_integration_export_entry($setup_id) {
+function tripal_export_views_integration($setup_id) {
 
   // Main setup details
   // D7 TODO: Check DBTNG changes work
@@ -863,61 +863,56 @@ function tripal_views_integration_export_entry($setup_id) {
  *
  * This should only be used to remove integrations created by your own module (possibly
  * on uninstall of your module). To override existing integrations simply create your own
- * integration with a lighter priority using tripal_views_clone_integration() or
- * tripal_views_integration_export_entry() to create a template.
+ * integration with a lighter priority using tripal_clone_views_integration() or
+ * tripal_export_views_integration() to create a template.
  *
- * @param $table_name
- *   The name of the table to remove a views integration entry for
- * @param $priority
- *   The priority of the of views integration entry
+ * @param $identifies
+ *   An array of identifiers where the keys indicate what the identifier is. One of the
+ *   following compinations must be present:
+ *    1) table_name & priority: the name of the table & the priority to remove a views
+ *       integration entry for
+ *    2) setup_id: the setup_id of the entry to remove
+ * @param $options
+ *   An array of options, currently none are supported
  *
  * @return
  *   TRUE on Success; FALSE otherwise
  *
  * @ingroup tripal_views_api
  */
-function tripal_views_integration_remove_entry_by_table_name($table_name, $priority) {
+function tripal_remove_views_integration($identifiers, $options = array()) {
 
-  // D7 TODO: Check DBTNG changes work
-  $views = db_query(
-    "SELECT * FROM {tripal_views} WHERE table_name=:table AND priority=:priority",
-    array(
-      ':table' => $table_name,
-      ':priority' => $priority
-    )
-  );
-  $views = $views->fetchObject();
-  if ($views->setup_id) {
-    tripal_views_integration_remove_entry_by_setup_id($views->setup_id);
-    return TRUE;
+  // Remove the views integration using the table_name/priority combo
+  if (isset($identifiers['table_name'])) {
+    $table_name = $identifiers['table_name'];
+    $priority = $identifiers['priority'];
+
+    $views = db_query(
+      "SELECT * FROM {tripal_views} WHERE table_name=:table AND priority=:priority",
+      array(
+        ':table' => $table_name,
+        ':priority' => $priority
+      )
+    );
+    $views = $views->fetchObject();
+    if ($views->setup_id) {
+      $identifiers['setup_id'] = $views->setup_id;
+    }
+
   }
-  else {
-    return FALSE;
-  }
 
-}
+  // Remove the views integration using the setup_id
+  if (isset($identifiers['setup_id'])) {
 
-/**
- * Removes a View Integration Entry when you know the setup_id
- *
- * This should only be used to remove integrations created by your own module (possibly
- * on uninstall of your module). To override existing integrations simply create your own
- * integration with a lighter priority using tripal_views_clone_integration() or
- * tripal_views_integration_export_entry() to create a template.
- *
- * @param $setup_id
- *   The setup ID of the views integration entry to remove
- *
- * @ingroup tripal_views_api
- */
-function tripal_views_integration_remove_entry_by_setup_id($setup_id) {
-
-    // D7 TODO: Check DBTNG changes work
     db_query('DELETE FROM {tripal_views} WHERE setup_id=:setup', array(':setup' => $setup_id));
     db_query('DELETE FROM {tripal_views_field} WHERE setup_id=:setup', array(':setup' => $setup_id));
     db_query('DELETE FROM {tripal_views_handlers} WHERE setup_id=:setup', array(':setup' => $setup_id));
     db_query('DELETE FROM {tripal_views_join} WHERE setup_id=:setup', array(':setup' => $setup_id));
 
+    return TRUE;
+  }
+
+  return FALSE;
 }
 
 /**
@@ -928,16 +923,16 @@ function tripal_views_integration_remove_entry_by_setup_id($setup_id) {
  *   The setup ID of the views integration entry to update
  * @param $defn_array
  *   An array describing the structure and fields of the table as is used in
- *   tripal_views_integration_add_entry().
+ *   tripal_add_views_integration().
  *
  * @ingroup tripal_views_api
  */
-function tripal_views_integration_update_entry($setup_id, $defn_array) {
+function tripal_update_views_integration($setup_id, $defn_array) {
 
-  tripal_views_integration_remove_entry_by_setup_id($setup_id);
+  tripal_remove_views_integration(array('setup_id' => $setup_id));
 
   $defn_array['additional_content'] = TRUE;
-  tripal_views_integration_add_entry($def_array, $setup_id);
+  tripal_add_views_integration($def_array, $setup_id);
 }
 
 /**
@@ -956,16 +951,16 @@ function tripal_views_integration_update_entry($setup_id, $defn_array) {
  *
  * @ingroup tripal_views_api
  */
-function tripal_views_clone_integration($table_name, $new_priority = NULL, $template_priority = NULL) {
+function tripal_clone_views_integration($table_name, $new_priority = NULL, $template_priority = NULL) {
 
   if (empty($template_priority)) {
-    $template_setup_id = tripal_views_get_lightest_priority_setup($table_name);
+    $template_setup_id = tripal_get_lightest_views_integration_setup($table_name);
   }
   else {
-    $template_setup_id = tripal_views_get_setup_id($table_name, $template_priority);
+    $template_setup_id = tripal_get_views_integration_setup_id($table_name, $template_priority);
   }
 
-  $defn_array = tripal_views_integration_export_entry($template_setup_id);
+  $defn_array = tripal_export_views_integration($template_setup_id);
 
   if (empty($new_priority)) {
     $defn_array['priority'] = $new_priority;
@@ -976,7 +971,7 @@ function tripal_views_clone_integration($table_name, $new_priority = NULL, $temp
   }
 
   // D7 TODO: Check DBTNG changes work
-  tripal_views_integration_add_entry($defn_array);
+  tripal_add_views_integration($defn_array);
   $setup_id = db_query(
     "SELECT setup_id FROM {tripal_views} WHERE table_name=:table AND priority=:priority",
     array(
@@ -1016,12 +1011,12 @@ function tripal_views_clone_integration($table_name, $new_priority = NULL, $temp
  *
  * @ingroup tripal_views_api
  */
-function tripal_views_add_field_to_integration($table_name, $priority, $field) {
+function tripal_add_field_to_views_integration($table_name, $priority, $field) {
   $no_errors = TRUE;
 
   // If no priority is supplied then add the field to the lightest integration
   if (empty($priority)) {
-    $priority = tripal_views_get_table_lightest_priority($table_name);
+    $priority = tripal_get_lightest_views_integration_priority($table_name);
   }
 
   // First get the setup_id
@@ -1038,7 +1033,7 @@ function tripal_views_add_field_to_integration($table_name, $priority, $field) {
   // If there isn't an integration matching that table/priority combination
   // then clone the lightest priority integration
   if (empty($setup_id)) {
-    $setup_id = tripal_views_clone_integration($table_name, $priority);
+    $setup_id = tripal_clone_views_integration($table_name, $priority);
   }
 
   // Now delete any existing field
@@ -1161,7 +1156,7 @@ function tripal_views_add_field_to_integration($table_name, $priority, $field) {
 
 /**
  * Remove a join from an integration. This is usually done after cloning an existing
- * integration using tripal_views_clone_integration().
+ * integration using tripal_clone_views_integration().
  *
  * @param $setup_id
  *   The setup_id of the integration to delete the join from
@@ -1176,7 +1171,7 @@ function tripal_views_add_field_to_integration($table_name, $priority, $field) {
  *
  * @ingroup tripal_views_api
  */
-function tripal_views_remove_join_from_integration($setup_id, $base_table, $base_field, $left_table, $left_field) {
+function tripal_remove_join_from_views_integration($setup_id, $base_table, $base_field, $left_table, $left_field) {
   db_query(
     "DELETE FROM {tripal_views_join} WHERE setup_id=:setup AND base_table=:base-table AND base_field=:base-field AND left_table=:left-table AND left_field=:left-field",
     array(
