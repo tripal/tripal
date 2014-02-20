@@ -39,7 +39,7 @@
  *
  * @ingroup tripal_organism_api
  */
-function chado_organism_retrieve($identifiers, $options = array()) {
+function tripal_get_organism($identifiers, $options = array()) {
 
   // Set Defaults
   if (!isset($options['include_fk'])) {
@@ -52,7 +52,7 @@ function chado_organism_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_organism_api',
       TRIPAL_ERROR,
-      "chado_organism_retrieve: The identifier passed in is expected to be an array with the key
+      "tripal_get_organism: The identifier passed in is expected to be an array with the key
         matching a column name in the organism table (ie: organism_id or name). You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
@@ -63,7 +63,7 @@ function chado_organism_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_organism_api',
       TRIPAL_ERROR,
-      "chado_organism_retrieve: You did not pass in anything to identify the organism you want. The identifier
+      "tripal_get_organism: You did not pass in anything to identify the organism you want. The identifier
         is expected to be an array with the key matching a column name in the organism table
         (ie: organism_id or name). You passed in %identifier.",
       array(
@@ -95,7 +95,7 @@ function chado_organism_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_organism_api',
       TRIPAL_ERROR,
-      "chado_organism_retrieve: The identifiers you passed in were not unique. You passed in %identifier.",
+      "tripal_get_organism: The identifiers you passed in were not unique. You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
       )
@@ -107,7 +107,7 @@ function chado_organism_retrieve($identifiers, $options = array()) {
     tripal_report_error(
       'tripal_organism_api',
       TRIPAL_ERROR,
-      "chado_organism_retrieve: chado_generate_var() failed to return a organism based on the identifiers
+      "tripal_get_organism: chado_generate_var() failed to return a organism based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
       array(
@@ -134,7 +134,7 @@ function chado_organism_retrieve($identifiers, $options = array()) {
  *
  * @ingroup tripal_organism_api
  */
-function organism_get_select_options($syncd_only = TRUE) {
+function tripal_get_organism_select_options($syncd_only = TRUE) {
 
   if ($syncd_only) {
     // use this SQL for getting synced organisms
@@ -180,7 +180,7 @@ function organism_get_select_options($syncd_only = TRUE) {
  * @return
  *   The fully qualified url to the image
  */
-function organism_get_image($organism, $nid = NULL) {
+function tripal_get_organism_image($organism, $nid = NULL) {
   $url = '';
 
   // first look for an image with the genus/species name.  This is old-style tripal

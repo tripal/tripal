@@ -354,9 +354,9 @@ function tripal_feature_delete_property_by_id($featureprop_id) {
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by feature_sequence_reverse_complement().
+ * This function has been replaced by tripal_reverse_compliment_sequence().
  *
- * @see feature_sequence_reverse_complement().
+ * @see tripal_reverse_compliment_sequence().
  */
 function tripal_feature_reverse_complement($sequence) {
 
@@ -366,19 +366,19 @@ function tripal_feature_reverse_complement($sequence) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_feature_reverse_complement',
-      '%new_function' => 'feature_sequence_reverse_complement'
+      '%new_function' => 'tripal_reverse_compliment_sequence'
     )
   );
 
-  return feature_sequence_reverse_complement($sequence);
+  return tripal_reverse_compliment_sequence($sequence);
 }
 
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by feature_sequence_get_formatted().
+ * This function has been replaced by tripal_format_sequence().
  *
- * @see feature_sequence_get_formatted().
+ * @see tripal_format_sequence().
  */
 function tripal_feature_get_formatted_sequence($feature_id, $feature_name, $num_bases_per_line, $derive_from_parent, $aggregate, $output_format, $upstream, $downstream, $sub_features = array(), $relationship = '', $rel_part = '') {
 
@@ -388,11 +388,11 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name, $num_
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_feature_get_formatted_sequence',
-      '%new_function' => 'feature_sequence_get_formatted'
+      '%new_function' => 'tripal_format_sequence'
     )
   );
 
-  return feature_sequence_get_formatted(
+  return tripal_format_sequence(
     // Feature
     array(
       'feature_id' => $feature_id,
@@ -416,9 +416,9 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name, $num_
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_associate_dbxref().
+ * This function has been replaced by tripal_associate_dbxref().
  *
- * @see chado_associate_dbxref().
+ * @see tripal_associate_dbxref().
  */
 function tripal_feature_add_dbxref($feature_id, $dbname, $accession) {
 
@@ -428,11 +428,11 @@ function tripal_feature_add_dbxref($feature_id, $dbname, $accession) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_feature_add_dbxref',
-      '%new_function' => 'chado_associate_dbxref'
+      '%new_function' => 'tripal_associate_dbxref'
     )
   );
 
-  return chado_associate_dbxref(
+  return tripal_associate_dbxref(
     'feature',
     $feature_id,
     array(
@@ -445,9 +445,9 @@ function tripal_feature_add_dbxref($feature_id, $dbname, $accession) {
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by chado_associate_cvterm().
+ * This function has been replaced by tripal_associate_cvterm().
  *
- * @see chado_associate_cvterm().
+ * @see tripal_associate_cvterm().
  */
 function tripal_feature_add_cvterm($feature_id, $cvname, $cvterm) {
 
@@ -457,11 +457,11 @@ function tripal_feature_add_cvterm($feature_id, $cvname, $cvterm) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_feature_add_cvterm',
-      '%new_function' => 'chado_associate_cvterm'
+      '%new_function' => 'tripal_associate_cvterm'
     )
   );
 
-  return chado_associate_cvterm(
+  return tripal_associate_cvterm(
     'feature',
     $feature_id,
     array(
@@ -474,9 +474,9 @@ function tripal_feature_add_cvterm($feature_id, $cvname, $cvterm) {
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by feature_sequence_get_fasta().
+ * This function has been replaced by tripal_get_fasta_sequence().
  *
- * @see feature_sequence_get_fasta().
+ * @see tripal_get_fasta_sequence().
  */
 function tripal_feature_return_fasta($feature, $desc) {
 
@@ -486,9 +486,9 @@ function tripal_feature_return_fasta($feature, $desc) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_feature_return_fasta',
-      '%new_function' => 'feature_sequence_get_fasta'
+      '%new_function' => 'tripal_get_fasta_sequence'
     )
   );
 
-  return feature_sequence_get_fasta($feature, $desc);
+  return tripal_get_fasta_sequence($feature, $desc);
 }

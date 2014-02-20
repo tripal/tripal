@@ -23,7 +23,7 @@
  *
  * @ingroup tripal_feature_api
  */
-function feature_sequence_reverse_complement($sequence) {
+function tripal_reverse_compliment_sequence($sequence) {
 
   $seq = strtoupper($sequence);
   $seq = strrev($seq);
@@ -82,7 +82,7 @@ function feature_sequence_reverse_complement($sequence) {
  *
  * @ingroup tripal_feature_api
  */
-function feature_sequence_get_formatted($feature, $options) {
+function tripal_format_sequence($feature, $options) {
 
   // Default Values
   $feature_id = $feature['feature_id'];
@@ -458,7 +458,7 @@ function feature_sequence_get_formatted($feature, $options) {
  *
  * @ingroup tripal_feature_api
  */
-function feature_sequence_get_fasta($feature, $desc) {
+function tripal_get_fasta_sequence($feature, $desc) {
 
   $fasta  = ">" . variable_get('chado_feature_accession_prefix', 'FID') . "$feature->feature_id|$feature->name";
   $fasta .= " $desc\n";

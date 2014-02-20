@@ -22,7 +22,7 @@
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_analysis_register_child($modulename) {
+function tripal_register_analysis_child($modulename) {
   $sql = "SELECT * FROM {tripal_analysis} WHERE modulename = :modname";
   if (!db_query($sql, array(':modname' => $modulename))->fetchField()) {
     $sql = "INSERT INTO {tripal_analysis} (modulename) VALUES (:modname)";
@@ -38,7 +38,7 @@ function tripal_analysis_register_child($modulename) {
  *
  * @ingroup tripal_analysis_api
  */
-function tripal_analysis_unregister_child($modulename) {
+function tripal_unregister_analysis_child($modulename) {
   if (db_table_exists('tripal_analysis')) {
       $sql = "DELETE FROM {tripal_analysis} WHERE modulename = :modname";
       db_query($sql, array(':modname' => $modulename));
@@ -70,7 +70,7 @@ function tripal_analysis_unregister_child($modulename) {
  *
  * @ingroup tripal_analysis_api
  */
-function chado_analysis_retrieve($identifier, $options) {
+function tripal_get_analysis($identifier, $options) {
 
   // Set Defaults
   if (!isset($options['include_fk'])) {
@@ -126,7 +126,7 @@ function chado_analysis_retrieve($identifier, $options) {
     tripal_report_error(
       'tripal_analysis_api',
       TRIPAL_ERROR,
-      "chado_analysis_retrieve: The identifiers you passed in were not unique. You passed in %identifier.",
+      "tripal_get_analysis: The identifiers you passed in were not unique. You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
       )
@@ -138,7 +138,7 @@ function chado_analysis_retrieve($identifier, $options) {
     tripal_report_error(
       'tripal_analysis_api',
       TRIPAL_ERROR,
-      "chado_analysis_retrieve: chado_generate_var() failed to return a analysis based on the identifiers
+      "tripal_get_analysis: chado_generate_var() failed to return a analysis based on the identifiers
         you passed in. You should check that your identifiers are correct, as well as, look
         for a chado_generate_var error for additional clues. You passed in %identifier.",
       array(
