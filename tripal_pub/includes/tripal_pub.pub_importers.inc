@@ -70,14 +70,14 @@ function tripal_pub_importers_list() {
 }
 
 /**
- * Creates the page that contains the publication importer setup form and 
+ * Creates the page that contains the publication importer setup form and
  * test results.
  *
  * @param $action
  *   The action to perform
  * @param $pub_import_id
  *   The importer ID
- *   
+ *
  * @return
  *   The HTML for the importer setup page
  *
@@ -216,7 +216,7 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
  *   The publication importer ID
  * @param $action
  *   The action to perform
- *   
+ *
  * @return
  *   A form array
  *
@@ -411,7 +411,7 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
 }
 
 /**
- * A helper function for the importer setup form that adds the criteria to 
+ * A helper function for the importer setup form that adds the criteria to
  * the form that belong to the importer.
  *
  * @param $form
@@ -835,7 +835,7 @@ function tripal_pub_importer_submit_job($import_id) {
  *   Returns an array containing the number of publications that were
  *   inserted, updated, skipped and which had an error during import.
  *
- * @ingroup tripal_pub_api
+ * @ingroup tripal_pub
  */
 function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE) {
   $report = array();
@@ -909,7 +909,7 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE) {
  *   the $action variable is set to 'inserted'.  If the function failes then the
  *   $action variable is set to 'error'
  *
- * @ingroup tripal_pub_api
+ * @ingroup tripal_pub
  */
 function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE, $update_if_exists = FALSE) {
   $pub_id = 0;
@@ -921,14 +921,14 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   // before proceeding check to see if the publication already exists. If there is only one match
   // and the $update_if_exists is NOT set then return FALSE
   $pub_ids = chado_does_pub_exist($pub_details);
-  
+
   if(count($pub_ids) == 1 and !$update_if_exists) {
     tripal_report_error('tripal_pub', TRIPAL_NOTICE,
      "There is a publication that is a duplicate of this publication. Cannot continue. It either ".
      "has a matching Dbxref (e.g. PubMed ID), a non-unique citation or matches on the unique  " .
      "constraint set by the Tripal publication module configuration page. \nCitation: %title %dbxref.\nMatching Pub id: %ids",
        array(
-        '%title' => $pub_details['Citation'], 
+        '%title' => $pub_details['Citation'],
         '%dbxref' => $pub_details['Publication Dbxref'],
         '%ids' => implode(",", $pub_ids),
        )
@@ -944,8 +944,8 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
       "have a matching Dbxref (e.g. PubMed ID) or match on the unique constraint set by the Tripal publication module ".
       "configuration page.  \nCitation: %title %dbxref.\nMatching Pub ids: %ids",
        array(
-         '%num' => count($pub_ids), 
-         '%title' => $pub_details['Citation'], 
+         '%num' => count($pub_ids),
+         '%title' => $pub_details['Citation'],
          '%dbxref' => $pub_details['Publication Dbxref'],
         '%ids' => implode(",", $pub_ids),
        )
@@ -972,7 +972,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     $pub_type = cvterm_retrieve($identifiers);
   }
   else {
-    tripal_report_error('tripal_pub', TRIPAL_ERROR, 
+    tripal_report_error('tripal_pub', TRIPAL_ERROR,
       "The Publication Type is a required property but is missing", array());
     $action = 'error';
     return FALSE;
@@ -1055,7 +1055,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     if($key == 'raw') {
       continue;
     }
-    
+
     // get the cvterm by name
     $identifiers = array(
       'name' => $key,
@@ -1064,7 +1064,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
       ),
     );
     $cvterm = cvterm_retrieve($identifiers);
-    
+
     // if we could not find the cvterm by name then try by synonym
     //$cvterm = tripal_cv_get_cvterm_by_name($key, NULL, 'tripal_pub');
     if (!$cvterm) {
@@ -1130,7 +1130,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
  * @param $do_contact
  *   Optional. Set to TRUE if a contact entry should be added to the Chado contact table
  *   for authors of the publication.
- * @ingroup tripal_pub_api
+ * @ingroup tripal_pub
  */
 function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
   $rank = 0;
@@ -1219,7 +1219,7 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
  *   An array suitable for the trpial_pub_create_citation function. On
  *   failure returns FALSE.
  *
- * @ingroup tripal_pub_api
+ * @ingroup tripal_pub
  */
 function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
 
