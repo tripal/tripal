@@ -71,7 +71,7 @@ function tripal_project_menu() {
     'title' => ' Sync',
     'description' => 'Create pages on this site for projects stored in Chado',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_core_chado_node_sync_form', 'tripal_project', 'chado_project'),
+    'page arguments' => array('chado_node_sync_form', 'tripal_project', 'chado_project'),
     'access arguments' => array('administer tripal project'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 0

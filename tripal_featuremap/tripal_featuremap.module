@@ -123,7 +123,7 @@ function tripal_featuremap_menu() {
     'title' => ' Sync',
     'description' => 'Sync featuremaps from Chado with Drupal',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_core_chado_node_sync_form', 'tripal_featuremap', 'chado_featuremap'),
+    'page arguments' => array('chado_node_sync_form', 'tripal_featuremap', 'chado_featuremap'),
     'access arguments' => array('administer tripal featuremap'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 0

@@ -73,7 +73,7 @@ function tripal_stock_menu() {
     'description' => 'Sync stocks from Chado with Drupal',
     'page callback' => 'drupal_get_form',
     //'page arguments' => array('tripal_stock_sync_form'),
-    'page arguments' => array('tripal_core_chado_node_sync_form', 'tripal_stock', 'chado_stock'),
+    'page arguments' => array('chado_node_sync_form', 'tripal_stock', 'chado_stock'),
     'access arguments' => array('administer tripal stock'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 0

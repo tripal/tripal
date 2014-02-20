@@ -96,7 +96,7 @@ function tripal_example_menu() {
     'title' => ' Sync',
     'description' => 'Create pages on this site for examples stored in Chado',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_core_chado_node_sync_form', 'tripal_example', 'chado_example'),
+    'page arguments' => array('chado_node_sync_form', 'tripal_example', 'chado_example'),
     'access arguments' => array('administer tripal example'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 2

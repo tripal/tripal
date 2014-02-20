@@ -75,7 +75,7 @@ function tripal_analysis_menu() {
     'title' => ' Sync',
     'description' => 'Create pages on this site for analyses stored in Chado',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_core_chado_node_sync_form', 'tripal_analysis', 'chado_analysis'),
+    'page arguments' => array('chado_node_sync_form', 'tripal_analysis', 'chado_analysis'),
     'access arguments' => array('administer tripal analysis'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 2

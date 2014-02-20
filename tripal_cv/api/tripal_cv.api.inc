@@ -803,10 +803,10 @@ function tripal_submit_obo_job($obo) {
 
   if ($obo['obo_id']) {
     $sql = "SELECT * FROM {tripal_cv_obo} WHERE obo_id = :obo_id";
-    $obo = db_query($sql, array(':obo_id' => $obo['obo_id']))->fetchObject();
+    $result = db_query($sql, array(':obo_id' => $obo['obo_id']))->fetchObject();
 
-    $args = array($obo['obo_id']);
-    return tripal_add_job("Load OBO $obo->name", 'tripal_cv',
+    $args = array($result->obo_id);
+    return tripal_add_job("Load OBO " . $result->name, 'tripal_cv',
        "tripal_cv_load_obo_v1_2_id", $args, $user->uid);
   }
   else {

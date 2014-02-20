@@ -94,7 +94,7 @@ function tripal_pub_menu() {
     'title' => ' Sync',
     'description' => 'Create pages on this site for libraries stored in Chado',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_core_chado_node_sync_form', 'tripal_pub', 'chado_pub'),
+    'page arguments' => array('chado_node_sync_form', 'tripal_pub', 'chado_pub'),
     'access arguments' => array('administer tripal pub'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 2

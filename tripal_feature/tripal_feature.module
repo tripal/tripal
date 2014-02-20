@@ -158,7 +158,7 @@ function tripal_feature_menu() {
     'title' => ' Sync',
     'description' => 'Create pages on this site for features stored in Chado',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_core_chado_node_sync_form', 'tripal_feature', 'chado_feature'),
+    'page arguments' => array('chado_node_sync_form', 'tripal_feature', 'chado_feature'),
     'access arguments' => array('administer tripal feature'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 1
