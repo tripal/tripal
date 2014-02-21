@@ -352,7 +352,7 @@ function tripal_cv_add_obo_ref($name, $path) {
     )
   );
 
-  return tripal_insert_obo($name, $ref);
+  return tripal_insert_obo($name, $path);
 }
 
 /**

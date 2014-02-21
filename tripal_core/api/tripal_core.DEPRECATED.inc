@@ -388,7 +388,7 @@ function tripal_core_chado_delete($table, $match, $options = NULL) {
   );
 
   //New API Function
-  return chado_delete_record();
+  return chado_delete_record($table, $match, $options);
 }
 
 /**

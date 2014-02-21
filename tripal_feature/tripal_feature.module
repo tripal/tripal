@@ -707,15 +707,9 @@ function tripal_feature_get_matched_alignments($feature) {
  */
 function tripal_feature_load_organism_feature_counts($organism) {
 
-  // don't show the browser if the settings in the admin page is turned off
-  // instead return the array indicating the status of the browser
-  $show_counts = variable_get('tripal_feature_summary_setting', 'show_feature_summary');
-  if (strcmp($show_counts, 'show_feature_summary')!=0) {
-    return array('enabled' => FALSE );
-  }
   $args = array();
-  $names = array();
   $order = array();
+  $names = array();
 
   // build the where clause for the SQL statement if we have a custom term list
   // we'll also keep track of the names the admin provided (if any) and the
@@ -727,25 +721,26 @@ function tripal_feature_load_organism_feature_counts($organism) {
     $is_custom = 1;
     $temp = explode("\n", $temp);
     $i = 0;
-    foreach ($temp as $key => $value) {
+    foreach ($temp as $value) {
       // separate the key value pairs
       $temp2 = explode("=", $value);
       $feature_type = rtrim($temp2[0]);
-      $args[] = $feature_type;
-      $order[] = $feature_type;
-      // if a new name is provided then use that otherwise just
-      // use the feature type
-      if (count($temp2) == 2) {
-        $names[":name$i"] = rtrim($temp2[1]);
+      $order[] = $feature_type;  // save the order of the these terms
+      $where .= " OFC.feature_type = :name$i OR ";
+      $args[":name$i"] = rtrim($temp2[0]);
+      
+      // if the admin specified a new name then store that otherwise use the
+      // the default sequence ontology term name
+      if(count($temp2) == 2) {
+        $names[] = rtrim($temp2[1]);
       }
       else {
-        $names[":name$i"] = $feature_type;
+        $names[] = $feature_type;
       }
-      $where .= " OFC.feature_type = :name$i OR ";
       $i++;
     }
     if ($where) {
-      $where = drupal_substr($where, 0, -5);  # remove OR from the end
+      $where = drupal_substr($where, 0, -4);  # remove OR from the end
       $where = "($where) AND";
     }
   }
@@ -774,12 +769,15 @@ function tripal_feature_load_organism_feature_counts($organism) {
     }
   }
 
-  # now reorder the types
+  // now reorder the types
   $ordered_types = array();
   foreach ($order as $type) {
     $ordered_types[] = $types[$type];
   }
-  return array( 'types' => $ordered_types, 'names' => $names, 'enabled' => TRUE );
+  return array( 
+    'types' => $ordered_types, 
+    'names' => $names
+  );
 }
 
 /**

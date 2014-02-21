@@ -76,8 +76,8 @@ function tripal_cv_menu() {
 
   // The OBO loader will be available in two places
   $items['admin/tripal/chado/tripal_cv/obo_loader'] = array(
-    'title' => 'Load Ontology',
-    'description' => 'Load an Ontology into chado as a controlled vocabulary.',
+    'title' => 'OBO File Loader',
+    'description' => 'Load an ontology in OBO format chado as a controlled vocabulary.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_cv_obo_form'),
     'access arguments' => array('administer controlled vocabularies'),
@@ -85,8 +85,8 @@ function tripal_cv_menu() {
   );
 
   $items['admin/tripal/loaders/obo_loader'] = array(
-    'title' => 'Load Ontology',
-    'description' => 'Load an Ontology into chado as a controlled vocabulary.',
+    'title' => 'OBO File Loader',
+    'description' => 'Load an ontology in OBO format into chado as a controlled vocabulary.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_cv_obo_form'),
     'access arguments' => array('administer controlled vocabularies'),

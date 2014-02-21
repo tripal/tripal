@@ -730,7 +730,7 @@ function tripal_feature_node_presave($node) {
         $uname       = $node->feature->uniquename;
         $type_id     = $node->feature->type_id;
         $values = array('cvterm_id' => $type_id);
-        $ftype = chado_select_record('cv', array('name'), $values);
+        $ftype = chado_select_record('cvterm', array('name'), $values);
         $type = $ftype[0]->name;
       }
 
@@ -937,7 +937,7 @@ function tripal_feature_node_view($node, $view_mode, $langcode) {
         $node->content['tripal_organism_feature_counts'] = array(
           '#markup' => theme('tripal_organism_feature_counts', array('node' => $node)),
           '#tripal_toc_id'    => 'feature_counts',
-          '#tripal_toc_title' => 'Data Type Summary',
+          '#tripal_toc_title' => 'Feature Summary',
         );
         $node->content['tripal_organism_feature_browser'] = array(
           '#markup' => theme('tripal_organism_feature_browser', array('node' => $node)),
