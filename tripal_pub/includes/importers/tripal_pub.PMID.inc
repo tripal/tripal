@@ -620,7 +620,7 @@ function tripal_pub_PMID_parse_publication_type($xml, &$pub) {
             )
           );
           $options = array('case_insensitive_columns' => array('name'));
-          $pub_cvterm = cvterm_retrieve($identifiers, $options);
+          $pub_cvterm = tripal_get_cvterm($identifiers, $options);
           if (!$pub_cvterm) {
             // see if this we can find the name using a synonym
             $identifiers = array(
@@ -629,7 +629,7 @@ function tripal_pub_PMID_parse_publication_type($xml, &$pub) {
                 'cv_name' => 'tripal_pub'
               )
             );
-            $pub_cvterm = cvterm_retrieve($identifiers, $options);
+            $pub_cvterm = tripal_get_cvterm($identifiers, $options);
             if (!$pub_cvterm) {
               tripal_report_error('tripal_pubmed', TRIPAL_ERROR, 
                 'Cannot find a valid vocabulary term for the publication type: "%term".',

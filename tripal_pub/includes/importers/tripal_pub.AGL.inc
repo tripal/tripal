@@ -98,7 +98,7 @@ function tripal_pub_remote_validate_form_AGL($form, $form_state) {
 function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
   // get some values from the serach array
   $num_criteria = $search_array['num_criteria'];
-  $days         = $search_array['days'];
+  $days         = array_key_exists('days', $search_array) ? $search_array['days'] : '';
 
   // set some defaults
   $search_array['limit'] = $num_to_retrieve;
@@ -447,7 +447,16 @@ function tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $tot
 
   $pubs = array();
   for($i = $start; $i < $start + $num_to_retrieve; $i++) {
+    // retrieve the XML results
     $pub_xml = yaz_record($yazc, $i + 1, 'xml; charset=marc-8,utf-8');
+    
+    // the XML is encoded twice, one to convert UTF-8 characters to 
+    // unicode HTML entities and second with URL encoding. We must
+    // reverse the encoding
+    //$pub_xml = urldecode($pub_xml);
+    //$pub_xml = mb_convert_encoding($pub_xml, 'UTF-8', 'HTML-ENTITIES');
+    
+    // parse the pub XML
     $pub     = tripal_pub_AGL_parse_pubxml($pub_xml);
     $pubs[]  = $pub;
   }

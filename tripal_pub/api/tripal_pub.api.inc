@@ -82,9 +82,7 @@ function tripal_get_remote_pubs($remote_db, $search_array, $num_to_retrieve, $pa
  *   for the record in the database.
  *
  * @return
- *   Returns the raw output wrapped in an HTML textarea element or an
- *   error message indicating if the database type is unsupported or the
- *   dbxref is invalid
+ *   Returns the publication array or FALSE if a problem occurs
  *
  * @ingroup tripal_pub_api
  */
@@ -97,7 +95,7 @@ function tripal_get_remote_pub($dbxref) {
     // check that the database is supported
     $supported_dbs = variable_get('tripal_pub_supported_dbs', array());
     if(!in_array($remote_db, $supported_dbs)) {
-      return "Unsupported database: $dbxref";
+      return FALSE;
     }
 
     $search = array(
@@ -114,9 +112,9 @@ function tripal_get_remote_pub($dbxref) {
     );
     $pubs = tripal_get_remote_pubs($remote_db, $search, 1, 0);
 
-    return $pubs[0]['raw'];
+    return $pubs['pubs'][0];
   }
-  return 'Invalid DB xref';
+  return FALSE;
 }
 
 /**
@@ -456,7 +454,7 @@ function tripal_publication_exists($pub_details) {
         'name' => 'tripal_pub',
       ),
     );
-    $pub_type = cvterm_retrieve($identifiers);
+    $pub_type = tripal_get_cvterm($identifiers);
   }
   else {
     tripal_report_error('tripal_pub', TRIPAL_ERROR, "chado_does_pub_exist(): The Publication Type is a " .

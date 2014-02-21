@@ -137,7 +137,8 @@ function tripal_pub_menu() {
   );
 
   $items['admin/tripal/chado/tripal_pub/import/raw/%'] = array(
-    'page callback' => 'tripal_get_remote_pub',
+    'title' => t('Raw Data From Publication Import'),
+    'page callback' => 'tripal_get_remote_pub_raw_page',
     'page arguments' => array(6),
     'access arguments' => array('administer tripal pub'),
     'type ' => MENU_CALLBACK,
@@ -416,4 +417,21 @@ function tripal_pub_job_describe_args($callback, $args) {
     $new_args['Importer'] = $import->name;
   }
   return $new_args;
+}
+
+
+/** 
+ * A simple wrapper function to put <pre> tags around the raw results
+ * returned by the 
+ * @param unknown $dbxref
+ * @return string
+ */
+function tripal_get_remote_pub_raw_page($dbxref) {
+  $pub = tripal_get_remote_pub($dbxref);
+  if ($pub) {
+    $page = "<strong>Raw results for $dbxref:</strong><br><br>";
+    $page.= '<textarea cols=80 rows=20>' . $pub['raw'] . '</textarea>';
+    return $page;
+  }
+  return "Cound not find the requested publication ($dbxref)";
 }
