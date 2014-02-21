@@ -670,6 +670,12 @@ function chado_feature_load($nodes) {
   foreach ($nodes as $nid => $node) {
     // find the feature and add in the details
     $feature_id = chado_get_id_from_nid('feature', $nid);
+    
+    // if the nid does not have a matching record then skip this node.
+    // this can happen with orphaned nodes.
+    if (!$feature_id) {
+      continue;
+    }
 
     // build the feature variable
     $values = array('feature_id' => $feature_id);

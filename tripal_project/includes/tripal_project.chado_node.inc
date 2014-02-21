@@ -394,6 +394,13 @@ function chado_project_load($nodes) {
     // get the feature details from chado
     $project_id = chado_get_id_from_nid('project', $node->nid);
 
+    // if the nid does not have a matching record then skip this node.
+    // this can happen with orphaned nodes.
+    if (!$project_id) {
+      continue;
+    }
+    
+    
     $values = array('project_id' => $project_id);
     $project = chado_generate_var('project', $values);
 

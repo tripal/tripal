@@ -959,6 +959,12 @@ function chado_pub_load($nodes) {
   foreach ($nodes as $nid => $node) {
     // find the pub and add in the details
     $pub_id = chado_get_id_from_nid('pub', $nid);
+    
+    // if the nid does not have a matching record then skip this node.
+    // this can happen with orphaned nodes. 
+    if (!$pub_id) {
+      continue;
+    }
 
     // get the pub
     $values = array('pub_id' => $pub_id);
@@ -1144,5 +1150,29 @@ function tripal_pub_node_update($node) {
   if ($node->type == 'chado_pub') {
     $pub_id = chado_get_id_from_nid('pub', $node->nid);
     tripal_pub_set_pub_url($node, $pub_id);
+  }
+}
+
+/**
+ * Implements hook_node_presave(). Acts on all content types.
+ *
+ * @ingroup tripal_stock
+ */
+function tripal_pub_node_presave($node) {
+  switch ($node->type) {
+    case 'chado_pub':
+      // when syncing the details are not present in the $node object
+      // as they are when submitted via the form.  Therefore, if we do
+      // not see any field values from the form, we assume this fucntion
+      // is being called for syncing, so we must set the title accordingly
+      if (property_exists($node, 'title')) {
+        // do nothing, the title is set
+      }
+      else if (property_exists($node, 'pub')) {
+        // in Drupal a node title can only be 255 characters so we truncate
+        // it just in case
+        $node->title = substr($node->pub->title, 0, 255);
+      }
+      break;
   }
 }

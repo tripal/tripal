@@ -56,43 +56,42 @@ function chado_stock_load($nodes) {
   foreach ($nodes as $nid => $node) {
     // get the stock details from chado
     $stock_id = chado_get_id_from_nid('stock', $node->nid);
-    if (empty($stock_id)) {
-      tripal_report_error('tripal_stock', TRIPAL_ERROR,
-        'Unable to retrieve stock_id for %title (NID = %nid).',
-        array('%title' => $node->title, '%nid' => $node->nid)
-      );
+    
+    // if the nid does not have a matching record then skip this node.
+    // this can happen with orphaned nodes.
+    if (!$stock_id) {
+      continue;
     }
-    else {
 
-      // build the variable with all the stock details
-      $values = array('stock_id' => $stock_id);
-      $stock = chado_generate_var('stock', $values);
+    // build the variable with all the stock details
+    $values = array('stock_id' => $stock_id);
+    $stock = chado_generate_var('stock', $values);
 
-      // by default, the titles are saved using the unique constraint.  We will
-      // keep it the same, but remove the duplicate name if the unique name and name
-      // are identical
-      $title_type = variable_get('chado_stock_title', 'unique_constraint');
-      if($title_type == 'unique_constraint') {
-        if (strcmp($stock->name, $stock->uniquename)==0) {
-          $node->title = $stock->name . " (" . $stock->type_id->name . ") " . $stock->organism_id->genus . " " . $stock->organism_id->species ;
-        }
-        // in previous version of Tripal, the stock title was simply the unique name.
-        // so, we recreate the title just to be sure all of our stock pages are consistent
-        else {
-          $node->title = $stock->name . ", " . $stock->uniquename . " (" . $stock->type_id->name . ") " . $stock->organism_id->genus . " " . $stock->organism_id->species ;
-        }
+    // by default, the titles are saved using the unique constraint.  We will
+    // keep it the same, but remove the duplicate name if the unique name and name
+    // are identical
+    $title_type = variable_get('chado_stock_title', 'unique_constraint');
+    if($title_type == 'unique_constraint') {
+      if (strcmp($stock->name, $stock->uniquename)==0) {
+        $node->title = $stock->name . " (" . $stock->type_id->name . ") " . $stock->organism_id->genus . " " . $stock->organism_id->species ;
       }
-      // set the title to be the stock name or uniquename as configured
-      if($title_type == 'stock_name') {
-        $node->title = $stock->name;
+      // in previous version of Tripal, the stock title was simply the unique name.
+      // so, we recreate the title just to be sure all of our stock pages are consistent
+      else {
+        $node->title = $stock->name . ", " . $stock->uniquename . " (" . $stock->type_id->name . ") " . $stock->organism_id->genus . " " . $stock->organism_id->species ;
       }
-      if($title_type == 'stock_unique_name') {
-        $node->title = $stock->uniquename;
-      }
-
-      // add this to the node
-      $node->stock = $stock;
     }
+    // set the title to be the stock name or uniquename as configured
+    if($title_type == 'stock_name') {
+      $node->title = $stock->name;
+    }
+    if($title_type == 'stock_unique_name') {
+      $node->title = $stock->uniquename;
+    }
+
+    // add this to the node
+    $node->stock = $stock;
+    
 
     $new_nodes[$nid] = $node;
 

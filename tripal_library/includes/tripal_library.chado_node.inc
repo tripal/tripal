@@ -387,6 +387,12 @@ function chado_library_load($nodes) {
     // get the feature details from chado
     $library_id = chado_get_id_from_nid('library', $node->nid);
 
+    // if the nid does not have a matching record then skip this node.
+    // this can happen with orphaned nodes.
+    if (!$library_id) {
+      continue;
+    }
+    
     $values = array('library_id' => $library_id);
     $library = chado_generate_var('library', $values);
 

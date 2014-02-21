@@ -496,6 +496,12 @@ function chado_contact_load($nodes) {
     // find the contact and add in the details
     $contact_id = chado_get_id_from_nid('contact', $nid);
 
+    // if the nid does not have a matching record then skip this node.
+    // this can happen with orphaned nodes.
+    if (!$contact_id) {
+      continue;
+    }
+    
     // get the contact
     $values = array('contact_id' => $contact_id);
     $contact = chado_generate_var('contact', $values);

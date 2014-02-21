@@ -419,6 +419,12 @@ function chado_featuremap_load($nodes) {
     // get the feature details from chado
     $featuremap_id = chado_get_id_from_nid('featuremap', $node->nid);
 
+    // if the nid does not have a matching record then skip this node.
+    // this can happen with orphaned nodes.
+    if (!$featuremap_id) {
+      continue;
+    }
+    
     $values = array('featuremap_id' => $featuremap_id);
     $featuremap = chado_generate_var('featuremap', $values);
 

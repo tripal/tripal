@@ -484,6 +484,12 @@ function chado_organism_load($nodes) {
   foreach ($nodes as $nid => $node) {
     // find the organism and add in the details
     $organism_id = chado_get_id_from_nid('organism', $nid);
+    
+    // if the nid does not have a matching record then skip this node.
+    // this can happen with orphaned nodes.
+    if (!$organism_id) {
+      continue;
+    }
 
     // build the organism variable
     $values = array('organism_id' => $organism_id);

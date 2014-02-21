@@ -536,6 +536,12 @@ function chado_analysis_load($nodes) {
     // find the analysis and add in the details
     $analysis_id = chado_get_id_from_nid('analysis', $nid);
 
+    // if the nid does not have a matching record then skip this node.
+    // this can happen with orphaned nodes.
+    if (!$analysis_id) {
+      continue;
+    }
+    
     // build the analysis variable
     $values = array('analysis_id' => $analysis_id);
     $analysis = chado_generate_var('analysis', $values);

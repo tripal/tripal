@@ -442,6 +442,12 @@ function chado_example_load($nodes) {
     // find the example and add in the details
     //$example_id = chado_get_id_from_nid('example', $nid);
 
+    // if the nid does not have a matching record then skip this node.
+    // this can happen with orphaned nodes.
+    //if (!$example_id) {
+    //  continue;
+    //}
+    
     // build the example variable by using the chado_generate_var() function
     //$values = array('example_id' => $example_id);
     //$example = chado_generate_var('example', $values);
