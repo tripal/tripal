@@ -71,7 +71,7 @@ function tripal_core_admin_defaultview_jobs() {
   $handler->display->display_options['style_options']['info'] = array(
     'job_id' => array(
       'sortable' => 1,
-      'default_sort_order' => 'asc',
+      'default_sort_order' => 'desc',
       'align' => '',
       'separator' => '',
       'empty_column' => 0,
