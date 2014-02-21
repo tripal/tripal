@@ -619,9 +619,11 @@ function chado_add_node_form_relationships_add_button_submit(&$form, &$form_stat
 
   $name = (isset($form_state['node']->{$details['base_table']}->uniquename)) ? $form_state['node']->{$details['base_table']}->uniquename : 'CURRENT';
 
+
+
+  
   // get details for the new relationship
   if ($form_state['values']['relationship_table']['new']['subject_is_current']) {
-
     $relationship = array(
       'type_id' => $form_state['values']['relationship_table']['new']['type_id'],
       'type_name' => $form_state['values']['relationship_table']['new']['type_name'],
@@ -631,6 +633,9 @@ function chado_add_node_form_relationships_add_button_submit(&$form, &$form_stat
       'subject_name' => $name,
       'rank' => '0',
     );
+    // we don't want the new element to pick up the values from the previous element so wipe them out
+    unset($form_state['input']['relationship_table']['new']['object_id']);
+    unset($form_state['input']['relationship_table']['new']['object_name']);
   }
   else {
     $relationship = array(
@@ -642,11 +647,18 @@ function chado_add_node_form_relationships_add_button_submit(&$form, &$form_stat
       'subject_name' => $form_state['values']['relationship_table']['new']['subject_name'],
       'rank' => '0',
     );
+    // we don't want the new element to pick up the values from the previous element so wipe them out
+    unset($form_state['input']['relationship_table']['new']['subject_id']);
+    unset($form_state['input']['relationship_table']['new']['subject_name']);
   }
-
+  
   $key = $relationship['type_id'] . '-' . $relationship['rank'];
   $form_state['chado_relationships'][$key] = (object) $relationship;
 
+  // we don't want the new element to pick up the values from the previous element so wipe them out
+  unset($form_state['input']['relationship_table']['new']['type_id']);
+  unset($form_state['input']['relationship_table']['new']['type_name']);
+  
   $form_state['rebuild'] = TRUE;
 }
 

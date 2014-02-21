@@ -151,12 +151,6 @@ function chado_pub_form($node, $form_state) {
     $is_obsolete  = $form_state['input']['is_obsolete'];
   }
 
-  // a drupal title can only be 255 characters, but the Chado title can be much longer.
-  // we use the publication title as the drupal title, but we'll need to truncate it.
-  $form['title'] = array(
-    '#type' => 'hidden',
-    '#value' => substr($title, 0, 255),
-  );
   $form['pubtitle'] = array(
     '#type' => 'textarea',
     '#title' => t('Publication Title'),
@@ -387,21 +381,6 @@ function chado_pub_validate($node, $form, &$form_state) {
 
     $pub_id = $node->pub_id;
 
-    // first get the original title, type and year before it was changed
-    $values = array('pub_id' => $pub_id);
-    $columns = array('title', 'pyear', 'type_id', 'series_name');
-    $options = array('statement_name' => 'sel_pub_id');
-    $pub = chado_select_record('pub', $columns, $values, $options);
-
-    // if the title, type,  year or series_name have changed then check the pub
-    // to see if it is a duplicate of another
-    if((strcmp(strtolower($pub[0]->title), strtolower($title)) == 0) and
-       (strcmp(strtolower($pub[0]->series_name), strtolower($series_name)) == 0) and
-       ($pub[0]->type_id == $type_id) and
-       ($pub[0]->pyear == $pyear)) {
-      $skip_duplicate_check = 1;
-    }
-
     // check to see if a duplicate publication already exists
     if (!$skip_duplicate_check) {
       chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvterm[0], $pub_id);
@@ -467,13 +446,11 @@ function chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvter
     'Series Name' => $series_name,
     'Publication Type' => $cvterm->name,
   );
+  // TODO: need to include the Publication Dbxref in the $pub_details as well
   $pub_ids = tripal_publication_exists($pub_details);
-//  dpm($pub_ids);
-//  dpm($pub_details);
   
-  // if we found only one publication and it is our publication then 
-  // return, we're good.
-  if (count($pub_ids) == 1 and !in_array($pub_id, $pub_ids)) {
+  // if we found only one publication and it is our publication then return, we're good.
+  if (count($pub_ids) == 1 and in_array($pub_id, $pub_ids)) {
     return;
   }
   if (count($pub_ids) == 0) {
@@ -561,9 +538,9 @@ function chado_pub_node_access($node, $op, $account) {
  */
 function chado_pub_insert($node) {
 
-  $title        = trim($node->pubtitle);
-  $pyear        = trim($node->pyear);
-  $uniquename   = trim($node->uniquename);
+  $node->pubtitle     = trim($node->pubtitle);
+  $node->pyear        = trim($node->pyear);
+  $node->uniquename   = trim($node->uniquename);
   $is_obsolete  = $node->is_obsolete;
   $type_id      = $node->type_id;
 
@@ -766,11 +743,11 @@ function chado_pub_insert($node) {
  * @ingroup tripal_pub
  */
 function chado_pub_update($node) {
-  $title        = trim($node->pubtitle);
-  $pyear        = trim($node->pyear);
-  $uniquename   = trim($node->uniquename);
-  $is_obsolete  = $node->is_obsolete;
-  $type_id      = $node->type_id;
+  $node->pubtitle   = trim($node->pubtitle);
+  $node->pyear      = trim($node->pyear);
+  $node->uniquename = trim($node->uniquename);
+  $is_obsolete      = $node->is_obsolete;
+  $type_id          = $node->type_id;
 
   // we need an array suitable for the tripal_pub_create_citation() function
   // to automatically generate a citation if a uniquename doesn't already exist

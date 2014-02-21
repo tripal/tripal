@@ -411,7 +411,8 @@ function tripal_get_publication($identifiers, $options = array()) {
  *     'Year':               The published year of the publication
  *     'Publication Type':   An array of publication types. A publication can have more than one type.
  *     'Series Name':        The series name of the publication
- *     'Journal Name':       An alternative to 'Series Name' is 'Journal Name'
+ *     'Journal Name':       An alternative to 'Series Name'
+ *     'Conference Name':    An alternative to 'Series Name'
  *     'Citation':           The publication citation (this is the value saved in the pub.uniquename field and must be unique)
  *   If this key is present it will also be checked
  *     'Publication Dbxref': A database cross reference of the form DB:ACCESSION where DB is the name
@@ -472,14 +473,16 @@ function tripal_publication_exists($pub_details) {
 
   // get the series name.  The pub.series_name field is only 255 chars so we must truncate to be safe
   $series_name = '';
-  if (array_key_exists('Series_Name', $pub_details)) {
+  if (array_key_exists('Series Name', $pub_details)) {
     $series_name = substr($pub_details['Series Name'], 0, 255);
   }
   if (array_key_exists('Journal Name', $pub_details)) {
     $series_name = substr($pub_details['Journal Name'], 0, 255);
   }
-
-
+  if (array_key_exists('Conference Name', $pub_details)) {
+    $series_name = substr($pub_details['Conference Name'], 0, 255);
+  }
+  
   // make sure the publication is unique using the prefereed import duplication check
   $import_dups_check = variable_get('tripal_pub_import_duplicate_check', 'title_year_media');
   $pubs = array();

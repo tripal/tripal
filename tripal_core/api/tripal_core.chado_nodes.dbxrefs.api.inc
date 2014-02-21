@@ -434,6 +434,13 @@ function chado_add_node_form_dbxrefs_add_button_submit(&$form, &$form_state) {
   $key = $dbxref['db_id'] . '-' . $version;
   $form_state['chado_additional_dbxrefs'][$key] = (object) $dbxref;
 
+  
+  // we don't want the new element to pick up the values from the previous element so wipe them out
+  unset($form_state['input']['dbxref_table']['new']['db']);
+  unset($form_state['input']['dbxref_table']['new']['db_name']);
+  unset($form_state['input']['dbxref_table']['new']['dbxref_version']);
+  unset($form_state['input']['dbxref_table']['new']['dbxref_accession']);
+  
   $form_state['rebuild'] = TRUE;
 }
 

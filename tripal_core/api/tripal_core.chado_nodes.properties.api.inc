@@ -633,8 +633,7 @@ function chado_add_node_form_properties_add_button_submit(&$form, &$form_state) 
   $key = $property['type_id'] . '-' . $property['rank'];
   $form_state['chado_properties'][$key] = (object) $property;
   
-  // we don't want the new element to pick up the values from the previous element
-  // so wipe them out
+  // we don't want the new element to pick up the values from the previous element so wipe them out
   unset($form_state['input']['property_table']['new']['type']);
   unset($form_state['input']['property_table']['new']['type_name']);
   unset($form_state['input']['property_table']['new']['definition']);

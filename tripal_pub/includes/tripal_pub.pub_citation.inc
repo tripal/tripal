@@ -212,7 +212,11 @@ function tripal_pub_create_citation($pub) {
   // Journal Article
   //----------------------
   if ($pub_type == 'Journal Article') {
-    $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
+    if (array_key_exists('Authors', $pub)) {
+      $citation = $pub['Authors'] . '. ';
+    }
+    
+    $citation .= $pub['Title'] .  '. ';
 
     if (array_key_exists('Journal Name', $pub)) {
       $citation .= $pub['Journal Name'] . '. ';
@@ -253,7 +257,11 @@ function tripal_pub_create_citation($pub) {
   // Review
   //----------------------
   if ($pub_type == 'Review') {
-    $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
+    if (array_key_exists('Authors', $pub)) {
+      $citation = $pub['Authors'] . '. ';
+    }
+    
+    $citation .= $pub['Title'] .  '. ';
 
     if (array_key_exists('Journal Name', $pub)) {
       $citation .= $pub['Journal Name'] . '. ';
@@ -294,7 +302,11 @@ function tripal_pub_create_citation($pub) {
   // Research Support, Non-U.S. Gov't
   //----------------------
   elseif ($pub_type == "Research Support, Non-U.S. Gov't") {
-    $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
+    if (array_key_exists('Authors', $pub)) {
+      $citation = $pub['Authors'] . '. ';
+    }
+    
+    $citation .= $pub['Title'] .  '. ';
 
     if (array_key_exists('Journal Name', $pub)) {
       $citation .= $pub['Journal Name'] . '. ';
@@ -311,8 +323,11 @@ function tripal_pub_create_citation($pub) {
   // Letter
   //----------------------
   elseif ($pub_type == 'Letter') {
-    $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
-
+    if (array_key_exists('Authors', $pub)) {
+      $citation = $pub['Authors'] . '. ';
+    }
+    
+    $citation .= $pub['Title'] .  '. ';
     if (array_key_exists('Journal Name', $pub)) {
       $citation .= $pub['Journal Name'] . '. ';
     }
@@ -364,8 +379,11 @@ function tripal_pub_create_citation($pub) {
   // Conference Proceedings
   //----------------------
   elseif ($pub_type == 'Conference Proceedings') {
-    $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
-
+    if (array_key_exists('Authors', $pub)) {
+      $citation = $pub['Authors'] . '. ';
+    }
+    
+    $citation .= $pub['Title'] .  '. ';
     if (array_key_exists('Conference Name', $pub)) {
       $citation .= $pub['Conference Name'] . '. ';
     }
