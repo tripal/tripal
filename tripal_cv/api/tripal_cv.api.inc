@@ -202,36 +202,30 @@ function tripal_get_cvterm($identifiers, $options = array()) {
   }
 
   // If synonym was passed in, then process this first before calling chado_generate_var()
-  if (isset($identifier['synonym'])) {
-    $synonym = $identifier['synonym']['name'];
+  if (isset($identifiers['synonym'])) {
+    $synonym = $identifiers['synonym']['name'];
 
-    $values = array(
-       'synonym' => $synonym,
-    );
-    $statement = "sel_cvtermsynonym_sy";
-    if (isset($identifier['synonym']['cv_id'])) {
-      $values['cvterm_id'] = array('cv_id' => $identifier['synonym']['cv_id']);
-      $statement = "sel_cvtermsynonym_sycv";
+    $values = array('synonym' => $synonym);
+    if (isset($identifiers['synonym']['cv_id'])) {
+      $values['cvterm_id'] = array('cv_id' => $identifiers['synonym']['cv_id']);
     }
-    if (isset($identifier['synonym']['cv_name'])) {
-      $values['cvterm_id'] = array('cv_id' => array('name' => $identifier['synonym']['cv_name']));
-      $statement = "sel_cvtermsynonym_sycv";
+    if (isset($identifiers['synonym']['cv_name'])) {
+      $values['cvterm_id'] = array('cv_id' => array('name' => $identifiers['synonym']['cv_name']));
     }
     $options = array(
-      'statement_name' => $statement,
       'case_insensitive_columns' => array('name')
     );
-    $synonym = chado_select_record('cvtermsynonym', array('cvterm_id'), $values, $options);
+    $result = chado_select_record('cvtermsynonym', array('cvterm_id'), $values, $options);
 
     // if the synonym doens't exist or more than one record is returned then return false
-    if (count($synonym) == 0) {
+    if (count($result) == 0) {
       return FALSE;
     }
-    if (count($synonym) > 1) {
+    if (count($result) > 1) {
       return FALSE;
     }
 
-    $identifiers = array('cvterm_id' => $synonym[0]->cvterm_id);
+    $identifiers = array('cvterm_id' => $result[0]->cvterm_id);
   }
 
   // If one of the identifiers is property then use chado_get_record_with_property()
@@ -243,13 +237,8 @@ function tripal_get_cvterm($identifiers, $options = array()) {
 
   // Else we have a simple case and we can just use chado_generate_var to get the cvterm
   else {
-
     // Try to get the cvterm
-    $cvterm = chado_generate_var(
-      'cvterm',
-      $identifiers,
-      $options
-    );
+    $cvterm = chado_generate_var('cvterm', $identifiers, $options);
   }
 
   // Ensure the cvterm is singular. If it's an array then it is not singular
