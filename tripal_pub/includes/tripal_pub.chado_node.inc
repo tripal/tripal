@@ -256,6 +256,7 @@ function chado_pub_form($node, $form_state) {
     'chado_id' => $pub_id,
     'cv_name' => 'tripal_pub',
     'select_options' => $select_options,
+    'default_properties' => $more_props,
   );
   chado_add_node_form_properties($form, $form_state, $details);
 
@@ -334,8 +335,7 @@ function chado_pub_validate($node, $form, &$form_state) {
 
   // get the type of publication
   $values = array('cvterm_id' => $type_id);
-  $options = array('statement_name' => 'sel_pub_ty');
-  $cvterm = chado_select_record('cvterm', array('name'), $values, $options);
+  $cvterm = chado_select_record('cvterm', array('name'), $values);
   if (count($cvterm) == 0) {
     $message = t('Invalid publication type.');
     form_set_error('type_id', $message);
@@ -344,30 +344,23 @@ function chado_pub_validate($node, $form, &$form_state) {
 
   // get the media name looking at the properties
   $series_name = '';
-  foreach ($node as $element => $value) {
-    // if this is an existing property (either previously in the database or
-    // added via AHAH/AJAX callback)
-    if (preg_match('/^prop_value-(\d+)-(\d+)$/', $element, $matches)) {
-      $prop_type_id = $matches[1];
-      $prop_type = tripal_cv_get_cvterm_by_id($prop_type_id);
-      if($prop_type->name == 'Conference Name' or $prop_type->name == 'Journal Name') {
-        $series_name = $value;
-      }
-      if($prop_type->name == 'Citation') {
-        $uniquename = $value;
-      }
-      $pub[$prop_type->name] = $value;
+  $properties = chado_retrieve_node_form_properties($node);
+  foreach ($properties as $key => $prop_values) {
+    $values = array('cvterm_id' => $key);
+    $prop_type = chado_select_record('cvterm', array('name'), $values);
+    if ($prop_type[0]->name == 'Conference Name' or 
+        $prop_type[0]->name == 'Journal Name' or
+        $prop_type[0]->name == 'Series Name') {
+      $series_name = $prop_values[0];
     }
-    // if this is a new property (added by this submit of the form)
-    elseif ($element == 'new_id') {
-      $prop_type = tripal_cv_get_cvterm_by_id($value);
-      if($prop_type->name == 'Conference Name' or $prop_type->name == 'Journal Name') {
-        $series_name = $node->new_value;
-      }
-      if($prop_type->name == 'Citation') {
-        $uniquename = $node->new_value;
-      }
-      $pub[$prop_type->name] = $node->new_value;
+    if ($prop_type[0]->name == 'Citation') {
+      $uniquename = $prop_values[0];
+    }
+    if (count($prop_values) == 1) {
+      $pub[$prop_type[0]->name] = $prop_values[0];
+    }
+    else {
+      $pub[$prop_type[0]->name] = $prop_values;
     }
   }
   // if the citation is missing then try to generate one
@@ -411,13 +404,13 @@ function chado_pub_validate($node, $form, &$form_state) {
 
     // check to see if a duplicate publication already exists
     if (!$skip_duplicate_check) {
-      chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvterm, $pub_id);
+      chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvterm[0], $pub_id);
     }
     chado_pub_validate_check_uniquename($uniquename, $pub_id);
   }
   // Validating for an insert
   else {
-    chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvterm);
+    chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvterm[0]);
     chado_pub_validate_check_uniquename($uniquename);
   }
 }
@@ -449,7 +442,8 @@ function chado_pub_validate_check_uniquename($uniquename, $pub_id = NULL) {
 }
 
 /**
- * Check for duplicate publications. To be called from hook_validate().
+ * Check for duplicate publications. To be called from hook_validate().  Sets
+ * the form error if a duplicate
  *
  * @param $title
  *   The title of the publication
@@ -461,6 +455,7 @@ function chado_pub_validate_check_uniquename($uniquename, $pub_id = NULL) {
  *   The type of publication
  * @param $pub_id
  *   the unique id of the publication
+ *   
  *
  * @ingroup tripal_pub
  */
@@ -472,11 +467,17 @@ function chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvter
     'Series Name' => $series_name,
     'Publication Type' => $cvterm->name,
   );
-  $pub_ids = chado_does_pub_exist($pub_details);
+  $pub_ids = tripal_publication_exists($pub_details);
+//  dpm($pub_ids);
+//  dpm($pub_details);
   
   // if we found only one publication and it is our publication then 
   // return, we're good.
-  if(count($pub_ids) == 1 and !in_array($pub_id, $pub_ids)) {
+  if (count($pub_ids) == 1 and !in_array($pub_id, $pub_ids)) {
+    return;
+  }
+  if (count($pub_ids) == 0) {
+    // there is no match so return
     return;
   }
   
@@ -485,15 +486,15 @@ function chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvter
   switch ($import_dups_check) {
     case 'title_year':
       $message = t('A publication with this title and publication year already exists.');
-      form_set_error('pyear', $message);
+      form_set_error('pubtitle', $message);
       break;
     case 'title_year_type':
       $message = t('A publication with this title, type and publication year already exists.');
-      form_set_error('pyear', $message);
+      form_set_error('pubtitle', $message);
       break;
     case 'title_year_media':
       $message = t('A publication with this title, media name (e.g. Journal Name) and publication year already exists.');
-      form_set_error('pyear', $message);
+      form_set_error('pubtitle', $message);
       break;
   }
 }

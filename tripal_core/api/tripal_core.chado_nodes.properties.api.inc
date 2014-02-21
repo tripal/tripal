@@ -118,18 +118,48 @@
  *   Optional keys include:
  *     - chado_id_field: the foreign key field that links properties to the
  *       chado_id record. If this value is not specified it is determined using the
- *       traditional Chado naming scheme for property tables. 
+ *       traditional Chado naming scheme for property tables.
+ *     - additional_instructions: provides additional instructions to the user
+ *       for dealing with the property elements.  These instructions are appended
+ *       to the default instructions
+ *     - fieldset_title: An alternate name for the fieldset in which the properties
+ *       form is placed. By default the title is 'Properties'.
+ *     - default_properties:  An array of properties used to initialize the 
+ *       properties form.  Each property shoudl be represented as an array with
+ *       the following keys and values:
+ *          'cvterm':    The cvterm object for the property type
+ *          'value':     The property value
  *
  * @ingroup tripal_chado_node_api
  */
+
 function chado_add_node_form_properties(&$form, &$form_state, $details) {
 
+  // Set defaults for optional fields
+  if (!array_key_exists('fieldset_title', $details)){
+    $details['fieldset_title'] = 'Properties';
+  }
+  if (!array_key_exists('additional_instructions', $details)){
+    $details['additional_instructions'] =  '';
+  };
+  if (!array_key_exists('default_properties', $details)){
+    $details['default_properties'] =  array();
+  };
+  if (!is_array($details['default_properties'])) {
+    drupal_set_message("The 'default_properties' option must be an array", "error");
+    tripal_report_error('tcprops_form', TRIPAL_ERROR,
+      "The 'default_properties' option must be an array",
+      array());
+    return;
+  }
+  
   // make sure the property table exists before proceeding.
   if (!chado_table_exists($details['property_table'])) {
     drupal_set_message("Cannot add property elements to the form. The property table, '" . 
       $details['property_table'] . "', does not exists", "error");
-    tripal_report_error('tcprops_form', TRIPAL_ERROR, "Cannot add property elements to the form. 
-      The property table, '%name', cannot be found.", array('%name' => $details['property_table']));
+    tripal_report_error('tcprops_form', TRIPAL_ERROR, 
+     "Cannot add property elements to the form. The property table, '%name', cannot be found.", 
+      array('%name' => $details['property_table']));
     return;
   }
   
@@ -148,8 +178,9 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     if (count($result) == 0) {
       drupal_set_message("Cannot add property elements to the form. The CV name, '" .
         $details['cv_name'] . "', does not exists", "error");
-      tripal_report_error('tcprops_form', TRIPAL_ERROR, "Cannot add property elements to the form.
-        The CV named, '%name', cannot be found.", array('%name' => $details['cv_name']));
+      tripal_report_error('tcprops_form', TRIPAL_ERROR, 
+        "Cannot add property elements to the form. The CV named, '%name', cannot be found.", 
+        array('%name' => $details['cv_name']));
       return;
     }
     // add the cv_id option to the details array
@@ -161,8 +192,9 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     if (count($result) == 0) {
       drupal_set_message("Cannot add property elements to the form. The CV ID, '" .
         $details['cv_id'] . "', does not exist", "error");
-      tripal_report_error('tcprops_form', TRIPAL_ERROR, "Cannot add property elements
-        to the form. The CV ID, '%id', cannot be found.", array('%id' => $details['cv_id']));
+      tripal_report_error('tcprops_form', TRIPAL_ERROR, 
+        "Cannot add property elements to the form. The CV ID, '%id', cannot be found.", 
+        array('%id' => $details['cv_id']));
       return;
     }
     // add the cv_name option to the details array
@@ -170,17 +202,13 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
   }
   else {
     drupal_set_message("Please provide either a 'cv_name' or 'cv_id' as an 
-        option for adding properties to the form", "error");
-    tripal_report_error('tcprops_form', TRIPAL_ERROR, "Please provide either a 
-        'cv_name' or 'cv_id' as an option for adding properties to the form", array());
+      option for adding properties to the form", "error");
+    tripal_report_error('tcprops_form', TRIPAL_ERROR, 
+      "Please provide either a 'cv_name' or 'cv_id' as an option for adding properties to the form", 
+      array());
     return;
   }
 
-  // Set Defaults for optional fields
-  $details['fieldset_title'] = 'Properties';
-  $details['additional_instructions'] = '';
-
-  
   // Get Property Types for the Select List
   if (isset($details['select_options'])) {
     $property_options = $details['select_options'];
@@ -291,11 +319,12 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
   );
 
   /* Properties can come to us in two ways:
-   *
-   * 1) In the form state in the $form_state['chado_properties']. Data is in this field
+   * 1) As entries in the $details['default_properties'] option 
+   * 
+   * 2) In the form state in the $form_state['chado_properties']. Data is in this field
    *    when an AJAX call updates the form state or a validation error.
    *
-   * 2) Directly from the database if the record already has properties associated.  This
+   * 3) Directly from the database if the record already has properties associated.  This
    *    data is only used the first time the form is loaded. On AJAX calls or validation
    *    errors the fields on the form are populated from the $form_state['chado_properties']
    *    entry.
@@ -304,30 +333,70 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     $existing_properties = $form_state['chado_properties'];
   }
   else {
-    if (isset($details['cv_name'])) {
-      $existing_properties = chado_query(
-        "SELECT PP.".$details['property_table']."_id as property_id, CVT.cvterm_id as type_id, CVT.name as type_name, CVT.definition, PP.value, PP.rank
-        FROM {" . $details['property_table'] . "} PP
-        INNER JOIN {cvterm} CVT ON CVT.cvterm_id = PP.type_id
-        INNER JOIN {cv} CV      ON CVT.cv_id     = CV.cv_id
-        WHERE
-        PP." . $details['chado_id_field'] . " = :chado_id AND
-        CV.name = '" .$details['cv_name']. "'
-        ORDER BY CVT.name, PP.rank",
-         array(':chado_id' => $details['chado_id'])
-      );
-    } elseif (isset($details['cv_id'])) {
-      $existing_properties = chado_query(
-        "SELECT PP.".$details['property_table']."_id property_id, CVT.cvterm_id as type_id, CVT.name as type_name, CVT.definition, PP.value, PP.rank
-        FROM {" . $details['property_table'] . "} PP
-        INNER JOIN {cvterm} CVT ON CVT.cvterm_id = PP.type_id
-        INNER JOIN {cv} CV      ON CVT.cv_id     = CV.cv_id
-        WHERE
-        PP." . $details['chado_id_field'] . " = :chado_id AND
-        CV.cv_id = '" .$details['cv_id']. "'
-        ORDER BY CVT.name, PP.rank",
-         array(':chado_id' => $details['chado_id'])
-      );
+    $ranks = array(); // a temporary array used for calculating rank
+    
+    // bulid the SQL for extracting properites already assigned to this record
+    $sql_args = array();
+    $sql_args[':chado_id'] = $details['chado_id'];
+    if (array_key_exists('cv_name', $details)) {
+      $cv_where = "CV.name = :cvname";
+      $sql_args[':cvname'] = $details['cv_name'];
+    } 
+    elseif (array_key_exists('cv_id', $details)) {
+      $cv_where = "CV.cv_id = :cvid";
+      $sql_args[':cvid'] = $details['cv_id'];
+    }
+    $existing_properties = chado_query(
+      "SELECT 
+         PP.".$details['property_table']."_id property_id, 
+         CVT.cvterm_id as type_id, 
+         CVT.name as type_name, 
+         CVT.definition, 
+         PP.value, 
+         PP.rank
+       FROM {" . $details['property_table'] . "} PP
+         INNER JOIN {cvterm} CVT ON CVT.cvterm_id = PP.type_id
+         INNER JOIN {cv} CV      ON CVT.cv_id     = CV.cv_id
+       WHERE
+         PP." . $details['chado_id_field'] . " = :chado_id AND
+         $cv_where 
+       ORDER BY CVT.name, PP.rank", $sql_args)->fetchAll();
+    
+    // iterate through the results and get the largest rank for each type
+    foreach ($existing_properties as $property) {
+      if (array_key_exists($property->type_id, $ranks)) {
+        if($ranks[$property->type_id] < $propety->rank) {
+          $ranks[$property->type_id] = $property->rank;
+        }
+      }
+      else {
+        $ranks[$property->type_id] = $property->rank;
+      }
+    }
+    
+    // next add in any default properties
+    if (array_key_exists('default_properties', $details)) {
+    
+      // next iterate through each of the default properties and create a new
+      // stdClass array that contains the fields needed.
+      foreach ($details['default_properties'] as $property) {
+        $new_prop = new stdClass();
+        $new_prop->type_id     = $property['cvterm']->cvterm_id;
+        $new_prop->type_name   = $property['cvterm']->name;
+        $new_prop->definition  = $property['cvterm']->definition;
+        $new_prop->value       = $property['value'];
+        $new_prop->property_id = NULL;
+        // to set the rank for this property, we need to make sure we set
+        // it greater than any already existing rank 
+        if (array_key_exists($property['cvterm']->cvterm_id, $ranks)) {
+          $ranks[$property['cvterm']->cvterm_id]++;
+        }
+        else {
+          $ranks[$property['cvterm']->cvterm_id] = 0;
+        }
+        $new_prop->rank = $ranks[$property['cvterm']->cvterm_id];
+        $existing_properties[] = $new_prop;
+      }
     }
   }
 
@@ -388,12 +457,12 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
 
       $form['properties']['property_table'][$property->type_id][$property->rank]['type'] = array(
         '#type' => 'markup',
-        '#markup' => $property->type_name
+        '#markup' => $property->type_name . '<br><i>' . $property->definition . '</i>'
       );
 
       $form['properties']['property_table'][$property->type_id][$property->rank]['value'] = array(
         '#type' => 'markup',
-        '#markup' => $property->value
+        '#markup' => $property->value,
       );
 
       $form['properties']['property_table'][$property->type_id][$property->rank]['rank'] = array(
@@ -439,14 +508,30 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     '#suffix' => '</span>'
   );
 
+  // get the value selected (only works on AJAX call) and print the 
+  // description
+  $type_desc = '';
+  if (isset($form_state['input']['property_table']['new']['type'])) {
+    $new_type_id = $form_state['values']['property_table']['new']['type'];
+    $new_term = tripal_get_cvterm(array('cvterm_id' => $new_type_id));
+    $type_desc = $new_term->definition;
+  }
   $form['properties']['property_table']['new']['type'] = array(
     '#type' => 'select',
     '#options' => $property_options, // Set at top of form
+    '#prefix' => '<span id="tripal-generic-edit-properties-new-desc">',
+    '#suffix' => '<i>' . $type_desc . '</i></span>',
+    '#ajax' => array(
+      'callback' => "chado_add_node_form_properties_ajax_desc",
+      'wrapper' => 'tripal-generic-edit-properties-new-desc',
+      'effect'   => 'fade',
+      'method'   => 'replace',
+    ),
   );
 
   $form['properties']['property_table']['new']['value'] = array(
     '#type' => 'textarea',
-    '#rows' => 1,
+    '#rows' => 2,
   );
 
   // add button
@@ -490,14 +575,15 @@ function chado_update_node_form_properties_add_button_validate($form, &$form_sta
   // Ensure the type_id is supplied & Valid
   $cvterm = chado_select_record(
     'cvterm',
-    array('cvterm_id', 'name'),
+    array('cvterm_id', 'name', 'definition'),
     array('cvterm_id' => $form_state['values']['property_table']['new']['type'])
   );
   if (!isset($cvterm[0])) {
     form_set_error('property_table][new][cvterm', 'Please select a property type before attempting to add a new property.');
   }
   else {
-    $form_state['values']['property_table']['new']['type_name'] = $cvterm[0]->name;
+    $form_state['values']['property_table']['new']['type_name']  = $cvterm[0]->name;
+    $form_state['values']['property_table']['new']['definition'] = $cvterm[0]->definition;
   }
 
   // Ensure value is supplied
@@ -528,6 +614,7 @@ function chado_add_node_form_properties_add_button_submit(&$form, &$form_state) 
   $property = array(
     'type_id' => $form_state['values']['property_table']['new']['type'],
     'type_name' => $form_state['values']['property_table']['new']['type_name'],
+    'definition' => $form_state['values']['property_table']['new']['definition'],
     'property_id' => NULL,
     'value' => $form_state['values']['property_table']['new']['value'],
     'rank' => '0',
@@ -545,6 +632,13 @@ function chado_add_node_form_properties_add_button_submit(&$form, &$form_state) 
 
   $key = $property['type_id'] . '-' . $property['rank'];
   $form_state['chado_properties'][$key] = (object) $property;
+  
+  // we don't want the new element to pick up the values from the previous element
+  // so wipe them out
+  unset($form_state['input']['property_table']['new']['type']);
+  unset($form_state['input']['property_table']['new']['type_name']);
+  unset($form_state['input']['property_table']['new']['definition']);
+  unset($form_state['input']['property_table']['new']['value']);
 
   $form_state['rebuild'] = TRUE;
 }
@@ -586,6 +680,9 @@ function chado_add_node_form_properties_remove_button_submit(&$form, &$form_stat
   $form_state['rebuild'] = TRUE;
 }
 
+function chado_add_node_form_properties_ajax_desc($form, $form_state) {
+  return $form['properties']['property_table']['new']['type'];
+}
 /**
  * Ajax function which returns the section of the form to be re-rendered
  *
@@ -644,9 +741,9 @@ function theme_chado_add_node_form_properties($variables) {
   $element = $variables['element'];
 
   $header = array(
-    'type' => t('Type'),
-    'value' => t('Value'),
-    'property_action' => t('Actions'),
+    'type'            => array('data' => t('Type'),   'width' => '30%'),
+    'value'           => array('data' => t('Value'),  'width' => '50%'),
+    'property_action' => array('data' => t('Actions'),'width' => '20%'),
   );
 
   $rows = array();
@@ -672,7 +769,7 @@ function theme_chado_add_node_form_properties($variables) {
       }
     }
   }
-
+  
   return theme('table', array(
     'header' => $header,
     'rows' => $rows

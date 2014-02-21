@@ -418,7 +418,8 @@ function tripal_get_publication($identifiers, $options = array()) {
  *                           of the database and ACCESSION is the unique identifier (e.g PMID:3483139)
  *
  * @return
- *   An array containing the pub_id's of matching publications.
+ *   An array containing the pub_id's of matching publications. Returns an
+ *   empty array if no pubs match
  */
 function tripal_publication_exists($pub_details) {
 
@@ -457,14 +458,16 @@ function tripal_publication_exists($pub_details) {
     $pub_type = tripal_get_cvterm($identifiers);
   }
   else {
-    tripal_report_error('tripal_pub', TRIPAL_ERROR, "chado_does_pub_exist(): The Publication Type is a " .
-        "required property but is missing", array());
-    return FALSE;
+    tripal_report_error('tripal_pub', TRIPAL_ERROR, 
+      "chado_does_pub_exist(): The Publication Type is a " .
+      "required property but is missing", array());
+    return array();
   }
   if (!$pub_type) {
-    tripal_report_error('tripal_pub', TRIPAL_ERROR, "chado_does_pub_exist(): Cannot find publication type: '%type'",
-    array('%type' => $pub_details['Publication Type'][0]));
-    return FALSE;
+    tripal_report_error('tripal_pub', TRIPAL_ERROR, 
+     "chado_does_pub_exist(): Cannot find publication type: '%type'",
+      array('%type' => $pub_details['Publication Type'][0]));
+    return array();
   }
 
   // get the series name.  The pub.series_name field is only 255 chars so we must truncate to be safe
