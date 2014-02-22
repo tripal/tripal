@@ -240,7 +240,7 @@ function chado_stock_form($node, $form_state) {
     '#title' =>  t('Stock Details')
   );
 
-  $type_options = tripal_get_cvterm_default_options('stock', 'type_id', 'stock types');
+  $type_options = tripal_get_cvterm_default_select_options('stock', 'type_id', 'stock types');
   $type_options[0] = 'Select a Type';
   
   $form['details']['type_id'] = array(

@@ -1075,7 +1075,7 @@ function tripal_get_default_cv($table, $field) {
  *   An array(cvterm_id => name)
  *   for each cvterm in the chado cvterm table where cv_id=that supplied
  */
-function tripal_get_cvterm_default_options($table, $field, $field_desc) {
+function tripal_get_cvterm_default_select_options($table, $field, $field_desc) {
   
   $default_cv = tripal_get_default_cv($table, $field);
   $options = array();
