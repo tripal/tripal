@@ -110,7 +110,16 @@ function tripal_cv_create_tripal_obo_temp() {
  * @ingroup tripal_cv
  */
 function tripal_cv_schema() {
-
+  $schema = array();
+  
+  tripal_cv_get_tripal_cv_obo_table($schema);
+  tripal_cv_get_tripal_cv_defaults_table($schema);
+}
+/**
+ * Table definition for the tripal_cv_obo table
+ * @param $schema
+ */
+function tripal_cv_get_tripal_cv_obo_table(&$schema) {
   $schema['tripal_cv_obo'] = array(
     'fields' => array(
       'obo_id' => array(
@@ -132,9 +141,40 @@ function tripal_cv_schema() {
     ),
     'primary key' => array('obo_id'),
   );
+}
 
-
-  return $schema;
+/**
+ * * Table definition for the tripal_cv_defaults table
+ * @param unknown $schema
+ */
+function tripal_cv_get_tripal_cv_defaults_table(&$schema) {
+  $schema['tripal_cv_defaults'] = array(
+    'fields' => array(
+      'cv_default_id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'table_name' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+      ),
+      'field_name' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+      ),
+      'cv_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      )
+    ),
+    'indexes' => array(
+      'tripal_cv_defaults_idx1' => array('table_name', 'field_name'),
+    ),
+    'primary key' => array('cv_default_id')
+  );
 }
 
 /**
@@ -206,5 +246,24 @@ function tripal_cv_add_obo_defaults() {
   );
   foreach ($ontologies as $o) {
     db_query("INSERT INTO {tripal_cv_obo} (name,path) VALUES (:name, :path)", array(':name' => $o[0], ':path' => $o[1]));
+  }
+}
+
+
+/**
+ * This is the required update for tripal_cv when upgrading from Drupal core API 6.x.
+ *
+ */
+function tripal_cv_update_7200() {
+
+  // add in the new tripal_cv_defaults table
+  try {
+    $schema = array();
+    tripal_cv_get_tripal_cv_defaults_table($schema);
+    db_create_table('tripal_cv_defaults', $schema['tripal_cv_defaults']);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to create tripal_cv_defaults table: '. $error);
   }
 }

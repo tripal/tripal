@@ -66,6 +66,10 @@ function chado_stock_load($nodes) {
     // build the variable with all the stock details
     $values = array('stock_id' => $stock_id);
     $stock = chado_generate_var('stock', $values);
+    
+    // add in the uniquename and the description as these are both text fields
+    $stock = chado_expand_var('stock', 'field', 'stock.uniquename');
+    $stock = chado_expand_var('stock', 'field', 'stock.description');
 
     // by default, the titles are saved using the unique constraint.  We will
     // keep it the same, but remove the duplicate name if the unique name and name
@@ -124,6 +128,7 @@ function chado_stock_load($nodes) {
  */
 function chado_stock_form($node, $form_state) {
 
+  /* I don't think we need this... commenting out but leaving just in case
   // If existing stock then expand all fields needed using the chado API
   if (isset($node->nid)) {
     $fields_needed = array('stock.uniquename', 'stock.name', 'stock.stock_id', 'stock.type_id', 'stock.organism_id', 'stock.description', 'stock.dbxref_id', 'dbxref.accession', 'dbxref.description', 'dbxref.db_id', 'db.db_id');
@@ -136,6 +141,8 @@ function chado_stock_form($node, $form_state) {
       }
     }
   }
+  */
+  //TODO: @lacey can you take a look at the above code?
 
   // Default values can come in the following ways:
   //
@@ -233,8 +240,9 @@ function chado_stock_form($node, $form_state) {
     '#title' =>  t('Stock Details')
   );
 
-  $type_options = tripal_cv_get_cvterm_options( variable_get('chado_stock_types_cv', 'NULL') );
+  $type_options = tripal_get_cvterm_default_options('stock', 'type_id', 'stock types');
   $type_options[0] = 'Select a Type';
+  
   $form['details']['type_id'] = array(
     '#type' => 'select',
     '#title' => t('Type of Stock'),
@@ -297,10 +305,12 @@ function chado_stock_form($node, $form_state) {
 
   // PROPERTIES FORM
   //---------------------------------------------
+  $prop_cv = tripal_get_default_cv('stockprop', 'type_id');
+  $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
   $details = array(
     'property_table' => 'stockprop',
     'chado_id' => $stock_id,
-    'cv_id' => variable_get('chado_stock_prop_types_cv', FALSE)
+    'cv_id' => $cv_id
   );
   chado_add_node_form_properties($form, $form_state, $details);
 
@@ -315,13 +325,15 @@ function chado_stock_form($node, $form_state) {
 
   // RELATIONSHIPS FORM
   //---------------------------------------------
+  $relationship_cv = tripal_get_default_cv('stock_relationship', 'type_id');
+  $cv_id = $relationship_cv ? $relationship_cv->cv_id : NULL;
   $details = array(
     'relationship_table' => 'stock_relationship',
     'base_table' => 'stock',
     'base_foreign_key' => 'stock_id',
     'base_key_value' => $stock_id,
     'nodetype' => 'stock',
-    'cv_id' => variable_get('chado_stock_relationship_cv', 0)
+    'cv_id' => $cv_id
   );
   chado_add_node_form_relationships($form, $form_state, $details);
 

@@ -63,6 +63,16 @@ function tripal_cv_menu() {
     'access arguments' => array('administer controlled vocabularies'),
     'type' => MENU_NORMAL_ITEM,
   );
+  
+  $items['admin/tripal/chado/tripal_cv/defaults'] = array(
+    'title' => 'Defaults',
+    'description' => 'Set the default vocabularies for properties and relationships.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_cv_admin_set_defaults_form'),
+    'access arguments' => array('administer controlled vocabularies'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 5
+  );
 
   $items['admin/tripal/chado/tripal_cv/help'] = array(
     'title' => 'Help',

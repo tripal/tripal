@@ -42,7 +42,7 @@ $rows[] = array(
 
 // Organism row
 $organism = $library->organism_id->genus ." " . $library->organism_id->species ." (" .$library->organism_id->common_name .")";
-if ($library->organism_id->nid) {
+if (property_exists($library->organism_id, 'nid')) {
   $organism = l("<i>" . $library->organism_id->genus . " " . $library->organism_id->species . "</i> (" .$library->organism_id->common_name .")", "node/".$library->organism_id->nid, array('html' => TRUE));
 } 
 $rows[] = array(

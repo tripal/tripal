@@ -258,7 +258,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
   // Tell tripal administrators how to add terms to the property types drop down.
   if (empty($property_options)) {
     $tripal_message = tripal_set_message(
-      t('There are currently no proeprty types! To add additional properties to the drop
+      t('There are currently no property types! To add properties to the drop
         down list, you need to <a href="@cvtermlink">add a controlled vocabulary term</a>
         to the %cv_name controlled vocabulary.',
         array(
@@ -266,7 +266,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
           '@cvtermlink' => url('admin/tripal/chado/tripal_cv/cv/' . $details['cv_id'] . '/cvterm/add')
         )
       ),
-      TRIPAL_WARNING,
+      TRIPAL_NOTICE,
       array('return_html' => TRUE)
     );
   }
@@ -288,10 +288,9 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
   $form['properties'] = array(
     '#type' => 'fieldset',
     '#title' => t($details['fieldset_title']),
-    '#description' => t('You may add additional properties by selecting a property type
-      from the dropdown and adding text. You may add as many properties as desired by
-      clicking the add button on the right. To remove a property, click the remove button.'
-      . $details['additional_instructions']),
+    '#description' => t('Add properties by selecting a type
+      from the dropdown, enter a value and click the "Add" button. To 
+      remove a property, click the remove button.' . $details['additional_instructions']),
     '#prefix' => "<div id='properties-fieldset'>",
     '#suffix' => '</div>',
     '#weight'      => 8

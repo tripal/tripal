@@ -140,6 +140,8 @@ function chado_featuremap_form($node, &$form_state) {
     'fieldset_name' => 'Additional Details',
     'additional_instructions' => $instructions
   );
+  // TODO: remove the 'Map Dbxref' from the list as that should now be handled
+  // by the dbxref interface below
   chado_add_node_form_properties($form, $form_state, $details);
 
   // ADDITIONAL DBXREFS FORM
@@ -456,9 +458,9 @@ function chado_featuremap_delete(&$node) {
   // drupal database
   $sql_del = "DELETE FROM {chado_featuremap} WHERE nid = :nid AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
-  $sql_del = "DELETE FROM {node} WHERE nid = :nid AND vid = :vid";
+  $sql_del = "DELETE FROM {node_revision} WHERE nid = :nid AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
-  $sql_del = "DELETE FROM {node_revisions} WHERE nid = :nid AND vid = :vid";
+  $sql_del = "DELETE FROM {node} WHERE nid = :nid AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
 
   // Remove data from map and mapprop tables of chado database as well

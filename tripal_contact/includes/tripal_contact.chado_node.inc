@@ -195,7 +195,7 @@ function chado_contact_form(&$node, $form_state) {
 
   $details = array(
     'property_table' => 'contactprop',
-    'chado_id' => 'contact_id',
+    'chado_id' => $contact_id,
     'cv_name' => 'tripal_contact',
     'select_options' => $select_options
   );
@@ -255,7 +255,7 @@ function chado_contact_validate($node, $form, &$form_state) {
   
   
   // Validating for an update
-  if (property_exists($node, 'nid')) {
+  if (!is_null($node->nid)) {
     // get the existing node
     $values = array('contact_id' => $node->contact_id);
     $result = chado_select_record('contact', array('*'), $values);

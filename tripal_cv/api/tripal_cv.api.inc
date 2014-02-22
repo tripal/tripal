@@ -979,3 +979,125 @@ function tripal_associate_cvterm($basetable, $record_id, $cvterm) {
 
   return FALSE;
 }
+/**
+ * This function sets the default vocabulary for a given table and field.
+ *
+ * @param $table
+ *   The name of the table that contains a field with a foreign key
+ *   relationship to the cvterm table
+ * @param $field
+ *   The table field name that has the foreign key relationship to the
+ *   cvterm table for which the default vocabulary will be set
+ * @param $cv_name
+ *   The name of the vocabulary
+ *
+ * @return
+ *   TRUE if set, FALSE if an error occured
+ */
+function tripal_set_default_cv($table, $field, $cv_name) {
+
+  // make sure the cv_id is valid
+  $cv = tripal_get_cv(array('name' => $cv_name));
+
+  if ($cv) {
+    // first delete any entries for this table and field
+    $num_deleted = db_delete('tripal_cv_defaults')
+    ->condition('table_name', $table)
+    ->condition('field_name', $field)
+    ->execute();
+
+    // now add the default value
+    $cv_default_id = db_insert('tripal_cv_defaults')
+    ->fields(array(
+      'table_name' => $table,
+      'field_name' => $field,
+      'cv_id'      => $cv->cv_id,
+    ))
+    ->execute();
+
+    if (!$cv_default_id) {
+      tripal_report_error('tripal_cv', TRIPAL_WARNING,
+      "Cannot set default vocabulary for %table.%field. Check the error logs.",
+      array('%table' => $table, '%field' => $field));
+      return FALSE;
+    }
+  }
+  else {
+    tripal_report_error('tripal_cv', TRIPAL_WARNING,
+    "Cannot set default vocabulary for %table.%field. The vocabulary name, '%cvname', doesn't exist.",
+    array('%table' => $table, '%field' => $field, '%cvname' => $cv_name));
+    return FALSE;
+  }
+}
+
+/**
+ * Retreives the default vocabulary for a given table and field
+ * @param $table
+ *   The name of the table that contains a field with a foreign key
+ *   relationship to the cvterm table
+ * @param $field
+ *   The table field name that has the foreign key relationship to the
+ *   cvterm table for which the default vocabulary will be set
+ *
+ * @return
+ *   The cv array of the default vocabulary or an empty array if not
+ *   available.
+ */
+function tripal_get_default_cv($table, $field) {
+  $sql = "
+    SELECT cv_id
+    FROM {tripal_cv_defaults}
+    WHERE table_name = :table and field_name = :field
+  ";
+  $cv_id = db_query($sql, array(':table' => $table, ':field' => $field))->fetchField();
+
+  return tripal_get_cv(array('cv_id' => $cv_id));
+}
+
+/**
+ * Create an options array to be used in a form element
+ * which provides a list of all chado cvterms. Unlike the
+ * tripal_get_cvterm_select_option, this function retreives the cvterms using
+ * the default vocabulary set for a given table and field.  It will also
+ * notify the administrative user if a default vocabulary is missing for the
+ * field and if the vocabulary is empty.  
+ *   
+ * @param $table
+ *   The name of the table that contains the field with a foreign key
+ *   relationship to the cvterm table
+ * @param $field
+ *   The table field name that has the foreign key relationship to the
+ *   cvterm table for which the default vocabulary will be set
+ * @param $field_desc
+ *   A human readable descriptive name for the field
+ *   
+ * @return
+ *   An array(cvterm_id => name)
+ *   for each cvterm in the chado cvterm table where cv_id=that supplied
+ */
+function tripal_get_cvterm_default_options($table, $field, $field_desc) {
+  
+  $default_cv = tripal_get_default_cv($table, $field);
+  $options = array();
+  
+  if ($default_cv) {
+    $options = tripal_get_cvterm_select_options($default_cv->cv_id);
+  }
+  else {
+    tripal_set_message('There is not a default vocabulary set for ' . $field_desc . '. '. 
+      'Please set one using the ' .
+      l('vocabulary defaults configuration page',
+        'admin/tripal/chado/tripal_cv/defaults',
+        array('attributes' => array('target' => '_blank'))) . '.',
+      TRIPAL_WARNING);
+  }
+  if (count($options) == 0) {
+    tripal_set_message('There are no ' . $field_desc . '. Please ' .
+      l('add terms',
+        'admin/tripal/chado/tripal_cv/cv/' .$default_cv->cv_id. '/cvterm/add',
+         array('attributes' => array('target' => '_blank'))) . ' to the ' .
+      $default_cv->name .' vocabulary.',
+      TRIPAL_WARNING);
+  }
+  return $options;
+}

@@ -227,7 +227,7 @@ function tripal_pub_add_cvs() {
   // Add cv for relationship types
   tripal_cv_add_cv(
     'pub_relationship_types',
-    'Contains Types of relationships between publications.'
+    'Contains types of relationships between publications.'
   );
 }
 
@@ -241,7 +241,7 @@ function tripal_pub_add_cvterms() {
 }
 
 /**
- * This is the required update for tripal_contact when upgrading from Drupal core API 6.x.
+ * This is the required update for tripal_pub when upgrading from Drupal core API 6.x.
  *
  */
 function tripal_pub_update_7200() {

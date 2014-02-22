@@ -44,3 +44,16 @@ function tripal_cv_admin_cv_listing() {
 
   return $output;
 }
+
+/**
+ * 
+ */
+function tripal_cv_admin_set_defaults_form() {
+  $form = array();
+  
+  $form['instructions'] = array(
+    '#markup' => 'use the following...'
+  );
+  
+  return $form;
+}

@@ -49,6 +49,11 @@ function tripal_stock_requirements($phase) {
 function tripal_stock_install() {
   // create the module's data directory
   tripal_create_files_dir('tripal_stock');
+  
+  // set the default vocabularies
+  tripal_set_default_cv('stock', 'type_id', 'stock_type');
+  tripal_set_default_cv('stockprop', 'type_id', 'stock_property');
+  tripal_set_default_cv('stock_relationship', 'type_id', 'stock_relationship');
 }
 
 /**
@@ -95,4 +100,125 @@ function tripal_stock_schema() {
   );
 
   return $schema;
+}
+
+/**
+ * Add cvs related to publications
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_stock_add_cvs() {
+
+  // Add cv for relationship types
+  tripal_cv_add_cv(
+    'stock_relationship',
+    'Contains types of relationships between stocks.'
+  );
+  tripal_cv_add_cv(
+    'stock_property',
+    'Contains properties for stocks.'
+  );
+  tripal_cv_add_cv(
+    'stock_type',
+    'Contains a list of types for stocks.'
+  );
+}
+
+/**
+ * Add cvterms related to publications
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_stock_add_cvterms() {
+
+}
+
+/**
+ * This is the required update for tripal_stock when upgrading from Drupal core API 6.x.
+ *
+ */
+function tripal_stock_update_7200() {
+  // add the new CVs.  We can't use the Tripal API because during
+  // an upgrade from D6 to D7 Tripal is disable. So, we have to manually add these
+  // new vocabularies.
+  
+  // add the stock_relationshp CV
+  try {
+    $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'stock_relationship'")->fetchObject();
+    if (!$check->cv_id) {
+      // add the vocabulary
+      $cv_id = db_insert('chado.cv')
+        ->fields(array(
+          'name' => 'stock_relationship',
+          'definition' => 'Contains types of relationships between stocks.'
+        ))
+        ->execute();
+      // make this the default cv for the stock_relationships.type_id field
+      db_insert('tripal_cv_defaults')
+        ->fields(array(
+          'table_name' => 'stock_relationship',
+          'field_name' => 'type_id',
+          'cv_id' => $cv_id
+        ))
+        ->execute();
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to add stock_relationship vocabulary: '. $error);
+  }
+ 
+  // add the stock_property CV
+  try {
+    $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'stock_property'")->fetchObject();
+    if (!$check->cv_id) {
+      // add the vocabulary
+      $cv_id = db_insert('chado.cv')
+        ->fields(array(
+          'name' => 'stock_property',
+          'definition' => 'Contains properties for stocks.'
+        ))
+        ->execute();
+      // make this the default vocabulary for the stockprop.type_id field
+      db_insert('tripal_cv_defaults')
+        ->fields(array(
+        'table_name' => 'stockprop',
+        'field_name' => 'type_id',
+        'cv_id' => $cv_id
+        ))
+        ->execute();
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to add stock_property vocabulary: '. $error);
+  }
+  
+  
+  // add the stock_type CV
+  try {
+    $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'stock_type'")->fetchObject();
+    if (!$check->cv_id) {
+      // add the vocabulary
+      $cv_id = db_insert('chado.cv')
+      ->fields(array(
+        'name' => 'stock_type',
+        'definition' => 'Contains a list of types for stocks.'
+      ))
+      ->execute();
+      // add this vocabulary as the default cv for stock.type_id
+      db_insert('tripal_cv_defaults')
+        ->fields(array(
+        'table_name' => 'stock',
+        'field_name' => 'type_id',
+        'cv_id' => $cv_id
+        ))
+        ->execute();
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to add stock_type vocabulary: '. $error);
+  }
+  
 }

@@ -320,7 +320,7 @@ function chado_project_delete($node) {
   // drupal database
   $sql_del = "DELETE FROM {chado_project} WHERE nid = :nid AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
-  $sql_del = "DELETE FROM {node_revision} WHERE nid = :nid AND vid = :vod";
+  $sql_del = "DELETE FROM {node_revision} WHERE nid = :nid AND vid = :vid";
   db_query($sql_del,  array(':nid' => $node->nid, ':vid' => $node->vid));
   $sql_del = "DELETE FROM {node} WHERE nid = :nid AND vid = :vid";
   db_query($sql_del,  array(':nid' => $node->nid, ':vid' => $node->vid));

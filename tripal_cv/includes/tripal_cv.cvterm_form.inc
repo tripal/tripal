@@ -238,9 +238,7 @@ function tripal_cv_add_cvterm_form_fields(&$form, $form_state, $cv_id = 0, $cvte
   $form['fields']['db_id'] = array(
     '#type'         => 'select',
     '#title'         => t('Database'),
-    '#description'   => t('All terms must be assocated with an external database.
-                          Please select the external database to associate with
-                          this term'),
+    '#description'   => t('All terms must be assocated with a database.'),
     '#options'      => $dbs,
     '#default_value' => $db_id,
     '#required' => TRUE,
