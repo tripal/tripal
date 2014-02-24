@@ -59,7 +59,7 @@ function tripal_library_install() {
   tripal_library_add_cvterms();
   
   // set the default vocabularies
-  tripal_set_default_cv('librarypprop', 'type_id', 'library_property');
+  tripal_set_default_cv('libraryprop', 'type_id', 'library_property');
   tripal_set_default_cv('library', 'type_id', 'library_type');
 }
 

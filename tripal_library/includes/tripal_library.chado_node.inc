@@ -162,7 +162,7 @@ function chado_library_form($node, &$form_state) {
   // PROPERTIES FORM
   //---------------------------------------------
   $select_options = array();
-  $prop_cv = tripal_get_default_cv('stockprop', 'type_id');
+  $prop_cv = tripal_get_default_cv('libraryprop', 'type_id');
   $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
   // if the default is the 'library_property' vocabulary then we want
   // to exclude the 'Library Description' term since it has it's own form element above

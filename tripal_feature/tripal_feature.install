@@ -63,7 +63,7 @@ function tripal_feature_install() {
   // set the default vocabularies
   tripal_set_default_cv('feature', 'type_id', 'sequence');
   tripal_set_default_cv('featureprop', 'type_id', 'feature_property');
-  tripal_set_default_cv('feature_relationships', 'type_id', 'feature_relationships');
+  tripal_set_default_cv('feature_relationship', 'type_id', 'feature_relationship');
 }
 
 /**

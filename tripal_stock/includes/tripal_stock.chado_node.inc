@@ -54,8 +54,9 @@ function chado_stock_load($nodes) {
 
   $new_nodes = array();
   foreach ($nodes as $nid => $node) {
+    
     // get the stock details from chado
-    $stock_id = chado_get_id_from_nid('stock', $node->nid);
+    $stock_id = chado_get_id_from_nid('stock', $nid);
     
     // if the nid does not have a matching record then skip this node.
     // this can happen with orphaned nodes.
@@ -68,8 +69,8 @@ function chado_stock_load($nodes) {
     $stock = chado_generate_var('stock', $values);
     
     // add in the uniquename and the description as these are both text fields
-    $stock = chado_expand_var('stock', 'field', 'stock.uniquename');
-    $stock = chado_expand_var('stock', 'field', 'stock.description');
+    $stock = chado_expand_var($stock, 'field', 'stock.uniquename');
+    $stock = chado_expand_var($stock, 'field', 'stock.description');
 
     // by default, the titles are saved using the unique constraint.  We will
     // keep it the same, but remove the duplicate name if the unique name and name
@@ -95,8 +96,6 @@ function chado_stock_load($nodes) {
 
     // add this to the node
     $node->stock = $stock;
-    
-
     $new_nodes[$nid] = $node;
 
   }
@@ -205,12 +204,7 @@ function chado_stock_form($node, $form_state) {
     $dbxref_description = $form_state['input']['db_description'];
     $dbxref_database = $form_state['input']['database'];
   }
-
-  $form['manually_edit_chado'] = array(
-    '#type' => 'hidden',
-    '#value' => TRUE,
-  );
-
+  
   $form['names'] = array(
     '#type' => 'fieldset',
     '#title' => t('Stock Name')
@@ -478,8 +472,8 @@ function chado_stock_insert($node) {
   // if there is an stock_id in the $node object then this must be a sync so
   // we can skip adding the stock to chado as it is already there, although
   // we do need to proceed with the rest of the insert
-  if (property_exists($node, 'manually_edit_chado')) {
-
+  if (!property_exists($node, 'stock_id')) {
+  
     // before we can add the stock, we must add the dbxref if one has been
     // provided by the user.
     $dbxref_status = 0;

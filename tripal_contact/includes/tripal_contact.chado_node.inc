@@ -220,7 +220,7 @@ function chado_contact_form(&$node, $form_state) {
   // RELATIONSHIPS FORM
   //---------------------------------------------
   $relationship_cv = tripal_get_default_cv('contact_relationship', 'type_id');
-  $cv_id = $relationship_cv ? $relationship_cv->cv_id : NULL;
+  $cv_id = $relationship_cv ? $relationship_cv->cv_id : NULL;  
   $details = array(
     'relationship_table' => 'contact_relationship', // the name of the _relationship table
     'base_table' => 'contact',                      // the name of your chado base table
@@ -229,7 +229,6 @@ function chado_contact_form(&$node, $form_state) {
     'nodetype' => 'contact',                        // the human-readable name of your node type
     'cv_id' => $cv_id,                              // the cv.cv_id of the cv governing contact_relationship.type_id
     'base_name_field' => 'name',                    // the base table field you want to be used as the name
-    'select_options' => $select_options
   );
   // Adds the form elements to your current form
   chado_add_node_form_relationships($form, $form_state, $details);

@@ -139,10 +139,11 @@ function chado_feature_form($node, &$form_state) {
     '#description' => t('Enter a unique name for this feature.  This name must be unique for the organism and feature type.'),
     '#maxlength' => 255
   );
-  // get the sequence ontology CV ID
-  $values = array('name' => 'sequence');
-  $cv = chado_select_record('cv', array('cv_id'), $values);
-  $cv_id = $cv[0]->cv_id;
+  
+  $type_options = tripal_get_cvterm_default_select_options('feature', 'type_id', 'feature types');
+  $type_options[0] = 'Select a Type';
+  $type_cv = tripal_get_default_cv('feature', 'type_id');
+  $cv_id = $type_cv->cv_id;
 
   $form['feature_type'] = array(
    '#title'       => t('Feature Type'),
@@ -426,7 +427,7 @@ function chado_feature_insert($node) {
 
   $feature_id = '';
 
-  // if there is an feature_id in the $node object then this must be a sync so
+  // if there is a feature_id in the $node object then this must be a sync so
   // we can skip adding the feature as it is already there, although
   // we do need to proceed with the rest of the insert
   if (!property_exists($node, 'feature_id')) {
