@@ -144,8 +144,10 @@ function tripal_stock_update_7200() {
   
   // add the stock_relationshp CV
   try {
-    $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'stock_relationship'")->fetchObject();
-    if (!$check->cv_id) {
+
+    
+    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'stock_relationship'")->fetchField();
+    if (!$cv_id) {
       // add the vocabulary
       $cv_id = db_insert('chado.cv')
         ->fields(array(
@@ -153,15 +155,17 @@ function tripal_stock_update_7200() {
           'definition' => 'Contains types of relationships between stocks.'
         ))
         ->execute();
-      // make this the default cv for the stock_relationships.type_id field
-      db_insert('tripal_cv_defaults')
-        ->fields(array(
-          'table_name' => 'stock_relationship',
-          'field_name' => 'type_id',
-          'cv_id' => $cv_id
-        ))
-        ->execute();
     }
+    // for backwards compatibility, get the previously set stock relationship CV, otherwise
+    // use the new stock_relationship CV we just added
+    $default_stockrel_cv = variable_get('chado_stock_relationship_cv', $cv_id);
+    db_insert('tripal_cv_defaults')
+      ->fields(array(
+        'table_name' => 'stock_relationship',
+        'field_name' => 'type_id',
+        'cv_id' => $default_stockrel_cv
+      ))
+      ->execute();
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
@@ -170,8 +174,8 @@ function tripal_stock_update_7200() {
  
   // add the stock_property CV
   try {
-    $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'stock_property'")->fetchObject();
-    if (!$check->cv_id) {
+    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'stock_property'")->fetchField();
+    if (!$cv_id) {
       // add the vocabulary
       $cv_id = db_insert('chado.cv')
         ->fields(array(
@@ -179,15 +183,17 @@ function tripal_stock_update_7200() {
           'definition' => 'Contains properties for stocks.'
         ))
         ->execute();
-      // make this the default vocabulary for the stockprop.type_id field
-      db_insert('tripal_cv_defaults')
-        ->fields(array(
-        'table_name' => 'stockprop',
-        'field_name' => 'type_id',
-        'cv_id' => $cv_id
-        ))
-        ->execute();
     }
+    // for backwards compatibility, get the previously set stock property CV, otherwise
+    // use the new stock_property CV we just added
+    $default_stockprop_cv = variable_get('chado_stock_prop_types_cv', $cv_id);
+    db_insert('tripal_cv_defaults')
+      ->fields(array(
+      'table_name' => 'stockprop',
+      'field_name' => 'type_id',
+      'cv_id' => $default_stockprop_cv
+      ))
+      ->execute();
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
@@ -197,8 +203,8 @@ function tripal_stock_update_7200() {
   
   // add the stock_type CV
   try {
-    $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'stock_type'")->fetchObject();
-    if (!$check->cv_id) {
+    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'stock_type'")->fetchField();
+    if (!$cv_id) {
       // add the vocabulary
       $cv_id = db_insert('chado.cv')
       ->fields(array(
@@ -206,15 +212,17 @@ function tripal_stock_update_7200() {
         'definition' => 'Contains a list of types for stocks.'
       ))
       ->execute();
-      // add this vocabulary as the default cv for stock.type_id
-      db_insert('tripal_cv_defaults')
-        ->fields(array(
-        'table_name' => 'stock',
-        'field_name' => 'type_id',
-        'cv_id' => $cv_id
-        ))
-        ->execute();
     }
+    // for backwards compatibility, get the previously set stock types CV, otherwise
+    // use the new stock_type CV we just added
+    $default_stocktype_cv = variable_get('chado_stock_types_cv', $cv_id);
+    db_insert('tripal_cv_defaults')
+      ->fields(array(
+      'table_name' => 'stock',
+      'field_name' => 'type_id',
+      'cv_id' => $default_stocktype_cv
+      ))
+      ->execute();
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
