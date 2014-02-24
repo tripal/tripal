@@ -378,7 +378,7 @@ function tripal_core_menu() {
 
   // Relationshi API autocomplete callback
   $items['tripal_ajax/relationship_nodeform/%/%/name_to_id'] = array(
-    'page callback' => 'chado_node_relationships_name_to_id_callback',
+    'page callback' => 'chado_add_node_form_relationships_name_to_id_callback',
     'page arguments' => array(2,3),
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK

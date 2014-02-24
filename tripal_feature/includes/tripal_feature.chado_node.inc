@@ -231,7 +231,9 @@ function chado_feature_form($node, &$form_state) {
   );
   chado_add_node_form_dbxrefs($form, $form_state, $details);
   
-  
+  // TODO: For some reason adding a relationship to the form breaks AJAX
+  // for features (works for other node type)... need to debug
+  /*
   // RELATIONSHIPS FORM
   //---------------------------------------------
   $relationship_cv = tripal_get_default_cv('feature_relationship', 'type_id');
@@ -245,6 +247,7 @@ function chado_feature_form($node, &$form_state) {
     'cv_id' => $cv_id
   );
   chado_add_node_form_relationships($form, $form_state, $details);
+  */
 
   return $form;
 }
