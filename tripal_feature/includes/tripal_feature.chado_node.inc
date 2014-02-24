@@ -212,12 +212,13 @@ function chado_feature_form($node, &$form_state) {
 
   // PROPERTIES FORM
   //---------------------------------------------
+  $prop_cv = tripal_get_default_cv('featureprop', 'type_id');
+  $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
   $details = array(
     'property_table' => 'featureprop',      // the name of the prop table
     'chado_id' => $feature_id,              // the value of feature_id for this record
-    'cv_name' => 'feature_property'         // the cv.name of the cv governing featureprop.type_id
+    'cv_id' => $cv_id                       // the cv.cv_id of the cv governing featureprop.type_id
   );
-  // Adds the form elements to your current form
   chado_add_node_form_properties($form, $form_state, $details);
 
   // ADDITIONAL DBXREFS FORM
@@ -227,8 +228,22 @@ function chado_feature_form($node, &$form_state) {
     'base_foreign_key' => 'feature_id',   // the name of the key in your base chado table
     'base_key_value' => $feature_id       // the value of feature_id for this record
   );
-  // Adds the form elements to your current form
   chado_add_node_form_dbxrefs($form, $form_state, $details);
+  
+  
+  // RELATIONSHIPS FORM
+  //---------------------------------------------
+  $relationship_cv = tripal_get_default_cv('feature_relationship', 'type_id');
+  $cv_id = $relationship_cv ? $relationship_cv->cv_id : NULL;
+  $details = array(
+    'relationship_table' => 'feature_relationship',
+    'base_table' => 'feature',
+    'base_foreign_key' => 'feature_id',
+    'base_key_value' => $feature_id,
+    'nodetype' => 'feature',
+    'cv_id' => $cv_id
+  );
+  chado_add_node_form_relationships($form, $form_state, $details);
 
   return $form;
 }

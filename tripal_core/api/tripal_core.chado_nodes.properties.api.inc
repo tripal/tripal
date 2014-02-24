@@ -113,8 +113,8 @@
  *       feature has a feature_id of 999 and we want to associate properties for that feature 
  *       then the chado_id option should be 999)
  *   Require ONE of the following to identify the controlled vocabulary containing the properties to use:
- *     -cv_id: the unique key from the cv table
- *     -cv_name: the cv.name field uniquely identifying the controlled vocabulary
+ *     - cv_id: the unique key from the cv table
+ *     - cv_name: the cv.name field uniquely identifying the controlled vocabulary
  *   Optional keys include:
  *     - chado_id_field: the foreign key field that links properties to the
  *       chado_id record. If this value is not specified it is determined using the
@@ -129,6 +129,10 @@
  *       the following keys and values:
  *          'cvterm':    The cvterm object for the property type
  *          'value':     The property value
+ *     - select_options: an array of terms to use for the drop down select box.
+ *       this array will be used rather than populating the drop down with terms
+ *       from the named vocabulary.  The array must have keys with the cvterm_id
+ *       and values with the cvterm name. 
  *
  * @ingroup tripal_chado_node_api
  */
@@ -209,8 +213,11 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     return;
   }
 
-  // Get Property Types for the Select List
-  if (isset($details['select_options'])) {
+  // Get property types for the select list. If the user has provided a set
+  // then use those, otherwise get them from the cvterm table for specified cv. 
+  if (isset($details['select_options']) and 
+      is_array($details['select_options']) and 
+      count($details['select_options']) > 0) {
     $property_options = $details['select_options'];
   }
   // if the select options are not provided then try to get them on our own
@@ -511,7 +518,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
   // description
   $type_desc = '';
   if (isset($form_state['input']['property_table']['new']['type'])) {
-    $new_type_id = $form_state['values']['property_table']['new']['type'];
+    $new_type_id = $form_state['input']['property_table']['new']['type'];
     $new_term = tripal_get_cvterm(array('cvterm_id' => $new_type_id));
     $type_desc = $new_term->definition;
   }

@@ -56,6 +56,14 @@ function tripal_feature_install() {
 
   // create the temp table we will use for loading GFF files
   tripal_cv_create_tripal_gff_temp();
+  
+  // add the vocabularies used by the feature module:
+  tripal_feature_add_cvs();
+  
+  // set the default vocabularies
+  tripal_set_default_cv('feature', 'type_id', 'sequence');
+  tripal_set_default_cv('featureprop', 'type_id', 'feature_property');
+  tripal_set_default_cv('feature_relationships', 'type_id', 'feature_relationships');
 }
 
 /**
@@ -211,6 +219,29 @@ function tripal_feature_add_organism_count_mview() {
 
   tripal_add_mview($view_name, 'tripal_feature', $schema, $sql, $comment);
 }
+/**
+ * Add cvs related to publications
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_feature_add_cvs() {
+
+  // Add cv for relationship types
+  tripal_cv_add_cv(
+    'feature_relationship',
+    'Contains types of relationships between features.'
+  );
+  
+  // the feature_property CV already exists... it comes with chado, so no need to add it here
+  
+  // the feature type vocabulary should be the sequence ontology, and even though
+  // this ontology should get loaded we will create it here just so that we can 
+  // set the default vocabulary for the feature.type_id field
+  tripal_cv_add_cv(
+    'sequence',
+    'The Sequence Ontology'
+  );
+}
 
 /**
  * This is the required update for tripal_feature when upgrading from Drupal core API 6.x.
@@ -252,4 +283,88 @@ function tripal_feature_update_7200() {
       throw new DrupalUpdateException('Could not move feature taxonomy terms: '. $error);
     }
   }
+  
+  // set the default feature property vocabulary
+  try {
+    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'feature_property'")->fetchField();
+    db_insert('tripal_cv_defaults')
+      ->fields(array(
+        'table_name' => 'featureprop',
+        'field_name' => 'type_id',
+        'cv_id' => $cv_id
+        ))
+      ->execute();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to set feature_property vocabulary as default: '. $error);
+  }
+  
+  // add the feature_relationshp CV
+  try {
+    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'feature_relationship'")->fetchField();
+    if (!$cv_id) {
+      // add the vocabulary
+      $cv_id = db_insert('chado.cv')
+      ->fields(array(
+        'name' => 'feature_relationship',
+        'definition' => 'Contains types of relationships between features.'
+      ))
+      ->execute();
+    }
+    // use the new feature_relationship CV we just added
+    db_insert('tripal_cv_defaults')
+      ->fields(array(
+        'table_name' => 'feature_relationship',
+        'field_name' => 'type_id',
+        'cv_id' => $cv_id
+      ))
+      ->execute();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to add feature_relationship vocabulary: '. $error);
+  }
+  
+  // set the feature_type as the 'sequence' ontology
+  try {
+    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'sequence'")->fetchField();
+    if (!$cv_id) {
+      // add the vocabulary
+      $cv_id = db_insert('chado.cv')
+      ->fields(array(
+        'name' => 'sequence',
+        'definition' => 'The Sequence Ontology.'
+      ))
+      ->execute();
+    }
+    db_insert('tripal_cv_defaults')
+      ->fields(array(
+        'table_name' => 'feature',
+        'field_name' => 'type_id',
+        'cv_id' => $cv_id
+      ))
+      ->execute();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to add sequence vocabulary which will be used for the sequence ontology: '. $error);
+  }
+  
+  
+}
+
+/**
+ * Implementation of hook_update_dependencies().  It specifies a list of
+ * other modules whose updates must be run prior to this one.
+ */
+function tripal_feature_update_dependencies() {
+  $dependencies = array();
+
+  // the tripal_cv update 7200 must run prior to update 7200 of this module
+  $dependencies['tripal_feature'][7200] = array(
+    'tripal_cv' => 7200
+  );
+
+  return $dependencies;
 }

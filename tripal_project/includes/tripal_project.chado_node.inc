@@ -137,21 +137,27 @@ function chado_project_form(&$node, $form_state) {
 
   // Properties Form
   // ----------------------------------
-  // we want to exclude the project description from being loaded as a stored property
-  // because we want to use the property to replace the project.description field as it is
-  // only 255 characters which isn't large enough. We don't want the user to set it
-  // as a property even though it will be stored as a property.
-  $cv_result = chado_select_record('cv',array('cv_id'),array('name' => 'project_property'));
-  $cv_id = $cv_result[0]->cv_id;
-  $select_options = tripal_cv_get_cvterm_options($cv_id);
-  $descrip_id = array_search('Project Description', $select_options);
-  unset($select_options[$descrip_id]);
+  $select_options = array();
+  $prop_cv = tripal_get_default_cv('projectprop', 'type_id');
+  $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
+  if ($prop_cv = 'project_property') {
+    // if this is the project_property CV then
+    // we want to exclude the project description from being loaded as a stored property
+    // because we want to use the property to replace the project.description field as it is
+    // only 255 characters which isn't large enough. We don't want the user to set it
+    // as a property even though it will be stored as a property.
+    $cv_result = chado_select_record('cv',array('cv_id'),array('name' => 'project_property'));
+    $cv_id = $cv_result[0]->cv_id;
+    $select_options = tripal_cv_get_cvterm_options($cv_id);
+    $descrip_id = array_search('Project Description', $select_options);
+    unset($select_options[$descrip_id]);
+  }
 
   $instructions = t('To add properties to the drop down list, you must ' . l("add terms to the project_property vocabulary", "admin/tripal/chado/tripal_cv/cvterm/add") . ".");
   $details = array(
     'property_table' => 'projectprop',
     'chado_id' => $project_id,
-    'cv_name' => 'project_property',
+    'cv_id' => $cv_id,
     'additional_instructions' => $instructions,
     'select_options' => $select_options
   );
@@ -159,25 +165,15 @@ function chado_project_form(&$node, $form_state) {
 
   // RELATIONSHIPS FORM
   //---------------------------------------------
-  // We want to use the contact_relationship_types cv if there are any terms available
-  // and if not, to default to the relationship ontology
-  $cv_result = chado_select_record('cv',array('cv_id'),array('name' => 'project_relationship_types'));
-  $cv_id = $cv_result[0]->cv_id;
-  $select_options = tripal_cv_get_cvterm_options($cv_id);
-  if (empty($select_options)) {
-    $cv_result = chado_select_record('cv',array('cv_id'),array('name' => 'relationship'));
-    $cv_id = $cv_result[0]->cv_id;
-    $select_options = tripal_cv_get_cvterm_options($cv_id);
-  }
-  // D7 @TODO: tell tripal admin's about this
-
+  $relationship_cv = tripal_get_default_cv('project_relationship', 'type_id');
+  $cv_id = $relationship_cv ? $relationship_cv->cv_id : NULL;
   $details = array(
     'relationship_table' => 'project_relationship', // the name of the _relationship table
     'base_table' => 'project',                      // the name of your chado base table
     'base_foreign_key' => 'project_id',             // the name of the key in your base chado table
     'base_key_value' => $project_id,                // the value of example_id for this record
     'nodetype' => 'project',                        // the human-readable name of your node type
-    'cv_name' => 'project_relationship_types',      // the cv.name of the cv governing example_relationship.type_id
+    'cv_id' => $cv_id,                              // the cv.cv_id of the cv governing example_relationship.type_id
     'base_name_field' => 'name',                    // the base table field you want to be used as the name
     'subject_field_name' => 'subject_project_id',
     'object_field_name' => 'object_project_id',

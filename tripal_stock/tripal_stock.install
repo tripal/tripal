@@ -144,8 +144,6 @@ function tripal_stock_update_7200() {
   
   // add the stock_relationshp CV
   try {
-
-    
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'stock_relationship'")->fetchField();
     if (!$cv_id) {
       // add the vocabulary
@@ -229,4 +227,19 @@ function tripal_stock_update_7200() {
     throw new DrupalUpdateException('Failed to add stock_type vocabulary: '. $error);
   }
   
+}
+
+/**
+ * Implementation of hook_update_dependencies().  It specifies a list of
+ * other modules whose updates must be run prior to this one.
+ */
+function tripal_stock_update_dependencies() {
+  $dependencies = array();
+
+  // the tripal_cv update 7200 must run prior to update 7200 of this module
+  $dependencies['tripal_stock'][7200] = array(
+    'tripal_cv' => 7200
+  );
+
+  return $dependencies;
 }

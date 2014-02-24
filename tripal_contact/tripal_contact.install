@@ -65,18 +65,11 @@ function tripal_contact_install() {
   // Add cvterms for relationship types
   tripal_contact_add_cvs();
   tripal_contact_add_cvterms();
-
-  /*
-  // Install our custom block visibility settings per node type
-  $query = db_insert('block_node_type')
-    ->fields(array('type', 'module', 'delta'))
-    ->values(array(
-      'type'   => 'chado_contact',
-      'module' => 'tripal_contact', // My module name
-      'delta'  => 'contbase', // Same delta used in hook_block_info
-    )
-  )->execute();
-  */
+  
+  // set the default vocabularies
+  tripal_set_default_cv('contact', 'type_id', 'tripal_contact');
+  tripal_set_default_cv('contactprop', 'type_id', 'tripal_contact');
+  tripal_set_default_cv('contact_relationship', 'type_id', 'contact_relationship');
 }
 
 /**
@@ -100,10 +93,31 @@ function tripal_contact_uninstall() {
  * @ingroup tripal_contact
  */
 function tripal_contact_add_cvs() {
-
+  
+  // Add the cv for contact properties. This is a default vocabulary in the event
+  // that a user does not want to use the tripal_contact vocabulary
   tripal_cv_add_cv(
-    'contact_relationship_types',
-    'Contains Types of relationships between contacts.'
+    'contact_property',
+    'Contains properties for contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
+  );
+  
+  // add the cv for the contact type. This is a default vocabulary in the event
+  // that a user does not want to use the tripal_contact vocabulary
+  tripal_cv_add_cv(
+    'contact_type',
+    'Contains types of contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
+  );
+  
+  // Add the cv for the tripal_contact vocabulary which is loaded via the OBO
+  tripal_cv_add_cv(
+   'tripal_contact',
+   'A heirarchical set of terms for describing a contact. It is intended to be used as the default vocabularies in Tripal for contact types and contact properties.'
+  );
+  
+  // add the cv for contact relationships
+  tripal_cv_add_cv(
+    'contact_relationship',
+    'Contains types of relationships between contacts.'
   );
 
 }
@@ -228,22 +242,118 @@ function tripal_contact_add_custom_tables(){
  *
  */
 function tripal_contact_update_7200() {
-
-  // add the new contact_relationship_types vocabulary
-  // We cannot use the Tripal API calls in the 7000 update 
-  // because during upgrade the tripal_core should also be disabled
+  
+  // We cannot use the Tripal API calls in the 7200 update 
+  // because during upgrade the tripal_core will be disabled
+  
+  // add the contact_type CV
   try {
-    $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'contact_relationship_types'")->fetchObject();
-    if (!$check->cv_id) {
-      $sql = "INSERT INTO chado.cv (name, definition) VALUES (
-        'contact_relationship_types',
-        'Contains Types of relationships between contacts.')
-      ";
-      db_query($sql);
+    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'tripal_contact'")->fetchField();
+    if (!$cv_id) {
+      // add the vocabulary
+      $cv_id = db_insert('chado.cv')
+      ->fields(array(
+        'name' => 'tripal_contact',
+        'definition' => 'A heirarchical set of terms for describing a contact. It is intended to be used as the default vocabularies in Tripal for contact types and contact properties.'
+      ))
+      ->execute();
+    }
+    // make this CV the defaults for the contact properties and contact types
+    db_insert('tripal_cv_defaults')
+      ->fields(array(
+         'table_name' => 'contact',
+         'field_name' => 'type_id',
+         'cv_id' => $cv_id
+       ))
+      ->execute();
+    db_insert('tripal_cv_defaults')
+      ->fields(array(
+        'table_name' => 'contactprop',
+        'field_name' => 'type_id',
+        'cv_id' => $cv_id
+      ))
+      ->execute();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to add tripal_contact vocabulary: '. $error);
+  }
+  
+  
+  // add the contact_relationship CV
+  try {
+    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'contact_relationship'")->fetchField();
+    if (!$cv_id) {
+      // add the vocabulary
+      $cv_id = db_insert('chado.cv')
+      ->fields(array(
+        'name' => 'contact_relationship',
+        'definition' => 'Contains types of relationships between contacts.'
+      ))
+      ->execute();
+    }
+    // add the default
+    db_insert('tripal_cv_defaults')
+      ->fields(array(
+        'table_name' => 'contact_relationship',
+        'field_name' => 'type_id',
+        'cv_id' => $cv_id
+        ))
+      ->execute();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to add contact_type vocabulary: '. $error);
+  }
+
+  // add the contact_type CV
+  try {
+    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'contact_type'")->fetchField();
+    if (!$cv_id) {
+      // add the vocabulary
+      $cv_id = db_insert('chado.cv')
+      ->fields(array(
+        'name' => 'contact_type',
+        'definition' => 'Contains types of contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
+      ))
+      ->execute();
     }
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to add contact_relationship_types vocabulary: '. $error);
+    throw new DrupalUpdateException('Failed to add contact_type vocabulary: '. $error);
   }
+  
+  // add the contact_property CV
+  try {
+    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'contact_property'")->fetchField();
+    if (!$cv_id) {
+      // add the vocabulary
+      $cv_id = db_insert('chado.cv')
+      ->fields(array(
+        'name' => 'contact_property',
+        'definition' => 'Contains properties for contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
+      ))
+      ->execute();
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to add contact_property vocabulary: '. $error);
+  }
+}
+
+/**
+ * Implementation of hook_update_dependencies().  It specifies a list of
+ * other modules whose updates must be run prior to this one.
+ */
+function tripal_contact_update_dependencies() {
+  $dependencies = array();
+
+  // the tripal_cv update 7200 must run prior to update 7200 of this module
+  $dependencies['tripal_contact'][7200] = array(
+    'tripal_cv' => 7200
+  );
+
+  return $dependencies;
 }

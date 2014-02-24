@@ -53,6 +53,10 @@ function tripal_project_install() {
 
   tripal_project_add_cvs();
   tripal_project_add_cvterms();
+  
+  // set the default vocabularies
+  tripal_set_default_cv('projectprop', 'type_id', 'project_property');
+  tripal_set_default_cv('project_relationship', 'type_id', 'project_relationship');
 }
 
 /**
@@ -98,11 +102,15 @@ function tripal_project_schema() {
  * @ingroup tripal_project
  */
 function tripal_project_add_cvs() {
-  tripal_cv_add_cv('project_property', 'Contains properties for projects');
+  // Add the cv for project properties
+  tripal_cv_add_cv(
+    'project_property', 
+    'Contains properties for projects'
+  );
 
   // Add cv for relationship types
   tripal_cv_add_cv(
-    'project_relationship_types',
+    'project_relationship',
     'Contains Types of relationships between projects.'
   );
 }
@@ -134,17 +142,54 @@ function tripal_project_update_7200() {
   
   // add the project_property CV
   try {
-    $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'project_property'")->fetchObject();
-    if (!$check->cv_id) {
-      $sql = "INSERT INTO chado.cv (name, definition) VALUES (
-        'project_property','Contains properties for projects.')
-      ";
-      db_query($sql);
+    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'project_property'")->fetchField();
+    if (!$cv_id) {
+      // add the vocabulary
+      $cv_id = db_insert('chado.cv')
+        ->fields(array(
+          'name' => 'project_property',
+          'definition' => 'Contains properties for projects.'
+        ))
+        ->execute();
     }
+    // use the new project_property CV we just added
+    db_insert('tripal_cv_defaults')
+      ->fields(array(
+      'table_name' => 'projectprop',
+      'field_name' => 'type_id',
+      'cv_id' => $cv_id
+      ))
+      ->execute();
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to add project_property vocabulary: '. $error);
+  }
+  
+  // add the project_relationship CV
+  try {
+    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'project_relationship'")->fetchField();
+    if (!$cv_id) {
+      // add the vocabulary
+      $cv_id = db_insert('chado.cv')
+      ->fields(array(
+        'name' => 'project_relationship',
+        'definition' => 'Contains types of relationships between projects.'
+      ))
+      ->execute();
+    }
+    // use the new project_property CV we just added
+    db_insert('tripal_cv_defaults')
+      ->fields(array(
+        'table_name' => 'project_relationship',
+        'field_name' => 'type_id',
+        'cv_id' => $cv_id
+      ))
+      ->execute();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to add project_relationship vocabulary: '. $error);
   }
 
   // For Tripal in Drupal 6 the project_description cvterm was stored in the
@@ -169,4 +214,20 @@ function tripal_project_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to change project_description property type to the project_property CV and update the name: '. $error);
   }
+}
+
+
+/**
+ * Implementation of hook_update_dependencies().  It specifies a list of
+ * other modules whose updates must be run prior to this one.
+ */
+function tripal_project_update_dependencies() {
+  $dependencies = array();
+
+  // the tripal_cv update 7200 must run prior to update 7200 of this module
+  $dependencies['tripal_project'][7200] = array(
+    'tripal_cv' => 7200
+  );
+
+  return $dependencies;
 }

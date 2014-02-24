@@ -120,28 +120,36 @@ function chado_contact_form(&$node, $form_state) {
     $description = $form_state['input']['description'];
   }
 
-  // get the contact types. These are those that are part of the tripal_contact
-  // vocabulary and are children of the term 'Contact Type', so we need
-  // to join on the cvtermpath table and select those with a distance of 1
-  $sql = "
-    SELECT CVTS.cvterm_id, CVTS.name
-    FROM {cvtermpath} CVTP
-      INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
-      INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
-      INNER JOIN {cv} CV       ON CVTO.cv_id = CV.cv_id
-    WHERE
-      CV.name = 'tripal_contact' AND
-      CVTO.name = 'Contact Type' AND
-      CVTP.pathdistance = 1
-    ORDER BY CVTS.name ASC
-  ";
-  $results = chado_query($sql);
-  $contact_types = array(3723 => 'Person');
-  while ($contact_type = $results->fetchObject()) {
-    $contact_types[$contact_type->cvterm_id] = $contact_type->name;
-    if (strcmp($contact_type->name, "Person") == 0 and !$type_id) {
-      $type_id = $contact_type->cvterm_id;
+  // get the contact type
+  $type_cv = tripal_get_default_cv('contact', 'type_id');
+  if ($type_cv->name == 'tripal_contact') {
+    // get the contact types. If the default is the 'tripal_contact' vocabulary,
+    // then we want terms that are part of the tripal_contact
+    // vocabulary and are children of the term 'Contact Type', so we need
+    // to join on the cvtermpath table and select those with a distance of 1
+    $sql = "
+      SELECT CVTS.cvterm_id, CVTS.name
+      FROM {cvtermpath} CVTP
+        INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
+        INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
+        INNER JOIN {cv} CV       ON CVTO.cv_id = CV.cv_id
+      WHERE
+        CV.name = 'tripal_contact' AND
+        CVTO.name = 'Contact Type' AND
+        CVTP.pathdistance = 1
+      ORDER BY CVTS.name ASC
+    ";
+    $results = chado_query($sql);
+    while ($contact_type = $results->fetchObject()) {
+      $contact_types[$contact_type->cvterm_id] = $contact_type->name;
+      if (strcmp($contact_type->name, "Person") == 0 and !$type_id) {
+        $type_id = $contact_type->cvterm_id;
+      }
     }
+  }
+  else {
+    $contact_types = tripal_get_cvterm_default_select_options('contact', 'type_id', 'contact types');
+    $contact_types[0] = 'Select a Type';
   }
   $form['type_id'] = array(
     '#type' => 'select',
@@ -170,25 +178,33 @@ function chado_contact_form(&$node, $form_state) {
 
   // Properties Form
   // ----------------------------------
-  // Need to pass in our own select_options since we use cvtermpath to filter ours
+  $prop_cv = tripal_get_default_cv('contactprop', 'type_id');
+  $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
   $select_options = array();
-  $select_options[] = 'Select a Property';
-  $sql = "
-   SELECT CVTS.cvterm_id, CVTS.name
-   FROM {cvtermpath} CVTP
-     INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
-     INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
-     INNER JOIN {cv} CV       ON CVTO.cv_id = CV.cv_id
-   WHERE
-     CV.name = 'tripal_contact' AND
-     NOT CVTO.name = 'Contact Type'
-   ORDER BY CVTS.name ASC";
-  $prop_types = chado_query($sql);
-  while ($prop = $prop_types->fetchObject()) {
-    // add all properties except the Citation. That property is set via the uniquename field
-    if ($prop->name != 'Citation') {
-      if (!isset($select_options[$prop->cvterm_id])) {
-        $select_options[$prop->cvterm_id] = $prop->name;
+  
+  // the Tripal contact vocabulary is heirarchical so if that vocab is default we
+  // want to use the subset of terms not under the type 'Contact Type' for our
+  // properties list.
+  if($prop_cv->name == 'tripal_contact') {
+    // Need to pass in our own select_options since we use cvtermpath to filter ours
+    $select_options[] = 'Select a Property';
+    $sql = "
+     SELECT CVTS.cvterm_id, CVTS.name
+     FROM {cvtermpath} CVTP
+       INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
+       INNER JOIN {cvterm} CVTO ON CVTP.object_id = CVTO.cvterm_id
+       INNER JOIN {cv} CV       ON CVTO.cv_id = CV.cv_id
+     WHERE
+       CV.name = 'tripal_contact' AND
+       NOT CVTO.name = 'Contact Type'
+     ORDER BY CVTS.name ASC";
+    $prop_types = chado_query($sql);
+    while ($prop = $prop_types->fetchObject()) {
+      // add all properties except the Citation. That property is set via the uniquename field
+      if ($prop->name != 'Citation') {
+        if (!isset($select_options[$prop->cvterm_id])) {
+          $select_options[$prop->cvterm_id] = $prop->name;
+        }
       }
     }
   }
@@ -196,32 +212,22 @@ function chado_contact_form(&$node, $form_state) {
   $details = array(
     'property_table' => 'contactprop',
     'chado_id' => $contact_id,
-    'cv_name' => 'tripal_contact',
-    'select_options' => $select_options
+    'cv_id' => $cv_id,
+    'select_options' => $select_options,
   );
   chado_add_node_form_properties($form, $form_state, $details);
 
   // RELATIONSHIPS FORM
   //---------------------------------------------
-  // We want to use the contact_relationship_types cv if there are any terms available
-  // and if not, to default to the relationship ontology
-  $cv_result = chado_select_record('cv',array('cv_id'),array('name' => 'contact_relationship_types'));
-  $cv_id = $cv_result[0]->cv_id;
-  $select_options = tripal_cv_get_cvterm_options($cv_id);
-  if (empty($select_options)) {
-    $cv_result = chado_select_record('cv',array('cv_id'),array('name' => 'relationship'));
-    $cv_id = $cv_result[0]->cv_id;
-    $select_options = tripal_cv_get_cvterm_options($cv_id);
-  }
-  // D7 @TODO: tell tripal admin's about this
-
+  $relationship_cv = tripal_get_default_cv('contact_relationship', 'type_id');
+  $cv_id = $relationship_cv ? $relationship_cv->cv_id : NULL;
   $details = array(
     'relationship_table' => 'contact_relationship', // the name of the _relationship table
     'base_table' => 'contact',                      // the name of your chado base table
     'base_foreign_key' => 'contact_id',             // the name of the key in your base chado table
     'base_key_value' => $contact_id,                // the value of example_id for this record
     'nodetype' => 'contact',                        // the human-readable name of your node type
-    'cv_name' => 'contact_relationship_types',      // the cv.name of the cv governing example_relationship.type_id
+    'cv_id' => $cv_id,                              // the cv.cv_id of the cv governing contact_relationship.type_id
     'base_name_field' => 'name',                    // the base table field you want to be used as the name
     'select_options' => $select_options
   );

@@ -232,10 +232,12 @@ function chado_analysis_form($node, &$form_state) {
   // Properties Form
   // ----------------------------------
   $instructions = t('To add additional properties to the drop down. ' . l("Add terms to the analysis_property vocabulary", "admin/tripal/chado/tripal_cv/cvterm/add") . ".");
+  $prop_cv = tripal_get_default_cv('analysisprop', 'type_id');
+  $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
   $details = array(
     'property_table' => 'analysisprop',       // the name of the prop table
     'chado_id' => $analysis_id,               // the value of analysis_id for this record
-    'cv_name' => 'analysis_property',         // the cv.name of the cv governing analysisprop.type_id
+    'cv_id' => $cv_id,                        // the cv.cv_id of the cv governing analysisprop.type_id
     'fieldset_title' => 'Properties',
     'additional_instructions' => $instructions
   );

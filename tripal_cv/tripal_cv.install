@@ -173,6 +173,9 @@ function tripal_cv_get_tripal_cv_defaults_table(&$schema) {
     'indexes' => array(
       'tripal_cv_defaults_idx1' => array('table_name', 'field_name'),
     ),
+    'unique keys' => array(
+      'tripal_cv_defaults_unq1' => array('table_name', 'field_name', 'cv_id'),
+    ),
     'primary key' => array('cv_default_id')
   );
 }

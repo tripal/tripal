@@ -107,20 +107,10 @@ function chado_featuremap_form($node, &$form_state) {
     '#default_value' => $description,
   );
 
-  // get the list of unit types
-  $values = array(
-    'cv_id' => array(
-      'name' => 'featuremap_units',
-    )
-  );
-  $columns = array('cvterm_id','name');
-  $options = array('order_by' => array('name' => 'ASC'));
-  $featuremap_units = chado_select_record('cvterm', $columns, $values, $options);
-  $units = array();
-  $units[''] = '';
-  foreach($featuremap_units as $unit) {
-    $units[$unit->cvterm_id] = $unit->name;
-  }
+  // get the list of unit types  
+  $units = tripal_get_cvterm_default_select_options('featuremap', 'unittype_id', 'map unit types');
+  $units[0] = 'Select a Type';
+  
   $form['unittype_id'] = array(
     '#title'       => t('Map Units'),
     '#type'        => t('select'),
@@ -132,11 +122,13 @@ function chado_featuremap_form($node, &$form_state) {
 
   // Properties Form
   // ----------------------------------
+  $prop_cv = tripal_get_default_cv('featuremap_property', 'type_id');
+  $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
   $instructions = t('To add additional properties to the drop down. ' . l("Add terms to the featuremap_property vocabulary", "admin/tripal/chado/tripal_cv/cvterm/add") . ".");
   $details = array(
     'property_table' => 'featuremapprop',
     'chado_id' => $featuremap_id,
-    'cv_name' => 'featuremap_property',
+    'cv_id' => $cv_id,
     'fieldset_name' => 'Additional Details',
     'additional_instructions' => $instructions
   );

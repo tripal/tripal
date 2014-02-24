@@ -57,6 +57,10 @@ function tripal_featuremap_install() {
   tripal_featuremap_add_cvs();
   tripal_featuremap_add_cvterms();
 
+  // set the default vocabularies
+  tripal_set_default_cv('featuremapprop', 'type_id', 'featuremap_property');
+  tripal_set_default_cv('featureposprop', 'type_id', 'featurepos_property');
+  tripal_set_default_cv('featuremap', 'uinittype_id', 'featuremap_units');
 }
 
 /**
@@ -430,4 +434,79 @@ function tripal_featuremap_add_custom_tables(){
     ),
   );
   chado_create_custom_table('featureposprop', $schema, TRUE);
+}
+
+
+/**
+ * This is the required update for tripal_featuremap when upgrading from Drupal core API 6.x.
+ * This update may take some time to complete.
+ */
+function tripal_featuremap_update_7200() {
+  // We can't use the Tripal API during an upgrade from D6 to D7 Tripal  because the tripal_core
+  // module is disabled. So, we have to manually make database additions/changes to chado.
+
+  // set the default vocabularies
+  // featuremap_units
+  try {    
+    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'featuremap_units'")->fetchField();
+    db_insert('tripal_cv_defaults')
+      ->fields(array(
+        'table_name' => 'featuremap',
+        'field_name' => 'unittype_id',
+        'cv_id' => $cv_id
+      ))
+      ->execute();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to set featuremap_units vocabulary as default: '. $error);
+  }
+  
+  // featurepos_property
+  try {
+    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'featurepos_property'")->fetchField();
+    db_insert('tripal_cv_defaults')
+      ->fields(array(
+        'table_name' => 'featureposprop',
+        'field_name' => 'type_id',
+        'cv_id' => $cv_id
+      ))
+      ->execute();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to set featurepos_property vocabulary as default: '. $error);
+  }
+  
+  // featuremap_property
+  try {
+    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'featuremap_property'")->fetchField();
+    db_insert('tripal_cv_defaults')
+     ->fields(array(
+       'table_name' => 'featuremapprop',
+       'field_name' => 'type_id',
+       'cv_id' => $cv_id
+      ))
+      ->execute();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to set featuremap_property vocabulary as default: '. $error);
+  }
+  
+}
+
+/**
+ * Implementation of hook_update_dependencies().  It specifies a list of
+ * other modules whose updates must be run prior to this one.
+ */
+function tripal_featuremap_update_dependencies() {
+  $dependencies = array();
+
+  // the tripal_cv update 7200 must run prior to update 7200 of this module
+  $dependencies['tripal_featuremap'][7200] = array(
+    'tripal_cv' => 7200
+  );
+
+  return $dependencies;
 }

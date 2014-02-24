@@ -118,20 +118,9 @@ function chado_library_form($node, &$form_state) {
     '#default_value' => $uniquename,
   );
 
-  // get the list of library types
-  $values = array(
-    'cv_id' => array(
-      'name' => 'library_type',
-    )
-  );
-  $columns = array('cvterm_id','name');
-  $options = array('order_by' => array('name' => 'ASC'));
-  $lib_types = chado_select_record('cvterm', $columns, $values, $options);
-  $types = array();
-  $types[''] = '';
-  foreach($lib_types as $type) {
-    $types[$type->cvterm_id] = $type->name;
-  }
+  // get the list of library types  
+  $types = tripal_get_cvterm_default_select_options('library', 'type_id', 'library types');
+  $types[0] = 'Select a Type';
 
   $form['library_type'] = array(
     '#title'       => t('Library Type'),
@@ -172,18 +161,23 @@ function chado_library_form($node, &$form_state) {
 
   // PROPERTIES FORM
   //---------------------------------------------
-  // Generate our own select list so we can desclude the description since it has it's
-  // own form element above
-  $cv_result = chado_select_record('cv',array('cv_id'),array('name' => 'library_property'));
-  $cv_id = $cv_result[0]->cv_id;
-  $select_options = tripal_cv_get_cvterm_options($cv_id);
-  $descrip_id = array_search('Library Description', $select_options);
-  unset($select_options[$descrip_id]);
-
+  $select_options = array();
+  $prop_cv = tripal_get_default_cv('stockprop', 'type_id');
+  $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
+  // if the default is the 'library_property' vocabulary then we want
+  // to exclude the 'Library Description' term since it has it's own form element above
+  if ($prop_cv->name == 'library_property') {
+    // Generate our own select list so we can exclude the description element
+    $cv_result = chado_select_record('cv',array('cv_id'),array('name' => 'library_property'));
+    $cv_id = $cv_result[0]->cv_id;
+    $select_options = tripal_cv_get_cvterm_options($cv_id);
+    $descrip_id = array_search('Library Description', $select_options);
+    unset($select_options[$descrip_id]);
+  }
   $details = array(
     'property_table' => 'libraryprop',      // the name of the prop table
     'chado_id' => $library_id,              // the value of library_id for this record
-    'cv_name' => 'library_property',        // the cv.name of the cv governing libraryprop.type_id
+    'cv_id' => $cv_id,                      // the cv.cv_id of the cv governing libraryprop.type_id
     'select_options' => $select_options
   );
   // Adds the form elements to your current form

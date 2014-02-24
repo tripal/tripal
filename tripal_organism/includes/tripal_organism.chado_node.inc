@@ -180,10 +180,12 @@ function chado_organism_form($node, $form_state) {
 
   // PROPERTIES FORM
   //---------------------------------------------
+  $prop_cv = tripal_get_default_cv('organismprop', 'type_id');
+  $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
   $details = array(
     'property_table' => 'organismprop',      // the name of the prop table
     'chado_id' => $organism_id,              // the value of organism_id for this record
-    'cv_name' => 'organism_property'         // the cv.name of the cv governing organismprop.type_id
+    'cv_id' => $cv_id                        // the cv.cv_id of the cv governing organismprop.type_id
   );
   // Adds the form elements to your current form
   chado_add_node_form_properties($form, $form_state, $details);

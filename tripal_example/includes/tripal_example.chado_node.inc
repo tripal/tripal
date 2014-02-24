@@ -141,17 +141,23 @@ function chado_example_form($node, &$form_state) {
     // $uniquename   = $form_state['input']['uniquename'];
 
   }
+  
+  // NOTE: if the table has a 'type_id' column, be sure to use the 
+  // tripal_get_default_cv('example', 'type_id') to get the site's 
+  // default vocabulary.
+  
 
-  // add form elements here.
 
   // PROPERTIES FORM
   //---------------------------------------------
   // If there is a exampleprop table and you want to allow users to add/remove entries
   // from it through your node form then add this section to your own node form
+  $prop_cv = tripal_get_default_cv('exampleprop', 'type_id');
+  $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
   $details = array(
     'property_table' => 'exampleprop',      // the name of the prop table
     'chado_id' => $example_id,              // the value of example_id for this record
-    'cv_name' => 'example_property_types'   // the cv.name of the cv governing exampleprop.type_id
+    'cv_id' => $cv_id                       // the cv.cv_id of the cv governing exampleprop.type_id
   );
   // Adds the form elements to your current form
   chado_add_node_form_properties($form, $form_state, $details);
@@ -172,13 +178,15 @@ function chado_example_form($node, &$form_state) {
   //---------------------------------------------
   // If there is a example_relationship table and you want to allow users to add/remove entries
   // from it through your node form then add this section to your own node form
+  $rels_cv = tripal_get_default_cv('example_relationship', 'type_id');
+  $cv_id = $rels_cv ? $rels_cv->cv_id : NULL;
   $details = array(
     'relationship_table' => 'example_relationship', // the name of the _relationship table
     'base_table' => 'example',                      // the name of your chado base table
     'base_foreign_key' => 'example_id',             // the name of the key in your base chado table
     'base_key_value' => $example_id,                // the value of example_id for this record
     'nodetype' => 'example',                        // the human-readable name of your node type
-    'cv_name' => 'example_relationship_types'         // the cv.name of the cv governing example_relationship.type_id
+    'cv_id' => $cv_id                               // the cv.cv_id of the cv governing example_relationship.type_id
   );
   // Adds the form elements to your current form
   chado_add_node_form_relationships($form, $form_state, $details);

@@ -57,6 +57,10 @@ function tripal_library_install() {
   // add cvterms
   tripal_library_add_cvs();
   tripal_library_add_cvterms();
+  
+  // set the default vocabularies
+  tripal_set_default_cv('librarypprop', 'type_id', 'library_property');
+  tripal_set_default_cv('library', 'type_id', 'library_type');
 }
 
 /**
@@ -347,4 +351,52 @@ function tripal_library_update_7200() {
       throw new DrupalUpdateException('Could not move library taxonomy terms: '. $error);
     }
   }
+  
+  // set the default vocabularies
+  // library_type
+  try {
+    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'library_type'")->fetchField();
+    db_insert('tripal_cv_defaults')
+      ->fields(array(
+        'table_name' => 'library',
+        'field_name' => 'type_id',
+        'cv_id' => $cv_id
+      ))
+      ->execute();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to set library_type vocabulary as default: '. $error);
+  }
+  // library_property
+  try {
+    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'library_property'")->fetchField();
+    db_insert('tripal_cv_defaults')
+      ->fields(array(
+        'table_name' => 'libraryprop',
+        'field_name' => 'type_id',
+        'cv_id' => $cv_id
+      ))
+      ->execute();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to set the library_property vocabulary as default: '. $error);
+  }
+  
+}
+
+/**
+ * Implementation of hook_update_dependencies().  It specifies a list of
+ * other modules whose updates must be run prior to this one.
+ */
+function tripal_library_update_dependencies() {
+  $dependencies = array();
+
+  // the tripal_cv update 7200 must run prior to update 7200 of this module
+  $dependencies['tripal_library'][7200] = array(
+    'tripal_cv' => 7200
+  );
+
+  return $dependencies;
 }

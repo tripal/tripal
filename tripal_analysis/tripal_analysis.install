@@ -56,11 +56,17 @@ function tripal_analysis_install() {
   // we may need the analysisfeatureprop table if it doesn't already exist
   tripal_analysis_create_analysisfeatureprop();
 
+  // add vocabularies
+  tripal_analysis_add_cvs();
+  
   // add cvterms
   tripal_analysis_add_cvterms();
 
   // add materialized views
   tripal_analysis_add_mview_analysis_organism();
+  
+  // set the default vocabularies
+  tripal_set_default_cv('analysisprop', 'type_id', 'analysis_property');
 }
 
 /**
@@ -100,6 +106,18 @@ function tripal_analysis_create_analysisfeatureprop() {
 }
 
 /**
+ * Add cvs related to analyses
+ *
+ * @ingroup tripal_analysis
+ */
+function tripal_analysis_add_cvs() {
+
+  // typically here we would add the analysis_property vocabulary
+  // but it already comes with Chado.
+
+}
+
+/**
  * Adds controlled vocabulary terms needed by this module.
  *
  * @ingroup tripal_analysis
@@ -125,9 +143,13 @@ function tripal_analysis_add_cvterms() {
   tripal_cv_add_cvterm($term, 'tripal', 0, 1 , 'tripal');
 
 
-  // the 'analysis_property' vocabulary is for user definable properties.
-  tripal_cv_add_cvterm(array('name' => 'Analysis Type', 'def' => 'The type of analysis that was performed.'),
-     'analysis_property', 0, 1, 'tripal');
+  // the 'analysis_property' vocabulary is for user definable properties wo we
+  // will add an 'Analysis Type' to this vocubulary
+  $term = array(
+    'name' => 'Analysis Type', 
+    'def' => 'The type of analysis that was performed.'
+  );
+  tripal_cv_add_cvterm($term, 'analysis_property', 0, 1, 'tripal');
 }
 
 /**
@@ -256,7 +278,26 @@ function tripal_analysis_add_mview_analysis_organism() {
  *
  */
 function tripal_analysis_update_7200() {
-
+  // We cannot use the Tripal API calls in the 7200 update
+  // because during upgrade the tripal_core should also be disabled
+  
+  // set the analysis_property as default
+  try {
+    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'analysis_property'")->fetchField();
+    db_insert('tripal_cv_defaults')
+      ->fields(array(
+        'table_name' => 'analysisprop',
+        'field_name' => 'type_id',
+        'cv_id' => $cv_id
+      ))
+      ->execute();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to add analysis_property vocabulary: '. $error);
+  }
+  
+  
   // During the upgrade from D6 to D7 the vocabulary terms assigned to organisms were
   // copied to the field_data_taxonomyextra table rather than to the correct
   // field_data_taxonomy_vocabulary_[vid] table. We'll move them.
@@ -292,4 +333,19 @@ function tripal_analysis_update_7200() {
       throw new DrupalUpdateException('Could not move organism taxonomy terms: '. $error);
     }
   }
+}
+
+/**
+ * Implementation of hook_update_dependencies().  It specifies a list of
+ * other modules whose updates must be run prior to this one.
+ */
+function tripal_analysis_update_dependencies() {
+  $dependencies = array();
+
+  // the tripal_cv update 7200 must run prior to update 7200 of this module
+  $dependencies['tripal_analysis'][7200] = array(
+    'tripal_cv' => 7200
+  );
+
+  return $dependencies;
 }

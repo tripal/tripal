@@ -157,29 +157,38 @@ function chado_pub_form($node, $form_state) {
     '#default_value' => $title,
     '#required' => TRUE,
   );
-  // get the list of publication types.  In the Tripal publication
-  // ontologies these are all grouped under the term 'Publication Type'
-  // we want the default to be 'Journal Article'
-  $sql = "
-    SELECT
-      CVTS.cvterm_id, CVTS.name
-    FROM {cvtermpath} CVTP
-      INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
-      INNER JOIN {cvterm} CVTO ON CVTP.object_id  = CVTO.cvterm_id
-      INNER JOIN {cv}          ON CVTO.cv_id      = CV.cv_id
-    WHERE
-      CV.name = 'tripal_pub' AND CVTO.name = 'Publication Type' AND
-      NOT CVTS.is_obsolete = 1
-    ORDER BY CVTS.name ASC
-  ";
-  $results = chado_query($sql);
-  $pub_types = array();
-  while ($pub_type = $results->fetchObject()) {
-    $pub_types[$pub_type->cvterm_id] = $pub_type->name;
-    // if we don't have a default type then set the default to be 'Journal Article'
-    if (strcmp($pub_type->name,"Journal Article") == 0 and !$type_id) {
-      $type_id = $pub_type->cvterm_id;
+  
+  $type_cv = tripal_get_default_cv('pub', 'type_id');
+  if ($type_cv->name == 'tripal_pub') {
+   
+    // get the list of publication types.  In the Tripal publication
+    // ontologies these are all grouped under the term 'Publication Type'
+    // we want the default to be 'Journal Article'
+    $sql = "
+      SELECT
+        CVTS.cvterm_id, CVTS.name
+      FROM {cvtermpath} CVTP
+        INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
+        INNER JOIN {cvterm} CVTO ON CVTP.object_id  = CVTO.cvterm_id
+        INNER JOIN {cv}          ON CVTO.cv_id      = CV.cv_id
+      WHERE
+        CV.name = 'tripal_pub' AND CVTO.name = 'Publication Type' AND
+        NOT CVTS.is_obsolete = 1
+      ORDER BY CVTS.name ASC
+    ";
+    $results = chado_query($sql);
+    $pub_types = array();
+    while ($pub_type = $results->fetchObject()) {
+      $pub_types[$pub_type->cvterm_id] = $pub_type->name;
+      // if we don't have a default type then set the default to be 'Journal Article'
+      if (strcmp($pub_type->name,"Journal Article") == 0 and !$type_id) {
+        $type_id = $pub_type->cvterm_id;
+      }
     }
+  }
+  else {
+    $pub_types = tripal_get_cvterm_default_select_options('pub', 'type_id', 'publication types');
+    $pub_types[0] = 'Select a Type'; 
   }
 
   $form['type_id'] = array(
@@ -217,38 +226,43 @@ function chado_pub_form($node, $form_state) {
 
   // Properties Form
   // ----------------------------------
-  // Need to pass in our own select_options since we use cvtermpath to filter ours
   $select_options = array();
-  $select_options[] = 'Select a Property';
-  $sql = "
-    SELECT
-      DISTINCT CVTS.cvterm_id, CVTS.name, CVTS.definition
-    FROM {cvtermpath} CVTP
-      INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
-      INNER JOIN {cvterm} CVTO ON CVTP.object_id  = CVTO.cvterm_id
-      INNER JOIN {cv}          ON CVTO.cv_id      = CV.cv_id
-    WHERE CV.name = 'tripal_pub' and
-      (CVTO.name = 'Publication Details' OR CVTS.name = 'Publication Type') AND
-      NOT CVTS.is_obsolete = 1
-    ORDER BY CVTS.name ASC
-  ";
-  $prop_types = chado_query($sql);
-  while ($prop = $prop_types->fetchObject()) {
-    // add all properties except the Citation. That property is set via the uniquename field
-    if ($prop->name == 'Citation') {
-      continue;
+  $prop_cv = tripal_get_default_cv('pubprop', 'type_id');
+  $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
+  // if the poperty cv is 'tripal_pub' then we need to pass in our own select_options 
+  // for only a subset of the vocabulary  
+  if ($prop_cv->name == 'tripal_pub') {
+    $select_options[] = 'Select a Property';
+    $sql = "
+      SELECT
+        DISTINCT CVTS.cvterm_id, CVTS.name, CVTS.definition
+      FROM {cvtermpath} CVTP
+        INNER JOIN {cvterm} CVTS ON CVTP.subject_id = CVTS.cvterm_id
+        INNER JOIN {cvterm} CVTO ON CVTP.object_id  = CVTO.cvterm_id
+        INNER JOIN {cv}          ON CVTO.cv_id      = CV.cv_id
+      WHERE CV.name = 'tripal_pub' and
+        (CVTO.name = 'Publication Details' OR CVTS.name = 'Publication Type') AND
+        NOT CVTS.is_obsolete = 1
+      ORDER BY CVTS.name ASC
+    ";
+    $prop_types = chado_query($sql);
+    while ($prop = $prop_types->fetchObject()) {
+      // add all properties except the Citation. That property is set via the uniquename field
+      if ($prop->name == 'Citation') {
+        continue;
+      }
+      // Publication Dbxref's are handled by the dbxref form addition below
+      if ($prop->name == 'Publication Dbxref') {
+        continue;
+      }
+      $select_options[$prop->cvterm_id] = $prop->name;
     }
-    // Publication Dbxref's are handled by the dbxref form addition below
-    if ($prop->name == 'Publication Dbxref') {
-      continue;
-    }
-    $select_options[$prop->cvterm_id] = $prop->name;
   }
 
   $details = array(
     'property_table' => 'pubprop',
     'chado_id' => $pub_id,
-    'cv_name' => 'tripal_pub',
+    'cv_id' => $cv_id,
     'select_options' => $select_options,
     'default_properties' => $more_props,
   );
@@ -256,23 +270,15 @@ function chado_pub_form($node, $form_state) {
 
   // RELATIONSHIPS FORM
   //---------------------------------------------
-  // We want to use the contact_relationship_types cv if there are any terms available
-  // and if not, then default to the relationship ontology
-  $cv_result = chado_select_record('cv',array('cv_id'),array('name' => 'pub_relationship_types'));
-  if (count($cv_result) > 0) {
-    $cv_id = $cv_result[0]->cv_id;
-    $cv_name = 'pub_relationship_types';
-    $select_options = tripal_cv_get_cvterm_options($cv_id);
-  }
-  // D7 @TODO: tell tripal admin's about this
-
+  $relationship_cv = tripal_get_default_cv('pub_relationship', 'type_id');
+  $cv_id = $relationship_cv ? $relationship_cv->cv_id : NULL;
   $details = array(
     'relationship_table' => 'pub_relationship', // the name of the _relationship table
     'base_table' => 'pub',                      // the name of your chado base table
     'base_foreign_key' => 'pub_id',             // the name of the key in your base chado table
     'base_key_value' => $pub_id,                // the value of example_id for this record
     'nodetype' => 'pub',                        // the human-readable name of your node type
-    'cv_name' => $cv_name,                      // the cv.name of the cv containing the properties
+    'cv_id' => $cv_id,                          // the cv.cv_id of the cv containing the properties
     'base_name_field' => 'uniquename',          // the base table field you want to be used as the name
     'select_options' => $select_options
   );
@@ -1134,7 +1140,7 @@ function tripal_pub_node_update($node) {
 /**
  * Implements hook_node_presave(). Acts on all content types.
  *
- * @ingroup tripal_stock
+ * @ingroup tripal_pub
  */
 function tripal_pub_node_presave($node) {
   switch ($node->type) {

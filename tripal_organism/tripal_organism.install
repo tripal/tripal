@@ -37,6 +37,10 @@ function tripal_organism_install() {
   // cvs & cvterms
   tripal_organism_add_cvs();
   tripal_organism_add_cvterms();
+  
+  // set the default vocabularies
+  tripal_set_default_cv('organismprop', 'type_id', 'organism_property');
+  
 }
 
 /**
@@ -112,7 +116,10 @@ function tripal_organism_requirements($phase) {
  * @ingroup tripal_organism
  */
 function tripal_organism_add_cvs() {
-  tripal_cv_add_cv('organism_property', 'Contains properties for organisms');
+  tripal_cv_add_cv(
+    'organism_property', 
+    'Contains properties for organisms'
+  );
 }
 
 /**
@@ -134,14 +141,22 @@ function tripal_organism_update_7200() {
   // We cannot use the Tripal API calls in the 7000 update 
   // because during upgrade the tripal_core should also be disabled
   try {
-    $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'organism_property'")->fetchObject();
-    if (!$check->cv_id) {
+    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'organism_property'")->fetchField();
+    if (!$cv_id) {
       $sql = "INSERT INTO chado.cv (name, definition) VALUES (
         'organism_property',
         'Contains properties for organisms.')
       ";
       db_query($sql);
     }
+    // add in the default vocabulary
+    db_insert('tripal_cv_defaults')
+      ->fields(array(
+        'table_name' => 'organismprop',
+        'field_name' => 'type_id',
+        'cv_id' => $cv_id
+      ))
+      ->execute();
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
@@ -184,4 +199,19 @@ function tripal_organism_update_7200() {
       throw new DrupalUpdateException('Could not move organism taxonomy terms: '. $error);
     }
   }
+}
+
+/**
+ * Implementation of hook_update_dependencies().  It specifies a list of
+ * other modules whose updates must be run prior to this one.
+ */
+function tripal_organism_update_dependencies() {
+  $dependencies = array();
+  
+  // the tripal_cv update 7200 must run prior to update 7200 of this module
+  $dependencies['tripal_organism'][7200] = array(
+    'tripal_cv' => 7200
+  );
+  
+  return $dependencies;
 }
