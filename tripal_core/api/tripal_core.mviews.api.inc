@@ -113,9 +113,9 @@ function tripal_add_legacy_mview($name, $modulename, $mv_table, $mv_specs, $inde
  *
  * @ingroup tripal_mviews_api
  */
-function tripal_add_mview($name, $modulename, $schema_arr, $query, $comment = NULL) {
+function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL) {
 
-  $mv_table = $schema_arr['table'];
+  $mv_table = $mv_schema['table'];
 
   if (!$mv_table) {
      tripal_report_error('tripal_core', TRIPAL_ERROR,
@@ -142,7 +142,7 @@ function tripal_add_mview($name, $modulename, $schema_arr, $query, $comment = NU
       chado_query($sql);
     }
     // create the table
-    if (!chado_create_custom_table ($mv_table, $schema_arr, 0)) {
+    if (!chado_create_custom_table ($mv_table, $mv_schema, 0)) {
       drupal_set_message(t("Could not create the materialized view. Check Drupal error report logs."), 'error');
     }
     else {

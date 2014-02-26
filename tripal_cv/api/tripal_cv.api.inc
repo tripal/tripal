@@ -469,7 +469,7 @@ function tripal_insert_cvterm($term, $options) {
   }
 
   // get the term properties
-  $id = $term['id'];
+  $id = (isset($term['id'])) ? $term['id'] : '';
   $name = '';
   $cvname = '';
   $definition = '';
@@ -1060,8 +1060,8 @@ function tripal_get_default_cv($table, $field) {
  * tripal_get_cvterm_select_option, this function retreives the cvterms using
  * the default vocabulary set for a given table and field.  It will also
  * notify the administrative user if a default vocabulary is missing for the
- * field and if the vocabulary is empty.  
- *   
+ * field and if the vocabulary is empty.
+ *
  * @param $table
  *   The name of the table that contains the field with a foreign key
  *   relationship to the cvterm table
@@ -1070,21 +1070,21 @@ function tripal_get_default_cv($table, $field) {
  *   cvterm table for which the default vocabulary will be set
  * @param $field_desc
  *   A human readable descriptive name for the field
- *   
+ *
  * @return
  *   An array(cvterm_id => name)
  *   for each cvterm in the chado cvterm table where cv_id=that supplied
  */
 function tripal_get_cvterm_default_select_options($table, $field, $field_desc) {
-  
+
   $default_cv = tripal_get_default_cv($table, $field);
   $options = array();
-  
+
   if ($default_cv) {
     $options = tripal_get_cvterm_select_options($default_cv->cv_id);
   }
   else {
-    tripal_set_message('There is not a default vocabulary set for ' . $field_desc . '. '. 
+    tripal_set_message('There is not a default vocabulary set for ' . $field_desc . '. '.
       'Please set one using the ' .
       l('vocabulary defaults configuration page',
         'admin/tripal/chado/tripal_cv/defaults',

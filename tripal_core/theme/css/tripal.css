@@ -208,6 +208,14 @@ div.messages.tripal-site-admin-only{
   color: #FF0000;
 }
 
+.tripal-code {
+  font-family: "Courier New", Courier, monospace;
+  word-wrap: break-word;
+  display: block;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
 .tripal-serverity-string.warning {
   color: #FF8000;
 }
