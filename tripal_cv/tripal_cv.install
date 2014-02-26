@@ -114,6 +114,8 @@ function tripal_cv_schema() {
   
   tripal_cv_get_tripal_cv_obo_table($schema);
   tripal_cv_get_tripal_cv_defaults_table($schema);
+  
+  return $schema;
 }
 /**
  * Table definition for the tripal_cv_obo table

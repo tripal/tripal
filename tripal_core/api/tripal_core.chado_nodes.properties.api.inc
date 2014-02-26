@@ -341,7 +341,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
   else {
     $ranks = array(); // a temporary array used for calculating rank
     
-    // bulid the SQL for extracting properites already assigned to this record
+    // build the SQL for extracting properties already assigned to this record
     $sql_args = array();
     $sql_args[':chado_id'] = $details['chado_id'];
     if (array_key_exists('cv_name', $details)) {
@@ -371,7 +371,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     // iterate through the results and get the largest rank for each type
     foreach ($existing_properties as $property) {
       if (array_key_exists($property->type_id, $ranks)) {
-        if($ranks[$property->type_id] < $propety->rank) {
+        if($ranks[$property->type_id] < $property->rank) {
           $ranks[$property->type_id] = $property->rank;
         }
       }
