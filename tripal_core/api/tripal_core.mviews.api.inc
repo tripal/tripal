@@ -113,21 +113,21 @@ function tripal_add_legacy_mview($name, $modulename, $mv_table, $mv_specs, $inde
  *
  * @ingroup tripal_mviews_api
  */
-function tripal_add_mview($name, $modulename, $schema_arr, $query, $comment = NULL) {
+function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL) {
 
-  $mv_table = $schema_arr['table'];
+  $mv_table = $mv_schema['table'];
 
   if (!$mv_table) {
      tripal_report_error('tripal_core', TRIPAL_ERROR,
        'Must have a table name when creating an mview.', array());
      return NULL;
   }
-  
+
   // see if the mv_table name already exsists
   $mview_id = db_query(
-    'SELECT mview_id FROM {tripal_mviews} WHERE name = :name', 
+    'SELECT mview_id FROM {tripal_mviews} WHERE name = :name',
     array(':name' => $name))->fetchField();
-  
+
   if(!$mview_id) {
 
     // Create a new record
@@ -138,18 +138,18 @@ function tripal_add_mview($name, $modulename, $schema_arr, $query, $comment = NU
     $record->query = $query;
     $record->comment = $comment;
     $record->mv_schema = $mv_schema;
-  
+
     // add the record to the tripal_mviews table and if successful
     // create the new materialized view in the chado schema
     if (drupal_write_record('tripal_mviews', $record)) {
-  
+
       // drop the table from chado if it exists
       if (chado_table_exists($mv_table)) {
         $sql = 'DROP TABLE {' . $mv_table . '}';
         chado_query($sql);
       }
       // create the table
-      if (!chado_create_custom_table ($mv_table, $schema_arr, 0)) {
+      if (!chado_create_custom_table ($mv_table, $mv_schema, 0)) {
         drupal_set_message(t("Could not create the materialized view. Check Drupal error report logs."), 'error');
       }
       else {
@@ -158,8 +158,8 @@ function tripal_add_mview($name, $modulename, $schema_arr, $query, $comment = NU
     }
   }
   else {
-    tripal_report_error('tripal_cv', TRIPAL_WARNING, 
-      "Materialized view, %vname, already exists. Cannot create.", 
+    tripal_report_error('tripal_cv', TRIPAL_WARNING,
+      "Materialized view, %vname, already exists. Cannot create.",
       array('%vname' => $name));
     drupal_set_message(t("Materialized view, $name, already exists. Cannot create.", array('%name' => $name)));
   }

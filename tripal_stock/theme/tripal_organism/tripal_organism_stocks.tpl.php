@@ -3,19 +3,19 @@ $organism = $variables['node']->organism;
 
 // expand the featuremap object to include the records from the featurepos table
 // specify the number of features to show by default and the unique pager ID
-$num_results_per_page = 25; 
+$num_results_per_page = 25;
 $pager_id = 3;
 
 // get the features aligned on this map
-$options = array(  
+$options = array(
   'return_array' => 1,
   'order_by' => array('name' => 'ASC'),
   'pager' => array(
-    'limit' => $num_results_per_page, 
+    'limit' => $num_results_per_page,
     'element' => $pager_id
   ),
   'include_fk' => array(
-    'type_id' => 1    
+    'type_id' => 1
   ),
 );
 
@@ -25,30 +25,30 @@ $stocks = $organism->stock;
 // get the total number of records
 $total_records = chado_pager_get_count($pager_id);
 
- 
+
 if (count($stocks) > 0) { ?>
-  <div class="tripal_organism-data-block-desc tripal-data-block-desc">This organism is associated with <?php print number_format($total_records) ?> stock(s):</div> <?php 
-  
-  // the $headers array is an array of fields to use as the colum headers. 
-  // additional documentation can be found here 
+  <div class="tripal_organism-data-block-desc tripal-data-block-desc">This organism is associated with <?php print number_format($total_records) ?> stock(s):</div> <?php
+
+  // the $headers array is an array of fields to use as the colum headers.
+  // additional documentation can be found here
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
   // This table for the analysis has a vertical header (down the first column)
   // so we do not provide headers here, but specify them in the $rows array below.
   $headers = array('Name', 'Type');
-  
+
   // the $rows array contains an array of rows where each row is an array
   // of values for each column of the table in that row.  Additional documentation
   // can be found here:
-  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7 
+  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
   $rows = array();
-  
+
   foreach ($stocks as $stock){
     $name = $stock->name;
     if (!$name) {
       $name = $stock->uniquename;
     }
-    if ($stock->nid) {    
-      $name = l($name, "node/$stock->nid", array('attributes' => array('target' => '_blank')));
+    if ($node->nid) {
+      $name = l($name, "node/$node->nid", array('attributes' => array('target' => '_blank')));
     }
 
     $rows[] = array(
@@ -74,7 +74,7 @@ if (count($stocks) > 0) { ?>
   // once we have our table array structure defined, we call Drupal's theme_table()
   // function to generate the table.
   print theme_table($table);
-  
+
   // the $pager array values that control the behavior of the pager.  For
   // documentation on the values allows in this array see:
   // https://api.drupal.org/api/drupal/includes!pager.inc/function/theme_pager/7
@@ -89,8 +89,8 @@ if (count($stocks) > 0) { ?>
     ),
     'quantity' => $num_results_per_page,
   );
-  print theme_pager($pager);  
-} 
+  print theme_pager($pager);
+}
 
 
 
