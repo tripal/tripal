@@ -7,35 +7,35 @@ else {
   $node_type = $node->type; ?>
   
   <script type="text/javascript">
-    (function ($) {
-      Drupal.behaviors.<?php print $node_type?>Behavior = {
-        attach: function (context, settings){ 
-          // hide all but the first data block 
-          $(".tripal-data-block").hide().filter(":first-child").show();
-     
-          // when a title in the table of contents is clicked, then 
-          // show the corresponding item in the details box 
-          $(".tripal_toc_list_item_link").click(function(){
-            var id = $(this).attr('id') + "-tripal-data-block";
-            $(".tripal-data-block").hide().filter("#"+ id).fadeIn('fast');
-            return false;
-          }); 
-    
-          // if a ?block= is specified in the URL then we want to show the
-          // requested block
-          var block = window.location.href.match(/[\?|\&]block=(.+?)\&/)
-          if(block == null){
-            block = window.location.href.match(/[\?|\&]block=(.+)/)
-          }
-          if(block != null){
-            $(".tripal-data-block").hide().filter("#" + block[1] + "-tripal-data-block").show();
-          }
-          // remove the 'active' class from the links section, as it doesn't
-          // make sense for this layout
-          $("a.active").removeClass('active');
-        }
-      };
-    })(jQuery);
+    // we do not use Drupal Behaviors because we do not want this
+    // code to be executed on AJAX callbacks. This code only needs to 
+    // be executed once the page is ready.
+    jQuery(document).ready(function($){
+
+      // hide all but the first data block 
+      $(".tripal-data-block").hide().filter(":first-child").show();
+  
+      // when a title in the table of contents is clicked, then 
+      // show the corresponding item in the details box 
+      $(".tripal_toc_list_item_link").click(function(){
+        var id = $(this).attr('id') + "-tripal-data-block";
+        $(".tripal-data-block").hide().filter("#"+ id).fadeIn('fast');
+        return false;
+      }); 
+  
+      // if a ?block= is specified in the URL then we want to show the
+      // requested block
+      var block = window.location.href.match(/[\?|\&]block=(.+?)\&/)
+      if(block == null){
+        block = window.location.href.match(/[\?|\&]block=(.+)/)
+      }
+      if(block != null){
+        $(".tripal-data-block").hide().filter("#" + block[1] + "-tripal-data-block").show();
+      }
+      // remove the 'active' class from the links section, as it doesn't
+      // make sense for this layout
+      $("a.active").removeClass('active');
+    });
   </script>
   
   <div id="tripal_<?php print $node_type?>_contents" class="tripal-contents">

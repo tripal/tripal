@@ -567,26 +567,26 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
             '04' => 'Apr', '05' => 'May', '06' => 'Jun',
             '07' => 'Jul', '08' => 'Aug', '09' => 'Sep',
             '10' => 'Oct', '11' => 'Nov', '12' => 'Dec'
-            );
-            $date0 = substr($value, 0, 6);  // date entered on file
-            $date1 = substr($value, 7, 4);  // year of publication
-            $date2 = substr($value, 11, 4); // month of publication
-            $place = substr($value, 15, 3);
-            $lang  = substr($value, 35, 3);
-            if (preg_match('/\d\d\d\d/', $date1)) {
-              $pub['Year'] = $date1;
-              $pub['Publication Date'] = $date1;
-            }
-            if (preg_match('/\d\d/', $date2)) {
-              $pub['Publication Date'] = $date1 . " " . $month[substr($date2, 0, 2)] . " " . substr($date2, 3, 2);
-            }
-            if (!preg_match('/\s+/', $place)) {
-              $pub['Published Location'] = $place;
-            }
-            if (!preg_match('/\s+/', $lang)) {
-              $pub['Language Abbr'] = $lang;
-            }
-            break;
+          );
+          $date0 = substr($value, 0, 6);  // date entered on file
+          $date1 = substr($value, 7, 4);  // year of publication
+          $date2 = substr($value, 11, 4); // month of publication
+          $place = substr($value, 15, 3);
+          $lang  = substr($value, 35, 3);
+          if (preg_match('/\d\d\d\d/', $date1)) {
+            $pub['Year'] = $date1;
+            $pub['Publication Date'] = $date1;
+          }
+          if (preg_match('/\d\d/', $date2)) {
+            $pub['Publication Date'] = $date1 . " " . $month[substr($date2, 0, 2)] . " " . substr($date2, 3, 2);
+          }
+          if (!preg_match('/\s+/', $place)) {
+            $pub['Published Location'] = $place;
+          }
+          if (!preg_match('/\s+/', $lang)) {
+            $pub['Language Abbr'] = $lang;
+          }
+          break;
         default:  // unhandled tag
           break;
       }
