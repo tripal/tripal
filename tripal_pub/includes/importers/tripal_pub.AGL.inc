@@ -908,7 +908,9 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
 
   // for Title, Abstract, Athors, convert the html entity and remove special unicode chars that are not meant for display
   $pub['Title'] =preg_replace( '/[\p{So}]/u', '', mb_convert_encoding($pub['Title'], 'UTF-8', 'HTML-ENTITIES'));
-  $pub['Abstract'] =preg_replace( '/[\p{So}]/u', '',mb_convert_encoding($pub['Abstract'], 'UTF-8', 'HTML-ENTITIES'));
+  if (key_exists('Abstract', $pub)) {
+    $pub['Abstract'] =preg_replace( '/[\p{So}]/u', '',mb_convert_encoding($pub['Abstract'], 'UTF-8', 'HTML-ENTITIES'));
+  }
   $newauths = array();
   foreach ($pub['Author List'] AS $auth) {
     foreach($auth AS $k => $v) {
