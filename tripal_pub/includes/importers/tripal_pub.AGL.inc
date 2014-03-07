@@ -661,19 +661,9 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
             switch ($code) {
               case 'a':
                 $pub['Title'] = trim(preg_replace('/\.$/', '', $value));
-                // some pub title contains html entities which need to be decoded first
-                $text =mb_convert_encoding($pub['Title'], 'UTF-8', 'HTML-ENTITIES');
-                // remove other unicode symbols that are not meant for display
-                $pub['Title'] = preg_replace( '/[\p{So}]/u', '',$text);
-                //$pub['Title'] = mb_convert_encoding($pub['Title'], 'UTF-8', 'HTML-ENTITIES');
                 break;
               case 'b':
                 $pub['Title'] .= ' ' . $value;
-                // some pub title contains html entities which need to be decoded first                
-                $text = mb_convert_encoding($pub['Title'], 'UTF-8', 'HTML-ENTITIES');
-                // remove other unicode symbols that are not meant for display
-                $pub['Title'] = preg_replace( '/[\p{So}]/u', '',$text);
-                //$pub['Title'] = mb_convert_encoding($pub['Title'], 'UTF-8', 'HTML-ENTITIES');
                 break;
               case 'h':
                 $pub['Publication Model'] = $value;
@@ -916,6 +906,15 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
     $pub['Authors'] = $pub['Author List'];
   }
 
+  // for Title, Author, Abstract, convert the html entity and remove special unicode chars that are not meant for display
+  $pub['Title'] =preg_replace( '/[\p{So}]/u', '', mb_convert_encoding($pub['Title'], 'UTF-8', 'HTML-ENTITIES'));
+  $pub['Abstract'] =preg_replace( '/[\p{So}]/u', '',mb_convert_encoding($pub['Abstract'], 'UTF-8', 'HTML-ENTITIES'));
+  foreach ($pub['Author List'] AS $auth) {
+    foreach($auth AS $k => $v) {
+      $auth[$k] = preg_replace( '/[\p{So}]/u', '',mb_convert_encoding($v, 'UTF-8', 'HTML-ENTITIES'));
+    }
+  }
+  
   // build the citation
   $pub['Citation'] = tripal_pub_create_citation($pub);
 
