@@ -661,9 +661,19 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
             switch ($code) {
               case 'a':
                 $pub['Title'] = trim(preg_replace('/\.$/', '', $value));
+                // some pub title contains html entities which need to be decoded first
+                $text =mb_convert_encoding($pub['Title'], 'UTF-8', 'HTML-ENTITIES');
+                // remove other unicode symbols that are not meant for display
+                $pub['Title'] = preg_replace( '/[\p{So}]/u', '',$text);
+                //$pub['Title'] = mb_convert_encoding($pub['Title'], 'UTF-8', 'HTML-ENTITIES');
                 break;
               case 'b':
                 $pub['Title'] .= ' ' . $value;
+                // some pub title contains html entities which need to be decoded first                
+                $text = mb_convert_encoding($pub['Title'], 'UTF-8', 'HTML-ENTITIES');
+                // remove other unicode symbols that are not meant for display
+                $pub['Title'] = preg_replace( '/[\p{So}]/u', '',$text);
+                //$pub['Title'] = mb_convert_encoding($pub['Title'], 'UTF-8', 'HTML-ENTITIES');
                 break;
               case 'h':
                 $pub['Publication Model'] = $value;
@@ -910,6 +920,7 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
   $pub['Citation'] = tripal_pub_create_citation($pub);
 
   $pub['raw'] = $pub_xml;
+  
   return $pub;
 }
 
