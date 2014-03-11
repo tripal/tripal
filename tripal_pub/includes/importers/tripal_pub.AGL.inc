@@ -449,13 +449,7 @@ function tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $tot
   for($i = $start; $i < $start + $num_to_retrieve; $i++) {
     // retrieve the XML results
     $pub_xml = yaz_record($yazc, $i + 1, 'xml; charset=marc-8,utf-8');
-    
-    // the XML is encoded twice, one to convert UTF-8 characters to 
-    // unicode HTML entities and second with URL encoding. We must
-    // reverse the encoding
-    //$pub_xml = urldecode($pub_xml);
-    //$pub_xml = mb_convert_encoding($pub_xml, 'UTF-8', 'HTML-ENTITIES');
-    
+
     // parse the pub XML
     $pub     = tripal_pub_AGL_parse_pubxml($pub_xml);
     $pubs[]  = $pub;
@@ -906,8 +900,8 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
     $pub['Authors'] = $pub['Author List'];
   }
 
-  // for Title, Abstract, Athors, convert the html entity and remove special unicode chars that are not meant for display
-  $pub['Title'] =preg_replace( '/[\p{So}]/u', '', mb_convert_encoding($pub['Title'], 'UTF-8', 'HTML-ENTITIES'));
+  // for Title, Abstract, Authors, convert the html entity and remove special unicode chars that are not meant for display
+  $pub['Title'] = preg_replace( '/[\p{So}]/u', '', mb_convert_encoding($pub['Title'], 'UTF-8', 'HTML-ENTITIES'));
   if (key_exists('Abstract', $pub)) {
     $pub['Abstract'] =preg_replace( '/[\p{So}]/u', '',mb_convert_encoding($pub['Abstract'], 'UTF-8', 'HTML-ENTITIES'));
   }
