@@ -595,12 +595,24 @@ function chado_feature_delete($node) {
 
   // Remove data from feature tables of chado database.  This will
   // cause a cascade delete and remove all data in referencing tables
-  // for this feature
+  // for this feature. However, we need t specifically delete from the
+  // featureloc table because the box() PLSQL function calls another
+  // function that does not reference the 'chado' schema and causes an error
+  // the chado_query function can handle this problem so we specificall delete
+  // from that table to prevent the error. The same problem exists for the
+  // frange.featuregroup table
+  $previous_db = chado_set_active('chado') ;
+  db_query("DELETE FROM frange.featuregroup WHERE subject_id = :feature_id", array(':feature_id' => $feature_id));
+  db_query("DELETE FROM frange.featuregroup WHERE object_id = :feature_id", array(':feature_id' => $feature_id));
+  db_query("DELETE FROM frange.featuregroup WHERE group_id = :feature_id", array(':feature_id' => $feature_id));
+  db_query("DELETE FROM frange.featuregroup WHERE srcfeature_id = :feature_id", array(':feature_id' => $feature_id));
+  chado_set_active($previous_db);
+  
+  chado_query("DELETE FROM {featureloc} WHERE feature_id = :feature_id", array(':feature_id' => $feature_id));
+  chado_query("DELETE FROM {featureloc} WHERE srcfeature_id = :feature_id", array(':feature_id' => $feature_id));
   chado_query("DELETE FROM {feature} WHERE feature_id = :feature_id", array(':feature_id' => $feature_id));
 
-  drupal_set_message(t("The feature and all associated data were removed from") .
-  "chado");
-
+  drupal_set_message(t("The feature and all associated data were removed"));
 }
 
 /**

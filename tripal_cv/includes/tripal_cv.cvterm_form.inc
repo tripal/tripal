@@ -330,17 +330,15 @@ function tripal_cv_cvterm_add_form_validate($form, &$form_state) {
  */
 function tripal_cv_cvterm_edit_form_submit($form, &$form_state) {
 
-  $cv_id = array_key_exists('cv_id', $form_state['values']) ? $form_state['values']['cv_id'] : '';
-  $name = array_key_exists('name', $form_state['values']) ? $form_state['values']['name'] : '';
-  $definition = array_key_exists('definition', $form_state['values']) ? $form_state['values']['definition'] : '';
-  $is_relationship = array_key_exists('is_relationship', $form_state['values']) ? $form_state['values']['is_relationship'] : '';
-  $is_obsolete = array_key_exists('is_obsolete', $form_state['values']) ? $form_state['values']['is_obsolete'] : '';
-  $cvterm_id = array_key_exists('cvterm_id', $form_state['values']) ? $form_state['values']['cvterm_id'] : '';
-
-  $db_id = array_key_exists('db_id', $form_state['values']) ? $form_state['values']['db_id'] : '';
-  $accession = array_key_exists('accession', $form_state['values']) ? $form_state['values']['accession'] : '';
-
-  $op    = array_key_exists('op', $form_state['values'])         ? trim($form_state['values']['op']) : '';
+  $cv_id           = array_key_exists('cv_id', $form_state['values'])           ? trim($form_state['values']['cv_id']) : '';
+  $name            = array_key_exists('name', $form_state['values'])            ? trim($form_state['values']['name']) : '';
+  $definition      = array_key_exists('definition', $form_state['values'])      ? trim($form_state['values']['definition']) : '';
+  $is_relationship = array_key_exists('is_relationship', $form_state['values']) ? trim($form_state['values']['is_relationship']) : '';
+  $is_obsolete     = array_key_exists('is_obsolete', $form_state['values'])     ? trim($form_state['values']['is_obsolete']) : '';
+  $cvterm_id       = array_key_exists('cvterm_id', $form_state['values'])       ? trim($form_state['values']['cvterm_id']) : '';
+  $db_id           = array_key_exists('db_id', $form_state['values'])           ? trim($form_state['values']['db_id']) : '';
+  $accession       = array_key_exists('accession', $form_state['values'])       ? trim($form_state['values']['accession']) : '';
+  $op              = array_key_exists('op', $form_state['values'])              ? trim($form_state['values']['op']) : '';
 
 
   $step = $form_state['storage']['step'];
