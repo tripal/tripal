@@ -149,6 +149,22 @@ function tripal_featuremap_menu() {
 }
 
 /**
+ * Implements hook_search_biological_data_views().
+ *
+ * Adds the described views to the "Search Biological Data" Page created by Tripal Views
+ */
+function tripal_featuremap_search_biological_data_views() {
+  return array(
+    'tripal_featuremap_user_featuremaps' => array(
+      'machine_name' => 'tripal_featuremap_user_featuremaps',
+      'human_name' => 'Maps',
+      'description' => 'A map of features from the chado database (e.g. genetic map)',
+      'link' => 'chado/featuremap'
+    ),
+  );
+}
+
+/**
  * Implements hook_views_api().
  *
  * Essentially this hook tells drupal that there is views support for
@@ -217,7 +233,7 @@ function tripal_featuremap_theme($existing, $type, $theme, $path) {
       'variables' =>  array(NULL),
       'path' => "$path/theme/tripal_featuremap",
     ),
-    
+
     // templates for the chado_feature nodes:
     'tripal_feature_featurepos' => array(
       'arguments' => array('node' => NULL),

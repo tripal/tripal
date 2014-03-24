@@ -119,6 +119,22 @@ function tripal_organism_menu() {
 }
 
 /**
+ * Implements hook_search_biological_data_views().
+ *
+ * Adds the described views to the "Search Biological Data" Page created by Tripal Views
+ */
+function tripal_organism_search_biological_data_views() {
+  return array(
+    'tripal_organism_user_organisms' => array(
+      'machine_name' => 'tripal_organism_user_organisms',
+      'human_name' => 'Organisms',
+      'description' => 'Any living biological entity, such as an animal, plant, fungus, or bacterium.',
+      'link' => 'chado/organism'
+    ),
+  );
+}
+
+/**
  * Implements hook_help().
  * Adds a help page to the module list
  *

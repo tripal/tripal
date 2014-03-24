@@ -33,6 +33,8 @@ function tripal_views_menu() {
   $items['chado'] = array(
     'title' => 'Search Biological Data',
     'description' => 'Listings of the various biological data available categorized by type.',
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_views_search_biological_content'),
     'access arguments' => array('access content'),
     'expanded' => TRUE,
     'type' => MENU_NORMAL_ITEM,
@@ -228,6 +230,12 @@ function tripal_views_theme($existing, $type, $theme, $path) {
     // instructions page for the views module
     'tripal_views_help' => array(
       'template' => 'tripal_views_help',
+      'variables' =>  array(NULL),
+      'path' => drupal_get_path('module', 'tripal_views') . '/theme'
+    ),
+    // search biological content page
+    'tripal_views_search_biological_content' => array(
+      'template' => 'tripal_views_search_biological_content',
       'variables' =>  array(NULL),
       'path' => drupal_get_path('module', 'tripal_views') . '/theme'
     ),

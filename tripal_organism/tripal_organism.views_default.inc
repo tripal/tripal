@@ -12,11 +12,59 @@
 function tripal_organism_views_default_views() {
   $views = array();
 
+  // User View ("Search Biological Content")
+  // Remember, if you change the name/path of this view,
+  // you also want to change it's description in tripal_organism_search_biological_data_views()
+  $view = tripal_organism_defaultvalue_user_organisms();
+  $view = tripal_views_make_view_compatible_with_external($view);
+  $views[$view->name] = $view;
+
+  // Admin view
   $view = tripal_organism_admin_defaultview_organisms();
   $view = tripal_views_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   return $views;
+}
+
+/**
+ * Defines the organism user search default view.
+ *
+ * @ingroup tripal_organism
+ */
+function tripal_organism_defaultvalue_user_organisms() {
+
+  // As a shortcut, currently I am copying the admin view and then tweaking it
+  // In thie future this should be replaced by a views export
+  $view = tripal_organism_admin_defaultview_organisms();
+
+  // change some view admin stuff
+  $view->name = 'tripal_organism_user_organisms';
+  $view->human_name = 'Organism User Search';
+  $view->description = 'Allows users to search organism data';
+  $view->tag = 'tripal search';
+
+  // Change the path
+  $view->display['page_1']->display_options['path'] = 'chado/organism';
+  $view->display['page_1']->display_options['menu'] = array(
+    'type' => 'normal',
+    'title' => 'Organisms',
+    'description' => 'Any living biological entity, such as an animal, plant, fungus, or bacterium.',
+    'weight' => '-10'
+  );
+  unset($view->display['page_1']->display_options['tab_options']);
+
+  // Remove edit/delete node
+  unset(
+    $view->display['default']->display_options['fields']['delete_node'],
+    $view->display['default']->display_options['fields']['edit_node'],
+    $view->display['default']->display_options['fields']['nothing']
+  );
+
+  // Remove the admin action links
+  unset($view->display['default']->display_options['header']['action_links_area']);
+
+  return $view;
 }
 
 /**
