@@ -47,7 +47,7 @@ function tripal_analysis_node_info() {
  */
 function chado_analysis_form($node, &$form_state) {
   $form = array();
-
+  
   // Default values can come in the following ways:
   //
   // 1) as elements of the $node object.  This occurs when editing an existing analysis
@@ -86,6 +86,8 @@ function chado_analysis_form($node, &$form_state) {
     $sourceuri      = $analysis->sourceuri;
     $timeexecuted   = $analysis->timeexecuted;
     $description    = $analysis->description;
+    $analysis_type  = $node->type;
+    
 
     // set the analysis_id in the form
     $form['analysis_id'] = array(
@@ -107,6 +109,7 @@ function chado_analysis_form($node, &$form_state) {
     $description    = $form_state['values']['description'];
     $d_removed      = $form_state['values']['removed'];
     $num_new        = $form_state['values']['num_new'] ? $form_state['values']['num_new'] : 0;
+    $analysis_type  = $form_state['values']['analysis_type'];
   }
   // if we are re building the form from after submission (from ajax call) then
   // the values are in the $form_state['input'] array
@@ -122,6 +125,7 @@ function chado_analysis_form($node, &$form_state) {
     $description    = $form_state['input']['description'];
     $d_removed      = $form_state['input']['removed'];
     $num_new        = $form_state['input']['num_new'] ? $form_state['input']['num_new'] : 0;
+    $analysis_type  = $form_state['input']['analysis_type'];
   }
 
   $form['title']= array(
@@ -224,11 +228,30 @@ function chado_analysis_form($node, &$form_state) {
        for collection of the source data and performing the analysis'),
   );
 
-
-  $exclude = array();
-  $include = array();
-
-
+  /*
+  // get node types from analysis extension modules
+  $sql = "SELECT modulename FROM {tripal_analysis}";
+  $modules = db_query($sql);  
+  $node_types = array();
+  $node_types['chado_analysis'] = 'Analysis';
+  foreach($modules as $module) {
+    $mtypes = call_user_func($module->modulename . "_node_info");
+    foreach ($mtypes as $mtypename => $mtype) {
+      $node_types[$mtypename] = $mtype['name'];
+    }
+  }
+  
+  if (count($node_types) > 0) {
+    $form['analysis_type'] = array(
+      '#title'         => t('Analysis Type'),
+      '#type'          => t('select'),
+      '#description'   => t("You can change this analysis type to be any other analysis type currently supported by Tripal.  Simply change this value and click 'Save'.  Then click 'Edit' again to supply additional values."),
+      '#required'      => TRUE,
+      '#default_value' => $analysis_type,
+      '#options'       => $node_types,
+    );
+  } */
+  
   // Properties Form
   // ----------------------------------
   $instructions = t('To add additional properties to the drop down. ' . l("Add terms to the analysis_property vocabulary", "admin/tripal/chado/tripal_cv/cvterm/add") . ".");
@@ -671,6 +694,8 @@ function tripal_analysis_node_presave($node) {
     if ($name) {
       $node->title = $name;
     }
+    // reset the type 
+    //$node->type = $node->analysis_type;
   }
   else if (property_exists($node, 'analysis')) {
     $name           = $node->analysis->name;
@@ -682,5 +707,6 @@ function tripal_analysis_node_presave($node) {
     if ($name) {
       $node->title = $name;
     }
+    //$node->type = $node->analysis_type;
   }
 }
