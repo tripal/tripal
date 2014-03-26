@@ -18,7 +18,7 @@
  *
  * @ingroup tripal_views
  */
-function tripal_views_integration_export_form($form_state, $setup_id) {
+function tripal_views_integration_export_form($form, $form_state, $setup_id) {
   $form = array();
 
   $defn_array = tripal_views_integration_export_entry($setup_id);
