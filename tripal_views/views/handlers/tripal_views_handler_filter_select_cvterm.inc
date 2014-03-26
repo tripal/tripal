@@ -129,7 +129,7 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
   /**
    * {@inheritdoc}
    */
-  function options_definition() {
+  function option_definition() {
     return parent::option_definition();
   }
 

@@ -47,26 +47,26 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
   /**
    * {@inheritdoc}
    */
-  function options_definition() {
+  function option_definition() {
     $options = parent::option_definition();
 
     $options['values_form_type'] = array(
       'default' => 'textfield',
-      'export' => 'export_plugin'
+      'export' => TRUE
     );
     $options['select_multiple'] = array(
       'default' => FALSE,
       'bool' => TRUE,
-      'export' => 'export_plugin'
+      'export' => TRUE
     );
     $options['select_optional'] = array(
       'default' => FALSE,
       'bool' => TRUE,
-      'export' => 'export_plugin'
+      'export' => TRUE
     );
     $options['max_length'] = array(
       'default' => 40,
-      'export' => 'export_plugin'
+      'export' => TRUE
     );
 
     return $options;
