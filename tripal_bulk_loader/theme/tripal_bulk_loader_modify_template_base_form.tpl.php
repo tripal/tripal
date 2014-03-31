@@ -18,13 +18,12 @@ td.tbl-action-field-links {
 }
 </style>
 
-<div id="tripal-bulk-loader-fields">
-<?php print drupal_render($form['template_name']); ?>
+<div id="tripal-bulk-loader-fields"><?php 
+print drupal_render($form['template_name']); ?>
 
-<!-- For each table display details in a draggable table -->
-<?php if (!$form['records']['no_records']['#value']) { ?>
-  <fieldset><legend><?php print $form['records']['#title']; ?></legend>
-  <?php
+<!-- For each table display details in a draggable table --><?php 
+if (!$form['records']['no_records']['#value']) { ?>
+  <fieldset><legend><?php print $form['records']['#title']; ?></legend> <?php
     print drupal_render($form['records']['description']);
 
     // generate table
@@ -66,16 +65,14 @@ td.tbl-action-field-links {
     // Render submit
     print drupal_render($form['records']['submit-new_record']);
     print drupal_render($form['records']['submit-reorder']);
-    unset($form['records']);
-  ?>
-  </fieldset>
-<?php } ?>
+    unset($form['records']); ?>
+  </fieldset> <?php 
+} ?>
 
-<!-- For each field display details plus edit/delete buttons-->
-<?php if ($form['fields']['total_fields']['#value'] > 0) { ?>
-  <fieldset><legend><?php print $form['fields']['#title']; ?></legend>
-
-  <?php
+<!-- For each field display details plus edit/delete buttons--> <?php 
+if (array_key_exists('total_fields', $form['fields']) and
+    $form['fields']['total_fields']['#value'] > 0) { ?>
+  <fieldset><legend><?php print $form['fields']['#title']; ?></legend> <?php
     // generate table
     $header = array('','Record Name', 'Field Name', 'Chado Table', 'Chado Field', 'Data File Column', 'Constant Value', 'Foreign Record');
     $rows = array();
@@ -110,11 +107,10 @@ td.tbl-action-field-links {
 
     // Render other elements
     print drupal_render($form['fields']['add_field']);
-    unset($form['fields']);
-  ?>
-  </fieldset>
-<?php } ?>
+    unset($form['fields']); ?>
+  </fieldset> <?php 
+} ?>
 
-<!-- Display Rest of form -->
-<?php print drupal_render_children($form); ?>
+<!-- Display Rest of form --><?php 
+print drupal_render_children($form); ?>
 </div>

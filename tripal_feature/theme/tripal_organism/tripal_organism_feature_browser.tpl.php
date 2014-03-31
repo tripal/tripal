@@ -66,7 +66,8 @@ if (count($features) > 0) { ?>
     "by navigating to the ".
     l("Tripal feature settings page", "admin/tripal/chado/tripal_feature/configuration", array('attributes' => array('target' => '_blank'))),
     TRIPAL_INFO,
-    array('return_html' => 1));
+    array('return_html' => 1)
+  );
   
   foreach ($features as $feature){
     $fname =  $feature->name;

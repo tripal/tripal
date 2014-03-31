@@ -542,6 +542,10 @@ function tripal_example_node_insert($node) {
   //      $chado_example = db_query($sql, array(':nid' => $node->nid))->fetchObject();
   //      $node->example_id = $chado_example->example_id;
   //    }
+  
+  //    // on an insert we need to add the feature_id to the node object
+  //    // so that the tripal_example_get_example_url function can set the URL properly
+  //    $node->example_id = chado_get_id_from_nid('example', $node->nid);
 
   //    // remove any previous alias
   //    db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));

@@ -124,7 +124,7 @@ function tripal_bulk_loader_menu() {
     'title' => 'Edit Template',
     'description' => 'Edit loader template for loading tab-delimited data',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_bulk_loader_modify_template_base_form', 'edit',5),
+    'page arguments' => array('tripal_bulk_loader_modify_template_base_form', 'edit', 5),
     'access arguments' => array('administer tripal_bulk_loader'),
     'type' => MENU_CALLBACK,
   );
@@ -145,7 +145,7 @@ function tripal_bulk_loader_menu() {
     'title' => 'Add Template Field',
     'description' => 'Add a template field to an existing tripal bulk loader template.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_bulk_loader_template_field_form','create_record',5,FALSE),
+    'page arguments' => array('tripal_bulk_loader_template_field_form', 'create_record', 5, FALSE),
     'access arguments' => array('administer tripal_bulk_loader'),
     'type' => MENU_CALLBACK,
   );
@@ -153,7 +153,7 @@ function tripal_bulk_loader_menu() {
     'title' => 'Edit Template Record',
     'description' => 'Edit a record in an existing tripal bulk loader template.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_bulk_loader_edit_template_record_form',5,7),
+    'page arguments' => array('tripal_bulk_loader_edit_template_record_form', 5, 7),
     'access arguments' => array('administer tripal_bulk_loader'),
     'type' => MENU_CALLBACK,
   );
@@ -161,7 +161,7 @@ function tripal_bulk_loader_menu() {
     'title' => 'Delete Template Record',
     'description' => 'Delete a record in an existing tripal bulk loader template.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_bulk_loader_delete_template_record_form',5,7),
+    'page arguments' => array('tripal_bulk_loader_delete_template_record_form', 5, 7),
     'access arguments' => array('administer tripal_bulk_loader'),
     'type' => MENU_CALLBACK,
   );
@@ -169,7 +169,7 @@ function tripal_bulk_loader_menu() {
     'title' => 'Duplicate Template Record',
     'description' => 'Duplicate a record in an existing tripal bulk loader template.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_bulk_loader_duplicate_template_record_form',5,7),
+    'page arguments' => array('tripal_bulk_loader_duplicate_template_record_form', 5, 7),
     'access arguments' => array('administer tripal_bulk_loader'),
     'type' => MENU_CALLBACK,
   );
@@ -179,7 +179,7 @@ function tripal_bulk_loader_menu() {
     'title' => 'Add Template Field',
     'description' => 'Add a template field to an existing tripal bulk loader template.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_bulk_loader_template_field_form','create',5,7),
+    'page arguments' => array('tripal_bulk_loader_template_field_form','create', 5, 7),
     'access arguments' => array('administer tripal_bulk_loader'),
     'type' => MENU_CALLBACK,
   );
@@ -187,7 +187,7 @@ function tripal_bulk_loader_menu() {
     'title' => 'Edit Template Field',
     'description' => 'Edit an existing field from a tripal bulk loader template.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_bulk_loader_template_field_form','edit',5,7,8),
+    'page arguments' => array('tripal_bulk_loader_template_field_form','edit', 5, 7, 8),
     'access arguments' => array('administer tripal_bulk_loader'),
     'type' => MENU_CALLBACK,
   );
@@ -195,7 +195,7 @@ function tripal_bulk_loader_menu() {
     'title' => 'Delete Template Field',
     'description' => 'Delete an existing field from a tripal bulk loader template.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_bulk_loader_delete_template_field_form',5,7,8),
+    'page arguments' => array('tripal_bulk_loader_delete_template_field_form', 5, 7, 8),
     'access arguments' => array('administer tripal_bulk_loader'),
     'type' => MENU_CALLBACK,
   );
@@ -205,7 +205,7 @@ function tripal_bulk_loader_menu() {
     'title' => 'Delete Template',
     'description' => 'Delete bulk loader template',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_bulk_loader_delete_template_base_form',5),
+    'page arguments' => array('tripal_bulk_loader_delete_template_base_form', 5),
     'access arguments' => array('administer tripal_bulk_loader'),
     'weight' => -4,
     'type' => MENU_CALLBACK,

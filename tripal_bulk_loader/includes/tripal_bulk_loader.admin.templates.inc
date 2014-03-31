@@ -496,7 +496,7 @@ function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state
       $form_state['storage']['template_name'] = $record['name'];
       $form_state['storage']['template'] = array();
       $form_state['rebuild'] = FALSE;
-      $form_state['redirect'] = 'admin/tripal/loaders/bulk/template/'.$record['template_id'].'/edit';
+      $form_state['redirect'] = 'admin/tripal/loaders/bulk/template/' . $record['template_id'] . '/edit';
     break;
 
     // Save Reordered Records -----------------------------------------------------
@@ -520,8 +520,9 @@ function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state
     break;
 
     case 'New Record/Field':
+      $template_id = $form_state['storage']['template_id'] ? $form_state['storage']['template_id'] : 'O';
       $form_state['rebuild'] = FALSE;
-      $form_state['redirect'] = 'admin/tripal/loaders/bulk/template/'.$form_state['storage']['template_id'].'/add_record';
+      $form_state['redirect'] = "admin/tripal/loaders/bulk/template/$template_id/add_record";
       $save = FALSE;
     break;
 
@@ -1397,10 +1398,15 @@ function tripal_bulk_loader_duplicate_template_record_form_submit($form, &$form_
 function tripal_bulk_loader_template_field_form_default_values($mode, &$form_state) {
   $v = array();
 
+  // mode can be 'create' or 'edit'
   $v['mode'] = $mode;
+  
+  // the template_id is the ID of the template if this is an edit, or FALSE if this is a create
   $v['template_id'] = (isset($form_state['build_info']['args'][1])) ? $form_state['build_info']['args'][1] : FALSE;
   $form_state['storage']['template_id'] = $v['template_id'];
   $template_id = $v['template_id'];
+  
+  
   $v['record_id'] = (isset($form_state['build_info']['args'][2])) ? $form_state['build_info']['args'][2] : FALSE;
   $v['no_record_id'] = ($mode == 'create_record') ? TRUE : FALSE;
   $form_state['storage']['record_id'] = $v['record_id'];
@@ -1411,30 +1417,41 @@ function tripal_bulk_loader_template_field_form_default_values($mode, &$form_sta
   $form_state['storage']['field_index'] = $v['field_index'];
   $field_index = $v['field_index'];
 
-  if (!isset($form_state['values'])) {
+  if (!array_key_exists('values', $form_state)) {
     $form_state['values'] = array();
   }
 
-  // Get the template if not already stored
-  if (!isset($form_state['storage']['template'])) {
-    $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id=:template";
-    $template = db_query($sql, array(':template' => $template_id))->fetchObject();
-    $form_state['storage']['template_array'] = unserialize($template->template_array);
-    if (!$form_state['storage']['template_array']) {
-      $form_state['storage']['template_array'] = array();
-    }
-    $form_state['storage']['template'] = $template;
-
-    $form_state['storage']['record2priority'] = array();
-    foreach ($form_state['storage']['template_array'] as $priority => $record_array) {
-      if (!is_array($record_array)) {
-        continue;
+  // if we are editing an existing template then get the template array from the database
+  // and store it in the form_state['storage'] variable for later access
+  if ($mode == 'edit') {
+    if(!array_key_exists('template', $form_state['storage'])) {
+      $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id = :template";
+      $template = db_query($sql, array(':template' => $template_id))->fetchObject();
+      
+      // unserialize the template array. This array contains the PHP serilazed array 
+      // describing the entire loader template
+      $form_state['storage']['template_array'] = unserialize($template->template_array);
+      if (!$form_state['storage']['template_array']) {
+        $form_state['storage']['template_array'] = array();
       }
-      $form_state['storage']['record2priority'][$record_array['record_id']] = $priority;
+      
+      // save the template record from the database for future use
+      $form_state['storage']['template'] = $template;
+  
+      // initialize the record2priority array which keeps track of the order by
+      // copying the priority information about each record from the template array
+      // into the $form_state['storage']['record2priority'] array
+      $form_state['storage']['record2priority'] = array();
+      foreach ($form_state['storage']['template_array'] as $priority => $record_array) {
+        if (!is_array($record_array)) {
+          continue;
+        }
+        $form_state['storage']['record2priority'][$record_array['record_id']] = $priority;
+      }
     }
-  }
-  else {
-    $template = $form_state['storage']['template'];
+    else {
+      $template = $form_state['storage']['template'];
+    }
   }
 
   // If we are editing then get the original values
@@ -1574,7 +1591,7 @@ function tripal_bulk_loader_template_field_form_default_values($mode, &$form_sta
   }
 
   // Field group options
-  if (!$form_state['storage']['record2priority']) {
+  if (!array_key_exists('record2priority', $form_state['storage'])) {
     $groups = array();
   }
   else {

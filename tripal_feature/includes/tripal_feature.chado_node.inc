@@ -472,7 +472,6 @@ function chado_feature_insert($node) {
       'foreignkey_value' => $feature_id      // the value of the feature_id key
     );
     chado_update_node_form_dbxrefs($node, $details);
-
   }
   else {
     $feature_id = $node->feature_id;
@@ -794,6 +793,10 @@ function tripal_feature_node_insert($node) {
   // know the feature_id in the presave
   switch ($node->type) {
     case 'chado_feature':
+      
+      // on an insert we need to add the feature_id to the node object
+      // so that the tripal_feature_get_feature_url function can set the URL properly
+      $node->feature_id = chado_get_id_from_nid('feature', $node->nid);
 
       // remove any previous alias
       db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));

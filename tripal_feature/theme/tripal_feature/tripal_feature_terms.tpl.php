@@ -46,6 +46,15 @@ if (count($s_terms) > 0) { ?>
         $term->cvterm_id->name
       );
     } 
+    
+    // generate the link to configure a database, b ut only if the user is
+    // a tripal administrator
+    $configure_link = '';
+    if (user_access('administer tripal')) {
+      $db_id = $term->cvterm_id->dbxref_id->db_id->db_id;
+      $configure_link = l('[configure term links]', "admin/tripal/chado/tripal_db/edit/$db_id", array('attributes' => array("target" => '_blank')));
+    }
+    
     // the $table array contains the headers and rows array as well as other
     // options for controlling the display of the table.  Additional
     // documentation can be found here:
@@ -57,7 +66,7 @@ if (count($s_terms) > 0) { ?>
         'id' => "tripal_feature-table-terms-$i",
       ),
       'sticky' => FALSE,
-      'caption' => '<b>Vocabulary: ' . ucwords(preg_replace('/_/', ' ', $cv)) . '</b>',
+      'caption' => 'Vocabulary:  <b>' . ucwords(preg_replace('/_/', ' ', $cv)) . '</b> ' . $configure_link,
       'colgroups' => array(),
       'empty' => '',
     );
@@ -66,5 +75,5 @@ if (count($s_terms) > 0) { ?>
     // function to generate the table.
     print theme_table($table);
     $i++;
-  } 
+  }
 }

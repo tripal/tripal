@@ -895,6 +895,10 @@ function tripal_stock_node_insert($node) {
   switch ($node->type) {
     case 'chado_stock':
 
+      // on an insert we need to add the stock_id to the node object
+      // so that the tripal_stock_get_stock_url function can set the URL properly
+      $node->stock_id = chado_get_id_from_nid('stock', $node->nid);
+      
       // remove any previous alias
       db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
 
