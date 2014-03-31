@@ -12,11 +12,60 @@
 function tripal_feature_views_default_views() {
   $views = array();
 
+  // User View ("Search Biological Content")
+  // Remember, if you change the name/path of this view,
+  // you also want to change it's description in tripal_feature_search_biological_data_views()
+  $view = tripal_feature_defaultvalue_user_features();
+  $view = tripal_views_make_view_compatible_with_external($view);
+  $views[$view->name] = $view;
+
+  // Admin view
   $view = tripal_feature_defaultview_admin_features();
   $view = tripal_views_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   return $views;
+}
+
+/**
+ * Defines the feature user search default view.
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_feature_defaultvalue_user_features() {
+
+  // As a shortcut, currently I am copying the admin view and then tweaking it
+  // In thie future this should be replaced by a views export
+  $view = tripal_feature_defaultview_admin_features();
+
+  // change some view admin stuff
+  $view->name = 'tripal_feature_user_feature';
+  $view->human_name = 'Feature User Search';
+  $view->description = 'Allows users to search feature data';
+  $view->tag = 'tripal search';
+
+  // Change the path
+  $view->display['page_1']->display_options['path'] = 'chado/feature';
+  $view->display['page_1']->display_options['menu'] = array(
+    'type' => 'normal',
+    'title' => 'Features',
+    'description' => 'A biological sequence or a section of a biological sequence, or a collection of such sections.',
+    'weight' => '-10'
+  );
+  unset($view->display['page_1']->display_options['tab_options']);
+
+  // Remove edit/delete node
+  unset(
+    $view->display['default']->display_options['fields']['delete_node'],
+    $view->display['default']->display_options['fields']['edit_node'],
+    $view->display['default']->display_options['fields']['nothing']
+  );
+
+  // Remove the admin action links
+  unset($view->display['default']->display_options['header']['action_links_area']);
+  unset($view->display['default']->display_options['header']['action_links_area_1']);
+
+  return $view;
 }
 
 /**

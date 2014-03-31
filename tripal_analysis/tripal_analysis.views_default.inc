@@ -15,11 +15,54 @@
 function tripal_analysis_views_default_views() {
   $views = array();
 
+  // User View ("Search Biological Content")
+  // Remember, if you change the name/path of this view,
+  // you also want to change it's description in tripal_analysis_search_biological_data_views()
+  $view = tripal_analysis_defaultvalue_user_analysis();
+  $view = tripal_views_make_view_compatible_with_external($view);
+  $views[$view->name] = $view;
+
+  // Admin View
   $view = tripal_analysis_defaultvalue_admin_analysis();
   $view = tripal_views_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   return $views;
+}
+
+/**
+ * Defines the analysis user search default view.
+ *
+ * @ingroup tripal_analysis
+ */
+function tripal_analysis_defaultvalue_user_analysis() {
+
+  // As a shortcut, currently I am copying the admin view and then tweaking it
+  // In thie future this should be replaced by a views export
+  $view = tripal_analysis_defaultvalue_admin_analysis();
+
+  // change some view admin stuff
+  $view->name = 'tripal_analysis_user_analyses';
+  $view->human_name = 'Analysis User Search';
+  $view->description = 'Allows users to search analysis data';
+  $view->tag = 'tripal search';
+
+  // Change the path
+  $view->display['page_1']->display_options['path'] = 'chado/analysis';
+  $view->display['page_1']->display_options['menu']['type'] = 'normal';
+  unset($view->display['page_1']->display_options['tab_options']);
+
+  // Remove edit/delete node
+  unset(
+    $view->display['default']->display_options['fields']['delete_node'],
+    $view->display['default']->display_options['fields']['edit_node'],
+    $view->display['default']->display_options['fields']['nothing']
+  );
+
+  // Remove the admin action links
+  unset($view->display['default']->display_options['header']['action_links_area']);
+
+  return $view;
 }
 
 /**

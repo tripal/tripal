@@ -85,6 +85,22 @@ function tripal_analysis_menu() {
 }
 
 /**
+ * Implements hook_search_biological_data_views().
+ *
+ * Adds the described views to the "Search Biological Data" Page created by Tripal Views
+ */
+function tripal_analysis_search_biological_data_views() {
+  return array(
+    'tripal_analysis_user_analyses' => array(
+      'machine_name' => 'tripal_analysis_user_analyses',
+      'human_name' => 'Analyses',
+      'description' => 'Bioinformatics analyses which often produces features.',
+      'link' => 'chado/analysis'
+    ),
+  );
+}
+
+/**
  * Implements hook_help().
  * Purpose: Adds a help page to the module list
  *

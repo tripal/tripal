@@ -114,6 +114,22 @@ function tripal_library_menu() {
 }
 
 /**
+ * Implements hook_search_biological_data_views().
+ *
+ * Adds the described views to the "Search Biological Data" Page created by Tripal Views
+ */
+function tripal_library_search_biological_data_views() {
+  return array(
+    'tripal_library_user_library' => array(
+      'machine_name' => 'tripal_library_user_library',
+      'human_name' => 'Libraries',
+      'description' => 'Biological library including BAC, cDNA, FOSMID, etc.',
+      'link' => 'chado/library'
+    ),
+  );
+}
+
+/**
  * Implements hook_views_api().
  *
  * Essentially this hook tells drupal that there is views support for

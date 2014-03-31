@@ -76,6 +76,22 @@ function tripal_genetic_menu() {
 }
 
 /**
+ * Implements hook_search_biological_data_views().
+ *
+ * Adds the described views to the "Search Biological Data" Page created by Tripal Views
+ */
+function tripal_genetic_search_biological_data_views() {
+  return array(
+    'tripal_genetic_user_genotypes' => array(
+      'machine_name' => 'tripal_genetic_user_genotypes',
+      'human_name' => 'Genotypes',
+      'description' => 'Genetic variations such as SNPs, MNPs and indels.',
+      'link' => 'chado/genotype'
+    ),
+  );
+}
+
+/**
  * Implements hook_views_api().
  *
  * Essentially this hook tells drupal that there is views support for

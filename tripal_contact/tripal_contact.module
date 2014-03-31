@@ -103,6 +103,22 @@ function tripal_contact_menu() {
 }
 
 /**
+ * Implements hook_search_biological_data_views().
+ *
+ * Adds the described views to the "Search Biological Data" Page created by Tripal Views
+ */
+function tripal_contact_search_biological_data_views() {
+  return array(
+    'tripal_contact_user_contacts' => array(
+      'machine_name' => 'tripal_contact_user_contacts',
+      'human_name' => 'Contacts',
+      'description' => 'Information about persons, institutes, groups, organizations, etc.',
+      'link' => 'chado/contact'
+    ),
+  );
+}
+
+/**
  * Implements hook_theme().
  * Register themeing functions for this module
  *
@@ -267,7 +283,7 @@ function tripal_contact_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == "chado_contact_node_form") {
     // turn of preview button for insert/updates
     $form['actions']['preview']['#access'] = FALSE;
-    
+
     //remove the body field
     unset($form['body']);
   }

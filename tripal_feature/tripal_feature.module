@@ -213,6 +213,22 @@ function tripal_feature_menu() {
 }
 
 /**
+ * Implements hook_search_biological_data_views().
+ *
+ * Adds the described views to the "Search Biological Data" Page created by Tripal Views
+ */
+function tripal_feature_search_biological_data_views() {
+  return array(
+    'tripal_feature_user_features' => array(
+      'machine_name' => 'tripal_feature_user_features',
+      'human_name' => 'Features',
+      'description' => 'A biological sequence or a section of a biological sequence, or a collection of such sections.',
+      'link' => 'chado/feature'
+    ),
+  );
+}
+
+/**
  * Implements hook_theme().
  *
  * We need to let drupal know about our theme functions and their arguments.
@@ -728,7 +744,7 @@ function tripal_feature_load_organism_feature_counts($organism) {
       $order[] = $feature_type;  // save the order of the these terms
       $where .= " OFC.feature_type = :name$i OR ";
       $args[":name$i"] = rtrim($temp2[0]);
-      
+
       // if the admin specified a new name then store that otherwise use the
       // the default sequence ontology term name
       if(count($temp2) == 2) {
@@ -774,8 +790,8 @@ function tripal_feature_load_organism_feature_counts($organism) {
   foreach ($order as $type) {
     $ordered_types[] = $types[$type];
   }
-  return array( 
-    'types' => $ordered_types, 
+  return array(
+    'types' => $ordered_types,
     'names' => $names
   );
 }

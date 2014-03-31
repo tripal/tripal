@@ -12,11 +12,59 @@
 function tripal_genetic_views_default_views() {
   $views = array();
 
+  // User View ("Search Biological Content")
+  // Remember, if you change the name/path of this view,
+  // you also want to change it's description in tripal_genetic_search_biological_data_views()
+  $view = tripal_genetic_defaultvalue_user_genotypes();
+  $view = tripal_views_make_view_compatible_with_external($view);
+  $views[$view->name] = $view;
+
+  // Admin view
   $view = tripal_genetic_defaultviews_admin_genotypes();
   $view = tripal_views_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   return $views;
+}
+
+/**
+ * Defines the genetic user search default view.
+ *
+ * @ingroup tripal_genetic
+ */
+function tripal_genetic_defaultvalue_user_genotypes() {
+
+  // As a shortcut, currently I am copying the admin view and then tweaking it
+  // In thie future this should be replaced by a views export
+  $view = tripal_genetic_defaultviews_admin_genotypes();
+
+  // change some view admin stuff
+  $view->name = 'tripal_genetic_user_genotypes';
+  $view->human_name = 'Genotype User Search';
+  $view->description = 'Allows users to search genotype data';
+  $view->tag = 'tripal search';
+
+  // Change the path
+  $view->display['page_1']->display_options['path'] = 'chado/genotype';
+  $view->display['page_1']->display_options['menu'] = array(
+    'type' => 'normal',
+    'title' => 'Genotypes',
+    'description' => 'Genetic variations such as SNPs, MNPs and indels.',
+    'weight' => '-10'
+  );
+  unset($view->display['page_1']->display_options['tab_options']);
+
+  // Remove edit/delete node
+  unset(
+    $view->display['default']->display_options['fields']['delete_node'],
+    $view->display['default']->display_options['fields']['edit_node'],
+    $view->display['default']->display_options['fields']['nothing']
+  );
+
+  // Remove the admin action links
+  unset($view->display['default']->display_options['header']['action_links_area']);
+
+  return $view;
 }
 
 /**

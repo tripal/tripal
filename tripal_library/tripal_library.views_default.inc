@@ -12,11 +12,59 @@
 function tripal_library_views_default_views() {
   $views = array();
 
+  // User View ("Search Biological Content")
+  // Remember, if you change the name/path of this view,
+  // you also want to change it's description in tripal_library_search_biological_data_views()
+  $view = tripal_library_defaultvalue_user_library();
+  $view = tripal_views_make_view_compatible_with_external($view);
+  $views[$view->name] = $view;
+
+  // Admin view
   $view = tripal_library_admin_defaultviews_library();
   $view = tripal_views_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   return $views;
+}
+
+/**
+ * Defines the library user search default view.
+ *
+ * @ingroup tripal_library
+ */
+function tripal_library_defaultvalue_user_library() {
+
+  // As a shortcut, currently I am copying the admin view and then tweaking it
+  // In thie future this should be replaced by a views export
+  $view = tripal_library_admin_defaultviews_library();
+
+  // change some view admin stuff
+  $view->name = 'tripal_library_user_library';
+  $view->human_name = 'Library User Search';
+  $view->description = 'Allows users to search library data';
+  $view->tag = 'tripal search';
+
+  // Change the path
+  $view->display['page_1']->display_options['path'] = 'chado/library';
+  $view->display['page_1']->display_options['menu'] = array(
+    'type' => 'normal',
+    'title' => 'Libraries',
+    'description' => 'Biological library including BAC, cDNA, FOSMID, etc.',
+    'weight' => '-10'
+  );
+  unset($view->display['page_1']->display_options['tab_options']);
+
+  // Remove edit/delete node
+  unset(
+    $view->display['default']->display_options['fields']['delete_node'],
+    $view->display['default']->display_options['fields']['edit_node'],
+    $view->display['default']->display_options['fields']['nothing']
+  );
+
+  // Remove the admin action links
+  unset($view->display['default']->display_options['header']['action_links_area']);
+
+  return $view;
 }
 
 /**

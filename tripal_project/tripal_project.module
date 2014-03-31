@@ -89,6 +89,22 @@ function tripal_project_menu() {
 }
 
 /**
+ * Implements hook_search_biological_data_views().
+ *
+ * Adds the described views to the "Search Biological Data" Page created by Tripal Views
+ */
+function tripal_project_search_biological_data_views() {
+  return array(
+    'tripal_project_user_projects' => array(
+      'machine_name' => 'tripal_project_user_projects',
+      'human_name' => 'Projects',
+      'description' => 'A project. Can be used for grouping data such as with the natural diversity module data.',
+      'link' => 'chado/project'
+    ),
+  );
+}
+
+/**
  * Implements hook_help().
  * Adds a help page to the module list
  *

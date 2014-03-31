@@ -12,11 +12,59 @@
 function tripal_featuremap_views_default_views() {
   $views = array();
 
+  // User View ("Search Biological Content")
+  // Remember, if you change the name/path of this view,
+  // you also want to change it's description in tripal_featuremap_search_biological_data_views()
+  $view = tripal_featuremap_defaultvalue_user_featuremaps();
+  $view = tripal_views_make_view_compatible_with_external($view);
+  $views[$view->name] = $view;
+
+  // Admin view
   $view = tripal_featuremap_defaultview_admin_featuremaps();
   $view = tripal_views_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   return $views;
+}
+
+/**
+ * Defines the featuremap user search default view.
+ *
+ * @ingroup tripal_featuremap
+ */
+function tripal_featuremap_defaultvalue_user_featuremaps() {
+
+  // As a shortcut, currently I am copying the admin view and then tweaking it
+  // In thie future this should be replaced by a views export
+  $view = tripal_featuremap_defaultview_admin_featuremaps();
+
+  // change some view admin stuff
+  $view->name = 'tripal_featuremap_user_featuremaps';
+  $view->human_name = 'Feature Map User Search';
+  $view->description = 'Allows users to search feature map data';
+  $view->tag = 'tripal search';
+
+  // Change the path
+  $view->display['page_1']->display_options['path'] = 'chado/featuremap';
+  $view->display['page_1']->display_options['menu'] = array(
+    'type' => 'normal',
+    'title' => 'Maps',
+    'description' => 'A map of features from the chado database (e.g. genetic map)',
+    'weight' => '-10'
+  );
+  unset($view->display['page_1']->display_options['tab_options']);
+
+  // Remove edit/delete node
+  unset(
+    $view->display['default']->display_options['fields']['delete_node'],
+    $view->display['default']->display_options['fields']['edit_node'],
+    $view->display['default']->display_options['fields']['nothing']
+  );
+
+  // Remove the admin action links
+  unset($view->display['default']->display_options['header']['action_links_area']);
+
+  return $view;
 }
 
 /**

@@ -71,6 +71,22 @@ function tripal_phenotype_menu() {
 }
 
 /**
+ * Implements hook_search_biological_data_views().
+ *
+ * Adds the described views to the "Search Biological Data" Page created by Tripal Views
+ */
+function tripal_phenotype_search_biological_data_views() {
+  return array(
+    'tripal_phenotype_user_phenotypes' => array(
+      'machine_name' => 'tripal_phenotype_user_phenotypes',
+      'human_name' => 'Phenotypes',
+      'description' => 'A controlled sentence describing observable effects of non-wild type function.',
+      'link' => 'chado/phenotype'
+    ),
+  );
+}
+
+/**
  *  Implements hook_theme().
  *
  *  We need to let drupal know about our theme functions and their arguments.
