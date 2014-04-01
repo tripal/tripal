@@ -215,7 +215,7 @@ function tripal_feature_menu() {
 /**
  * Implements hook_search_biological_data_views().
  *
- * Adds the described views to the "Search Biological Data" Page created by Tripal Views
+ * Adds the described views to the "Search Data" Page created by Tripal Views
  */
 function tripal_feature_search_biological_data_views() {
   return array(

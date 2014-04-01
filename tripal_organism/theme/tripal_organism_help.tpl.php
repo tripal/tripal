@@ -35,5 +35,5 @@
     <li><p><b>Simple Search Tool</b>: A <?php print l('simple search tool','chado/organisms') ?> is provided for
     finding organisms. This tool relies on Drupal Views.  <a href="http://drupal.org/project/views">Drupal Views</a>
     which must be installed to see the search tool.  Look for it in the navigation menu under the item
-    "Search Biological Data". </p></li>
+    "Search Data". </p></li>
             </ul>

@@ -46,7 +46,18 @@ require_once 'includes/importers/tripal_pub.AGL.inc';
 function tripal_pub_menu() {
   $items = array();
 
+  // because the publication search is not views we need to manually add
+  // it to the Search Data list in the navigation menu
+  $items['chado/publication' ]= array(
+    'title' => 'Publications',
+    'description' => ('Publications such as journal articles, conference proceedings, or other media.'),
+    'page callback' => 'tripal_pub_search_page',
+    'access arguments' => array('access chado_pub content'),
+    'type' => MENU_NORMAL_ITEM
+  );
 
+  // for backwards compatibility the same chado/publications is also found
+  // at find/publications
   $items['find/publications' ]= array(
     'title' => 'Publication Search',
     'description' => ('Search for publications'),
@@ -54,6 +65,8 @@ function tripal_pub_menu() {
     'access arguments' => array('access chado_pub content'),
     'type' => MENU_CALLBACK
   );
+  
+
 
   $items['find/publications/criteria/%/%'] = array(
     'page callback' => 'tripal_pub_search_page_update_criteria',
@@ -434,4 +447,18 @@ function tripal_get_remote_pub_raw_page($dbxref) {
     return $page;
   }
   return "Cound not find the requested publication ($dbxref)";
+}
+
+/**
+ * 
+ */
+function tripal_pub_search_biological_data_views() {
+  return array(
+    'publications' => array(
+      'machine_name' => 'publications',
+      'human_name'   => 'Publications',
+      'description'  => 'Publications such as journal articles, conference proceedings, or other media.',
+      'link'         => 'find/publications'
+    ),
+  );
 }

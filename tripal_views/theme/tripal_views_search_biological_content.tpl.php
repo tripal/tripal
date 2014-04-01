@@ -28,7 +28,8 @@ print tripal_set_message(
 
 // Tell Tripal admin how to add views to this list
 print tripal_set_message(
-  "In order to add views to the above list you need to implement hook_search_biological_data_views().
+  "Developers: To add a view or other search tool to the above list you need to 
+    implement hook_search_biological_data_views() in your custom module.
     This hook should return an array as follows: <code><pre>array(
     '[view-machine-name]' => array(
       'machine_name' => '[view-machine-name]',

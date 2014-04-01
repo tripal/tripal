@@ -115,7 +115,7 @@
     <li><p><b>Simple Search Tool</b>: A <?php print l('simple search tool','chado/features') ?> is provided for 
     finding features. This tool relies on Drupal Views.  <a href="http://drupal.org/project/views">Drupal Views</a>
     which must be installed to see the search tool.  Look for it in the navigation menu under the item 
-    "Search Biological Data". </p></li>
+    "Search Data". </p></li>
 
     <li><p><b>Delete Features</b>: You can  <a href="<?php print url('admin/tripal/tripal_feature/delete') ?>">bulk delete features</a>
     by providing a list of feature names, or for a specific organism or for a specific feature type. Be sure you have
