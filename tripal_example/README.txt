@@ -74,9 +74,10 @@ features, or publications associated with featurmaps, etc.).  These template
 files and any JavaScript, CSS or images needed to suppport them are all
 housed inside of a 'theme' directory with the following structure:
 [module dir]/theme
-[module dir]/theme/css      (for CSS files)
-[module dir]/theme/js       (for JS files)
-[module dir]/theme/images   (for images)
+[module dir]/theme/css       (for CSS files)
+[module dir]/theme/js        (for JS files)
+[module dir]/theme/images    (for images)
+[module dir]/theme/templates (for all Drupal template files)
 
 All Drupal hooks and functions related to theming of content should go in the
 file named:
@@ -86,21 +87,12 @@ The functions in that file will typically be functions which directly
 generate content for a page or "preprocess" hooks that prepare variables that
 are passed to templates.
 
-Template files are typically placed inside of directories named after the 
-Tripal node type to which the template adds content.  For example, the 
-tripal_pub module is responsible for interactions with the publication tables
-of Chado.  It provides it's own 'chado_pub' node type.  But it also adds 
-publication information on feature pages if there is an associated publication.
-Therefore, the tripal_pub/theme/chado_feature directory exists and 
-contains the templates responsible for adding content to the 'chado_feature' 
-node type !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 Template files are named in the following way
-[module dir]/theme/[template dir]/[module name]_[function].tpl.php.
+[module dir]/theme/templates/[module name]_[function].tpl.php.
 
 Notice that templates have an underscore separating the [module name] from the
 [function].  Typically a period is used (as with include files) but for
-backwards compatibility the undescores are kept.
+backwards compatibility the undescores are kept.  
 
 API Files
 ---------

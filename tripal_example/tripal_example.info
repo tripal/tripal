@@ -26,7 +26,7 @@ package = Tripal Extensions
 ; Follow these instructions when specifying the version:
 ; https:;drupal.org/node/1015226
 ; 
-version = 7.x-2.0
+version = 7.x-2.0.1-alpha
 
 ;
 ; Stylesheets containing CSS that should always be available for the
