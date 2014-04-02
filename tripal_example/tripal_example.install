@@ -98,6 +98,10 @@ function tripal_example_install() {
   // then set it as a default vocabulary (see below).
   tripal_example_add_cvs();
   
+  
+  // add any controlled vocabulary terms
+  tripal_example_add_cvterms();
+  
   // EXPLANATION: Many tables in Chado have a 'type_id' column which allows for
   // association of controlled vocabulries to describe the record.   Chado
   // places no restrictions on which vocabularies can be used, but Tripal can
@@ -105,10 +109,15 @@ function tripal_example_install() {
   // example, the feature.type_id column will typically use the Sequence Ontology
   // In that case, we can use the tripal_set_default_cv() function to specify
   // the Sequence Ontology (sequence) as the default vocabulary.  
-  tripal_set_default_cv('example', 'type_id', 'sequence');
+  tripal_set_default_cv('example', 'type_id', 'example_type');
   tripal_set_default_cv('exampleprop', 'type_id', 'example_property');
   tripal_set_default_cv('example_relationship', 'type_id', 'example_relationship');
+  
+  // add any custom tables. For this case we will add an 'example' table to the
+  // chado schema
+  tripal_example_add_custom_tables();
 }
+
 
 /**
  * Implements hook_uninstall().
@@ -196,15 +205,364 @@ function tripal_example_add_mviews() {
 /**
  * Add cvs related to publications
  *
- * @ingroup tripal_pub
+ * @ingroup tripal_example
+ */
+function tripal_example_add_dbs() {
+  // EXPLANATION: use the tripal_db_add_db() function to add any
+  // external databases needed by your module.  If the database already
+  // exists then the function will gracefully return.
+  
+  tripal_db_add_db(
+    'example_db',
+    'An example database.'
+  );
+}
+/**
+ * Add cvs related to publications
+ *
+ * @ingroup tripal_example
  */
 function tripal_example_add_cvs() {
 
   // EXPLANATION: use the tripal_cv_add_cv() function to add any 
   // controlled vocabularies needed by your module.  If the vocabulary already
-  // exists then the function will gracefully return.  
+  // exists then the function will gracefully return.  Chado convensions
+  // use a singluar name for CV names (not plural)/
+  
+  tripal_cv_add_cv(
+    'example_property',
+    'Contains property terms for examples.'
+  );
+  
+  tripal_cv_add_cv(
+    'example_type',
+    'Contains terms describing types of examples.'
+  );
+  
+  tripal_cv_add_cv(
+   'example_relationship',
+   'Contains terms for describing relationship types between examples.'
+  );
+  
 }
 
+/**
+ * Adds controlled vocabulary terms needed by this module.
+ *
+ * @ingroup tripal_example
+ */
+function tripal_example_add_cvterms() {
+  
+  // EXPLANATION:  for our test module to work we need to add some terms to our example_type
+  // controlled vocabulary.  Ideally we should have a full OBO file for loading
+  // but sometimes we just have a small list that won't really change so
+  // we can add those terms here.
+  tripal_insert_cvterm(array(
+    'id'         => 'test',         // the term accession
+    'name'       => 'Test type',    // the human readable term name
+    'cv_name'    => 'example_type', // the CV name this term belongs to.
+    'definition' => 'A test type for the example modlue.',
+    'db_name'    => 'example_db',   // the database in which the term is found.
+  ));
+}
+
+/**
+ * Add custom tables to Chado that are required by this module
+ * 
+ * @ingroup tripal_example
+ */
+function tripal_example_add_custom_tables() {
+  
+  // EXPLANATION: for this example module we will create a set of example tables
+  // that mimic Chado tables. These tables are:
+  //
+  //   1) example     (for storing the primary example records)
+  //   2) exampleprop (for sorting properties about the example)
+  //   3) example_relationship (for storing relationships about examples)
+  //   4) example_dbxref (for storing cross-references about an example)
+  //
+  // To make the code easier to read, each table is created by a separte 
+  // function called here:
+  
+  tripal_example_add_example_table();
+  tripal_example_add_exampleprop_table();
+  tripal_example_add_example_relationship_table();
+  tripal_example_add_example_dbxref_table();
+}
+/**
+ * Adds the 'example' custom table to Chado.
+ * 
+ * @ingroup tripal_example
+ */
+function tripal_example_add_example_table() {
+  // EXPLANATION: use the Drupal Schema API to describe the custom table. Then
+  // add the table using the chado_create_custom_table() function.
+  $schema = array(
+    'table' => 'example',
+    'fields' => array(
+      'example_id' => array(
+        'type' => 'serial',
+        'not null' => true,
+      ),
+      'uniquename' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'type_id' => array(
+        'type' => 'int',
+        'not null' => true,
+      ),
+      'organism_id' => array(
+        'type' => 'int',
+        'not null' => true,
+      ),
+      'description' => array(
+        'type' => 'text',
+      ),
+    ),
+    'primary key' => array(
+      0 => 'example_id',
+    ),
+    'unique keys' => array(
+      'example_uq1' => array(
+        0 => 'uniquename',
+        1 => 'type_id',
+        2 => 'organism_id',
+      ),
+    ),
+    'indexes' => array(
+      'example_idx1' => array(
+        0 => 'example_id',
+      ),
+      'example_idx2' => array(
+        0 => 'uniquename',
+      ),
+    ),
+    'foreign keys' => array(
+      'cvterm' => array(
+        'table' => 'cvterm',
+        'columns' => array(
+          'type_id' => 'cvterm_id',
+        ),
+      ),
+      'organism' => array(
+        'table' => 'organism',
+        'columns' => array(
+          'organism_id' => 'organism_id',
+        ),
+      ),
+    ),
+  );
+  chado_create_custom_table('example', $schema, TRUE);
+}
+/**
+ * Adds the 'example_relationship' custom table to Chado.
+ * 
+ * @ingroup tripal_example
+ */
+function tripal_example_add_exampleprop_table() {
+  // EXPLANATION: use the Drupal Schema API to describe the custom table. Then
+  // add the table using the chado_create_custom_table() function.
+  
+  // Add the exampleprop table
+  $schema =  array(
+    'table' => 'exampleprop',
+    'fields' => array(
+      'exampleprop_id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'example_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'type_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'value' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
+      'rank' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array(
+      0 => 'exampleprop_id',
+    ),
+    'unique keys' => array(
+      'example_id_type_id_rank' => array(
+        0 => 'example_id',
+        1 => 'type_id',
+        2 => 'rank',
+      ),
+    ),
+    'foreign keys' => array(
+      'cvterm' => array(
+        'table' => 'cvterm',
+        'columns' => array(
+          'type_id' => 'cvterm_id',
+        ),
+      ),
+      'example' => array(
+        'table' => 'example',
+        'columns' => array(
+          'example_id' => 'example_id',
+        ),
+      ),
+    ),
+  );
+  chado_create_custom_table('exampleprop', $schema, TRUE);
+}
+
+/**
+ * Adds the 'example_relationship' custom table to Chado.
+ * 
+ * @ingroup tripal_example
+ */
+function tripal_example_add_example_relationship_table() {
+  // EXPLANATION: use the Drupal Schema API to describe the custom table. Then
+  // add the table using the chado_create_custom_table() function.
+  
+  $schema =  array(
+    'table' => 'example_relationship',
+    'fields' => array(
+      'example_relationship_id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'subject_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'object_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'type_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'value' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
+      'rank' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array(
+      0 => 'example_relationship_id',
+    ),
+    'unique keys' => array(
+      'example_relationship_c1' => array(
+        0 => 'subject_id',
+        1 => 'object_id',
+        2 => 'type_id',
+        3 => 'rank',
+      ),
+    ),
+    'indexes' => array(
+      'example_relationship_idx1' => array(
+        0 => 'subject_id',
+      ),
+      'example_relationship_idx2' => array(
+        0 => 'object_id',
+      ),
+      'example_relationship_idx3' => array(
+        0 => 'type_id',
+      ),
+    ),
+    'foreign keys' => array(
+      'cvterm' => array(
+        'table' => 'cvterm',
+        'columns' => array(
+          'type_id' => 'cvterm_id',
+        ),
+      ),
+      'example' => array(
+        'table' => 'example',
+        'columns' => array(
+          'subject_id' => 'example_id',
+          'object_id' => 'example_id',
+        ),
+      ),
+    ),
+  );
+  chado_create_custom_table('example_relationship', $schema, TRUE);
+}
+
+/**
+ * Adds the 'example_dbxref' custom table to Chado.
+ * 
+ * @ingroup tripal_example
+ */
+function tripal_example_add_example_dbxref_table() {
+  
+  // EXPLANATION: use the Drupal Schema API to describe the custom table. Then
+  // add the table using the chado_create_custom_table() function.
+
+  $description =  array(
+    'table' => 'example_dbxref',
+    'fields' => array(
+      'example_dbxref_id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'example_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'dbxref_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'is_current' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+    ),
+    'primary key' => array(
+      0 => 'example_dbxref_id',
+    ),
+    'unique keys' => array(
+      'example_dbxref_unq1' => array(
+        0 => 'example_id',
+        1 => 'dbxref_id',
+      ),
+    ),
+    'indexes' => array(
+      'example_dbxref_idx1' => array(
+        0 => 'example_id',
+      ),
+      'example_dbxref_idx2' => array(
+        0 => 'dbxref_id',
+      ),
+    ),
+    'foreign keys' => array(
+      'dbxref' => array(
+        'table' => 'dbxref',
+        'columns' => array(
+          'dbxref_id' => 'dbxref_id',
+        ),
+      ),
+      'example' => array(
+        'table' => 'example',
+        'columns' => array(
+          'example_id' => 'example_id',
+        ),
+      ),
+    ),
+  );
+  chado_create_custom_table('example_dbxref', $schema, TRUE);
+}
 /**
  * This is the required update for tripal_example.
  */

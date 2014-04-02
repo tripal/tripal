@@ -142,11 +142,12 @@ function tripal_get_cv_select_options() {
  * Retrieves a chado controlled vocabulary term variable
  *
  * @param $identifier
- *   An array with the key stating what the identifier is. Supported keys (only on of the
- *   following unique keys is required):
+ *   An array with the key stating what the identifier is. Supported keys (only one of the
+ *   following unique keys are required):
  *    - cvterm_id: the chado cv.cvterm_id primary key
- *    - name: the chado cv.name field (assume unique)
+ *    - name: the chado cvterm.name field (assume unique)
  *   There are also some specially handled keys. They are:
+ *    - cv_id:  an integer indicating the cv_id or an array with 'name' => the name of the cv.
  *    - synonym: an array with 'name' => the name of the synonym of the cvterm you want
  *        returned; 'cv_id' => the cv_id of the synonym; 'cv_name' => the name of the cv
  *        of the synonym
@@ -178,26 +179,18 @@ function tripal_get_cvterm($identifiers, $options = array()) {
 
   // Error Checking of parameters
   if (!is_array($identifiers)) {
-    tripal_report_error(
-      'tripal_cv_api',
-      TRIPAL_ERROR,
+    tripal_report_error('tripal_cv_api', TRIPAL_ERROR,
       "tripal_get_cvterm: The identifier passed in is expected to be an array with the key
         matching a column name in the cvterm table (ie: cvterm_id or name). You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      array('%identifier'=> print_r($identifiers, TRUE))
     );
   }
   elseif (empty($identifiers)) {
-    tripal_report_error(
-      'tripal_cv_api',
-      TRIPAL_ERROR,
+    tripal_report_error('tripal_cv_api', TRIPAL_ERROR,
       "tripal_get_cvterm: You did not pass in anything to identify the cvterm you want. The identifier
         is expected to be an array with the key matching a column name in the cvterm table
         (ie: cvterm_id or name). You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      array('%identifier'=> print_r($identifiers, TRUE))
     );
   }
 
@@ -437,7 +430,7 @@ function tripal_insert_cv($name, $definition) {
  *
  * @ingroup tripal_cv_api
  */
-function tripal_insert_cvterm($term, $options) {
+function tripal_insert_cvterm($term, $options = array()) {
 
   // Set Defaults
   if (isset($term['cv_name'])) {

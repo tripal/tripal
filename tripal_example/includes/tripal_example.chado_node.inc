@@ -139,15 +139,24 @@ function chado_example_form($node, &$form_state) {
 
 
   // SET FORM DEFAULTS
-  //---------------------------------------------
+  //---------------------------------------------  
+  $example      = null;   // holds the example object record
+  $example_id   = null;   // when editing an example record we'll have an example_id
+  
+  // initialize the defaults for the form fields
+  $uniquename   = '';
+  $example_type = '';
+  $organism_id  = '';
+  $description  = '';
   
   // if we are editing an existing node then the 'example' record from Chado
   // is already part of the node, so we set the defaults from that object
   if (property_exists($node, 'example')) {
     $example = $node->example;
-    $example = chado_expand_var($example, 'field', 'example.residues');
     $example_id   = $example->example_id;
     $uniquename   = $example->uniquename;
+    $description  = $example->description;
+    $organism_id  = $example->organism_id;
 
     // keep track of the example id
     $form['example_id'] = array(
@@ -160,19 +169,21 @@ function chado_example_form($node, &$form_state) {
   if (array_key_exists('values', $form_state)) {
      $uniquename   = $form_state['values']['uniquename'];
      $example_type = $form_state['values']['example_type'];
-
+     $description  = $form_state['values']['description'];
+     $organism_id  = $form_state['values']['organism_id'];
   }
   // if we are re building the form from after submission (from ajax call) then
   // the values are in the $form_state['input'] array
   if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
      $uniquename   = $form_state['input']['uniquename'];
      $example_type = $form_state['input']['example_type'];
+     $organism_id  = $form_state['input']['organism_id'];
   }
     
   
   // FORM ELEMENTS 
   //---------------------------------------------
-  $form['uniquename']= array(
+  $form['uniquename'] = array(
     '#type' => 'textfield',
     '#title' => t('Unique Name'),
     '#required' => TRUE,
@@ -186,9 +197,9 @@ function chado_example_form($node, &$form_state) {
   $type_cv = tripal_get_default_cv('example', 'type_id');
   $cv_id = $type_cv->cv_id;
   $form['example_type'] = array(
-    '#title'       => t('Feature Type'),
+    '#title'       => t('Example Type'),
     '#type'        => 'textfield',
-    '#description' => t("Choose the example type."),
+    '#description' => t("Choose the example type (e.g. Test Type)."),
     '#required'    => TRUE,
     '#default_value' => $example_type,
     '#autocomplete_path' => "admin/tripal/chado/tripal_cv/cvterm/auto_name/$cv_id",
@@ -203,6 +214,14 @@ function chado_example_form($node, &$form_state) {
     '#required'    => TRUE,
     '#default_value' => $organism_id,
     '#options'     => $organisms,
+  );
+  
+  $form['description'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Description'),
+    '#required' => TRUE,
+    '#default_value' => $description,
+    '#description' => t('Enter a description for this example.'),
   );
 
   // PROPERTIES FORM
@@ -284,19 +303,38 @@ function chado_example_validate($node, $form, &$form_state) {
 
   // be sure to always trim text fields
   $node->uniquename   = trim($node->uniquename);
+  $node->description  = trim($node->description);
   
   // Validating for an update. If the 'nid' property is present in the node then
   // this is an update and validation can be different for updates
   if (property_exists($node, 'nid')) {
 
-    // if there is a problem with a field then you can set an error on the form
-    form_set_error('uniquename', t("example update cannot proceed. The example name '$node->uniquename' is not unique for this organism. Please provide a unique name for this example."));
+    // make sure the feature type is an allowed term
+    $type_cv = tripal_get_default_cv('example', 'type_id');
+    $type = tripal_get_cvterm(array(
+      'name' => $node->example_type,
+      'cv_id' => $type_cv->cv_id,
+    ));
+    if (!$type) {
+      form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
+    }
+    
+    // TODO: also we should check that the unique constraint is not invalidated by
+    // changing either the type_id, organism_id or uniquename. 
   }
   // Validating for an insert
   else {
-
-    // if there is a problem with a field then you can set an error on the form
-    form_set_error('uniquename', t("example insert cannot proceed. The example name '$node->uniquename' already exists for this organism. Please provide a unique name for this example."));
+    // make sure the feature type is an allowed term
+    $type_cv = tripal_get_default_cv('example', 'type_id');
+    $type = tripal_get_cvterm(array(
+      'name' => $node->example_type,
+      'cv_id' => $type_cv->cv_id,
+    ));
+    if (!$type) {
+      form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
+    }
+    
+    // TODO: also we should check that the unique constraint doesn't already exist
   }
 }
 
@@ -318,6 +356,7 @@ function chado_example_validate($node, $form, &$form_state) {
 function chado_example_insert($node) {
   // be sure to always trim text fields
   $node->uniquename   = trim($node->uniquename);
+  $node->description  = trim($node->description);
 
   // if there is an example_id in the $node object then this must be a sync so
   // we can skip adding the example as it is already there, although
@@ -327,7 +366,9 @@ function chado_example_insert($node) {
     // perform the insert using the tripal_core_chado_insert function();
     $values = array(
       'uniquename' => $node->uniquename,
-      'residues' => $residues,
+      'description' => $node->description,
+      'type_id' => $node->example_type,
+      'organism_id' => $node->organism_id,
     );
     $example = chado_select_record('example', array('*'), $values);
     if (!$example) {
@@ -401,6 +442,7 @@ function chado_example_insert($node) {
 function chado_example_update($node) {
   // be sure to always trim text fields
   $node->uniquename   = trim($node->uniquename);
+  $node->description  = trim($node->description);
 
   // use the chado_update_record() function to update the record
   $match = array(
