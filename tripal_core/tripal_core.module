@@ -420,7 +420,7 @@ function tripal_core_theme($existing, $type, $theme, $path) {
     'tripal_core_customize' => array(
       'arguments' => array('job_id' => NULL),
       'template' => 'tripal_core_customize',
-      'path' => "$path/theme"
+      'path' => "$path/theme/templates"
     ),
     'theme_file_upload_combo' => array(
       'render element' => 'element',
@@ -431,12 +431,12 @@ function tripal_core_theme($existing, $type, $theme, $path) {
     'tripal_core_jobs_help' => array(
       'template' => 'tripal_core_jobs_help',
       'variables' =>  array(NULL),
-      'path' => "$path/theme"
+      'path' => "$path/theme/templates"
     ),
     'tripal_core_customtables_help' => array(
       'template' => 'tripal_core_customtables_help',
       'variables' =>  array(NULL),
-      'path' => "$path/theme"
+      'path' => "$path/theme/templates"
     ),
 
     // Chado Node API Themes

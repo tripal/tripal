@@ -163,32 +163,32 @@ function tripal_organism_theme($existing, $type, $theme, $path) {
       'template' => 'node--chado-generic',
       'render element' => 'node',
       'base hook' => 'node',
-      'path' => "$core_path/theme",
+      'path' => "$core_path/theme/templates",
     ),
     'tripal_organism_base' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_organism_base',
-      'path' => "$path/theme/tripal_organism",
+      'path' => "$path/theme/templates",
     ),
     'tripal_organism_properties' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_organism_properties',
-      'path' => "$path/theme/tripal_organism",
+      'path' => "$path/theme/templates",
     ),
     'tripal_organism_references' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_organism_references',
-      'path' => "$path/theme/tripal_organism",
+      'path' => "$path/theme/templates",
     ),
     'tripal_organism_teaser' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_organism_teaser',
-      'path' => "$path/theme/tripal_organism",
+      'path' => "$path/theme/templates",
     ),
     'tripal_organism_help' => array(
       'template' => 'tripal_organism_help',
       'variables' =>  array(NULL),
-      'path' => "$path/theme",
+      'path' => "$path/theme/templates",
     ),
   );
   return $items;

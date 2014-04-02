@@ -245,79 +245,79 @@ function tripal_feature_theme($existing, $type, $theme, $path) {
       'template' => 'node--chado-generic',
       'render element' => 'node',
       'base hook' => 'node',
-      'path' => "$core_path/theme",
+      'path' => "$core_path/theme/templates",
     ),
     'tripal_feature_alignments' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_feature_alignments',
-      'path' => "$path/theme/tripal_feature",
+      'path' => "$path/theme/templates",
     ),
     'tripal_feature_analyses' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_feature_analyses',
-      'path' => "$path/theme/tripal_feature",
+      'path' => "$path/theme/templates",
     ),
     'tripal_feature_base' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_feature_base',
-      'path' => "$path/theme/tripal_feature",
+      'path' => "$path/theme/templates",
     ),
     'tripal_feature_sequence' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_feature_sequence',
-      'path' => "$path/theme/tripal_feature",
+      'path' => "$path/theme/templates",
     ),
     'tripal_feature_proteins' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_feature_proteins',
-      'path' => "$path/theme/tripal_feature",
+      'path' => "$path/theme/templates",
     ),
     'tripal_feature_publications' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_feature_publications',
-      'path' => "$path/theme/tripal_feature",
+      'path' => "$path/theme/templates",
     ),
     'tripal_feature_synonyms' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_feature_synonyms',
-      'path' => "$path/theme/tripal_feature",
+      'path' => "$path/theme/templates",
     ),
     'tripal_feature_references' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_feature_references',
-      'path' => "$path/theme/tripal_feature",
+      'path' => "$path/theme/templates",
     ),
     'tripal_feature_properties' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_feature_properties',
-      'path' => "$path/theme/tripal_feature",
+      'path' => "$path/theme/templates",
     ),
     'tripal_feature_terms' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_feature_terms',
-      'path' => "$path/theme/tripal_feature",
+      'path' => "$path/theme/templates",
     ),
     'tripal_feature_relationships' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_feature_relationships',
-      'path' => "$path/theme/tripal_feature",
+      'path' => "$path/theme/templates",
     ),
     'tripal_feature_help' => array(
       'template' => 'tripal_feature_help',
       'variables' =>  array(NULL),
-      'path' => "$path/theme/"
+      'path' => "$path/theme/templates"
     ),
 
     // template for the organism page
     'tripal_organism_feature_browser' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_organism_feature_browser',
-      'path' => "$path/theme/tripal_organism",
+      'path' => "$path/theme/templates",
     ),
     'tripal_organism_feature_counts' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_organism_feature_counts',
-      'path' => "$path/theme/tripal_organism",
+      'path' => "$path/theme/templates",
     ),
 
     // themed forms
@@ -329,7 +329,7 @@ function tripal_feature_theme($existing, $type, $theme, $path) {
     'tripal_feature_teaser' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_feature_teaser',
-      'path' => "$path/theme/tripal_feature",
+      'path' => "$path/theme/templates",
     ),
   );
 
@@ -1156,9 +1156,7 @@ function tripal_feature_match_features_page($id) {
     return "<p>No features matched the given name '$id'</p>";
   }
 
-  $table_attrs = array(
-    'class' => 'tripal-table tripal-table-horz'
-  );
+  $table_attrs = array('class' => 'tripal-data-table');
   $output = "<p>The following features match the name '$id'.</p>";
   $output .= theme_table($header, $rows, $table_attrs, $caption);
   return $output;

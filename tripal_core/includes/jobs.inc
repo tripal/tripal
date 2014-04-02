@@ -207,7 +207,7 @@ function tripal_jobs_report() {
   $table = array(
     'header' => $header,
     'rows' => $rows,
-    'attributes' => array(),
+    'attributes' => array('class' => 'tripal-data-table'),
     'sticky' => FALSE,
     'caption' => '',
     'colgroups' => array(),
@@ -308,7 +308,7 @@ function tripal_jobs_view($job_id) {
   $table = array(
     'header' => $header,
     'rows' => $rows,
-    'attributes' => array(),
+    'attributes' => array('class' => 'tripal-data-table'),
     'sticky' => FALSE,
     'caption' => '',
     'colgroups' => array(),

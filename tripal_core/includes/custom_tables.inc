@@ -140,7 +140,7 @@ function tripal_custom_tables_list() {
   $table = array(
     'header' => $header,
     'rows' => $rows,
-    'attributes' => array(),
+    'attributes' => array('class' => 'tripal-data-table'),
     'sticky' => FALSE,
     'caption' => '',
     'colgroups' => array(),

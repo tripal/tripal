@@ -104,23 +104,23 @@ function tripal_natural_diversity_theme($existing, $type, $theme, $path) {
     'tripal_feature_nd_genotypes' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_feature_nd_genotypes',
-      'path' => "$path/theme/tripal_feature",
+      'path' => "$path/theme/templates",
     ),
     // tripal_stock templates
     'tripal_stock_nd_genotypes' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_stock_nd_genotypes',
-      'path' => "$path/theme/tripal_stock",
+      'path' => "$path/theme/templates",
     ),
     'tripal_stock_nd_phenotypes' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_stock_nd_phenotypes',
-      'path' => "$path/theme/tripal_stock",
+      'path' => "$path/theme/templates",
     ),
     'tripal_natural_diversity_help' => array(
       'template' => 'tripal_natural_diversity_help',
       'variables' =>  array(NULL),
-      'path' => "$path/theme",
+      'path' => "$path/theme/templates",
     ),
   );
   return $items;

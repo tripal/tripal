@@ -90,7 +90,11 @@ function tripal_pub_search_page() {
     $table = array(
       'header' => $headers,
       'rows' => $rows,
-      'attributes' => array('id' => 'tripal-pub-search-results-table', 'border' => '0'),
+      'attributes' => array(
+        'id' => 'tripal-pub-search-results-table', 
+        'border' => '0',
+        'class' => 'tripal-data-table'
+      ),
       'sticky' => TRUE,
       'caption' => '',
       'colgroups' => array(),
@@ -513,7 +517,11 @@ function theme_tripal_pub_search_setup_form_elements($variables) {
   $table = array(
     'header' => $headers,
     'rows' => $rows,
-    'attributes' => array('id' => 'tripal-pub-search-form-table', 'border' => '0'),
+    'attributes' => array(
+      'id' => 'tripal-pub-search-form-table', 
+      'border' => '0',
+      'class' => 'tripal-data-table'
+    ),
     'sticky' => TRUE,
     'caption' => '',
     'colgroups' => array(),

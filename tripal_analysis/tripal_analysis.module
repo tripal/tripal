@@ -161,34 +161,34 @@ function tripal_analysis_theme($existing, $type, $theme, $path) {
       'template' => 'node--chado-generic',
       'render element' => 'node',
       'base hook' => 'node',
-      'path' => "$core_path/theme",
+      'path' => "$core_path/theme/templates",
     ),
     'tripal_analysis_base' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_analysis_base',
-      'path' => "$path/theme/tripal_analysis",
+      'path' => "$path/theme/templates",
     ),
     'tripal_analysis_properties' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_analysis_properties',
-      'path' => "$path/theme/tripal_analysis",
+      'path' => "$path/theme/templates",
     ),
     'tripal_analysis_teaser' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_analysis_teaser',
-      'path' => "$path/theme/tripal_analysis",
+      'path' => "$path/theme/templates",
     ),
     'tripal_analysis_help' => array(
       'template' => 'tripal_analysis_help',
       'variables' =>  array(NULL),
-      'path' => "$path/theme",
+      'path' => "$path/theme/templates",
     ),
 
     // tripal_feature theme
     'tripal_feature_analyses' => array(
       'template' => 'tripal_feature_analyses',
       'variables' =>  array('node' => NULL),
-      'path' => "$path/theme/tripal_analysis",
+      'path' => "$path/theme/templates",
     ),
 
   );

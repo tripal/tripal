@@ -171,6 +171,7 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
         'rows' => $rows,
         'attributes' => array(
           'id' => 'tripal_pub-importer-test',
+          'class' => 'tripal-data-table'
         ),
         'sticky' => FALSE,
         'caption' => '',
@@ -775,7 +776,7 @@ function theme_tripal_pub_importer_setup_form_elements($variables) {
   $table = array(
     'header' => $headers,
     'rows' => $rows,
-    'attributes' => array(),
+    'attributes' => array('class' => 'tripal-data-table'),
     'sticky' => TRUE,
     'caption' => '',
     'colgroups' => array(),

@@ -114,7 +114,7 @@ function tripal_mview_report($mview_id) {
   $table = array(
     'header' => $header,
     'rows' => $rows,
-    'attributes' => array(),
+    'attributes' => array('class' => 'tripal-data-table'),
     'sticky' => FALSE,
     'caption' => '',
     'colgroups' => array(),
@@ -178,7 +178,7 @@ function tripal_mviews_report() {
   $table = array(
     'header' => $header,
     'rows' => $rows,
-    'attributes' => array(),
+    'attributes' => array('class' => 'tripal-data-table'),
     'sticky' => FALSE,
     'caption' => '',
     'colgroups' => array(),

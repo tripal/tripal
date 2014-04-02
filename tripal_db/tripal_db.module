@@ -142,7 +142,7 @@ function tripal_db_theme($existing, $type, $theme, $path) {
     'tripal_db_help' => array(
       'template' => 'tripal_db_help',
       'variables' =>  array(NULL),
-      'path' => "$path/theme/"
+      'path' => "$path/theme/templates"
     )
   );
   return $items;

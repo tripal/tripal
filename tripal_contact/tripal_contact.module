@@ -135,37 +135,37 @@ function tripal_contact_theme($existing, $type, $theme, $path) {
       'template' => 'node--chado-generic',
       'render element' => 'node',
       'base hook' => 'node',
-      'path' => "$core_path/theme",
+      'path' => "$core_path/theme/templates",
     ),
     'tripal_contact_base' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_contact_base',
-      'path' => "$path/theme/tripal_contact",
+      'path' => "$path/theme/templates",
     ),
     'tripal_contact_properties' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_contact_properties',
-      'path' => "$path/theme/tripal_contact",
+      'path' => "$path/theme/templates",
     ),
     'tripal_contact_relationships' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_contact_relationships',
-      'path' => "$path/theme/tripal_contact",
+      'path' => "$path/theme/templates",
     ),
     'tripal_contact_publications' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_contact_publications',
-      'path' => "$path/theme/tripal_contact",
+      'path' => "$path/theme/templates",
     ),
     'tripal_contact_help' => array(
       'template' => 'tripal_contact_help',
       'variables' =>  array(NULL),
-      'path' => "$path/theme",
+      'path' => "$path/theme/templates",
     ),
     'tripal_contact_teaser' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_contact_teaser',
-      'path' => "$path/theme/tripal_contact",
+      'path' => "$path/theme/templates",
     ),
   );
   return $items;

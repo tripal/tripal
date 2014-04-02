@@ -250,88 +250,74 @@ function tripal_stock_theme($existing, $type, $theme, $path) {
 
   $items = array(
 
-    // property edit forms function templates
-    'tripal_stock_edit_ALL_properties_form' => array(
-      'variables' => array('form'),
-      'function' => 'theme_tripal_stock_edit_ALL_properties_form',
-    ),
-    'tripal_stock_edit_ALL_db_references_form' => array(
-      'variables' => array('form'),
-      'function' => 'theme_tripal_stock_edit_ALL_db_references_form',
-    ),
-    'tripal_stock_edit_ALL_relationships_form' => array(
-      'variables' => array('form'),
-      'function' => 'theme_tripal_stock_edit_ALL_relationships_form',
-    ),
-
     // tripal_stock templates
     'node__chado_stock' => array(
       'template' => 'node--chado-generic',
       'render element' => 'node',
       'base hook' => 'node',
-      'path' => "$core_path/theme",
+      'path' => "$core_path/theme/templates",
     ),
     'tripal_stock_base' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_stock_base',
-      'path' => "$path/theme/tripal_stock",
+      'path' => "$path/theme/templates",
     ),
     'tripal_stock_properties' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_stock_properties',
-      'path' => "$path/theme/tripal_stock",
+      'path' => "$path/theme/templates",
     ),
     'tripal_stock_publications' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_stock_publications',
-      'path' => "$path/theme/tripal_stock",
+      'path' => "$path/theme/templates",
     ),
     'tripal_stock_references' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_stock_references',
-      'path' => "$path/theme/tripal_stock",
+      'path' => "$path/theme/templates",
     ),
     'tripal_stock_relationships' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_stock_relationships',
-      'path' => "$path/theme/tripal_stock",
+      'path' => "$path/theme/templates",
     ),
     'tripal_stock_synonyms' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_stock_synonyms',
-      'path' => "$path/theme/tripal_stock",
+      'path' => "$path/theme/templates",
     ),
     'tripal_stock_collections' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_stock_collections',
-      'path' => "$path/theme/tripal_stock",
+      'path' => "$path/theme/templates",
     ),
     'tripal_stock_collections' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_stock_collections',
-      'path' => "$path/theme/tripal_stock",
+      'path' => "$path/theme/templates",
     ),
     'tripal_stock_phenotypes' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_stock_phenotypes',
-      'path' => "$path/theme/tripal_stock",
+      'path' => "$path/theme/templates",
     ),
     'tripal_stock_locations' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_stock_locations',
-      'path' => "$path/theme/tripal_stock",
+      'path' => "$path/theme/templates",
     ),
     // tripal_organism templates
     'tripal_organism_stocks' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_organism_stocks',
-      'path' => "$path/theme/tripal_organism",
+      'path' => "$path/theme/templates",
     ),
     // help template
     'tripal_stock_help' => array(
       'template' => 'tripal_stock_help',
       'variables' =>  array(NULL),
-      'path' => "$path/theme/",
+      'path' => "$path/theme/templates",
     ),
   );
   return $items;

@@ -211,65 +211,65 @@ function tripal_pub_theme($existing, $type, $theme, $path) {
       'template' => 'node--chado-generic',
       'render element' => 'node',
       'base hook' => 'node',
-      'path' => "$core_path/theme",
+      'path' => "$core_path/theme/templates",
     ),
     // node templates
     'tripal_pub_authors' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_pub_authors',
-      'path' => "$path/theme/tripal_pub",
+      'path' => "$path/theme/templates",
     ),
     'tripal_pub_base' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_pub_base',
-      'path' => "$path/theme/tripal_pub",
+      'path' => "$path/theme/templates",
     ),
     'tripal_pub_featuremaps' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_pub_featuremaps',
-      'path' => "$path/theme/tripal_pub",
+      'path' => "$path/theme/templates",
     ),
     'tripal_pub_features' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_pub_features',
-      'path' => "$path/theme/tripal_pub",
+      'path' => "$path/theme/templates",
     ),
     'tripal_pub_libraries' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_pub_libraries',
-      'path' => "$path/theme/tripal_pub",
+      'path' => "$path/theme/templates",
     ),
     'tripal_pub_projects' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_pub_projects',
-      'path' => "$path/theme/tripal_pub",
+      'path' => "$path/theme/templates",
     ),
     'tripal_pub_properties' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_pub_properties',
-      'path' => "$path/theme/tripal_pub",
+      'path' => "$path/theme/templates",
     ),
     'tripal_pub_references' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_pub_references',
-      'path' => "$path/theme/tripal_pub",
+      'path' => "$path/theme/templates",
     ),
     'tripal_pub_relationships' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_pub_relationships',
-      'path' => "$path/theme/tripal_pub",
+      'path' => "$path/theme/templates",
     ),
     'tripal_pub_stocks' => array(
       'arguments' => array('node' => NULL),
       'template' => 'tripal_pub_stocks',
-      'path' => "$path/theme/tripal_pub",
+      'path' => "$path/theme/templates",
     ),
 
     // instructions page for the pub module
     'tripal_pub_help' => array(
       'template' => 'tripal_pub_help',
       'arguments' =>  array(NULL),
-      'path' => "$path/theme",
+      'path' => "$path/theme/templates",
     ),
 
     // themed forms
@@ -284,7 +284,7 @@ function tripal_pub_theme($existing, $type, $theme, $path) {
     'tripal_pub_teaser' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_pub_teaser',
-      'path' => "$path/theme/tripal_pub",
+      'path' => "$path/theme/templates",
     ),
   );
 
