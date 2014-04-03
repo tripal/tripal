@@ -52,7 +52,7 @@ if ($residues or count($featureloc_sequences) > 0) {
      
     // format the sequence to break every 50 residues
     $sequences_html .= '<a name="residues"></a>';
-    $sequences_html .= '<div class="tripal_feature-sequence-item">';
+    $sequences_html .= '<div id="residues" class="tripal_feature-sequence-item">';
     $sequences_html .= '<p><b>Current ' . $feature->type_id->name . ' sequence</b></p>';
     $sequences_html .= '<pre class="tripal_feature-sequence">';
     $sequences_html .= '>' . tripal_get_fasta_defline($feature) . "\n";
@@ -78,7 +78,7 @@ if ($residues or count($featureloc_sequences) > 0) {
           
           $list_items[] = '<a href="#residues">Protein sequence of ' . $protein->name . '</a>';
           $sequences_html .= '<a name="protein-' . $protein->feature_id . '"></a>';
-          $sequences_html .= '<div class="tripal_feature-sequence-item">';
+          $sequences_html .= '<div id="protein-' . $protein->feature_id . '" class="tripal_feature-sequence-item">';
           $sequences_html .= '<p><b>Protein sequence of ' . $protein->name . '</b></p>';
           $sequences_html .= '<pre class="tripal_feature-sequence">';
           $sequences_html .= '>' . tripal_get_fasta_defline($protein) . "\n";
@@ -104,7 +104,7 @@ if ($residues or count($featureloc_sequences) > 0) {
       //   * formatted_seq: the formatted sequences
       $list_items[] = '<a href="#' . $attrs['src'] . '">Alignment at  ' . $attrs['location'];
       $sequences_html .= '<a name="' . $attrs['src'] . '"></a>';
-      $sequences_html .= '<div class="tripal_feature-sequence-item">';
+      $sequences_html .= '<div id="' . $attrs['src'] . '" class="tripal_feature-sequence-item">';
       $sequences_html .= '<p><b>Alignment at  ' . $attrs['location'] .'</b></p>';
       $sequences_html .= $attrs['formatted_seq'];
       $sequences_html .= '<a href="#sequences-top">back to top</a>';
