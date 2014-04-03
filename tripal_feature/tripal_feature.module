@@ -860,7 +860,8 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
   $newseq .= ">$defline\n";
 
   // iterate through the parts. They should be in order.
-  $ends = array();
+  $starts   = array(); // an array holding all of the children starting locations
+  $ends     = array(); // an array holding all of the children's ending locations
   $seqcount = 0;
   foreach ($parts as $index => $types) {
 
@@ -868,51 +869,45 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
     // same position so we only need the first record
     foreach ($types as $type => $child) {
       $start = $child['start'];
-      break;
+      $starts[$start][] = $type;
     }
 
-    // add in the sequence up to the start of this part
-    for ($i = $pos; $i < $start; $i++) {
-      $newseq .= $sequence{$pos};
-      $seqcount++;
-      if ($seqcount % 50 == 0) {
-        $newseq .= "\n";
-      }
-      if (array_key_exists($pos, $ends)) {
-        foreach ($ends[$pos] as $end) {
-          $newseq .= "</span>";
-        }
-      }
-      $pos++;
-    }
-
-    // we want to sort the parts by their end. We want the span tag to
+    // next, sort the parts by their end. We want the span tag to
     // to be added in the order the parts end.
     usort($types, 'tripal_feature_sort_rel_parts_by_end');
 
-    // now add the child span for all types that start at this position
+    // iterate through the types in order that then end and create a 
+    // span for it.
     foreach ($types as $type) {
-      $class = "tripal_feature-featureloc_sequence-" . $type['type'];
-      $newseq .= "<span class=\"$class\">";
-      // add the end position
       $end = $type['end'];
-      $ends[$end][] = $end;
+      $ends[$end][] = $type;
     }
   }
 
-  // add in rest of the sequence
-  for ($i = $pos; $i < strlen($sequence); $i++) {
-    $newseq .= $sequence{$pos};
+  // iterate through each nucleotide in the sequence, add a new line very
+  // 50 characters and add the spans as we encounter them
+  for ($i = 0; $i < strlen($sequence); $i++) {
+
+    // if we are at and end of a span then close it
+    if (array_key_exists($i, $ends)) {
+      foreach ($ends[$i] as $index => $type) {
+        $newseq .= "</span>";
+      }
+    }
+    
+    // if we are at and end of a span then close it
+    if (array_key_exists($i, $starts)) {
+      foreach ($starts[$i] as $index => $type) {
+        $class = "tripal_feature-featureloc_sequence-" . $type;
+        $newseq .= "<span class=\"$class\">";
+      }
+    }
+
+    $newseq .= $sequence{$i};
     $seqcount++;
     if ($seqcount % 50 == 0) {
       $newseq .= "\n";
     }
-    if (array_key_exists($pos, $ends)) {
-      foreach ($ends[$pos] as $end) {
-        $newseq .= "</span>";
-      }
-    }
-    $pos++;
   }
 
   $newseq .= "</pre>";
