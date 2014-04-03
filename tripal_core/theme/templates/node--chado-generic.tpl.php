@@ -3,7 +3,7 @@
 if($teaser) {
   print render($content);
 }
-else { 
+else {
   $node_type = $node->type; ?>
   
   <script type="text/javascript">

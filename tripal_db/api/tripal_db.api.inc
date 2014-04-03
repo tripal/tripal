@@ -37,8 +37,8 @@
  * @param $identifier
  *   An array with the key stating what the identifier is. Supported keys (only on of the
  *   following unique keys is required):
- *    - db_id: the chado cv.cv_id primary key
- *    - name: the chado cv.name field (assume unique)
+ *    - db_id: the chado db.db_id primary key
+ *    - name: the chado db.name field (assume unique)
  * @param $options
  *   An array of options. Supported keys include:
  *     - Any keys supported by chado_generate_var(). See that function definition for

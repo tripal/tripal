@@ -36,9 +36,7 @@ require_once 'api/tripal_bulk_loader.DEPRECATED.inc';
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_init() {
-  // Add javascript and style sheet
-  drupal_add_css(drupal_get_path('theme', 'tripal') . '/css/tripal_bulk_loader.css');
-  drupal_add_js(drupal_get_path('theme', 'tripal') . '/js/tripal_bulk_loader.js');
+
 }
 
 /**

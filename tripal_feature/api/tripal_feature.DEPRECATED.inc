@@ -376,9 +376,9 @@ function tripal_feature_reverse_complement($sequence) {
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by tripal_format_sequence().
+ * This function has been replaced by tripal_get_sequence().
  *
- * @see tripal_format_sequence().
+ * @see tripal_get_sequence().
  */
 function tripal_feature_get_formatted_sequence($feature_id, $feature_name, $num_bases_per_line, $derive_from_parent, $aggregate, $output_format, $upstream, $downstream, $sub_features = array(), $relationship = '', $rel_part = '') {
 
@@ -388,11 +388,11 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name, $num_
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_feature_get_formatted_sequence',
-      '%new_function' => 'tripal_format_sequence'
+      '%new_function' => 'tripal_get_sequence'
     )
   );
 
-  return tripal_format_sequence(
+  return tripal_get_sequence(
     // Feature
     array(
       'feature_id' => $feature_id,
@@ -474,9 +474,9 @@ function tripal_feature_add_cvterm($feature_id, $cvname, $cvterm) {
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by tripal_get_fasta_sequence().
+ * This function has been replaced by tripal_format_fasta_sequence().
  *
- * @see tripal_get_fasta_sequence().
+ * @see tripal_format_fasta_sequence().
  */
 function tripal_feature_return_fasta($feature, $desc) {
 
@@ -486,9 +486,9 @@ function tripal_feature_return_fasta($feature, $desc) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_feature_return_fasta',
-      '%new_function' => 'tripal_get_fasta_sequence'
+      '%new_function' => 'tripal_format_fasta_sequence'
     )
   );
 
-  return tripal_get_fasta_sequence($feature, $desc);
+  return tripal_format_fasta_sequence($feature, $desc);
 }

@@ -13,6 +13,8 @@ pre.tripal_feature-sequence {
   height: 300px;
   overflow: scroll; 
   border: 1px solid #DDDDDD;
+  max-width: 500px;
+  white-space: normal;
 }
 
 div#tripal_feature-featureloc_sequence-legend {

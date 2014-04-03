@@ -32,13 +32,13 @@ version = 7.x-2.0.1-alpha
 ; Stylesheets containing CSS that should always be available for the
 ; module should be specified here.  
 ;
-stylesheets[all][] = theme/css/tripal_feature.css
+stylesheets[all][] = theme/css/tripal_example.css
 
 ;
 ; Javascript files that should always be available for the
 ; module should be specified here.  
 ;
-scripts[]          = theme/js/tripal_feature.js
+scripts[]          = theme/js/tripal_example.js
 
 ; 
 ; Add additional dependencies for other modules using the module project name.

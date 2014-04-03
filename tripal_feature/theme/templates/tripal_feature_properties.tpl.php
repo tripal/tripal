@@ -6,7 +6,7 @@ $feature = chado_expand_var($feature, 'table', 'featureprop', $options);
 $properties = $feature->featureprop;
 
 if(count($properties) > 0){ 
-    
+  
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7

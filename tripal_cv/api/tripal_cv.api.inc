@@ -548,7 +548,7 @@ function tripal_insert_cvterm($term, $options = array()) {
 
   // add the database. The function will just return the DB object if the
   // database already exists.
-  $db = tripal_db_get_db_by_name($dbname);
+  $db = tripal_get_db(array('name' => $dbname));
   if (!$db) {
     $db = tripal_db_add_db($dbname);
   }

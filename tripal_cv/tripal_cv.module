@@ -34,17 +34,6 @@ require_once 'includes/tripal_cv.cvtermpath_form.inc';
  */
 function tripal_cv_init() {
 
-  // add the tripal_cv JS and CSS
-  drupal_add_css(drupal_get_path('module', 'tripal_cv') . '/theme/css/tripal_cv.css');
-  drupal_add_js(drupal_get_path('module', 'tripal_cv') . '/theme/js/tripal_cv.js');
-
-  // add the jgCharts.js
-  drupal_add_js(drupal_get_path('module', 'tripal_cv') . '/theme/js/jgcharts/jgcharts.js');
-
-  // add the jsTree JS and CSS
-  drupal_add_css(drupal_get_path('module', 'tripal_cv') . '/theme/js/jsTree/source/tree_component.css');
-  drupal_add_js(drupal_get_path('module', 'tripal_cv') . '/theme/js/jsTree/source/_lib.js');
-  drupal_add_js(drupal_get_path('module', 'tripal_cv') . '/theme/js/jsTree/source/tree_component.js');
 }
 
 /**
