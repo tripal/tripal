@@ -51,6 +51,10 @@ function tripal_reverse_compliment_sequence($sequence) {
  *   An associative array describing the feature. Valid keys include:
  *    - feature_id: The feature_id of the feature for which the sequence will be retrieved
  *    - name: The feature name. This will appear on the FASTA definition line
+ *    - parent_id:  (optional) only retrieve a sequence if 'derive_from_parent' is true 
+ *        and the parent matches this ID.
+ *    - featureloc_id: (optional) only retrieve a sequence if 'derive_from_parent' is 
+ *        true and the alignment is defined with this featureloc_id
  * @param $options
  *   An associative array of options. Valid keys include:
  *    - width: Indicate the number of bases to use per line.  A new line will be added
@@ -78,15 +82,17 @@ function tripal_reverse_compliment_sequence($sequence) {
  *        relationship the matched features belong
  *
  * @return
- *   The DNA/protein sequence formated as requested.
+ *   an array of matching sequence formated as requested.
  *
  * @ingroup tripal_feature_api
  */
 function tripal_get_sequence($feature, $options) {
 
   // default values for finding the feature
-  $feature_id   = array_key_exists('feature_id', $feature) ? $feature['feature_id'] : 0;
-  $feature_name = array_key_exists('name', $feature)       ? $feature['name']       : '';
+  $feature_id    = array_key_exists('feature_id', $feature)     ? $feature['feature_id']     : 0;
+  $parent_id     = array_key_exists('parent_id', $feature)      ? $feature['parent_id']      : 0;
+  $featureloc_id = array_key_exists('featureloc_id', $feature)  ? $feature['featureloc_id']  : 0;
+  $feature_name  = array_key_exists('name', $feature)           ? $feature['name']           : '';
 
   // default values for building the sequence
   $num_bases_per_line = array_key_exists('width', $options)              ? $options['width']              : 50;
@@ -99,14 +105,18 @@ function tripal_get_sequence($feature, $options) {
   $relationship       = array_key_exists('relationship_type', $options)  ? $options['relationship_type']  : '';
   $rel_part           = array_key_exists('relationship_part', $options)  ? $options['relationship_part']  : '';
   
+  // make sure the sub_features variable is an array
   if (!is_array($sub_features)) {
     tripal_report_error('tripal_deprecated', TRIPAL_ERROR,
       "'sub_features' option must be an array for function tripal_get_sequence().",
       array()
     );
-    return;
+    return array();
   }
 
+  // if a relationship was specified then retreive and the sequences that
+  // have the given relationship and the recurse to extract the appropriate 
+  // sequence
   if ($rel_part == "object" or $rel_part == "subject") {
     if ($rel_part == "subject") {
       $sql = '
@@ -148,10 +158,11 @@ function tripal_get_sequence($feature, $options) {
       if ($rel_part == "object") {
         $defline = "$feature->uniquename $feature->feature_type ($feature->genus $feature->species), $relationship, $feature_name";
       }
-      $sequences .= tripal_get_sequence(
+      return tripal_get_sequence(
         array(
           'feature_id' => $feature->feature_id, 
-          'name' => $defline
+          'name' => $defline,
+          'parent_id' => $parent_id,
         ),
         array(
           'width' => $num_bases_per_line, 
@@ -164,7 +175,6 @@ function tripal_get_sequence($feature, $options) {
         )
       );
     }
-    return $sequences;
   }
 
   // prepare the queries we're going to use later during the render phase
@@ -173,13 +183,13 @@ function tripal_get_sequence($feature, $options) {
   // the upstream and downstream extensions go beyond the lenght of the
   // parent sequence.
   $sql ='
-    SELECT srcname, srcfeature_id, strand, srctypename, typename,
+    SELECT featureloc_id, srcname, srcfeature_id, strand, srctypename, typename,
       fmin, fmax, upstream, downstream, adjfmin, adjfmax,
       substring(residues from (adjfmin + 1) for (upstream + (fmax - fmin) + downstream))  as residues,
       genus, species
     FROM (
       SELECT
-        OF.name srcname, FL.srcfeature_id, FL.strand,
+        FL.featureloc_id, OF.name srcname, FL.srcfeature_id, FL.strand,
         OCVT.name as srctypename, SCVT.name as typename,
         FL.fmin, FL.fmax, OO.genus, OO.species,
         CASE
@@ -263,15 +273,25 @@ function tripal_get_sequence($feature, $options) {
     WHERE FR.object_id = :feature_id and PF.feature_id = :srcfeature_id
   ';
 
+  // the array to be returned
+  $sequences = array();
+  
   // if we need to get the sequence from the parent then do so now.
   if ($derive_from_parent) {
-    
-    $residues = '';
 
     // execute the query to get the sequence from the parent
     $parents = chado_query($sql, array(':upstream' => $upstream, ':downstream' => $downstream, ':feature_id' => $feature_id));
 
     while ($parent = $parents->fetchObject()) {
+      
+      // if the user specified a particular parent and this one doesn't match then skip it
+      if ($parent_id and $parent_id != $parent->srcfeature_id) {
+        continue;
+      }
+      // if the user specified a particular featureloc_id and this one doesn't match then skip it
+      if ($featureloc_id and $featureloc_id != $parent->featureloc_id) {
+        continue;
+      }
       $seq = '';  // initialize the sequence for each parent
 
       // if we are to aggregate then we will ignore the feature returned
@@ -354,7 +374,6 @@ function tripal_get_sequence($feature, $options) {
         $seq = tripal_feature_reverse_complement($seq);
         $dir = 'reverse';
       }
-
       // now format for display
       if ($output_format == 'fasta_html') {
          $seq = wordwrap($seq, $num_bases_per_line, "<br>", TRUE);
@@ -362,34 +381,35 @@ function tripal_get_sequence($feature, $options) {
       elseif ($output_format == 'fasta_txt') {
          $seq = wordwrap($seq, $num_bases_per_line, "\r\n", TRUE);
       }
-      $residues .= ">$feature_name. Sequence derived from feature of type, '$parent->srctypename', of $parent->genus $parent->species: $parent->srcname:" . ($parent->adjfmin + 1) . ".." . $parent->adjfmax . " ($dir). ";
-      if (count($types) > 0) {
-        $residues .= "Excludes all bases but those of type(s): " . implode(', ', $types) . ". " ;
-      }
-      if ($parent->upstream > 0) {
-         $residues .= "Includes " . $parent->upstream . " bases upstream.  ";
-      }
-      if ($parent->downstream > 0) {
-         $residues .= "Includes " . $parent->downstream . " bases downstream.  ";
-      }
       if (!$seq) {
-
         if ($output_format == 'fasta_html') {
-          $residues .= "No sequence available.</br>";
+          $notes .= "No sequence available.</br>";
         }
         else {
-          $residues .= "No sequence available.\r\n";
+          $notes .= "No sequence available.\r\n";
         }
       }
-      else {
-        if ($output_format == 'fasta_html') {
-          $residues .= "<br>";
-        }
-        $residues .= "\r\n" . $seq . "\r\n";
-        if ($output_format == 'fasta_html') {
-          $residues .= "<br>";
-        }
+      
+      $notes = "Sequence derived from feature of type, '$parent->srctypename', of $parent->genus $parent->species: $parent->srcname:" . ($parent->adjfmin + 1) . ".." . $parent->adjfmax . " ($dir). ";
+      /*
+      if (count($types) > 0) {
+        $notes .= "Excludes all bases but those of type(s): " . implode(', ', $types) . ". " ;
       }
+      if ($parent->upstream > 0) {
+         $notes .= "Includes " . $parent->upstream . " bases upstream.  ";
+      }
+      if ($parent->downstream > 0) {
+         $notes .= "Includes " . $parent->downstream . " bases downstream.  ";
+      }      
+      */
+      $sequences[] = array(
+        'types'         => $types,
+        'upstream'      => $parent->upstream,
+        'downstream'    => $parent->downstream,
+        'notes'         => $notes,
+        'residues'      => $seq,
+        'featureloc_id' => $parent->featureloc_id,
+      );
     }
   }
   // if we are not getting the sequence from the parent sequence then
@@ -404,16 +424,17 @@ function tripal_get_sequence($feature, $options) {
     elseif ($output_format == 'fasta_txt') {
        $residues = wordwrap($residues, $num_bases_per_line, "\r\n", TRUE);
     }
-    $residues = ">$feature_name\r\n$residues\r\n";
+
+    $sequences[] = array(
+      'types'      => $values->type,
+      'upstream'   => 0,
+      'downstream' => 0,
+      'notes'      => '',
+      'residues'   => $residues,
+    );
   }
 
-  // format the residues for display
-  if ($residues and $num_bases_per_line) {
-    if ($output_format == 'fasta_html') {
-       $residues = '<span style="font-family: monospace;">' . $residues . '</span>';
-    }
-  }
-  return $residues;
+  return $sequences;
 }
 
 /**
@@ -446,21 +467,27 @@ function tripal_format_fasta_sequence($feature, $desc) {
  * 
  * @param $feature
  *   A single feature object containing all the fields from the chado.feature table
- * @param $alignment
+ * @param $featureloc
  *   Optional: A single featureloc object generated using chado_generate_var that
  *   contains a record from the chado.featureloc table.
+ * @param $type
+ *   Optional: the type of sequence. By default the feature type is used.
  *   
  * @return
  *   A string of the format: uniquename|name|type|feature_id
  *   or if an alignment:  srcfeature_name:fmin..fmax[+-]; alignment of uniquename|name|type|feature_id 
  */
-function tripal_get_fasta_defline($feature, $featureloc = NULL) {
-   $defline = $feature->uniquename . "|" . $feature->name . "|" . $feature->type_id->name . "|" . $feature->feature_id; 
-   if ($featureloc) {
-     $defline = tripal_get_location_string($featureloc) . "; alignment of " . $defline;
-   }
-   
-   return $defline;
+function tripal_get_fasta_defline($feature, $featureloc = NULL, $type = '') {
+  
+  if (!$type) {
+    $type = $feature->type_id->name;
+  }
+  $defline = $feature->uniquename . "|" . $feature->name . "|" . $type . "|" . $feature->feature_id; 
+  if ($featureloc) {
+    $defline = $defline . "; derived from alignment at " .tripal_get_location_string($featureloc);
+  }
+  
+  return $defline;
 }
 
 /**
