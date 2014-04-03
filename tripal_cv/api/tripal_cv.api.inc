@@ -845,7 +845,7 @@ function tripal_autocomplete_cvterm($cv_id, $string = '') {
   $sql = "
     SELECT cvterm_id, name
     FROM {cvterm}
-    WHERE cv_id = :cv_id and name like :name
+    WHERE cv_id = :cv_id and lower(name) like lower(:name)
     ORDER by name
     LIMIT 25 OFFSET 0
   ";

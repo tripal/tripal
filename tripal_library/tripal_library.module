@@ -170,6 +170,11 @@ function tripal_library_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_library_base',
       'path' => "$path/theme/templates",
     ),
+    'tripal_library_features' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_library_features',
+      'path' => "$path/theme/templates",
+    ),
     'tripal_library_properties' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_library_properties',

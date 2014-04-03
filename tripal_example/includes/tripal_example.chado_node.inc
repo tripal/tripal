@@ -357,6 +357,13 @@ function chado_example_insert($node) {
   // be sure to always trim text fields
   $node->uniquename   = trim($node->uniquename);
   $node->description  = trim($node->description);
+  
+  // get the example type record
+  $type_cv = tripal_get_default_cv('example', 'type_id');
+  $type = tripal_get_cvterm(array(
+    'name' => $node->example_type,
+    'cv_id' => $type_cv->cv_id,
+  ));  
 
   // if there is an example_id in the $node object then this must be a sync so
   // we can skip adding the example as it is already there, although
@@ -367,10 +374,10 @@ function chado_example_insert($node) {
     $values = array(
       'uniquename' => $node->uniquename,
       'description' => $node->description,
-      'type_id' => $node->example_type,
+      'type_id' => $type->cvterm_id,
       'organism_id' => $node->organism_id,
     );
-    $example = chado_select_record('example', array('*'), $values);
+    $example = chado_insert_record('example', $values);
     if (!$example) {
       drupal_set_message(t('Unable to add example.'), 'warning');
       tripal_report_error('tripal_example', TRIPAL_WARNING, 'Insert example: Unable to create example where values: %values',
@@ -379,7 +386,7 @@ function chado_example_insert($node) {
     }
 
     // get the example_id for linking Drupal node with Chado data
-    $example_id = $example->example_id;
+    $example_id = $example['example_id'];
 
     // Only add to other chado tables if the base record was inserted properly
     if ($example_id > 0) {
@@ -387,19 +394,19 @@ function chado_example_insert($node) {
       // If you implemented the properties form in chado_example_form then you need to
       // handle inserting these properties into your chado prop table.
       $details = array(
-        'property_table' => 'exampleprop',   // the name of the prop table
-        'base_table' => 'example',           // the name of your chado base table
-        'foreignkey_name' => 'example_id',   // the name of the key in your base table
-        'foreignkey_value' => $example_id    // the value of the example_id key
+        'property_table'   => 'exampleprop',   // the name of the prop table
+        'base_table'       => 'example',       // the name of your chado base table
+        'foreignkey_name'  => 'example_id',    // the name of the key in your base table
+        'foreignkey_value' => $example_id      // the value of the example_id key
       );
       chado_update_node_form_properties($node, $details);
 
       // If you implemented the dbxrefs form in chado_example_form then you need to
       // handle inserting these database references into your chado _dbxref table.
       $details = array(
-        'linking_table' => 'example_dbxref',   // the name of your _dbxref table
-        'foreignkey_name' => 'example_id',     // the name of the key in your base table
-        'foreignkey_value' => $example_id      // the value of the example_id key
+        'linking_table'    => 'example_dbxref', // the name of your _dbxref table
+        'foreignkey_name'  => 'example_id',     // the name of the key in your base table
+        'foreignkey_value' => $example_id       // the value of the example_id key
       );
       chado_update_node_form_dbxrefs($node, $details);
 
@@ -419,7 +426,7 @@ function chado_example_insert($node) {
 
   // Make sure the entry for this example doesn't already exist in the
   // chado_example table if it doesn't exist then we want to add it.
-  // $check_org_id = chado_get_id_from_nid('example', $node->nid);
+   $check_org_id = chado_get_id_from_nid('example', $node->nid);
   if (!$check_org_id) {
     $record = new stdClass();
     $record->nid = $node->nid;
@@ -566,7 +573,7 @@ function chado_example_load($nodes) {
     // include it here using the chado_expand_var() function.  In most
     // cases it is probably best to let the end-user decide if text fields should
     // be included by using this function in the templates.
-    $example = chado_expand_var($example, 'field', 'example.residues');
+    $example = chado_expand_var($example, 'field', 'example.description');
 
     // add the new example object to this node.
     $nodes[$nid]->example = $example;
@@ -642,8 +649,8 @@ function tripal_example_node_insert($node) {
     case 'chado_example':
       
       // if we do not have an record ID for this node then get it
-      if (!$node->example_id) {
-        $node->example_id = chado_get_id_for_node('example', $node);
+      if (!property_exists($node, 'example_id')) {
+        $node->example_id = chado_get_id_from_nid('example', $node->nid);
       }
 
       // set the URL for this example page
@@ -701,7 +708,7 @@ function tripal_example_node_view($node, $view_mode, $langcode) {
   // when thhe node is displayed. It is node type agnostic so we can add
   // content to any node type.  So, we use this function to add the content
   // from all of our theme templates onto our new node type. We will also
-  // use this function to add content to other node types.
+  // use this function to add content to other node types. 
           
   switch ($node->type) {
     case 'chado_example':

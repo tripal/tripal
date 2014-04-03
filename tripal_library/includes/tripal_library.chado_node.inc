@@ -499,6 +499,11 @@ function tripal_library_node_view($node, $view_mode, $langcode) {
           '#tripal_toc_title' => 'Overview',
           '#weight' => -100,
         );
+        $node->content['tripal_library_features'] = array(
+          '#markup' => theme('tripal_library_features', array('node' => $node)),
+          '#tripal_toc_id'    => 'features',
+          '#tripal_toc_title' => 'Features',
+        );
         $node->content['tripal_library_properties'] = array(
           '#markup' => theme('tripal_library_properties', array('node' => $node)),
           '#tripal_toc_id'    => 'properties',
@@ -533,8 +538,8 @@ function tripal_library_node_view($node, $view_mode, $langcode) {
       break;
     case 'chado_organism':
       if ($view_mode == 'full') {
-        $node->content['tripal_organism.libraries'] = array(
-          '#markup' => theme('tripal_organism.libraries', array('node' => $node)),
+        $node->content['tripal_organism_libraries'] = array(
+          '#markup' => theme('tripal_organism_libraries', array('node' => $node)),
           '#tripal_toc_id'    => 'libraries',
           '#tripal_toc_title' => 'Libraries',
         );
@@ -542,8 +547,8 @@ function tripal_library_node_view($node, $view_mode, $langcode) {
       break;
     case 'chado_feature':
       if ($view_mode == 'full') {
-        $node->content['tripal_feature.libraries'] = array(
-          '#markup' => theme('tripal_feature.libraries', array('node' => $node)),
+        $node->content['tripal_feature_libraries'] = array(
+          '#markup' => theme('tripal_feature_libraries', array('node' => $node)),
           '#tripal_toc_id'    => 'libraries',
           '#tripal_toc_title' => 'Libraries',
         );
