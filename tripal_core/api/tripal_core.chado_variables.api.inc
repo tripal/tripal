@@ -700,6 +700,10 @@ function chado_expand_var($object, $type, $to_expand, $table_options = array()) 
         return $object;
       }
       $foreign_table_desc = chado_get_schema($foreign_table);
+      
+      // TODO: if we don't get a foreign_table (which could happen of a custom table
+      // is not correctly defined or the table name is mispelled then we should return
+      // gracefully.
 
       // BASE CASE: If it's connected to the base table via a FK constraint
       // then we have all the information needed to expand it now

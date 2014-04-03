@@ -353,6 +353,15 @@ function tripal_example_add_example_table() {
         ),
       ),
     ),
+    // EXPLANATION: the 'referring_tables' array is the list of tables
+    // that have a foreign key relationships with this table. This 
+    // information is required for the Tripal API to be able to expand
+    // tables in templates.
+    'referring_tables' => array(
+      0 => 'example_relationship',
+      1 => 'exampleprop',
+      2 => 'example_dbxref',
+    ),
   );
   chado_create_custom_table('example', $schema, TRUE);
 }

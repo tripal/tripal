@@ -704,7 +704,7 @@ function tripal_example_node_update($node) {
  */
 function tripal_example_node_view($node, $view_mode, $langcode) {
   
-  // EXPLANATION: This function defines the content "blocks" that appear 
+  // EXPLANATION: This function defines the content "blocks" that appear
   // when thhe node is displayed. It is node type agnostic so we can add
   // content to any node type.  So, we use this function to add the content
   // from all of our theme templates onto our new node type. We will also
@@ -715,7 +715,7 @@ function tripal_example_node_view($node, $view_mode, $langcode) {
       // there are different ways a node can be viewed. Primarily Tripal
       // supports full page view and teaser view.
       if ($view_mode == 'full') {
-        
+
         // There is always a base template.  This is the template that
         // is first shown when the example node type is first displayed. 
         // if you are using the default Tripal node template, then you should
@@ -741,12 +741,12 @@ function tripal_example_node_view($node, $view_mode, $langcode) {
           '#tripal_toc_title' => 'Properties',
         );
         $node->content['tripal_example_references'] = array(
-          '#markup' => theme('tripal_feature_references', array('node' => $node)),
+          '#markup' => theme('tripal_example_references', array('node' => $node)),
           '#tripal_toc_id'    => 'references',
           '#tripal_toc_title' => 'Cross References',
         );
         $node->content['tripal_example_relationships'] = array(
-          '#markup' => theme('tripal_feature_relationships', array('node' => $node)),
+          '#markup' => theme('tripal_example_relationships', array('node' => $node)),
           '#tripal_toc_id'    => 'relationships',
           '#tripal_toc_title' => 'Relationships',
         );
@@ -762,12 +762,13 @@ function tripal_example_node_view($node, $view_mode, $langcode) {
     // you can add custom content to any node type by adding
     // content to the node in the same way as above.
     case 'chado_organism':
-      break;
-    case 'chado_library':
-      break;
-    case 'chado_stock':
-      break;
-    case 'chado_analysis':
+      if ($view_mode == 'full') {
+        $node->content['tripal_organism_examples'] = array(
+          '#markup' => theme('tripal_organism_examples', array('node' => $node)),
+          '#tripal_toc_id'    => 'examples',
+          '#tripal_toc_title' => 'Examples',
+        );
+      }
       break;
     // ... etc
   }

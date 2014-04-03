@@ -80,14 +80,14 @@ function tripal_example_menu() {
   //    
   
   // EXPLANATION:  all extension modules should have an administrative menu item
-  // with the path set to 'admin/tripal/extesion/[module name]'.  This will
+  // with the path set to 'admin/tripal/extension/[module name]'.  This will
   // place the menu item in the 'Tripal' -> 'Extesion Modules' page.  Because this
   // is an administrative menu item we must be sure to set the 'access arguments'
   // to be 'administer tripal example' which is a permission type we created
   // in the tripal_example_permissions() function above.
   $items['admin/tripal/extension/tripal_example'] = array(
     'title' => 'Examples',
-    'description' => 'Any example.',
+    'description' => 'Example module for help with development of new extension modules.',
     'page callback' => 'tripal_example_admin_examples_listing',
     'access arguments' => array('administer tripal example'),
     'type' => MENU_NORMAL_ITEM,
@@ -101,7 +101,7 @@ function tripal_example_menu() {
   // function and the 'page_arguments' indicate the name of the template file
   // Thus, all help documentation should be provided in the 
   // [module name]/theme/tripal_example_help.tpl.php file. 
-  $items['admin/tripal/chado/tripal_example/help'] = array(
+  $items['admin/tripal/extension/tripal_example/help'] = array(
     'title' => 'Help',
     'description' => 'Basic Description of Tripal Library Module Functionality',
     'page callback' => 'theme',
@@ -120,7 +120,7 @@ function tripal_example_menu() {
   // drupal_get_form() function and the 'page argument' indicates the form
   // to call is named 'tripal_eample_admin'.  The function that describes
   // to form is in the includes/tripal_example.admin.inc file.
-  $items['admin/tripal/chado/tripal_example/configuration'] = array(
+  $items['admin/tripal/extension/tripal_example/configuration'] = array(
     'title' => 'Settings',
     'description' => 'Configure the Tripal Library module',
     'page callback' => 'drupal_get_form',
@@ -135,7 +135,7 @@ function tripal_example_menu() {
   // to quickly provide syncing functionality.  See the API documentation here
   // for more information on how that is setup:
   // http://api.tripal.info/api/tripal/tripal_core%21api%21tripal_core.chado_nodes.api.inc/function/chado_node_sync_form/2.x
-  $items['admin/tripal/chado/tripal_example/sync'] = array(
+  $items['admin/tripal/extension/tripal_example/sync'] = array(
     'title' => ' Sync',
     'description' => 'Create pages on this site for examples stored in Chado',
     'page callback' => 'drupal_get_form',
@@ -222,7 +222,7 @@ function tripal_example_theme($existing, $type, $theme, $path) {
     'tripal_example_help' => array(
       'template' => 'tripal_example_help',
       'variables' =>  array(NULL),
-      'path' => "$path/theme",
+      'path' => "$path/theme/templates",
     ),
     // the teaser template.
     'tripal_example_teaser' => array(
@@ -242,24 +242,14 @@ function tripal_example_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_example_properties',
       'path' => "$path/theme/templates",
     ),
-    'tripal_example_publications' => array(
-      'variables' => array('node' => NULL),
-      'template' => 'tripal_example_publications',
-      'path' => "$path/theme/templates",
-    ),
     'tripal_example_references' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_example_references',
       'path' => "$path/theme/templates",
     ),
-    'tripal_example_synonyms' => array(
+    'tripal_example_relationships' => array(
       'variables' => array('node' => NULL),
-      'template' => 'tripal_example_synonyms',
-      'path' => "$path/theme/templates",
-    ),
-    'tripal_example_terms' => array(
-      'variables' => array('node' => NULL),
-      'template' => 'tripal_example_terms',
+      'template' => 'tripal_example_relationships',
       'path' => "$path/theme/templates",
     ),
 
@@ -277,15 +267,8 @@ function tripal_example_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_organism_examples',
       'path' => "$path/theme/templates",
     ),
-
-    // tripal_feature templates
-    'tripal_feature_examples' => array(
-      'variables' => array('node' => NULL),
-      'template' => 'tripal_feature_examples',
-      'path' => "$path/theme/templates",
-    ),
-
   );
+  
   return $items;
 }
 

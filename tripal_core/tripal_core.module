@@ -356,7 +356,7 @@ function tripal_core_menu() {
   $items['admin/tripal/schema/custom_tables/edit/%'] = array(
     'title' => 'Edit Custom Table',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_custom_tables_form', 4),
+    'page arguments' => array('tripal_custom_tables_form', 5),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );
@@ -560,7 +560,7 @@ function tripal_core_node_view_alter(&$build) {
   $node = $build['#node'];
   $toc = array();
   $toc_html = '';
-
+  
   // if we are looking at a Tripal node template then we want to
   // make some changes to each block of content so that we can associate
   // a table of contents and add administrator and curator messages

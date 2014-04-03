@@ -139,7 +139,12 @@ function chado_create_custom_table($table, $schema, $skip_creation = 1) {
     // drop the table we'll recreate it with the new schema
     try {
       chado_query('DROP TABLE {' . $table . '}');
-      db_create_table('chado.' . $table, $schema);
+      // remove any 'referring_tables' from the array as the db_create_table doesn't use that
+      $new_schema = $schema;
+      if (array_key_exists('referring_tables', $new_schema)) {
+        unset($new_schema['referring_tables']);
+      }
+      db_create_table('chado.' . $table, $new_schema);
       $recreated = 1;
     }
     catch (Exception $e) {
