@@ -10,7 +10,7 @@ if ($stock->dbxref_id) {
 
 // Second, expand the stock object to include the records from the stock_dbxref table
 $options = array('return_array' => 1);
-$stock = tripal_core_expand_chado_vars($stock, 'table', 'stock_dbxref', $options);
+$stock = chado_expand_var($stock, 'table', 'stock_dbxref', $options);
 $stock_dbxrefs = $stock->stock_dbxref;
 if (count($stock_dbxrefs) > 0 ) {
   foreach ($stock_dbxrefs as $stock_dbxref) {    

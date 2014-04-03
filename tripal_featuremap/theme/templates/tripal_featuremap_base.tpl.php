@@ -3,7 +3,7 @@
 $featuremap  = $variables['node']->featuremap;
 
 // expand the description field
-$featuremap = tripal_core_expand_chado_vars($featuremap, 'field', 'featuremap.description'); ?>
+$featuremap = chado_expand_var($featuremap, 'field', 'featuremap.description'); ?>
 
 <div class="tripal_featuremap-data-block-desc tripal-data-block-desc"></div> <?php 
 

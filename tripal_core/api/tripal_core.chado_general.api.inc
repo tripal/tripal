@@ -18,7 +18,7 @@ require_once 'tripal_core.schema_v1.11.api.inc';
  * for inserts and updates.
  *
  * Also, a set of functions is provided for creating template variables.  First,
- * is the tripal_core_generate_chado_vars which is used to select one ore more
+ * is the chado_generate_var which is used to select one ore more
  * records from a table and return an array with foreign key relationships fully
  * populated.  For example, if selecting a feature, the organism_id and type_id
  * would be present in the returned array as a nested array with their respective

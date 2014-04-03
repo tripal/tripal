@@ -15,8 +15,8 @@
 $pub = $variables['node']->pub;
 
 // expand the title
-$pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.title');
-$pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.volumetitle');
+$pub = chado_expand_var($pub, 'field', 'pub.title');
+$pub = chado_expand_var($pub, 'field', 'pub.volumetitle');
 
 // get the citation
 $values = array(
@@ -25,8 +25,8 @@ $values = array(
     'name' => 'Citation',
   ),
 );
-$citation = tripal_core_generate_chado_var('pubprop', $values); 
-$citation = tripal_core_expand_chado_vars($citation, 'field', 'pubprop.value');
+$citation = chado_generate_var('pubprop', $values); 
+$citation = chado_expand_var($citation, 'field', 'pubprop.value');
 
 // get the abstract
 $values = array(
@@ -35,8 +35,8 @@ $values = array(
     'name' => 'Abstract',
   ),
 );
-$abstract = tripal_core_generate_chado_var('pubprop', $values); 
-$abstract = tripal_core_expand_chado_vars($abstract, 'field', 'pubprop.value');
+$abstract = chado_generate_var('pubprop', $values); 
+$abstract = chado_expand_var($abstract, 'field', 'pubprop.value');
 $abstract_text = '';
 if ($abstract) {
   $abstract_text = htmlspecialchars($abstract->value);
@@ -49,8 +49,8 @@ $values = array(
     'name' => 'Authors',
   ),
 );
-$authors = tripal_core_generate_chado_var('pubprop', $values); 
-$authors = tripal_core_expand_chado_vars($authors, 'field', 'pubprop.value');
+$authors = chado_generate_var('pubprop', $values); 
+$authors = chado_expand_var($authors, 'field', 'pubprop.value');
 $authors_list = 'N/A';
 if ($authors) {
   $authors_list = $authors->value;
@@ -58,7 +58,7 @@ if ($authors) {
 
 // get the first database cross-reference with a url
 $options = array('return_array' => 1);
-$pub = tripal_core_expand_chado_vars($pub, 'table', 'pub_dbxref', $options);
+$pub = chado_expand_var($pub, 'table', 'pub_dbxref', $options);
 $dbxref = NULL;
 if ($pub->pub_dbxref) { 
   foreach ($pub->pub_dbxref as $index => $pub_dbxref) {
@@ -77,8 +77,8 @@ $values = array(
   ),
 );
 $options = array('return_array' => 1);
-$urls = tripal_core_generate_chado_var('pubprop', $values, $options); 
-$urls = tripal_core_expand_chado_vars($urls, 'field', 'pubprop.value');
+$urls = chado_generate_var('pubprop', $values, $options); 
+$urls = chado_expand_var($urls, 'field', 'pubprop.value');
 $url = '';
 if (count($urls) > 0) {
   $url = $urls[0]->value; 

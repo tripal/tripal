@@ -20,7 +20,7 @@ $options = array(
   ),
 );
 
-$pub = tripal_core_expand_chado_vars($pub, 'table', 'library_pub', $options);
+$pub = chado_expand_var($pub, 'table', 'library_pub', $options);
 $library_pubs = $pub->library_pub;
 if (count($library_pubs) > 0 ) {
   foreach ($library_pubs as $library_pub) {    

@@ -3,7 +3,7 @@ $contact = $variables['node']->contact;
 
 // expand contact to include pubs 
 $options = array('return_array' => 1);
-$contact = tripal_core_expand_chado_vars($contact, 'table', 'pubauthor_contact', $options);
+$contact = chado_expand_var($contact, 'table', 'pubauthor_contact', $options);
 $pubauthor_contacts = $contact->pubauthor_contact; 
 
 
@@ -23,7 +23,7 @@ if (count($pubauthor_contacts) > 0) { ?>
   
   foreach ($pubauthor_contacts as $pubauthor_contact) {
     $pub = $pubauthor_contact->pubauthor_id->pub_id;
-    $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.title');
+    $pub = chado_expand_var($pub, 'field', 'pub.title');
     $citation = $pub->title;  // use the title as the default citation
     
     // get the citation for this pub if it exists
@@ -34,9 +34,9 @@ if (count($pubauthor_contacts) > 0) { ?>
       ),
     );
     $options = array('return_array' => 1);
-    $citation_prop = tripal_core_generate_chado_var('pubprop', $values, $options); 
+    $citation_prop = chado_generate_var('pubprop', $values, $options); 
     if (count($citation_prop) == 1) {
-      $citation_prop = tripal_core_expand_chado_vars($citation_prop, 'field', 'pubprop.value');
+      $citation_prop = chado_expand_var($citation_prop, 'field', 'pubprop.value');
       $citation = $citation_prop[0]->value;
     }
     

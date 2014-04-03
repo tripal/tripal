@@ -4,7 +4,7 @@ $organism = $variables['node']->organism;
 // expand the organism object to include the libraries from the library
 // table in chado.
 $options = array('return_array' => 1);
-$organism = tripal_core_expand_chado_vars($organism, 'table', 'library', $options);
+$organism = chado_expand_var($organism, 'table', 'library', $options);
 $libraries = $organism->library;
 
 

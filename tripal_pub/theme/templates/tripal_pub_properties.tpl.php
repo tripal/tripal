@@ -6,7 +6,7 @@ $options = array(
   'return_array' => 1,
   'order_by' => array('rank' => 'ASC'),
 );
-$pub = tripal_core_expand_chado_vars($pub,'table', 'pubprop', $options);
+$pub = chado_expand_var($pub,'table', 'pubprop', $options);
 $pubprops = $pub->pubprop;
 $properties = array();
 if (is_array($pubprops)) {
@@ -19,7 +19,7 @@ if (is_array($pubprops)) {
         $property->type_id->name == 'Structured Abstract Part')  {
       continue;
     }
-    $property = tripal_core_expand_chado_vars($property,'field','pubprop.value');
+    $property = chado_expand_var($property,'field','pubprop.value');
     $properties[] = $property;
   }
 }

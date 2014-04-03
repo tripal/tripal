@@ -4,7 +4,7 @@ $library = $variables['node']->library;
 // expand the library object to include the synonyms from the library_synonym 
 // table in chado.
 $options = array('return_array' => 1);
-$library = tripal_core_expand_chado_vars($library, 'table', 'library_synonym', $options);
+$library = chado_expand_var($library, 'table', 'library_synonym', $options);
 $synonyms = $library->library_synonym;
 
 if(count($synonyms) > 0){ ?>

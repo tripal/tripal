@@ -2,7 +2,7 @@
 
 $feature = $variables['node']->feature;
 $options = array('return_array' => 1);
-$feature = tripal_core_expand_chado_vars($feature, 'table', 'featureprop', $options);
+$feature = chado_expand_var($feature, 'table', 'featureprop', $options);
 $properties = $feature->featureprop;
 
 if(count($properties) > 0){ 
@@ -19,7 +19,7 @@ if(count($properties) > 0){
   $rows = array();
   
   foreach ($properties as $property){
-    $property = tripal_core_expand_chado_vars($property,'field','featureprop.value');
+    $property = chado_expand_var($property,'field','featureprop.value');
     $rows[] = array(
       array(
         'data' => ucfirst(preg_replace('/_/', ' ', $property->type_id->name)),

@@ -4,7 +4,7 @@ $references = array();
 
 // expand the organism object to include the records from the organism_dbxref table
 $options = array('return_array' => 1);
-$organism = tripal_core_expand_chado_vars($organism, 'table', 'organism_dbxref', $options);
+$organism = chado_expand_var($organism, 'table', 'organism_dbxref', $options);
 $organism_dbxrefs = $organism->organism_dbxref;
 if (count($organism_dbxrefs) > 0 ) {
   foreach ($organism_dbxrefs as $organism_dbxref) {    

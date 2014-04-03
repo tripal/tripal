@@ -5,11 +5,11 @@
  * This template will show both or one or the other depending on the data available.
  * 
  * For retreiving the sequence from an alignment we would typically make a call to
- * tripal_core_expand_chado_vars function.  For example, to retrieve all
+ * chado_expand_var function.  For example, to retrieve all
  * of the featurelocs in order to get the sequences needed for this template, the
  * following function call would be made:
  *
- *   $feature = tripal_core_expand_chado_vars($feature,'table','featureloc');
+ *   $feature = chado_expand_var($feature,'table','featureloc');
  *
  * Then all of the sequences would need to be retreived from the alignments and
  * formatted for display below.  However, to simplify this template, this has already
@@ -30,7 +30,7 @@ if(strcmp($feature->type_id->name,'scaffold') !=0 and
    strcmp($feature->type_id->name,'chromosome') !=0 and
    strcmp($feature->type_id->name,'supercontig') !=0 and
    strcmp($feature->type_id->name,'pseudomolecule') !=0) {
-  $feature = tripal_core_expand_chado_vars($feature,'field','feature.residues');
+  $feature = chado_expand_var($feature,'field','feature.residues');
   $residues = $feature->residues;
 } 
 

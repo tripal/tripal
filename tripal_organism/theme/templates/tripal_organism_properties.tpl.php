@@ -2,7 +2,7 @@
 
 $organism = $variables['node']->organism;
 $options = array('return_array' => 1);
-$organism = tripal_core_expand_chado_vars($organism, 'table', 'organismprop', $options);
+$organism = chado_expand_var($organism, 'table', 'organismprop', $options);
 $properties = $organism->organismprop;
 
 if(count($properties) > 0){ 
@@ -19,7 +19,7 @@ if(count($properties) > 0){
   $rows = array();
   
   foreach ($properties as $property){
-    $property = tripal_core_expand_chado_vars($property,'field','organismprop.value');
+    $property = chado_expand_var($property,'field','organismprop.value');
     $rows[] = array(
       ucfirst(preg_replace('/_/', ' ', $property->type_id->name)),
       urldecode($property->value)

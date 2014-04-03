@@ -36,7 +36,7 @@ $options = array(
     'element' => $feature_pager_id
   ),
 );
-$feature = tripal_core_expand_chado_vars($feature, 'table', 'feature_genotype', $options); 
+$feature = chado_expand_var($feature, 'table', 'feature_genotype', $options); 
 $feature_genotypes = $feature->feature_genotype->feature_id;
 
 // get the total number of records
@@ -74,7 +74,7 @@ if (count($feature_genotypes) > 0) {?>
     
     // get the genotype properties
     $options = array('return_array' => 1);
-    $genotype = tripal_core_expand_chado_vars($genotype, 'table', 'genotypeprop', $options);
+    $genotype = chado_expand_var($genotype, 'table', 'genotypeprop', $options);
     $properties = $genotype->genotypeprop; 
     $details = '';
     if(count($properties) > 0) {
@@ -93,7 +93,7 @@ if (count($feature_genotypes) > 0) {?>
         )
       ),
     );
-    $genotype = tripal_core_expand_chado_vars($genotype, 'table', 'stock_genotype', $options);
+    $genotype = chado_expand_var($genotype, 'table', 'stock_genotype', $options);
     $stock_genotypes = $genotype->stock_genotype; 
 
     // build the list of germplasm.

@@ -2,7 +2,7 @@
 
 // get the analysis object and expand it to include the records from the analysisprop table
 $analysis = $variables['node']->analysis;
-$analysis = tripal_core_expand_chado_vars($analysis,'table', 'analysisprop', array('return_array' => 1));
+$analysis = chado_expand_var($analysis,'table', 'analysisprop', array('return_array' => 1));
 $properties = $analysis->analysisprop;
 
 if (count($properties) > 0) { ?>

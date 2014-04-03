@@ -4,7 +4,7 @@ $references = array();
 
 // expand the featuremap object to include the records from the featuremap_dbxref table
 $options = array('return_array' => 1);
-$featuremap = tripal_core_expand_chado_vars($featuremap, 'table', 'featuremap_dbxref', $options);
+$featuremap = chado_expand_var($featuremap, 'table', 'featuremap_dbxref', $options);
 $featuremap_dbxrefs = $featuremap->featuremap_dbxref;
 if (count($featuremap_dbxrefs) > 0 ) {
   foreach ($featuremap_dbxrefs as $featuremap_dbxref) {    

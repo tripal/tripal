@@ -20,7 +20,7 @@ $options = array(
   ),
 );
 
-$pub = tripal_core_expand_chado_vars($pub, 'table', 'feature_pub', $options);
+$pub = chado_expand_var($pub, 'table', 'feature_pub', $options);
 $feature_pubs = $pub->feature_pub;
 if (count($feature_pubs) > 0 ) {
   foreach ($feature_pubs as $feature_pub) {    

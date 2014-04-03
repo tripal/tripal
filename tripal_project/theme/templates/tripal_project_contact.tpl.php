@@ -3,7 +3,7 @@ $project = $variables['node']->project;
 
 // expand the project object to include the contacts from the project_contact
 // table in chado.
-$project = tripal_core_expand_chado_vars($project,'table','project_contact', array('return_array' => 1));
+$project = chado_expand_var($project,'table','project_contact', array('return_array' => 1));
 $project_contacts = $project->project_contact;
 
 if (count($project_contacts) > 0) { ?>
@@ -30,10 +30,10 @@ if (count($project_contacts) > 0) { ?>
     // Get some additional details about this contact if they exists.
     $details = '';
     $options = array('return_array' => 1);
-    $contact = tripal_core_expand_chado_vars($contact, 'table', 'contactprop', $options);
+    $contact = chado_expand_var($contact, 'table', 'contactprop', $options);
     $properties = $contact->contactprop;
     $options = array('order_by' => array('rank' => 'ASC'));
-    $properties = tripal_core_expand_chado_vars($properties, 'field', 'contactprop.value', $options);
+    $properties = chado_expand_var($properties, 'field', 'contactprop.value', $options);
     
     if (is_array($properties)) {
       foreach ($properties as $property) {

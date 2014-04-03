@@ -4,7 +4,7 @@ $feature = $variables['node']->feature;
 // expand the feature object to include the libraries from the library
 // table in chado.
 $options = array('return_array' => 1);
-$feature = tripal_core_expand_chado_vars($feature, 'table', 'library_feature', $options);
+$feature = chado_expand_var($feature, 'table', 'library_feature', $options);
 $library_features = $feature->library_feature;
 
 

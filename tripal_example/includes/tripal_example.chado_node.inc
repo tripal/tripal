@@ -566,7 +566,7 @@ function chado_example_load($nodes) {
     $example = chado_generate_var('example', $values);
 
     // for fields in the table that are of type 'text' you may want to include those
-    // by default, the tripal_core_generate_chado_var does not include text fields as
+    // by default, the chado_generate_var does not include text fields as
     // they may be very large and including a large text field can slow the page load.
     // If you know a text field will never be large and it is important for the
     // other functions that will see the node to have access to a field you can

@@ -27,7 +27,7 @@ $options = array(
   ),
 );
 
-$feature = tripal_core_expand_chado_vars($feature, 'table', 'featurepos', $options);
+$feature = chado_expand_var($feature, 'table', 'featurepos', $options);
 
 // because the featurepos table has  FK relationships with map_feature_id and feature_id with the feature table 
 // the function call above will try to expand both and will create an array of matches for each FK.
@@ -64,7 +64,7 @@ if(count($map_positions) > 0){ ?>
         'type_id' => 1,            
       ),
     );
-    $position = tripal_core_expand_chado_vars($position, 'table', 'featureposprop', $options);
+    $position = chado_expand_var($position, 'table', 'featureposprop', $options);
     $featureposprop = $position->featureposprop;
     $start = '';
     $stop = '';

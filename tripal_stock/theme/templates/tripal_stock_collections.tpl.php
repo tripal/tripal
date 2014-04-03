@@ -3,7 +3,7 @@ $stock = $variables['node']->stock;
 
 // expand the stock object to include the stockcollections associated with this stock
 $options = array('return_array' => 1);
-$stock = tripal_core_expand_chado_vars($stock, 'table', 'stockcollection_stock', $options);
+$stock = chado_expand_var($stock, 'table', 'stockcollection_stock', $options);
 $collections = $stock->stockcollection_stock;
 
 if (count($collections) > 0) {?>

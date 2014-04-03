@@ -12,7 +12,7 @@ $options = array(
     )
   )
 );
-$feature = tripal_core_expand_chado_vars($feature, 'table', 'feature_phenotype', $options);
+$feature = chado_expand_var($feature, 'table', 'feature_phenotype', $options);
 $feature_phenotypes = $feature->feature_phenotype;
 
 if(count($feature_phenotypes) > 0){ ?>
@@ -36,9 +36,9 @@ if(count($feature_phenotypes) > 0){ ?>
     
     // expand the text fields
     $options = array('return_array' => 1);
-    $phenotype = tripal_core_expand_chado_vars($phenotype, 'field', 'phenotype.value', $options);
-    $phenotype = tripal_core_expand_chado_vars($phenotype, 'field', 'phenotype.uniquename', $options);
-    $phenotype = tripal_core_expand_chado_vars($phenotype, 'field', 'phenotype.name', $options); 
+    $phenotype = chado_expand_var($phenotype, 'field', 'phenotype.value', $options);
+    $phenotype = chado_expand_var($phenotype, 'field', 'phenotype.uniquename', $options);
+    $phenotype = chado_expand_var($phenotype, 'field', 'phenotype.name', $options); 
     
     // get the phenotype value. If the value is qualitative the cvalue_id will link to a type. 
     // If quantitative we use the value column

@@ -6,7 +6,7 @@ $options = array(
   'return_array' => 1,
   'order_by' => array('rank' => 'ASC'),
 );
-$pub = tripal_core_expand_chado_vars($pub, 'table', 'pubauthor', $options);
+$pub = chado_expand_var($pub, 'table', 'pubauthor', $options);
 
 // see if we have authors as contacts if so then we'll add this resource
 $authors = $pub->pubauthor;
@@ -22,7 +22,7 @@ if (count($authors) > 0) {
         ),
       ),
     );
-    $author = tripal_core_expand_chado_vars($author, 'table', 'pubauthor_contact', $options);
+    $author = chado_expand_var($author, 'table', 'pubauthor_contact', $options);
     if ($author->pubauthor_contact) {
       $has_contacts = TRUE;
     }
@@ -53,10 +53,10 @@ if ($has_contacts) { ?>
         'type_id' => 1,       
       ),      
     );
-    $contact = tripal_core_expand_chado_vars($contact, 'table', 'contactprop', $options);
+    $contact = chado_expand_var($contact, 'table', 'contactprop', $options);
     $properties = $contact->contactprop;
     $options = array('order_by' => array('rank' => 'ASC'));
-    $properties = tripal_core_expand_chado_vars($properties, 'field', 'contactprop.value', $options); 
+    $properties = chado_expand_var($properties, 'field', 'contactprop.value', $options); 
     
     // link the contact to it's node if one exists
     $contact_name = $author->givennames . " " . $author->surname;

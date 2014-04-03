@@ -182,7 +182,7 @@ function tripal_feature_preprocess_tripal_organism_feature_counts(&$variables, $
 }
 
 /**
- * Using the tripal_core_expand_chado_vars function to retrieve a set
+ * Using the chado_expand_var function to retrieve a set
  * of relationships can be very slow, especialy if there are many relationships
  * This function is intended to help speed up the retrieval of relationships
  * by only retrieving the base information for the relationship and returning

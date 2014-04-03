@@ -4,7 +4,7 @@ $pub = $variables['node']->pub;
 
 // expand the pub object to include the records from the pub_dbxref table
 $options = array('return_array' => 1);
-$pub = tripal_core_expand_chado_vars($pub, 'table', 'pub_dbxref', $options);
+$pub = chado_expand_var($pub, 'table', 'pub_dbxref', $options);
 $pub_dbxrefs = $pub->pub_dbxref;
 
 $references = array();

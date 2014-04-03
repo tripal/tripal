@@ -7,7 +7,7 @@ $synonyms = array();
 
 // expand the stock object to include the stockprop records
 $options = array('return_array' => 1);
-$stock = tripal_core_expand_chado_vars($stock, 'table', 'stockprop', $options);
+$stock = chado_expand_var($stock, 'table', 'stockprop', $options);
 $stockprops = $stock->stockprop;
 
 // iterate through all of the properties and pull out only the synonyms

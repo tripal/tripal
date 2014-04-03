@@ -6,7 +6,7 @@ $options = array(
   'return_array' => 1,
   'order_by' => array('rank' => 'ASC'),
 );
-$example = tripal_core_expand_chado_vars($example,'table', 'exampleprop', $options);
+$example = chado_expand_var($example,'table', 'exampleprop', $options);
 $exampleprops = $example->exampleprop;
 $properties = array();
 

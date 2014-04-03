@@ -1,12 +1,12 @@
 <?php
 /* Typically in a Tripal template, the data needed is retrieved using a call to
- * tripal_core_expand_chado_vars function.  For example, to retrieve all 
+ * chado_expand_var function.  For example, to retrieve all 
  * of the pub relationships for this node, the following function call would be made:
  * 
- *   $pub = tripal_core_expand_chado_vars($pub,'table','pub_relationship');
+ *   $pub = chado_expand_var($pub,'table','pub_relationship');
  * 
  * However, this function call can be extremely slow when there are numerous relationships.
- * This is because the tripal_core_expand_chado_vars function is recursive and expands 
+ * This is because the chado_expand_var function is recursive and expands 
  * all data following the foreign key relationships tree.  Therefore, to speed retrieval
  * of data, a special variable is provided to this template:
  * 
@@ -55,8 +55,8 @@ if (count($object_rels) > 0 or count($subject_rels) > 0) { ?>
             'name' => 'Citation',
           ),
         );
-        $citation = tripal_core_generate_chado_var('pubprop', $values);
-        $citation = tripal_core_expand_chado_vars($citation, 'field', 'pubprop.value');
+        $citation = chado_generate_var('pubprop', $values);
+        $citation = chado_expand_var($citation, 'field', 'pubprop.value');
         
         $rows[] = array(
           $title . '<br>' . htmlspecialchars($citation->value),
@@ -116,8 +116,8 @@ if (count($object_rels) > 0 or count($subject_rels) > 0) { ?>
             'name' => 'Citation',
           ),
         );
-        $citation = tripal_core_generate_chado_var('pubprop', $values);
-        $citation = tripal_core_expand_chado_vars($citation, 'field', 'pubprop.value');
+        $citation = chado_generate_var('pubprop', $values);
+        $citation = chado_expand_var($citation, 'field', 'pubprop.value');
         
         $rows[] = array(
           $title . '<br>' . htmlspecialchars($citation->value),

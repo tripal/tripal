@@ -9,8 +9,8 @@ $values = array(
     'name' => 'Citation',
   ),
 );
-$citation = tripal_core_generate_chado_var('pubprop', $values); 
-$citation = tripal_core_expand_chado_vars($citation, 'field', 'pubprop.value'); 
+$citation = chado_generate_var('pubprop', $values); 
+$citation = chado_expand_var($citation, 'field', 'pubprop.value'); 
 
 // get the abstract
 $values = array(
@@ -19,8 +19,8 @@ $values = array(
     'name' => 'Abstract',
   ),
 );
-$abstract = tripal_core_generate_chado_var('pubprop', $values); 
-$abstract = tripal_core_expand_chado_vars($abstract, 'field', 'pubprop.value');
+$abstract = chado_generate_var('pubprop', $values); 
+$abstract = chado_expand_var($abstract, 'field', 'pubprop.value');
 $abstract_text = '';
 if ($abstract) {
   $abstract_text = htmlspecialchars($abstract->value);
