@@ -63,13 +63,13 @@ function tripal_core_exclude_field_from_feature_by_default() {
 }
 
 /**
- * Generates an array containing the full details of a record(s) in chado. The 
+ * Generates an array containing the full details of a record(s) in chado. The
  * returned array differs from the array returned by chado_select_record as all foreign key
  * relationships have been followed and those data are also included. The array
  * returned by this function can be used with chado_expand_var function to add
  * additional FK relationships that were not included because they were not
  * a one-to-one mapping or for fields that were excluded such as large text fields.
- *  
+ *
  *
  * @param $table
  *   The name of the base table to generate a variable for
@@ -695,7 +695,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = array()) 
     case "table": //--------------------------------------------------------------------------------
       $foreign_table = $to_expand;
 
-      // RECURSIVE BASE CASE: don't expand the table it already is expanded
+      // BASE CASE: don't expand the table it already is expanded
       if (array_key_exists($foreign_table, $object)) {
         return $object;
       }
@@ -766,7 +766,18 @@ function chado_expand_var($object, $type, $to_expand, $table_options = array()) 
         $did_expansion = 0;
         foreach ((array) $object as $field_name => $field_value) {
 
-          // if we have a nested object ->expand the table in it
+          // CASE #1: This field is an already expanded foreign key and the table to be
+          // expanded is in the table referenced by the foreign key
+
+          // First of all it can only be expanded if it's an object
+          // And if it's a foreign key it should have a tablename property
+          if (is_object($field_value) AND property_exists($field_value, 'tablename')) {
+            $object->{$field_name} = chado_expand_var($field_value, 'table', $foreign_table);
+          }
+
+          // CASE #2: This field is an already expanded object (ie: the field is actually
+          // the expanded table name) and the table to be expanded si related to it
+
           // check to see if the $field_name is a valid chado table, we don't need
           // to call chado_expand_var on fields that aren't tables
           $check = chado_get_schema($field_name);
