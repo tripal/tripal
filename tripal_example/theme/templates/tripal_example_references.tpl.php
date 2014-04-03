@@ -1,21 +1,20 @@
 <?php
-$pub = $variables['node']->pub;
+$example = $variables['node']->example;
 
-
-// expand the pub object to include the records from the pub_dbxref table
+// expand the example object to include the records from the example_dbxref table
 $options = array('return_array' => 1);
-$pub = tripal_core_expand_chado_vars($pub, 'table', 'pub_dbxref', $options);
-$pub_dbxrefs = $pub->pub_dbxref;
+$example = chado_expand_var($example, 'table', 'example_dbxref', $options);
+$example_dbxrefs = $example->example_dbxref;
 
 $references = array();
-if (count($pub_dbxrefs) > 0 ) {
-  foreach ($pub_dbxrefs as $pub_dbxref) {    
-    $references[] = $pub_dbxref->dbxref_id;
+if (count($example_dbxrefs) > 0 ) {
+  foreach ($example_dbxrefs as $example_dbxref) {    
+    $references[] = $example_dbxref->dbxref_id;
   }
 }
 
 if(count($references) > 0){ ?>
-  <div class="tripal_pub-data-block-desc tripal-data-block-desc">This publication is also available in the following databases:</div><?php 
+  <div class="tripal_example-data-block-desc tripal-data-block-desc">This example is also available in the following databases:</div><?php 
   
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
@@ -54,7 +53,7 @@ if(count($references) > 0){ ?>
     'header' => $headers,
     'rows' => $rows,
     'attributes' => array(
-      'id' => 'tripal_pub-table-references',
+      'id' => 'tripal_example-table-references',
       'class' => 'tripal-data-table'
     ),
     'sticky' => FALSE,

@@ -71,7 +71,7 @@ if (user_access('administer tripal')) {
       'header' => TRUE,
       'class'  => 'tripal-site-admin-only-table-row',
     ),
-    $library->uniquename,
+    $library->library_id,
   );
 }
 

@@ -17,6 +17,11 @@ function tripal_example_admin_examples_listing() {
   $breadcrumb[] = l('Examples', 'admin/tripal/chado/tripal_example');
   drupal_set_breadcrumb($breadcrumb);
 
+  
+  // EXPLANATION:  Typically for all Tripal modules the home administrative
+  // page for the module contains a search form to help the adminstrator
+  // locate records.  The following example code adds a default View to
+  // the page
   /*
   // Add the view
   $view = views_embed_view('tripal_example_admin_examples','default');
@@ -33,6 +38,7 @@ function tripal_example_admin_examples_listing() {
     $output .= '</ul>';
   }
   */
+  $output = 'Typically a search view goes here';  
 
   return $output;
 }

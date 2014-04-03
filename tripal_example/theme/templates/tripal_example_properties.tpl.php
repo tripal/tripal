@@ -1,33 +1,17 @@
 <?php
-$pub = $node->pub;
+$example = $node->example;
 
-// expand the pub to include the properties.
+// expand the example to include the properties.
 $options = array(
   'return_array' => 1,
   'order_by' => array('rank' => 'ASC'),
 );
-$pub = tripal_core_expand_chado_vars($pub,'table', 'pubprop', $options);
-$pubprops = $pub->pubprop;
+$example = tripal_core_expand_chado_vars($example,'table', 'exampleprop', $options);
+$exampleprops = $example->exampleprop;
 $properties = array();
-if (is_array($pubprops)) {
-  foreach ($pubprops as $property) {
-    // skip the following properties as those are already on other templates
-    if ($property->type_id->name == 'Abstract' or
-        $property->type_id->name == 'Citation' or
-        $property->type_id->name == 'Publication Dbxref' or
-        $property->type_id->name == 'Authors' or
-        $property->type_id->name == 'Structured Abstract Part')  {
-      continue;
-    }
-    $property = tripal_core_expand_chado_vars($property,'field','pubprop.value');
-    $properties[] = $property;
-  }
-}
-// we'll keep track of the keywords so we can lump them into a single row
-$keywords = array(); 
 
 if (count($properties)) { ?>
-  <div class="tripal_pub-data-block-desc tripal-data-block-desc">Additional details for this publication include:</div> <?php 
+  <div class="tripal_example-data-block-desc tripal-data-block-desc">Additional details for this example include:</div> <?php 
 
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
@@ -70,7 +54,7 @@ if (count($properties)) { ?>
     'header' => $headers,
     'rows' => $rows,
     'attributes' => array(
-      'id' => 'tripal_pub-table-properties',
+      'id' => 'tripal_example-table-properties',
       'class' => 'tripal-data-table'
     ),
     'sticky' => FALSE,

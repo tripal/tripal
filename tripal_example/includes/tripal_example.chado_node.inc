@@ -139,15 +139,24 @@ function chado_example_form($node, &$form_state) {
 
 
   // SET FORM DEFAULTS
-  //---------------------------------------------
+  //---------------------------------------------  
+  $example      = null;   // holds the example object record
+  $example_id   = null;   // when editing an example record we'll have an example_id
+  
+  // initialize the defaults for the form fields
+  $uniquename   = '';
+  $example_type = '';
+  $organism_id  = '';
+  $description  = '';
   
   // if we are editing an existing node then the 'example' record from Chado
   // is already part of the node, so we set the defaults from that object
   if (property_exists($node, 'example')) {
     $example = $node->example;
-    $example = chado_expand_var($example, 'field', 'example.residues');
     $example_id   = $example->example_id;
     $uniquename   = $example->uniquename;
+    $description  = $example->description;
+    $organism_id  = $example->organism_id;
 
     // keep track of the example id
     $form['example_id'] = array(
@@ -160,19 +169,21 @@ function chado_example_form($node, &$form_state) {
   if (array_key_exists('values', $form_state)) {
      $uniquename   = $form_state['values']['uniquename'];
      $example_type = $form_state['values']['example_type'];
-
+     $description  = $form_state['values']['description'];
+     $organism_id  = $form_state['values']['organism_id'];
   }
   // if we are re building the form from after submission (from ajax call) then
   // the values are in the $form_state['input'] array
   if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
      $uniquename   = $form_state['input']['uniquename'];
      $example_type = $form_state['input']['example_type'];
+     $organism_id  = $form_state['input']['organism_id'];
   }
     
   
   // FORM ELEMENTS 
   //---------------------------------------------
-  $form['uniquename']= array(
+  $form['uniquename'] = array(
     '#type' => 'textfield',
     '#title' => t('Unique Name'),
     '#required' => TRUE,
@@ -186,9 +197,9 @@ function chado_example_form($node, &$form_state) {
   $type_cv = tripal_get_default_cv('example', 'type_id');
   $cv_id = $type_cv->cv_id;
   $form['example_type'] = array(
-    '#title'       => t('Feature Type'),
+    '#title'       => t('Example Type'),
     '#type'        => 'textfield',
-    '#description' => t("Choose the example type."),
+    '#description' => t("Choose the example type (e.g. Test Type)."),
     '#required'    => TRUE,
     '#default_value' => $example_type,
     '#autocomplete_path' => "admin/tripal/chado/tripal_cv/cvterm/auto_name/$cv_id",
@@ -203,6 +214,14 @@ function chado_example_form($node, &$form_state) {
     '#required'    => TRUE,
     '#default_value' => $organism_id,
     '#options'     => $organisms,
+  );
+  
+  $form['description'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Description'),
+    '#required' => TRUE,
+    '#default_value' => $description,
+    '#description' => t('Enter a description for this example.'),
   );
 
   // PROPERTIES FORM
@@ -284,19 +303,38 @@ function chado_example_validate($node, $form, &$form_state) {
 
   // be sure to always trim text fields
   $node->uniquename   = trim($node->uniquename);
+  $node->description  = trim($node->description);
   
   // Validating for an update. If the 'nid' property is present in the node then
   // this is an update and validation can be different for updates
   if (property_exists($node, 'nid')) {
 
-    // if there is a problem with a field then you can set an error on the form
-    form_set_error('uniquename', t("example update cannot proceed. The example name '$node->uniquename' is not unique for this organism. Please provide a unique name for this example."));
+    // make sure the feature type is an allowed term
+    $type_cv = tripal_get_default_cv('example', 'type_id');
+    $type = tripal_get_cvterm(array(
+      'name' => $node->example_type,
+      'cv_id' => $type_cv->cv_id,
+    ));
+    if (!$type) {
+      form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
+    }
+    
+    // TODO: also we should check that the unique constraint is not invalidated by
+    // changing either the type_id, organism_id or uniquename. 
   }
   // Validating for an insert
   else {
-
-    // if there is a problem with a field then you can set an error on the form
-    form_set_error('uniquename', t("example insert cannot proceed. The example name '$node->uniquename' already exists for this organism. Please provide a unique name for this example."));
+    // make sure the feature type is an allowed term
+    $type_cv = tripal_get_default_cv('example', 'type_id');
+    $type = tripal_get_cvterm(array(
+      'name' => $node->example_type,
+      'cv_id' => $type_cv->cv_id,
+    ));
+    if (!$type) {
+      form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
+    }
+    
+    // TODO: also we should check that the unique constraint doesn't already exist
   }
 }
 
@@ -318,6 +356,14 @@ function chado_example_validate($node, $form, &$form_state) {
 function chado_example_insert($node) {
   // be sure to always trim text fields
   $node->uniquename   = trim($node->uniquename);
+  $node->description  = trim($node->description);
+  
+  // get the example type record
+  $type_cv = tripal_get_default_cv('example', 'type_id');
+  $type = tripal_get_cvterm(array(
+    'name' => $node->example_type,
+    'cv_id' => $type_cv->cv_id,
+  ));  
 
   // if there is an example_id in the $node object then this must be a sync so
   // we can skip adding the example as it is already there, although
@@ -327,9 +373,11 @@ function chado_example_insert($node) {
     // perform the insert using the tripal_core_chado_insert function();
     $values = array(
       'uniquename' => $node->uniquename,
-      'residues' => $residues,
+      'description' => $node->description,
+      'type_id' => $type->cvterm_id,
+      'organism_id' => $node->organism_id,
     );
-    $example = chado_select_record('example', array('*'), $values);
+    $example = chado_insert_record('example', $values);
     if (!$example) {
       drupal_set_message(t('Unable to add example.'), 'warning');
       tripal_report_error('tripal_example', TRIPAL_WARNING, 'Insert example: Unable to create example where values: %values',
@@ -338,7 +386,7 @@ function chado_example_insert($node) {
     }
 
     // get the example_id for linking Drupal node with Chado data
-    $example_id = $example->example_id;
+    $example_id = $example['example_id'];
 
     // Only add to other chado tables if the base record was inserted properly
     if ($example_id > 0) {
@@ -346,19 +394,19 @@ function chado_example_insert($node) {
       // If you implemented the properties form in chado_example_form then you need to
       // handle inserting these properties into your chado prop table.
       $details = array(
-        'property_table' => 'exampleprop',   // the name of the prop table
-        'base_table' => 'example',           // the name of your chado base table
-        'foreignkey_name' => 'example_id',   // the name of the key in your base table
-        'foreignkey_value' => $example_id    // the value of the example_id key
+        'property_table'   => 'exampleprop',   // the name of the prop table
+        'base_table'       => 'example',       // the name of your chado base table
+        'foreignkey_name'  => 'example_id',    // the name of the key in your base table
+        'foreignkey_value' => $example_id      // the value of the example_id key
       );
       chado_update_node_form_properties($node, $details);
 
       // If you implemented the dbxrefs form in chado_example_form then you need to
       // handle inserting these database references into your chado _dbxref table.
       $details = array(
-        'linking_table' => 'example_dbxref',   // the name of your _dbxref table
-        'foreignkey_name' => 'example_id',     // the name of the key in your base table
-        'foreignkey_value' => $example_id      // the value of the example_id key
+        'linking_table'    => 'example_dbxref', // the name of your _dbxref table
+        'foreignkey_name'  => 'example_id',     // the name of the key in your base table
+        'foreignkey_value' => $example_id       // the value of the example_id key
       );
       chado_update_node_form_dbxrefs($node, $details);
 
@@ -378,7 +426,7 @@ function chado_example_insert($node) {
 
   // Make sure the entry for this example doesn't already exist in the
   // chado_example table if it doesn't exist then we want to add it.
-  // $check_org_id = chado_get_id_from_nid('example', $node->nid);
+   $check_org_id = chado_get_id_from_nid('example', $node->nid);
   if (!$check_org_id) {
     $record = new stdClass();
     $record->nid = $node->nid;
@@ -401,6 +449,7 @@ function chado_example_insert($node) {
 function chado_example_update($node) {
   // be sure to always trim text fields
   $node->uniquename   = trim($node->uniquename);
+  $node->description  = trim($node->description);
 
   // use the chado_update_record() function to update the record
   $match = array(
@@ -524,7 +573,7 @@ function chado_example_load($nodes) {
     // include it here using the chado_expand_var() function.  In most
     // cases it is probably best to let the end-user decide if text fields should
     // be included by using this function in the templates.
-    $example = chado_expand_var($example, 'field', 'example.residues');
+    $example = chado_expand_var($example, 'field', 'example.description');
 
     // add the new example object to this node.
     $nodes[$nid]->example = $example;
@@ -600,8 +649,8 @@ function tripal_example_node_insert($node) {
     case 'chado_example':
       
       // if we do not have an record ID for this node then get it
-      if (!$node->example_id) {
-        $node->example_id = chado_get_id_for_node('example', $node);
+      if (!property_exists($node, 'example_id')) {
+        $node->example_id = chado_get_id_from_nid('example', $node->nid);
       }
 
       // set the URL for this example page
@@ -655,18 +704,18 @@ function tripal_example_node_update($node) {
  */
 function tripal_example_node_view($node, $view_mode, $langcode) {
   
-  // EXPLANATION: This function defines the content "blocks" that appear 
+  // EXPLANATION: This function defines the content "blocks" that appear
   // when thhe node is displayed. It is node type agnostic so we can add
   // content to any node type.  So, we use this function to add the content
   // from all of our theme templates onto our new node type. We will also
-  // use this function to add content to other node types.
+  // use this function to add content to other node types. 
           
   switch ($node->type) {
     case 'chado_example':
       // there are different ways a node can be viewed. Primarily Tripal
       // supports full page view and teaser view.
       if ($view_mode == 'full') {
-        
+
         // There is always a base template.  This is the template that
         // is first shown when the example node type is first displayed. 
         // if you are using the default Tripal node template, then you should
@@ -692,12 +741,12 @@ function tripal_example_node_view($node, $view_mode, $langcode) {
           '#tripal_toc_title' => 'Properties',
         );
         $node->content['tripal_example_references'] = array(
-          '#markup' => theme('tripal_feature_references', array('node' => $node)),
+          '#markup' => theme('tripal_example_references', array('node' => $node)),
           '#tripal_toc_id'    => 'references',
           '#tripal_toc_title' => 'Cross References',
         );
         $node->content['tripal_example_relationships'] = array(
-          '#markup' => theme('tripal_feature_relationships', array('node' => $node)),
+          '#markup' => theme('tripal_example_relationships', array('node' => $node)),
           '#tripal_toc_id'    => 'relationships',
           '#tripal_toc_title' => 'Relationships',
         );
@@ -713,12 +762,13 @@ function tripal_example_node_view($node, $view_mode, $langcode) {
     // you can add custom content to any node type by adding
     // content to the node in the same way as above.
     case 'chado_organism':
-      break;
-    case 'chado_library':
-      break;
-    case 'chado_stock':
-      break;
-    case 'chado_analysis':
+      if ($view_mode == 'full') {
+        $node->content['tripal_organism_examples'] = array(
+          '#markup' => theme('tripal_organism_examples', array('node' => $node)),
+          '#tripal_toc_id'    => 'examples',
+          '#tripal_toc_title' => 'Examples',
+        );
+      }
       break;
     // ... etc
   }

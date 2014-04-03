@@ -184,12 +184,11 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
     // set the default values.  If there is a value set in the
     // form_state then let's use that, otherwise, we'll pull
     // the values from the database
-    $default_schema = $form_state['values']['schema'];
-    $default_force_drop = $form_state['values']['force_drop'];
-
-    if (!$default_table_name) {
-      $default_table = $custom_table->table_name;
+    if (array_key_exists('values', $form_state)) {
+      $default_schema     = $form_state['values']['schema'];
+      $default_force_drop = $form_state['values']['force_drop'];
     }
+
     if (!$default_schema) {
       $default_schema = var_export(unserialize($custom_table->schema), 1);
       $default_schema = preg_replace('/=>\s+\n\s+array/', '=> array', $default_schema);
