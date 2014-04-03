@@ -27,6 +27,13 @@ function tripal_feature_preprocess_tripal_feature_sequence(&$variables) {
   // now extract the sequences
   $featureloc_sequences = tripal_feature_load_featureloc_sequences($feature->feature_id, $ffeaturelocs);
   $feature->featureloc_sequences = $featureloc_sequences;
+  
+  // if this feature has associated protein sequences (or others via relationships
+  // then we want to make sure the relationships are added so that we can 
+  // show the protein sequences
+  if (!$feature->all_relationships) {
+    $feature->all_relationships = tripal_feature_get_feature_relationships($feature);
+  }
 }
 /**
  *

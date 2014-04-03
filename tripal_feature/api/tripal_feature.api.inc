@@ -468,3 +468,49 @@ function tripal_get_fasta_sequence($feature, $desc) {
   return $fasta;
 
 }
+
+/**
+ * Returns a definition line that can be used in a FASTA file
+ * 
+ * @param $feature
+ *   A single feature object containing all the fields from the chado.feature table
+ * @param $alignment
+ *   Optional: A single featureloc object generated using chado_generate_var that
+ *   contains a record from the chado.featureloc table.
+ *   
+ * @return
+ *   A string of the format: uniquename|name|type|feature_id
+ *   or if an alignment:  srcfeature_name:fmin..fmax[+-]; alignment of uniquename|name|type|feature_id 
+ */
+function tripal_get_fasta_defline($feature, $featureloc = NULL) {
+   $defline = $feature->uniquename . "|" . $feature->name . "|" . $feature->type_id->name . "|" . $feature->feature_id; 
+   if ($featureloc) {
+     $defline = tripal_get_location_string($featureloc) . "; alignment of " . $defline;
+   }
+   
+   return $defline;
+}
+
+/**
+ * Returns a string representing a feature location in an alignment
+ *  
+ * @param unknown $featureloc
+ *   A single featureloc object generated using chado_generate_var that
+ *   contains a record from the chado.featureloc table.
+ */
+function tripal_get_location_string($featureloc) {
+  $feature = $featureloc->feature_id;
+  
+  if ($featureloc->strand < 0) {
+    $residues = tripal_feature_reverse_complement($residues);
+  }
+  $strand = '.';
+  if ($featureloc->strand == 1) {
+    $strand = '+';
+  }
+  elseif ($featureloc->strand == -1) {
+    $strand = '-';
+  }
+  
+  return $featureloc->srcfeature_id->name . ":" . ($featureloc->fmin + 1) . ".." . $featureloc->fmax .  $strand;  
+}

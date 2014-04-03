@@ -25,7 +25,7 @@ else {
   
       // if a ?block= is specified in the URL then we want to show the
       // requested block
-      var block = window.location.href.match(/[\?|\&]block=(.+?)\&/)
+      var block = window.location.href.match(/[\?|\&]block=(.+?)[\&|\#]/)
       if(block == null){
         block = window.location.href.match(/[\?|\&]block=(.+)/)
       }

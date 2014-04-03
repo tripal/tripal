@@ -38,21 +38,93 @@ if(strcmp($feature->type_id->name,'scaffold') !=0 and
 $feature = $variables['node']->feature;
 $featureloc_sequences = $feature->featureloc_sequences;
 
-if ($residues or count($featureloc_sequences) > 0) { ?>
-  <div class="tripal_feature-data-block-desc tripal-data-block-desc"></div> <?php
+if ($residues or count($featureloc_sequences) > 0) { 
+
+  $sequences_html = '';  // a variable for holding all sequences HTML text
+  $list_items = array(); // a list to be used for theming of content on this page ?>
   
-  // show the alignment sequences first as they are colored with child features
-  if(count($featureloc_sequences) > 0){
-    foreach($featureloc_sequences as $src => $attrs){ 
-      print $attrs['formatted_seq'];
-    } 
+  <div class="tripal_feature-data-block-desc tripal-data-block-desc">The following sequences are available for this feature:</div> <?php
+  
+  // ADD IN RESIDUES FOR THIS FEATURE
+  // add in the residues if they are present
+  if ($residues) {
+    $list_items[] = '<a href="#residues">Current ' . $feature->type_id->name . ' sequence</a>';
+     
+    // format the sequence to break every 50 residues
+    $sequences_html .= '<a name="residues"></a>';
+    $sequences_html .= '<div class="tripal_feature-sequence-item">';
+    $sequences_html .= '<p><b>Current ' . $feature->type_id->name . ' sequence</b></p>';
+    $sequences_html .= '<pre class="tripal_feature-sequence">';
+    $sequences_html .= '>' . tripal_get_fasta_defline($feature) . "\n";
+    $sequences_html .= preg_replace("/(.{50})/","\\1<br>",$feature->residues);
+    $sequences_html .= '</pre>';
+    $sequences_html .= '<a href="#sequences-top">back to top</a>';
+    $sequences_html .= '</div>';
+    
   }
   
-  // add in the residues if they are present
-  if ($residues) { ?>
-    <pre id="tripal_feature-sequence-residues"><?php 
-      // format the sequence to break every 100 residues
-      print preg_replace("/(.{50})/","\\1<br>",$feature->residues); ?>  
-    </pre> <?php 
-  } 
+  // ADD IN RELATIONSHIP SEQUENCES (e.g. proteins)
+  // see the explanation in the tripal_feature_relationships.tpl.php 
+  // template for how the 'all_relationships' is provided. It is this
+  // variable that we use to get the proteins.
+  $all_relationships = $feature->all_relationships;
+  $object_rels = $all_relationships['object'];
+  foreach ($object_rels as $rel_type => $rels){
+    foreach ($rels as $subject_type => $subjects){
+      foreach ($subjects as $subject){
+        if ($rel_type == 'derives from' and $subject_type == 'polypeptide') {
+          $protein = $subject->record->subject_id;
+          $protein = chado_expand_var($protein, 'field', 'feature.residues');
+          
+          $list_items[] = '<a href="#residues">Protein sequence of ' . $protein->name . '</a>';
+          $sequences_html .= '<a name="protein-' . $protein->feature_id . '"></a>';
+          $sequences_html .= '<div class="tripal_feature-sequence-item">';
+          $sequences_html .= '<p><b>Protein sequence of ' . $protein->name . '</b></p>';
+          $sequences_html .= '<pre class="tripal_feature-sequence">';
+          $sequences_html .= '>' . tripal_get_fasta_defline($protein) . "\n";
+          $sequences_html .= preg_replace("/(.{50})/","\\1<br>", $protein->residues);
+          $sequences_html .= '</pre>';
+          $sequences_html .= '<a href="#sequences-top">back to top</a>';
+          $sequences_html .= '</div>';
+        }
+        // add any other sequences by by relationship in a similar way
+      }
+    }
+  }
+  
+  // ADD IN ALIGNMENT SEQUENCES FOR THIS FEATURE
+  // show the alignment sequences first as they are colored with child features
+  if(count($featureloc_sequences) > 0){
+    foreach($featureloc_sequences as $src => $attrs){
+      // the $attrs array has the following keys
+      //   * src:  a unique identifier combining the feature id with the cvterm id
+      //   * type: the type of sequence (e.g. mRNA, etc)
+      //   * location:  the alignment location
+      //   * defline: the definition line
+      //   * formatted_seq: the formatted sequences
+      $list_items[] = '<a href="#' . $attrs['src'] . '">Alignment at  ' . $attrs['location'];
+      $sequences_html .= '<a name="' . $attrs['src'] . '"></a>';
+      $sequences_html .= '<div class="tripal_feature-sequence-item">';
+      $sequences_html .= '<p><b>Alignment at  ' . $attrs['location'] .'</b></p>';
+      $sequences_html .= $attrs['formatted_seq'];
+      $sequences_html .= '<a href="#sequences-top">back to top</a>';
+      $sequences_html .= '</div>';
+    }
+  }
+  
+  // first add a list at the top of the page that can be formatted as the
+  // user desires.  We use the theme_item_list function of Drupal to create 
+  // the list rather than hard-code the HTML here.  Instructions for how
+  // to create the list can be found here:
+  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_item_list/7
+  print '<a name="sequences-top"></a>';
+  print theme_item_list(array(
+    'items' => $list_items,
+    'title' => '',
+    'type' => 'ul',
+    'attributes' => array(),
+  ));
+  
+  // now print the sequences
+  print $sequences_html;
 }

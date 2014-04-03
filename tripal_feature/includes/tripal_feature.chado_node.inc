@@ -233,7 +233,7 @@ function chado_feature_form($node, &$form_state) {
   
   // TODO: For some reason adding a relationship to the form breaks AJAX
   // for features (works for other node type)... need to debug
-  /*
+  
   // RELATIONSHIPS FORM
   //---------------------------------------------
   $relationship_cv = tripal_get_default_cv('feature_relationship', 'type_id');
@@ -247,7 +247,7 @@ function chado_feature_form($node, &$form_state) {
     'cv_id' => $cv_id
   );
   chado_add_node_form_relationships($form, $form_state, $details);
-  */
+  
 
   return $form;
 }
@@ -951,8 +951,8 @@ function tripal_feature_node_view($node, $view_mode, $langcode) {
         );
         $node->content['tripal_feature_seqence'] = array(
           '#markup' => theme('tripal_feature_sequence', array('node' => $node)),
-          '#tripal_toc_id'    => 'sequence',
-          '#tripal_toc_title' => 'Sequence',
+          '#tripal_toc_id'    => 'sequences',
+          '#tripal_toc_title' => 'Sequences',
         );
         $node->content['tripal_feature_synonyms'] = array(
           '#markup' => theme('tripal_feature_synonyms', array('node' => $node)),

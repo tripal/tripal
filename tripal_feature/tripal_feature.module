@@ -634,8 +634,9 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
       elseif ($featureloc->strand == -1) {
         $strand = '-';
       }
-      $defline = $featureloc->feature_id->name . " " . $featureloc->srcfeature_id->name . ":" . ($featureloc->fmin + 1) . ".." . $featureloc->fmax . " " . $strand;
-      $floc_sequences[$src]['formatted_seq'] =  tripal_feature_color_sequence($residues, $parts, $defline);
+      $floc_sequences[$src]['location'] = tripal_get_location_string($featureloc);
+      $floc_sequences[$src]['defline'] = tripal_get_fasta_defline($featureloc->feature_id, $featureloc);
+      $floc_sequences[$src]['formatted_seq'] =  tripal_feature_color_sequence($residues, $parts, $floc_sequences[$src]['defline']);
     }
   }
   return $floc_sequences;
@@ -855,7 +856,7 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
 
   // set the background color of the rows based on the type
   $pos = 0;
-  $newseq .= "<pre id=\"tripal_feature-featureloc_sequence\">";
+  $newseq .= "<pre class=\"tripal_feature-sequence\">";
   $newseq .= ">$defline\n";
 
   // iterate through the parts. They should be in order.
