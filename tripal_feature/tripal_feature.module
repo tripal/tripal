@@ -851,7 +851,7 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
   foreach ($types as $type_name => $present) {
     $newseq .= "<span id=\"tripal_feature-legend-$type_name\" class=\"tripal_feature-legend-item tripal_feature-featureloc_sequence-$type_name\" script=\"\">$type_name</span>";
   }
-  $newseq .= "</div>Hold the cursor over a type above to highlight its positions in the sequence below. The colors in the sequence below merge when types overlap.";
+  $newseq .= "</div>Hold the cursor over a type above to highlight its positions in the sequence below.";
 
 
   // set the background color of the rows based on the type
