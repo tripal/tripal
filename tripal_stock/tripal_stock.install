@@ -49,11 +49,14 @@ function tripal_stock_requirements($phase) {
 function tripal_stock_install() {
   // create the module's data directory
   tripal_create_files_dir('tripal_stock');
-  
+
   // set the default vocabularies
   tripal_set_default_cv('stock', 'type_id', 'stock_type');
   tripal_set_default_cv('stockprop', 'type_id', 'stock_property');
   tripal_set_default_cv('stock_relationship', 'type_id', 'stock_relationship');
+
+  // add the materialized view
+  tripal_stock_add_organism_count_mview();
 }
 
 /**
@@ -103,6 +106,74 @@ function tripal_stock_schema() {
 }
 
 /**
+ * Creates a materialized view that stores the type & number of stocks per organism
+ *
+ * @ingroup tripal_stock
+ */
+function tripal_stock_add_organism_count_mview() {
+  $view_name = 'organism_stock_count';
+  $comment = 'Stores the type and number of stocks per organism';
+
+  $schema = array(
+    'description' => $comment,
+    'table' => $view_name,
+    'fields' => array(
+      'organism_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'genus' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'species' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'common_name' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'num_stocks' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'cvterm_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'stock_type' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'organism_stock_count_idx1' => array('organism_id'),
+      'organism_stock_count_idx2' => array('cvterm_id'),
+      'organism_stock_count_idx3' => array('stock_type'),
+    ),
+  );
+
+  $sql = "
+    SELECT
+        O.organism_id, O.genus, O.species, O.common_name,
+        count(S.stock_id) as num_stocks,
+        CVT.cvterm_id, CVT.name as stock_type
+     FROM organism O
+        INNER JOIN stock S  ON O.Organism_id = S.organism_id
+        INNER JOIN cvterm CVT ON S.type_id     = CVT.cvterm_id
+     GROUP BY
+        O.Organism_id, O.genus, O.species, O.common_name, CVT.cvterm_id, CVT.name
+  ";
+
+  tripal_add_mview($view_name, 'tripal_stock', $schema, $sql, $comment);
+}
+
+/**
  * Add cvs related to publications
  *
  * @ingroup tripal_pub
@@ -141,7 +212,7 @@ function tripal_stock_update_7200() {
   // add the new CVs.  We can't use the Tripal API because during
   // an upgrade from D6 to D7 Tripal is disable. So, we have to manually add these
   // new vocabularies.
-  
+
   // add the stock_relationshp CV
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'stock_relationship'")->fetchField();
@@ -169,7 +240,7 @@ function tripal_stock_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to add stock_relationship vocabulary: '. $error);
   }
- 
+
   // add the stock_property CV
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'stock_property'")->fetchField();
@@ -197,8 +268,8 @@ function tripal_stock_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to add stock_property vocabulary: '. $error);
   }
-  
-  
+
+
   // add the stock_type CV
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'stock_type'")->fetchField();
@@ -226,7 +297,17 @@ function tripal_stock_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to add stock_type vocabulary: '. $error);
   }
-  
+
+}
+
+/**
+ * Upgrade to 7.x-2.0.1-alpha
+ */
+function tripal_stock_update_7201() {
+
+  // add the materialized view
+  tripal_stock_add_organism_count_mview();
+
 }
 
 /**

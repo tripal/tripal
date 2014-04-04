@@ -528,3 +528,86 @@ function tripal_stock_form_alter(&$form, &$form_state, $form_id) {
     $form['actions']['preview']['#access'] = FALSE;
   }
 }
+
+/**
+ * Load the arguments for the organism stock counts browser
+ *
+ * @param $organism
+ *  The organism of interest
+ *
+ * @ingroup tripal_stock
+ */
+function tripal_stock_load_organism_stock_counts($organism) {
+
+  $args = array();
+  $order = array();
+  $names = array();
+
+  // build the where clause for the SQL statement if we have a custom term list
+  // we'll also keep track of the names the admin provided (if any) and the
+  // order that the terms should appear.
+  $is_custom = 0;
+  $temp = rtrim(variable_get('tripal_stock_summary_report_mapping', ''));
+  $where = '';
+  if ($temp) {
+    $is_custom = 1;
+    $temp = explode("\n", $temp);
+    $i = 0;
+    foreach ($temp as $value) {
+      // separate the key value pairs
+      $temp2 = explode("=", $value);
+      $stock_type = rtrim($temp2[0]);
+      $order[] = $stock_type;  // save the order of the these terms
+      $where .= " OFC.stock_type = :name$i OR ";
+      $args[":name$i"] = rtrim($temp2[0]);
+
+      // if the admin specified a new name then store that otherwise use the
+      // the default sequence ontology term name
+      if(count($temp2) == 2) {
+        $names[] = rtrim($temp2[1]);
+      }
+      else {
+        $names[] = $stock_type;
+      }
+      $i++;
+    }
+    if ($where) {
+      $where = drupal_substr($where, 0, -4);  # remove OR from the end
+      $where = "($where) AND";
+    }
+  }
+
+  // get the stock counts.  This is dependent on a materialized view
+  // installed with the organism module
+  $sql = "
+    SELECT OFC.num_stocks,OFC.stock_type,CVT.definition
+    FROM {organism_stock_count} OFC
+      INNER JOIN {cvterm} CVT on OFC.cvterm_id = CVT.cvterm_id
+    WHERE $where organism_id = :organism_id
+    ORDER BY num_stocks desc
+  ";
+  $args[':organism_id'] = $organism->organism_id;
+  $org_stocks = chado_query($sql, $args);
+
+  // iterate through the types
+  $types = array();
+  while ($type = $org_stocks->fetchObject()) {
+    $types[$type->stock_type] = $type;
+    // if we don't have an order this means we didn't go through the loop
+    // above to set the names, so do that now
+    if (!$is_custom) {
+      $names[] = $type->stock_type;
+      $order[] = $type->stock_type;
+    }
+  }
+
+  // now reorder the types
+  $ordered_types = array();
+  foreach ($order as $type) {
+    $ordered_types[] = $types[$type];
+  }
+  return array(
+    'types' => $ordered_types,
+    'names' => $names
+  );
+}
