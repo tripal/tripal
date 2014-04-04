@@ -29,7 +29,7 @@ $options = array(
   ),
 );
 
-$featuremap = tripal_core_expand_chado_vars($featuremap, 'table', 'featurepos', $options);
+$featuremap = chado_expand_var($featuremap, 'table', 'featurepos', $options);
 $feature_positions = $featuremap->featurepos;
 
 
@@ -64,7 +64,7 @@ if(count($feature_positions) > 0){ ?>
         'type_id' => 1,            
       ),
     );
-    $position = tripal_core_expand_chado_vars($position, 'table', 'featureposprop', $options);
+    $position = chado_expand_var($position, 'table', 'featureposprop', $options);
     $featureposprop = $position->featureposprop;
     $start = 0;
     $stop = 0;

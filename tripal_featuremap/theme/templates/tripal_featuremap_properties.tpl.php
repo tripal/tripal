@@ -2,7 +2,7 @@
 
 $featuremap = $variables['node']->featuremap;
 $options = array('return_array' => 1);
-$featuremap = tripal_core_expand_chado_vars($featuremap, 'table', 'featuremapprop', $options);
+$featuremap = chado_expand_var($featuremap, 'table', 'featuremapprop', $options);
 $properties = $featuremap->featuremapprop;
 
 if(count($properties) > 0){
@@ -18,7 +18,7 @@ if(count($properties) > 0){
   $rows = array();
 
   foreach ($properties as $property){
-    $property = tripal_core_expand_chado_vars($property,'field','featuremapprop.value');
+    $property = chado_expand_var($property,'field','featuremapprop.value');
     $rows[] = array(
       ucfirst(preg_replace('/_/', ' ', $property->type_id->name)),
       urldecode($property->value)

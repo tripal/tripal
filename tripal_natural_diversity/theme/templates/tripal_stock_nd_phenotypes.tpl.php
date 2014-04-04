@@ -137,7 +137,7 @@ if (count($phenotypes) > 0) {?>
     // but the database does not constrain that there only be one project so just in case we get them all
     $projects = array();
     $values = array('nd_experiment_id' => $nd_experiment_stock->nd_experiment_id->nd_experiment_id);
-    $nd_experiment_project = tripal_core_generate_chado_var('nd_experiment_project', $values, $options);
+    $nd_experiment_project = chado_generate_var('nd_experiment_project', $values, $options);
     $nd_experiment_projects = $nd_experiment_project;
     foreach ($nd_experiment_projects as $nd_experiment_project) {
       // we do have a project record, so add it to our $phenotypes array for display below

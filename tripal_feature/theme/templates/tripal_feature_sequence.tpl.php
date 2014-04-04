@@ -1,24 +1,14 @@
 <?php
 /*
- * There are two ways that sequences can be displayed.  They can come from the 
- * feature.residues column or they can come from an alignment with another feature.  
- * This template will show both or one or the other depending on the data available.
- * 
- * For retreiving the sequence from an alignment we would typically make a call to
- * tripal_core_expand_chado_vars function.  For example, to retrieve all
- * of the featurelocs in order to get the sequences needed for this template, the
- * following function call would be made:
- *
- *   $feature = tripal_core_expand_chado_vars($feature,'table','featureloc');
- *
- * Then all of the sequences would need to be retreived from the alignments and
- * formatted for display below.  However, to simplify this template, this has already
- * been done by the tripal_feature module and the sequences are made available in
- * the variable:
- *
- *   $feature->featureloc_sequences
+ * There are several ways that sequences can be displayed.  They can come from the 
+ * feature.residues column,  they can come from an alignment with another feature,
+ * they can come from a protein sequence that has relationship with this sequence,
+ * or they can come from sub children (e.g. CDS coding sequences).
+ *   
+ * This template will show all types depending on the data available.
  *
  */
+
 
 $feature = $variables['node']->feature;
 
@@ -30,7 +20,7 @@ if(strcmp($feature->type_id->name,'scaffold') !=0 and
    strcmp($feature->type_id->name,'chromosome') !=0 and
    strcmp($feature->type_id->name,'supercontig') !=0 and
    strcmp($feature->type_id->name,'pseudomolecule') !=0) {
-  $feature = tripal_core_expand_chado_vars($feature,'field','feature.residues');
+  $feature = chado_expand_var($feature,'field','feature.residues');
   $residues = $feature->residues;
 } 
 
@@ -38,21 +28,191 @@ if(strcmp($feature->type_id->name,'scaffold') !=0 and
 $feature = $variables['node']->feature;
 $featureloc_sequences = $feature->featureloc_sequences;
 
-if ($residues or count($featureloc_sequences) > 0) { ?>
-  <div class="tripal_feature-data-block-desc tripal-data-block-desc"></div> <?php
+if ($residues or count($featureloc_sequences) > 0) { 
+
+  $sequences_html = '';  // a variable for holding all sequences HTML text
+  $list_items = array(); // a list to be used for theming of content on this page
   
-  // show the alignment sequences first as they are colored with child features
-  if(count($featureloc_sequences) > 0){
-    foreach($featureloc_sequences as $src => $attrs){ 
-      print $attrs['formatted_seq'];
-    } 
+  // ADD IN RESIDUES FOR THIS FEATURE
+  // add in the residues if they are present
+  if ($residues) {
+    $list_items[] = '<a href="#residues">' . $feature->type_id->name . ' sequence</a>';
+     
+    // format the sequence to break every 50 residues
+    $sequences_html .= '<a name="residues"></a>';
+    $sequences_html .= '<div id="residues" class="tripal_feature-sequence-item">';
+    $sequences_html .= '<p><b>' . $feature->type_id->name . ' sequence</b></p>';
+    $sequences_html .= '<pre class="tripal_feature-sequence">';
+    $sequences_html .= '>' . tripal_get_fasta_defline($feature) . "\n";
+    $sequences_html .= preg_replace("/(.{50})/","\\1<br>",$feature->residues);
+    $sequences_html .= '</pre>';
+    $sequences_html .= '<a href="#sequences-top">back to top</a>';
+    $sequences_html .= '</div>';
+    
   }
   
-  // add in the residues if they are present
-  if ($residues) { ?>
-    <pre id="tripal_feature-sequence-residues"><?php 
-      // format the sequence to break every 100 residues
-      print preg_replace("/(.{50})/","\\1<br>",$feature->residues); ?>  
-    </pre> <?php 
+  // ADD IN RELATIONSHIP SEQUENCES (e.g. proteins)
+  // see the explanation in the tripal_feature_relationships.tpl.php 
+  // template for how the 'all_relationships' is provided. It is this
+  // variable that we use to get the proteins.
+  $all_relationships = $feature->all_relationships;
+  $object_rels = $all_relationships['object'];
+  $has_coding_seq = 0;
+  $coding_seq = '';
+  foreach ($object_rels as $rel_type => $rels){
+    foreach ($rels as $subject_type => $subjects){
+      foreach ($subjects as $subject){
+        
+        // add in protein sequence if it has residues
+        if ($rel_type == 'derives from' and $subject_type == 'polypeptide') {
+          $protein = $subject->record->subject_id;
+          $protein = chado_expand_var($protein, 'field', 'feature.residues');
+          
+          if ($protein->residues) {
+            $list_items[] = '<a href="#residues">protein sequence</a>';
+            $sequences_html .= '<a name="protein-' . $protein->feature_id . '"></a>';
+            $sequences_html .= '<div id="protein-' . $protein->feature_id . '" class="tripal_feature-sequence-item">';
+            $sequences_html .= '<p><b>protein sequence of ' . $protein->name . '</b></p>';
+            $sequences_html .= '<pre class="tripal_feature-sequence">';
+            $sequences_html .= '>' . tripal_get_fasta_defline($protein) . "\n";
+            $sequences_html .= preg_replace("/(.{50})/","\\1<br>", $protein->residues);
+            $sequences_html .= '</pre>';
+            $sequences_html .= '<a href="#sequences-top">back to top</a>';
+            $sequences_html .= '</div>';
+          }
+        }
+        
+        // If the CDS has sequences then concatenate those. The objects 
+        // should be returned in order of rank
+        if ($rel_type == 'part of' and $subject_type == 'CDS') {
+          $cds = $subject->record->subject_id;
+          $cds = chado_expand_var($cds, 'field', 'feature.residues');
+          if ($cds->residues) {
+            $has_coding_seq = 1;
+            $coding_seq .= $cds->residues;
+          }
+        }
+        
+        // add any other sequences that are related through a relationship
+        // and that have values in the 'residues' column
+      }
+    }
+  }
+  
+  // CODING SEQUENCES FROM RELATIONSHIPS
+  // add in any CDS sequences.
+  if ($has_coding_seq) {
+    $list_items[] = '<a href="#coding_sequence">coding sequence </a>';
+    $sequences_html .= '<a name="coding_sequence"></a>';
+    $sequences_html .= '<div id="coding_sequence" class="tripal_feature-sequence-item">';
+    $sequences_html .= '<p><b>coding sequence</b></p>';
+    $sequences_html .= '<pre class="tripal_feature-sequence">';
+    $sequences_html .= $coding_seq;
+    $sequences_html .= '</pre>';
+    $sequences_html .= '<a href="#sequences-top">back to top</a>';
+    $sequences_html .= '</div>';
+  }
+  
+  /* ADD IN ALIGNMENT SEQUENCES FOR THIS FEATURE
+   * For retreiving the sequence from an alignment we would typically make a call to
+   * chado_expand_var function.  For example, to retrieve all
+   * of the featurelocs in order to get the sequences needed for this template, the
+   * following function call would be made:
+   *
+   *   $feature = chado_expand_var($feature,'table','featureloc');
+   *
+   * Then all of the sequences would need to be retreived from the alignments and
+   * formatted for display below.  However, to simplify this template, this has already
+   * been done by the tripal_feature module and the sequences are made available in
+   * the variable: 
+   *
+   *   $feature->featureloc_sequences
+   */
+  if(count($featureloc_sequences) > 0){
+    foreach($featureloc_sequences as $src => $attrs){
+      // the $attrs array has the following keys
+      //   * id:  a unique identifier combining the feature id with the cvterm id
+      //   * type: the type of sequence (e.g. mRNA, etc)
+      //   * location:  the alignment location
+      //   * defline: the definition line
+      //   * formatted_seq: the formatted sequences
+      //   * featureloc:  the feature object aligned to
+      $list_items[] = '<a href="#' . $attrs['id'] . '">'. $feature->type_id->name . ' from alignment at  ' . $attrs['location'] . "</a>";
+      $sequences_html .= '<a name="' . $attrs['id'] . '"></a>';
+      $sequences_html .= '<div id="' . $attrs['id'] . '" class="tripal_feature-sequence-item">';
+      $sequences_html .= '<p><b>'. $feature->type_id->name . ' from alignment at  ' . $attrs['location'] .'</b></p>';
+      $sequences_html .= $attrs['formatted_seq'];
+      $sequences_html .= '<a href="#sequences-top">back to top</a>';
+      $sequences_html .= '</div>';
+    }
+    
+    // check to see if this alignment has any CDS. If so, generate a CDS sequence
+    $cds_sequence = tripal_get_sequence(
+        array(
+          'feature_id' => $feature->feature_id,
+          'parent_id' => $attrs['featureloc']->srcfeature_id->feature_id,
+          'name' => $feature->name,
+          'featureloc_id' => $attrs['featureloc']->featureloc_id,
+        ),
+        array(
+          'width' => 50,  // FASTA sequence should have 50 chars per line
+          'derive_from_parent' => 1, // CDS are in parent-child relationships so we want to use the sequence from the parent
+          'aggregate' => 1, // we want to combine all CDS for this feature into a single sequence
+          'output_format' => 'fasta_txt', // we just want plain text, we'll format it here.
+          'sub_feature_types' => array('CDS'), // we're looking for CDS features
+          ''
+        )
+    );
+    if (count($cds_sequence) > 0) {
+      if ($cds_sequence[0]['residues']) {
+        $list_items[] = '<a href="#coding_' . $attrs['id'] . '">coding sequnece from alignment at  ' . $attrs['location'] . "</a>";
+        $sequences_html .= '<a name="ccoding_' . $attrs['id'] . '"></a>';
+        $sequences_html .= '<div id="coding_' . $attrs['id'] . '" class="tripal_feature-sequence-item">';
+        $sequences_html .= '<p><b>Coding sequence (CDS) from alignment at  ' . $attrs['location'] . '</b></p>';
+        $sequences_html .= '<pre class="tripal_feature-sequence">';
+        $sequences_html .= '>' . tripal_get_fasta_defline($feature, $attrs['featureloc'], 'CDS') . "\n";
+        $sequences_html .= $cds_sequence[0]['residues'];
+        $sequences_html .= '</pre>';
+        $sequences_html .= '<a href="#sequences-top">back to top</a>';
+        $sequences_html .= '</div>';
+      }
+    }
   } 
+  ?>
+
+  <div class="tripal_feature-data-block-desc tripal-data-block-desc">The following sequences are available for this feature:</div> 
+  <?php
+  
+  // first add a list at the top of the page that can be formatted as the
+  // user desires.  We use the theme_item_list function of Drupal to create 
+  // the list rather than hard-code the HTML here.  Instructions for how
+  // to create the list can be found here:
+  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_item_list/7
+  print '<a name="sequences-top"></a>';
+  print theme_item_list(array(
+    'items' => $list_items,
+    'title' => '',
+    'type' => 'ul',
+    'attributes' => array(),
+  ));
+
+  $message = 'Administrators, sequences will appear on this page if:
+    <ul>
+      <li>This feature has residues stored in the "residues" field of the feature table of Chado.</li>
+      <li>This feature has a protein feature associated via the "feature_relationship" table of Chado with a
+          relationship of type "derives from" and the protein feature has residues.</li>
+      <li>This feature has one or more CDS features associated via the "feature_relationship" table of Chado with a
+          relationship of type "part of". If the CDS features have residues then those will be concatenated
+          and presented as a sequence.</li>
+      <li>This feature is aligned to another feature (e.g. scaffold, or chromosome). In this case, the
+          sequence underlying the alignment will be shown.</li>
+      <li>This feature is aligned to another feature (e.g. scaffold, or chromosome) and this feature has
+          one or more CDS features associated.  The CDS sequenes underlying the alignment will be
+          shown.</li>
+    </ul>
+    </p>';
+  print tripal_set_message($message, TRIPAL_INFO, array('return_html' => 1));
+  
+  // now print the sequences
+  print $sequences_html;
 }

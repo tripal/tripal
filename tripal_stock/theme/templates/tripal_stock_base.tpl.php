@@ -4,8 +4,8 @@ $organism = $node->stock->organism_id;
 $main_db_reference = $stock->dbxref_id;
 
 // expand the text fields
-$stock = tripal_core_expand_chado_vars($stock, 'field', 'stock.description');
-$stock = tripal_core_expand_chado_vars($stock, 'field', 'stock.uniquename'); ?>
+$stock = chado_expand_var($stock, 'field', 'stock.description');
+$stock = chado_expand_var($stock, 'field', 'stock.uniquename'); ?>
 
 <div class="tripal_stock-data-block-desc tripal-data-block-desc"></div> <?php  
 

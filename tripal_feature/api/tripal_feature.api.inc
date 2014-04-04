@@ -51,67 +51,75 @@ function tripal_reverse_compliment_sequence($sequence) {
  *   An associative array describing the feature. Valid keys include:
  *    - feature_id: The feature_id of the feature for which the sequence will be retrieved
  *    - name: The feature name. This will appear on the FASTA definition line
+ *    - parent_id:  (optional) only retrieve a sequence if 'derive_from_parent' is true 
+ *        and the parent matches this ID.
+ *    - featureloc_id: (optional) only retrieve a sequence if 'derive_from_parent' is 
+ *        true and the alignment is defined with this featureloc_id
  * @param $options
  *   An associative array of options. Valid keys include:
  *    - width: Indicate the number of bases to use per line.  A new line will be added
- *      after the specified number of bases on each line.
+ *        after the specified number of bases on each line.
  *    - derive_from_parent: Set to '1' if the sequence should be obtained from the parent
- *      to which this feature is aligned.
+ *        to which this feature is aligned.
  *    - aggregate: Set to '1' if the sequence should only contain sub features, excluding
- *      intro sub feature sequence.  For example, set this option to obtain just
- *      the coding sequence of an mRNA.
+ *        intro sub feature sequence.  For example, set this option to obtain just
+ *        the coding sequence of an mRNA.
  *    - output_format: The type of format.  Valid formats include 'fasta_html', 'fasta_txt' and
- *      'raw'.  The format 'fasta_txt' outputs line breaks as <br> tags and the entire
- *      return value is in a <span> tag with a fixed-width font definition.  'fasta_txt'
- *      outputs line breaks with windows format carriage returns (e.g. \r\n) with no other
- *      formatting. The raw format is simply the sequence with now FASTA formatting and no
- *      line breaks.
+ *        'raw'.  The format 'fasta_txt' outputs line breaks as <br> tags and the entire
+ *        return value is in a <span> tag with a fixed-width font definition.  'fasta_txt'
+ *        outputs line breaks with windows format carriage returns (e.g. \r\n) with no other
+ *        formatting. The raw format is simply the sequence with no FASTA formatting and no
+ *        line breaks.
  *    - num_upstream: An integer specifing the number of upstream bases to include in the output
  *    - num_downstream: An integer specifying the number of downstream bases to include in the
- *      output.
+ *        output.
  *    - sub_feature_types: Only include sub features (or child features) of the types
- *      provided in the array
+ *        provided in the array
  *    - relationship_type: If a relationship name is provided (e.g. sequence_of) then any
- *      sequences that are in relationships of this type with matched sequences are also included
+ *        sequences that are in relationships of this type with matched sequences are also included
  *    - relationship_part: If a relationship is provided in the preceeding argument then
- *      the rel_part must be either 'object' or 'subject' to indicate which side of the
- *      relationship the matched features belong
+ *        the rel_part must be either 'object' or 'subject' to indicate which side of the
+ *        relationship the matched features belong
  *
  * @return
- *   The DNA/protein sequence formated as requested.
+ *   an array of matching sequence formated as requested.
  *
  * @ingroup tripal_feature_api
  */
-function tripal_format_sequence($feature, $options) {
+function tripal_get_sequence($feature, $options) {
 
-  // Default Values
-  $feature_id = $feature['feature_id'];
-  $feature_name = $feature['name'];
+  // default values for finding the feature
+  $feature_id    = array_key_exists('feature_id', $feature)     ? $feature['feature_id']     : 0;
+  $parent_id     = array_key_exists('parent_id', $feature)      ? $feature['parent_id']      : 0;
+  $featureloc_id = array_key_exists('featureloc_id', $feature)  ? $feature['featureloc_id']  : 0;
+  $feature_name  = array_key_exists('name', $feature)           ? $feature['name']           : '';
 
-  $num_bases_per_line = $options['width'];
-  $derive_from_parent = $options['derive_from_parent'];
-  $aggregate = $options['aggregate'];
-  $output_format = $options['output_format'];
-  $upstream = $options['num_upstream'];
-  $downstream = $options['num_downstream'];
-  $sub_features = $options['sub_feature_types'];
-  $relationship = $options['relationship_type'];
-  $rel_part = $options['relationship_part'];
-
-  // to speed things up we need to make sure we have a persistent connection
-  $connection = tripal_db_persistent_chado();
-
-  if (!$upstream) {
-     $upstream = 0;
+  // default values for building the sequence
+  $num_bases_per_line = array_key_exists('width', $options)              ? $options['width']              : 50;
+  $derive_from_parent = array_key_exists('derive_from_parent', $options) ? $options['derive_from_parent'] : 0;
+  $aggregate          = array_key_exists('aggregate', $options)          ? $options['aggregate']          : 0;
+  $output_format      = array_key_exists('output_format', $options)      ? $options['output_format']      : 'fasta_txt';
+  $upstream           = array_key_exists('num_upstream', $options)       ? $options['num_upstream']       : 0;
+  $downstream         = array_key_exists('num_downstream', $options)     ? $options['num_downstream']     : 0;
+  $sub_features       = array_key_exists('sub_feature_types', $options)  ? $options['sub_feature_types']  : array();
+  $relationship       = array_key_exists('relationship_type', $options)  ? $options['relationship_type']  : '';
+  $rel_part           = array_key_exists('relationship_part', $options)  ? $options['relationship_part']  : '';
+  
+  // make sure the sub_features variable is an array
+  if (!is_array($sub_features)) {
+    tripal_report_error('tripal_deprecated', TRIPAL_ERROR,
+      "'sub_features' option must be an array for function tripal_get_sequence().",
+      array()
+    );
+    return array();
   }
-  if (!$downstream) {
-     $downstream = 0;
-  }
 
+  // if a relationship was specified then retreive and the sequences that
+  // have the given relationship and the recurse to extract the appropriate 
+  // sequence
   if ($rel_part == "object" or $rel_part == "subject") {
     if ($rel_part == "subject") {
-      $psql = '
-        PREPARE feature_rel_get_object (int, text) AS
+      $sql = '
         SELECT FO.feature_id, FO.name, FO.uniquename, CVTO.name as feature_type, O.genus, O.species
         FROM feature FS
           INNER JOIN feature_relationship FR ON FR.subject_id   = FS.feature_id
@@ -120,20 +128,13 @@ function tripal_format_sequence($feature, $options) {
           INNER JOIN cvterm CVTO             ON CVTO.cvterm_id  = FO.type_id
           INNER JOIN organism O              ON O.organism_id   = FO.organism_id
         WHERE
-          FS.feature_id = $1 AND
-          CVTFR.name    = $2
+          FS.feature_id = :feature_id AND
+          CVTFR.name    = :relationship
       ';
-      $status = tripal_core_chado_prepare('feature_rel_get_object', $psql, array('int', 'text'));
-      if (!$status) {
-        tripal_report_error('tripal_feature', TRIPAL_ERROR, "init: not able to prepare SQL statement '%name'",
-          array('%name' => 'feature_by_subject'));
-      }
-      $sql = "EXECUTE feature_rel_get_object(:feature_id, :relationship)";
       $features = chado_query($sql, array(':feature_id' => $feature_id, ':relationship' => $relationship));
     }
     if ($rel_part == "object") {
-      $psql = '
-        PREPARE feature_rel_get_subject (int, text) AS
+      $sql = '
         SELECT FS.feature_id, FS.name, FS.uniquename, CVTO.name as feature_type, O.genus, O.species
         FROM feature FO
           INNER JOIN feature_relationship FR ON FR.object_id    = FO.feature_id
@@ -142,15 +143,9 @@ function tripal_format_sequence($feature, $options) {
           INNER JOIN cvterm CVTO             ON CVTO.cvterm_id  = FS.type_id
           INNER JOIN organism O              ON O.organism_id   = FS.organism_id
         WHERE
-          FO.feature_id = $1 AND
-          CVTFR.name    = $2
+          FO.feature_id = :feature_id AND
+          CVTFR.name    = :relationship
       ';
-      $status = tripal_core_chado_prepare('feature_rel_get_subject', $psql, array('int', 'text'));
-      if (!$status) {
-        tripal_report_error('tripal_feature', TRIPAL_ERROR, "init: not able to prepare SQL statement '%name'",
-          array('%name' => 'feature_by_object'));
-      }
-      $sql = "EXECUTE feature_rel_get_subject(:feature_id, :relationship)";
       $features = chado_query($sql, array(':feature_id' => $feature_id, ':relationship' => $relationship));
     }
     $sequences = '';
@@ -163,137 +158,140 @@ function tripal_format_sequence($feature, $options) {
       if ($rel_part == "object") {
         $defline = "$feature->uniquename $feature->feature_type ($feature->genus $feature->species), $relationship, $feature_name";
       }
-      $sequences .= tripal_feature_get_formatted_sequence($feature->feature_id, $defline,
-        $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
-        $upstream, $downstream, $sub_features, '', '');
-    }
-    return $sequences;
-  }
-
-  // prepare statements we'll need to use later
-  if (!tripal_core_is_sql_prepared('sequence_by_parent')) {
-    // prepare the queries we're going to use later during the render phase
-    // This SQL statement uses conditionals in the select clause to handle
-    // cases cases where the alignment is in the reverse direction and when
-    // the upstream and downstream extensions go beyond the lenght of the
-    // parent sequence.
-    $psql ='
-      PREPARE sequence_by_parent (int, int, int) AS
-      SELECT srcname, srcfeature_id, strand, srctypename, typename,
-        fmin, fmax, upstream, downstream, adjfmin, adjfmax,
-        substring(residues from (adjfmin + 1) for (upstream + (fmax - fmin) + downstream))  as residues,
-        genus, species
-      FROM (
-        SELECT
-          OF.name srcname, FL.srcfeature_id, FL.strand,
-          OCVT.name as srctypename, SCVT.name as typename,
-          FL.fmin, FL.fmax, OO.genus, OO.species,
-          CASE
-            WHEN FL.strand >= 0 THEN
-              CASE
-                 WHEN FL.fmin - $1 <= 0 THEN 0
-                 ELSE FL.fmin - $1
-              END
-            WHEN FL.strand < 0 THEN
-              CASE
-                 WHEN FL.fmin - $2 <= 0 THEN 0
-                 ELSE FL.fmin - $2
-              END
-          END as adjfmin,
-          CASE
-            WHEN FL.strand >= 0 THEN
-              CASE
-                WHEN FL.fmax + $2 > OF.seqlen THEN OF.seqlen
-                ELSE FL.fmax + $2
-              END
-            WHEN FL.strand < 0 THEN
-              CASE
-                WHEN FL.fmax + $1 > OF.seqlen THEN OF.seqlen
-                ELSE FL.fmax + $1
-              END
-          END as adjfmax,
-          CASE
-            WHEN FL.strand >= 0 THEN
-              CASE
-                 WHEN FL.fmin - $1 <= 0 THEN FL.fmin
-                 ELSE $1
-              END
-            ELSE
-              CASE
-                 WHEN FL.fmax + $1 > OF.seqlen THEN OF.seqlen - FL.fmax
-                 ELSE $1
-              END
-          END as upstream,
-          CASE
-            WHEN FL.strand >= 0 THEN
-              CASE
-                 WHEN FL.fmax + $2 > OF.seqlen THEN OF.seqlen - FL.fmax
-                 ELSE $2
-              END
-            ELSE
-              CASE
-                 WHEN FL.fmin - $2 <= 0 THEN FL.fmin
-                 ELSE $2
-              END
-          END as downstream,
-          OF.residues
-        FROM {featureloc} FL
-          INNER JOIN {feature} SF   on FL.feature_id    = SF.feature_id
-          INNER JOIN {cvterm}  SCVT on SF.type_id       = SCVT.cvterm_id
-          INNER JOIN {feature} OF   on FL.srcfeature_id = OF.feature_id
-          INNER JOIN {cvterm}  OCVT on OF.type_id       = OCVT.cvterm_id
-          INNER JOIN {organism} OO  on OF.organism_id   = OO.organism_id
-        WHERE SF.feature_id = $3 and NOT (OF.residues = \'\' or OF.residues IS NULL)) as tbl1
-    ';
-    $status = tripal_core_chado_prepare('sequence_by_parent', $psql, array('int', 'int', 'int'));
-    if (!$status) {
-      tripal_report_error('tripal_feature', TRIPAL_ERROR,
-        "init: not able to prepare SQL statement '%name'",
-        array('%name' => 'sequence_by_parent'));
-    }
-
-    // this query is meant to get all of the sub features of any given
-    // feature (arg #1) and order them as they appear on the reference
-    // feature (arg #2).
-    $psql ='PREPARE sub_features (int, int) AS
-            SELECT SF.feature_id, CVT.name as type_name, SF.type_id
-            FROM {feature_relationship} FR
-              INNER JOIN {feature} SF on SF.feature_id = FR.subject_id
-              INNER JOIN {cvterm} CVT on CVT.cvterm_id = SF.type_id
-              INNER JOIN {featureloc} FL on FL.feature_id = FR.subject_id
-              INNER JOIN {feature} PF on PF.feature_id = FL.srcfeature_id
-            WHERE FR.object_id = $1 and PF.feature_id = $2
-            ORDER BY FL.fmin ASC';
-    $status = tripal_core_chado_prepare('sub_features', $psql, array('int', 'int'));
-    if (!$status) {
-      tripal_report_error('tripal_feature', TRIPAL_ERROR,
-        "init: not able to prepare SQL statement '%name'",
-        array('%name' => 'ssub_features'));
-    }
-    $psql ='PREPARE count_sub_features (int, int) AS
-            SELECT count(*) as num_children
-            FROM {feature_relationship} FR
-              INNER JOIN {feature} SF on SF.feature_id = FR.subject_id
-              INNER JOIN {cvterm} CVT on CVT.cvterm_id = SF.type_id
-              INNER JOIN {featureloc} FL on FL.feature_id = FR.subject_id
-              INNER JOIN {feature} PF on PF.feature_id = FL.srcfeature_id
-            WHERE FR.object_id = $1 and PF.feature_id = $2';
-    $status = tripal_core_chado_prepare('count_sub_features', $psql, array('int', 'int'));
-    if (!$status) {
-      tripal_report_error('tripal_feature', TRIPAL_ERROR,
-        "init: not able to prepare SQL statement '%name'",
-        array('%name' => 'count_sub_features'));
+      return tripal_get_sequence(
+        array(
+          'feature_id' => $feature->feature_id, 
+          'name' => $defline,
+          'parent_id' => $parent_id,
+        ),
+        array(
+          'width' => $num_bases_per_line, 
+          'derive_from_pareht' => $derive_from_parent, 
+          'aggregate' => $aggregate, 
+          'output_format' => $output_format,
+          'upstream' => $upstream, 
+          'downstream' => $downstream, 
+          'sub_features' => $sub_features, 
+        )
+      );
     }
   }
 
+  // prepare the queries we're going to use later during the render phase
+  // This SQL statement uses conditionals in the select clause to handle
+  // cases cases where the alignment is in the reverse direction and when
+  // the upstream and downstream extensions go beyond the lenght of the
+  // parent sequence.
+  $sql ='
+    SELECT featureloc_id, srcname, srcfeature_id, strand, srctypename, typename,
+      fmin, fmax, upstream, downstream, adjfmin, adjfmax,
+      substring(residues from (adjfmin + 1) for (upstream + (fmax - fmin) + downstream))  as residues,
+      genus, species
+    FROM (
+      SELECT
+        FL.featureloc_id, OF.name srcname, FL.srcfeature_id, FL.strand,
+        OCVT.name as srctypename, SCVT.name as typename,
+        FL.fmin, FL.fmax, OO.genus, OO.species,
+        CASE
+          WHEN FL.strand >= 0 THEN
+            CASE
+               WHEN FL.fmin - :upstream <= 0 THEN 0
+               ELSE FL.fmin - :upstream
+            END
+          WHEN FL.strand < 0 THEN
+            CASE
+               WHEN FL.fmin - :downstream <= 0 THEN 0
+               ELSE FL.fmin - :downstream
+            END
+        END as adjfmin,
+        CASE
+          WHEN FL.strand >= 0 THEN
+            CASE
+              WHEN FL.fmax + :downstream > OF.seqlen THEN OF.seqlen
+              ELSE FL.fmax + :downstream
+            END
+          WHEN FL.strand < 0 THEN
+            CASE
+              WHEN FL.fmax + :upstream > OF.seqlen THEN OF.seqlen
+              ELSE FL.fmax + :upstream
+            END
+        END as adjfmax,
+        CASE
+          WHEN FL.strand >= 0 THEN
+            CASE
+               WHEN FL.fmin - :upstream <= 0 THEN FL.fmin
+               ELSE :upstream
+            END
+          ELSE
+            CASE
+               WHEN FL.fmax + :upstream > OF.seqlen THEN OF.seqlen - FL.fmax
+               ELSE :upstream
+            END
+        END as upstream,
+        CASE
+          WHEN FL.strand >= 0 THEN
+            CASE
+               WHEN FL.fmax + :downstream > OF.seqlen THEN OF.seqlen - FL.fmax
+               ELSE :downstream
+            END
+          ELSE
+            CASE
+               WHEN FL.fmin - :downstream <= 0 THEN FL.fmin
+               ELSE :downstream
+            END
+        END as downstream,
+        OF.residues
+      FROM {featureloc} FL
+        INNER JOIN {feature} SF   on FL.feature_id    = SF.feature_id
+        INNER JOIN {cvterm}  SCVT on SF.type_id       = SCVT.cvterm_id
+        INNER JOIN {feature} OF   on FL.srcfeature_id = OF.feature_id
+        INNER JOIN {cvterm}  OCVT on OF.type_id       = OCVT.cvterm_id
+        INNER JOIN {organism} OO  on OF.organism_id   = OO.organism_id
+      WHERE SF.feature_id = :feature_id and NOT (OF.residues = \'\' or OF.residues IS NULL)) as tbl1
+  ';
+  // this query is meant to get all of the sub features of any given
+  // feature (arg #1) and order them as they appear on the reference
+  // feature (arg #2).
+  $sfsql = '
+    SELECT SF.feature_id, CVT.name as type_name, SF.type_id
+    FROM {feature_relationship} FR
+      INNER JOIN {feature} SF on SF.feature_id = FR.subject_id
+      INNER JOIN {cvterm} CVT on CVT.cvterm_id = SF.type_id
+      INNER JOIN {featureloc} FL on FL.feature_id = FR.subject_id
+      INNER JOIN {feature} PF on PF.feature_id = FL.srcfeature_id
+    WHERE FR.object_id = :feature_id and PF.feature_id = :srcfeature_id
+    ORDER BY FL.fmin ASC
+  ';
+  // for counting the number of children
+  $fsql ='
+    SELECT count(*) as num_children
+    FROM {feature_relationship} FR
+      INNER JOIN {feature} SF on SF.feature_id = FR.subject_id
+      INNER JOIN {cvterm} CVT on CVT.cvterm_id = SF.type_id
+      INNER JOIN {featureloc} FL on FL.feature_id = FR.subject_id
+      INNER JOIN {feature} PF on PF.feature_id = FL.srcfeature_id
+    WHERE FR.object_id = :feature_id and PF.feature_id = :srcfeature_id
+  ';
+
+  // the array to be returned
+  $sequences = array();
+  
   // if we need to get the sequence from the parent then do so now.
   if ($derive_from_parent) {
 
     // execute the query to get the sequence from the parent
-    $sql = "EXECUTE sequence_by_parent (:upstream, :downstream, :feature_id)";
-    $parents = chado_query($sql, array(':uptream' => $upstream, ':downstream' => $downstream, ':feature_id' => $feature_id));
+    $parents = chado_query($sql, array(':upstream' => $upstream, ':downstream' => $downstream, ':feature_id' => $feature_id));
 
     while ($parent = $parents->fetchObject()) {
+      
+      // if the user specified a particular parent and this one doesn't match then skip it
+      if ($parent_id and $parent_id != $parent->srcfeature_id) {
+        continue;
+      }
+      // if the user specified a particular featureloc_id and this one doesn't match then skip it
+      if ($featureloc_id and $featureloc_id != $parent->featureloc_id) {
+        continue;
+      }
       $seq = '';  // initialize the sequence for each parent
 
       // if we are to aggregate then we will ignore the feature returned
@@ -301,11 +299,8 @@ function tripal_format_sequence($feature, $options) {
       if ($aggregate) {
 
         // now get the sub features that are located on the parent.
-        $sql = "EXECUTE sub_features (:feature_id, :srcfeature_id)";
-        $children = chado_query($sql, array(':feature_id' => $feature_id, ':srcfeature_id' => $parent->srcfeature_id));
-        $sql = "EXECUTE count_sub_features (:feature_id, :srcfeature_id)";
-        $sub_features = chado_query($sql, array(':feature_id' => $feature_id, ':srcfeature_id' => $parent->srcfeature_id));
-        $num_children = $sub_features->fetchObject();
+        $children = chado_query($sfsql, array(':feature_id' => $feature_id, ':srcfeature_id' => $parent->srcfeature_id));
+        $num_children = chado_query($fsql, array(':feature_id' => $feature_id, ':srcfeature_id' => $parent->srcfeature_id))->fetchObject();
 
         // iterate through the sub features and concat their sequences. They
         // should already be in order.
@@ -323,8 +318,6 @@ function tripal_format_sequence($feature, $options) {
           if (!in_array($child->type_name, $types)) {
             $types[] = $child->type_name;
           }
-
-          $sql = "EXECUTE sequence_by_parent (:upstream, %d, :feature_id)";
 
           // if the first sub feature we need to include the upstream bases. first check if
           // the feature is in the foward direction or the reverse.
@@ -358,7 +351,6 @@ function tripal_format_sequence($feature, $options) {
 
           // for internal sub features we don't want upstream or downstream bases
           else {
-            $sql = "EXECUTE sequence_by_parent (%d, %d, %d)";
             $q = chado_query($sql, array(':upstream' => 0, ':downstream' => 0, ':feature_id' => $child->feature_id));
           }
 
@@ -378,11 +370,11 @@ function tripal_format_sequence($feature, $options) {
 
       // get the reverse compliment if feature is on the reverse strand
       $dir = 'forward';
+      $notes = '';
       if ($parent->strand < 0) {
         $seq = tripal_feature_reverse_complement($seq);
         $dir = 'reverse';
       }
-
       // now format for display
       if ($output_format == 'fasta_html') {
          $seq = wordwrap($seq, $num_bases_per_line, "<br>", TRUE);
@@ -390,34 +382,35 @@ function tripal_format_sequence($feature, $options) {
       elseif ($output_format == 'fasta_txt') {
          $seq = wordwrap($seq, $num_bases_per_line, "\r\n", TRUE);
       }
-      $residues .= ">$feature_name. Sequence derived from feature of type, '$parent->srctypename', of $parent->genus $parent->species: $parent->srcname:" . ($parent->adjfmin + 1) . ".." . $parent->adjfmax . " ($dir). ";
-      if (count($types) > 0) {
-        $residues .= "Excludes all bases but those of type(s): " . implode(', ', $types) . ". " ;
-      }
-      if ($parent->upstream > 0) {
-         $residues .= "Includes " . $parent->upstream . " bases upstream.  ";
-      }
-      if ($parent->downstream > 0) {
-         $residues .= "Includes " . $parent->downstream . " bases downstream.  ";
-      }
       if (!$seq) {
-
         if ($output_format == 'fasta_html') {
-          $residues .= "No sequence available.</br>";
+          $notes .= "No sequence available.</br>";
         }
         else {
-          $residues .= "No sequence available.\r\n";
+          $notes .= "No sequence available.\r\n";
         }
       }
-      else {
-        if ($output_format == 'fasta_html') {
-          $residues .= "<br>";
-        }
-        $residues .= "\r\n" . $seq . "\r\n";
-        if ($output_format == 'fasta_html') {
-          $residues .= "<br>";
-        }
+      
+      $notes = "Sequence derived from feature of type, '$parent->srctypename', of $parent->genus $parent->species: $parent->srcname:" . ($parent->adjfmin + 1) . ".." . $parent->adjfmax . " ($dir). ";
+      /*
+      if (count($types) > 0) {
+        $notes .= "Excludes all bases but those of type(s): " . implode(', ', $types) . ". " ;
       }
+      if ($parent->upstream > 0) {
+         $notes .= "Includes " . $parent->upstream . " bases upstream.  ";
+      }
+      if ($parent->downstream > 0) {
+         $notes .= "Includes " . $parent->downstream . " bases downstream.  ";
+      }      
+      */
+      $sequences[] = array(
+        'types'         => $types,
+        'upstream'      => $parent->upstream,
+        'downstream'    => $parent->downstream,
+        'notes'         => $notes,
+        'residues'      => $seq,
+        'featureloc_id' => $parent->featureloc_id,
+      );
     }
   }
   // if we are not getting the sequence from the parent sequence then
@@ -432,16 +425,17 @@ function tripal_format_sequence($feature, $options) {
     elseif ($output_format == 'fasta_txt') {
        $residues = wordwrap($residues, $num_bases_per_line, "\r\n", TRUE);
     }
-    $residues = ">$feature_name\r\n$residues\r\n";
+
+    $sequences[] = array(
+      'types'      => $values->type,
+      'upstream'   => 0,
+      'downstream' => 0,
+      'notes'      => '',
+      'residues'   => $residues,
+    );
   }
 
-  // format the residues for display
-  if ($residues and $num_bases_per_line) {
-    if ($output_format == 'fasta_html') {
-       $residues = '<span style="font-family: monospace;">' . $residues . '</span>';
-    }
-  }
-  return $residues;
+  return $sequences;
 }
 
 /**
@@ -458,7 +452,7 @@ function tripal_format_sequence($feature, $options) {
  *
  * @ingroup tripal_feature_api
  */
-function tripal_get_fasta_sequence($feature, $desc) {
+function tripal_format_fasta_sequence($feature, $desc) {
 
   $fasta  = ">" . variable_get('chado_feature_accession_prefix', 'FID') . "$feature->feature_id|$feature->name";
   $fasta .= " $desc\n";
@@ -467,4 +461,56 @@ function tripal_get_fasta_sequence($feature, $desc) {
 
   return $fasta;
 
+}
+
+/**
+ * Returns a definition line that can be used in a FASTA file
+ * 
+ * @param $feature
+ *   A single feature object containing all the fields from the chado.feature table
+ * @param $featureloc
+ *   Optional: A single featureloc object generated using chado_generate_var that
+ *   contains a record from the chado.featureloc table.
+ * @param $type
+ *   Optional: the type of sequence. By default the feature type is used.
+ *   
+ * @return
+ *   A string of the format: uniquename|name|type|feature_id
+ *   or if an alignment:  srcfeature_name:fmin..fmax[+-]; alignment of uniquename|name|type|feature_id 
+ */
+function tripal_get_fasta_defline($feature, $featureloc = NULL, $type = '') {
+  
+  if (!$type) {
+    $type = $feature->type_id->name;
+  }
+  $defline = $feature->uniquename . "|" . $feature->name . "|" . $type . "|" . $feature->feature_id; 
+  if ($featureloc) {
+    $defline = $defline . "; derived from alignment at " .tripal_get_location_string($featureloc);
+  }
+  
+  return $defline;
+}
+
+/**
+ * Returns a string representing a feature location in an alignment
+ *  
+ * @param unknown $featureloc
+ *   A single featureloc object generated using chado_generate_var that
+ *   contains a record from the chado.featureloc table.
+ */
+function tripal_get_location_string($featureloc) {
+  $feature = $featureloc->feature_id;
+  
+  if ($featureloc->strand < 0) {
+    $residues = tripal_feature_reverse_complement($residues);
+  }
+  $strand = '.';
+  if ($featureloc->strand == 1) {
+    $strand = '+';
+  }
+  elseif ($featureloc->strand == -1) {
+    $strand = '-';
+  }
+  
+  return $featureloc->srcfeature_id->name . ":" . ($featureloc->fmin + 1) . ".." . $featureloc->fmax .  $strand;  
 }

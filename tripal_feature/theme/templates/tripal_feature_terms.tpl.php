@@ -3,7 +3,7 @@
 $feature = $variables['node']->feature;
 
 $options = array('return_array' => 1);
-$feature = tripal_core_expand_chado_vars($feature, 'table', 'feature_cvterm', $options);
+$feature = chado_expand_var($feature, 'table', 'feature_cvterm', $options);
 $terms = $feature->feature_cvterm;
 
 // order the terms by CV

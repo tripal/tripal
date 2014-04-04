@@ -2,7 +2,7 @@
 
 $stock = $variables['node']->stock;
 $options = array('return_array' => 1);
-$stock = tripal_core_expand_chado_vars($stock, 'table', 'stockprop', $options);
+$stock = chado_expand_var($stock, 'table', 'stockprop', $options);
 $stockprops = $stock->stockprop;
 
 // the stock synonyms are stored in the stockprop table because we do not have
@@ -14,7 +14,7 @@ if ($stockprops) {
     // we want to keep all properties but the stock_description as that
     // property is shown on the base template page.
     if($property->type_id->name != 'synonym' and  $property->type_id->name != 'alias') {
-      $property = tripal_core_expand_chado_vars($property,'field','stockprop.value');
+      $property = chado_expand_var($property,'field','stockprop.value');
       $properties[] = $property;
     }
   }
@@ -34,7 +34,7 @@ if(count($properties) > 0){
   $rows = array();
   
   foreach ($properties as $property){
-    $property = tripal_core_expand_chado_vars($property,'field','stockprop.value');
+    $property = chado_expand_var($property,'field','stockprop.value');
     $rows[] = array(
       array('data' => ucfirst(preg_replace('/_/', ' ', $property->type_id->name)), 'width' => '20%'),
       urldecode($property->value)

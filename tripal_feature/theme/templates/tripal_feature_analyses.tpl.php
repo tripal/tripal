@@ -1,7 +1,7 @@
 <?php
 $feature = $variables['node']->feature;
 $options = array('return_array' => 1);
-$feature = tripal_core_expand_chado_vars($feature, 'table', 'analysisfeature', $options);
+$feature = chado_expand_var($feature, 'table', 'analysisfeature', $options);
 $analyses = $feature->analysisfeature;
 
 // don't show this page if there are no analyses

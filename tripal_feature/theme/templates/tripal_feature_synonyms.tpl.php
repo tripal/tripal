@@ -4,7 +4,7 @@ $feature = $variables['node']->feature;
 // expand the feature object to include the synonyms from the feature_synonym 
 // table in chado.
 $options = array('return_array' => 1);
-$feature = tripal_core_expand_chado_vars($feature, 'table', 'feature_synonym', $options);
+$feature = chado_expand_var($feature, 'table', 'feature_synonym', $options);
 $synonyms = $feature->feature_synonym;
 
 if(count($synonyms) > 0){ ?>

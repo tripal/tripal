@@ -4,7 +4,7 @@ $references = array();
 
 // Second, expand the library object to include the records from the library_dbxref table
 $options = array('return_array' => 1);
-$library = tripal_core_expand_chado_vars($library, 'table', 'library_dbxref', $options);
+$library = chado_expand_var($library, 'table', 'library_dbxref', $options);
 $library_dbxrefs = $library->library_dbxref;
 if (count($library_dbxrefs) > 0 ) {
   foreach ($library_dbxrefs as $library_dbxref) {    

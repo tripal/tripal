@@ -1,7 +1,7 @@
 <?php
 
 $organism  = $variables['node']->organism;
-$organism = tripal_core_expand_chado_vars($organism,'field','organism.comment'); ?>
+$organism = chado_expand_var($organism,'field','organism.comment'); ?>
 
 <div class="tripal_organism-data-block-desc tripal-data-block-desc"></div><?php
 

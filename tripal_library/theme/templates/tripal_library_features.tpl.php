@@ -32,7 +32,7 @@ foreach ($results as $library_feature) {
       'type_id' => 1
     )
   );
-  $features[] = tripal_core_generate_chado_var('feature', $values, $options);
+  $features[] = chado_generate_var('feature', $values, $options);
 }
 
 if (count($features) > 0) { ?>

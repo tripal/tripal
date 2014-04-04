@@ -10,7 +10,7 @@ if ($feature->dbxref_id) {
 
 // Second, expand the feature object to include the records from the feature_dbxref table
 $options = array('return_array' => 1);
-$feature = tripal_core_expand_chado_vars($feature, 'table', 'feature_dbxref', $options);
+$feature = chado_expand_var($feature, 'table', 'feature_dbxref', $options);
 $feature_dbxrefs = $feature->feature_dbxref;
 if (count($feature_dbxrefs) > 0 ) {
   foreach ($feature_dbxrefs as $feature_dbxref) {    

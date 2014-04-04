@@ -2,7 +2,7 @@
 
 $library = $variables['node']->library;
 $options = array('return_array' => 1);
-$library = tripal_core_expand_chado_vars($library, 'table', 'libraryprop', $options);
+$library = chado_expand_var($library, 'table', 'libraryprop', $options);
 $props = $library->libraryprop;
 
 // iterate through the properties and remove the 'library_description' as it is
@@ -29,7 +29,7 @@ if(count($properties) > 0){
   $rows = array();
   
   foreach ($properties as $property){
-    $property = tripal_core_expand_chado_vars($property,'field','libraryprop.value');
+    $property = chado_expand_var($property,'field','libraryprop.value');
     $rows[] = array(
       ucfirst(preg_replace('/_/', ' ', $property->type_id->name)),
       urldecode($property->value)

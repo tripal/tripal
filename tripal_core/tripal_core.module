@@ -36,11 +36,11 @@ require_once 'api/tripal_core.tripal.api.inc';
 require_once 'api/tripal_core.DEPRECATED.inc';
 
 // INCLUDES -------------------------------------
-require_once 'includes/jobs.inc';
-require_once 'includes/mviews.inc';
-require_once 'includes/custom_tables.inc';
-require_once 'includes/chado_install.inc';
-require_once 'includes/form_elements.inc';
+require_once 'includes/tripal_core.jobs.inc';
+require_once 'includes/tripal_core.mviews.inc';
+require_once 'includes/tripal_core.custom_tables.inc';
+require_once 'includes/tripal_core.chado_install.inc';
+require_once 'includes/tripal_core.form_elements.inc';
 
 tripal_core_set_globals();
 /**

@@ -1,6 +1,6 @@
 <?php
 $analysis = $variables['node']->analysis;
-$analysis = tripal_core_expand_chado_vars($analysis,'field','analysis.description'); ?>
+$analysis = chado_expand_var($analysis,'field','analysis.description'); ?>
 
 <div class="tripal__analysis-data-block-desc tripal-data-block-desc"></div><?php 
   

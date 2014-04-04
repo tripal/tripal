@@ -20,7 +20,7 @@ $options = array(
   ),
 );
 
-$pub = tripal_core_expand_chado_vars($pub, 'table', 'project_pub', $options);
+$pub = chado_expand_var($pub, 'table', 'project_pub', $options);
 $project_pubs = $pub->project_pub;
 if (count($project_pubs) > 0 ) {
   foreach ($project_pubs as $project_pub) {    

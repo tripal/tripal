@@ -2,7 +2,7 @@
 
 // expand the project to include the properties.
 $project = $variables['node']->project;
-$project = tripal_core_expand_chado_vars($project,'table', 'projectprop', array('return_array' => 1));
+$project = chado_expand_var($project,'table', 'projectprop', array('return_array' => 1));
 $projectprops = $project->projectprop;
 
 // put the properties in an array so we can remove the project_description property
@@ -12,7 +12,7 @@ if ($projectprops) {
     // we want to keep all properties but the project_description as that
     // property is shown on the base template page.
     if($property->type_id->name != 'Project Description') {
-      $property = tripal_core_expand_chado_vars($property,'field','projectprop.value');
+      $property = chado_expand_var($property,'field','projectprop.value');
       $properties[] = $property;
     }
   }

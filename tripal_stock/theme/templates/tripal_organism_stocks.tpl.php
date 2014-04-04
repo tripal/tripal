@@ -19,7 +19,7 @@ $options = array(
   ),
 );
 
-$organism = tripal_core_expand_chado_vars($organism, 'table', 'stock', $options);
+$organism = chado_expand_var($organism, 'table', 'stock', $options);
 $stocks = $organism->stock;
 
 // get the total number of records

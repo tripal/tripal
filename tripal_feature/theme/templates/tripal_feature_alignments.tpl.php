@@ -1,10 +1,10 @@
 <?php
 /*
 * Typically in a Tripal template, the data needed is retrieved using a call to
-* tripal_core_expand_chado_vars function.  For example, to retrieve all 
+* chado_expand_var function.  For example, to retrieve all 
 * of the feature alignments for this node, the following function call would be made:
 * 
-*   $feature = tripal_core_expand_chado_vars($feature,'table','featureloc');
+*   $feature = chado_expand_var($feature,'table','featureloc');
 *   
 * However, this will return all records from the featureloc table without any context.
 * To help provide context, a special variable is provided to this template named

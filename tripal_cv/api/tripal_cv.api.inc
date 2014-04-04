@@ -127,7 +127,7 @@ function tripal_get_cv($identifiers, $options = array()) {
  */
 function tripal_get_cv_select_options() {
 
-  $results = chado_select_record('cv', array('cv_id', 'name'), array());
+  $results = chado_select_record('cv', array('cv_id', 'name'), array(), array('order_by' => array('name' => 'ASC')));
 
   $options = array();
   foreach ($results as $r) {
@@ -548,7 +548,7 @@ function tripal_insert_cvterm($term, $options = array()) {
 
   // add the database. The function will just return the DB object if the
   // database already exists.
-  $db = tripal_db_get_db_by_name($dbname);
+  $db = tripal_get_db(array('name' => $dbname));
   if (!$db) {
     $db = tripal_db_add_db($dbname);
   }

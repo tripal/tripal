@@ -3,7 +3,7 @@ $library = $variables['node']->library;
 
 // expand library to include pubs 
 $options = array('return_array' => 1);
-$library = tripal_core_expand_chado_vars($library, 'table', 'library_pub', $options);
+$library = chado_expand_var($library, 'table', 'library_pub', $options);
 $library_pubs = $library->library_pub; 
 
 
@@ -23,7 +23,7 @@ if (count($library_pubs) > 0) { ?>
   
   foreach ($library_pubs as $library_pub) {
     $pub = $library_pub->pub_id;
-    $pub = tripal_core_expand_chado_vars($pub, 'field', 'pub.title');
+    $pub = chado_expand_var($pub, 'field', 'pub.title');
     $citation = $pub->title;  // use the title as the default citation
     
     // get the citation for this pub if it exists
@@ -34,9 +34,9 @@ if (count($library_pubs) > 0) { ?>
       ),
     );
     $options = array('return_array' => 1);
-    $citation_prop = tripal_core_generate_chado_var('pubprop', $values, $options); 
+    $citation_prop = chado_generate_var('pubprop', $values, $options); 
     if (count($citation_prop) == 1) {
-      $citation_prop = tripal_core_expand_chado_vars($citation_prop, 'field', 'pubprop.value');
+      $citation_prop = chado_expand_var($citation_prop, 'field', 'pubprop.value');
       $citation = $citation_prop[0]->value;
     }
     

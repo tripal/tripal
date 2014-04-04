@@ -2,11 +2,11 @@
 
 $feature = $variables['node']->feature;
 $options = array('return_array' => 1);
-$feature = tripal_core_expand_chado_vars($feature, 'table', 'featureprop', $options);
+$feature = chado_expand_var($feature, 'table', 'featureprop', $options);
 $properties = $feature->featureprop;
 
 if(count($properties) > 0){ 
-    
+  
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
@@ -19,7 +19,7 @@ if(count($properties) > 0){
   $rows = array();
   
   foreach ($properties as $property){
-    $property = tripal_core_expand_chado_vars($property,'field','featureprop.value');
+    $property = chado_expand_var($property,'field','featureprop.value');
     $rows[] = array(
       array(
         'data' => ucfirst(preg_replace('/_/', ' ', $property->type_id->name)),

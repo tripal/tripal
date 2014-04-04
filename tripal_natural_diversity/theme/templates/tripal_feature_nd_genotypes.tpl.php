@@ -59,7 +59,7 @@ $options = array(
     'element' => $feature_pager_id
   ),
 );
-$feature = tripal_core_expand_chado_vars($feature, 'table', 'feature_genotype', $options);
+$feature = chado_expand_var($feature, 'table', 'feature_genotype', $options);
 $feature_genotypes = $feature->feature_genotype->feature_id;
 
 // get the total number of records
@@ -102,7 +102,7 @@ if (count($feature_genotypes) > 0) { ?>
 
     // build the genotype properties
     $options = array('return_array' => 1);
-    $genotype = tripal_core_expand_chado_vars($genotype, 'table', 'genotypeprop', $options);
+    $genotype = chado_expand_var($genotype, 'table', 'genotypeprop', $options);
     $properties = $genotype->genotypeprop;
     $details = '';
     if(count($properties) > 0) {
@@ -114,7 +114,7 @@ if (count($feature_genotypes) > 0) { ?>
 
     // get the nd_experiment_genotype records and if any
     $values = array('genotype_id' => $genotype->genotype_id);
-    $nd_experiment_genotype = tripal_core_generate_chado_var('nd_experiment_genotype', $values);
+    $nd_experiment_genotype = chado_generate_var('nd_experiment_genotype', $values);
     if ($nd_experiment_genotype) {
       $nd_experiment    = $nd_experiment_genotype->nd_experiment_id;
       $nd_experiment_id = $nd_experiment_genotype->nd_experiment_id->nd_experiment_id;
@@ -129,7 +129,7 @@ if (count($feature_genotypes) > 0) { ?>
           )
         ),
       );
-      $nd_experiment = tripal_core_expand_chado_vars($nd_experiment, 'table', 'nd_experiment_stock', $options);
+      $nd_experiment = chado_expand_var($nd_experiment, 'table', 'nd_experiment_stock', $options);
       $nd_experiment_stocks = $nd_experiment->nd_experiment_stock;
       if (count($nd_experiment_stocks) > 0) {
         $stock_names = '';
@@ -147,7 +147,7 @@ if (count($feature_genotypes) > 0) { ?>
       // expand the nd_experiment object to incldue the nd_experiment_project table
       $values = array('nd_experiment_id' => $nd_experiment_id);
       $options = array('return_array' => 1);
-      $nd_experiment = tripal_core_expand_chado_vars($nd_experiment, 'table', 'nd_experiment_project', $options);
+      $nd_experiment = chado_expand_var($nd_experiment, 'table', 'nd_experiment_project', $options);
       $nd_experiment_projects = $nd_experiment->nd_experiment_project;
       if (count($nd_experiment_projects) > 0) {
         $project_names = '';

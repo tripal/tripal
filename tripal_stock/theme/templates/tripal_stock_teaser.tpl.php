@@ -1,7 +1,7 @@
 <?php
 $node  = $variables['node'];
 $stock = $variables['node']->stock;
-$stock = tripal_core_expand_chado_vars($stock,'field','stock.description'); ?>
+$stock = chado_expand_var($stock,'field','stock.description'); ?>
 
 <div class="tripal_stock-teaser tripal-teaser"> 
   <div class="tripal-stock-teaser-title tripal-teaser-title"><?php 

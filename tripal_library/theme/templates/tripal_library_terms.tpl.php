@@ -3,7 +3,7 @@
 $library = $variables['node']->library;
 
 $options = array('return_array' => 1);
-$library = tripal_core_expand_chado_vars($library, 'table', 'library_cvterm', $options);
+$library = chado_expand_var($library, 'table', 'library_cvterm', $options);
 $terms = $library->library_cvterm;
 
 // order the terms by CV

@@ -1,7 +1,7 @@
 <?php
 $node = $variables['node'];
 $featuremap = $variables['node']->featuremap;
-$featuremap = tripal_core_expand_chado_vars($featuremap,'field','featuremap.description'); ?>
+$featuremap = chado_expand_var($featuremap,'field','featuremap.description'); ?>
 
 <div class="tripal_featuremap-teaser tripal-teaser"> 
   <div class="tripal-featuremap-teaser-title tripal-teaser-title"><?php 
