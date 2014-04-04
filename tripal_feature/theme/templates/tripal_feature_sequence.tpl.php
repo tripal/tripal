@@ -164,16 +164,18 @@ if ($residues or count($featureloc_sequences) > 0) {
         )
     );
     if (count($cds_sequence) > 0) {
-      $list_items[] = '<a href="#coding_' . $attrs['id'] . '">coding sequnece from alignment at  ' . $attrs['location'] . "</a>";
-      $sequences_html .= '<a name="ccoding_' . $attrs['id'] . '"></a>';
-      $sequences_html .= '<div id="coding_' . $attrs['id'] . '" class="tripal_feature-sequence-item">';
-      $sequences_html .= '<p><b>Coding sequence (CDS) from alignment at  ' . $attrs['location'] . '</b></p>';
-      $sequences_html .= '<pre class="tripal_feature-sequence">';
-      $sequences_html .= '>' . tripal_get_fasta_defline($feature, $attrs['featureloc'], 'CDS') . "\n";
-      $sequences_html .= $cds_sequence[0]['residues'];
-      $sequences_html .= '</pre>';
-      $sequences_html .= '<a href="#sequences-top">back to top</a>';
-      $sequences_html .= '</div>';
+      if ($cds_sequence[0]['residues']) {
+        $list_items[] = '<a href="#coding_' . $attrs['id'] . '">coding sequnece from alignment at  ' . $attrs['location'] . "</a>";
+        $sequences_html .= '<a name="ccoding_' . $attrs['id'] . '"></a>';
+        $sequences_html .= '<div id="coding_' . $attrs['id'] . '" class="tripal_feature-sequence-item">';
+        $sequences_html .= '<p><b>Coding sequence (CDS) from alignment at  ' . $attrs['location'] . '</b></p>';
+        $sequences_html .= '<pre class="tripal_feature-sequence">';
+        $sequences_html .= '>' . tripal_get_fasta_defline($feature, $attrs['featureloc'], 'CDS') . "\n";
+        $sequences_html .= $cds_sequence[0]['residues'];
+        $sequences_html .= '</pre>';
+        $sequences_html .= '<a href="#sequences-top">back to top</a>';
+        $sequences_html .= '</div>';
+      }
     }
   } 
   ?>
@@ -199,13 +201,13 @@ if ($residues or count($featureloc_sequences) > 0) {
       <li>This feature has residues stored in the "residues" field of the feature table of Chado.</li>
       <li>This feature has a protein feature associated via the "feature_relationship" table of Chado with a
           relationship of type "derives from" and the protein feature has residues.</li>
-      <li>This feature has one or more CDS feature associated via the "feature_relationship" table of Chado with a
+      <li>This feature has one or more CDS features associated via the "feature_relationship" table of Chado with a
           relationship of type "part of". If the CDS features have residues then those will be concatenated
-          and presented as a feature.</li>
+          and presented as a sequence.</li>
       <li>This feature is aligned to another feature (e.g. scaffold, or chromosome). In this case, the
-          sequence underlying the alignment will be shown</li>
+          sequence underlying the alignment will be shown.</li>
       <li>This feature is aligned to another feature (e.g. scaffold, or chromosome) and this feature has
-          one ore more CDS features associated.  The CDS sequenes underlying the alignment will be
+          one or more CDS features associated.  The CDS sequenes underlying the alignment will be
           shown.</li>
     </ul>
     </p>';

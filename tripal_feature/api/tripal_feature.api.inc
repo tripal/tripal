@@ -370,6 +370,7 @@ function tripal_get_sequence($feature, $options) {
 
       // get the reverse compliment if feature is on the reverse strand
       $dir = 'forward';
+      $notes = '';
       if ($parent->strand < 0) {
         $seq = tripal_feature_reverse_complement($seq);
         $dir = 'reverse';

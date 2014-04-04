@@ -127,7 +127,7 @@ function tripal_get_cv($identifiers, $options = array()) {
  */
 function tripal_get_cv_select_options() {
 
-  $results = chado_select_record('cv', array('cv_id', 'name'), array());
+  $results = chado_select_record('cv', array('cv_id', 'name'), array(), array('order_by' => array('name' => 'ASC')));
 
   $options = array();
   foreach ($results as $r) {

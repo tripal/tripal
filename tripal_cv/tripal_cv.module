@@ -326,7 +326,12 @@ function tripal_cv_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_cv_help',
       'variables' =>  array(NULL),
       'path' => "$path/theme/templates"
-    )
+    ),
+    // Default CV form
+    'tripal_cv_admin_set_defaults_form' => array(
+      'function' => 'theme_tripal_cv_admin_set_defaults_form',
+      'render element' => 'element',
+    ),
   );
 
   return $items;
