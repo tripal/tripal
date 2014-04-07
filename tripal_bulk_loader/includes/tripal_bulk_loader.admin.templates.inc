@@ -95,6 +95,7 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
       $form['new_template_name'] = array(
         '#type' => 'textfield',
         '#title' => 'Template Name',
+        '#required' => TRUE,
         '#description' => 'The template name should be unique, short and descriptive. It '
           .'will be shown to your users in the Bulk Loading Job creation form so it '
           .'should be friendly and easy to determine which template to choose.',
