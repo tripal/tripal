@@ -58,6 +58,7 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
       $form_state['storage']['template_id'] = FALSE;
       $form['records']['no_records']['#value'] = TRUE;
       $form['fields']['total_fields']['#value'] = 0;
+      tripal_set_message('Unable to determine the template_id from the path.',TRIPAL_ERROR);
     }
   }
   else {
@@ -945,8 +946,6 @@ function tripal_bulk_loader_edit_template_record_form($form, $form_state) {
      $optional = 1;
   }
 
-  //dpm($form_state, 'form state');
-
    // Form Proper -------------------------------------------
   $form['template_name'] = array(
     '#type' => 'item',
@@ -1181,7 +1180,7 @@ function tripal_bulk_loader_edit_template_record_form_submit($form, &$form_state
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_delete_template_record_form($form, $form_state) {
+function tripal_bulk_loader_delete_template_record_form($form, &$form_state) {
   $form['#cache'] = TRUE; // Make sure the form is cached.
 
   // get args from path
@@ -1192,6 +1191,11 @@ function tripal_bulk_loader_delete_template_record_form($form, $form_state) {
 
   // if there is no template supplied don't return rest of form
   if (!$template_id) {
+    tripal_set_message('Unable to determine the template_id from the path.',TRIPAL_ERROR);
+    return $form;
+  }
+  elseif (!$record_id) {
+    tripal_set_message('Unable to determine the record_id from the path.',TRIPAL_ERROR);
     return $form;
   }
 
@@ -1309,6 +1313,11 @@ function tripal_bulk_loader_duplicate_template_record_form($form, &$form_state) 
 
   // if there is no template supplied don't return rest of form
   if (!$template_id) {
+    tripal_set_message('Unable to determine the template_id from the path.',TRIPAL_ERROR);
+    return $form;
+  }
+  elseif (!$record_id) {
+    tripal_set_message('Unable to determine the record_id from the path.',TRIPAL_ERROR);
     return $form;
   }
 
@@ -1753,12 +1762,29 @@ function tripal_bulk_loader_template_field_form_default_values($mode, &$form_sta
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_template_field_form($form, $form_state = NULL) {
+function tripal_bulk_loader_template_field_form($form, &$form_state = NULL) {
   $form['#cache'] = TRUE; // Make sure the form is cached.
 
   // if there is no template supplied don't return rest of form
   if (!isset($form_state['build_info']['args'][1])) {
     return $form;
+  }
+  // if there is no template array saved then retrieve it
+  elseif (!isset($form_state['storage']['template_array'])) {
+    $form_state['storage']['template'] = db_select('tripal_bulk_loader_template', 't')
+      ->fields('t')
+      ->condition('t.template_id',$form_state['build_info']['args'][1],'=')
+      ->execute()
+      ->fetchObject();
+    $form_state['storage']['template_array'] = unserialize($form_state['storage']['template']->template_array);
+    $form_state['storage']['template_id'] = $form_state['build_info']['args'][1];
+
+    if (isset($form_state['build_info']['args'][2])) {
+      $form_state['storage']['record_id'] = $form_state['build_info']['args'][2];
+    }
+    if (isset($form_state['build_info']['args'][3])) {
+      $form_state['storage']['field_index'] = $form_state['build_info']['args'][3];
+    }
   }
 
   $v['mode'] = (isset($form_state['build_info']['args'][0])) ? $form_state['build_info']['args'][0] : 'create';
@@ -2189,7 +2215,7 @@ function tripal_bulk_loader_template_field_form_submit($form, &$form_state) {
 
     }
     else {
-      $priority = $form_state['values']['field_group'];
+      $priority = $form_state['storage']['record_id'];
     }
 
     // Add field to template array
@@ -2334,6 +2360,15 @@ function tripal_bulk_loader_delete_template_field_form($form, $form_state) {
 
   // if there is no template supplied don't return rest of form
   if (!$template_id) {
+    tripal_set_message('Unable to determine the template_id from the path.',TRIPAL_ERROR);
+    return $form;
+  }
+  elseif (!$record_id) {
+    tripal_set_message('Unable to determine the record_id from the path.',TRIPAL_ERROR);
+    return $form;
+  }
+  elseif (!$field_id) {
+    tripal_set_message('Unable to determine the field_id from the path.',TRIPAL_ERROR);
     return $form;
   }
 
