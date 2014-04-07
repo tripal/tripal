@@ -1981,11 +1981,15 @@ function tripal_bulk_loader_template_field_form($form, $form_state = NULL) {
   );
 
 
+  $collapsed = TRUE;
+  if ($values['required'] OR $values['regex_are_set']) {
+    $collapsed = FALSE;
+  }
   $form['fields']['additional'] = array(
     '#type' => 'fieldset',
     '#title' => 'Additional Options',
     '#collapsible' => TRUE,
-    '#collapsed' => FALSE
+    '#collapsed' => $collapsed
   );
 
   $form['fields']['additional']['required'] = array(
@@ -1998,7 +2002,7 @@ function tripal_bulk_loader_template_field_form($form, $form_state = NULL) {
     '#type' => 'fieldset',
     '#title' => 'Transform Data File Value Rules',
     '#collapsible' => TRUE,
-    '#collapsed' => FALSE//$values['regex_are_set'],
+    '#collapsed' => !$values['regex_are_set'],
   );
 
   $form['fields']['additional']['regex_transform']['regex_description'] = array(
