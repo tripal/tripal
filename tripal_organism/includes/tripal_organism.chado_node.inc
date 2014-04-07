@@ -418,7 +418,7 @@ function chado_organism_delete($node) {
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
   $sql_del = "DELETE FROM {node} WHERE nid = :nid AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
-  $sql_del = "DELETE FROM {node_revision} WHERE nid = ':nid' AND vid = ':vid'";
+  $sql_del = "DELETE FROM {node_revision} WHERE nid = :nid AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
 
   // Test dependency before deleting from chado database. If a library or
