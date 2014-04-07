@@ -45,14 +45,14 @@ function tripal_project_defaultvalue_user_projects() {
   $view->tag = 'tripal search';
 
   // Change the path
-  $view->display['page_1']->display_options['path'] = 'chado/project';
-  $view->display['page_1']->display_options['menu'] = array(
+  $view->display['page']->display_options['path'] = 'chado/project';
+  $view->display['page']->display_options['menu'] = array(
     'type' => 'normal',
     'title' => 'Projects',
     'description' => 'A project. Can be used for grouping data such as with the natural diversity module data.',
     'weight' => '-10'
   );
-  unset($view->display['page_1']->display_options['tab_options']);
+  unset($view->display['page']->display_options['tab_options']);
 
   // Remove edit/delete node
   unset(
