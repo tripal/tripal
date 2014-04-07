@@ -168,15 +168,30 @@ function tripal_library_admin_defaultviews_library() {
   $handler->display->display_options['fields']['nid']['field'] = 'nid';
   $handler->display->display_options['fields']['nid']['relationship'] = 'library_id';
   $handler->display->display_options['fields']['nid']['exclude'] = TRUE;
+  /* Field: Node URL */
+  $handler->display->display_options['fields']['nid_1']['id'] = 'nid_1';
+  $handler->display->display_options['fields']['nid_1']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_1']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_1']['relationship'] = 'feature_id';
+  $handler->display->display_options['fields']['nid_1']['ui_name'] = 'Node URL';
+  $handler->display->display_options['fields']['nid_1']['label'] = '';
+  $handler->display->display_options['fields']['nid_1']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['nid_1']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid_1']['alter']['text'] = 'node/[nid]';
+  $handler->display->display_options['fields']['nid_1']['element_label_colon'] = FALSE;
   /* Field: Chado Library: Uniquename */
   $handler->display->display_options['fields']['uniquename']['id'] = 'uniquename';
   $handler->display->display_options['fields']['uniquename']['table'] = 'library';
   $handler->display->display_options['fields']['uniquename']['field'] = 'uniquename';
   $handler->display->display_options['fields']['uniquename']['label'] = 'Unique Name';
+  $handler->display->display_options['fields']['uniquename']['alter']['make_link'] = TRUE;
+  $handler->display->display_options['fields']['uniquename']['alter']['path'] = '[nid_1]';
   /* Field: Chado Library: Name */
   $handler->display->display_options['fields']['name_1']['id'] = 'name_1';
   $handler->display->display_options['fields']['name_1']['table'] = 'library';
   $handler->display->display_options['fields']['name_1']['field'] = 'name';
+  $handler->display->display_options['fields']['name']['alter']['make_link'] = TRUE;
+  $handler->display->display_options['fields']['name']['alter']['path'] = '[nid_1]';
   /* Field: Chado Organism: Common Name */
   $handler->display->display_options['fields']['common_name']['id'] = 'common_name';
   $handler->display->display_options['fields']['common_name']['table'] = 'organism';

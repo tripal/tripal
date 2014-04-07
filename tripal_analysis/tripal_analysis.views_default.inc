@@ -166,10 +166,23 @@ function tripal_analysis_defaultvalue_admin_analysis() {
   $handler->display->display_options['fields']['nid']['field'] = 'nid';
   $handler->display->display_options['fields']['nid']['relationship'] = 'analysis_id';
   $handler->display->display_options['fields']['nid']['exclude'] = TRUE;
+  /* Field: Node URL */
+  $handler->display->display_options['fields']['nid_1']['id'] = 'nid_1';
+  $handler->display->display_options['fields']['nid_1']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_1']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_1']['relationship'] = 'feature_id';
+  $handler->display->display_options['fields']['nid_1']['ui_name'] = 'Node URL';
+  $handler->display->display_options['fields']['nid_1']['label'] = '';
+  $handler->display->display_options['fields']['nid_1']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['nid_1']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid_1']['alter']['text'] = 'node/[nid]';
+  $handler->display->display_options['fields']['nid_1']['element_label_colon'] = FALSE;
   /* Field: Chado Analysis: Name */
   $handler->display->display_options['fields']['name']['id'] = 'name';
   $handler->display->display_options['fields']['name']['table'] = 'analysis';
   $handler->display->display_options['fields']['name']['field'] = 'name';
+  $handler->display->display_options['fields']['name']['alter']['make_link'] = TRUE;
+  $handler->display->display_options['fields']['name']['alter']['path'] = '[nid_1]';
   /* Field: Chado Analysis: Program */
   $handler->display->display_options['fields']['program']['id'] = 'program';
   $handler->display->display_options['fields']['program']['table'] = 'analysis';
