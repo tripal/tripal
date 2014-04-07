@@ -82,9 +82,22 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
   }
   else {
     if (preg_match('/create/', $mode)) {
+      $form['create_desc'] = array(
+        '#type' => 'item',
+        '#prefix' => '<div class="tripal-bulk-loader" "instructions" style="font-weight: bold;">',
+        '#suffix' => '</div>',
+        '#markup' => 'The first step to creating a Tripal Bulk Loading Template is to
+          choose a short, unique name to identify it. After this is done you will be able
+          to add record and field description through the edit template form (you should
+          be redirected after you click the "Create Template" button below).'
+      );
+
       $form['new_template_name'] = array(
         '#type' => 'textfield',
         '#title' => 'Template Name',
+        '#description' => 'The template name should be unique, short and descriptive. It '
+          .'will be shown to your users in the Bulk Loading Job creation form so it '
+          .'should be friendly and easy to determine which template to choose.',
         '#weight' => 1,
       );
     }
@@ -119,6 +132,9 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
   );
 
   if (preg_match('/edit/', $mode) && !$form_state['storage']['template_id']) {
+    return $form;
+  }
+  elseif (preg_match('/create/', $mode)) {
     return $form;
   }
 
@@ -1400,13 +1416,13 @@ function tripal_bulk_loader_template_field_form_default_values($mode, &$form_sta
 
   // mode can be 'create' or 'edit'
   $v['mode'] = $mode;
-  
+
   // the template_id is the ID of the template if this is an edit, or FALSE if this is a create
   $v['template_id'] = (isset($form_state['build_info']['args'][1])) ? $form_state['build_info']['args'][1] : FALSE;
   $form_state['storage']['template_id'] = $v['template_id'];
   $template_id = $v['template_id'];
-  
-  
+
+
   $v['record_id'] = (isset($form_state['build_info']['args'][2])) ? $form_state['build_info']['args'][2] : FALSE;
   $v['no_record_id'] = ($mode == 'create_record') ? TRUE : FALSE;
   $form_state['storage']['record_id'] = $v['record_id'];
@@ -1427,17 +1443,17 @@ function tripal_bulk_loader_template_field_form_default_values($mode, &$form_sta
     if(!array_key_exists('template', $form_state['storage'])) {
       $sql = "SELECT * FROM {tripal_bulk_loader_template} WHERE template_id = :template";
       $template = db_query($sql, array(':template' => $template_id))->fetchObject();
-      
-      // unserialize the template array. This array contains the PHP serilazed array 
+
+      // unserialize the template array. This array contains the PHP serilazed array
       // describing the entire loader template
       $form_state['storage']['template_array'] = unserialize($template->template_array);
       if (!$form_state['storage']['template_array']) {
         $form_state['storage']['template_array'] = array();
       }
-      
+
       // save the template record from the database for future use
       $form_state['storage']['template'] = $template;
-  
+
       // initialize the record2priority array which keeps track of the order by
       // copying the priority information about each record from the template array
       // into the $form_state['storage']['record2priority'] array
