@@ -127,35 +127,27 @@ function chado_create_custom_table($table, $schema, $skip_creation = 1, $mview_i
   $created = 0;
   $recreated = 0;
 
-  // see if the table entry already exists in the tripal_custom_tables table.
-  $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_name = :table_name";
-  $results = db_query($sql, array(':table_name' => $table));
-  $centry = $results->fetchObject();
-
-  // check to see if the table already exists in the chado schema
-  $exists = chado_table_exists($table);
-
-  // if the table does not exist then create it
-  if (!$exists) {
-    try {
+  $transaction = db_transaction();
+  try {
+    // see if the table entry already exists in the tripal_custom_tables table.
+    $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_name = :table_name";
+    $results = db_query($sql, array(':table_name' => $table));
+    $centry = $results->fetchObject();
+  
+    // check to see if the table already exists in the chado schema
+    $exists = chado_table_exists($table);
+  
+    // if the table does not exist then create it
+    if (!$exists) {
       $ret = db_create_table('chado.' . $table, $schema);
       $created = 1;
     }
-    catch (Exception $e) {
-      $error = $e->getMessage();
-      tripal_report_error('tripal_core', TRIPAL_ERROR,
-        "Error adding custom table: @message", array('@message' => $error));
-      drupal_set_message("Could not add custom table. $error.", "error");
-      return FALSE;
-    }
-  }
-
-  // if the table exists in Chado and in our custom table and
-  // skip creation is turned off then drop and re-create the table
-  if ($exists and is_object($centry) and !$skip_creation) {
-
-    // drop the table we'll recreate it with the new schema
-    try {
+  
+    // if the table exists in Chado and in our custom table and
+    // skip creation is turned off then drop and re-create the table
+    if ($exists and is_object($centry) and !$skip_creation) {
+  
+      // drop the table we'll recreate it with the new schema
       chado_query('DROP TABLE {' . $table . '}');
       // remove any 'referring_tables' from the array as the db_create_table doesn't use that
       $new_schema = $schema;
@@ -165,67 +157,49 @@ function chado_create_custom_table($table, $schema, $skip_creation = 1, $mview_i
       db_create_table('chado.' . $table, $new_schema);
       $recreated = 1;
     }
-    catch (Exception $e) {
-      $error = $e->getMessage();
-      tripal_report_error('tripal_core', TRIPAL_ERROR,
-        "Error adding custom table: @message",
-        array('@message' => $error));
-      drupal_set_message("Could not add custom table. $error.", "error");
-      return FALSE;
+  
+    // add an entry in the tripal_custom_table
+    $record = new stdClass();
+    $record->table_name = $table;
+    $record->schema = serialize($schema);
+    if ($mview_id) {
+      $record->mview_id = $mview_id;
     }
-  }
-
-  // add an entry in the tripal_custom_table
-  $record = new stdClass();
-  $record->table_name = $table;
-  $record->schema = serialize($schema);
-  if ($mview_id) {
-    $record->mview_id = $mview_id;
-  }
-
-  // if an entry already exists then remove it
-  if ($centry) {
-    $sql = "DELETE FROM {tripal_custom_tables} WHERE table_name = :table_name";
-    db_query($sql, array(':table_name' => $table));
-  }
-  $success = drupal_write_record('tripal_custom_tables', $record);
-  if (!$success) {
-    tripal_report_error('tripal_core', TRIPAL_ERROR, "Error adding custom table %table_name.",
-      array('%table_name' => $table));
-    drupal_set_message(t("Could not add custom table %table_name.
-      Please check the schema array.", array('%table_name' => $table)), 'error');
-    return FALSE;
-  }
-
-
-  // now add any foreign key constraints
-  if (!$skip_creation and array_key_exists('foreign keys', $schema)) {
-
-    // iterate through the foreign keys and add each one
-    $fkeys = $schema['foreign keys'];
-    foreach ($fkeys as $fktable => $fkdetails) {
-      $relations = $fkdetails['columns'];
-      foreach ($relations as $left => $right) {
-        $sql = '
-          ALTER TABLE {' . $table . '}
-            ADD CONSTRAINT ' . $table . '_' . $left . '_fkey FOREIGN KEY (' . $left . ')
-            REFERENCES  {' . $fktable . '} (' . $right . ')
-            ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
-        ';
-        try {
+  
+    // if an entry already exists then remove it
+    if ($centry) {
+      $sql = "DELETE FROM {tripal_custom_tables} WHERE table_name = :table_name";
+      db_query($sql, array(':table_name' => $table));
+    }
+    $success = drupal_write_record('tripal_custom_tables', $record); 
+  
+    // now add any foreign key constraints
+    if (!$skip_creation and array_key_exists('foreign keys', $schema)) {
+  
+      // iterate through the foreign keys and add each one
+      $fkeys = $schema['foreign keys'];
+      foreach ($fkeys as $fktable => $fkdetails) {
+        $relations = $fkdetails['columns'];
+        foreach ($relations as $left => $right) {
+          $sql = '
+            ALTER TABLE {' . $table . '}
+              ADD CONSTRAINT ' . $table . '_' . $left . '_fkey FOREIGN KEY (' . $left . ')
+              REFERENCES  {' . $fktable . '} (' . $right . ')
+              ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+          ';
           chado_query($sql);
-        }
-        catch (Exception $e) {
-          $error = $e->getMessage();
-          tripal_report_error('tripal_core', TRIPAL_ERROR, "Error, could not add foreign key contraint to custom table: %error",
-            array('%error' => $error));
-          drupal_set_message("Could not add foreign key contraint to table: $error", 'error');
-          return FALSE;
         }
       }
     }
   }
-
+  catch (Exception $e) {
+    $transaction->rollback();
+    watchdog_exception('tripal_core', $e);
+    $error = _drupal_decode_exception($e);
+    drupal_set_message(t("Could not add custom table '%table_name': %message.", 
+      array('%table_name' => $table, '%message' => $error['!message'])), 'error');
+    return FALSE;
+  }
   if ($created) {
     drupal_set_message("Custom table created successfully.", 'status');
   }
@@ -236,6 +210,52 @@ function chado_create_custom_table($table, $schema, $skip_creation = 1, $mview_i
     drupal_set_message("Custom table already exists. Table structure not changed, but definition array has been saved.", 'status');
   }
   return TRUE;
+}
+
+/**
+ * This function is used to validate a Drupal Schema API array prior to 
+ * passing it ot the chado_create_custom_table_schema().  This function
+ * can be used in a form validate function or whenver a schema is provided by
+ * a user and needs validation.
+ * 
+ * @param $schema_array
+ *   the Drupal Schema API compatible array
+ *   
+ * @return
+ *   An empty string for success or a message string for failure
+ * 
+ * @ingroup tripal_custom_tables_api
+ */
+function chado_validate_custom_table_schema($schema_array) {
+
+  if (is_array($schema_array) and !array_key_exists('table', $schema_array)) {
+    return "The schema array must have key named 'table'";
+  }
+  
+  // check index length
+  if (array_key_exists('indexes', $schema_array)) {
+    foreach ($schema_array['indexes'] as $index_name => $details) {
+      if (strlen($schema_array['table'] . '_' . $index_name) > 60) {
+        return "One ore more index names appear to be too long. For example: '" .  $schema_array['table'] . '_' . $index_name .
+        ".'  Index names are created by concatenating the table name with the index name provided " .
+        "in the 'indexes' array of the schema. Please alter any indexes that when combined with the table name are " .
+        "longer than 60 characters.";
+      }
+    }
+  }
+  
+  // check unique key length
+  if (array_key_exists('unique keys', $schema_array)) {
+    foreach ($schema_array['unique keys'] as $index_name => $details) {
+      if (strlen($schema_array['table'] . '_' . $index_name) > 60) {
+        return "One ore more unique key names appear to be too long. For example: '" .  $schema_array['table'] . '_' . $index_name .
+        ".'  Unique key names are created by concatenating the table name with the key name provided " .
+        "in the 'unique keys' array of the schema. Please alter any unique keys that when combined with the table name are " .
+        "longer than 60 characters.";
+      }
+    }
+  }
+  
 }
 /**
  * Retrieve the custom table id given the name
@@ -266,9 +286,9 @@ function chado_get_custom_table_id($table_name) {
  * @param $table_id
  *   The unique ID of the custom table for the action to be performed on
  *
- * @ingroup tripal_custom_tables
+ * @ingroup tripal_custom_tables_api
  */
-function tripal_delete_custom_table($table_id) {
+function chado_delete_custom_table($table_id) {
   global $user;
 
   $args = array("$table_id");
@@ -280,10 +300,10 @@ function tripal_delete_custom_table($table_id) {
   $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
   $results = db_query($sql, array(':table_id' => $table_id));
   $custom_table = $results->fetchObject();
-  
+
   // if this is a materialized view then don't allow deletion with this function
   if ($custom_table->mview_id) {
-    tripal_report_error('tripal_core', TRIPAL_ERROR, "Please use the tripal_delete_mview() function to delete this custom table as it is a materialized view. Table not deleted.", array());    
+    tripal_report_error('tripal_core', TRIPAL_ERROR, "Please use the tripal_delete_mview() function to delete this custom table as it is a materialized view. Table not deleted.", array());
     drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/schema/mviews') . " interface to delete it.", 'error');
     return FALSE;
   }
@@ -294,12 +314,16 @@ function tripal_delete_custom_table($table_id) {
   if ($success) {
     drupal_set_message(t("Custom Table '%name' removed", array('%name' => $custom_table->table_name)));
   }
-  
+
   // drop the table from chado if it exists
-  if (db_table_exists($custom_table->table_name)) {
-    $success = chado_query("DROP TABLE %s", $custom_table->table_name);
+  if (chado_table_exists($custom_table->table_name)) {
+    $success = chado_query("DROP TABLE {" .  $custom_table->table_name . "}");
     if ($success) {
       drupal_set_message(t("Custom Table '%name' dropped", array('%name' => $custom_table->table_name)));
+    }
+    else {
+      tripal_report_error('tripal_core', TRIPAL_ERROR, "Cannot drop the custom table: %name", array('%name' => $custom_table->table_name));
+      drupal_set_message(t("Cannot drop the custom table: '%name'", array('%name' => $custom_table->table_name)));
     }
   }
 }

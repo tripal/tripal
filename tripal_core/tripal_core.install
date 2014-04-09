@@ -21,6 +21,14 @@ function tripal_core_install() {
     tripal_report_error('tripal_core', TRIPAL_ERROR, $message, array());
   }
 
+  // the foreign key specification doesn't really add one to the
+  // Drupal schema, it is just used internally, but we want one
+  db_query('
+      ALTER TABLE {tripal_custom_tables}
+      ADD CONSTRAINT tripal_custom_tables_fk1
+      FOREIGN KEY (mview_id) REFERENCES {tripal_mviews} (mview_id)
+      ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+  ');
 }
 /**
  * Implementation of hook_schema().
@@ -55,6 +63,13 @@ function tripal_core_schema() {
  * @ingroup tripal_core
  */
 function tripal_core_uninstall() {
+  
+  // drop the foreign key between tripal_custom_tables and tripal_mviews
+  // so that Drupal can then drop the tables
+  db_query('
+      ALTER TABLE {tripal_custom_tables}
+      DROP CONSTRAINT IF EXISTS tripal_custom_tables_fk1 CASCADE
+    ');
 }
 
 /**
@@ -358,7 +373,7 @@ function tripal_core_update_7200() {
     // Drupal schema, it is just used internally, but we want one
     db_query('
       ALTER TABLE {tripal_custom_tables}
-      ADD CONSTRAINT {tripal_custom_tables_fk1}
+      ADD CONSTRAINT tripal_custom_tables_fk1
       FOREIGN KEY (mview_id) REFERENCES {tripal_mviews} (mview_id)
       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
     ');

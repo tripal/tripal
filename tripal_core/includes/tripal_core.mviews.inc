@@ -412,9 +412,9 @@ array (
     ),
   ),
   'indexes' => array (
-    'organism_feature_count_idx1' => array ('organism_id'),
-    'organism_feature_count_idx2' => array ('cvterm_id'),
-    'organism_feature_count_idx3' => array ('feature_type'),
+    'organism_id_idx'  => array ('organism_id'),
+    'cvterm_id_idx'    => array ('cvterm_id'),
+    'feature_type_idx' => array ('feature_type'),
   ),
 )
 </pre>"
@@ -433,14 +433,14 @@ function tripal_mviews_form_validate($form, &$form_state) {
   
   $action    = $form_state['values']['action'];
   $mview_id  = $form_state['values']['mview_id'];
-  $name      = $form_state['values']['name'];
+  $name      = trim($form_state['values']['name']);
   $is_legacy = $form_state['values']['is_legacy'];
   $query     = $form_state['values']['mvquery'];
   
   // if this is a legacy materialized view (no longer supported in Tripal v2.0
   // but code left just in case)
   if ($is_legacy) {
-    $mv_table = $form_state['values']['mv_table'];
+    $mv_table = trim($form_state['values']['mv_table']);
     $mv_specs = $form_state['values']['mv_specs'];
     $indexed  = $form_state['values']['indexed'];
     $special_index = '';//$form_state['values']['special_index'];
@@ -451,8 +451,16 @@ function tripal_mviews_form_validate($form, &$form_state) {
     $indexed = '';
     $special_index = '';
   }
-  $comment = $form_state['values']['comment'];
+  $comment = trim($form_state['values']['comment']);
   $schema  = $form_state['values']['schema'];
+  
+  // validate the contents of the array
+  $schema_array = array();
+  $success = eval("\$schema_array = $schema;");
+  $error = chado_validate_custom_table_schema($schema_array);
+  if ($error) {
+    form_set_error('schema', $error);
+  }
 
   // if both the schema and the older fields for the legacy view are populated then
   // this is an error and we need to let the user know.
@@ -503,12 +511,12 @@ function tripal_mviews_form_submit($form, &$form_state) {
   
   $action     = $form_state['values']['action'];
   $mview_id   = $form_state['values']['mview_id'];
-  $name       = $form_state['values']['name'];
+  $name       = trim($form_state['values']['name']);
   $is_legacy  = $form_state['values']['is_legacy'];
   $query      = $form_state['values']['mvquery'];
-  $comment    = $form_state['values']['comment'];
+  $comment    = trim($form_state['values']['comment']);
   $schema     = $form_state['values']['schema'];
-  $modulename = $form_state['values']['modulename'];
+  $modulename = trim($form_state['values']['modulename']);
   $mv_table = '';
   $mv_specs = '';
   $indexed = '';

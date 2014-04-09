@@ -129,43 +129,51 @@ function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NUL
     array(':name' => $name))->fetchField();
 
   if(!$mview_id) {
-
-    // Create a new record
-    $record = new stdClass();
-    $record->name = $name;
-    $record->modulename = $modulename;
-    $record->mv_table = $mv_table;
-    $record->query = $query;
-    $record->comment = $comment;
-    
-    // convert the schema into a string format
-    $str_schema = var_export($mv_schema, TRUE);
-    $str_schema = preg_replace('/=>\s+\n\s+array/', '=> array', $str_schema);
-    $record->mv_schema = $str_schema;
-
-    // add the record to the tripal_mviews table and if successful
-    // create the new materialized view in the chado schema
-    if (drupal_write_record('tripal_mviews', $record)) {
-
-      // drop the table from chado if it exists
-      if (chado_table_exists($mv_table)) {
-        $sql = 'DROP TABLE {' . $mv_table . '}';
-        chado_query($sql);
-      }
-      // create the table
-      if (!chado_create_custom_table($mv_table, $mv_schema, 0, $record->mview_id)) {
-        drupal_set_message(t("Could not create the materialized view. Check Drupal error report logs."), 'error');
-      }
-      else {
-        drupal_set_message(t("Materialized view '%name' created", array('%name' => $name)));
+    $transaction = db_transaction();
+    try {
+      // Create a new record
+      $record = new stdClass();
+      $record->name = $name;
+      $record->modulename = $modulename;
+      $record->mv_table = $mv_table;
+      $record->query = $query;
+      $record->comment = $comment;
+      
+      // convert the schema into a string format
+      $str_schema = var_export($mv_schema, TRUE);
+      $str_schema = preg_replace('/=>\s+\n\s+array/', '=> array', $str_schema);
+      $record->mv_schema = $str_schema;
+  
+      // add the record to the tripal_mviews table and if successful
+      // create the new materialized view in the chado schema
+      if (drupal_write_record('tripal_mviews', $record)) {
+  
+        // drop the table from chado if it exists
+        if (chado_table_exists($mv_table)) {
+          $sql = 'DROP TABLE {' . $mv_table . '}';
+          chado_query($sql);
+        }
+        // create the table
+        chado_create_custom_table($mv_table, $mv_schema, 0, $record->mview_id);
       }
     }
+    catch (Exception $e) {
+      $transaction->rollback();
+      watchdog_exception('tripal_core', $e);
+      $error = _drupal_decode_exception($e);
+      drupal_set_message(t("Could not create the materialized view %table_name: %message.",
+      array('%table_name' => $name, '%message' => $error['!message'])), 'error');
+      return FALSE;
+    }
+    drupal_set_message(t("Materialized view '%name' created", array('%name' => $name)));
+    return TRUE;
   }
   else {
     tripal_report_error('tripal_cv', TRIPAL_WARNING,
       "Materialized view, %vname, already exists. Cannot create.",
       array('%vname' => $name));
     drupal_set_message(t("Materialized view, $name, already exists. Cannot create.", array('%name' => $name)));
+    return FALSE;
   }
 }
 

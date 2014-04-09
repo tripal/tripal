@@ -322,7 +322,7 @@ function tripal_core_menu() {
     'title' => 'Custom Tables',
     'description' => 'Custom tables are added to Chado.',
     'page callback' => 'tripal_custom_table_view',
-    'page arguments' => array(4),
+    'page arguments' => array(5),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );

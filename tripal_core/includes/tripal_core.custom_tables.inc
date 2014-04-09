@@ -80,7 +80,7 @@ function tripal_custom_table_view($table_id) {
   // create a table with each row containig stats for
   // an individual job in the results set.
   $return_url = url("admin/tripal/schema/custom_tables");
-  $output .= "<p><a href=\"$return_url\">" . t("Return to list of custom tables") . "</a></p>";
+  $output = "<p><a href=\"$return_url\">" . t("Return to list of custom tables") . "</a></p>";
   $output .= "<br />";
   $output .= "<p>Details for <b>$custom_table->table_name</b>:</p>";
   $output .= "<br />";
@@ -100,8 +100,8 @@ function tripal_custom_table_view($table_id) {
 
   // build the URLs using the url function so we can handle installations where
   // clean URLs are or are not used
-  $delete_url = url("admin/tripal/custom_tables/action/delete/$custom_table->table_id");
-  $edit_url = url("admin/tripal/custom_tables/edit/$custom_table->table_id");
+  $delete_url = url("admin/tripal/schema/custom_tables/delete/$custom_table->table_id");
+  $edit_url = url("admin/tripal/schema/custom_tables/edit/$custom_table->table_id");
   $output .= "<tr><th>Actions</th>" .
             "<td>" .
             "     <a href='$edit_url'>Edit</a>, " .
@@ -184,11 +184,11 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
        These are not offically sanctioned tables but may be necessary for local data requirements.
        Avoid creating custom tables when possible as other GMOD tools may not recognize these tables
        nor the data in them.  Linker tables or property tables are often a good candidate for
-       a custom table. For example a table to link stocks and libraries (e.g. library_stock) would be
-       a good custom table. Try to model linker or propery tables after existing tables.  If the
+       a custom table. For example a table to link stocks and libraries (e.g. library_stock). 
+       Try to model linker or propery tables after existing tables.  If the
        table already exists it will not be modified.  To force dropping and recreation of the table
-       click the checkbox below.
-    '),
+       click the checkbox below.  Tables are defined usign the ' . l('Drupal Schema API', 'https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7', array('attributes' => array('target' => '_blank')))
+    ),
   );
 
   $form['force_drop']= array(
@@ -200,7 +200,7 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
   $form['schema']= array(
     '#type'          => 'textarea',
     '#title'         => t('Schema Array'),
-    '#description'   => t('Please enter the Drupal Schema API compatible array that defines the table.'),
+    '#description'   => t('Please enter the ' . l('Drupal Schema API', 'https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7', array('attributes' => array('target' => '_blank'))) . ' compatible array that defines the table.'),
     '#required'      => FALSE,
     '#default_value' => $default_schema,
     '#rows'          => 25,
@@ -281,8 +281,7 @@ function tripal_custom_tables_form_validate($form, &$form_state) {
   $force_drop = $form_state['values']['force_drop'];
 
   if (!$schema) {
-    form_set_error($form_state['values']['schema'],
-      t('Schema array field is required.'));
+    form_set_error($form_state['values']['schema'], t('Schema array field is required.'));
   }
 
   // make sure the array is valid
@@ -297,13 +296,18 @@ function tripal_custom_tables_form_validate($form, &$form_state) {
       $success = eval("\$schema_array = $schema;");
       if ($success === FALSE) {
         $error = error_get_last();
-        form_set_error($form_state['values']['schema'],
-          t("The schema array is improperly formatted. Parse Error : " . $error["message"]));
+        form_set_error('schema', t("The schema array is improperly formatted. Parse Error : " . $error["message"]));
       }
       if (is_array($schema_array) and !array_key_exists('table', $schema_array)) {
-        form_set_error($form_state['values']['schema'],
-          t("The schema array must have key named 'table'"));
+        form_set_error('schema', t("The schema array must have key named 'table'"));
       }
+      
+      // validate the contents of the array
+      $error = chado_validate_custom_table_schema($schema_array);
+      if ($error) {
+        form_set_error('schema', $error);
+      }
+      
       if ($action == 'Edit') {
         // see if the table name has changed. If so, then check to make sure
         // it doesn't already exists. We don't want to drop a table we didn't mean to
@@ -411,7 +415,7 @@ function tripal_custom_tables_delete_form_submit($form, &$form_state) {
   $table_id = $form_state['values']['table_id'];
     
   if (strcmp($action, 'Delete') == 0) {
-    tripal_delete_custom_table($table_id);
+    chado_delete_custom_table($table_id);
   }
   else {
     drupal_set_message(t("No action performed."));

@@ -317,7 +317,7 @@ function tripal_core_admin_defaultview_custom_tables() {
   $view->core = 7;
   $view->api_version = '3.0';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
-
+  
   /* Display: Master */
   $handler = $view->new_display('default', 'Master', 'default');
   $handler->display->display_options['title'] = 'Custom Tables';
@@ -356,7 +356,7 @@ function tripal_core_admin_defaultview_custom_tables() {
   $handler->display->display_options['fields']['table_id']['id'] = 'table_id';
   $handler->display->display_options['fields']['table_id']['table'] = 'tripal_custom_tables';
   $handler->display->display_options['fields']['table_id']['field'] = 'table_id';
-  $handler->display->display_options['fields']['table_id']['label'] = '';
+  $handler->display->display_options['fields']['table_id']['label'] = 'ID';
   $handler->display->display_options['fields']['table_id']['element_class'] = 'extra-short-column';
   $handler->display->display_options['fields']['table_id']['element_label_class'] = 'extra-short-column';
   $handler->display->display_options['fields']['table_id']['element_label_colon'] = FALSE;
@@ -368,6 +368,15 @@ function tripal_core_admin_defaultview_custom_tables() {
   $handler->display->display_options['fields']['table_name']['label'] = 'Name';
   $handler->display->display_options['fields']['table_name']['alter']['make_link'] = TRUE;
   $handler->display->display_options['fields']['table_name']['alter']['path'] = 'admin/tripal/schema/custom_tables/view/[table_id]';
+  /* Field: Tripal Custom Tables: Materialized View ID */
+  $handler->display->display_options['fields']['mview_id']['id'] = 'mview_id';
+  $handler->display->display_options['fields']['mview_id']['table'] = 'tripal_custom_tables';
+  $handler->display->display_options['fields']['mview_id']['field'] = 'mview_id';
+  $handler->display->display_options['fields']['mview_id']['label'] = 'Is MView';
+  $handler->display->display_options['fields']['mview_id']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['mview_id']['alter']['text'] = 'Yes';
+  $handler->display->display_options['fields']['mview_id']['hide_empty'] = TRUE;
+  $handler->display->display_options['fields']['mview_id']['empty_zero'] = TRUE;
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing']['id'] = 'nothing';
   $handler->display->display_options['fields']['nothing']['table'] = 'views';
@@ -407,7 +416,7 @@ function tripal_core_admin_defaultview_custom_tables() {
     1 => 0,
     3 => 0,
   );
-
+  
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
   $handler->display->display_options['path'] = 'admin/tripal/schema/custom_tables/tables';
