@@ -260,16 +260,6 @@ function tripal_core_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
   );
-  /**
-  $items['admin/tripal/schema/mviews/list'] = array(
-    'title' => 'List Materialized Views',
-    'description' => 'A list of existing materialized views with the ability to edit & delete existing materialized views.',
-    'page callback' => 'tripal_mviews_report',
-    'access arguments' => array('administer tripal'),
-    'type' => MENU_NORMAL_ITEM,
-    'weight' => -10
-  );
-  */
   $items['admin/tripal/schema/mviews/report/%'] = array(
     'title' => 'Materialized View',
     'description' => 'Materialized views are used to improve speed of large or complex queries. These are database views as compared to Drupal views.',
@@ -293,19 +283,19 @@ function tripal_core_menu() {
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/schema/mviews/action/update/%'] = array(
+  $items['admin/tripal/schema/mviews/update/%'] = array(
     'title' => 'Create Materialized View',
     'description' => 'Materialized views are used to improve speed of large or complex queries.',
-    'page callback' => 'tripal_add_populate_mview',
-    'page arguments' => array(6, "1"),
+    'page callback' => 'tripal_mviews_add_populate_job',
+    'page arguments' => array(5),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/schema/mviews/action/delete/%'] = array(
+  $items['admin/tripal/schema/mviews/delete/%'] = array(
     'title' => 'Create Materialized View',
     'description' => 'Materialized views are used to improve speed of large or complex queries.',
-    'page callback' => 'tripal_delete_mview',
-    'page arguments' => array(6, "1"),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array(tripal_mviews_delete_form, 5),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );
@@ -328,16 +318,6 @@ function tripal_core_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
   );
-  /**
-  $items['admin/tripal/schema/custom_tables/list'] = array(
-    'title' => 'List of Custom Tables',
-    'description' => 'Provides a list of all custom tables created by Tripal and allows for editing or removing existing custom tables.',
-    'page callback' => 'tripal_custom_tables_list',
-    'access arguments' => array('administer tripal'),
-    'type' => MENU_NORMAL_ITEM,
-    'weight' => -10
-  );
-  */
   $items['admin/tripal/schema/custom_tables/view/%'] = array(
     'title' => 'Custom Tables',
     'description' => 'Custom tables are added to Chado.',
@@ -360,11 +340,11 @@ function tripal_core_menu() {
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/schema/custom_tables/action/%/%'] = array(
+  $items['admin/tripal/schema/custom_tables/delete/%'] = array(
     'title' => 'Create Custom Table',
     'description' => 'Custom tables are added to Chado.',
-    'page callback' => 'tripal_custom_tables_action',
-    'page arguments' => array(4, 5, "1"),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_custom_tables_delete_form', 5),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );

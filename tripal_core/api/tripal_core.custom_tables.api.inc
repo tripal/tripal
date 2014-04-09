@@ -42,6 +42,13 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_creation
   $results = db_query($sql, array(':table_id' => $table_id));
   $custom_table = $results->fetchObject();
 
+  // if this is a materialized view then don't allow editing with this function
+  if ($custom_table->mview_id) {
+    tripal_report_error('tripal_core', TRIPAL_ERROR, "Please use the tripal_edit_mview() function to edit this custom table as it is a materialized view.", array());
+    drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/schema/mviews') . " interface to edit it.", 'error');
+    return FALSE;
+  }
+  
   // if the user changed the table name, we want to drop the old one and force
   // creation of the new one.
   if ($custom_table->table_name != $table_name) {
@@ -75,7 +82,6 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_creation
         drupal_set_message(t("Custom table '%name' created", array('%name' => $table_name)));
       }
     }
-    // TODO: add FK constraints
   }
 }
 
@@ -88,6 +94,14 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_creation
  * table. This way the function cannot be used to accidentally alter existing
  * non custom tables.  If $skip_creation is set then the table is simply
  * added to the tripal_custom_tables and no table is created in Chado.
+ * 
+ * If you are creating a materialized view do not use this function, but rather 
+ * use the tripal_add_mview(). A materialized view is also considered a custom table
+ * and an entry for it will be added to both the tripal_mviews and 
+ * tripal_custom_tables tables, but only if the tripal_add_mview() function is
+ * used. The optional $mview_id parameters in this function is intended
+ * for use by the tripal_add_mview() function when it calls this function
+ * to create the table.
  *
  * @param $table
  *   The name of the table to create.
@@ -98,13 +112,17 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_creation
  *   exists.  This is useful if the table was already created through another
  *   means and you simply want to make Tripal aware of the table schema.  If the
  *   table does not exist it will be created.
- *
+ * @param $mview_id
+ *   Optional. If this custom table is also a materialized view then provide
+ *   it's mview_id. This paramter is intended only when this function
+ *   is called by the tripal_add_mview() function. When creating a custom
+ *   table you shouldn't need to use this parameter.
  * @return
  *   TRUE on success, FALSE on failure
  *
  * @ingroup tripal_custom_tables_api
  */
-function chado_create_custom_table($table, $schema, $skip_creation = 1) {
+function chado_create_custom_table($table, $schema, $skip_creation = 1, $mview_id = NULL) {
   global $databases;
   $created = 0;
   $recreated = 0;
@@ -161,6 +179,9 @@ function chado_create_custom_table($table, $schema, $skip_creation = 1) {
   $record = new stdClass();
   $record->table_name = $table;
   $record->schema = serialize($schema);
+  if ($mview_id) {
+    $record->mview_id = $mview_id;
+  }
 
   // if an entry already exists then remove it
   if ($centry) {
@@ -169,8 +190,7 @@ function chado_create_custom_table($table, $schema, $skip_creation = 1) {
   }
   $success = drupal_write_record('tripal_custom_tables', $record);
   if (!$success) {
-    tripal_report_error('tripal_core', TRIPAL_ERROR,
-      "Error adding custom table %table_name.",
+    tripal_report_error('tripal_core', TRIPAL_ERROR, "Error adding custom table %table_name.",
       array('%table_name' => $table));
     drupal_set_message(t("Could not add custom table %table_name.
       Please check the schema array.", array('%table_name' => $table)), 'error');
@@ -239,4 +259,47 @@ function chado_get_custom_table_id($table_name) {
   }
 
   return FALSE;
+}
+/**
+ * Deletes the specified custom table
+ *
+ * @param $table_id
+ *   The unique ID of the custom table for the action to be performed on
+ *
+ * @ingroup tripal_custom_tables
+ */
+function tripal_delete_custom_table($table_id) {
+  global $user;
+
+  $args = array("$table_id");
+  if (!$table_id) {
+    return '';
+  }
+
+  // get this table details
+  $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
+  $results = db_query($sql, array(':table_id' => $table_id));
+  $custom_table = $results->fetchObject();
+  
+  // if this is a materialized view then don't allow deletion with this function
+  if ($custom_table->mview_id) {
+    tripal_report_error('tripal_core', TRIPAL_ERROR, "Please use the tripal_delete_mview() function to delete this custom table as it is a materialized view. Table not deleted.", array());    
+    drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/schema/mviews') . " interface to delete it.", 'error');
+    return FALSE;
+  }
+
+  // remove the entry from the tripal_custom tables table
+  $sql = "DELETE FROM {tripal_custom_tables} WHERE table_id = $table_id";
+  $success = db_query($sql);
+  if ($success) {
+    drupal_set_message(t("Custom Table '%name' removed", array('%name' => $custom_table->table_name)));
+  }
+  
+  // drop the table from chado if it exists
+  if (db_table_exists($custom_table->table_name)) {
+    $success = chado_query("DROP TABLE %s", $custom_table->table_name);
+    if ($success) {
+      drupal_set_message(t("Custom Table '%name' dropped", array('%name' => $custom_table->table_name)));
+    }
+  }
 }

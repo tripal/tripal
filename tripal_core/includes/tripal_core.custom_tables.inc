@@ -57,8 +57,9 @@ function tripal_custom_table_admin_view() {
  * @ingroup tripal_custom_tables
  */
 function tripal_custom_table_new_page() {
-  $output = drupal_render(drupal_get_form('tripal_custom_tables_form'));
-  return $output;
+ 
+  $form = drupal_get_form('tripal_custom_tables_form');
+  return drupal_render($form);
 }
 
 /**
@@ -78,7 +79,7 @@ function tripal_custom_table_view($table_id) {
 
   // create a table with each row containig stats for
   // an individual job in the results set.
-  $return_url = url("admin/tripal/custom_tables/");
+  $return_url = url("admin/tripal/schema/custom_tables");
   $output .= "<p><a href=\"$return_url\">" . t("Return to list of custom tables") . "</a></p>";
   $output .= "<br />";
   $output .= "<p>Details for <b>$custom_table->table_name</b>:</p>";
@@ -111,47 +112,6 @@ function tripal_custom_table_view($table_id) {
 }
 
 /**
- * A template function to render a listing of all Custom tables
- *
- * @ingroup tripal_custom_tables
- */
-function tripal_custom_tables_list() {
-  $header = array('', 'Table Name', 'Description');
-  $rows = array();
-  $custom_tables = db_query("SELECT * FROM {tripal_custom_tables} ORDER BY table_name");
-
-  foreach ($custom_tables as $custom_table) {
-
-    $rows[] = array(
-      l(t('View'), "admin/tripal/custom_tables/view/$custom_table->table_id") . " | " .
-      l(t('Edit'), "admin/tripal/custom_tables/edit/$custom_table->table_id") . " | " .
-      $custom_table->table_name,
-      $custom_table->comment,
-      l(t('Delete'), "admin/tripal/custom_tables/action/delete/$custom_table->table_id"),
-    );
-  }
-
-  $rows[] = array(
-    'data' => array(
-      array('data' => l(t('Create a new custom table.'), "admin/tripal/custom_tables/new"),
-        'colspan' => 6),
-    )
-  );
-  $table = array(
-    'header' => $header,
-    'rows' => $rows,
-    'attributes' => array('class' => 'tripal-data-table'),
-    'sticky' => FALSE,
-    'caption' => '',
-    'colgroups' => array(),
-    'empty' => 'No custom tables have been added',
-  );
-
-  $page = theme_table($table);
-  return $page;
-}
-
-/**
  * A Form to Create/Edit a Custom table.
  *
  * @param $form_state
@@ -180,6 +140,13 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
     $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id ";
     $results = db_query($sql, array(':table_id' => $table_id));
     $custom_table = $results->fetchObject();
+    
+    // if this is a materialized view then don't allow editing with this function
+    if ($custom_table->mview_id) {
+      drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/schema/mviews') . " interface to edit it.", 'error');
+      drupal_goto("admin/tripal/schema/custom_tables");
+      return array();
+    }
 
     // set the default values.  If there is a value set in the
     // form_state then let's use that, otherwise, we'll pull
@@ -194,6 +161,11 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
       $default_schema = preg_replace('/=>\s+\n\s+array/', '=> array', $default_schema);
     }
   }
+  
+  $form['return'] = array(
+    '#type' => 'markup',
+    '#markup' => "<p>" . l("Return to list of custom tables", "admin/tripal/schema/custom_tables") . "</p>",
+  );
 
   // Build the form
   $form['action'] = array(
@@ -245,7 +217,6 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
     '#value'        => t($value),
     '#executes_submit_callback' => TRUE,
   );
-  $form['#redirect'] = 'admin/tripal/custom_tables';
 
   $form['example']= array(
     '#type'          => 'item',
@@ -384,53 +355,68 @@ function tripal_custom_tables_form_submit($form, &$form_state) {
   else {
     drupal_set_message(t("No action performed."));
   }
-
-  return '';
+  
+  drupal_goto("admin/tripal/schema/custom_tables");
 }
 
 /**
- * Does the specified action for the specified custom table
- *
- * @param $op
- *   The action to be taken. Currenly only delete is available
- * @param $table_id
- *   The unique ID of the custom table for the action to be performed on
- * @param $redirect
- *   TRUE/FALSE depending on whether you want to redirect the user to admin/tripal/custom_tables
+ * Just a simple form for confirming deletion of a custom table
  *
  * @ingroup tripal_custom_tables
  */
-function tripal_custom_tables_action($op, $table_id, $redirect = FALSE) {
-  global $user;
-
-  $args = array("$table_id");
-  if (!$table_id) {
-    return '';
-  }
-
-  // get this table details
+function tripal_custom_tables_delete_form($form, &$form_state, $table_id) {
+  
+  // get details about this table entry
   $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
   $results = db_query($sql, array(':table_id' => $table_id));
-  $custom_table = $results->fetchObject();
-
-  if ($op == 'delete') {
-
-    // remove the entry from the tripal_custom tables table
-    $sql = "DELETE FROM {tripal_custom_tables} " .
-           "WHERE table_id = $table_id";
-    db_query($sql);
-
-    // drop the table from chado if it exists
-    if (db_table_exists($custom_table->table_name)) {
-      $success = chado_query("DROP TABLE %s", $custom_table->table_name);
-      if ($success) {
-        drupal_set_message(t("Custom Table '%name' dropped", array('%name' => $custom_table->table_name)));
-      }
-    }
+  $entry = $results->fetchObject();
+  
+  // if this is a materialized view then don't allow editing with this function
+  if ($entry->mview_id) {
+    drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/schema/mviews') . " interface to delete it.", 'error');
+    drupal_goto("admin/tripal/schema/custom_tables");
+    return array();
   }
-
-  // Redirect the user
-  if ($redirect) {
-    drupal_goto("admin/tripal/custom_tables");
-  }
+  
+  
+  $form = array();
+  $form['table_id'] = array(
+    '#type' => 'value',
+    '#value' => $table_id
+  );
+  
+  $form['sure'] = array(
+    '#type' => 'markup',
+    '#markup' => '<p>Are you sure you want to delete the "' . $entry->table_name . '" custom table?</p>'
+  );
+  $form['submit'] = array(
+    '#type'         => 'submit',
+    '#value'        => 'Delete',
+  );
+  $form['cancel'] = array(
+    '#type'         => 'submit',
+    '#value'        => 'Cancel',
+  );
+  return $form;
 }
+
+/**
+ * form submit hook for the tripal_custom_tables_delete_form form.
+ * 
+ * @param $form
+ * @param $form_state
+ */
+function tripal_custom_tables_delete_form_submit($form, &$form_state) {
+  $action   = $form_state['clicked_button']['#value'];
+  $table_id = $form_state['values']['table_id'];
+    
+  if (strcmp($action, 'Delete') == 0) {
+    tripal_delete_custom_table($table_id);
+  }
+  else {
+    drupal_set_message(t("No action performed."));
+  }
+  drupal_goto("admin/tripal/schema/custom_tables");
+}
+
+

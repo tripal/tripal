@@ -307,12 +307,76 @@ function tripal_core_custom_tables_schema() {
         'type' => 'text',
         'not NULL' => TRUE
       ),
+      'mview_id' => array(
+        'type' => 'int',
+        'not NULL' => FALSE
+      )
     ),
     'indexes' => array(
       'table_id' => array('table_id'),
     ),
     'primary key' => array('table_id'),
+    'foreign keys' => array(
+      'tripal_mviews' => array(
+        'table' => 'tripal_mviews',
+        'columns' => array(
+          'mview_id' => 'mview_id'
+        ),
+      ),
+    ),
   );
 
   return $schema;
+}
+
+/**
+ * Adds an mview_id column to the tripal_custom_tables table and makes an assocation between the mview and the custom table
+ *
+ */
+function tripal_core_update_7200() {
+
+  // add an mview column to the tripal_custom_tables table so we
+  // can associate which of the custom tables are also mviews
+  if (!db_field_exists('tripal_custom_tables', 'mview_id')) {
+    $spec = array(
+      'type' => 'int',
+      'not NULL' => FALSE
+    );
+    $keys = array(
+      'foreign keys' => array(
+        'tripal_mviews' => array(
+          'table' => 'tripal_mviews',
+          'columns' => array(
+            'mview_id' => 'mview_id'
+          ),
+        ),
+      ),
+    );
+    db_add_field('tripal_custom_tables', 'mview_id', $spec, $keys);
+    
+    // the foreign key specification doesn't really add one to the
+    // Drupal schema, it is just used internally, but we want one
+    db_query('
+      ALTER TABLE {tripal_custom_tables}
+      ADD CONSTRAINT {tripal_custom_tables_fk1}
+      FOREIGN KEY (mview_id) REFERENCES {tripal_mviews} (mview_id)
+      ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+    ');
+  }
+  
+  // now link the materialized view to it's custom table entry
+  $mviews = db_select('tripal_mviews', 'tmv')
+    ->fields('tmv', array('mview_id', 'mv_table'))
+    ->execute();
+  foreach ($mviews as $mview) {
+    db_update('tripal_custom_tables')
+     ->fields(array(
+       'mview_id' => $mview->mview_id
+     ))
+     ->condition('table_name', $mview->mv_table)
+     ->execute();
+     
+     
+  }
+  
 }

@@ -127,68 +127,6 @@ function tripal_mview_report($mview_id) {
 }
 
 /**
- * A template function to render a listing of all Materialized Views
- *
- * @ingroup tripal_mviews
- */
-function tripal_mviews_report() {
-  $header = array('', 'MView Name', 'Last Update', 'Status', 'Description', '');
-  $rows = array();
-  $mviews = db_query("SELECT * FROM {tripal_mviews} ORDER BY name");
-
-  foreach ($mviews as $mview) {
-    if ($mview->last_update > 0) {
-      $update = format_date($mview->last_update);
-    }
-    else {
-      $update = 'Not yet populated';
-    }
-
-    $rows[] = array(
-      l(t('View'), "admin/tripal/schema/mviews/report/$mview->mview_id") . " | " .
-      l(t('Edit'), "admin/tripal/schema/mviews/edit/$mview->mview_id") . " | " .
-      l(t('Populate'), "admin/tripal/schema/mviews/action/update/$mview->mview_id"),
-      $mview->name,
-      $update,
-      $mview->status,
-      $mview->comment,
-      l(t('Delete'), "admin/tripal/schema/mviews/action/delete/$mview->mview_id"),
-    );
-  }
-
-  $rows[] = array(
-    'data' => array(
-      array('data' => l(t('Create a new materialized view.'), "admin/tripal/schema/mviews/new"),
-        'colspan' => 6),
-    )
-  );
-  $page = '</p>' . t("Materialized Views (MViews) are custom tables populated with a defined SQL statement.
-    Because Chado is highly normalized and highly constrained it serves as a wonderful
-    data storage platform, but unfortunately some queries may be slow.  MViews alleviate slowness by aggregating data
-    into tables that are more easy to query.  Use MViews to create tables for custom search pages or custom Tripal
-    module development.") . '</p>';
-  $page .= '<p><b>' . t("MViews behaves in the following way:") . '</b><ul>' .
-           '<li>' . t("The SQL statement defined for an MVIEW will be used to populate the table") . '</li>' .
-           '<li>' . t("Altering the table structure of an MView will cause the MView table to be dropped and recreated.  All records in the MView will be lost.") . '</li>' .
-           '<li>' . t("Altering the query of an existing view will not change the MView table. No records will be lost. ") . '</li>' .
-           '<li>' . t("Repopulating an MView that is already populated will result in replacement of all records.") . '</li>' .
-           '<li>' . t("A database transaction will be used when populating MViews. Therefore replacement of records does not occur until the query completes.  Any search forms or pages dependent on the MView will continue to function.") . '</li>' .
-           '</ul></p>';
-  $page .= '<b>' . t("Existing MViews") . '</b>';
-  $table = array(
-    'header' => $header,
-    'rows' => $rows,
-    'attributes' => array('class' => 'tripal-data-table'),
-    'sticky' => FALSE,
-    'caption' => '',
-    'colgroups' => array(),
-    'empty' => 'There are no materialized views',
-  );
-  $page .= theme_table($table);
-  return $page;
-}
-
-/**
  * A Form to Create/Edit a Materialized View
  *
  * @param $form_state
@@ -432,7 +370,6 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
     '#value'        => t($value),
     '#executes_submit_callback' => TRUE,
   );
-  $form['#redirect'] = 'admin/tripal/schema/mviews';
   
   $form['example']= array(
     '#type'          => 'item',
@@ -601,10 +538,77 @@ function tripal_mviews_form_submit($form, &$form_state) {
     $schema_arr = array();
     eval("\$schema_arr = $schema;");
     tripal_add_mview($name, $modulename, $schema_arr, $query, $comment);
+    drupal_goto("admin/tripal/schema/mviews");
   }
   else {
     drupal_set_message(t("No action performed."));
   }
 
   return '';
+}
+
+
+/**
+ * Just a simple form for confirming deletion of a custom table
+ *
+ * @ingroup tripal_custom_tables
+ */
+function tripal_mviews_delete_form($form, &$form_state, $mview_id) {
+
+  // get details about this table entry
+  $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id";
+  $results = db_query($sql, array(':mview_id' => $mview_id));
+  $entry = $results->fetchObject();
+
+  $form = array();
+  $form['mview_id'] = array(
+    '#type' => 'value',
+    '#value' => $mview_id
+  );
+
+  $form['sure'] = array(
+    '#type' => 'markup',
+    '#markup' => '<p>Are you sure you want to delete the "' . $entry->name . '" materialized view?</p>'
+  );
+  $form['submit'] = array(
+    '#type'         => 'submit',
+    '#value'        => 'Delete',
+  );
+  $form['cancel'] = array(
+    '#type'         => 'submit',
+    '#value'        => 'Cancel',
+  );
+  return $form;
+}
+
+/**
+ * form submit hook for the tripal_custom_tables_delete_form form.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function tripal_mviews_delete_form_submit($form, &$form_state) {
+  $action   = $form_state['clicked_button']['#value'];
+  $mview_id = $form_state['values']['mview_id'];
+
+  if (strcmp($action, 'Delete') == 0) {
+    tripal_delete_mview($mview_id);
+  }
+  else {
+    drupal_set_message(t("No action performed."));
+  }
+  drupal_goto("admin/tripal/schema/mviews");
+}
+
+/**
+ * A wrapper for the tripal_add_job_populate_mview() API function, which
+ * then redirects back to the admin page for mviews.
+ * 
+ * @param $mview_id
+ */
+
+function tripal_mviews_add_populate_job($mview_id) {
+  
+  tripal_add_job_populate_mview($mview_id);
+  drupal_goto("admin/tripal/schema/mviews");
 }

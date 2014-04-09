@@ -153,7 +153,7 @@ function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NUL
         chado_query($sql);
       }
       // create the table
-      if (!chado_create_custom_table($mv_table, $mv_schema, 0)) {
+      if (!chado_create_custom_table($mv_table, $mv_schema, 0, $record->mview_id)) {
         drupal_set_message(t("Could not create the materialized view. Check Drupal error report logs."), 'error');
       }
       else {
@@ -272,7 +272,7 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
     // re-create the table differently depending on if it the traditional method
     // or the Drupal Schema API method
     if ($create_table and $mv_schema) {
-      if (!chado_create_custom_table($mv_table, $schema_arr, 0)) {
+      if (!chado_create_custom_table($mv_table, $schema_arr, 0, $record->mview_id)) {
         drupal_set_message(t("Could not create the materialized view. Check Drupal error report logs."));
       }
       else {
@@ -334,12 +334,10 @@ function tripal_mviews_get_mview_id($view_name) {
  *
  * @param $mview_id
  *   The unique ID of the materialized view for the action to be performed on
- * @param $redirect
- *   TRUE/FALSE depending on whether you want to redirect the user to admin/tripal/mviews
  *
  * @ingroup tripal_mviews_api
  */
-function tripal_add_populate_mview($mview_id, $redirect = FALSE) {
+function tripal_add_job_populate_mview($mview_id) {
   global $user;
 
   if (!$mview_id) {
@@ -356,10 +354,6 @@ function tripal_add_populate_mview($mview_id, $redirect = FALSE) {
   tripal_add_job("Populate materialized view '$mview->name'", 'tripal_core',
      'tripal_populate_mview', $args, $user->uid);
 
-  // Redirect the user
-  if ($redirect) {
-    drupal_goto("admin/tripal/mviews");
-  }
 }
 
 /**
@@ -369,12 +363,10 @@ function tripal_add_populate_mview($mview_id, $redirect = FALSE) {
  *   The action to be taken. One of update or delete
  * @param $mview_id
  *   The unique ID of the materialized view for the action to be performed on
- * @param $redirect
- *   TRUE/FALSE depending on whether you want to redirect the user to admin/tripal/mviews
  *
  * @ingroup tripal_mviews_api
  */
-function tripal_delete_mview($mview_id, $redirect = FALSE) {
+function tripal_delete_mview($mview_id) {
   global $user;
 
   if (!$mview_id) {
@@ -397,12 +389,13 @@ function tripal_delete_mview($mview_id, $redirect = FALSE) {
   // drop the table from chado if it exists
   if ($mview_exists) {
     $sql = "DROP TABLE {" . $mview->mv_table . "}";
-    chado_query($sql);
-  }
-
-  // Redirect the user
-  if ($redirect) {
-    drupal_goto("admin/tripal/mviews");
+    $success = chado_query($sql);
+    if ($success) {
+      drupal_set_message(t("Materialized view, %name, deleted.", array('%name' => $mview->name)));
+    }
+    else {
+      drupal_set_message(t("Problem deleting materialized view, %name.", array('%name' => $mview->name)), 'error');
+    }
   }
 }
 

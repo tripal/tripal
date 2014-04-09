@@ -385,7 +385,7 @@ function tripal_core_admin_defaultview_custom_tables() {
   $handler->display->display_options['fields']['nothing_1']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing_1']['alter']['text'] = 'Delete';
   $handler->display->display_options['fields']['nothing_1']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/tripal/schema/custom_tables/action/delete/[table_id]';
+  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/tripal/schema/custom_tables/delete/[table_id]';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_2']['id'] = 'nothing_2';
   $handler->display->display_options['fields']['nothing_2']['table'] = 'views';
@@ -594,7 +594,7 @@ function tripal_core_admin_defaultview_mviews() {
   $handler->display->display_options['fields']['nothing_1']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing_1']['alter']['text'] = 'Delete';
   $handler->display->display_options['fields']['nothing_1']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/tripal/schema/mviews/action/delete/[mview_id]';
+  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/tripal/schema/mviews/delete/[mview_id]';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_2']['id'] = 'nothing_2';
   $handler->display->display_options['fields']['nothing_2']['table'] = 'views';
@@ -603,7 +603,7 @@ function tripal_core_admin_defaultview_mviews() {
   $handler->display->display_options['fields']['nothing_2']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing_2']['alter']['text'] = 'Populate';
   $handler->display->display_options['fields']['nothing_2']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing_2']['alter']['path'] = 'admin/tripal/schema/mviews/action/update/[mview_id]';
+  $handler->display->display_options['fields']['nothing_2']['alter']['path'] = 'admin/tripal/schema/mviews/update/[mview_id]';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_3']['id'] = 'nothing_3';
   $handler->display->display_options['fields']['nothing_3']['table'] = 'views';
@@ -636,7 +636,7 @@ function tripal_core_admin_defaultview_mviews() {
   $handler->display->display_options['filters']['mv_table']['group'] = 1;
   $handler->display->display_options['filters']['mv_table']['exposed'] = TRUE;
   $handler->display->display_options['filters']['mv_table']['expose']['operator_id'] = 'mv_table_op';
-  $handler->display->display_options['filters']['mv_table']['expose']['label'] = 'Database Table';
+  $handler->display->display_options['filters']['mv_table']['expose']['label'] = 'Table Name';
   $handler->display->display_options['filters']['mv_table']['expose']['operator'] = 'mv_table_op';
   $handler->display->display_options['filters']['mv_table']['expose']['identifier'] = 'mv_table';
   $handler->display->display_options['filters']['mv_table']['expose']['remember_roles'] = array(
@@ -651,7 +651,7 @@ function tripal_core_admin_defaultview_mviews() {
   $handler->display->display_options['filters']['modulename']['group'] = 1;
   $handler->display->display_options['filters']['modulename']['exposed'] = TRUE;
   $handler->display->display_options['filters']['modulename']['expose']['operator_id'] = 'modulename_op';
-  $handler->display->display_options['filters']['modulename']['expose']['label'] = 'Module Created by';
+  $handler->display->display_options['filters']['modulename']['expose']['label'] = 'Module';
   $handler->display->display_options['filters']['modulename']['expose']['operator'] = 'modulename_op';
   $handler->display->display_options['filters']['modulename']['expose']['identifier'] = 'modulename';
   $handler->display->display_options['filters']['modulename']['expose']['remember_roles'] = array(
