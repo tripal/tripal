@@ -295,7 +295,7 @@ function tripal_core_menu() {
     'title' => 'Create Materialized View',
     'description' => 'Materialized views are used to improve speed of large or complex queries.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array(tripal_mviews_delete_form, 5),
+    'page arguments' => array('tripal_mviews_delete_form', 5),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );

@@ -361,6 +361,23 @@ function tripal_core_views_data_custom_tables($data) {
       'handler' => 'views_handler_argument_string',
     ),
   );
+  
+  // Table ID
+  $data['tripal_custom_tables']['mview_id'] = array(
+    'title' => t('Materialized View ID'),
+    'help' => t('Foreign key to tripal_mviews table for the materialized view.'),
+    'field' => array(
+      'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+  );
+  
 
   return $data;
 }

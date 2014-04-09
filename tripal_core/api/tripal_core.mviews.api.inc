@@ -83,7 +83,7 @@ function tripal_add_legacy_mview($name, $modulename, $mv_table, $mv_specs, $inde
   $results = db_query($sql);
   chado_set_active($previous_db);  // now use drupal database
   if ($results) {
-    drupal_set_message(t("View '%name' created", array('%name' => $name)));
+    drupal_set_message(t("Materialized view '%name' created", array('%name' => $name)));
   }
   else {
     drupal_set_message(t("Failed to create the materialized view table: '%mv_table'", array('%mv_table' => $mv_table)), 'error');
@@ -276,14 +276,14 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
         drupal_set_message(t("Could not create the materialized view. Check Drupal error report logs."));
       }
       else {
-        drupal_set_message(t("View '%name' created", array('%name' => $name)));
+        drupal_set_message(t("Materialized view '%name' created", array('%name' => $name)));
       }
     }
     if ($create_table and !$mv_schema) {
       $sql = "CREATE TABLE {$mv_table} ($mv_specs); $index";
       $results = chado_query($sql);
       if ($results) {
-        drupal_set_message(t("View '%name' created.  All records cleared. Please re-populate the view.",
+        drupal_set_message(t("Materialized view '%name' created.  All records cleared. Please re-populate the view.",
           array('%name' => $name)));
       }
       else {
