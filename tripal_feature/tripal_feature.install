@@ -232,7 +232,12 @@ function tripal_feature_add_cvs() {
     'Contains types of relationships between features.'
   );
   
-  // the feature_property CV already exists... it comes with chado, so no need to add it here
+  // the feature_property CV already exists... it comes with chado, but we need to
+  // add it just in case it doesn't get added before the feature module is installed
+  tripal_cv_add_cv(
+    'feature_property',
+    'Stores properties about features'
+  );
   
   // the feature type vocabulary should be the sequence ontology, and even though
   // this ontology should get loaded we will create it here just so that we can 
@@ -367,4 +372,38 @@ function tripal_feature_update_dependencies() {
   );
 
   return $dependencies;
+}
+
+/**
+ * Fixes an error with the materialized view installation
+ *
+ */
+function tripal_feature_update_7201() {
+
+  // there is a bug in the Tripal v2.0-alpha release that didn't add the
+  // materialized view schema to the mviews table.
+  // get the schema for the materialized view from the custom_tables table
+  // as there is a copy there, but only if the schema is missing from the
+  // materialized view table
+  $view_name = 'organism_feature_count';
+  $schema = db_select('tripal_mviews', 'tm')
+    ->fields('tm', array('mv_schema'))
+    ->condition('name', $view_name)
+    ->execute()
+    ->fetchField();
+  if (!$schema or $schema == 'Array') {
+    $schema = db_select('tripal_custom_tables', 'tct')
+      ->fields('tct', array('schema'))
+      ->condition('table_name', $view_name)
+      ->execute()
+      ->fetchField();
+    $schema_str = var_export(unserialize($schema), TRUE);
+    $schema_str = preg_replace('/=>\s+\n\s+array/', '=> array', $schema_str);
+    db_update('tripal_mviews')
+      ->fields(array(
+      'mv_schema' => $schema_str
+      ))
+      ->condition('name', $view_name)
+      ->execute();
+  }
 }

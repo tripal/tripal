@@ -370,7 +370,7 @@ function tripal_custom_tables_form_submit($form, &$form_state) {
      $skip_creation = 0;
   }
 
-  // conver the schema into a PHP array
+  // convert the schema into a PHP array
   $schema_arr = array();
   eval("\$schema_arr = $schema;");
 

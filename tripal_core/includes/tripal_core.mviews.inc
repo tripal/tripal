@@ -230,21 +230,20 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
   // get this requested view
   if (strcmp($action, 'Edit') == 0 ) {
     $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id ";
-    $results = db_query($sql, array(':mview_id' => $mview_id));
-    $mview = $results->fetchObject();
+    $mview = db_query($sql, array(':mview_id' => $mview_id))->fetchObject();
 
     // set the default values.  If there is a value set in the
     // form_state then let's use that, otherwise, we'll pull
     // the values from the database
     if (array_key_exists('values', $form_state)) {
-      $default_name = $form_state['values']['name'];
-      $default_mv_table = $form_state['values']['mv_table'];
-      $default_mv_specs = $form_state['values']['mv_specs'];
-      $default_indexed = $form_state['values']['indexed'];
-      $default_mvquery = $form_state['values']['mvquery'];
+      $default_name          = $form_state['values']['name'];
+      $default_mv_table      = $form_state['values']['mv_table'];
+      $default_mv_specs      = $form_state['values']['mv_specs'];
+      $default_indexed       = $form_state['values']['indexed'];
+      $default_mvquery       = $form_state['values']['mvquery'];
       $default_special_index = $form_state['values']['special_index'];
-      $default_comment = $form_state['values']['comment'];
-      $default_modulename = $form_state['values']['modulename'];
+      $default_comment       = $form_state['values']['comment'];
+      $default_modulename    = $form_state['values']['modulename'];
     }
 
     if (!$default_name) {
@@ -341,10 +340,9 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
   // add a fieldset for the Drupal Schema API
   $form['schema'] = array(
     '#type' => 'fieldset',
-    '#title' => 'Drupal Schema API Setup',
-    '#description' => t('Use the Drupal Schema API array to describe a table. The benefit is that it ' .
-                       'can be fully integrated with Tripal Views.  Tripal supports an extended ' .
-                       'array format to allow for descriptoin of foreign key relationships.'),
+    '#title' => 'Table Schema',
+    '#description' => t('Use a ' . l("Drupal Schema API", "https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7", array('attributes' => array('target' => '_blank'))) . 
+        ' array to describe the table. See the bottom of this page for an example.'),
     '#collapsible' => 1,
     '#collapsed' => $schema_collapsed ,
   );
@@ -352,7 +350,8 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
   $form['schema']['schema']= array(
     '#type'          => 'textarea',
     '#title'         => t('Schema Array'),
-    '#description'   => t('Please enter the Drupal Schema API compatible array that defines the table.'),
+    '#description'   => t('Please enter the ' . l("Drupal Schema API", "https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7", array('attributes' => array('target' => '_blank'))) . 
+        ' compatible array that defines the table. There must also be a "table" key with the name of the table as the value. See the example at the bottom of this page.'),
     '#required'      => FALSE,
     '#default_value' => $default_schema,
     '#rows'          => 25,
@@ -431,11 +430,58 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
   $form['submit'] = array(
     '#type'         => 'submit',
     '#value'        => t($value),
-    '#weight'       => 9,
     '#executes_submit_callback' => TRUE,
   );
   $form['#redirect'] = 'admin/tripal/schema/mviews';
-
+  
+  $form['example']= array(
+    '#type'          => 'item',
+    '#description'         => "<br>An example Schema API definition for a materialized view: <pre>
+array (
+  'description' => 'Stores the type and number of features per organism',
+  'table' => 'organism_feature_count',
+  'fields' => array (
+    'organism_id' => array (
+      'type' => 'int',
+      'not null' => true,
+    ),
+    'genus' => array (
+      'type' => 'varchar',
+      'length' => '255',
+      'not null' => true,
+    ),
+    'species' => array (
+      'type' => 'varchar',
+      'length' => '255',
+      'not null' => true,
+    ),
+    'common_name' => array (
+      'type' => 'varchar',
+      'length' => '255',
+      'not null' => false,
+    ),
+    'num_features' => array (
+      'type' => 'int',
+      'not null' => true,
+    ),
+    'cvterm_id' => array (
+      'type' => 'int',
+      'not null' => true,
+    ),
+    'feature_type' => array (
+      'type' => 'varchar',
+      'length' => '255',
+      'not null' => true,
+    ),
+  ),
+  'indexes' => array (
+    'organism_feature_count_idx1' => array ('organism_id'),
+    'organism_feature_count_idx2' => array ('cvterm_id'),
+    'organism_feature_count_idx3' => array ('feature_type'),
+  ),
+)
+</pre>"
+  );
   return $form;
 }
 
@@ -446,15 +492,20 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
  * @ingroup tripal_mviews
  */
 function tripal_mviews_form_validate($form, &$form_state) {
-  $action = $form_state['values']['action'];
-  $mview_id = $form_state['values']['mview_id'];
-  $name = $form_state['values']['name'];
+  
+  
+  $action    = $form_state['values']['action'];
+  $mview_id  = $form_state['values']['mview_id'];
+  $name      = $form_state['values']['name'];
   $is_legacy = $form_state['values']['is_legacy'];
-  $query = $form_state['values']['mvquery'];
+  $query     = $form_state['values']['mvquery'];
+  
+  // if this is a legacy materialized view (no longer supported in Tripal v2.0
+  // but code left just in case)
   if ($is_legacy) {
     $mv_table = $form_state['values']['mv_table'];
     $mv_specs = $form_state['values']['mv_specs'];
-    $indexed = $form_state['values']['indexed'];
+    $indexed  = $form_state['values']['indexed'];
     $special_index = '';//$form_state['values']['special_index'];
   }
   else {
@@ -464,13 +515,18 @@ function tripal_mviews_form_validate($form, &$form_state) {
     $special_index = '';
   }
   $comment = $form_state['values']['comment'];
-  $schema = $form_state['values']['schema'];
+  $schema  = $form_state['values']['schema'];
 
+  // if both the schema and the older fields for the legacy view are populated then
+  // this is an error and we need to let the user know.
   if ($schema and ($mv_table or $mv_specs or $indexed or $special_index)) {
     form_set_error($form_state['values']['schema'],
       t('You can create an MView using the Drupal Schema API method or the ' .
         'traditional method but not both.'));
   }
+  
+  // if we don't have a schema and are missing fields for the legacy views then
+  // inform the user.
   if (!$schema) {
     if (!$mv_specs) {
       form_set_error($form_state['values']['mv_specs'],
@@ -494,7 +550,6 @@ function tripal_mviews_form_validate($form, &$form_state) {
       form_set_error($form_state['values']['schema'],
         t("The schema array must have key named 'table'"));
     }
-
     // TODO: add in more validation checks of the array to help the user
   }
 }
@@ -508,37 +563,44 @@ function tripal_mviews_form_validate($form, &$form_state) {
 function tripal_mviews_form_submit($form, &$form_state) {
 
   $ret = array();
-  $action = $form_state['values']['action'];
-  $mview_id = $form_state['values']['mview_id'];
-  $name = $form_state['values']['name'];
-  $is_legacy = $form_state['values']['is_legacy'];
-  $query = $form_state['values']['mvquery'];
+  
+  $action     = $form_state['values']['action'];
+  $mview_id   = $form_state['values']['mview_id'];
+  $name       = $form_state['values']['name'];
+  $is_legacy  = $form_state['values']['is_legacy'];
+  $query      = $form_state['values']['mvquery'];
+  $comment    = $form_state['values']['comment'];
+  $schema     = $form_state['values']['schema'];
+  $modulename = $form_state['values']['modulename'];
+  $mv_table = '';
+  $mv_specs = '';
+  $indexed = '';
+  $special_index = '';
+  
+  // if this is a legacy materialized view (no longer supported in Tripal v2.0
+  // but code left just in case)
   if ($is_legacy) {
     $mv_table = $form_state['values']['mv_table'];
     $mv_specs = $form_state['values']['mv_specs'];
-    $indexed = $form_state['values']['indexed'];
+    $indexed  = $form_state['values']['indexed'];
     $special_index = '';//$form_state['values']['special_index'];
   }
-  else {
-    $mv_table = '';
-    $mv_specs = '';
-    $indexed = '';
-    $special_index = '';
-  }
-  $comment = $form_state['values']['comment'];
-  $schema = $form_state['values']['schema'];
-  $modulename = $form_state['values']['modulename'];
+
   if (!$modulename) {
     $modulename = 'tripal_core';
   }
 
+  // if this is an edit action
   if (strcmp($action, 'Edit') == 0) {
     tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
       $indexed, $query, $special_index, $comment, $schema);
   }
+  // else an add action
   elseif (strcmp($action, 'Add') == 0) {
-    tripal_add_mview($name, $modulename, $mv_table, $mv_specs,
-      $indexed, $query, $special_index, $comment, $schema);
+    // convert the schema into a PHP array
+    $schema_arr = array();
+    eval("\$schema_arr = $schema;");
+    tripal_add_mview($name, $modulename, $schema_arr, $query, $comment);
   }
   else {
     drupal_set_message(t("No action performed."));

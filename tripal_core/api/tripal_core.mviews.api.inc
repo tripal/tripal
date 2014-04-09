@@ -115,13 +115,13 @@ function tripal_add_legacy_mview($name, $modulename, $mv_table, $mv_specs, $inde
  */
 function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NULL) {
 
-  $mv_table = $mv_schema['table'];
-
-  if (!$mv_table) {
+  if (!array_key_exists('table', $mv_schema)) {
      tripal_report_error('tripal_core', TRIPAL_ERROR,
        'Must have a table name when creating an mview.', array());
      return NULL;
   }
+  
+  $mv_table = $mv_schema['table'];
 
   // see if the mv_table name already exsists
   $mview_id = db_query(
@@ -137,7 +137,11 @@ function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NUL
     $record->mv_table = $mv_table;
     $record->query = $query;
     $record->comment = $comment;
-    $record->mv_schema = $mv_schema;
+    
+    // convert the schema into a string format
+    $str_schema = var_export($mv_schema, TRUE);
+    $str_schema = preg_replace('/=>\s+\n\s+array/', '=> array', $str_schema);
+    $record->mv_schema = $str_schema;
 
     // add the record to the tripal_mviews table and if successful
     // create the new materialized view in the chado schema
@@ -149,11 +153,11 @@ function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NUL
         chado_query($sql);
       }
       // create the table
-      if (!chado_create_custom_table ($mv_table, $mv_schema, 0)) {
+      if (!chado_create_custom_table($mv_table, $mv_schema, 0)) {
         drupal_set_message(t("Could not create the materialized view. Check Drupal error report logs."), 'error');
       }
       else {
-        drupal_set_message(t("View '%name' created", array('%name' => $name)));
+        drupal_set_message(t("Materialized view '%name' created", array('%name' => $name)));
       }
     }
   }
@@ -166,7 +170,7 @@ function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NUL
 }
 
 /**
- * Edits a materialized view to the chado database to help speed data access.This
+ * Edits a materialized view to the chado database to help speed data access. This
  * function supports the older style where postgres column specifications
  * are provided using the $mv_table, $mv_specs and $indexed variables. It also
  * supports the newer preferred method where the materialized view is described
