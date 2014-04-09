@@ -955,6 +955,109 @@ function tripal_views_integration_form($form, $form_state, $arg) {
       );
     }
 
+    // Form to add a new join
+    $form['view_setup_join']['new_join'] = array(
+      '#type' => 'fieldset',
+      '#title' => 'New Join',
+      '#description' => "Add a new join to the $table_name table",
+      '#prefix' => '<div id="new-join">',
+      '#suffix' => '</div>',
+    );
+
+    $form['view_setup_join']['new_join']['column-1'] = array(
+         '#type' => 'markup',
+         '#prefix' => "<div class=\"join-column-one\">",
+         '#suffix' => "</div>",
+    );
+
+    $form['view_setup_join']['new_join']['column-1']['join_base_table'] = array(
+      '#type' => 'item',
+      '#markup' => '<span class="column-name">' . $table_name . '</span>'
+    );
+
+    $form['view_setup_join']['new_join']['column-1']['new_join_base_table'] = array(
+      '#type' => 'hidden',
+      '#value' => $table_name
+    );
+
+    $form['view_setup_join']['new_join']['column-1']['new_join_base_field'] = array(
+      '#type' => 'select',
+      '#options' => $base_field_options,
+      '#required' => FALSE,
+    );
+
+    // COLUMN II
+    $form['view_setup_join']['new_join']['column-2'] = array(
+         '#type' => 'markup',
+         '#prefix' => "<div class=\"join-column-two\">",
+         '#suffix' => "</div>",
+         '#value' => filter_xss('')
+    );
+
+    $form['view_setup_join']['new_join']['column-2']['new_join_join_handler'] = array(
+      '#type' => 'select',
+      '#prefix' => "<div class=\"fields-join-handler\">",
+      '#suffix' => "</div>",
+      '#options' => $handlers_join,
+      '#required' => FALSE,
+    );
+
+    $form['view_setup_join']['new_join']['column-2']['new_join_relationship_handler'] = array(
+      '#type' => 'select',
+      '#prefix' => "<div class=\"fields-relationship-handler\">",
+      '#suffix' => "</div>",
+      '#options' => $handlers_rel,
+      '#required' => FALSE,
+      '#default_value' => 'views_handler_relationship'
+    );
+
+    $form['view_setup_join']['new_join']['column-2']['new_join_relationship_only'] = array(
+      '#type' => 'checkbox',
+      '#title' => 'Relationship Only?',
+      '#default_value' => TRUE
+    );
+
+    // COLUMN III
+    $form['view_setup_join']['new_join']['column-3'] = array(
+         '#type' => 'markup',
+         '#prefix' => "<div class=\"join-column-three\">",
+         '#suffix' => "</div>",
+         '#value' => filter_xss('')
+    );
+
+    $form['view_setup_join']['new_join']['column-3']['new_join_left_table'] = array(
+      '#type' => 'select',
+      '#options' => $chado_join_tables,
+      '#ajax' => array(
+        'callback' => 'tripal_views_integration_ajax_new_join_left_field_callback',
+        'wrapper' => 'new-join',
+      )
+    );
+
+    $new_join_table = (isset($form_state['values']['new_join_left_table']))? $form_state['values']['new_join_left_table'] : FALSE;
+    if ($new_join_table) {
+      // get the table description
+      $table_desc = chado_get_schema($new_join_table);
+      foreach ($table_desc['fields'] as $column => $def) {
+        $columns[$column] = $column;
+      }
+    }
+    else {
+      $columns = array('Select Left Column');
+    }
+    $form['view_setup_join']['new_join']['column-3']['new_join_left_field'] = array(
+      '#type' => 'select',
+      '#prefix' => "  <div id=\"fields-column-join-column-$table_id-$i\" class=\"fields-column-join-column\">",
+      '#suffix' => "</div>",
+      '#options' => $columns,
+      '#required' => FALSE,
+    );
+
+    $form['view_setup_join']['new_join']['save'] = array(
+      '#type'  => 'submit',
+      '#value' => t('Save & Add Join'),
+    );
+
     $form['num_joins'] = array(
       '#type' => 'hidden',
       '#value' => $i
@@ -1024,6 +1127,17 @@ function tripal_views_integration_form_validate($form, &$form_state) {
     form_set_error('row_priority', 'A priority of 10 or 9 is reserved for default tripal '
       .'views integrations created by core modules. Please set the priority between '
       .'0 and -10 to ensure your changes are used rather over the defaults.');
+  }
+
+  // Check that if some fields for a new join are entered, all of them are
+  if (!empty($form_state['values']['new_join_base_field'])
+    OR !empty($form_state['values']['new_join_left_table'])
+    OR !empty($form_state['values']['new_join_left_field'])) {
+    if (!(!empty($form_state['values']['new_join_base_field'])
+      AND !empty($form_state['values']['new_join_left_table'])
+      AND !empty($form_state['values']['new_join_left_field']))) {
+      form_set_error('new_join_base_field','You need to select the Base Column, Left Table and Left Column to create a new join');
+    }
   }
 }
 
@@ -1173,6 +1287,21 @@ function tripal_views_integration_form_submit($form, &$form_state) {
     drupal_write_record('tripal_views_join', $join_record);
   }
 
+  // Now add the new join if there is one
+  if ($form_state['values']['new_join_base_field']) {
+    $join_record = array(
+      'setup_id' => $tripal_views_record['setup_id'],
+      'base_table' => $form_state['values']["new_join_base_table"],
+      'base_field' => $form_state['values']["new_join_base_field"],
+      'left_table' => $form_state['values']["new_join_left_table"],
+      'left_field' => $form_state['values']["new_join_left_field"],
+      'handler' => $form_state['values']["new_join_join_handler"],
+      'relationship_handler' => $form_state['values']["new_join_relationship_handler"],
+      'relationship_only' => $form_state['values']["new_join_relationship_only"]
+    );
+    drupal_write_record('tripal_views_join', $join_record);
+  }
+
   if ($setup_id) {
     drupal_set_message(t('Record Updated'));
   }
@@ -1180,10 +1309,18 @@ function tripal_views_integration_form_submit($form, &$form_state) {
     drupal_set_message(t('Record Added'));
   }
 
-  $form_state['redirect'] = 'admin/tripal/views-integration/list';
+  $form_state['redirect'] = 'admin/tripal/views-integration/integrations';
 
   // now clear all the caches so that Drupal views picks up our chages
   views_invalidate_cache();
+}
+
+/**
+ * AJAX callback to replace the left field select list in the new join fieldset of the
+ * tripal_views_integration_form form
+ */
+function tripal_views_integration_ajax_new_join_left_field_callback($form, $form_state) {
+  return $form['view_setup_join']['new_join'];
 }
 
 /**
