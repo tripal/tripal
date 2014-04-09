@@ -1166,7 +1166,9 @@ function tripal_add_field_to_views_integration($table_name, $priority, $field) {
  * @param $priority
  *   The priority of the integration to use; pass NULL to use the lightest integration
  * @param $field
- *   An array describing the field ot add; uses the same format as the $defn_array
+ *   An array describing the join to add. it should contain the following keys:
+ *   base_table, base_field, left_table, left_field, handler, relationship_handler,
+ *   relationship_only
  *
  * @return
  *   TRUE if the field was added successfully; FALSE otherwise
