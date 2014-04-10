@@ -382,3 +382,40 @@ function tripal_pub_update_dependencies() {
 
   return $dependencies;
 }
+
+/**
+ * Adds missing foreign key constraints
+ *
+ */
+function tripal_pub_update_7201() {
+  // there was a bug in the function for creating a custom table that
+  // kept foreign key constraints from being added.  So, we need to add those
+  // to keep from error messages appear, we will drop the FK if it already
+  // exists and then re-add it.
+  try {
+    db_query('
+      ALTER TABLE chado.pubauthor_contact
+      DROP CONSTRAINT IF EXISTS pubauthor_contact_pubauthor_id_fkey CASCADE
+    ');
+    db_query('
+      ALTER TABLE chado.pubauthor_contact
+      DROP CONSTRAINT IF EXISTS pubauthor_contact_contact_id_fkey CASCADE
+    ');
+    db_query('
+      ALTER TABLE chado.pubauthor_contact
+      ADD CONSTRAINT pubauthor_contact_pubauthor_id_fkey
+      FOREIGN KEY (pubauthor_id) REFERENCES chado.pubauthor (pubauthor_id)
+      ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+    ');
+    db_query('
+      ALTER TABLE chado.pubauthor_contact
+      ADD CONSTRAINT pubauthor_contact_contact_id_fkey
+      FOREIGN KEY (contact_id) REFERENCES chado.contact (contact_id)
+      ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+    ');
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to update foriegn key: '. $error);
+  }
+}

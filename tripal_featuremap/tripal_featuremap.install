@@ -510,3 +510,85 @@ function tripal_featuremap_update_dependencies() {
 
   return $dependencies;
 }
+
+/**
+ * Adds missing foreign key constraints
+ *
+ */
+function tripal_featuremap_update_7201() {
+  // there was a bug in the function for creating a custom table that
+  // kept foreign key constraints from being added.  So, we need to add those
+  // to keep from error messages appear, we will drop the FK if it already
+  // exists and then re-add it.
+  try {
+    // featuremapprop table
+    db_query('
+      ALTER TABLE chado.featuremapprop
+      DROP CONSTRAINT IF EXISTS featuremapprop_type_id_fkey CASCADE
+    ');
+    db_query('
+      ALTER TABLE chado.featuremapprop
+      DROP CONSTRAINT IF EXISTS featuremapprop_featuremap_id_fkey CASCADE
+    ');
+    db_query('
+      ALTER TABLE chado.featuremapprop
+      ADD CONSTRAINT featuremapprop_type_id_fkey
+      FOREIGN KEY (type_id) REFERENCES chado.cvterm (cvterm_id)
+      ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+    ');
+    db_query('
+      ALTER TABLE chado.featuremapprop
+      ADD CONSTRAINT featuremapprop_featuremap_id_fkey
+      FOREIGN KEY (featuremap_id) REFERENCES chado.featuremap (featuremap_id)
+      ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+    ');
+    
+    // featuremap_dbref table
+    db_query('
+      ALTER TABLE chado.featuremap_dbxref
+      DROP CONSTRAINT IF EXISTS featuremap_dbxref_dbxref_id_fkey CASCADE
+    ');
+    db_query('
+      ALTER TABLE chado.featuremap_dbxref
+      DROP CONSTRAINT IF EXISTS featuremap_dbxref_featuremap_id_fkey CASCADE
+    ');
+    db_query('
+      ALTER TABLE chado.featuremap_dbxref
+      ADD CONSTRAINT featuremap_dbxref_dbxref_id_fkey
+      FOREIGN KEY (dbxref_id) REFERENCES chado.dbxref (dbxref_id)
+      ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+    ');
+    db_query('
+      ALTER TABLE chado.featuremap_dbxref
+      ADD CONSTRAINT featuremap_dbxref_featuremap_id_fkey
+      FOREIGN KEY (featuremap_id) REFERENCES chado.featuremap (featuremap_id)
+      ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+    ');
+    
+    // featureposprop
+    db_query('
+      ALTER TABLE chado.featureposprop
+      DROP CONSTRAINT IF EXISTS featureposprop_type_id_fkey CASCADE
+    ');
+    db_query('
+      ALTER TABLE chado.featureposprop
+      DROP CONSTRAINT IF EXISTS featureposprop_featurepos_id_fkey CASCADE
+    ');
+    db_query('
+      ALTER TABLE chado.featureposprop
+      ADD CONSTRAINT featureposprop_type_id_fkey
+      FOREIGN KEY (type_id) REFERENCES chado.cvterm (cvterm_id)
+      ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+    ');
+    db_query('
+      ALTER TABLE chado.featureposprop
+      ADD CONSTRAINT featureposprop_featurepos_id_fkey
+      FOREIGN KEY (featurepos_id) REFERENCES chado.featurepos (featurepos_id)
+      ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+    ');
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to update foriegn key: '. $error);
+  }
+}
