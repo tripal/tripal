@@ -211,60 +211,49 @@ function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NUL
 function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
   $indexed, $query, $special_index, $comment = NULL, $mv_schema = NULL) {
 
-  // get the table name from the schema array
-  $schema_arr = array();
-  if ($mv_schema) {
-    // get the schema from the mv_specs and use it to add the custom table
-    eval("\$schema_arr = $mv_schema;");
-    $mv_table = $schema_arr['table'];
-  }
-
-  $record = new stdClass();
-  $record->mview_id = $mview_id;
-  $record->name = $name;
-  $record->modulename = $modulename;
-  $record->query = $query;
-  $record->last_update = 0;
-  $record->status = '';
-  $record->comment = $comment;
-
-  // get the view before we update and check to see if the table structure has
-  // changed. IF so, then we want to drop and recreate the table. If not, then
-  // just save the updated SQL.
-  $create_table = 1;
-  $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id";
-  $results = db_query($sql, array(':mview_id' => $mview_id));
-  $mview = $results->fetchObject();
-  if ($mview->mv_schema == $mv_schema and $mview->mv_table == $mv_table and
-     $mview->mv_specs == $mv_specs and $mview->indexed == $indexed and
-     $mview->special_index == $special_index) {
-    // nothing has changed so simpy update the SQL and other fields
-    $create_table = 0;
-  }
-  else {
-    // add in the table structure fields
-    $record->mv_schema = $mv_schema;
-    $record->mv_table = $mv_table;
-    $record->mv_specs = $mv_specs;
-    $record->indexed = $indexed;
-    $record->query = $query;
-    $record->special_index = $special_index;
-  }
-
-  // if we are going to create the table then we must first drop it if it exists
-  if ($create_table) {
-    $previous_db = chado_set_active('chado');  // use chado database
-    if (db_table_exists($mview->mv_table)) {
-      $sql = "DROP TABLE :table_name";
-      db_query($sql, array(':table_name' => $mview->mv_table));
-      drupal_set_message(t("View '%name' dropped", array('%name' => $name)));
+  $transaction = db_transaction();
+  try {
+    // get the table name from the schema array
+    $schema_arr = array();
+    if ($mv_schema) {
+      // get the schema from the mv_specs and use it to add the custom table
+      eval("\$schema_arr = $mv_schema;");
+      $mv_table = $schema_arr['table'];
     }
-    chado_set_active($previous_db);  // now use drupal database
-  }
-
-  // update the record to the tripal_mviews table and if successful
-  // create the new materialized view in the chado schema
-  if (drupal_write_record('tripal_mviews', $record, 'mview_id')) {
+  
+    $record = new stdClass();
+    $record->mview_id    = $mview_id;
+    $record->name        = $name;
+    $record->modulename  = $modulename;
+    $record->query       = $query;
+    $record->last_update = 0;
+    $record->status      = '';
+    $record->comment     = $comment;
+    $record->mv_schema   = $mv_schema;
+    $record->mv_table    = $mv_table;
+    
+    // update the record to the tripal_mviews table
+    drupal_write_record('tripal_mviews', $record, 'mview_id');
+  
+    // get the view before we update and check to see if the table structure has
+    // changed. If so, then we want to drop and recreate the table. If not, then
+    // just save the updated SQL.
+    $create_table = 1;
+    $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id";
+    $results = db_query($sql, array(':mview_id' => $mview_id));
+    $mview = $results->fetchObject();
+    if ($mview->mv_schema == $mv_schema and $mview->mv_table == $mv_table) {
+      chado_create_custom_table($mv_table, $schema_arr, 0, $record->mview_id);
+        drupal_set_message(t("Materialized view '%name' created", array('%name' => $name)));
+    }
+    else {
+      $message = "View '%name' updated.  All records remain. ";
+      if ($query != $mview->query) {
+        $message .= "Please repopulate the view to use the updated query.";
+      }
+      drupal_set_message(t($message, array('%name' => $name)));
+    }
+      
     // construct the indexes SQL if needed
     $index = '';
     if ($indexed) {
@@ -277,39 +266,14 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
       }
     }
 
-    // re-create the table differently depending on if it the traditional method
-    // or the Drupal Schema API method
-    if ($create_table and $mv_schema) {
-      if (!chado_create_custom_table($mv_table, $schema_arr, 0, $record->mview_id)) {
-        drupal_set_message(t("Could not create the materialized view. Check Drupal error report logs."));
-      }
-      else {
-        drupal_set_message(t("Materialized view '%name' created", array('%name' => $name)));
-      }
-    }
-    if ($create_table and !$mv_schema) {
-      $sql = "CREATE TABLE {$mv_table} ($mv_specs); $index";
-      $results = chado_query($sql);
-      if ($results) {
-        drupal_set_message(t("Materialized view '%name' created.  All records cleared. Please re-populate the view.",
-          array('%name' => $name)));
-      }
-      else {
-        drupal_set_message(t("Failed to create the materialized view table: '%mv_table'",
-          array('%mv_table' => $mv_table)), 'error');
-      }
-    }
-    if (!$create_table) {
-      $message = "View '%name' updated.  All records remain. ";
-      if ($query != $mview->query) {
-        $message .= "Please repopulate the view to use updated query.";
-      }
-      drupal_set_message(t($message, array('%name' => $name)));
-    }
   }
-  else {
-    drupal_set_message(t("Failed to update the materialized view: '%mv_table'",
-      array('%mv_table' => $mv_table)), 'error');
+  catch (Exception $e) {
+    $transaction->rollback();
+    watchdog_exception('tripal_core', $e);
+    $error = _drupal_decode_exception($e);
+    drupal_set_message(t("Could not update materialized view '%table_name': %message.",
+    array('%table_name' => $mv_table, '%message' => $error['!message'])), 'error');
+    return FALSE;
   }
 }
 

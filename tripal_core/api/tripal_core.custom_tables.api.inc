@@ -22,67 +22,63 @@
  *   The name of the custom table
  * @param $schema
  *   Use the Schema API array to define the custom table.
- * @param $skip_creation
+ * @param $skip_if_exists
  *   Set as TRUE to skip dropping and re-creation of the table.  This is
  *   useful if the table was already created through another means and you
  *   simply want to make Tripal aware of the table schema.
  *
  * @ingroup tripal_custom_tables_api
  */
-function chado_edit_custom_table($table_id, $table_name, $schema, $skip_creation = 1) {
+function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exists = 1) {
 
-  // Create a new record
-  $record = new stdClass();
-  $record->table_id = $table_id;
-  $record->table_name = $table_name;
-  $record->schema = serialize($schema);
-
-  // get the current custom table record
-  $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
-  $results = db_query($sql, array(':table_id' => $table_id));
-  $custom_table = $results->fetchObject();
-
-  // if this is a materialized view then don't allow editing with this function
-  if ($custom_table->mview_id) {
-    tripal_report_error('tripal_core', TRIPAL_ERROR, "Please use the tripal_edit_mview() function to edit this custom table as it is a materialized view.", array());
-    drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/schema/mviews') . " interface to edit it.", 'error');
-    return FALSE;
-  }
+  $transaction = db_transaction();
+  try {
+    // Create a new record
+    $record = new stdClass();
+    $record->table_id = $table_id;
+    $record->table_name = $table_name;
+    $record->schema = serialize($schema);
   
-  // if the user changed the table name, we want to drop the old one and force
-  // creation of the new one.
-  if ($custom_table->table_name != $table_name) {
-    chado_query("DROP TABLE %s", $custom_table->table_name);
-    $skip_creation = 0; // we want to create the table
-  }
-
-  // if skip creation is not set, then drop the table from chado if it exists
-  if (!$skip_creation) {
-    if (db_table_exists($custom_table->table_name)) {
-      chado_query("DROP TABLE %s", $custom_table->table_name);
-      drupal_set_message(t("Custom Table '%name' dropped", array('%name' => $custom_table->table_name)));
+    // get the current custom table record
+    $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
+    $results = db_query($sql, array(':table_id' => $table_id));
+    $custom_table = $results->fetchObject();
+  
+    // if this is a materialized view then don't allow editing with this function
+    if ($custom_table->mview_id) {
+      tripal_report_error('tripal_core', TRIPAL_ERROR, "Please use the tripal_edit_mview() function to edit this custom table as it is a materialized view.", array());
+      drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/schema/mviews') . " interface to edit it.", 'error');
+      return FALSE;
     }
-  }
-
-  // update the custom table record and re-create the table in Chado
-  if (drupal_write_record('tripal_custom_tables', $record, 'table_id')) {
-
-    // drop the table from chado if it exists
-    if (!$skip_creation) {
+    
+    // if the user changed the table name, we want to drop the old one and force
+    // creation of the new one.
+    if ($custom_table->table_name != $table_name) {
+      chado_query("DROP TABLE %s", $custom_table->table_name);
+      $skip_if_exists = 0; // we want to create the table
+    }
+  
+    // if skip creation is not set, then drop the table from chado if it exists
+    if (!$skip_if_exists) {
       if (db_table_exists($custom_table->table_name)) {
         chado_query("DROP TABLE %s", $custom_table->table_name);
-        drupal_set_message(t("Custom Table '%name' dropped", array('%name' => $custom_table->table_name)));
-      }
-
-      // re-create the table
-      if (!chado_create_custom_table ($table_name, $schema)) {
-        drupal_set_message(t("Could not create the custom table. Check Drupal error report logs."));
-      }
-      else {
-        drupal_set_message(t("Custom table '%name' created", array('%name' => $table_name)));
+        drupal_set_message(t("Custom Table " . $custom_table->table_name . " dropped"));
       }
     }
+  
+    // update the custom table record and run the create custom table function
+    drupal_write_record('tripal_custom_tables', $record, 'table_id');
+    $success = chado_create_custom_table ($table_name, $schema, $skip_if_exists);
   }
+  catch (Exception $e) {
+    $transaction->rollback();
+    watchdog_exception('tripal_core', $e);
+    $error = _drupal_decode_exception($e);
+    drupal_set_message(t("Could not update custom table '%table_name': %message.",
+    array('%table_name' => $table, '%message' => $error['!message'])), 'error');
+    return FALSE;
+  }
+  return TRUE;
 }
 
 /**
@@ -92,7 +88,7 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_creation
  * exists then it will be dropped and recreated using the schema provided.
  * However, it will only drop a table if it exsits in the tripal_custom_tables
  * table. This way the function cannot be used to accidentally alter existing
- * non custom tables.  If $skip_creation is set then the table is simply
+ * non custom tables.  If $skip_if_exists is set then the table is simply
  * added to the tripal_custom_tables and no table is created in Chado.
  * 
  * If you are creating a materialized view do not use this function, but rather 
@@ -107,7 +103,7 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_creation
  *   The name of the table to create.
  * @param $schema
  *   A Drupal-style Schema API definition of the table
- * @param $skip_creation
+ * @param $skip_if_exists
  *   Set as TRUE to skip dropping and re-creation of the table if it already
  *   exists.  This is useful if the table was already created through another
  *   means and you simply want to make Tripal aware of the table schema.  If the
@@ -122,7 +118,7 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_creation
  *
  * @ingroup tripal_custom_tables_api
  */
-function chado_create_custom_table($table, $schema, $skip_creation = 1, $mview_id = NULL) {
+function chado_create_custom_table($table, $schema, $skip_if_exists = 1, $mview_id = NULL) {
   global $databases;
   $created = 0;
   $recreated = 0;
@@ -145,7 +141,7 @@ function chado_create_custom_table($table, $schema, $skip_creation = 1, $mview_i
   
     // if the table exists in Chado and in our custom table and
     // skip creation is turned off then drop and re-create the table
-    if ($exists and is_object($centry) and !$skip_creation) {
+    if ($exists and is_object($centry) and !$skip_if_exists) {
   
       // drop the table we'll recreate it with the new schema
       chado_query('DROP TABLE {' . $table . '}');
@@ -172,9 +168,9 @@ function chado_create_custom_table($table, $schema, $skip_creation = 1, $mview_i
       db_query($sql, array(':table_name' => $table));
     }
     $success = drupal_write_record('tripal_custom_tables', $record); 
-  
+
     // now add any foreign key constraints
-    if (!$skip_creation and array_key_exists('foreign keys', $schema)) {
+    if (($created or !$skip_if_exists) and array_key_exists('foreign keys', $schema)) {
   
       // iterate through the foreign keys and add each one
       $fkeys = $schema['foreign keys'];
@@ -201,13 +197,13 @@ function chado_create_custom_table($table, $schema, $skip_creation = 1, $mview_i
     return FALSE;
   }
   if ($created) {
-    drupal_set_message("Custom table created successfully.", 'status');
+    drupal_set_message("Custom table, '" . $table . "' ,  created successfully.", 'status');
   }
   elseif ($recreated) {
-    drupal_set_message("Custom table re-created successfully.", 'status');
+    drupal_set_message("Custom table, '" . $table . "' ,  re-created successfully.", 'status');
   }
   else {
-    drupal_set_message("Custom table already exists. Table structure not changed, but definition array has been saved.", 'status');
+    drupal_set_message("Custom table, '" . $table . "' , already exists. Table structure not changed, but definition array has been saved.", 'status');
   }
   return TRUE;
 }

@@ -142,7 +142,7 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
     $custom_table = $results->fetchObject();
     
     // if this is a materialized view then don't allow editing with this function
-    if ($custom_table->mview_id) {
+    if (property_exists($custom_table, 'mview_id') and $custom_table->mview_id) {
       drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/schema/mviews') . " interface to edit it.", 'error');
       drupal_goto("admin/tripal/schema/custom_tables");
       return array();

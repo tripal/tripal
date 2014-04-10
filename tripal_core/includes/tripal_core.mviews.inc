@@ -304,10 +304,7 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
     $form['traditional'] = array(
       '#type' => 'fieldset',
       '#title' => 'Legacy MViews Setup',
-      '#description' => t('Traditionally MViews were created by specifying PostgreSQL style ' .
-                         'column types.  This method can be used but is deprecated in favor of the ' .
-                         'newer Drupal schema API method provided above. In rare cases where the Drupal Schema API ' .
-                         'does not support a desired data type the Legacy Mviews should be used'),
+      '#description' => t('<font color="red">Tripal no longer supports editing of legacy style materialized views. </font> This view will continue to function and you can populate it, however, to update you must convert this view to the newer Drupal Schema API format using the "Table Schema" section above.  Unfortunately, after converting this view to the Schema API and saving, the materialized view be recreated and emptied. You will need to re-populate it. Therefore, you may want to schedule update of this or any other legacy materialized during your next site maintenance.'),
       '#collapsible' => 1,
       '#collapsed' => $traditional_collapsed,
     );
@@ -318,6 +315,7 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
       '#description'   => t('Please enter the table name that this view will generate in the database.  You can use the schema and table name for querying the view'),
       '#required'      => FALSE,
       '#default_value' => $default_mv_table,
+      '#attributes'   => array('disabled' => 'disabled'),
     );
 
     $form['traditional']['mv_specs']= array(
@@ -326,6 +324,7 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
       '#description'   => t('Please enter the field definitions for this view. Each field should be separated by a comma or enter each field definition on each line.'),
       '#required'      => FALSE,
       '#default_value' => $default_mv_specs,
+      '#attributes'   => array('disabled' => 'disabled'),
     );
 
     $form['traditional']['indexed']= array(
@@ -334,6 +333,7 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
       '#description'   => t('Please enter the field names (as provided in the table definition above) that will be indexed for this view.  Separate by a comma or enter each field on a new line.'),
       '#required'      => FALSE,
       '#default_value' => $default_indexed,
+      '#attributes'    => array('disabled' => 'disabled'),
     );
 
     /**
