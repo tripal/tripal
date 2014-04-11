@@ -850,6 +850,7 @@ function tripal_views_integration_form($form, $form_state, $arg) {
     $chado_join_tables[0] = 'Select the Left Table';
     unset($handlers_join[0]);
 
+    $i=0;
     $query = db_select('tripal_views_join','tvj');
     $query->fields('tvj')
       ->condition('tvj.setup_id',$setup_id,'=')
@@ -955,6 +956,11 @@ function tripal_views_integration_form($form, $form_state, $arg) {
       );
     }
 
+    $form['num_joins'] = array(
+      '#type' => 'hidden',
+      '#value' => $i
+    );
+
     // Form to add a new join
     $form['view_setup_join']['new_join'] = array(
       '#type' => 'fieldset',
@@ -1056,11 +1062,6 @@ function tripal_views_integration_form($form, $form_state, $arg) {
     $form['view_setup_join']['new_join']['save'] = array(
       '#type'  => 'submit',
       '#value' => t('Save & Add Join'),
-    );
-
-    $form['num_joins'] = array(
-      '#type' => 'hidden',
-      '#value' => $i
     );
 
     $form['save'] = array(
@@ -1274,17 +1275,19 @@ function tripal_views_integration_form_submit($form, &$form_state) {
 
   // Now add all the joins
   for($i = 0; $i <= $form_state['values']['num_joins']; $i++) {
-    $join_record = array(
-      'setup_id' => $tripal_views_record['setup_id'],
-      'base_table' => $form_state['values']["join_base_table-$i"],
-      'base_field' => $form_state['values']["join_base_field-$i"],
-      'left_table' => $form_state['values']["join_left_table-$i"],
-      'left_field' => $form_state['values']["join_left_field-$i"],
-      'handler' => $form_state['values']["join_join_handler-$i"],
-      'relationship_handler' => $form_state['values']["join_relationship_handler-$i"],
-      'relationship_only' => $form_state['values']["join_relationship_only-$i"]
-    );
-    drupal_write_record('tripal_views_join', $join_record);
+    if (isset($form_state['values']["join_base_table-$i"])) {
+      $join_record = array(
+        'setup_id' => $tripal_views_record['setup_id'],
+        'base_table' => $form_state['values']["join_base_table-$i"],
+        'base_field' => $form_state['values']["join_base_field-$i"],
+        'left_table' => $form_state['values']["join_left_table-$i"],
+        'left_field' => $form_state['values']["join_left_field-$i"],
+        'handler' => $form_state['values']["join_join_handler-$i"],
+        'relationship_handler' => $form_state['values']["join_relationship_handler-$i"],
+        'relationship_only' => $form_state['values']["join_relationship_only-$i"]
+      );
+      drupal_write_record('tripal_views_join', $join_record);
+    }
   }
 
   // Now add the new join if there is one
