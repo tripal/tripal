@@ -107,10 +107,10 @@ function chado_featuremap_form($node, &$form_state) {
     '#default_value' => $description,
   );
 
-  // get the list of unit types  
+  // get the list of unit types
   $units = tripal_get_cvterm_default_select_options('featuremap', 'unittype_id', 'map unit types');
   $units[0] = 'Select a Type';
-  
+
   $form['unittype_id'] = array(
     '#title'       => t('Map Units'),
     '#type'        => t('select'),
@@ -170,7 +170,7 @@ function chado_featuremap_validate($node, $form, &$form_state) {
   // trim white space from text fields
   $node->fmapname       = trim($node->fmapname);
   $node->description    = trim($node->description);
-  
+
   $featuremap = 0;
   // check to make sure the unique name on the map is unique
   // before we try to insert into chado. If this is an update then we will
@@ -221,26 +221,26 @@ function chado_featuremap_node_access($node, $op, $account) {
   if (is_object($node)) {
     $node_type = $node->type;
   }
-  
+
   if($node_type == 'chado_featuremap') {
     if ($op == 'create') {
-      if (!user_access('create chado_featuremap', $account)) {
+      if (!user_access('create chado_featuremap content', $account)) {
         return NODE_ACCESS_DENY;
       }
       return NODE_ACCESS_ALLOW;
     }
     if ($op == 'update') {
-      if (!user_access('edit chado_featuremap', $account)) {
+      if (!user_access('edit chado_featuremap content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
     if ($op == 'delete') {
-      if (!user_access('delete chado_featuremap', $account)) {
+      if (!user_access('delete chado_featuremap content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
     if ($op == 'view') {
-      if (!user_access('access chado_featuremap', $account)) {
+      if (!user_access('access chado_featuremap content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
@@ -418,7 +418,7 @@ function chado_featuremap_load($nodes) {
     if (!$featuremap_id) {
       continue;
     }
-    
+
     $values = array('featuremap_id' => $featuremap_id);
     $featuremap = chado_generate_var('featuremap', $values);
 

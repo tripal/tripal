@@ -66,26 +66,26 @@ function chado_organism_node_access($node, $op, $account) {
   if (is_object($node)) {
     $node_type = $node->type;
   }
-  
+
   if($node_type == 'chado_organism') {
     if ($op == 'create') {
-      if (!user_access('create chado_organism', $account)) {
+      if (!user_access('create chado_organism content', $account)) {
         return NODE_ACCESS_DENY;
       }
       return NODE_ACCESS_ALLOW;
     }
     if ($op == 'update') {
-      if (!user_access('edit chado_organism', $account)) {
+      if (!user_access('edit chado_organism content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
     if ($op == 'delete') {
-      if (!user_access('delete chado_organism', $account)) {
+      if (!user_access('delete chado_organism content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
     if ($op == 'view') {
-      if (!user_access('access chado_organism', $account)) {
+      if (!user_access('access chado_organism content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
@@ -230,7 +230,7 @@ function chado_organism_validate($node, $form, &$form_state) {
   $node->abbreviation = trim($node->abbreviation);
   $node->common_name  = trim($node->common_name);
   $node->description  = trim($node->description);
-  
+
   // Validating for an update
   if (property_exists($node, 'organism_id')) {
     $sql = "
@@ -486,7 +486,7 @@ function chado_organism_load($nodes) {
   foreach ($nodes as $nid => $node) {
     // find the organism and add in the details
     $organism_id = chado_get_id_from_nid('organism', $nid);
-    
+
     // if the nid does not have a matching record then skip this node.
     // this can happen with orphaned nodes.
     if (!$organism_id) {

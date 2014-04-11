@@ -438,23 +438,23 @@ function chado_project_node_access($node, $op, $account) {
 
   if($node_type == 'chado_project') {
     if ($op == 'create') {
-      if (!user_access('create chado_project', $account)) {
+      if (!user_access('create chado_project content', $account)) {
         return NODE_ACCESS_DENY;
       }
       return NODE_ACCESS_ALLOW;
     }
     if ($op == 'update') {
-      if (!user_access('edit chado_project', $account)) {
+      if (!user_access('edit chado_project content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
     if ($op == 'delete') {
-      if (!user_access('delete chado_project', $account)) {
+      if (!user_access('delete chado_project content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
     if ($op == 'view') {
-      if (!user_access('access chado_project', $account)) {
+      if (!user_access('access chado_project content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }

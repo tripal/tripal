@@ -118,7 +118,7 @@ function chado_library_form($node, &$form_state) {
     '#default_value' => $uniquename,
   );
 
-  // get the list of library types  
+  // get the list of library types
   $types = tripal_get_cvterm_default_select_options('library', 'type_id', 'library types');
   $types[0] = 'Select a Type';
 
@@ -208,13 +208,13 @@ function chado_library_validate($node, $form, &$form_state) {
   if($node->op == 'Delete') {
     return;
   }
-  
+
   // we are syncing if we do not have a node ID but we do have a featuremap_id. We don't
   // need to validate during syncing so just skip it.
   if (is_null($node->nid) and property_exists($node, 'library_id') and $node->library_id != 0) {
     return;
   }
-  
+
   // trim white space from text fields
   $node->libraryname = trim($node->libraryname);
   $node->uniquename  = trim($node->uniquename);
@@ -386,7 +386,7 @@ function chado_library_load($nodes) {
     if (!$library_id) {
       continue;
     }
-    
+
     $values = array('library_id' => $library_id);
     $library = chado_generate_var('library', $values);
 
@@ -456,26 +456,26 @@ function chado_library_node_access($node, $op, $account) {
   if (is_object($node)) {
     $node_type = $node->type;
   }
-  
+
   if($node_type == 'chado_library') {
     if ($op == 'create') {
-      if (!user_access('create chado_library', $account)) {
+      if (!user_access('create chado_library content', $account)) {
         return NODE_ACCESS_DENY;
       }
       return NODE_ACCESS_ALLOW;
     }
     if ($op == 'update') {
-      if (!user_access('edit chado_library', $account)) {
+      if (!user_access('edit chado_library content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
     if ($op == 'delete') {
-      if (!user_access('delete chado_library', $account)) {
+      if (!user_access('delete chado_library content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
     if ($op == 'view') {
-      if (!user_access('access chado_library', $account)) {
+      if (!user_access('access chado_library content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
