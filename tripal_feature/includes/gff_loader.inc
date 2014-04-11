@@ -306,7 +306,7 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
  * @ingroup gff3_loader
  */
 function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id, 
-  $add_only = 0, $update = 0, $refresh = 0, $remove = 0, $use_transaction = 1, 
+  $add_only = 0, $update = 1, $refresh = 0, $remove = 0, $use_transaction = 1, 
   $target_organism_id = NULL, $target_type = NULL,  $create_target = 0, 
   $start_line = 1, $landmark_type = '', $alt_id_attr = '', $create_organism = FALSE, 
   $job = NULL) {     
