@@ -899,8 +899,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     }
   }
   catch (Exception $e) {
-    print "\n"; // make sure we start errors on new line
-    watchdog_exception('T_gff3_loader', $e);
+    print "\n"; // make sure we start errors on new line    
     if ($use_transaction) {
       $transaction->rollback();
       print "FAILED: Rolling back database changes...\n";
@@ -908,6 +907,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     else {
       print "FAILED\n";
     }
+    watchdog_exception('T_gff3_loader', $e);
     return 0;
   }
 

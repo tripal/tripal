@@ -231,8 +231,7 @@ $cv_name, $value, $update_if_present = 0) {
     }
   }
 
-  // make sure the cvterm exists.  Otherwise we'll get an error with
-  // prepared statements not matching
+  // make sure the cvterm exists.  
   $values = array(
     'cv_id' => array(
       'name' => $cv_name,

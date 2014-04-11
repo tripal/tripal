@@ -50,7 +50,7 @@ function tripal_feature_admin() {
   $form['title'] = array(
     '#type' => 'fieldset',
     '#title' => t('Feature Page Titles'),
-    '#collapsible' => TRUE,
+    '#collapsible' => FALSE,
     '#collapsed' => FALSE,
   );
   $form['title']['desc'] = array(
@@ -82,7 +82,7 @@ function tripal_feature_admin() {
   $form['url'] = array(
     '#type' => 'fieldset',
     '#title' => t('Feature URL Path'),
-    '#collapsible' => TRUE,
+    '#collapsible' => FALSE,
     '#collapsed' => FALSE,
   );
   
@@ -143,7 +143,7 @@ function tripal_feature_admin() {
   $form['browser'] = array(
      '#type' => 'fieldset',
      '#title' => t('Feature Browser'),
-     '#collapsible' => TRUE,
+     '#collapsible' => FALSE,
      '#collapsed' => FALSE,
   );
   $form['browser']['browser_desc'] = array(
@@ -172,7 +172,7 @@ function tripal_feature_admin() {
   $form['summary'] = array(
      '#type' => 'fieldset',
      '#title' => t('Feature Summary Report'),
-     '#collapsible' => TRUE,
+     '#collapsible' => FALSE,
      '#collapsed' => FALSE,
   );
   $form['summary']['feature_mapping'] = array(
@@ -213,10 +213,12 @@ function tripal_feature_admin_validate($form, &$form_state) {
       break;
 
     case t('Set Feature URLs') :
-      variable_set('chado_feature_url', $form_state['values']['feature_url']);
+      variable_set('chado_feature_url_string', $form_state['values']['chado_feature_url_string']);
       tripal_add_job('Set Feature URLs', 'tripal_feature',
         'tripal_feature_set_urls', $job_args, $user->uid);
       break;
   }
 
 }
+
+

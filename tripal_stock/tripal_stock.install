@@ -49,6 +49,11 @@ function tripal_stock_requirements($phase) {
 function tripal_stock_install() {
   // create the module's data directory
   tripal_create_files_dir('tripal_stock');
+  
+  // add some controlled vocabularies 
+  tripal_stock_add_cvs();
+  
+  tripal_stock_add_cvterms();
 
   // set the default vocabularies
   tripal_set_default_cv('stock', 'type_id', 'stock_type');
@@ -301,7 +306,7 @@ function tripal_stock_update_7200() {
 }
 
 /**
- * Upgrade to 7.x-2.0.1-alpha
+ * Add materialized views
  */
 function tripal_stock_update_7201() {
 

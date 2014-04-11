@@ -843,7 +843,6 @@ function chado_delete_record($table, $match, $options = NULL) {
   $args = array();
   foreach ($delete_matches as $field => $value) {
     // if we have an array values then this is an "IN" clasue.
-    // we cannot use prepared statements with these
 
     if (count($value) > 1) {
       $sql .= "$field IN (";
@@ -1180,15 +1179,11 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
   }
 
 
-  // now build the SQL and prepared SQL statements. We may not use
-  // the prepared statement if it wasn't requested in the options or if the
-  // argument in a where statement has multiple values.
+  // now build the SQL 
   if (empty($where)) {
     // sometimes want to select everything
     $sql  = "SELECT " . implode(', ', $columns) . " ";
     $sql .= 'FROM {' . $table . '} ';
-    // we don't prepare a statement if there is no where clause
-    $prepared = FALSE;
   }
   else {
     $sql  = "SELECT " . implode(', ', $columns) . " ";

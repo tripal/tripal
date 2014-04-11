@@ -237,15 +237,14 @@ function chado_node_sync_form($form, &$form_state) {
         $form['sync']['ids'] = array(
           '#title'         => 'Avaliable ' . $args['record_type_title']['plural'],
           '#type'          => 'checkboxes',
-          '#description'   => t("The above  %title_plural have not been synced. Check those to be synced or leave all unchecked to sync them all.",
-            array(
-              '%title_singular' => strtolower($args['record_type_title']['singular']),
-              '%title_plural'   => strtolower($args['record_type_title']['plural'])
-            )),
           '#options'       => $values,
           '#default_value' => (isset($form_state['values']['ids'])) ? $form_state['values']['ids'] : array(),
-          '#prefix'        => '<div style="height: 200px; overflow: scroll">',
           '#suffix'        => '</div><br>',
+          '#prefix'       => t("The following  %title_plural have not been synced. Check those to be synced or leave all unchecked to sync them all.",
+              array(
+                '%title_singular' => strtolower($args['record_type_title']['singular']),
+                '%title_plural'   => strtolower($args['record_type_title']['plural'])
+              )) . '<div style="height: 200px; overflow: scroll">',
         );
       }
       else {
@@ -476,7 +475,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
   // execute the query
   $results = chado_query($query, $sql_args);
 
-  // Iterate through features that need to be synced
+  // Iterate through records that need to be synced
   $count = $results->rowCount();
   $interval = intval($count * 0.01);
   if ($interval < 1) {
@@ -490,7 +489,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
   try {
     foreach ($results as $record) {
 
-      print "\nLoading $base_table " . ($i + 1) . " of $count ($base_table_id=".$record->{$base_table_id}.")...";
+      print "\nLoading $base_table " . ($i + 1) . " of $count ($base_table_id=" . $record->{$base_table_id} . ")...";
 
       // update the job status every 1% features
       if ($job_id and $i % $interval == 0) {
@@ -500,7 +499,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
       }
 
       // Check if it is in the chado linking table (ie: check to see if it is already linked to a node)
-      $result = db_select('chado_'.$base_table, 'lnk')
+      $result = db_select('chado_' . $base_table, 'lnk')
         ->fields('lnk',array('nid'))
         ->condition($base_table_id, $record->{$base_table_id}, '=')
         ->execute()
@@ -517,6 +516,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
         $new_node->uid = $user->uid;
         $new_node->{$base_table_id} = $record->{$base_table_id};
         $new_node->$base_table = $record;
+        //$new_node->language = LANGUAGE_NONE;
 
         // TODO: should we get rid of this hook and use hook_node_presave() instead?
         // allow base module to set additional fields as needed

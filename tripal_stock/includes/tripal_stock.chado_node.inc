@@ -1001,3 +1001,83 @@ function tripal_stock_get_stock_url($node, $url_alias = NULL) {
 
   return $url_alias;
 }
+/**
+ * Resets all of the URL alias for all stocks.  This function is meant to
+ * be run using Tripal's job managmenet interface
+ *
+ * @param $na
+ *   Tripal expects all jobs to have at least one argument. For this function
+ *   we don't need any, so we have this dummy argument as a filler
+ * @param $job_id
+ *
+ * @ingroup tripal_stock
+ */
+function tripal_stock_set_urls($na = NULL, $job = NULL) {
+
+  $transaction = db_transaction();
+
+  print "\nNOTE: Setting of URLs is performed using a database transaction. \n" .
+      "If the load fails or is terminated prematurely then the entire set of \n" .
+      "new URLs will be rolled back and no changes will be made\n\n";
+
+  try {
+    // get the number of records we need to set URLs for
+    $csql = "SELECT count(*) FROM {chado_stock}";
+    $num_nodes = db_query($csql)->fetchField();
+
+    // calculate the interval at which we will print an update on the screen
+    $num_set = 0;
+    $num_per_interval = 100;
+
+    // prepare the statements which will quickly add url alias. Because these
+    // are not Chado tables we must manually prepare them
+    $dsql = "DELETE FROM {url_alias} WHERE source = :source";
+    $isql = "INSERT INTO url_alias (source, alias, language) VALUES (:source, :alias, :language)";
+
+    // get the URL alias syntax string
+    $url_alias = variable_get('chado_stock_url_string', '/stock/[genus]/[species]/[type]/[uniquename]');
+    $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash
+
+    // get the list of stocks that have been synced
+    $sql = "SELECT * FROM {chado_stock}";
+    $nodes = db_query($sql);
+    foreach ($nodes as $node) {
+       
+      // get the URL alias
+      $src = "node/$node->nid";
+      $dst = tripal_stock_get_stock_url($node, $url_alias);
+
+      // if the src and dst is the same (the URL alias couldn't be set)
+      // then skip to the next one. There's nothing we can do about this one.
+      if($src == $dst) {
+        continue;
+      }
+
+      // remove any previous alias and then add the new one
+      db_query($dsql, array(':source' => $src));
+      db_query($isql, array(':source' => $src, ':alias' => $dst, ':language' => LANGUAGE_NONE));
+
+      // update the job status every 1% stocks
+      if ($job and $num_set % $num_per_interval == 0) {
+        $percent = ($num_set / $num_nodes) * 100;
+        tripal_job_set_progress($job, intval($percent));
+        $percent = sprintf("%.2f", $percent);
+        print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
+
+      }
+      $num_set++;
+    }
+    $percent = ($num_set / $num_nodes) * 100;
+    tripal_job_set_progress($job, intval($percent));
+    $percent = sprintf("%.2f", $percent);
+    print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
+    print "\nDone. Set " . number_format($num_set) . " URLs\n";
+
+  }
+  catch (Exception $e) {
+    $transaction->rollback();
+    print "\n"; // make sure we start errors on new line
+    watchdog_exception('tripal_stock', $e);
+    watchdog('trp-seturl', "Failed Removing URL Alias: %src", array('%src' => $src), WATCHDOG_ERROR);
+  }
+}

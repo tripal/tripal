@@ -204,6 +204,7 @@ function tripal_cv_add_cvterm_form_fields(&$form, $form_state, $cv_id = 0, $cvte
     '#type'          => 'textfield',
     '#title'         => t("Term Name"),
     '#default_value' => $name,
+    '#description'   => t('The term must be unique within the database selected below.'),
     '#required'      => TRUE,
   );
 
@@ -238,7 +239,7 @@ function tripal_cv_add_cvterm_form_fields(&$form, $form_state, $cv_id = 0, $cvte
   $form['fields']['db_id'] = array(
     '#type'         => 'select',
     '#title'         => t('Database'),
-    '#description'   => t('All terms must be assocated with a database. If the term you are adding is custom for this database, consider creating a database specific for your site and use that anytime you would like to add terms.'),
+    '#description'   => t('All terms must be assocated with a database. If there is no database for this term (e.g. it is a custom term specific to this site) then select the database \'null\' or consider creating a database specific for your site and use that anytime you would like to add terms.'),
     '#options'      => $dbs,
     '#default_value' => $db_id,
     '#required' => TRUE,
@@ -250,8 +251,7 @@ function tripal_cv_add_cvterm_form_fields(&$form, $form_state, $cv_id = 0, $cvte
     '#description'   => t('If this term has an existing accession (unique identifier) in the database
        please enter that here.  If the accession is numeric with a database prefix (e.g. GO:003023), please
        enter just the numeric value.  The database prefix will be appended whenever the term is displayed.
-       If the accession is not numeric then enter it as is.  If no value is provied, the term name
-       provided above will be used as the accession.'),
+       If you do not have a numeric value consider entering the term name as the accession.'),
     '#required'      => TRUE,
     '#default_value' => $accession,
   );

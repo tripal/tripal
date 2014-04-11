@@ -725,11 +725,11 @@ function tripal_feature_load_organism_feature_counts($organism) {
   // get the feature counts.  This is dependent on a materialized view
   // installed with the organism module
   $sql = "
-  SELECT OFC.num_features,OFC.feature_type,CVT.definition
-  FROM {organism_feature_count} OFC
-  INNER JOIN {cvterm} CVT on OFC.cvterm_id = CVT.cvterm_id
-  WHERE $where organism_id = :organism_id
-  ORDER BY num_features desc
+    SELECT OFC.num_features,OFC.feature_type,CVT.definition
+    FROM {organism_feature_count} OFC
+      INNER JOIN {cvterm} CVT on OFC.cvterm_id = CVT.cvterm_id
+    WHERE $where organism_id = :organism_id
+    ORDER BY num_features desc
   ";
   $args[':organism_id'] = $organism->organism_id;
   $org_features = chado_query($sql, $args);
