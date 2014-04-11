@@ -516,7 +516,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
         $new_node->uid = $user->uid;
         $new_node->{$base_table_id} = $record->{$base_table_id};
         $new_node->$base_table = $record;
-        //$new_node->language = LANGUAGE_NONE;
+        $new_node->language = LANGUAGE_NONE;
 
         // TODO: should we get rid of this hook and use hook_node_presave() instead?
         // allow base module to set additional fields as needed
