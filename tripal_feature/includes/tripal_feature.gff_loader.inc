@@ -316,7 +316,7 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
  * @param $update
  *   Set to 1 to update existing features. New features will be added. Attributes 
  *   for a feature that are not present in the GFF but which are present in the 
- *   database will not be altered. Default is 0
+ *   database will not be altered. Default is 1
  * @param $refresh
  *   Set to 1 to update existing features. New features will be added. Attributes 
  *   for a feature that are not present in the GFF but which are present in the 
@@ -374,7 +374,7 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
  * @ingroup gff3_loader
  */
 function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
-  $add_only = 0, $update = 0, $refresh = 0, $remove = 0, $use_transaction = 1,
+  $add_only = 0, $update = 1, $refresh = 0, $remove = 0, $use_transaction = 1,
   $target_organism_id = NULL, $target_type = NULL,  $create_target = 0,
   $start_line = 1, $landmark_type = '', $alt_id_attr = '', $create_organism = FALSE,
   $job = NULL) {
