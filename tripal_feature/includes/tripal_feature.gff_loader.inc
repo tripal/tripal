@@ -305,23 +305,71 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
  * Actually load a GFF3 file. This is the function called by tripal jobs
  *
  * @param $gff_file
+ *   The full path to the GFF file on the filesystem
  * @param $organism_id
+ *   The organism_id of the organism to which the features in the GFF belong
  * @param $analysis_id
+ *   The anlaysis_id of the analysis from which the features in the GFF were generated
  * @param $add_only
+ *   Set to 1 if feature should be added only.  In the case where a feature
+ *   already exists, it will not be updated.  Default is 0
  * @param $update
+ *   Set to 1 to update existing features. New features will be added. Attributes 
+ *   for a feature that are not present in the GFF but which are present in the 
+ *   database will not be altered. Default is 0
  * @param $refresh
+ *   Set to 1 to update existing features. New features will be added. Attributes 
+ *   for a feature that are not present in the GFF but which are present in the 
+ *   database will be removed. Default is 0
  * @param $remove
+ *   Set to 1 to remove features present in the GFF file that exist in the database. 
+ *   Default is 0.
  * @param $use_transaction
- *   Whether or not to use a transaction. Default is yes (TRUE)
+ *   Set to 1 to use a transaction when loading the GFF. Any failure during
+ *   loading will result in the rollback of any changes. Default is 1.
  * @param $target_organism_id
+ *   If the GFF file contains a 'Target' attribute then the feature and the 
+ *   target will have an alignment created, but to find the proper target 
+ *   feature the target organism must also be known.  If different from the 
+ *   organism specified for the GFF file, then use  this argument to specify
+ *   the target organism.  Only use this argument if all target sequences belong 
+ *   to the same species. If the targets in the GFF file belong to multiple 
+ *   different species then the organism must be specified using the 
+ *   'target_organism=genus:species' attribute in the GFF file. Default is NULL.
  * @param $target_type
+ *   If the GFF file contains a 'Target' attribute then the feature and the 
+ *   target will have an alignment created, but to find the proper target 
+ *   feature the target organism must also be known.  This can be used to 
+ *   specify the target feature type to help with identification of the target
+ *   feature.  Only use this argument if all target sequences types are the same. 
+ *   If the targets are of different types then the type must be specified using 
+ *   the 'target_type=type' attribute in the GFF file. This must be a valid 
+ *   Sequence Ontology (SO) term. Default is NULL
  * @param $create_target
+ *   Set to 1 to create the target feature if it cannot be found in the 
+ *   database. Default is 0 
  * @param $start_line
+ *   Set this to the line in the GFF file where importing should start. This
+ *   is useful for testing and debugging GFF files that may have problems and
+ *   you want to start at a particular line to speed testing.  Default = 1
  * @param $landmark_type
+ *   Use this argument to specify a Sequence Ontology term name for the landmark 
+ *   sequences in the GFF fie (e.g. 'chromosome'), if the GFF file contains a 
+ *   '##sequence-region' line that describes the landmark sequences. Default = ''
  * @param $alt_id_attr
+ *   Sometimes lines in the GFF file are missing the required ID attribute that 
+ *   specifies the unique name of the feature. If so, you may specify the 
+ *   name of an existing attribute to use for the ID.
  * @param $create_organism
+ *   The Tripal GFF loader supports the "organism" attribute. This allows 
+ *   features of a different organism to be aligned to the landmark sequence of 
+ *   another species. The format of the attribute is "organism=[genus]:[species]", 
+ *   where [genus] is the organism's genus and [species] is the species name. 
+ *   Check this box to automatically add the organism to the database if it does 
+ *   not already exists. Otherwise lines with an oraganism attribute where the 
+ *   organism is not present in the database will be skipped.
  * @param $job
- *  The tripal job
+ *  The tripal job_id.  Only used by the Tripal Jobs subsystem. 
  *
  * @ingroup gff3_loader
  */
