@@ -208,7 +208,7 @@ function chado_project_validate($node, $form, &$form_state) {
   // trim white space from text fields
   $node->title = trim($node->title);
   $node->description = trim($node->description);
-  
+
   $project = 0;
   // check to make sure the name on the project is unique
   // before we try to insert into chado.
@@ -395,8 +395,8 @@ function chado_project_load($nodes) {
     if (!$project_id) {
       continue;
     }
-    
-    
+
+
     $values = array('project_id' => $project_id);
     $project = chado_generate_var('project', $values);
 
@@ -435,26 +435,26 @@ function chado_project_node_access($node, $op, $account) {
   if (is_object($node)) {
     $node_type = $node->type;
   }
-  
+
   if($node_type == 'chado_project') {
     if ($op == 'create') {
-      if (!user_access('create chado_project', $account)) {
+      if (!user_access('create chado_project content', $account)) {
         return NODE_ACCESS_DENY;
       }
       return NODE_ACCESS_ALLOW;
     }
     if ($op == 'update') {
-      if (!user_access('edit chado_project', $account)) {
+      if (!user_access('edit chado_project content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
     if ($op == 'delete') {
-      if (!user_access('delete chado_project', $account)) {
+      if (!user_access('delete chado_project content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
     if ($op == 'view') {
-      if (!user_access('access chado_project', $account)) {
+      if (!user_access('access chado_project content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
@@ -505,5 +505,190 @@ function tripal_project_node_view($node, $view_mode, $langcode) {
         );
       }
       break;
+  }
+}
+
+/**
+ * Implements hook_node_insert().
+ * Acts on all content types.
+ *
+ * @ingroup tripal_project
+ */
+function tripal_project_node_insert($node) {
+
+  // set the URL path after inserting.  We do it here because we do not
+  // know the project_id in the presave
+  switch ($node->type) {
+    case 'chado_project':
+
+      // on an insert we need to add the project_id to the node object
+      // so that the tripal_project_get_project_url function can set the URL properly
+      $node->project_id = chado_get_id_from_nid('project', $node->nid);
+
+      // remove any previous alias
+      db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
+
+      // set the URL for this project page
+      $url_alias = tripal_project_get_project_url($node);
+      $path_alias = array("source" => "node/$node->nid", "alias" => $url_alias);
+      path_save($path_alias);
+      break;
+  }
+}
+
+/**
+ * Implements hook_node_update().
+ * Acts on all content types.
+ *
+ * @ingroup tripal_project
+ */
+function tripal_project_node_update($node) {
+
+  // add items to other nodes, build index and search results
+  switch ($node->type) {
+    case 'chado_project':
+      // remove any previous alias
+      db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
+
+      // set the URL for this project page
+      $url_alias = tripal_project_get_project_url($node);
+      $path_alias = array("source" => "node/$node->nid", "alias" => $url_alias);
+      path_save($path_alias);
+      break;
+  }
+}
+
+/**
+ * Return the url alias for a project
+ *
+ * @param $node
+ *   A node object containing at least the project_id and nid
+ * @param $url_alias
+ *   Optional.  This should be the URL alias syntax string that contains
+ *   placeholders such as [id] and [name]. These placeholders will be substituted for actual values.
+ *   If this parameter is not provided then the value of the
+ *   chado_project_url_string Drupal variable will be used.
+ *
+ * @ingroup tripal_project
+ */
+function tripal_project_get_project_url($node, $url_alias = NULL) {
+  $length_project_name = 100;
+
+  // get the starting URL alias
+  if(!$url_alias) {
+    $url_alias = variable_get('chado_project_url_string', '/project/[id]');
+    if (!$url_alias) {
+      $url_alias = '/project/[id]';
+    }
+    $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash
+  }
+
+  // get the project
+  $values = array('project_id' => $node->project_id);
+  $project = chado_select_record('project', array('*'), $values);
+  if (!$project) {
+    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find project when setting URL alias for project: %id", array('%id' => $node->project_id));
+    return FALSE;
+  }
+  $project = (object) $project[0];
+
+  // Sanitize project name
+  $project_name = str_replace(' ','-', $project->name);
+  $project_name = str_replace(',','', $project_name);
+  $project_name = str_replace('&','and', $project_name);
+  $project_name = substr($project_name, 0, $length_project_name);
+
+  // now substitute in the values
+  $url_alias = preg_replace('/\[id\]/', $project->project_id, $url_alias);
+  $url_alias = preg_replace('/\[name\]/', $project_name, $url_alias);
+
+  // the dst field of the url_alias table is only 128 characters long.
+  // if this is the case then simply return the node URL, we can't set this one
+  if (strlen($url_alias) > 128) {
+    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot set alias longer than 128 characters: %alias.", array('%alias' => $url_alias));
+    return "node/" . $node->nid;
+  }
+
+  return $url_alias;
+}
+
+/**
+ * Resets all of the URL alias for all projects.  This function is meant to
+ * be run using Tripal's job managmenet interface
+ *
+ * @param $na
+ *   Tripal expects all jobs to have at least one argument. For this function
+ *   we don't need any, so we have this dummy argument as a filler
+ * @param $job_id
+ *
+ * @ingroup tripal_project
+ */
+function tripal_project_set_urls($na = NULL, $job = NULL) {
+
+  $transaction = db_transaction();
+
+  print "\nNOTE: Setting of URLs is performed using a database transaction. \n" .
+      "If the load fails or is terminated prematurely then the entire set of \n" .
+      "new URLs will be rolled back and no changes will be made\n\n";
+
+  try {
+    // get the number of records we need to set URLs for
+    $csql = "SELECT count(*) FROM {chado_project}";
+    $num_nodes = db_query($csql)->fetchField();
+
+    // calculate the interval at which we will print an update on the screen
+    $num_set = 0;
+    $num_per_interval = 100;
+
+    // prepare the statements which will quickly add url alias. Because these
+    // are not Chado tables we must manually prepare them
+    $dsql = "DELETE FROM {url_alias} WHERE source = :source";
+    $isql = "INSERT INTO url_alias (source, alias, language) VALUES (:source, :alias, :language)";
+
+    // get the URL alias syntax string
+    $url_alias = variable_get('chado_project_url_string', '/project/[id]');
+    $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash
+
+    // get the list of projects that have been synced
+    $sql = "SELECT * FROM {chado_project}";
+    $nodes = db_query($sql);
+    foreach ($nodes as $node) {
+
+      // get the URL alias
+      $src = "node/$node->nid";
+      $dst = tripal_project_get_project_url($node, $url_alias);
+
+      // if the src and dst is the same (the URL alias couldn't be set)
+      // then skip to the next one. There's nothing we can do about this one.
+      if($src == $dst) {
+        continue;
+      }
+
+      // remove any previous alias and then add the new one
+      db_query($dsql, array(':source' => $src));
+      db_query($isql, array(':source' => $src, ':alias' => $dst, ':language' => LANGUAGE_NONE));
+
+      // update the job status every 1% projects
+      if ($job and $num_set % $num_per_interval == 0) {
+        $percent = ($num_set / $num_nodes) * 100;
+        tripal_job_set_progress($job, intval($percent));
+        $percent = sprintf("%.2f", $percent);
+        print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
+
+      }
+      $num_set++;
+    }
+    $percent = ($num_set / $num_nodes) * 100;
+    tripal_job_set_progress($job, intval($percent));
+    $percent = sprintf("%.2f", $percent);
+    print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
+    print "\nDone. Set " . number_format($num_set) . " URLs\n";
+
+  }
+  catch (Exception $e) {
+    $transaction->rollback();
+    print "\n"; // make sure we start errors on new line
+    watchdog_exception('tripal_project', $e);
+    watchdog('trp-seturl', "Failed Removing URL Alias: %src", array('%src' => $src), WATCHDOG_ERROR);
   }
 }

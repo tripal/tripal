@@ -54,6 +54,9 @@ function tripal_project_defaultvalue_user_projects() {
   );
   unset($view->display['page']->display_options['tab_options']);
 
+  // Change the permission
+  $view->display['default']->display_options['access']['perm'] = 'access chado_project content';
+
   // Remove edit/delete node
   unset(
     $view->display['default']->display_options['fields']['delete_node'],
@@ -88,7 +91,8 @@ function tripal_project_defaultview_admin_projects() {
   $handler = $view->new_display('default', 'Master', 'default');
   $handler->display->display_options['title'] = 'Projects';
   $handler->display->display_options['use_more_always'] = FALSE;
-  $handler->display->display_options['access']['type'] = 'none';
+$handler->display->display_options['access']['type'] = 'perm';
+$handler->display->display_options['access']['perm'] = 'adminster tripal project';
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
   $handler->display->display_options['exposed_form']['type'] = 'basic';

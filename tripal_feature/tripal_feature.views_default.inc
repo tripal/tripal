@@ -54,6 +54,9 @@ function tripal_feature_defaultvalue_user_features() {
   );
   unset($view->display['page_1']->display_options['tab_options']);
 
+  // Change the permission
+  $view->display['default']->display_options['access']['perm'] = 'access chado_feature content';
+
   // Remove edit/delete node
   unset(
     $view->display['default']->display_options['fields']['delete_node'],

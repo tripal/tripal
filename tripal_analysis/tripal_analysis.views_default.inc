@@ -52,6 +52,9 @@ function tripal_analysis_defaultvalue_user_analysis() {
   $view->display['page_1']->display_options['menu']['type'] = 'normal';
   unset($view->display['page_1']->display_options['tab_options']);
 
+  // Change the permission
+  $view->display['default']->display_options['access']['perm'] = 'access chado_analysis content';
+
   // Remove edit/delete node
   unset(
     $view->display['default']->display_options['fields']['delete_node'],

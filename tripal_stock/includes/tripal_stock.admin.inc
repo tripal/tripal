@@ -161,11 +161,6 @@ function tripal_stock_admin_validate($form, &$form_state) {
   global $user;  // we need access to the user info
   $job_args = array();
 
-  variable_set('chado_stock_types_cv', $form_state['values']['stock_types_cv']);
-  variable_set('chado_stock_prop_types_cv', $form_state['values']['stock_prop_types_cv']);
-  variable_set('chado_stock_relationship_cv', $form_state['values']['stock_relationship_cv']);
-  variable_set('chado_stock_url_string', $form_state['values']['chado_stock_url_string']);
-
   switch ($form_state['values']['op']) {
     case  t('Set Controlled Vacabularies') :
       break;

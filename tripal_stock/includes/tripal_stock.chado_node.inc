@@ -54,10 +54,10 @@ function chado_stock_load($nodes) {
 
   $new_nodes = array();
   foreach ($nodes as $nid => $node) {
-    
+
     // get the stock details from chado
     $stock_id = chado_get_id_from_nid('stock', $nid);
-    
+
     // if the nid does not have a matching record then skip this node.
     // this can happen with orphaned nodes.
     if (!$stock_id) {
@@ -67,7 +67,7 @@ function chado_stock_load($nodes) {
     // build the variable with all the stock details
     $values = array('stock_id' => $stock_id);
     $stock = chado_generate_var('stock', $values);
-    
+
     // add in the uniquename and the description as these are both text fields
     $stock = chado_expand_var($stock, 'field', 'stock.uniquename');
     $stock = chado_expand_var($stock, 'field', 'stock.description');
@@ -204,7 +204,7 @@ function chado_stock_form($node, $form_state) {
     $dbxref_description = $form_state['input']['db_description'];
     $dbxref_database = $form_state['input']['database'];
   }
-  
+
   $form['names'] = array(
     '#type' => 'fieldset',
     '#title' => t('Stock Name')
@@ -224,10 +224,12 @@ function chado_stock_form($node, $form_state) {
     '#required'       => TRUE
   );
 
-  $form['names']['stock_id'] = array(
-    '#type' => 'hidden',
-    '#value' => $stock_id,
-  );
+  if ($stock_id > 0) {
+    $form['names']['stock_id'] = array(
+      '#type' => 'hidden',
+      '#value' => $stock_id,
+    );
+  }
 
   $form['details'] = array(
     '#type' => 'fieldset',
@@ -236,7 +238,7 @@ function chado_stock_form($node, $form_state) {
 
   $type_options = tripal_get_cvterm_default_select_options('stock', 'type_id', 'stock types');
   $type_options[0] = 'Select a Type';
-  
+
   $form['details']['type_id'] = array(
     '#type' => 'select',
     '#title' => t('Type of Stock'),
@@ -364,14 +366,14 @@ function chado_stock_validate(&$node, $form, &$form_state) {
   $node->stock_description = trim($node->stock_description);
   $node->accession = trim($node->accession);
   $node->db_description = trim($node->db_description);
-  
+
   $int_in_chado_sql = "SELECT count(*) as count FROM {:table} WHERE :column = :value";
   $string_in_chado_sql = "SELECT count(*) as count FROM {:table} WHERE :column = :value";
 
   // if this is an update, we want to make sure that a different stock for
   // the organism doesn't already have this uniquename. We don't want to give
   // two sequences the same uniquename
-  if (property_exists($node, 'nid')) {
+  if (property_exists($node, 'nid') and property_exists($node, 'stock_id')) {
     $sql = "
       SELECT *
       FROM {stock} S
@@ -465,7 +467,7 @@ function chado_stock_validate(&$node, $form, &$form_state) {
  * @ingroup tripal_stock
  */
 function chado_stock_insert($node) {
-  
+
   $node->uniquename   = trim($node->uniquename);
   $node->sname        = trim($node->sname);
 
@@ -473,7 +475,7 @@ function chado_stock_insert($node) {
   // we can skip adding the stock to chado as it is already there, although
   // we do need to proceed with the rest of the insert
   if (!property_exists($node, 'stock_id')) {
-  
+
     // before we can add the stock, we must add the dbxref if one has been
     // provided by the user.
     $dbxref_status = 0;
@@ -558,7 +560,7 @@ function chado_stock_insert($node) {
       // Now add in relationships
       $details = array(
         'relationship_table' => 'stock_relationship',
-        'foreignkey_value' => $node->stock_id
+        'foreignkey_value' => $stock_id
       );
       chado_update_node_form_relationships($node, $details);
     }
@@ -605,7 +607,7 @@ function chado_stock_insert($node) {
  * @ingroup tripal_stock
  */
 function chado_stock_update($node) {
-  
+
   $node->uniquename   = trim($node->uniquename);
   $node->sname        = trim($node->sname);
 
@@ -898,7 +900,7 @@ function tripal_stock_node_insert($node) {
       // on an insert we need to add the stock_id to the node object
       // so that the tripal_stock_get_stock_url function can set the URL properly
       $node->stock_id = chado_get_id_from_nid('stock', $node->nid);
-      
+
       // remove any previous alias
       db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
 
@@ -1042,7 +1044,7 @@ function tripal_stock_set_urls($na = NULL, $job = NULL) {
     $sql = "SELECT * FROM {chado_stock}";
     $nodes = db_query($sql);
     foreach ($nodes as $node) {
-       
+
       // get the URL alias
       $src = "node/$node->nid";
       $dst = tripal_stock_get_stock_url($node, $url_alias);

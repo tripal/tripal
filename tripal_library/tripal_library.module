@@ -28,7 +28,7 @@ require_once 'includes/tripal_library.chado_node.inc';
  *
  * @ingroup tripal_library
  */
-function tripal_library_permisssion() {
+function tripal_library_permission() {
   return array(
     'access chado_library content' => array(
       'title' => t('View Libraries'),
