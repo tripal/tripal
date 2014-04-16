@@ -81,42 +81,10 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
    */
   function get_select_options() {
 
-    // build a where clause that will filter the list in the drop box
-    // using fields that are not exposed and that are for the table
-    // from whcih the values in the drop box will be slected and
-    // we only want to use non-exposed fields because these are not
-    // available to the user to edit--they're fixed.
+    $where_clauses = $this->get_select_option_where();
     $where = '';
-    $filters = (is_array($this->view->filter)) ? $this->view->filter : array();
-    foreach ($filters as $filter_name => $details) {
-      // we only want to inclue non-exposed filters
-      if ($details->options['exposed'] == FALSE) {
-
-        $value = $details->value;
-        if (is_array($details->value) AND isset($details->value['value'])) {
-         $value = $details->value['value'];
-        }
-
-        if (is_array($value)) {
-          // we only want to filter on the table we're getting the list from
-          if (strcmp($details->table, $this->table)==0 AND !empty($value)) {
-            $where .= "$details->field IN (" . implode(', ', $value) . ')';
-            $where .= ' AND ';
-          }
-
-        }
-        else {
-          // we only want to filter on the table we're getting the list from
-          if (strcmp($details->table, $this->table)==0 AND !empty($value)) {
-            $where .= "$details->field $details->operator " . $value;
-            $where .= ' AND ';
-          }
-        }
-      }
-    }
-    if ($where) {
-       $where = "WHERE $where";
-       $where = substr($where, 0, -5); # remove the final ' AND '
+    if (!empty($where_clauses)) {
+      $where = ' WHERE ' . implode(' AND ', $where_clauses);
     }
 
     // get the values from the table
@@ -142,6 +110,50 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
     }
 
     return $options;
+  }
+
+  /**
+   * For the SQL generating the options, determine the WHERE clauses
+   *
+   * @return
+   *   An array of full qualified where clauses (ie: table.myfield = 'fred')
+   */
+  function get_select_option_where() {
+    $where = array();
+
+    // build a where clause that will filter the list in the drop box
+    // using fields that are not exposed and that are for the table
+    // from whcih the values in the drop box will be slected and
+    // we only want to use non-exposed fields because these are not
+    // available to the user to edit--they're fixed.
+    $where = array();
+    $filters = (is_array($this->view->filter)) ? $this->view->filter : array();
+    foreach ($filters as $filter_name => $details) {
+      // we only want to inclue non-exposed filters
+      if ($details->options['exposed'] == FALSE) {
+
+        $value = $details->value;
+        if (is_array($details->value) AND isset($details->value['value'])) {
+         $value = $details->value['value'];
+        }
+
+        if (is_array($value)) {
+          // we only want to filter on the table we're getting the list from
+          if (strcmp($details->table, $this->table)==0 AND !empty($value)) {
+            $where[] = "$details->field IN (" . implode(', ', $value) . ')';
+          }
+
+        }
+        else {
+          // we only want to filter on the table we're getting the list from
+          if (strcmp($details->table, $this->table)==0 AND !empty($value)) {
+            $where[] = "$details->field $details->operator " . $value;
+          }
+        }
+      }
+    }
+
+    return $where;
   }
 
   /**

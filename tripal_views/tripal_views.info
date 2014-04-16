@@ -12,6 +12,7 @@ files[] = views/handlers/tripal_views_handler_field_sequence.inc
 files[] = views/handlers/tripal_views_handler_filter_no_results.inc
 files[] = views/handlers/tripal_views_handler_filter_sequence.inc
 files[] = views/handlers/tripal_views_handler_filter_select_cvterm.inc
+files[] = views/handlers/tripal_views_handler_filter_select_id.inc
 files[] = views/handlers/tripal_views_handler_filter_select_string.inc
 files[] = views/handlers/tripal_views_handler_field_aggregate.inc
 

@@ -12,7 +12,18 @@
  *
  * @ingroup tripal_views
  */
-class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_filter_select_string {
+class tripal_views_handler_filter_select_id extends tripal_views_handler_filter_select_string {
+
+  /**
+   * {@inheritdoc}
+   */
+  function init(&$view, &$options) {
+    parent::init($view, $options);
+
+    if (preg_match('/(\w+)_id/',$this->field,$matches)) {
+      $this->parent_table = $matches[1];
+    }
+  }
 
   /**
    * Provide the options used in the select list.
@@ -45,6 +56,7 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
             .' LEFT JOIN chado.cvterm cvterm ON cvterm.cvterm_id=' . $this->view->base_table . '.type_id '
             .'LEFT JOIN chado.cv cv ON cv.cv_id=cvterm.cv_id';
         }
+        // D7 TODO: Check DBTNG changes work
         $resource = chado_query($sql);
         $cvterms = array();
         foreach ($resource as $r) {
@@ -67,22 +79,28 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
         $where = ' AND ' . implode(' AND ', $where_clauses);
       }
 
-      $sql = "SELECT cvterm_id, name FROM {cvterm} WHERE cvterm_id IN (SELECT distinct(" . $this->field . ") FROM {" . $this->table . "}) " . $where . ' ORDER BY cvterm.name ASC';
+      $sql = "SELECT PARENT.%field as id, PARENT.name as name
+              FROM {%parent_table} PARENT
+                LEFT JOIN {%table} CHILD ON CHILD.%field = PARENT.%field
+              WHERE CHILD.%field IS NOT NULL $where
+              GROUP BY PARENT.%field
+              ORDER BY name";
+      $sql = str_replace(array('%field', '%table','%parent_table'),array($this->field, $this->table, $this->parent_table), $sql);
       $resource = chado_query($sql);
-      $cvterms = array();
+      $options = array();
 
       if ($this->options['select_optional']) {
-        $cvterms['All'] = '- Any -';
+        $options['All'] = '- Any -';
       }
 
       foreach ($resource as $r) {
-        $cvterms[$r->cvterm_id] = $r->name;
+        $options[$r->id] = $r->name;
       }
     }
-    //sort cvterms by name (case insensitive)
-    natcasesort($cvterms);
+    //sort options by name (case insensitive)
+    natcasesort($options);
 
-    return $cvterms;
+    return $options;
 
   }
 
@@ -93,41 +111,7 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
    *   An array of full qualified where clauses (ie: table.myfield = 'fred')
    */
   function get_select_option_where() {
-    $where = array();
-
-    // build a where clause that will filter the list in the drop box
-    // using fields that are not exposed and that are for the table
-    // from whcih the values in the drop box will be slected and
-    // we only want to use non-exposed fields because these are not
-    // available to the user to edit--they're fixed.
-    $filters = (is_array($this->view->filter)) ? $this->view->filter : array();
-    foreach ($filters as $filter_name => $details) {
-       // we only want to inclue non-exposed filters
-       if ($details->options['exposed'] == FALSE) {
-          $value = $details->value;
-          if (is_array($details->value) AND isset($details->value['value'])) {
-            $value = $details->value['value'];
-          }
-
-          $field = $details->field;
-          if (($this->table == $this->view->base_table) AND ($details->field == 'type_id')) {
-            $field = 'cvterm_id';
-          }
-
-          if (is_array($value)) {
-            // we only want to filter on the table we're getting the list from
-            if (strcmp($details->table, $this->table)==0 AND !empty($value)) {
-              $where[] = "$field IN (" . implode(', ', $value) . ')';
-            }
-          }
-          else {
-            // we only want to filter on the table we're getting the list from
-            if (strcmp($details->table, 'cvterm')==0 AND !empty($value)) {
-              $where[] = "$field $details->operator " . $value;
-            }
-          }
-       }
-    }
+    $where = parent::get_select_option_where();
 
     return $where;
   }

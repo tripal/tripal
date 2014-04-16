@@ -45,6 +45,9 @@ function tripal_views_views_handlers() {
       'tripal_views_handler_filter_select_cvterm' => array(
         'parent' => 'tripal_views_handler_filter_select_string',
       ),
+      'tripal_views_handler_filter_select_id' => array(
+        'parent' => 'tripal_views_handler_filter_select_string',
+      ),
       'tripal_views_handler_filter_select_string' => array(
         'parent' => 'views_handler_filter_string',
       ),
