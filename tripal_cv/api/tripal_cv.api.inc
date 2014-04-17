@@ -987,10 +987,15 @@ function tripal_associate_cvterm($basetable, $record_id, $cvterm) {
  * @return
  *   TRUE if set, FALSE if an error occured
  */
-function tripal_set_default_cv($table, $field, $cv_name) {
+function tripal_set_default_cv($table, $field, $cv_name, $cv_id = FALSE) {
 
-  // make sure the cv_id is valid
-  $cv = tripal_get_cv(array('name' => $cv_name));
+  // Get the CV object
+  if ($cv_id) {
+    $cv = tripal_get_cv(array('cv_id' => $cv_id));
+  }
+  else {
+    $cv = tripal_get_cv(array('name' => $cv_name));
+  }
 
   if ($cv) {
     // first delete any entries for this table and field
@@ -1075,6 +1080,16 @@ function tripal_get_cvterm_default_select_options($table, $field, $field_desc) {
 
   if ($default_cv) {
     $options = tripal_get_cvterm_select_options($default_cv->cv_id);
+
+    if (count($options) == 0) {
+      tripal_set_message('There are no ' . $field_desc . '. Please ' .
+        l('add terms',
+          'admin/tripal/chado/tripal_cv/cv/' .$default_cv->cv_id. '/cvterm/add',
+           array('attributes' => array('target' => '_blank'))) . ' to the ' .
+        $default_cv->name .' vocabulary.',
+        TRIPAL_WARNING);
+    }
+
   }
   else {
     tripal_set_message('There is not a default vocabulary set for ' . $field_desc . '. '.
@@ -1084,13 +1099,6 @@ function tripal_get_cvterm_default_select_options($table, $field, $field_desc) {
         array('attributes' => array('target' => '_blank'))) . '.',
       TRIPAL_WARNING);
   }
-  if (count($options) == 0) {
-    tripal_set_message('There are no ' . $field_desc . '. Please ' .
-      l('add terms',
-        'admin/tripal/chado/tripal_cv/cv/' .$default_cv->cv_id. '/cvterm/add',
-         array('attributes' => array('target' => '_blank'))) . ' to the ' .
-      $default_cv->name .' vocabulary.',
-      TRIPAL_WARNING);
-  }
+
   return $options;
 }

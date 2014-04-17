@@ -46,11 +46,10 @@ function tripal_cv_admin_cv_listing() {
 }
 
 /**
- * 
+ *
  */
-function tripal_cv_admin_set_defaults_form() {
-  $form = array();
-  
+function tripal_cv_admin_set_defaults_form($form, $form_state) {
+
   $form['instructions'] = array(
     '#markup' => t('Much of the data housed in Chado is typed, meaning that a ' .
         'controlled vocabulary describes what type of data the record is. For example, '.
@@ -60,20 +59,20 @@ function tripal_cv_admin_set_defaults_form() {
         'Chado that requires a type from a vocabulary. By default, autocomplete fields, '.
         'type select boxes and type validation occur using the default vocabularies set below. '),
   );
-  
+
   // get the list of all tables that use the cvterm table as an FK
   $cvterm_schema = chado_get_schema('cvterm');
   $referring_tables = $cvterm_schema['referring_tables'];
-  
+
   // get the list of tables that already have default set
   $cv_defaults = db_select('tripal_cv_defaults', 'TCD')
     ->fields('TCD', array('cv_default_id', 'table_name', 'field_name', 'cv_id'))
     ->orderBy('table_name', 'ASC')
     ->execute();
-  
+
   // get the list of vocabularies
   $cvs = tripal_get_cv_select_options();
-  
+
   $form['settings'] = array(
     '#type' => 'fieldset',
     '#title' => t('Configured Defaults'),
@@ -83,83 +82,131 @@ function tripal_cv_admin_set_defaults_form() {
   foreach ($cv_defaults as $cv_default) {
     $cv_default_id = $cv_default->cv_default_id;
     $cv = tripal_get_cv(array('cv_id' => $cv_default->cv_id));
+
     $form['settings']['existing'][$cv_default_id]["id"] = array(
       '#type' => 'hidden',
       '#value' => $cv_default_id,
     );
-    $form['settings']['existing'][$cv_default_id]["table_name"] = array(
+
+    // Display
+    $form['settings']['existing'][$cv_default_id]["table_name-display"] = array(
       '#type' => 'markup',
       '#markup' => $cv_default->table_name
     );
-    $form['settings']['existing'][$cv_default_id]["field_name"] = array(
+    $form['settings']['existing'][$cv_default_id]["field_name-display"] = array(
       '#type' => 'markup',
       '#markup' => $cv_default->field_name
     );
+
+    // Save for use in submit
+    $form['settings']['existing'][$cv_default_id]["table_name"] = array(
+      '#type' => 'hidden',
+      '#value' => $cv_default->table_name
+    );
+    $form['settings']['existing'][$cv_default_id]["field_name"] = array(
+      '#type' => 'hidden',
+      '#value' => $cv_default->field_name
+    );
+
+    // Selectbox to set the vocabulary
+    if (!empty($cv)) {
+      $default_cv = $cv_default->cv_id;
+    }
+    else {
+      $cvs[0] = 'NONE SET';
+      $default_cv = 0;
+    }
     $form['settings']['existing'][$cv_default_id]["vocabulary"] = array(
       '#type' => 'select',
       '#options' => $cvs,
-      '#default_value' => $cv_default->cv_id,
-      '#suffix' => '<a target="_blank" href="'. url('admin/tripal/chado/tripal_cv/cvterms') . '?cv=' . $cv->name . '">View terms</a>'
+      '#default_value' => $default_cv,
     );
-    // remove button
-    $form['settings']['existing'][$cv_default_id]['remove'] = array(
-      '#type' => 'submit',
-      '#value' => t('Remove'),
-      '#name' => "cv_remove-$cv_default_id",
-      '#ajax' => array(
-        'callback' => "tripal_cv_admin_set_defaults_ajax_update",
-        'wrapper' => 'tripal-generic-edit-properties-table',
-        'effect'   => 'fade',
-        'method'   => 'replace',
-        'prevent'  => 'click'
-      ),
-      // When this button is clicked, the form will be validated and submitted.
-      // Therefore, we set custom submit and validate functions to override the
-      // default node form submit.  In the validate function we validate only the
-      // property fields and in the submit we remove the indicated property
-      // from the chado_properties array. In order to keep validate errors
-      // from the node form validate and Drupal required errors for non-property fields
-      // preventing the user from removing properties we set the #limit_validation_errors below
-      '#validate' => array('chado_add_node_form_properties_remove_button_validate'),
-      '#submit' => array('chado_add_node_form_properties_remove_button_submit'),
-      // Limit the validation of the form upon clicking this button to the property_table tree
-      // No other fields will be validated (ie: no fields from the main form or any other api
-      // added form).
-      '#limit_validation_errors' => array(
-        array('property_table')  // Validate all fields within $form_state['values']['property_table']
-      )
+
+    // Actions
+    $view_terms = l('New Vocabulary', 'admin/tripal/chado/tripal_cv/cv/add');
+    $add_term = '';
+    if (!empty($cv)) {
+      $view_terms = l(
+        'View Terms',
+        'admin/tripal/chado/tripal_cv/cvterms',
+        array('query' => array('cv' => $cv->name))
+      );
+
+      $add_term = l(
+        'Add Term',
+        'admin/tripal/chado/tripal_cv/cv/' . $cv->cv_id . '/cvterm/add'
+      );
+    }
+    $form['settings']['existing'][$cv_default_id]["view-terms"] = array(
+      '#type' => 'markup',
+      '#markup' => $view_terms
     );
+    $form['settings']['existing'][$cv_default_id]["add-new-term"] = array(
+      '#type' => 'markup',
+      '#markup' => $add_term
+    );
+
   }
-  
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Update Defaults'
+  );
+
   return $form;
 }
 
+function tripal_cv_admin_set_defaults_form_submit($form, $form_state) {
+
+  foreach ($form_state['values']['settings']['existing'] as $default_cv) {
+    if (!empty($default_cv['vocabulary'])) {
+      tripal_set_default_cv(
+        $default_cv['table_name'],
+        $default_cv['field_name'],
+        '', // We are passing in the cv_id so we don't need the name
+        $default_cv['vocabulary']
+      );
+    }
+  }
+
+}
+
 /**
- * 
+ *
  * @param unknown $variables
  */
 function theme_tripal_cv_admin_set_defaults_form($variables) {
   $element = $variables['element'];
 
   $header = array(
-    'table_name'      => array('data' => t('Table Name'),      'width' => '20%'),
-    'field_name'      => array('data' => t('Field Name'),      'width' => '20%'),
-    'vocabulary'      => array('data' => t('Default Vocabulary'), 'width' => '40%'),
-    'property_action' => array('data' => t('Actions'),    'width' => '20%'),
+    'table_name'      => array('data' => t('Table Name'),         'width' => '20%'),
+    'field_name'      => array('data' => t('Field Name'),         'width' => '20%'),
+    'vocabulary'      => array('data' => t('Default Vocabulary'), 'width' => '30%'),
+    'actions'         => array('data' => t('Actions'),            'width' => '30%'),
   );
 
   $rows = array();
-  
+
   foreach ($element['settings']['existing'] as $key => $value) {
     if (is_numeric($key)) {
+
+      $action_links = '<ul class="links inline">';
+      if (!empty($value['view-terms'])) {
+        $action_links .= '<li>' . drupal_render($value['view-terms']) . '</li>';
+      }
+      if (!empty($value['add-new-term'])) {
+        $action_links .= '<li>' . drupal_render($value['add-new-term']) . '</li>';
+      }
+      $action_links .= '</li></ul>';
+
       $rows[] = array(
-        drupal_render($value['table_name']),
-        drupal_render($value['field_name']),
+        drupal_render($value['table_name-display']),
+        drupal_render($value['field_name-display']),
         drupal_render($value['vocabulary']),
-        drupal_render($value['remove']),
+        $action_links
       );
     }
-  } 
+  }
   $settings_table = theme('table', array(
     'header' => $header,
     'rows' => $rows
@@ -168,7 +215,7 @@ function theme_tripal_cv_admin_set_defaults_form($variables) {
     '#type' => 'markup',
     '#markup' => $settings_table,
   );
-  
+
   return drupal_render_children($element);
-  
+
 }

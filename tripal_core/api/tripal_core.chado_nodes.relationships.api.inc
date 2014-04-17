@@ -134,7 +134,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
       The relationship table, '%name', cannot be found.", array('%name' => $details['relationship_table']));
     return;
   }
-  
+
   // make sure the specified cv exists
   if (isset($details['cv_name'])) {
     // make sure the cv_name is real
@@ -163,13 +163,31 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     $details['cv_name'] = $result[0]->name;
   }
   else {
-    drupal_set_message("Please provide either a 'cv_name' or 'cv_id' as an
-        option for adding relationship to the form", "error");
-    tripal_report_error('tcprops_form', TRIPAL_ERROR, "Please provide either a
+
+    // If we didn't get given a cv identifier, then try retrieving the default one
+    // using the new cv defaults api
+    $default_cv = tripal_get_default_cv($details['relationship_table'], 'type_id');
+    if (!empty($default_cv)) {
+      $details['cv_id'] = $default_cv->cv_id;
+      $details['cv_name'] = $default_cv->name;
+    }
+    else {
+
+      $default_form_link = l('vocabulary defaults configuration page',
+          'admin/tripal/chado/tripal_cv/defaults',
+          array('attributes' => array('target' => '_blank')));
+
+      $table = ucwords(str_replace('_',' ',$details['base_table']));
+      $message = "There is not a default vocabulary set for $table Releationship Types. Please set one using the  $default_form_link.";
+
+      tripal_set_message($message, TRIPAL_WARNING);
+      tripal_report_error('tcprops_form', TRIPAL_ERROR, "Please provide either a
         'cv_name' or 'cv_id' as an option for adding relationship to the form", array());
+    }
+
     return;
   }
-  
+
   $form_state['rebuild'] = TRUE;
 
   // Set Defaults for optional fields
@@ -207,7 +225,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
         $type_options[$prop->cvterm_id] = $prop->name;
         $details['cv_id'] = $prop->cv_id;
       }
-    } 
+    }
     elseif (isset($details['cv_id'])) {
       $type_options = array();
       $type_options[] = 'Select a Property';
@@ -621,7 +639,7 @@ function chado_add_node_form_relationships_add_button_submit(&$form, &$form_stat
 
 
 
-  
+
   // get details for the new relationship
   if ($form_state['values']['relationship_table']['new']['subject_is_current']) {
     $relationship = array(
@@ -651,14 +669,14 @@ function chado_add_node_form_relationships_add_button_submit(&$form, &$form_stat
     unset($form_state['input']['relationship_table']['new']['subject_id']);
     unset($form_state['input']['relationship_table']['new']['subject_name']);
   }
-  
+
   $key = $relationship['type_id'] . '-' . $relationship['rank'];
   $form_state['chado_relationships'][$key] = (object) $relationship;
 
   // we don't want the new element to pick up the values from the previous element so wipe them out
   unset($form_state['input']['relationship_table']['new']['type_id']);
   unset($form_state['input']['relationship_table']['new']['type_name']);
-  
+
   $form_state['rebuild'] = TRUE;
 }
 
