@@ -42,12 +42,24 @@
  * $feature_id  = chado_get_id_from_nid ('feature', $node->nid)
  *
  * @param $table
+ *   The chado table the chado record is from
  * @param $nid
+ *   The value of the primary key of node
+ * @param $linking_table
+ *   The Drupal table linking the chado record to it's node.
+ *   This field is optional and defaults to chado_$table
+ *
+ * @return
+ *   The chado id of the associated chado record
  *
  * @ingroup tripal_chado_node_api
  */
-function chado_get_id_from_nid($table, $nid) {
-  $sql = "SELECT " . $table . "_id as id FROM {chado_$table} WHERE nid = :nid";
+function chado_get_id_from_nid($table, $nid, $linking_table = NULL) {
+  if (empty($linking_table)) {
+    $linking_table = 'chado_' . $table;
+  }
+
+  $sql = "SELECT " . $table . "_id as id FROM {$linking_table} WHERE nid = :nid";
   return db_query($sql, array(':nid' => $nid))->fetchField();
 }
 
@@ -59,10 +71,25 @@ function chado_get_id_from_nid($table, $nid) {
  *  $nid = chado_get_nid_from_id ('organism', $organism_id)
  *  $nid = chado_get_nid_from_id ('feature', $feature_id)
  *
+ * @param $table
+ *   The chado table the id is from
+ * @param $id
+ *   The value of the primary key from the $table chado table (ie: feature_id)
+ * @param $linking_table
+ *   The Drupal table linking the chado record to it's node.
+ *   This field is optional and defaults to chado_$table
+ *
+ * @return
+ *   The nid of the associated node
+ *
  *  @ingroup tripal_chado_node_api
  */
-function chado_get_nid_from_id($table, $id) {
-  $sql = "SELECT nid FROM {chado_$table} WHERE " . $table . "_id = :" . $table . "_id";
+function chado_get_nid_from_id($table, $id, $linking_table = NULL) {
+  if (empty($linking_table)) {
+    $linking_table = 'chado_' . $table;
+  }
+
+  $sql = "SELECT nid FROM {" . $linking_table . "} WHERE " . $table . "_id = :" . $table . "_id";
   return db_query($sql, array(":" . $table . "_id" => $id))->fetchField();
 }
 
@@ -144,6 +171,11 @@ function chado_node_sync_form($form, &$form_state) {
     $args = $node_info[$linking_table]['chado_node_api'];
     $form_state['chado_node_api'] = $args;
   }
+
+  $form['linking_table'] = array(
+    '#type' => 'hidden',
+    '#value' => $linking_table
+  );
 
   // define the fieldsets
   $form['sync'] = array(
@@ -312,6 +344,7 @@ function chado_node_sync_form_submit($form, $form_state) {
     $args = $form_state['chado_node_api'];
     $module = $form_state['chado_node_api']['hook_prefix'];
     $base_table = $form_state['chado_node_api']['base_table'];
+    $linking_table = $form_state['values']['linking_table'];
 
     // Allow each module to hijack the submit if needed
     $hook_form_hijack_submit = $args['hook_prefix'] . '_chado_node_sync_form_submit';
@@ -358,6 +391,7 @@ function chado_node_sync_form_submit($form, $form_state) {
       'organism_id' => $organism_id,
       'types' => $types,
       'ids' => $ids,
+      'inking_table' => $linking_table
     );
 
     $title = "Sync " . $args['record_type_title']['plural'];
@@ -377,10 +411,14 @@ function chado_node_sync_form_submit($form, $form_state) {
  * @ingroup tripal_chado_node_api
  */
 function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = FALSE,
-    $types = array(), $ids = array(), $job_id = NULL) {
+    $types = array(), $ids = array(), $linking_table = FALSE, $job_id = NULL) {
 
   global $user;
   $base_table_id = $base_table . '_id';
+
+  if (!$linking_table) {
+    $linking_table = 'chado_' . $base_table;
+  }
 
   print "\nSync'ing $base_table records.  ";
 
@@ -424,7 +462,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
   }
 
   // Allow module to add to query
-  $hook_query_alter = 'chado_' . $base_table . '_chado_node_sync_select_query';
+  $hook_query_alter = $linking_table . '_chado_node_sync_select_query';
   if (function_exists($hook_query_alter)) {
     call_user_func($hook_query_alter, $select, $joins, $where_clauses, $where_args);
   }
@@ -435,7 +473,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
   $query = "
     SELECT " . implode(', ',$select) . ' ' .
     'FROM {' . $base_table . '} ' . $base_table . ' ' . implode(' ', $joins) . ' '.
-    "  LEFT JOIN public.chado_$base_table CT ON CT.$base_table_id = $base_table.$base_table_id " .
+    "  LEFT JOIN public.$linking_table CT ON CT.$base_table_id = $base_table.$base_table_id " .
     "WHERE CT.$base_table_id IS NULL AND";
 
   // extend the where clause if needed
@@ -499,7 +537,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
       }
 
       // Check if it is in the chado linking table (ie: check to see if it is already linked to a node)
-      $result = db_select('chado_' . $base_table, 'lnk')
+      $result = db_select($linking_table, 'lnk')
         ->fields('lnk',array('nid'))
         ->condition($base_table_id, $record->{$base_table_id}, '=')
         ->execute()
@@ -512,7 +550,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
 
         // Create generic new node
         $new_node = new stdClass();
-        $new_node->type = 'chado_' . $base_table;
+        $new_node->type = $linking_table;
         $new_node->uid = $user->uid;
         $new_node->{$base_table_id} = $record->{$base_table_id};
         $new_node->$base_table = $record;
@@ -520,7 +558,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
 
         // TODO: should we get rid of this hook and use hook_node_presave() instead?
         // allow base module to set additional fields as needed
-        $hook_create_new_node = 'chado_' . $base_table . '_chado_node_sync_create_new_node';
+        $hook_create_new_node = $linking_table . '_chado_node_sync_create_new_node';
         if (function_exists($hook_create_new_node)) {
           $new_node = call_user_func($hook_create_new_node, $new_node, $record);
         }
