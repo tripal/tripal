@@ -183,9 +183,10 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
       tripal_set_message($message, TRIPAL_WARNING);
       tripal_report_error('tcprops_form', TRIPAL_ERROR, "Please provide either a
         'cv_name' or 'cv_id' as an option for adding relationship to the form", array());
+
+      return;
     }
 
-    return;
   }
 
   $form_state['rebuild'] = TRUE;
@@ -278,14 +279,18 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
   $form['relationships'] = array(
     '#type' => 'fieldset',
     '#title' => t($details['fieldset_title']),
-    '#description' => t('You may add relationships between this %nodetype and other
+    '#prefix' => "<div id='relationships-fieldset'>",
+    '#suffix' => '</div>',
+    '#weight'      => 10
+  );
+
+  $form['relationships']['descrip'] = array(
+    '#type' => 'item',
+    '#markup' => t('You may add relationships between this %nodetype and other
       %nodetype_plural by entering the details below.  You may add
       as many relationships as desired by clicking the add button on the right.  To
       remove a relationship, click the remove button. ' . $details['additional_instructions'],
       array('%nodetype' => $details['nodetype'], '%nodetype_plural' => $details['nodetype_plural'])),
-    '#prefix' => "<div id='relationships-fieldset'>",
-    '#suffix' => '</div>',
-    '#weight'      => 10
   );
 
   $form['relationships']['admin_message'] = array(
@@ -381,7 +386,11 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
   foreach ($existing_rels as $relationship) {
     if (array_key_exists($relationship->type_id, $type_options)) {
 
-      $rank = (isset($relationship->rank)) ? $relationship->rank : 0;
+      // We're using a unique id as a rank placeholder to ensure all relationships are shown
+      // We can't use the actual rank b/c there can be two relationships with the same type
+      // and rank as long as the subject_id and object_id are switched. For example, you can
+      // have Fred is_paternal_parent_of Max and Max is_paternal_parent_of Lui (both rank=0)
+      $rank = uniqid();
 
       $form['relationships']['relationship_table'][$relationship->type_id]['#type'] = 'markup';
       $form['relationships']['relationship_table'][$relationship->type_id]['#type'] = '';
@@ -649,7 +658,7 @@ function chado_add_node_form_relationships_add_button_submit(&$form, &$form_stat
       'object_name' => $form_state['values']['relationship_table']['new']['object_name'],
       'subject_id' => $form_state['node']->{$details['base_table']}->{$details['base_foreign_key']},
       'subject_name' => $name,
-      'rank' => '0',
+      'rank' => uniqid(),
     );
     // we don't want the new element to pick up the values from the previous element so wipe them out
     unset($form_state['input']['relationship_table']['new']['object_id']);
@@ -663,7 +672,7 @@ function chado_add_node_form_relationships_add_button_submit(&$form, &$form_stat
       'object_name' => $name,
       'subject_id' => $form_state['values']['relationship_table']['new']['subject_id'],
       'subject_name' => $form_state['values']['relationship_table']['new']['subject_name'],
-      'rank' => '0',
+      'rank' => uniqid(),
     );
     // we don't want the new element to pick up the values from the previous element so wipe them out
     unset($form_state['input']['relationship_table']['new']['subject_id']);
@@ -779,9 +788,9 @@ function theme_chado_add_node_form_relationships_table($variables) {
   $details = unserialize($element['details']['#value']);
 
   $header = array(
-    'object_name' => t('Object ' . $details['base_name_field']),
-    'type_name' => t('Type'),
     'subject_name' => t('Subject ' . $details['base_name_field']),
+    'type_name' => t('Type'),
+    'object_name' => t('Object ' . $details['base_name_field']),
     'rel_action' => t('Action')
   );
 
