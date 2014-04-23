@@ -7,10 +7,10 @@
  */
 
 /**
- *  Implementation of hook_node_info().  
- *  
- *  This hook provides information to drupal about any node types that are being 
- *  created by this module. If your module does not create any node types then 
+ *  Implementation of hook_node_info().
+ *
+ *  This hook provides information to drupal about any node types that are being
+ *  created by this module. If your module does not create any node types then
  *  this function is not required.
  *
  * @ingroup tripal_example
@@ -22,8 +22,8 @@ function tripal_example_node_info() {
   // by this module. For many Tripal modules (e.g. tripal_example, tripal_stock,
   // tripal_library, tripal_pub, etc.) new node types are created. It is
   // customary to name all new node types that interact with data in Chado
-  // with a 'chado_' prefix.  
-  
+  // with a 'chado_' prefix.
+
   $nodes['chado_example'] = array(
     'name'        => t('Example'),
     'base'        => 'chado_example',
@@ -73,8 +73,8 @@ function chado_example_node_access($node, $op, $account) {
   if (is_object($node)) {
     $node_type = $node->type;
   }
-  // EXPLANATION:  in the tripal_example_permissions() function we 
-  // created the permission types that are used here to check for 
+  // EXPLANATION:  in the tripal_example_permissions() function we
+  // created the permission types that are used here to check for
   // access permissions to the 'chado_exmaple' node type.
   if($node_type == 'chado_example') {
     if ($op == 'create') {
@@ -103,14 +103,14 @@ function chado_example_node_access($node, $op, $account) {
 }
 
 /**
- * Implementation of hook_form() 
- * 
- * Creates the form for editing or inserting a record 
+ * Implementation of hook_form()
+ *
+ * Creates the form for editing or inserting a record
  *
  * @ingroup tripal_example
  */
 function chado_example_form($node, &$form_state) {
-  
+
   // EXPLANATION: This function should construct a form array that is used
   // by Drupal to contruct a form for inserting or editing our new node type.
   // See this page for information about the Form API:
@@ -119,7 +119,7 @@ function chado_example_form($node, &$form_state) {
   // The code below is laid out in the following order
   // 1) Set default values
   // 2) Add form elements used by this node type
-  // 3) Use the Tripal API to add form elemetns for properties, 
+  // 3) Use the Tripal API to add form elemetns for properties,
   //    dbxref's and relationships
   //
   // For the example code below we assume that the fake 'example' table
@@ -139,16 +139,16 @@ function chado_example_form($node, &$form_state) {
 
 
   // SET FORM DEFAULTS
-  //---------------------------------------------  
+  //---------------------------------------------
   $example      = null;   // holds the example object record
   $example_id   = null;   // when editing an example record we'll have an example_id
-  
+
   // initialize the defaults for the form fields
   $uniquename   = '';
   $example_type = '';
   $organism_id  = '';
   $description  = '';
-  
+
   // if we are editing an existing node then the 'example' record from Chado
   // is already part of the node, so we set the defaults from that object
   if (property_exists($node, 'example')) {
@@ -179,9 +179,9 @@ function chado_example_form($node, &$form_state) {
      $example_type = $form_state['input']['example_type'];
      $organism_id  = $form_state['input']['organism_id'];
   }
-    
-  
-  // FORM ELEMENTS 
+
+
+  // FORM ELEMENTS
   //---------------------------------------------
   $form['uniquename'] = array(
     '#type' => 'textfield',
@@ -191,7 +191,7 @@ function chado_example_form($node, &$form_state) {
     '#description' => t('Enter a unique name for this example.  This name must be unique.'),
     '#maxlength' => 255
   );
-  
+
   // for the type_id we want to use the default vocabulary so that this
   // field can have autocomplete functionality
   $type_cv = tripal_get_default_cv('example', 'type_id');
@@ -204,7 +204,7 @@ function chado_example_form($node, &$form_state) {
     '#default_value' => $example_type,
     '#autocomplete_path' => "admin/tripal/chado/tripal_cv/cvterm/auto_name/$cv_id",
   );
-  
+
   // add a select box of organisms
   $organisms = tripal_get_organism_select_options();
   $form['organism_id'] = array(
@@ -215,7 +215,7 @@ function chado_example_form($node, &$form_state) {
     '#default_value' => $organism_id,
     '#options'     => $organisms,
   );
-  
+
   $form['description'] = array(
     '#type' => 'textarea',
     '#title' => t('Description'),
@@ -274,10 +274,10 @@ function chado_example_form($node, &$form_state) {
 /**
  * Implementation of hook_validate
  *
- * This function validates a form prior to insert or update. If an error 
+ * This function validates a form prior to insert or update. If an error
  * is detected, it sets the error using form_set_error() which takes the
  * user back to the form to make corrections.
- * 
+ *
  * This validation is being used for three activities:
  *   CASE A: Update a node that exists in both drupal and chado
  *   CASE B: Synchronizing a node from chado to drupal
@@ -304,7 +304,7 @@ function chado_example_validate($node, $form, &$form_state) {
   // be sure to always trim text fields
   $node->uniquename   = trim($node->uniquename);
   $node->description  = trim($node->description);
-  
+
   // Validating for an update. If the 'nid' property is present in the node then
   // this is an update and validation can be different for updates
   if (property_exists($node, 'nid')) {
@@ -318,9 +318,9 @@ function chado_example_validate($node, $form, &$form_state) {
     if (!$type) {
       form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
     }
-    
+
     // TODO: also we should check that the unique constraint is not invalidated by
-    // changing either the type_id, organism_id or uniquename. 
+    // changing either the type_id, organism_id or uniquename.
   }
   // Validating for an insert
   else {
@@ -333,7 +333,7 @@ function chado_example_validate($node, $form, &$form_state) {
     if (!$type) {
       form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
     }
-    
+
     // TODO: also we should check that the unique constraint doesn't already exist
   }
 }
@@ -357,13 +357,13 @@ function chado_example_insert($node) {
   // be sure to always trim text fields
   $node->uniquename   = trim($node->uniquename);
   $node->description  = trim($node->description);
-  
+
   // get the example type record
   $type_cv = tripal_get_default_cv('example', 'type_id');
   $type = tripal_get_cvterm(array(
     'name' => $node->example_type,
     'cv_id' => $type_cv->cv_id,
-  ));  
+  ));
 
   // if there is an example_id in the $node object then this must be a sync so
   // we can skip adding the example as it is already there, although
@@ -544,9 +544,9 @@ function chado_example_delete($node) {
  * @ingroup tripal_example
  */
 function chado_example_load($nodes) {
-  
+
   // EXPLANATION: when displaying or node or accessing the node in a template
-  // we need the data from Chado.  This fucntion finds the record in Chado that 
+  // we need the data from Chado.  This fucntion finds the record in Chado that
   // this node belongs to and adds the record.
 
   // there may be multiple nodes that get passed in so we have to iterate through
@@ -560,7 +560,7 @@ function chado_example_load($nodes) {
     if (!$example_id) {
       continue;
     }
-    
+
     // build the example variable by using the chado_generate_var() function
     $values = array('example_id' => $example_id);
     $example = chado_generate_var('example', $values);
@@ -582,7 +582,7 @@ function chado_example_load($nodes) {
 
 /**
  * Implementation of hook_node_presave().
- * 
+ *
  * Performs actions on a node object prior to it being saved
  *
  * @ingroup tripal_example
@@ -601,7 +601,7 @@ function tripal_example_node_presave($node) {
   //  don't define a custom node type in the hook_node_info() function. But
   // it is node type agnostic, so you can use this function to change the
   // contents of any node regardless of it's type.
-  
+
   // set the node title
   switch ($node->type) {
     case 'chado_example':
@@ -619,14 +619,14 @@ function tripal_example_node_presave($node) {
 }
 
 /**
- * Implementation of hook node_insert(). 
- * 
- * Performs actions after any node has been inserted. 
+ * Implementation of hook node_insert().
+ *
+ * Performs actions after any node has been inserted.
  *
  * @ingroup tripal_example
  */
 function tripal_example_node_insert($node) {
-  
+
   // EXPLANATION: This function is used
   // after any a node is inserted into the database.  It is different
   // from the hook_insert() function above in that it is called after
@@ -642,12 +642,12 @@ function tripal_example_node_insert($node) {
   // it is node type agnostic, so you can use this function to do any
   // activity after insert of any node.
 
-  // the Example code below will set the URL path after inserting.  We do it 
-  // here because we do not know the example_id in the presave and cannot do 
+  // the Example code below will set the URL path after inserting.  We do it
+  // here because we do not know the example_id in the presave and cannot do
   // it in the hook_insert()
   switch ($node->type) {
     case 'chado_example':
-      
+
       // if we do not have an record ID for this node then get it
       if (!property_exists($node, 'example_id')) {
         $node->example_id = chado_get_id_from_nid('example', $node->nid);
@@ -657,7 +657,7 @@ function tripal_example_node_insert($node) {
       // see the code in the tripal_feature/includes/tripal_feature.chado_node.inc file
       // in the function tripal_feature_node_insert for an example of how that
       // module sets the URL.  It uses a configuration file to allow the user
-      // to dynmically build a URL schema and then uses that schema to generate 
+      // to dynmically build a URL schema and then uses that schema to generate
       // a URL string.
       break;
   }
@@ -665,8 +665,8 @@ function tripal_example_node_insert($node) {
 
 /**
  * Implementation of hook node_update().
- * 
- * Performs actions after any node has been updated. 
+ *
+ * Performs actions after any node has been updated.
  *
  */
 function tripal_example_node_update($node) {
@@ -674,7 +674,7 @@ function tripal_example_node_update($node) {
   // EXPLANATION: This function is used
   // after any a node is updated in the database.  It is different
   // from the hook_update() function above in that it is called after
-  // any node is updated, regardlesss of it's type. 
+  // any node is updated, regardlesss of it's type.
   // An example comes from the tripal_feature module where the URL alias
   // of a node cannot be set in the hook_update() function. Therefore
   // the tripal_feature module uses this function to reset the url path
@@ -684,7 +684,7 @@ function tripal_example_node_update($node) {
   // don't define a custom node type in the hook_node_info() function. But
   // it is node type agnostic, so you can use this function to do any
   // activity after insert of a node.
-  
+
   // add items to other nodes, build index and search results
   switch ($node->type) {
     case 'chado_example':
@@ -692,39 +692,46 @@ function tripal_example_node_update($node) {
       // see the code in the tripal_feature/includes/tripal_feature.chado_node.inc file
       // in the function tripal_feature_node_insert for an example of how that
       // module sets the URL.  It uses a configuration file to allow the user
-      // to dynmically build a URL schema and then uses that schema to generate 
+      // to dynmically build a URL schema and then uses that schema to generate
       // a URL string.
       break;
   }
 }
 /**
- * Implementation of hook_node_view().  
+ * Implementation of hook_node_view().
  *
  * @ingroup tripal_example
  */
 function tripal_example_node_view($node, $view_mode, $langcode) {
-  
+
   // EXPLANATION: This function defines the content "blocks" that appear
   // when thhe node is displayed. It is node type agnostic so we can add
   // content to any node type.  So, we use this function to add the content
   // from all of our theme templates onto our new node type. We will also
-  // use this function to add content to other node types. 
-          
+  // use this function to add content to other node types.
+
   switch ($node->type) {
     case 'chado_example':
       // there are different ways a node can be viewed. Primarily Tripal
       // supports full page view and teaser view.
       if ($view_mode == 'full') {
 
+        // If you want to use the default Tripal node template then you need to tell
+        // tripal to generate the Table of Contents. This is done by setting the following
+        // to TRUE. If your content type follows the chado_<base table> convention
+        // then this is the default. In this case if you don't want to use the default
+        // template then you need to set the following to FALSE.
+        $node->content['#tripal_generic_node_template'] = TRUE;
+
         // There is always a base template.  This is the template that
-        // is first shown when the example node type is first displayed. 
+        // is first shown when the example node type is first displayed.
         // if you are using the default Tripal node template, then you should
         // also set two additional items in each array:  tripal_toc_id and
         // tripal_toc_title.  The tripal_tock_id should be a single unqiue
         // world that is used to reference the template. This ID is used for
         // constructing URLs for the content.  The tripal_toc_title contains
-        // the title that should appear in the table of contents for this 
-        // content.  You should only set the '#weight' element for the 
+        // the title that should appear in the table of contents for this
+        // content.  You should only set the '#weight' element for the
         // base template (or Overview) to ensure that it appears at the top of
         // the list. Otherwise items are sorted alphabetically.
         $node->content['tripal_example_base'] = array(
