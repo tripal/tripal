@@ -700,7 +700,7 @@ function chado_expand_var($object, $type, $to_expand, $table_options = array()) 
         return $object;
       }
       $foreign_table_desc = chado_get_schema($foreign_table);
-      
+
       // TODO: if we don't get a foreign_table (which could happen of a custom table
       // is not correctly defined or the table name is mispelled then we should return
       // gracefully.
@@ -804,7 +804,30 @@ function chado_expand_var($object, $type, $to_expand, $table_options = array()) 
       if ($object->tablename == $to_expand) {
 
         // Load the node based on the current objects nid (node primary key)
-        $node = node_load($object->nid);
+        $node = NULL;
+        if (property_exists($object, 'nid')) {
+          $node = node_load($object->nid);
+        }
+        // Try to get the nid based on the tablename
+        else {
+          // Invoke all hook_node_info to avoid hard-coding the chado_$table assumption
+          foreach (module_invoke_all('node_info') as $node_info) {
+            if (array_key_exists('chado_node_api', $node_info)) {
+              if ($node_info['chado_node_api']['base_table'] == $object->tablename) {
+                $key_name = $node_info['chado_node_api']['base_table'] . '_id';
+                $nid = chado_get_nid_from_id(
+                  $node_info['chado_node_api']['base_table'],
+                  $object->{$key_name},
+                  $node_info['base']);
+                if ($nid > 0) {
+                  $object->nid = $nid;
+                  $node = node_load($nid);
+                  break;
+                }
+              }
+            }
+          }
+        }
 
         // If we have successfully loaded the node...
         if ($node) {
@@ -829,10 +852,14 @@ function chado_expand_var($object, $type, $to_expand, $table_options = array()) 
         else {
 
           // Warn the administrator
-          tripal_report_error('tripal_core', TRIPAL_ERROR, 'chado_expand_var: No node matches the nid (%nid) supplied.',
-            array('%nid' => $object->nid));
+          if (isset($object->nid)) {
+            tripal_report_error('tripal_core', TRIPAL_ERROR, 'chado_expand_var: No node matches the nid (%nid) supplied.',
+              array('%nid' => $object->nid));
+          }
+          else {
+            tripal_report_error('tripal_core', TRIPAL_NOTICE, 'chado_expand_var: There is no node for the current object: <pre>%object</pre>', array('%object' => print_r($object,TRUE)));
+          }
         } //end of if node
-
       }
       // RECURSIVE CASE: check to see if the node to be expanded associates with a
       // chado table within one of the nested objects.
