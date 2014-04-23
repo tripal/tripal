@@ -56,7 +56,12 @@ function chado_stock_load($nodes) {
   foreach ($nodes as $nid => $node) {
 
     // get the stock details from chado
-    $stock_id = chado_get_id_from_nid('stock', $nid);
+    if (isset($node->stock_id)) {
+      $stock_id = $node->stock_id;
+    }
+    else {
+      $stock_id = chado_get_id_from_nid('stock', $nid);
+    }
 
     // if the nid does not have a matching record then skip this node.
     // this can happen with orphaned nodes.
