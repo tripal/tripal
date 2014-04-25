@@ -94,6 +94,11 @@ function chado_get_nid_from_id($table, $id, $linking_table = NULL) {
 }
 
 /**
+ * @section
+ * Sync Form
+ */
+
+/**
  * Generic Sync Form to aid in sync'ing (create drupal nodes linking to chado content)
  * any chado node type.
  *

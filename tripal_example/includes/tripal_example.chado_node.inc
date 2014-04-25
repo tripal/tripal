@@ -575,6 +575,11 @@ function chado_example_load($nodes) {
     // be included by using this function in the templates.
     $example = chado_expand_var($example, 'field', 'example.description');
 
+    // If your module is using the Chado Node: Title & Path API to allow custom titles
+    // for your node type. Every time you want the title of the node, you need to use the
+    // following API function:
+    $example->title = chado_get_node_title($node);
+
     // add the new example object to this node.
     $nodes[$nid]->example = $example;
   }
@@ -653,6 +658,11 @@ function tripal_example_node_insert($node) {
         $node->example_id = chado_get_id_from_nid('example', $node->nid);
       }
 
+      // If your module is using the Chado Node: Title & Path API to allow custom titles
+      // for your node type. Every time you want the title of the node, you need to use the
+      // following API function:
+      $example->title = chado_get_node_title($node);
+
       // set the URL for this example page
       // see the code in the tripal_feature/includes/tripal_feature.chado_node.inc file
       // in the function tripal_feature_node_insert for an example of how that
@@ -688,6 +698,12 @@ function tripal_example_node_update($node) {
   // add items to other nodes, build index and search results
   switch ($node->type) {
     case 'chado_example':
+
+      // If your module is using the Chado Node: Title & Path API to allow custom titles
+      // for your node type. Every time you want the title of the node, you need to use the
+      // following API function:
+      $example->title = chado_get_node_title($node);
+
       // set the URL for this example page
       // see the code in the tripal_feature/includes/tripal_feature.chado_node.inc file
       // in the function tripal_feature_node_insert for an example of how that

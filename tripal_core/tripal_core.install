@@ -63,7 +63,7 @@ function tripal_core_schema() {
  * @ingroup tripal_core
  */
 function tripal_core_uninstall() {
-  
+
   // drop the foreign key between tripal_custom_tables and tripal_mviews
   // so that Drupal can then drop the tables
   db_query('
@@ -93,6 +93,10 @@ function tripal_core_get_schemas() {
     $schema[$table] = $arr;
   }
   $temp = tripal_core_custom_tables_schema();
+  foreach ($temp as $table => $arr) {
+    $schema[$table] = $arr;
+  }
+  $temp = tripal_core_tripaltoken_schema();
   foreach ($temp as $table => $arr) {
     $schema[$table] = $arr;
   }
@@ -344,6 +348,47 @@ function tripal_core_custom_tables_schema() {
   return $schema;
 }
 
+function tripal_core_tripaltoken_schema() {
+  $schema = array();
+  $schema['tripal_token_formats'] = array(
+    'fields' => array(
+      'tripal_format_id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not NULL' => TRUE
+      ),
+      'content_type' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not NULL' => TRUE
+      ),
+      'application' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not NULL' => TRUE
+      ),
+      'format' => array(
+        'type' => 'text',
+        'not NULL' => TRUE
+      ),
+      'tokens' => array(
+        'type' => 'text',
+        'not NULL' => TRUE
+      ),
+    ),
+    'indexes' => array(
+      'tripal_format_id' => array('tripal_format_id'),
+      'type_application' => array('content_type', 'application'),
+    ),
+    'unique keys' => array(
+      'type_application' => array('content_type', 'application'),
+    ),
+    'primary key' => array('tripal_format_id'),
+  );
+
+  return $schema;
+}
+
 /**
  * Adds an mview_id column to the tripal_custom_tables table and makes an assocation between the mview and the custom table
  *
@@ -368,7 +413,7 @@ function tripal_core_update_7200() {
         ),
       );
       db_add_field('tripal_custom_tables', 'mview_id', $spec, $keys);
-      
+
       // the foreign key specification doesn't really add one to the
       // Drupal schema, it is just used internally, but we want one
       db_query('
@@ -378,7 +423,7 @@ function tripal_core_update_7200() {
         ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
       ');
     }
-    
+
     // now link the materialized view to it's custom table entry
     $mviews = db_select('tripal_mviews', 'tmv')
       ->fields('tmv', array('mview_id', 'mv_table'))
@@ -414,4 +459,47 @@ function tripal_core_update_7201() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Could not reset language for nodes and url aliases: '. $error);
   }
+}
+
+/**
+ * Adds in tripal token formats table to handle page title and path rewrites
+ */
+function tripal_core_update_7202() {
+  $schema = array();
+  $schema['tripal_token_formats'] = array(
+    'fields' => array(
+      'tripal_format_id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not NULL' => TRUE
+      ),
+      'content_type' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not NULL' => TRUE
+      ),
+      'application' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not NULL' => TRUE
+      ),
+      'format' => array(
+        'type' => 'text',
+        'not NULL' => TRUE
+      ),
+      'tokens' => array(
+        'type' => 'text',
+        'not NULL' => TRUE
+      ),
+    ),
+    'indexes' => array(
+      'tripal_format_id' => array('tripal_format_id'),
+      'type_application' => array('content_type', 'application'),
+    ),
+    'unique keys' => array(
+      'type_application' => array('content_type', 'application'),
+    ),
+    'primary key' => array('tripal_format_id'),
+  );
+  db_create_table('tripal_token_formats', $schema['tripal_token_formats']);
 }

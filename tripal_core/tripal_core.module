@@ -20,6 +20,7 @@ require_once 'api/tripal_core.chado_query.api.inc';
 require_once 'api/tripal_core.chado_variables.api.inc';
 require_once 'api/tripal_core.chado_schema.api.inc';
 require_once 'api/tripal_core.chado_nodes.api.inc';
+require_once 'api/tripal_core.chado_nodes.title_and_path.inc';
 require_once 'api/tripal_core.chado_nodes.properties.api.inc';
 require_once 'api/tripal_core.chado_nodes.dbxrefs.api.inc';
 require_once 'api/tripal_core.chado_nodes.relationships.api.inc';

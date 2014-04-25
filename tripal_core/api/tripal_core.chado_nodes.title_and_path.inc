@@ -1,0 +1,520 @@
+<?php
+
+/**
+ * @file
+ * Contains API functions to set titles and paths for all chado nodes
+ *
+ * TITLES
+ * ====================================
+ * There are two steps to implement the ability to set custom titles for your node type:
+ * 1) Add the "Set Page Titles" Form to your admin settings form
+ * @code
+    // If your module is using the Chado Node: Title & Path API to allow custom titles
+    // for your node type then you need to add the configuration form for this functionality.
+    $details = array(
+      'module' => 'tripal_example',       // the name of the MODULE implementing the content type
+        // An array of options to use under "Page Titles"
+        // the key should be the token and the value should be the human-readable option
+      'options' => array(
+        '[example.name]' => 'Germplasm Name Only',
+        '[example.uniquename]' => 'Germplasm Unique Name Only',
+          // there should always be one options matching the unique constraint.
+          // If you have a more human-readable constraint, then that is preferrable.
+          // See the tripal feature module for a good example of this.
+        '[example.example_id]' => 'Unique Contraint: The Chado ID for Examples'
+      ),
+      // the token indicating the unique constraint in the options array
+      'unique_option' => '[example.example_id]'
+    );
+    // This call adds the configuration form to your current form
+    // This sub-form handles it's own validation & submit
+    chado_add_admin_form_set_title($form, $form_state, $details);
+ * @endcode
+ *
+ * 2) Use chado_get_node_title($node) where ever you want the title for your node. This
+ *    should be done in hook_load(), hook_node_insert(), hook_node_update(). The reason you
+ *    set the title in the node_action hooks, which act on all nodes, is because at that
+ *    point you have the generic loaded node.
+ * @code
+  function tripal_example_load($nodes) {
+
+    $new_nodes = array();
+    foreach ($nodes as $nid => $node) {
+
+      // Add all of the custom content for your node type.
+      // See tripal_example.chado_node.api: chado_example_load()
+
+      // Now get the title
+      $node->title = chado_get_node_title($node);
+
+      $new_nodes[$nid] = $node;
+    }
+
+    return $new_nodes;
+  }
+ * @endcode
+ */
+
+/**
+ * @section
+ * Set Titles
+ */
+
+/**
+ * Get the title of a node based on the Title Format set in the admin section of the module
+ *
+ * @param $node
+ *   The node whose title you want
+ */
+function chado_get_node_title($node) {
+  $content_type = $node->type;
+
+  $format_record = db_select('tripal_token_formats','t')
+    ->fields('t')
+    ->condition('content_type', $content_type,'=')
+    ->condition('application', 'title','=')
+    ->execute()
+    ->fetchObject();
+
+  $title = $format_record->format;
+  $tokens = unserialize($format_record->tokens);
+
+  // Determine which tokens were used in the format string
+  if (preg_match_all('/\[[^]]+\]/',$format_record->format,$used_tokens)) {
+
+    // Get the value for each token used
+    foreach ($used_tokens[0] as $token) {
+      $token_info = $tokens[$token];
+      $value = chado_get_token_value($token_info, $node);
+
+      $title = str_replace($token,$value,$title);
+    }
+  }
+  else {
+    return $format_record->format;
+  }
+
+  return $title;
+}
+
+/**
+ * Generic "Set Node Title" sub-form for setting the title of any chado node
+ *
+ * @param $form
+ *   The Drupal form array into which the property form elements will be added
+ * @param $form_state
+ *   The corresponding form_state array for the form
+ * @param $details
+ *   An array defining details used by this form.
+ *   Required keys that are always required:
+ *     -module: the name of the module implementing the node. For example, for features the module is tripal_feature.
+ *   Optional keys include:
+ *     -fieldset_title: the title to use for the fieldset. Defaults to "Set Page Title".
+ */
+function chado_add_admin_form_set_title(&$form, &$form_state, $details) {
+
+  // Defaults
+  $details['fieldset_title'] = (isset($details['fieldset_title'])) ? $details['fieldset_title'] : 'Set Page Titles';
+  $details['additional_instructions'] = (isset($details['additional_instructions'])) ? $details['additional_instructions'] : '';
+
+  // Get Node Info
+  if (isset($details['module'])) {
+    $node_info = call_user_func($details['module'] . '_node_info');
+    $chado_node_api = $node_info[ $details['module'] ]['chado_node_api'];
+  }
+  else {
+    tripal_report_error(
+      'chado_node_api',
+      TRIPAL_ERROR,
+      "Set Titles API: When calling chado_add_admin_form_set_title, you \$details array must include 'module' => [name of your module] in order to pull out all the information provided in your implementation of hook_node_info"
+    );
+  }
+
+
+  // Determine what the tokens for the custom option should be using the chado schema api
+  $tokens = chado_node_generate_tokens($chado_node_api['base_table']);
+  $token_list = chado_node_format_tokens($tokens);
+
+  // FORM PROPER
+  $msg = t(
+    'Each synced %singular must have a unique page title, however, %plural may have the
+      same name if they are of different types or from different organisms. Therefore,
+      we must be sure that the page titles can uniquely identify the %singular being viewed.
+      Select an option below that will uniquely identify all %plural on your site.'
+      . $details['additional_instructions'],
+    array('%singular' => $chado_node_api['record_type_title']['singular'],
+      '%plural' => $chado_node_api['record_type_title']['plural'])
+  );
+  $form['set_titles'] = array(
+    '#type' => 'fieldset',
+    '#title' => t($details['fieldset_title']),
+    '#description' => $msg,
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#prefix' => "<div id='set_titles-fieldset'>",
+    '#suffix' => '</div>',
+    '#weight'      => 8
+  );
+
+  $form['set_titles']['content_type'] = array(
+    '#type' => 'hidden',
+    '#value' => $node_info[ $details['module'] ]['base'],
+  );
+
+  $details['options']['custom'] = 'Custom: See the text field below.';
+  $form['set_titles']['title_option'] = array(
+    '#title'         => t('%singular Page Titles', array('%singular' => $chado_node_api['record_type_title']['singular'])),
+    '#type'          => 'radios',
+    '#description'   => t("Choose a title type from the list above that is
+      guaranteed to be unique for all %plural. If in doubt it is safest to choose
+      the 'Unique Constaint' option as that guarantees uniqueness.",
+      array('%plural' => $chado_node_api['record_type_title']['plural'])),
+    '#required'      => FALSE,
+    '#options'       => $details['options'],
+    '#default_value' => chado_node_get_token_format('title', $node_info[ $details['module'] ]['base']),
+  );
+
+  $form['set_titles']['title_format_variable'] = array(
+    '#type' => 'hidden',
+    '#value' => $details['module'] . '_title_format'
+  );
+
+  $form['set_titles']['custom_title'] = array(
+    '#type' => 'textarea',
+    '#title' => 'Custom Page Title',
+    '#description' => 'You may rearrange elements in this text box to customize the page
+      titles. The available tokens are listed below. You can separate or include any text
+      between the tokens. <strong>Important: be sure that whatever you choose
+      will always be unique even considering future data that may be added. If in doubt,
+      please select the unique constraint title option above.</strong>',
+    '#default_value' => chado_node_get_token_format('title', $node_info[ $details['module'] ]['base']),
+    '#rows' => 1
+  );
+
+  $form['set_titles']['token_display'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Available Tokens',
+    '#description' => 'Copy the token and paste it into the "Custom Page Title" text field above.',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE
+  );
+
+  $form['set_titles']['token_display']['content'] = array(
+    '#type' => 'item',
+    '#markup' => $token_list
+  );
+
+  $form['set_titles']['tokens'] = array(
+    '#type' => 'hidden',
+    '#value' => serialize($tokens)
+  );
+
+  $form['set_titles']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Set Titles',
+		'#validate' => array('chado_add_admin_form_set_title_form_validate'),
+ 		'#submit' => array('chado_add_admin_form_set_title_form_submit')
+  );
+
+}
+
+/**
+ * Implements hook_form_validate().
+ * VALIDATE: validate the format.
+ */
+function chado_add_admin_form_set_title_form_validate($form, $form_state) {
+
+  // Ensure that all tokens used in the format are in the tokens list
+  if (preg_match_all('/\[[^]]+\]/',$form_state['values']['custom_title'],$used_tokens)) {
+    $token_list = unserialize($form_state['values']['tokens']);
+    foreach ($used_tokens[0] as $token) {
+      if (!array_key_exists($token,$token_list)) {
+        form_set_error('custom_title', 'All tokens used must be in the "Available Tokens" list. Please make sure not to use [ or ] unless it\'s denoting a token');
+      }
+    }
+  }
+
+}
+
+/**
+ * Implements hook_form_submit().
+ * SUBMIT: Actually add the format specified by chado_add_admin_form_set_title()
+ */
+function chado_add_admin_form_set_title_form_submit($form, $form_state) {
+
+  if ($form_state['values']['title_option'] == 'custom') {
+    $format =  $form_state['values']['custom_title'];
+  }
+  else {
+    $format = $form_state['values']['title_option'];
+  }
+
+  chado_node_add_token_format('title', $form_state['values']['content_type'], $format, $form_state['values']['tokens']);
+}
+
+/**
+ * @section
+ * Set Paths
+ */
+
+/**
+ * @section
+ * Tokens
+ */
+
+/**
+ * Save a format to be used by chado_get_node_title() or chado_get_node_path()
+ *
+ * @param $application
+ *   What the format is to be applied to. For example 'title' for generating node titles
+ *   and 'path' for generating node paths
+ * @param $content_type
+ *   The name of the content type this format applies to (ie: $node->type)
+ * @param $format
+ *   A string including tokens used to generate the title/path (which is based on $application)
+ * @param $tokens
+ *   An array of tokens generated by chado_node_generate_tokens(). This is saved to ensure the
+ *   tokens that are available when the format is created are still available when it's used
+ */
+function chado_node_add_token_format($application, $content_type, $format, $tokens) {
+
+  if (is_array($tokens)) {
+    $tokens = serialize($tokens);
+  }
+
+  $record = array(
+    'content_type' => $content_type,
+    'application' => $application,
+    'format' => $format,
+    'tokens' => $tokens
+  );
+
+  // Check if it already exists
+  $id = db_query('SELECT tripal_format_id FROM {tripal_token_formats} WHERE content_type=:type AND application=:application', array(':type'=>$record['content_type'], ':application'=>$record['application']))->fetchField();
+  if ($id) {
+    drupal_write_record('tripal_token_formats',$record,array('content_type','application'));
+  }
+  else {
+    drupal_write_record('tripal_token_formats',$record);
+  }
+
+}
+
+/**
+ * Get the format for the given application of a given content type (ie: the feature title)
+ *
+ * @param $application
+ *   What the format is to be applied to. For example 'title' for generating node titles
+ *   and 'path' for generating node paths
+ * @param $content_type
+ *   The name of the content type this format applies to (ie: $node->type)
+ *
+ * @return
+ *   A string specifying the format
+ */
+function chado_node_get_token_format($application, $content_type) {
+
+  $format_record = db_select('tripal_token_formats','t')
+    ->fields('t')
+    ->condition('content_type', $content_type,'=')
+    ->condition('application', $application,'=')
+    ->execute()
+    ->fetchObject();
+
+  if (is_object($format_record)) {
+    return $format_record->format;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
+ * Generate tokens for a particular base table
+ *
+ * @param $base_table
+ *   The name of the chado table you would like to generate tokens for
+ * @param $token_prefix
+ *   RECURSIVE ARG: Used to determine the generic token based on previous interations.
+ *   For example, when adding cvterm fields to a feature token, the token_prefix is "feature.type_id"
+ *   so that resulting tokens can be "feature.type_id>cvterm.*" (ie: [feature.type_id>cvterm.name] )
+ * @param $location_prefix
+ *   RECURSIVE ARG: Used to keep track of the location of the value based on previous interations.
+ *   For example, when adding cvterm fields to a feature token, the location_prefix is "feature > type_id"
+ *   so that resulting tokens can be "feature > type_id > *" (ie: feature > type_id > name)
+ * @return
+ *   An array of available tokens where the key is the table.field and the value is an array
+ *   with the following keys:
+ *    -table: the name of the chado table
+ *    -field: the name of the field in the above table
+ *    -token: the token string (ie: [stock.stock_id])
+ *    -description: a very short description of the token (displayed when tokens are listed)
+ *    -location: the location of the value in a chado node variable with each level
+ *     separated by an arrow (->) symbol. For example, the location for $node->feature->type_id->name
+ *     is feature>type_id>name
+ */
+function chado_node_generate_tokens($base_table, $token_prefix = FALSE, $location_prefix = FALSE) {
+
+  $tokens = array();
+  $table_descrip = chado_get_schema($base_table);
+  foreach ($table_descrip['fields'] as $field_name => $field_details) {
+
+    if (empty($token_prefix)) {
+      $token = '[' . $base_table . '.' . $field_name . ']';
+      $location = implode(' > ',array($base_table, $field_name));
+    }
+    else {
+      $token = '[' . $token_prefix . '>' . $base_table . '.' . $field_name . ']';
+      $location = $location_prefix . ' > ' . $field_name;
+    }
+
+
+    $tokens[$token] = array(
+      'name' => ucwords(str_replace('_',' ',$base_table)) . ': ' . ucwords(str_replace('_',' ',$field_name)),
+      'table' => $base_table,
+      'field' => $field_name,
+      'token' => $token,
+      'description' => $field_details['description'],
+      'location' => $location
+    );
+
+    if (preg_match('/TODO/',$field_details['description'])) {
+      $tokens[$token]['description'] = 'The '.$field_name.' field of the '.$base_table.' table.';
+    }
+  }
+
+  // RECURSION:
+  // Follow the foreign key relationships recursively
+  foreach ($table_descrip['foreign keys'] as $table => $details) {
+    foreach ($details['columns'] as $left_field => $right_field) {
+      if (empty($token_prefix)) {
+        $sub_token_prefix = $base_table . '.' . $left_field;
+        $sub_location_prefix = implode(' > ',array($base_table, $left_field));
+      }
+      else {
+        $sub_token_prefix = $token_prefix . '>' . $base_table . ':' . $left_field;
+        $sub_location_prefix = $location_prefix . ' > ' . implode(' > ',array($base_table, $left_field));
+      }
+
+      $sub_tokens = chado_node_generate_tokens($table, $sub_token_prefix, $sub_location_prefix);
+      if (is_array($sub_tokens)) {
+        $tokens = array_merge($tokens, $sub_tokens);
+      }
+    }
+  }
+
+  return $tokens;
+}
+
+/**
+ * Retrieve the value of the token from the node based on the $token_info['location']
+ *
+ * @param $token_info
+ *   An array of information about the token including:
+ *    -table: the name of the chado table
+ *    -field: the name of the field in the above table
+ *    -token: the token string (ie: [stock.stock_id])
+ *    -description: a very short description of the token (displayed when tokens are listed)
+ *    -location: the location of the value in a chado node variable with each level
+ *     separated by an arrow (>) symbol. For example, the location for $node->feature->type_id->name
+ *     is feature>type_id>name
+ *  @param $node
+ *   The node to get the value of the token from
+ *
+ * @return
+ *   The value of the token
+ */
+function chado_get_token_value($token_info, $node) {
+
+  $location = explode('>',$token_info['location']);
+
+  $var = $node;
+  foreach ($location as $index) {
+    $index = trim($index);
+    if (is_object($var)) {
+      $var = $var->{$index};
+    }
+    elseif (is_array($var)) {
+      $var = $var[$index];
+    }
+    else {
+      tripal_report_error(
+        'chado_node_api',
+        TRIPAL_WARNING,
+        'Tokens: Unable to determine the value of %token. Things went awry when trying
+        to access %index for the following %var',
+        array(
+          '%token' => $token,
+          '%index' => $index,
+          '%var' => print_r($var,TRUE)
+        )
+      );
+      return;
+    }
+  }
+  return $var;
+}
+
+/**
+ * Format a set of tokens for consistent display
+ *
+ * @param $tokens
+ *   An array of tokens from chado_node_generate_tokens()
+ *
+ * @return
+ *   HTML displaying the token list
+ */
+function chado_node_format_tokens($tokens) {
+
+  $header = array('name' => 'Name','token' => 'Token','description' => 'Description');
+  $rows = array();
+
+  usort($tokens, 'chado_sort_tokens_by_location');
+  foreach ($tokens as $token) {
+    $rows[] = array(
+      'name' => $token['name'],
+      'token' => $token['token'],
+      'description' => $token['description']
+    );
+  }
+
+  $table = array(
+    'header' => $header,
+    'rows' => $rows,
+    'attributes' => array(
+      'id' => 'tripal_tokens',
+      'class' => 'tripal-data-table'
+    ),
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => array(),
+    'empty' => '',
+  );
+  return theme_table($table);
+}
+
+/**
+ * This sorts tokens first by depth (ie: stock.* is before stock.*>subtable.*) and
+ * then alphabetically within a level (ie: stock.name comes before stock.type_id)
+ *
+ * This is a usort callback and shouldn't be called directly. To use:
+ *    usort($tokens, 'chado_sort_tokens_by_location');
+ */
+function chado_sort_tokens_by_location($tokenA, $tokenB) {
+
+  // First check if they're the same
+  if ($tokenA['location'] == $tokenB['location']) {
+      return 0;
+  }
+
+  // Then check if there's a difference in depth
+  // For example, "stock > type_id" comes before "stock > type_id > name"
+  $tokenA_depth = substr_count($tokenA['location'],'>');
+  $tokenB_depth = substr_count($tokenB['location'],'>');
+  if ($tokenA_depth != $tokenB_depth) {
+    return ($tokenA_depth < $tokenB_depth) ? -1 : 1;
+  }
+
+  // If the depth is equal then just use alphabetical basic string compare
+  return ($tokenA['location'] < $tokenB['location']) ? -1 : 1;
+}
