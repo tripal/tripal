@@ -47,6 +47,26 @@ function tripal_feature_admin_feature_view() {
 function tripal_feature_admin() {
 
   // FEATURE PAGE TITLES
+  // Using the Chado Node: Title & Path API
+  $details = array(
+    'module' => 'tripal_feature',
+    'content_type' => 'chado_feature',
+      // An array of options to use under "Page Titles"
+      // the key should be the token and the value should be the human-readable option
+    'options' => array(
+      '[feature.name]' => 'Feature Name Only',
+      '[feature.uniquename]' => 'Feature Unique Name Only',
+        // there should always be one options matching the unique constraint.
+      '[feature.name], [feature.uniquename] ([feature.type_id>cvterm.name]) [feature.organism_id>organism.genus] [feature.organism_id>organism.species]' => 'Unique Contraint: Includes the name, uniquename, type and scientific name'
+    ),
+    // the token indicating the unique constraint in the options array
+    'unique_option' => '[feature.name], [feature.uniquename] ([feature.type_id>cvterm.name]) [feature.organism_id>organism.genus] [feature.organism_id>organism.species]'
+  );
+  // This call adds the configuration form to your current form
+  // This sub-form handles it's own validation & submit
+  chado_add_admin_form_set_title($form, $form_state, $details);
+    
+/**
   $form['title'] = array(
     '#type' => 'fieldset',
     '#title' => t('Feature Page Titles'),
@@ -77,6 +97,7 @@ function tripal_feature_admin() {
     '#options'       => $options,
     '#default_value' => variable_get('chado_feature_title', 'unique_constraint'),
   );
+  */
     
   // FEATURE URL PATHS
   $form['url'] = array(

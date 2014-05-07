@@ -13,6 +13,7 @@
     // for your node type then you need to add the configuration form for this functionality.
     $details = array(
       'module' => 'tripal_example',       // the name of the MODULE implementing the content type
+      'content_type' => 'chado_example'   // the name of the content type
         // An array of options to use under "Page Titles"
         // the key should be the token and the value should be the human-readable option
       'options' => array(
@@ -158,7 +159,7 @@ function chado_add_admin_form_set_title(&$form, &$form_state, $details) {
   $details['custom_tokens'] = (isset($details['custom_tokens'])) ? $details['custom_tokens'] : array();
   $details['content_type'] = (isset($details['content_type'])) ? $details['content_type'] : $details['module'];
   $details['default_option'] = (isset($details['default_option'])) ? $details['default_option'] : FALSE;
-  $details['default_option'] = ($details['default_option'] === FALSE) ? chado_node_get_token_format('title', $node_info[ $details['module'] ]['base']) : $details['default_option'];
+  $details['default_option'] = ($details['default_option'] === FALSE) ? chado_node_get_token_format('title', $node_info[ $details['content_type'] ]['base']) : $details['default_option'];
   $details['default_option'] = ($details['default_option'] === FALSE) ? $details['unique_option'] : $details['default_option'];
 
 
@@ -294,7 +295,19 @@ function chado_add_admin_form_set_title_form_submit($form, $form_state) {
  */
 function chado_node_get_legacy_title_default($content_type) {
   if ($content_type == 'chado_feature') {
-
+    $legacy_option = variable_get('chado_feature_title', 'unique_constraint');
+    switch ($legacy_option) {
+      case 'feature_unique_name':
+        $default_title_format = '[feature.uniquename]';
+        break;
+      case 'feature_name':
+        $default_title_format = '[feature.name]';
+        break;
+      case 'unique_constraint':
+        $default_title_format = '[feature.name], [feature.uniquename] ([feature.type_id>cvterm.name]) [feature.organism_id>organism.genus] [feature.organism_id>organism.species]';
+        break;
+    }
+    return $default_title_format;
   }
   elseif ($content_type == 'chado_stock') {
     $legacy_option = variable_get('chado_stock_title', 'unique_constraint');
@@ -379,7 +392,7 @@ function chado_node_add_token_format($application, $content_type, $format, $toke
  * @return
  *   A string specifying the format
  */
-function chado_node_get_token_format($application, $content_type, $options) {
+function chado_node_get_token_format($application, $content_type, $options = array()) {
 
   $format_record = db_select('tripal_token_formats','t')
     ->fields('t')

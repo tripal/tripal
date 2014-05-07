@@ -712,28 +712,8 @@ function chado_feature_load($nodes) {
     $feature = chado_generate_var('feature', $values);
     $nodes[$nid]->feature = $feature;
 
-    // by default, the titles are saved using the unique constraint.  We will
-    // keep it the same, but remove the duplicate name if the unique name and name
-    // are identical. This doesn't change the title saved in the database, just what is shown
-    // to the user on the page
-    $title_type = variable_get('chado_feature_title', 'unique_constraint');
-    if ($title_type == 'unique_constraint') {
-      if (strcmp($feature->name, $feature->uniquename)==0) {
-        $node->title = $feature->name . " (" . $feature->type_id->name . ") " . $feature->organism_id->genus . " " . $feature->organism_id->species ;
-      }
-      // in previous version of Tripal, the feature title was simply the unique name.
-      // so, we recreate the title just to be sure all of our feature pages are consistent
-      else {
-        $node->title = $feature->name . ", " . $feature->uniquename . " (" . $feature->type_id->name . ") " . $feature->organism_id->genus . " " . $feature->organism_id->species ;
-      }
-    }
-    // set the title to be the feature name or uniquename as configured
-    if ($title_type == 'feature_name') {
-      $node->title = $feature->name;
-    }
-    if ($title_type == 'feature_unique_name') {
-      $node->title = $feature->uniquename;
-    }
+    // Now get the title
+    $node->title = chado_get_node_title($node);
   }
 }
 
@@ -805,6 +785,10 @@ function tripal_feature_node_insert($node) {
       $url_alias = tripal_feature_get_feature_url($node);
       $path_alias = array("source" => "node/$node->nid", "alias" => $url_alias);
       path_save($path_alias);
+
+      // Now get the title
+      $node->title = chado_get_node_title($node);
+      
       break;
   }
 }
@@ -827,6 +811,10 @@ function tripal_feature_node_update($node) {
       $url_alias = tripal_feature_get_feature_url($node);
       $path_alias = array("source" => "node/$node->nid", "alias" => $url_alias);
       path_save($path_alias);
+
+      // Now get the title
+      $node->title = chado_get_node_title($node);
+      
       break;
   }
 }
