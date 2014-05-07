@@ -52,36 +52,18 @@ function tripal_stock_admin() {
 
 
   // STOCK PAGE TITLES CONFIGURATION
-  $form['title'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Stock Page Titles'),
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
+
+  $details = array(
+    'module' => 'tripal_stock',
+    'content_type' => 'chado_stock',
+    'options' => array(
+      '[stock.name]' => 'Stock Name Only',
+      '[stock.uniquename]' => 'Stock Unique Name Only',
+      '[stock.name], [stock.uniquename] ([stock.type_id>cvterm.name]) [stock.organism_id>organism.genus] [stock.organism_id>organism.species]' => 'Unique Contraint: Includes the name, uniquename, type and scientific name'
+    ),
+    'unique_option' => '[stock.name], [stock.uniquename] ([stock.type_id>cvterm.name]) [stock.organism_id>organism.genus] [stock.organism_id>organism.species]'
   );
-  $form['title']['desc'] = array(
-    '#markup' => t('Each synced stock must have a unique page title, however, stocks
-      may have the same name if they are of different types or from different
-      organisms.  Therefore, we must be sure that the page titles can uniquely
-      identify the stock being viewed.  Select an option below that will
-      uniquely identify all stocks on your site.'),
-  );
-  $options = array(
-    'stock_unique_name'  => 'Only stock unique name',
-    'stock_name'         => 'Only stock name',
-    'unique_constraint'  => 'Includes stock name, uniquename, type and species',
-  );
-  $form['title']['chado_stock_title'] = array(
-    '#title'         => t('Stock Page Titles'),
-    '#type'          => 'radios',
-    '#description'   => t('Choose a title type  from the list above that is
-      guaranteed to be unique for all stocks If in doubt it is safest to choose
-      the last option as that guarantees uniqueness. Click the
-      \'Save Configuration\' button at the bottom to save your selection.'),
-    '#required'      => FALSE,
-    '#options'       => $options,
-    '#default_value' => variable_get('chado_stock_title', 'unique_constraint'),
-  );
-  
+  chado_add_admin_form_set_title($form, $form_state, $details);
 
   // STOCK URL CONFIGURATION
   $form['url'] = array(

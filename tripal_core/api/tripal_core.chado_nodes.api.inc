@@ -94,6 +94,46 @@ function chado_get_nid_from_id($table, $id, $linking_table = NULL) {
 }
 
 /**
+ * Determine the chado base table for a given content type
+ *
+ * @param $content_type
+ *    The machine name of the content type (node type) you want to
+ *    determine the base chado table of
+ * @param $module
+ *    (Optional) The machine-name of the module implementing the
+ *    content type
+ *
+ * @return
+ *    The name of the chado base table for the specified content type
+ *
+ *  @ingroup tripal_chado_node_api
+ */
+function chado_node_get_base_table($content_type, $module = FALSE) {
+
+  if ($module) {
+    $node_info = call_user_func($details['module'] . '_node_info');
+  }
+  else {
+    $node_types = module_invoke_all('node_info');
+  
+    if (isset($node_types[$content_type])) {
+      $node_info = $node_types[$content_type];
+    }
+    else {
+      return FALSE;
+    }
+  }
+  
+  if (isset($node_info['chado_node_api']['base_table'])) {
+    return $node_info['chado_node_api']['base_table'];
+  }
+  else {
+    return FALSE;
+  }
+
+}
+
+/**
  * @section
  * Sync Form
  */

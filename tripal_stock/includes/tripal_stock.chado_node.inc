@@ -77,32 +77,14 @@ function chado_stock_load($nodes) {
     $stock = chado_expand_var($stock, 'field', 'stock.uniquename');
     $stock = chado_expand_var($stock, 'field', 'stock.description');
 
-    // by default, the titles are saved using the unique constraint.  We will
-    // keep it the same, but remove the duplicate name if the unique name and name
-    // are identical
-    $title_type = variable_get('chado_stock_title', 'unique_constraint');
-    if($title_type == 'unique_constraint') {
-      if (strcmp($stock->name, $stock->uniquename)==0) {
-        $node->title = $stock->name . " (" . $stock->type_id->name . ") " . $stock->organism_id->genus . " " . $stock->organism_id->species ;
-      }
-      // in previous version of Tripal, the stock title was simply the unique name.
-      // so, we recreate the title just to be sure all of our stock pages are consistent
-      else {
-        $node->title = $stock->name . ", " . $stock->uniquename . " (" . $stock->type_id->name . ") " . $stock->organism_id->genus . " " . $stock->organism_id->species ;
-      }
-    }
-    // set the title to be the stock name or uniquename as configured
-    if($title_type == 'stock_name') {
-      $node->title = $stock->name;
-    }
-    if($title_type == 'stock_unique_name') {
-      $node->title = $stock->uniquename;
-    }
-
     // add this to the node
     $node->stock = $stock;
     $new_nodes[$nid] = $node;
 
+    // If your module is using the Chado Node: Title & Path API to allow custom titles
+    // for your node type. Every time you want the title of the node, you need to use the
+    // following API function:
+    $node->title = chado_get_node_title($node);
   }
 
   return $new_nodes;
@@ -816,7 +798,12 @@ function tripal_stock_node_presave($node) {
       }
       $values = array('organism_id' => $organism_id);
       $organism = chado_select_record('organism', array('genus','species'), $values);
-      $node->title = "$sname, $uniquename ($type) " . $organism[0]->genus . ' ' . $organism[0]->species;
+
+      // If your module is using the Chado Node: Title & Path API to allow custom titles
+      // for your node type. Every time you want the title of the node, you need to use the
+      // following API function:
+      $node->title = chado_get_node_title($node);
+
       if ($sname == $uniquename) {
         $node->title = "$sname ($type) " . $organism[0]->genus . ' ' . $organism[0]->species;
       }
@@ -902,6 +889,11 @@ function tripal_stock_node_insert($node) {
   switch ($node->type) {
     case 'chado_stock':
 
+      // If your module is using the Chado Node: Title & Path API to allow custom titles
+      // for your node type. Every time you want the title of the node, you need to use the
+      // following API function:
+      $node->title = chado_get_node_title($node);
+
       // on an insert we need to add the stock_id to the node object
       // so that the tripal_stock_get_stock_url function can set the URL properly
       $node->stock_id = chado_get_id_from_nid('stock', $node->nid);
@@ -928,6 +920,12 @@ function tripal_stock_node_update($node) {
   // add items to other nodes, build index and search results
   switch ($node->type) {
     case 'chado_stock':
+
+      // If your module is using the Chado Node: Title & Path API to allow custom titles
+      // for your node type. Every time you want the title of the node, you need to use the
+      // following API function:
+      $node->title = chado_get_node_title($node);
+
       // remove any previous alias
       db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
 
