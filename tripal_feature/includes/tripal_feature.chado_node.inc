@@ -139,7 +139,7 @@ function chado_feature_form($node, &$form_state) {
     '#description' => t('Enter a unique name for this feature.  This name must be unique for the organism and feature type.'),
     '#maxlength' => 255
   );
-  
+
   $type_options = tripal_get_cvterm_default_select_options('feature', 'type_id', 'feature types');
   $type_options[0] = 'Select a Type';
   $type_cv = tripal_get_default_cv('feature', 'type_id');
@@ -230,10 +230,10 @@ function chado_feature_form($node, &$form_state) {
     'base_key_value' => $feature_id       // the value of feature_id for this record
   );
   chado_add_node_form_dbxrefs($form, $form_state, $details);
-  
+
   // TODO: For some reason adding a relationship to the form breaks AJAX
   // for features (works for other node type)... need to debug
-  
+
   // RELATIONSHIPS FORM
   //---------------------------------------------
   $relationship_cv = tripal_get_default_cv('feature_relationship', 'type_id');
@@ -247,7 +247,7 @@ function chado_feature_form($node, &$form_state) {
     'cv_id' => $cv_id
   );
   chado_add_node_form_relationships($form, $form_state, $details);
-  
+
 
   return $form;
 }
@@ -280,7 +280,7 @@ function chado_feature_validate($node, $form, &$form_state) {
   $node->fname        = trim($node->fname);
   $node->feature_type = trim($node->feature_type);
   $node->residues     = trim($node->residues);
-  
+
   // Validating for an update
   if (property_exists($node, 'nid')) {
 
@@ -368,7 +368,7 @@ function chado_feature_node_access($node, $op, $account) {
   if (is_object($node)) {
     $node_type = $node->type;
   }
-  
+
   if($node_type == 'chado_feature') {
     if ($op == 'create') {
       if (!user_access('create chado_feature content', $account)) {
@@ -376,7 +376,7 @@ function chado_feature_node_access($node, $op, $account) {
       }
       return NODE_ACCESS_ALLOW;
     }
-  
+
     if ($op == 'update') {
       if (!user_access('edit chado_feature content', $account)) {
         return NODE_ACCESS_DENY;
@@ -606,7 +606,7 @@ function chado_feature_delete($node) {
   db_query("DELETE FROM frange.featuregroup WHERE group_id = :feature_id", array(':feature_id' => $feature_id));
   db_query("DELETE FROM frange.featuregroup WHERE srcfeature_id = :feature_id", array(':feature_id' => $feature_id));
   chado_set_active($previous_db);
-  
+
   chado_query("DELETE FROM {featureloc} WHERE feature_id = :feature_id", array(':feature_id' => $feature_id));
   chado_query("DELETE FROM {featureloc} WHERE srcfeature_id = :feature_id", array(':feature_id' => $feature_id));
   chado_query("DELETE FROM {feature} WHERE feature_id = :feature_id", array(':feature_id' => $feature_id));
@@ -700,7 +700,7 @@ function chado_feature_load($nodes) {
   foreach ($nodes as $nid => $node) {
     // find the feature and add in the details
     $feature_id = chado_get_id_from_nid('feature', $nid);
-    
+
     // if the nid does not have a matching record then skip this node.
     // this can happen with orphaned nodes.
     if (!$feature_id) {
@@ -773,7 +773,7 @@ function tripal_feature_node_insert($node) {
   // know the feature_id in the presave
   switch ($node->type) {
     case 'chado_feature':
-      
+
       // on an insert we need to add the feature_id to the node object
       // so that the tripal_feature_get_feature_url function can set the URL properly
       $node->feature_id = chado_get_id_from_nid('feature', $node->nid);
@@ -788,7 +788,7 @@ function tripal_feature_node_insert($node) {
 
       // Now get the title
       $node->title = chado_get_node_title($node);
-      
+
       break;
   }
 }
@@ -814,7 +814,7 @@ function tripal_feature_node_update($node) {
 
       // Now get the title
       $node->title = chado_get_node_title($node);
-      
+
       break;
   }
 }
@@ -892,12 +892,12 @@ function tripal_feature_get_feature_url($node, $url_alias = NULL) {
 /**
  * Resets all of the URL alias for all features.  This function is meant to
  * be run using Tripal's job managmenet interface
- *  
+ *
  * @param $na
  *   Tripal expects all jobs to have at least one argument. For this function
  *   we don't need any, so we have this dummy argument as a filler
  * @param $job_id
- * 
+ *
  * @ingroup tripal_feature
  */
 function tripal_feature_set_urls($na = NULL, $job = NULL) {
@@ -930,7 +930,7 @@ function tripal_feature_set_urls($na = NULL, $job = NULL) {
     $sql = "SELECT * FROM {chado_feature}";
     $nodes = db_query($sql);
     foreach ($nodes as $node) {
-       
+
       // get the URL alias
       $src = "node/$node->nid";
       $dst = tripal_feature_get_feature_url($node, $url_alias);
@@ -1064,4 +1064,12 @@ function tripal_feature_node_view($node, $view_mode, $langcode) {
   }
 }
 
-
+/**
+ * Implements [content_type]_chado_node_default_title_format().
+ *
+ * Defines a default title format for the Chado Node API to set the titles on
+ * Chado Feature nodes based on chado fields.
+ */
+function chado_feature_chado_node_default_title_format() {
+  return '[feature.name], [feature.uniquename] ([feature.type_id>cvterm.name]) [feature.organism_id>organism.genus] [feature.organism_id>organism.species]';
+}

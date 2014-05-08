@@ -1086,3 +1086,13 @@ function tripal_stock_set_urls($na = NULL, $job = NULL) {
     watchdog('trp-seturl', "Failed Removing URL Alias: %src", array('%src' => $src), WATCHDOG_ERROR);
   }
 }
+
+/**
+ * Implements [content_type]_chado_node_default_title_format().
+ *
+ * Defines a default title format for the Chado Node API to set the titles on
+ * Chado Stock nodes based on chado fields.
+ */
+function chado_stock_chado_node_default_title_format() {
+  return '[stock.name], [stock.uniquename] ([stock.type_id>cvterm.name]) [stock.organism_id>organism.genus] [stock.organism_id>organism.species]';
+}

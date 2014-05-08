@@ -13,7 +13,7 @@
     // for your node type then you need to add the configuration form for this functionality.
     $details = array(
       'module' => 'tripal_example',       // the name of the MODULE implementing the content type
-      'content_type' => 'chado_example'   // the name of the content type
+      'content_type' => 'chado_example',   // the name of the content type
         // An array of options to use under "Page Titles"
         // the key should be the token and the value should be the human-readable option
       'options' => array(
@@ -54,6 +54,17 @@
     return $new_nodes;
   }
  * @endcode
+ *
+ * Optionally define a default for a specific content type by implementing a function of the name
+ * [content type]_chado_node_default_title_format() that returns a string describing the
+ * default format.
+ * @code
+  function chado_example_chado_node_default_title_format() {
+    return '[example.example_id]';
+  }
+ * @endcode
+ * If you don't implement this then a default format based on the unique constraint for
+ * the base table of the content type will be generated.
  */
 
 /**
@@ -75,28 +86,12 @@
 function chado_get_node_title($node) {
   $content_type = $node->type;
 
-  $format_record = chado_node_get_token_format('title',$content_type, array('return_record' => TRUE));
-
-  if (empty($format_record)) {
-    $base_table = chado_node_get_base_table($content_type);
-    $tokens = chado_node_generate_tokens($base_table);
-    
-    // Check for a legacy option
-    $title = chado_node_get_legacy_title_default($content_type);
-    
-    // Otherwise get the unique constraint option
-    if (empty($title)) {
-      $title = chado_node_get_unique_constraint_format($base_table);
-    }
-    chado_node_add_token_format('title',$content_type,$title,$tokens);
-  }
-  else {
-    $title = $format_record->format;
-    $tokens = unserialize($format_record->tokens);
-  }
+  // Get the tokens and format
+  $tokens = array(); // this will be set by chado_node_get_title_format
+  $title = chado_node_get_title_format($content_type, $tokens);
 
   // Determine which tokens were used in the format string
-  if (preg_match_all('/\[[^]]+\]/',$title,$used_tokens)) {
+  if (preg_match_all('/\[[^]]+\]/', $title, $used_tokens)) {
 
     // Get the value for each token used
     foreach ($used_tokens[0] as $token) {
@@ -158,13 +153,12 @@ function chado_add_admin_form_set_title(&$form, &$form_state, $details) {
   $details['additional_instructions'] = (isset($details['additional_instructions'])) ? $details['additional_instructions'] : '';
   $details['custom_tokens'] = (isset($details['custom_tokens'])) ? $details['custom_tokens'] : array();
   $details['content_type'] = (isset($details['content_type'])) ? $details['content_type'] : $details['module'];
-  $details['default_option'] = (isset($details['default_option'])) ? $details['default_option'] : FALSE;
-  $details['default_option'] = ($details['default_option'] === FALSE) ? chado_node_get_token_format('title', $node_info[ $details['content_type'] ]['base']) : $details['default_option'];
-  $details['default_option'] = ($details['default_option'] === FALSE) ? $details['unique_option'] : $details['default_option'];
 
-
-  // Determine what the tokens for the custom option should be using the chado schema api
-  $tokens = chado_node_generate_tokens($chado_node_api['base_table']);
+  $tokens = array();
+  $details['default_option'] = (isset($details['default_option'])) ? $details['default_option'] : chado_node_get_title_format($details['content_type'], $tokens);
+  if (empty($tokens)) {
+    $tokens = chado_node_generate_tokens($chado_node_api['base_table']);
+  }
   $tokens = array_merge($tokens, $details['custom_tokens']);
   $token_list = chado_node_format_tokens($tokens);
 
@@ -286,6 +280,71 @@ function chado_add_admin_form_set_title_form_submit($form, $form_state) {
 }
 
 /**
+ * Get the title format for a specific content type
+ *
+ * If the title format has not yet been set then the following will be done
+ *  1) Check to see if there is a legacy title format set (features & stocks)
+ *  2) Check if there is a defined default for this content type
+ *  3) Create a format using any name fields and the unique constraint for the
+ *     base table associated with this content type
+ *
+ * Define a default for a specific content type by implementing a function of the name
+ * [content type]_chado_node_default_title_format() that returns a string describing the
+ * default format.
+ *
+ * @param $content_type
+ *   The name of the content (node) type you are interested in (ie: chado_feature)
+ *
+ * @return
+ *   A string containing tokens describing the default format for the title of nodes
+ *   of the specified content type.
+ */
+function chado_node_get_title_format($content_type, &$tokens, $base_table = NULL) {
+  $format = '';
+
+  // Is there a title format set?
+  $format_record = chado_node_get_token_format('title',$content_type, array('return_record' => TRUE));
+  if (!empty($format_record)) {
+    $format = $format_record->format;
+    $tokens = $format_record->tokens;
+  }
+
+  // All three options below need the tokens to be generated so do that now
+  if (empty($format)) {
+    if (empty($base_table)) {
+      $base_table = chado_node_get_base_table($content_type);
+    }
+    $tokens = chado_node_generate_tokens($base_table);
+  }
+
+  // 1) Check for legacy format
+  if (empty($format)) {
+    $format = chado_node_get_legacy_title_default($content_type);
+  }
+
+  // 2) Module-defined default format
+  if (empty($format)) {
+    $hook = $content_type . '_chado_node_default_title_format';
+    if (function_exists($hook)) {
+      $format = call_user_func($hook);
+    }
+  }
+
+  // 3) Create unique constraint format
+  if (empty($format)) {
+    if (empty($base_table)) {
+      $base_table = chado_node_get_base_table($content_type);
+    }
+    $format = chado_node_get_unique_constraint_format($base_table);
+  }
+
+  // Add the format to the new system so we can use it later
+  chado_node_add_token_format('title', $content_type, $format, $tokens);
+
+  return $format;
+}
+
+/**
  * Handles legacy title options
  *
  * Features & Stocks already had custom functionality to handle title
@@ -403,6 +462,7 @@ function chado_node_get_token_format($application, $content_type, $options = arr
 
   if (is_object($format_record)) {
     if (isset($options['return_record'])) {
+      $format_record->tokens = unserialize($format_record->tokens);
       return $format_record;
     }
     else {
@@ -427,7 +487,7 @@ function chado_node_get_token_format($application, $content_type, $options = arr
 function chado_node_get_unique_constraint_format($base_table) {
 
   $table_descrip = chado_get_schema($base_table);
-  
+
   // Find the name/uniquename from the base table
   $names = array();
   foreach($table_descrip['fields'] as $field_name => $field) {
@@ -457,7 +517,7 @@ function chado_node_get_unique_constraint_format($base_table) {
       }
     }
   }
-  
+
   $format = implode(', ',$names) . ' (' . implode(', ',$tokens) . ')';
   return $format;
 }

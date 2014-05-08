@@ -52,7 +52,6 @@ function tripal_stock_admin() {
 
 
   // STOCK PAGE TITLES CONFIGURATION
-
   $details = array(
     'module' => 'tripal_stock',
     'content_type' => 'chado_stock',
