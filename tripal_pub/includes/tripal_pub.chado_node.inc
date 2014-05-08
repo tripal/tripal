@@ -963,6 +963,9 @@ function chado_pub_load($nodes) {
     // set the URL path
     $nodes[$nid]->path = "pub/$pub_id";
     $nodes[$nid]->pub = $pub;
+
+    // Now get the title
+    $node->title = chado_get_node_title($node);
   }
 }
 
@@ -1088,6 +1091,10 @@ function tripal_pub_node_view($node, $view_mode, $langcode) {
 function tripal_pub_node_insert($node) {
 
   if ($node->type == 'chado_pub') {
+
+    // Now get the title
+    $node->title = chado_get_node_title($node);
+      
     $pub_id = chado_get_id_from_nid('pub', $node->nid);
     tripal_pub_set_pub_url($node, $pub_id);
   }
@@ -1132,6 +1139,10 @@ function tripal_pub_node_load($nodes, $types) {
 function tripal_pub_node_update($node) {
 
   if ($node->type == 'chado_pub') {
+
+    // Now get the title
+    $node->title = chado_get_node_title($node);
+      
     $pub_id = chado_get_id_from_nid('pub', $node->nid);
     tripal_pub_set_pub_url($node, $pub_id);
   }
@@ -1159,4 +1170,14 @@ function tripal_pub_node_presave($node) {
       }
       break;
   }
+}
+
+/**
+ * Implements [content_type]_chado_node_default_title_format().
+ *
+ * Defines a default title format for the Chado Node API to set the titles on
+ * Chado pub nodes based on chado fields.
+ */
+function chado_pub_chado_node_default_title_format() {
+  return '[pub.title]';
 }

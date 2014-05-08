@@ -426,6 +426,9 @@ function chado_featuremap_load($nodes) {
     $featuremap = chado_expand_var($featuremap, 'field', 'featuremap.description');
 
     $nodes[$nid]->featuremap = $featuremap;
+
+    // Now get the title
+    $node->title = chado_get_node_title($node);
   }
 
 }
@@ -536,4 +539,50 @@ function tripal_featuremap_node_view($node, $view_mode, $langcode) {
       }
       break;
   }
+}
+
+/**
+ * Implements hook_node_insert().
+ * Acts on all content types.
+ *
+ * @ingroup tripal_featuremap
+ */
+function tripal_featuremap_node_insert($node) {
+
+  switch ($node->type) {
+    case 'chado_featuremap':
+
+      // Now get the title
+      $node->title = chado_get_node_title($node);
+
+      break;
+  }
+}
+
+/**
+ * Implements hook_node_update().
+ * Acts on all content types.
+ *
+ * @ingroup tripal_featuremap
+ */
+function tripal_featuremap_node_update($node) {
+
+  switch ($node->type) {
+    case 'chado_featuremap':
+
+      // Now get the title
+      $node->title = chado_get_node_title($node);
+
+      break;
+  }
+}
+
+/**
+ * Implements [content_type]_chado_node_default_title_format().
+ *
+ * Defines a default title format for the Chado Node API to set the titles on
+ * Chado featuremap nodes based on chado fields.
+ */
+function chado_featuremap_chado_node_default_title_format() {
+  return '[featuremap.name]';
 }

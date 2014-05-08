@@ -47,7 +47,7 @@ function tripal_analysis_node_info() {
  */
 function chado_analysis_form($node, &$form_state) {
   $form = array();
-  
+
   // Default values can come in the following ways:
   //
   // 1) as elements of the $node object.  This occurs when editing an existing analysis
@@ -87,7 +87,7 @@ function chado_analysis_form($node, &$form_state) {
     $timeexecuted   = $analysis->timeexecuted;
     $description    = $analysis->description;
     $analysis_type  = $node->type;
-    
+
 
     // set the analysis_id in the form
     $form['analysis_id'] = array(
@@ -231,7 +231,7 @@ function chado_analysis_form($node, &$form_state) {
   /*
   // get node types from analysis extension modules
   $sql = "SELECT modulename FROM {tripal_analysis}";
-  $modules = db_query($sql);  
+  $modules = db_query($sql);
   $node_types = array();
   $node_types['chado_analysis'] = 'Analysis';
   foreach($modules as $module) {
@@ -240,7 +240,7 @@ function chado_analysis_form($node, &$form_state) {
       $node_types[$mtypename] = $mtype['name'];
     }
   }
-  
+
   if (count($node_types) > 0) {
     $form['analysis_type'] = array(
       '#title'         => t('Analysis Type'),
@@ -251,7 +251,7 @@ function chado_analysis_form($node, &$form_state) {
       '#options'       => $node_types,
     );
   } */
-  
+
   // Properties Form
   // ----------------------------------
   $instructions = t('To add additional properties to the drop down. ' . l("Add terms to the analysis_property vocabulary", "admin/tripal/chado/tripal_cv/cvterm/add") . ".");
@@ -310,7 +310,7 @@ function tripal_analysis_validate($node, $form, &$form_state) {
   $node->sourcename = trim($node->sourcename);
   $node->sourceversion = trim($node->sourceversion);
   $node->sourceuri = trim($node->sourceuri);
-  
+
   // Validating for an update
   if (!is_null($node->nid)) {
 
@@ -566,7 +566,7 @@ function chado_analysis_load($nodes) {
     if (!$analysis_id) {
       continue;
     }
-    
+
     // build the analysis variable
     $values = array('analysis_id' => $analysis_id);
     $analysis = chado_generate_var('analysis', $values);
@@ -574,6 +574,9 @@ function chado_analysis_load($nodes) {
     // add in the description field
     $analysis = chado_expand_var($analysis, 'field', 'analysis.description');
     $nodes[$nid]->analysis = $analysis;
+
+    // Now get the title
+    $node->title = chado_get_node_title($node);
   }
 }
 
@@ -606,7 +609,7 @@ function chado_analysis_node_access($node, $op, $account) {
   if (is_object($node)) {
     $node_type = $node->type;
   }
-  
+
   if($node_type == 'chado_analysis') {
     if ($op == 'create') {
       if (!user_access('create chado_analysis content', $account)) {
@@ -694,7 +697,7 @@ function tripal_analysis_node_presave($node) {
     if ($name) {
       $node->title = $name;
     }
-    // reset the type 
+    // reset the type
     //$node->type = $node->analysis_type;
   }
   else if (property_exists($node, 'analysis')) {
@@ -709,4 +712,50 @@ function tripal_analysis_node_presave($node) {
     }
     //$node->type = $node->analysis_type;
   }
+}
+
+/**
+ * Implements hook_node_insert().
+ * Acts on all content types.
+ *
+ * @ingroup tripal_analysis
+ */
+function tripal_analysis_node_insert($node) {
+
+  switch ($node->type) {
+    case 'chado_analysis':
+
+      // Now get the title
+      $node->title = chado_get_node_title($node);
+
+      break;
+  }
+}
+
+/**
+ * Implements hook_node_update().
+ * Acts on all content types.
+ *
+ * @ingroup tripal_analysis
+ */
+function tripal_analysis_node_update($node) {
+
+  switch ($node->type) {
+    case 'chado_analysis':
+
+      // Now get the title
+      $node->title = chado_get_node_title($node);
+
+      break;
+  }
+}
+
+/**
+ * Implements [content_type]_chado_node_default_title_format().
+ *
+ * Defines a default title format for the Chado Node API to set the titles on
+ * Chado Analysis nodes based on chado fields.
+ */
+function chado_analysis_chado_node_default_title_format() {
+  return '[analysis.name]';
 }

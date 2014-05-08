@@ -48,9 +48,24 @@ function tripal_organism_admin() {
 
   $form = array();
 
-  $form['nothing'] = array(
-    '#markup' => t('There are currently no settings to configure.')
+  // If your module is using the Chado Node: Title & Path API to allow custom titles
+  // for your node type then you need to add the configuration form for this functionality.
+  $details = array(
+    'module' => 'tripal_organism',       // the name of the MODULE implementing the content type
+    'content_type' => 'chado_organism',   // the name of the content type
+      // An array of options to use under "Page Titles"
+      // the key should be the token and the value should be the human-readable option
+    'options' => array(
+      '[organism.name]' => 'Organism Name Only',
+        // there should always be one options matching the unique constraint.
+      '[organism.genus] [organism.species]' => 'Unique Contraint: The scientific name'
+    ),
+    // the token indicating the unique constraint in the options array
+    'unique_option' => '[organism.genus] [organism.species]'
   );
+  // This call adds the configuration form to your current form
+  // This sub-form handles it's own validation & submit
+  chado_add_admin_form_set_title($form, $form_state, $details);
 
   return system_settings_form($form);
 }

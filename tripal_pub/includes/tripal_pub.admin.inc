@@ -47,6 +47,25 @@ function tripal_pub_admin_pub_view() {
 function tripal_pub_admin() {
   $form = array();
 
+  // If your module is using the Chado Node: Title & Path API to allow custom titles
+  // for your node type then you need to add the configuration form for this functionality.
+  $details = array(
+    'module' => 'tripal_pub',       // the name of the MODULE implementing the content type
+    'content_type' => 'chado_pub',   // the name of the content type
+      // An array of options to use under "Page Titles"
+      // the key should be the token and the value should be the human-readable option
+    'options' => array(
+      '[pub.title]' => 'Publication Title',
+        // there should always be one options matching the unique constraint.
+      '[pub.uniquename]' => 'Unique Contraint: Citation of the Publication.'
+    ),
+    // the token indicating the unique constraint in the options array
+    'unique_option' => '[pub.uniquename]'
+  );
+  // This call adds the configuration form to your current form
+  // This sub-form handles it's own validation & submit
+  chado_add_admin_form_set_title($form, $form_state, $details);
+  
   // -----------------------------------------
   // add in the fields for selecting which fields are used when search for pubs
   $form['searching'] = array(

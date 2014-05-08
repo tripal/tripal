@@ -401,6 +401,10 @@ function chado_project_load($nodes) {
     $project = chado_generate_var('project', $values);
 
     $nodes[$nid]->project = $project;
+
+    // Now get the title
+    $node->title = chado_get_node_title($node);
+      
   }
 
 }
@@ -521,6 +525,9 @@ function tripal_project_node_insert($node) {
   switch ($node->type) {
     case 'chado_project':
 
+      // Now get the title
+      $node->title = chado_get_node_title($node);
+      
       // on an insert we need to add the project_id to the node object
       // so that the tripal_project_get_project_url function can set the URL properly
       $node->project_id = chado_get_id_from_nid('project', $node->nid);
@@ -547,6 +554,10 @@ function tripal_project_node_update($node) {
   // add items to other nodes, build index and search results
   switch ($node->type) {
     case 'chado_project':
+
+      // Now get the title
+      $node->title = chado_get_node_title($node);
+      
       // remove any previous alias
       db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
 
@@ -691,4 +702,14 @@ function tripal_project_set_urls($na = NULL, $job = NULL) {
     watchdog_exception('tripal_project', $e);
     watchdog('trp-seturl', "Failed Removing URL Alias: %src", array('%src' => $src), WATCHDOG_ERROR);
   }
+}
+
+/**
+ * Implements [content_type]_chado_node_default_title_format().
+ *
+ * Defines a default title format for the Chado Node API to set the titles on
+ * Chado project nodes based on chado fields.
+ */
+function chado_project_chado_node_default_title_format() {
+  return '[project.name]';
 }

@@ -501,6 +501,9 @@ function chado_organism_load($nodes) {
     // add in the description field
     $organism = chado_expand_var($organism, 'field', 'organism.comment');
     $nodes[$nid]->organism = $organism;
+
+    // Now get the title
+    $node->title = chado_get_node_title($node);
   }
 }
 
@@ -564,4 +567,50 @@ function tripal_organism_node_view($node, $view_mode, $langcode) {
       }
       break;
   }
+}
+
+/**
+ * Implements hook_node_insert().
+ * Acts on all content types.
+ *
+ * @ingroup tripal_organism
+ */
+function tripal_organism_node_insert($node) {
+
+  switch ($node->type) {
+    case 'chado_organism':
+
+      // Now get the title
+      $node->title = chado_get_node_title($node);
+
+      break;
+  }
+}
+
+/**
+ * Implements hook_node_update().
+ * Acts on all content types.
+ *
+ * @ingroup tripal_organism
+ */
+function tripal_organism_node_update($node) {
+
+  switch ($node->type) {
+    case 'chado_organism':
+
+      // Now get the title
+      $node->title = chado_get_node_title($node);
+
+      break;
+  }
+}
+
+/**
+ * Implements [content_type]_chado_node_default_title_format().
+ *
+ * Defines a default title format for the Chado Node API to set the titles on
+ * Chado organism nodes based on chado fields.
+ */
+function chado_organism_chado_node_default_title_format() {
+  return '[organism.genus] [organism.species]';
 }

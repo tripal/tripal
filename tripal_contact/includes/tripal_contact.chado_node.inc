@@ -181,7 +181,7 @@ function chado_contact_form(&$node, $form_state) {
   $prop_cv = tripal_get_default_cv('contactprop', 'type_id');
   $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
   $select_options = array();
-  
+
   // the Tripal contact vocabulary is heirarchical so if that vocab is default we
   // want to use the subset of terms not under the type 'Contact Type' for our
   // properties list.
@@ -220,7 +220,7 @@ function chado_contact_form(&$node, $form_state) {
   // RELATIONSHIPS FORM
   //---------------------------------------------
   $relationship_cv = tripal_get_default_cv('contact_relationship', 'type_id');
-  $cv_id = $relationship_cv ? $relationship_cv->cv_id : NULL;  
+  $cv_id = $relationship_cv ? $relationship_cv->cv_id : NULL;
   $details = array(
     'relationship_table' => 'contact_relationship', // the name of the _relationship table
     'base_table' => 'contact',                      // the name of your chado base table
@@ -257,8 +257,8 @@ function chado_contact_validate($node, $form, &$form_state) {
   // remove surrounding white-space on submitted values
   $node->contactname    = trim($node->contactname);
   $node->description    = trim($node->description);
-  
-  
+
+
   // Validating for an update
   if (!is_null($node->nid)) {
     // get the existing node
@@ -314,12 +314,12 @@ function chado_contact_validate($node, $form, &$form_state) {
  * @ingroup tripal_contact
  */
 function chado_contact_node_access($node, $op, $account ) {
-  
+
   $node_type = $node;
   if (is_object($node)) {
     $node_type = $node->type;
   }
-  
+
   if($node_type == 'chado_contact') {
     if ($op == 'create') {
       if (!user_access('create chado_contact content', $account)) {
@@ -327,7 +327,7 @@ function chado_contact_node_access($node, $op, $account ) {
       }
       return NODE_ACCESS_ALLOW;
     }
-  
+
     if ($op == 'update') {
       if (!user_access('edit chado_contact content', $account)) {
         return NODE_ACCESS_DENY;
@@ -379,7 +379,7 @@ function chado_contact_insert($node) {
     $contact = chado_insert_record('contact', $values);
     if (!$contact) {
       drupal_set_message(t('Unable to add contact.', 'warning'));
-      tripal_report_error('tripal_contact', TRIPAL_ERROR, 
+      tripal_report_error('tripal_contact', TRIPAL_ERROR,
         'Insert contact: Unable to create contact where values: %values',
         array('%values' => print_r($values, TRUE)));
       return;
@@ -455,7 +455,7 @@ function chado_contact_update($node) {
   $status = chado_update_record('contact', $match, $values);
   if (!$status) {
     drupal_set_message("Error updating contact", "error");
-    tripal_report_error('tripal_contact', TRIPAL_ERROR, 
+    tripal_report_error('tripal_contact', TRIPAL_ERROR,
       "Error updating contact", array());
     return;
   }
@@ -506,7 +506,7 @@ function chado_contact_load($nodes) {
     if (!$contact_id) {
       continue;
     }
-    
+
     // get the contact
     $values = array('contact_id' => $contact_id);
     $contact = chado_generate_var('contact', $values);
@@ -531,6 +531,9 @@ function chado_contact_load($nodes) {
     }
 
     $nodes[$nid]->contact = $contact;
+
+    // Now get the title
+    $node->title = chado_get_node_title($node);
   }
 }
 
@@ -631,4 +634,50 @@ function tripal_contact_node_presave($node) {
       }
       break;
   }
+}
+
+/**
+ * Implements hook_node_insert().
+ * Acts on all content types.
+ *
+ * @ingroup tripal_contact
+ */
+function tripal_contact_node_insert($node) {
+
+  switch ($node->type) {
+    case 'chado_contact':
+
+      // Now get the title
+      $node->title = chado_get_node_title($node);
+
+      break;
+  }
+}
+
+/**
+ * Implements hook_node_update().
+ * Acts on all content types.
+ *
+ * @ingroup tripal_contact
+ */
+function tripal_contact_node_update($node) {
+
+  switch ($node->type) {
+    case 'chado_contact':
+
+      // Now get the title
+      $node->title = chado_get_node_title($node);
+
+      break;
+  }
+}
+
+/**
+ * Implements [content_type]_chado_node_default_title_format().
+ *
+ * Defines a default title format for the Chado Node API to set the titles on
+ * Chado contact nodes based on chado fields.
+ */
+function chado_contact_chado_node_default_title_format() {
+  return '[contact.name]';
 }

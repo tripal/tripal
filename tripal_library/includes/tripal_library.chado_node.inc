@@ -394,6 +394,9 @@ function chado_library_load($nodes) {
     $library = chado_expand_var($library, 'field', 'library.uniquename');
 
     $nodes[$nid]->library = $library;
+
+    // Now get the title
+    $node->title = chado_get_node_title($node);
   }
 }
 
@@ -577,4 +580,50 @@ function tripal_library_node_presave($node) {
       }
       break;
   }
+}
+
+/**
+ * Implements hook_node_insert().
+ * Acts on all content types.
+ *
+ * @ingroup tripal_library
+ */
+function tripal_library_node_insert($node) {
+
+  switch ($node->type) {
+    case 'chado_library':
+
+      // Now get the title
+      $node->title = chado_get_node_title($node);
+
+      break;
+  }
+}
+
+/**
+ * Implements hook_node_update().
+ * Acts on all content types.
+ *
+ * @ingroup tripal_library
+ */
+function tripal_library_node_update($node) {
+
+  switch ($node->type) {
+    case 'chado_library':
+
+      // Now get the title
+      $node->title = chado_get_node_title($node);
+
+      break;
+  }
+}
+
+/**
+ * Implements [content_type]_chado_node_default_title_format().
+ *
+ * Defines a default title format for the Chado Node API to set the titles on
+ * Chado library nodes based on chado fields.
+ */
+function chado_library_chado_node_default_title_format() {
+  return '[library.name], [library.uniquename] ([library.type_id>cvterm.name])';
 }

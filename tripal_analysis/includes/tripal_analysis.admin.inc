@@ -60,6 +60,25 @@ function tripal_analysis_admin() {
   // has a setting will be added.
   $form = array();
 
+  // If your module is using the Chado Node: Title & Path API to allow custom titles
+  // for your node type then you need to add the configuration form for this functionality.
+  $details = array(
+    'module' => 'tripal_analysis',       // the name of the MODULE implementing the content type
+    'content_type' => 'chado_analysis',   // the name of the content type
+      // An array of options to use under "Page Titles"
+      // the key should be the token and the value should be the human-readable option
+    'options' => array(
+      '[analysis.name]' => 'Analysis Name Only',
+        // there should always be one options matching the unique constraint.
+      '[analysis.name] ([analysis.sourcename]) [analysis.program] version [analysis.programversion]' => 'Unique Contraint: Includes the name, source and program name/version'
+    ),
+    // the token indicating the unique constraint in the options array
+    'unique_option' => '[analysis.name] ([analysis.sourcename]) [analysis.program] version [analysis.programversion]'
+  );
+  // This call adds the configuration form to your current form
+  // This sub-form handles it's own validation & submit
+  chado_add_admin_form_set_title($form, $form_state, $details);
+
   // Add sub-module settings. Pull all sub-module information from
   // {tripal_analysis} table
   $sql = "SELECT modulename FROM {tripal_analysis}";
