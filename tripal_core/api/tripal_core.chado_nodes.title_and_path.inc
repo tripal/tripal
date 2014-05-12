@@ -239,8 +239,8 @@ function chado_add_admin_form_set_title(&$form, &$form_state, $details) {
   $form['set_titles']['submit'] = array(
     '#type' => 'submit',
     '#value' => 'Set Titles',
-		'#validate' => array('chado_add_admin_form_set_title_form_validate'),
- 		'#submit' => array('chado_add_admin_form_set_title_form_submit')
+    '#validate' => array('chado_add_admin_form_set_title_form_validate'),
+    '#submit' => array('chado_add_admin_form_set_title_form_submit')
   );
 
 }

@@ -412,13 +412,13 @@ function tripal_populate_mview($mview_id) {
       }
     }
     catch (Exception $e) {
+      $transaction->rollback();
       // print and save the error message
       $record = new stdClass();
       $record->mview_id = $mview_id;
       $record->status = "ERROR populating $mview->mv_table. See Drupal's recent log entries for details.\n";
       drupal_write_record('tripal_mviews', $record, 'mview_id');
       watchdog_exception('tripal_mviews', $e);
-      $transaction->rollback();
       return FALSE;
     }
     print "Done.\n";

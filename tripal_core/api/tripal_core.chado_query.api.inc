@@ -1298,6 +1298,7 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
 function chado_query($sql, $args = array()) {
   $is_local = $GLOBALS["chado_is_local"];
 
+
   // Args should be an array
   if (!is_array($args)) {
     tripal_report_error('tripal_core', TRIPAL_ERROR,

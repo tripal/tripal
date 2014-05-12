@@ -616,9 +616,9 @@ function tripal_reimport_publications($do_contact = FALSE, $dbxref = NULL, $db =
     }
   }
   catch (Exception $e) {
+    $transaction->rollback();
     print "\n"; // make sure we start errors on new line
     watchdog_exception('T_pub_import', $e);
-    $transaction->rollback();
     print "FAILED: Rolling back database changes...\n";
     return;
   }
@@ -685,9 +685,9 @@ function tripal_execute_pub_importer($import_id, $job_id = NULL) {
     tripal_set_job_progress($job_id, '100');
   }
   catch (Exception $e) {
+    $transaction->rollback();
     print "\n"; // make sure we start errors on new line
     watchdog_exception('T_pub_import', $e);
-    $transaction->rollback();
     print "FAILED: Rolling back database changes...\n";
     return;
   }
@@ -783,10 +783,10 @@ function tripal_execute_active_pub_importers($report_email = FALSE, $do_update =
     }
   }
   catch (Exception $e) {
+    $transaction->rollback();
     print "\n"; // make sure we start errors on new line
     watchdog_exception('T_pub_import', $e);
-      $transaction->rollback();
-      print "FAILED: Rolling back database changes...\n";
+    print "FAILED: Rolling back database changes...\n";
     return;
   }
   print "Done.\n";
@@ -856,11 +856,11 @@ function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_updat
     }
   }
   catch (Exception $e) {
+    $transaction->rollback();
     print "\n"; // make sure we start errors on new line
     watchdog_exception('T_pub_import', $e);
-        $transaction->rollback();
-        print "FAILED: Rolling back database changes...\n";
-      return;
+    print "FAILED: Rolling back database changes...\n";
+    return;
   }
 
   print "Done.\n";

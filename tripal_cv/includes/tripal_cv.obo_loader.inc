@@ -186,16 +186,16 @@ function tripal_cv_load_obo_v1_2_id($obo_id, $jobid = NULL) {
 function tripal_cv_load_obo_v1_2_file($obo_name, $file, $jobid = NULL, $is_new = TRUE) {
   $newcvs = array();
 
-  // TODO: need better error detection
-
-  tripal_cv_load_obo_v1_2($file, $jobid, $newcvs);
   if ($is_new) {
     tripal_cv_add_obo_ref($obo_name, $file);
   }
-  print "\nDone\n";
 
-  // update the cvtermpath table
-  tripal_cv_load_update_cvtermpath($newcvs, $jobid);
+  $success = tripal_cv_load_obo_v1_2($file, $jobid, $newcvs);
+  if ($success) {
+    // update the cvtermpath table
+    tripal_cv_load_update_cvtermpath($newcvs, $jobid);
+    print "\nDone\n";
+  }
 }
 
 /**
@@ -236,21 +236,21 @@ function tripal_cv_load_obo_v1_2_url($obo_name, $url, $jobid = NULL, $is_new = T
   }
   fclose($url_fh);
   fclose($obo_fh);
-
-  // second, parse the OBO
-  tripal_cv_load_obo_v1_2($temp, $jobid, $newcvs);
-
-  // now remove the temp file
-  unlink($temp);
-
+  
   if ($is_new) {
     tripal_cv_add_obo_ref($obo_name, $url);
   }
 
-  // update the cvtermpath table
-  tripal_cv_load_update_cvtermpath($newcvs, $jobid);
-
-  print "Done\n";
+  // second, parse the OBO
+  $success = tripal_cv_load_obo_v1_2($temp, $jobid, $newcvs);
+  if ($success) {
+    
+    // update the cvtermpath table
+    tripal_cv_load_update_cvtermpath($newcvs, $jobid);
+    print "Done\n";
+  }
+  // now remove the temp file
+  unlink($temp);
 }
 
 /**
@@ -322,12 +322,36 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
     // parse the obo file
     $default_db = tripal_cv_obo_parse($file, $header, $jobid);
 
-    // add the CV for this ontology to the database
-    $defaultcv = tripal_cv_add_cv($header['default-namespace'][0], '');
-    if (!$defaultcv) {
-      tripal_cv_obo_quiterror('Cannot add namespace ' . $header['default-namespace'][0]);
+    // add the CV for this ontology to the database.  The v1.2 definition
+    // specifies a 'default-namespace' to be used if a 'namespace' is not
+    // present for each stanza.  Some ontologies have adopted the v1.4 method
+    // in their v1.2 files and not including it.
+    if (array_key_exists('default-namespace', $header)) {
+      $defaultcv = tripal_cv_add_cv($header['default-namespace'][0], '');
+      if (!$defaultcv) {
+        tripal_cv_obo_quiterror('Cannot add namespace ' . $header['default-namespace'][0]);
+      }
+      $newcvs[$header['default-namespace'][0]] = $defaultcv->cv_id;
     }
-    $newcvs[$header['default-namespace'][0]] = $defaultcv->cv_id;
+    // if the 'default-namespace' is missing
+    else {
+      
+      // look to see if an 'ontology' key is present.  It is part of the v1.4 
+      // specification so it shouldn't be in the file, but just in case
+      if (array_key_exists('ontology', $header)) {
+        $defaultcv = tripal_cv_add_cv(strtoupper($header['ontology'][0]), '');
+        if (!$defaultcv) {
+          tripal_cv_obo_quiterror('Cannot add namespace ' . strtoupper($header['ontology'][0]));
+        }
+        $newcvs[strtoupper(strtoupper($header['ontology'][0]))] = $defaultcv->cv_id;
+      }
+      else {
+        $defaultcv = tripal_cv_add_cv('_global', '');
+        $newcvs['_global'] = $defaultcv->cv_id;
+      }
+      watchdog('t_obo_loader', "This OBO is missing the 'default-namespace' header. It is not possible to determine which vocabulary terms without a 'namespace' key should go.  Instead, those terms will be placed in the '%vocab' vocabulary.", 
+        array('%vocab' => $defaultcv->name), WATCHDOG_WARNING);
+    }
 
     // add any typedefs to the vocabulary first
     print "\nStep 2: Loading type defs...\n";
@@ -340,14 +364,14 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
     }
   }
   catch (Exception $e) {
-    print "\n"; // make sure we start errors on new line
-    watchdog_exception('T_obo_loader', $e);
     $transaction->rollback();
-    print "FAILED: Rolling back database changes...\n";
-    return 0;
+    print "\n"; // make sure we start errors on new line
+    print "FAILED. Rolling back database changes...\n";
+    watchdog_exception('T_obo_loader', $e);
+    return FALSE;
   }
 
-  return;
+  return TRUE;
 }
 
 /**
@@ -509,8 +533,7 @@ function tripal_cv_obo_process_terms($defaultcv, $jobid = NULL, &$newcvs, $defau
  * @param $term
  *   An array representing the cvterm. 
  * @param $defaultcv
- *   A database object containing a record from the cv table for the 
- *   default controlled vocabulary
+ *   The name of the default controlled vocabulary
  * @is_relationship
  *   Set to 1 if this term is a relationship term
  * @default_db
@@ -520,6 +543,11 @@ function tripal_cv_obo_process_terms($defaultcv, $jobid = NULL, &$newcvs, $defau
  */
 function tripal_cv_obo_process_term($term, $defaultcv, $is_relationship = 0, &$newcvs, $default_db) {
 
+  // make sure we have a namespace for this term
+  if (!array_key_exists('namespace', $term) and !($defaultcv or $defaultcv == '')) {
+    tripal_cv_obo_quiterror("Cannot add the term: no namespace defined. " . $term['id'][0]);
+  }
+  
   // construct the term array for sending to the tripal_cv_add_cvterm function
   // for adding a new cvterm
   $t = array();

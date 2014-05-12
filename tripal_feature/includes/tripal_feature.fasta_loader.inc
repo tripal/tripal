@@ -607,9 +607,9 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
       $source, $residues, $method, $re_name, $match_type, $parentcvterm, $relcvterm);
   }
   catch (Exception $e) {
+    $transaction->rollback();
     print "\n"; // make sure we start errors on new line
     watchdog_exception('T_fasta_loader', $e);
-    $transaction->rollback();
     print "FAILED: Rolling back database changes...\n";
   }
   

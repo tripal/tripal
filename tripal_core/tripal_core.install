@@ -461,6 +461,7 @@ function tripal_core_update_7201() {
   }
 }
 
+
 /**
  * Adds in tripal token formats table to handle page title and path rewrites
  */
