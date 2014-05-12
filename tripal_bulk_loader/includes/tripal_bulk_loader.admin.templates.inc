@@ -17,9 +17,9 @@
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_modify_template_base_form($form_state = NULL, $mode) {
+function tripal_bulk_loader_modify_template_base_form(&$form_state = NULL, $mode) {
   $form = array();
-
+  
    // get template id from path and rebuild form
   if ($_GET['template_id']) {
     if (preg_match('/^\d+$/', $_GET['template_id'])) {
@@ -570,7 +570,7 @@ function tripal_bulk_loader_delete_template_base_form_submit($form, &$form_state
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_import_export_template_form($form_state = NULL, $mode) {
+function tripal_bulk_loader_import_export_template_form(&$form_state = NULL, $mode) {
   $form = array();
 
   $form['mode'] = array(
@@ -686,6 +686,7 @@ function tripal_bulk_loader_import_export_template_form_submit($form, &$form_sta
  */
 function tripal_bulk_loader_edit_template_record_form(&$form_state = NULL) {
   $form['#cache'] = TRUE; // Make sure the form is cached.
+
 
    // get template id from path
   $template_id = ($_GET['template_id'] !== NULL) ? $_GET['template_id'] : $form_state['values']['template_id'];
@@ -1595,7 +1596,6 @@ function tripal_bulk_loader_add_template_field_form_validate($form, $form_state)
       form_set_error('record_name', "New Record Name must be unique. '" . $form_state['values']['record_name'] . "' is not unique.");
     }
   }
-
 }
 
 /**

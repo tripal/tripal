@@ -313,13 +313,37 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
   // parse the obo file
   $default_db = tripal_cv_obo_parse($file, $header, $jobid);
 
-  // add the CV for this ontology to the database
-  $defaultcv = tripal_cv_add_cv($header['default-namespace'][0], '');
-  if (!$defaultcv) {
-    tripal_cv_obo_quiterror('Cannot add namespace ' . $header['default-namespace'][0]);
+  // add the CV for this ontology to the database.  The v1.2 definition
+  // specifies a 'default-namespace' to be used if a 'namespace' is not
+  // present for each stanza.  Some ontologies have adopted the v1.4 method
+  // in their v1.2 files and not including it.
+  if (array_key_exists('default-namespace', $header)) {
+    $defaultcv = tripal_cv_add_cv($header['default-namespace'][0], '');
+    if (!$defaultcv) {
+      tripal_cv_obo_quiterror('Cannot add namespace ' . $header['default-namespace'][0]);
+    }
+    $newcvs[$header['default-namespace'][0]] = $defaultcv->cv_id;
   }
-  $newcvs[$header['default-namespace'][0]] = $defaultcv->cv_id;
-
+  // if the 'default-namespace' is missing
+  else {
+    
+    // look to see if an 'ontology' key is present.  It is part of the v1.4 
+    // specification so it shouldn't be in the file, but just in case
+    if (array_key_exists('ontology', $header)) {
+      $defaultcv = tripal_cv_add_cv(strtoupper($header['ontology'][0]), '');
+      if (!$defaultcv) {
+        tripal_cv_obo_quiterror('Cannot add namespace ' . strtoupper($header['ontology'][0]));
+      }
+      $newcvs[strtoupper(strtoupper($header['ontology'][0]))] = $defaultcv->cv_id;
+    }
+    else {
+      $defaultcv = tripal_cv_add_cv('_global', '');
+      $newcvs['_global'] = $defaultcv->cv_id;
+    }
+    watchdog('t_obo_loader', "This OBO is missing the 'default-namespace' header. It is not possible to determine which vocabulary terms without a 'namespace' key should go.  Instead, those terms will be placed in the '%vocab' vocabulary.", 
+      array('%vocab' => $defaultcv->name), WATCHDOG_WARNING);
+  }
+  
   // add any typedefs to the vocabulary first
   print "\nStep 2: Loading type defs...\n"; 
   tripal_cv_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid);
@@ -465,7 +489,12 @@ function tripal_cv_obo_process_terms($defaultcv, $jobid = NULL, &$newcvs, $defau
  * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_process_term($term, $defaultcv, $is_relationship = 0, &$newcvs, $default_db) {
- 
+
+  // make sure we have a namespace for this term
+  if (!array_key_exists('namespace', $term) and !($defaultcv or $defaultcv == '')) {
+    tripal_cv_obo_quiterror("Cannot add the term: no namespace defined. " . $term['id'][0]);
+  }
+  
   // construct the term array for sending to the tripal_cv_add_cvterm function
   // for adding a new cvterm
   $t = array(); 
@@ -482,7 +511,7 @@ function tripal_cv_obo_process_term($term, $defaultcv, $is_relationship = 0, &$n
   }
   if (array_key_exists('is_obsolete', $term)) {
     $t['is_obsolete'] = $term['is_obsolete'][0];
-  } 
+  }
   
   // add the cvterm
   $cvterm = tripal_cv_add_cvterm($t, $defaultcv, $is_relationship, 1, $default_db); 
