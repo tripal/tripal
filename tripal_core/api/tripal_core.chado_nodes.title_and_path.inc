@@ -104,7 +104,7 @@ function chado_get_node_title($node) {
     }
   }
   else {
-    return $format_record->format;
+    return $title;
   }
 
   return $title;
