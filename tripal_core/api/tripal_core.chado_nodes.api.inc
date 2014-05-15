@@ -481,8 +481,9 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
     $select[] = 'cvterm.name as cvtname';
     $joins[] = "LEFT JOIN {cvterm} cvterm ON $base_table.type_id = cvterm.cvterm_id";
     foreach ($types as $type) {
-      $where_clauses['type'][] = "cvterm.name = :type_name_$type";
-      $where_args['type'][":type_name_$type"] = $type;
+      $sanitized_type = str_replace(' ','_',$type);
+      $where_clauses['type'][] = "cvterm.name = :type_name_$sanitized_type";
+      $where_args['type'][":type_name_$sanitized_type"] = $type;
     }
   }
 
@@ -541,6 +542,8 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
   }
   $query = substr($query, 0, -4); // remove the trailing 'AND'
   $query .- " ORDER BY " . $base_table_id;
+
+print $query."\n";
 
   // If Maximum number to Sync is supplied
   if ($max_sync) {

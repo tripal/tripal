@@ -104,7 +104,7 @@ function chado_get_node_title($node) {
     }
   }
   else {
-    return $format_record->format;
+    return $title;
   }
 
   return $title;
@@ -155,13 +155,13 @@ function chado_add_admin_form_set_title(&$form, &$form_state, $details) {
   $details['content_type'] = (isset($details['content_type'])) ? $details['content_type'] : $details['module'];
 
   $tokens = array();
-  $details['default_option'] = (isset($details['default_option'])) ? $details['default_option'] : chado_node_get_title_format($details['content_type'], $tokens);
   if (empty($tokens)) {
     $tokens = chado_node_generate_tokens($chado_node_api['base_table']);
   }
   $tokens = array_merge($tokens, $details['custom_tokens']);
   $token_list = chado_node_format_tokens($tokens);
-
+  $details['default_option'] = (isset($details['default_option'])) ? $details['default_option'] : chado_node_get_title_format($details['content_type'], $tokens);
+  
   // FORM PROPER
   $msg = t(
     'Each synced %singular must have a unique page title, however, %plural may have the
@@ -198,7 +198,7 @@ function chado_add_admin_form_set_title(&$form, &$form_state, $details) {
       array('%plural' => $chado_node_api['record_type_title']['plural'])),
     '#required'      => FALSE,
     '#options'       => $details['options'],
-    '#default_value' => $details['default_option'],
+    '#default_value' => (isset($details['options'][$details['default_option']])) ? $details['default_option'] : 'custom',
   );
 
   $form['set_titles']['title_format_variable'] = array(
