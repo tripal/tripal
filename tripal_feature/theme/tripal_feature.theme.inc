@@ -168,7 +168,7 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
         $strand = '-';
       }
       $floc_sequences[$src]['location'] = tripal_get_location_string($featureloc);
-      $floc_sequences[$src]['defline'] = tripal_get_fasta_defline($featureloc->feature_id, $featureloc);
+      $floc_sequences[$src]['defline'] = tripal_get_fasta_defline($featureloc->feature_id, '', $featureloc, '', strlen($residues));
       $floc_sequences[$src]['featureloc'] = $featureloc;
       $floc_sequences[$src]['formatted_seq'] =  tripal_feature_color_sequence($residues, $parts, $floc_sequences[$src]['defline']);
     }

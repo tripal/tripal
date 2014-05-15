@@ -34,9 +34,20 @@ function tripal_feature_seq_extract_page() {
       drupal_add_http_header('Content-Disposition: attachment; filename="sequences.fasta.txt"');
     }
 
-    tripal_feature_seq_extract_get_features(NULL, $genus, $species, $analysis,
-      $ftype, $fnames['items_array'], $upstream, $downstream, $format, $use_parent, $aggregate,
-      $agg_types);
+    tripal_get_bulk_feature_sequences(array(
+      'genus' => $genus, 
+      'species' => $species, 
+      'analysis_name' => $analysis,
+      'type' => $ftype, 
+      'feature_name' => $fnames['items_array'], 
+      'upstream' => $upstream, 
+      'downstream' => $downstream, 
+      'print' => 1,
+      'output_format' => $format, 
+      'derive_from_parent' => $use_parent, 
+      'aggregate' => $aggregate,
+      'sub_feature_types' => $agg_types
+    ));
 
     return;
   }
@@ -460,101 +471,5 @@ function tripal_feature_seq_extract_form_submit($form, &$form_state) {
   }
   if ($op == 'Reset') {
     unset($_SESSION['tripal_feature_seq_extract']);
-  }
-}
-
-/**
- * Actually extract the sequences
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_seq_extract_get_features($org_commonname, $genus, $species, $analysis_name,
-  $type, $feature_name, $upstream, $downstream, $output_format, $derive_from_parent, $aggregate,
-  $child, $relationship, $rel_part) {
-
-  $sub_features = explode(',', $child);
-
-  if (!$output_format) {
-    $output_format = 'fasta_txt';
-  }
-
-  if (!$type and !$feature_name and !$genus) {
-    print "Please provide a type, feature name or genus\n";
-     return;
-  }
-
-  // get the list of features
-  $vars = array();
-  $sql  = "SELECT DISTINCT F.feature_id, F.name, F.uniquename, O.genus, O.species, CVT.name as feature_type " .
-          "FROM {feature} F " .
-          "  INNER JOIN {organism} O on O.organism_id = F.organism_id " .
-          "  INNER JOIN {cvterm} CVT on CVT.cvterm_id = F.type_id ";
-  if ($analysis_name) {
-     $sql .= "  INNER JOIN {analysisfeature} AF on AF.feature_id = F.feature_id " .
-             "  INNER JOIN {analysis} A on AF.analysis_id = A.analysis_id ";
-  }
-  $sql .= "WHERE (1=1) ";
-  if ($org_commonname) {
-    $sql .= "AND O.common_name = :common_name ";
-    $vars[':common_name'] = $org_commonname;
-  }
-  if ($genus) {
-    $sql .= "AND O.genus = :genus ";
-    $vars[':genus'] = $genus;
-  }
-  if ($species) {
-    $sql .= "AND O.species = :species ";
-    $vars[':species'] = $species;
-  }
-  if ($type) {
-    $sql .= "AND CVT.name = ':cvtname ";
-    $vars[':cvtname'] = $type;
-  }
-  if ($feature_name) {
-    if (is_array($feature_name)) {
-      $sql .= "AND F.name IN (";
-      foreach ($feature_name as $i => $fname) {
-        $sql .= ":fname$i, ";
-        $vars[":fname$i"] = $fname;
-      }
-      // remove the trailing comma and close the paren
-      $sql = substr($sql, 0, -2) . ")";
-    }
-    else {
-      $sql .= "AND F.name = :fname";
-      $vars[':fname'] = $feature_name;
-    }
-  }
-  if ($analysis_name) {
-    $sql .= "AND A.name = :aname";
-    $vars[':aname'] = $analysis_name;
-  }
-  $num_bases_per_line = 50;
-  $num_seqs = 0;
-  $q = chado_query($sql, $vars);
-
-  while ($feature = $q->fetchObject()) {
-
-    $feature_id = $feature->feature_id;
-
-    // build the header for each FASTA entry
-    if ($feature->uniquename == $feature->name) {
-      $feature_name = "$feature->uniquename $feature->feature_type ($feature->genus $feature->species)";
-    }
-    else {
-      $feature_name = "$feature->uniquename $feature->name $feature->feature_type ($feature->genus $feature->species)";
-    }
-
-    // generate the sequence
-    $sequence = tripal_feature_get_formatted_sequence($feature_id, $feature_name,
-      $num_bases_per_line, $derive_from_parent, $aggregate, $output_format,
-      $upstream, $downstream, $sub_features, $relationship, $rel_part);
-
-    // print the sequence
-    print $sequence;
-    $num_seqs++;
-  }
-  if ($num_seqs == 0) {
-    print "No Sequences Found";
   }
 }
