@@ -6,13 +6,42 @@
  *
  * TITLES
  * ====================================
- * There are two steps to implement the ability to set custom titles for your node type:
- * 1) Add the "Set Page Titles" Form to your admin settings form
+ * There are two steps to implement the ability to set custom titles for the node type:
+ * 1) Add the 'chado_node_api' elements to the hook_node_info function().  These values
+ *    define the name of the base table and how to refer to nodes in singular and plural.
+ *    There are additional paramaters that can be added to the 'chado_node_api' for 
+ *    syncing nodes (see documentation for the chado_node_sync_form() function for additional
+ *    options.
  * @code
-    // If your module is using the Chado Node: Title & Path API to allow custom titles
+  function modulename_node_info() {
+    return array(
+      'chado_example' => array(
+        'name' => t('example'),
+        'base' => 'chado_example',
+        'description' => t('A Chado example is a collection of material that can be sampled and have experiments performed on it.'),
+        'has_title' => TRUE,
+        'locked' => TRUE,
+
+        // this is what differs from the regular Drupal-documented hook_node_info()
+        'chado_node_api' => array(
+          'base_table' => 'example',            // the name of the chado base table
+          'hook_prefix' => 'chado_example',     // usually the name of the node type
+          'record_type_title' => array(
+            'singular' => t('Example'),         // Singular human-readable title
+            'plural' => t('Examples')           // Plural human-readable title
+          ),
+        )
+      ),
+    );
+  }
+ * @endcode
+ * 
+ * 2) Add the "Set Page Titles" Form to the admin settings form
+ * @code
+    // If the module is using the "Chado Node: Title & Path API" to allow custom titles
     // for your node type then you need to add the configuration form for this functionality.
     $details = array(
-      'module' => 'tripal_example',       // the name of the MODULE implementing the content type
+      'module' => 'tripal_example',        // the name of the MODULE implementing the content type
       'content_type' => 'chado_example',   // the name of the content type
         // An array of options to use under "Page Titles"
         // the key should be the token and the value should be the human-readable option
@@ -32,14 +61,13 @@
     chado_add_admin_form_set_title($form, $form_state, $details);
  * @endcode
  *
- * 2) Use chado_get_node_title($node) where ever you want the title for your node. This
+ * 3) Use chado_get_node_title($node) where ever you want the title for your node. This
  *    should be done in hook_load(), hook_node_insert(), hook_node_update(). The reason you
  *    set the title in the node_action hooks, which act on all nodes, is because at that
  *    point you have the generic loaded node.
  * @code
   function tripal_example_load($nodes) {
 
-    $new_nodes = array();
     foreach ($nodes as $nid => $node) {
 
       // Add all of the custom content for your node type.
@@ -48,10 +76,8 @@
       // Now get the title
       $node->title = chado_get_node_title($node);
 
-      $new_nodes[$nid] = $node;
+      $nodes[$nid] = $node;
     }
-
-    return $new_nodes;
   }
  * @endcode
  *

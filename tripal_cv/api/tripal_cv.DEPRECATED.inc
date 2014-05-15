@@ -326,9 +326,9 @@ function tripal_cv_submit_obo_job($obo_id = NULL, $obo_name = NULL, $obo_url = N
   return tripal_submit_obo_job(
     array(
       'obo_id' => $obo_id,
-      'name' => $obo_name,
-      'url' => $obo_url,
-      'file' => $obo_file
+      'name'   => $obo_name,
+      'url'    => $obo_url,
+      'file'   => $obo_file
     )
   );
 }
