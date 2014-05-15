@@ -97,6 +97,7 @@ if ($residues or count($featureloc_sequences) > 0) {
         
         // add any other sequences that are related through a relationship
         // and that have values in the 'residues' column
+        
       }
     }
   }
@@ -202,15 +203,21 @@ if ($residues or count($featureloc_sequences) > 0) {
   ));
 
   $message = 'Administrators, sequences will appear on this page if:
+    <br><br><b>For any feature type:</b>
     <ul>
       <li>This feature has residues stored in the "residues" field of the feature table of Chado.</li>
-      <li>This feature has a protein feature associated via the "feature_relationship" table of Chado with a
-          relationship of type "derives from" and the protein feature has residues.</li>
-      <li>This feature has one or more CDS features associated via the "feature_relationship" table of Chado with a
-          relationship of type "part of". If the CDS features have residues then those will be concatenated
-          and presented as a sequence.</li>
       <li>This feature is aligned to another feature (e.g. scaffold, or chromosome). In this case, the
           sequence underlying the alignment will be shown.</li>
+    </ul>
+    <br><b>For gene models:</b>
+    <ul>
+      <li>This feature has a "polypeptide" (protein) feature associated via the "feature_relationship" table of Chado with a
+          relationship of type "derives from" and the protein feature has residues. Typically, a protein
+          is associated with an mRNA feature and protein sequences will appear on the mRNA page.</li>
+      <li>This feature has one or more CDS features associated via the "feature_relationship" table of Chado with a
+          relationship of type "part of". If the CDS features have residues then those will be concatenated
+          and presented as a sequence. Typically, CDSs are associated with an mRNA feature and CDS sequences 
+          will appear on the mRNA page.</li>
       <li>This feature is aligned to another feature (e.g. scaffold, or chromosome) and this feature has
           one or more CDS features associated.  The CDS sequenes underlying the alignment will be
           shown.</li>
