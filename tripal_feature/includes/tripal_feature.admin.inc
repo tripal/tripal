@@ -96,7 +96,7 @@ function tripal_feature_admin() {
       'simply save this setup. <b>Important</b>: be sure that whatever you choose will always be unique even considering '.
       'future data that may be added.  If you include the Chado table name, genus, species, type '.
       'and uniquename you are guaranteed to have a unique URL. For example feature/[genus]/[species]/[type]/[uniquename]'),
-    '#size' => 150,
+    '#size' => 75,
     '#default_value' => variable_get('chado_feature_url_string', '/feature/[genus]/[species]/[type]/[uniquename]'),
   );
 

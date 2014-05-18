@@ -541,7 +541,9 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
   if (isset($form_state['input']['property_table']['new']['type'])) {
     $new_type_id = $form_state['input']['property_table']['new']['type'];
     $new_term = tripal_get_cvterm(array('cvterm_id' => $new_type_id));
-    $type_desc = $new_term->definition;
+    if ($new_term) {
+      $type_desc = $new_term->definition;
+    }
   }
   $form['properties']['property_table']['new']['type'] = array(
     '#type' => 'select',

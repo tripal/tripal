@@ -574,6 +574,7 @@ function chado_example_load($nodes) {
     // cases it is probably best to let the end-user decide if text fields should
     // be included by using this function in the templates.
     $example = chado_expand_var($example, 'field', 'example.description');
+    
 
     // If your module is using the Chado Node: Title & Path API to allow custom titles
     // for your node type. Every time you want the title of the node, you need to use the
@@ -652,13 +653,16 @@ function tripal_example_node_insert($node) {
   // it in the hook_insert()
   switch ($node->type) {
     case 'chado_example':
+     
+      // find the example and add in the details
+      $example_id = chado_get_id_from_nid('example', $nid);
+      
+      // build the example variable by using the chado_generate_var() function
+      $values = array('example_id' => $example_id);
+      $example = chado_generate_var('example', $values);
+      $node->example = $example;
 
-      // if we do not have an record ID for this node then get it
-      if (!property_exists($node, 'example_id')) {
-        $node->example_id = chado_get_id_from_nid('example', $node->nid);
-      }
-
-      // If your module is using the Chado Node: Title & Path API to allow custom titles
+      // If your module is using the 'Chado Node: Title & Path API' to allow custom titles
       // for your node type. Every time you want the title of the node, you need to use the
       // following API function:
       $example->title = chado_get_node_title($node);

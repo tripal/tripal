@@ -551,6 +551,12 @@ function tripal_featuremap_node_insert($node) {
 
   switch ($node->type) {
     case 'chado_featuremap':
+      
+      // get the feature details from chado
+      $featuremap_id = chado_get_id_from_nid('featuremap', $node->nid);      
+      $values = array('featuremap_id' => $featuremap_id);
+      $featuremap = chado_generate_var('featuremap', $values);
+      $node->featuremap = $featuremap;
 
       // Now get the title
       $node->title = chado_get_node_title($node);
@@ -570,6 +576,12 @@ function tripal_featuremap_node_update($node) {
   switch ($node->type) {
     case 'chado_featuremap':
 
+      // get the feature details from chado
+      $featuremap_id = chado_get_id_from_nid('featuremap', $node->nid);
+      $values = array('featuremap_id' => $featuremap_id);
+      $featuremap = chado_generate_var('featuremap', $values);
+      $node->featuremap = $featuremap;
+      
       // Now get the title
       $node->title = chado_get_node_title($node);
 

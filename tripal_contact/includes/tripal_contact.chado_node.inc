@@ -647,6 +647,14 @@ function tripal_contact_node_insert($node) {
   switch ($node->type) {
     case 'chado_contact':
 
+      // find the contact and add in the details
+      $contact_id = chado_get_id_from_nid('contact', $node->nid);
+     
+      // get the contact
+      $values = array('contact_id' => $contact_id);
+      $contact = chado_generate_var('contact', $values);
+      $node->contact = $contact;
+      
       // Now get the title
       $node->title = chado_get_node_title($node);
 
@@ -665,6 +673,14 @@ function tripal_contact_node_update($node) {
   switch ($node->type) {
     case 'chado_contact':
 
+      // find the contact and add in the details
+      $contact_id = chado_get_id_from_nid('contact', $node->nid);
+       
+      // get the contact
+      $values = array('contact_id' => $contact_id);
+      $contact = chado_generate_var('contact', $values);
+      $node->contact = $contact;
+      
       // Now get the title
       $node->title = chado_get_node_title($node);
 

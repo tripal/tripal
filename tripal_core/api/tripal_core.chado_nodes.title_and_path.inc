@@ -105,7 +105,7 @@
  * a default format
  *
  * @param $node
- *   The node whose title you want
+ *   The node object
  *
  * @ingroup tripal_chado_node_api
  */
@@ -124,8 +124,7 @@ function chado_get_node_title($node) {
       $token_info = $tokens[$token];
       if (!empty($token_info)) {
         $value = chado_get_token_value($token_info, $node);
-
-        $title = str_replace($token,$value,$title);
+        $title = str_replace($token, $value, $title);
       }
     }
   }
@@ -320,6 +319,16 @@ function chado_add_admin_form_set_title_form_submit($form, $form_state) {
  *
  * @param $content_type
  *   The name of the content (node) type you are interested in (ie: chado_feature)
+ * @param $tokens
+ *   An array, passed by reference that is filled to include the tokens for this
+ *   node type.  Each token is an array with the following keys:
+ *    -table: the name of the chado table
+ *    -field: the name of the field in the above table
+ *    -token: the token string (ie: [stock.stock_id])
+ *    -description: a very short description of the token (displayed when tokens are listed)
+ *    -location: the location of the value in a chado node variable with each level
+ *     separated by an arrow (->) symbol. For example, the location for $node->feature->type_id->name
+ *     is feature>type_id>name
  *
  * @return
  *   A string containing tokens describing the default format for the title of nodes
@@ -329,7 +338,7 @@ function chado_node_get_title_format($content_type, &$tokens, $base_table = NULL
   $format = '';
 
   // Is there a title format set?
-  $format_record = chado_node_get_token_format('title',$content_type, array('return_record' => TRUE));
+  $format_record = chado_node_get_token_format('title', $content_type, array('return_record' => TRUE));
   if (!empty($format_record)) {
     $format = $format_record->format;
     $tokens = $format_record->tokens;
@@ -364,7 +373,7 @@ function chado_node_get_title_format($content_type, &$tokens, $base_table = NULL
     $format = chado_node_get_unique_constraint_format($base_table);
   }
 
-  // Add the format to the new system so we can use it later
+  // Add the format to table so we can use it later
   chado_node_add_token_format('title', $content_type, $format, $tokens);
 
   return $format;
@@ -638,42 +647,45 @@ function chado_node_generate_tokens($base_table, $token_prefix = FALSE, $locatio
  *     separated by an arrow (>) symbol. For example, the location for $node->feature->type_id->name
  *     is feature>type_id>name
  *  @param $node
- *   The node to get the value of the token from
+ *   The node to get the value of the token
  *
  * @return
  *   The value of the token
  */
 function chado_get_token_value($token_info, $node) {
 
-  $location = explode('>',$token_info['location']);
+  $token = $token_info['token'];
+  $table = $token_info['table'];
+  $location = explode('>', $token_info['location']);
 
   $var = $node;
   foreach ($location as $index) {
     $index = trim($index);
+
+    // if $var is an object then it is the $node object or a table
+    // that has been expanded. On a node_insert then the fields are 
     if (is_object($var)) {
-      if (isset($var->{$index})) {
-        $var = $var->{$index};
+      // check to see if the index is a member of the object. If so,
+      // then reset the $var to this value.
+      if (property_exists($var, $index)) {
+        $var = $var->$index;
       }
       else {
         // @TODO: Error Handling
       }
     }
+    // if the $var is an array then there are multiple instances of the same
+    // table in a FK relationship (e.g. relationship tables)
     elseif (is_array($var)) {
       $var = $var[$index];
     }
     else {
-      tripal_report_error(
-        'chado_node_api',
-        TRIPAL_WARNING,
+      tripal_report_error('chado_node_api', TRIPAL_WARNING,
         'Tokens: Unable to determine the value of %token. Things went awry when trying
         to access %index for the following %var',
-        array(
-          '%token' => $token,
-          '%index' => $index,
-          '%var' => print_r($var,TRUE)
-        )
+        array('%token' => $token, '%index' => $index, '%var' => print_r($var,TRUE))
       );
-      return;
+      return '';
     }
   }
   return $var;

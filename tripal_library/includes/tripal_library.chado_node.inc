@@ -592,6 +592,12 @@ function tripal_library_node_insert($node) {
 
   switch ($node->type) {
     case 'chado_library':
+      
+      $library_id = chado_get_id_from_nid('library', $node->nid);
+      $values = array('library_id' => $library_id);
+      $library = chado_generate_var('library', $values);
+      $library = chado_expand_var($library, 'field', 'library.uniquename');
+      $node->library = $library;
 
       // Now get the title
       $node->title = chado_get_node_title($node);
@@ -610,6 +616,12 @@ function tripal_library_node_update($node) {
 
   switch ($node->type) {
     case 'chado_library':
+      
+      $library_id = chado_get_id_from_nid('library', $node->nid);
+      $values = array('library_id' => $library_id);
+      $library = chado_generate_var('library', $values);
+      $library = chado_expand_var($library, 'field', 'library.uniquename');
+      $node->library = $library;
 
       // Now get the title
       $node->title = chado_get_node_title($node);

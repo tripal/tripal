@@ -95,7 +95,7 @@ function tripal_project_admin($form, $form_state) {
       'simply save this setup. <b>Important</b>: be sure that whatever you choose will '.
       'always be unique even considering future data that may be added.  If you include '.
       'the Chado table name and id you are guaranteed to have a unique URL. For example project/[id]'),
-    '#size' => 150,
+    '#size' => 75,
     '#default_value' => variable_get('chado_project_url_string', '/project/[id]'),
   );
 
