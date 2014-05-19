@@ -776,7 +776,9 @@ function theme_tripal_pub_importer_setup_form_elements($variables) {
   $table = array(
     'header' => $headers,
     'rows' => $rows,
-    'attributes' => array('class' => 'tripal-data-table'),
+    'attributes' => array(
+      'class' => array('tripal-data-table')
+    ),
     'sticky' => TRUE,
     'caption' => '',
     'colgroups' => array(),

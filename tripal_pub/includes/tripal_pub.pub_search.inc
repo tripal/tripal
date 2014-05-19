@@ -93,7 +93,7 @@ function tripal_pub_search_page() {
       'attributes' => array(
         'id' => 'tripal-pub-search-results-table', 
         'border' => '0',
-        'class' => 'tripal-data-table'
+        'class' => array('tripal-data-table')
       ),
       'sticky' => TRUE,
       'caption' => '',

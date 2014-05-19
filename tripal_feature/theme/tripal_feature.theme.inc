@@ -389,7 +389,7 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
   // set the background color of the rows based on the type
   $pos = 0;
   $newseq .= "<pre class=\"tripal_feature-sequence\">";
-  $newseq .= ">$defline\n";
+  $newseq .= ">$defline<br>";
 
   // iterate through the parts. They should be in order.
   $starts   = array(); // an array holding all of the children starting locations
