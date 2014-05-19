@@ -384,12 +384,14 @@ function tripal_bulk_loader_node_view($node, $view_mode, $langcode) {
           '#markup' => theme('tripal_bulk_loader_base', array('node' => $node)),
           '#tripal_toc_id'    => 'base',
           '#tripal_toc_title' => 'Overview',
+          '#tripal_template_show' => FALSE, 
           '#weight' => -100,
         );
         $node->content['tripal_bulk_loader_fields'] = array(
           '#markup' => theme('tripal_bulk_loader_fields', array('node' => $node)),
           '#tripal_toc_id'    => 'fields',
           '#tripal_toc_title' => 'Data Fields',
+          '#tripal_template_show' => FALSE,
         );
       }
       if ($view_mode == 'teaser') {

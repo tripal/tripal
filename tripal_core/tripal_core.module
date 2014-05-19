@@ -618,19 +618,22 @@ function tripal_core_node_view_alter(&$build) {
         //-----------------------
         // get the template path so we can put it in an admin message box
         $path = '';
-        if ($cache and array_key_exists($key, $cache->data) and array_key_exists('path', $cache->data[$key])) {
-
-          $path = $cache->data[$key]['path'] . '/' . $key . '.tpl.php';
-
-          $path = tripal_set_message("Administrators, you can
-            customize the way the content above is presented.  Tripal provides a template
-            file for each block of content.  To customize, copy the template file to your
-            site's default theme, edit then " .
-            l('clear the Drupal cache', 'admin/config/development/performance', array('attributes' => array('target' => '_blank'))) . ".
-            Currently, the content above is provided by this template: <br><br>$path",
-            TRIPAL_INFO,
-            array('return_html' => 1)
-          );
+        if (!array_key_exists('#tripal_template_show', $build[$key]) or 
+             $build[$key]['#tripal_template_show'] == TRUE) {
+          if ($cache and array_key_exists($key, $cache->data) and array_key_exists('path', $cache->data[$key])) {
+  
+            $path = $cache->data[$key]['path'] . '/' . $key . '.tpl.php';
+  
+            $path = tripal_set_message("Administrators, you can
+              customize the way the content above is presented.  Tripal provides a template
+              file for each block of content.  To customize, copy the template file to your
+              site's default theme, edit then " .
+              l('clear the Drupal cache', 'admin/config/development/performance', array('attributes' => array('target' => '_blank'))) . ".
+              Currently, the content above is provided by this template: <br><br>$path",
+              TRIPAL_INFO,
+              array('return_html' => 1)
+            );
+          }
         }
 
         //-----------------------

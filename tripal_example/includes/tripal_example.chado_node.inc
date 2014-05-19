@@ -777,6 +777,12 @@ function tripal_example_node_view($node, $view_mode, $langcode) {
           '#tripal_toc_id'    => 'relationships',
           '#tripal_toc_title' => 'Relationships',
         );
+        
+        // Note: if you create a template that you do not want a user to 
+        // know where it is (discourage editing of it), you can add the following 
+        // key:  '#tripal_template_show' => FALSE. If this key/value is set
+        // the the administrator message that Tripal provides indicating
+        // where the template is housed will not be shown.
       }
       // set the content for the teaser view
       if ($view_mode == 'teaser') {
