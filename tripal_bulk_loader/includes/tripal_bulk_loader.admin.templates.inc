@@ -1435,8 +1435,6 @@ function tripal_bulk_loader_template_field_form_default_values($mode, &$form_sta
   
   // mode can be 'create' or 'edit'
   $v['mode'] = $mode;
-  
-  dpm($mode);
 
   // the template_id is the ID of the template if this is an edit, or FALSE if this is a create
   $v['template_id'] = (isset($form_state['build_info']['args'][1])) ? $form_state['build_info']['args'][1] : FALSE;

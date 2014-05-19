@@ -44,15 +44,17 @@ else {
         <td nowrap class="tripal-contents-table-td tripal-contents-table-td-toc"  align="left"><?php
         
           // print the table of contents. It's found in the content array 
-          print $content['tripal_toc']['#markup'];
+          if (array_key_exists('tripal_toc', $content)) {
+            print $content['tripal_toc']['#markup'];
           
-          // we may want to add the links portion of the contents to the sidebar
-          //print render($content['links']);
-          
-          // remove the table of contents and links so thye doent show up in the 
-          // data section when the rest of the $content array is rendered
-          unset($content['tripal_toc']);
-          unset($content['links']); ?>
+            // we may want to add the links portion of the contents to the sidebar
+            //print render($content['links']);
+            
+            // remove the table of contents and links so thye doent show up in the 
+            // data section when the rest of the $content array is rendered
+            unset($content['tripal_toc']);
+            unset($content['links']); 
+          } ?>
 
         </td>
         <td class="tripal-contents-table-td-data" align="left" width="100%"> <?php

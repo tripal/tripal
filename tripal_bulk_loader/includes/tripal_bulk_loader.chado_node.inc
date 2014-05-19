@@ -363,3 +363,40 @@ function tripal_bulk_loader_node_access($node, $op, $account) {
     return NODE_ACCESS_IGNORE;
   }
 }
+
+
+/**
+ * Implements hook_node_view().
+ * Acts on all content types.
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_bulk_loader_node_view($node, $view_mode, $langcode) {
+  switch ($node->type) {
+    case 'tripal_bulk_loader':
+      // Show feature browser and counts
+      if ($view_mode == 'full') {
+        
+        // we want to use the Tripal generic node template
+        $node->content['#tripal_generic_node_template'] = TRUE;
+        
+        $node->content['tripal_bulk_loader_base'] = array(
+          '#markup' => theme('tripal_bulk_loader_base', array('node' => $node)),
+          '#tripal_toc_id'    => 'base',
+          '#tripal_toc_title' => 'Overview',
+          '#weight' => -100,
+        );
+        $node->content['tripal_bulk_loader_fields'] = array(
+          '#markup' => theme('tripal_bulk_loader_fields', array('node' => $node)),
+          '#tripal_toc_id'    => 'fields',
+          '#tripal_toc_title' => 'Data Fields',
+        );
+      }
+      if ($view_mode == 'teaser') {
+        $node->content['tripal_bulk_loader_teaser'] = array(
+          '#markup' => theme('tripal_bulk_loader_teaser', array('node' => $node)),
+        );
+      }
+      break;
+  }
+}
