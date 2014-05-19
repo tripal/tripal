@@ -737,23 +737,25 @@ function tripal_feature_load_organism_feature_counts($organism) {
   // iterate through the types
   $types = array();
   while ($type = $org_features->fetchObject()) {
-  $types[$type->feature_type] = $type;
-  // if we don't have an order this means we didn't go through the loop
-  // above to set the names, so do that now
-  if (!$is_custom) {
-  $names[] = $type->feature_type;
-  $order[] = $type->feature_type;
-  }
+    $types[$type->feature_type] = $type;
+    // if we don't have an order this means we didn't go through the loop
+    // above to set the names, so do that now
+    if (!$is_custom) {
+      $names[] = $type->feature_type;
+      $order[] = $type->feature_type;
+    }
   }
 
   // now reorder the types
   $ordered_types = array();
   foreach ($order as $type) {
-  $ordered_types[] = $types[$type];
+    if (array_key_exists($type, $types)) {
+      $ordered_types[] = $types[$type];
+    }
   }
   return array(
-  'types' => $ordered_types,
-      'names' => $names
+    'types' => $ordered_types,
+    'names' => $names
   );
 }
 
