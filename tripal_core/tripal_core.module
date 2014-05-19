@@ -538,7 +538,7 @@ function tripal_core_node_view_alter(&$build) {
   $node = $build['#node'];
   $toc = array();
   $toc_html = '';
-
+  
   // if we are looking at a Tripal node template then we want to
   // make some changes to each block of content so that we can associate
   // a table of contents and add administrator and curator messages
@@ -618,7 +618,7 @@ function tripal_core_node_view_alter(&$build) {
         //-----------------------
         // get the template path so we can put it in an admin message box
         $path = '';
-        if (array_key_exists($key, $cache->data) and array_key_exists('path', $cache->data[$key])) {
+        if ($cache and array_key_exists($key, $cache->data) and array_key_exists('path', $cache->data[$key])) {
 
           $path = $cache->data[$key]['path'] . '/' . $key . '.tpl.php';
 
