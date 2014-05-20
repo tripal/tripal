@@ -136,7 +136,6 @@ else {  ?>
     You can specify the feature types
     that should appear in this browser or remove it from the list of resources by navigating to the " . 
     l("Tripal feature settings page", "admin/tripal/chado/tripal_feature/configuration", array('attributes' => array('target' => '_blank')))  . "
-    </p>
     The feature browser will not appear to site visitors unless features are present. ",
     TRIPAL_INFO,
     array('return_html' => 1));

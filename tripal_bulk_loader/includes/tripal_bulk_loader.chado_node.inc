@@ -243,9 +243,9 @@ function tripal_bulk_loader_insert($node) {
 
   db_insert('tripal_bulk_loader')->fields(array(
     'nid' => $node->nid,
-    'loader_name' => $node->loader_name,
+    'loader_name' => trim($node->loader_name),
     'template_id' => $node->template_id,
-    'file' => $node->file,
+    'file' => trim($node->file),
     'file_has_header' => $node->has_header,
     'job_status' => 'Initialized',
     'keep_track_inserted' => $node->keep_track_inserted
@@ -283,9 +283,9 @@ function tripal_bulk_loader_update($node) {
   // Update tripal_bulk_loader
   db_update('tripal_bulk_loader')->fields(array(
     'nid' => $node->nid,
-    'loader_name' => $node->loader_name,
+    'loader_name' => trim($node->loader_name),
     'template_id' => $node->template_id,
-    'file' => $node->file,
+    'file' => trim($node->file),
     'file_has_header' => $node->has_header,
     'keep_track_inserted' => $node->keep_track_inserted
   ))->condition('nid',$node->nid)->execute();
