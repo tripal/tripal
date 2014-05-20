@@ -361,7 +361,7 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
       $lockmode = variable_get('tripal_bulk_loader_lock', 'ROW EXCLUSIVE');
       foreach ($tables as $table) {
         print "\t\t\t$lockmode for $table\n";
-        chado_query("LOCK TABLE ".$table." IN ".$lockmode." MODE");
+        chado_query("LOCK TABLE {".$table."} IN ".$lockmode." MODE");
       }
     }
 
