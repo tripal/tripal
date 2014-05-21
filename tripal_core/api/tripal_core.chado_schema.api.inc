@@ -214,7 +214,9 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
     if (!$v) {
       $version =  "1.11 or older";
     }
-    $version =  $v->value;
+    else {
+      $version =  $v->value;
+    }
   }
 
   // next get the exact Chado version that is installed
