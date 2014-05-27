@@ -250,7 +250,7 @@ function tripal_project_sync_projects($project_id = NULL, $job_id = NULL) {
       $new_node->uid = $user->uid;
       $new_node->title = "$project->name";
       $new_node->project_id = $project->project_id;
-      $new_node->name = $project->name;
+      //$new_node->name = $project->name;
       $new_node->description = $project->description;
       node_validate($new_node);
       if (!form_get_errors()) {

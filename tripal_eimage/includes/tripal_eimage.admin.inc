@@ -103,23 +103,21 @@ function get_tripal_eimage_admin_form_sync_set(&$form) {
     */
     // if we have eimages we need to add to the checkbox then
     // build that form element
-    if ($added > 0) {
-      $eimage_boxes['all'] = "All Eimages";
+    $eimage_boxes['all'] = "All Eimages";
 
-      $form['sync']['eimages'] = array(
-        '#title'       => t('Available Eimages'),
-        '#type'        => t('checkboxes'),
-        '#description' => t("Check the eimages you want to sync.  Drupal content will be created for each of the eimages listed above.  Select 'All Eimages' to sync all of them."),
-        '#required'    => FALSE,
-        '#prefix'      => '<div id="org_boxes">',
-        '#suffix'      => '</div>',
-        '#options'     => $eimage_boxes,
-      );
-      $form['sync']['button'] = array(
-        '#type' => 'submit',
-        '#value' => t('Submit Sync Job')
-      );
-    }
+    $form['sync']['eimages'] = array(
+      '#title'       => t('Available Eimages'),
+      '#type'        => t('checkboxes'),
+      '#description' => t("Check the eimages you want to sync.  Drupal content will be created for each of the eimages listed above.  Select 'All Eimages' to sync all of them."),
+      '#required'    => FALSE,
+      '#prefix'      => '<div id="org_boxes">',
+      '#suffix'      => '</div>',
+      '#options'     => $eimage_boxes,
+    );
+    $form['sync']['button'] = array(
+      '#type' => 'submit',
+      '#value' => t('Submit Sync Job')
+    );
     // we don't have any eimages to select from
     else {
     $form['sync']['value'] = array(
