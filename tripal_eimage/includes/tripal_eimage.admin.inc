@@ -82,7 +82,7 @@ function get_tripal_eimage_admin_form_sync_set(&$form) {
     $eimage_boxes = array();
 
     // get the list of eimages
-    $sql = "SELECT * FROM {eimage} E LEFT JOIN chado_eimage CE ON E.eimage_id = CE.eimage_id WHERE CE.eimage_id IS NULL LIMIT 100";
+    $sql = "SELECT E.* FROM {eimage} E LEFT JOIN chado_eimage CE ON E.eimage_id = CE.eimage_id WHERE CE.eimage_id IS NULL LIMIT 100";
     $org_rset = chado_query($sql);
 
     // if we've added any eimages to the list that can be synced
