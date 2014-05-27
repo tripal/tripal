@@ -1,0 +1,364 @@
+<?php
+
+require('includes/tripal_eimage.admin.inc');
+require('api/tripal_eimage.api.inc');
+
+/**
+ *  @file
+ * This file contains the basic functions needed for this drupal module.
+ * The drupal tripal_eimage module maps directly to the chado general module.
+ *
+ * For documentation regarding the Chado General module:
+ * @see http://gmod.org/wiki/Chado_General_Module
+ *
+ * @defgroup tripal_eimage Eimage Module
+ * @ingroup tripal_modules
+ */
+
+/**
+ * Implements hook_menu
+ *
+ * @ingroup tripal_eimage
+ */
+function tripal_eimage_menu() {
+  $items[ 'admin/tripal/tripal_eimage' ]= array(
+    'title' => 'Eimages',
+    'description' => ('A module for interfacing the GMOD chado database with Drupal, providing viewing of eimages'),
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_eimage_admin'),
+    'access arguments' => array('adminster tripal eimages'),
+    'type' => MENU_NORMAL_ITEM
+  );
+
+  $items[ 'admin/tripal/tripal_eimage/configuration' ]= array(
+    'title' => 'Configuration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_eimage_admin'),
+    'access arguments' => array('adminster tripal eimages'),
+    'type' => MENU_NORMAL_ITEM
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_perm()
+ *
+ *  This function sets the permission for the user to access the information in the database.
+ *  This includes creating, inserting, deleting and updating of information in the database
+ *
+ *
+ * @ingroup tripal_eimage
+ */
+function tripal_eimage_perm() {
+  return array(
+    'access chado_eimages content',
+    'create chado_eimages content',
+    'delete chado_eimages content',
+    'edit chado_eimages content',
+    'adminster tripal eimages',
+  );
+}
+
+/**
+ * Implement hook_access().
+ *
+ * This hook allows node modules to limit access to the node types they define.
+ *
+ *  @param $op
+ *  The operation to be performed
+ *
+ *  @param $node
+ *  The node on which the operation is to be performed, or, if it does not yet exist, the
+ *  type of node to be created
+ *
+ *  @param $account
+ *  A user object representing the user for whom the operation is to be performed
+ *
+ *  @return
+ *  If the permission for the specified operation is not set then return FALSE. If the
+ *  permission is set then return NULL as this allows other modules to disable
+ *  access.  The only exception is when the $op == 'create'.  We will always 
+ *  return TRUE if the permission is set.
+ *  
+ * @ingroup tripal_eimage
+ */
+function chado_eimage_access($op, $node, $account) {
+
+  if ($op == 'create') {
+    if (!user_access('create chado_eimages content', $account)) {
+      return FALSE;
+    }
+    return TRUE;
+  }
+  if ($op == 'update') {
+    if (!user_access('edit chado_eimages content', $account)) {
+      return FALSE;
+    }
+  }
+  if ($op == 'delete') {
+    if (!user_access('delete chado_eimages content', $account)) {
+      return FALSE;
+    }
+  }
+  if ($op == 'view') {
+    if (!user_access('access chado_eimages content', $account)) {
+      return FALSE;
+    }
+  }
+  return NULL;
+}
+
+/**
+ * Implementation of hook_node_info().
+ *
+ * This node_info, is a simple node that describes the functionallity of the module. It specifies
+ * that the title(Eimage Name) and body(Description) set to true so that they information can be
+ * entered
+ *
+ *
+ * @ingroup tripal_eimage
+ */
+function tripal_eimage_node_info() {
+  return array(
+    'chado_eimage' => array(
+      'name' => t('Eimage'),
+      'module' => 'chado_eimage',
+      'description' => t('A module for interfacing the GMOD chado database with Drupal, providing viewing of eimages'),
+      'has_title' => TRUE,
+      'title_label' => t('Eimage'),
+      'had_body' => FALSE
+    )
+  );
+}
+/**
+ *  We need to let drupal know about our theme functions and their arguments.
+ *  We create theme functions to allow users of the module to customize the
+ *  look and feel of the output generated in this module
+ *
+ * @ingroup tripal_eimage
+ */
+function tripal_eimage_theme() {
+  return array(
+    'tripal_eimage_base' => array(
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_eimage_base',
+    ),
+    'tripal_eimage_admin' => array(
+      'template' => 'tripal_eimage_admin',
+      'arguments' =>  array(NULL),
+      'path' => drupal_get_path('module', 'tripal_eimage') . '/theme'
+    ),
+  );
+}
+/**
+ * Implementation of hook_form().
+ *
+ *  This form takes the Eimage Title information and description from the user.
+ *
+ *  @parm $node
+ *    The initialized node
+ *
+ *  @parm $form_state
+ *    The state of the form, that has the user entered information that is neccessary for adding
+ *    information to the eimage
+ *
+ *  @return $form
+ *    An array as described by the Drupal Form API
+ *
+ *
+ * @ingroup tripal_eimage
+ */
+function chado_eimage_form(&$node, $form_state) {
+  $form = array();
+
+  $eimage = $node->eimage;
+
+  // keep track of the eimage id if we have.  If we do have one then
+  // this is an update as opposed to an insert.
+  $form['eimage_id'] = array(
+    '#type' => 'value',
+    '#value' => $eimage->eimage_id,
+  );
+
+  $form['title']= array(
+    '#type'          => 'textfield',
+    '#title'         => t('Eimage URI'),
+    '#description'   => t('Please enter the URI for this eimage. This appears at the top of the eimage page.'),
+    '#required'      => TRUE,
+    '#default_value' => $node->title,
+    '#weight'        => 1
+  );
+  $form['eimage_type']= array(
+      '#type'          => 'textfield',
+      '#title'         => t('Eimage Type'),
+      '#description'   => t('Type of the eimage'),
+      '#required'      => FALSE,
+      '#default_value' => $eimage_type,
+      '#weight'        => 2
+  );
+  $form['eimage_data']= array(
+    '#type'          => 'textarea',
+    '#title'         => t('Eimage Data'),
+    '#description'   => t('Data of the eimage'),
+    '#required'      => FALSE,
+    '#default_value' => $eimage_data,
+    '#weight'        => 3
+  );
+
+  return $form;
+
+}
+
+/**
+ *  validates submission of form when adding or updating a eimage node
+ *
+ * @ingroup tripal_eimage
+ */
+function chado_eimage_validate($node) {
+  
+}
+
+/**
+ * Implementation of hook_insert().
+ *
+ *  @parm $node
+ *    Then node that has the information stored within, accessed given the nid
+ *
+ *
+ * @ingroup tripal_eimage
+ */
+function chado_eimage_insert($node) {
+
+  if ($node->eimage_id) {
+    $eimage['eimage_id'] = $node->eimage_id;
+  }
+  else {
+    $image_uri = trim($node->title);
+    $eimage_type = trim($node->eimage_type);
+    $eimage_data = trim($node->eimage_data);
+    $values = array(
+      'image_uri' => $image_uri,
+      'eimage_type' => $eimage_type ? $eimage_type : '',
+      'eimage_data' => $eimage_data ? $eimage_data : NULL,
+    );
+    $eimage = tripal_core_chado_insert('eimage', $values);
+  }
+
+  if ($eimage) {
+    // make sure the entry for this feature doesn't already exist in the chado_eimage table
+    // if it doesn't exist then we want to add it.
+    $eimage_id = chado_get_id_for_node('eimage', $node) ;
+    if (!$eimage_id) {
+       // next add the item to the drupal table
+      $sql = "INSERT INTO {chado_eimage} (nid, vid, eimage_id) ".
+             "VALUES (%d, %d, %d)";
+      db_query($sql, $node->nid, $node->vid, $eimage['eimage_id']);
+    }
+  }
+  else {
+    drupal_set_message(t('Unable to add eimage.', 'warning'));
+    watchdog('tripal_eimage', 'Insert eimage: Unable to create eimage where values: %values',
+      array('%values' => print_r($values, TRUE)), WATCHDOG_WARNING);
+  }
+}
+
+/**
+ *
+ * Implementation of hook_delete().
+ *
+ * @param $node
+ * The node which is to be deleted, only chado eimage and chado_eimage need to be dealt with
+ * since the drupal node is deleted automagically
+ *
+ *
+ * @ingroup tripal_eimage
+ */
+function chado_eimage_delete($node) {
+
+  $eimage_id = chado_get_id_for_node('eimage', $node);
+
+  // if we don't have a eimage id for this node then this isn't a node of
+  // type chado_eimage or the entry in the chado_eimage table was lost.
+  if (!$eimage_id) {
+    return;
+  }
+
+  // Remove data from {chado_eimage}, {node} and {node_revisions} tables of
+  // drupal database
+  $sql_del = "DELETE FROM {chado_eimage} ".
+             "WHERE nid = %d ".
+             "AND vid = %d";
+  db_query($sql_del, $node->nid, $node->vid);
+  $sql_del = "DELETE FROM {node_revisions} ".
+             "WHERE nid = %d ".
+             "AND vid = %d";
+  db_query($sql_del, $node->nid, $node->vid);
+  $sql_del = "DELETE FROM {node} ".
+             "WHERE nid = %d ".
+             "AND vid = %d";
+  db_query($sql_del, $node->nid, $node->vid);
+
+
+  // Remove data from eimage table of chado database as well
+  chado_query("DELETE FROM {eimage} WHERE eimage_id = %d", $eimage_id);
+}
+
+/**
+ * Implements hook_update().
+ *
+ * @param $node
+ *  The node which is to have its containing information updated when the user modifies information
+ *  pertaining to the specific eimage
+ *
+ *
+ * @ingroup tripal_eimage
+ */
+function chado_eimage_update($node) {
+ if ($node->revision) {
+    // there is no way to handle revisions in Chado but leave
+    // this here just to make not we've addressed it.
+  }
+
+  // update the eimage and the description
+  $eimage_id = chado_get_id_for_node('eimage', $node) ;
+  $match = array(
+     'eimage_id' => $eimage_id,
+  );
+  $image_uri = trim($node->title);
+  $eimage_type = trim($node->eimage_type);
+  $eimage_data = trim($node->eimage_data);
+  $values = array(
+      'image_uri' => $image_uri,
+      'eimage_type' => $eimage_type ? $eimage_type : '',
+      'eimage_data' => $eimage_data ? $eimage_data : NULL,
+  );
+  $status = tripal_core_chado_update('eimage', $match, $values);
+  
+}
+
+/**
+ * Implementation of node_load().
+ *
+ * @param $node
+ *   The node that is to have its containing information loaded
+ *
+ * @return $node
+ *   The node, containing the loaded eimage with the current nid
+ *
+ *
+ * @ingroup tripal_eimage
+ */
+function chado_eimage_load($node) {
+
+  // get the feature details from chado
+  $eimage_id = chado_get_id_for_node('eimage', $node);
+
+  $values = array('eimage_id' => $eimage_id);
+  $eimage = tripal_core_generate_chado_var('eimage', $values);
+
+  $additions = new stdClass();
+  $additions->eimage = $eimage;
+  return $additions;
+
+}

@@ -1,0 +1,7 @@
+name = Tripal Eimage
+description = A module for interfacing the GMOD chado database with Drupal, providing viewing of eimages
+core = 6.x
+eimage = tripal_eimage
+package = Tripal
+version = 6.x-1.1
+dependencies[] = tripal_core

@@ -15,6 +15,10 @@ function tripal_natural_diversity_install() {
   // add cvterms
   tripal_natural_diversity_add_cvterms();
   
+  // add chado_nd_geolocation table
+  if (!db_table_exists('chado_nd_geolocation')) {
+    drupal_install_schema('tripal_natural_diversity_nd_geolocation');
+  }
 }
 
 /**
@@ -72,4 +76,47 @@ function tripal_natural_diversity_requirements($phase) {
     }
   }
   return $requirements;
+}
+
+/**
+ *  Update for Drupal 6.x, Tripal 1.1, Natural Diversity Module 1.1
+ *  This update adds new chado_nd_geolocation table
+ *
+ */
+function tripal_natural_diversity_update_6101() {
+   
+  // add chado_nd_geolocation table
+  drupal_install_schema('tripal_natural_diversity_nd_geolocation');
+
+  $ret = array(
+      '#finished' => 1,
+  );
+
+  return $ret;
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function tripal_natural_diversity_nd_geolocation_schema() {
+  $schema['chado_nd_geolocation'] = array(
+      'fields' => array(
+          'nid' => array(
+              'type' => 'int',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+          ),
+          'vid' => array(
+              'type' => 'int',
+              'not null' => TRUE,
+          ),
+          'nd_geolocation_id' => array(
+              'type' => 'int',
+              'unsigned' => TRUE,
+              'not null' => TRUE,
+          ),
+      ),
+      'primary key' => array('nid', 'vid', 'nd_geolocation_id'),
+  );
+  return $schema;
 }
