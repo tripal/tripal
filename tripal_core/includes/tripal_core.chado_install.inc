@@ -171,10 +171,6 @@ function tripal_core_install_chado($action) {
 function tripal_core_reset_chado_schema() {
 
   // drop current chado and chado-related schema
-  if (chado_dbschema_exists('chado')) {
-    print "Dropping existing 'chado' schema\n";
-    db_query("drop schema chado cascade");
-  }
   if (chado_dbschema_exists('genetic_code')) {
     print "Dropping existing 'genetic_code' schema\n";
     db_query("drop schema genetic_code cascade");
@@ -186,6 +182,10 @@ function tripal_core_reset_chado_schema() {
   if (chado_dbschema_exists('frange')) {
     print "Dropping existing 'frange' schema\n";
     db_query("drop schema frange cascade");
+  }
+  if (chado_dbschema_exists('chado')) {
+    print "Dropping existing 'chado' schema\n";
+    db_query("drop schema chado cascade");
   }
 
   // create the new chado schema

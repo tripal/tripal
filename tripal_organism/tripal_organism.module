@@ -272,5 +272,8 @@ function tripal_organism_form_alter(&$form, &$form_state, $form_id) {
   // turn of preview button for insert/updates
   if ($form_id == "chado_organism_node_form") {
     $form['actions']['preview']['#access'] = FALSE;
+    
+    //remove the body field
+    unset($form['body']);
   }
 }
