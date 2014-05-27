@@ -80,9 +80,9 @@ function get_tripal_eimage_admin_form_sync_set(&$form) {
   if (!$active_jobs) {
 
     $eimage_boxes = array();
-    /* Listing of all eimages is disabled because it takes too long if there are a lot of eimages
+
     // get the list of eimages
-    $sql = "SELECT * FROM {eimage}";
+    $sql = "SELECT * FROM {eimage} E LEFT JOIN chado_eimage CE ON E.eimage_id = CE.eimage_id WHERE CE.eimage_id IS NULL LIMIT 100";
     $org_rset = chado_query($sql);
 
     // if we've added any eimages to the list that can be synced
@@ -92,32 +92,29 @@ function get_tripal_eimage_admin_form_sync_set(&$form) {
 
     $added = 0;
     while ($eimage = db_fetch_object($org_rset)) {
-      // check to see if the eimage is already present as a node in drupal.
-      // if so, then skip it.
-      $sql = "SELECT * FROM {chado_eimage} WHERE eimage_id = %d";
-      if (!db_fetch_object(db_query($sql, $eimage->eimage_id))) {
         $eimage_boxes[$eimage->eimage_id] = "[" . $eimage->eimage_type . "] " . $eimage->image_uri;
         $added++;
-      }
     }
-    */
+    
     // if we have eimages we need to add to the checkbox then
     // build that form element
-    $eimage_boxes['all'] = "All Eimages";
+    if ($added > 0) {
+      $eimage_boxes['all'] = "All Eimages";
 
-    $form['sync']['eimages'] = array(
-      '#title'       => t('Available Eimages'),
-      '#type'        => t('checkboxes'),
-      '#description' => t("Check the eimages you want to sync.  Drupal content will be created for each of the eimages listed above.  Select 'All Eimages' to sync all of them."),
-      '#required'    => FALSE,
-      '#prefix'      => '<div id="org_boxes">',
-      '#suffix'      => '</div>',
-      '#options'     => $eimage_boxes,
-    );
-    $form['sync']['button'] = array(
-      '#type' => 'submit',
-      '#value' => t('Submit Sync Job')
-    );
+      $form['sync']['eimages'] = array(
+        '#title'       => t('Available Eimages (First 100 eimages listed if there are too many)'),
+        '#type'        => t('checkboxes'),
+        '#description' => t("Check the eimages you want to sync.  Drupal content will be created for each of the eimages listed above.  Select 'All Eimages' to sync all of them."),
+        '#required'    => FALSE,
+        '#prefix'      => '<div id="org_boxes">',
+        '#suffix'      => '</div>',
+        '#options'     => $eimage_boxes,
+      );
+      $form['sync']['button'] = array(
+        '#type' => 'submit',
+        '#value' => t('Submit Sync Job')
+      );
+    }
     // we don't have any eimages to select from
     else {
     $form['sync']['value'] = array(
