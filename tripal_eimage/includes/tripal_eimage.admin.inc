@@ -91,6 +91,7 @@ function get_tripal_eimage_admin_form_sync_set(&$form) {
     // a message stating that all eimages are currently synced.
 
     $added = 0;
+    $eimage_boxes = array();
     while ($eimage = db_fetch_object($org_rset)) {
         $eimage_boxes[$eimage->eimage_id] = "[" . $eimage->eimage_type . "] " . $eimage->image_uri;
         $added++;
