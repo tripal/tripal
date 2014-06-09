@@ -930,29 +930,49 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
  */
 function tripal_feature_load_gff3_derives_from($feature, $subject, $organism) {
 
-  // get the subject type
+  // get the subject. If the subject is not in the tripal_gff_temp table
+  // then look for the subject in the feature table using the unique name.
+  // if it is not unique then we can provide an error
   $values = array(
     'organism_id' => $organism->organism_id,
     'uniquename' => $subject,
   );
   $options = array('statement_name' => 'sel_tripalgfftemp_orun');
-  $result = tripal_core_chado_select('tripal_gff_temp', array('type_name'), $values, $options);   
-  if (count($result) == 0) {
-    watchdog("T_gff3_loader", "Cannot find subject type for feature in 'derives_from' relationship: %subject", array('%subject' => $subject), WATCHDOG_WARNING);
-     return ''; 
+  $result = tripal_core_chado_select('tripal_gff_temp', array('type_name'), $values, $options);
+  $type_id = array();
+  if (count($result) > 0) {
+    $type_id = array(
+      'name' => $result[0]->type_name,
+      'cv_id' => array(
+        'name' => 'sequence'
+      ),
+    );
   }
-  $subject_type = $result[0]->type_name;
+  
+  // if we don't have a subject type then look for the feature in the feature table
+  if (empty($type_id)) {
+    $options = array('statement_name' => 'sel_feature_orun');
+    $result = tripal_core_chado_select('feature', array('type_id'), $values, $options);
+    if (count($result) > 1) {
+      watchdog("T_gff3_loader", "Cannot find subject type for feature,'%subject' , in 'derives_from' relationship. Multiple matching features exist with this uniquename.", 
+        array('%subject' => $subject), WATCHDOG_WARNING);
+      return '';
+    }
+    else if (count($result) == 0) {
+      watchdog("T_gff3_loader", "Cannot find subject type for feature,'%subject' , in 'derives_from' relationship.",
+        array('%subject' => $subject), WATCHDOG_WARNING);
+      return '';
+    }
+    else {
+      $type_id = $result->type_id;
+    }
+  }
   
   // get the subject feature
   $match = array(
     'organism_id' => $organism->organism_id,
     'uniquename' => $subject,
-    'type_id' => array(
-      'name' => $subject_type,
-      'cv_id' => array(
-        'name' => 'sequence'
-      ),
-    ),      
+    'type_id' => $type_id,
   );
   $options = array('statement_name' => 'sel_feature_orunty');
   $sfeature = tripal_core_chado_select('feature', array('feature_id'), $match, $options);

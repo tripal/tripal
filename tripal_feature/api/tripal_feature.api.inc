@@ -702,6 +702,7 @@ function tripal_feature_get_formatted_sequence($feature_id, $feature_name,
           // included then continue if this child is not one of those allowed
           // subfeatures
           if (count($sub_features) > 0 and !in_array($child->type_name, $sub_features)) {
+             $i++;
              continue;
           }
         
