@@ -571,7 +571,12 @@ function tripal_core_node_view_alter(&$build) {
           $element = $build[$key][$index];
           $weight = 0;
           $parts = explode("|", $element['#markup']);
-          $toc[$weight][$parts[0]] = l($parts[0], $parts[1], array('attributes' => array('class' => 'tripal-field-resource_link')));
+          if (count($parts) == 2) {
+            $toc[$weight][$parts[0]] = "<div class=\"tripal_toc_list_item\">" . l($parts[0], $parts[1], array('attributes' => array('target' => '_blank'))) . "</div>";
+          }
+          else {
+            $toc[$weight][$parts[0]] = "<div class=\"tripal_toc_list_item\">" . $element['#markup'] . "</div>";
+          }
           // remove this link from the build array as we've moved it to appear in the TOC
           unset($build[$key]);
         }
