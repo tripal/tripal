@@ -21,7 +21,7 @@ else {
         var id = $(this).attr('id') + "-tripal-data-block";
         $(".tripal-data-block").hide().filter("#"+ id).fadeIn('fast');
         return false;
-      }); 
+      });
   
       // if a ?block= is specified in the URL then we want to show the
       // requested block

@@ -557,114 +557,172 @@ function tripal_core_node_view_alter(&$build) {
       // examine elements without a '#' prefix as these should be adding
       // contents to the page. Skip the table of contents and links as those
       // will be placed elsewhere
-      if (!preg_match('/^#/', $key) and $key != 'tripal_toc' and $key != 'links') {
-
-        //-----------------------
-        // INITIALIZE THE CONTENT VARIABLES
-        //-----------------------
-        $toc_item_title = $key;
-        $toc_item_id    = $key;
-        $toc_item_link  = '';
-
-        // get the title for the table of contents.  Tripal templates should
-        // have a '#tripal_toc_title' element in the build array
-        if (array_key_exists('#tripal_toc_title', $build[$key])) {
-          $toc_item_title = $build[$key]['#tripal_toc_title'];
+      if (preg_match('/^#/', $key) or $key == 'tripal_toc' or $key == 'links') {
+        continue;
+      }
+      
+      // for backwards compatibility we will handle the content type fields 
+      // named 'field_resource_blocks', 'field_resource_titles', and 'field_resource_links'
+      // these fields can be added on the Drupal content types page and were
+      // specifically recoginzed by Tripal v1.1. 
+      if ($key == "field_resource_links") {
+        // links should just appear on the sidebar as is and not open up a panel
+        foreach (element_children($build[$key]) as $index) {
+          $element = $build[$key][$index];
+          $weight = 0;
+          $parts = explode("|", $element['#markup']);
+          $toc[$weight][$parts[0]] = l($parts[0], $parts[1], array('attributes' => array('class' => 'tripal-field-resource_link')));
+          // remove this link from the build array as we've moved it to appear in the TOC
+          unset($build[$key]);
         }
-        // other elements in the $build array may just have a '#title' element,
-        if (array_key_exists('#title', $build[$key])) {
-          $toc_item_title = $build[$key]['#title'];
+        continue;
+      }
+      if ($key == "field_resource_titles") {
+        // ignore these, we will use them in the field_resource_blocks if
+        // statement below
+        continue;
+      }
+      if ($key == "field_resource_blocks") {
+        foreach (element_children($build[$key]) as $index) {
+          // get the block details and the title
+          $weight = 0;
+          $markup = $build[$key][$index]["#markup"];
+          $toc_item_id = "resource-$index";
+          $toc_item_title = $build["field_resource_titles"][$index]["#markup"];
+          $updated_markup = "
+            <div id=\"$toc_item_id-tripal-data-block\" class=\"tripal-data-block\">
+              <div class=\"$toc_item_id-tripal-data-block-title tripal-data-block-title\">$toc_item_title</div>
+                $markup
+              </div>
+            </div>
+          ";
+          $build[$toc_item_id]['#markup'] = $updated_markup;
+          $build[$toc_item_id]['#weight'] = $weight;
+          $build[$toc_item_id]['#toc_handled'] = TRUE;
+          // add the entry to the TOC
+          $toc_item_link = "<div class=\"tripal_toc_list_item\"><a id=\"$toc_item_id\" class=\"tripal_toc_list_item_link\" href=\"?block=$toc_item_id\">$toc_item_title</a></div>";
+          $toc[$weight][$toc_item_title] = $toc_item_link;
         }
-        $toc_item_title = ucwords($toc_item_title);
+        // remove the key from the build array. We have have replaced it
+        unset($build[$key]);
+        unset($build["field_resource_titles"]);
+        continue;
+      }
+      
+      // skip any keys we may have already handled. This is the case for 
+      // the field_resource_blocks where we removed the old CCK fields
+      // and added new ones.  We don't want these new ones to be processed
+      // again by the code below.
+      if (array_key_exists('#toc_handled', $build[$key]) and $build[$key]['#toc_handled'] == TRUE) {
+        continue;
+      }
+      
+      // for all other fields we will handle in the following way 
+      //-----------------------
+      // INITIALIZE THE CONTENT VARIABLES
+      //-----------------------
+      $toc_item_title = $key;
+      $toc_item_id    = $key;
+      $toc_item_link  = '';
 
-        if (array_key_exists('#tripal_toc_id', $build[$key])) {
-          $toc_item_id = $build[$key]['#tripal_toc_id'];
-        }
-        $toc_item_link = "<div class=\"tripal_toc_list_item\"><a id=\"$toc_item_id\" class=\"tripal_toc_list_item_link\" href=\"?block=$toc_item_id\">$toc_item_title</a></div>";
+      // get the title for the table of contents.  Tripal templates should
+      // have a '#tripal_toc_title' element in the build array
+      if (array_key_exists('#tripal_toc_title', $build[$key])) {
+        $toc_item_title = $build[$key]['#tripal_toc_title'];
+      }
+      // other elements in the $build array may just have a '#title' element,
+      if (array_key_exists('#title', $build[$key])) {
+        $toc_item_title = $build[$key]['#title'];
+      }
+      $toc_item_title = ucwords($toc_item_title);
+
+      if (array_key_exists('#tripal_toc_id', $build[$key])) {
+        $toc_item_id = $build[$key]['#tripal_toc_id'];
+      }
+      $toc_item_link = "<div class=\"tripal_toc_list_item\"><a id=\"$toc_item_id\" class=\"tripal_toc_list_item_link\" href=\"?block=$toc_item_id\">$toc_item_title</a></div>";
 
 
-        //-----------------------
-        // GET THE MARKUP FOR EACH ELEMENT
-        //-----------------------
-        $markup = '';
+      //-----------------------
+      // GET THE MARKUP FOR EACH ELEMENT
+      //-----------------------
+      $markup = '';
 
-        // find the markup. Some fields will have a '#markup' and others, such
-        // as CCK elements may have a set of '#markup' elements organized by
-        // numerical keys.
-        if (array_key_exists('#markup', $build[$key]) and trim($build[$key]['#markup'])) {
-          $markup = $build[$key]['#markup'];
-        }
-        // For backwards copmatibility we should support the '#value' element as well.
-        elseif (array_key_exists('#value', $build[$key]) and trim($build[$key]['#value'])) {
-          $markup = $build[$key]['#markup'];
-        }
+      // find the markup. Some fields will have a '#markup' and others, such
+      // as CCK elements may have a set of '#markup' elements organized by
+      // numerical keys.
+      if (array_key_exists('#markup', $build[$key]) and trim($build[$key]['#markup'])) {
+        $markup = $build[$key]['#markup'];
+      }
+      // For backwards copmatibility we should support the '#value' element as well.
+      elseif (array_key_exists('#value', $build[$key]) and trim($build[$key]['#value'])) {
+        $markup = $build[$key]['#markup'];
+      }
 
-        // if we have no '#markup' field then this element has not yet
-        // been rendered.  Let's render it and substitute that for markup
-        if (!$markup) {
-          $markup = trim(render($build[$key]));
-          $build[$key] = array(
-            '#markup' => $markup,
+      // if we have no '#markup' field then this element has not yet
+      // been rendered.  Let's render it and substitute that for markup
+      if (!$markup) {
+        $markup = trim(render($build[$key]));
+        $build[$key] = array(
+          '#markup' => $markup,
+        );
+      }
+
+      // if we still don't have markup then skip this one
+      if (!$markup) {
+        continue;
+      }
+
+      //-----------------------
+      // FIND THE TEMPLATE PATH
+      //-----------------------
+      // get the template path so we can put it in an admin message box
+      $path = '';
+      if (!array_key_exists('#tripal_template_show', $build[$key]) or 
+           $build[$key]['#tripal_template_show'] == TRUE) {
+        if ($cache and array_key_exists($key, $cache->data) and array_key_exists('path', $cache->data[$key])) {
+
+          $path = $cache->data[$key]['path'] . '/' . $key . '.tpl.php';
+
+          $path = tripal_set_message("Administrators, you can
+            customize the way the content above is presented.  Tripal provides a template
+            file for each block of content.  To customize, copy the template file to your
+            site's default theme, edit then " .
+            l('clear the Drupal cache', 'admin/config/development/performance', array('attributes' => array('target' => '_blank'))) . ".
+            Currently, the content above is provided by this template: <br><br>$path",
+            TRIPAL_INFO,
+            array('return_html' => 1)
           );
         }
-
-        // if we still don't have markup then skip this one
-        if (!$markup) {
-          continue;
-        }
-
-        //-----------------------
-        // FIND THE TEMPLATE PATH
-        //-----------------------
-        // get the template path so we can put it in an admin message box
-        $path = '';
-        if (!array_key_exists('#tripal_template_show', $build[$key]) or 
-             $build[$key]['#tripal_template_show'] == TRUE) {
-          if ($cache and array_key_exists($key, $cache->data) and array_key_exists('path', $cache->data[$key])) {
-  
-            $path = $cache->data[$key]['path'] . '/' . $key . '.tpl.php';
-  
-            $path = tripal_set_message("Administrators, you can
-              customize the way the content above is presented.  Tripal provides a template
-              file for each block of content.  To customize, copy the template file to your
-              site's default theme, edit then " .
-              l('clear the Drupal cache', 'admin/config/development/performance', array('attributes' => array('target' => '_blank'))) . ".
-              Currently, the content above is provided by this template: <br><br>$path",
-              TRIPAL_INFO,
-              array('return_html' => 1)
-            );
-          }
-        }
-
-        //-----------------------
-        // SET THE WEIGHTS FOR THE TOC ELEMENTS
-        //-----------------------
-        // set the weight of the TOC item and add it to our $toc array
-        // for building of the TOC below
-        $weight = 0;
-        if (array_key_exists('#weight', $build[$key])) {
-          $weight = $build[$key]['#weight'];
-        }
-        $toc[$weight][$toc_item_title] = $toc_item_link;
-
-        //-----------------------
-        // CREATE THE DATA BLOCK
-        //-----------------------
-        // add a surrounding <div> box around the content
-        $updated_markup = "
-          <div id=\"$toc_item_id-tripal-data-block\" class=\"tripal-data-block\">
-            <div class=\"$toc_item_id-tripal-data-block-title tripal-data-block-title\">$toc_item_title</div>
-              $markup
-              $path
-            </div>
-          </div>
-        ";
-
-        $build[$key]['#markup'] = $updated_markup;
-        $build[$key]['#weight'] = $weight;
       }
-    }
-  }
+
+      //-----------------------
+      // SET THE WEIGHTS FOR THE TOC ELEMENTS
+      //-----------------------
+      // set the weight of the TOC item and add it to our $toc array
+      // for building of the TOC below
+      $weight = 0;
+      if (array_key_exists('#weight', $build[$key])) {
+        $weight = $build[$key]['#weight'];
+      }
+      $toc[$weight][$toc_item_title] = $toc_item_link;
+
+      //-----------------------
+      // CREATE THE DATA BLOCK
+      //-----------------------
+      // add a surrounding <div> box around the content
+      $updated_markup = "
+        <div id=\"$toc_item_id-tripal-data-block\" class=\"tripal-data-block\">
+          <div class=\"$toc_item_id-tripal-data-block-title tripal-data-block-title\">$toc_item_title</div>
+            $markup
+            $path
+          </div>
+        </div>
+      ";
+
+      $build[$key]['#markup'] = $updated_markup;
+      $build[$key]['#weight'] = $weight;
+    } // end foreach ($build as $key => $value) {
+  } // end if ($build['#tripal_generic_node_template'] == TRUE) {
 
   //-----------------------
   // BUILD THE TABLE OF CONTENTS LINKS
@@ -680,7 +738,6 @@ function tripal_core_node_view_alter(&$build) {
     }
   }
   $build['tripal_toc']['#markup'] = "<div id=\"$node->type-tripal-toc-block\" class=\"tripal-toc-block\">$toc_html</div>";
-
 }
 
 /**
