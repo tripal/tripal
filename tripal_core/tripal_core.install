@@ -96,7 +96,11 @@ function tripal_core_get_schemas() {
   foreach ($temp as $table => $arr) {
     $schema[$table] = $arr;
   }
-  $temp = tripal_core_tripaltoken_schema();
+  $temp = tripal_core_tripal_token_schema();
+  foreach ($temp as $table => $arr) {
+    $schema[$table] = $arr;
+  }
+  $temp = tripal_core_tripal_toc_schema();
   foreach ($temp as $table => $arr) {
     $schema[$table] = $arr;
   }
@@ -348,7 +352,7 @@ function tripal_core_custom_tables_schema() {
   return $schema;
 }
 
-function tripal_core_tripaltoken_schema() {
+function tripal_core_tripal_token_schema() {
   $schema = array();
   $schema['tripal_token_formats'] = array(
     'fields' => array(
@@ -384,6 +388,51 @@ function tripal_core_tripaltoken_schema() {
       'type_application' => array('content_type', 'application'),
     ),
     'primary key' => array('tripal_format_id'),
+  );
+
+  return $schema;
+}
+
+/**
+ * 
+ * 
+ */
+function tripal_core_tripal_toc_schema() {
+  $schema = array();
+  $schema['tripal_toc'] = array(
+    'fields' => array(
+      'toc_item_id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not NULL' => TRUE
+      ),
+      'node_type' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'not NULL' => TRUE
+      ),
+      'key' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not NULL' => TRUE,
+      ),
+      'title' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not NULL' => TRUE
+      ),
+      'weight' => array(
+        'type' => 'int',
+        'not NULL' => TRUE
+      ),
+    ),
+    'indexes' => array(
+      'tripal_toc_idx1' => array('node_type', 'key'),
+    ),
+    'unique keys' => array(
+      'tripal_toc_uq1' => array('node_type', 'key'),
+    ),
+    'primary key' => array('toc_item_id'),
   );
 
   return $schema;
@@ -463,44 +512,31 @@ function tripal_core_update_7201() {
 
 
 /**
- * Adds in tripal token formats table to handle page title and path rewrites
+ * Adds a tripal_token_formats table for custom page titles and URL paths
  */
 function tripal_core_update_7202() {
-  $schema = array();
-  $schema['tripal_token_formats'] = array(
-    'fields' => array(
-      'tripal_format_id' => array(
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not NULL' => TRUE
-      ),
-      'content_type' => array(
-        'type' => 'varchar',
-        'length' => 255,
-        'not NULL' => TRUE
-      ),
-      'application' => array(
-        'type' => 'varchar',
-        'length' => 255,
-        'not NULL' => TRUE
-      ),
-      'format' => array(
-        'type' => 'text',
-        'not NULL' => TRUE
-      ),
-      'tokens' => array(
-        'type' => 'text',
-        'not NULL' => TRUE
-      ),
-    ),
-    'indexes' => array(
-      'tripal_format_id' => array('tripal_format_id'),
-      'type_application' => array('content_type', 'application'),
-    ),
-    'unique keys' => array(
-      'type_application' => array('content_type', 'application'),
-    ),
-    'primary key' => array('tripal_format_id'),
-  );
-  db_create_table('tripal_token_formats', $schema['tripal_token_formats']);
+  try {
+    $schema = drupal_get_schema_unprocessed('tripal_core', 'tripal_token_formats');
+    db_create_table('tripal_token_formats', $schema);
+  }
+  catch (Exception $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not add tripal_token_formats table: '. $error);
+  }
+}
+
+/**
+ * Adds a tripal_toc table for customizing the table of contents on each Tripal page.
+ */
+function tripal_core_update_7203() {
+  try {
+    $schema = drupal_get_schema_unprocessed('tripal_core', 'tripal_toc');
+    db_create_table('tripal_toc', $schema);
+  }
+  catch (Exception $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not add tripal_toc table: '. $error);
+    
+  }
+  
 }

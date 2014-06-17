@@ -528,7 +528,7 @@ function tripal_core_views_api() {
  */
 function tripal_core_node_view_alter(&$build) {
   global $theme;
-
+  
   // if this is not a full node view, we do not want to alter
   if ($build['#view_mode'] != 'full' OR !array_key_exists('#tripal_generic_node_template', $build)) {
     return;
