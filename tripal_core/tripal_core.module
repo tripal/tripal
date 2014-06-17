@@ -528,11 +528,15 @@ function tripal_core_views_api() {
  */
 function tripal_core_node_view_alter(&$build) {
   global $theme;
-  
+
   // if this is not a full node view, we do not want to alter
   if ($build['#view_mode'] != 'full' OR !array_key_exists('#tripal_generic_node_template', $build)) {
     return;
   }
+  
+  $node_type = $build["#node"]->type;
+  $nid = $build["#node"]->nid;
+  
 
   $cache = cache_get("theme_registry:$theme", 'cache');
   $node = $build['#node'];
@@ -548,7 +552,7 @@ function tripal_core_node_view_alter(&$build) {
     // that are wanting to provide content for this node
     $markup = array();
     foreach ($build as $key => $value) {
-
+      
       // skip the body element as the Tripal node types do not use it
       if ($key == 'body') {
         continue;
@@ -558,6 +562,47 @@ function tripal_core_node_view_alter(&$build) {
       // contents to the page. Skip the table of contents and links as those
       // will be placed elsewhere
       if (preg_match('/^#/', $key) or $key == 'tripal_toc' or $key == 'links') {
+        continue;
+      }
+      //kook to see if the title, position and visibilty of this element has
+      // custom settings.  First check if the node is customized then check
+      // if the node type.
+      $override_title = '';
+      $override_weight = '';
+      $override_hide = 0;
+      $toc_item_overrides = db_select('tripal_toc', 'tc')
+        ->fields('tc', array('toc_item_id', 'title', 'weight', 'hide'))
+        ->condition('node_type', $node_type)
+        ->condition('key', $key)
+        ->condition('nid', $nid)
+        ->execute()
+        ->fetchObject();
+      if ($toc_item_overrides) {
+        $override_title = $toc_item_overrides->title;
+        $override_weight = $toc_item_overrides->weight;
+        $override_hide = $toc_item_overrides->hide;
+      }
+      else {
+        
+        // get the override title, weight for the general case
+        $toc_item_overrides = db_select('tripal_toc', 'tc')
+          ->fields('tc', array('toc_item_id', 'title', 'weight', 'hide'))
+          ->condition('node_type', $node_type)
+          ->condition('key', $key)
+          ->isNull('nid')
+          ->execute()
+          ->fetchObject();
+        if ($toc_item_overrides) {
+          $override_title = $toc_item_overrides->title;
+          $override_weight = $toc_item_overrides->weight;
+          $override_hide = $toc_item_overrides->hide;
+        }
+      }
+
+      // if the element should be hiddent then unset this key the build
+      // array continue to the next one
+      if ($override_hide == 1) {
+        unset($build[$key]);
         continue;
       }
       
@@ -640,6 +685,9 @@ function tripal_core_node_view_alter(&$build) {
         $toc_item_title = $build[$key]['#title'];
       }
       $toc_item_title = ucwords($toc_item_title);
+      
+      // now override the title if a value is set in the tripal_toc table
+      $toc_item_title = $override_title ? $override_title : $toc_item_title;
 
       if (array_key_exists('#tripal_toc_id', $build[$key])) {
         $toc_item_id = $build[$key]['#tripal_toc_id'];
@@ -709,6 +757,8 @@ function tripal_core_node_view_alter(&$build) {
       if (array_key_exists('#weight', $build[$key])) {
         $weight = $build[$key]['#weight'];
       }
+      // override the weight if it's set in the tripal_toc table
+      $weight = $override_weight ? $override_weight : $weight;
       $toc[$weight][$toc_item_title] = $toc_item_link;
 
       //-----------------------

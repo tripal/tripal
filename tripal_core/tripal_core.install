@@ -359,25 +359,25 @@ function tripal_core_tripal_token_schema() {
       'tripal_format_id' => array(
         'type' => 'serial',
         'unsigned' => TRUE,
-        'not NULL' => TRUE
+        'not null' => TRUE
       ),
       'content_type' => array(
         'type' => 'varchar',
         'length' => 255,
-        'not NULL' => TRUE
+        'not null' => TRUE
       ),
       'application' => array(
         'type' => 'varchar',
         'length' => 255,
-        'not NULL' => TRUE
+        'not null' => TRUE
       ),
       'format' => array(
         'type' => 'text',
-        'not NULL' => TRUE
+        'not null' => TRUE
       ),
       'tokens' => array(
         'type' => 'text',
-        'not NULL' => TRUE
+        'not null' => TRUE
       ),
     ),
     'indexes' => array(
@@ -404,33 +404,44 @@ function tripal_core_tripal_toc_schema() {
       'toc_item_id' => array(
         'type' => 'serial',
         'unsigned' => TRUE,
-        'not NULL' => TRUE
+        'not null' => TRUE
       ),
       'node_type' => array(
         'type' => 'varchar',
         'length' => 32,
-        'not NULL' => TRUE
+        'not null' => TRUE
       ),
       'key' => array(
         'type' => 'varchar',
         'length' => 255,
-        'not NULL' => TRUE,
+        'not null' => TRUE,
       ),
       'title' => array(
         'type' => 'varchar',
         'length' => 255,
-        'not NULL' => TRUE
+        'not null' => TRUE
       ),
       'weight' => array(
         'type' => 'int',
-        'not NULL' => TRUE
+        'not null' => TRUE
       ),
+      'hide' => array(
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+      )
     ),
     'indexes' => array(
       'tripal_toc_idx1' => array('node_type', 'key'),
+      'tripal_toc_idx2' => array('node_type', 'key', 'nid'),
     ),
     'unique keys' => array(
-      'tripal_toc_uq1' => array('node_type', 'key'),
+      'tripal_toc_uq1' => array('node_type', 'key', 'nid'),
     ),
     'primary key' => array('toc_item_id'),
   );
