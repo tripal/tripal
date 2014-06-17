@@ -419,16 +419,16 @@ function tripal_core_tripal_toc_schema() {
       'title' => array(
         'type' => 'varchar',
         'length' => 255,
-        'not null' => TRUE
+        'not null' => FALSE
       ),
       'weight' => array(
         'type' => 'int',
-        'not null' => TRUE
+        'not null' => FALSE
       ),
       'hide' => array(
         'type' => 'int',
         'size' => 'tiny',
-        'not null' => TRUE,
+        'not null' => FALSE,
         'default' => 0,
       ),
       'nid' => array(
