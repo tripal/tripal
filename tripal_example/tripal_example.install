@@ -516,7 +516,7 @@ function tripal_example_add_example_dbxref_table() {
   // EXPLANATION: use the Drupal Schema API to describe the custom table. Then
   // add the table using the chado_create_custom_table() function.
 
-  $description =  array(
+  $schema =  array(
     'table' => 'example_dbxref',
     'fields' => array(
       'example_dbxref_id' => array(

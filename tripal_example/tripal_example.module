@@ -23,7 +23,7 @@ require('includes/tripal_example.chado_node.inc');
  * 
  * @ingroup tripal_example
  */
-function tripal_example_permisssions() {
+function tripal_example_permission() {
   
   // EXPLANATION:  here we want to setup any of the permission types
   // that this module needs.  Our exmample module creates a new
