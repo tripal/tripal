@@ -50,7 +50,7 @@ function tripal_example_permisssions() {
       'title' => t('Edit Examples'),
       'description' => t('Allow users to edit example pages.'),
     ),
-    'adminster tripal example' => array(
+    'administer tripal example' => array(
       'title' => t('Administer Examples'),
       'description' => t('Allow users to administer all examples.'),
     ),

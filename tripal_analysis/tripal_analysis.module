@@ -139,7 +139,7 @@ function tripal_analysis_permission() {
       'title' => t('Edit Analyses'),
       'description' => t('Allow users to edit analysis pages.'),
     ),
-    'adminster tripal analysis' => array(
+    'administer tripal analysis' => array(
       'title' => t('Administer Analyses'),
       'description' => t('Allow users to administer all analyses.'),
     ),

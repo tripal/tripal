@@ -72,7 +72,7 @@ function tripal_organism_menu() {
     'title' => 'Organisms',
     'description' => 'Any living biological entity, such as an animal, plant, fungus, or bacterium.',
     'page callback' => 'tripal_organism_admin_organism_view',
-    'access arguments' => array('adminster tripal organism'),
+    'access arguments' => array('administer tripal organism'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -81,7 +81,7 @@ function tripal_organism_menu() {
     'description' => "A description of the Tripal Organism module including a short description of it's usage.",
     'page callback' => 'theme',
     'page arguments' => array('tripal_organism_help'),
-    'access arguments' => array('adminster tripal organism'),
+    'access arguments' => array('administer tripal organism'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
   );
@@ -91,7 +91,7 @@ function tripal_organism_menu() {
     'description' => 'Manage integration of Chado organisms including associated features',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_organism_admin'),
-    'access arguments' => array('adminster tripal organism'),
+    'access arguments' => array('administer tripal organism'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 5
   );
@@ -221,7 +221,7 @@ function tripal_organism_permission() {
       'title' => t('Edit Organisms'),
       'description' => t('Allow users to edit organism pages.'),
     ),
-    'adminster tripal organism' => array(
+    'administer tripal organism' => array(
       'title' => t('Administer Organisms'),
       'description' => t('Allow users to administer all organisms.'),
     ),

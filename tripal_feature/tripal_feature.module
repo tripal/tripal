@@ -93,7 +93,7 @@ function tripal_feature_permission() {
       'title' => t('Edit Features'),
       'description' => t('Allow users to edit feature pages.'),
     ),
-    'adminster tripal feature' => array(
+    'administer tripal feature' => array(
       'title' => t('Administer Features'),
       'description' => t('Allow users to administer all features.'),
     ),

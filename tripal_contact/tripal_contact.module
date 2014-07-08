@@ -266,7 +266,7 @@ function tripal_contact_permission() {
       'title' => t('Edit Contacts'),
       'description' => t('Allow users to edit contact pages.'),
     ),
-    'adminster tripal contact' => array(
+    'administer tripal contact' => array(
       'title' => t('Administer Contacts'),
       'description' => t('Allow users to administer all contacts.'),
     ),

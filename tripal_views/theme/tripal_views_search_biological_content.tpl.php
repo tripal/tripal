@@ -19,7 +19,7 @@ this site:</p>
 <?php
 // How to disable/remove views from this list
 print tripal_set_message(
-  "To remove a view from this list, simply navigate to the Views UI (Adminster ->
+  "To remove a view from this list, simply navigate to the Views UI (Administer ->
     Structure -> Views; admin/structure/views) and choose 'disable' from the action
     drop-down to the right of the view you would like to remove.",
   TRIPAL_INFO,

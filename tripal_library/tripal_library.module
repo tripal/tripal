@@ -46,7 +46,7 @@ function tripal_library_permission() {
       'title' => t('Edit Libraries'),
       'description' => t('Allow users to edit library pages.'),
     ),
-    'adminster tripal library' => array(
+    'administer tripal library' => array(
       'title' => t('Administer Libraries'),
       'description' => t('Allow users to administer all libraries.'),
     ),

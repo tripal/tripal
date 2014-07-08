@@ -163,7 +163,7 @@ function tripal_stock_permission() {
       'title' => t('Edit Stocks'),
       'description' => t('Allow users to edit stock pages.'),
     ),
-    'adminster tripal stock' => array(
+    'administer tripal stock' => array(
       'title' => t('Administer Stocks'),
       'description' => t('Allow users to administer all stocks.'),
     ),
