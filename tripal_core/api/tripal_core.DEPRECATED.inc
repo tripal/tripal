@@ -149,7 +149,7 @@ function chado_node_additional_dbxrefs_form_update_dbxrefs($node, $details, $ret
  *
  * @see chado_add_node_form_properties().
  */
-function chado_node_properties_form($form, $form_state, $details) {
+function chado_node_properties_form($form, &$form_state, $details) {
 
   tripal_report_error(
     'tripal_deprecated',

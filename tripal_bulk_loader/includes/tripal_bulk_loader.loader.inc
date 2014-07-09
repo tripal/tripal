@@ -15,7 +15,7 @@
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_add_loader_job_form($form, $form_state, $node) {
+function tripal_bulk_loader_add_loader_job_form($form, &$form_state, $node) {
   $form = array();
 
   // --notify--

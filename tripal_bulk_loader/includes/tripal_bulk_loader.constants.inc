@@ -123,7 +123,7 @@ function tripal_bulk_loader_has_exposed_fields($node) {
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_set_constants_form($form, $form_state, $node) {
+function tripal_bulk_loader_set_constants_form($form, &$form_state, $node) {
   $form = array();
 
   $form['nid'] = array(
@@ -410,7 +410,7 @@ function tripal_bulk_loader_set_constants_form_submit($form, $form_state) {
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_edit_constant_set_form($form, $form_state, $node, $group_id) {
+function tripal_bulk_loader_edit_constant_set_form($form, &$form_state, $node, $group_id) {
   $form = array();
 
   $form['nid'] = array(
@@ -554,7 +554,7 @@ function tripal_bulk_loader_edit_constant_set_form_submit($form, &$form_state) {
  *
  * @ingroup tripal_bulk_loader
  */
-function tripal_bulk_loader_delete_constant_set_form($form, $form_state, $node, $group_id) {
+function tripal_bulk_loader_delete_constant_set_form($form, &$form_state, $node, $group_id) {
   $form = array();
 
   $form['nid'] = array(

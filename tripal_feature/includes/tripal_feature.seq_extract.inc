@@ -73,7 +73,7 @@ function tripal_feature_seq_extract_page() {
  *
  * @ingroup tripal_feature
  */
-function theme_tripal_feature_seq_extract_form($form) {
+function theme_tripal_feature_seq_extract_form($form, &$form_state) {
   $rows = array(
     0 => array(
       array('data' => drupal_render($form['description']), 'colspan' => 3),

@@ -79,7 +79,7 @@ function tripal_cv_cv_edit_form($form, &$form_state) {
  *
  * @ingroup tripal_cv
  */
-function tripal_cv_cv_add_form($form, $form_state) {
+function tripal_cv_cv_add_form($form, &$form_state) {
 
   // add in the form fields to this form
   tripal_cv_add_cv_form_fields($form, $form_state);

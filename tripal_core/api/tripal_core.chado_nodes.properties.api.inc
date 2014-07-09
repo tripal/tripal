@@ -7,7 +7,7 @@
  * How To Use:
  * @code
 
-  function chado_example_form($form, $form_state) {
+  function chado_example_form($form, &$form_state) {
 
     // Default values for form elements can come in the following ways:
     //

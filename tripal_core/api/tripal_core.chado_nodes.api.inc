@@ -791,7 +791,7 @@ function hook_chado_node_sync_create_new_node($new_node, $record) {
  *
  * @ingroup tripal_chado_node_api
  */
-function hook_chado_node_sync_form($form, $form_state) {
+function hook_chado_node_sync_form($form, &$form_state) {
 
   // Change or add to the form array as needed
   // Any changes should be made in accordance with the Drupal Form API

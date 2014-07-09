@@ -319,6 +319,12 @@ function tripal_stock_theme($existing, $type, $theme, $path) {
       'variables' =>  array(NULL),
       'path' => "$path/theme/templates",
     ),
+    // themed teaser
+    'tripal_stock_teaser' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_stock_teaser',
+      'path' => "$path/theme/templates",
+    ),
   );
   return $items;
 }

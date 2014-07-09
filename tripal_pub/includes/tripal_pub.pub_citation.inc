@@ -11,7 +11,7 @@
  *
  * @ingroup tripal_pub
  */
-function tripal_pub_citation_form($form_state) {
+function tripal_pub_citation_form($form, &$form_state) {
 
   $form['instructions'] = array(
     '#markup' => '<p>Use this form to unify publication citations. Citations are created automtically when
