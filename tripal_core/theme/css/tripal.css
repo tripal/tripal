@@ -154,7 +154,7 @@
  * |-----------------------------------------------|
  */
 .tripal-teaser {
-  clear_both;
+  clear: both;
   margin-bottom: 10px;
 }
 .tripal-teaser-title {

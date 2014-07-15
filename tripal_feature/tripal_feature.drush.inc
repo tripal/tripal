@@ -40,12 +40,12 @@ function tripal_feature_drush_command() {
       'name'     => dt('The name of the feature to retrieve.'),
       'up'       => dt('An integer value specifying the number of upstream bases to include.'),
       'down'     => dt('An integer value specifying the number of downstream bases to incldue.'),
-      'out'      => dt('The output format. Valid options are "fasta_html", "fasta_txt" and raw.'),
       'parent'   => dt('Set this argument to 1 to retrieve the sequence from the parent in an alignment rather than the residues column of the feature itself.'),
       'agg'      => dt('Set this argument to 1 to aggregate sub features into a single sequence.  This is useful, for example, for obtaining CDS sequence from an mRNA'),
-      'child'    => dt('Set this argument to the sequence ontology term for the children to aggregate.  This is useful in the case where a gene has exons as well as CDSs and UTRs.  You may sepcify as many feature types as desired by separating each with a single comma (no spaces).'),
+      'child'    => dt('Set this argument to the exact sequence ontology term for the children to aggregate.  This is useful in the case where a gene has exons as well as CDSs and UTRs.  You may sepcify as many feature types as desired by separating each with a single comma (no spaces). Term matching is case-sensitive.'),
       'relationship'  => dt('Retreives the sequence of any feature in the specified relationship with the matched features.'),
       'rel_part' => dt('If a relationship is provided, then this will be "subject" or "object" indicating the side of the relationship for the matched features. If the matched features are the "object" then the "subject" features will have their sequences included in the output (and vice versa).'),
+      'width'    => dt('The number of nucleotides per row (defaults to 50).')
     ),
     'examples' => array(
       'Standard example' => 'drush tripal-current-job',
@@ -72,29 +72,45 @@ function tripal_feature_drush_command() {
  */
 function drush_tripal_feature_tripal_get_sequence() {
 
-  $org_commonname = drush_get_option('org');
-  $genus = drush_get_option('genus');
-  $species = drush_get_option('species');
-  $analysis_name = drush_get_option('analysis');
-  $type = drush_get_option('type');
-  $feature_name = drush_get_option('name');
-  $upstream = drush_get_option('up');
-  $downstream = drush_get_option('down');
-  $output_format = drush_get_option('out');
+  $org_commonname     = drush_get_option('org');
+  $genus              = drush_get_option('genus');
+  $species            = drush_get_option('species');
+  $analysis_name      = drush_get_option('analysis');
+  $type               = drush_get_option('type');
+  $feature_name       = drush_get_option('name');
+  $upstream           = drush_get_option('up')   ? drush_get_option('up') : 0;
+  $downstream         = drush_get_option('down') ? drush_get_option('down') : 0;
   $derive_from_parent = drush_get_option('parent');
-  $aggregate = drush_get_option('agg');
-  $child = drush_get_option('child');
-  $relationship = drush_get_option('relationship');
-  $rel_part = drush_get_option('rel_part');
+  $aggregate          = drush_get_option('agg');
+  $child              = drush_get_option('child');
+  $relationship       = drush_get_option('relationship');
+  $rel_part           = drush_get_option('rel_part');
+  $width              = drush_get_option('width') ? drush_get_option('width') : 50;
 
   if ($relationship and !$rel_part) {
     print "Please specify both 'relationship' and a 'rel_part' arguments. Both must be used together\n";
     return;
   }
 
-  tripal_feature_seq_extract_get_features($org_commonname, $genus, $species, $analysis_name,
-    $type, $feature_name, $upstream, $downstream, $output_format, $derive_from_parent,
-    $aggregate, $child, $relationship, $rel_part);
+  $options = array(
+    'org_commonname' => $org_commonname,
+    'genus' => $genus,
+    'species' => $species,
+    'analysis_name' => $analysis_name,
+    'type' => $type,
+    'feature_name' => $feature_name,
+    'upstream' => $upstream,
+    'downstream' => $downstream,
+    'derive_from_parent' => $derive_from_parent,
+    'aggregate' => $aggregate,
+    'sub_feature_types' => explode(',', $child),
+    'relationship_type' => $relationship,
+    'relationship_part' => $rel_part,
+    'print' => TRUE,
+    'width' => $width
+  );
+  
+  tripal_get_bulk_feature_sequences($options);
 }
 
 /**

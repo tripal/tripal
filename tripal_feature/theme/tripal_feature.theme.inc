@@ -168,7 +168,7 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
         $strand = '-';
       }
       $floc_sequences[$src]['location'] = tripal_get_location_string($featureloc);
-      $floc_sequences[$src]['defline'] = tripal_get_fasta_defline($featureloc->feature_id, $featureloc);
+      $floc_sequences[$src]['defline'] = tripal_get_fasta_defline($featureloc->feature_id, '', $featureloc, '', strlen($residues));
       $floc_sequences[$src]['featureloc'] = $featureloc;
       $floc_sequences[$src]['formatted_seq'] =  tripal_feature_color_sequence($residues, $parts, $floc_sequences[$src]['defline']);
     }
@@ -389,7 +389,7 @@ function tripal_feature_color_sequence($sequence, $parts, $defline) {
   // set the background color of the rows based on the type
   $pos = 0;
   $newseq .= "<pre class=\"tripal_feature-sequence\">";
-  $newseq .= ">$defline\n";
+  $newseq .= ">$defline<br>";
 
   // iterate through the parts. They should be in order.
   $starts   = array(); // an array holding all of the children starting locations
@@ -737,23 +737,25 @@ function tripal_feature_load_organism_feature_counts($organism) {
   // iterate through the types
   $types = array();
   while ($type = $org_features->fetchObject()) {
-  $types[$type->feature_type] = $type;
-  // if we don't have an order this means we didn't go through the loop
-  // above to set the names, so do that now
-  if (!$is_custom) {
-  $names[] = $type->feature_type;
-  $order[] = $type->feature_type;
-  }
+    $types[$type->feature_type] = $type;
+    // if we don't have an order this means we didn't go through the loop
+    // above to set the names, so do that now
+    if (!$is_custom) {
+      $names[] = $type->feature_type;
+      $order[] = $type->feature_type;
+    }
   }
 
   // now reorder the types
   $ordered_types = array();
   foreach ($order as $type) {
-  $ordered_types[] = $types[$type];
+    if (array_key_exists($type, $types)) {
+      $ordered_types[] = $types[$type];
+    }
   }
   return array(
-  'types' => $ordered_types,
-      'names' => $names
+    'types' => $ordered_types,
+    'names' => $names
   );
 }
 

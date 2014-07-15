@@ -163,7 +163,7 @@ function tripal_stock_permission() {
       'title' => t('Edit Stocks'),
       'description' => t('Allow users to edit stock pages.'),
     ),
-    'adminster tripal stock' => array(
+    'administer tripal stock' => array(
       'title' => t('Administer Stocks'),
       'description' => t('Allow users to administer all stocks.'),
     ),
@@ -317,6 +317,12 @@ function tripal_stock_theme($existing, $type, $theme, $path) {
     'tripal_stock_help' => array(
       'template' => 'tripal_stock_help',
       'variables' =>  array(NULL),
+      'path' => "$path/theme/templates",
+    ),
+    // themed teaser
+    'tripal_stock_teaser' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_stock_teaser',
       'path' => "$path/theme/templates",
     ),
   );
@@ -526,6 +532,9 @@ function tripal_stock_form_alter(&$form, &$form_state, $form_id) {
   // turn of preview button for insert/updates
   if ($form_id == "chado_stock_node_form") {
     $form['actions']['preview']['#access'] = FALSE;
+    
+    //remove the body field
+    unset($form['body']);
   }
 }
 

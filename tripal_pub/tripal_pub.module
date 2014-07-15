@@ -137,7 +137,7 @@ function tripal_pub_menu() {
     'title' => t('Publication Importers'),
     'description' => t('Create and modify importers that can connect to and retreive publications from remote databases.'),
     'page callback' => 'tripal_pub_importers_list',
-    'access arguments' => array('administer tripal pubs'),
+    'access arguments' => array('administer tripal pub'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -341,7 +341,7 @@ function tripal_pub_permission() {
       'title' => t('Edit Publications'),
       'description' => t('Allow users to edit publication pages.'),
     ),
-    'adminster tripal pub' => array(
+    'administer tripal pub' => array(
       'title' => t('Administer Publications'),
       'description' => t('Allow users to administer all publications.'),
     ),

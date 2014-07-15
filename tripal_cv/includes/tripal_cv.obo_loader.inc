@@ -114,10 +114,10 @@ function tripal_cv_obo_form($form, &$form_state) {
  * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_form_submit($form, &$form_state) {
-  $obo_id =  $form_state['values']['obo_id'];
-  $obo_name =  $form_state['values']['obo_name'];
-  $obo_url =  $form_state['values']['obo_url'];
-  $obo_file  = $form_state['values']['obo_file'];
+  $obo_id    = $form_state['values']['obo_id'];
+  $obo_name  = trim($form_state['values']['obo_name']);
+  $obo_url   = trim($form_state['values']['obo_url']);
+  $obo_file  = trim($form_state['values']['obo_file']);
 
   tripal_cv_submit_obo_job($obo_id, $obo_name, $obo_url, $obo_file);
 }

@@ -11,4 +11,4 @@ $example  = $variables['node']->example; ?>
       print "... " . l("[more]", "node/$node->nid");
     } ?>
   </div>
-</div> <?php 
+</div>

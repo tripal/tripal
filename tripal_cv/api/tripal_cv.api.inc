@@ -779,9 +779,9 @@ function tripal_submit_obo_job($obo) {
 
   // Set Defaults
   $obo['obo_id'] = (isset($obo['obo_id'])) ? $obo['obo_id'] : NULL;
-  $obo['name'] = (isset($obo['name'])) ? $obo['name'] : NULL;
-  $obo['url'] = (isset($obo['url'])) ? $obo['url'] : NULL;
-  $obo['file'] = (isset($obo['file'])) ? $obo['file'] : NULL;
+  $obo['name']   = (isset($obo['name']))   ? $obo['name']   : NULL;
+  $obo['url']    = (isset($obo['url']))    ? $obo['url']    : NULL;
+  $obo['file']   = (isset($obo['file']))   ? $obo['file']   : NULL;
 
   if ($obo['obo_id']) {
     $sql = "SELECT * FROM {tripal_cv_obo} WHERE obo_id = :obo_id";
@@ -794,12 +794,12 @@ function tripal_submit_obo_job($obo) {
   else {
     if ($obo['url']) {
       $args = array($obo['name'], $obo['url']);
-      return tripal_add_job("Load OBO $obo_name", 'tripal_cv',
+      return tripal_add_job("Load OBO " . $obo['name'], 'tripal_cv',
         "tripal_cv_load_obo_v1_2_url", $args, $user->uid);
     }
     elseif ($obo['file']) {
       $args = array($obo['name'], $obo['file']);
-      return tripal_add_job("Load OBO $obo_name", 'tripal_cv',
+      return tripal_add_job("Load OBO " . $obo['name'], 'tripal_cv',
         "tripal_cv_load_obo_v1_2_file", $args, $user->uid);
     }
   }

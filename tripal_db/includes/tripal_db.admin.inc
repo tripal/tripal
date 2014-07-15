@@ -120,7 +120,7 @@ function tripal_db_db_edit_form($form, &$form_state) {
  *
  * @ingroup tripal_db
  */
-function tripal_db_db_add_form($form, $form_state) {
+function tripal_db_db_add_form($form, &$form_state) {
 
   // add in the form fields to this form
   tripal_db_add_db_form_fields($form, $form_state);

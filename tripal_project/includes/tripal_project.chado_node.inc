@@ -524,13 +524,19 @@ function tripal_project_node_insert($node) {
   // know the project_id in the presave
   switch ($node->type) {
     case 'chado_project':
+      
+      // get the feature details from chado
+      $project_id = chado_get_id_from_nid('project', $node->nid);
+      $values = array('project_id' => $project_id);
+      $project = chado_generate_var('project', $values);
+      $nodes->project = $project;
 
       // Now get the title
       $node->title = chado_get_node_title($node);
       
       // on an insert we need to add the project_id to the node object
       // so that the tripal_project_get_project_url function can set the URL properly
-      $node->project_id = chado_get_id_from_nid('project', $node->nid);
+      $node->project_id = $project_id;
 
       // remove any previous alias
       db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
@@ -555,6 +561,12 @@ function tripal_project_node_update($node) {
   switch ($node->type) {
     case 'chado_project':
 
+      // get the feature details from chado
+      $project_id = chado_get_id_from_nid('project', $node->nid);
+      $values = array('project_id' => $project_id);
+      $project = chado_generate_var('project', $values);
+      $nodes->project = $project;
+      
       // Now get the title
       $node->title = chado_get_node_title($node);
       

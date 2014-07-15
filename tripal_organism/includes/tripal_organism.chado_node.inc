@@ -579,6 +579,12 @@ function tripal_organism_node_insert($node) {
 
   switch ($node->type) {
     case 'chado_organism':
+      
+      // find the organism and add in the details
+      $organism_id = chado_get_id_from_nid('organism', $node->nid);
+      $values = array('organism_id' => $organism_id);
+      $organism = chado_generate_var('organism', $values);
+      $node->organism = $organism;
 
       // Now get the title
       $node->title = chado_get_node_title($node);
@@ -597,6 +603,12 @@ function tripal_organism_node_update($node) {
 
   switch ($node->type) {
     case 'chado_organism':
+      
+      // find the organism and add in the details
+      $organism_id = chado_get_id_from_nid('organism', $node->nid);
+      $values = array('organism_id' => $organism_id);
+      $organism = chado_generate_var('organism', $values);
+      $node->organism = $organism;
 
       // Now get the title
       $node->title = chado_get_node_title($node);

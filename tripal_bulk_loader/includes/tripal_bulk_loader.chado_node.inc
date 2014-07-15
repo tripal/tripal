@@ -243,9 +243,9 @@ function tripal_bulk_loader_insert($node) {
 
   db_insert('tripal_bulk_loader')->fields(array(
     'nid' => $node->nid,
-    'loader_name' => $node->loader_name,
+    'loader_name' => trim($node->loader_name),
     'template_id' => $node->template_id,
-    'file' => $node->file,
+    'file' => trim($node->file),
     'file_has_header' => $node->has_header,
     'job_status' => 'Initialized',
     'keep_track_inserted' => $node->keep_track_inserted
@@ -283,9 +283,9 @@ function tripal_bulk_loader_update($node) {
   // Update tripal_bulk_loader
   db_update('tripal_bulk_loader')->fields(array(
     'nid' => $node->nid,
-    'loader_name' => $node->loader_name,
+    'loader_name' => trim($node->loader_name),
     'template_id' => $node->template_id,
-    'file' => $node->file,
+    'file' => trim($node->file),
     'file_has_header' => $node->has_header,
     'keep_track_inserted' => $node->keep_track_inserted
   ))->condition('nid',$node->nid)->execute();
@@ -361,5 +361,44 @@ function tripal_bulk_loader_node_access($node, $op, $account) {
       }
     }
     return NODE_ACCESS_IGNORE;
+  }
+}
+
+
+/**
+ * Implements hook_node_view().
+ * Acts on all content types.
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_bulk_loader_node_view($node, $view_mode, $langcode) {
+  switch ($node->type) {
+    case 'tripal_bulk_loader':
+      // Show feature browser and counts
+      if ($view_mode == 'full') {
+        
+        // we want to use the Tripal generic node template
+        $node->content['#tripal_generic_node_template'] = TRUE;
+        
+        $node->content['tripal_bulk_loader_base'] = array(
+          '#markup' => theme('tripal_bulk_loader_base', array('node' => $node)),
+          '#tripal_toc_id'    => 'base',
+          '#tripal_toc_title' => 'Overview',
+          '#tripal_template_show' => FALSE, 
+          '#weight' => -100,
+        );
+        $node->content['tripal_bulk_loader_fields'] = array(
+          '#markup' => theme('tripal_bulk_loader_fields', array('node' => $node)),
+          '#tripal_toc_id'    => 'fields',
+          '#tripal_toc_title' => 'Data Fields',
+          '#tripal_template_show' => FALSE,
+        );
+      }
+      if ($view_mode == 'teaser') {
+        $node->content['tripal_bulk_loader_teaser'] = array(
+          '#markup' => theme('tripal_bulk_loader_teaser', array('node' => $node)),
+        );
+      }
+      break;
   }
 }

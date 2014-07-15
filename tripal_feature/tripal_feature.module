@@ -93,7 +93,7 @@ function tripal_feature_permission() {
       'title' => t('Edit Features'),
       'description' => t('Allow users to edit feature pages.'),
     ),
-    'adminster tripal feature' => array(
+    'administer tripal feature' => array(
       'title' => t('Administer Features'),
       'description' => t('Allow users to administer all features.'),
     ),
@@ -302,6 +302,7 @@ function tripal_feature_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_feature_relationships',
       'path' => "$path/theme/templates",
     ),
+    // help template
     'tripal_feature_help' => array(
       'template' => 'tripal_feature_help',
       'variables' =>  array(NULL),
@@ -601,5 +602,8 @@ function tripal_feature_form_alter(&$form, &$form_state, $form_id) {
   // turn off preview button for insert/updates
   if ($form_id == "chado_feature_node_form") {
     $form['actions']['preview']['#access'] = FALSE;
+    
+    //remove the body field
+    unset($form['body']);
   }
 }

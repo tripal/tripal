@@ -148,7 +148,7 @@ function chado_pub_form($node, $form_state) {
     $title        = $form_state['input']['pubtitle'];
     $uniquename   = $form_state['input']['uniquename'];
     $type_id      = $form_state['input']['type_id'];
-    $is_obsolete  = $form_state['input']['is_obsolete'];
+    $is_obsolete  = array_key_exists('is_obsolete', $form_state['input']) ? $form_state['input']['is_obsolete'] : '';
   }
 
   $form['pubtitle'] = array(
@@ -586,7 +586,7 @@ function chado_pub_insert($node) {
       if ($prop->name == 'Citation') {
         $citation_id = $prop->cvterm_id;
         if (!empty($node->uniquename)) {
-          $properties[$citation_id] = $node->uniquename;
+          $properties[$citation_id][0] = $node->uniquename;
         }
       }
     }
@@ -1091,11 +1091,22 @@ function tripal_pub_node_view($node, $view_mode, $langcode) {
 function tripal_pub_node_insert($node) {
 
   if ($node->type == 'chado_pub') {
+    
+    // get the pub
+    $pub_id = chado_get_id_from_nid('pub', $node->nid);
+    $values = array('pub_id' => $pub_id);
+    $pub = chado_generate_var('pub', $values);
 
+    // expand the 'text' fields as those aren't included by default
+    // and they really shouldn't be so large to cause problems
+    $pub = chado_expand_var($pub, 'field', 'pub.title');
+    $pub = chado_expand_var($pub, 'field', 'pub.volumetitle');
+    $pub = chado_expand_var($pub, 'field', 'pub.uniquename');
+    $node->pub = $pub;
+    
     // Now get the title
     $node->title = chado_get_node_title($node);
-      
-    $pub_id = chado_get_id_from_nid('pub', $node->nid);
+
     tripal_pub_set_pub_url($node, $pub_id);
   }
 }
@@ -1140,10 +1151,21 @@ function tripal_pub_node_update($node) {
 
   if ($node->type == 'chado_pub') {
 
+    // get the pub
+    $pub_id = chado_get_id_from_nid('pub', $node->nid);
+    $values = array('pub_id' => $pub_id);
+    $pub = chado_generate_var('pub', $values);
+    
+    // expand the 'text' fields as those aren't included by default
+    // and they really shouldn't be so large to cause problems
+    $pub = chado_expand_var($pub, 'field', 'pub.title');
+    $pub = chado_expand_var($pub, 'field', 'pub.volumetitle');
+    $pub = chado_expand_var($pub, 'field', 'pub.uniquename');
+    $node->pub = $pub;
+            
     // Now get the title
     $node->title = chado_get_node_title($node);
-      
-    $pub_id = chado_get_id_from_nid('pub', $node->nid);
+
     tripal_pub_set_pub_url($node, $pub_id);
   }
 }

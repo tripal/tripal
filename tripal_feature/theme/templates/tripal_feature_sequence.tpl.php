@@ -9,8 +9,10 @@
  *
  */
 
-
 $feature = $variables['node']->feature;
+
+// number of bases per line in FASTA format
+$num_bases = 50; 
 
 // we don't want to get the sequence for traditionally large types. They are
 // too big,  bog down the web browser, take longer to load and it's not
@@ -43,8 +45,8 @@ if ($residues or count($featureloc_sequences) > 0) {
     $sequences_html .= '<div id="residues" class="tripal_feature-sequence-item">';
     $sequences_html .= '<p><b>' . $feature->type_id->name . ' sequence</b></p>';
     $sequences_html .= '<pre class="tripal_feature-sequence">';
-    $sequences_html .= '>' . tripal_get_fasta_defline($feature) . "\n";
-    $sequences_html .= preg_replace("/(.{50})/","\\1<br>",$feature->residues);
+    $sequences_html .= '>' . tripal_get_fasta_defline($feature, '', NULL, '', strlen($feature->residues)) . "\n";
+    $sequences_html .= wordwrap($feature->residues, $num_bases, "<br>", TRUE);
     $sequences_html .= '</pre>';
     $sequences_html .= '<a href="#sequences-top">back to top</a>';
     $sequences_html .= '</div>';
@@ -74,8 +76,8 @@ if ($residues or count($featureloc_sequences) > 0) {
             $sequences_html .= '<div id="protein-' . $protein->feature_id . '" class="tripal_feature-sequence-item">';
             $sequences_html .= '<p><b>protein sequence of ' . $protein->name . '</b></p>';
             $sequences_html .= '<pre class="tripal_feature-sequence">';
-            $sequences_html .= '>' . tripal_get_fasta_defline($protein) . "\n";
-            $sequences_html .= preg_replace("/(.{50})/","\\1<br>", $protein->residues);
+            $sequences_html .= '>' . tripal_get_fasta_defline($protein, '', NULL, '', strlen($protein->residues)) . "\n";
+            $sequences_html .= wordwrap($protein->residues, $num_bases, "<br>", TRUE);
             $sequences_html .= '</pre>';
             $sequences_html .= '<a href="#sequences-top">back to top</a>';
             $sequences_html .= '</div>';
@@ -95,6 +97,7 @@ if ($residues or count($featureloc_sequences) > 0) {
         
         // add any other sequences that are related through a relationship
         // and that have values in the 'residues' column
+        
       }
     }
   }
@@ -107,7 +110,7 @@ if ($residues or count($featureloc_sequences) > 0) {
     $sequences_html .= '<div id="coding_sequence" class="tripal_feature-sequence-item">';
     $sequences_html .= '<p><b>coding sequence</b></p>';
     $sequences_html .= '<pre class="tripal_feature-sequence">';
-    $sequences_html .= $coding_seq;
+    $sequences_html .= wordwrap($coding_seq, $num_bases, "<br>", TRUE);
     $sequences_html .= '</pre>';
     $sequences_html .= '<a href="#sequences-top">back to top</a>';
     $sequences_html .= '</div>';
@@ -147,7 +150,7 @@ if ($residues or count($featureloc_sequences) > 0) {
     }
     
     // check to see if this alignment has any CDS. If so, generate a CDS sequence
-    $cds_sequence = tripal_get_sequence(
+    $cds_sequence = tripal_get_feature_sequences(
         array(
           'feature_id' => $feature->feature_id,
           'parent_id' => $attrs['featureloc']->srcfeature_id->feature_id,
@@ -155,22 +158,25 @@ if ($residues or count($featureloc_sequences) > 0) {
           'featureloc_id' => $attrs['featureloc']->featureloc_id,
         ),
         array(
-          'width' => 50,  // FASTA sequence should have 50 chars per line
+          'width' => $num_bases,  // FASTA sequence should have $num_bases chars per line
           'derive_from_parent' => 1, // CDS are in parent-child relationships so we want to use the sequence from the parent
           'aggregate' => 1, // we want to combine all CDS for this feature into a single sequence
-          'output_format' => 'fasta_txt', // we just want plain text, we'll format it here.
           'sub_feature_types' => array('CDS'), // we're looking for CDS features
-          ''
+          'is_html' => 1
         )
     );
     if (count($cds_sequence) > 0) {
+      // the tripal_get_feature_sequences() function can return multiple sequences
+      // if a feature is aligned to multiple places. In the case of CDSs we expect
+      // that one mRNA is only aligned to a single location on the assembly so we
+      // can access the CDS sequence with index 0.
       if ($cds_sequence[0]['residues']) {
         $list_items[] = '<a href="#coding_' . $attrs['id'] . '">coding sequnece from alignment at  ' . $attrs['location'] . "</a>";
         $sequences_html .= '<a name="ccoding_' . $attrs['id'] . '"></a>';
         $sequences_html .= '<div id="coding_' . $attrs['id'] . '" class="tripal_feature-sequence-item">';
         $sequences_html .= '<p><b>Coding sequence (CDS) from alignment at  ' . $attrs['location'] . '</b></p>';
         $sequences_html .= '<pre class="tripal_feature-sequence">';
-        $sequences_html .= '>' . tripal_get_fasta_defline($feature, $attrs['featureloc'], 'CDS') . "\n";
+        $sequences_html .= '>' . tripal_get_fasta_defline($feature, '', $attrs['featureloc'], 'CDS', $cds_sequence[0]['length']) . "<br>";
         $sequences_html .= $cds_sequence[0]['residues'];
         $sequences_html .= '</pre>';
         $sequences_html .= '<a href="#sequences-top">back to top</a>';
@@ -197,15 +203,21 @@ if ($residues or count($featureloc_sequences) > 0) {
   ));
 
   $message = 'Administrators, sequences will appear on this page if:
+    <br><br><b>For any feature type:</b>
     <ul>
       <li>This feature has residues stored in the "residues" field of the feature table of Chado.</li>
-      <li>This feature has a protein feature associated via the "feature_relationship" table of Chado with a
-          relationship of type "derives from" and the protein feature has residues.</li>
-      <li>This feature has one or more CDS features associated via the "feature_relationship" table of Chado with a
-          relationship of type "part of". If the CDS features have residues then those will be concatenated
-          and presented as a sequence.</li>
       <li>This feature is aligned to another feature (e.g. scaffold, or chromosome). In this case, the
           sequence underlying the alignment will be shown.</li>
+    </ul>
+    <br><b>For gene models:</b>
+    <ul>
+      <li>This feature has a "polypeptide" (protein) feature associated via the "feature_relationship" table of Chado with a
+          relationship of type "derives from" and the protein feature has residues. Typically, a protein
+          is associated with an mRNA feature and protein sequences will appear on the mRNA page.</li>
+      <li>This feature has one or more CDS features associated via the "feature_relationship" table of Chado with a
+          relationship of type "part of". If the CDS features have residues then those will be concatenated
+          and presented as a sequence. Typically, CDSs are associated with an mRNA feature and CDS sequences 
+          will appear on the mRNA page.</li>
       <li>This feature is aligned to another feature (e.g. scaffold, or chromosome) and this feature has
           one or more CDS features associated.  The CDS sequenes underlying the alignment will be
           shown.</li>

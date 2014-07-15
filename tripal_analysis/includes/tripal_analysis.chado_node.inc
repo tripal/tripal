@@ -724,7 +724,13 @@ function tripal_analysis_node_insert($node) {
 
   switch ($node->type) {
     case 'chado_analysis':
-
+      
+      // build the analysis variable
+      $analysis_id = chado_get_id_from_nid('analysis', $node->nid);      
+      $values = array('analysis_id' => $analysis_id);
+      $analysis = chado_generate_var('analysis', $values);
+      $node->analysis = $analysis;
+      
       // Now get the title
       $node->title = chado_get_node_title($node);
 
@@ -742,6 +748,12 @@ function tripal_analysis_node_update($node) {
 
   switch ($node->type) {
     case 'chado_analysis':
+      
+      // build the analysis variable
+      $analysis_id = chado_get_id_from_nid('analysis', $node->nid);
+      $values = array('analysis_id' => $analysis_id);
+      $analysis = chado_generate_var('analysis', $values);
+      $node->analysis = $analysis;
 
       // Now get the title
       $node->title = chado_get_node_title($node);

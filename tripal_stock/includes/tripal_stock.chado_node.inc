@@ -888,6 +888,14 @@ function tripal_stock_node_insert($node) {
   // know the stock_id in the presave
   switch ($node->type) {
     case 'chado_stock':
+      
+      // get the feature details from chado
+      $stock_id = chado_get_id_from_nid('stock', $node->nid);
+      $values = array('stock_id' => $stock_id);
+      $stock = chado_generate_var('stock', $values);
+      $stock = chado_expand_var($stock, 'field', 'stock.uniquename');
+      $stock = chado_expand_var($stock, 'field', 'stock.description');
+      $node->stock = $stock;
 
       // If your module is using the Chado Node: Title & Path API to allow custom titles
       // for your node type. Every time you want the title of the node, you need to use the
@@ -920,6 +928,14 @@ function tripal_stock_node_update($node) {
   // add items to other nodes, build index and search results
   switch ($node->type) {
     case 'chado_stock':
+      
+      // get the feature details from chado
+      $stock_id = chado_get_id_from_nid('stock', $node->nid);
+      $values = array('stock_id' => $stock_id);
+      $stock = chado_generate_var('stock', $values);
+      $stock = chado_expand_var($stock, 'field', 'stock.uniquename');
+      $stock = chado_expand_var($stock, 'field', 'stock.description');
+      $node->stock = $stock;
 
       // If your module is using the Chado Node: Title & Path API to allow custom titles
       // for your node type. Every time you want the title of the node, you need to use the

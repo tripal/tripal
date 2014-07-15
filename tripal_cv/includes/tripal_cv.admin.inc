@@ -48,7 +48,7 @@ function tripal_cv_admin_cv_listing() {
 /**
  *
  */
-function tripal_cv_admin_set_defaults_form($form, $form_state) {
+function tripal_cv_admin_set_defaults_form($form, &$form_state) {
 
   $form['instructions'] = array(
     '#markup' => t('Much of the data housed in Chado is typed, meaning that a ' .

@@ -432,7 +432,7 @@ function tripal_cv_cvterm_info($cvterm_id) {
  *
  * @ingroup tripal_cv
  */
-function tripal_cv_list_form($form_state) {
+function tripal_cv_list_form($form, &$form_state) {
 
   // get a list of db from chado for user to choose
   $sql = "

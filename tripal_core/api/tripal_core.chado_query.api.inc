@@ -645,7 +645,7 @@ function chado_update_record($table, $match, $values, $options = NULL) {
   }
 
   // get the values used for updating
-  foreach ($values as $field => $value) {
+  foreach ($values as $field => &$value) {
     if (is_array($value)) {
       $foreign_options = array();
       // select the value from the foreign key relationship for this value
@@ -1298,14 +1298,12 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
 function chado_query($sql, $args = array()) {
   $is_local = $GLOBALS["chado_is_local"];
 
-
   // Args should be an array
   if (!is_array($args)) {
     tripal_report_error('tripal_core', TRIPAL_ERROR,
       'chado_query; Need to pass an array to chado_query, "%value" passed instead. Query: %query',
       array('%value' => $args, '%query' => $sql)
     );
-    $args = array($args);
     return FALSE;
   }
 
@@ -1318,7 +1316,7 @@ function chado_query($sql, $args = array()) {
     // the featureloc table has some indexes that use function that call other functions
     // and those calls do not reference a schema, therefore, any tables with featureloc
     // must automaticaly have the chado schema set as active to find
-    if(preg_match('/chado.featureloc/i', $sql)) {
+    if (preg_match('/chado.featureloc/i', $sql)) {
       $previous_db = chado_set_active('chado') ;
       $results = db_query($sql, $args);
       chado_set_active($previous_db);

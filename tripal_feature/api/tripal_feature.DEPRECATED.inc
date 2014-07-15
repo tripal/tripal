@@ -376,46 +376,6 @@ function tripal_feature_reverse_complement($sequence) {
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by tripal_get_sequence().
- *
- * @see tripal_get_sequence().
- */
-function tripal_feature_get_formatted_sequence($feature_id, $feature_name, $num_bases_per_line, $derive_from_parent, $aggregate, $output_format, $upstream, $downstream, $sub_features = array(), $relationship = '', $rel_part = '') {
-
-  tripal_report_error(
-    'tripal_deprecated',
-    TRIPAL_NOTICE,
-    "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
-    array(
-      '%old_function'=>'tripal_feature_get_formatted_sequence',
-      '%new_function' => 'tripal_get_sequence'
-    )
-  );
-
-  return tripal_get_sequence(
-    // Feature
-    array(
-      'feature_id' => $feature_id,
-      'name' => $feature_name
-    ),
-    // Options
-    array(
-      'width' => $num_bases_per_line,
-      'derive_from_parent' => $derive_from_parent,
-      'aggregate' => $aggregate,
-      'output_format' => $output_format,
-      'num_upstream' => $upstream,
-      'num_downstream' => $downstream,
-      'sub_feature_types' => $sub_features,
-      'relationship_type' => $relationship,
-      'relationship_part' => $rel_part
-    )
-  );
-}
-
-/**
- * @deprecated Restructured API to make naming more readable and consistent.
- * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
  * This function has been replaced by tripal_associate_dbxref().
  *
  * @see tripal_associate_dbxref().
@@ -469,26 +429,4 @@ function tripal_feature_add_cvterm($feature_id, $cvname, $cvterm) {
       'cv_name' => $cvname
     )
   );
-}
-
-/**
- * @deprecated Restructured API to make naming more readable and consistent.
- * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by tripal_format_fasta_sequence().
- *
- * @see tripal_format_fasta_sequence().
- */
-function tripal_feature_return_fasta($feature, $desc) {
-
-  tripal_report_error(
-    'tripal_deprecated',
-    TRIPAL_NOTICE,
-    "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
-    array(
-      '%old_function'=>'tripal_feature_return_fasta',
-      '%new_function' => 'tripal_format_fasta_sequence'
-    )
-  );
-
-  return tripal_format_fasta_sequence($feature, $desc);
 }

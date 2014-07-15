@@ -44,7 +44,7 @@ function tripal_project_menu() {
     'title' => 'Projects',
     'description' => ('A project. Can be used for grouping data such as with the natural diversity module data.'),
     'page callback' => 'tripal_project_admin_project_view',
-    'access arguments' => array('adminster tripal project'),
+    'access arguments' => array('administer tripal project'),
     'type' => MENU_NORMAL_ITEM
   );
 
@@ -53,7 +53,7 @@ function tripal_project_menu() {
     'description' => ("Basic Description of Tripal Project Module Functionality."),
     'page callback' => 'theme',
     'page arguments' => array('tripal_project_help'),
-    'access arguments' => array('adminster tripal project'),
+    'access arguments' => array('administer tripal project'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 6
   );
@@ -62,7 +62,7 @@ function tripal_project_menu() {
     'title' => 'Settings',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_project_admin'),
-    'access arguments' => array('adminster tripal project'),
+    'access arguments' => array('administer tripal project'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 4
   );
@@ -142,7 +142,7 @@ function tripal_project_permission() {
       'title' => t('Edit Projects'),
       'description' => t('Allow users to edit project pages.'),
     ),
-    'adminster tripal project' => array(
+    'administer tripal project' => array(
       'title' => t('Administer Projects'),
       'description' => t('Allow users to administer all projects.'),
     ),

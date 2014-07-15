@@ -774,6 +774,13 @@ function tripal_feature_node_insert($node) {
   switch ($node->type) {
     case 'chado_feature':
 
+      $feature_id = chado_get_id_from_nid('feature', $node->nid);
+      
+      // build the feature variable
+      $values = array('feature_id' => $feature_id);
+      $feature = chado_generate_var('feature', $values);
+      $node->feature = $feature;
+      
       // on an insert we need to add the feature_id to the node object
       // so that the tripal_feature_get_feature_url function can set the URL properly
       $node->feature_id = chado_get_id_from_nid('feature', $node->nid);
@@ -804,6 +811,14 @@ function tripal_feature_node_update($node) {
   // add items to other nodes, build index and search results
   switch ($node->type) {
     case 'chado_feature':
+      
+      $feature_id = chado_get_id_from_nid('feature', $node->nid);
+      
+      // build the feature variable
+      $values = array('feature_id' => $feature_id);
+      $feature = chado_generate_var('feature', $values);
+      $node->feature = $feature;
+      
       // remove any previous alias
       db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
 

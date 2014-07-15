@@ -71,7 +71,7 @@ function tripal_featuremap_permission() {
       'title' => t('Edit Maps'),
       'description' => t('Allow users to edit map pages.'),
     ),
-    'adminster tripal featuremap' => array(
+    'administer tripal featuremap' => array(
       'title' => t('Administer Maps'),
       'description' => t('Allow users to administer all maps.'),
     ),

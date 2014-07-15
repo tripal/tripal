@@ -27,7 +27,7 @@ require_once 'includes/tripal_natural_diversity.admin.inc';
  */
 function tripal_natural_diversity_permission() {
   return array(
-    'adminster tripal nd' => array(
+    'administer tripal nd' => array(
       'title' => t('Administer Natural Diversity Module'),
       'description' => t('Allow users to administer the natural diversity module.'),
     ),
@@ -51,7 +51,7 @@ function tripal_natural_diversity_menu() {
    'title' => 'Natural Diversity Experiments',
    'description' => 'Experiments relating to natural diversity such as genotype and phenotype experiments.',
    'page callback' => 'tripal_natural_diversity_admin_natdiv_view',
-   'access arguments' => array('adminster tripal nd'),
+   'access arguments' => array('administer tripal nd'),
    'type' => MENU_NORMAL_ITEM,
   );
 
