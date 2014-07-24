@@ -94,6 +94,25 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $pr
 }
 
 /**
+ * Retrieve information regarding a tripal job
+ *
+ * @param $job_id
+ *   The unique identifier of the job
+ *
+ * @return
+ *   An object describing the job
+ *
+ * @ingroup tripal_jobs_api
+ */
+function tripal_get_job($job_id) {
+
+  $job = db_query('SELECT j.* FROM {tripal_jobs} j WHERE j.job_id=:job_id', array(':job_id' => $job_id))
+    ->fetchObject();
+
+  return $job;
+}
+
+/**
  * Returns a list of running tripal jobs
  *
  * @return
