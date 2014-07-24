@@ -706,9 +706,6 @@ function tripal_get_fasta_defline($feature, $notes = '', $featureloc = NULL, $ty
 function tripal_get_location_string($featureloc) {
   $feature = $featureloc->feature_id;
   
-  if ($featureloc->strand < 0) {
-    $residues = tripal_feature_reverse_complement($feature->residues);
-  }
   $strand = '';
   if ($featureloc->strand == 1) {
     $strand = '+';
