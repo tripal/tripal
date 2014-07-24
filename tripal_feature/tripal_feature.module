@@ -2305,16 +2305,18 @@ function tripal_feature_coder_ignore() {
  */
 function tripal_feature_match_features_page($id) {
   
-  // if the URL alias configuration is set such that the URL
-  // always begins with 'feature' then we want to use the ID as it is and
-  // forward it on. Otherwise, try to find the matching feature.
-  $url_alias = variable_get('chado_feature_url_string', '/feature/[genus]/[species]/[type]/[uniquename]'); 
-  if (!$url_alias) {
-    $url_alias = '/feature/[genus]/[species]/[type]/[uniquename]';
-  } 
-  $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash  
-  if (preg_match('/^feature\//', $url_alias)) {
-    drupal_goto($id);
+  // first check to see if the URL (e.g. /feature/$id) is already
+  // assigned to a node. If so, then just go there.  Otherwise, 
+  // try to find the feature.
+  $sql = "
+    SELECT src 
+    FROM {url_alias}
+    WHERE dst = '%s'
+  ";
+  $match = db_fetch_object(db_query($sql, "feature/$id"));
+  if ($match) {
+    drupal_goto($match->src);
+    return;
   }
 
   $sql = "
