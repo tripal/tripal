@@ -707,7 +707,7 @@ function tripal_get_location_string($featureloc) {
   $feature = $featureloc->feature_id;
   
   if ($featureloc->strand < 0) {
-    $residues = tripal_feature_reverse_complement($residues);
+    $residues = tripal_feature_reverse_complement($feature->residues);
   }
   $strand = '';
   if ($featureloc->strand == 1) {
