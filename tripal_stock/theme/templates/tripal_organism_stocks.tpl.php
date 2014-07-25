@@ -48,7 +48,7 @@ if (count($stocks) > 0) { ?>
       $name = $stock->uniquename;
     }
     if ($node->nid) {
-      $name = l($name, "node/$node->nid", array('attributes' => array('target' => '_blank')));
+      $name = l($name, "node/$stock->nid", array('attributes' => array('target' => '_blank')));
     }
 
     $rows[] = array(
