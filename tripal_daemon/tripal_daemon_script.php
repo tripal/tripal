@@ -1,15 +1,8 @@
 <?php
 
-require_once 'classes/TripalDaemon.inc';
-
 /**
  * This is the script that is actually Daemonized.
- *
- * Arguments expected to be passed to this script:
- *  - action: One of 'start','stop','restart',status','show-log'. Meant to indicate what
- *       you want the daemon to do.
- *  - log_file: the full path & filename of the log file. If it doesn't exist this script will
- *       create it.
+ * Expected to be run via Drush tripal-jobs-daemon
  */
 
 // Get Command-line Variables
@@ -19,11 +12,13 @@ if (!$action) {
   die('You need to specify what you want the Daemon to do. This should be one of: start, stop, restart, status, show-log');
 }
 
+require_once $args['module_path'] . '/classes/TripalJobDaemon.inc';
 $Daemon = new TripalJobDaemon($args);
 
 print "\nTripal Jobs Daemon\n".str_repeat("=",60)."\n";
 print "Memory Threshold: " . ($Daemon->get_memory_threshold() * 100) . "%\n";
 print "Wait Time: ". $Daemon->get_wait_time() . " seconds\n";
+print "Log File: " . $Daemon->log_filename . "\n";
 print "\n";
 
 // Check that the action is valid and then execute it

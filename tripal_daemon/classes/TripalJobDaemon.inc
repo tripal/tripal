@@ -5,7 +5,7 @@
  */
 class TripalJobDaemon {
 
-  // Maximum Memory Threshold
+  // Maximum Memory Usage Allowed
   // During Health checks, if the memory usage is over this % usage for the system
   // then the child process will kill re-fork and kill itself
   protected $memory_threshold = 0.85;
@@ -26,10 +26,10 @@ class TripalJobDaemon {
   protected $file_path;
 
   // The filename & path of the log file
-  protected $log_filename;
+  public $log_filename;
 
   // The filename & path of the status file
-  protected $status_filename;
+  public $status_filename;
 
   /**
    * Creates a new TripalDaemon object
@@ -39,11 +39,11 @@ class TripalJobDaemon {
     // Set the log/status files
     $this->file_path = (isset($args['file_path'])) ? $args['file_path'] : '/tmp';
 
-    $this->log_filename = (isset($args['logfile'])) ? $args['logfile'] : 'tripaljobs_daemon.log';
-    $this->log_filename = $this->file_path . $this->log_filename;
+    $this->log_filename = (isset($args['log_filename'])) ? $args['log_filename'] : 'tripaljobs_daemon.log';
+    $this->log_filename = $this->file_path . '/' . $this->log_filename;
 
     $this->status_filename = (isset($args['status_filename'])) ? $args['status_filename'] : 'tripaljobs_daemon.status.json';
-    $this->status_filename = $this->file_path . $this->status_filename;
+    $this->status_filename = $this->file_path . '/' . $this->status_filename;
 
     // If the wait time is provided then set it to the provided value
     if (isset($args['wait_time'])) {

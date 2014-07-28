@@ -30,7 +30,15 @@ function tripal_daemon_drush_command() {
       'show-log' => 'Show the log file.',
     ),
     'options' => array(
-      //'--feedback' => 'Frequency of progress messages, in seconds or items processed.',
+      'memory_threshold' => 'The maximum memory usage allowed before the daemon should kill itself. Default: 0.85',
+      'wait_time' => 'The amount of seconds to wait before checking whether a Tripal Job has been submitted. Default: 60.',
+      'file_path' => 'The filepath to store the log and status files to. This should be
+        either the sites/default/files directory for your Drupal site or the /tmp directory. Default: /tmp.',
+      'log_filename' => 'The name of the logfile. Default: tripaljobs_daemon.log',
+      'status_filename' => array(
+        'description' => 'The name of the file containing a JSON array describing the status of the Daemon. Default: tripaljobs_daemon.status.json',
+        'hidden' => TRUE
+      )
     ),
     'examples' => array(
       'drush trpjob-daemon start'                            => 'Start the daemon.',
@@ -40,11 +48,11 @@ function tripal_daemon_drush_command() {
       ' '   => '',
       'drush trpjob-daemon status' => 'Show the current status of the daemon.',
       '  '  => '',
-      'drush trpjob-daemon stop'              => 'Stop the daemon, allowing 45 seconds for processing.',
+      'drush trpjob-daemon stop'              => 'Stop the daemon.',
       //'drush trpjob-daemon stop --timeout=10' => 'Allow 10 seconds for processing.',
       //'drush trpjob-daemon stop --queue'      => 'Queue the node access rebuild daemon to stop.',
       '   ' => '',
-      'drush trpjob-daemon restart'              => 'Restart the daemon, allowing 45 seconds for processing.',
+      'drush trpjob-daemon restart'              => 'Restart the daemon.',
       //'drush trpjob-daemon restart --timeout=10' => 'Allow 10 seconds for processing.',
       //'drush trpjob-daemon restart --queue'      => 'Queue the node access rebuild daemon to restart.',
       '    ' => '',
@@ -67,7 +75,31 @@ function tripal_daemon_drush_command() {
  */
 function drush_tripal_daemon_tripal_jobs_daemon($action) {
 
-  drush_print("\nTripal Jobs Daemon\n".str_repeat("=",60)."\n");
-  drush_print(" You have choosen to $action the daemon.\n");
+  $details = tripal_daemon_drush_command();
+  $supported_options = array_keys($details['tripal-jobs-daemon']['options']);
 
+  $script_path = drupal_get_path('module','tripal_daemon');
+  $module_path = DRUPAL_ROOT . '/' . drupal_get_path('module','tripal_daemon');
+
+  $output = NULL;
+  $return_value = NULL;
+  $options = array();
+  foreach ($supported_options as $opt) {
+    $val = drush_get_option($opt);
+    if ($val) {
+      $options[] = $opt . '=' . $val;
+    }
+  }
+  $command = "php $script_path/tripal_daemon_script.php $action module_path=$module_path " . implode(" ",$options);
+  exec($command, $output, $return_value);
+  drush_print(implode("\n",$output));
+
+  switch($return_value) {
+    case 0:
+      drush_log("Daemon started successfully.",'ok');
+      break;
+    default:
+      drush_log("Unable to $action the Daemon.",'error');
+      break;
+  }
 }
