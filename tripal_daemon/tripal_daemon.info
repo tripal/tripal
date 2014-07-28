@@ -1,0 +1,5 @@
+name = Tripal Jobs Daemon
+description = Creates a Daemon to run Tripal Jobs as they are submitted.
+core = 7.x
+package = Tripal Extensions
+dependencies[] = tripal_core
