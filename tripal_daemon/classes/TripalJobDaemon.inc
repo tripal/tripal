@@ -31,6 +31,9 @@ class TripalJobDaemon {
   // The filename & path of the status file
   public $status_filename;
 
+  // Whether or not the current process is a Daemon (ie: child) or not (ie: parent)
+  protected $is_daemon = FALSE;
+
   /**
    * Creates a new TripalDaemon object
    */
@@ -54,13 +57,44 @@ class TripalJobDaemon {
     if (isset($args['memory_threshold'])) {
       $this->memory_threshold = $args['memory_threshold'];
     }
+
+    // Whether or not the current process is a Daemon (ie: child) or not (ie: parent)
+    // There are VERY FEW cases where it's a good idea to pass this option in yourself
+    if (isset($args['is_daemon'])) {
+      $this->is_daemon = $args['is_daemon'];
+    }
   }
 
   /**
    * Start the Daemon
    */
   public function start() {
-    print "Starting the Tripal Daemon...\n";
+
+    // If we are not currently dealing with the daemon/child process then we need to first
+    // create it via forking
+    if (!$this->is_daemon) {
+      print "Starting the Tripal Daemon...\n";
+      $this->fork();
+    }
+
+
+    // If we are a Daemon, we need to implement the never-ending daemonizing loop
+    if ($this->is_daemon) {
+
+      //Now, we detach from the terminal window, so that we stay alive when it is closed.
+      if ( posix_setsid() == -1 ) {
+	      echo "\n Error: Unable to detach from the terminal window. \n";
+      }
+
+      for ($i=0; $i<=10; $i++) {
+        print posix_getpid() . " Mua" . str_repeat("ha",rand(1,15)) . "\n";
+      }
+    }
+    // Otherwise, we are going to be an irresponsible parent and let our child run amok
+    else {
+      print posix_getpid() . " Letting my child run amok :)\n";
+      exit;
+    }
   }
 
   /**
@@ -89,5 +123,27 @@ class TripalJobDaemon {
    */
   public function log() {
     print "Showing the Tripal Daemon Log...\n";
+  }
+
+  /**
+   * Fork off a new process to be the daemon since nobody wants to be the daemon themselves ;-)
+   */
+  protected function fork() {
+    $pid = pcntl_fork();
+    pcntl_signal(SIGCHLD, SIG_IGN);
+
+    // Problem launching the job
+    if ($pid == -1){
+      error_log('Could not launch new job, exiting');
+      return FALSE;
+    }
+    // Parent Process since children are not self-aware
+    else if ($pid) {
+      print "Daemon Process ID: $pid.\n";
+    }
+    // Child Process (we should never get here b/c of the is_daemon logic in start)
+    else {
+      $this->is_daemon = TRUE;
+    }
   }
 }

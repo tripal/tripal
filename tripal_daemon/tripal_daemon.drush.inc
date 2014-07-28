@@ -90,8 +90,9 @@ function drush_tripal_daemon_tripal_jobs_daemon($action) {
       $options[] = $opt . '=' . $val;
     }
   }
-  $command = "php $script_path/tripal_daemon_script.php $action module_path=$module_path " . implode(" ",$options);
-  exec($command, $output, $return_value);
+  $command = "php $script_path/tripal_daemon_script.php $action module_path=$module_path " . implode(" ",$options) . " &";
+  exec($command); //, $output, $return_value);
+  /**
   drush_print(implode("\n",$output));
 
   switch($return_value) {
@@ -102,4 +103,5 @@ function drush_tripal_daemon_tripal_jobs_daemon($action) {
       drush_log("Unable to $action the Daemon.",'error');
       break;
   }
+  */
 }
