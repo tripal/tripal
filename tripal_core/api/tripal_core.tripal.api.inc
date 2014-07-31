@@ -37,10 +37,10 @@ define('TRIPAL_INFO',6);
 define('TRIPAL_DEBUG',7);
 
 /**
- * Provide better error notice for Tripal. If the environment variable 
+ * Provide better error notice for Tripal. If the environment variable
  * 'TRIPAL_DEBUG' is set to 1 then this function will add backtrace
  * information to the message.
- * 
+ *
  * @param $type
  *   The catagory to which this message belongs. Can be any string, but the general
  *   practice is to use the name of the module.
@@ -90,7 +90,7 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
       $severity_string = 'DEBUG';
       break;
   }
-  
+
   // get the backtrace and include in the error message, but only if the
   // TRIPAL_DEBUG environment variable is set.
   if (getenv('TRIPAL_DEBUG') == 1) {
@@ -112,13 +112,22 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
     $options['print'] = TRUE;
   }
 
+  // Format the message for printing (either to the screen, log or both)
+  if (sizeof($variables) > 0) {
+    $print_message = str_replace(array_keys($variables), $variables, $message);
+  }
+  else {
+    $print_message = $message;
+  }
+
   // If print option supplied then print directly to the screen
   if (isset($options['print'])) {
-    if (sizeof($variables) > 0) {
-      $message = str_replace(array_keys($variables), $variables, $message);
-    }
-    print $severity_string . ' (' . strtoupper($type) . '): ' . $message . "\n";
+    print $severity_string . ' (' . strtoupper($type) . '): ' . $print_message . "\n";
   }
+
+  // Print to the Tripal error log
+  tripal_log( $severity_string . ' (' . strtoupper($type) . '): ' . $print_message . "\n", 'error');
+
 }
 
 /**
@@ -192,4 +201,54 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = arra
   else {
     drupal_set_message($full_message, 'tripal-site-admin-only');
   }
+}
+
+/**
+ * File-based Logging for Tripal
+ *
+ * @param $message
+ *   The message to be logged. Need not contain date/time information
+ * @param $log_type
+ *   The type of log. Should be one of 'error' or 'job'
+ * @param $options
+ *   An array of options where the following keys are supported:
+ *     - first_progress_bar: this sohuld be used for the first log call for a progress bar
+ *     - is_progress_bar: this option should be used for all but the first print of a
+ *         progress bar to allow it all to be printed on the same line without intervening
+ *         date prefixes
+ * @return
+ *   The number of bytes that were written to the file, or FALSE on failure
+ */
+function tripal_log($message, $type, $options = array()) {
+
+  $date   = date("Y-m-d H:i:s");
+  $prefix = "[$date]";
+  $indent = "\t\t\t";
+
+  $log_filename = tripal_get_logfile_path($type);
+
+  if (!isset($options['is_progress_bar'])) {
+    $message = $prefix . "\t" . str_replace("\n", "\n$indent", trim($message)) . "\n";
+  }
+
+  if (isset($options['first_progress_bar'])) {
+    $message = trim($message);
+  }
+
+  return file_put_contents($log_filename, $message, FILE_APPEND);
+
+}
+
+/**
+ * Return the filename including path to the specified log file
+ *
+ * @param $type
+ *   The type of log. See tripal_log for supported types
+ * @return
+ *  The filename including path to the specified log file
+ */
+function tripal_get_logfile_path($type) {
+
+  return '/tmp/tripal_' . $type . '_' . date('Ymd') . '.log';
+
 }
