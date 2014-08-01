@@ -30,6 +30,8 @@ function tripal_daemon_drush_command() {
       //'show-log' => 'Show the log file.',
     ),
     'options' => array(
+      'num_lines' => 'The number of lines of the log file to show.',
+      'deamonize' => 'Pass this option to push the daemon into the background'
     ),
     'examples' => array(
       'drush trpjob-daemon start'                            => 'Start the daemon.',
