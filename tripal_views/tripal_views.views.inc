@@ -145,7 +145,7 @@ function tripal_views_views_data() {
 
     // check to see if this is the lightest (drupal-style) priority setup for this table
     // if not then don't use this definition
-    $lightest_priority_setup = tripal_views_is_lightest_priority_setup($tvi_row->setup_id, $tvi_row->table_name);
+    $lightest_priority_setup = tripal_is_lightest_priority_setup($tvi_row->setup_id, $tvi_row->table_name);
     if (!$lightest_priority_setup) {
       continue;
     }

@@ -16,7 +16,7 @@ function tripal_library_disable() {
   require_once("tripal_library.views_default.inc");
   $views = tripal_library_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_views_admin_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
   }
 
 }
@@ -57,7 +57,7 @@ function tripal_library_install() {
   // add cvterms
   tripal_library_add_cvs();
   tripal_library_add_cvterms();
-  
+
   // set the default vocabularies
   tripal_set_default_cv('libraryprop', 'type_id', 'library_property');
   tripal_set_default_cv('library', 'type_id', 'library_type');
@@ -247,7 +247,7 @@ function tripal_library_add_cvterms() {
 function tripal_library_update_7200() {
 
   // the library types were formerly in a vocabulary named 'tripal_library_types'.
-  // rename that to just be 'library_type'. We cannot use the Tripal API calls 
+  // rename that to just be 'library_type'. We cannot use the Tripal API calls
   // because during upgrade the tripal_core should also be disabled
   try {
     $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'library_type'")->fetchObject();
@@ -260,7 +260,7 @@ function tripal_library_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to change the vocabulary from tripal_library_types to library_type: '. $error);
   }
-  
+
   // add the library_property CV
   try {
     $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'library_property'")->fetchObject();
@@ -276,7 +276,7 @@ function tripal_library_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to add library_property vocabulary: '. $error);
   }
-  
+
   // add the library_type CV
   try {
     $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'library_type'")->fetchObject();
@@ -284,7 +284,7 @@ function tripal_library_update_7200() {
       $sql = "INSERT INTO chado.cv (name, definition) VALUES (
         'library_type',
         'Contains terms for types of libraries (e.g. BAC, cDNA, FOSMID, etc).')
-      ";  
+      ";
       db_query($sql);
     }
   }
@@ -292,19 +292,19 @@ function tripal_library_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to add library_type vocabulary: '. $error);
   }
-  
+
   // For Tripal in Drupal 6 the library_description cvterm was stored in the
   // 'tripal' CV.  It should be stored in the new library_property CV that
   // is added by this module for Tripal 2.0 and Drupal 7.  So, we need to
-  // reset the CV ID for that term and rename the term to 'Library Description' 
-  // We cannot use the Tripal API calls in the 7000 update 
+  // reset the CV ID for that term and rename the term to 'Library Description'
+  // We cannot use the Tripal API calls in the 7000 update
   // because during upgrade the tripal_core should also be disabled
   $sql = "
-    UPDATE chado.cvterm 
-    SET 
+    UPDATE chado.cvterm
+    SET
       name = 'Library Description',
       cv_id = (SELECT cv_id FROM chado.cv WHERE name = 'library_property')
-    WHERE 
+    WHERE
       name = 'library_description' AND
       cv_id = (SELECT cv_id FROM chado.cv WHERE name = 'tripal')
   ";
@@ -315,7 +315,7 @@ function tripal_library_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to change library_description property type to the library_property CV and update the name: '. $error);
   }
-  
+
   // During the upgrade from D6 to D7 the vocabulary terms assigned to libraries were
   // copied to the field_data_taxonomyextra table rather than to the correct
   // field_data_taxonomy_vocabulary_[vid] table. We'll move them.
@@ -333,7 +333,7 @@ function tripal_library_update_7200() {
       db_query($sql);
       $sql = "DELETE FROM field_data_taxonomyextra WHERE bundle = 'chado_library'";
       db_query($sql);
-  
+
       // next move from the field_revision_taxonomyextra table
       $sql = "
         INSERT INTO {field_revision_taxonomy_vocabulary_$vid}
@@ -351,7 +351,7 @@ function tripal_library_update_7200() {
       throw new DrupalUpdateException('Could not move library taxonomy terms: '. $error);
     }
   }
-  
+
   // set the default vocabularies
   // library_type
   try {
@@ -383,7 +383,7 @@ function tripal_library_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to set the library_property vocabulary as default: '. $error);
   }
-  
+
 }
 
 /**

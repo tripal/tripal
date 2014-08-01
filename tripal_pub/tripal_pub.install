@@ -16,7 +16,7 @@ function tripal_pub_disable() {
   require_once("tripal_pub.views_default.inc");
   $views = tripal_pub_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_views_admin_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
   }
 
 }
@@ -62,7 +62,7 @@ function tripal_pub_install() {
 
   // add the custom tables
   tripal_pub_add_custom_tables();
-  
+
   // set the default vocabularies
   tripal_set_default_cv('pub', 'type_id', 'tripal_pub');
   tripal_set_default_cv('pubprop', 'type_id', 'tripal_pub');
@@ -229,25 +229,25 @@ function tripal_pub_add_custom_tables() {
  */
 function tripal_pub_add_cvs() {
 
-  
+
   // Add the cv for pub properties
   tripal_cv_add_cv(
     'tripal_pub',
     'A heirarchical set of terms for describing a publication. It is intended to be used as the default vocabularies in Tripal for publication types and contact properties.'
   );
-  
+
   // Add the cv for pub types
   tripal_cv_add_cv(
     'pub_type',
     'Contains types of publications. This can be used if the tripal_pub vocabulary (which is default for publications in Tripal) is not desired.'
   );
-  
+
   // Add the cv for pub properties
   tripal_cv_add_cv(
     'pub_property',
     'Contains properties for publications. This can be used if the tripal_pub vocabulary (which is default for publications in Tripal) is not desired.'
   );
-  
+
   // Add cv for relationship types
   tripal_cv_add_cv(
     'pub_relationship',
@@ -270,7 +270,7 @@ function tripal_pub_add_cvterms() {
  */
 function tripal_pub_update_7200() {
 
-  
+
   // add the tripal_pub CV and set it to be the default for pub types and pub properties
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'tripal_pub'")->fetchField();
@@ -304,7 +304,7 @@ function tripal_pub_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to add pub_property vocabulary: '. $error);
   }
-  
+
   // add the pub_property CV
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'pub_property'")->fetchField();
@@ -322,7 +322,7 @@ function tripal_pub_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to add pub_property vocabulary: '. $error);
   }
-  
+
   // add the pub_type CV
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'pub_type'")->fetchField();
@@ -340,7 +340,7 @@ function tripal_pub_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to add pub_type vocabulary: '. $error);
   }
-  
+
   // add the pub_relationship CV
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'pub_relationship'")->fetchField();

@@ -16,12 +16,12 @@ function tripal_organism_views_default_views() {
   // Remember, if you change the name/path of this view,
   // you also want to change it's description in tripal_organism_search_biological_data_views()
   $view = tripal_organism_defaultvalue_user_organisms();
-  $view = tripal_views_make_view_compatible_with_external($view);
+  $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   // Admin view
   $view = tripal_organism_admin_defaultview_organisms();
-  $view = tripal_views_make_view_compatible_with_external($view);
+  $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   return $views;
@@ -43,7 +43,7 @@ function tripal_organism_defaultvalue_user_organisms() {
   $view->core = 0;
   $view->api_version = '3.0';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
-  
+
   /* Display: Defaults */
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->display->display_options['title'] = 'Organisms';
@@ -186,7 +186,7 @@ function tripal_organism_defaultvalue_user_organisms() {
     1 => 0,
     3 => 0,
   );
-  
+
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
   $handler->display->display_options['path'] = 'chado/organism';
@@ -194,7 +194,7 @@ function tripal_organism_defaultvalue_user_organisms() {
   $handler->display->display_options['menu']['title'] = 'Organisms';
   $handler->display->display_options['menu']['description'] = 'Any living biological entity, such as an animal, plant, fungus, or bacterium.';
   $handler->display->display_options['menu']['weight'] = '-10';
-    
+
 
   return $view;
 }

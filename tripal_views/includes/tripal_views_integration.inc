@@ -41,7 +41,7 @@ function tripal_views_integrate_all_chado_tables() {
   foreach ($tables as $tablename) {
 
     $priority = 10;
-    if (!tripal_views_is_integrated($tablename, $priority)) {
+    if (!tripal_is_table_integrated($tablename, $priority)) {
       if (in_array($tablename, $base_tables)) {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
       }
@@ -49,7 +49,7 @@ function tripal_views_integrate_all_chado_tables() {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE, $priority);
       }
       if ($table_integration_array) {
-        tripal_views_integration_add_entry($table_integration_array);
+        tripal_add_views_integration($table_integration_array);
       }
     }
   }
@@ -62,7 +62,7 @@ function tripal_views_integrate_all_chado_tables() {
  *   The table to generate the tripal views integration array for
  * @return
  *   The tripal views integration array which is the parameter for
- *   tripal_views_integration_add_entry($defn_array)
+ *   tripal_add_views_integration($defn_array)
  *
  * @ingroup tripal_views
  */

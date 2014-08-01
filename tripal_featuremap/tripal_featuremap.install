@@ -16,7 +16,7 @@ function tripal_featuremap_disable() {
   require_once("tripal_featuremap.views_default.inc");
   $views = tripal_featuremap_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_views_admin_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
   }
 
 }
@@ -447,7 +447,7 @@ function tripal_featuremap_update_7200() {
 
   // set the default vocabularies
   // featuremap_units
-  try {    
+  try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'featuremap_units'")->fetchField();
     db_insert('tripal_cv_defaults')
       ->fields(array(
@@ -461,7 +461,7 @@ function tripal_featuremap_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to set featuremap_units vocabulary as default: '. $error);
   }
-  
+
   // featurepos_property
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'featurepos_property'")->fetchField();
@@ -477,7 +477,7 @@ function tripal_featuremap_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to set featurepos_property vocabulary as default: '. $error);
   }
-  
+
   // featuremap_property
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'featuremap_property'")->fetchField();
@@ -493,7 +493,7 @@ function tripal_featuremap_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to set featuremap_property vocabulary as default: '. $error);
   }
-  
+
 }
 
 /**
@@ -542,7 +542,7 @@ function tripal_featuremap_update_7201() {
       FOREIGN KEY (featuremap_id) REFERENCES chado.featuremap (featuremap_id)
       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
     ');
-    
+
     // featuremap_dbref table
     db_query('
       ALTER TABLE chado.featuremap_dbxref
@@ -564,7 +564,7 @@ function tripal_featuremap_update_7201() {
       FOREIGN KEY (featuremap_id) REFERENCES chado.featuremap (featuremap_id)
       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
     ');
-    
+
     // featureposprop
     db_query('
       ALTER TABLE chado.featureposprop

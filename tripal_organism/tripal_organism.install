@@ -16,7 +16,7 @@ function tripal_organism_disable() {
   require_once("tripal_organism.views_default.inc");
   $views = tripal_organism_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_views_admin_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
   }
 
 }
@@ -37,10 +37,10 @@ function tripal_organism_install() {
   // cvs & cvterms
   tripal_organism_add_cvs();
   tripal_organism_add_cvterms();
-  
+
   // set the default vocabularies
   tripal_set_default_cv('organismprop', 'type_id', 'organism_property');
-  
+
 }
 
 /**
@@ -117,7 +117,7 @@ function tripal_organism_requirements($phase) {
  */
 function tripal_organism_add_cvs() {
   tripal_cv_add_cv(
-    'organism_property', 
+    'organism_property',
     'Contains properties for organisms'
   );
 }
@@ -138,7 +138,7 @@ function tripal_organism_add_cvterms() {
 function tripal_organism_update_7200() {
 
   // add the new organism_property vocabulary
-  // We cannot use the Tripal API calls in the 7000 update 
+  // We cannot use the Tripal API calls in the 7000 update
   // because during upgrade the tripal_core should also be disabled
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'organism_property'")->fetchField();
@@ -162,7 +162,7 @@ function tripal_organism_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to add organism_property vocabulary: '. $error);
   }
-  
+
 
   // During the upgrade from D6 to D7 the vocabulary terms assigned to organisms were
   // copied to the field_data_taxonomyextra table rather than to the correct
@@ -207,11 +207,11 @@ function tripal_organism_update_7200() {
  */
 function tripal_organism_update_dependencies() {
   $dependencies = array();
-  
+
   // the tripal_cv update 7200 must run prior to update 7200 of this module
   $dependencies['tripal_organism'][7200] = array(
     'tripal_cv' => 7200
   );
-  
+
   return $dependencies;
 }

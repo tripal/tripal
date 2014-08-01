@@ -16,12 +16,12 @@ function tripal_featuremap_views_default_views() {
   // Remember, if you change the name/path of this view,
   // you also want to change it's description in tripal_featuremap_search_biological_data_views()
   $view = tripal_featuremap_defaultvalue_user_featuremaps();
-  $view = tripal_views_make_view_compatible_with_external($view);
+  $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   // Admin view
   $view = tripal_featuremap_defaultview_admin_featuremaps();
-  $view = tripal_views_make_view_compatible_with_external($view);
+  $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   return $views;

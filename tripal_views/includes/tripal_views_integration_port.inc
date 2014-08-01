@@ -21,7 +21,7 @@
 function tripal_views_integration_export_form($form, &$form_state, $setup_id) {
   $form = array();
 
-  $defn_array = tripal_views_integration_export_entry($setup_id);
+  $defn_array = tripal_export_views_integration($setup_id);
 
   $t = var_export($defn_array, TRUE);
   $t = preg_replace("/\n\s+array/", "array", $t); // move array( to previous line
@@ -110,7 +110,7 @@ function tripal_views_integration_import_form_submit($form, &$form_state) {
   }
 
   // Add the views integration
-  $success = tripal_views_integration_add_entry($defn_array);
+  $success = tripal_add_views_integration($defn_array);
   if ($success) {
     drupal_set_message(t("Successfully imported %name Integration", array('%name' => $defn_array['name'])));
   }

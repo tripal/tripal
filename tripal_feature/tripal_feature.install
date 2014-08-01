@@ -17,7 +17,7 @@ function tripal_feature_disable() {
   require_once("tripal_feature.views_default.inc");
   $views = tripal_feature_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_views_admin_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
   }
 
 }
@@ -56,10 +56,10 @@ function tripal_feature_install() {
 
   // create the temp table we will use for loading GFF files
   tripal_cv_create_tripal_gff_temp();
-  
+
   // add the vocabularies used by the feature module:
   tripal_feature_add_cvs();
-  
+
   // set the default vocabularies
   tripal_set_default_cv('feature', 'type_id', 'sequence');
   tripal_set_default_cv('featureprop', 'type_id', 'feature_property');
@@ -231,16 +231,16 @@ function tripal_feature_add_cvs() {
     'feature_relationship',
     'Contains types of relationships between features.'
   );
-  
+
   // the feature_property CV already exists... it comes with chado, but we need to
   // add it just in case it doesn't get added before the feature module is installed
   tripal_cv_add_cv(
     'feature_property',
     'Stores properties about features'
   );
-  
+
   // the feature type vocabulary should be the sequence ontology, and even though
-  // this ontology should get loaded we will create it here just so that we can 
+  // this ontology should get loaded we will create it here just so that we can
   // set the default vocabulary for the feature.type_id field
   tripal_cv_add_cv(
     'sequence',
@@ -253,9 +253,9 @@ function tripal_feature_add_cvs() {
  * This update may take some time to complete.
  */
 function tripal_feature_update_7200() {
-  // During the upgrade from D6 to D7 the vocabulary terms assigned to features were 
+  // During the upgrade from D6 to D7 the vocabulary terms assigned to features were
   // copied to the field_data_taxonomyextra table rather than to the correct
-  // field_data_taxonomy_vocabulary_[vid] table. We'll move them. 
+  // field_data_taxonomy_vocabulary_[vid] table. We'll move them.
   $vid = db_query("SELECT vid FROM {taxonomy_vocabulary} WHERE name = 'Feature Type'")->fetchField();
   if ($vid) {
     try {
@@ -270,7 +270,7 @@ function tripal_feature_update_7200() {
       db_query($sql);
       $sql = "DELETE FROM field_data_taxonomyextra WHERE bundle = 'chado_feature'";
       db_query($sql);
-      
+
       // next move from the field_revision_taxonomyextra table
       $sql = "
         INSERT INTO {field_revision_taxonomy_vocabulary_$vid}
@@ -288,7 +288,7 @@ function tripal_feature_update_7200() {
       throw new DrupalUpdateException('Could not move feature taxonomy terms: '. $error);
     }
   }
-  
+
   // set the default feature property vocabulary
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'feature_property'")->fetchField();
@@ -304,7 +304,7 @@ function tripal_feature_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to set feature_property vocabulary as default: '. $error);
   }
-  
+
   // add the feature_relationshp CV
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'feature_relationship'")->fetchField();
@@ -330,7 +330,7 @@ function tripal_feature_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to add feature_relationship vocabulary: '. $error);
   }
-  
+
   // set the feature_type as the 'sequence' ontology
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'sequence'")->fetchField();
@@ -355,8 +355,8 @@ function tripal_feature_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to add sequence vocabulary which will be used for the sequence ontology: '. $error);
   }
-  
-  
+
+
 }
 
 /**

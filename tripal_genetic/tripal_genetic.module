@@ -66,7 +66,7 @@ function tripal_genetic_menu() {
 
   $items['admin/tripal/chado/tripal_genetic/views/genetics/enable'] = array(
     'title' => 'Enable genetic Administrative View',
-    'page callback' => 'tripal_views_admin_enable_view',
+    'page callback' => 'tripal_enable_view',
     'page arguments' => array('tripal_genetic_admin_genetics', 'admin/tripal/chado/tripal_genetic'),
     'access arguments' => array('administer tripal genetic'),
     'type' => MENU_CALLBACK,

@@ -135,7 +135,7 @@ function tripal_views_menu() {
 
   $items['admin/tripal/views-integrations/views/integrations/enable'] = array(
     'title' => 'Enable Integrations Administrative View',
-    'page callback' => 'tripal_views_admin_enable_view',
+    'page callback' => 'tripal_enable_view',
     'page arguments' => array('tripal_views_admin_integrations', 'admin/tripal/views-integrations'),
     'access arguments' => array('manage tripal_views_integration'),
     'type' => MENU_CALLBACK,
@@ -159,7 +159,7 @@ function tripal_views_init() {
   $tripal_views = $tripal_views->fetchObject();
   if (isset($tripal_views)) {
     if (!$tripal_views->has_rows) {
-      tripal_views_rebuild_views_integrations();
+      tripal_rebuild_views_integrations();
     }
   }
 }

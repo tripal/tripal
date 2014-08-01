@@ -14,12 +14,12 @@ function tripal_cv_views_default_views() {
 
   // Default Tripal Admin View: CVs
   $view = tripal_cv_defaultview_admin_cvs_listing();
-  $view = tripal_views_make_view_compatible_with_external($view);
+  $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   // Default Tripal Admin View: CV Terms
   $view = tripal_cv_defaultview_admin_cvterms_listing();
-  $view = tripal_views_make_view_compatible_with_external($view);
+  $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   return $views;

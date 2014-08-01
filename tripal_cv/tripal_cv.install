@@ -17,7 +17,7 @@ function tripal_cv_disable() {
   require_once("tripal_cv.views_default.inc");
   $views = tripal_cv_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_views_admin_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
   }
 
 }
@@ -111,10 +111,10 @@ function tripal_cv_create_tripal_obo_temp() {
  */
 function tripal_cv_schema() {
   $schema = array();
-  
+
   tripal_cv_get_tripal_cv_obo_table($schema);
   tripal_cv_get_tripal_cv_defaults_table($schema);
-  
+
   return $schema;
 }
 /**

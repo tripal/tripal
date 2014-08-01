@@ -18,7 +18,7 @@ function tripal_analysis_disable() {
   require_once("tripal_analysis.views_default.inc");
   $views = tripal_analysis_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_views_admin_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
   }
 
 }
@@ -58,13 +58,13 @@ function tripal_analysis_install() {
 
   // add vocabularies
   tripal_analysis_add_cvs();
-  
+
   // add cvterms
   tripal_analysis_add_cvterms();
 
   // add materialized views
   tripal_analysis_add_mview_analysis_organism();
-  
+
   // set the default vocabularies
   tripal_set_default_cv('analysisprop', 'type_id', 'analysis_property');
 }
@@ -146,7 +146,7 @@ function tripal_analysis_add_cvterms() {
   // the 'analysis_property' vocabulary is for user definable properties wo we
   // will add an 'Analysis Type' to this vocubulary
   $term = array(
-    'name' => 'Analysis Type', 
+    'name' => 'Analysis Type',
     'def' => 'The type of analysis that was performed.'
   );
   tripal_cv_add_cvterm($term, 'analysis_property', 0, 1, 'tripal');
@@ -280,7 +280,7 @@ function tripal_analysis_add_mview_analysis_organism() {
 function tripal_analysis_update_7200() {
   // We cannot use the Tripal API calls in the 7200 update
   // because during upgrade the tripal_core should also be disabled
-  
+
   // set the analysis_property as default
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'analysis_property'")->fetchField();
@@ -296,8 +296,8 @@ function tripal_analysis_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to add analysis_property vocabulary: '. $error);
   }
-  
-  
+
+
   // During the upgrade from D6 to D7 the vocabulary terms assigned to organisms were
   // copied to the field_data_taxonomyextra table rather than to the correct
   // field_data_taxonomy_vocabulary_[vid] table. We'll move them.
@@ -355,9 +355,9 @@ function tripal_analysis_update_dependencies() {
  *
  */
 function tripal_analysis_update_7201() {
-  
+
   // there is a bug in the Tripal v2.0-alpha release that didn't add the
-  // materialized view schema to the mviews table.  
+  // materialized view schema to the mviews table.
   // get the schema for the materialized view from the custom_tables table
   // as there is a copy there, but only if the schema is missing from the
   // materialized view table

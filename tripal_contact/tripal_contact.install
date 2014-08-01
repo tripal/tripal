@@ -19,7 +19,7 @@ function tripal_contact_disable() {
   require_once("tripal_contact.views_default.inc");
   $views = tripal_contact_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_views_admin_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
   }
 
 }
@@ -65,7 +65,7 @@ function tripal_contact_install() {
   // Add cvterms for relationship types
   tripal_contact_add_cvs();
   tripal_contact_add_cvterms();
-  
+
   // set the default vocabularies
   tripal_set_default_cv('contact', 'type_id', 'tripal_contact');
   tripal_set_default_cv('contactprop', 'type_id', 'tripal_contact');
@@ -93,27 +93,27 @@ function tripal_contact_uninstall() {
  * @ingroup tripal_contact
  */
 function tripal_contact_add_cvs() {
-  
+
   // Add the cv for contact properties. This is a default vocabulary in the event
   // that a user does not want to use the tripal_contact vocabulary
   tripal_cv_add_cv(
     'contact_property',
     'Contains properties for contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
   );
-  
+
   // add the cv for the contact type. This is a default vocabulary in the event
   // that a user does not want to use the tripal_contact vocabulary
   tripal_cv_add_cv(
     'contact_type',
     'Contains types of contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
   );
-  
+
   // Add the cv for the tripal_contact vocabulary which is loaded via the OBO
   tripal_cv_add_cv(
    'tripal_contact',
    'A heirarchical set of terms for describing a contact. It is intended to be used as the default vocabularies in Tripal for contact types and contact properties.'
   );
-  
+
   // add the cv for contact relationships
   tripal_cv_add_cv(
     'contact_relationship',
@@ -242,10 +242,10 @@ function tripal_contact_add_custom_tables(){
  *
  */
 function tripal_contact_update_7200() {
-  
-  // We cannot use the Tripal API calls in the 7200 update 
+
+  // We cannot use the Tripal API calls in the 7200 update
   // because during upgrade the tripal_core will be disabled
-  
+
   // add the contact_type CV
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'tripal_contact'")->fetchField();
@@ -278,8 +278,8 @@ function tripal_contact_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to add tripal_contact vocabulary: '. $error);
   }
-  
-  
+
+
   // add the contact_relationship CV
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'contact_relationship'")->fetchField();
@@ -323,7 +323,7 @@ function tripal_contact_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to add contact_type vocabulary: '. $error);
   }
-  
+
   // add the contact_property CV
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'contact_property'")->fetchField();
@@ -363,9 +363,9 @@ function tripal_contact_update_dependencies() {
  *
  */
 function tripal_contact_update_7201() {
-  // there was a bug in the function for creating a custom table that 
+  // there was a bug in the function for creating a custom table that
   // kept foreign key constraints from being added.  So, we need to add those
-  // to keep from error messages appear, we will drop the FK if it already 
+  // to keep from error messages appear, we will drop the FK if it already
   // exists and then re-add it.
   try {
     db_query('

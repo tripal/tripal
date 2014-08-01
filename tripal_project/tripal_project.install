@@ -16,7 +16,7 @@ function tripal_project_disable() {
   require_once("tripal_project.views_default.inc");
   $views = tripal_project_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_views_admin_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
   }
 
 }
@@ -53,7 +53,7 @@ function tripal_project_install() {
 
   tripal_project_add_cvs();
   tripal_project_add_cvterms();
-  
+
   // set the default vocabularies
   tripal_set_default_cv('projectprop', 'type_id', 'project_property');
   tripal_set_default_cv('project_relationship', 'type_id', 'project_relationship');
@@ -104,7 +104,7 @@ function tripal_project_schema() {
 function tripal_project_add_cvs() {
   // Add the cv for project properties
   tripal_cv_add_cv(
-    'project_property', 
+    'project_property',
     'Contains properties for projects'
   );
 
@@ -139,7 +139,7 @@ function tripal_project_add_cvterms() {
  *
  */
 function tripal_project_update_7200() {
-  
+
   // add the project_property CV
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'project_property'")->fetchField();
@@ -165,7 +165,7 @@ function tripal_project_update_7200() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to add project_property vocabulary: '. $error);
   }
-  
+
   // add the project_relationship CV
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'project_relationship'")->fetchField();

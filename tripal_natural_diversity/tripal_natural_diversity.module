@@ -67,7 +67,7 @@ function tripal_natural_diversity_menu() {
 
   $items['admin/tripal/chado/tripal_natdiv/views/natdiv_exp/enable'] = array(
     'title' => 'Enable Natural Diversity Administrative View',
-    'page callback' => 'tripal_views_admin_enable_view',
+    'page callback' => 'tripal_enable_view',
     'page arguments' => array('tripal_natural_diversity_admin_natdiv_exp', 'admin/tripal/chado/tripal_natdiv'),
     'access arguments' => array('administer tripal nd'),
     'type' => MENU_CALLBACK,

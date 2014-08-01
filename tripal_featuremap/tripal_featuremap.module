@@ -139,7 +139,7 @@ function tripal_featuremap_menu() {
 
   $items['admin/tripal/chado/tripal_featuremap/views/featuremaps/enable'] = array(
     'title' => 'Enable featuremap Administrative View',
-    'page callback' => 'tripal_views_admin_enable_view',
+    'page callback' => 'tripal_enable_view',
     'page arguments' => array('tripal_featuremap_admin_featuremaps', 'admin/tripal/chado/tripal_featuremap'),
     'access arguments' => array('administer tripal featuremap'),
     'type' => MENU_CALLBACK,

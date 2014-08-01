@@ -16,12 +16,12 @@ function tripal_project_views_default_views() {
   // Remember, if you change the name/path of this view,
   // you also want to change it's description in tripal_project_search_biological_data_views()
   $view = tripal_project_defaultvalue_user_projects();
-  $view = tripal_views_make_view_compatible_with_external($view);
+  $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   // Admin view
   $view = tripal_project_defaultview_admin_projects();
-  $view = tripal_views_make_view_compatible_with_external($view);
+  $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   return $views;

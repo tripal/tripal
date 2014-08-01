@@ -16,12 +16,12 @@ function tripal_feature_views_default_views() {
   // Remember, if you change the name/path of this view,
   // you also want to change it's description in tripal_feature_search_biological_data_views()
   $view = tripal_feature_defaultvalue_user_features();
-  $view = tripal_views_make_view_compatible_with_external($view);
+  $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   // Admin view
   $view = tripal_feature_defaultview_admin_features();
-  $view = tripal_views_make_view_compatible_with_external($view);
+  $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   return $views;
@@ -43,7 +43,7 @@ function tripal_feature_defaultvalue_user_features() {
   $view->core = 0;
   $view->api_version = '3.0';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
-  
+
   /* Display: features_all */
   $handler = $view->new_display('default', 'features_all', 'default');
   $handler->display->display_options['title'] = 'Sequence Features';
@@ -248,7 +248,7 @@ function tripal_feature_defaultvalue_user_features() {
   $handler->display->display_options['filters']['common_name']['expose']['identifier'] = 'organism';
   $handler->display->display_options['filters']['common_name']['values_form_type'] = 'select';
   $handler->display->display_options['filters']['common_name']['select_optional'] = TRUE;
-  
+
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
   $handler->display->display_options['path'] = 'chado/feature';
@@ -256,8 +256,8 @@ function tripal_feature_defaultvalue_user_features() {
   $handler->display->display_options['menu']['title'] = 'Features';
   $handler->display->display_options['menu']['description'] = 'A biological sequence or a section of a biological sequence, or a collection of such sections.';
   $handler->display->display_options['menu']['weight'] = '-10';
-  
-  
+
+
   return $view;
 }
 

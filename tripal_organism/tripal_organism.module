@@ -108,7 +108,7 @@ function tripal_organism_menu() {
 
   $items['admin/tripal/chado/tripal_organism/views/organisms/enable'] = array(
     'title' => 'Enable Organism Administrative View',
-    'page callback' => 'tripal_views_admin_enable_view',
+    'page callback' => 'tripal_enable_view',
     'page arguments' => array('tripal_organism_admin_organisms', 'admin/tripal/chado/tripal_organism'),
     'access arguments' => array('administer tripal organism'),
     'type' => MENU_CALLBACK,
@@ -272,7 +272,7 @@ function tripal_organism_form_alter(&$form, &$form_state, $form_id) {
   // turn of preview button for insert/updates
   if ($form_id == "chado_organism_node_form") {
     $form['actions']['preview']['#access'] = FALSE;
-    
+
     //remove the body field
     unset($form['body']);
   }

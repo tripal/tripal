@@ -16,7 +16,7 @@ function tripal_genetic_disable() {
   require_once("tripal_genetic.views_default.inc");
   $views = tripal_genetic_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_views_admin_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
   }
 
 }

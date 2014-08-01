@@ -16,7 +16,7 @@ function tripal_stock_disable() {
   require_once("tripal_stock.views_default.inc");
   $views = tripal_stock_views_default_views();
   foreach (array_keys($views) as $view_name) {
-    tripal_views_admin_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
+    tripal_disable_view($view_name,FALSE,array('suppress_error' => TRUE));
   }
 
 }
@@ -49,10 +49,10 @@ function tripal_stock_requirements($phase) {
 function tripal_stock_install() {
   // create the module's data directory
   tripal_create_files_dir('tripal_stock');
-  
-  // add some controlled vocabularies 
+
+  // add some controlled vocabularies
   tripal_stock_add_cvs();
-  
+
   tripal_stock_add_cvterms();
 
   // set the default vocabularies

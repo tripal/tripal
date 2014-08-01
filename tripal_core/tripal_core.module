@@ -237,7 +237,7 @@ function tripal_core_menu() {
   );
   $items['admin/tripal/tripal_jobs/views/jobs/enable'] = array(
     'title' => 'Enable Jobs Administrative View',
-    'page callback' => 'tripal_views_admin_enable_view',
+    'page callback' => 'tripal_enable_view',
     'page arguments' => array('tripal_core_admin_jobs', 'admin/tripal/tripal_jobs'),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
@@ -351,7 +351,7 @@ function tripal_core_menu() {
   );
   $items['admin/tripal/schema/custom_tables/views/tables/enable'] = array(
     'title' => 'Enable Custom Tables Administrative View',
-    'page callback' => 'tripal_views_admin_enable_view',
+    'page callback' => 'tripal_enable_view',
     'page arguments' => array('tripal_core_admin_custom_table', 'admin/tripal/schema/custom_tables'),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
@@ -533,16 +533,16 @@ function tripal_core_node_view_alter(&$build) {
   if ($build['#view_mode'] != 'full' OR !array_key_exists('#tripal_generic_node_template', $build)) {
     return;
   }
-  
+
   $node_type = $build["#node"]->type;
   $nid = $build["#node"]->nid;
-  
+
 
   $cache = cache_get("theme_registry:$theme", 'cache');
   $node = $build['#node'];
   $toc = array();
   $toc_html = '';
-  
+
   // if we are looking at a Tripal node template then we want to
   // make some changes to each block of content so that we can associate
   // a table of contents and add administrator and curator messages
@@ -552,7 +552,7 @@ function tripal_core_node_view_alter(&$build) {
     // that are wanting to provide content for this node
     $markup = array();
     foreach ($build as $key => $value) {
-      
+
       // skip the body element as the Tripal node types do not use it
       if ($key == 'body') {
         continue;
@@ -583,7 +583,7 @@ function tripal_core_node_view_alter(&$build) {
         $override_hide = $toc_item_overrides->hide;
       }
       else {
-        
+
         // get the override title, weight for the general case
         $toc_item_overrides = db_select('tripal_toc', 'tc')
           ->fields('tc', array('toc_item_id', 'title', 'weight', 'hide'))
@@ -605,11 +605,11 @@ function tripal_core_node_view_alter(&$build) {
         unset($build[$key]);
         continue;
       }
-      
-      // for backwards compatibility we will handle the content type fields 
+
+      // for backwards compatibility we will handle the content type fields
       // named 'field_resource_blocks', 'field_resource_titles', and 'field_resource_links'
       // these fields can be added on the Drupal content types page and were
-      // specifically recoginzed by Tripal v1.1. 
+      // specifically recoginzed by Tripal v1.1.
       if ($key == "field_resource_links") {
         // links should just appear on the sidebar as is and not open up a panel
         foreach (element_children($build[$key]) as $index) {
@@ -658,16 +658,16 @@ function tripal_core_node_view_alter(&$build) {
         unset($build["field_resource_titles"]);
         continue;
       }
-      
-      // skip any keys we may have already handled. This is the case for 
+
+      // skip any keys we may have already handled. This is the case for
       // the field_resource_blocks where we removed the old CCK fields
       // and added new ones.  We don't want these new ones to be processed
       // again by the code below.
       if (array_key_exists('#toc_handled', $build[$key]) and $build[$key]['#toc_handled'] == TRUE) {
         continue;
       }
-      
-      // for all other fields we will handle in the following way 
+
+      // for all other fields we will handle in the following way
       //-----------------------
       // INITIALIZE THE CONTENT VARIABLES
       //-----------------------
@@ -685,7 +685,7 @@ function tripal_core_node_view_alter(&$build) {
         $toc_item_title = $build[$key]['#title'];
       }
       $toc_item_title = ucwords($toc_item_title);
-      
+
       // now override the title if a value is set in the tripal_toc table
       $toc_item_title = $override_title ? $override_title : $toc_item_title;
 
@@ -730,7 +730,7 @@ function tripal_core_node_view_alter(&$build) {
       //-----------------------
       // get the template path so we can put it in an admin message box
       $path = '';
-      if (!array_key_exists('#tripal_template_show', $build[$key]) or 
+      if (!array_key_exists('#tripal_template_show', $build[$key]) or
            $build[$key]['#tripal_template_show'] == TRUE) {
         if ($cache and array_key_exists($key, $cache->data) and array_key_exists('path', $cache->data[$key])) {
 

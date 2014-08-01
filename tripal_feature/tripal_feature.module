@@ -203,7 +203,7 @@ function tripal_feature_menu() {
   // Enable admin view
   $items['admin/tripal/chado/tripal_feature/views/features/enable'] = array(
     'title' => 'Enable feature Administrative View',
-    'page callback' => 'tripal_views_admin_enable_view',
+    'page callback' => 'tripal_enable_view',
     'page arguments' => array('tripal_feature_admin_features', 'admin/tripal/chado/tripal_feature'),
     'access arguments' => array('administer tripal feature'),
     'type' => MENU_CALLBACK,
@@ -515,10 +515,10 @@ function tripal_feature_coder_ignore() {
 function tripal_feature_match_features_page($id) {
 
   // first check to see if the URL (e.g. /feature/$id) is already
-  // assigned to a node. If so, then just go there.  Otherwise, 
+  // assigned to a node. If so, then just go there.  Otherwise,
   // try to find the feature.
   $sql = "
-    SELECT source 
+    SELECT source
     FROM {url_alias}
     WHERE alias = :alias
   ";
@@ -603,7 +603,7 @@ function tripal_feature_form_alter(&$form, &$form_state, $form_id) {
   // turn off preview button for insert/updates
   if ($form_id == "chado_feature_node_form") {
     $form['actions']['preview']['#access'] = FALSE;
-    
+
     //remove the body field
     unset($form['body']);
   }

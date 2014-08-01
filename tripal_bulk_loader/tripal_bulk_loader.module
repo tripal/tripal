@@ -94,7 +94,7 @@ function tripal_bulk_loader_menu() {
   $items['admin/tripal/loaders/bulk/views/jobs/enable'] = array(
     'title' => 'Enable Jobs Administrative View',
     'description' => 'Enable Jobs Administrative View',
-    'page callback' => 'tripal_views_admin_enable_view',
+    'page callback' => 'tripal_enable_view',
     'page arguments' => array('tripal_bulk_loading_jobs','admin/tripal/loaders/bulk'),
     'access arguments' => array('administer tripal_bulk_loader'),
     'type' => MENU_CALLBACK,
@@ -102,7 +102,7 @@ function tripal_bulk_loader_menu() {
   $items['admin/tripal/loaders/bulk/views/templates/enable'] = array(
     'title' => 'Enable Templates Administrative View',
     'description' => 'Enable Templates Administrative View',
-    'page callback' => 'tripal_views_admin_enable_view',
+    'page callback' => 'tripal_enable_view',
     'page arguments' => array('tripal_bulk_loader_templates', 'admin/tripal/loaders/bulk'),
     'access arguments' => array('administer tripal_bulk_loader'),
     'type' => MENU_CALLBACK,
@@ -285,7 +285,7 @@ function tripal_bulk_loader_views_api() {
  */
 function tripal_bulk_loader_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
-  
+
   return array(
     'node__tripal_bulk_loader' => array(
       'template' => 'node--chado-generic',
@@ -303,7 +303,7 @@ function tripal_bulk_loader_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_bulk_loader_fields',
       'path' => "$path/theme/templates",
     ),
-    
+
     // form element themes
     'tripal_bulk_loader_modify_template_base_form' => array(
       'template' => 'tripal_bulk_loader_modify_template_base_form',
@@ -315,13 +315,13 @@ function tripal_bulk_loader_theme($existing, $type, $theme, $path) {
       'function' => 'tripal_bulk_loader_field_regex_fieldset',
       'render element' => 'element'
     ),
-    
+
     // admin theme
     'tripal_bulk_loader_admin' => array(
       'template' => 'tripal_bulk_loader_admin',
       'path' => "$path/theme/templates",
     ),
-    
+
 
     // themed teaser
     'tripal_bulk_loader_teaser' => array(

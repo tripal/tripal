@@ -131,7 +131,7 @@ function tripal_views_integration_setup_list() {
  */
 function tripal_views_integration_delete($setup_id) {
 
-  tripal_views_integration_remove_entry_by_setup_id($setup_id);
+  tripal_remove_views_integration(array('setup_id' => ($setup_id));
   drupal_set_message(t("Record Deleted"));
   drupal_goto('admin/tripal/views-integration');
 
@@ -188,7 +188,7 @@ function tripal_views_integration_delete_all_form($form, &$form_state) {
  */
 function tripal_views_integration_delete_all_form_submit($form, &$form_state) {
 
-  tripal_views_rebuild_views_integrations(TRUE);
+  tripal_rebuild_views_integrations(TRUE);
 
   $form_state['redirect'] = 'admin/tripal/views-integration/list';
 
@@ -198,7 +198,7 @@ function tripal_views_integration_delete_all_form_submit($form, &$form_state) {
  * Purpose: defines the web form used for specifing the base table, joins and
  *   handlers when integrating a table with views.  This form is used for both
  *   creating a new record and editing an existing record.
- *   
+ *
  * @param $form
  *    The form array which is passed automatically by drupal
  *
@@ -857,7 +857,7 @@ function tripal_views_integration_form($form, &$form_state) {
       ->orderBy('tvj.relationship_only','ASC')
       ->orderBy('tvj.base_field', 'ASC')
       ->orderBy('tvj.left_table', 'ASC');
-    
+
     foreach ($query->execute() as $i => $result) {
       $form['view_setup_join']["$table_id-$i"] = array(
            '#type' => 'markup',
@@ -1092,7 +1092,7 @@ function tripal_views_integration_form($form, &$form_state) {
       );
     }
   }
-  
+
   $form['#prefix'] = '<div id="tripal-views-integration-form">';
   $form['#suffix'] = '</div>';
 

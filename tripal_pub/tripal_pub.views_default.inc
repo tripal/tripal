@@ -14,7 +14,7 @@ function tripal_pub_views_default_views() {
 
   // Main default view
   $view = tripal_pub_defaultview_admin_publications();
-  $view = tripal_views_make_view_compatible_with_external($view);
+  $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
 
   return $views;
