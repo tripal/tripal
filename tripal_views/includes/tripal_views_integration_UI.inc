@@ -131,7 +131,7 @@ function tripal_views_integration_setup_list() {
  */
 function tripal_views_integration_delete($setup_id) {
 
-  tripal_remove_views_integration(array('setup_id' => ($setup_id));
+  tripal_remove_views_integration(array('setup_id' => ($setup_id)));
   drupal_set_message(t("Record Deleted"));
   drupal_goto('admin/tripal/views-integration');
 
