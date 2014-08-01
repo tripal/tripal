@@ -404,7 +404,7 @@ function chado_project_load($nodes) {
 
     // Now get the title
     $node->title = chado_get_node_title($node);
-      
+
   }
 
 }
@@ -524,7 +524,7 @@ function tripal_project_node_insert($node) {
   // know the project_id in the presave
   switch ($node->type) {
     case 'chado_project':
-      
+
       // get the feature details from chado
       $project_id = chado_get_id_from_nid('project', $node->nid);
       $values = array('project_id' => $project_id);
@@ -533,7 +533,7 @@ function tripal_project_node_insert($node) {
 
       // Now get the title
       $node->title = chado_get_node_title($node);
-      
+
       // on an insert we need to add the project_id to the node object
       // so that the tripal_project_get_project_url function can set the URL properly
       $node->project_id = $project_id;
@@ -566,10 +566,10 @@ function tripal_project_node_update($node) {
       $values = array('project_id' => $project_id);
       $project = chado_generate_var('project', $values);
       $nodes->project = $project;
-      
+
       // Now get the title
       $node->title = chado_get_node_title($node);
-      
+
       // remove any previous alias
       db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
 
@@ -694,7 +694,7 @@ function tripal_project_set_urls($na = NULL, $job = NULL) {
       // update the job status every 1% projects
       if ($job and $num_set % $num_per_interval == 0) {
         $percent = ($num_set / $num_nodes) * 100;
-        tripal_job_set_progress($job, intval($percent));
+        tripal_set_job_progress($job, intval($percent));
         $percent = sprintf("%.2f", $percent);
         print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
 
@@ -702,7 +702,7 @@ function tripal_project_set_urls($na = NULL, $job = NULL) {
       $num_set++;
     }
     $percent = ($num_set / $num_nodes) * 100;
-    tripal_job_set_progress($job, intval($percent));
+    tripal_set_job_progress($job, intval($percent));
     $percent = sprintf("%.2f", $percent);
     print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
     print "\nDone. Set " . number_format($num_set) . " URLs\n";

@@ -472,7 +472,7 @@ function chado_stock_insert($node) {
           'db_id' => $node->database,
           'accession' => $node->accession,
         );
-        if (!tripal_core_chado_select('dbxref', array('dbxref_id'), $values)) {
+        if (!chado_select_record('dbxref', array('dbxref_id'), $values)) {
           $values['description'] = $node->db_description;
           $values['version'] = '1';
           $dbxref_status = chado_insert_record('dbxref', $values);
@@ -888,7 +888,7 @@ function tripal_stock_node_insert($node) {
   // know the stock_id in the presave
   switch ($node->type) {
     case 'chado_stock':
-      
+
       // get the feature details from chado
       $stock_id = chado_get_id_from_nid('stock', $node->nid);
       $values = array('stock_id' => $stock_id);
@@ -928,7 +928,7 @@ function tripal_stock_node_update($node) {
   // add items to other nodes, build index and search results
   switch ($node->type) {
     case 'chado_stock':
-      
+
       // get the feature details from chado
       $stock_id = chado_get_id_from_nid('stock', $node->nid);
       $values = array('stock_id' => $stock_id);
@@ -1081,7 +1081,7 @@ function tripal_stock_set_urls($na = NULL, $job = NULL) {
       // update the job status every 1% stocks
       if ($job and $num_set % $num_per_interval == 0) {
         $percent = ($num_set / $num_nodes) * 100;
-        tripal_job_set_progress($job, intval($percent));
+        tripal_set_job_progress($job, intval($percent));
         $percent = sprintf("%.2f", $percent);
         print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
 
@@ -1089,7 +1089,7 @@ function tripal_stock_set_urls($na = NULL, $job = NULL) {
       $num_set++;
     }
     $percent = ($num_set / $num_nodes) * 100;
-    tripal_job_set_progress($job, intval($percent));
+    tripal_set_job_progress($job, intval($percent));
     $percent = sprintf("%.2f", $percent);
     print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
     print "\nDone. Set " . number_format($num_set) . " URLs\n";

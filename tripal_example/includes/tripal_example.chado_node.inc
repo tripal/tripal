@@ -370,7 +370,7 @@ function chado_example_insert($node) {
   // we do need to proceed with the rest of the insert
   if (!property_exists($node, 'example_id')) {
 
-    // perform the insert using the tripal_core_chado_insert function();
+    // perform the insert using the chado_insert_record function();
     $values = array(
       'uniquename' => $node->uniquename,
       'description' => $node->description,
@@ -574,13 +574,13 @@ function chado_example_load($nodes) {
     // cases it is probably best to let the end-user decide if text fields should
     // be included by using this function in the templates.
     $example = chado_expand_var($example, 'field', 'example.description');
-    
+
 
     // If your module is using the Chado Node: Title & Path API to allow custom titles
     // for your node type. Every time you want the title of the node, you need to use the
     // following API function:
     $node->title = chado_get_node_title($node);
-    
+
     // add the new example object to this node.
     $nodes[$nid]->example = $example;
   }
@@ -653,10 +653,10 @@ function tripal_example_node_insert($node) {
   // it in the hook_insert()
   switch ($node->type) {
     case 'chado_example':
-     
+
       // find the example and add in the details
       $example_id = chado_get_id_from_nid('example', $nid);
-      
+
       // build the example variable by using the chado_generate_var() function
       $values = array('example_id' => $example_id);
       $example = chado_generate_var('example', $values);
@@ -777,9 +777,9 @@ function tripal_example_node_view($node, $view_mode, $langcode) {
           '#tripal_toc_id'    => 'relationships',
           '#tripal_toc_title' => 'Relationships',
         );
-        
-        // Note: if you create a template that you do not want a user to 
-        // know where it is (discourage editing of it), you can add the following 
+
+        // Note: if you create a template that you do not want a user to
+        // know where it is (discourage editing of it), you can add the following
         // key:  '#tripal_template_show' => FALSE. If this key/value is set
         // the the administrator message that Tripal provides indicating
         // where the template is housed will not be shown.

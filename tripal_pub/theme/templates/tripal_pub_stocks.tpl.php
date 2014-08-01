@@ -4,18 +4,18 @@ $stocks = array();
 
 // get the stocks that are associated with this publication.  But we only
 // want 25 and we want a pager to let the user cycle between pages of stocks.
-// so we, use the tripal_core_chado_select API function to get the results and
+// so we, use the chado_select_record API function to get the results and
 // generate the pager.  The function is smart enough to know which page the user is
 // on and retrieves the proper set of stocks
 
 $element = 5;        // an index to specify the pager this must be unique amongst all pub templates
-$num_per_page = 25;  // the number of stocks to show per page$num_results_per_page = 25; 
+$num_per_page = 25;  // the number of stocks to show per page$num_results_per_page = 25;
 
 // get the stocks from the stock_pub table
-$options = array(  
+$options = array(
   'return_array' => 1,
   'pager' => array(
-    'limit'   => $num_per_page, 
+    'limit'   => $num_per_page,
     'element' => $element
   ),
 );
@@ -23,7 +23,7 @@ $options = array(
 $pub = chado_expand_var($pub, 'table', 'stock_pub', $options);
 $stock_pubs = $pub->stock_pub;
 if (count($stock_pubs) > 0 ) {
-  foreach ($stock_pubs as $stock_pub) {    
+  foreach ($stock_pubs as $stock_pub) {
     $stocks[] = $stock_pub->stock_id;
   }
 }
@@ -32,25 +32,25 @@ if (count($stock_pubs) > 0 ) {
 $total_records = chado_pager_get_count($element);
 
 if(count($stocks) > 0){ ?>
-  <div class="tripal_pub-data-block-desc tripal-data-block-desc">This publication contains information about <?php print number_format($total_records) ?> stocks:</div> <?php 
+  <div class="tripal_pub-data-block-desc tripal-data-block-desc">This publication contains information about <?php print number_format($total_records) ?> stocks:</div> <?php
 
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
   $headers = array('Stock Name', 'Uniquenaem', 'Type');
-  
+
   // the $rows array contains an array of rows where each row is an array
   // of values for each column of the table in that row.  Additional documentation
   // can be found here:
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
   $rows = array();
-  
+
   foreach ($stocks as $stock){
      $stock_name = $stock->name;
      if (property_exists($stock, 'nid')) {
        $stock_name = l($stock_name, 'node/' . $stock->nid, array('attributes' => array('target' => '_blank')));
      }
-     
+
      $rows[] = array(
        $stock_name,
        $stock->uniquename,
@@ -76,7 +76,7 @@ if(count($stocks) > 0){ ?>
   // once we have our table array structure defined, we call Drupal's theme_table()
   // function to generate the table.
   print theme_table($table);
-  
+
   // the $pager array values that control the behavior of the pager.  For
   // documentation on the values allows in this array see:
   // https://api.drupal.org/api/drupal/includes!pager.inc/function/theme_pager/7
@@ -91,6 +91,6 @@ if(count($stocks) > 0){ ?>
     ),
     'quantity' => $num_per_page,
   );
-  print theme_pager($pager); 
+  print theme_pager($pager);
 }
 

@@ -11,7 +11,7 @@ $so_terms = explode(' ', $allowed_types);
 
 // get the feature_id's of the feature that belong to this organism.  But we only
 // want 25 and we want a pager to let the user cycle between pages of features.
-// so we, use the tripal_core_chado_select API function to get the results and
+// so we, use the chado_select_record API function to get the results and
 // generate the pager.  The function is smart enough to know which page the user is
 // on and retrieves the proper set of features
 $element = 0;        // an index to specify the pager if more than one is on the page
@@ -25,12 +25,12 @@ $values = array(
 $columns = array('feature_id');
 $options = array(
   'pager' => array(
-    'limit' => $num_per_page, 
+    'limit' => $num_per_page,
     'element' => $element
    ),
   'order_by' => array('name' => 'ASC'),
 );
-$results = tripal_core_chado_select('feature', $columns, $values, $options);
+$results = chado_select_record('feature', $columns, $values, $options);
 
 // now that we have all of the feature IDs, we want to expand each one so that we
 // have all of the neccessary values, including the node ID, if one exists, and the
@@ -48,18 +48,18 @@ foreach ($results as $result) {
 
 if (count($features) > 0) { ?>
   <div class="tripal_organism-data-block-desc tripal-data-block-desc">The following browser provides a quick view for new visitors.  Use the searching mechanism to find specific features.</div> <?php
-  
+
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
   $headers = array('Feature Name' ,'Unique Name', 'Type');
-  
+
   // the $rows array contains an array of rows where each row is an array
   // of values for each column of the table in that row.  Additional documentation
   // can be found here:
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
   $rows = array();
-  
+
   // let admins know they can customize the terms that appear in the list
   print tripal_set_message("Administrators, you can specify the feature types ".
     "that should appear in this browser or remove it from the list of resources ".
@@ -68,7 +68,7 @@ if (count($features) > 0) { ?>
     TRIPAL_INFO,
     array('return_html' => 1)
   );
-  
+
   foreach ($features as $feature){
     $fname =  $feature->name;
     if (property_exists($feature, 'nid')) {
@@ -79,7 +79,7 @@ if (count($features) > 0) { ?>
       $feature->uniquename,
       $feature->type_id->name
     );
-  } 
+  }
   // the $table array contains the headers and rows array as well as other
   // options for controlling the display of the table.  Additional
   // documentation can be found here:
@@ -99,8 +99,8 @@ if (count($features) > 0) { ?>
   // once we have our table array structure defined, we call Drupal's theme_table()
   // function to generate the table.
   print theme_table($table);
-  
-  // the $pager array values that control the behavior of the pager.  For 
+
+  // the $pager array values that control the behavior of the pager.  For
   // documentation on the values allows in this array see:
   // https://api.drupal.org/api/drupal/includes!pager.inc/function/theme_pager/7
   // here we add the paramter 'block' => 'feature_browser'. This is because
@@ -114,8 +114,8 @@ if (count($features) > 0) { ?>
     ),
     'quantity' => $num_per_page,
   );
-  print theme_pager($pager); 
-} 
+  print theme_pager($pager);
+}
 else {  ?>
   <p>There are no results.</p><?php
   print tripal_set_message("
@@ -134,7 +134,7 @@ else {  ?>
     <br>
     <br>
     You can specify the feature types
-    that should appear in this browser or remove it from the list of resources by navigating to the " . 
+    that should appear in this browser or remove it from the list of resources by navigating to the " .
     l("Tripal feature settings page", "admin/tripal/chado/tripal_feature/configuration", array('attributes' => array('target' => '_blank')))  . "
     The feature browser will not appear to site visitors unless features are present. ",
     TRIPAL_INFO,

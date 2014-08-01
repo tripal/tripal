@@ -554,7 +554,7 @@ function tripal_views_views_data_alter(&$data) {
       $base_title = ucwords(str_replace('_', ' ', $base_table));
 
       // add in joins to the node tables if the Chado schema is local
-      if (tripal_core_chado_schema_exists()) {
+      if (chado_is_local()) {
         // if a node linking table exists then add in the joins
         if (db_table_exists($linker_table)) {
 

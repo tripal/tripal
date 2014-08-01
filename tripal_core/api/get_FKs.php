@@ -46,7 +46,7 @@ function get_chado_fk_relationships($version) {
   $v = $version;
   $v = preg_replace("/\./","_",$v);
 
-  $tables = tripal_core_get_chado_tables();
+  $tables = chado_get_table_names();
   $sql ="
     SELECT
         tc.constraint_name, tc.table_name, kcu.column_name,
@@ -84,10 +84,10 @@ function get_chado_fk_relationships($version) {
  * the Drupal-style array definition for any table, use the following function
  * call:
  *
- *   \$table_desc = tripal_core_get_chado_table_schema(\$table)
+ *   \$table_desc = chado_get_schema(\$table)
  *
  * where the variable \$table contains the name of the table you want to
- * retireve.  The tripal_core_get_chado_table_schema function determines the appropriate version of
+ * retireve.  The chado_get_schema function determines the appropriate version of
  * Chado and uses the Drupal hook infrastructure to call the appropriate
  * hook function to retrieve the table schema.
  *
@@ -100,7 +100,7 @@ function get_chado_fk_relationships($version) {
   foreach ($tables as $table) {
 
     // get the existing table array
-    $table_arr = tripal_core_get_chado_table_schema($table);
+    $table_arr = chado_get_schema($table);
 
     if (empty($table_arr)) {
        print "ERROR: empty table definition $table\n";
@@ -140,9 +140,9 @@ function get_chado_fk_relationships($version) {
 print "/**
  * Implements hook_chado_schema_v".$v."_".$table."()
  * Purpose: To describe the structure of '$table' to tripal
- * @see tripal_core_chado_insert()
- * @see tripal_core_chado_update()
- * @see tripal_core_chado_select()
+ * @see chado_insert_record()
+ * @see chado_update_record()
+ * @see chado_select_record()
  *
  * @return
  *    An array describing the '$table' table

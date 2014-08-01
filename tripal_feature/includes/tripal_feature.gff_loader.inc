@@ -314,62 +314,62 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
  *   Set to 1 if feature should be added only.  In the case where a feature
  *   already exists, it will not be updated.  Default is 0
  * @param $update
- *   Set to 1 to update existing features. New features will be added. Attributes 
- *   for a feature that are not present in the GFF but which are present in the 
+ *   Set to 1 to update existing features. New features will be added. Attributes
+ *   for a feature that are not present in the GFF but which are present in the
  *   database will not be altered. Default is 1
  * @param $refresh
- *   Set to 1 to update existing features. New features will be added. Attributes 
- *   for a feature that are not present in the GFF but which are present in the 
+ *   Set to 1 to update existing features. New features will be added. Attributes
+ *   for a feature that are not present in the GFF but which are present in the
  *   database will be removed. Default is 0
  * @param $remove
- *   Set to 1 to remove features present in the GFF file that exist in the database. 
+ *   Set to 1 to remove features present in the GFF file that exist in the database.
  *   Default is 0.
  * @param $use_transaction
  *   Set to 1 to use a transaction when loading the GFF. Any failure during
  *   loading will result in the rollback of any changes. Default is 1.
  * @param $target_organism_id
- *   If the GFF file contains a 'Target' attribute then the feature and the 
- *   target will have an alignment created, but to find the proper target 
- *   feature the target organism must also be known.  If different from the 
+ *   If the GFF file contains a 'Target' attribute then the feature and the
+ *   target will have an alignment created, but to find the proper target
+ *   feature the target organism must also be known.  If different from the
  *   organism specified for the GFF file, then use  this argument to specify
- *   the target organism.  Only use this argument if all target sequences belong 
- *   to the same species. If the targets in the GFF file belong to multiple 
- *   different species then the organism must be specified using the 
+ *   the target organism.  Only use this argument if all target sequences belong
+ *   to the same species. If the targets in the GFF file belong to multiple
+ *   different species then the organism must be specified using the
  *   'target_organism=genus:species' attribute in the GFF file. Default is NULL.
  * @param $target_type
- *   If the GFF file contains a 'Target' attribute then the feature and the 
- *   target will have an alignment created, but to find the proper target 
- *   feature the target organism must also be known.  This can be used to 
+ *   If the GFF file contains a 'Target' attribute then the feature and the
+ *   target will have an alignment created, but to find the proper target
+ *   feature the target organism must also be known.  This can be used to
  *   specify the target feature type to help with identification of the target
- *   feature.  Only use this argument if all target sequences types are the same. 
- *   If the targets are of different types then the type must be specified using 
- *   the 'target_type=type' attribute in the GFF file. This must be a valid 
+ *   feature.  Only use this argument if all target sequences types are the same.
+ *   If the targets are of different types then the type must be specified using
+ *   the 'target_type=type' attribute in the GFF file. This must be a valid
  *   Sequence Ontology (SO) term. Default is NULL
  * @param $create_target
- *   Set to 1 to create the target feature if it cannot be found in the 
- *   database. Default is 0 
+ *   Set to 1 to create the target feature if it cannot be found in the
+ *   database. Default is 0
  * @param $start_line
  *   Set this to the line in the GFF file where importing should start. This
  *   is useful for testing and debugging GFF files that may have problems and
  *   you want to start at a particular line to speed testing.  Default = 1
  * @param $landmark_type
- *   Use this argument to specify a Sequence Ontology term name for the landmark 
- *   sequences in the GFF fie (e.g. 'chromosome'), if the GFF file contains a 
+ *   Use this argument to specify a Sequence Ontology term name for the landmark
+ *   sequences in the GFF fie (e.g. 'chromosome'), if the GFF file contains a
  *   '##sequence-region' line that describes the landmark sequences. Default = ''
  * @param $alt_id_attr
- *   Sometimes lines in the GFF file are missing the required ID attribute that 
- *   specifies the unique name of the feature. If so, you may specify the 
+ *   Sometimes lines in the GFF file are missing the required ID attribute that
+ *   specifies the unique name of the feature. If so, you may specify the
  *   name of an existing attribute to use for the ID.
  * @param $create_organism
- *   The Tripal GFF loader supports the "organism" attribute. This allows 
- *   features of a different organism to be aligned to the landmark sequence of 
- *   another species. The format of the attribute is "organism=[genus]:[species]", 
- *   where [genus] is the organism's genus and [species] is the species name. 
- *   Check this box to automatically add the organism to the database if it does 
- *   not already exists. Otherwise lines with an oraganism attribute where the 
+ *   The Tripal GFF loader supports the "organism" attribute. This allows
+ *   features of a different organism to be aligned to the landmark sequence of
+ *   another species. The format of the attribute is "organism=[genus]:[species]",
+ *   where [genus] is the organism's genus and [species] is the species name.
+ *   Check this box to automatically add the organism to the database if it does
+ *   not already exists. Otherwise lines with an oraganism attribute where the
  *   organism is not present in the database will be skipped.
  * @param $job
- *  The tripal job_id.  Only used by the Tripal Jobs subsystem. 
+ *  The tripal job_id.  Only used by the Tripal Jobs subsystem.
  *
  * @ingroup gff3_loader
  */
@@ -424,7 +424,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     $sql = "SELECT * FROM {cv} WHERE name = :cvname";
     $cv = chado_query($sql, array(':cvname' => 'sequence'))->fetchObject();
     if (!$cv) {
-      tripal_report_error('T_gff3_loader', TRIPAL_ERROR, 
+      tripal_report_error('T_gff3_loader', TRIPAL_ERROR,
         "Cannot find the 'sequence' ontology", array());
       return '';
     }
@@ -947,7 +947,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
     }
   }
   catch (Exception $e) {
-    print "\n"; // make sure we start errors on new line    
+    print "\n"; // make sure we start errors on new line
     if ($use_transaction) {
       $transaction->rollback();
       print "FAILED: Rolling back database changes...\n";
@@ -981,7 +981,7 @@ function tripal_feature_load_gff3_derives_from($feature, $subject, $organism) {
     'organism_id' => $organism->organism_id,
     'uniquename' => $subject,
   );
-  $result = tripal_core_chado_select('tripal_gff_temp', array('type_name'), $values);
+  $result = chado_select_record('tripal_gff_temp', array('type_name'), $values);
   $type_id = array();
   if (count($result) > 0) {
     $type_id = array(
@@ -991,12 +991,12 @@ function tripal_feature_load_gff3_derives_from($feature, $subject, $organism) {
       ),
     );
   }
-  
+
   // if we don't have a subject type then look for the feature in the feature table
   if (empty($type_id)) {
-    $result = tripal_core_chado_select('feature', array('type_id'), $values);
+    $result = chado_select_record('feature', array('type_id'), $values);
     if (count($result) > 1) {
-      watchdog("T_gff3_loader", "Cannot find subject type for feature,'%subject' , in 'derives_from' relationship. Multiple matching features exist with this uniquename.", 
+      watchdog("T_gff3_loader", "Cannot find subject type for feature,'%subject' , in 'derives_from' relationship. Multiple matching features exist with this uniquename.",
         array('%subject' => $subject), WATCHDOG_WARNING);
       return '';
     }
@@ -1562,7 +1562,7 @@ function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uni
     if (strcmp($score, '.') != 0) {
       $af_values['significance'] = $score;
     }
-    if (!tripal_core_chado_insert('analysisfeature', $af_values)) {
+    if (!chado_insert_record('analysisfeature', $af_values)) {
       tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Could not add analysisfeature record: $analysis_id, $feature->feature_id", array());
     }
   }
