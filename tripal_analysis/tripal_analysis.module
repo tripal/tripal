@@ -196,50 +196,6 @@ function tripal_analysis_theme($existing, $type, $theme, $path) {
   return $items;
 }
 /**
- * Implements hook_block_info().
- *
- * @ingroup tripal_analysis
- */
-function tripal_analysis_block_info() {
-  $blocks['base']['info'] = t('Tripal Analysis Details');
-  $blocks['base']['cache'] = DRUPAL_NO_CACHE;
-
-  $blocks['featureblast']['info'] = t('Tripal Feature Analyses');
-  $blocks['featureblast']['cache'] = DRUPAL_NO_CACHE;
-
-  return $blocks;
-}
-
-/**
- * Implements hook_block_view().
- *
- * @ingroup tripal_analysis
- */
-function tripal_analysis_block_view($delta = '') {
-
-  if (user_access('access chado_analysis content') and arg(0) == 'node' and is_numeric(arg(1))) {
-    $nid = arg(1);
-    $node = node_load($nid);
-
-    $block = array();
-    switch ($delta) {
-      case 'base':
-        $block['subject'] = t('Analysis Details');
-        $block['content'] = theme('tripal_analysis_base', $node);
-        break;
-      case 'tripal_feature_analyses':
-        $block['subject'] = t('Feature Analyses');
-        $block['content'] = theme('tripal_feature_analyses', $node);
-        break;
-      default :
-    }
-    return $block;
-  }
-}
-
-
-
-/**
  * Implements hook_views_api().
  * Essentially this hook tells drupal that there is views support for
  *  for this module which then includes tripal_analysis.views.inc where all the

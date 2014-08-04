@@ -19,43 +19,6 @@ require_once 'includes/tripal_organism.chado_node.inc';
  */
 
 /**
- * Implements hook_block_info().
- *
- * @ingroup tripal_organism
- */
-function tripal_organism_block_info() {
-
-  $blocks['base']['info'] = t('Tripal Organism Details');
-  $blocks['base']['cache'] = DRUPAL_NO_CACHE;
-
-  return $blocks;
-
-}
-
-/**
- * Implements hook_block_view().
- *
- * @ingroup tripal_organism
- */
-function tripal_organism_block_view($delta = '') {
-
-  if (user_access('access chado_feature content') and arg(0) == 'node' and is_numeric(arg(1))) {
-    $nid = arg(1);
-    $node = node_load($nid);
-
-    $block = array();
-    switch ($delta) {
-      case 'base':
-        $block['subject'] = t('Organism Details');
-        $block['content'] = theme('tripal_organism_base', $node);
-        break;
-      default:
-    }
-    return $block;
-  }
-}
-
-/**
  *  Implements hook_menu().
  *
  * Menu items are automatically added for the new node types created
