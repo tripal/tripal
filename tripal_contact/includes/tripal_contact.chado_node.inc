@@ -697,3 +697,17 @@ function tripal_contact_node_update($node) {
 function chado_contact_chado_node_default_title_format() {
   return '[contact.name]';
 }
+
+/**
+ * Implements [content_type]_chado_node_sync_select_query().
+ *
+ * Adds a where clause to the query to exclude the NULL contact.
+ */
+function chado_contact_chado_node_sync_select_query($query) {
+  $query['where_clauses']['title'][] = 'contact.name <> :contact_name_null1';
+  $query['where_clauses']['title'][] = 'contact.name <> :contact_name_null2';
+  $query['where_args']['title'][':contact_name_null1'] = 'null';
+  $query['where_args']['title'][':contact_name_null2'] = 'NULL';
+
+  return $query;
+}
