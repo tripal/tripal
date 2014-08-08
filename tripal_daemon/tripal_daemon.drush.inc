@@ -24,34 +24,25 @@ function tripal_daemon_drush_command() {
     'description' => dt('Use Tripal Jobs Deamon to manage Tripal Job execution.'),
     'arguments' => array(
       'start'    => 'Start the daemon.',
-      //'status'   => 'Display status information about the daemon.',
+      'status'   => 'Display status information about the daemon.',
       'stop'     => 'Stop the daemon.',
-      //'restart'  => 'Restart the daemon',
-      //'show-log' => 'Show the log file.',
+      'show-log' => 'Show the log file.',
     ),
     'options' => array(
       'num_lines' => 'The number of lines of the log file to show.',
-      'deamonize' => 'Pass this option to push the daemon into the background'
+      'child' => array(
+        'hidden' => TRUE,
+        'description' => 'This option should only be passed via '
+        . 'drush_invoke_process and essentially just allows my command '
+        . 'to not fork bomb',
+      ),
     ),
     'examples' => array(
-      'drush trpjob-daemon start'                            => 'Start the daemon.',
-      //'drush trpjob-daemon start --feedback="100 items"'     => 'Log a status message every 100 nodes.',
-      //'drush trpjob-daemon start --feedback="60 seconds"'    => 'Log a status message every 60 seconds.',
-      //'drush trpjob-daemon start --verbose'                  => 'Log verbosely.',
-      //' '   => '',
-      //'drush trpjob-daemon status' => 'Show the current status of the daemon.',
-      '  '  => '',
+      'drush trpjob-daemon start' => 'Start the daemon.',
+      'drush trpjob-daemon status' => 'Show the current status of the daemon.',
       'drush trpjob-daemon stop'              => 'Stop the daemon.',
-      //'drush trpjob-daemon stop --timeout=10' => 'Allow 10 seconds for processing.',
-      //'drush trpjob-daemon stop --queue'      => 'Queue the node access rebuild daemon to stop.',
-      //'   ' => '',
-      //'drush trpjob-daemon restart'              => 'Restart the daemon.',
-      //'drush trpjob-daemon restart --timeout=10' => 'Allow 10 seconds for processing.',
-      //'drush trpjob-daemon restart --queue'      => 'Queue the node access rebuild daemon to restart.',
-      //'    ' => '',
-      //'drush trpjob-daemon show-log' => 'Show the log file, using less.',
-      //'drush trpjob-daemon show-log --watch' => 'Watch the log file.',
-      //'drush trpjob-daemon show-log --tail' => 'Show just the tail of the log file, to see recent messages.',
+      'drush trpjob-daemon show-log' => 'Show the last 10 lines of the log file.',
+      'drush trpjob-daemon show-log --num_lines=50' => 'Show the last 10 lines of the log file.',
     ),
     'aliases' => array('trpjob-daemon'),
   );
@@ -69,5 +60,5 @@ function tripal_daemon_drush_command() {
  *   the daemon to do.
  */
 function drush_tripal_daemon_tripal_jobs_daemon($action) {
-  drush_daemon_api_jobs_daemon($action, 'tripal_daemon');
+  drush_daemon_api_daemon($action, 'tripal_daemon');
 }

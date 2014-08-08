@@ -2,26 +2,22 @@
 
 /**
  * @file
- * Non-Drush Tripal Daemon functionality
+ * Non-Drush Tripal Daemon functionality.
  */
 
 /**
  * Implements hook_daemon_api_info().
+ *
  * Registers our Daemon with the Daemon API
  */
 function tripal_daemon_daemon_api_info() {
   $daemon = array();
 
   $daemon['tripal_daemon'] = array(
-    // the machine name of the daemon (same as key above)
     'machine_name' => 'tripal_daemon',
-    // A human-readable name for your daemon
     'name' => 'Tripal Job Daemon',
-    // this module (ie: the module implementing the daemon)
     'module' => 'tripal_daemon',
-    // The class extending JobDaemon and implementing your daemon-specific functionality
-    // This class should be in a [classname].inc file in your modules base directory
-    'class' => 'TripalJobDaemon'
+    'class' => 'TripalDaemon'
   );
 
   return $daemon;
