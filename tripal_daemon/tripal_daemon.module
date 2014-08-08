@@ -17,7 +17,7 @@ function tripal_daemon_daemon_api_info() {
     'machine_name' => 'tripal_daemon',
     'name' => 'Tripal Job Daemon',
     'module' => 'tripal_daemon',
-    'class' => 'TripalDaemon'
+    'class' => 'TripalDaemon',
   );
 
   return $daemon;

@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Implementation of the Tripal Daemon Drush commands
+ * Implementation of the Tripal Daemon Drush commands.
  */
 
 /**
@@ -52,12 +52,13 @@ function tripal_daemon_drush_command() {
 
 /**
  * Drush Command for Daemonized management of Tripal Jobs.
- * Simply plugs into the Daemon API for easier running. This is the equivalent of
- *   drush jobs-daemon $action tripal_daemon
  *
- * @param $action
- *   One of 'start','stop','restart',status','show-log'. Meant to indicate what you want
- *   the daemon to do.
+ * Simply plugs into the Daemon API for easier running. This is equivalent to
+ *   drush jobs-daemon $action tripal_daemon.
+ *
+ * @param string $action
+ *   One of 'start','stop','restart',status','show-log'. Meant to indicate what
+ *   you want the daemon to do.
  */
 function drush_tripal_daemon_tripal_jobs_daemon($action) {
   drush_daemon_api_daemon($action, 'tripal_daemon');

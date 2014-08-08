@@ -6,4 +6,4 @@ package = Tripal Extensions
 dependencies[] = daemon_api
 dependencies[] = tripal_core
 
-files[] = TripalJobDaemon.inc
+files[] = TripalDaemon.inc

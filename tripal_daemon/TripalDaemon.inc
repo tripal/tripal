@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Implements the Tripal Daemon functionality by using the Daemon API
+ * Implements the Tripal Daemon functionality by using the Daemon API.
  */
 
 /**
@@ -61,7 +61,7 @@ class TripalDaemon extends DaemonAPIDaemon {
         $this->log('Starting Job (ID=' . $id . ')', '', 1);
         tripal_launch_job(FALSE, $id);
 
-        // Report job details
+        // Report job details.
         $job = db_query(
           "SELECT j.*
           FROM {tripal_jobs} j

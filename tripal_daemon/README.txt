@@ -22,7 +22,7 @@ FEATURES
  * Your daemon starts in the background and is detached from the current
    terminal.
  * Daemon will run all Tripal Jobs submitted within 20 seconds.
- * A log of the number of jobs executed including their identifier and the result.
+ * A log including the number of jobs executed, their identifiers and results.
  * Lock Files, Automatic restart (8hrs default) and Built-in Signal Handling &
    Event Logging are only a few of the features provided by the Daemon API
    making this a fully featured & robust Daemon.
