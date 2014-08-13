@@ -10,7 +10,7 @@ $disabled_views = variable_get('views_defaults', array());
 this site:</p>
 <DL>
 <?php foreach ($biological_views as $view) { ?>
-  <?php if (!isset($disabled_views[ $view['machine_name'] ]) OR ($disabled_views[ $view['machine_name'] ] == TRUE)) { ?>
+  <?php if (!isset($disabled_views[ $view['machine_name'] ]) OR ($disabled_views[ $view['machine_name'] ] == FALSE)) { ?>
     <DT><?php print l($view['human_name'], $view['link']); ?></DT>
     <DD><?php print $view['description']; ?></DD>
 <?php }} ?>
