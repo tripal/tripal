@@ -144,7 +144,7 @@ function tripal_featuremap_add_cvterms() {
    tripal_insert_cvterm(
      array(
        'name' => 'cM',
-       'def' => 'Centimorgan units',
+       'definition' => 'Centimorgan units',
        'cv_name' => 'featuremap_units',
        'is_relationship' => 0,
        'db_name' => 'tripal'
@@ -154,7 +154,7 @@ function tripal_featuremap_add_cvterms() {
    tripal_insert_cvterm(
      array(
        'name' => 'bp',
-       'def' => 'Base pairs units',
+       'definition' => 'Base pairs units',
        'cv_name' => 'featuremap_units',
        'is_relationship' => 0,
        'db_name' => 'tripal'
@@ -164,7 +164,7 @@ function tripal_featuremap_add_cvterms() {
    tripal_insert_cvterm(
      array(
        'name' => 'bin_unit',
-       'def' => 'The bin unit',
+       'definition' => 'The bin unit',
        'cv_name' => 'featuremap_units',
        'is_relationship' => 0,
        'db_name' => 'tripal'
@@ -174,7 +174,7 @@ function tripal_featuremap_add_cvterms() {
    tripal_insert_cvterm(
      array(
        'name' => 'marker_order',
-       'def' => 'Units simply to define marker order.',
+       'definition' => 'Units simply to define marker order.',
        'cv_name' => 'featuremap_units',
        'is_relationship' => 0,
        'db_name' => 'tripal'
@@ -184,7 +184,7 @@ function tripal_featuremap_add_cvterms() {
    tripal_insert_cvterm(
      array(
        'name' => 'undefined',
-       'def' => 'A catch-all for an undefined unit type',
+       'definition' => 'A catch-all for an undefined unit type',
        'cv_name' => 'featuremap_units',
        'is_relationship' => 0,
        'db_name' => 'tripal'
@@ -196,7 +196,7 @@ function tripal_featuremap_add_cvterms() {
    tripal_insert_cvterm(
      array(
        'name' => 'start',
-       'def' => 'The start coordinate for a map feature.',
+       'definition' => 'The start coordinate for a map feature.',
        'cv_name' => 'featurepos_property',
        'is_relationship' => 0,
        'db_name' => 'tripal'
@@ -206,7 +206,7 @@ function tripal_featuremap_add_cvterms() {
    tripal_insert_cvterm(
      array(
        'name' => 'stop',
-       'def' => 'The end coordinate for a map feature',
+       'definition' => 'The end coordinate for a map feature',
        'cv_name' => 'featurepos_property',
        'is_relationship' => 0,
        'db_name' => 'tripal'
@@ -218,7 +218,7 @@ function tripal_featuremap_add_cvterms() {
    tripal_insert_cvterm(
      array(
        'name' => 'Map Dbxref',
-       'def' => 'A unique identifer for the map in a remote database.  The '
+       'definition' => 'A unique identifer for the map in a remote database.  The '
         . 'format is a database abbreviation and a unique accession separated '
         . 'by a colon.  (e.g. Gramene:tsh1996a)',
        'cv_name' => 'featuremap_property',
@@ -230,7 +230,7 @@ function tripal_featuremap_add_cvterms() {
    tripal_insert_cvterm(
      array(
        'name' => 'Map Type',
-       'def' => 'The type of Map (e.g. QTL, Physical, etc.)',
+       'definition' => 'The type of Map (e.g. QTL, Physical, etc.)',
        'cv_name' => 'featuremap_property',
        'is_relationship' => 0,
        'db_name' => 'tripal'
@@ -240,7 +240,7 @@ function tripal_featuremap_add_cvterms() {
    tripal_insert_cvterm(
      array(
        'name' => 'Genome Group',
-       'def' => '',
+       'definition' => '',
        'cv_name' => 'featuremap_property',
        'is_relationship' => 0,
        'db_name' => 'tripal'
@@ -250,7 +250,7 @@ function tripal_featuremap_add_cvterms() {
    tripal_insert_cvterm(
      array(
        'name' => 'URL',
-       'def' => 'A univeral resource locator (URL) reference where the '
+       'definition' => 'A univeral resource locator (URL) reference where the '
         . 'publication can be found.  For maps found online, this would be '
         . 'the web address for the map.',
        'cv_name' => 'featuremap_property',
@@ -262,7 +262,7 @@ function tripal_featuremap_add_cvterms() {
    tripal_insert_cvterm(
      array(
        'name' => 'Population Type',
-       'def' => 'A brief description of the population type used to generate '
+       'definition' => 'A brief description of the population type used to generate '
         . 'the map (e.g. RIL, F2, BC1, etc).',
        'cv_name' => 'featuremap_property',
        'is_relationship' => 0,
@@ -273,7 +273,7 @@ function tripal_featuremap_add_cvterms() {
    tripal_insert_cvterm(
      array(
        'name' => 'Population Size',
-       'def' => 'The size of the population used to construct the map.',
+       'definition' => 'The size of the population used to construct the map.',
        'cv_name' => 'featuremap_property',
        'is_relationship' => 0,
        'db_name' => 'tripal'
@@ -283,7 +283,7 @@ function tripal_featuremap_add_cvterms() {
    tripal_insert_cvterm(
      array(
        'name' => 'Methods',
-       'def' => 'A brief description of the methods used to construct the map.',
+       'definition' => 'A brief description of the methods used to construct the map.',
        'cv_name' => 'featuremap_property',
        'is_relationship' => 0,
        'db_name' => 'tripal'
@@ -293,7 +293,7 @@ function tripal_featuremap_add_cvterms() {
    tripal_insert_cvterm(
      array(
        'name' => 'Software',
-       'def' => 'The software used to construct the map.',
+       'definition' => 'The software used to construct the map.',
        'cv_name' => 'featuremap_property',
        'is_relationship' => 0,
        'db_name' => 'tripal'

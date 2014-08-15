@@ -131,7 +131,7 @@ function tripal_analysis_add_cvterms() {
   tripal_insert_cvterm(
     array(
       'name' => 'analysis_date',
-      'def' => 'The date that an analysis was performed.',
+      'definition' => 'The date that an analysis was performed.',
       'cv_name' => 'tripal',
       'is_relationship' => 0,
       'db_name' => 'tripal'
@@ -144,7 +144,7 @@ function tripal_analysis_add_cvterms() {
   tripal_insert_cvterm(
     array(
       'name' => 'analysis_short_name',
-      'def' => 'A computer legible (no spaces or special characters) '
+      'definition' => 'A computer legible (no spaces or special characters) '
         . 'abbreviation for the analysis.',
       'cv_name' => 'tripal',
       'is_relationship' => 0,
@@ -159,7 +159,7 @@ function tripal_analysis_add_cvterms() {
   tripal_insert_cvterm(
     array(
       'name' => 'Analysis Type',
-      'def' => 'The type of analysis that was performed.',
+      'definition' => 'The type of analysis that was performed.',
       'cv_name' => 'analysis_property',
       'is_relationship' => 0,
       'db_name' => 'tripal'

@@ -74,12 +74,26 @@ function tripal_insert_contact($values) {
   // add the description property. We don't store this in the contact.description
   // field because it is only 255 characters long and may not be enough
   if ($description) {
-    tripal_contact_insert_property($contact['contact_id'], 'contact_description', $description, TRUE);
+    chado_insert_property(
+      'contact',
+      $contact['contact_id'],
+      'contact_description',
+      'tripal_contact',
+      $description,
+      TRUE
+    );
   }
 
   // add in the other properties provided
   foreach ($properties as $key => $value) {
-    $success = tripal_contact_insert_property($contact['contact_id'], $key,$value, TRUE);
+    $success = chado_insert_property(
+      'contact',
+      $contact['contact_id'],
+      $key,
+      'tripal_contact',
+      $value,
+      TRUE
+    );
     if (!$success) {
       tripal_report_error('tripal_contact', TRIPAL_ERROR,
         "Could not add the contact property '%prop'", array('%prop' => $key));

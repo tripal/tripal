@@ -128,7 +128,7 @@ function tripal_project_add_cvterms() {
   tripal_insert_cvterm(
     array(
       'name' => 'Project Description',
-      'def'  => 'Description of a project',
+      'definition'  => 'Description of a project',
       'cv_name' => 'project_property',
       'is_relationship' => 0,
       'db_name' => 'tripal'

@@ -191,7 +191,7 @@ function tripal_library_add_cvterms() {
   tripal_insert_cvterm(
      array(
        'name' => 'Library Description',
-       'def' => 'Description of a library',
+       'definition' => 'Description of a library',
        'cv_name' => 'library_property',
        'is_relationship' => 0,
        'db_name' => 'tripal'
@@ -203,62 +203,62 @@ function tripal_library_add_cvterms() {
   tripal_insert_cvterm(
     array(
       'name' => 'cdna_library',
-      'def' => 'cDNA library',
-       'cv_name' => 'library_type',
-       'is_relationship' => 0,
-       'db_name' => 'tripal'
-      ),
-      array('update_existing' => TRUE)
+      'definition' => 'cDNA library',
+      'cv_name' => 'library_type',
+      'is_relationship' => 0,
+      'db_name' => 'tripal'
+    ),
+    array('update_existing' => TRUE)
   );
   tripal_insert_cvterm(
     array(
       'name' => 'bac_library',
-      'def' => 'Bacterial Artifical Chromsome (BAC) library',
-       'cv_name' => 'library_type',
-       'is_relationship' => 0,
-       'db_name' => 'tripal'
-      ),
-      array('update_existing' => TRUE)
+      'definition' => 'Bacterial Artifical Chromsome (BAC) library',
+      'cv_name' => 'library_type',
+      'is_relationship' => 0,
+      'db_name' => 'tripal'
+    ),
+    array('update_existing' => TRUE)
   );
   tripal_insert_cvterm(
     array(
       'name' => 'fosmid_library',
-      'def' => 'Fosmid library',
-       'cv_name' => 'library_type',
-       'is_relationship' => 0,
-       'db_name' => 'tripal'
-      ),
-      array('update_existing' => TRUE)
+      'definition' => 'Fosmid library',
+      'cv_name' => 'library_type',
+      'is_relationship' => 0,
+      'db_name' => 'tripal'
+    ),
+    array('update_existing' => TRUE)
   );
   tripal_insert_cvterm(
     array(
       'name' => 'cosmid_library',
-      'def' => 'Cosmid library',
-       'cv_name' => 'library_type',
-       'is_relationship' => 0,
-       'db_name' => 'tripal'
-      ),
-      array('update_existing' => TRUE)
+      'definition' => 'Cosmid library',
+      'cv_name' => 'library_type',
+      'is_relationship' => 0,
+      'db_name' => 'tripal'
+    ),
+    array('update_existing' => TRUE)
   );
   tripal_insert_cvterm(
     array(
       'name' => 'yac_library',
-      'def' => 'Yeast Artificial Chromosome (YAC) library',
-       'cv_name' => 'library_type',
-       'is_relationship' => 0,
-       'db_name' => 'tripal'
-      ),
-      array('update_existing' => TRUE)
+      'definition' => 'Yeast Artificial Chromosome (YAC) library',
+      'cv_name' => 'library_type',
+      'is_relationship' => 0,
+      'db_name' => 'tripal'
+    ),
+    array('update_existing' => TRUE)
   );
   tripal_insert_cvterm(
     array(
       'name' => 'genomic_library',
-      'def' => 'Genomic Library',
-       'cv_name' => 'library_type',
-       'is_relationship' => 0,
-       'db_name' => 'tripal'
-      ),
-      array('update_existing' => TRUE)
+      'definition' => 'Genomic Library',
+      'cv_name' => 'library_type',
+      'is_relationship' => 0,
+      'db_name' => 'tripal'
+    ),
+    array('update_existing' => TRUE)
   );
 }
 

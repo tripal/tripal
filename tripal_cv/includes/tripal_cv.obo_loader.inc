@@ -559,7 +559,7 @@ function tripal_cv_obo_process_term($term, $defaultcv, $is_relationship = 0, &$n
   $t['id'] = $term['id'][0];
   $t['name'] = $term['name'][0];
   if (array_key_exists('def', $term)) {
-    $t['def'] = $term['def'][0];
+    $t['definition'] = $term['def'][0];
   }
   if (array_key_exists('subset', $term)) {
     $t['subset'] = $term['subset'][0];
@@ -774,7 +774,7 @@ function tripal_cv_obo_add_relationship($cvterm, $defaultcv, $rel,
   $objterm['id']            = $oterm['id'][0];
   $objterm['name']          = $oterm['name'][0];
   if (array_key_exists('def', $oterm)) {
-    $objterm['def']           = $oterm['def'][0];
+    $objterm['definition']           = $oterm['def'][0];
   }
   if (array_key_exists('subset', $oterm)) {
     $objterm['subset']      = $oterm['subset'][0];

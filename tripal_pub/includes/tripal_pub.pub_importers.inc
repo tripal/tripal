@@ -1184,7 +1184,12 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
     // if the user wants us to create a contact for each author then do it.
     if ($do_contact) {
       // Add the contact
-      $contact = tripal_contact_add_contact($name, '', $type, $author);
+      $contact = tripal_insert_contact(array(
+        'name' => $name,
+        'description' => '',
+        'type_name' => $type,
+        'properties' => $author
+      ));
 
       // if we have succesfully added the contact and the pubauthor entries then we want to
       // link them together

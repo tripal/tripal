@@ -437,7 +437,7 @@ function tripal_cv_cvterm_add_form_submit($form, &$form_state) {
     'name' => $name,
     'namespace' => $cv->name,
     'id' => $accession,
-    'def' => $definition,
+    'definition' => $definition,
     'is_obsolete' => $is_obsolete,
     'cv_name' => $cv->name,
     'is_relationship' => $is_relationship,

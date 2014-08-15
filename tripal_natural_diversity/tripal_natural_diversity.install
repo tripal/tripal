@@ -76,7 +76,7 @@ function tripal_natural_diversity_add_cvterms(){
   tripal_insert_cvterm(
     array(
      'name' => 'Genotyping',
-     'def' => 'An experiment where genotypes of individuals are identified.',
+     'definition' => 'An experiment where genotypes of individuals are identified.',
      'cv_name' => 'nd_experiment_types',
      'is_relationship' => 0,
      'db_name' => 'tripal'
@@ -87,7 +87,7 @@ function tripal_natural_diversity_add_cvterms(){
   tripal_insert_cvterm(
     array(
       'name' => 'Phenotyping',
-      'def' => 'An experiment where phenotypes of individuals are identified.',
+      'definition' => 'An experiment where phenotypes of individuals are identified.',
       'cv_name' => 'nd_experiment_types',
       'is_relationship' => 0,
       'db_name' => 'tripal'
@@ -98,7 +98,7 @@ function tripal_natural_diversity_add_cvterms(){
   tripal_insert_cvterm(
     array(
       'name' => 'Location',
-      'def' => 'The name of the location.',
+      'definition' => 'The name of the location.',
       'cv_name' => 'nd_geolocation_property',
       'is_relationship' => 0,
       'db_name' => 'tripal'
