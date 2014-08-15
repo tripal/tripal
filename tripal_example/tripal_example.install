@@ -208,14 +208,14 @@ function tripal_example_add_mviews() {
  * @ingroup tripal_example
  */
 function tripal_example_add_dbs() {
-  // EXPLANATION: use the tripal_db_add_db() function to add any
+  // EXPLANATION: use the tripal_insert_db() function to add any
   // external databases needed by your module.  If the database already
   // exists then the function will gracefully return.
 
-  tripal_db_add_db(
-    'example_db',
-    'An example database.'
-  );
+  tripal_insert_db(array(
+    'name' => 'example_db',
+    'description' => 'An example database.'
+  ));
 }
 /**
  * Add cvs related to publications

@@ -128,7 +128,7 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
   $details['fieldset_title'] = 'Additional Database References';
   $details['additional_instructions'] = '';
 
-  // Get the list of databases to display in the dropdown. 
+  // Get the list of databases to display in the dropdown.
   if (isset($details['select_options'])) {
     // the callee has provided a list
     $db_options = $details['select_options'];
@@ -199,9 +199,9 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
   }
   else {
     $existing_dbxrefs = chado_query(
-      "SELECT 
+      "SELECT
          db.name as db_name, db.db_id as db_id,
-         dbxref.dbxref_id, dbxref.accession as accession, 
+         dbxref.dbxref_id, dbxref.accession as accession,
          dbxref.description as description, dbxref.version
        FROM {dbxref} dbxref
          LEFT JOIN {db} db ON db.db_id = dbxref.db_id
@@ -243,14 +243,14 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
    * an element to the form for each one.
    */
   foreach ($existing_dbxrefs as $dbxref) {
-    
+
     if (array_key_exists($dbxref->db_id, $db_options)) {
 
-      /* Since the dbxref version is part of the unique constraint, when it is 
-       * empty we need to use something in the key to indicate this case. Otherwise, 
-       * you wouldn't be able to select those elements from the array 
-       * (ie: $form['addtl_dbxrefs']['dbxref_table'][9999][''] doesn't work as 
-       * expected whereas $form['addtl_dbxrefs']['dbxref_table'][9999][NONE] 
+      /* Since the dbxref version is part of the unique constraint, when it is
+       * empty we need to use something in the key to indicate this case. Otherwise,
+       * you wouldn't be able to select those elements from the array
+       * (ie: $form['addtl_dbxrefs']['dbxref_table'][9999][''] doesn't work as
+       * expected whereas $form['addtl_dbxrefs']['dbxref_table'][9999][NONE]
        * is much better)
        */
       $version = (!empty($dbxref->version)) ? $dbxref->version : 'NONE';
@@ -434,13 +434,13 @@ function chado_add_node_form_dbxrefs_add_button_submit(&$form, &$form_state) {
   $key = $dbxref['db_id'] . '-' . $version;
   $form_state['chado_additional_dbxrefs'][$key] = (object) $dbxref;
 
-  
+
   // we don't want the new element to pick up the values from the previous element so wipe them out
   unset($form_state['input']['dbxref_table']['new']['db']);
   unset($form_state['input']['dbxref_table']['new']['db_name']);
   unset($form_state['input']['dbxref_table']['new']['dbxref_version']);
   unset($form_state['input']['dbxref_table']['new']['dbxref_accession']);
-  
+
   $form_state['rebuild'] = TRUE;
 }
 
@@ -649,12 +649,12 @@ function chado_update_node_form_dbxrefs($node, $details, $retrieved_dbxrefs = FA
           // If there is no dbxref then we have to create that first
           if ($dbxref_id == 'NONE') {
             $version = ($version == 'NONE') ? '' : $version;
-            $success = tripal_db_add_dbxref(
-              $db_id,
-              $accession,
-              $version,
-              NULL
-            );
+            $success = tripal_insert_dbxref(array(
+              'db_id' => $db_id,
+              'accession' => $accession,
+              'version' => $version,
+              'description' => NULL
+            ));
             if ($success) {
               $dbxref_id = $success->dbxref_id;
             }
@@ -665,12 +665,15 @@ function chado_update_node_form_dbxrefs($node, $details, $retrieved_dbxrefs = FA
 
           // add _dbxref linker
           if ($dbxref_id) {
-            $success_link = tripal_db_add_dbxref_link(
-              $linking_table,
-              $dbxref_id,
-              $foreignkey_name,
-              $foreignkey_value
-            );
+            if (preg_match('/(\w+)_dbxref/',$linking_table,$matches)) {
+              $base_table = $matches[1];
+
+              $success_link = tripal_associate_dbxref(
+                $base_table,
+                $foreignkey_value,
+                array('dbxref_id' => $dbxref_id)
+              );
+            }
           }
         }
       }

@@ -277,7 +277,7 @@ function chado_stock_form($node, $form_state) {
     '#description' => t('Optionally enter a description about the database accession.')
   );
 
-  $db_options = tripal_db_get_db_options();
+  $db_options = tripal_get_db_select_options();
   $db_options[0] = 'Select a Database';
   $form['database_reference']['database'] = array(
     '#type' => 'select',

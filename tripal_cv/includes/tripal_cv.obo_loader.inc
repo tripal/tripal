@@ -15,12 +15,12 @@
 /**
  * Provides the form to load an already existing controlled
  *  Vocabulary into chado
- *  
+ *
  * @param $form
- *   The form array 
+ *   The form array
  * @param $form_state
  *   The form state array
- *   
+ *
  * @return
  *   The form array with new additions
  *
@@ -104,13 +104,13 @@ function tripal_cv_obo_form($form, &$form_state) {
 /**
  * The submit function for the load ontology form. It registers a
  *   tripal job to import the user specified ontology file
- *   
+ *
  * @param $form
- *   The form array 
+ *   The form array
  * @param $form_state
  *   The form state array
- *   
- * 
+ *
+ *
  * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_form_submit($form, &$form_state) {
@@ -123,15 +123,15 @@ function tripal_cv_obo_form_submit($form, &$form_state) {
 }
 
 /**
- * A wrapper function for importing the user specified OBO file into Chado by 
- * specifying the obo_id of the OBO. It requires that the file be in OBO v1.2 
- * compatible format.  This function is typically executed via the Tripal jobs 
+ * A wrapper function for importing the user specified OBO file into Chado by
+ * specifying the obo_id of the OBO. It requires that the file be in OBO v1.2
+ * compatible format.  This function is typically executed via the Tripal jobs
  * management after a user submits a job via the Load Onotloies form.
- * 
+ *
  * @param $obo_id
  *   An obo_id from the tripal_cv_obo file that specifies which OBO file to import
  * @param $job_id
- *   The job_id of the job from the Tripal jobs management system. 
+ *   The job_id of the job from the Tripal jobs management system.
  *
  * @ingroup tripal_obo_loader
  */
@@ -166,19 +166,19 @@ function tripal_cv_load_obo_v1_2_id($obo_id, $jobid = NULL) {
 }
 
 /**
- * A wrapper function for importing the user specified OBO file into Chado by 
- * specifying the filename and path of the OBO. It requires that the file be in OBO v1.2 
- * compatible format.  This function is typically executed via the Tripal jobs 
+ * A wrapper function for importing the user specified OBO file into Chado by
+ * specifying the filename and path of the OBO. It requires that the file be in OBO v1.2
+ * compatible format.  This function is typically executed via the Tripal jobs
  * management after a user submits a job via the Load Onotloies form.
- * 
+ *
  * @param $obo_name
  *   The name of the OBO (typially the ontology or controlled vocabulary name)
  * @param $file
  *   The path on the file system where the ontology can be found
  * @param $job_id
- *   The job_id of the job from the Tripal jobs management system. 
+ *   The job_id of the job from the Tripal jobs management system.
  * @param $is_new
- *   Set to TRUE if this is a new ontology that does not yet exist in the 
+ *   Set to TRUE if this is a new ontology that does not yet exist in the
  *   tripal_cv_obo table.  If TRUE the OBO will be added to the table.
  *
  * @ingroup tripal_obo_loader
@@ -199,19 +199,19 @@ function tripal_cv_load_obo_v1_2_file($obo_name, $file, $jobid = NULL, $is_new =
 }
 
 /**
- * A wrapper function for importing the user specified OBO file into Chado by 
- * specifying the remote URL of the OBO. It requires that the file be in OBO v1.2 
- * compatible format.  This function is typically executed via the Tripal jobs 
+ * A wrapper function for importing the user specified OBO file into Chado by
+ * specifying the remote URL of the OBO. It requires that the file be in OBO v1.2
+ * compatible format.  This function is typically executed via the Tripal jobs
  * management after a user submits a job via the Load Onotloies form.
- * 
+ *
  * @param $obo_name
  *   The name of the OBO (typially the ontology or controlled vocabulary name)
  * @param $url
  *   The remote URL of the OBO file.
  * @param $job_id
- *   The job_id of the job from the Tripal jobs management system. 
+ *   The job_id of the job from the Tripal jobs management system.
  * @param $is_new
- *   Set to TRUE if this is a new ontology that does not yet exist in the 
+ *   Set to TRUE if this is a new ontology that does not yet exist in the
  *   tripal_cv_obo table.  If TRUE the OBO will be added to the table.
  *
  * @ingroup tripal_obo_loader
@@ -236,7 +236,7 @@ function tripal_cv_load_obo_v1_2_url($obo_name, $url, $jobid = NULL, $is_new = T
   }
   fclose($url_fh);
   fclose($obo_fh);
-  
+
   if ($is_new) {
     tripal_cv_add_obo_ref($obo_name, $url);
   }
@@ -244,7 +244,7 @@ function tripal_cv_load_obo_v1_2_url($obo_name, $url, $jobid = NULL, $is_new = T
   // second, parse the OBO
   $success = tripal_cv_load_obo_v1_2($temp, $jobid, $newcvs);
   if ($success) {
-    
+
     // update the cvtermpath table
     tripal_cv_load_update_cvtermpath($newcvs, $jobid);
     print "Done\n";
@@ -255,15 +255,15 @@ function tripal_cv_load_obo_v1_2_url($obo_name, $url, $jobid = NULL, $is_new = T
 
 /**
  * A function for executing the cvtermpath function of Chado.  This function
- * populates the cvtermpath table of Chado for quick lookup of term 
+ * populates the cvtermpath table of Chado for quick lookup of term
  * relationships
- * 
+ *
  * @param $newcvs
  *   An associative array of controlled vocabularies to update.  The key must be
  *   the name of the vocabulary and the value the cv_id from the cv table of chado.
  * @param $jobid
- *   The job_id of the job from the Tripal jobs management system. 
- * 
+ *   The job_id of the job from the Tripal jobs management system.
+ *
  * @ingroup tripal_obo_loader
  */
 function tripal_cv_load_update_cvtermpath($newcvs, $jobid) {
@@ -276,21 +276,21 @@ function tripal_cv_load_update_cvtermpath($newcvs, $jobid) {
 
 /**
  * Imports a given OBO file into Chado.  This function is usually called by
- * one of three wrapper functions:  tripal_cv_load_obo_v1_2_id, 
+ * one of three wrapper functions:  tripal_cv_load_obo_v1_2_id,
  * tripal_cv_load_obo_v1_2_file or tirpal_cv_load_obo_v1_2_url. But, it can
- * be called directly if the full path to an OBO file is available on the 
+ * be called directly if the full path to an OBO file is available on the
  * file system.
- * 
+ *
  * @param $flie
  *   The full path to the OBO file on the file system
  * @param $jobid
  *   The job_id of the job from the Tripal jobs management system.
  * @param $newcvs
- *   An empty array passed by reference that upon return will contain the list 
+ *   An empty array passed by reference that upon return will contain the list
  *   of newly added vocabularies.  The key will contain the CV name and the
  *   value the new cv_id
- * 
- * 
+ *
+ *
  * @ingroup tripal_obo_loader
  */
 function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
@@ -312,10 +312,10 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
     print "Step 1: Preloading File $file\n";
 
     // make sure we have an 'internal' and a '_global' database
-    if (!tripal_db_add_db('internal')) {
+    if (!tripal_insert_db(array('name' => 'internal'))) {
       tripal_cv_obo_quiterror("Cannot add 'internal' database");
     }
-    if (!tripal_db_add_db('_global')) {
+    if (!tripal_insert_db(array('name' => '_global'))) {
       tripal_cv_obo_quiterror("Cannot add '_global' database");
     }
 
@@ -335,8 +335,8 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
     }
     // if the 'default-namespace' is missing
     else {
-      
-      // look to see if an 'ontology' key is present.  It is part of the v1.4 
+
+      // look to see if an 'ontology' key is present.  It is part of the v1.4
       // specification so it shouldn't be in the file, but just in case
       if (array_key_exists('ontology', $header)) {
         $defaultcv = tripal_cv_add_cv(strtoupper($header['ontology'][0]), '');
@@ -349,7 +349,7 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
         $defaultcv = tripal_cv_add_cv('_global', '');
         $newcvs['_global'] = $defaultcv->cv_id;
       }
-      watchdog('t_obo_loader', "This OBO is missing the 'default-namespace' header. It is not possible to determine which vocabulary terms without a 'namespace' key should go.  Instead, those terms will be placed in the '%vocab' vocabulary.", 
+      watchdog('t_obo_loader', "This OBO is missing the 'default-namespace' header. It is not possible to determine which vocabulary terms without a 'namespace' key should go.  Instead, those terms will be placed in the '%vocab' vocabulary.",
         array('%vocab' => $defaultcv->name), WATCHDOG_WARNING);
     }
 
@@ -376,10 +376,10 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
 
 /**
  * Immediately terminates loading of the OBO file.
- * 
+ *
  * @param $message
  *   The error message to present to the user
- *   
+ *
  * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_quiterror($message) {
@@ -390,11 +390,11 @@ function tripal_cv_obo_quiterror($message) {
 }
 
 /**
- * OBO files are divided into a typedefs terms section and vocabulary terms section.  
+ * OBO files are divided into a typedefs terms section and vocabulary terms section.
  * This function loads the typedef terms from the OBO.
- * 
+ *
  * @param $defaultcv
- *   A database object containing a record from the cv table for the 
+ *   A database object containing a record from the cv table for the
  *   default controlled vocabulary
  * @param $newcvs
  *   An associative array of controlled vocabularies for this OBO.  The key must be
@@ -403,7 +403,7 @@ function tripal_cv_obo_quiterror($message) {
  *   The name of the default database.
  * @param $jobid
  *   The job_id of the job from the Tripal jobs management system.
- *   
+ *
  * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid) {
@@ -453,11 +453,11 @@ function tripal_cv_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid) {
 }
 
 /**
- * OBO files are divided into a typedefs section and a terms section.  This 
+ * OBO files are divided into a typedefs section and a terms section.  This
  * function loads the typedef terms from the OBO.
- * 
+ *
  * @param $defaultcv
- *   A database object containing a record from the cv table for the 
+ *   A database object containing a record from the cv table for the
  *   default controlled vocabulary
  * @param $jobid
  *  The job_id of the job from the Tripal jobs management system.
@@ -527,18 +527,18 @@ function tripal_cv_obo_process_terms($defaultcv, $jobid = NULL, &$newcvs, $defau
 }
 
 /**
- * Uses the provided term array to add/update information to Chado about the 
+ * Uses the provided term array to add/update information to Chado about the
  * term including the term, dbxref, synonyms, properties, and relationships.
- * 
+ *
  * @param $term
- *   An array representing the cvterm. 
+ *   An array representing the cvterm.
  * @param $defaultcv
  *   The name of the default controlled vocabulary
  * @is_relationship
  *   Set to 1 if this term is a relationship term
  * @default_db
  *   The name of the default database.
- * 
+ *
  * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_process_term($term, $defaultcv, $is_relationship = 0, &$newcvs, $default_db) {
@@ -547,7 +547,7 @@ function tripal_cv_obo_process_term($term, $defaultcv, $is_relationship = 0, &$n
   if (!array_key_exists('namespace', $term) and !($defaultcv or $defaultcv == '')) {
     tripal_cv_obo_quiterror("Cannot add the term: no namespace defined. " . $term['id'][0]);
   }
-  
+
   // construct the term array for sending to the tripal_cv_add_cvterm function
   // for adding a new cvterm
   $t = array();
@@ -705,15 +705,15 @@ function tripal_cv_obo_process_term($term, $defaultcv, $is_relationship = 0, &$n
 
 /**
  * Adds a cvterm relationship
- * 
+ *
  * @param $cvterm
- *   A database object for the cvterm 
+ *   A database object for the cvterm
  * @param $rel
  *   The relationship name
  * @param $objname
  *   The relationship term name
  * @param $defaultcv
- *   A database object containing a record from the cv table for the 
+ *   A database object containing a record from the cv table for the
  *   default controlled vocabulary
  * @object_is_relationship
  *   Set to 1 if this term is a relationship term
@@ -799,10 +799,10 @@ function tripal_cv_obo_add_relationship($cvterm, $defaultcv, $rel,
 
 /**
  * Retreives the term array from the temp loading table for a given term id.
- * 
+ *
  * @param id
  *   The id of the term to retrieve
- *   
+ *
  * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_get_term($id) {
@@ -817,12 +817,12 @@ function tripal_cv_obo_get_term($id) {
 
 /**
  * Adds the synonyms to a term
- * 
+ *
  * @param term
  *   An array representing the cvterm. It must have a 'synonym' key/value pair.
  * @param cvterm
  *   The database object of the cvterm to which the synonym will be added.
- * 
+ *
  * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_add_synonyms($term, $cvterm) {
@@ -917,13 +917,13 @@ function tripal_cv_obo_add_synonyms($term, $cvterm) {
  * Parse the OBO file and populate the templ loading table
  *
  * @param $file
- *   The path on the file system where the ontology can be found 
+ *   The path on the file system where the ontology can be found
  * @param $header
  *   An array passed by reference that will be populated with the header
  *   information from the OBO file
  * @param $jobid
  *   The job_id of the job from the Tripal jobs management system.
- * 
+ *
  * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_parse($obo_file, &$header, $jobid) {
@@ -1048,7 +1048,7 @@ function tripal_cv_obo_parse($obo_file, &$header, $jobid) {
 
 /**
  * Adds a database reference to a cvterm
- * 
+ *
  * @param cvterm
  *   The database object of the cvterm to which the synonym will be added.
  * @param xref
@@ -1076,7 +1076,7 @@ function tripal_cv_obo_add_cvterm_dbxref($cvterm, $xref) {
   }
 
   // add the database
-  $db = tripal_db_add_db($dbname);
+  $db = tripal_insert_db(array('name' => $dbname));
   if (!$db) {
     tripal_cv_obo_quiterror("Cannot find database '$dbname' in Chado.");
   }
@@ -1111,12 +1111,12 @@ function tripal_cv_obo_add_cvterm_dbxref($cvterm, $xref) {
 
 /**
  * Adds a property to a cvterm
- * 
+ *
  * @param cvterm
  *   A database object for the cvterm to which properties will be added
  * @param $property
  *   The name of the property to add
- * @param $value 
+ * @param $value
  *   The value of the property
  * @param rank
  *   The rank of the property
@@ -1187,7 +1187,7 @@ function tripal_cv_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
 
 /**
  * Adds a database cross reference to a cvterm
- * 
+ *
  * @param db_id
  *   The database ID of the cross reference
  * @param accession
