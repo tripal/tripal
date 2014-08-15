@@ -327,7 +327,24 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL) {
       $args = explode("::", $job->arguments);
     }
     $args[] = $job->job_id;
-    print "Calling: $callback(" . implode(", ", $args) . ")\n";
+
+    // We need to do some additional processing for printing since the switch
+    // to serialized arrays now allows nested arrays which cause errors when
+    // printed using implode alone.
+    $string_args = array();
+    foreach ($args as $k => $a) {
+      if (is_array($a)) {
+        $string_args[$k] = 'Array';
+      }
+      elseif (is_object($a)) {
+        $string_args[$k] = 'Object';
+      }
+      else {
+        $string_args[$k] = $a;
+      }
+    }
+
+    print "Calling: $callback(" . implode(", ", $string_args) . ")\n";
     call_user_func_array($callback, $args);
     // set the end time for this job
     $record->end_time = REQUEST_TIME;
