@@ -91,7 +91,12 @@ function chado_project_form(&$node, $form_state) {
       $description = $project->description;
     }
     if (!$description) {
-      $projectprop = tripal_project_get_property($project->project_id, 'Project Description');
+      $projectprop = chado_get_property(
+        'project',
+        $project->project_id,
+        'Project Description',
+        'project_property'
+      );
       $description = $projectprop->value;
     }
 

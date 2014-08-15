@@ -73,7 +73,12 @@ function chado_library_form($node, &$form_state) {
     $library_type = $library->type_id->cvterm_id;
     $organism_id  = $library->organism_id->organism_id;
 
-    $libprop = tripal_library_get_property($library->library_id, 'Library Description');
+    $libprop = chado_get_property(
+      'library',
+      $library->library_id,
+      'Library Description',
+      'library_property'
+    );
     $description = $libprop->value;
 
     // keep track of the library id if we have.  If we do have one then
