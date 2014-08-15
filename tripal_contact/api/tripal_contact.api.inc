@@ -46,7 +46,10 @@ function tripal_insert_contact($values) {
   $contact = chado_select_record('contact', array('contact_id'), $values, $options);
 
   if (count($contact) == 0) {
-    $cvterm = tripal_cv_get_cvterm_by_name($type, NULL, 'tripal_contact');
+    $cvterm = tripal_get_cvterm(array(
+      'name' => $type,
+      'cv_id' => array('name' => 'tripal_contact')
+    ));
     if (!$cvterm) {
       tripal_report_error('tripal_contact', TRIPAL_ERROR, "Cannot find contact type '%type'",
         array('%type' => $type));

@@ -523,9 +523,9 @@ function tripal_insert_cvterm($term, $options = array()) {
   }
 
   // make sure the CV name exists
-  $cv = tripal_cv_get_cv_by_name($cvname);
+  $cv = tripal_get_cv(array('name' => $cvname));
   if (!$cv) {
-    $cv = tripal_cv_add_cv($cvname, '');
+    $cv = tripal_insert_cv($cvname, '');
   }
   if (!$cv) {
     tripal_report_error('tripal_cv', TRIPAL_WARNING, "Cannot find namespace '$cvname' when adding/updating $id", NULL);

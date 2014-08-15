@@ -224,22 +224,22 @@ function tripal_example_add_dbs() {
  */
 function tripal_example_add_cvs() {
 
-  // EXPLANATION: use the tripal_cv_add_cv() function to add any
+  // EXPLANATION: use the tripal_insert_cv() function to add any
   // controlled vocabularies needed by your module.  If the vocabulary already
   // exists then the function will gracefully return.  Chado convensions
   // use a singluar name for CV names (not plural)/
 
-  tripal_cv_add_cv(
+  tripal_insert_cv(
     'example_property',
     'Contains property terms for examples.'
   );
 
-  tripal_cv_add_cv(
+  tripal_insert_cv(
     'example_type',
     'Contains terms describing types of examples.'
   );
 
-  tripal_cv_add_cv(
+  tripal_insert_cv(
    'example_relationship',
    'Contains terms for describing relationship types between examples.'
   );

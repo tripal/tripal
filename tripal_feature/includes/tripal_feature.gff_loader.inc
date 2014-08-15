@@ -1358,8 +1358,10 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
       'id' => "internal:exact",
       'definition' => '',
       'is_obsolete' => 0,
+      'cv_name' => $syncv->name,
+      'is_relationship' => FALSE
     );
-    $syntype = tripal_cv_add_cvterm($term, $syncv->name, 0, 1);
+    $syntype = tripal_insert_cvterm($term, array('update_existing' => TRUE));
     if (!$syntype) {
       tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Cannot add synonym type: internal:$type", array());
       return 0;
@@ -1805,8 +1807,10 @@ function tripal_feature_load_gff3_property($feature, $property, $value) {
       'name' => $property,
       'namespace' => 'feature_property',
       'is_obsolete' => 0,
+      'cv_name' => 'feature_property',
+      'is_relationship' => FALSE
     );
-    $cvterm = (object) tripal_cv_add_cvterm($term, 'feature_property', 0, 0);
+    $cvterm = (object) tripal_insert_cvterm($term, array('update_existing' => FALSE));
     if (!$cvterm) {
       tripal_report_error("T_gff3_loader", TRIPAL_WARNING, "Cannot add cvterm, $property", array());
       return 0;

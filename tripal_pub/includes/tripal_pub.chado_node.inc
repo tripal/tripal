@@ -91,45 +91,72 @@ function chado_pub_form($node, $form_state) {
     // get fields from the pub table and convert them to properties. We will add these to the $more_props
     // array which gets passed in to the tripal_core_properties_form() API call further down
     if ($pub->volumetitle) {
-      $cvterm = tripal_cv_get_cvterm_by_name('Volume Title', NULL, 'tripal_pub');
+      $cvterm = tripal_get_cvterm(array(
+        'name' => 'Volume Title',
+        'cv_id' => array('name' => 'tripal_pub')
+      ));
       $more_props[] = array('cvterm' => $cvterm, 'value' => $pub->volumetitle);
     }
     if ($pub->volume) {
-      $cvterm = tripal_cv_get_cvterm_by_name('Volume', NULL, 'tripal_pub');
+      $cvterm = tripal_get_cvterm(array(
+        'name' => 'Volume',
+        'cv_id' => array('name' => 'tripal_pub')
+      ));
       $more_props[] = array('cvterm' => $cvterm, 'value' => $pub->volume);
     }
     if ($pub->series_name) {
       switch ($pub->type_id->name) {
         case 'Journal Article':
-          $cvterm = tripal_cv_get_cvterm_by_name('Journal Name', NULL, 'tripal_pub');
+          $cvterm = tripal_get_cvterm(array(
+            'name' => 'Journal Name',
+            'cv_id' => array('name' => 'tripal_pub')
+          ));
           $more_props[] = array('cvterm' => $cvterm, 'value' => $pub->series_name);
           break;
         case 'Conference Proceedings':
-          $cvterm = tripal_cv_get_cvterm_by_name('Conference Name', NULL, 'tripal_pub');
+          $cvterm = tripal_get_cvterm(array(
+            'name' => 'Conference Name',
+            'cv_id' => array('name' => 'tripal_pub')
+          ));
           $more_props[] = array('cvterm' => $cvterm, 'value' => $pub->series_name);
           break;
         default:
-          $cvterm = tripal_cv_get_cvterm_by_name('Series Name', NULL, 'tripal_pub');
+          $cvterm = tripal_get_cvterm(array(
+            'name' => 'Series Name',
+            'cv_id' => array('tripal_pub')
+          ));
           $more_props[] = array('cvterm' => $cvterm, 'value' => $pub->series_name);
       }
     }
     if ($pub->issue) {
-      $cvterm = tripal_cv_get_cvterm_by_name('Issue', NULL, 'tripal_pub');
+      $cvterm = tripal_get_cvterm(array(
+        'name' => 'Issue',
+        'cv_id' => array('name' => 'tripal_pub')
+      ));
       $more_props[] = array('cvterm' => $cvterm, 'value' => $pub->issue);
     }
     if ($pub->pages) {
-      $cvterm = tripal_cv_get_cvterm_by_name('Pages', NULL, 'tripal_pub');
+      $cvterm = tripal_get_cvterm(array(
+        'name' => 'Pages',
+        'cv_id' => array('name' => 'tripal_pub')
+      ));
       $more_props[] = array('cvterm' => $cvterm, 'value' => $pub->pages);
     }
     if ($pub->miniref) {
       // not sure what to do with this one
     }
     if ($pub->publisher) {
-      $cvterm = tripal_cv_get_cvterm_by_name('Publisher', NULL, 'tripal_pub');
+      $cvterm = tripal_get_cvterm(array(
+        'name' => 'Publisher',
+        'cv_id' => array('name' => 'tripal_pub')
+      ));
       $more_props[] = array('cvterm' => $cvterm, 'value' => $pub->publisher);
     }
     if ($pub->pubplace) {
-      $cvterm = tripal_cv_get_cvterm_by_name('Published Location', NULL, 'tripal_pub');
+      $cvterm = tripal_get_cvterm(array(
+        'name' => 'Published Location',
+        'cv_id' => array('name' => 'tripal_pub')
+      ));
       $more_props[] = array('cvterm' => $cvterm, 'value' => $pub->pages);
     }
   }
@@ -157,10 +184,10 @@ function chado_pub_form($node, $form_state) {
     '#default_value' => $title,
     '#required' => TRUE,
   );
-  
+
   $type_cv = tripal_get_default_cv('pub', 'type_id');
   if ($type_cv->name == 'tripal_pub') {
-   
+
     // get the list of publication types.  In the Tripal publication
     // ontologies these are all grouped under the term 'Publication Type'
     // we want the default to be 'Journal Article'
@@ -188,7 +215,7 @@ function chado_pub_form($node, $form_state) {
   }
   else {
     $pub_types = tripal_get_cvterm_default_select_options('pub', 'type_id', 'publication types');
-    $pub_types[0] = 'Select a Type'; 
+    $pub_types[0] = 'Select a Type';
   }
 
   $form['type_id'] = array(
@@ -229,8 +256,8 @@ function chado_pub_form($node, $form_state) {
   $select_options = array();
   $prop_cv = tripal_get_default_cv('pubprop', 'type_id');
   $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
-  // if the poperty cv is 'tripal_pub' then we need to pass in our own select_options 
-  // for only a subset of the vocabulary  
+  // if the poperty cv is 'tripal_pub' then we need to pass in our own select_options
+  // for only a subset of the vocabulary
   if ($prop_cv->name == 'tripal_pub') {
     $select_options[] = 'Select a Property';
     $sql = "
@@ -285,7 +312,7 @@ function chado_pub_form($node, $form_state) {
   // Adds the form elements to your current form
   chado_add_node_form_relationships($form, $form_state, $details);
 
-  
+
   // ADDITIONAL DBXREFS FORM
   //---------------------------------------------
   $details = array(
@@ -324,7 +351,7 @@ function chado_pub_validate($node, $form, &$form_state) {
   $uniquename   = trim($node->uniquename);
   $is_obsolete  = $node->is_obsolete;
   $type_id      = $node->type_id;
-  
+
   $pub = array();
 
   // make sure the year is four digits
@@ -348,7 +375,7 @@ function chado_pub_validate($node, $form, &$form_state) {
   foreach ($properties as $key => $prop_values) {
     $values = array('cvterm_id' => $key);
     $prop_type = chado_select_record('cvterm', array('name'), $values);
-    if ($prop_type[0]->name == 'Conference Name' or 
+    if ($prop_type[0]->name == 'Conference Name' or
         $prop_type[0]->name == 'Journal Name' or
         $prop_type[0]->name == 'Series Name') {
       $series_name = $prop_values[0];
@@ -417,7 +444,7 @@ function chado_pub_validate_check_uniquename($uniquename, $pub_id = NULL) {
   $pub = chado_get_publication(array('uniquename' => $uniquename));
   if ($pub) {
     // if a $pub_id is provided to the function then this is an update
-    // if the pub_id's don't match then a different pub with the same 
+    // if the pub_id's don't match then a different pub with the same
     // uniquename already exists.
     if ($pub->pub_id != $pub_id) {
       $message = t('A publication with this unique citation already exists.');
@@ -440,7 +467,7 @@ function chado_pub_validate_check_uniquename($uniquename, $pub_id = NULL) {
  *   The type of publication
  * @param $pub_id
  *   the unique id of the publication
- *   
+ *
  *
  * @ingroup tripal_pub
  */
@@ -454,7 +481,7 @@ function chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvter
   );
   // TODO: need to include the Publication Dbxref in the $pub_details as well
   $pub_ids = tripal_publication_exists($pub_details);
-  
+
   // if we found only one publication and it is our publication then return, we're good.
   if (count($pub_ids) == 1 and in_array($pub_id, $pub_ids)) {
     return;
@@ -463,7 +490,7 @@ function chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvter
     // there is no match so return
     return;
   }
-  
+
   // return an appropriate message based on the unique constraint settings
   $import_dups_check = variable_get('tripal_pub_import_duplicate_check', 'title_year_media');
   switch ($import_dups_check) {
@@ -510,7 +537,7 @@ function chado_pub_node_access($node, $op, $account) {
   if (is_object($node)) {
     $node_type = $node->type;
   }
-  
+
   if($node_type == 'chado_pub') {
     if ($op == 'create') {
       if (!user_access('create chado_pub', $account)) {
@@ -647,7 +674,7 @@ function chado_pub_insert($node) {
     }
     // generate a citation for this pub if one doesn't already exist
     if (!$node->uniquename and !array_key_exists($citation_id, $properties)) {
-      $pub_type = tripal_cv_get_cvterm_by_id($node->type_id);
+      $pub_type = tripal_get_cvterm(array('cvterm_id' => $node->type_id));
       $pub_arr['Title'] = $node->pubtitle;
       $pub_arr['Publication Type'][0] = $pub_type->name;
       $pub_arr['Year'] = $node->pyear;
@@ -697,7 +724,7 @@ function chado_pub_insert($node) {
     chado_update_node_form_relationships($node, $details);
 
     // add in any database cross-references
-    foreach ($cross_refs as $index => $ref) { 
+    foreach ($cross_refs as $index => $ref) {
       $dbxref = array();
       if(preg_match('/^(.*?):(.*?)$/', trim($ref), $matches)) {
         $dbxref['db_name']   = $matches[1];
@@ -851,7 +878,7 @@ function chado_pub_update($node) {
   }
   // generate a citation for this pub if one doesn't already exist
   if (!$node->uniquename) {
-    $pub_type = tripal_cv_get_cvterm_by_id($node->type_id);
+    $pub_type = tripal_get_cvterm(array('cvterm_id' => $node->type_id));
     $pub_arr['Title'] = $node->pubtitle;
     $pub_arr['Publication Type'][0] = $pub_type->name;
     $pub_arr['Year'] = $node->pyear;
@@ -943,9 +970,9 @@ function chado_pub_load($nodes) {
   foreach ($nodes as $nid => $node) {
     // find the pub and add in the details
     $pub_id = chado_get_id_from_nid('pub', $nid);
-    
+
     // if the nid does not have a matching record then skip this node.
-    // this can happen with orphaned nodes. 
+    // this can happen with orphaned nodes.
     if (!$pub_id) {
       continue;
     }
@@ -1091,7 +1118,7 @@ function tripal_pub_node_view($node, $view_mode, $langcode) {
 function tripal_pub_node_insert($node) {
 
   if ($node->type == 'chado_pub') {
-    
+
     // get the pub
     $pub_id = chado_get_id_from_nid('pub', $node->nid);
     $values = array('pub_id' => $pub_id);
@@ -1103,7 +1130,7 @@ function tripal_pub_node_insert($node) {
     $pub = chado_expand_var($pub, 'field', 'pub.volumetitle');
     $pub = chado_expand_var($pub, 'field', 'pub.uniquename');
     $node->pub = $pub;
-    
+
     // Now get the title
     $node->title = chado_get_node_title($node);
 
@@ -1155,14 +1182,14 @@ function tripal_pub_node_update($node) {
     $pub_id = chado_get_id_from_nid('pub', $node->nid);
     $values = array('pub_id' => $pub_id);
     $pub = chado_generate_var('pub', $values);
-    
+
     // expand the 'text' fields as those aren't included by default
     // and they really shouldn't be so large to cause problems
     $pub = chado_expand_var($pub, 'field', 'pub.title');
     $pub = chado_expand_var($pub, 'field', 'pub.volumetitle');
     $pub = chado_expand_var($pub, 'field', 'pub.uniquename');
     $node->pub = $pub;
-            
+
     // Now get the title
     $node->title = chado_get_node_title($node);
 
@@ -1206,12 +1233,12 @@ function chado_pub_chado_node_default_title_format() {
 
 /**
  * Implements [content_type]_chado_node_sync_select_query().
- * 
+ *
  * Adds a where clause to the query to exclude the NULL pub.
  */
 function chado_pub_chado_node_sync_select_query($query) {
   $query['where_clauses']['title'][] = 'pub.title <> :pub_title_null';
   $query['where_args']['title'][':pub_title_null'] = 'NULL';
-  
+
   return $query;
 }

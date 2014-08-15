@@ -1069,7 +1069,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     $cvterm = tripal_get_cvterm($identifiers);
 
     // if we could not find the cvterm by name then try by synonym
-    //$cvterm = tripal_cv_get_cvterm_by_name($key, NULL, 'tripal_pub');
+    //$cvterm = tripal_get_cvterm(array('name' => $key, 'cv_id' => array('name' => 'tripal_pub')));
     if (!$cvterm) {
       $identifiers = array(
         'synonym' => array(

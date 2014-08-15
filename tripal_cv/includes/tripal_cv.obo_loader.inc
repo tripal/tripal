@@ -119,7 +119,12 @@ function tripal_cv_obo_form_submit($form, &$form_state) {
   $obo_url   = trim($form_state['values']['obo_url']);
   $obo_file  = trim($form_state['values']['obo_file']);
 
-  tripal_cv_submit_obo_job($obo_id, $obo_name, $obo_url, $obo_file);
+  tripal_submit_obo_job(array(
+    'ob_id' => $obo_id,
+    'name' => $obo_name,
+    'url' => $obo_url,
+    'file' => $obo_file
+  ));
 }
 
 /**
@@ -187,7 +192,7 @@ function tripal_cv_load_obo_v1_2_file($obo_name, $file, $jobid = NULL, $is_new =
   $newcvs = array();
 
   if ($is_new) {
-    tripal_cv_add_obo_ref($obo_name, $file);
+    tripal_insert_obo($obo_name, $file);
   }
 
   $success = tripal_cv_load_obo_v1_2($file, $jobid, $newcvs);
@@ -238,7 +243,7 @@ function tripal_cv_load_obo_v1_2_url($obo_name, $url, $jobid = NULL, $is_new = T
   fclose($obo_fh);
 
   if ($is_new) {
-    tripal_cv_add_obo_ref($obo_name, $url);
+    tripal_insert_obo($obo_name, $url);
   }
 
   // second, parse the OBO
@@ -270,7 +275,7 @@ function tripal_cv_load_update_cvtermpath($newcvs, $jobid) {
 
   print "\nUpdating cvtermpath table.  This may take a while...\n";
   foreach ($newcvs as $namespace => $cvid) {
-    tripal_cv_update_cvtermpath($cvid, $jobid);
+    tripal_update_cvtermpath($cvid, $jobid);
   }
 }
 
@@ -327,7 +332,7 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
     // present for each stanza.  Some ontologies have adopted the v1.4 method
     // in their v1.2 files and not including it.
     if (array_key_exists('default-namespace', $header)) {
-      $defaultcv = tripal_cv_add_cv($header['default-namespace'][0], '');
+      $defaultcv = tripal_insert_cv($header['default-namespace'][0], '');
       if (!$defaultcv) {
         tripal_cv_obo_quiterror('Cannot add namespace ' . $header['default-namespace'][0]);
       }
@@ -339,14 +344,14 @@ function tripal_cv_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
       // look to see if an 'ontology' key is present.  It is part of the v1.4
       // specification so it shouldn't be in the file, but just in case
       if (array_key_exists('ontology', $header)) {
-        $defaultcv = tripal_cv_add_cv(strtoupper($header['ontology'][0]), '');
+        $defaultcv = tripal_insert_cv(strtoupper($header['ontology'][0]), '');
         if (!$defaultcv) {
           tripal_cv_obo_quiterror('Cannot add namespace ' . strtoupper($header['ontology'][0]));
         }
         $newcvs[strtoupper(strtoupper($header['ontology'][0]))] = $defaultcv->cv_id;
       }
       else {
-        $defaultcv = tripal_cv_add_cv('_global', '');
+        $defaultcv = tripal_insert_cv('_global', '');
         $newcvs['_global'] = $defaultcv->cv_id;
       }
       watchdog('t_obo_loader', "This OBO is missing the 'default-namespace' header. It is not possible to determine which vocabulary terms without a 'namespace' key should go.  Instead, those terms will be placed in the '%vocab' vocabulary.",
@@ -566,8 +571,12 @@ function tripal_cv_obo_process_term($term, $defaultcv, $is_relationship = 0, &$n
     $t['is_obsolete'] = $term['is_obsolete'][0];
   }
 
+  $t['cv_name'] = $defaultcv;
+  $t['is_relationship'] = $is_relationship;
+  $t['db_name'] = $default_db;
+
   // add the cvterm
-  $cvterm = tripal_cv_add_cvterm($t, $defaultcv, $is_relationship, 1, $default_db);
+  $cvterm = tripal_insert_cvterm($t, array('update_existing' => TRUE));
   if (!$cvterm) {
     tripal_cv_obo_quiterror("Cannot add the term " . $term['id'][0]);
   }
@@ -731,8 +740,11 @@ function tripal_cv_obo_add_relationship($cvterm, $defaultcv, $rel,
     'id' => "$default_db:$rel",
     'definition' => '',
     'is_obsolete' => 0,
+    'cv_name' => $defaultcv,
+    'is_relationship' => TRUE,
+    'db_naame' => $default_db
   );
-  $relcvterm = tripal_cv_add_cvterm($term, $defaultcv, 1, 0, $default_db);
+  $relcvterm = tripal_insert_cvterm($term, array('update_existing' => FALSE));
 
   if (!$relcvterm) {
     // if the relationship term couldn't be found in the default_db provided
@@ -742,8 +754,11 @@ function tripal_cv_obo_add_relationship($cvterm, $defaultcv, $rel,
       'id' => "OBO_REL:$rel",
       'definition' => '',
       'is_obsolete' => 0,
+      'cv_name' => $defaultcv,
+      'is_relationship' => TRUE,
+      'db_name' => 'OBO_REL'
     );
-    $relcvterm = tripal_cv_add_cvterm($term, $defaultcv, 1, 0, 'OBO_REL');
+    $relcvterm = tripal_insert_cvterm($term, array('update_existing' => FALSE));
     if (!$relcvterm) {
       tripal_cv_obo_quiterror("Cannot find the relationship term in the current ontology or in the relationship ontology: $rel\n");
     }
@@ -770,7 +785,12 @@ function tripal_cv_obo_add_relationship($cvterm, $defaultcv, $rel,
   if (array_key_exists('is_obsolete', $oterm)) {
     $objterm['is_obsolete'] = $oterm['is_obsolete'][0];
   }
-  $objcvterm = tripal_cv_add_cvterm($objterm, $defaultcv, $object_is_relationship, 1, $default_db);
+
+  $objterm['cv_name' ] = $defaultcv;
+  $objterm['is_relationship'] = $object_is_relationship;
+  $objterm['db_name'] = $default_db;
+
+  $objcvterm = tripal_insert_cvterm($objterm, array('update_existing' => TRUE));
   if (!$objcvterm) {
     tripal_cv_obo_quiterror("Cannot add cvterm " . $oterm['name'][0]);
   }
@@ -828,7 +848,7 @@ function tripal_cv_obo_get_term($id) {
 function tripal_cv_obo_add_synonyms($term, $cvterm) {
 
   // make sure we have a 'synonym_type' vocabulary
-  $syncv = tripal_cv_add_cv('synonym_type', 'A vocabulary added by the Tripal CV module OBO loader for storing synonym types.');
+  $syncv = tripal_insert_cv('synonym_type', 'A vocabulary added by the Tripal CV module OBO loader for storing synonym types.');
 
   // now add the synonyms
   if (array_key_exists('synonym', $term)) {
@@ -860,8 +880,10 @@ function tripal_cv_obo_add_synonyms($term, $cvterm) {
            'id' => "internal:$scope",
            'definition' => '',
            'is_obsolete' => 0,
+           'cv_name' => $syncv->name,
+           'is_relationship' => FALSE
         );
-        $syntype = tripal_cv_add_cvterm($term, $syncv->name, 0, 1);
+        $syntype = tripal_insert_cvterm($term, array('update_existing' => TRUE));
         if (!$syntype) {
           tripal_cv_obo_quiterror("Cannot add synonym type: internal:$scope");
         }
@@ -1126,7 +1148,7 @@ function tripal_cv_obo_add_cvterm_dbxref($cvterm, $xref) {
 function tripal_cv_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
 
   // make sure the 'cvterm_property_type' CV exists
-  $cv = tripal_cv_add_cv('cvterm_property_type', '');
+  $cv = tripal_insert_cv('cvterm_property_type', '');
   if (!$cv) {
     tripal_cv_obo_quiterror("Cannot add/find cvterm_property_type cvterm");
   }
@@ -1144,8 +1166,10 @@ function tripal_cv_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
       'id' => "internal:$property",
       'definition' => '',
       'is_obsolete' => 0,
+      'cv_name' => $cv->name,
+      'is_relationship' => FALSE,
     );
-    $cvproptype = tripal_cv_add_cvterm($term, $cv->name, 0, 0);
+    $cvproptype = tripal_insert_cvterm($term, array('update_existing' => FALSE));
     if (!$cvproptype) {
       tripal_cv_obo_quiterror("Cannot add cvterm property: internal:$property");
       return FALSE;

@@ -170,7 +170,7 @@ function chado_library_form($node, &$form_state) {
     // Generate our own select list so we can exclude the description element
     $cv_result = chado_select_record('cv',array('cv_id'),array('name' => 'library_property'));
     $cv_id = $cv_result[0]->cv_id;
-    $select_options = tripal_cv_get_cvterm_options($cv_id);
+    $select_options = tripal_get_cvterm_select_options($cv_id);
     $descrip_id = array_search('Library Description', $select_options);
     unset($select_options[$descrip_id]);
   }
@@ -277,7 +277,10 @@ function chado_library_insert($node) {
     // * Properties Form *
     // add the description property
     $properties = chado_retrieve_node_form_properties($node);
-    $descrip_id = tripal_cv_get_cvterm_by_name('Library Description', NULL, 'library_property');
+    $descrip_id = tripal_get_cvterm(array(
+      'name' => 'Library Description',
+      'cv_id' => array('name' => 'library_property')
+    ));
     $properties[$descrip_id->cvterm_id][0] = $node->description;
 
     $details = array(
@@ -346,7 +349,10 @@ function chado_library_update($node) {
   // * Properties Form *
   // add the description property
   $properties = chado_retrieve_node_form_properties($node);
-  $descrip_id = tripal_cv_get_cvterm_by_name('Library Description', NULL, 'library_property');
+  $descrip_id = tripal_get_cvterm(array(
+    'name' => 'Library Description',
+    'cv_id' => array('name' => 'library_property')
+  ));
   $properties[$descrip_id->cvterm_id][0] = $node->description;
 
   $details = array(
@@ -592,7 +598,7 @@ function tripal_library_node_insert($node) {
 
   switch ($node->type) {
     case 'chado_library':
-      
+
       $library_id = chado_get_id_from_nid('library', $node->nid);
       $values = array('library_id' => $library_id);
       $library = chado_generate_var('library', $values);
@@ -616,7 +622,7 @@ function tripal_library_node_update($node) {
 
   switch ($node->type) {
     case 'chado_library':
-      
+
       $library_id = chado_get_id_from_nid('library', $node->nid);
       $values = array('library_id' => $library_id);
       $library = chado_generate_var('library', $values);

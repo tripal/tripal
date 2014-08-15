@@ -388,7 +388,10 @@ function chado_contact_insert($node) {
 
       // Add the description property
     $properties = chado_retrieve_node_form_properties($node);
-    $contact_descrip_id = tripal_cv_get_cvterm_by_name('contact_description', NULL, 'tripal_contact');
+    $contact_descrip_id = tripal_get_cvterm(array(
+      'name' => 'contact_description',
+      'cv_id' => array('name' =>  'tripal_contact')
+    ));
     $properties[$contact_descrip_id->cvterm_id][0] = $node->description;
 
     // * Properties Form *
@@ -462,7 +465,10 @@ function chado_contact_update($node) {
 
   // Add the description property
   $properties = chado_retrieve_node_form_properties($node);
-  $contact_descrip_id = tripal_cv_get_cvterm_by_name('contact_description', NULL, 'tripal_contact');
+  $contact_descrip_id = tripal_get_cvterm(array(
+    'name' => 'contact_description',
+    'cv_id' => array('name' => 'tripal_contact')
+  ));
   $properties[$contact_descrip_id->cvterm_id][0] = $node->description;
 
   // now add in the properties by first removing any the contact
@@ -649,12 +655,12 @@ function tripal_contact_node_insert($node) {
 
       // find the contact and add in the details
       $contact_id = chado_get_id_from_nid('contact', $node->nid);
-     
+
       // get the contact
       $values = array('contact_id' => $contact_id);
       $contact = chado_generate_var('contact', $values);
       $node->contact = $contact;
-      
+
       // Now get the title
       $node->title = chado_get_node_title($node);
 
@@ -675,12 +681,12 @@ function tripal_contact_node_update($node) {
 
       // find the contact and add in the details
       $contact_id = chado_get_id_from_nid('contact', $node->nid);
-       
+
       // get the contact
       $values = array('contact_id' => $contact_id);
       $contact = chado_generate_var('contact', $values);
       $node->contact = $contact;
-      
+
       // Now get the title
       $node->title = chado_get_node_title($node);
 

@@ -148,7 +148,7 @@ function chado_project_form(&$node, $form_state) {
     // as a property even though it will be stored as a property.
     $cv_result = chado_select_record('cv',array('cv_id'),array('name' => 'project_property'));
     $cv_id = $cv_result[0]->cv_id;
-    $select_options = tripal_cv_get_cvterm_options($cv_id);
+    $select_options = tripal_get_cvterm_select_options($cv_id);
     $descrip_id = array_search('Project Description', $select_options);
     unset($select_options[$descrip_id]);
   }
@@ -258,7 +258,10 @@ function chado_project_insert($node) {
     // * Properties Form *
     // Add the description property
     $properties = chado_retrieve_node_form_properties($node);
-    $descrip_id = tripal_cv_get_cvterm_by_name('Project Description', NULL, 'project_property');
+    $descrip_id = tripal_get_cvterm(array(
+      'name' => 'Project Description',
+      'cv_id' => array('name' => 'project_property')
+    ));
     $properties[$descrip_id->cvterm_id][0] = $node->description;
 
     $details = array(
@@ -357,7 +360,10 @@ function chado_project_update($node) {
   // * Properties Form *
   // Add the description property
   $properties = chado_retrieve_node_form_properties($node);
-  $descrip_id = tripal_cv_get_cvterm_by_name('Project Description', NULL, 'project_property');
+  $descrip_id = tripal_get_cvterm(array(
+    'name' => 'Project Description',
+    'cv_id' => array('name' => 'project_property')
+  ));
   $properties[$descrip_id->cvterm_id][0] = $node->description;
 
   $details = array(
