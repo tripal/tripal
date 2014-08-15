@@ -127,56 +127,6 @@ function tripal_natural_diversity_theme($existing, $type, $theme, $path) {
 }
 
 /**
- * Implements hook_block_info().
- *
- * @ingroup tripal_library
- */
-function tripal_natural_diversity_block_info() {
-
-  $blocks['ndfgenotype']['info'] = t('Tripal Natural Diversity Feature Genotypes');
-  $blocks['ndfgenotype']['cache'] = 'BLOCK_NO_CACHE';
-
-  $blocks['ndsgenotype']['info'] = t('Tripal Natural Diversity Library Genotypes');
-  $blocks['ndsgenotype']['cache'] = 'BLOCK_NO_CACHE';
-
-  $blocks['ndsphenotype']['info'] = t('Tripal Natural Diversity Stock Phenotypes');
-  $blocks['ndsphenotype']['cache'] = 'BLOCK_NO_CACHE';
-
-  return $blocks;
-}
-
-/**
- * Implements hook_block_view().
- *
- * @ingroup tripal_library
- */
-function tripal_natural_diversity_block_view($delta = '') {
-
-  if (user_access('access chado_library content') and arg(0) == 'node' and is_numeric(arg(1))) {
-    $nid = arg(1);
-    $node = node_load($nid);
-
-    $block = array();
-    switch ($delta) {
-      case 'ndfgenotype':
-        $block['subject'] = t('Genotypes');
-        $block['content'] = theme('tripal_feature_nd_genotypes', $node);
-        break;
-      case 'ndsgenotype':
-        $block['subject'] = t('Stock Genotypes');
-        $block['content'] = theme('tripal_stock_nd_genotypes', $node);
-        break;
-      case 'ndsphenotype':
-        $block['subject'] = t('Phenotypes');
-        $block['content'] = theme('tripal_stock_nd_phenotypes', $node);
-        break;
-      default :
-    }
-    return $block;
-  }
-}
-
-/**
  * Implements hook_node_view(). Acts on all content types.
  *
  * @ingroup tripal_natural_diversity

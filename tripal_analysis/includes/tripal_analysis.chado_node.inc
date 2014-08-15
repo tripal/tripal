@@ -123,9 +123,9 @@ function chado_analysis_form($node, &$form_state) {
     $sourceuri      = $form_state['input']['sourceuri'];
     $timeexecuted   = $form_state['input']['timeexecuted'];
     $description    = $form_state['input']['description'];
-    $d_removed      = $form_state['input']['removed'];
-    $num_new        = $form_state['input']['num_new'] ? $form_state['input']['num_new'] : 0;
-    $analysis_type  = $form_state['input']['analysis_type'];
+    $d_removed      = isset($form_state['input']['removed']) ? $form_state['input']['removed'] : array();
+    $num_new        = isset($form_state['input']['num_new']) ? $form_state['input']['num_new'] : 0;
+    $analysis_type  = isset($form_state['input']['analysis_type']) ? $form_state['input']['analysis_type'] : '';
   }
 
   $form['title']= array(

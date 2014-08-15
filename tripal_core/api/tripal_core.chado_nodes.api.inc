@@ -510,40 +510,46 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
   // Allow module to add to query
   $hook_query_alter = $linking_table . '_chado_node_sync_select_query';
   if (function_exists($hook_query_alter)) {
-    call_user_func($hook_query_alter, $select, $joins, $where_clauses, $where_args);
+    $update = call_user_func($hook_query_alter, array(
+      'select' => $select, 
+      'joins' => $joins, 
+      'where_clauses' => $where_clauses, 
+      'where_args' => $where_args,
+    ));
+    // Now add in any new changes
+    if ($update and is_array($update)) {
+      $select = $update['select'];
+      $joins = $update['joins'];
+      $where_clauses = $update['where_clauses'];
+      $where_args = $update['where_args'];
+    }
   }
-
   // Build Query, we do a left join on the chado_xxxx table in the Drupal schema
   // so that if no criteria are specified we only get those items that have not
   // yet been synced.
   $query = "
-    SELECT " . implode(', ',$select) . ' ' .
+    SELECT " . implode(', ', $select) . ' ' .
     'FROM {' . $base_table . '} ' . $base_table . ' ' . implode(' ', $joins) . ' '.
     "  LEFT JOIN public.$linking_table CT ON CT.$base_table_id = $base_table.$base_table_id " .
-    "WHERE CT.$base_table_id IS NULL AND";
+    "WHERE CT.$base_table_id IS NULL ";
 
   // extend the where clause if needed
   $where = '';
   $sql_args = array();
-  if (count($where_clauses['type']) > 0) {
-    $where .= '(' . implode(' OR ', $where_clauses['type']) . ') AND';
-    $sql_args = array_merge($sql_args, $where_args['type']);
+  foreach ($where_clauses as $category => $items) {
+    $where .= ' AND (';
+    foreach ($items as $item) {
+      $where .= $item . ' OR ';
+    }
+    $where = substr($where, 0, -4); // remove the trailing 'OR'
+    $where .= ') ';
+    $sql_args = array_merge($sql_args, $where_args[$category]);
   }
-  if (count($where_clauses['organism']) > 0) {
-    $where .= '(' . implode(' OR ', $where_clauses['organism']) . ') AND';
-    $sql_args = array_merge($sql_args, $where_args['organism']);
-  }
-  if (count($where_clauses['id']) > 0) {
-    $where .= '(' . implode(' OR ', $where_clauses['id']) . ') AND';
-    $sql_args = array_merge($sql_args, $where_args['id']);
-  }
+  
   if ($where) {
     $query .= $where;
   }
-  $query = substr($query, 0, -4); // remove the trailing 'AND'
   $query .- " ORDER BY " . $base_table_id;
-
-print $query."\n";
 
   // If Maximum number to Sync is supplied
   if ($max_sync) {
@@ -836,7 +842,7 @@ function hook_chado_node_sync_form_submit ($form, $form_state) {
 
 
 /**
- * Alter the query for the chado database which gets the chado records to be sync'd (optional)
+ * Alter the query that retrieves records to be sync'd (optional)
  *
  * This might be necessary if you need fields from other chado tables to create your node
  * or if your chado node type only supports a subset of a given table (ie: a germplasm node
@@ -846,27 +852,43 @@ function hook_chado_node_sync_form_submit ($form, $form_state) {
  * Note: For your own module, replace hook in the function name with the machine-name of
  * your chado node type (ie: chado_feature).
  *
- * @param $select:
- *   An array of select clauses
- * @param $joins:
- *   An array of joins (ie: a single join could be 'LEFT JOIN {chadotable} alias ON base.id=alias.id')
- * @param $where_clauses:
- *   An array of where clauses which will all be AND'ed together. Use :placeholders for values.
- * @param $where_args:
- *   An associative array of arguments to be subbed in to the where clause where the
- *   key = :placeholder and the value is the actual argument to be subbed in.
+ * @param $query 
+ *   An array containing the following: 
+ *    'select': An array of select clauses
+ *    'joins:  An array of joins (ie: a single join could be 
+ *      'LEFT JOIN {chadotable} alias ON base.id=alias.id')
+ *    'where_clauses: An array of where clauses which will all be AND'ed 
+ *      together. Use :placeholders for values.
+ *    'where_args: An associative array of arguments to be subbed in to the 
+ *      where clause where the
  *
  * @ingroup tripal_chado_node_api
  */
-function hook_chado_node_sync_select_query (&$select, &$joins, &$where_clauses, &$where_args) {
+function hook_chado_node_sync_select_query($query) {
 
-  // You can add fields to be selected
-  $select[] = 'example.myfavfield';
+  // You can add fields to be selected. Be sure to prefix each field with the 
+  // tale name.
+  $query['select'][] = 'example.myfavfield';
 
-  // Or joins to important tables
-  $joins[] = 'LEFT JOIN {exampleprop} PROP ON PROP.example_id=EXAMPLE.example_id';
+  // Provide any join you may need to the joins array. Be sure to wrap the 
+  // table name in curly brackets.
+  $query['joins'][] = 'LEFT JOIN {exampleprop} PROP ON PROP.example_id=EXAMPLE.example_id';
 
-  // Or filter the query using where clauses
-  $where_clauses[] = 'example.myfavfield = :favvalue';
-  $where_args[':favvalue'] = 'awesome-ness';
+  // The category should be a unique id for a group of items that will be 
+  // concatenated together via an SQL 'OR'.  By default the $where_clases
+  // variable will come with categories of 'id', 'organism' and 'type'.  
+  // you can add your own unique category or alter the contents of the existing
+  // categories.  Be sure to make sure the category doesn't already exist
+  // in the $query['where_clauses']
+  $category = 'my_category'; 
+  
+  // Provide any aditionall where clauses and their necessary arguments.
+  // Be sure to prefix the field with the table name.   Be sure that the 
+  // placeholder is unique across all categories (perhaps add a unique 
+  // prefix/suffix).
+  $query['where_clauses'][$category][] = 'example.myfavfield = :favvalue';
+  $query['where_args'][$category][':favvalue'] = 'awesome-ness';
+  
+  // Must return the updated query
+  return $query;
 }

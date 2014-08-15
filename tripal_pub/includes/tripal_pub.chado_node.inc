@@ -1203,3 +1203,15 @@ function tripal_pub_node_presave($node) {
 function chado_pub_chado_node_default_title_format() {
   return '[pub.title]';
 }
+
+/**
+ * Implements [content_type]_chado_node_sync_select_query().
+ * 
+ * Adds a where clause to the query to exclude the NULL pub.
+ */
+function chado_pub_chado_node_sync_select_query($query) {
+  $query['where_clauses']['title'][] = 'pub.title <> :pub_title_null';
+  $query['where_args']['title'][':pub_title_null'] = 'NULL';
+  
+  return $query;
+}

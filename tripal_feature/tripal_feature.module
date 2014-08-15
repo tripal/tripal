@@ -24,7 +24,6 @@ require_once 'includes/tripal_feature.gff_loader.inc';
 require_once 'includes/tripal_feature.seq_extract.inc';
 require_once 'includes/tripal_feature.delete.inc';
 require_once 'includes/tripal_feature.chado_node.inc';
-require_once 'includes/tripal_feature.blocks.inc';
 
 /**
  * Implements hook_views_api().

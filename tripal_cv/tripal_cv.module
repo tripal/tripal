@@ -19,8 +19,6 @@ require_once 'api/tripal_cv.schema.api.inc';
 require_once 'api/tripal_cv.DEPRECATED.inc';
 
 require_once 'includes/tripal_cv.admin.inc';
-require_once 'includes/tripal_cv.charts.inc';
-require_once 'includes/tripal_cv.trees.inc';
 require_once 'includes/tripal_cv.obo_loader.inc';
 require_once 'includes/tripal_cv.cv_form.inc';
 require_once 'includes/tripal_cv.cvterm_form.inc';
