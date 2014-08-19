@@ -299,6 +299,7 @@ function tripal_featuremap_add_cvterms() {
        'db_name' => 'tripal'
       ),
       array('update_existing' => TRUE)
+    );
 
 }
 
