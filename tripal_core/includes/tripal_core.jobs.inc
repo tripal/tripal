@@ -250,7 +250,7 @@ function tripal_jobs_view($job_id) {
   $results = db_query($sql, array(':job_id' => $job_id));
   $job = $results->fetchObject();
 
-  // we do not know what the arguments are for and we want to provide a
+  // We do not know what the arguments are for and we want to provide a
   // meaningful description to the end-user. So we use a callback function
   // deinfed in the module that created the job to describe in an array
   // the arguments provided.  If the callback fails then just use the

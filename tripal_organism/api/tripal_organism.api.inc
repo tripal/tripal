@@ -170,17 +170,21 @@ function tripal_get_organism_select_options($syncd_only = TRUE) {
 }
 
 /**
- * Return the URL for the organism image
+ * Return the path for the organism image.
  *
  * @param $organism
  *   An organism table record
  * @param $nid
- *   (Optional) the node id of the organism node. if not supplied it will be looked up
+ *   (Optional). The node id of the organism node. if not supplied it will be looked up
+ * @param $type
+ *   (Optional). Specify the type of path, either 'url' or path'. Default is 'path'
  *
  * @return
- *   The fully qualified url to the image
+ *   If the type parameter is 'url' (the default) then the fully qualified 
+ *   url to the image is returend. If the type is 'path' then the full 
+ *   filesystem is returned.
  */
-function tripal_get_organism_image($organism, $nid = NULL) {
+function tripal_get_organism_image($organism, $nid = NULL, $type = 'url') {
   $url = '';
 
   // first look for an image with the genus/species name.  This is old-style tripal
@@ -190,15 +194,23 @@ function tripal_get_organism_image($organism, $nid = NULL) {
   $base_path = realpath('.');
   $image_dir = tripal_get_files_dir('tripal_organism') . "/images";
   $image_name =  $organism->genus . "_" . $organism->species . ".jpg";
+  $image_path = "$base_path/$image_dir/$image_name";
 
-  if (file_exists("$base_path/$image_dir/$image_name")) {
+  if (file_exists($image_path)) {
     $url = file_create_url("$image_dir/$image_name");
   }
   else {
      $image_name = $nid . ".jpg";
-     if (file_exists("$base_path/$image_dir/$image_name")) {
+     $image_path = "$base_path/$image_dir/$image_name";
+     if (file_exists($image_path)) {
        $url = file_create_url("$image_dir/$image_name");
      }
   }
-  return $url;
+  if ($type == "path") {
+    return $image_path;
+  }
+  else {
+    return $url;
+  }
 }
+

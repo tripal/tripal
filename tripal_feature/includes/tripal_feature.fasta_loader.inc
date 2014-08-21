@@ -442,17 +442,13 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
   $re_subject, $parent_type, $method, $uid, $analysis_id,
   $match_type, $job = NULL) {
 
-  // open the temporary loading file
-  $tmp_file = tempnam(sys_get_temp_dir(), 'tripal_fasta_');
-  $fh = fopen($tmp_file, 'wb');
-    
   $transaction = db_transaction();
   print "\nNOTE: Loading of this GFF file is performed using a database transaction. \n" .
        "If the load fails or is terminated prematurely then the entire set of \n" .
        "insertions/updates is rolled back and will not be found in the database\n\n";
   try {
 
-    // first get the type for this sequence
+    // First get the type for this sequence.
     $cvtermsql = "
       SELECT CVT.cvterm_id
       FROM {cvterm} CVT
@@ -465,6 +461,8 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
       tripal_report_error("T_fasta_loader", TRIPAL_ERROR, "Cannot find the term type: '%type'", array('%type' => $type));
       return 0;
     }
+    
+    // Second, if there is a parent type then get that.
     if ($parent_type) {
       $parentcvterm = chado_query($cvtermsql, array(':cvname' => 'sequence', ':name' => $parent_type, ':synonym' => $parent_type))->fetchObject();
       if (!$parentcvterm) {
@@ -472,6 +470,8 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
         return 0;
       }
     }
+    
+    // Third, if there is a relationship type then get that.
     if ($rel_type) {
       $relcvterm = chado_query($cvtermsql, array(':cvname' => 'relationship', ':name' => $rel_type, ':synonym' => $rel_type))->fetchObject();
       if (!$relcvterm) {
@@ -479,182 +479,204 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type,
         return 0;
       }
     }
+    
+    // We need to get the table schema to make sure we don't overrun the
+    // size of fields with what our regular expressions retrieve
+    $feature_tbl = chado_get_schema('feature');
+    $dbxref_tbl = chado_get_schema('dbxref');
   
-    print "Opening FASTA file $dfile\n";
-  
-    //$lines = file($dfile, FILE_SKIP_EMPTY_LINES);
+    print "Step 1: finding sequences\n";
+    $filesize = filesize($dfile);
     $fh = fopen($dfile, 'r');
     if (!$fh) {
       tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "cannot open file: %dfile", array('%dfile' => $dfile));
       return 0;
     }
-    $filesize = filesize($dfile);
-    $i = 0;
-  
-    $name = '';
-    $uname = '';
-    $residues = '';
+    
+    // Calculate the interval at which we will print to the screen that status.
     $interval = intval($filesize * 0.01);
     if ($interval < 1) {
       $interval = 1;
     }
     $inv_read = 0;
-  
-    // we need to get the table schema to make sure we don't overrun the
-    // size of fields with what our regular expressions retrieve
-    $feature_tbl = chado_get_schema('feature');
-    $dbxref_tbl = chado_get_schema('dbxref');
-  
-    //foreach ($lines as $line_num => $line) {
+    $num_read = 0;
+
+    // Iterate through the lines of the file.  Keep a record for
+    // where in the file each line is at for later import.
+    $seqs = array();
+    $num_seqs = 0;
+    $prev_pos = 0;
+    $set_start = FALSE;
     while ($line = fgets($fh)) {
-      $i++;  // update the line count
-      $num_read += drupal_strlen($line);
-      $intv_read += drupal_strlen($line);
-  
-      // if we encounter a definition line then get the name, uniquename,
-      // accession and relationship subject from the definition line
+      $num_read += strlen($line);
+      $intv_read += strlen($line);
+
+      // If we encounter a definition line then get the name, uniquename,
+      // accession and relationship subject from the definition line.
       if (preg_match('/^>/', $line)) {
-        // if we have a feature name then we are starting a new sequence
-        // so lets handle the previous one before moving on
-        if ($name or $uname) {
-          tripal_feature_fasta_loader_handle_feature($fh, $name, $uname, $db_id,
-            $accession, $subject, $rel_type, $parent_type, $analysis_id, $organism_id, $cvterm,
-            $source, $residues, $method, $re_name, $match_type, $parentcvterm, $relcvterm);
-          $residues = '';
-          $name = '';
-          $uname = '';
-        }
+
+        // Remove the > symbol from the defline.
+        $defline = preg_replace("/^>/", '', $line); 
   
-        $line = preg_replace("/^>/", '', $line); // remove the > symbol from the defline
-  
-        // get the feature name
+        // Get the feature name if a regular expression is provided.
         if ($re_name) {
-          if (!preg_match("/$re_name/", $line, $matches)) {
-            tripal_report_error('trp-fasta', "ERROR: Regular expression for the feature name finds nothing. Line %line.", array('%line' => $i), 'error');
+          if (!preg_match("/$re_name/", $defline, $matches)) {
+            tripal_report_error('trp-fasta', 
+              "ERROR: Regular expression for the feature name finds nothing. Line %line.", 
+              array('%line' => $i), 'error');
           }
           elseif (strlen($matches[1]) > $feature_tbl['fields']['name']['length']) {
-            tripal_report_error('trp-fasta', "WARNING: Regular expression retrieves a value too long for the feature name. Line %line.", array('%line' => $i), 'error');
+            tripal_report_error('trp-fasta', 
+              "WARNING: Regular expression retrieves a value too long for the feature name. Line %line.", 
+              array('%line' => $i), 'error');
           }
           else {
             $name = trim($matches[1]);
           }
         }
-        else {
-          // if the match_type is name and no regular expression was provided
-          // then use the first word as the name, otherwise we don't set the name
-          if (strcmp($match_type, 'Name')==0) {
-            if (preg_match("/^\s*(.*?)[\s\|].*$/", $line, $matches)) {
-              if (strlen($matches[1]) > $feature_tbl['fields']['name']['length']) {
-                tripal_report_error('trp-fasta', "WARNING: Regular expression retrieves a feature name too long for the feature name. Line %line.", array('%line' => $i), 'error');
-              }
-              else {
-                $name = trim($matches[1]);
-              }
+        // If the match_type is name and no regular expression was provided
+        // then use the first word as the name, otherwise we don't set the name.
+        elseif (strcmp($match_type, 'Name')==0) {
+          if (preg_match("/^\s*(.*?)[\s\|].*$/", $defline, $matches)) {
+            if (strlen($matches[1]) > $feature_tbl['fields']['name']['length']) {
+              tripal_report_error('trp-fasta', 
+                "WARNING: Regular expression retrieves a feature name too long for the feature name. Line %line.", 
+                array('%line' => $i), 'error');
             }
             else {
-              tripal_report_error('trp-fasta', "ERROR: Cannot find a feature name. Line %line.", array('%line' => $i), 'error');
+              $name = trim($matches[1]);
             }
+          }
+          else {
+            tripal_report_error('trp-fasta', 
+              "ERROR: Cannot find a feature name. Line %line.", 
+              array('%line' => $i), 'error');
           }
         }
   
-        // get the feature unique name
+        // Get the feature uniquename if a regular expression is provided.
         if ($re_uname) {
-          if (!preg_match("/$re_uname/", $line, $matches)) {
-            tripal_report_error('trp-fasta', "ERROR: Regular expression for the feature unique name finds nothing. Line %line.", array('%line' => $i), 'error');
+          if (!preg_match("/$re_uname/", $defline, $matches)) {
+            tripal_report_error('trp-fasta', 
+              "ERROR: Regular expression for the feature unique name finds nothing. Line %line.", 
+              array('%line' => $i), 'error');
           }
           $uname = trim($matches[1]);
         }
-        else {
-          // if the match_type is name and no regular expression was provided
-          // then use the first word as the name, otherwise, we don't set the unqiuename
-          if (strcmp($match_type, 'Unique name')==0) {
-            if (preg_match("/^\s*(.*?)[\s\|].*$/", $line, $matches)) {
-              $uname = trim($matches[1]);
-            }
-            else {
-              tripal_report_error('trp-fasta', "ERROR: Cannot find a feature unique name. Line %line.", array('%line' => $i), 'error');
-            }
+        // If the match_type is name and no regular expression was provided
+        // then use the first word as the name, otherwise, we don't set the 
+        // unqiuename.
+        elseif (strcmp($match_type, 'Unique name')==0) {
+          if (preg_match("/^\s*(.*?)[\s\|].*$/", $defline, $matches)) {
+            $uname = trim($matches[1]);
+          }
+          else {
+            tripal_report_error('trp-fasta', 
+              "ERROR: Cannot find a feature unique name. Line %line.", 
+              array('%line' => $i), 'error');
           }
         }
-        // get the accession
-        preg_match("/$re_accession/", $line, $matches);
+
+        // Get the accession if a regular expression is provided.
+        preg_match("/$re_accession/", $defline, $matches);
         if (strlen($matches[1]) > $dbxref_tbl['fields']['accession']['length']) {
-          tripal_report_error('trp-fasta', "WARNING: Regular expression retrieves an accession too long for the feature name. Cannot add cross reference. Line %line.", array('%line' => $i), 'warning');
+          tripal_report_error('trp-fasta', 
+            "WARNING: Regular expression retrieves an accession too long for the feature name. " .
+            "Cannot add cross reference. Line %line.", 
+            array('%line' => $i), 'warning');
         }
         else {
           $accession = trim($matches[1]);
         }
   
-        // get the relationship subject
+        // Get the relationship subject
         preg_match("/$re_subject/", $line, $matches);
         $subject = trim($matches[1]);
-      }
-      else {
-        $residues .= trim($line);
-  
-        // update the job status every % features
-        if ($job and $intv_read >= $interval) {
-          $intv_read = 0;
-          $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
-          if ($name) {
-            print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes. Current feature: $name\r";
-          }
-          else {
-            print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes. Current feature: $uname\r";
-          }
-          tripal_set_job_progress($job, intval(($num_read / $filesize) * 100));
+        
+        // Add the details to the sequence.
+        $seqs[$num_seqs] = array(
+          'name' => $name,
+          'uname' => $uname,
+          'accession' => $accession,
+          'subject' => $subject,
+          'seq_start' => ftell($fh),
+        );
+        $set_start = TRUE;
+        // If this isn't the first sequence, then we want to specify where
+        // the previous sequence ended.
+        if ($num_seqs > 0) {
+          $seqs[$num_seqs - 1]['seq_end'] = $prev_pos;
         }
+        $num_seqs++;
+      }
+      // Keep the current file position so we can use it to set the sequence
+      // ending position
+      $prev_pos = ftell($fh);
+
+      // update the job status every % bytes
+      if ($job and $intv_read >= $interval) {
+        $intv_read = 0;
+        $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
+        if ($name) {
+          print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
+        }
+        else {
+          print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
+        }
+        tripal_set_job_progress($job, intval(($num_read / $filesize) * 100));
       }
     }
-  
-    // now load the last sequence in the file
-    tripal_feature_fasta_loader_handle_feature($fh, $name, $uname, $db_id,
-      $accession, $subject, $rel_type, $parent_type, $analysis_id, $organism_id, $cvterm,
-      $source, $residues, $method, $re_name, $match_type, $parentcvterm, $relcvterm);
+    $percent = sprintf("%.2f", ($num_read / $filesize) * 100);
+    print "Parsing Line $i (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
+    tripal_set_job_progress($job, 50);
+    
+    // Set the end position for the last sequence.
+    $seqs[$num_seqs - 1]['seq_end'] = $num_read - strlen($line);
+
+    // Now that we know where the sequences are in the file we need to add them.
+    print "\nStep 2: Importing sequences\n";
+    for ($i = 0; $i < $num_seqs; $i++) {
+      $seq = $seqs[$i];
+      print "Importing " . ($i + 1) ." of $num_seqs. ";
+      if ($name) {
+        print "Current feature: " . $seq['name'] . ".\n";
+      }
+      else {
+        print "Current feature: " . $seq['uname'] . ".\n";
+      }
+
+      tripal_feature_load_fasta_feature($fh, $seq['name'], $seq['uname'], 
+        $db_id, $seq['accession'], $seq['subject'], $rel_type, $parent_type, 
+        $analysis_id, $organism_id, $cvterm, $source, $method, 
+        $re_name, $match_type, $parentcvterm, $relcvterm, $seq['seq_start'], 
+        $seq['seq_end']);
+    }
+    tripal_set_job_progress($job, 100);
+    fclose($fh);
   }
   catch (Exception $e) {
+    fclose($fh);
     $transaction->rollback();
     print "\n"; // make sure we start errors on new line
     watchdog_exception('T_fasta_loader', $e);
     print "FAILED: Rolling back database changes...\n";
   }
-  close($fh);
+  
   print "\nDone\n";
 }
 
 /**
  * A helper function for tripal_feature_load_fasta() to load a single feature
  *
- * @param $fh
- *   The file handle where the temporary loading file is stored
- * @param $name
- *   The name of the feature to insert/update
- * @param $uname
- *   The uniquename of the feature to insert/udpate
- * @param $db_id
- * @param $accession
- * @param $parent
- * @param $rel_type
- * @param $parent_type
- * @param $analysis_id
- * @param $organism_id
- * @param $cvterm
- * @param $source
- * @param $residues
- * @param $method
- * @param $re_name
- * @param $match_type
- * @param $parentcvterm
- * @param $relcvterm
- *
  * @ingroup fasta_loader
  */
-function tripal_feature_fasta_loader_handle_feature($fh, $name, $uname, $db_id, $accession,
+function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accession,
   $parent, $rel_type, $parent_type, $analysis_id, $organism_id, $cvterm,
-  $source, &$residues, $method, $re_name, $match_type, $parentcvterm, $relcvterm) {
+  $source, $method, $re_name, $match_type, $parentcvterm, $relcvterm,
+  $seq_start, $seq_end) {
 
-  // check to see if this feature already exists if the match_type is 'Name'
-  if (strcmp($match_type, 'Name')==0) {
+  // Check to see if this feature already exists if the match_type is 'Name'.
+  if (strcmp($match_type, 'Name') == 0) {
     $values = array(
       'organism_id' => $organism_id,
       'name' => $name,
@@ -670,8 +692,9 @@ function tripal_feature_fasta_loader_handle_feature($fh, $name, $uname, $db_id, 
       $feature = $results[0];
     }
   }
-  // check to see if this feature already exists if the match_type is 'Unique Name'
-  if (strcmp($match_type, 'Unique name')==0) {
+
+  // Check if this feature already exists if the match_type is 'Unique Name'.
+  if (strcmp($match_type, 'Unique name') == 0) {
     $values = array(
       'organism_id' => $organism_id,
       'uniquename' => $uname,
@@ -680,27 +703,30 @@ function tripal_feature_fasta_loader_handle_feature($fh, $name, $uname, $db_id, 
 
     $results = chado_select_record('feature', array('feature_id'), $values);
     if (count($results) > 1) {
-      tripal_report_error('T_fasta_loader', "Multiple features exist with the name '%name' of type
-               '%type' for the organism.  skipping", array('%name' => $name, '%type' => $type));
+      tripal_report_error('T_fasta_loader', TRIPAL_WARNING,
+        "Multiple features exist with the name '%name' of type '%type' for the organism.  skipping", 
+        array('%name' => $name, '%type' => $type));
       return 0;
     }
     if (count($results) == 1) {
       $feature = $results[0];
     }
 
-    // if the feature exists but this is an "insert only" method then skip this feature
+    // If the feature exists but this is an "insert only" then skip.
     if ($feature and (strcmp($method, 'Insert only')==0)) {
-      tripal_report_error('T_fasta_loader', TRIPAL_WARNING, "Feature already exists '%name' ('%uname') while matching on %type. Skipping insert.",
+      tripal_report_error('T_fasta_loader', TRIPAL_WARNING, 
+        "Feature already exists '%name' ('%uname') while matching on %type. Skipping insert.",
         array('%name' => $name, '%uname' => $uname, '%type' => drupal_strtolower($match_type)));
       return 0;
     }
   }
 
-  // if we don't have a feature and we're doing an insert then do the insert
+  // If we don't have a feature and we're doing an insert then do the insert.
   $inserted = 0;
-  if (!$feature and (strcmp($method, 'Insert only')==0 or strcmp($method, 'Insert and update')==0)) {
-    print "!feature && (Insert only || Insert and update)\n\n";
-    // if we have a unique name but not a name then set them to be the same and vice versa
+  if (!$feature and (
+      strcmp($method, 'Insert only') == 0 or 
+      strcmp($method, 'Insert and update') == 0)) {
+    // If we have a unique name but not a name then set them to be the same 
     if (!$uname) {
       $uname = $name;
     }
@@ -708,14 +734,11 @@ function tripal_feature_fasta_loader_handle_feature($fh, $name, $uname, $db_id, 
       $name = $uname;
     }
 
-    // insert the feature
+    // Insert the feature record.
     $values = array(
       'organism_id' => $organism_id,
       'name' => $name,
       'uniquename' => $uname,
-      'residues' => &$residues,
-      'seqlen' => drupal_strlen($residues),
-      'md5checksum' => md5($residues),
       'type_id' => $cvterm->cvterm_id,
     );
     $success = chado_insert_record('feature', $values);
@@ -741,25 +764,37 @@ function tripal_feature_fasta_loader_handle_feature($fh, $name, $uname, $db_id, 
         array('%name' => $name, '%uname' => $numane));
       return 0;
     }
+    
+    // Add the residues for this feature
+    tripal_feature_load_fasta_residues($fh, $feature->feature_id, $seq_start, $seq_end);
   }
 
   // if we don't have a feature and the user wants to do an update then fail
-  if (!$feature and (strcmp($method, 'Update only')==0 or drupal_strcmp($method, 'Insert and update')==0)) {
-    tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Failed to find feature '%name' ('%uname') while matching on " .
-      drupal_strtolower($match_type), array('%name' => $name, '%uname' => $uname));
+  if (!$feature and (strcmp($method, 'Update only') == 0 or 
+       drupal_strcmp($method, 'Insert and update') == 0)) {
+    tripal_report_error('T_fasta_loader', TRIPAL_ERROR, 
+      "Failed to find feature '%name' ('%uname') while matching on " .
+      drupal_strtolower($match_type), 
+      array('%name' => $name, '%uname' => $uname));
     return 0;
   }
 
   // if we do have a feature and this is an update then proceed with the update
-  if ($feature and !$inserted and (strcmp($method, 'Update only')==0 or strcmp($method, 'Insert and update')==0)) {
-    print "feature && !inserted and (Update only || Insert and update)\n\n";
+  if ($feature and !$inserted and 
+       (strcmp($method, 'Update only') == 0 or 
+        strcmp($method, 'Insert and update')==0)) {
+
     // if the user wants to match on the Name field
     if (strcmp($match_type, 'Name')==0) {
-      // if we're matching on the name but do not have a unique name then we don't want to update the uniquename.
+
+      // if we're matching on the name but do not have a unique name then we 
+      // don't want to update the uniquename.
       $values = array();
       if ($uname) {
-        // first check to make sure that by changing the unique name of this feature that we won't conflict with
-        // another existing feature of the same name
+
+        // First check to make sure that by changing the unique name of this 
+        // feature that we won't conflict with another existing feature of 
+        // the same name
         $values = array(
           'organism_id' => $organism_id,
           'uniquename' => $uname,
@@ -767,7 +802,8 @@ function tripal_feature_fasta_loader_handle_feature($fh, $name, $uname, $db_id, 
         );
         $results = chado_select_record('feature', array('feature_id'), $values);
         if (count($results) > 0) {
-          tripal_report_error('T_fasta_loader', "Cannot update the feature '%name' with a uniquename of '%uname' and type of '%type' as it
+          tripal_report_error('T_fasta_loader', 
+            "Cannot update the feature '%name' with a uniquename of '%uname' and type of '%type' as it
             conflicts with an existing feature with the same uniquename and type.",
             array('%name' => $name, '%uname' => $uname, '%type' => $type));
           return 0;
@@ -776,76 +812,50 @@ function tripal_feature_fasta_loader_handle_feature($fh, $name, $uname, $db_id, 
         // the changes to the uniquename don't conflict so proceed with the update
         $values = array(
           'uniquename' => $uname,
-          'residues' => &$residues,
-          'seqlen' => drupal_strlen($residues),
-          'md5checksum' => md5($residues),
         );
         $match = array(
           'name' => $name,
           'organism_id' => $organism_id,
           'type_id' => $cvterm->cvterm_id,
         );
-      }
-      // if we do not have a new unique name then don't change the existing uniquename field
-      else {
-        $values = array(
-          'residues' => &$residues,
-          'seqlen' => drupal_strlen($residues),
-          'md5checksum' => md5($residues),
-        );
-        $match = array(
-          'name' => $name,
-          'organism_id' => $organism_id,
-          'type_id' => $cvterm->cvterm_id,
-        );
-      }
 
-      // perform the update
-      $success = chado_update_record('feature', $match, $values);
-      if (!$success) {
-        tripal_report_error('T_fasta_loader', TRIPAL_ERROR,
+        // perform the update
+        $success = chado_update_record('feature', $match, $values);
+        if (!$success) {
+          tripal_report_error('T_fasta_loader', TRIPAL_ERROR,
           "Failed to update feature '%name' ('%name')",
           array('%name' => $name, '%uiname' => $uname));
-        return 0;
+          return 0;
+        }
       }
     }
+
+    // If the user wants to match on the unique name field.
     if (strcmp($match_type, 'Unique name')==0) {
-      // if we're matching on the uniquename but do not have a new name then we don't want to update the name.
+      // If we're matching on the uniquename and have a new name then 
+      // we want to update the name.
       $values = array();
       if ($name) {
         $values = array(
           'name' => $name,
-           'residues' => &$residues,
-           'seqlen' => drupal_strlen($residues),
-           'md5checksum' => md5($residues),
         );
         $match = array(
           'uniquename' => $uname,
           'organism_id' => $organism_id,
           'type_id' => $cvterm->cvterm_id,
         );
-      }
-      // if we have a unique name then update it after matching by the name
-      else {
-        $values = array(
-           'residues' => &$residues,
-           'seqlen' => drupal_strlen($residues),
-           'md5checksum' => md5($residues),
-        );
-        $match = array(
-          'uniquename' => $uname,
-          'organism_id' => $organism_id,
-          'type_id' => $cvterm->cvterm_id,
-        );
-      }
-      $success = chado_update_record('feature', $match, $values);
-      if (!$success) {
-        tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Failed to update feature '%name' ('%name')",
+        $success = chado_update_record('feature', $match, $values);
+        if (!$success) {
+          tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Failed to update feature '%name' ('%name')",
           array('%name' => $name, '%uiname' => $uname));
-        return 0;
+          return 0;
+        }
       }
     }
   }
+  
+  // Update the residues for this feature
+  tripal_feature_load_fasta_residues($fh, $feature->feature_id, $seq_start, $seq_end);
 
   // add in the analysis link
   if ($analysis_id) {
@@ -942,4 +952,106 @@ function tripal_feature_fasta_loader_handle_feature($fh, $name, $uname, $db_id, 
       }
     }
   }
+}
+
+/**
+ * Adds the residues column to the feature.
+ * 
+ * This function seeks to the proper location in the file for the sequence
+ * and reads in chunks of sequence and appends them to the feature.residues
+ * column in the database.
+ * 
+ * @param unknown $fh
+ * @param unknown $feature_id
+ * @param unknown $seq_start
+ * @param unknown $seq_end
+ */
+function tripal_feature_load_fasta_residues($fh, $feature_id, $seq_start, $seq_end) {
+
+  // First position the file at the beginning of the sequence
+  fseek($fh, $seq_start, SEEK_SET);
+  $chunk_size = 100000000;
+  $chunk = '';
+  $seqlen = ($seq_end - $seq_start) + 1;
+
+  // Calculate the interval at which we updated the precent complete.
+  $interval = intval($seqlen * 0.01);
+  if ($interval < 1) {
+    $interval = 1;
+  }
+  // We don't to repeat the update too often or it slows things down, so
+  // if the interval is less than 1000 then bring it up to that.
+  if ($interval < 100000) {
+    $interval = 100000;
+  }
+  $chunk_intv_read = 0;
+  $intv_read = 0;
+  $num_read = 0;
+  $total_seq_size = 0;
+  
+  // First, make sure we don't have a null in the residues
+  $sql = "UPDATE {feature} SET residues = '' WHERE feature_id = :feature_id";
+  chado_query($sql, array(':feature_id' => $feature_id));
+
+  // Read in the lines until we reach the end of the sequence.  Once we 
+  // get a specific bytes read then append the sequence to the one in the 
+  // database.
+  print "Sequence complete: 0%. Memory: " . number_format(memory_get_usage()) . " bytes. \r";
+  while ($line = fgets($fh)) {
+    $num_read += strlen($line) + 1;
+    $chunk_intv_read += strlen($line) + 1;
+    $intv_read += strlen($line) + 1;
+    $chunk .= trim($line);
+
+    // If we've read in enough of the sequence then append it to the database.
+    if ($chunk_intv_read >= $chunk_size) {
+      $sql = "
+        UPDATE {feature}
+        SET residues = residues || :chunk
+        WHERE feature_id = :feature_id
+      ";
+      $success = chado_query($sql, array(':feature_id' => $feature_id, ':chunk' => $chunk));
+      if (!$success) {
+        return FALSE;
+      }
+      $total_seq_size += strlen($chunk);
+      $chunk = '';
+      $chunk_intv_read = 0;
+    }
+    if ($intv_read >= $interval) {
+      $percent = sprintf("%.2f", ($total_seq_size / $seqlen) * 100);
+      print "Sequence complete: " . $percent . "%. Memory: " . number_format(memory_get_usage()) . " bytes. \r";
+      $intv_read = 0;
+    }
+    
+    // If we've reached the ned of the sequence then break out of the loop
+    if (ftell($fh) == $seq_end) {
+      break;
+    }
+  }
+  
+  // write the last bit of sequence if it remains
+  if (strlen($chunk) > 0) {
+    $sql = "
+        UPDATE {feature}
+        SET residues = residues || :chunk
+        WHERE feature_id = :feature_id
+      ";
+    $success = chado_query($sql, array(':feature_id' => $feature_id, ':chunk' => $chunk));
+    if (!$success) {
+      return FALSE;
+    }
+    $total_seq_size += strlen($chunk);
+    $chunk = '';
+    $chunk_intv_read = 0;
+  }
+  
+  // Now update the seqlen and md5checksum fields
+  $sql = "UPDATE {feature} SET seqlen = :seqlen,  md5checksum = md5('residues') WHERE feature_id = :feature_id";
+  chado_query($sql, array(':seqlen' => $seqlen, ':feature_id' => $feature_id));
+  
+  $percent = sprintf("%.2f", ($num_read / $seqlen) * 100);
+  print "Sequence complete: " . $percent . "%. Memory: " . number_format(memory_get_usage()) . " bytes. \r";
+  
+
 }
