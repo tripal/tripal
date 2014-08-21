@@ -154,9 +154,8 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
 function tripal_set_message($message, $importance = TRIPAL_INFO, $options = array()) {
   global $user;
 
-  // Only show the message to the administrator user (uid=1)
-  // thus if the current user is not the administrator then return nothing
-  if (!user_access('administer tripal')) {
+  // Only show the message to the users with 'view dev helps' permission.
+  if (!user_access('view dev helps')) {
     return '';
   }
 

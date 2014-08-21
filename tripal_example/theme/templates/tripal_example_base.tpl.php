@@ -46,7 +46,7 @@ $rows[] = array(
 );
 
 // allow site admins to see the example ID
-if (user_access('administer tripal')) { 
+if (user_access('view ids')) { 
   // Feature ID
   $rows[] = array(
     array(

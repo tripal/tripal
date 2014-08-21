@@ -200,7 +200,7 @@ else {
     htmlspecialchars($citation->value)
   );
   // allow site admins to see the pub ID
-  if (user_access('administer tripal')) {
+  if (user_access('view ids')) {
     // Pub ID
     $rows[] = array(
       array(

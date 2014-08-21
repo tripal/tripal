@@ -50,7 +50,7 @@ if (count($s_terms) > 0) { ?>
     // generate the link to configure a database, b ut only if the user is
     // a tripal administrator
     $configure_link = '';
-    if (user_access('administer tripal')) {
+    if (user_access('view ids')) {
       $db_id = $term->cvterm_id->dbxref_id->db_id->db_id;
       $configure_link = l('[configure term links]', "admin/tripal/chado/tripal_db/edit/$db_id", array('attributes' => array("target" => '_blank')));
     }

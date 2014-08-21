@@ -63,7 +63,7 @@ $rows[] = array(
 );
 
 // allow site admins to see the library ID
-if (user_access('administer tripal')) {
+if (user_access('view ids')) {
   // Library ID
   $rows[] = array(
     array(

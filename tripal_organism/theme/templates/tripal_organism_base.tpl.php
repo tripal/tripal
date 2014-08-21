@@ -63,7 +63,7 @@ $rows[] = array(
 );
 
 // allow site admins to see the organism ID
-if (user_access('administer tripal')) {
+if (user_access('view ids')) {
   // Organism ID
   $rows[] = array(
     array(

@@ -36,7 +36,7 @@ require_once 'api/tripal_core.tripal.api.inc';
 
 require_once 'api/tripal_core.DEPRECATED.inc';
 
-// INCLUDES -------------------------------------
+// INCLUDES 
 require_once 'includes/tripal_core.jobs.inc';
 require_once 'includes/tripal_core.mviews.inc';
 require_once 'includes/tripal_core.custom_tables.inc';
@@ -44,6 +44,7 @@ require_once 'includes/tripal_core.chado_install.inc';
 require_once 'includes/tripal_core.form_elements.inc';
 
 tripal_core_set_globals();
+
 /**
  * This function is used to set the global Chado variables
  *
@@ -133,7 +134,7 @@ function tripal_core_menu() {
   // Triapl setting groups
   $items['admin/tripal'] = array(
     'title' => 'Tripal',
-    'description' => "Manage the behavior or Tripal and its various modules.",
+    'description' => t("Manage the behavior or Tripal and its various modules."),
     'weight' => -8,
     'page callback' => 'system_admin_menu_block_page',
     'access arguments' => array('administer tripal'),
@@ -142,27 +143,27 @@ function tripal_core_menu() {
   );
   $items['admin/tripal/schema'] = array(
     'title' => 'Chado Schema',
-    'description' => "Tools to extend the chado schema through custom tables & materialized views.",
+    'description' => t("Tools to extend the chado schema through custom tables & materialized views."),
     'weight' => -2,
     'access arguments' => array('administer tripal'),
   );
   $items['admin/tripal/chado'] = array(
     'title' => 'Chado Modules',
-    'description' => 'Configuration for specific chado data types such as Vocabularies, Features, etc.',
+    'description' => t('Configuration for specific chado data types such as Vocabularies, Features, etc.'),
     'access arguments' => array('administer tripal'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => -6
   );
   $items['admin/tripal/loaders'] = array(
     'title' => 'Chado Data Loaders',
-    'description' => 'Tools facilitating loading data into the chado database. Includes a generic tab-delimited loader (Bulk Loader).',
+    'description' => t('Tools facilitating loading data into the chado database. Includes a generic tab-delimited loader (Bulk Loader).'),
     'access arguments' => array('administer tripal'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => -4
   );
   $items['admin/tripal/extension'] = array(
     'title' => 'Extension Modules',
-    'description' => 'Configuration for Tripal extension modules.',
+    'description' => t('Configuration for Tripal extension modules.'),
     'access arguments' => array('administer tripal'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => 0
@@ -171,32 +172,32 @@ function tripal_core_menu() {
   // Tripal Setup
   $items['admin/tripal/setup'] = array(
     'title' => 'Setup Tripal',
-    'description' => 'Tools for initial setup of Tripal',
+    'description' => t('Tools for setup of Tripal'),
     'access arguments' => array('administer tripal'),
     'weight' => -8
   );
-  $items['admin/tripal/setup/customize'] = array(
-    'title' => 'Customize Tripal',
-    'description' => 'Information on how to customize tripal',
-    'page callback' => 'theme',
-    'page arguments' => array('tripal_core_customize'),
-    'access arguments' => array('administer tripal'),
-    'weight' => 10
-  );
   $items['admin/tripal/setup/chado_install'] = array(
     'title' => 'Install Chado Schema',
-    'description' => 'Installs the Chado database tables, views, etc., inside the current Drupal database',
+    'description' => t('Installs the Chado database tables, views, etc., inside the current Drupal database'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_core_chado_load_form'),
     'access arguments' => array('install chado'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => -10
   );
+  $items['admin/tripal/setup/customize'] = array(
+    'title' => 'Customize Tripal',
+    'description' => t('Information on how to customize tripal'),
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_core_customize'),
+    'access arguments' => array('administer tripal'),
+    'weight' => 10
+  );
 
   // Jobs Management
   $items['admin/tripal/tripal_jobs'] = array(
     'title' => 'Jobs',
-    'description' => 'Jobs managed by Tripal',
+    'description' => t('Jobs managed by Tripal'),
     'page callback' => 'tripal_jobs_admin_view',
     'access arguments' => array('administer tripal'),
     'type' => MENU_NORMAL_ITEM,
@@ -204,7 +205,7 @@ function tripal_core_menu() {
   );
   $items['admin/tripal/tripal_jobs/help'] = array(
     'title' => 'Help',
-    'description' => 'Help for the tripal job management system',
+    'description' => t('Help for the tripal job management system'),
     'page callback' => 'theme',
     'page arguments' => array('tripal_core_job_help'),
     'access arguments' => array('administer tripal'),
@@ -213,7 +214,7 @@ function tripal_core_menu() {
   );
   $items['admin/tripal/tripal_jobs/cancel/%'] = array(
     'title' => 'Jobs',
-    'description' => 'Cancel a pending job',
+    'description' => t('Cancel a pending job'),
     'page callback' => 'tripal_cancel_job',
     'page arguments' => array(4),
     'access arguments' => array('administer tripal'),
@@ -221,7 +222,7 @@ function tripal_core_menu() {
   );
   $items['admin/tripal/tripal_jobs/rerun/%'] = array(
     'title' => 'Jobs',
-    'description' => 'Re-run an existing job.',
+    'description' => t('Re-run an existing job.'),
     'page callback' => 'tripal_rerun_job',
     'page arguments' => array(4),
     'access arguments' => array('administer tripal'),
@@ -229,7 +230,7 @@ function tripal_core_menu() {
   );
   $items['admin/tripal/tripal_jobs/view/%'] = array(
     'title' => 'Jobs Details',
-    'description' => 'View job details.',
+    'description' => t('View job details.'),
     'page callback' => 'tripal_jobs_view',
     'page arguments' => array(4),
     'access arguments' => array('administer tripal'),
@@ -246,7 +247,7 @@ function tripal_core_menu() {
   // Materialized Views
   $items['admin/tripal/schema/mviews'] = array(
     'title' => 'Materialized Views',
-    'description' => 'Materialized views are used to improve speed of large or complex queries.',
+    'description' => t('Materialized views are used to improve speed of large or complex queries.'),
     'page callback' => 'tripal_mview_admin_view',
     'access arguments' => array('administer tripal'),
     'type' => MENU_NORMAL_ITEM,
@@ -254,7 +255,7 @@ function tripal_core_menu() {
   );
   $items['admin/tripal/schema/mviews/help'] = array(
     'title' => 'Help',
-    'description' => 'Help for the materialized views management system',
+    'description' => t('Help for the materialized views management system'),
     'page callback' => 'theme',
     'page arguments' => array('tripal_core_mviews_help'),
     'access arguments' => array('administer tripal'),
@@ -263,7 +264,7 @@ function tripal_core_menu() {
   );
   $items['admin/tripal/schema/mviews/report/%'] = array(
     'title' => 'Materialized View',
-    'description' => 'Materialized views are used to improve speed of large or complex queries. These are database views as compared to Drupal views.',
+    'description' => t('Materialized views are used to improve speed of large or complex queries. These are database views as compared to Drupal views.'),
     'page callback' => 'tripal_mview_report',
     'page arguments' => array(5),
     'access arguments' => array('administer tripal'),
@@ -271,7 +272,7 @@ function tripal_core_menu() {
   );
   $items['admin/tripal/schema/mviews/new'] = array(
     'title' => 'Create Materialized View',
-    'description' => 'Create a new materialized view.',
+    'description' => t('Create a new materialized view.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_mviews_form'),
     'access arguments' => array('administer tripal'),
@@ -286,7 +287,7 @@ function tripal_core_menu() {
   );
   $items['admin/tripal/schema/mviews/update/%'] = array(
     'title' => 'Create Materialized View',
-    'description' => 'Materialized views are used to improve speed of large or complex queries.',
+    'description' => t('Materialized views are used to improve speed of large or complex queries.'),
     'page callback' => 'tripal_mviews_add_populate_job',
     'page arguments' => array(5),
     'access arguments' => array('administer tripal'),
@@ -294,7 +295,7 @@ function tripal_core_menu() {
   );
   $items['admin/tripal/schema/mviews/delete/%'] = array(
     'title' => 'Create Materialized View',
-    'description' => 'Materialized views are used to improve speed of large or complex queries.',
+    'description' => t('Materialized views are used to improve speed of large or complex queries.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_mviews_delete_form', 5),
     'access arguments' => array('administer tripal'),
@@ -304,7 +305,7 @@ function tripal_core_menu() {
   // Custom Tables
   $items['admin/tripal/schema/custom_tables'] = array(
     'title' => 'Custom Tables',
-    'description' => 'Creation of custom tables that are added to Chado database.',
+    'description' => t('Creation of custom tables that are added to Chado database.'),
     'page callback' => 'tripal_custom_table_admin_view',
     'access arguments' => array('administer tripal'),
     'type' => MENU_NORMAL_ITEM,
@@ -312,7 +313,7 @@ function tripal_core_menu() {
   );
   $items['admin/tripal/schema/custom_tables/help'] = array(
     'title' => 'Help',
-    'description' => 'Help for the tripal job management system',
+    'description' => t('Help for the tripal job management system'),
     'page callback' => 'theme',
     'page arguments' => array('tripal_core_job_help'),
     'access arguments' => array('administer tripal'),
@@ -321,7 +322,7 @@ function tripal_core_menu() {
   );
   $items['admin/tripal/schema/custom_tables/view/%'] = array(
     'title' => 'Custom Tables',
-    'description' => 'Custom tables are added to Chado.',
+    'description' => t('Custom tables are added to Chado.'),
     'page callback' => 'tripal_custom_table_view',
     'page arguments' => array(5),
     'access arguments' => array('administer tripal'),
@@ -329,7 +330,7 @@ function tripal_core_menu() {
   );
   $items['admin/tripal/schema/custom_tables/new'] = array(
     'title' => 'Create Custom Table',
-    'description' => 'An interface for creating your own custom tables.',
+    'description' => t('An interface for creating your own custom tables.'),
     'page callback' => 'tripal_custom_table_new_page',
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
@@ -343,7 +344,7 @@ function tripal_core_menu() {
   );
   $items['admin/tripal/schema/custom_tables/delete/%'] = array(
     'title' => 'Create Custom Table',
-    'description' => 'Custom tables are added to Chado.',
+    'description' => t('Custom tables are added to Chado.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_custom_tables_delete_form', 5),
     'access arguments' => array('administer tripal'),
@@ -387,6 +388,25 @@ function tripal_core_permission() {
       'title' => t('Administer Tripal'),
       'description' => t('Allow the user to access administrative pages of Tripal.')
     ),
+    'view dev helps' => array(
+      'title' => t('View Developer Hints'),
+      'description' => t('Tripal will provide blue shaded boxes that provide 
+          instructions for how to customize or setup specific pages on a 
+          site.  This permission should be enabled for developers. But can 
+          be disabled once developers are accustomed to these hints.'),
+      'restrict access' => TRUE,
+    ),
+    'view ids' => array(
+      'title' => t('View Internal IDs'),
+      'description' => t('On content pages Tripal will typically provide
+          a table of information pulled from the Chado database but the 
+          primary key IDs for that data is typically not shown.  The 
+          default Tripal templates can show the primary key ID inside of a 
+          blue shaded table row if this permission is enabled. This can
+          be useful for site developers who might want these IDs when working
+          with the underlying database.'),
+      'restrict access' => TRUE,
+    )
   );
 }
 

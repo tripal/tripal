@@ -38,7 +38,7 @@ $rows[] = array(
   $featuremap->unittype_id->name
 );
 // allow site admins to see the feature ID
-if (user_access('administer tripal')) {
+if (user_access('view ids')) {
   // Feature Map ID
   $rows[] = array(
     array(

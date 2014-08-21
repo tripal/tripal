@@ -47,7 +47,7 @@ $rows[] = array(
   $project->name
 );
 // allow site admins to see the feature ID
-if (user_access('administer tripal')) {
+if (user_access('view ids')) {
   // Project ID
   $rows[] = array(
     array(
