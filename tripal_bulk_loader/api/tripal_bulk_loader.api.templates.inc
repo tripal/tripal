@@ -127,7 +127,7 @@ function tripal_delete_bulk_loader_field($priority, $delete_field_index, $templa
 
   // If this field was the only one in the current record, also delete the record
   if (empty($new_template_array[$priority]['fields'])) {
-    $new_template_array = tripal_bulk_loader_delete_record($priority, $new_template_array);
+    $new_template_array = tripal_delete_bulk_loader_record($priority, $new_template_array);
   }
 
   return $new_template_array;

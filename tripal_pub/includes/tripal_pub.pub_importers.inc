@@ -1069,7 +1069,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     $cvterm = tripal_get_cvterm($identifiers);
 
     // if we could not find the cvterm by name then try by synonym
-    //$cvterm = tripal_cv_get_cvterm_by_name($key, NULL, 'tripal_pub');
+    //$cvterm = tripal_get_cvterm(array('name' => $key, 'cv_id' => array('name' => 'tripal_pub')));
     if (!$cvterm) {
       $identifiers = array(
         'synonym' => array(
@@ -1184,7 +1184,12 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
     // if the user wants us to create a contact for each author then do it.
     if ($do_contact) {
       // Add the contact
-      $contact = tripal_contact_add_contact($name, '', $type, $author);
+      $contact = tripal_insert_contact(array(
+        'name' => $name,
+        'description' => '',
+        'type_name' => $type,
+        'properties' => $author
+      ));
 
       // if we have succesfully added the contact and the pubauthor entries then we want to
       // link them together

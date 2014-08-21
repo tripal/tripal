@@ -186,15 +186,15 @@ function tripal_stock_add_organism_count_mview() {
 function tripal_stock_add_cvs() {
 
   // Add cv for relationship types
-  tripal_cv_add_cv(
+  tripal_insert_cv(
     'stock_relationship',
     'Contains types of relationships between stocks.'
   );
-  tripal_cv_add_cv(
+  tripal_insert_cv(
     'stock_property',
     'Contains properties for stocks.'
   );
-  tripal_cv_add_cv(
+  tripal_insert_cv(
     'stock_type',
     'Contains a list of types for stocks.'
   );

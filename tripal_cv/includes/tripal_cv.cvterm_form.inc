@@ -378,11 +378,14 @@ function tripal_cv_cvterm_edit_form_submit($form, &$form_state) {
           'name' => $name,
           'namespace' => $cv->name,
           'id' => $accession,
-          'def' => $definition,
+          'definition' => $definition,
           'is_obsolete' => $is_obsolete,
+          'cv_name' => $cv->name,
+          'is_relationship' => $is_relationship,
+          'db_name' => $db_name
         );
 
-        $cvterm = tripal_cv_add_cvterm($term, $cv->name, $is_relationship, TRUE, $db->name);
+        $cvterm = tripal_insert_cvterm($term, array('update_existing' => TRUE));
         if ($cvterm) {
           drupal_set_message('Term updated successfully.');
         }
@@ -434,11 +437,14 @@ function tripal_cv_cvterm_add_form_submit($form, &$form_state) {
     'name' => $name,
     'namespace' => $cv->name,
     'id' => $accession,
-    'def' => $definition,
+    'definition' => $definition,
     'is_obsolete' => $is_obsolete,
+    'cv_name' => $cv->name,
+    'is_relationship' => $is_relationship,
+    'db_name' => $db->name
   );
 
-  $cvterm = tripal_cv_add_cvterm($term, $cv->name, $is_relationship, TRUE, $db->name);
+  $cvterm = tripal_insert_cvterm($term, array('update_existing' => TRUE));
   if ($cvterm) {
     drupal_set_message('Term added successfully.');
   }

@@ -116,7 +116,7 @@ function tripal_organism_requirements($phase) {
  * @ingroup tripal_organism
  */
 function tripal_organism_add_cvs() {
-  tripal_cv_add_cv(
+  tripal_insert_cv(
     'organism_property',
     'Contains properties for organisms'
   );

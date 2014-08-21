@@ -523,9 +523,9 @@ function tripal_insert_cvterm($term, $options = array()) {
   }
 
   // make sure the CV name exists
-  $cv = tripal_cv_get_cv_by_name($cvname);
+  $cv = tripal_get_cv(array('name' => $cvname));
   if (!$cv) {
-    $cv = tripal_cv_add_cv($cvname, '');
+    $cv = tripal_insert_cv($cvname, '');
   }
   if (!$cv) {
     tripal_report_error('tripal_cv', TRIPAL_WARNING, "Cannot find namespace '$cvname' when adding/updating $id", NULL);
@@ -550,7 +550,7 @@ function tripal_insert_cvterm($term, $options = array()) {
   // database already exists.
   $db = tripal_get_db(array('name' => $dbname));
   if (!$db) {
-    $db = tripal_db_add_db($dbname);
+    $db = tripal_insert_db(array('name' => $dbname));
   }
   if (!$db) {
     tripal_report_error('tripal_cv', TRIPAL_WARNING, "Cannot find database '$dbname' in Chado.", NULL);
@@ -630,7 +630,10 @@ function tripal_insert_cvterm($term, $options = array()) {
     if ($dbxref->accession != $accession) {
 
       // get/add the dbxref fort his term
-      $dbxref_new =  tripal_db_add_dbxref($db->db_id, $accession);
+      $dbxref_new =  tripal_insert_dbxref(array(
+        'db_id' => $db->db_id,
+        'accession' => $accession
+      ));
       if (!$dbxref_new) {
         tripal_report_error('tripal_cv', TRIPAL_WARNING, "Failed to find or insert the dbxref record for cvterm, " .
           "$name (id: $accession), for database $dbname", NULL);
@@ -675,7 +678,10 @@ function tripal_insert_cvterm($term, $options = array()) {
   if (!$cvterm) {
 
     // check to see if the dbxref exists if not, add it
-    $dbxref =  tripal_db_add_dbxref($db->db_id, $accession);
+    $dbxref =  tripal_insert_dbxref(array(
+      'db_id' => $db->db_id,
+      'accession' => $accession
+    ));
     if (!$dbxref) {
       tripal_report_error('tripal_cv', TRIPAL_WARNING, "Failed to find or insert the dbxref record for cvterm, " .
         "$name (id: $accession), for database $dbname", NULL);

@@ -285,7 +285,10 @@ function chado_feature_validate($node, $form, &$form_state) {
   if (property_exists($node, 'nid')) {
 
     // make sure the feature type is a real sequence ontology term
-    $type = tripal_cv_get_cvterm_by_name($node->feature_type, NULL, 'sequence');
+    $type = tripal_get_cvterm(array(
+      'name' => $node->feature_type,
+      'cv_id' => array('name' =>'sequence')
+    ));
     if (!$type) {
       form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
     }
@@ -316,7 +319,10 @@ function chado_feature_validate($node, $form, &$form_state) {
   else {
 
     // make sure the feature type is a real sequence ontology term
-    $type = tripal_cv_get_cvterm_by_name($node->feature_type, NULL, 'sequence');
+    $type = tripal_get_cvterm(array(
+      'name' => $node->feature_type,
+      'cv_id' => array('name' => 'sequence')
+    ));
     if (!$type) {
       form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
     }

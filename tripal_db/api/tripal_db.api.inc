@@ -21,7 +21,7 @@
     $select_values = array(
       'name' => 'SOFP'
     );
-    $db_object = tripal_db_get_db($select_values);
+    $db_object = tripal_get_db($select_values);
  * @endcode
  *  The above code selects the SOFP db and returns the following object:
  * @code
@@ -159,7 +159,7 @@ function tripal_get_db_select_options() {
         'name' => 'SOFP'
       )
     );
-    $dbxref_object = tripal_db_get_dbxref($identifiers);
+    $dbxref_object = tripal_get_dbxref($identifiers);
  * @endcode
  *  The above code selects the synonym database reference and returns the following object:
  * @code

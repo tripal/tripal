@@ -53,7 +53,7 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
       $form_state['storage']['record2priority'] = array();
       foreach ($form_state['storage']['template'] as $priority => $record_array) {
         if (!is_array($record_array)) {
-          continue; 
+          continue;
         }
         $form_state['storage']['record2priority'][$record_array['record_id']] = $priority;
       }
@@ -205,11 +205,11 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
 
     // List Current Fields -------------------------------------------------------------
     $num_fields=0;
-    
+
     // pre-create the URLs for dealing with records & fields. We will substitute values as needed
     $record_href_template = 'admin/tripal/loaders/bulk/template/%template/%action/%priority';
     $field_href_template  = 'admin/tripal/loaders/bulk/template/%template/%action/%priority/%field';
-    
+
     foreach ($form_state['storage']['template'] as $priority => $table_array) {
       if (!is_array($table_array)) {
       continue; }
@@ -875,7 +875,7 @@ function tripal_bulk_loader_edit_template_record_form($form, &$form_state) {
   else {
     $template = $form_state['storage']['template'];
   }
-  
+
   // Tables and default table
   $tables = chado_get_table_names(TRUE);
   if (isset($form_state['values']['chado_table'])) {
@@ -1082,7 +1082,7 @@ function tripal_bulk_loader_edit_template_record_form_validate($form, &$form_sta
 
   // Don't worry about validation when Cancel button is clicked
   if ($form_state['clicked_button']['#value'] == 'Save Record') {
-    $is_unique = tripal_bulk_loader_is_record_name_unique(
+    $is_unique = tripal_is_bulk_loader_record_name_unique(
       $form_state['values']['record_name'],
       $form_state['values']['template_id'],
       $form_state['storage']['template_array'],
@@ -1282,7 +1282,7 @@ function tripal_bulk_loader_delete_template_record_form_submit($form, &$form_sta
   $form_state['storage']['template'] = unserialize($result->template_array);
 
   $form_state['storage']['record2priority'] = array();
-  $new_template = tripal_bulk_loader_delete_record($form_state['storage']['record_id'], $form_state['storage']['template']);
+  $new_template = tripal_delete_bulk_loader_record($form_state['storage']['record_id'], $form_state['storage']['template']);
   if (!empty($new_template)) {
     $form_state['storage']['template'] = $new_template;
   }
@@ -1432,7 +1432,7 @@ function tripal_bulk_loader_duplicate_template_record_form_submit($form, &$form_
  */
 function tripal_bulk_loader_template_field_form_default_values($mode, &$form_state) {
   $v = array();
-  
+
   // mode can be 'create' or 'edit'
   $v['mode'] = $mode;
 
@@ -1450,7 +1450,7 @@ function tripal_bulk_loader_template_field_form_default_values($mode, &$form_sta
   $v['no_field_index'] = (isset($form_state['build_info']['args'][3])) ? FALSE : TRUE;
   $form_state['storage']['field_index'] = $v['field_index'];
   $field_index = $v['field_index'];
-  
+
   if (!array_key_exists('values', $form_state)) {
     $form_state['values'] = array();
   }
@@ -1476,7 +1476,7 @@ function tripal_bulk_loader_template_field_form_default_values($mode, &$form_sta
       $template = $form_state['storage']['template'];
     }
   }
-  
+
   // initialize the record2priority array which keeps track of the order by
   // copying the priority information about each record from the template array
   // into the $form_state['storage']['record2priority'] array
@@ -1487,7 +1487,7 @@ function tripal_bulk_loader_template_field_form_default_values($mode, &$form_sta
     }
     $form_state['storage']['record2priority'][$record_array['record_id']] = $priority;
   }
-  
+
 
   // If we are editing then get the original values
   if ($mode == 'edit' && !$v['no_field_index']) {
@@ -2185,7 +2185,7 @@ function tripal_bulk_loader_template_field_form_validate($form, &$form_state) {
 
   // Don't worry about validation when Cancel button is clicked
   if ($form_state['clicked_button']['#value'] == 'Save Changes') {
-    $is_unique = tripal_bulk_loader_is_record_name_unique(
+    $is_unique = tripal_is_bulk_loader_record_name_unique(
       $form_state['values']['record_name'],
       $form_state['values']['template_id'],
       $form_state['storage']['template_array']
@@ -2459,7 +2459,7 @@ function tripal_bulk_loader_delete_template_field_form_submit($form, &$form_stat
   $result = db_query($sql, array(':template' => $form_state['storage']['template_id']))->fetchObject();
   $form_state['storage']['template'] = unserialize($result->template_array);
 
-  $new_template = tripal_bulk_loader_delete_field(
+  $new_template = tripal_delete_bulk_loader_field(
     $form_state['storage']['record_id'],
     $form_state['storage']['field_id'],
     $form_state['storage']['template']

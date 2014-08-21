@@ -103,13 +103,13 @@ function tripal_project_schema() {
  */
 function tripal_project_add_cvs() {
   // Add the cv for project properties
-  tripal_cv_add_cv(
+  tripal_insert_cv(
     'project_property',
     'Contains properties for projects'
   );
 
   // Add cv for relationship types
-  tripal_cv_add_cv(
+  tripal_insert_cv(
     'project_relationship',
     'Contains Types of relationships between projects.'
   );
@@ -125,12 +125,15 @@ function tripal_project_add_cvterms() {
   // Insert cvterm 'Project Description' into cvterm table of chado
   // database. This CV term is used to keep track of the project
   // description in the projectprop table.
-  tripal_cv_add_cvterm(
+  tripal_insert_cvterm(
     array(
       'name' => 'Project Description',
-      'def'  => 'Description of a project'
+      'definition'  => 'Description of a project',
+      'cv_name' => 'project_property',
+      'is_relationship' => 0,
+      'db_name' => 'tripal'
     ),
-    'project_property', 0, 1, 'tripal'
+    array('update_existing' => TRUE)
   );
 }
 

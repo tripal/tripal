@@ -59,8 +59,8 @@ function tripal_contact_install() {
 
   // add loading of the the tripal contact ontology to the job queue
   $obo_path = drupal_realpath(drupal_get_path('module', 'tripal_contact') . '/files/tcontact.obo');
-  $obo_id = tripal_cv_add_obo_ref('Tripal Contacts', $obo_path);
-  tripal_cv_submit_obo_job($obo_id);
+  $obo_id = tripal_insert_obo('Tripal Contacts', $obo_path);
+  tripal_submit_obo_job(array('ob_id' => $obo_id));
 
   // Add cvterms for relationship types
   tripal_contact_add_cvs();
@@ -96,26 +96,26 @@ function tripal_contact_add_cvs() {
 
   // Add the cv for contact properties. This is a default vocabulary in the event
   // that a user does not want to use the tripal_contact vocabulary
-  tripal_cv_add_cv(
+  tripal_insert_cv(
     'contact_property',
     'Contains properties for contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
   );
 
   // add the cv for the contact type. This is a default vocabulary in the event
   // that a user does not want to use the tripal_contact vocabulary
-  tripal_cv_add_cv(
+  tripal_insert_cv(
     'contact_type',
     'Contains types of contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
   );
 
   // Add the cv for the tripal_contact vocabulary which is loaded via the OBO
-  tripal_cv_add_cv(
+  tripal_insert_cv(
    'tripal_contact',
    'A heirarchical set of terms for describing a contact. It is intended to be used as the default vocabularies in Tripal for contact types and contact properties.'
   );
 
   // add the cv for contact relationships
-  tripal_cv_add_cv(
+  tripal_insert_cv(
     'contact_relationship',
     'Contains types of relationships between contacts.'
   );

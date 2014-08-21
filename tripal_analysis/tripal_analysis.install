@@ -124,32 +124,48 @@ function tripal_analysis_add_cvs() {
  */
 function tripal_analysis_add_cvterms() {
 
-  tripal_cv_add_cv('tripal_analysis', 'Terms used for managing analyses in Tripal');
+  tripal_insert_cv('tripal_analysis', 'Terms used for managing analyses in Tripal');
 
   // add analysis_date.  This is no longer used (as far as we can tell) but we don't
   // get rid of it in case it is used, so just keep it in the Tripal CV
-  $term = array(
-    'name' => 'analysis_date',
-    'def' => 'The date that an analysis was performed.'
+  tripal_insert_cvterm(
+    array(
+      'name' => 'analysis_date',
+      'definition' => 'The date that an analysis was performed.',
+      'cv_name' => 'tripal',
+      'is_relationship' => 0,
+      'db_name' => 'tripal'
+    ),
+    array('update_existing' => TRUE)
   );
-  tripal_cv_add_cvterm($term, 'tripal', 0, 1, 'tripal');
 
   // add analysis_short_name.  This is no longer used (as far as we can tell) but we don't
   // get rid of it in case it is used, so just keep it in the Tripal CV
-  $term = array(
-    'name' => 'analysis_short_name',
-    'def' => 'A computer legible (no spaces or special characters) abbreviation for the analysis.'
+  tripal_insert_cvterm(
+    array(
+      'name' => 'analysis_short_name',
+      'definition' => 'A computer legible (no spaces or special characters) '
+        . 'abbreviation for the analysis.',
+      'cv_name' => 'tripal',
+      'is_relationship' => 0,
+      'db_name' => 'tripal'
+    ),
+    array('update_existing' => TRUE)
   );
-  tripal_cv_add_cvterm($term, 'tripal', 0, 1 , 'tripal');
 
 
   // the 'analysis_property' vocabulary is for user definable properties wo we
   // will add an 'Analysis Type' to this vocubulary
-  $term = array(
-    'name' => 'Analysis Type',
-    'def' => 'The type of analysis that was performed.'
+  tripal_insert_cvterm(
+    array(
+      'name' => 'Analysis Type',
+      'definition' => 'The type of analysis that was performed.',
+      'cv_name' => 'analysis_property',
+      'is_relationship' => 0,
+      'db_name' => 'tripal'
+    ),
+    array('update_existing' => TRUE)
   );
-  tripal_cv_add_cvterm($term, 'analysis_property', 0, 1, 'tripal');
 }
 
 /**

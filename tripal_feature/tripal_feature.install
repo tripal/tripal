@@ -227,14 +227,14 @@ function tripal_feature_add_organism_count_mview() {
 function tripal_feature_add_cvs() {
 
   // Add cv for relationship types
-  tripal_cv_add_cv(
+  tripal_insert_cv(
     'feature_relationship',
     'Contains types of relationships between features.'
   );
 
   // the feature_property CV already exists... it comes with chado, but we need to
   // add it just in case it doesn't get added before the feature module is installed
-  tripal_cv_add_cv(
+  tripal_insert_cv(
     'feature_property',
     'Stores properties about features'
   );
@@ -242,7 +242,7 @@ function tripal_feature_add_cvs() {
   // the feature type vocabulary should be the sequence ontology, and even though
   // this ontology should get loaded we will create it here just so that we can
   // set the default vocabulary for the feature.type_id field
-  tripal_cv_add_cv(
+  tripal_insert_cv(
     'sequence',
     'The Sequence Ontology'
   );
