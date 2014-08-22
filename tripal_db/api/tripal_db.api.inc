@@ -304,7 +304,7 @@ function tripal_get_dbxref($identifiers, $options = array()) {
  *
  * @ingroup tripal_db_api
  */
-function tripal_insert_db($values, $options) {
+function tripal_insert_db($values, $options = array()) {
 
   // Default Values
   $dbname = $values['name'];

@@ -592,7 +592,7 @@ function tripal_core_node_view_alter(&$build) {
   $toc_html = '';
 
   // If we are looking at a Tripal node template then we want to
-  // make some changes to each block of content so that we can associate
+  // make some changes to each pane of content so that we can associate
   // a table of contents and add administrator and curator messages.
   if ($build['#tripal_generic_node_template'] == TRUE) {
 
@@ -682,14 +682,14 @@ function tripal_core_node_view_alter(&$build) {
       }
       if ($key == "field_resource_blocks") {
         foreach (element_children($build[$key]) as $index) {
-          // get the block details and the title
+          // get the details and the title
           $weight = 0;
           $markup = $build[$key][$index]["#markup"];
           $toc_item_id = "resource-$index";
           $toc_item_title = $build["field_resource_titles"][$index]["#markup"];
           $updated_markup = "
-            <div id=\"$toc_item_id-tripal-data-block\" class=\"tripal-data-block\">
-              <div class=\"$toc_item_id-tripal-data-block-title tripal-data-block-title\">$toc_item_title</div>
+            <div id=\"$toc_item_id-tripal-data-pane\" class=\"tripal-data-pane\">
+              <div class=\"$toc_item_id-tripal-data-pane-title tripal-data-pane-title\">$toc_item_title</div>
                 $markup
               </div>
             </div>
@@ -698,7 +698,7 @@ function tripal_core_node_view_alter(&$build) {
           $build[$toc_item_id]['#weight'] = $weight;
           $build[$toc_item_id]['#toc_handled'] = TRUE;
           // add the entry to the TOC
-          $toc_item_link = "<div class=\"tripal_toc_list_item\"><a id=\"$toc_item_id\" class=\"tripal_toc_list_item_link\" href=\"?block=$toc_item_id\">$toc_item_title</a></div>";
+          $toc_item_link = "<div class=\"tripal_toc_list_item\"><a id=\"$toc_item_id\" class=\"tripal_toc_list_item_link\" href=\"?pane=$toc_item_id\">$toc_item_title</a></div>";
           $toc[$weight][$toc_item_title] = $toc_item_link;
         }
         // Remove the key from the build array. We have have replaced it
@@ -740,7 +740,7 @@ function tripal_core_node_view_alter(&$build) {
       if (array_key_exists('#tripal_toc_id', $build[$key])) {
         $toc_item_id = $build[$key]['#tripal_toc_id'];
       }
-      $toc_item_link = "<div class=\"tripal_toc_list_item\"><a id=\"$toc_item_id\" class=\"tripal_toc_list_item_link\" href=\"?block=$toc_item_id\">$toc_item_title</a></div>";
+      $toc_item_link = "<div class=\"tripal_toc_list_item\"><a id=\"$toc_item_id\" class=\"tripal_toc_list_item_link\" href=\"?pane=$toc_item_id\">$toc_item_title</a></div>";
 
 
       //-----------------------
@@ -786,7 +786,7 @@ function tripal_core_node_view_alter(&$build) {
 
           $path = tripal_set_message("Administrators, you can
             customize the way the content above is presented.  Tripal provides a template
-            file for each block of content.  To customize, copy the template file to your
+            file for each pane of content.  To customize, copy the template file to your
             site's default theme, edit then " .
             l('clear the Drupal cache', 'admin/config/development/performance', array('attributes' => array('target' => '_blank'))) . ".
             Currently, the content above is provided by this template: <br><br>$path",
@@ -814,8 +814,8 @@ function tripal_core_node_view_alter(&$build) {
       //-----------------------
       // add a surrounding <div> box around the content
       $updated_markup = "
-        <div id=\"$toc_item_id-tripal-data-block\" class=\"tripal-data-block\">
-          <div class=\"$toc_item_id-tripal-data-block-title tripal-data-block-title\">$toc_item_title</div>
+        <div id=\"$toc_item_id-tripal-data-pane\" class=\"tripal-data-pane\">
+          <div class=\"$toc_item_id-tripal-data-pane-title tripal-data-pane-title\">$toc_item_title</div>
             $markup
             $path
           </div>
@@ -840,7 +840,7 @@ function tripal_core_node_view_alter(&$build) {
       $toc_html .= $toc_item_link;
     }
   }
-  $build['tripal_toc']['#markup'] = "<div id=\"$node->type-tripal-toc-block\" class=\"tripal-toc-block\">$toc_html</div>";
+  $build['tripal_toc']['#markup'] = "<div id=\"$node->type-tripal-toc-pane\" class=\"tripal-toc-pane\">$toc_html</div>";
 }
 
 /**
