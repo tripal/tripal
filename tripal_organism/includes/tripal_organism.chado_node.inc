@@ -171,11 +171,13 @@ function chado_organism_form($node, $form_state) {
     '#title' => t('Description'),
     '#default_value' => $description,
   );
+  
   $form['organism_image']= array(
-    '#type' => 'file',
+    '#type' => 'managed_file',
     '#title' => t('Organism Image'),
-    '#description' => 'Add an image for this organism',
+    '#description' => t('Add an image to display for this organism.'),
     '#progress_indicator' => 'bar',
+    '#upload_location' => 'public://tripal/tripal_organism/images/',
   );
 
   // PROPERTIES FORM
@@ -350,6 +352,7 @@ function chado_organism_insert($node) {
  * @ingroup tripal_organism
  */
 function chado_organism_update($node) {
+
   // remove any white space around values
   $node->genus        = trim($node->genus);
   $node->species      = trim($node->species);
@@ -374,10 +377,8 @@ function chado_organism_update($node) {
     'comment' => $node->description
   );
   $org_status = chado_update_record('organism', $match, $values);
-
-  // add the image
   chado_organism_add_image($node);
-
+  
   // * Properties Form *
   $details = array(
     'property_table' => 'organismprop',   // the name of the prop table
@@ -394,6 +395,38 @@ function chado_organism_update($node) {
     'foreignkey_value' => $organism_id      // the value of the organism_id key
   );
   chado_update_node_form_dbxrefs($node, $details);
+}
+
+/**
+ * Adds the image to the organism node and cleans up any old images.
+ * 
+ * @param $node
+ *   The node object.
+ */
+function chado_organism_add_image($node) {
+  
+  // If there is already an organism image, then remove it it if 
+  // no other modules are using it
+  $fid = db_select('file_usage', 'fu')
+    ->fields('fu', array('fid'))
+    ->condition('module', 'tripal_organism')
+    ->condition('type', 'organism_image')
+    ->condition('id', $node->nid)
+    ->execute()
+    ->fetchField();
+  if ($fid) {
+    $file = file_load($fid);
+    file_usage_delete($file, 'tripal_organism', 'organism_image', $node->nid);
+    file_delete($file);
+  }
+
+  // Save the uploaded file
+  $file = file_load($node->organism_image);
+  if ($file) {
+    $file->status = FILE_STATUS_PERMANENT;
+    file_save($file);
+    file_usage_add($file, 'tripal_organism', 'organism_image', $node->nid);
+  }
 }
 
 /**
@@ -438,41 +471,6 @@ function chado_organism_delete($node) {
     drupal_set_message(t("Warning: other data depends on this organism. The organism page was removed from this site but the organism was removed from Chado."), 'warning');
   }
 }
-
-/**
- * Add an image to an organims node
- *
- * @param $node
- *   The node to add an image to
- *
- * The file is specified in the $_FILES array created by Drupal
- *
- * @ingroup tripal_organism
- */
-function chado_organism_add_image($node) {
-  // check to see if a file was uploaded. If so then copy it to the images
-  // directory for display with the organism
-  if (isset($_FILES['files']) &&
-  $_FILES['files']['name']['organism_image'] &&
-  is_uploaded_file($_FILES['files']['tmp_name']['organism_image'])) {
-
-    // make sure the destination directory exists
-    $dest = tripal_get_files_dir() . "/tripal_organism/images";
-    file_prepare_directory($dest, FILE_CREATE_DIRECTORY);
-
-    // now move the file
-    $validators = array('file_validate_is_image' => array());
-    $destination = "public://tripal/tripal_organism/images/";
-    $file = file_save_upload('organism_image', $validators, $destination);
-    if (!$file) {
-      drupal_set_message(t("Organism image was not uploaded."));
-    }
-    else {
-      file_move($file, $destination . "/" . $node->nid . ".jpg", FILE_EXISTS_REPLACE);
-    }
-  }
-}
-
 /**
  *  Implements hook_load().
  *

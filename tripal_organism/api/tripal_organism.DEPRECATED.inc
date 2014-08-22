@@ -89,5 +89,5 @@ function tripal_organism_get_image_url($organism, $nid = NULL) {
     )
   );
 
-  return tripal_get_organism_image($organism, $nid);
+  return tripal_get_organism_image_url($organism);
 }

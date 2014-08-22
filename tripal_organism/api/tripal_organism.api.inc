@@ -174,23 +174,34 @@ function tripal_get_organism_select_options($syncd_only = TRUE) {
  *
  * @param $organism
  *   An organism table record
- * @param $nid
- *   (Optional). The node id of the organism node. if not supplied it will be looked up
- * @param $type
- *   (Optional). Specify the type of path, either 'url' or path'. Default is 'path'
  *
  * @return
  *   If the type parameter is 'url' (the default) then the fully qualified 
- *   url to the image is returend. If the type is 'path' then the full 
- *   filesystem is returned.
+ *   url to the image is returend. If no image is present then NULL is returned
  */
-function tripal_get_organism_image($organism, $nid = NULL, $type = 'url') {
+function tripal_get_organism_image_url($organism) {
   $url = '';
+  
+  // Get the organism's node
+  $nid = chado_get_nid_from_id('organism', $organism->organism_id);
+  
+  // Look in the file_usage table of Drupal for the image file. This
+  // is the current way for handling uploaded images. It allows the file to
+  // keep it's proper name and extension.
+  $fid = db_select('file_usage', 'fu')
+    ->fields('fu', array('fid'))
+    ->condition('module', 'tripal_organism')
+    ->condition('type', 'organism_image')
+    ->condition('id', $nid)
+    ->execute()
+    ->fetchField();
+  if ($fid) {
+    $file = file_load($fid);
+    return file_create_url($file->uri);
+  }
 
-  // first look for an image with the genus/species name.  This is old-style tripal
-  // and we keep it for backwards compatibility.  If we don't find that file
-  // then look for the image with the node ID in the name. If we don't find that then
-  // no image tag is generated
+  // First look for an image with the genus/species name.  This is old-style tripal
+  // and we keep it for backwards compatibility.  
   $base_path = realpath('.');
   $image_dir = tripal_get_files_dir('tripal_organism') . "/images";
   $image_name =  $organism->genus . "_" . $organism->species . ".jpg";
@@ -198,19 +209,19 @@ function tripal_get_organism_image($organism, $nid = NULL, $type = 'url') {
 
   if (file_exists($image_path)) {
     $url = file_create_url("$image_dir/$image_name");
-  }
-  else {
-     $image_name = $nid . ".jpg";
-     $image_path = "$base_path/$image_dir/$image_name";
-     if (file_exists($image_path)) {
-       $url = file_create_url("$image_dir/$image_name");
-     }
-  }
-  if ($type == "path") {
-    return $image_path;
-  }
-  else {
     return $url;
   }
+  
+  // If we don't find the file using the genus ans species then look for the 
+  // image with the node ID in the name. This method was used for Tripal 1.1
+  // and 2.x-alpha version.
+  $image_name = $nid . ".jpg";
+  $image_path = "$base_path/$image_dir/$image_name";
+  if (file_exists($image_path)) {
+    $url = file_create_url("$image_dir/$image_name");
+    return $url;
+  }
+
+  return NULL;
 }
 
