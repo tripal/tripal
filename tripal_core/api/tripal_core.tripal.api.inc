@@ -208,7 +208,8 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = arra
  * @param $message
  *   The message to be logged. Need not contain date/time information
  * @param $log_type
- *   The type of log. Should be one of 'error' or 'job'
+ *   The type of log. Should be one of 'error' or 'job' although other types
+ *   are supported.
  * @param $options
  *   An array of options where the following keys are supported:
  *     - first_progress_bar: this sohuld be used for the first log call for a progress bar
@@ -218,36 +219,18 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = arra
  * @return
  *   The number of bytes that were written to the file, or FALSE on failure
  */
-function tripal_log($message, $type, $options = array()) {
-
-  $date   = date("Y-m-d H:i:s");
-  $prefix = "[$date]";
-  $indent = "\t\t\t";
-
-  $log_filename = tripal_get_logfile_path($type);
+function tripal_log($message, $type = 'error', $options = array()) {
+  global $base_url;
+  $prefix = '[TRIPAL ' . strtoupper(check_plain($type)) . '] ';
 
   if (!isset($options['is_progress_bar'])) {
-    $message = $prefix . "\t" . str_replace("\n", "\n$indent", trim($message)) . "\n";
+    $message = $prefix . str_replace("\n", "", trim($message));
   }
 
   if (isset($options['first_progress_bar'])) {
     $message = trim($message);
   }
 
-  return file_put_contents($log_filename, $message, FILE_APPEND);
-
-}
-
-/**
- * Return the filename including path to the specified log file
- *
- * @param $type
- *   The type of log. See tripal_log for supported types
- * @return
- *  The filename including path to the specified log file
- */
-function tripal_get_logfile_path($type) {
-
-  return '/tmp/tripal_' . $type . '_' . date('Ymd') . '.log';
+  return error_log($message);
 
 }
