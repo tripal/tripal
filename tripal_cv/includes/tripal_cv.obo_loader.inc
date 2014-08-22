@@ -120,7 +120,7 @@ function tripal_cv_obo_form_submit($form, &$form_state) {
   $obo_file  = trim($form_state['values']['obo_file']);
 
   tripal_submit_obo_job(array(
-    'ob_id' => $obo_id,
+    'obo_id' => $obo_id,
     'name' => $obo_name,
     'url' => $obo_url,
     'file' => $obo_file
