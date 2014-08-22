@@ -7,7 +7,7 @@ $organism = chado_expand_var($organism,'field','organism.comment'); ?>
 
 // generate the image tag
 $image = '';
-$image_url = tripal_organism_get_image_url($organism, $node->nid); 
+$image_url = tripal_get_organism_image($organism, $node->nid); 
 if ($image_url) {
   $image = "<img class=\"tripal-organism-img\" src=\"$image_url\">";
 }

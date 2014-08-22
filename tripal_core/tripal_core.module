@@ -365,8 +365,37 @@ function tripal_core_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK
   );
+  
+  // The node's TOC tab
+  $items['node/%node/tripal_toc'] = array(
+    'title' => 'TOC',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_core_node_toc_form', 1),
+    'access callback' => 'tripal_core_access_node_toc_form',
+    'access arguments' => array(1),
+    'type' => MENU_LOCAL_TASK,
+    'file' => '/includes/tripal_core.toc.inc',
+  );
 
   return $items;
+}
+
+/**
+ * An access wrapper function for editing the TOC
+ *
+ * @param $node
+ *   A node object
+ * @return
+ *   Returns TRUE if the node is a Tripal-based node and the user hass
+ *   the 'administer tripal' role.
+ */
+function tripal_core_access_node_toc_form($node) {
+  $types = module_invoke_all('node_info');
+  if (array_key_exists($node->type, $types) and 
+      array_key_exists('chado_node_api', $types[$node->type])) {
+    return user_access('administer tripal');
+  }
+  return FALSE;
 }
 
 /**
@@ -538,7 +567,6 @@ function tripal_core_views_api() {
   );
 }
 
-
 /**
  * After the node is built, we want to add instructions to each
  * content section letting the administrator know which template
@@ -563,28 +591,28 @@ function tripal_core_node_view_alter(&$build) {
   $toc = array();
   $toc_html = '';
 
-  // if we are looking at a Tripal node template then we want to
+  // If we are looking at a Tripal node template then we want to
   // make some changes to each block of content so that we can associate
-  // a table of contents and add administrator and curator messages
+  // a table of contents and add administrator and curator messages.
   if ($build['#tripal_generic_node_template'] == TRUE) {
 
-    // iterate through all the elements of the $build array and for those
-    // that are wanting to provide content for this node
+    // Iterate through all the elements of the $build array and for those
+    // that are wanting to provide content for this node.
     $markup = array();
     foreach ($build as $key => $value) {
 
-      // skip the body element as the Tripal node types do not use it
+      // Skip the body element as the Tripal node types do not use it.
       if ($key == 'body') {
         continue;
       }
 
-      // examine elements without a '#' prefix as these should be adding
+      // Examine elements without a '#' prefix as these should be adding
       // contents to the page. Skip the table of contents and links as those
-      // will be placed elsewhere
+      // will be placed elsewhere.
       if (preg_match('/^#/', $key) or $key == 'tripal_toc' or $key == 'links') {
         continue;
       }
-      //kook to see if the title, position and visibilty of this element has
+      // Look to see if the title, position and visibilty of this element has
       // custom settings.  First check if the node is customized then check
       // if the node type.
       $override_title = '';
@@ -619,14 +647,14 @@ function tripal_core_node_view_alter(&$build) {
         }
       }
 
-      // if the element should be hiddent then unset this key the build
+      // If the element should be hidden then unset this key the build
       // array continue to the next one
       if ($override_hide == 1) {
         unset($build[$key]);
         continue;
       }
 
-      // for backwards compatibility we will handle the content type fields
+      // For backwards compatibility we will handle the content type fields
       // named 'field_resource_blocks', 'field_resource_titles', and 'field_resource_links'
       // these fields can be added on the Drupal content types page and were
       // specifically recoginzed by Tripal v1.1.
@@ -673,13 +701,13 @@ function tripal_core_node_view_alter(&$build) {
           $toc_item_link = "<div class=\"tripal_toc_list_item\"><a id=\"$toc_item_id\" class=\"tripal_toc_list_item_link\" href=\"?block=$toc_item_id\">$toc_item_title</a></div>";
           $toc[$weight][$toc_item_title] = $toc_item_link;
         }
-        // remove the key from the build array. We have have replaced it
+        // Remove the key from the build array. We have have replaced it
         unset($build[$key]);
         unset($build["field_resource_titles"]);
         continue;
       }
 
-      // skip any keys we may have already handled. This is the case for
+      // Skip any keys we may have already handled. This is the case for
       // the field_resource_blocks where we removed the old CCK fields
       // and added new ones.  We don't want these new ones to be processed
       // again by the code below.
@@ -687,7 +715,7 @@ function tripal_core_node_view_alter(&$build) {
         continue;
       }
 
-      // for all other fields we will handle in the following way
+      // For all other fields we will handle in the following way
       //-----------------------
       // INITIALIZE THE CONTENT VARIABLES
       //-----------------------
