@@ -32,7 +32,7 @@ REQUIREMENTS
  * Libraries API (https://www.drupal.org/project/libraries)
  * PHP-Daemon Library version 2.0 (https://github.com/shaneharter/PHP-Daemon)
  * Drush 5.x (https://github.com/drush-ops/drush)
- * Daemon API (https://www.drupal.org/sandbox/laceysanderson/2311987)
+ * Drush Daemon API (https://www.drupal.org/project/drushd)
 
 INSTALLATION
 ------------

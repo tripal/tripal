@@ -61,5 +61,5 @@ function tripal_daemon_drush_command() {
  *   you want the daemon to do.
  */
 function drush_tripal_daemon_tripal_jobs_daemon($action) {
-  drush_daemon_api_daemon($action, 'tripal_daemon');
+  drush_drushd_daemon($action, 'tripal_daemon');
 }

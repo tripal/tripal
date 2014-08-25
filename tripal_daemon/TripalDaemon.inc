@@ -11,7 +11,7 @@
  * It extends the DaemonAPIDaemon class provided by the Daemon API in order
  * to implement tripal job checking and execution functionality.
  */
-class TripalDaemon extends DaemonAPIDaemon {
+class TripalDaemon extends DrushDaemon {
 
   // OPTIONAL: Set how often in seconds your executeTask() should be called.
   // Keep in mind that this time does not include the amount of time spent
