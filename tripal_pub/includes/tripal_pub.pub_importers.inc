@@ -859,7 +859,20 @@ function tripal_pub_add_publications($pubs, $do_contact, $update = FALSE) {
     if ($pub_id){
       // add the publication cross reference (e.g. to PubMed)
       if ($pub_id and $pub['Publication Dbxref']) {
-        $pub_dbxref = tripal_pub_add_pub_dbxref($pub_id, $pub['Publication Dbxref']);
+        $dbxref = array();
+        if (preg_match('/^(.*?):(.*?)$/', trim($pub['Publication Dbxref']), $matches)) {
+          $dbxref['db_name']   = $matches[1];
+          $dbxref['accession'] = $matches[2];
+        }
+        else {
+          tripal_report_error(
+            'tripal_pub',
+            TRIPAL_ERROR,
+            'Unable to extract the dbxref to be associated with the publication (pub ID=@pub_id) from @dbxref. This reference should be [database-name]:[accession]',
+            array('@pub_id' => $pub_id, '@dbxref' => $pub['Publication Dbxref'])
+          );
+        }
+        $pub_dbxref = tripal_associate_dbxref('pub', $pub_id, $dbxref);
       }
       $pub['pub_id'] = $pub_id;
     }
@@ -923,7 +936,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
 
   // before proceeding check to see if the publication already exists. If there is only one match
   // and the $update_if_exists is NOT set then return FALSE
-  $pub_ids = chado_does_pub_exist($pub_details);
+  $pub_ids = tripal_publication_exists($pub_details);
 
   if(count($pub_ids) == 1 and !$update_if_exists) {
     tripal_report_error('tripal_pub', TRIPAL_NOTICE,

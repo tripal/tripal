@@ -385,7 +385,7 @@ function tripal_get_feature_sequences($feature, $options) {
       $dir = 'forward';
       $length = strlen($seq);
       if ($parent->strand < 0) {
-        $seq = tripal_feature_reverse_complement($seq);
+        $seq = tripal_reverse_compliment_sequence($seq);
         $dir = 'reverse';
       }
       // now format for display

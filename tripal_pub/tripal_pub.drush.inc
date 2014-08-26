@@ -99,5 +99,5 @@ function drush_tripal_pub_tripal_pubs_update() {
   $dbxref = drush_get_option('dbxref');
   $db = drush_get_option('db');
 
-  chado_reimport_publications($create_contacts, $dbxref, $db);
+  tripal_reimport_publications($create_contacts, $dbxref, $db);
 }
