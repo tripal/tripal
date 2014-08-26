@@ -42,7 +42,7 @@ function tripal_pub_search_page() {
     $page = isset($_GET['page']) ? $_GET['page'] : '0';
     $offset = $page * $limit;
     $total_records = 0;
-    $pubs = pub_search($search_array, $offset, $limit, $total_records);
+    $pubs = tripal_search_publications($search_array, $offset, $limit, $total_records);
     pager_default_initialize($total_records, $limit, 0);
     
     // iterate through the results and construct the table displaying the publications

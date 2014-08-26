@@ -441,7 +441,7 @@ function chado_pub_validate($node, $form, &$form_state) {
 function chado_pub_validate_check_uniquename($uniquename, $pub_id = NULL) {
 
   // check to see if a pub exists with this uniquename
-  $pub = chado_get_publication(array('uniquename' => $uniquename));
+  $pub = tripal_get_publication(array('uniquename' => $uniquename));
   if ($pub) {
     // if a $pub_id is provided to the function then this is an update
     // if the pub_id's don't match then a different pub with the same

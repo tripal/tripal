@@ -158,7 +158,7 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
       $sequence = chado_query($sql, $args)->fetchObject();
       $residues = $sequence->residues;
       if ($featureloc->strand < 0) {
-        $residues = tripal_feature_reverse_complement($residues);
+        $residues = tripal_reverse_compliment_sequence($residues);
       }
       $strand = '.';
       if ($featureloc->strand == 1) {

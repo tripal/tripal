@@ -427,7 +427,7 @@ function tripal_publication_exists($pub_details) {
 
   // first try to find the publication using the accession number if that key exists in the details array
   if (array_key_exists('Publication Dbxref', $pub_details)) {
-    $pub = chado_get_publication(array('dbxref' => $pub_details['Publication Dbxref']));
+    $pub = tripal_get_publication(array('dbxref' => $pub_details['Publication Dbxref']));
     if($pub) {
       return array($pub->pub_id);
     }
@@ -435,7 +435,7 @@ function tripal_publication_exists($pub_details) {
 
   // make sure the citation is unique
   if (array_key_exists('Citation', $pub_details)) {
-    $pub = chado_get_publication(array('uniquename' => $pub_details['Citation']));
+    $pub = tripal_get_publication(array('uniquename' => $pub_details['Citation']));
     if($pub) {
       return array($pub->pub_id);
     }
@@ -460,13 +460,13 @@ function tripal_publication_exists($pub_details) {
   }
   else {
     tripal_report_error('tripal_pub', TRIPAL_ERROR, 
-      "chado_does_pub_exist(): The Publication Type is a " .
+      "tripal_publication_exists(): The Publication Type is a " .
       "required property but is missing", array());
     return array();
   }
   if (!$pub_type) {
     tripal_report_error('tripal_pub', TRIPAL_ERROR, 
-     "chado_does_pub_exist(): Cannot find publication type: '%type'",
+     "tripal_publication_exists(): Cannot find publication type: '%type'",
       array('%type' => $pub_details['Publication Type'][0]));
     return array();
   }
