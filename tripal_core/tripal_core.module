@@ -492,7 +492,13 @@ function tripal_core_theme($existing, $type, $theme, $path) {
     'tripal_admin_message' => array(
       'function' => 'theme_tripal_admin_message',
       'variables' => array('message' => NULL),
-    )
+    ),
+    
+    // Form and form element themes.
+    // --------------------------------
+    'tripal_node_toc_items_table' => array(
+      'render element' => 'element',
+    ),
   );
 }
 
@@ -568,283 +574,18 @@ function tripal_core_views_api() {
 }
 
 /**
- * After the node is built, we want to add instructions to each
- * content section letting the administrator know which template
- * they can customize
+ * Implements hook_node_view_alter()
  *
  * @param unknown $build
  */
 function tripal_core_node_view_alter(&$build) {
-  global $theme;
-
-  // if this is not a full node view, we do not want to alter
-  if ($build['#view_mode'] != 'full' OR !array_key_exists('#tripal_generic_node_template', $build)) {
-    return;
-  }
-
-  $node_type = $build["#node"]->type;
-  $nid = $build["#node"]->nid;
-
-
-  $cache = cache_get("theme_registry:$theme", 'cache');
-  $node = $build['#node'];
-  $toc = array();
-  $toc_html = '';
-
-  // If we are looking at a Tripal node template then we want to
-  // make some changes to each pane of content so that we can associate
-  // a table of contents and add administrator and curator messages.
-  if ($build['#tripal_generic_node_template'] == TRUE) {
-
-    // Iterate through all the elements of the $build array and for those
-    // that are wanting to provide content for this node.
-    $markup = array();
-    foreach ($build as $key => $value) {
-
-      // Skip the body element as the Tripal node types do not use it.
-      if ($key == 'body') {
-        continue;
-      }
-
-      // Examine elements without a '#' prefix as these should be adding
-      // contents to the page. Skip the table of contents and links as those
-      // will be placed elsewhere.
-      if (preg_match('/^#/', $key) or $key == 'tripal_toc' or $key == 'links') {
-        continue;
-      }
-      // Look to see if the title, position and visibilty of this element has
-      // custom settings.  First check if the node is customized then check
-      // if the node type.
-      $override_title = '';
-      $override_weight = '';
-      $override_hide = 0;
-      $toc_item_overrides = db_select('tripal_toc', 'tc')
-        ->fields('tc', array('toc_item_id', 'title', 'weight', 'hide'))
-        ->condition('node_type', $node_type)
-        ->condition('key', $key)
-        ->condition('nid', $nid)
-        ->execute()
-        ->fetchObject();
-      if ($toc_item_overrides) {
-        $override_title = $toc_item_overrides->title;
-        $override_weight = $toc_item_overrides->weight;
-        $override_hide = $toc_item_overrides->hide;
-      }
-      else {
-
-        // get the override title, weight for the general case
-        $toc_item_overrides = db_select('tripal_toc', 'tc')
-          ->fields('tc', array('toc_item_id', 'title', 'weight', 'hide'))
-          ->condition('node_type', $node_type)
-          ->condition('key', $key)
-          ->isNull('nid')
-          ->execute()
-          ->fetchObject();
-        if ($toc_item_overrides) {
-          $override_title = $toc_item_overrides->title;
-          $override_weight = $toc_item_overrides->weight;
-          $override_hide = $toc_item_overrides->hide;
-        }
-      }
-
-      // If the element should be hidden then unset this key the build
-      // array continue to the next one
-      if ($override_hide == 1) {
-        unset($build[$key]);
-        continue;
-      }
-
-      // For backwards compatibility we will handle the content type fields
-      // named 'field_resource_blocks', 'field_resource_titles', and 'field_resource_links'
-      // these fields can be added on the Drupal content types page and were
-      // specifically recoginzed by Tripal v1.1.
-      if ($key == "field_resource_links") {
-        // links should just appear on the sidebar as is and not open up a panel
-        foreach (element_children($build[$key]) as $index) {
-          $element = $build[$key][$index];
-          $weight = 0;
-          $parts = explode("|", $element['#markup']);
-          if (count($parts) == 2) {
-            $toc[$weight][$parts[0]] = "<div class=\"tripal_toc_list_item\">" . l($parts[0], $parts[1], array('attributes' => array('target' => '_blank'))) . "</div>";
-          }
-          else {
-            $toc[$weight][$parts[0]] = "<div class=\"tripal_toc_list_item\">" . $element['#markup'] . "</div>";
-          }
-          // remove this link from the build array as we've moved it to appear in the TOC
-          unset($build[$key]);
-        }
-        continue;
-      }
-      if ($key == "field_resource_titles") {
-        // ignore these, we will use them in the field_resource_blocks if
-        // statement below
-        continue;
-      }
-      if ($key == "field_resource_blocks") {
-        foreach (element_children($build[$key]) as $index) {
-          // get the details and the title
-          $weight = 0;
-          $markup = $build[$key][$index]["#markup"];
-          $toc_item_id = "resource-$index";
-          $toc_item_title = $build["field_resource_titles"][$index]["#markup"];
-          $updated_markup = "
-            <div id=\"$toc_item_id-tripal-data-pane\" class=\"tripal-data-pane\">
-              <div class=\"$toc_item_id-tripal-data-pane-title tripal-data-pane-title\">$toc_item_title</div>
-                $markup
-              </div>
-            </div>
-          ";
-          $build[$toc_item_id]['#markup'] = $updated_markup;
-          $build[$toc_item_id]['#weight'] = $weight;
-          $build[$toc_item_id]['#toc_handled'] = TRUE;
-          // add the entry to the TOC
-          $toc_item_link = "<div class=\"tripal_toc_list_item\"><a id=\"$toc_item_id\" class=\"tripal_toc_list_item_link\" href=\"?pane=$toc_item_id\">$toc_item_title</a></div>";
-          $toc[$weight][$toc_item_title] = $toc_item_link;
-        }
-        // Remove the key from the build array. We have have replaced it
-        unset($build[$key]);
-        unset($build["field_resource_titles"]);
-        continue;
-      }
-
-      // Skip any keys we may have already handled. This is the case for
-      // the field_resource_blocks where we removed the old CCK fields
-      // and added new ones.  We don't want these new ones to be processed
-      // again by the code below.
-      if (array_key_exists('#toc_handled', $build[$key]) and $build[$key]['#toc_handled'] == TRUE) {
-        continue;
-      }
-
-      // For all other fields we will handle in the following way
-      //-----------------------
-      // INITIALIZE THE CONTENT VARIABLES
-      //-----------------------
-      $toc_item_title = $key;
-      $toc_item_id    = $key;
-      $toc_item_link  = '';
-
-      // get the title for the table of contents.  Tripal templates should
-      // have a '#tripal_toc_title' element in the build array
-      if (array_key_exists('#tripal_toc_title', $build[$key])) {
-        $toc_item_title = $build[$key]['#tripal_toc_title'];
-      }
-      // other elements in the $build array may just have a '#title' element,
-      if (array_key_exists('#title', $build[$key])) {
-        $toc_item_title = $build[$key]['#title'];
-      }
-      $toc_item_title = ucwords($toc_item_title);
-
-      // now override the title if a value is set in the tripal_toc table
-      $toc_item_title = $override_title ? $override_title : $toc_item_title;
-
-      if (array_key_exists('#tripal_toc_id', $build[$key])) {
-        $toc_item_id = $build[$key]['#tripal_toc_id'];
-      }
-      $toc_item_link = "<div class=\"tripal_toc_list_item\"><a id=\"$toc_item_id\" class=\"tripal_toc_list_item_link\" href=\"?pane=$toc_item_id\">$toc_item_title</a></div>";
-
-
-      //-----------------------
-      // GET THE MARKUP FOR EACH ELEMENT
-      //-----------------------
-      $markup = '';
-
-      // find the markup. Some fields will have a '#markup' and others, such
-      // as CCK elements may have a set of '#markup' elements organized by
-      // numerical keys.
-      if (array_key_exists('#markup', $build[$key]) and trim($build[$key]['#markup'])) {
-        $markup = $build[$key]['#markup'];
-      }
-      // For backwards copmatibility we should support the '#value' element as well.
-      elseif (array_key_exists('#value', $build[$key]) and trim($build[$key]['#value'])) {
-        $markup = $build[$key]['#markup'];
-      }
-
-      // if we have no '#markup' field then this element has not yet
-      // been rendered.  Let's render it and substitute that for markup
-      if (!$markup) {
-        $markup = trim(render($build[$key]));
-        $build[$key] = array(
-          '#markup' => $markup,
-        );
-      }
-
-      // if we still don't have markup then skip this one
-      if (!$markup) {
-        continue;
-      }
-
-      //-----------------------
-      // FIND THE TEMPLATE PATH
-      //-----------------------
-      // get the template path so we can put it in an admin message box
-      $path = '';
-      if (!array_key_exists('#tripal_template_show', $build[$key]) or
-           $build[$key]['#tripal_template_show'] == TRUE) {
-        if ($cache and array_key_exists($key, $cache->data) and array_key_exists('path', $cache->data[$key])) {
-
-          $path = $cache->data[$key]['path'] . '/' . $key . '.tpl.php';
-
-          $path = tripal_set_message("Administrators, you can
-            customize the way the content above is presented.  Tripal provides a template
-            file for each pane of content.  To customize, copy the template file to your
-            site's default theme, edit then " .
-            l('clear the Drupal cache', 'admin/config/development/performance', array('attributes' => array('target' => '_blank'))) . ".
-            Currently, the content above is provided by this template: <br><br>$path",
-            TRIPAL_INFO,
-            array('return_html' => 1)
-          );
-        }
-      }
-
-      //-----------------------
-      // SET THE WEIGHTS FOR THE TOC ELEMENTS
-      //-----------------------
-      // set the weight of the TOC item and add it to our $toc array
-      // for building of the TOC below
-      $weight = 0;
-      if (array_key_exists('#weight', $build[$key])) {
-        $weight = $build[$key]['#weight'];
-      }
-      // override the weight if it's set in the tripal_toc table
-      $weight = $override_weight ? $override_weight : $weight;
-      $toc[$weight][$toc_item_title] = $toc_item_link;
-
-      //-----------------------
-      // CREATE THE DATA BLOCK
-      //-----------------------
-      // add a surrounding <div> box around the content
-      $updated_markup = "
-        <div id=\"$toc_item_id-tripal-data-pane\" class=\"tripal-data-pane\">
-          <div class=\"$toc_item_id-tripal-data-pane-title tripal-data-pane-title\">$toc_item_title</div>
-            $markup
-            $path
-          </div>
-        </div>
-      ";
-
-      $build[$key]['#markup'] = $updated_markup;
-      $build[$key]['#weight'] = $weight;
-    } // end foreach ($build as $key => $value) {
-  } // end if ($build['#tripal_generic_node_template'] == TRUE) {
-
-  //-----------------------
-  // BUILD THE TABLE OF CONTENTS LINKS
-  //-----------------------
-  // first sort the links numerically by their weight
-  ksort($toc, SORT_NUMERIC);
-  $toc_html = '';
-  foreach ($toc as $weight => $links) {
-    // for links in the same weight, sort them alphabetically
-    ksort($links);
-    foreach ($links as $toc_item_title => $toc_item_link) {
-      $toc_html .= $toc_item_link;
-    }
-  }
-  $build['tripal_toc']['#markup'] = "<div id=\"$node->type-tripal-toc-pane\" class=\"tripal-toc-pane\">$toc_html</div>";
+  module_load_include('inc', 'tripal_core', 'includes/tripal_core.toc');
+  tripal_core_node_view_add_toc($build);
 }
 
 /**
- *
+ * Implements hook_node_view()
+ * 
  * @ingroup tripal_core
  */
 function tripal_core_node_view($node, $view_mode, $langcode) {
