@@ -293,8 +293,8 @@ function tripal_get_dbxref($identifiers, $options = array()) {
  *   - urlprefix: (Optional) The URL that is to be used as a prefix when constructing a
  *     link to a database term
  * @param $options
- *   An associative array of options including:
- *   - update_existing: (Optional) Set this to '1' to force an update of the database if it
+ *   Optional. An associative array of options that can include:
+ *   - update_existing: Set this to '1' to force an update of the database if it
  *     already exists. The default is to not update. If the database exists
  *     then nothing is added.
  *
@@ -304,7 +304,7 @@ function tripal_get_dbxref($identifiers, $options = array()) {
  *
  * @ingroup tripal_db_api
  */
-function tripal_insert_db($values, $options) {
+function tripal_insert_db($values, $options = array()) {
 
   // Default Values
   $dbname = $values['name'];
