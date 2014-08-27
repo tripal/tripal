@@ -780,16 +780,11 @@ function tripal_feature_node_insert($node) {
   switch ($node->type) {
     case 'chado_feature':
 
-      // The Chado Node URL API assumes it has access to a fully loaded node
-      // but the node on insert just includes the fields from the node form.
-      // As such we need to load the chado data similarily to the node_load()
-      // function in order to ensure the tokens can be populated with the
-      // the correct data.
+      // We still don't have a fully loaded node object in this hook. Therefore,
+      // we need to simulate one so that the right values are available for
+      // the URL to be determined.
       $feature_id = chado_get_id_from_nid('feature', $node->nid);
-      $values = array('feature_id' => $feature_id);
-      $feature = chado_generate_var('feature', $values);
-      $node->feature = $feature;
-      $node->feature_id = $feature_id;
+      $node->feature = chado_generate_var('feature', array('feature_id' => $feature_id));
 
       // Now use the API to set the path.
       chado_set_node_url($node);
@@ -812,17 +807,6 @@ function tripal_feature_node_update($node) {
   // add items to other nodes, build index and search results
   switch ($node->type) {
     case 'chado_feature':
-
-      // The Chado Node URL API assumes it has access to a fully loaded node
-      // but the node on insert just includes the fields from the node form.
-      // As such we need to load the chado data similarily to the node_load()
-      // function in order to ensure the tokens can be populated with the
-      // the correct data.
-      $feature_id = chado_get_id_from_nid('feature', $node->nid);
-      $values = array('feature_id' => $feature_id);
-      $feature = chado_generate_var('feature', $values);
-      $node->feature = $feature;
-      $node->feature_id = $feature_id;
 
       // Now use the API to set the path.
       chado_set_node_url($node);

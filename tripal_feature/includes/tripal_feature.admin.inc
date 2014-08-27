@@ -156,11 +156,6 @@ function tripal_feature_admin_validate($form, &$form_state) {
       variable_set('tripal_feature_summary_report_mapping', $form_state['values']['feature_mapping']);
       break;
 
-    case t('Set Feature URLs') :
-      variable_set('chado_feature_url_string', $form_state['values']['chado_feature_url_string']);
-      tripal_add_job('Set Feature URLs', 'tripal_feature',
-        'tripal_feature_set_urls', $job_args, $user->uid);
-      break;
   }
 
 }

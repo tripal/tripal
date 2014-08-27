@@ -91,6 +91,90 @@
  * @endcode
  * If you don't implement this then a default format based on the unique constraint for
  * the base table of the content type will be generated.
+ *
+ * NODE URL/PATHS
+ * ====================================
+ * There are two steps to implement the ability to set custom URLs for the node type:
+ * 1) Add the 'chado_node_api' elements to the hook_node_info function().  These values
+ *    define the name of the base table and how to refer to nodes in singular and plural.
+ *    There are additional paramaters that can be added to the 'chado_node_api' for
+ *    syncing nodes (see documentation for the chado_node_sync_form() function for additional
+ *    options.
+ * @code
+  function modulename_node_info() {
+    return array(
+      'chado_example' => array(
+        'name' => t('example'),
+        'base' => 'chado_example',
+        'description' => t('A Chado example is a collection of material that can be sampled and have experiments performed on it.'),
+        'has_title' => TRUE,
+        'locked' => TRUE,
+
+        // this is what differs from the regular Drupal-documented hook_node_info()
+        'chado_node_api' => array(
+          'base_table' => 'example',            // the name of the chado base table
+          'hook_prefix' => 'chado_example',     // usually the name of the node type
+          'record_type_title' => array(
+            'singular' => t('Example'),         // Singular human-readable title
+            'plural' => t('Examples')           // Plural human-readable title
+          ),
+        )
+      ),
+    );
+  }
+ * @endcode
+ *
+ * 2) Add the "Set Page URLs" Form to the admin settings form
+ * @code
+    // If the module is using the "Chado Node: Title & Path API" to allow custom URLs
+    // for your node type then you need to add the configuration form for this functionality.
+    $details = array(
+      'module' => 'tripal_example',        // the name of the MODULE implementing the content type
+      'content_type' => 'chado_example',   // the name of the content type
+        // An array of options to use under "Page URLs"
+        // the key should be the token and the value should be the human-readable option
+      'options' => array(
+        '/example/[example.type_id>cvterm.name]/[example.example_id]' => 'Examples separated by Type',
+          // there should always be one options matching the unique constraint.
+          // If you have a more human-readable constraint, then that is preferrable.
+          // See the tripal feature module for a good example of this.
+        '/example/[example.example_id]' => 'Unique Contraint: The Chado ID for Examples'
+      ),
+    );
+    // This call adds the configuration form to your current form
+    // This sub-form handles it's own validation & submit
+    chado_add_admin_form_set_url($form, $form_state, $details);
+ * @endcode
+ *
+ * 3) Use chado_set_node_url($node) where ever you want to reset the URL of the
+ *    node. This should be done in hook_node_insert(), hook_node_update(). The reason you
+ *    set the title in the node_action hooks, which act on all nodes, is because at that
+ *    point you have the generic loaded node.
+ * @code
+  function tripal_example_node_insert($node) {
+
+    // Set the URL path after inserting.
+    switch ($node->type) {
+      case 'chado_example':
+
+        // Now use the API to set the path.
+        chado_set_node_url($node);
+
+        break;
+    }
+  }
+ * @endcode
+ *
+ * Optionally define a default for a specific content type by implementing a function of the name
+ * [content type]_chado_node_default_url_format() that returns a string describing the
+ * default format.
+ * @code
+  function chado_example_chado_node_default_url_format() {
+    return '/example/[example.example_id]';
+  }
+ * @endcode
+ * If you don't implement this then a default format based on the unique constraint for
+ * the base table of the content type will be generated.
  */
 
 /**
@@ -454,7 +538,20 @@ function chado_get_node_url($node) {
       $token_info = $tokens[$token];
       if (!empty($token_info)) {
         $value = chado_get_token_value($token_info, $node);
-        $url = str_replace($token, $value, $url);
+        if (is_string($value)) {
+          $url = str_replace($token, $value, $url);
+        }
+        else {
+          tripal_report_error(
+            'chado_node_api',
+            TRIPAL_ERROR,
+            'Unable to replace %token. The value in the node should be a string but is instead: %value',
+            array(
+              '%token' => $token,
+              '%value' => print_r($value, TRUE)
+            )
+          );
+        }
       }
     }
   }
@@ -494,30 +591,37 @@ function chado_set_node_url($node) {
   // Use the node to determine the source/original URL.
   $source_url = 'node/' . $node->nid;
 
+  // Ensure that there are no spaces and other non-friendly characters are
+  // sanitized.
+  $url_alias = preg_replace('/\s+/','-',$url_alias);
+
   // Only bother setting the alias if there is one.
   if (!empty($url_alias) AND $source_url != $url_alias) {
 
-  $path = array(
-    'source' => $source_url,
-    'alias' => $url_alias,
-    'language' => $language_content->language
-  );
-  path_save($path);
-/**
-    // Remove any existing alias.
-    db_delete('url_alias')
-      ->condition('source', $source_url)
-      ->execute();
+    // First we need to check if the alias already exists.
+    $path = path_load($url_alias);
+    if (!$path) {
+      $path = array(
+        'source' => $source_url,
+        'alias' => $url_alias
+      );
+      path_save($path);
+    }
+    // If the Alias already exists we want to double check that it's for the
+    // current node. Otherwise we should warn the administrator that the path
+    // format they chose isn't unique.
+    elseif ($path['source'] != $source_url) {
+      tripal_report_error('chado_node_api', TRIPAL_WARNING,
+        'URL Alias: The URL format for %content-type is not unique. The same alias (%alias) was almost added for %source1 & %source2.',
+        array(
+          '%content-type' => $node->type,
+          '%alias' => $url_alias,
+          '%source1' => $path['source'],
+          '%source2' => $source_url
+        )
+      );
+    }
 
-    // Add our new one.
-    db_insert('url_alias')
-      ->fields(array(
-          'source' => $source_url,
-          'alias' => $url_alias,
-          'language' => $language_content->language
-        ))
-      ->execute();
-*/
   }
 
   return $url_alias;
@@ -901,10 +1005,28 @@ function chado_node_get_legacy_url_default($content_type) {
     }
   }
   elseif ($content_type == 'chado_stock') {
-
+    $legacy_format = variable_get('chado_stock_url_string', NULL);
+    $legacy_tokens = array(
+    '[id]' => '[stock.stock_id]',
+    '[genus]' => '[stock.organism_id>organism.genus]',
+    '[species]' => '[stock.organism_id>organism.species]',
+    '[type]' => '[stock.type_id>cvterm.name]',
+    '[uniquename]' => '[stock.uniquename]',
+    '[name]' => '[stock.name]',
+    );
+    if ($legacy_format) {
+      return str_replace(array_keys($legacy_tokens),$legacy_tokens, $legacy_format);
+    }
   }
   elseif ($content_type == 'chado_project') {
-
+    $legacy_format = variable_get('chado_project_url_string', NULL);
+    $legacy_tokens = array(
+      '[id]' => '[project.project_id]',
+      '[name]' => '[project.name]',
+    );
+    if ($legacy_format) {
+      return str_replace(array_keys($legacy_tokens),$legacy_tokens, $legacy_format);
+    }
   }
 
   return FALSE;
@@ -1166,7 +1288,7 @@ function chado_get_token_value($token_info, $node) {
     $index = trim($index);
 
     // if $var is an object then it is the $node object or a table
-    // that has been expanded. On a node_insert then the fields are
+    // that has been expanded.
     if (is_object($var)) {
       // check to see if the index is a member of the object. If so,
       // then reset the $var to this value.
@@ -1174,7 +1296,12 @@ function chado_get_token_value($token_info, $node) {
         $var = $var->$index;
       }
       else {
-        // @TODO: Error Handling
+        tripal_report_error('chado_node_api', TRIPAL_WARNING,
+          'Tokens: Unable to determine the value of %token. Things went awry when trying
+          to access %index for the following %var',
+          array('%token' => $token, '%index' => $index, '%var' => print_r($var,TRUE))
+        );
+        return '';
       }
     }
     // if the $var is an array then there are multiple instances of the same
