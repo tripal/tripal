@@ -780,26 +780,21 @@ function tripal_feature_node_insert($node) {
   switch ($node->type) {
     case 'chado_feature':
 
+      // The Chado Node URL API assumes it has access to a fully loaded node
+      // but the node on insert just includes the fields from the node form.
+      // As such we need to load the chado data similarily to the node_load()
+      // function in order to ensure the tokens can be populated with the
+      // the correct data.
       $feature_id = chado_get_id_from_nid('feature', $node->nid);
-
-      // build the feature variable
       $values = array('feature_id' => $feature_id);
       $feature = chado_generate_var('feature', $values);
       $node->feature = $feature;
+      $node->feature_id = $feature_id;
 
-      // on an insert we need to add the feature_id to the node object
-      // so that the tripal_feature_get_feature_url function can set the URL properly
-      $node->feature_id = chado_get_id_from_nid('feature', $node->nid);
+      // Now use the API to set the path.
+      chado_set_node_url($node);
 
-      // remove any previous alias
-      db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
-
-      // set the URL for this feature page
-      $url_alias = tripal_feature_get_feature_url($node);
-      $path_alias = array("source" => "node/$node->nid", "alias" => $url_alias);
-      path_save($path_alias);
-
-      // Now get the title
+      // Now get the title.
       $node->title = chado_get_node_title($node);
 
       break;
@@ -818,176 +813,24 @@ function tripal_feature_node_update($node) {
   switch ($node->type) {
     case 'chado_feature':
 
+      // The Chado Node URL API assumes it has access to a fully loaded node
+      // but the node on insert just includes the fields from the node form.
+      // As such we need to load the chado data similarily to the node_load()
+      // function in order to ensure the tokens can be populated with the
+      // the correct data.
       $feature_id = chado_get_id_from_nid('feature', $node->nid);
-
-      // build the feature variable
       $values = array('feature_id' => $feature_id);
       $feature = chado_generate_var('feature', $values);
       $node->feature = $feature;
+      $node->feature_id = $feature_id;
 
-      // remove any previous alias
-      db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
-
-      // set the URL for this feature page
-      $url_alias = tripal_feature_get_feature_url($node);
-      $path_alias = array("source" => "node/$node->nid", "alias" => $url_alias);
-      path_save($path_alias);
+      // Now use the API to set the path.
+      chado_set_node_url($node);
 
       // Now get the title
       $node->title = chado_get_node_title($node);
 
       break;
-  }
-}
-
-/**
- * Return the url alias for a feature
- *
- * @param $node
- *   A node object containing at least the feature_id and nid
- * @param $url_alias
- *   Optional.  This should be the URL alias syntax string that contains
- *   placeholders such as [id], [genus], [species], [name], [uniquename],
- *   and [type].  These placeholders will be substituted for actual values.
- *   If this parameter is not provided then the value of the
- *   chado_feature_url_string Drupal variable will be used.
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_get_feature_url($node, $url_alias = NULL) {
-
-  // get the starting URL alias
-  if(!$url_alias) {
-    $url_alias = variable_get('chado_feature_url_string', '/feature/[genus]/[species]/[type]/[uniquename]');
-    if (!$url_alias) {
-      $url_alias = '/feature/[genus]/[species]/[type]/[uniquename]';
-    }
-    $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash
-  }
-
-  // get the feature
-  $values = array('feature_id' => $node->feature_id);
-  $feature = chado_select_record('feature', array('*'), $values);
-  if (!$feature) {
-    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find feature when setting URL alias for feature: %id", array('%id' => $node->feature_id));
-    return FALSE;
-  }
-  $feature = (object) $feature[0];
-
-  // get the organism
-  $values = array('organism_id' => $feature->organism_id);
-  $organism  = chado_select_record('organism', array('*'), $values);
-  if (!$organism) {
-    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find organism when setting URL alias for feature: %id", array('%id' => $node->feature_id));
-    return FALSE;
-  }
-  $genus = preg_replace('/\s/', '_', strtolower($organism[0]->genus));
-  $species = preg_replace('/\s/', '_', strtolower($organism[0]->species));
-
-  // get the type
-  $values = array('cvterm_id' => $feature->type_id);
-  $cvterm = chado_select_record('cvterm', array('name'), $values);
-  if (!$cvterm) {
-    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find type when setting URL alias for feature: %id", array('%id' => $node->feature_id));
-    return FALSE;
-  }
-  $type = preg_replace('/\s/', '_', $cvterm[0]->name);
-
-  // now substitute in the values
-  $url_alias = preg_replace('/\[id\]/', $feature->feature_id, $url_alias);
-  $url_alias = preg_replace('/\[genus\]/', $genus, $url_alias);
-  $url_alias = preg_replace('/\[species\]/', $species, $url_alias);
-  $url_alias = preg_replace('/\[type\]/', $type, $url_alias);
-  $url_alias = preg_replace('/\[name\]/', $feature->name, $url_alias);
-  $url_alias = preg_replace('/\[uniquename\]/', $feature->uniquename, $url_alias);
-
-  // the dst field of the url_alias table is only 128 characters long.
-  // if this is the case then simply return the node URL, we can't set this one
-  if (strlen($url_alias) > 128) {
-    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot set alias longer than 128 characters: %alias.", array('%alias' => $url_alias));
-    return "node/" . $node->nid;
-  }
-
-  return $url_alias;
-}
-/**
- * Resets all of the URL alias for all features.  This function is meant to
- * be run using Tripal's job managmenet interface
- *
- * @param $na
- *   Tripal expects all jobs to have at least one argument. For this function
- *   we don't need any, so we have this dummy argument as a filler
- * @param $job_id
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_set_urls($na = NULL, $job = NULL) {
-
-  $transaction = db_transaction();
-
-  print "\nNOTE: Setting of URLs is performed using a database transaction. \n" .
-      "If the load fails or is terminated prematurely then the entire set of \n" .
-      "new URLs will be rolled back and no changes will be made\n\n";
-
-  try {
-    // get the number of records we need to set URLs for
-    $csql = "SELECT count(*) FROM {chado_feature}";
-    $num_nodes = db_query($csql)->fetchField();
-
-    // calculate the interval at which we will print an update on the screen
-    $num_set = 0;
-    $num_per_interval = 100;
-
-    // prepare the statements which will quickly add url alias. Because these
-    // are not Chado tables we must manually prepare them
-    $dsql = "DELETE FROM {url_alias} WHERE source = :source";
-    $isql = "INSERT INTO url_alias (source, alias, language) VALUES (:source, :alias, :language)";
-
-    // get the URL alias syntax string
-    $url_alias = variable_get('chado_feature_url_string', '/feature/[genus]/[species]/[type]/[uniquename]');
-    $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash
-
-    // get the list of features that have been synced
-    $sql = "SELECT * FROM {chado_feature}";
-    $nodes = db_query($sql);
-    foreach ($nodes as $node) {
-
-      // get the URL alias
-      $src = "node/$node->nid";
-      $dst = tripal_feature_get_feature_url($node, $url_alias);
-
-      // if the src and dst is the same (the URL alias couldn't be set)
-      // then skip to the next one. There's nothing we can do about this one.
-      if($src == $dst) {
-        continue;
-      }
-
-      // remove any previous alias and then add the new one
-      db_query($dsql, array(':source' => $src));
-      db_query($isql, array(':source' => $src, ':alias' => $dst, ':language' => LANGUAGE_NONE));
-
-      // update the job status every 1% features
-      if ($job and $num_set % $num_per_interval == 0) {
-        $percent = ($num_set / $num_nodes) * 100;
-        tripal_set_job_progress($job, intval($percent));
-        $percent = sprintf("%.2f", $percent);
-        print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
-
-      }
-      $num_set++;
-    }
-    $percent = ($num_set / $num_nodes) * 100;
-    tripal_set_job_progress($job, intval($percent));
-    $percent = sprintf("%.2f", $percent);
-    print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
-    print "\nDone. Set " . number_format($num_set) . " URLs\n";
-
-  }
-  catch (Exception $e) {
-    $transaction->rollback();
-    print "\n"; // make sure we start errors on new line
-    watchdog_exception('tripal_feature', $e);
-    watchdog('trp-seturl', "Failed Removing URL Alias: %src", array('%src' => $src), WATCHDOG_ERROR);
   }
 }
 
@@ -1093,4 +936,13 @@ function tripal_feature_node_view($node, $view_mode, $langcode) {
  */
 function chado_feature_chado_node_default_title_format() {
   return '[feature.name], [feature.uniquename] ([feature.type_id>cvterm.name]) [feature.organism_id>organism.genus] [feature.organism_id>organism.species]';
+}
+
+/**
+ * Implements hook_chado_node_default_url_format().
+ *
+ * Designates a default URL format for feature nodes.
+ */
+function chado_feature_chado_node_default_url_format() {
+  return '/feature/[feature.organism_id>organism.genus]/[feature.organism_id>organism.species]/[feature.type_id>cvterm.name]/[feature.uniquename]';
 }

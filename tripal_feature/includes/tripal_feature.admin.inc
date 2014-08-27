@@ -66,66 +66,22 @@ function tripal_feature_admin() {
   // This sub-form handles it's own validation & submit
   chado_add_admin_form_set_title($form, $form_state, $details);
 
-  // FEATURE URL PATHS
-  $form['url'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Feature URL Path'),
-    '#collapsible' => FALSE,
-    '#collapsed' => FALSE,
+  // FEATURE NODE URL
+  // Using the Chado Node: Title & Path API
+  $details = array(
+    'module' => 'tripal_feature',
+    'content_type' => 'chado_feature',
+      // An array of options to use under "Page URL"
+      // the key should be the token and the value should be the human-readable option
+    'options' => array(
+      '/feature/[feature.feature_id]' => 'Feature ID',
+        // there should always be one options matching the unique constraint.
+      '/feature/[feature.organism_id>organism.genus]/[feature.organism_id>organism.species]/[feature.type_id>cvterm.name]/[feature.uniquename]' => 'Unique Contraint: Includes the name, uniquename, type and scientific name'
+    )
   );
-
-  $options = array(
-    'SID[id]'      => '[id]:' . t('The Chado feature_id'),
-    'feature'      => 'feature:' . t('Chado table name'),
-    '[genus]'      => '[genus]:' . t('Genus to which the feature belongs'),
-    '[species]'    => '[species]:' . t('Species to which the feature belongs'),
-    '[type]'       => '[type]:' . t('The type of feature'),
-    '[uniquename]' => '[uniquename]:' . t('The feature unique name'),
-    '[name]'       => '[name]:' . t('The feature name'),
-    'reset'        => t('Reset'),
-  );
-
-  $form['url']['chado_feature_url_string'] = array(
-    '#title' => 'URL Syntax',
-    '#type' => 'textfield',
-    '#description' => t('You may rearrange elements in this text box to '.
-      'customize the URLs.  The available tags include: [id], '.
-      '[uniquename]. [name], [species], [genus], [type]. You can separate or '.
-      'include any text between the tags. Click the "Set Feature URLs" button to '.
-      'reset the URLs for all feature pages.  Click the "Save Configuration" button to '.
-      'simply save this setup. <b>Important</b>: be sure that whatever you choose will always be unique even considering '.
-      'future data that may be added.  If you include the Chado table name, genus, species, type '.
-      'and uniquename you are guaranteed to have a unique URL. For example feature/[genus]/[species]/[type]/[uniquename]'),
-    '#size' => 75,
-    '#default_value' => variable_get('chado_feature_url_string', '/feature/[genus]/[species]/[type]/[uniquename]'),
-  );
-
-  $form['url']['chado_feature_url'] = array(
-    '#title'         => t('URL components'),
-    '#type'          => 'checkboxes',
-    '#required'      => FALSE,
-    '#options'       => $options,
-    '#description'   => t('Click the item above to make it appear in the URL Syntax box'),
-    '#attributes'    => array(
-      'onclick' => '
-      box = $(\'#edit-chado-feature-url-string\');
-      if (this.value == \'reset\') {
-        box.val(\'\');
-      }
-      else {
-        box.val(box.val() + "/" + this.value);
-      }
-      this.checked = false;
-    ',
-    ),
-  );
-
-  $form['url']['button'] = array(
-    '#type' => 'submit',
-    '#value' => t('Set Feature URLs'),
-  );
-
-
+  // This call adds the configuration form to your current form
+  // This sub-form handles it's own validation & submit
+  chado_add_admin_form_set_url($form, $form_state, $details);
 
   // FEATURE BROWSER
   $form['browser'] = array(
@@ -208,5 +164,3 @@ function tripal_feature_admin_validate($form, &$form_state) {
   }
 
 }
-
-

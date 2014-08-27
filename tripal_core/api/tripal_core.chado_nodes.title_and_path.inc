@@ -9,7 +9,7 @@
  * There are two steps to implement the ability to set custom titles for the node type:
  * 1) Add the 'chado_node_api' elements to the hook_node_info function().  These values
  *    define the name of the base table and how to refer to nodes in singular and plural.
- *    There are additional paramaters that can be added to the 'chado_node_api' for 
+ *    There are additional paramaters that can be added to the 'chado_node_api' for
  *    syncing nodes (see documentation for the chado_node_sync_form() function for additional
  *    options.
  * @code
@@ -35,7 +35,7 @@
     );
   }
  * @endcode
- * 
+ *
  * 2) Add the "Set Page Titles" Form to the admin settings form
  * @code
     // If the module is using the "Chado Node: Title & Path API" to allow custom titles
@@ -186,7 +186,7 @@ function chado_add_admin_form_set_title(&$form, &$form_state, $details) {
   $tokens = array_merge($tokens, $details['custom_tokens']);
   $token_list = chado_node_format_tokens($tokens);
   $details['default_option'] = (isset($details['default_option'])) ? $details['default_option'] : chado_node_get_title_format($details['content_type'], $tokens);
-  
+
   // FORM PROPER
   $msg = t(
     'Each synced %singular must have a unique page title, however, %plural may have the
@@ -429,12 +429,494 @@ function chado_node_get_legacy_title_default($content_type) {
  */
 
 /**
+ * Get the url of a node based on the url Format set in the admin
+ * section of the module. If the format has not yet been set than
+ * the the unique constrain and name fields will be used to generate
+ * a default format
+ *
+ * @param $node
+ *   The node object
+ *
+ * @ingroup tripal_chado_node_api
+ */
+function chado_get_node_url($node) {
+  $content_type = $node->type;
+
+  // Get the tokens and format
+  $tokens = array(); // this will be set by chado_node_get_url_format
+  $url = chado_node_get_url_format($content_type, $tokens);
+
+  // Determine which tokens were used in the format string
+  if (preg_match_all('/\[[^]]+\]/', $url, $used_tokens)) {
+
+    // Get the value for each token used
+    foreach ($used_tokens[0] as $token) {
+      $token_info = $tokens[$token];
+      if (!empty($token_info)) {
+        $value = chado_get_token_value($token_info, $node);
+        $url = str_replace($token, $value, $url);
+      }
+    }
+  }
+  else {
+    return $url;
+  }
+
+  return $url;
+}
+
+/**
+ * Set the URL for a given node.
+ *
+ * Note: This makes the old URL completely invalid which breaks bookmarks.
+ * Furthermore, if someone attempts to go to an old URL they will get a white
+ * screen PDO error which is not very user friendly ;-)
+ * @todo handle re-directing for old URLs or at least ensure a page not found
+ *   error is displayed.
+ *
+ * @param $node
+ *   The node to set the URL for.
+ *
+ * @return
+ *   The URL alias that was set.
+ */
+function chado_set_node_url($node) {
+
+  // Get the global variable determining the language of the current content.
+  global $language_content;
+
+  // First we need to get the URL alias.
+  $url_alias = chado_get_node_url($node);
+
+  // And remove any forward slashes since those wreak havok.
+  $url_alias = preg_replace('/^\//', '', $url_alias);
+
+  // Use the node to determine the source/original URL.
+  $source_url = 'node/' . $node->nid;
+
+  // Only bother setting the alias if there is one.
+  if (!empty($url_alias) AND $source_url != $url_alias) {
+
+  $path = array(
+    'source' => $source_url,
+    'alias' => $url_alias,
+    'language' => $language_content->language
+  );
+  path_save($path);
+/**
+    // Remove any existing alias.
+    db_delete('url_alias')
+      ->condition('source', $source_url)
+      ->execute();
+
+    // Add our new one.
+    db_insert('url_alias')
+      ->fields(array(
+          'source' => $source_url,
+          'alias' => $url_alias,
+          'language' => $language_content->language
+        ))
+      ->execute();
+*/
+  }
+
+  return $url_alias;
+}
+
+/**
+ * Tripal Job for updating all node URLs for a particular node type.
+ *
+ * @param $content_type
+ *   The machine name of the node type to update URLs for.
+ * @param $job_id
+ *   The ID of the tripal job calling this function.
+ */
+function chado_update_existing_node_urls($content_type, $job_id = 0) {
+  $transaction = db_transaction();
+
+  print "\nNOTE: Setting of URLs is performed using a database transaction. \n" .
+      "If the load fails or is terminated prematurely then the entire set of \n" .
+      "new URLs will be rolled back and no changes will be made.\n\n";
+
+  try {
+    // Get the number of records we need to set URLs for.
+    $num_nodes = db_query(
+        'SELECT count(*) FROM {' . $content_type . '}'
+      )->fetchField();
+
+    // Calculate the interval at which we will print an update on the screen.
+    $num_set = 0;
+    $num_per_interval = 100;
+
+    if ($num_nodes > 0) {
+
+      print "There are $num_nodes nodes to update URLs for. You will be \n"
+       . "updated on the progress every 100 nodes.\n\n";
+
+      // Get the list of nodes of this particular content type.
+      $query = new EntityFieldQuery();
+      $result = $query->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', $content_type)
+        ->execute();
+
+      if (isset($result['node'])) {
+        $nids = array_keys($result['node']);
+
+        foreach ($nids as $nid) {
+
+          // Load the current node.
+          // We do it this way instead of using noad_load_multiple to load them
+          // all at once to avoid overloading the memory.
+          $node = node_load($nid);
+
+          // Now set the URL for the current node.
+          $alias = chado_set_node_url($node);
+
+          // update the job status every 1% nodes
+          if ($num_set % $num_per_interval == 0) {
+            $percent = ($num_set / $num_nodes) * 100;
+
+            // Update the tripal job.
+            if ($job_id) {
+              tripal_set_job_progress($job_id, intval($percent));
+            }
+
+            // Update the user on progress.
+            $percent = sprintf("%.2f", $percent);
+            print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
+          }
+          $num_set++;
+        }
+      }
+      $percent = ($num_set / $num_nodes) * 100;
+      tripal_set_job_progress($job_id, intval($percent));
+      $percent = sprintf("%.2f", $percent);
+      print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
+      print "\nDone. Set " . number_format($num_set) . " URLs\n";
+    }
+    else {
+      print "\nThere are no $content_type nodes to update. If you know there\n"
+        . "are records of this type in chado, try sync'ing them to Drupal.\n";
+    }
+  }
+  catch (Exception $e) {
+    $transaction->rollback();
+    print "\n"; // make sure we start errors on new line
+    watchdog_exception('chado_node_api', $e);
+    tripal_report_error(
+      'chado_node_api',
+      TRIPAL_WARNING,
+      'Unable to update URLs for the :content-type Node Type. Specifically, the last URL attempted was NID=:nid and Alias=:alias',
+      array(':content-type' => $content_type, ':nid' => $node->nid, ':alias' => $alias)
+    );
+  }
+}
+
+/**
+ * Generic "Set Node url" sub-form for setting the url of any chado node
+ *
+ * @param $form
+ *   The Drupal form array into which the property form elements will be added
+ * @param $form_state
+ *   The corresponding form_state array for the form
+ * @param $details
+ *   An array defining details used by this form.
+ *   Required keys that are always required:
+ *     -module: the name of the module implementing the node. For example, for features
+ *      the module is tripal_feature.
+ *     -options: an array of quick-choice options to supply to the user. The key should be
+ *      the token and the value should be a human-readable description of the option
+ *   Optional keys include:
+ *     -content_type: the name of the content type. Defaults to module name.
+ *     -fieldset_title: the title to use for the fieldset. Defaults to "Set Page url".
+ *     -default_option: the default format to use which matches one of those in $details['options']
+ *     -custom_tokens: an array of custom tokens that follow the same format as those
+ *      generated by chado_node_generate_tokens().
+ *
+ * @ingroup tripal_chado_node_api
+ */
+function chado_add_admin_form_set_url(&$form, &$form_state, $details) {
+
+  // Get Node Info
+  if (isset($details['module'])) {
+    $node_info = call_user_func($details['module'] . '_node_info');
+    $chado_node_api = $node_info[ $details['content_type'] ]['chado_node_api'];
+  }
+  else {
+    tripal_report_error(
+      'chado_node_api',
+      TRIPAL_ERROR,
+      "Set URL API: When calling chado_add_admin_form_set_url, you \$details array must include 'module' => [name of your module] in order to pull out all the information provided in your implementation of hook_node_info"
+    );
+  }
+
+  // Defaults
+  $details['fieldset_title'] = (isset($details['fieldset_title'])) ? $details['fieldset_title'] : 'Set Page URLs';
+  $details['additional_instructions'] = (isset($details['additional_instructions'])) ? $details['additional_instructions'] : '';
+  $details['custom_tokens'] = (isset($details['custom_tokens'])) ? $details['custom_tokens'] : array();
+  $details['content_type'] = (isset($details['content_type'])) ? $details['content_type'] : $details['module'];
+
+  $tokens = array();
+  if (empty($tokens)) {
+    $tokens = chado_node_generate_tokens($chado_node_api['base_table']);
+  }
+  $tokens = array_merge($tokens, $details['custom_tokens']);
+  $token_list = chado_node_format_tokens($tokens);
+  $current_format = chado_node_get_url_format($details['content_type'], $tokens);
+  $details['default_option'] = (isset($details['default_option'])) ? $details['default_option'] : $current_format;
+
+  // FORM PROPER
+  $msg = t(
+    'Each synced %singular must have a unique page URL, however, %plural may have the
+      same name if they are of different types or from different organisms. Therefore,
+      we must be sure that the page URLs can uniquely identify the %singular being viewed.
+      Select an option below that will uniquely identify all %plural on your site.'
+      . $details['additional_instructions'],
+    array('%singular' => $chado_node_api['record_type_title']['singular'],
+      '%plural' => $chado_node_api['record_type_title']['plural'])
+  );
+  $form['set_url'] = array(
+    '#type' => 'fieldset',
+    '#title' => t($details['fieldset_title']),
+    '#description' => $msg,
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#prefix' => "<div id='set_url-fieldset'>",
+    '#suffix' => '</div>',
+    '#weight'      => 8
+  );
+
+  $form['set_url']['content_type'] = array(
+    '#type' => 'hidden',
+    '#value' => $node_info[ $details['content_type'] ]['base'],
+  );
+
+  $details['options']['custom'] = 'Custom: See the text field below.';
+
+  $form['set_url']['url_option'] = array(
+    '#title'         => t('%singular Page URL', array('%singular' => $chado_node_api['record_type_title']['singular'])),
+    '#type'          => 'radios',
+    '#description'   => t("Choose a URL type from the list above that is
+      guaranteed to be unique for all %plural. If in doubt it is safest to choose
+      the 'Unique Constaint' option as that guarantees uniqueness.",
+      array('%plural' => $chado_node_api['record_type_title']['plural'])),
+    '#required'      => FALSE,
+    '#options'       => $details['options'],
+    '#default_value' => (isset($details['options'][$details['default_option']])) ? $details['default_option'] : 'custom',
+  );
+
+  $form['set_url']['url_format_variable'] = array(
+    '#type' => 'hidden',
+    '#value' => $details['module'] . '_url_format'
+  );
+
+  $form['set_url']['custom_url'] = array(
+    '#type' => 'textarea',
+    '#title' => 'Custom Page URL',
+    '#description' => 'You may rearrange elements in this text box to customize the page
+      URLs. The available tokens are listed below. You can separate or include any text
+      between the tokens. <strong>Important: be sure that whatever you choose
+      will always be unique even considering future data that may be added. If in doubt,
+      please select the unique constraint title option above.</strong>',
+    '#default_value' => $current_format,
+    '#rows' => 1
+  );
+
+  $form['set_url']['token_display'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Available Tokens',
+    '#description' => 'Copy the token and paste it into the "Custom Page URL" text field above.',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE
+  );
+
+  $form['set_url']['token_display']['content'] = array(
+    '#type' => 'item',
+    '#markup' => $token_list
+  );
+
+  $form['set_url']['tokens'] = array(
+    '#type' => 'hidden',
+    '#value' => serialize($tokens)
+  );
+
+  $form['set_url']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => 'Set URLs',
+    '#validate' => array('chado_add_admin_form_set_url_form_validate'),
+    '#submit' => array('chado_add_admin_form_set_url_form_submit')
+  );
+
+}
+
+/**
+ * Implements hook_form_validate().
+ * VALIDATE: validate the format.
+ */
+function chado_add_admin_form_set_url_form_validate($form, $form_state) {
+
+  // Ensure that all tokens used in the format are in the tokens list
+  if (preg_match_all('/\[[^]]+\]/',$form_state['values']['custom_url'],$used_tokens)) {
+    $token_list = unserialize($form_state['values']['tokens']);
+    foreach ($used_tokens[0] as $token) {
+      if (!array_key_exists($token,$token_list)) {
+        form_set_error('custom_url', 'All tokens used must be in the "Available Tokens" list. Please make sure not to use [ or ] unless it\'s denoting a token');
+      }
+    }
+  }
+
+}
+
+/**
+ * Implements hook_form_submit().
+ * SUBMIT: Actually add the format specified by chado_add_admin_form_set_title()
+ */
+function chado_add_admin_form_set_url_form_submit($form, $form_state) {
+
+  if ($form_state['values']['url_option'] == 'custom') {
+    $format =  $form_state['values']['custom_url'];
+  }
+  else {
+    $format = $form_state['values']['url_option'];
+  }
+
+  // Add the format to the table for all new nodes.
+  chado_node_add_token_format(
+    'url',
+    $form_state['values']['content_type'],
+    $format,
+    $form_state['values']['tokens']
+  );
+
+  // Add a job to Update all existing nodes.
+  global $user;
+  tripal_add_job(
+    "Set " . $form_state['values']['content_type'] . " URLs for all existing nodes.",
+    $form_state['values']['content_type'],
+    'chado_update_existing_node_urls',
+    array('content_type' => $form_state['values']['content_type']),
+    $user->uid
+  );
+}
+
+/**
+ * Get the url format for a specific content type
+ *
+ * If the url format has not yet been set then the following will be done
+ *  1) Check to see if there is a legacy url format set (features & stocks)
+ *  2) Check if there is a defined default for this content type
+ *  3) Create a format using any name fields and the unique constraint for the
+ *     base table associated with this content type
+ *
+ * Define a default for a specific content type by implementing a function of the name
+ * [content type]_chado_node_default_url_format() that returns a string describing the
+ * default format.
+ *
+ * @param $content_type
+ *   The name of the content (node) type you are interested in (ie: chado_feature)
+ * @param $tokens
+ *   An array, passed by reference that is filled to include the tokens for this
+ *   node type.  Each token is an array with the following keys:
+ *    -table: the name of the chado table
+ *    -field: the name of the field in the above table
+ *    -token: the token string (ie: [stock.stock_id])
+ *    -description: a very short description of the token (displayed when tokens are listed)
+ *    -location: the location of the value in a chado node variable with each level
+ *     separated by an arrow (->) symbol. For example, the location for $node->feature->type_id->name
+ *     is feature>type_id>name
+ *
+ * @return
+ *   A string containing tokens describing the default format for the url of nodes
+ *   of the specified content type.
+ */
+function chado_node_get_url_format($content_type, &$tokens, $base_table = NULL) {
+  $format = '';
+
+  // Is there a url format set?
+  $format_record = chado_node_get_token_format('url', $content_type, array('return_record' => TRUE));
+  if (!empty($format_record)) {
+    $format = $format_record->format;
+    $tokens = $format_record->tokens;
+  }
+
+  // All three options below need the tokens to be generated so do that now
+  if (empty($format)) {
+    if (empty($base_table)) {
+      $base_table = chado_node_get_base_table($content_type);
+    }
+    if (empty($tokens)) {
+      $tokens = chado_node_generate_tokens($base_table);
+    }
+  }
+
+  // 1) Check for legacy format
+  if (empty($format)) {
+    $format = chado_node_get_legacy_url_default($content_type);
+  }
+
+  // 2) Module-defined default format
+  if (empty($format)) {
+    $hook = $content_type . '_chado_node_default_url_format';
+    if (function_exists($hook)) {
+      $format = call_user_func($hook);
+    }
+  }
+
+  // 3) Create unique constraint format
+  if (empty($format)) {
+    if (empty($base_table)) {
+      $base_table = chado_node_get_base_table($content_type);
+    }
+    $format = chado_node_get_unique_constraint_format($base_table, 'url');
+  }
+
+  // Add the format to table so we can use it later
+  chado_node_add_token_format('url', $content_type, $format, $tokens);
+
+  return $format;
+}
+
+/**
+ * Handles legacy URL options
+ *
+ * Features, Projects & Stocks already had custom functionality to handle URL
+ * setting before this API was created. That has since been removed but
+ * to remain backwards compatible this function checks for those
+ * old settings and translates them into new defaults.
+ */
+function chado_node_get_legacy_url_default($content_type) {
+
+  if ($content_type == 'chado_feature') {
+    $legacy_format = variable_get('chado_feature_url_string', NULL);
+    $legacy_tokens = array(
+      '[id]' => '[feature.feature_id]',
+      '[genus]' => '[feature.organism_id>organism.genus]',
+      '[species]' => '[feature.organism_id>organism.species]',
+      '[type]' => '[feature.type_id>cvterm.name]',
+      '[uniquename]' => '[feature.uniquename]',
+      '[name]' => '[feature.name]',
+    );
+    if ($legacy_format) {
+      return str_replace(array_keys($legacy_tokens),$legacy_tokens, $legacy_format);
+    }
+  }
+  elseif ($content_type == 'chado_stock') {
+
+  }
+  elseif ($content_type == 'chado_project') {
+
+  }
+
+  return FALSE;
+}
+
+/**
  * @section
  * Tokens
  */
 
 /**
- * Save a format to be used by chado_get_node_title() or chado_get_node_path()
+ * Save a format to be used by chado_get_node_title() or chado_get_node_url()
  *
  * @param $application
  *   What the format is to be applied to. For example 'title' for generating node titles
@@ -515,11 +997,13 @@ function chado_node_get_token_format($application, $content_type, $options = arr
  *
  * @param $base_table
  *   The base table to generate the unique constraint format for
+ * @param $format_type
+ *   The type of format to return. This should be one of 'title' or 'url'.
  * @return
  *   A format string including tokens describing the unique constraint
  *   including all name fields
  */
-function chado_node_get_unique_constraint_format($base_table) {
+function chado_node_get_unique_constraint_format($base_table, $format_type = 'title') {
 
   $table_descrip = chado_get_schema($base_table);
 
@@ -529,6 +1013,7 @@ function chado_node_get_unique_constraint_format($base_table) {
     if (preg_match('/name/',$field_name)) {
       $names[$field_name] = "[$base_table.$field_name]";
     }
+
   }
   uksort($names, 'tripal_sort_key_length_asc');
 
@@ -553,7 +1038,25 @@ function chado_node_get_unique_constraint_format($base_table) {
     }
   }
 
-  $format = implode(', ',$names) . ' (' . implode(', ',$tokens) . ')';
+  if ($format_type == 'title') {
+    $format = implode(', ',$names) . ' (' . implode(', ',$tokens) . ')';
+  }
+  elseif ($format_type == 'url') {
+    // We don't want to put more than one name in the URL. Thus we are
+    // arbitrarily grabbing the longest name token since it it likely the
+    // uniquename.
+    $format = implode('/',$tokens) . '/' . array_pop($names);
+  }
+  else {
+    $format = FALSE;
+    tripal_report_error(
+      'tripal_node_api',
+      TRIPAL_ERROR,
+      'Unable to determine the format for the unique contraint since the format type (%format-type) is not supported (only "title" and "url" are at this time).',
+      array('%format-type' => $format_type)
+    );
+  }
+
   return $format;
 }
 
@@ -663,7 +1166,7 @@ function chado_get_token_value($token_info, $node) {
     $index = trim($index);
 
     // if $var is an object then it is the $node object or a table
-    // that has been expanded. On a node_insert then the fields are 
+    // that has been expanded. On a node_insert then the fields are
     if (is_object($var)) {
       // check to see if the index is a member of the object. If so,
       // then reset the $var to this value.
