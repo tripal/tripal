@@ -599,8 +599,18 @@ function chado_set_node_url($node) {
   if (!empty($url_alias) AND $source_url != $url_alias) {
 
     // First we need to check if the alias already exists.
-    $path = path_load($url_alias);
-    if (!$path) {
+    $path = path_load(array('source' => $source_url, 'alias' => $url_alias));
+
+    // Etierh there isn't an alias yet so we just create one.
+    if (empty($path)) {
+      $path = array(
+        'source' => $source_url,
+        'alias' => $url_alias
+      );
+      path_save($path);
+    }
+    // Or an Alias already exists but we would like to add a new one.
+    elseif ($path['alias'] != $url_alias) {
       $path = array(
         'source' => $source_url,
         'alias' => $url_alias
@@ -610,16 +620,21 @@ function chado_set_node_url($node) {
     // If the Alias already exists we want to double check that it's for the
     // current node. Otherwise we should warn the administrator that the path
     // format they chose isn't unique.
-    elseif ($path['source'] != $source_url) {
-      tripal_report_error('chado_node_api', TRIPAL_WARNING,
-        'URL Alias: The URL format for %content-type is not unique. The same alias (%alias) was almost added for %source1 & %source2.',
-        array(
-          '%content-type' => $node->type,
-          '%alias' => $url_alias,
-          '%source1' => $path['source'],
-          '%source2' => $source_url
-        )
-      );
+    else {
+
+      $num_aliases = db_query('SELECT count(*) as num_alias FROM {url_alias} WHERE alias=:alias AND source!=:source',
+        array(':alias' => $url_alias, ':source' => $source_url))->fetchField();
+
+      // If there is an alias with a different source than warn the admin.
+      if ($num_aliases > 0) {
+        tripal_report_error('chado_node_api', TRIPAL_WARNING,
+          'URL Alias: The URL format for %content-type is not unique. Specifically, %alias was almost added multiple times.',
+          array(
+            '%content-type' => $node->type,
+            '%alias' => $url_alias,
+          )
+        );
+      }
     }
 
   }
