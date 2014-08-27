@@ -7,32 +7,42 @@ else {
   $node_type = $node->type; ?>
   
   <script type="text/javascript">
-    // we do not use Drupal Behaviors because we do not want this
+    // We do not use Drupal Behaviors because we do not want this
     // code to be executed on AJAX callbacks. This code only needs to 
     // be executed once the page is ready.
     jQuery(document).ready(function($){
 
-      // hide all but the first data block 
-      $(".tripal-data-block").hide().filter(":first-child").show();
+      // Hide all but the first data pane 
+      $(".tripal-data-pane").hide().filter(":first-child").show();
   
-      // when a title in the table of contents is clicked, then 
+      // When a title in the table of contents is clicked, then 
       // show the corresponding item in the details box 
       $(".tripal_toc_list_item_link").click(function(){
-        var id = $(this).attr('id') + "-tripal-data-block";
-        $(".tripal-data-block").hide().filter("#"+ id).fadeIn('fast');
+        var id = $(this).attr('id') + "-tripal-data-pane";
+        $(".tripal-data-pane").hide().filter("#"+ id).fadeIn('fast');
         return false;
       });
   
-      // if a ?block= is specified in the URL then we want to show the
-      // requested block
-      var block = window.location.href.match(/[\?|\&]block=(.+?)[\&|\#]/)
-      if(block == null){
-        block = window.location.href.match(/[\?|\&]block=(.+)/)
+      // If a ?pane= is specified in the URL then we want to show the
+      // requested content pane. For previous version of Tripal,
+      // ?block=, was used.  We support it here for backwards
+      // compatibility
+      var pane;
+      pane = window.location.href.match(/[\?|\&]pane=(.+?)[\&|\#]/)
+      if (pane == null) {
+        pane = window.location.href.match(/[\?|\&]pane=(.+)/)
       }
-      if(block != null){
-        $(".tripal-data-block").hide().filter("#" + block[1] + "-tripal-data-block").show();
+      // if we don't have a pane then try the old style ?block=
+      if (pane == null) {
+        pane = window.location.href.match(/[\?|\&]block=(.+?)[\&|\#]/)
+        if (pane == null) {
+          pane = window.location.href.match(/[\?|\&]block=(.+)/)
+        }
       }
-      // remove the 'active' class from the links section, as it doesn't
+      if(pane != null){
+        $(".tripal-data-pane").hide().filter("#" + pane[1] + "-tripal-data-pane").show();
+      }
+      // Remove the 'active' class from the links section, as it doesn't
       // make sense for this layout
       $("a.active").removeClass('active');
     });

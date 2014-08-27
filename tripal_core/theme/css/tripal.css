@@ -89,22 +89,22 @@
 /******************************************************************************
  * The links that appear in the TOC section are added dynamically by
  * JavaScript code found at the top of the node--chado-generc.tpl.php template.
- * Each link in the TOC cooresponds to a "block" of data added to the Data
- * Column. Initially, the JavaScript hids all "blocks" except for the "Details"
- * block.  There will be as many blocks as there are TOC links.
+ * Each link in the TOC cooresponds to a "pane" of data added to the Data
+ * Column. Initially, the JavaScript hids all "panes" except for the "Details"
+ * pane.  There will be as many panes as there are TOC links.
  *
- * By default, all blocks have the following layout that consists of a
+ * By default, all panes have the following layout that consists of a
  * container div box with the class 'tripal-info-box', a div box to house the
- * block title with the class 'tripal-info-box-title', and a div box to
- * house a brief description about the block with the class
+ * pane title with the class 'tripal-info-box-title', and a div box to
+ * house a brief description about the pane with the class
  * 'tripal-info-box-desc'
  *
  * |-----------------------------------------------|
- * |  .tripal-data-block                           |
+ * |  .tripal-data-pane                            |
  * | |-------------------------------------------| |
- * | | .tripal-data-block-title                  | |
+ * | | .tripal-data-pane-title                   | |
  * | |-------------------------------------------| |
- * | | .tripal-data-block-desc                   | |
+ * | | .tripal-data-pane-desc                    | |
  * | |-------------------------------------------| |
  * |                                               |
  * | (Block data goes here)                        |
@@ -114,12 +114,12 @@
  * |                                               |
  * |-----------------------------------------------|
  */
-.tripal-data-block {
+.tripal-data-pane {
    padding: 0;
    margin:  0;
    width: 100%;
 }
-.tripal-data-block-title {
+.tripal-data-pane-title {
   font-size: 1.5em;
   padding-bottom: 5px;
 }
@@ -129,7 +129,7 @@
 }
 
 /**
- * Within the block data
+ * Within the pane data
  */
  .tripal-data-table {
    margin-top: 0px;
@@ -140,7 +140,7 @@
  * The teaser appears anywhere that a small snippet of the content is required.
  * When any node in Drupal is published to the home page a teaser is used.
  * Teasers can also be used in views to provide lists of content. The
- * teaser template is similar to the block but with the following sections and
+ * teaser template is similar to the pane but with the following sections and
  * classes
  *
  * |-----------------------------------------------|
