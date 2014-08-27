@@ -8,6 +8,12 @@ function tripal_core_node_toc_form($form, &$form_state, $node) {
   $form["#tree"] = TRUE;
   
   $form["instructions"] = array(
+    '#type' => 'fieldset',
+    '#collapsed' => TRUE,
+    '#collapsible' => TRUE,
+    '#title' => 'Instructions',
+  );
+  $form["instructions"]["main"] = array(
     '#markup' => '</p>' . t('Below is a list of the titles of
       content panes that can appear on this page.  These titles appear in the 
       the following order in the Table of Contents (TOC). You may rename 
@@ -25,7 +31,10 @@ function tripal_core_node_toc_form($form, &$form_state, $node) {
   
   // Get the content array for this node, then pass it through the 
   // tripal_core_node_view_alter which generates the TOC.  After that
-  // we can use the $build array to build the form.
+  // we can use the $build array to build the form. We have to add
+  // a 'tripal_toc_mode' to the $node because we need to give the mode
+  // to the tripal_core_node_view_build_toc function.
+  $node->tripal_toc_mode = 'manage_node';
   node_build_content($node);
   $build = $node->content;
   $build["#node"] = $node;
@@ -34,13 +43,19 @@ function tripal_core_node_toc_form($form, &$form_state, $node) {
   // Iterate through the built items and add form elemetns for each one.
   foreach(element_children($build) as $key) {
     $element = $build[$key];
+
     if (array_key_exists('#tripal_toc_id', $element)) {
       $toc_id = $element['#tripal_toc_id'];
       $toc_title = $element['#tripal_toc_title'];
       $toc_weight = $element['#weight'];
+      $toc_hide = $element['#hide'];
       $form['toc_items'][$toc_id]['title'] = array(
         '#type' => 'textfield',
         '#default_value' => $toc_title,
+      );
+      $form['toc_items'][$toc_id]['hide'] = array(
+        '#type' => 'checkbox',
+        '#default_value' => $toc_hide,
       );
       $form['toc_items'][$toc_id]['weight'] = array(
         '#type' => 'textfield',
@@ -59,6 +74,27 @@ function tripal_core_node_toc_form($form, &$form_state, $node) {
     '#name' => 'toc_submit',
     '#value' => t('Submit'),
   );
+  $form['unset'] = array(
+    '#type' => 'submit',
+    '#name' => 'toc_unset',
+    '#value' => t('Unset Node Customizations'),
+  );
+  
+  // Check to see if this node's TOC is specifically being managed.
+  $sql = "SELECT count(*) FROM {tripal_toc} where nid = :nid";
+  $managed_items = db_query($sql, array(':nid' => $node->nid))->fetchField();
+  
+  if ($managed_items > 0) {
+    $form['is_managed'] = array(
+      '#markup' => '<p><font color="red">' .
+      t('This page currently has customiations to the TOC.</font> This means
+        that any customzations for the content type are overriden. Click the
+        "Unset Node Customizations" button above to remove page-level
+        customizations and default to the content type settings.') . '</p>',
+    );
+  }
+  
+  
   return $form;
 }
 /**
@@ -77,7 +113,7 @@ function theme_tripal_node_toc_items_table($variables) {
   usort($toc_items, 'theme_tripal_node_sort_toc_items');
 
   // Build the table header.
-  $headers = array('Content Pane Name', 'Weight');
+  $headers = array('Content Pane Name', 'Hide', 'Weight');
   
   // Format the form elements as rows in the table.
   $rows = array();
@@ -85,6 +121,7 @@ function theme_tripal_node_toc_items_table($variables) {
     $rows[] = array(
       'data' => array(
         drupal_render($item['title']),
+        drupal_render($item['hide']),
         drupal_render($item['weight']),
       ),
       'class' => array('draggable'),
@@ -142,30 +179,48 @@ function tripal_core_node_toc_form_submit($form, &$form_state) {
   $toc_items = $form_state['values']['toc_items'];
   $node      = $form_state['values']['node'];
   
-  $transaction = db_transaction();
-  try {
-    // First delete any settings for this node
-    db_delete('tripal_toc')
-      ->condition('nid', $node->nid)
-      ->execute();
-
-    // Second add in any new settings for this node 
-    foreach ($toc_items as $toc_id => $item) {
-      db_insert('tripal_toc')
-        ->fields(array(
-          'node_type' => $node->type,
-          'key' => $toc_id,
-          'title' => $item['title'],
-          'weight' => $item['weight'],
-          'nid' => $node->nid,
-        ))
+  if ($form_state['clicked_button']['#name'] == "toc_submit") { 
+    $transaction = db_transaction();
+    try {
+      // First delete any settings for this node
+      db_delete('tripal_toc')
+        ->condition('nid', $node->nid)
         ->execute();
+  
+      // Second add in any new settings for this node 
+      foreach ($toc_items as $toc_id => $item) {
+        db_insert('tripal_toc')
+          ->fields(array(
+            'node_type' => $node->type,
+            'key' => $toc_id,
+            'title' => $item['title'],
+            'weight' => $item['weight'],
+            'nid' => $node->nid,
+            'hide' => $item['hide'],
+          ))
+          ->execute();
+      }
+      drupal_set_message("TOC changes successfully applied to this node only.");
     }
-    drupal_set_message("TOC changes successfully applied to this node only.");
+    catch (Exception $e) {
+      $transaction->rollback();
+      drupal_set_message("Failed to apply TOC changes.", "error");
+    }
   }
-  catch (Exception $e) {
-    $transaction->rollback();
-    drupal_set_message("Failed to apply TOC changes.", "error");
+  if ($form_state['clicked_button']['#name'] == "toc_unset") {
+    $transaction = db_transaction();
+    try {
+      // First delete any settings for this node
+      db_delete('tripal_toc')
+        ->condition('nid', $node->nid)
+        ->execute();
+
+      drupal_set_message("TOC is no longer customized specifically for this page. Now using the content type settings.");
+    }
+    catch (Exception $e) {
+      $transaction->rollback();
+      drupal_set_message("Failed to apply TOC changes.", "error");
+    }
   }
 }
 
@@ -174,10 +229,11 @@ function tripal_core_node_toc_form_submit($form, &$form_state) {
  * 
  * @param $build
  *   The build array passed to hook_node_view_alter()
+ *
  */
-function tripal_core_node_view_add_toc(&$build) {
+function tripal_core_node_view_build_toc(&$build) {
   global $theme;
-  
+
   // if this is not a full node view, we do not want to alter
   if ($build['#view_mode'] != 'full' OR !array_key_exists('#tripal_generic_node_template', $build)) {
     return;
@@ -185,6 +241,18 @@ function tripal_core_node_view_add_toc(&$build) {
   
   $node_type = $build["#node"]->type;
   $nid = $build["#node"]->nid;
+  
+  // The mode alters the format of the build array. There are three types of
+  // modes: "display", "manage_node", "manage_type".  If "display" is provided
+  // then the build array is formatted for the display of the content.
+  // If "manage_node" is provided then the build array will contain all
+  // content panes regardless if the pane should be hidden. This allows
+  // the management tool to find all content panes and their settings. If
+  // "manage_type" is provided then node-specific content panes are
+  // excluded.  Node-specific content panes are those that appear only on
+  // specific nodes and therefore should not be used when managing the
+  // TOC for a content type.
+  $mode = isset($build["#node"]->tripal_toc_mode) ? $build["#node"]->tripal_toc_mode : "display";
   
   
   $cache = cache_get("theme_registry:$theme", 'cache');
@@ -217,49 +285,51 @@ function tripal_core_node_view_add_toc(&$build) {
       // named 'field_resource_blocks', 'field_resource_titles', and 'field_resource_links'
       // these fields can be added on the Drupal content types page and were
       // specifically recoginzed by Tripal v1.1.
-      if ($key == "field_resource_links") {
+      if ($mode != "manage_type" and $key == "field_resource_links") {
         // links should just appear on the sidebar as is and not open up a panel
         foreach (element_children($build[$key]) as $index) {
           $element = $build[$key][$index];
           $weight = 0;
+          $toc_item_id = "resource-$index";
+          
           $parts = explode("|", $element['#markup']);
           if (count($parts) == 2) {
-            $toc[$weight][$parts[0]] = "<div class=\"tripal_toc_list_item\">" . l($parts[0], $parts[1], array('attributes' => array('target' => '_blank'))) . "</div>";
+            $toc[$weight][$parts[0]] = "<div id=\"$toc_item_id\" class=\"tripal_toc_list_item\">" . l($parts[0], $parts[1], array('attributes' => array('target' => '_blank'))) . "</div>";
           }
           else {
-            $toc[$weight][$parts[0]] = "<div class=\"tripal_toc_list_item\">" . $element['#markup'] . "</div>";
+            $toc[$weight][$parts[0]] = "<div id=\"$toc_item_id\" class=\"tripal_toc_list_item\">" . $element['#markup'] . "</div>";
           }
           // remove this link from the build array as we've moved it to appear in the TOC
           unset($build[$key]);
         }
         continue;
       }
-      if ($key == "field_resource_titles") {
+      if ($mode != "manage_type" and $key == "field_resource_titles") {
         // ignore these, we will use them in the field_resource_blocks if
         // statement below
         continue;
       }
-      if ($key == "field_resource_blocks") {
+      if ($mode != "manage_type" and $key == "field_resource_blocks") {
         foreach (element_children($build[$key]) as $index) {
-          
           // get the details and the title
           $weight = 0;
+          $hide = 0;
           $markup = $build[$key][$index]["#markup"];
           $toc_item_id = "resource-$index";
-          
+
           // Get any overrides for this key.
           $overrides = tripal_core_get_toc_overrides($nid, $toc_item_id, $node_type);
-          
+
           // If the element should be hidden then unset this key the build
           // array continue to the next one
-          if ($overrides['hide'] == 1) {
-            unset($build[$key]);
+          if ($mode == "display" and $overrides['hide'] == 1) {
             continue;
           }
-          
+
           $toc_item_title = $build["field_resource_titles"][$index]["#markup"];
           $toc_item_title = $overrides['title'] ? $overrides['title'] : $toc_item_title;
           $weight = $overrides['weight'] ? $overrides['weight'] : $weight;
+          $hide = $overrides['hide'] ? $overrides['hide'] : $hide;
           $updated_markup = "
             <div id=\"$toc_item_id-tripal-data-pane\" class=\"tripal-data-pane\">
               <div class=\"$toc_item_id-tripal-data-pane-title tripal-data-pane-title\">$toc_item_title</div>
@@ -272,15 +342,20 @@ function tripal_core_node_view_add_toc(&$build) {
           $build[$toc_item_id]['#tripal_toc_id'] = $toc_item_id;
           $build[$toc_item_id]['#tripal_toc_title'] = $toc_item_title;
           $build[$toc_item_id]['#weight'] = $weight;
+          $build[$toc_item_id]['#hide'] = $hide;
           // add the entry to the TOC
-          $toc_item_link = "<div class=\"tripal_toc_list_item\"><a id=\"$toc_item_id\" class=\"tripal_toc_list_item_link\" href=\"?pane=$toc_item_id\">$toc_item_title</a></div>";
+          $toc_item_link = "
+            <div class=\"tripal_toc_list_item\">
+              <a id=\"$toc_item_id\" class=\"tripal_toc_list_item_link\" href=\"?pane=$toc_item_id\">$toc_item_title</a>
+            </div>
+          ";
           $toc[$weight][$toc_item_title] = $toc_item_link;
         }
         // Remove the key from the build array. We have have replaced it
         unset($build[$key]);
         unset($build["field_resource_titles"]);
         continue;
-      }
+      } // end if ($mode != "manage_type" and $key == "field_resource_blocks") {
   
       // Skip any keys we may have already handled. This is the case for
       // the field_resource_blocks where we removed the old CCK fields
@@ -298,6 +373,7 @@ function tripal_core_node_view_add_toc(&$build) {
       $toc_item_id    = $key;
       $toc_item_link  = '';
       $weight = 0;
+      $hide = 0;
 
       // get the title for the table of contents.  Tripal templates should
       // have a '#tripal_toc_title' element in the build array
@@ -312,27 +388,28 @@ function tripal_core_node_view_add_toc(&$build) {
       if (array_key_exists('#weight', $build[$key])) {
         $weight = $build[$key]['#weight'];
       }
+      if (array_key_exists('#tripal_toc_id', $build[$key])) {
+        $toc_item_id = $build[$key]['#tripal_toc_id'];
+      }
       
       // Get any overrides for this key.
       $overrides = tripal_core_get_toc_overrides($nid, $toc_item_id, $node_type);
+
       
       // If the element should be hidden then unset this key the build
       // array continue to the next one
-      if ($overrides['hide'] == 1) {
+      if ($mode == "display" and $overrides['hide'] == 1) {
         unset($build[$key]);
         continue;
       }
 
-      // now override the title if a value is set in the tripal_toc table
+      // now override the title, weight, hidden values if a value is set in the tripal_toc table
       $toc_item_title = $overrides['title'] ? $overrides['title'] : $toc_item_title;
       $weight = $overrides['weight'] ? $overrides['weight'] : $weight;
-  
-      if (array_key_exists('#tripal_toc_id', $build[$key])) {
-        $toc_item_id = $build[$key]['#tripal_toc_id'];
-      }
+      $hide = $overrides['hide'] ? $overrides['hide'] : $hide;
       $toc_item_link = "<div class=\"tripal_toc_list_item\"><a id=\"$toc_item_id\" class=\"tripal_toc_list_item_link\" href=\"?pane=$toc_item_id\">$toc_item_title</a></div>";
-  
-  
+
+
       //-----------------------
       // GET THE MARKUP FOR EACH ELEMENT
       //-----------------------
@@ -348,18 +425,21 @@ function tripal_core_node_view_add_toc(&$build) {
       elseif (array_key_exists('#value', $build[$key]) and trim($build[$key]['#value'])) {
         $markup = $build[$key]['#markup'];
       }
-  
       // if we have no '#markup' field then this element has not yet
       // been rendered.  Let's render it and substitute that for markup
       if (!$markup) {
         $markup = trim(render($build[$key]));
-        $build[$key] = array(
-          '#markup' => $markup,
-          '#tripal_toc_id' => $toc_item_id,
-          '#tripal_toc_title' => $toc_item_title,
-          '#weight' => $weight,
-        );
       }
+
+      // Setup the content array for this element
+      $build[$key] = array(
+        '#markup' => $markup,
+        '#tripal_toc_id' => $toc_item_id,
+        '#tripal_toc_title' => $toc_item_title,
+        '#weight' => $weight,
+        '#hide' => $hide,
+      );
+      
   
         // if we still don't have markup then skip this one
       if (!$markup) {
@@ -390,7 +470,7 @@ function tripal_core_node_view_add_toc(&$build) {
       }
     
       //-----------------------
-      // SET THE WEIGHTS FOR THE TOC ELEMENTS
+      // ADD THIS PANE TO THE TOC BY ORDER OF WEIGHT
       //-----------------------
       // set the weight of the TOC item and add it to our $toc array
       // for building of the TOC below
@@ -398,12 +478,10 @@ function tripal_core_node_view_add_toc(&$build) {
       if (array_key_exists('#weight', $build[$key])) {
         $weight = $build[$key]['#weight'];
       }
-      // override the weight if it's set in the tripal_toc table
-      $weight = $overrides['weight'] ? $overrides['weight'] : $weight;
       $toc[$weight][$toc_item_title] = $toc_item_link;
 
       //-----------------------
-      // CREATE THE DATA BLOCK
+      // CREATE THE CONTENT PANE MARKUP
       //-----------------------
       // add a surrounding <div> box around the content
       $updated_markup = "
@@ -416,7 +494,6 @@ function tripal_core_node_view_add_toc(&$build) {
       ";
   
       $build[$key]['#markup'] = $updated_markup;
-      $build[$key]['#weight'] = $weight;
     } // end foreach ($build as $key => $value) {
   } // end if ($build['#tripal_generic_node_template'] == TRUE) {
   
@@ -434,7 +511,6 @@ function tripal_core_node_view_add_toc(&$build) {
     }
   }
   $build['tripal_toc']['#markup'] = "<div id=\"$node->type-tripal-toc-pane\" class=\"tripal-toc-pane\">$toc_html</div>";
-  
 }
 
 /**

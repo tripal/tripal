@@ -1,6 +1,6 @@
 <?php
 $organism  = $variables['node']->organism;
-$image_url  = tripal_get_organism_image($organism, $node->nid); ?>
+$image_url  = tripal_get_organism_image_url($organism); ?>
 
 <div class="tripal_organism-teaser tripal-teaser"> 
   <div class="tripal-organism-teaser-title tripal-teaser-title"><?php 

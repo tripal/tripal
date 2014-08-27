@@ -580,7 +580,7 @@ function tripal_core_views_api() {
  */
 function tripal_core_node_view_alter(&$build) {
   module_load_include('inc', 'tripal_core', 'includes/tripal_core.toc');
-  tripal_core_node_view_add_toc($build);
+  tripal_core_node_view_build_toc($build);
 }
 
 /**
