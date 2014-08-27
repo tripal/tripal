@@ -889,30 +889,21 @@ function tripal_stock_node_insert($node) {
   switch ($node->type) {
     case 'chado_stock':
 
-      // get the feature details from chado
+      // We still don't have a fully loaded node object in this hook. Therefore,
+      // we need to simulate one so that the right values are available for
+      // the URL to be determined.
       $stock_id = chado_get_id_from_nid('stock', $node->nid);
       $values = array('stock_id' => $stock_id);
       $stock = chado_generate_var('stock', $values);
       $stock = chado_expand_var($stock, 'field', 'stock.uniquename');
-      $stock = chado_expand_var($stock, 'field', 'stock.description');
       $node->stock = $stock;
 
-      // If your module is using the Chado Node: Title & Path API to allow custom titles
-      // for your node type. Every time you want the title of the node, you need to use the
-      // following API function:
+      // Set the Title.
       $node->title = chado_get_node_title($node);
 
-      // on an insert we need to add the stock_id to the node object
-      // so that the tripal_stock_get_stock_url function can set the URL properly
-      $node->stock_id = chado_get_id_from_nid('stock', $node->nid);
+      // Now use the API to set the path.
+      chado_set_node_url($node);
 
-      // remove any previous alias
-      db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
-
-      // set the URL for this stock page
-      $url_alias = tripal_stock_get_stock_url($node);
-      $path_alias = array("source" => "node/$node->nid", "alias" => $url_alias);
-      path_save($path_alias);
       break;
   }
 }
@@ -929,177 +920,13 @@ function tripal_stock_node_update($node) {
   switch ($node->type) {
     case 'chado_stock':
 
-      // get the feature details from chado
-      $stock_id = chado_get_id_from_nid('stock', $node->nid);
-      $values = array('stock_id' => $stock_id);
-      $stock = chado_generate_var('stock', $values);
-      $stock = chado_expand_var($stock, 'field', 'stock.uniquename');
-      $stock = chado_expand_var($stock, 'field', 'stock.description');
-      $node->stock = $stock;
-
-      // If your module is using the Chado Node: Title & Path API to allow custom titles
-      // for your node type. Every time you want the title of the node, you need to use the
-      // following API function:
+      // Set the Title.
       $node->title = chado_get_node_title($node);
 
-      // remove any previous alias
-      db_query("DELETE FROM {url_alias} WHERE source = :source", array(':source' => "node/$node->nid"));
+      // Now use the API to set the path.
+      chado_set_node_url($node);
 
-      // set the URL for this stock page
-      $url_alias = tripal_stock_get_stock_url($node);
-      $path_alias = array("source" => "node/$node->nid", "alias" => $url_alias);
-      path_save($path_alias);
       break;
-  }
-}
-/**
- * Return the url alias for a stock
- *
- * @param $node
- *   A node object containing at least the stock_id and nid
- * @param $url_alias
- *   Optional.  This should be the URL alias syntax string that contains
- *   placeholders such as [id], [genus], [species], [name], [uniquename],
- *   and [type].  These placeholders will be substituted for actual values.
- *   If this parameter is not provided then the value of the
- *   chado_stock_url_string Drupal variable will be used.
- *
- * @ingroup tripal_stock
- */
-function tripal_stock_get_stock_url($node, $url_alias = NULL) {
-
-  // get the starting URL alias
-  if(!$url_alias) {
-    $url_alias = variable_get('chado_stock_url_string', '/stock/[genus]/[species]/[type]/[uniquename]');
-    if (!$url_alias) {
-      $url_alias = '/stock/[genus]/[species]/[type]/[uniquename]';
-    }
-    $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash
-  }
-
-  // get the stock
-  $values = array('stock_id' => $node->stock_id);
-  $stock = chado_select_record('stock', array('*'), $values);
-  if (!$stock) {
-    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find stock when setting URL alias for stock: %id", array('%id' => $node->stock_id));
-    return FALSE;
-  }
-  $stock = (object) $stock[0];
-
-  // get the organism
-  $values = array('organism_id' => $stock->organism_id);
-  $organism  = chado_select_record('organism', array('*'), $values);
-  if (!$organism) {
-    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find organism when setting URL alias for stock: %id", array('%id' => $node->stock_id));
-    return FALSE;
-  }
-  $genus = preg_replace('/\s/', '_', strtolower($organism[0]->genus));
-  $species = preg_replace('/\s/', '_', strtolower($organism[0]->species));
-
-  // get the type
-  $values = array('cvterm_id' => $stock->type_id);
-  $cvterm = chado_select_record('cvterm', array('name'), $values);
-  if (!$cvterm) {
-    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot find type when setting URL alias for stock: %id", array('%id' => $node->stock_id));
-    return FALSE;
-  }
-  $type = preg_replace('/\s/', '_', $cvterm[0]->name);
-
-  // now substitute in the values
-  $url_alias = preg_replace('/\[id\]/', $stock->stock_id, $url_alias);
-  $url_alias = preg_replace('/\[genus\]/', $genus, $url_alias);
-  $url_alias = preg_replace('/\[species\]/', $species, $url_alias);
-  $url_alias = preg_replace('/\[type\]/', $type, $url_alias);
-  $url_alias = preg_replace('/\[name\]/', $stock->name, $url_alias);
-  $url_alias = preg_replace('/\[uniquename\]/', $stock->uniquename, $url_alias);
-
-  // the dst field of the url_alias table is only 128 characters long.
-  // if this is the case then simply return the node URL, we can't set this one
-  if (strlen($url_alias) > 128) {
-    tripal_report_error('trp-seturl', TRIPAL_ERROR, "Cannot set alias longer than 128 characters: %alias.", array('%alias' => $url_alias));
-    return "node/" . $node->nid;
-  }
-
-  return $url_alias;
-}
-/**
- * Resets all of the URL alias for all stocks.  This function is meant to
- * be run using Tripal's job managmenet interface
- *
- * @param $na
- *   Tripal expects all jobs to have at least one argument. For this function
- *   we don't need any, so we have this dummy argument as a filler
- * @param $job_id
- *
- * @ingroup tripal_stock
- */
-function tripal_stock_set_urls($na = NULL, $job = NULL) {
-
-  $transaction = db_transaction();
-
-  print "\nNOTE: Setting of URLs is performed using a database transaction. \n" .
-      "If the load fails or is terminated prematurely then the entire set of \n" .
-      "new URLs will be rolled back and no changes will be made\n\n";
-
-  try {
-    // get the number of records we need to set URLs for
-    $csql = "SELECT count(*) FROM {chado_stock}";
-    $num_nodes = db_query($csql)->fetchField();
-
-    // calculate the interval at which we will print an update on the screen
-    $num_set = 0;
-    $num_per_interval = 100;
-
-    // prepare the statements which will quickly add url alias. Because these
-    // are not Chado tables we must manually prepare them
-    $dsql = "DELETE FROM {url_alias} WHERE source = :source";
-    $isql = "INSERT INTO url_alias (source, alias, language) VALUES (:source, :alias, :language)";
-
-    // get the URL alias syntax string
-    $url_alias = variable_get('chado_stock_url_string', '/stock/[genus]/[species]/[type]/[uniquename]');
-    $url_alias = preg_replace('/^\//', '', $url_alias); // remove any preceeding forward slash
-
-    // get the list of stocks that have been synced
-    $sql = "SELECT * FROM {chado_stock}";
-    $nodes = db_query($sql);
-    foreach ($nodes as $node) {
-
-      // get the URL alias
-      $src = "node/$node->nid";
-      $dst = tripal_stock_get_stock_url($node, $url_alias);
-
-      // if the src and dst is the same (the URL alias couldn't be set)
-      // then skip to the next one. There's nothing we can do about this one.
-      if($src == $dst) {
-        continue;
-      }
-
-      // remove any previous alias and then add the new one
-      db_query($dsql, array(':source' => $src));
-      db_query($isql, array(':source' => $src, ':alias' => $dst, ':language' => LANGUAGE_NONE));
-
-      // update the job status every 1% stocks
-      if ($job and $num_set % $num_per_interval == 0) {
-        $percent = ($num_set / $num_nodes) * 100;
-        tripal_set_job_progress($job, intval($percent));
-        $percent = sprintf("%.2f", $percent);
-        print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
-
-      }
-      $num_set++;
-    }
-    $percent = ($num_set / $num_nodes) * 100;
-    tripal_set_job_progress($job, intval($percent));
-    $percent = sprintf("%.2f", $percent);
-    print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
-    print "\nDone. Set " . number_format($num_set) . " URLs\n";
-
-  }
-  catch (Exception $e) {
-    $transaction->rollback();
-    print "\n"; // make sure we start errors on new line
-    watchdog_exception('tripal_stock', $e);
-    watchdog('trp-seturl', "Failed Removing URL Alias: %src", array('%src' => $src), WATCHDOG_ERROR);
   }
 }
 
@@ -1111,4 +938,13 @@ function tripal_stock_set_urls($na = NULL, $job = NULL) {
  */
 function chado_stock_chado_node_default_title_format() {
   return '[stock.name], [stock.uniquename] ([stock.type_id>cvterm.name]) [stock.organism_id>organism.genus] [stock.organism_id>organism.species]';
+}
+
+/**
+ * Implements hook_chado_node_default_url_format().
+ *
+ * Designates a default URL format for stock nodes.
+ */
+function chado_stock_chado_node_default_url_format() {
+  return '/stock/[stock.organism_id>organism.genus]/[stock.organism_id>organism.species]/[stock.type_id>cvterm.name]/[stock.uniquename]';
 }

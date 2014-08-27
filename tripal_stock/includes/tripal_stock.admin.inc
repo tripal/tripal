@@ -64,65 +64,18 @@ function tripal_stock_admin() {
   );
   chado_add_admin_form_set_title($form, $form_state, $details);
 
-  // STOCK URL CONFIGURATION
-  $form['url'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Stock URL Path'),
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
-  );
-
-  $options = array(
-    'SID[id]'      => '[id]:' . t('The Chado stock_id'),
-    'stock'        => 'stock:' . t('Chado table name'),
-    '[genus]'      => '[genus]:' . t('Genus to which the stock belongs'),
-    '[species]'    => '[species]:' . t('Species to which the stock belongs'),
-    '[type]'       => '[type]:' . t('The type of stock'),
-    '[uniquename]' => '[uniquename]:' . t('The stock unique name'),
-    '[name]'       => '[name]:' . t('The stock name'),
-    'reset'        => t('Reset'),
-  );
-
-
-  $form['url']['chado_stock_url_string'] = array(
-    '#title' => 'URL Syntax',
-    '#type' => 'textfield',
-    '#description' => t('You may rearrange elements in this text box to
-      customize the URLs.  The available tags include: [id],
-      [uniquename]. [name], [species], [genus], [type]. You can separate or
-      include any text between the tags. Click the "Set Stock URLs" button to
-      reset the URLs for all stock pages.  Click the "Save Configuration" button to
-      simply save this setup. <b>Important</b>: be sure that whatever you choose will always be unique even considering
-      future data that may be added.  If you include the Chado table name, genus, species, type
-      and uniquename you are guaranteed to have a unique URL. For example stock/[genus]/[species]/[type]/[uniquename]'),
-    '#size' => 75,
-    '#default_value' => variable_get('chado_stock_url_string', '/stock/[genus]/[species]/[type]/[uniquename]'),
-  );
-
-  $form['url']['chado_stock_url'] = array(
-    '#title'         => t('URL components'),
-    '#type'          => 'checkboxes',
-    '#required'      => FALSE,
-    '#options'       => $options,
-    '#description'   => t('Click the item above to make it appear in the URL Syntax box'),
-    '#attributes'    => array(
-      'onclick' => '
-        box = $(\'#edit-chado-stock-url-string\');
-        if (this.value == \'reset\') {
-          box.val(\'\');
-        }
-        else {
-          box.val(box.val() + "/" + this.value);
-        }
-        this.checked = false;
-      ',
+  // URL ALIAS
+  $details = array(
+    'module' => 'tripal_stock',
+    'content_type' => 'chado_stock',
+    'options' => array(
+      '/stock/[stock.stock_id]' => 'Stock ID',
+      '/stock/[stock.organism_id>organism.genus]/[stock.organism_id>organism.species]/[stock.type_id>cvterm.name]/[stock.uniquename]' => 'Unique Contraint: Includes the name, uniquename, type and scientific name'
     ),
   );
-
-  $form['url']['button'] = array(
-    '#type' => 'submit',
-    '#value' => t('Set Stock URLs'),
-  );
+  // This call adds the configuration form to your current form
+  // This sub-form handles it's own validation & submit
+  chado_add_admin_form_set_url($form, $form_state, $details);
 
   return system_settings_form($form);
 
@@ -151,9 +104,5 @@ function tripal_stock_admin_validate($form, &$form_state) {
          'tripal_stock_cleanup', $job_args, $user->uid);
       break;
 
-    case t('Set Stock URLs') :
-      tripal_add_job('Set Stock URLs', 'tripal_stock',
-        'tripal_stock_set_urls', $job_args, $user->uid);
-      break;
   }
 }
