@@ -69,6 +69,20 @@ function tripal_contact_admin() {
   // This sub-form handles it's own validation & submit
   chado_add_admin_form_set_title($form, $form_state, $details);
 
+  // URL ALIAS
+  $details = array(
+    'module' => 'tripal_contact',
+    'content_type' => 'chado_contact',
+    'options' => array(
+      '/contact/[contact.contact_id]' => 'Contact ID',
+      '/contact/[contact.name]' => 'Unique Contraint: The name of the contact'
+    ),
+  );
+
+  // This call adds the configuration form to your current form
+  // This sub-form handles it's own validation & submit
+  chado_add_admin_form_set_url($form, $form_state, $details);
+
   return system_settings_form($form);
 }
 

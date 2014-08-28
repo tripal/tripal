@@ -669,6 +669,9 @@ function tripal_contact_node_insert($node) {
       // Now get the title
       $node->title = chado_get_node_title($node);
 
+      // Now use the API to set the path.
+      chado_set_node_url($node);
+
       break;
   }
 }
@@ -684,16 +687,11 @@ function tripal_contact_node_update($node) {
   switch ($node->type) {
     case 'chado_contact':
 
-      // find the contact and add in the details
-      $contact_id = chado_get_id_from_nid('contact', $node->nid);
-
-      // get the contact
-      $values = array('contact_id' => $contact_id);
-      $contact = chado_generate_var('contact', $values);
-      $node->contact = $contact;
-
-      // Now get the title
+      // Set the title
       $node->title = chado_get_node_title($node);
+
+      // Now use the API to set the path.
+      chado_set_node_url($node);
 
       break;
   }
@@ -707,6 +705,15 @@ function tripal_contact_node_update($node) {
  */
 function chado_contact_chado_node_default_title_format() {
   return '[contact.name]';
+}
+
+/**
+ * Implements hook_chado_node_default_url_format().
+ *
+ * Designates a default URL format for contact nodes.
+ */
+function chado_contact_chado_node_default_url_format() {
+  return '/contact/[contact.name]';
 }
 
 /**
