@@ -66,5 +66,19 @@ function tripal_library_admin() {
   // This sub-form handles it's own validation & submit
   chado_add_admin_form_set_title($form, $form_state, $details);
 
+  // URL ALIAS
+  $details = array(
+    'module' => 'tripal_library',
+    'content_type' => 'chado_library',
+    'options' => array(
+      '/library/[library.library_id]' => 'Library ID',
+      '/library/[library.organism_id>organism.genus]/[library.organism_id>organism.species]/[library.type_id>cvterm.name]/[library.uniquename]' => 'Unique Contraint: Includes the name, uniquename, type and scientific name'
+    ),
+  );
+
+  // This call adds the configuration form to your current form
+  // This sub-form handles it's own validation & submit
+  chado_add_admin_form_set_url($form, $form_state, $details);
+
   return system_settings_form($form);
 }

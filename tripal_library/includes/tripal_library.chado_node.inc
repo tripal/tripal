@@ -613,6 +613,9 @@ function tripal_library_node_insert($node) {
       // Now get the title
       $node->title = chado_get_node_title($node);
 
+      // Now use the API to set the path.
+      chado_set_node_url($node);
+
       break;
   }
 }
@@ -628,14 +631,11 @@ function tripal_library_node_update($node) {
   switch ($node->type) {
     case 'chado_library':
 
-      $library_id = chado_get_id_from_nid('library', $node->nid);
-      $values = array('library_id' => $library_id);
-      $library = chado_generate_var('library', $values);
-      $library = chado_expand_var($library, 'field', 'library.uniquename');
-      $node->library = $library;
-
       // Now get the title
       $node->title = chado_get_node_title($node);
+
+      // Now use the API to set the path.
+      chado_set_node_url($node);
 
       break;
   }
@@ -649,4 +649,13 @@ function tripal_library_node_update($node) {
  */
 function chado_library_chado_node_default_title_format() {
   return '[library.name], [library.uniquename] ([library.type_id>cvterm.name])';
+}
+
+/**
+ * Implements hook_chado_node_default_url_format().
+ *
+ * Designates a default URL format for library nodes.
+ */
+function chado_library_chado_node_default_url_format() {
+  return '/library/[library.organism_id>organism.genus]/[library.organism_id>organism.species]/[library.type_id>cvterm.name]/[library.uniquename]';
 }
