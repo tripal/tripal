@@ -59,10 +59,23 @@ function tripal_core_node_toc_form($form, &$form_state, $node) {
       $toc_title = $element['#tripal_toc_title'];
       $toc_weight = $element['#weight'];
       $toc_hide = $element['#hide'];
-      $form['toc_items'][$toc_id]['title'] = array(
-        '#type' => 'textfield',
-        '#default_value' => $toc_title,
-      );
+
+      // If this element is a link then we don't want to allow the user
+      // to change the title as the link title is changed by using the
+      // interface that created the link.
+      $is_link = array_key_exists('#is_link', $element) ? $element['#is_link'] : FALSE;
+      if (!$is_link) {
+        $form['toc_items'][$toc_id]['title'] = array(
+          '#type' => 'textfield',
+          '#default_value' => $toc_title,
+        );
+      }
+      else {
+        $form['toc_items'][$toc_id]['title'] = array(
+          '#markup' => '<i>link title:</i> ' . $toc_title,
+          '#value' => $toc_title,
+        );
+      }
       $form['toc_items'][$toc_id]['hide'] = array(
         '#type' => 'checkbox',
         '#default_value' => $toc_hide,
@@ -158,7 +171,7 @@ function theme_tripal_node_toc_items_table($variables) {
  * @param $b
  */
 function theme_tripal_node_sort_toc_items($a, $b) {
-  
+
   if ($a['weight']['#value'] < $b['weight']['#value']) {
     return -1;
   }
@@ -178,7 +191,7 @@ function tripal_core_node_toc_form_validate($form, &$form_state) {
 
   // Iterate through the TOC items and validate.
   foreach ($toc_items as $toc_id => $item) {
-    if (!$item['title']) {
+    if (array_key_exists('title', $item) and !$item['title']) {
       form_set_error('toc_items][' . $toc_id, "Please provide a valid title.");
     }
   }
@@ -204,7 +217,7 @@ function tripal_core_node_toc_form_submit($form, &$form_state) {
           ->fields(array(
             'node_type' => $node->type,
             'key' => $toc_id,
-            'title' => $item['title'],
+            'title' => array_key_exists('title', $item) ? $item['title'] : '',
             'weight' => $item['weight'],
             'nid' => $node->nid,
             'hide' => $item['hide'],
@@ -309,8 +322,21 @@ function tripal_core_node_view_build_toc(&$build) {
         foreach (element_children($build[$key]) as $index) {
           $element = $build[$key][$index];
           $weight = 0;
-          $toc_item_id = "resource-$index";
-          
+          $hide = 0;
+          $toc_item_id = "resource-link-$index";
+
+          // Get any overrides for this key.
+          $overrides = tripal_core_get_toc_overrides($nid, $toc_item_id, $node_type);
+          $weight = $overrides['weight'] ? $overrides['weight'] : $weight;
+          $hide = $overrides['hide'] ? $overrides['hide'] : $hide;
+
+          // If the element should be hidden then unset this key the build
+          // array continue to the next one
+          if ($mode == "display" and $overrides['hide'] == 1) {
+            continue;
+          }
+
+          // Add the link to the TOC
           $parts = explode("|", $element['#markup']);
           if (count($parts) == 2) {
             $toc[$weight][$parts[0]] = "<div id=\"$toc_item_id\" class=\"tripal_toc_list_item\">" . l($parts[0], $parts[1], array('attributes' => array('target' => '_blank'))) . "</div>";
@@ -318,9 +344,21 @@ function tripal_core_node_view_build_toc(&$build) {
           else {
             $toc[$weight][$parts[0]] = "<div id=\"$toc_item_id\" class=\"tripal_toc_list_item\">" . $element['#markup'] . "</div>";
           }
-          // remove this link from the build array as we've moved it to appear in the TOC
-          unset($build[$key]);
+
+          // Add to the build array but do not add markup. This way 
+          // when the TOC is managed by the node 'TOC' menu these links can
+          // be ordered as well.
+          $build[$toc_item_id]['#toc_handled'] = TRUE;
+          $build[$toc_item_id]['#tripal_toc_id'] = $toc_item_id;
+          $build[$toc_item_id]['#tripal_toc_title'] = $parts[0];
+          $build[$toc_item_id]['#weight'] = $weight;
+          $build[$toc_item_id]['#hide'] = $hide;
+          $build[$toc_item_id]['#is_link'] = TRUE;
+
         }
+        // Remove the orilink from the build array as we've moved it to
+        // appear in the TOC
+        unset($build[$key]);
         continue;
       }
       if ($key == "field_resource_titles") {
@@ -710,6 +748,7 @@ function tripal_core_content_type_toc_form_submit($form, &$form_state) {
       // First delete any settings for this content type
       db_delete('tripal_toc')
         ->condition('node_type', $content_type)
+        ->isNull('nid')
         ->execute();
 
       // Second add in any new settings for this node
@@ -737,6 +776,7 @@ function tripal_core_content_type_toc_form_submit($form, &$form_state) {
       // First delete any settings for this node
       db_delete('tripal_toc')
         ->condition('node_type', $content_type)
+        ->isNull('nid')
         ->execute();
 
       drupal_set_message("The TOC is reset to defaults for this content type.");
