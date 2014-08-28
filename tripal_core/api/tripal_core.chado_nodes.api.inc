@@ -149,8 +149,12 @@ function chado_node_get_base_table($content_type, $module = FALSE) {
 
   function modulename_menu() {
 
-    $module_name = 'tripal_example';        // the machine name of your module
-    $linking_table = 'chado_example';       // the base specified in hook_node_info
+    //  the machine name of your module
+    $module_name = 'tripal_example';
+
+    // the base specified in hook_node_info
+    $linking_table = 'chado_example';
+
     // This menu item will be a tab on the admin/tripal/chado/tripal_example page
     // that is not selected by default
     $items['admin/tripal/chado/tripal_example/sync'] = array(

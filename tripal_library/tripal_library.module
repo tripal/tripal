@@ -101,6 +101,18 @@ function tripal_library_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 2
   );
+  
+  $items['admin/tripal/chado/tripal_library/toc'] = array(
+    'title' => ' TOC',
+    'description' => 'Manage the table of contents for library nodes.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_core_content_type_toc_form', 'chado_library'),
+    'access arguments' => array('administer tripal library'),
+    'type' => MENU_LOCAL_TASK,
+    'file' =>  'includes/tripal_core.toc.inc',
+    'file path' => drupal_get_path('module', 'tripal_core'),
+    'weight' => 3
+  );
 
   $items['admin/tripal/chado/tripal_library/views/libraries/enable'] = array(
     'title' => 'Enable Library Administrative View',

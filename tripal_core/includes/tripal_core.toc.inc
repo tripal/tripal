@@ -5,6 +5,10 @@
  */
 function tripal_core_node_toc_form($form, &$form_state, $node) {
   
+  // Get info about this content type
+  $all_types = node_type_get_types();
+  $type_info = $all_types[$node->type];
+  
   $form["#tree"] = TRUE;
   
   $form["instructions"] = array(
@@ -13,15 +17,21 @@ function tripal_core_node_toc_form($form, &$form_state, $node) {
     '#collapsible' => TRUE,
     '#title' => 'Instructions',
   );
+  $admin_link = l(
+    $type_info->name . " TOC administrative page", 
+    "admin/tripal/chado/" . $type_info->module . "/toc",
+    array('attributes' => array('target' => '_blank'))
+  );
   $form["instructions"]["main"] = array(
-    '#markup' => '<p>' . t('Below is a list of the titles of
+    '#markup' => '<p>' . t("Below is a list of the titles of
       content panes that can appear on this page.  These titles appear in the 
       the following order in the Table of Contents (TOC). You may rename 
       the titles or drag and drop them to change the order.  <b>Any changes will
       only apply to this page</b>. If you would like to make changes apply to multiple
-      pages of the same tpye, please visit the TOC administrative page.') . '</p>' .
+      pages of the same tpye, please visit the $admin_link. ") . '</p>' .
       '<p>' . t('The list below shows all possible content panes that can appear.
-      However, those without content are hidden and do not appear in the TOC.' . '</p>'),
+      However, those without content are automatically hidden and do not 
+      appear in the TOC.' . '</p>'),
   );
   
   $form['node'] = array(
@@ -282,11 +292,19 @@ function tripal_core_node_view_build_toc(&$build) {
         continue;
       }
 
+
       // For backwards compatibility we will handle the content type fields
       // named 'field_resource_blocks', 'field_resource_titles', and 'field_resource_links'
       // these fields can be added on the Drupal content types page and were
-      // specifically recoginzed by Tripal v1.1.
-      if ($mode != "manage_type" and $key == "field_resource_links") {
+      // specifically recoginzed by Tripal v1.1.  If the mode type is "manage_type"
+      // then remove these content panes because they are node specific.
+      if ($mode == "manage_type" and (
+          $key == "field_resource_links" or
+          $key == "field_resource_titles" or
+          $key == "field_resource_blocks")) {
+        unset($build[$key]);
+      }
+      if ($key == "field_resource_links") {
         // links should just appear on the sidebar as is and not open up a panel
         foreach (element_children($build[$key]) as $index) {
           $element = $build[$key][$index];
@@ -305,12 +323,12 @@ function tripal_core_node_view_build_toc(&$build) {
         }
         continue;
       }
-      if ($mode != "manage_type" and $key == "field_resource_titles") {
+      if ($key == "field_resource_titles") {
         // ignore these, we will use them in the field_resource_blocks if
         // statement below
         continue;
       }
-      if ($mode != "manage_type" and $key == "field_resource_blocks") {
+      if ($key == "field_resource_blocks") {
         foreach (element_children($build[$key]) as $index) {
           // get the details and the title
           $weight = 0;
@@ -571,42 +589,19 @@ function tripal_core_content_type_toc_form($form, &$form_state, $content_type) {
   
   $form["#tree"] = TRUE;
 
-  $form["instructions"] = array(
-    '#type' => 'fieldset',
-    '#collapsed' => TRUE,
-    '#collapsible' => TRUE,
-    '#title' => 'Instructions',
-  );
-  $form["instructions"]["main"] = array(
-    '#markup' => '</p>' . t('Below is a list of the titles of
-      content panes that can appear on all %type_name pages.  These titles will appear in the
-      the following order in the Table of Contents (TOC) on the page. You may rename
-      the titles or drag and drop them to change the order.  <b>Any changes will
-      only apply to this page</b>. Content that appears only on a single page
-      cannot be ordered here, but must be ordered using the TOC tab on the page
-      itself.  If a page has customized TOC settings then those settings will take
-      precedent over these.', array('%type_name' => $type_info['name'])) . '</p>' . 
-      '<p>' . t('The list below shows all possible content 
-      panes that can appear. However, those without content are hidden and do not 
-      appear in the TOC.' . '</p>'),
-  );
-
-  $form['content_type'] = array(
-    '#type' => 'value',
-    '#value' => $content_type,
-  );
-
-  // Get a node of this type just so we can get all the possible content for it
+  // Get a single node of this type so we can get all the possible content for it
   $sql = "SELECT nid FROM {node} WHERE type = :type LIMIT 1 OFFSET 0";
   $nid = db_query($sql, array(':type' => $content_type))->fetchField();
   if (!$nid) {
     $form["not_available"] = array(
       '#markup' => t('Please sync at least one %type_name record. A node 
-          must exist for customizations to the Table of Contents (TOC) can 
-          be performed.', array('%type_name' => $type_info['name'])),
+          must exist before customizations to the Table of Contents (TOC) can 
+          be performed.', array('%type_name' => $type_info->name)),
     );
-    return $from;
+    return $form;
   } 
+  
+  // Load the node
   $node = node_load($nid);
 
   // Get the content array for this node, then pass it through the
@@ -620,6 +615,30 @@ function tripal_core_content_type_toc_form($form, &$form_state, $content_type) {
   $build = $node->content;
   $build["#node"] = $node;
   tripal_core_node_view_alter($build);
+  
+  $form["instructions"] = array(
+    '#type' => 'fieldset',
+    '#collapsed' => TRUE,
+    '#collapsible' => TRUE,
+    '#title' => 'Instructions',
+  );
+  $form["instructions"]["main"] = array(
+    '#markup' => '</p>' . t('Below is a list of the titles of
+      content panes that can appear on all %type_name pages.  You may rename
+      the titles or drag and drop them to change the order.  Content that appears
+      only on a single page can not be ordered here, but must be ordered using
+      the TOC tab on the page itself.  If a page has customized TOC settings
+      then those settings will take precedent over these.',
+        array('%type_name' => $type_info->name)) . '</p>' .
+    '<p>' . t('The list below shows all possible content
+      panes that can appear. However, those without content are automatically
+      hidden and do not appear in the TOC.' . '</p>'),
+  );
+  
+  $form['content_type'] = array(
+    '#type' => 'value',
+    '#value' => $content_type,
+  );
 
   // Iterate through the built items and add form elemetns for each one.
   foreach(element_children($build) as $key) {

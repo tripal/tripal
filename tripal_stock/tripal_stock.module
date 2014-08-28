@@ -78,6 +78,18 @@ function tripal_stock_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 0
   );
+  
+  $items['admin/tripal/chado/tripal_stock/toc'] = array(
+    'title' => ' TOC',
+    'description' => 'Manage the table of contents for stock nodes.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_core_content_type_toc_form', 'chado_stock'),
+    'access arguments' => array('administer tripal stock'),
+    'type' => MENU_LOCAL_TASK,
+    'file' =>  'includes/tripal_core.toc.inc',
+    'file path' => drupal_get_path('module', 'tripal_core'),
+    'weight' => 3
+  );
 
   $items['admin/tripal/chado/tripal_stock/help'] = array(
     'title' => 'Help',
