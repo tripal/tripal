@@ -561,6 +561,9 @@ function tripal_featuremap_node_insert($node) {
       // Now get the title
       $node->title = chado_get_node_title($node);
 
+      // Now use the API to set the path.
+      chado_set_node_url($node);
+
       break;
   }
 }
@@ -575,15 +578,12 @@ function tripal_featuremap_node_update($node) {
 
   switch ($node->type) {
     case 'chado_featuremap':
-
-      // get the feature details from chado
-      $featuremap_id = chado_get_id_from_nid('featuremap', $node->nid);
-      $values = array('featuremap_id' => $featuremap_id);
-      $featuremap = chado_generate_var('featuremap', $values);
-      $node->featuremap = $featuremap;
       
       // Now get the title
       $node->title = chado_get_node_title($node);
+
+      // Now use the API to set the path.
+      chado_set_node_url($node);
 
       break;
   }
@@ -597,4 +597,13 @@ function tripal_featuremap_node_update($node) {
  */
 function chado_featuremap_chado_node_default_title_format() {
   return '[featuremap.name]';
+}
+
+/**
+ * Implements hook_chado_node_default_url_format().
+ *
+ * Designates a default URL format for featuremap nodes.
+ */
+function chado_featuremap_chado_node_default_url_format() {
+  return '/featuremap/[featuremap.featuremap_id]';
 }

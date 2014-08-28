@@ -65,5 +65,19 @@ function tripal_featuremap_admin() {
   // This sub-form handles it's own validation & submit
   chado_add_admin_form_set_title($form, $form_state, $details);
 
+  // URL ALIAS
+  $details = array(
+    'module' => 'tripal_featuremap',
+    'content_type' => 'chado_featuremap',
+    'options' => array(
+      '/featuremap/[featuremap.featuremap_id]' => 'Feature Map ID',
+      '/featuremap/[featuremap.name]' => 'Unique Contraint: The name of the Feature Map'
+    ),
+  );
+
+  // This call adds the configuration form to your current form
+  // This sub-form handles it's own validation & submit
+  chado_add_admin_form_set_url($form, $form_state, $details);
+
   return system_settings_form($form);
 }
