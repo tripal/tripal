@@ -1044,7 +1044,7 @@ function tripal_set_default_cv($table, $field, $cv_name, $cv_id = FALSE) {
  *   cvterm table for which the default vocabulary will be set
  *
  * @return
- *   The cv array of the default vocabulary or an empty array if not
+ *   The cv object of the default vocabulary or an empty array if not
  *   available.
  */
 function tripal_get_default_cv($table, $field) {

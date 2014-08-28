@@ -76,6 +76,18 @@ function tripal_project_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 0
   );
+  
+  $items['admin/tripal/chado/tripal_project/toc'] = array(
+    'title' => ' TOC',
+    'description' => 'Manage the table of contents for project nodes.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_core_content_type_toc_form', 'chado_project'),
+    'access arguments' => array('administer tripal project'),
+    'type' => MENU_LOCAL_TASK,
+    'file' =>  'includes/tripal_core.toc.inc',
+    'file path' => drupal_get_path('module', 'tripal_core'),
+    'weight' => 3
+  );
 
   $items['admin/tripal/chado/tripal_project/views/projects/enable'] = array(
     'title' => 'Enable Project Administrative View',

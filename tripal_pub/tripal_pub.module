@@ -112,6 +112,18 @@ function tripal_pub_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 2
   );
+  
+  $items['admin/tripal/chado/tripal_pub/toc'] = array(
+    'title' => ' TOC',
+    'description' => 'Manage the table of contents for pub nodes.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_core_content_type_toc_form', 'chado_pub'),
+    'access arguments' => array('administer tripal pub'),
+    'type' => MENU_LOCAL_TASK,
+    'file' =>  'includes/tripal_core.toc.inc',
+    'file path' => drupal_get_path('module', 'tripal_core'),
+    'weight' => 3
+  );
 
   $items['admin/tripal/chado/tripal_pub/citation'] = array(
     'title' => 'Citations',

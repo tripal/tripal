@@ -124,16 +124,26 @@ function chado_library_form($node, &$form_state) {
   );
 
   // get the list of library types
+  $lt_cv = tripal_get_default_cv("library", "type_id");
   $types = tripal_get_cvterm_default_select_options('library', 'type_id', 'library types');
   $types[0] = 'Select a Type';
+  $lt_message = tripal_set_message("To add additional items to the library type drop down list, 
+     add a term to the " . 
+     l($lt_cv->name . " controlled vocabulary", 
+       "admin/tripal/chado/tripal_cv/cv/" . $lt_cv->cv_id . "/cvterm/add",
+       array('attributes' => array('target' => '_blank'))
+      ),
+     TRIPAL_INFO, array('return_html' => TRUE)
+  );
 
   $form['library_type'] = array(
-    '#title'       => t('Library Type'),
-    '#type'        => t('select'),
-    '#description' => t("Choose the library type."),
-    '#required'    => TRUE,
+    '#title'         => t('Library Type'),
+    '#type'          => t('select'),
+    '#description'   => t("Choose the library type."),
+    '#required'      => TRUE,
     '#default_value' => $library_type,
-    '#options'     => $types,
+    '#options'       => $types,
+    '#suffix'        => $lt_message,
   );
 
   // get the list of organisms
@@ -173,7 +183,7 @@ function chado_library_form($node, &$form_state) {
   // to exclude the 'Library Description' term since it has it's own form element above
   if ($prop_cv->name == 'library_property') {
     // Generate our own select list so we can exclude the description element
-    $cv_result = chado_select_record('cv',array('cv_id'),array('name' => 'library_property'));
+    $cv_result = chado_select_record('cv', array('cv_id'), array('name' => 'library_property'));
     $cv_id = $cv_result[0]->cv_id;
     $select_options = tripal_get_cvterm_select_options($cv_id);
     $descrip_id = array_search('Library Description', $select_options);

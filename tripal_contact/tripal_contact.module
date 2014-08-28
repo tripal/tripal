@@ -89,16 +89,17 @@ function tripal_contact_menu() {
     'weight' => 0
   );
 
-  $items['admin/tripal/chado/tripal_contact/sync'] = array(
-    'title' => ' Sync',
-    'description' => 'Create pages on this site for libraries stored in Chado',
+  $items['admin/tripal/chado/tripal_contact/toc'] = array(
+    'title' => ' TOC',
+    'description' => 'Manage the table of contents for contact nodes.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('chado_node_sync_form', 'tripal_contact', 'chado_contact'),
+    'page arguments' => array('tripal_core_content_type_toc_form', 'chado_contact'),
     'access arguments' => array('administer tripal contact'),
     'type' => MENU_LOCAL_TASK,
-    'weight' => 2
+    'file' =>  'includes/tripal_core.toc.inc',
+    'file path' => drupal_get_path('module', 'tripal_core'),
+    'weight' => 3
   );
-
   return $items;
 }
 

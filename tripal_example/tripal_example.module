@@ -145,6 +145,26 @@ function tripal_example_menu() {
     'weight' => 2
   );
   
+  // EXPLANATION: If your module defines a new node type that uses the default
+  // table of contents (left-side bar of content panes on a page). Then a 
+  // 'TOC' link will automatically appear on the node page to allow for 
+  // customization of the TOC.  However those customizations are only node
+  // specific.  To provide a tab in the module's administrative pages add the
+  // following menu item. This menu will provide a form similar to the one
+  // found on the node that allows the user to set global TOC settings for the
+  // content type.
+  $items['admin/tripal/chado/tripal_example/toc'] = array(
+    'title' => ' TOC',
+    'description' => 'Manage the table of contents for example nodes.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_core_content_type_toc_form', 'chado_example'),
+    'access arguments' => array('administer tripal example'),
+    'type' => MENU_LOCAL_TASK,
+    'file' =>  'includes/tripal_core.toc.inc',
+    'file path' => drupal_get_path('module', 'tripal_core'),
+    'weight' => 3
+  );
+  
   return $items;
 }
 

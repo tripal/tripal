@@ -236,14 +236,12 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
 
   // Get property types for the select list. If the user has provided a set
   // then use those, otherwise get them from the cvterm table for specified cv.
-  if (isset($details['select_options']) and
-      is_array($details['select_options']) and
-      count($details['select_options']) > 0) {
+  if (array_key_exists('select_options', $details) and
+      is_array($details['select_options'])) {
     $property_options = $details['select_options'];
   }
   // if the select options are not provided then try to get them on our own
   else {
-
     // if the vocabulary name is provided in the details then use that to
     // get the terms
     if (isset($details['cv_name'])) {

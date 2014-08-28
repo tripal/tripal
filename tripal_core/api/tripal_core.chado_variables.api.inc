@@ -790,9 +790,11 @@ function chado_expand_var($object, $type, $to_expand, $table_options = array()) 
         // if we did not expand this table we should return a message that the foreign table
         // could not be expanded
         if (!$did_expansion) {
-          tripal_report_error('tripal_core', TRIPAL_ERROR, 'chado_expand_var: Could not expand table, %table. It is ' .
-            'not in a foreign key relationship with the base object nor with any other expanded table. ' .
-            'Check the table definition to ensure that a proper foreign key relationship is present.',
+          tripal_report_error('tripal_core', TRIPAL_ERROR, 'chado_expand_var: Could not expand %table. ' .
+            'The table is either not related to the base object through a foreign key relationships or ' .
+            'it is already expanded. First check the object to ensure it doesn’t already contain the ' .
+            'data needed and otherwise check the table definition using chado_get_schema() to ensure ' .
+            'a proper foreign key relationship is present.',
             array('%table' => $foreign_table));
         }
       }

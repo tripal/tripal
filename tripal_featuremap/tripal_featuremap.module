@@ -129,12 +129,16 @@ function tripal_featuremap_menu() {
     'weight' => 0
   );
 
-  // Synchronizing maps from Chado to Drupal
-  $items['chado_sync_featuremaps'] = array(
-    'title' => 'Sync Data',
-    'page callback' => 'tripal_featuremap_sync_featuremaps',
+  $items['admin/tripal/chado/tripal_featuremap/toc'] = array(
+    'title' => ' TOC',
+    'description' => 'Manage the table of contents for feature map nodes.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_core_content_type_toc_form', 'chado_featuremap'),
     'access arguments' => array('administer tripal featuremap'),
-    'type' => MENU_CALLBACK
+    'type' => MENU_LOCAL_TASK,
+    'file' =>  'includes/tripal_core.toc.inc',
+    'file path' => drupal_get_path('module', 'tripal_core'),
+    'weight' => 3
   );
 
   $items['admin/tripal/chado/tripal_featuremap/views/featuremaps/enable'] = array(
