@@ -162,7 +162,7 @@ function tripal_feature_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 1
   );
-  $items['admin/tripal/chado/tripal_feature/toc'] = array(
+  $items['admin/tripal/chado/tripal_feature/chado_feature_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for feature nodes.',
     'page callback' => 'drupal_get_form',

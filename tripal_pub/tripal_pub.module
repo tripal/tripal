@@ -113,7 +113,7 @@ function tripal_pub_menu() {
     'weight' => 2
   );
   
-  $items['admin/tripal/chado/tripal_pub/toc'] = array(
+  $items['admin/tripal/chado/tripal_pub/chado_pub_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for pub nodes.',
     'page callback' => 'drupal_get_form',

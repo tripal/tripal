@@ -77,7 +77,7 @@ function tripal_project_menu() {
     'weight' => 0
   );
   
-  $items['admin/tripal/chado/tripal_project/toc'] = array(
+  $items['admin/tripal/chado/tripal_project/chado_project_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for project nodes.',
     'page callback' => 'drupal_get_form',

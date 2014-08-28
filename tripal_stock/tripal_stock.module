@@ -79,7 +79,7 @@ function tripal_stock_menu() {
     'weight' => 0
   );
   
-  $items['admin/tripal/chado/tripal_stock/toc'] = array(
+  $items['admin/tripal/chado/tripal_stock/chado_stock_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for stock nodes.',
     'page callback' => 'drupal_get_form',

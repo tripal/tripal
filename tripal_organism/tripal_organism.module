@@ -69,7 +69,7 @@ function tripal_organism_menu() {
     'weight' => 2
   );
   
-  $items['admin/tripal/chado/tripal_organism/toc'] = array(
+  $items['admin/tripal/chado/tripal_organism/chado_organism_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for organism nodes.',
     'page callback' => 'drupal_get_form',

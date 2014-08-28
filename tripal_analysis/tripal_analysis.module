@@ -81,7 +81,7 @@ function tripal_analysis_menu() {
     'weight' => 2
   );
 
-  $items['admin/tripal/chado/tripal_analysis/toc'] = array(
+  $items['admin/tripal/chado/tripal_analysis/chado_analysis_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for analysis nodes.',
     'page callback' => 'drupal_get_form',

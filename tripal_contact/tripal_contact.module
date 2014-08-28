@@ -89,7 +89,7 @@ function tripal_contact_menu() {
     'weight' => 0
   );
 
-  $items['admin/tripal/chado/tripal_contact/toc'] = array(
+  $items['admin/tripal/chado/tripal_contact/chado_contact_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for contact nodes.',
     'page callback' => 'drupal_get_form',

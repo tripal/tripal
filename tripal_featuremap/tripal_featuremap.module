@@ -129,7 +129,7 @@ function tripal_featuremap_menu() {
     'weight' => 0
   );
 
-  $items['admin/tripal/chado/tripal_featuremap/toc'] = array(
+  $items['admin/tripal/chado/tripal_featuremap/chado_featuremap_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for feature map nodes.',
     'page callback' => 'drupal_get_form',

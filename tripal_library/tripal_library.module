@@ -102,7 +102,7 @@ function tripal_library_menu() {
     'weight' => 2
   );
   
-  $items['admin/tripal/chado/tripal_library/toc'] = array(
+  $items['admin/tripal/chado/tripal_library/chado_library_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for library nodes.',
     'page callback' => 'drupal_get_form',

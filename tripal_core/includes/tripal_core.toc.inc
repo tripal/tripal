@@ -19,7 +19,7 @@ function tripal_core_node_toc_form($form, &$form_state, $node) {
   );
   $admin_link = l(
     $type_info->name . " TOC administrative page", 
-    "admin/tripal/chado/" . $type_info->module . "/toc",
+    "admin/tripal/chado/" . $type_info->module . "/" . $node->type . "toc",
     array('attributes' => array('target' => '_blank'))
   );
   $form["instructions"]["main"] = array(
