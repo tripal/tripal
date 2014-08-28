@@ -316,6 +316,7 @@ function tripal_core_node_view_build_toc(&$build) {
           $key == "field_resource_titles" or
           $key == "field_resource_blocks")) {
         unset($build[$key]);
+        continue;
       }
       if ($key == "field_resource_links") {
         // links should just appear on the sidebar as is and not open up a panel
@@ -326,7 +327,7 @@ function tripal_core_node_view_build_toc(&$build) {
           $toc_item_id = "resource-link-$index";
 
           // Get any overrides for this key.
-          $overrides = tripal_core_get_toc_overrides($nid, $toc_item_id, $node_type);
+          $overrides = tripal_core_get_toc_overrides($nid, $toc_item_id, $node_type, $mode);
           $weight = $overrides['weight'] ? $overrides['weight'] : $weight;
           $hide = $overrides['hide'] ? $overrides['hide'] : $hide;
 
@@ -375,7 +376,7 @@ function tripal_core_node_view_build_toc(&$build) {
           $toc_item_id = "resource-$index";
 
           // Get any overrides for this key.
-          $overrides = tripal_core_get_toc_overrides($nid, $toc_item_id, $node_type);
+          $overrides = tripal_core_get_toc_overrides($nid, $toc_item_id, $node_type, $mode);
 
           // If the element should be hidden then unset this key the build
           // array continue to the next one
@@ -450,7 +451,7 @@ function tripal_core_node_view_build_toc(&$build) {
       }
       
       // Get any overrides for this key.
-      $overrides = tripal_core_get_toc_overrides($nid, $toc_item_id, $node_type);
+      $overrides = tripal_core_get_toc_overrides($nid, $toc_item_id, $node_type, $mode);
 
       
       // If the element should be hidden then unset this key the build
@@ -574,17 +575,39 @@ function tripal_core_node_view_build_toc(&$build) {
  * 
  * @param $build
  */
-function tripal_core_get_toc_overrides($nid, $key, $node_type) {
+function tripal_core_get_toc_overrides($nid, $key, $node_type, $mode) {
   // Set override defaults
   $override_title = '';
   $override_weight = '';
   $override_hide = 0;
   
-  // First look to see if the node has customizations for this item.
+  if ($mode != "manage_type") {
+    // First look to see if the node has customizations for this item.
+    $toc_item_overrides = db_select('tripal_toc', 'tc')
+      ->fields('tc', array('title', 'weight', 'hide'))
+      ->condition('key', $key)
+      ->condition('nid', $nid)
+      ->execute()
+      ->fetchObject();
+    if ($toc_item_overrides) {
+      $override_title = $toc_item_overrides->title;
+      $override_weight = $toc_item_overrides->weight;
+      $override_hide = $toc_item_overrides->hide;
+      return array(
+        'title'  => $override_title,
+        'weight' => $override_weight,
+        'hide'   => $override_hide,
+      );
+    }
+  }
+  
+  // If there are no specific node customizations then look to see if there
+  // are customizations for this content type.
   $toc_item_overrides = db_select('tripal_toc', 'tc')
     ->fields('tc', array('title', 'weight', 'hide'))
+    ->condition('node_type', $node_type)
     ->condition('key', $key)
-    ->condition('nid', $nid)
+    ->isNull('nid')
     ->execute()
     ->fetchObject();
   if ($toc_item_overrides) {
@@ -592,28 +615,13 @@ function tripal_core_get_toc_overrides($nid, $key, $node_type) {
     $override_weight = $toc_item_overrides->weight;
     $override_hide = $toc_item_overrides->hide;
   }
-  // If there are no specific node customizations then look to see if there
-  // are customizations for this content type.
-  else {
-    $toc_item_overrides = db_select('tripal_toc', 'tc')
-      ->fields('tc', array('title', 'weight', 'hide'))
-      ->condition('node_type', $node_type)
-      ->condition('key', $key)
-      ->isNull('nid')
-      ->execute()
-      ->fetchObject();
-    if ($toc_item_overrides) {
-      $override_title = $toc_item_overrides->title;
-      $override_weight = $toc_item_overrides->weight;
-      $override_hide = $toc_item_overrides->hide;
-    }
-  }
-  
+
   return array(
     'title' => $override_title,
     'weight' => $override_weight,
     'hide' => $override_hide,
   );
+
 }
 
 /**
