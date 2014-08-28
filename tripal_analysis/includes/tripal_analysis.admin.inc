@@ -79,6 +79,21 @@ function tripal_analysis_admin() {
   // This sub-form handles it's own validation & submit
   chado_add_admin_form_set_title($form, $form_state, $details);
 
+  // URL ALIAS
+  $details = array(
+    'module' => 'tripal_analysis',
+    'content_type' => 'chado_analysis',
+    'options' => array(
+      '/analysis/[analysis.analysis_id]' => 'Analysis ID',
+      '/analysis/[analysis.program]/[analysis.programversion]/[analysis.sourcename]' => 'Unique Contraint: Includes the program name & version as well as the source name'
+
+    ),
+  );
+
+  // This call adds the configuration form to your current form
+  // This sub-form handles it's own validation & submit
+  chado_add_admin_form_set_url($form, $form_state, $details);
+
   // Add sub-module settings. Pull all sub-module information from
   // {tripal_analysis} table
   $sql = "SELECT modulename FROM {tripal_analysis}";

@@ -725,7 +725,9 @@ function tripal_analysis_node_insert($node) {
   switch ($node->type) {
     case 'chado_analysis':
       
-      // build the analysis variable
+      // We still don't have a fully loaded node object in this hook. Therefore,
+      // we need to simulate one so that the right values are available for
+      // the URL to be determined.
       $analysis_id = chado_get_id_from_nid('analysis', $node->nid);      
       $values = array('analysis_id' => $analysis_id);
       $analysis = chado_generate_var('analysis', $values);
@@ -733,6 +735,9 @@ function tripal_analysis_node_insert($node) {
       
       // Now get the title
       $node->title = chado_get_node_title($node);
+
+      // Now use the API to set the path.
+      chado_set_node_url($node);
 
       break;
   }
@@ -749,14 +754,11 @@ function tripal_analysis_node_update($node) {
   switch ($node->type) {
     case 'chado_analysis':
       
-      // build the analysis variable
-      $analysis_id = chado_get_id_from_nid('analysis', $node->nid);
-      $values = array('analysis_id' => $analysis_id);
-      $analysis = chado_generate_var('analysis', $values);
-      $node->analysis = $analysis;
-
       // Now get the title
       $node->title = chado_get_node_title($node);
+ 
+      // Now use the API to set the path.
+      chado_set_node_url($node);
 
       break;
   }
@@ -770,4 +772,13 @@ function tripal_analysis_node_update($node) {
  */
 function chado_analysis_chado_node_default_title_format() {
   return '[analysis.name]';
+}
+
+/**
+ * Implements hook_chado_node_default_url_format().
+ *
+ * Designates a default URL format for analysis nodes.
+ */
+function chado_analysis_chado_node_default_url_format() {
+  return '/analysis/[analysis.program]/[analysis.programversion]/[analysis.sourcename]';
 }
