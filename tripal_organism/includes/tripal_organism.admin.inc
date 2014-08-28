@@ -67,6 +67,22 @@ function tripal_organism_admin() {
   // This sub-form handles it's own validation & submit
   chado_add_admin_form_set_title($form, $form_state, $details);
 
+  // URL ALIAS
+  $details = array(
+    'module' => 'tripal_organism',
+    'content_type' => 'chado_organism',
+    'options' => array(
+      '/organism/[organism.organism_id]' => 'Organism ID',
+      '/organism/[organism.abbreviation]' => 'The abbreviation for the organism',
+      '/organism/[organism.common_name]' => 'The common name of the organism',
+      '/organism/[organism.genus]/[organism.species]' => 'Unique Contraint: the scientific name.'
+    ),
+  );
+
+  // This call adds the configuration form to your current form
+  // This sub-form handles it's own validation & submit
+  chado_add_admin_form_set_url($form, $form_state, $details);
+
   return system_settings_form($form);
 }
 

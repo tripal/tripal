@@ -587,6 +587,9 @@ function tripal_organism_node_insert($node) {
       // Now get the title
       $node->title = chado_get_node_title($node);
 
+      // Now use the API to set the path.
+      chado_set_node_url($node);
+
       break;
   }
 }
@@ -602,14 +605,11 @@ function tripal_organism_node_update($node) {
   switch ($node->type) {
     case 'chado_organism':
       
-      // find the organism and add in the details
-      $organism_id = chado_get_id_from_nid('organism', $node->nid);
-      $values = array('organism_id' => $organism_id);
-      $organism = chado_generate_var('organism', $values);
-      $node->organism = $organism;
-
-      // Now get the title
+      // Now get the title.
       $node->title = chado_get_node_title($node);
+
+      // Now use the API to set the path.
+      chado_set_node_url($node);
 
       break;
   }
@@ -624,3 +624,13 @@ function tripal_organism_node_update($node) {
 function chado_organism_chado_node_default_title_format() {
   return '[organism.genus] [organism.species]';
 }
+
+/**
+ * Implements hook_chado_node_default_url_format().
+ *
+ * Designates a default URL format for organism nodes.
+ */
+function chado_organism_chado_node_default_url_format() {
+  return '/organism/[organism.genus]/[organism.species]';
+}
+
