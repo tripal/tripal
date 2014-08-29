@@ -49,9 +49,10 @@ function tripal_create_files_dir($module_name, $path = FALSE) {
     tripal_create_files_dir($module_name);
 
     // now make sure the sub dir exists
-    $sub_dir = tripal_get_files_dir() . $module_name . $path;
+    $sub_dir = tripal_get_files_dir() . '/' . $module_name . '/' . $path;
+    print "$sub_dir\n";
     if (!file_prepare_directory($sub_dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
-      $message = "Cannot create directory $sub_dir. ";
+      $message = "Can not create directory $sub_dir. ";
       drupal_set_message(check_plain(t($message)), 'error');
       tripal_report_error('tripal_core', TRIPAL_ERROR, $message, array());
     }
