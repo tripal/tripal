@@ -92,7 +92,7 @@ function tripal_core_drush_command() {
     ),
   );
   $items['trp-get-currjob'] = array(
-    'description' => dt('Returns details about the currently running tripal job including percent complete.'),
+    'description' => dt('Returns details about the currently running job including percent complete.'),
     'arguments'   => array(),
     'examples' => array(
       'Standard example' => 'drush trp-get-currjob',
@@ -115,7 +115,7 @@ function tripal_core_drush_command() {
     ),
   );
   $items['trp-rerun-job'] = array(
-    'description' => dt('Rerun any job in the queue.'),
+    'description' => dt('Re-run a specific job from the queue.'),
     'examples' => array(
       'Single Job' => 'drush trp-rerun-job --user=administrator --job_id=2',
       'Parallel Job' => 'drush trp-rerun-job --user=administrator  --job_id=2 --parallel=1'
@@ -134,7 +134,7 @@ function tripal_core_drush_command() {
     ),
   );
   $items['trp-get-cversion'] = array(
-    'description' => dt('Returns the current version of chado associated with this drupal site.'),
+    'description' => dt('Returns the current installed version of Chado.'),
     'arguments' => array(),
     'examples' => array(
       'Standard Example' => 'drush trp-get-cversion',
@@ -156,7 +156,7 @@ function tripal_core_drush_command() {
     ),
   );
   $items['trp-clean-nodes'] = array(
-    'description' => dt('Clean-up orphaned Drupal nodes and chado records.'),
+    'description' => dt('Removes orphaned Drupal nodes.'),
     'arguments' => array(),
     'examples' => array(
       'Standard Example' => 'drush trp-clean-nodes table=feature'
@@ -170,9 +170,9 @@ function tripal_core_drush_command() {
     ),
   );
 
-  // DEPRICATED COMMANDS. Depricated as of Tripal v2.0-rc
+  // DEPRECATED COMMANDS. Deprecated as of Tripal v2.0-rc
   $items['tripal-mview-update'] = array(
-    'description' => dt('DEPRICATED. Please see: trp-refresh-mview.'),
+    'description' => dt('DEPRECATED. Please see: trp-refresh-mview.'),
     'arguments' => array(),
     'examples' => array(
       'By Materialized View ID' => 'drush tripal-update-mview --mview_id=5',
@@ -231,7 +231,7 @@ function tripal_core_drush_command() {
     'aliases' => array('trpchado-ver')
   );
   $items['tripal-chadotable-desc'] = array(
-    'description' => dt('DEPRICATED. Please see: trp-get-table. '),
+    'description' => dt('DEPRECATED. Please see: trp-get-table. '),
     'arguments' => array(
       'table_name' => dt('The name of the chado table.'),
     ),
@@ -244,7 +244,7 @@ function tripal_core_drush_command() {
     'aliases' => array('trpschema-tbl')
   );
   $items['tripal-node-clean'] = array(
-    'description' => dt('DEPRICATED. Please see: trp-clean-nodes.'),
+    'description' => dt('DEPRECATED. Please see: trp-clean-nodes.'),
     'arguments' => array(
       'module' => dt('The name of the chado-centric module to clean-up.'),
     ),
@@ -322,7 +322,7 @@ function drush_tripal_core_tripal_jobs_launch($username) {
 
   drush_tripal_core_set_user($username);
   
-  drush_print("\n\nDEPRICATED: This drush command is outdated.\nIt will ".
+  drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will ".
     "continue to work but please consider using the 'trp-run-jobs' command.\n\n");
 
   if ($parallel) {
@@ -378,7 +378,7 @@ function drush_tripal_core_trp_rerun_job() {
  */
 function drush_tripal_core_tripal_jobs_rerun($username, $job_id) {
   
-  drush_print("\n\nDEPRICATED: This drush command is outdated.\nIt will ".
+  drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will ".
       "continue to work but please consider using the 'trp-rerun-job' command.\n\n");
   
   drush_tripal_core_set_user($username);
@@ -428,7 +428,7 @@ function drush_tripal_core_trp_get_currjob() {
  * @ingroup tripal_drush
  */
 function drush_tripal_core_tripal_jobs_current() {
-  drush_print("\n\nDEPRICATED: This drush command is outdated.\nIt will ".
+  drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will ".
       "continue to work but please consider using the 'trp-get-currjob' command.\n\n");
   
   drush_tripal_core_trp_get_currjob();
@@ -480,7 +480,7 @@ function drush_tripal_core_tripal_update_mview() {
   $mview_id = drush_get_option('mview_id');
   $table_name = drush_get_option('table_name');
   
-  drush_print("\n\nDEPRICATED: This drush command is outdated.\nIt will ".
+  drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will ".
       "continue to work but please consider using the 'trp-refresh-mview' command.\n\n");
 
   // Either table_name or mview is required
@@ -516,7 +516,7 @@ function drush_tripal_core_tripal_update_mview() {
  * @ingroup tripal_drush
  */
 function drush_tripal_core_tripal_chado_version() {
-  drush_print("\n\nDEPRICATED: This drush command is outdated.\nIt will ".
+  drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will ".
       "continue to work but please consider using the 'trp-get-cversion' command.\n\n");
   
   drush_tripal_core_trp_get_cversion();
@@ -553,7 +553,7 @@ function drush_tripal_core_trp_get_table() {
 }
 
 /**
- * DEPRICATED. Returns the Tripal Schema API Description of the given table.
+ * DEPRECATED. Returns the Tripal Schema API Description of the given table.
  *
  * @param $table_name
  *  The name of the table to return the description of
@@ -563,7 +563,7 @@ function drush_tripal_core_trp_get_table() {
 function drush_tripal_core_tripal_chadotable_desc($table_name) {
   $section = drush_get_option('section');
   
-  drush_print("\n\nDEPRICATED: This drush command is outdated.\nIt will ".
+  drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will ".
       "continue to work but please consider using the 'trp-get-table' command.\n\n");
 
   drush_print("Schema API Description for $table_name:");
@@ -589,7 +589,7 @@ function drush_tripal_core_trp_clean_nodes() {
 }
 
 /**
- * DEPRICATED. Clean-up orphaned Drupal nodes and chado records.
+ * DEPRECATED. Clean-up orphaned Drupal nodes and chado records.
  *
  * @param $module
  *  The name of a module with nodes associated with it. For example, feature
