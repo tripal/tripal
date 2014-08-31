@@ -303,11 +303,10 @@ function chado_pub_form($node, $form_state) {
     'relationship_table' => 'pub_relationship', // the name of the _relationship table
     'base_table' => 'pub',                      // the name of your chado base table
     'base_foreign_key' => 'pub_id',             // the name of the key in your base chado table
-    'base_key_value' => $pub_id,                // the value of example_id for this record
+    'base_key_value' => $pub_id,                // the value of pub_id for this record
     'nodetype' => 'pub',                        // the human-readable name of your node type
-    'cv_id' => $cv_id,                          // the cv.cv_id of the cv containing the properties
+    'cv_id' => $cv_id,                          // the cv.cv_id of the cv containing the relationships
     'base_name_field' => 'uniquename',          // the base table field you want to be used as the name
-    'select_options' => $select_options
   );
   // Adds the form elements to your current form
   chado_add_node_form_relationships($form, $form_state, $details);

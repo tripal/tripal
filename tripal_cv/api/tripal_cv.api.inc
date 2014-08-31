@@ -419,10 +419,11 @@ function tripal_insert_cv($name, $definition) {
  *        name provided in the $term[namespace].  If this field is provided then it
  *        overrides what the value in $term[namespace]
  *    - is_relationship: If this term is a relationship term then this value should be 1.
- *    _ db_name: In some cases the database name will not be part of the $term['id'] and it
+ *    - db_name: In some cases the database name will not be part of the $term['id'] and it
  *        needs to be explicitly set.  Use this argument only if the database name
  *        cannot be specififed in the term ID (e.g. <DB>:<ACCESSION>).
  * @param $options
+ *   An associative array with the following keys:
  *    - update_existing: By default this is TRUE.  If the term exists it is automatically updated.
  *
  * @return

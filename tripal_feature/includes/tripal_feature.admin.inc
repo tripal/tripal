@@ -87,8 +87,8 @@ function tripal_feature_admin() {
   $form['browser'] = array(
      '#type' => 'fieldset',
      '#title' => t('Feature Browser'),
-     '#collapsible' => FALSE,
-     '#collapsed' => FALSE,
+     '#collapsible' => TRUE,
+     '#collapsed' => TRUE,
   );
   $form['browser']['browser_desc'] = array(
      '#markup' => t('A feature browser can be added to an organism page to allow users to quickly ' .
@@ -116,8 +116,8 @@ function tripal_feature_admin() {
   $form['summary'] = array(
      '#type' => 'fieldset',
      '#title' => t('Feature Summary Report'),
-     '#collapsible' => FALSE,
-     '#collapsed' => FALSE,
+     '#collapsible' => TRUE,
+     '#collapsed' => TRUE,
   );
   $form['summary']['feature_mapping'] = array(
      '#title' => 'Map feature types',

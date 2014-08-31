@@ -289,7 +289,6 @@ function chado_add_admin_form_set_title(&$form, &$form_state, $details) {
     '#collapsed' => FALSE,
     '#prefix' => "<div id='set_titles-fieldset'>",
     '#suffix' => '</div>',
-    '#weight'      => 8
   );
 
   $form['set_titles']['content_type'] = array(
@@ -802,7 +801,6 @@ function chado_add_admin_form_set_url(&$form, &$form_state, $details) {
     '#collapsed' => FALSE,
     '#prefix' => "<div id='set_url-fieldset'>",
     '#suffix' => '</div>',
-    '#weight'      => 8
   );
 
   $form['set_url']['content_type'] = array(
