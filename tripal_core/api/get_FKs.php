@@ -37,8 +37,10 @@ if (isset($arguments['v'])) {
 }
 
 /**
- * This function does the actual work of determining the foreign key relationships from
- * the database and creating the schema file.
+ * Builds the FK relationships array in the database.
+ * 
+ * This function does the actual work of determining the foreign key 
+ * relationships from the database and creating the schema file.
  */
 function get_chado_fk_relationships($version) {
 

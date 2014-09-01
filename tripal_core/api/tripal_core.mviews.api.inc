@@ -288,7 +288,7 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
  *
  * @ingroup tripal_mviews_api
  */
-function tripal_mviews_get_mview_id($view_name) {
+function tripal_get_mview_id($view_name) {
   if (db_table_exists('tripal_mviews')) {
     $sql = "SELECT * FROM {tripal_mviews} WHERE name = :name";
     $results = db_query($sql, array(':name' => $view_name));
@@ -302,14 +302,14 @@ function tripal_mviews_get_mview_id($view_name) {
 }
 
 /**
- * Does the specified action for the specified Materialized View
+ * Populates the specified Materialized View
  *
  * @param $mview_id
  *   The unique ID of the materialized view for the action to be performed on
  *
  * @ingroup tripal_mviews_api
  */
-function tripal_add_job_populate_mview($mview_id) {
+function tripal_refresh_mview($mview_id) {
   global $user;
 
   if (!$mview_id) {
@@ -321,7 +321,7 @@ function tripal_add_job_populate_mview($mview_id) {
   $results = db_query($sql, array(':mview_id' => $mview_id));
   $mview = $results->fetchObject();
 
-  // add a job or perform the action based on the given operation
+  // add a job to populate the mview
   $args = array("$mview_id");
   tripal_add_job("Populate materialized view '$mview->name'", 'tripal_core',
      'tripal_populate_mview', $args, $user->uid);

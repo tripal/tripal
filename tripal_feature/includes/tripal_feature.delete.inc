@@ -81,11 +81,11 @@ function tripal_feature_delete_form() {
 function tripal_feature_delete_form_validate($form, &$form_state) {
   $organism_id   = $form_state['values']['organism_id'];
   $seq_type      = trim($form_state['values']['seq_type']);
-  $analysis_id   = $form_state['values']['analysis_id'];
+  //$analysis_id   = $form_state['values']['analysis_id'];
   $is_unique     = $form_state['values']['is_unique'];
   $feature_names = $form_state['values']['feature_names'];
 
-  if (!$organism_id and !$anaysis_id and !$seq_type and !$feature_names) {
+  if (!$organism_id and !$seq_type and !$feature_names) { // !$anaysis_id and
     form_set_error('feature_names', t("Please select at least one option"));
   }
 
@@ -117,9 +117,10 @@ function tripal_feature_delete_form_submit($form, &$form_state) {
 
   $organism_id   = $form_state['values']['organism_id'];
   $seq_type      = trim($form_state['values']['seq_type']);
-  $analysis_id   = $form_state['values']['analysis_id'];
+  //$analysis_id   = $form_state['values']['analysis_id'];
   $is_unique     = $form_state['values']['is_unique'];
   $feature_names = $form_state['values']['feature_names'];
+  $analysis_id = NULL;
 
   $args = array($organism_id, $analysis_id, $seq_type, $is_unique, $feature_names);
 
@@ -152,47 +153,74 @@ function tripal_feature_delete_features($organism_id, $analysis_id, $seq_type,
   global $user;
   $match = array();
 
-  // if feature names have been provided then handle that separately
-  if ($feature_names) {
-    $names = preg_split('/\s+/', $feature_names);
-    if (sizeof($names) == 1) {
-      $names = $names[0];
+  // Deleting of features will cause a cascade delete on the
+  // featureloc table which in turn will wind up calling create_point
+  // function which is not prefix with the schema, and an error occurs.
+  // Therefore, we set the active database to chado to get around that
+  // problem.
+  $previous_db = chado_set_active('chado');
+  
+  // begin the transaction
+  $transaction = db_transaction();
+  print "\nNOTE: Loading of this GFF file is performed using a database transaction. \n" .
+      "If the load fails or is terminated prematurely then the entire set of \n" .
+      "insertions/updates is rolled back and will not be found in the database\n\n";
+
+  try {
+    
+    
+    // if feature names have been provided then handle that separately
+    if ($feature_names) {
+      $names = preg_split('/\s+/', $feature_names);
+      if (sizeof($names) == 1) {
+        $names = $names[0];
+      }
+      if ($is_unique) {
+        $match['uniquename'] = $names;
+      }
+      else {
+        $match['name'] = $names;
+      }
+      $num_deletes = chado_select_record('feature', array('count(*) as cnt'), $match);
+      print "Deleting " . $num_deletes[0]->cnt . " features\n";
+      
+      chado_delete_record('feature', $match);
     }
-    if ($is_unique) {
-      $match['uniquename'] = $names;
+  
+    // if the user has provided an analysis_id then handle that separately
+    elseif ($analysis_id) {
+      tripal_feature_delete_by_analysis();
     }
     else {
-      $match['name'] = $names;
+  
+      if ($organism_id) {
+        $match['organism_id'] = $organism_id;
+      }
+      if ($seq_type) {
+        $match['type_id'] = array(
+          'name' => $seq_type,
+          'cv_id' => array(
+            'name' => 'sequence'
+          ),
+        );
+      }
+      $num_deletes = chado_select_record('feature', array('count(*) as cnt'), $match);
+      print "Deleting " . $num_deletes[0]->cnt . " features\n";
+      chado_delete_record('feature', $match);
     }
-    $num_deletes = chado_select_record('feature', array('count(*) as cnt'), $match);
-    print "Deleting " . $num_deletes[0]->cnt . " features\n";
-    chado_delete_record('feature', $match);
+  
+    print "Removing orphaned feature pages\n";
+    chado_cleanup_orphaned_nodes('feature');
   }
-
-  // if the user has provided an analysis_id then handle that separately
-  elseif ($analysis_id) {
-    tripal_feature_delete_by_analysis();
+  catch (Exception $e) {
+    print "\n"; // make sure we start errors on new line
+    $transaction->rollback();
+    print "FAILED: Rolling back database changes...\n";
+    watchdog_exception('tripal_feature', $e);
+    return 0;
   }
-  else {
-
-    if ($organism_id) {
-      $match['organism_id'] = $organism_id;
-    }
-    if ($seq_type) {
-      $match['type_id'] = array(
-        'name' => $seq_type,
-        'cv_id' => array(
-          'name' => 'sequence'
-        ),
-      );
-    }
-    $num_deletes = chado_select_record('feature', array('count(*) as cnt'), $match);
-    print "Deleting " . $num_deletes[0]->cnt . " features\n";
-    chado_delete_record('feature', $match);
-  }
-
-  print "Removing orphaned feature pages\n";
-  tripal_features_cleanup(array(), $user->uid);
+  chado_set_active($previous_db);
+  print "\nDone\n";
 }
 
 /**

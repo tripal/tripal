@@ -796,7 +796,7 @@ function tripal_job_set_progress($job_id, $percentage) {
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
  * This function has been replaced by tripal_update_mview().
  *
- * @see tripal_update_mview().
+ * @see tripal_refresh_mview() or tripal_delete_mview().
  */
 function tripal_mviews_action($op, $mview_id, $redirect = FALSE) {
 
@@ -807,12 +807,16 @@ function tripal_mviews_action($op, $mview_id, $redirect = FALSE) {
       "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
       array(
         '%old_function'=>'tripal_mviews_action',
-        '%new_function' => 'tripal_add_populate_mview'
+        '%new_function' => 'tripal_refresh_mview'
       )
     );
 
     //New API Function
-    return tripal_add_job_populate_mview($mview_id, $redirect);
+    $ret = tripal_refresh_mview($mview_id, $redirect);
+    if ($redirect) {
+      drupal_goto("admin/tripal/schema/mviews");
+    }
+    return $ret;
   }
   if ($op == 'delete') {
     tripal_report_error(
@@ -826,7 +830,11 @@ function tripal_mviews_action($op, $mview_id, $redirect = FALSE) {
     );
 
     //New API Function
-    return tripal_delete_mview($mview_id, $redirect);
+    $ret = tripal_delete_mview($mview_id, $redirect);
+    if ($redirect) {
+      drupal_goto("admin/tripal/schema/mviews");
+    }
+    return $ret;
   }
 }
 
@@ -871,6 +879,27 @@ function tripal_update_mview($mview_id) {
   return tripal_populate_mview($mview_id);
 }
 
+/**
+ * @deprecated Restructured API to make naming more readable and consistent.
+ * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
+ * This function is considered to be no easier to use than tripal_get_mview_id directly
+ * tripal_get_mview_id().
+ *
+ * @see tripal_get_mview_id().
+ */
+function tripal_mviews_get_mview_id($view_name) {
+  tripal_report_error(
+    'tripal_deprecated', TRIPAL_NOTICE,
+    "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
+    array(
+      '%old_function'=>'tripal_mviews_get_mview_id',
+      '%new_function' => 'tripal_get_mview_id'
+    )
+  );
+  
+  //New API Function
+  return tripal_get_mview_id($view_name);
+}
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.

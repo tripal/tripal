@@ -30,9 +30,8 @@ if (count($s_terms) > 0) { ?>
     // can be found here:
     // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
     $rows = array();
-    
-    foreach ($terms as $term) { 
 
+    foreach ($terms as $term) { 
       $accession = $term->cvterm_id->dbxref_id->accession;
       if (is_numeric($term->cvterm_id->dbxref_id->accession)) {
         $accession = $term->cvterm_id->dbxref_id->db_id->name . ":" . $term->cvterm_id->dbxref_id->accession;

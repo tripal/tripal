@@ -199,7 +199,7 @@ function chado_get_property($basetable, $record_id, $property, $cv_name, $proper
  * @ingroup tripal_chado_api
  */
 function chado_insert_property($basetable, $record_id, $property,
-$cv_name, $value, $update_if_present = 0) {
+  $cv_name, $value, $update_if_present = 0) {
 
   // first see if the property already exists, if the user want's to update
   // then we can do that, but otherwise we want to increment the rank and

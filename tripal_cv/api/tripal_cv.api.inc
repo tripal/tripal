@@ -873,12 +873,13 @@ function tripal_autocomplete_cvterm($cv_id, $string = '') {
  * @param $record_id
  *   The primary key of the basetable to associate the cvterm with. This should be in integer.
  * @param $cvterm
- *   An associative array describing the cvterm. Valid keys include: 'name' => the
- *   name for the cvterm, 'cv_name' => the name of the cv the cvterm belongs to;
- *   'cv_id' => the primary key of the cv the cvterm belongs to.
+ *   An associative array describing the cvterm. Valid keys include: 
+ *     - name: the name for the cvterm, 
+ *     - cv_name: the name of the cv the cvterm belongs to.
+ *     - cv_id: the primary key of the cv the cvterm belongs to.
  * @param $options
  *   An associative array of options. Valid keys include:
- *    - insert_cvterm: Insert the cvterm if it doesn't already exist. FALSE is the default
+ *     - insert_cvterm: Insert the cvterm if it doesn't already exist. FALSE is the default
  *
  * @ingroup tripal_db_api
  */
@@ -889,23 +890,21 @@ function tripal_associate_cvterm($basetable, $record_id, $cvterm) {
   // Default Values
   $options['insert_cvterm'] = (isset($options['insert_cvterm'])) ? $options['insert_cvterm'] : FALSE;
 
-  // If the cvterm_id is set then we know it already exists
-  // Otherwise, select to check
+  // If the cvterm_id is not set then find the cvterm record using the name and cv_id
   if (!isset($cvterm['cvterm_id'])) {
     $values = array(
       'name' => $cvterm['name'],
     );
     if (isset($cvterm['cv_id'])) {
       $values['cv_id'] = $cvterm['cv_id'];
-    } elseif (isset($cvterm['cv_name'])) {
+    } 
+    elseif (isset($cvterm['cv_name'])) {
       $values['cv_id'] = array(
         'name' => $cvterm['cv_name']
       );
     }
     else {
-      tripal_report_error(
-        'tripal_cv_api',
-        TRIPAL_WARNING,
+      tripal_report_error('tripal_cv_api', TRIPAL_WARNING,
         "tripal_associate_cvterm: The cvterm needs to have either the cv_name or cv_id
           supplied. You were trying to associate a cvterm with the %base %record_id
           and supplied the cvterm values: %cvterm.",
@@ -913,7 +912,10 @@ function tripal_associate_cvterm($basetable, $record_id, $cvterm) {
       );
       return FALSE;
     }
-    $select = chado_select_record('cvterm',array('*'), $values);
+
+    // Get the cvterm. If it doesn't exist then add it if the option
+    // 'insert_cvterm' is set.
+    $select = chado_select_record('cvterm', array('*'), $values);
     if ($select) {
       $cvterm['cvterm_id'] = $select[0]->cvterm_id;
     }
@@ -924,9 +926,7 @@ function tripal_associate_cvterm($basetable, $record_id, $cvterm) {
         $cvterm['cvterm_id'] = $insert->cvterm_id;
       }
       else {
-        tripal_report_error(
-          'tripal_cv_api',
-          TRIPAL_WARNING,
+        tripal_report_error('tripal_cv_api', TRIPAL_WARNING,
           "tripal_associate_cvterm: Unable to insert the cvterm using the cvterm values: %cvterm.",
           array('%cvterm' => print_r($cvterm,TRUE))
         );
@@ -934,16 +934,14 @@ function tripal_associate_cvterm($basetable, $record_id, $cvterm) {
       }
     }
     else {
-      tripal_report_error(
-        'tripal_api',
-        TRIPAL_WARNING,
+      tripal_report_error('tripal_api', TRIPAL_WARNING,
         "tripal_associate_cvterm: The cvterm doesn't already exist. You supplied the cvterm values: %cvterm.",
         array('%cvterm' => print_r($cvterm,TRUE))
       );
       return FALSE;
     }
   }
-
+  
   // Now add the link between the record & cvterm
   if ($cvterm['cvterm_id'] > 0) {
     $values = array(
@@ -952,15 +950,12 @@ function tripal_associate_cvterm($basetable, $record_id, $cvterm) {
       'pub_id' => 1,
     );
 
+    // Check if the cvterm is already associated. If so, don't re-add it.
     $result = chado_select_record($linking_table, array('*'), $values);
-
-    // if it doesn't already exist then add it
     if (!$result) {
       $success = chado_insert_record($linking_table, $values);
       if (!$success) {
-        tripal_report_error(
-          'tripal_api',
-          TRIPAL_WARNING,
+        tripal_report_error('tripal_api', TRIPAL_WARNING,
           "Failed to insert the %base record %term",
           array('%base' => $linking_table, '%term' => $cvterm['name'])
         );

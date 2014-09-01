@@ -723,7 +723,7 @@ function chado_cleanup_orphaned_nodes($table, $job_id = NULL) {
       $sql = "DELETE FROM {chado_" . $table . "} WHERE " . $table . "_id = :" . $table . "_id";
       db_query($sql, array(":" . $table . "_id" => $nid->$table_id));
       $message = "chado_$table missing $table.... DELETING entry.";
-      watchdog('tripal_core', $message, array(), WATCHDOG_WARNING);
+      watchdog('tripal_core', $message, array(), WATCHDOG_NOTICE);
     }
     $i++;
   }
@@ -747,7 +747,7 @@ function chado_cleanup_orphaned_nodes($table, $job_id = NULL) {
       if (node_access('delete', $node)) {
         $deleted++;
         $message = "Node missing in chado_$table table.... DELETING node $node->nid";
-        watchdog("tripal_core", $message, array(), WATCHDOG_WARNING);
+        watchdog("tripal_core", $message, array(), WATCHDOG_NOTICE);
         node_delete($node->nid);
       }
       else {
