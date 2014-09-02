@@ -801,13 +801,9 @@ function tripal_cv_obo_add_relationship($cvterm, $defaultcv, $rel,
     'subject_id' => $cvterm->cvterm_id,
     'object_id'  => $objcvterm->cvterm_id
   );
-  $options = array('statement_name' => 'sel_cvtermrelationship_tysuob');
-  $result = chado_select_record('cvterm_relationship', array('*'), $values, $options);
+  $result = chado_select_record('cvterm_relationship', array('*'), $values);
   if (count($result) == 0) {
-    $options = array(
-      'statement_name' => 'ins_cvtermrelationship_tysuob',
-      'return_record' => FALSE
-    );
+    $options = array('return_record' => FALSE);
     $success = chado_insert_record('cvterm_relationship', $values, $options);
     if (!$success) {
       tripal_cv_obo_quiterror("Cannot add term relationship: '$cvterm->name' $rel '$objcvterm->name'");
@@ -827,8 +823,7 @@ function tripal_cv_obo_add_relationship($cvterm, $defaultcv, $rel,
  */
 function tripal_cv_obo_get_term($id) {
   $values = array('id' => $id);
-  $options = array('statement_name' => 'sel_tripalobotemp_id');
-  $result = chado_select_record('tripal_obo_temp', array('stanza'), $values, $options);
+  $result = chado_select_record('tripal_obo_temp', array('stanza'), $values);
   if (count($result) == 0) {
     return FALSE;
   }
@@ -869,7 +864,7 @@ function tripal_cv_obo_add_synonyms($term, $cvterm) {
           'name' => 'synonym_type',
         ),
       );
-      $options = array('statement_name' => 'sel_cvterm_nacv', 'is_updlicate' => 1);
+      $options = array('is_duplicate' => 1);
       $results = chado_select_record('cvterm', array('*'), $values, $options);
 
       // if it doesn't exist then add it
@@ -897,18 +892,14 @@ function tripal_cv_obo_add_synonyms($term, $cvterm) {
         'cvterm_id' => $cvterm->cvterm_id,
         'synonym' => $def
       );
-      $options = array('statement_name' => 'sel_cvtermsynonym_cvsy');
-      $results = chado_select_record('cvtermsynonym', array('*'), $values, $options);
+      $results = chado_select_record('cvtermsynonym', array('*'), $values);
       if (count($results) == 0) {
         $values = array(
           'cvterm_id' => $cvterm->cvterm_id,
           'synonym' => $def,
           'type_id' => $syntype->cvterm_id
         );
-        $options = array(
-          'statement_name' => 'ins_cvtermsynonym_cvsy',
-          'return_record' => FALSE
-        );
+        $options = array('return_record' => FALSE);
         $success = chado_insert_record('cvtermsynonym', $values, $options);
         if (!$success) {
           tripal_cv_obo_quiterror("Failed to insert the synonym for term: $name ($def)");
@@ -1006,8 +997,7 @@ function tripal_cv_obo_parse($obo_file, &$header, $jobid) {
           'stanza' => base64_encode(serialize($stanza)),
           'type' => $type,
         );
-        $options = array('statement_name' => 'ins_tripalobotemp_all');
-        $success = chado_insert_record('tripal_obo_temp', $values, $options);
+        $success = chado_insert_record('tripal_obo_temp', $values);
         if (!$success) {
           tripal_report_error('T_obo_loader', "ERROR: Cannot insert stanza into temporary table.", array(), 'error');
           exit;
@@ -1055,8 +1045,7 @@ function tripal_cv_obo_parse($obo_file, &$header, $jobid) {
       'stanza' => base64_encode(serialize($stanza)),
       'type' => $type,
     );
-    $options = array('statement_name' => 'ins_tripalobotemp_all');
-    chado_insert_record('tripal_obo_temp', $values, $options);
+    chado_insert_record('tripal_obo_temp', $values);
     if (!$success) {
       tripal_report_error('T_obo_loader', "ERROR: Cannot insert stanza into temporary table.", array(), 'error');
       exit;
@@ -1114,13 +1103,9 @@ function tripal_cv_obo_add_cvterm_dbxref($cvterm, $xref) {
     'cvterm_id' => $cvterm->cvterm_id,
     'dbxref_id' => $dbxref->dbxref_id,
   );
-  $options = array('statement_name' => 'sel_cvtermdbxref_cvdb');
-  $result = chado_select_record('cvterm_dbxref', array('*'), $values, $options);
+  $result = chado_select_record('cvterm_dbxref', array('*'), $values);
   if (count($result) == 0) {
-    $ins_options = array(
-      'statement_name' => 'ins_cvtermdbxref_cvdb',
-      'return_record' => FALSE
-    );
+    $ins_options = array('return_record' => FALSE);
     $result = chado_insert_record('cvterm_dbxref', $values, $ins_options);
     if (!$result) {
       tripal_cv_obo_quiterror("Cannot add cvterm_dbxref: $xref");
@@ -1158,8 +1143,7 @@ function tripal_cv_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
     'name' => $property,
     'cv_id' => $cv->cv_id,
   );
-  $options = array('statement_name' => 'sel_cvterm_nacv_na');
-  $results = chado_select_record('cvterm', array('*'), $values, $options);
+  $results = chado_select_record('cvterm', array('*'), $values);
   if (count($results) == 0) {
     $term = array(
       'name' => $property,
@@ -1182,8 +1166,7 @@ function tripal_cv_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
   // remove any properties that currently exist for this term.  We'll reset them
   if ($rank == 0) {
     $values = array('cvterm_id' => $cvterm->cvterm_id);
-    $options = array('statement_name' => 'del_cvtermprop_cv');
-    $success = chado_delete_record('cvtermprop', $values, $options);
+    $success = chado_delete_record('cvtermprop', $values);
     if (!$success) {
        tripal_cv_obo_quiterror("Could not remove existing properties to update property $property for term\n");
        return FALSE;
@@ -1197,10 +1180,7 @@ function tripal_cv_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
     'value' => $value,
     'rank' => $rank,
   );
-  $options = array(
-    'statement_name' => 'ins_cvtermprop_cvtyvara',
-    'return_record' => FALSE,
-  );
+  $options = array('return_record' => FALSE);
   $result = chado_insert_record('cvtermprop', $values, $options);
   if (!$result) {
     tripal_cv_obo_quiterror("Could not add property $property for term\n");
@@ -1230,8 +1210,7 @@ function tripal_cv_obo_add_dbxref($db_id, $accession, $version='', $description=
     'db_id' => $db_id,
     'accession' => $accession,
   );
-  $options = array('statement_name' => 'sel_dbxref_idac');
-  $result = chado_select_record('dbxref', array('dbxref_id'), $values, $options);
+  $result = chado_select_record('dbxref', array('dbxref_id'), $values);
   if (count($result) == 0) {
     $ins_values = array(
       'db_id'       => $db_id,
@@ -1239,10 +1218,7 @@ function tripal_cv_obo_add_dbxref($db_id, $accession, $version='', $description=
       'version'     => $version,
       'description' => $description,
     );
-    $ins_options = array(
-      'statement_name' => 'ins_dbxref_idacvede',
-      'return_record' => FALSE
-    );
+    $ins_options = array('return_record' => FALSE);
     $result = chado_insert_record('dbxref', $ins_values, $ins_options);
     if (!$result) {
       tripal_cv_obo_quiterror("Failed to insert the dbxref record $accession");

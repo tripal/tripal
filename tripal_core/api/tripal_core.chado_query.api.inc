@@ -1044,8 +1044,7 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
   $where = array();
   $args = array();
 
-  // if the 'use_unique' option is turned on then we want
-  // to remove all but unique keys
+  // if the 'is_duplicate' option is turned on then we want to remove all but unique keys
   if ($options['is_duplicate'] and array_key_exists('unique keys', $table_desc)) {
     $ukeys = $table_desc['unique keys'];
     $has_results = 0;
@@ -1105,8 +1104,9 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
         // is a duplicate so return FALSE
         else {
           tripal_report_error('tripal_core', TRIPAL_ERROR,
-            'chado_select_record: There is no value for %field thus we cannot check if this record is unique',
-            array('%field' => $field), array('print' => $print_errors));
+            'chado_select_record: There is no value for %field thus we cannot ' .
+            ' check if this record for table, %table, is unique.',
+            array('%field' => $field, '%table' => $table), array('print' => $print_errors));
           return FALSE;
         }
       }

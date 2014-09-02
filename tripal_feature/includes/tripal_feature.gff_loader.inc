@@ -87,8 +87,9 @@ function tripal_feature_gff3_load_form() {
     '#title'       => t('ID Attribute'),
     '#type'        => t('textfield'),
     '#description' => t("Optional. Sometimes lines in the GFF file are missing the
-      required ID attribute that specifies the unique name of the feature.  If so,
-      you may specify an the name of an existing  attribute to use for the name."),
+      required ID attribute that specifies the unique name of the feature, but there
+      may be another attribute that can uniquely identify the feature.  If so,
+      you may specify the name of the attribute to use for the name."),
   );
 
   $form['import_options'] = array(

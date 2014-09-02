@@ -3,7 +3,7 @@
 $library  = $variables['node']->library;
 
 // get the library description. IT uses a tern name of 'Library Description'
-$libprop = tripal_library_get_property($library->library_id, 'Library Description');
+$libprop = chado_get_property('library', $library->library_id, 'Library Description', 'library_property');
 $description = $libprop->value; ?>
 
 <div class="tripal_library-data-block-desc tripal-data-block-desc"></div> <?php 

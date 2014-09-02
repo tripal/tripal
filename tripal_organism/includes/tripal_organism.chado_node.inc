@@ -343,7 +343,7 @@ function chado_organism_insert($node) {
   }
 
   // add the image
-  if (property_exists($node, organism_image)) {
+  if (property_exists($node, 'organism_image')) {
     chado_organism_add_image($node);
   }
 }
