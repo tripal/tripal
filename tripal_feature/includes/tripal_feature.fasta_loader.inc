@@ -77,7 +77,6 @@ function tripal_feature_fasta_load_form() {
        not exist and upate those that do.'),
     '#default_value' => 2,
   );
-
   $form['match_type']= array(
     '#type' => 'radios',
     '#title' => 'Name Match Type',
