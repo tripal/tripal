@@ -140,8 +140,8 @@ function chado_feature_form($node, &$form_state) {
     '#maxlength' => 255
   );
 
-  $type_options = tripal_get_cvterm_default_select_options('feature', 'type_id', 'feature types');
-  $type_options[0] = 'Select a Type';
+  //$type_options = tripal_get_cvterm_default_select_options('feature', 'type_id', 'feature types');
+  //$type_options[0] = 'Select a Type';
   $type_cv = tripal_get_default_cv('feature', 'type_id');
   $cv_id = $type_cv->cv_id;
 
@@ -733,6 +733,12 @@ function tripal_feature_node_presave($node) {
 
   // set the title to ensure it is always unique
   switch ($node->type) {
+    // This step is for setting the title for the Drupal node.  This title
+    // is permanent and thus is created to be unique.  Title changes provided
+    // by tokens are generated on the fly dynamically, but the node title
+    // seen in the content listing needs to be set here. Do not call
+    // the chado_get_node_title() function here to set the title as the node
+    // object isn't properly filled out and the function will fail.
     case 'chado_feature':
       // for a form submission the fields are part of the node object
       // but for a sync the fields are in an object of the node
@@ -760,9 +766,6 @@ function tripal_feature_node_presave($node) {
       $organism = chado_select_record('organism', array('genus', 'species'), $values);
       $node->title = "$name, $uname ($type) " . $organism[0]->genus . ' ' . $organism[0]->species;
 
-      if ($name == $uname) {
-        $node->title = "$name ($type) " . $organism[0]->genus . ' ' . $organism[0]->species;
-      }
       break;
   }
 }

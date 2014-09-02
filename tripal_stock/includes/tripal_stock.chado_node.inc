@@ -38,30 +38,18 @@ function tripal_stock_node_info() {
 
 /**
  * Implements hook_load().
- * Prepares the chado_stock node
  *
- * @param $node
- *   The basic node containing all variables common to all nodes
- *
- * @return
- *   A stock node containing all the variables from the basic node and all stock specific variables
- *
- * D7 @todo: Make optimizations to take advantage of $nodes
+ * When a node is requested by the user this function is called to allow us
+ *  to add auxiliary data to the node object.
  *
  * @ingroup tripal_stock
  */
 function chado_stock_load($nodes) {
 
-  $new_nodes = array();
   foreach ($nodes as $nid => $node) {
 
-    // get the stock details from chado
-    if (isset($node->stock_id)) {
-      $stock_id = $node->stock_id;
-    }
-    else {
-      $stock_id = chado_get_id_from_nid('stock', $nid);
-    }
+    // find the stock and add in the details
+    $stock_id = chado_get_id_from_nid('stock', $nid);
 
     // if the nid does not have a matching record then skip this node.
     // this can happen with orphaned nodes.
@@ -72,22 +60,13 @@ function chado_stock_load($nodes) {
     // build the variable with all the stock details
     $values = array('stock_id' => $stock_id);
     $stock = chado_generate_var('stock', $values);
-
-    // add in the uniquename and the description as these are both text fields
     $stock = chado_expand_var($stock, 'field', 'stock.uniquename');
     $stock = chado_expand_var($stock, 'field', 'stock.description');
+    $nodes[$nid]->stock = $stock;
 
-    // add this to the node
-    $node->stock = $stock;
-    $new_nodes[$nid] = $node;
-
-    // If your module is using the Chado Node: Title & Path API to allow custom titles
-    // for your node type. Every time you want the title of the node, you need to use the
-    // following API function:
+    // Now get the title
     $node->title = chado_get_node_title($node);
   }
-
-  return $new_nodes;
 }
 
 /**
@@ -192,48 +171,42 @@ function chado_stock_form($node, $form_state) {
     $dbxref_database = $form_state['input']['database'];
   }
 
-  $form['names'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Stock Name')
-  );
-
-  $form['names']['sname'] = array(
+  $form['sname'] = array(
     '#type' => 'textfield',
-    '#title' => t('Name'),
+    '#title' => t('Stock Name'),
+    '#description' => t('Enter a human-readable name for this stock.'),
     '#default_value' => $sname,
-    '#required'       => TRUE
+    '#required' => TRUE
   );
 
-  $form['names']['uniquename'] = array(
+  $form['uniquename'] = array(
     '#type' => 'textfield',
     '#title' => t('Unique Name'),
     '#default_value' => $uniquename,
+    '#description' => t('Enter a unique name for this stock. This name must be unique for the organism and stock type.'),
     '#required'       => TRUE
   );
 
   if ($stock_id > 0) {
-    $form['names']['stock_id'] = array(
+    $form['stock_id'] = array(
       '#type' => 'hidden',
       '#value' => $stock_id,
     );
   }
 
-  $form['details'] = array(
-    '#type' => 'fieldset',
-    '#title' =>  t('Stock Details')
-  );
-
+  // TODO: Should we make this a textfield with an autocomplete field like the
+  // feature type_id field?.
   $type_options = tripal_get_cvterm_default_select_options('stock', 'type_id', 'stock types');
   $type_options[0] = 'Select a Type';
 
-  $form['details']['type_id'] = array(
+  $form['type_id'] = array(
     '#type' => 'select',
     '#title' => t('Type of Stock'),
+    '#description' => t('Select the stock type.'),
     '#options' => $type_options,
     '#default_value' => $type_id,
     '#required'    => TRUE,
   );
-
 
   // get the list of organisms
   $sql = "SELECT * FROM {organism} ORDER BY genus, species";
@@ -243,16 +216,16 @@ function chado_stock_form($node, $form_state) {
   while ($organism = $org_rset->fetchObject()) {
     $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
   }
-  $form['details']['organism_id'] = array(
+  $form['organism_id'] = array(
     '#type' => 'select',
-    '#title' => t('Source Organism for stock'),
+    '#title' => t('Organism'),
     '#default_value' => $organism_id,
+    '#description' => t('Choose the organism with which this stock is associated.'),
     '#options' => $organisms,
     '#required'    => TRUE
   );
 
-
-  $form['details']['stock_description'] = array(
+  $form['stock_description'] = array(
     '#type' => 'textarea',
     '#title' => t('Notes'),
     '#default_value' => $sdescription,
@@ -261,13 +234,29 @@ function chado_stock_form($node, $form_state) {
 
   $form['database_reference'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Stock Database Reference')
+    '#title' => t('Stock Database Reference'),
+    '#description' => t('If this site is not the primary location for information 
+        about this stock, please provide the name of the database, the accession
+        and an optional description using the fields below. If the database
+        is not present in the list, then please ') . 
+        l(t('add the database '), 'admin/tripal/chado/tripal_db/add', array('attributes' => array('target' => '_blank'))) .
+        t('then refresh this page.'), 
+  );
+  
+  $db_options = tripal_get_db_select_options();
+  $form['database_reference']['database'] = array(
+    '#type' => 'select',
+    '#title' => t('Database'),
+    '#options' => $db_options,
+    '#default_value' => $dbxref_database,
+    '#description' => t('Select the remote database.')
   );
 
   $form['database_reference']['accession'] = array(
     '#type' => 'textfield',
     '#title' => t('Accession'),
     '#default_value' => $dbxref_accession,
+    '#description' => t('Please enter the accession in the remote database for this stock.')
   );
 
   $form['database_reference']['db_description'] = array(
@@ -275,16 +264,10 @@ function chado_stock_form($node, $form_state) {
     '#title' => t('Description of Database Reference'),
     '#default_value' => $dbxref_description,
     '#description' => t('Optionally enter a description about the database accession.')
+    
   );
 
-  $db_options = tripal_get_db_select_options();
-  $db_options[0] = 'Select a Database';
-  $form['database_reference']['database'] = array(
-    '#type' => 'select',
-    '#title' => t('Database'),
-    '#options' => $db_options,
-    '#default_value' => $dbxref_database
-  );
+
 
   // PROPERTIES FORM
   //---------------------------------------------
@@ -457,6 +440,9 @@ function chado_stock_insert($node) {
 
   $node->uniquename   = trim($node->uniquename);
   $node->sname        = trim($node->sname);
+  $node->accession    = trim($node->accession);
+  
+  $stock_id = '';
 
   // if there is an stock_id in the $node object then this must be a sync so
   // we can skip adding the stock to chado as it is already there, although
@@ -465,117 +451,86 @@ function chado_stock_insert($node) {
 
     // before we can add the stock, we must add the dbxref if one has been
     // provided by the user.
-    $dbxref_status = 0;
-    if (!empty($node->accession) ) {
-      if (!empty($node->database) ) {
-        $values = array(
-          'db_id' => $node->database,
-          'accession' => $node->accession,
-        );
-        if (!chado_select_record('dbxref', array('dbxref_id'), $values)) {
-          $values['description'] = $node->db_description;
-          $values['version'] = '1';
-          $dbxref_status = chado_insert_record('dbxref', $values);
-          if (!$dbxref_status) {
-            drupal_set_message(t('Unable to add database reference to this stock.'), 'warning');
-            tripal_report_error('tripal_stock', TRIPAL_WARNING,
-              'Insert Stock: Unable to create dbxref where values:%values',
-              array('%values' => print_r($values, TRUE)));
-          }
-        }
-        else {
-          $dbxref_status = 1;
+    $dbxref = NULL;
+    if (!empty($node->accession) and !empty($node->database)) {
+      $values = array(
+        'db_id' => $node->database,
+        'accession' => $node->accession,
+      );
+      if (!chado_select_record('dbxref', array('dbxref_id'), $values)) {
+        $values['description'] = $node->db_description;
+        $values['version'] = '1';
+        $dbxref = chado_insert_record('dbxref', $values);
+        if (!$dbxref) {
+          drupal_set_message(t('Unable to add database reference to this stock.'), 'warning');
+          tripal_report_error('tripal_stock', TRIPAL_WARNING,
+            'Insert Stock: Unable to create dbxref where values:%values',
+            array('%values' => print_r($values, TRUE)));
         }
       }
     }
 
     // create stock including the dbxref
     $stock = '';
-    if ($dbxref_status) {
-      $values = array(
-        'dbxref_id' => array(
-          'db_id' => $node->database,
-          'accession' => $node->accession
-        ),
-        'organism_id' => $node->organism_id,
-        'name' => $node->sname,
-        'uniquename' => $node->uniquename,
-        'description' => $node->stock_description,
-        'type_id' => $node->type_id
+    $values = array(
+      'organism_id' => $node->organism_id,
+      'name'        => $node->sname,
+      'uniquename'  => $node->uniquename,
+      'description' => $node->stock_description,
+      'type_id'     => $node->type_id
+    );
+    if ($dbxref) {
+      $values['dbxref_id'] = array(
+        'db_id' => $node->database,
+        'accession' => $node->accession
       );
-      $stock = chado_insert_record('stock', $values);
     }
-    // create a stock without a dbxref
-    else {
-      $values = array(
-        'organism_id' => $node->organism_id,
-        'name'        => $node->sname,
-        'uniquename'  => $node->uniquename,
-        'description' => $node->stock_description,
-        'type_id'     => $node->type_id
-      );
-      $stock = chado_insert_record('stock', $values);
+    $stock = chado_insert_record('stock', $values);
+    if (!$stock) {
+      drupal_set_message(t('Unable to add stock.'), 'warning');
+      tripal_report_error('tripal_stock', TRIPAL_WARNING, 'Insert stock: Unable to create stock where values: %values',
+        array('%values' => print_r($values, TRUE)));
+      return;
     }
+    $stock_id = $stock['stock_id'];
 
-    if (is_array($stock)) {
-      $stock_added = TRUE;
-      $stock_id = $stock['stock_id'];
-    }
-    else {
-      $stock_added = FALSE;
-    }
+    // Now add properties
+    $details = array(
+      'property_table' => 'stockprop',
+      'base_table' => 'stock',
+      'foreignkey_name' => 'stock_id',
+      'foreignkey_value' => $stock_id
+    );
+    chado_update_node_form_properties($node, $details);
 
-    if ($stock_added) {
+    // Now add the additional references
+    $details = array(
+      'linking_table' => 'stock_dbxref',
+      'foreignkey_name' => 'stock_id',
+      'foreignkey_value' => $stock_id
+    );
+    chado_update_node_form_dbxrefs($node, $details);
 
-      // Now add properties
-      $details = array(
-        'property_table' => 'stockprop',
-        'base_table' => 'stock',
-        'foreignkey_name' => 'stock_id',
-        'foreignkey_value' => $stock_id
-      );
-      chado_update_node_form_properties($node, $details);
-
-      // Now add the additional references
-      $details = array(
-        'linking_table' => 'stock_dbxref',
-        'foreignkey_name' => 'stock_id',
-        'foreignkey_value' => $stock_id
-      );
-      chado_update_node_form_dbxrefs($node, $details);
-
-      // Now add in relationships
-      $details = array(
-        'relationship_table' => 'stock_relationship',
-        'foreignkey_value' => $stock_id
-      );
-      chado_update_node_form_relationships($node, $details);
-    }
-  } //end of adding stock to chado
-  else {
-    // stock already exists since this is a sync
-    $stock_added = TRUE;
-    $stock['stock_id'] = $node->stock_id;
-  }
-
-  // if the stock creation was succesful then add the URL and the entry in the
-  // chado_stock table
-  if ($stock_added) {
-
-    // add the entry to the chado_stock table
-    db_insert('chado_stock')->fields(array(
-      'nid' => (int) $node->nid,
-      'vid' => (int) $node->vid,
-      'stock_id' => (int) $stock['stock_id']
-    ))->execute();
-
+    // Now add in relationships
+    $details = array(
+      'relationship_table' => 'stock_relationship',
+      'foreignkey_value' => $stock_id
+    );
+    chado_update_node_form_relationships($node, $details);
   }
   else {
-    drupal_set_message(t('Error during stock creation.'), 'error');
-    tripal_report_error('tripal_stock', TRIPAL_WARNING,
-      'Insert Stock: Unable to create stock where values:%values',
-      array('%values' => print_r($values, TRUE)));
-    return FALSE;
+    $stock_id = $node->stock_id;
+  }
+  
+  // Make sure the entry for this stock doesn't already exist in the
+  // chado_stock table if it doesn't exist then we want to add it.
+  $check_org_id = chado_get_id_from_nid('stock', $node->nid);
+  if (!$check_org_id) {
+    $record = new stdClass();
+    $record->nid = $node->nid;
+    $record->vid = $node->vid;
+    $record->stock_id = $stock_id;
+    drupal_write_record('chado_stock', $record);
   }
 }
 
@@ -774,9 +729,15 @@ function chado_stock_chado_node_sync_create_new_node($new_node, $record) {
 function tripal_stock_node_presave($node) {
 
   switch ($node->type) {
+    // This step is for setting the title for the Drupal node.  This title
+    // is permanent and thus is created to be unique.  Title changes provided 
+    // by tokens are generated on the fly dynamically, but the node title
+    // seen in the content listing needs to be set here. Do not call
+    // the chado_get_node_title() function here to set the title as the node
+    // object isn't properly filled out and the function will fail.
     case 'chado_stock':
-      // for a form submission the fields part of the node object
-      // but for a sync the fields are in an object of the node
+      // For a form submission the fields are part of the node object
+      // but for a sync the fields are in an object of the node.
       $organism_id = null;
       $sname = '';
       $uniquename = '';
@@ -798,15 +759,8 @@ function tripal_stock_node_presave($node) {
       }
       $values = array('organism_id' => $organism_id);
       $organism = chado_select_record('organism', array('genus','species'), $values);
+      $node->title = "$sname, $uniquename ($type) " . $organism[0]->genus . ' ' . $organism[0]->species;
 
-      // If your module is using the Chado Node: Title & Path API to allow custom titles
-      // for your node type. Every time you want the title of the node, you need to use the
-      // following API function:
-      $node->title = chado_get_node_title($node);
-
-      if ($sname == $uniquename) {
-        $node->title = "$sname ($type) " . $organism[0]->genus . ' ' . $organism[0]->species;
-      }
       break;
   }
 }
@@ -893,9 +847,9 @@ function tripal_stock_node_insert($node) {
       // we need to simulate one so that the right values are available for
       // the URL to be determined.
       $stock_id = chado_get_id_from_nid('stock', $node->nid);
-      $values = array('stock_id' => $stock_id);
-      $stock = chado_generate_var('stock', $values);
+      $stock = chado_generate_var('stock', array('stock_id' => $stock_id));
       $stock = chado_expand_var($stock, 'field', 'stock.uniquename');
+      $stock = chado_expand_var($stock, 'field', 'stock.description');
       $node->stock = $stock;
 
       // Set the Title.

@@ -1294,9 +1294,11 @@ function chado_get_token_value($token_info, $node) {
 
   $token = $token_info['token'];
   $table = $token_info['table'];
-  $location = explode('>', $token_info['location']);
-
   $var = $node;
+  
+  // Iterate through each portion of the location string. An example string
+  // might be:  stock > type_id > name.
+  $location = explode('>', $token_info['location']);
   foreach ($location as $index) {
     $index = trim($index);
 
@@ -1310,8 +1312,8 @@ function chado_get_token_value($token_info, $node) {
       }
       else {
         tripal_report_error('chado_node_api', TRIPAL_WARNING,
-          'Tokens: Unable to determine the value of %token. Things went awry when trying
-          to access %index for the following %var',
+          'Tokens: Unable to determine the value of %token. Things went awry when trying ' .
+          'to access %index for the following: %var.',
           array('%token' => $token, '%index' => $index, '%var' => print_r($var,TRUE))
         );
         return '';
@@ -1324,8 +1326,8 @@ function chado_get_token_value($token_info, $node) {
     }
     else {
       tripal_report_error('chado_node_api', TRIPAL_WARNING,
-        'Tokens: Unable to determine the value of %token. Things went awry when trying
-        to access %index for the following %var',
+        'Tokens: Unable to determine the value of %token. Things went awry when trying ' .
+        'to access %index for the following: %var.',
         array('%token' => $token, '%index' => $index, '%var' => print_r($var,TRUE))
       );
       return '';

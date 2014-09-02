@@ -679,6 +679,13 @@ function tripal_analysis_node_presave($node) {
   $program = '';
   $programversion = '';
   $sourcename = '';
+  
+  // This step is for setting the title for the Drupal node.  This title
+  // is permanent and thus is created to be unique.  Title changes provided
+  // by tokens are generated on the fly dynamically, but the node title
+  // seen in the content listing needs to be set here. Do not call
+  // the chado_get_node_title() function here to set the title as the node
+  // object isn't properly filled out and the function will fail.
 
   // If this is an analysis of some type it will should have three required
   // fields for the Chado analysis table: program, programversion and sourcename.

@@ -597,11 +597,8 @@ function tripal_example_node_presave($node) {
 
   // EXPLANATION: This node is useful for
   // making changes to the node prior to it being saved to the database.
-  // One useful case for this is to set the title of a node. In some cases
-  // such as for the organism module, the title will be set depending on
-  // what genus and species is provided. This hook can allow the title to
-  // be set using user supplied data before the node is saved.  In practice
-  // any change can be made to any fields in the node object.
+  // One useful case for this is to set the title of a node using values 
+  // supplied by the user.
   //
   // This function is not required. You probably won't need it if you
   //  don't define a custom node type in the hook_node_info() function. But
@@ -610,6 +607,12 @@ function tripal_example_node_presave($node) {
 
   // set the node title
   switch ($node->type) {
+    // This step is for setting the title for the Drupal node.  This title
+    // is permanent and thus is created to be unique.  Title changes provided
+    // by tokens are generated on the fly dynamically, but the node title
+    // seen in the content listing needs to be set here. Do not call
+    // the chado_get_node_title() function here to set the title as the node
+    // object isn't properly filled out and the function will fail.
     case 'chado_example':
       // for a form submission the 'uniquename' field will be set,
       // for a sync, we must pull from the example object

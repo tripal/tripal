@@ -589,6 +589,12 @@ function tripal_library_node_view($node, $view_mode, $langcode) {
 function tripal_library_node_presave($node) {
 
   switch ($node->type) {
+    // This step is for setting the title for the Drupal node.  This title
+    // is permanent and thus is created to be unique.  Title changes provided
+    // by tokens are generated on the fly dynamically, but the node title
+    // seen in the content listing needs to be set here. Do not call
+    // the chado_get_node_title() function here to set the title as the node
+    // object isn't properly filled out and the function will fail.
     case 'chado_library':
       // for a form submission the 'libraryname' field will be set,
       // for a sync, we must pull from the library object
