@@ -513,7 +513,7 @@ function tripal_bulk_loader_modify_template_base_form_submit($form, &$form_state
     case 'Create Template':
       $record = array(
         'name' => $form_state['values']['new_template_name'],
-        'template_array' => array(),
+        'template_array' => serialize(array()),
         'created' => time(),
         'changed' => time()
       );
