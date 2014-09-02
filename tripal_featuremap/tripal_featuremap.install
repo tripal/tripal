@@ -60,7 +60,7 @@ function tripal_featuremap_install() {
   // set the default vocabularies
   tripal_set_default_cv('featuremapprop', 'type_id', 'featuremap_property');
   tripal_set_default_cv('featureposprop', 'type_id', 'featurepos_property');
-  tripal_set_default_cv('featuremap', 'uinittype_id', 'featuremap_units');
+  tripal_set_default_cv('featuremap', 'unittype_id', 'featuremap_units');
 }
 
 /**
@@ -640,5 +640,17 @@ function tripal_featuremap_update_7201() {
   catch (\PDOException $e) {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to update foriegn key: '. $error);
+  }
+}
+/**
+ * Fixes a typo when setting the default CV for the unittype_id field of the featuremap table.
+ */
+function tripal_featuremap_update_7202() {
+  try {
+    tripal_set_default_cv('featuremap', 'unittype_id', 'featuremap_units');
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to update featurmap CV default: '. $error);
   }
 }

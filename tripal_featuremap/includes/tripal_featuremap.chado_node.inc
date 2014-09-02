@@ -109,7 +109,6 @@ function chado_featuremap_form($node, &$form_state) {
 
   // get the list of unit types
   $units = tripal_get_cvterm_default_select_options('featuremap', 'unittype_id', 'map unit types');
-  $units[0] = 'Select a Type';
 
   $form['unittype_id'] = array(
     '#title'       => t('Map Units'),
