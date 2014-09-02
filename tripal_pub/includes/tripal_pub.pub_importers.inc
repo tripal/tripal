@@ -1413,3 +1413,451 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
   }
   return $pub_array;
 }
+
+/**
+ * Imports all publications for all active import setups.
+ *
+ * @param $report_email
+ *   A list of email address, separated by commas, that should be notified
+ *   once importing has completed
+ * @param $do_update
+ *   If set to TRUE then publications that already exist in the Chado database
+ *   will be updated, whereas if FALSE only new publications will be added
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_execute_active_pub_importers($report_email = FALSE, $do_update = FALSE) {
+  $num_to_retrieve = 100;
+  $page = 0;
+
+  print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
+      "If the load fails or is terminated prematurely then the entire set of \n" .
+      "insertions/updates is rolled back and will not be found in the database\n\n";
+
+  // start the transaction
+  $transaction = db_transaction();
+
+  try {
+    // get all of the loaders
+    $args = array();
+    $sql = "SELECT * FROM {tripal_pub_import} WHERE disabled = 0 ";
+    $results = db_query($sql, $args);
+    $do_contact = FALSE;
+    $reports = array();
+    foreach ($results as $import) {
+      $page = 0;
+      print "Executing importer: '" . $import->name . "'\n";
+      // keep track if any of the importers want to create contacts from authors
+      if ($import->do_contact == 1) {
+        $do_contact = TRUE;
+      }
+      $criteria = unserialize($import->criteria);
+      $remote_db = $criteria['remote_db'];
+      do {
+        // retrieve the pubs for this page. We'll retreive 100 at a time
+        $results = tripal_get_remote_pubs($remote_db, $criteria, $num_to_retrieve, $page);
+        $pubs = $results['pubs'];
+        $reports[$import->name] = tripal_pub_add_publications($pubs, $import->do_contact, $do_update);
+        $page++;
+      }
+      // continue looping until we have a $pubs array that does not have
+      // our requested numer of records.  This means we've hit the end
+      while (count($pubs) == $num_to_retrieve);
+    }
+
+    // sync the newly added publications with Drupal. If the user
+    // requested a report then we don't want to print any syncing information
+    // so pass 'FALSE' to the sync call
+    print "Syncing publications with Drupal...\n";
+    chado_node_sync_records('pub');
+
+    // iterate through each of the reports and generate a final report with HTML links
+    $HTML_report = '';
+    if ($report_email) {
+      $HTML_report .= "<html>";
+      global $base_url;
+      foreach ($reports as $importer => $report) {
+        $total = count($report['inserted']);
+        $HTML_report .= "<b>$total new publications from importer: $importer</b><br><ol>\n";
+        foreach ($report['inserted'] as $pub) {
+          $item = $pub['Title'];
+          if (array_key_exists('pub_id', $pub)) {
+            $item = l($pub['Title'], "$base_url/pub/" . $pub['pub_id']);
+          }
+          $HTML_report .= "<li>$item</li>\n";
+        }
+        $HTML_report .= "</ol>\n";
+      }
+      $HTML_report .= "</html>";
+      $site_email = variable_get('site_mail', '');
+      $params = array(
+        'message' => $HTML_report
+      );
+      drupal_mail('tripal_pub', 'import_report', $report_email, language_default(), $params, $site_email, TRUE);
+    }
+
+    // if any of the importers wanted to create contacts from the authors then sync them
+    if($do_contact) {
+      print "Syncing contacts with Drupal...\n";
+      chado_node_sync_records('contact');
+    }
+  }
+  catch (Exception $e) {
+    $transaction->rollback();
+    print "\n"; // make sure we start errors on new line
+    watchdog_exception('T_pub_import', $e);
+    print "FAILED: Rolling back database changes...\n";
+    return;
+  }
+  print "Done.\n";
+}
+
+/**
+ * Imports all publications for a given publication import setup.
+ *
+ * @param $import_id
+ *   The ID of the import setup to use
+ * @param $job_id
+ *   The jobs management job_id for the job if this function is run as a job.
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_execute_pub_importer($import_id, $job_id = NULL) {
+  print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
+      "If the load fails or is terminated prematurely then the entire set of \n" .
+      "insertions/updates is rolled back and will not be found in the database\n\n";
+
+  // start the transaction
+  $transaction = db_transaction();
+
+  try {
+    $page = 0;
+    $do_contact = FALSE;
+    $num_to_retrieve = 100;
+
+    // get all of the loaders
+    $args = array(':import_id' => $import_id);
+    $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = :import_id ";
+    $import = db_query($sql, $args)->fetchObject();
+
+    print "Executing Importer: '" . $import->name . "'\n";
+
+    $criteria = unserialize($import->criteria);
+    $remote_db = $criteria['remote_db'];
+    $total_pubs = 0;
+    do {
+      // retrieve the pubs for this page. We'll retreive 100 at a time
+      $results  = tripal_get_remote_pubs($remote_db, $criteria, $num_to_retrieve, $page);
+      $pubs     = $results['pubs'];
+      $num_pubs = $rseults['total_records'];
+      $total_pubs += $num_pubs;
+      tripal_pub_add_publications($pubs, $import->do_contact);
+      $page++;
+    }
+    // continue looping until we have a $pubs array that does not have
+    // our requested numer of records.  This means we've hit the end
+    while (count($pubs) == $num_to_retrieve);
+
+    // sync the newly added publications with Drupal. If the user
+    // requested a report then we don't want to print any syncing information
+    // so pass 'FALSE' to the sync call
+    print "Syncing publications with Drupal...\n";
+    chado_node_sync_records('pub');
+
+    // if any of the importers wanted to create contacts from the authors then sync them
+    if($import->do_contact) {
+      print "Syncing contacts with Drupal...\n";
+      chado_node_sync_records('contact');
+    }
+    tripal_set_job_progress($job_id, '100');
+  }
+  catch (Exception $e) {
+    $transaction->rollback();
+    print "\n"; // make sure we start errors on new line
+    watchdog_exception('T_pub_import', $e);
+    print "FAILED: Rolling back database changes...\n";
+    return;
+  }
+  print "Done.\n";
+}
+
+/**
+ * This function is used to perfom a query using one of the supported databases
+ * and return the raw query results. This may be XML or some other format
+ * as provided by the database.
+ *
+ * @param $dbxref
+ *   The unique database ID for the record to retrieve.  This value must
+ *   be of the format DB_NAME:ACCESSION where DB_NAME is the name of the
+ *   database (e.g. PMID or AGL) and the ACCESSION is the unique identifier
+ *   for the record in the database.
+ *
+ * @return
+ *   Returns the publication array or FALSE if a problem occurs
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_get_remote_pub($dbxref) {
+
+  if(preg_match('/^(.*?):(.*?)$/', $dbxref, $matches)) {
+    $remote_db = $matches[1];
+    $accession = $matches[2];
+
+    // check that the database is supported
+    $supported_dbs = variable_get('tripal_pub_supported_dbs', array());
+    if(!in_array($remote_db, $supported_dbs)) {
+      return FALSE;
+    }
+
+    $search = array(
+      'num_criteria' => 1,
+      'remote_db' => $remote_db,
+      'criteria' => array(
+        '1' => array(
+          'search_terms' => "$remote_db:$accession",
+          'scope' => 'id',
+          'operation' => '',
+          'is_phrase' => 0,
+        ),
+      ),
+    );
+    $pubs = tripal_get_remote_pubs($remote_db, $search, 1, 0);
+
+    return $pubs['pubs'][0];
+  }
+  return FALSE;
+}
+
+/**
+ * Retrieves a list of publications as an associated array where
+ *  keys correspond directly with Tripal Pub CV terms.
+ *
+ * @param remote_db
+ *    The name of the remote publication database to query. These names should
+ *    match the name of the databases in the Chado 'db' table. Currently
+ *    supported databass include
+ *      'PMID':  PubMed
+ *
+ * @param search_array
+ *    An associate array containing the search criteria. The following key
+ *    are expected
+ *      'remote_db':     Specifies the name of the remote publication database
+ *      'num_criteria':  Specifies the number of criteria present in the search array
+ *      'days':          The number of days to include in the search starting from today
+ *      'criteria':      An associate array containing the search critiera. There should
+ *                       be no less than 'num_criteria' elements in this array.
+ *
+ *    The following keys are expected in the 'criteria' array
+ *      'search_terms':  A list of terms to search on, separated by spaces.
+ *      'scope':         The fields to search in the remote database. Valid values
+ *                       include: 'title', 'abstract', 'author' and 'any'
+ *      'operation':     The logical operation to use for this criteria. Valid
+ *                       values include: 'AND', 'OR' and 'NOT'.
+ * @param $num_to_retrieve
+ *    The number of records to retrieve.  In cases with large numbers of
+ *    records to retrieve, the remote database may limit the size of each
+ *    retrieval.
+ * @param $page
+ *    Optional.  If this function is called where the
+ *    page for the pager cannot be set using the $_GET variable, use this
+ *    argument to specify the page to retrieve.
+ *
+ * @return
+ *   Returns an array of pubs where each element is
+ *   an associative array where the keys are Tripal Pub CV terms.
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_get_remote_pubs($remote_db, $search_array, $num_to_retrieve, $page = 0) {
+
+  // now call the callback function to get the results
+  $callback = "tripal_pub_remote_search_$remote_db";
+  $pubs =  array(
+    'total_records' => 0,
+    'search_str'    => '',
+    'pubs'          => array(),
+  );
+  if (function_exists($callback)) {
+    $pubs = call_user_func($callback, $search_array, $num_to_retrieve, $page);
+  }
+  return $pubs;
+}
+
+/**
+ * Imports a singe publication specified by a remote database cross reference.
+ *
+ * @param $pub_dbxref
+ *   The unique database ID for the record to update.  This value must
+ *   be of the format DB_NAME:ACCESSION where DB_NAME is the name of the
+ *   database (e.g. PMID or AGL) and the ACCESSION is the unique identifier
+ *   for the record in the database.
+ * @param $do_contact
+ *   Set to TRUE if authors should automatically have a contact record added
+ *   to Chado.
+ * @param $do_update
+ *   If set to TRUE then the publication will be updated if it already exists
+ *   in the database.
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_update) {
+  $num_to_retrieve = 1;
+  $pager_id = 0;
+  $page = 0;
+  $num_pubs = 0;
+
+  print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
+      "If the load fails or is terminated prematurely then the entire set of \n" .
+      "insertions/updates is rolled back and will not be found in the database\n\n";
+
+  $transaction = db_transaction();
+  try {
+    if(preg_match('/^(.*?):(.*?)$/', $pub_dbxref, $matches)) {
+      $dbname = $matches[1];
+      $accession = $matches[2];
+
+      $criteria = array(
+        'num_criteria' => 1,
+        'remote_db' => $dbname,
+        'criteria' => array(
+          '1' => array(
+            'search_terms' => "$dbname:$accession",
+            'scope' => 'id',
+            'operation' => '',
+            'is_phrase' => 0,
+          ),
+        ),
+      );
+      $remote_db = $criteria['remote_db'];
+      $results = tripal_get_remote_pubs($remote_db, $criteria, $num_to_retrieve, $page);
+      $pubs          = $results['pubs'];
+      $search_str    = $results['search_str'];
+      $total_records = $results['total_records'];
+      $pub_id = tripal_pub_add_publications($pubs, $do_contact, $do_update);
+    }
+
+    // sync the newly added publications with Drupal
+    print "Syncing publications with Drupal...\n";
+    chado_node_sync_records('pub');
+
+    // if any of the importers wanted to create contacts from the authors then sync them
+    if($do_contact) {
+      print "Syncing contacts with Drupal...\n";
+      chado_node_sync_records('contact');
+    }
+  }
+  catch (Exception $e) {
+    $transaction->rollback();
+    print "\n"; // make sure we start errors on new line
+    watchdog_exception('T_pub_import', $e);
+    print "FAILED: Rolling back database changes...\n";
+    return;
+  }
+
+  print "Done.\n";
+}
+
+/**
+ * Updates publication records that currently exist in the Chado pub table
+ * with the most recent data in the remote database.
+ *
+ * @param $do_contact
+ *   Set to TRUE if authors should automatically have a contact record added
+ *   to Chado. Contacts are added using the name provided by the remote
+ *   database.
+ * @param $dbxref
+ *   The unique database ID for the record to update.  This value must
+ *   be of the format DB_NAME:ACCESSION where DB_NAME is the name of the
+ *   database (e.g. PMID or AGL) and the ACCESSION is the unique identifier
+ *   for the record in the database.
+ * @param $db
+ *   The name of the remote database to update.  If this value is provided and
+ *   no dbxref then all of the publications currently in the Chado database
+ *   for this remote database will be updated.
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_reimport_publications($do_contact = FALSE, $dbxref = NULL, $db = NULL) {
+
+  print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
+      "If the load fails or is terminated prematurely then the entire set of \n" .
+      "insertions/updates is rolled back and will not be found in the database\n\n";
+  $transaction = db_transaction();
+  try {
+
+    // get a list of all publications by their Dbxrefs that have supported databases
+    $sql = "
+      SELECT DB.name as db_name, DBX.accession
+      FROM pub P
+        INNER JOIN pub_dbxref PDBX ON P.pub_id = PDBX.pub_id
+        INNER JOIN dbxref DBX      ON DBX.dbxref_id = PDBX.dbxref_id
+        INNER JOIN db DB           ON DB.db_id = DBX.db_id
+    ";
+    $args = array();
+    if ($dbxref and preg_match('/^(.*?):(.*?)$/', $dbxref, $matches)) {
+      $dbname = $matches[1];
+      $accession = $matches[2];
+      $sql .= "WHERE DBX.accession = :accession and DB.name = :dbname ";
+      $args[':accession'] = $accession;
+      $args[':dbname'] = $dbname;
+    }
+    elseif ($db) {
+      $sql .= " WHERE DB.name = :dbname ";
+      $args[':dbname'] = $db;
+    }
+    $sql .= "ORDER BY DB.name, P.pub_id";
+    $results = chado_query($sql, $args);
+
+    $num_to_retrieve = 100;
+    $i = 0;                 // count the number of IDs. When we hit $num_to_retrieve we'll do the query
+    $curr_db = '';          // keeps track of the current current database
+    $ids = array();         // the list of IDs for the database
+    $search = array();      // the search array passed to the search function
+
+    // iterate through the pub IDs
+    while ($pub = $results->fetchObject()) {
+      $accession = $pub->accession;
+      $remote_db = $pub->db_name;
+
+      // here we need to only update publications for databases we support
+      $supported_dbs = variable_get('tripal_pub_supported_dbs', array());
+      if(!in_array($remote_db, $supported_dbs)) {
+        continue;
+      }
+      $search = array(
+        'num_criteria' => 1,
+        'remote_db' => $remote_db,
+        'criteria' => array(
+          '1' => array(
+            'search_terms' => "$remote_db:$accession",
+            'scope' => 'id',
+            'operation' => '',
+            'is_phrase' => 0,
+          ),
+        ),
+      );
+      $pubs = tripal_get_remote_pubs($remote_db, $search, 1, 0);
+      tripal_pub_add_publications($pubs, $do_contact, TRUE);
+
+      $i++;
+    }
+
+    // sync the newly added publications with Drupal
+    print "Syncing publications with Drupal...\n";
+    chado_node_sync_records('pub');
+
+    // if the caller wants to create contacts then we should sync them
+    if ($do_contact) {
+      print "Syncing contacts with Drupal...\n";
+      chado_node_sync_records('contact');
+    }
+  }
+  catch (Exception $e) {
+    $transaction->rollback();
+    print "\n"; // make sure we start errors on new line
+    watchdog_exception('T_pub_import', $e);
+    print "FAILED: Rolling back database changes...\n";
+    return;
+  }
+  print "Done.\n";
+}

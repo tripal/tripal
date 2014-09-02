@@ -272,26 +272,25 @@ function tripal_get_cvterm($identifiers, $options = array()) {
  *   which provides a list of all chado cvterms
  *
  * @param $cv_id
- *   The chado cv_id;
- *   only cvterms with the supplied cv_id will be returned
+ *   The chado cv_id; only cvterms with the supplied cv_id will be returned
+ *   
  * @return
- *   An array(cvterm_id => name)
- *   for each cvterm in the chado cvterm table where cv_id=that supplied
+ *   An associative array with the cvterm_id's as keys. The first
+ *   element in the array has a key of '0' and a value of 'Select a Type'
  *
  * @ingroup tripal_cv_api
  */
-function tripal_get_cvterm_select_options($cv_id = 0) {
+function tripal_get_cvterm_select_options($cv_id) {
+  $columns = array('cvterm_id', 'name');
+  $values = array('cv_id' => $cv_id);
+  $s_options = array('order_by' => array('name' => 'ASC'));
 
-  if ($cv_id > 0) {
-    $results = chado_select_record('cvterm', array('cvterm_id', 'name'), array('cv_id' => $cv_id));
-  }
-  else {
-    $results = chado_select_record('cvterm', array('cvterm_id', 'name'), array());
-  }
+  $cvterms = chado_select_record('cvterm', $columns, $values, $s_options); 
 
   $options = array();
-  foreach ($results as $r) {
-    $options[$r->cvterm_id] = $r->name;
+  $options[0] = 'Select a Type';
+  foreach ($cvterms as $cvterm) {
+    $options[$cvterm->cvterm_id] = $cvterm->name;
   }
 
   return $options;
@@ -312,12 +311,12 @@ function tripal_get_cvterm_select_options($cv_id = 0) {
  *
  * @ingroup tripal_cv_api
  */
-function tripal_update_cvtermpath($cvid, $job_id = NULL) {
+function tripal_update_cvtermpath($cv_id, $job_id = NULL) {
   // TODO: need better error checking in this function
 
   // first get the controlled vocabulary name:
   $sql = "SELECT * FROM {cv} WHERE cv_id = :cv_id";
-  $cv = chado_query($sql, array(':cv_id' => $cvid))->fetchObject();
+  $cv = chado_query($sql, array(':cv_id' => $cv_id))->fetchObject();
 
   print "\nUpdating cvtermpath for $cv->name...\n";
 
@@ -817,12 +816,12 @@ function tripal_submit_obo_job($obo) {
  * Add the obo to the tripal_cv_obo table in the Drupal database
  *
  * @param $name
- * The human readable name of this ontology
+ *   The human readable name of this ontology
  * @param $path
- * The file path or URL of the ontology
+ *   The file path or URL of the ontology
  *
  * @return
- * Returns the ontology ID
+ *   Returns the ontology ID
  *
  * @ingroup tripal_cv_api
  */
@@ -883,7 +882,7 @@ function tripal_autocomplete_cvterm($cv_id, $string = '') {
  *
  * @ingroup tripal_db_api
  */
-function tripal_associate_cvterm($basetable, $record_id, $cvterm) {
+function tripal_associate_cvterm($basetable, $record_id, $cvterm, $options = array()) {
   $linking_table = $basetable . '_cvterm';
   $foreignkey_name = $basetable . '_id';
 

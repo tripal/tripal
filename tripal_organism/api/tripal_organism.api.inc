@@ -135,17 +135,17 @@ function tripal_get_organism($identifiers, $options = array()) {
  * @ingroup tripal_organism_api
  */
 function tripal_get_organism_select_options($syncd_only = TRUE) {
-
+  $org_list = array();
+  $org_list[] = 'Select an organism';
+  
   if ($syncd_only) {
-    // use this SQL for getting synced organisms
-    $dsql =  "SELECT * FROM {chado_organism}";
-    $orgs = db_query($dsql);
-
-    // use this SQL statement for getting the organisms
-    $csql =  "SELECT * FROM {organism} " .
-             "WHERE organism_id = :organism_id";
-
-    $org_list = array();
+    $sql = "
+      SELECT * 
+      FROM public.chado_organism CO
+        INNER JOIN {organism} O ON O.organism_id = CO.organism_id
+      ORDER BY O.genus, O.species
+    ";
+    $orgs = chado_query($sql);
 
     // iterate through the organisms and build an array of those that are synced
     foreach ($orgs as $org) {
@@ -156,10 +156,8 @@ function tripal_get_organism_select_options($syncd_only = TRUE) {
   }
   else {
     // use this SQL statement for getting the organisms
-    $csql =  "SELECT * FROM {organism}";
-    $orgs = chado_query($csql)->execute();
-
-    $org_list = array();
+    $csql =  "SELECT * FROM {organism} ORDER BY genus, species";
+    $orgs = chado_query($csql);
 
     // iterate through the organisms and build an array of those that are synced
     foreach ($orgs as $org) {

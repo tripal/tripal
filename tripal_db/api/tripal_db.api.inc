@@ -137,13 +137,13 @@ function tripal_get_db($identifiers, $options = array()) {
  */
 function tripal_get_db_select_options() {
 
-  $result = chado_query("SELECT db_id, name FROM {db} ORDER BY name");
+  $dbs = chado_query("SELECT db_id, name FROM {db} ORDER BY name");
 
   $options = array();
   $options[] = 'Select a Database';
   
-  foreach ($result as $r) {
-    $options[$r->db_id] = $r->name;
+  foreach ($dbs as $db) {
+    $options[$db->db_id] = $db->name;
   }
 
   return $options;

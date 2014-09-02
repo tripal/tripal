@@ -154,7 +154,6 @@ function chado_contact_form(&$node, $form_state) {
   }
   else {
     $contact_types = tripal_get_cvterm_default_select_options('contact', 'type_id', 'contact types');
-    $contact_types[0] = 'Select a Type';
   }
   $form['type_id'] = array(
     '#type' => 'select',
