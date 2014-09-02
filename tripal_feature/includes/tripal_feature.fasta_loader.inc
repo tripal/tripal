@@ -56,7 +56,7 @@ function tripal_feature_fasta_load_form() {
     '#type' => 'textfield',
     '#title' => t('Sequence Type'),
     '#required' => TRUE,
-    '#description' => t('Please enter the Sequence Ontology (SO) term name that describes the sequences in the FASTA file (e.g. gene, mRNA, protein, etc...)'),
+    '#description' => t('Please enter the Sequence Ontology (SO) term name that describes the sequences in the FASTA file (e.g. gene, mRNA, polypeptide, etc...)'),
     '#autocomplete_path' => "admin/tripal/chado/tripal_cv/cvterm/auto_name/$cv_id",
   );
   
