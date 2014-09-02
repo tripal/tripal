@@ -63,7 +63,7 @@ function tripal_bulk_loader_form($node, $form_state) {
 
   $form['loader']['loader_name'] = array(
     '#type'          => 'textfield',
-    '#title'         => t('Loading Job Name'),
+    '#title'         => t('Job Name'),
     '#weight'        => -10,
     '#required'      => TRUE,
     '#default_value' => (isset($node->loader_name)) ? $node->loader_name : ''

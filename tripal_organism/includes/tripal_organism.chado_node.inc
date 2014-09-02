@@ -343,7 +343,9 @@ function chado_organism_insert($node) {
   }
 
   // add the image
-  chado_organism_add_image($node);
+  if (property_exists($node, organism_image)) {
+    chado_organism_add_image($node);
+  }
 }
 
 /**

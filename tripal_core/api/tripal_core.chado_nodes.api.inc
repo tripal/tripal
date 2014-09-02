@@ -582,15 +582,18 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
 
   $i = 0;
   $transaction = db_transaction();
+  print "\nNOTE: Syncing is performed using a database transaction. \n" .
+      "If the sync fails or is terminated prematurely then the entire set of \n" .
+      "synced items is rolled back and will not be found in the database\n\n";
   try {
     foreach ($results as $record) {
 
-      print "\nLoading $base_table " . ($i + 1) . " of $count ($base_table_id=" . $record->{$base_table_id} . ")...";
+      //print "\nLoading $base_table " . ($i + 1) . " of $count ($base_table_id=" . $record->{$base_table_id} . ")...";
 
       // update the job status every 1% features
       if ($job_id and $i % $interval == 0) {
-        $percent = sprintf("%.2f", ($i / $count) * 100);
-        print "Parsing Line $line_num (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\n";
+        $percent = sprintf("%.2f", (($i + 1) / $count) * 100);
+        print "Syncing $base_table " . ($i + 1) . " of $count (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
         tripal_set_job_progress($job_id, intval(($i/$count)*100));
       }
 
@@ -602,7 +605,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
         ->fetchObject();
 
       if (!empty($result)) {
-        print " Previously Sync'd";
+        //print " Previously Sync'd";
       }
       else {
 
@@ -628,7 +631,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
         if (!form_get_errors()) {
           $node = node_submit($new_node);
           node_save($node);
-          print " Node Created (nid=".$node->nid.")";
+          //print " Node Created (nid=".$node->nid.")";
         }
         else {
           watchdog('trp-fsync', "Failed to insert $base_table: %title", array('%title' => $new_node->title), WATCHDOG_ERROR);
@@ -636,9 +639,9 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
       }
       $i++;
     }
-
     print "\n\nComplete!\n";
   }
+  
   catch (Exception $e) {
     $transaction->rollback();
     print "\n"; // make sure we start errors on new line
