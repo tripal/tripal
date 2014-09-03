@@ -206,7 +206,7 @@ function chado_get_property($record, $property) {
 
   // construct the array of values to be selected
   $values = array(
-    $fkcol => $record_id,
+    $fkcol => $base_id,
     'type_id' => $type,
   );
   
@@ -266,7 +266,7 @@ function chado_get_property($record, $property) {
  *
  * @ingroup tripal_chado_api
  */
-function chado_insert_property($record, $property, $options) {
+function chado_insert_property($record, $property, $options = array()) {
 
   $base_table  = array_key_exists('table', $record) ? $record['table'] : '';
   $base_id     = array_key_exists('id', $record) ? $record['id'] : '';
@@ -401,7 +401,7 @@ function chado_insert_property($record, $property, $options) {
  *
  * @ingroup tripal_chado_api
  */
-function chado_update_property($property, $options) {
+function chado_update_property($record, $property, $options) {
 
   $base_table  = array_key_exists('table', $record) ? $record['table'] : '';
   $base_id     = array_key_exists('id', $record) ? $record['id'] : '';
@@ -468,7 +468,7 @@ function chado_update_property($property, $options) {
 
   // construct the array that will match the exact record to update
   $match = array(
-    $fkcol => $record_id,
+    $fkcol => $base_id,
     'type_id' => $type,
   );
   // If we have the unique property_id, make sure to use it in the match to 
