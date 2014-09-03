@@ -53,9 +53,9 @@ function tripal_pub_install() {
   tripal_create_files_dir('tripal_pub');
 
   // add loading of the the tripal pub ontology to the job queue
-  $obo_path =  drupal_realpath(drupal_get_path('module', 'tripal_pub') . '/files/tpub.obo');
+  $obo_path = '{tripal_pub}/files/tpub.obo';
   $obo_id = tripal_insert_obo('Tripal Publication', $obo_path);
-  tripal_submit_obo_job(array('ob_id' => $obo_id));
+  tripal_submit_obo_job(array('obo_id' => $obo_id));
 
   tripal_pub_add_cvs();
   tripal_pub_add_cvterms();
@@ -432,5 +432,24 @@ function tripal_pub_update_7201() {
   catch (\PDOException $e) {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to update foriegn key: '. $error);
+  }
+}
+/**
+ * Updates path of tripal_pub OBO to be relative.
+ */
+function tripal_pub_update_7202() {
+  try {
+    // Remove duplicates.
+    db_delete('tripal_cv_obo')
+      ->condition('name', 'Tripal Publication')
+      ->execute();
+
+    // Add in the updated path.
+    $obo_path = '{tripal_pub}/files/tpub.obo';
+    $obo_id = tripal_insert_obo('Tripal Publication', $obo_path);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to update tripal_pub OBO path: '. $error);
   }
 }

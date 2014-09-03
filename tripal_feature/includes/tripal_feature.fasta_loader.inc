@@ -1046,8 +1046,8 @@ function tripal_feature_load_fasta_residues($fh, $feature_id, $seq_start, $seq_e
   }
   
   // Now update the seqlen and md5checksum fields
-  $sql = "UPDATE {feature} SET seqlen = :seqlen,  md5checksum = md5('residues') WHERE feature_id = :feature_id";
-  chado_query($sql, array(':seqlen' => $seqlen, ':feature_id' => $feature_id));
+  $sql = "UPDATE {feature} SET seqlen = char_length(residues),  md5checksum = md5(residues) WHERE feature_id = :feature_id";
+  chado_query($sql, array(':feature_id' => $feature_id));
   
   $percent = sprintf("%.2f", ($num_read / $seqlen) * 100);
   print "Sequence complete: " . $percent . "%. Memory: " . number_format(memory_get_usage()) . " bytes. \r";

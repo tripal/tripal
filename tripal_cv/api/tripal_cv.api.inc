@@ -817,7 +817,9 @@ function tripal_submit_obo_job($obo) {
 }
 
 /**
- * Add the obo to the tripal_cv_obo table in the Drupal database
+ * Add the OBO to the tripal_cv_obo table in the Drupal database.
+ * 
+ * If the OBO name already exists in the table then the path is updated. 
  *
  * @param $name
  *   The human readable name of this ontology
@@ -830,11 +832,29 @@ function tripal_submit_obo_job($obo) {
  * @ingroup tripal_cv_api
  */
 function tripal_insert_obo($name, $path) {
-  $record = new stdClass;
-  $record->name = $name;
-  $record->path = $path;
-  drupal_write_record('tripal_cv_obo', $record);
-  return $record->obo_id;
+  // make sure an OBO with the same name doesn't already exist
+  $obo_id = db_select('tripal_cv_obo', 'tco')
+    ->fields('tco', array('obo_id'))
+    ->condition('name', $name)
+    ->execute()
+    ->fetchField();
+  
+  if ($obo_id) {
+    db_update('tripal_cv_obo')
+      ->fields(array(
+        'path' => $path,
+      ))
+      ->condition('name', $name)
+      ->execute();
+    return $obo_id;
+  }
+  else {
+    $record = new stdClass;
+    $record->name = $name;
+    $record->path = $path;
+    drupal_write_record('tripal_cv_obo', $record);
+    return $record->obo_id;
+  }
 }
 
 /**

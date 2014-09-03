@@ -142,9 +142,16 @@ function tripal_cv_obo_form_submit($form, &$form_state) {
  */
 function tripal_cv_load_obo_v1_2_id($obo_id, $jobid = NULL) {
 
-  // get the OBO reference
+  // Get the OBO reference.
   $sql = "SELECT * FROM {tripal_cv_obo} WHERE obo_id = :obo_id";
   $obo = db_query($sql, array(':obo_id' => $obo_id))->fetchObject();
+
+  // Convert the module name to the real path if present
+  if (preg_match("/\{(.*?)\}/", $obo->path, $matches)) {
+    $module = $matches[1];
+    $path = drupal_realpath(drupal_get_path('module', $module));
+    $obo->path = preg_replace("/\{.*?\}/", $path, $obo->path);
+  } 
 
   // if the reference is for a remote URL then run the URL processing function
   if (preg_match("/^http:\/\//", $obo->path) or preg_match("/^ftp:\/\//", $obo->path)) {

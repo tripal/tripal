@@ -552,12 +552,14 @@ function tripal_feature_match_features_page($id) {
       INNER JOIN public.chado_feature CF on CF.feature_id = F.feature_id
     WHERE
       F.uniquename = :uname or
-      F.name = :fname' or
+      F.name = :fname or
       S.name = :sname
     GROUP BY F.name, F.uniquename, F.feature_id, O.genus, O.species,
       O.organism_id, CVT.cvterm_id, CVT.name, CF.nid
   ";
-  $results = chado_query($sql, array(':uname' => $id, ':fname' => $id, ':sname' => $id));
+  
+  $args = array(':uname' => $id, ':fname' => $id, ':sname' => $id); 
+  $results = chado_query($sql, $args);
 
   $num_matches = 0;
 

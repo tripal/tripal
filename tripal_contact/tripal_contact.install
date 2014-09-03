@@ -51,22 +51,22 @@ function tripal_contact_requirements($phase) {
  */
 function tripal_contact_install() {
 
-  // create the module's data directory
+  // Create the module's data directory.
   tripal_create_files_dir('tripal_contact');
 
-  // add the contactprop table to Chado
+  // Add the contactprop table to Chado.
   tripal_contact_add_custom_tables();
 
-  // add loading of the the tripal contact ontology to the job queue
-  $obo_path = drupal_realpath(drupal_get_path('module', 'tripal_contact') . '/files/tcontact.obo');
+  // Add loading of the the tripal contact ontology to the job queue.
+  $obo_path = '{tripal_contact}/files/tcontact.obo';
   $obo_id = tripal_insert_obo('Tripal Contacts', $obo_path);
-  tripal_submit_obo_job(array('ob_id' => $obo_id));
+  tripal_submit_obo_job(array('obo_id' => $obo_id));
 
-  // Add cvterms for relationship types
+  // Add cvterms for relationship types.
   tripal_contact_add_cvs();
   tripal_contact_add_cvterms();
 
-  // set the default vocabularies
+  // Set the default vocabularies.
   tripal_set_default_cv('contact', 'type_id', 'tripal_contact');
   tripal_set_default_cv('contactprop', 'type_id', 'tripal_contact');
   tripal_set_default_cv('contact_relationship', 'type_id', 'contact_relationship');
@@ -392,5 +392,24 @@ function tripal_contact_update_7201() {
   catch (\PDOException $e) {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to update foriegn key: '. $error);
+  }
+}
+/**
+ * Updates path of tripal_contact OBO to be relative.
+ */
+function tripal_contact_update_7202() {
+  try {
+    // Remove duplicates.
+    db_delete('tripal_cv_obo')
+      ->condition('name', 'Tripal Contacts')
+      ->execute();
+    
+    // Add in the updated path.
+    $obo_path = '{tripal_contact}/files/tcontact.obo';
+    $obo_id = tripal_insert_obo('Tripal Contacts', $obo_path);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to update tripal_contact OBO path: '. $error);
   }
 }
