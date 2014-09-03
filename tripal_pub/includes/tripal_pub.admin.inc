@@ -129,6 +129,7 @@ function tripal_pub_admin() {
   // get the list of publication types.  In the Tripal publication
   // ontologies these are all grouped under the term 'Publication Type'
   // we want the default to be 'Journal Article'
+  $d_type_id = '';
   $sql = "
     SELECT
       CVTS.cvterm_id, CVTS.name
