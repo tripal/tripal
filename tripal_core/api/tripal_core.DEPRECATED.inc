@@ -949,8 +949,17 @@ function tripal_core_delete_property($basetable, $record_id, $property, $cv_name
     )
   );
 
+  $record = array(
+    'table' => $basetable,
+    'id' => $record_id
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => $cv_name,
+  );
+  
   //New API Function
-  return chado_delete_property($basetable, $record_id, $property, $cv_name);
+  return chado_delete_property($record, $property);
 }
 
 /**
@@ -970,9 +979,18 @@ function tripal_core_get_property($basetable, $record_id, $property, $cv_name) {
       '%new_function' => 'chado_get_property'
     )
   );
+  
+  $record = array(
+    'table' => $basetable,
+    'id' => $record_id
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => $cv_name,
+  );
 
   //New API Function
-  return chado_get_property($basetable, $record_id, $property, $cv_name);
+  return chado_get_property($record, $property);
 }
 
 /**
@@ -1028,7 +1046,7 @@ function get_max_chado_rank($tablename, $where_options) {
  * @see chado_insert_property().
  */
 function tripal_core_insert_property($basetable, $record_id, $property,
-$cv_name, $value, $update_if_present = 0) {
+    $cv_name, $value, $update_if_present = 0) {
   tripal_report_error(
     'tripal_deprecated',
     TRIPAL_NOTICE,
@@ -1038,9 +1056,20 @@ $cv_name, $value, $update_if_present = 0) {
       '%new_function' => 'chado_insert_property'
     )
   );
-
+  $record = array(
+    'table' => $basetable,
+    'id' => $record_id
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => $cv_name,
+    'value' => $value,
+  );
+  $options = array(
+    'update_if_present' => $update_if_present
+  );
   //New API Function
-  return chado_insert_property($basetable, $record_id, $property, $cv_name, $value, $update_if_present);
+  return chado_insert_property($record, $property, $options);
 }
 
 /**
@@ -1051,7 +1080,7 @@ $cv_name, $value, $update_if_present = 0) {
  * @see chado_update_property().
  */
 function tripal_core_update_property_by_id($basetable, $record_id, $property,
-$cv_name, $value) {
+  $cv_name, $value) {
   tripal_report_error(
     'tripal_deprecated',
     TRIPAL_NOTICE,
@@ -1062,9 +1091,18 @@ $cv_name, $value) {
       '%new_function' => 'chado_update_property'
     )
   );
-
-  //New API Function
-  return chado_update_property($basetable, FALSE, $property, $cv_name, $value, FALSE, $record_id);
+  $record = array(
+    'table' => $basetable,
+    'prop_id' => $record_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => $cv_name,
+    'value' => $value,
+  );
+  
+  // New API Function.
+  return chado_update_property($record, $property);
 }
 
 /**
@@ -1086,8 +1124,20 @@ $cv_name, $value, $insert_if_missing = 0) {
     )
   );
 
-  //New API Function
-  return chado_update_property($basetable, $record_id, $property, $cv_name, $value, $insert_if_missing);
+  $record = array(
+    'table' => $basetable,
+    'id' => $record_id
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => $cv_name,
+    'value' => $value,
+  );
+  $options = array(
+    'insert_if_missing' => $insert_if_missing,
+  );
+  // New API Function.
+  return chado_update_property($record, $property, $options);
 }
 
 /**

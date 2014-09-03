@@ -25,7 +25,7 @@ function tripal_feature_analysis_get_property($analysis_id = NULL, $feature_id =
 
   // check that the incoming arguments are correct
   if (($analysis_id and !$feature_id) or
-    (!$analysis_id and $feature_id)) {
+      (!$analysis_id and $feature_id)) {
       tripal_report_error('tripal_feature', TRIPAL_WARNING,
       'tripal_feature_analysis_get_property: Both an analysis ID and feature ID should be specified',
       array());
@@ -39,8 +39,17 @@ function tripal_feature_analysis_get_property($analysis_id = NULL, $feature_id =
     $analysisfeature_id = $result[0]->analysisfeature_id;
   }
 
+  $record = array(
+    'table' => 'analysisfeature',
+    'id' => $analysisfeature_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => $cv_name,
+  );
+
   // get the property.
-  return chado_get_property('analysisfeature', $analysisfeature_id, $property, $cv_name);
+  return chado_get_property($record, $property);
 }
 
 /**
@@ -78,9 +87,21 @@ function tripal_feature_analysis_insert_property($analysis_id = NULL, $feature_i
     $analysisfeature_id = $result[0]->analysisfeature_id;
   }
 
+  $record = array(
+    'table' => 'analysisfeature',
+    'id' => $analysisfeature_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => $cv_name,
+    'value' => $value
+  );
+  $options = array(
+    'update_if_present' => $update_if_present,
+  );
+  
   // insert the property.
-  return chado_insert_property('analysisfeature', $analysisfeature_id,
-    $property, $cv_name, $value, $update_if_present);
+  return chado_insert_property($record, $property, $options);
 
 }
 
@@ -119,8 +140,21 @@ function tripal_feature_analysis_update_property($analysis_id = NULL, $feature_i
     $analysisfeature_id = $result[0]->analysisfeature_id;
   }
 
+  $record = array(
+    'table' => 'analysisfeature',
+    'id' => $analysisfeature_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => $cv_name,
+    'value' => $value
+  );
+  $options = array(
+    'insert_if_missing' => $insert_if_missing,
+  );
+  
   // update the property.
-  return chado_update_property('analysisfeature', $analysisfeature_id, $property, $cv_name, $value, $insert_if_missing);
+  return chado_update_property($record, $property, $options);
 }
 
 /**
@@ -142,8 +176,17 @@ function tripal_feature_analysis_update_property_by_id($analysisfeatureprop_id, 
     )
   );
 
+  $record = array(
+    'table' => 'analysisfeature',
+    'prop_id' => $analysisfeatureprop_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => $cv_name,
+    'value' => $value
+  );
   // update the property.
-  return chado_update_property('analysisfeature', NULL, $property, $cv_name, $value, FALSE, $analysisfeatureprop_id);
+  return chado_update_property($record, $property);
 }
 
 /**
@@ -180,9 +223,18 @@ function tripal_feature_analysis_delete_property($analysis_id = NULL, $feature_i
     $result = chado_select_record('analysisfeature', $columns, $values);
     $analysisfeature_id = $result[0]->analysisfeature_id;
   }
+  
+  $record = array(
+    'table' => 'analysisfeature',
+    'id' => $analysisfeature_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => $cv_name,
+  );
 
   // get the property.
-  return chado_delete_property('analysisfeature', $analysisfeature_id, $property, $cv_name);
+  return chado_delete_property($record, $property);
 
 }
 
@@ -201,7 +253,7 @@ function tripal_feature_analysis_delete_property_by_id($analysisfeatureprop_id) 
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_feature_analysis_delete_property_by_id',
-      '%new_function' => 'chado_delete_property'
+      '%new_function' => 'chado_delete_record'
     )
   );
 
@@ -231,8 +283,17 @@ function tripal_feature_get_property($feature_id, $property, $cv_name='tripal') 
       '%new_function' => 'chado_get_property'
     )
   );
+  
+  $record = array(
+    'table' => 'feature',
+    'id' => $feature_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => $cv_name,
+  );
 
-  return chado_get_property('feature', $feature_id, $property, $cv_name);
+  return chado_get_property($record, $property);
 }
 
 /**
@@ -254,8 +315,20 @@ function tripal_feature_insert_property($feature_id, $property, $value, $update_
     )
   );
 
-  return chado_insert_property('feature', $feature_id, $property,
-    $cv_name, $value, $update_if_present);
+  $record = array(
+    'table' => 'feature',
+    'id' => $feature_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => $cv_name,
+    'value' => $value,
+  );
+  $options = array(
+    'update_if_present' => $update_if_present,
+  );
+  
+  return chado_insert_property($record, $property, $options);
 }
 
 /**
@@ -277,7 +350,19 @@ function tripal_feature_update_property($feature_id, $property, $value, $insert_
     )
   );
 
-  return chado_update_property('feature', $feature_id, $property, $cv_name, $value, $insert_if_missing);
+  $record = array(
+    'table' => 'feature',
+    'id' => $feature_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => $cv_name,
+    'value' => $value,
+  );
+  $options = array(
+    'insert_if_missing' => insert_if_missing,
+  );
+  return chado_update_property($record, $property, $options);
 }
 
 /**
@@ -299,7 +384,16 @@ function tripal_feature_update_property_by_id($featureprop_id, $property, $value
     )
   );
 
-  return chado_update_property('feature', NULL, $property, $cv_name, $value, FALSE, $featureprop_id);
+  $record = array(
+    'table' => 'feature',
+    'prop_id' => $featureprop_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => $cv_name,
+    'value' => $value,
+  );
+  return chado_update_property($record, $property);
 }
 
 /**
@@ -320,8 +414,17 @@ function tripal_feature_delete_property($feature_id, $property, $cv_name='tripal
       '%new_function' => 'chado_delete_property'
     )
   );
+  
+  $record = array(
+    'table' => 'feature',
+    'id' => $feature_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => $cv_name,
+  );
 
-  return chado_delete_property('feature', $feature_id, $property, $cv_name);
+  return chado_delete_property($record, $property);
 }
 
 /**
@@ -339,7 +442,7 @@ function tripal_feature_delete_property_by_id($featureprop_id) {
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_feature_delete_property_by_id',
-      '%new_function' => 'chado_delete_property'
+      '%new_function' => 'chado_delete_record'
     )
   );
 

@@ -96,10 +96,8 @@ function chado_contact_form(&$node, $form_state) {
     }
     if (!$description) {
       $contactprop = chado_get_property(
-        'contact',
-        $contact->contact_id,
-        'contact_description',
-        'tripal_contact'
+        array('table' => 'contact', 'id' => $contact->contact_id),
+        array('type_name' => 'contact_description', 'cv_name' => 'tripal_contact')
       );
       $description = (isset($contactprop->value)) ? $contactprop->value : '';
     }

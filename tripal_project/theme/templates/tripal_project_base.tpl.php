@@ -18,7 +18,15 @@ if ($project->description) {
   $description = $project->description;
 }
 else {
-  $projectprop = chado_get_property('project', $project->project_id, 'Project Description', 'project_property');
+  $record = array(
+    'table' => 'project',
+    'id' => $project->project_id,
+  );
+  $property = array(
+    'type_name' => 'Project Description',
+    'cv_name' => 'project_property',
+  );
+  $projectprop = chado_get_property($record, $property);
   $description = $projectprop->value;
 } ?>
 

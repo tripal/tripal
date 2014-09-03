@@ -73,7 +73,11 @@ function tripal_get_publication($identifiers, $options = array()) {
   if (array_key_exists('property', $identifiers)) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
-    $pub = chado_get_record_with_property('pub', $property, $identifiers, $options);
+    $pub = chado_get_record_with_property(
+      array('table' => 'pub', 'base_records' => $identifiers),
+      array('type_name' => $property), 
+      $options
+    );
   }
   elseif (array_key_exists('dbxref', $identifiers)) {
     if(preg_match('/^(.*?):(.*?)$/', $identifiers['dbxref'], $matches)) {

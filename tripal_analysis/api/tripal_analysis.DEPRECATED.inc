@@ -66,8 +66,17 @@ function tripal_analysis_get_property($analysis_id, $property, $cv_name = 'tripa
       '%new_function' => 'chado_get_property'
     )
   );
+  
+  $record = array(
+    'table' => 'analysis',
+    'id' => $analysis_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => $cv_name,
+  );
 
-  return chado_get_property('analysis', $analysis_id, $property, $cv_name);
+  return chado_get_property($record, $property);
 }
 
 /**
@@ -89,7 +98,19 @@ function tripal_analysis_insert_property($analysis_id, $property, $value, $updat
     )
   );
 
-  return chado_insert_property('analysis', $analysis_id, $property, $cv_name, $value, $update_if_present);
+  $record = array(
+    'table' => 'analysis',
+    'id' => $analysis_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => $cv_name,
+    'value' => $value,
+  );
+  $options = array(
+    'update_if_present' => $update_if_present,
+  );
+  return chado_insert_property($record, $property, $options);
 }
 
 /**
@@ -111,7 +132,19 @@ function tripal_analysis_update_property($analysis_id, $property, $value, $inser
     )
   );
 
-  return chado_update_property('analysis', $analysis_id, $property, $cv_name, $value, $insert_if_missing);
+  $record = array(
+    'table' => 'analysis',
+    'id' => $analysis_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => $cv_name,
+    'value' => $value,
+  );
+  $options = array(
+    'insert_if_missing' => $insert_if_missing,
+  );
+  return chado_update_property($record, $property, $options);
 }
 
 /**
@@ -123,17 +156,22 @@ function tripal_analysis_update_property($analysis_id, $property, $value, $inser
  */
 function tripal_analysis_delete_property($analysis_id, $property, $cv_name = 'tripal') {
 
-  tripal_report_error(
-    'tripal_deprecated',
-    TRIPAL_NOTICE,
+  tripal_report_error('tripal_deprecated', TRIPAL_NOTICE,
     "DEPRECATED: %old_function has been replaced with %new_function. Please update your code.",
     array(
       '%old_function'=>'tripal_analysis_delete_property',
       '%new_function' => 'chado_delete_property'
     )
   );
-
-  return chado_delete_property('analysis', $analysis_id, $property, $cv_name);
+  $record = array(
+    'table' => 'analysis',
+    'id' => $analysis_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => $cv_name,
+  );
+  return chado_delete_property($record, $property);
 }
 
 /**

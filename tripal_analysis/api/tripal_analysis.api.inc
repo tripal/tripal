@@ -84,7 +84,7 @@ function tripal_get_analysis($identifier, $options) {
       'tripal_stock_api',
       TRIPAL_ERROR,
       "chado_get_stock: The identifier passed in is expected to be an array with the key
-        matching a column name in the stock table (ie: stock_id or name). You passed in %identifier.",
+        matching a column name in the analysis table (ie: analysis_id or name). You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
       )
@@ -94,8 +94,8 @@ function tripal_get_analysis($identifier, $options) {
     tripal_report_error(
       'tripal_stock_api',
       TRIPAL_ERROR,
-      "chado_get_stock: You did not pass in anything to identify the stock you want. The identifier
-        is expected to be an array with the key matching a column name in the stock table
+      "chado_get_stock: You did not pass in anything to identify the analysis you want. The identifier
+        is expected to be an array with the key matching a column name in the analysis table
         (ie: stock_id or name). You passed in %identifier.",
       array(
         '%identifier'=> print_r($identifiers, TRUE)
@@ -107,7 +107,10 @@ function tripal_get_analysis($identifier, $options) {
   if (isset($identifiers['property'])) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
-    $analysis = chado_get_record_with_property('analysis', $property, $identifiers, $options);
+    $analysis = chado_get_record_with_property(
+      array('table' => 'analysis', 'base_records' => $identifiers), 
+      array('type_name' => $property)
+    );
   }
 
   // Else we have a simple case and we can just use chado_generate_var to get the analysis

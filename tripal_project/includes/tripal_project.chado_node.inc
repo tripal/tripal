@@ -92,10 +92,8 @@ function chado_project_form(&$node, $form_state) {
     }
     if (!$description) {
       $projectprop = chado_get_property(
-        'project',
-        $project->project_id,
-        'Project Description',
-        'project_property'
+        array('table' => 'project', 'id' => $project->project_id),
+        array('type_name' => 'Project Description', 'cv_name' =>'project_property')
       );
       $description = $projectprop->value;
     }

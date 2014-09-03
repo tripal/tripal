@@ -75,25 +75,33 @@ function tripal_insert_contact($values) {
   // field because it is only 255 characters long and may not be enough
   if ($description) {
     chado_insert_property(
-      'contact',
-      $contact['contact_id'],
-      'contact_description',
-      'tripal_contact',
-      $description,
-      TRUE
+      array(
+        'table' => 'contact',
+        'id' => $contact['contact_id'],
+      ),
+      array(
+        'type_name' => 'contact_description',
+        'cv_name' => 'tripal_contact',
+        'value' => $description,
+      ),
+      array(
+        'update_if_present' => TRUE,
+      )
     );
   }
 
   // add in the other properties provided
   foreach ($properties as $key => $value) {
     $success = chado_insert_property(
-      'contact',
-      $contact['contact_id'],
-      $key,
-      'tripal_contact',
-      $value,
-      TRUE
+      array('table' => 'contact', 'id' => $contact['contact_id']),
+      array(
+        'type_name' => $key,
+        'cv_name' => 'tripal_contact',
+        'value' => $value,
+      ),
+      array('update_if_present' => TRUE)
     );
+
     if (!$success) {
       tripal_report_error('tripal_contact', TRIPAL_ERROR,
         "Could not add the contact property '%prop'", array('%prop' => $key));

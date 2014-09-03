@@ -225,7 +225,11 @@ function tripal_get_cvterm($identifiers, $options = array()) {
   if (isset($identifiers['property'])) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
-    $cvterm = chado_get_record_with_property('cvterm', $property, $identifiers, $options);
+    $cvterm = chado_get_record_with_property(
+      array('table' => 'cvterm', 'base_records' => $identifiers), 
+      array('type_name' => $property),
+      $options
+    );
   }
 
   // Else we have a simple case and we can just use chado_generate_var to get the cvterm

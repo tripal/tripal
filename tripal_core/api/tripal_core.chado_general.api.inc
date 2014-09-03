@@ -427,8 +427,7 @@ function chado_update_property($property, $options) {
     }
   }
   
-  // Build the values array for checking if the CVterm exists and for
-  // inserting the term as a property.
+  // Build the values array for checking if the CVterm exists.
   $type = array();
   if ($cv_id) {
     $type['cv_id'] = $cv_id;
@@ -452,13 +451,14 @@ function chado_update_property($property, $options) {
     tripal_report_error('tripal_core', TRIPAL_ERROR, "chado_update_property: " .
         "Cannot find the term described by: %property.",
         array('%property' => print_r($property, TRUE)));
-        return FALSE;
+    return FALSE;
   }
   if (count($term) > 1) {
     tripal_report_error('tripal_core', TRIPAL_ERROR, "chado_update_property: " .
         "Multiple terms found. Cannot add the property. Property was described " .
         "by: %property.",
-        array('%property' => print_r($property, TRUE)));    return FALSE;
+        array('%property' => print_r($property, TRUE)));    
+    return FALSE;
   }
   
 
@@ -466,7 +466,6 @@ function chado_update_property($property, $options) {
   $table_desc = chado_get_schema($base_table . 'prop');
   $fkcol = key($table_desc['foreign keys'][$base_table]['columns']);
 
-  
   // construct the array that will match the exact record to update
   $match = array(
     $fkcol => $record_id,
@@ -620,13 +619,16 @@ function chado_delete_property($record, $property) {
  *     -cv_name: The name of the CV that contains the term.
  *     -value: The specific value for the property.
  *     -rank: The specific rank for the property.
+ * @param $options
+ *   An array of options supported by chado_generate_var(). These keys
+ *   are used for generating the cvterm objects returned by this function.
  *
  * @return
  *   An array of chado variables with the given property
  *
  * @ingroup tripal_chado_api
  */
-function chado_get_record_with_property($record, $property) {
+function chado_get_record_with_property($record, $property, $options = array()) {
   
   $base_table  = array_key_exists('table', $record) ? $record['table'] : '';
   $base_records= array_key_exists('base_records', $record) ? $record['base_records'] : array();
@@ -660,8 +662,7 @@ function chado_get_record_with_property($record, $property) {
   }
   
   // Make sure the CV term exists;
-  $options = array();
-  $term = chado_select_record('cvterm', array('cvterm_id'), $type, $options);
+  $term = chado_select_record('cvterm', array('cvterm_id'), $type);
   if (!$term or count($term) == 0) {
     tripal_report_error('tripal_core', TRIPAL_ERROR, "chado_update_property: " .
         "Cannot find the term described by: %property.",

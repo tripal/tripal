@@ -76,7 +76,11 @@ function tripal_get_stock($identifiers, $options = array()) {
   if (isset($identifiers['property'])) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
-    $stock = chado_get_record_with_property('stock', $property, $identifiers, $options);
+    $stock = chado_get_record_with_property(
+      array('table' => 'stock', 'base_records' => $identifiers),
+      array('type_name' => $property), 
+      $options
+    );
   }
 
   // Else we have a simple case and we can just use chado_generate_var to get the stock
@@ -176,7 +180,11 @@ function tripal_get_multiple_stocks($identifiers, $options = array()) {
   if (isset($identifiers['property'])) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
-    $stock = chado_get_record_with_property('stock', $property, $identifiers, $options);
+    $stock = chado_get_record_with_property(
+      array('table' => 'stock', 'base_records' => $identifiers),
+      array('type_name' => $property), 
+      $options
+    );
   }
 
   // Else we have a simple case and we can just use chado_generate_var to get the stock

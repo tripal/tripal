@@ -22,8 +22,15 @@ function tripal_featuremap_get_property($featuremap_id, $property) {
       '%new_function' => 'chado_get_property'
     )
   );
-
-  return chado_get_property('featuremap', $featuremap_id, $property, 'featuremap_property');
+  $record = array(
+    'table' => 'featuremap',
+    'id' => $featuremap_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => 'featuremap_property',
+  );
+  return chado_get_property($record, $property);
 }
 
 /**
@@ -44,8 +51,19 @@ function tripal_featuremap_insert_property($featuremap_id, $property, $value, $u
       '%new_function' => 'chado_insert_property'
     )
   );
-
-  return chado_insert_property('featuremap', $featuremap_id, $property, 'featuremap_property', $value, $update_if_present);
+  $record = array(
+    'table' => 'featuremap',
+    'id' => $featuremap_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => 'featuremap_property',
+    'value' => $value,
+  );
+  $options = array(
+    'update_if_present' => $update_if_present,
+  );
+  return chado_insert_property($record, $property, $options);
 }
 
 /**
@@ -66,8 +84,19 @@ function tripal_featuremap_update_property($featuremap_id, $property, $value, $i
       '%new_function' => 'chado_update_property'
     )
   );
-
-  return chado_update_property('featuremap', $featuremap_id, $property, 'featuremap_property', $value, $insert_if_missing);
+  $record = array(
+    'table' => 'featuremap',
+    'id' => $featuremap_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => 'featuremap_property',
+    'value' => $value,
+  );
+  $options = array(
+    'insert_if_missing' => $insert_if_missing,
+  );
+  return chado_update_property($record, $property, $options);
 }
 
 /**
@@ -88,8 +117,17 @@ function tripal_featuremap_delete_property($featuremap_id, $property) {
       '%new_function' => 'chado_delete_property'
     )
   );
+  
+  $record = array(
+    'table' => 'featuremap',
+    'id' => $featuremap_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => 'featuremap_property',
+  );
 
-  return chado_delete_property('featuremap', $featuremap_id, $property, 'featuremap_property');
+  return chado_delete_property($record, $property);
 }
 
 /**

@@ -23,7 +23,15 @@ function tripal_project_get_property($project_id, $property) {
     )
   );
 
-  return chado_get_property('project', $project_id, $property, 'project_property');
+  $record = array(
+    'table' => 'project',
+    'id' => $project_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => 'project_property',
+  );
+  return chado_get_property($record, $property);
 }
 
 /**
@@ -45,7 +53,19 @@ function tripal_project_insert_property($project_id, $property, $value, $update_
     )
   );
 
-  return chado_insert_property('project', $project_id, $property, 'project_property', $value, $update_if_present);
+  $record = array(
+    'table' => 'project',
+    'id' => $project_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => 'project_property',
+    'value' => $value,
+  );
+  $options = array(
+    'update_if_present' => $update_if_present,
+  );
+  return chado_insert_property($record, $property, $options);
 }
 
 /**
@@ -66,8 +86,19 @@ function tripal_project_update_property($project_id, $property, $value, $insert_
       '%new_function' => 'chado_update_property'
     )
   );
-
-  return chado_update_property('project', $project_id, $property, 'project_property', $value, $insert_if_missing);
+  $record = array(
+    'table' => 'project',
+    'id' => $project_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => 'project_property',
+    'value' => $value,
+  );
+  $options = array(
+    'insert_if_missing' => $insert_if_missing,
+  );
+  return chado_update_property($record, $property, $options);
 }
 
 /**
@@ -88,6 +119,13 @@ function tripal_project_delete_property($project_id, $property) {
       '%new_function' => 'chado_delete_property'
     )
   );
-
-  return chado_delete_property('project', $project_id, $property, 'project_property');
+  $record = array(
+    'table' => 'project',
+    'id' => $project_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => 'project_property',
+  );
+  return chado_delete_property($record, $property);
 }

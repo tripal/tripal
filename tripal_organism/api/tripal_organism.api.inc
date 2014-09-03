@@ -76,7 +76,11 @@ function tripal_get_organism($identifiers, $options = array()) {
   if (isset($identifiers['property'])) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
-    $organism = chado_get_record_with_property('organism', $property, $identifiers, $options);
+    $organism = chado_get_record_with_property(
+      array('table' => 'organism', 'base_records' => $identifiers), 
+      array('type_name' => $property), 
+      $options
+    );
   }
 
   // Else we have a simple case and we can just use chado_generate_var to get the analysis

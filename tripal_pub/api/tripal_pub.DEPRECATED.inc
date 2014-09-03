@@ -355,8 +355,15 @@ function tripal_pub_get_property($pub_id, $property) {
       '%new_function' => 'chado_get_property'
     )
   );
-
-  return chado_get_property('pub', $pub_id, $property, 'tripal_pub');
+  $record = array(
+    'table' => 'pub',
+    'id' => $pub_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => 'tripal_pub',
+  );
+  return chado_get_property($record, $property);
 }
 
 /**
@@ -377,8 +384,19 @@ function tripal_pub_insert_property($pub_id, $property, $value, $update_if_prese
       '%new_function' => 'chado_insert_property'
     )
   );
-
-  return chado_insert_property('pub', $pub_id, $property, 'tripal_pub', $value, $update_if_present);
+  $record = array(
+    'table' => 'pub',
+    'id' => $pub_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => 'tripal_pub',
+    'value' => $value,
+  );
+  $options = array(
+    'insert_if_missing' => $insert_if_missing,
+  );
+  return chado_insert_property($record, $property, $options);
 }
 
 /**
@@ -399,8 +417,19 @@ function tripal_pub_update_property($pub_id, $property, $value, $insert_if_missi
       '%new_function' => 'chado_update_property'
     )
   );
-
-  return chado_update_property('pub', $pub_id, $property, 'tripal_pub', $value, $insert_if_missing);
+  $record = array(
+    'table' => 'pub',
+    'id' => $pub_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => 'tripal_pub',
+    'value' => $value,
+  );
+  $options = array(
+    'update_if_present' => $update_if_present,
+  );
+  return chado_update_property($record, $property, $options);
 }
 
 /**
@@ -421,6 +450,13 @@ function tripal_pub_delete_property($pub_id, $property) {
       '%new_function' => 'chado_delete_property'
     )
   );
-
-  return chado_delete_property('pub', $pub_id, $property, 'tripal_pub');
+  $record = array(
+    'table' => 'pub',
+    'id' => $pub_id,
+  );
+  $property = array(
+    'type_name' => $property,
+    'cv_name' => 'tripal_pub',
+  );
+  return chado_delete_property($record, $property);
 }

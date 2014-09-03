@@ -239,27 +239,23 @@ function tripal_get_dbxref($identifiers, $options = array()) {
   if (isset($identifiers['property'])) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
-    $dbxref = chado_get_record_with_property('dbxref', $property, $identifiers, $options);
-  }
-
-  // Else we have a simple case and we can just use chado_generate_var to get the analysis
-  else {
-    $dbxref = chado_generate_var(
-      'dbxref',
-      $identifiers,
+    $dbxref = chado_get_record_with_property(
+      array('table' => 'dbxref', 'base_records' => $identifiers), 
+      array('type_name' => $property),
       $options
     );
   }
 
+  // Else we have a simple case and we can just use chado_generate_var to get the analysis
+  else {
+    $dbxref = chado_generate_var('dbxref', $identifiers, $options);
+  }
+
   // Ensure the dbxref is singular. If it's an array then it is not singular
   if (is_array($dbxref)) {
-    tripal_report_error(
-      'tripal_db_api',
-      TRIPAL_ERROR,
+    tripal_report_error('tripal_db_api', TRIPAL_ERROR,
       "tripal_get_dbxref: The identifiers you passed in were not unique. You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
+      array('%identifier'=> print_r($identifiers, TRUE))
     );
   }
 

@@ -1113,15 +1113,25 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
         // if the key is an integer then this array is a simple list and
         // we will insert using the primary key. Otheriwse, use the new key
         if(is_int($subkey)) {
-          $success = chado_insert_property('pub', $pub_id, $key, 'tripal_pub', $subvalue, FALSE);
+          $success = chado_insert_property(
+            array('table' => 'pub', 'id' => $pub_id),
+            array('type_name' => $key, 'cv_name' => 'tripal_pub', 'value' => $subvalue)
+          );
         }
         else {
-          $success = chado_insert_property('pub', $pub_id, $subkey, 'tripal_pub', $subvalue, FALSE);
+          $success = chado_insert_property(
+            array('table' => 'pub', 'id' => $pub_id),
+            array('type_name' => $subkey, 'cv_name' => 'tripal_pub', 'value' => $subvalue)
+          );
         }
       }
     }
     else {
-      $success = chado_insert_property('pub', $pub_id, $key, 'tripal_pub', $value, TRUE);
+      $success = chado_insert_property(
+        array('table' => 'pub', 'id' => $pub_id),
+        array('type_name' => $key, 'cv_name' => 'tripal_pub', 'value' => $value),
+        array('update_if_present' => TRUE)
+      );
     }
     if (!$success) {
       tripal_report_error('tripal_pub', TRIPAL_ERROR, "Cannot add property '%prop' to publication. Skipping.",

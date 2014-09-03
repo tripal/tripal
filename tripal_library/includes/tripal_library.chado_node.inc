@@ -74,10 +74,8 @@ function chado_library_form($node, &$form_state) {
     $organism_id  = $library->organism_id->organism_id;
 
     $libprop = chado_get_property(
-      'library',
-      $library->library_id,
-      'Library Description',
-      'library_property'
+      array('table' => 'library', 'id' => $library->library_id),
+      array('type_name' => 'Library Description', 'cv_name' => 'library_property')
     );
     $description = $libprop->value;
 
