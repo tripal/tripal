@@ -133,7 +133,7 @@ function chado_analysis_form($node, &$form_state) {
     '#default_value' => $node->title,
   );
   $form['instructions'] = array(
-    '#markup' => t('<b>Note</b>: When adding any type of data it is good to associate it with
+    '#markup' => t('When adding any type of data it is good to associate it with
         an analysis so that site visitors can identify the source of the data including
         necessary materials and methods.  The fields below imply that all analyses
         are derived from some software package. But, data can also be derived via retreival

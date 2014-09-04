@@ -6,7 +6,7 @@
  *
  * TITLES
  * ====================================
- * There are two steps to implement the ability to set custom titles for the node type:
+ * There are three steps to implement the ability to set custom titles for the node type:
  * 1) Add the 'chado_node_api' elements to the hook_node_info function().  These values
  *    define the name of the base table and how to refer to nodes in singular and plural.
  *    There are additional paramaters that can be added to the 'chado_node_api' for
@@ -94,7 +94,7 @@
  *
  * NODE URL/PATHS
  * ====================================
- * There are two steps to implement the ability to set custom URLs for the node type:
+ * There are three steps to implement the ability to set custom URLs for the node type:
  * 1) Add the 'chado_node_api' elements to the hook_node_info function().  These values
  *    define the name of the base table and how to refer to nodes in singular and plural.
  *    There are additional paramaters that can be added to the 'chado_node_api' for
