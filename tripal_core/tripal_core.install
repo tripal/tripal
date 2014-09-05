@@ -68,7 +68,7 @@ function tripal_core_uninstall() {
   // so that Drupal can then drop the tables
   db_query('
     ALTER TABLE {tripal_custom_tables}
-    DROP CONSTRAINT IF EXISTS tripal_custom_tables_fk1 CASCADE
+    DROP CONSTRAINT tripal_custom_tables_fk1 CASCADE
   ');
 }
 

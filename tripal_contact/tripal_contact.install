@@ -368,14 +368,17 @@ function tripal_contact_update_7201() {
   // to keep from error messages appear, we will drop the FK if it already
   // exists and then re-add it.
   try {
-    db_query('
-      ALTER TABLE chado.contactprop
-      DROP CONSTRAINT IF EXISTS contactprop_type_id_fkey CASCADE
-    ');
-    db_query('
-      ALTER TABLE chado.contactprop
-      DROP CONSTRAINT IF EXISTS contactprop_contact_id_fkey CASCADE
-    ');
+    $fkey_exists = db_query('SELECT TRUE FROM pg_constraint WHERE conname = :constraint', array(':constraint' => 'contactprop_type_id_fkey'))->fetchField();
+    if ($fkey_exists) {
+      db_query('
+        ALTER TABLE chado.contactprop
+        DROP CONSTRAINT contactprop_type_id_fkey CASCADE
+      ');
+      db_query('
+        ALTER TABLE chado.contactprop
+        DROP CONSTRAINT contactprop_contact_id_fkey CASCADE
+      ');
+    }
     db_query('
       ALTER TABLE chado.contactprop
       ADD CONSTRAINT contactprop_type_id_fkey
