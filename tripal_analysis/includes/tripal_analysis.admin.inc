@@ -45,10 +45,6 @@ function tripal_analysis_admin_analysis_view() {
 /**
  * Administration page callbacks for the Tripal Analysis module
  *
- * We have defined a hook_get_settings() function. When a sub-module
- * is enabled, we'll look for this function to provide a form for the
- * administrative setting.
- *
  * @return
  *  A form API array describing an administrative form
  *
@@ -86,7 +82,6 @@ function tripal_analysis_admin() {
     'options' => array(
       '/analysis/[analysis.analysis_id]' => 'Analysis ID',
       '/analysis/[analysis.program]/[analysis.programversion]/[analysis.sourcename]' => 'Unique Contraint: Includes the program name & version as well as the source name'
-
     ),
   );
 
@@ -94,41 +89,6 @@ function tripal_analysis_admin() {
   // This sub-form handles it's own validation & submit
   chado_add_admin_form_set_url($form, $form_state, $details);
 
-  // Add sub-module settings. Pull all sub-module information from
-  // {tripal_analysis} table
-  $sql = "SELECT modulename FROM {tripal_analysis}";
-  $result = db_query($sql);
-  $counter = 0;  //keep track of the number of sub-modules
-  while ($data = $result->fetchObject()) {
-
-    // Check if the hook_get_settings() function is already defined.
-    $func = $data->modulename . "_get_settings";
-    $functions = get_defined_functions();
-    $settings;
-    foreach ($functions['user'] as $function) {
-      if ($function == $func) {
-        $settings = $func();
-      }
-    }
-
-    // Add sub-module's specific settings to the administrative view
-    if ($settings) {
-      // Define a fieldset for the sub-module
-      $form["field$counter"] = array(
-        '#type' => 'fieldset',
-        '#title' => "$settings->title",
-        '#collapsible' => TRUE
-      );
-      $form["field$counter"]["$settings->title"] = $settings->form;
-    }
-    $counter++;
-  }
-
-  if($counter == 0) {
-    $form['nothing'] = array(
-      '#markup' => t('There are currently no settings to configure. However, analysis extension modules may add items here when they are installed.')
-    );
-  }
   return system_settings_form($form);
 }
 

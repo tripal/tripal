@@ -794,7 +794,8 @@ function tripal_job_set_progress($job_id, $percentage) {
 /**
  * @deprecated Restructured API to make naming more readable and consistent.
  * Function was deprecated in Tripal 2.0 and will be removed 2 releases from now.
- * This function has been replaced by tripal_update_mview().
+ * This function has been replaced by tripal_refresh_mview(),  and 
+ * tripal_delete_mview().
  *
  * @see tripal_refresh_mview() or tripal_delete_mview().
  */

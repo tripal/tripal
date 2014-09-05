@@ -302,7 +302,7 @@ function tripal_views_views_data() {
             functionality for this column. To register handlers, make sure the 'handlers'
             key for this field is set in the integration array (priority = %priority).
             The supported keys include 'field', 'filter', 'sort', 'relationship'. Look
-            at the tripal_views_integration_add_entry() for additional details.",
+            at the tripal_add_views_integration() for additional details.",
           array(
             '%table'=> $base_table,
             '%column' => $column_name,
