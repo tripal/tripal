@@ -1,7 +1,7 @@
 name = Tripal Contact
 description = Supports the contact tables of Chado by providing pages for viewing and editing of contacts. Table list at: http://gmod.org/wiki/Chado_Contact_Module.
 core = 7.x
-project = tripal_contact
+project = tripal
 package = Tripal
 version = 7.x-2.0-rc1
 

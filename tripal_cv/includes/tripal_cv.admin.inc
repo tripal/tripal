@@ -316,6 +316,11 @@ function theme_tripal_cv_admin_set_defaults_form($variables) {
     '#markup' => $settings_table,
   );
 
+  // TODO: I believe rendering of the form should not happen here. But rather
+  // the form should be returned as is. This way other modules can have access
+  // to the form elements via the hook_form_alter.  Rather, there should
+  // be a theme function for the form where the rendering in the table
+  // should occur.  See the tripal_pub_importer_setup_form() for an exmaple.
   return drupal_render_children($element);
 
 }

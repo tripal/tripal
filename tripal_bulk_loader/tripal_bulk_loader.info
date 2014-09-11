@@ -1,7 +1,7 @@
 name = Tripal Bulk Loader
 description = Supports the construction of templates for customizable uploading of tab-delimited files into the Chado database.
 core = 7.x
-project = tripal_bulk_loader
+project = tripal
 package = Tripal
 version = 7.x-2.0-rc1
 

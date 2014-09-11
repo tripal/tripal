@@ -1,7 +1,7 @@
 name = Tripal Feature Map
 description = Supports the map tables of Chado by providing pages for viewing and editing of maps. Table list at: http://gmod.org/wiki/Chado_Map_Module
 core = 7.x
-project = tripal_featuremap
+project = tripal
 package = Tripal
 version = 7.x-2.0-rc1
 

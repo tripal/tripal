@@ -1,7 +1,7 @@
 name = Tripal Library
 description = Supports the library tables of Chado by providing pages for viewing and editing of biological libraries. Table list at: http://gmod.org/wiki/Chado_Library_Module
 core = 7.x
-project = tripal_library
+project = tripal
 package = Tripal
 version = 7.x-2.0-rc1
 
