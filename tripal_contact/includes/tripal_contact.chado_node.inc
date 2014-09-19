@@ -432,9 +432,11 @@ function chado_contact_insert($node) {
 /**
  * Implements hook_update
  *
- * The purpose of the function is to allow the module to take action when an edited node is being
- * updated. It updates any name changes to the database tables that werec reated upon registering a contact.
- * As well, the database will be changed, so the user changed information will be saved to the database.
+ * The purpose of the function is to allow the module to take action when an
+ * edited node is being updated. It updates any name changes to the database
+ * tables that were created upon registering a contact.
+ * As well, the database will be changed, so the user changed information will
+ * be saved to the database.
  *
  * @param $node
  *   The node being updated

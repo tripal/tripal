@@ -83,7 +83,8 @@ function tripal_contact_menu() {
     'title' => ' Sync',
     'description' => 'Sync contacts in Chado with Drupal',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_contact_sync_form'),
+    // 'page arguments' => array('tripal_contact_sync_form'),
+    'page arguments' => array('chado_node_sync_form', 'tripal_contact', 'chado_contact'),
     'access arguments' => array('administer tripal contact'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 0
