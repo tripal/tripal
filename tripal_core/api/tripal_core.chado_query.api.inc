@@ -542,6 +542,8 @@ function chado_insert_record($table, $values, $options = array()) {
  * values to update.  The function will find the record that matches the
  * columns specified and update the record with the avlues in the $uvalues array.
  *
+ * @TODO: Support Complex filtering as is done in chado_select_record();
+ *
  * @ingroup tripal_chado_query_api
  */
 function chado_update_record($table, $match, $values, $options = NULL) {
@@ -783,6 +785,8 @@ function chado_update_record($table, $match, $values, $options = NULL) {
  * values to update.  The function will find all records that match the
  * columns specified and delete them.
  *
+ * @TODO: Support Complex filtering as is done in chado_select_record();
+ *
  * @ingroup tripal_chado_query_api
  */
 function chado_delete_record($table, $match, $options = NULL) {
@@ -892,7 +896,8 @@ function chado_delete_record($table, $match, $options = NULL) {
  * @param $values
  *  An associative array containing the values for filtering the results. In the
  *  case where multiple values for the same time are to be selected an additional
- *  entry for the field should appear for each value
+ *  entry for the field should appear for each value. If you need to filter
+ *  results using more complex methods see the 'Complex Filtering' section below.
  * @param $options
  *  An associative array of additional options where the key is the option
  *  and the value is the value of that option.
@@ -966,33 +971,44 @@ function chado_delete_record($table, $match, $options = NULL) {
  * for the cvterm is nested as well.  In the example above, two different species
  * are allowed to match
  *
+ * Complex Filtering:
+ *   All of the documentation above supports filtering based on 'is equal to'
+ *   or 'is NULL'. If your criteria doesn't fall into one of these two categories
+ *   then you need to provide an array with additional details such as the operator
+ *   as well as the value. An example follows and will be discussed in detail.
+ *   @code
+      $columns = array('feature_id', 'fmin', 'fmax');
+      // Regular criteria specifying the parent feature to retrieve locations from.
+      $values = array(
+        'srcfeature_id' => array(
+          'uniquename' => 'MtChr01'
+          'type_id' => array(
+            'name' => 'pseudomolecule'
+          ),
+        ),
+      );
+      // Complex filtering to specify the range to return locations from.
+      $values['fmin'][] = array(
+        'op' => '>',
+        'data' => 15
+      );
+      $values['fmin'][] = array(
+        'op' => '<',
+        'data' => 100
+      );
+      $results = chado_select_record('featureloc', $columns, $values);
+ *   @endcode
+ *   The above code example will return all of the name, start and end of all
+ *   the features that start within MtChr1:15-100bp. Note that complex filtering
+ *   can be used in conjunction with basic filtering and that multiple criteria,
+ *   even for the same field can be entered.
+ *
  * @ingroup tripal_chado_query_api
  */
 function chado_select_record($table, $columns, $values, $options = NULL) {
 
-  $print_errors = (isset($options['print_errors'])) ? $options['print_errors'] : FALSE;
-
-  if (!is_array($values)) {
-    tripal_report_error('tripal_core', TRIPAL_ERROR, 'Cannot pass non array as values for selecting.',
-      array(), array('print' => $print_errors)
-    );
-    return FALSE;
-  }
-  if (!is_array($columns)) {
-    tripal_report_error('tripal_core', TRIPAL_ERROR, 'Cannot pass non array as columns for selecting.',
-      array(), array('print' => $print_errors)
-    );
-    return FALSE;
-  }
-  if (count($columns)==0) {
-    tripal_report_error('tripal_core', TRIPAL_ERROR, 'Cannot pass an empty array as columns for selecting.',
-      array(), array('print' => $print_errors)
-    );
-    return FALSE;
-  }
-
-  // set defaults for options. If we don't set defaults then
-  // we get memory leaks when we try to access the elements
+  // Set defaults for options. If we don't set defaults then
+  // we get memory leaks when we try to access the elements.
   if (!is_array($options)) {
     $options = array();
   }
@@ -1018,8 +1034,12 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
   if (array_key_exists('pager', $options)) {
     $pager = $options['pager'];
   }
+  $print_errors = FALSE;
+  if (isset($options['print_errors'])) {
+    $print_errors = $options['print_errors'];
+  }
 
-  // check that our columns and values arguments are proper arrays
+  // Check that our columns and values arguments are proper arrays.
   if (!is_array($columns)) {
     tripal_report_error('tripal_core', TRIPAL_ERROR,
       'chado_select_record; the $columns argument must be an array. Columns:%columns',
@@ -1037,8 +1057,9 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
     return FALSE;
   }
 
-  // get the table description
+  // Get the table description.
   $table_desc = chado_get_schema($table);
+
   $select = '';
   $from = '';
   $where = array();
@@ -1128,9 +1149,13 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
     }
   }
 
+  // Process the values array into where clauses and retrieve foreign keys. The
+  // $where array should always be an integer-indexed array with each value
+  // being an array with a 'field', 'op', and 'data' keys with all foreign keys
+  // followed.
   foreach ($values as $field => $value) {
-    // make sure the field is in the table description. If not then return an error
-    // message
+
+    // Require the field be in the table description.
     if (!array_key_exists($field, $table_desc['fields'])) {
       tripal_report_error('tripal_core', TRIPAL_ERROR,
         'chado_select_record: The field "%field" does not exist for the table "%table".  Cannot perform query. Values: %array',
@@ -1141,47 +1166,129 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
     }
 
     $select[] = $field;
-    if (is_array($value)) {
-      // if the user has specified multiple values for matching then this we
-      // want to catch that and save them in our $where array, otherwise
-      // we'll descend for a foreign key relationship
-      if (array_values($value) === $value) {
-        $where[$field] = $value;
-      }
-      else {
-        // select the value from the foreign key relationship for this value
-        $foreign_options = array(
-          'regex_columns' => $options['regex_columns'],
-        );
 
-        $results = chado_schema_get_foreign_key($table_desc, $field, $value, $foreign_options);
-        if (!$results or count($results)==0) {
-          return array();
-        }
-        else {
-          $where[$field] = $results;
-        }
+    // CASE 1: We have an array for a value.
+    if (is_array($value)) {
+
+      // CASE 1a: If there is only one element in the array, treat it the same
+      // as a non-array value.
+      if (count($value) == 1 AND is_int(key($value))) {
+
+        $value = array_pop($value);
+        $op = '=';
+        chado_select_record_check_value_type($op, $value, $table_desc['fields'][$field]['type']);
+
+        $where[] = array(
+          'field' => $field,
+          'op' => $op,
+          'data' => $value
+        );
       }
-    }
-    else {
-      // need to catch a 0 and make int if integer field
-      // but we don't want to catch a NULL
-      if ($value === NULL) {
-        $where[$field] = NULL;
+      // CASE 1b: If there is a 'data' key in the array then we have the new
+      // complex filtering format with a single criteria.
+      elseif (isset($value['data']) AND isset($value['op'])) {
+
+        $value['field'] = $field;
+        $where[] = $value;
       }
-      elseif ($table_desc['fields'][$field]['type'] == 'int') {
-        $where[$field][] = (int) $value;
+      // CASE 1c: If we have an integer indexed array and the first element is
+      // not an array then we have a simple array of values to be used for an IN clause.
+      elseif (is_int(key($value)) AND !is_array(current($value))) {
+
+        $where[] = array(
+          'field' => $field,
+          'op' => 'IN',
+          'data' => $value
+        );
       }
+      // We have a multi-dimensional array: 2 cases...
       else {
-        $where[$field][] = $value;
+
+        // CASE 1d: If there is a multi-dimensional array with each sub-array
+        // containing a data key then we have the new complex filtering format
+        // with multiple criteria.
+        if (isset($value[0]['data']) AND isset($value[0]['op'])) {
+
+          foreach ($value as $subvalue) {
+            $subvalue['field'] = $field;
+            $where[] = $subvalue;
+          }
+        }
+        // CASE 1e: We have a multi-dimensional array that doesn't fit any of the
+        // above cases then we have a foreign key definition to follow.
+        else {
+
+          // Select the value from the foreign key relationship for this value.
+          $foreign_options = array(
+            'regex_columns' => $options['regex_columns'],
+          );
+          $results = chado_schema_get_foreign_key($table_desc, $field, $value, $foreign_options);
+
+          // Ensure that looking up the foreign key didn't fail in an error.
+          if ($results === FALSE OR $results === NULL) {
+            tripal_report_error('tripal_core', TRIPAL_ERROR,
+              'chado_select_record: could not follow the foreign key definition
+              for %field where the definition supplied was %value',
+              array('%field' => $field, '%value' => print_r($value, TRUE))
+            );
+          }
+          // Ensure that there were results returned.
+          elseif (count($results)==0) {
+            tripal_report_error('tripal_core', TRIPAL_ERROR,
+              'chado_select_record: the foreign key definition for %field
+              returned no results where the definition supplied was %value',
+              array('%field' => $field, '%value' => print_r($value, TRUE))
+            );
+          }
+          // If there was only a single resutlt then add it using an op of =.
+          elseif (count($results) == 1) {
+            $results = array_pop($results);
+            $op = '=';
+            chado_select_record_check_value_type($op, $results, $table_desc['fields'][$field]['type']);
+
+            $where[] = array(
+              'field' => $field,
+              'op' => $op,
+              'data' => $results
+            );
+          }
+          // Otherwise multiple results were returned so we want to form an
+          // IN (x, y, z) expression.
+          else {
+            $where[] = array(
+              'field' => $field,
+              'op' => 'IN',
+              'data' => $results
+            );
+          }
+        }
       }
     }
+    // CASE 2: We have a single value.
+    else {
+
+      $op = '=';
+      chado_select_record_check_value_type($op, $value, $table_desc['fields'][$field]['type']);
+
+      $where[] = array(
+        'field' => $field,
+        'op' => $op,
+        'data' => $value
+      );
+    }
+
+    // Support Deprecated method for regex conditions.
+    $current_key = key($where);
+    if (in_array($field, $options['regex_columns'])) {
+      $where[$current_key]['op'] = '~*';
+    }
+
   }
 
 
-  // now build the SQL 
+  // Now build the SQL.
   if (empty($where)) {
-    // sometimes want to select everything
+    // Sometimes want to select everything.
     $sql  = "SELECT " . implode(', ', $columns) . " ";
     $sql .= 'FROM {' . $table . '} ';
   }
@@ -1189,50 +1296,50 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
     $sql  = "SELECT " . implode(', ', $columns) . " ";
     $sql .= 'FROM {' . $table . '} ';
 
-    // if $values is empty then we want all results so no where clause
+    // If $values is empty then we want all results so no where clause.
     if (!empty($values)) {
       $sql .= "WHERE ";
     }
-    foreach ($where as $field => $value) {
+    foreach ($where as $clause_num => $value_def) {
 
-      // if we have multiple values returned then we need an 'IN' statement
-      // in our where statement
-      if (count($value) > 1) {
-        $sql .= "$field IN (";
-        $index = 0;
-        foreach ($value as $v) {
-          $sql .= ":$field" . $index . ', ';
-          $args[":$field" . $index] = $v;
-          $index++;
-        }
-        $sql = drupal_substr($sql, 0, -2); // remove trailing ', '
-        $sql .= ") AND ";
+      switch ($value_def['op']) {
+        // Deal with 'field IN (x, y, z)' where clauses.
+        case 'IN':
+          $sql .= $value_def['field'] . " IN (";
+          $index = 0;
+          foreach ($value_def['data'] as $v) {
+            $placeholder = ':' . $value_def['field'] . $clause_num .'_' . $index;
+            $sql .= $placeholder . ', ';
+            $args[$placeholder] = $v;
+            $index++;
+          }
+          $sql = drupal_substr($sql, 0, -2); // remove trailing ', '
+          $sql .= ") AND ";
+          break;
+
+        // Deal with IS NULL.
+        case 'IS NULL':
+          $sql .= $value_def['field'] . ' IS NULL AND ';
+          break;
+
+        // Default is [field] [op] [data].
+        default:
+          $placeholder = ':'. $value_def['field'] . $clause_num;
+
+          // Support case insensitive columns.
+          if (in_array($value_def['field'], $options['case_insensitive_columns'])) {
+            $sql .= 'lower(' . $value_def['field'] .') '. $value_def['op'] .' lower('. $placeholder . ') AND ';
+          }
+          else {
+            $sql .= $value_def['field'] .' '. $value_def['op'] .' '. $placeholder . ' AND ';
+          }
+          $args[$placeholder] = $value_def['data'];
       }
-      // if we have a null value then we need an IS NULL in our where statement
-      elseif ($value === NULL) {
-        $sql .= "$field IS NULL AND ";
-        // Need to remove one from the argument count b/c nulls don't add an argument
-      }
-      // if we have a single value then we need an = in our where statement
-      else {
-        $operator = '=';
-        if (in_array($field, $options['regex_columns'])) {
-          $operator = '~*';
-        }
-        if (in_array($field, $options['case_insensitive_columns'])) {
-          $sql .= "lower($field) $operator lower(:$field) AND ";
-          $args[":$field"] = $value[0];
-        }
-        else {
-          $sql .= "$field $operator :$field AND ";
-          $args[":$field"] = $value[0];
-        }
-      }
-    } // end foreach item in where clause
+    } // end foreach item in where clause.
     $sql = drupal_substr($sql, 0, -4);  // get rid of the trailing 'AND '
   } // end if (empty($where)){ } else {
 
-  // finally add any ordering of the results to the SQL statement
+  // Finally add any ordering of the results to the SQL statement.
   if (count($options['order_by']) > 0) {
     $sql .= " ORDER BY ";
     foreach ($options['order_by'] as $field => $dir) {
@@ -1241,7 +1348,7 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
     $sql = drupal_substr($sql, 0, -2);  // get rid of the trailing ', '
   }
 
-  // if the caller has requested the SQL rather than the results then do so
+  // if the caller has requested the SQL rather than the results then do so.
   if ($options['return_sql'] == TRUE) {
     return array('sql' => $sql, 'args' => $args);
   }
@@ -1253,7 +1360,7 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
     $resource = chado_query($sql, $args);
   }
 
-  // format results into an array
+  // Format results into an array.
   $results = array();
   foreach ($resource as $r) {
     $results[] = $r;
@@ -1261,7 +1368,46 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
   if ($options['has_record']) {
     return count($results);
   }
+
   return $results;
+}
+
+/**
+ * Helper Function: check that the value is the correct type.
+ *
+ * This function is used by chado_select_record() when building the $where
+ * clause array to ensure that any single values are the correct type based
+ * on the table definition. Furthermore, it ensures that NULL's are caught
+ * changing the operator to 'IS NULL'.
+ * @code
+      $op = '=';
+      chado_select_record_check_value_type($op, $value, $table_desc['fields'][$field]['type']);
+
+      $where[] = array(
+        'field' => $field,
+        'op' => $op,
+        'data' => $value
+      );
+ * @endcode
+ *
+ * @param $op
+ *   The operator being used. This is mostly passed in to allow it to be changed
+ *   if a NULL value is detected.
+ * @param $value
+ *   The value to be checked and adjusted.
+ * @param $type
+ *   The type from the table definition that's used to determine the type of
+ *   value.
+ */
+function chado_select_record_check_value_type(&$op, &$value, $type) {
+
+  if ($value === NULL) {
+    $op = 'IS NULL';
+  }
+  elseif ($type == 'int') {
+    $value = (int) $value;
+  }
+
 }
 
 /**
@@ -1392,16 +1538,16 @@ function chado_pager_query($query, $args, $limit, $element, $count_query = '') {
 /**
  * A function to retrieve the total number of records for a pager that
  * was generated using the chado_pager_query() function
- * 
+ *
  * @param $element
  *   The $element argument that was passed to the chado_pager_query function
- *   
+ *
  * @ingroup tripal_chado_query_api
  */
 function chado_pager_get_count($element) {
   $q = $_GET['q'];
-  
-  if (array_key_exists($q, $GLOBALS['chado_pager']) and 
+
+  if (array_key_exists($q, $GLOBALS['chado_pager']) and
       array_key_exists($element, $GLOBALS['chado_pager'][$q])) {
     return $GLOBALS['chado_pager'][$q][$element]['total_records'];
   }

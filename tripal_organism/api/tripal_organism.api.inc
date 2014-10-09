@@ -77,8 +77,8 @@ function tripal_get_organism($identifiers, $options = array()) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
     $organism = chado_get_record_with_property(
-      array('table' => 'organism', 'base_records' => $identifiers), 
-      array('type_name' => $property), 
+      array('table' => 'organism', 'base_records' => $identifiers),
+      array('type_name' => $property),
       $options
     );
   }
@@ -141,10 +141,10 @@ function tripal_get_organism($identifiers, $options = array()) {
 function tripal_get_organism_select_options($syncd_only = TRUE) {
   $org_list = array();
   $org_list[] = 'Select an organism';
-  
+
   if ($syncd_only) {
     $sql = "
-      SELECT * 
+      SELECT *
       FROM public.chado_organism CO
         INNER JOIN {organism} O ON O.organism_id = CO.organism_id
       ORDER BY O.genus, O.species
@@ -154,7 +154,6 @@ function tripal_get_organism_select_options($syncd_only = TRUE) {
     // iterate through the organisms and build an array of those that are synced
     foreach ($orgs as $org) {
       $args = array(':organism_id' => $org->organism_id);
-      $org = chado_query($csql, $args)->fetchObject();
       $org_list[$org->organism_id] = $org->genus . ' ' . $org->species;
     }
   }
@@ -178,15 +177,15 @@ function tripal_get_organism_select_options($syncd_only = TRUE) {
  *   An organism table record
  *
  * @return
- *   If the type parameter is 'url' (the default) then the fully qualified 
+ *   If the type parameter is 'url' (the default) then the fully qualified
  *   url to the image is returend. If no image is present then NULL is returned
  */
 function tripal_get_organism_image_url($organism) {
   $url = '';
-  
+
   // Get the organism's node
   $nid = chado_get_nid_from_id('organism', $organism->organism_id);
-  
+
   // Look in the file_usage table of Drupal for the image file. This
   // is the current way for handling uploaded images. It allows the file to
   // keep it's proper name and extension.
@@ -203,7 +202,7 @@ function tripal_get_organism_image_url($organism) {
   }
 
   // First look for an image with the genus/species name.  This is old-style tripal
-  // and we keep it for backwards compatibility.  
+  // and we keep it for backwards compatibility.
   $base_path = realpath('.');
   $image_dir = tripal_get_files_dir('tripal_organism') . "/images";
   $image_name =  $organism->genus . "_" . $organism->species . ".jpg";
@@ -213,8 +212,8 @@ function tripal_get_organism_image_url($organism) {
     $url = file_create_url("$image_dir/$image_name");
     return $url;
   }
-  
-  // If we don't find the file using the genus ans species then look for the 
+
+  // If we don't find the file using the genus ans species then look for the
   // image with the node ID in the name. This method was used for Tripal 1.1
   // and 2.x-alpha version.
   $image_name = $nid . ".jpg";

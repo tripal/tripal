@@ -414,9 +414,14 @@ function chado_generate_var($table, $values, $base_options = array()) {
  * @param $object
  *   This must be an object generated using chado_generate_var()
  * @param $type
- *   Must be one of 'field', 'table', 'node'. Indicates what is being expanded.
+ *   Indicates what is being expanded. Must be one of 'field', 'foreign_key',
+ *   'table', 'node'. While field and node are self-explanitory, it might help
+ *   to node that 'table' refers to tables that have a foreign key pointing to
+ *   the current table (ie: featureprop is a table that can be expanded for
+ *   features) and 'foreign_key' expands a foreign key in the current table
+ *   that might have been excluded (ie: feature.type_id for features).
  * @param $to_expand
- *   The name of the field/table/node to be expanded
+ *   The name of the field/foreign_key/table/node to be expanded
  * @param $table_options
  *   - order_by:
  *     An array containing options for the base table.  For example, an
@@ -455,6 +460,14 @@ function chado_generate_var($table, $values, $base_options = array()) {
  *     unique integer to differentiate between pagers when more than one
  *     appear on a page.  The 'element' should start with zero and increment by
  *     one for each pager.  This only works when type is a 'table'.
+ *   - filter:
+ *     This options is only used where type=table and allows you to
+ *     expand only a subset of results based on the given criteria. Criteria
+ *     should provided as an array of [field name] => [value] similar to the
+ *     values array provided to chado_generate_var(). For example, when expanding
+ *     the featureprop table for a feature, you will already get only properties
+ *     for that feature, this option allows you to further get only properties
+ *     of a given type by passing in array('type_id' => array('name' => [name of type]))
  * @return
  *   A chado object supplemented with the field/table/node requested to be expanded.
  *   If the type is a table and it has already been expanded no changes is made to the
@@ -656,9 +669,33 @@ function chado_expand_var($object, $type, $to_expand, $table_options = array()) 
             continue;
           }
 
+          // If the user wants to limit the results they expand, make sure
+          // those criteria are taken into account.
+          if (isset($table_options['filter'])) {
+            if (is_array($table_options['filter'])) {
+              $filter_criteria = $table_options['filter'];
+              $filter_criteria[$left] = $object->{$right};
+            }
+            else {
+
+              // If they supplied criteria but it's not in the correct format
+              // then warn them but proceed as though criteria was not supplied.
+              $filter_criteria = array($left => $object->{$right});
+
+              tripal_report_error('tripal_core', TRIPAL_WARNING,
+                'chado_expand_var: unable to apply supplied filter criteria
+                since it should be an array. You supplied %criteria',
+                array('%criteria' => print_r($table_options['filter'], TRUE))
+              );
+            }
+          }
+          else {
+            $filter_criteria = array($left => $object->{$right});
+          }
+
           // generate a new object for this table using the FK values in the base table.
           $new_options = $table_options;
-          $foreign_object = chado_generate_var($foreign_table, array($left => $object->{$right}), $new_options);
+          $foreign_object = chado_generate_var($foreign_table, $filter_criteria, $new_options);
 
           // if the generation of the object was successful, update the base object to include it.
           if ($foreign_object) {
