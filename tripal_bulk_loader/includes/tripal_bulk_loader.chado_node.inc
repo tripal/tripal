@@ -200,15 +200,15 @@ function tripal_bulk_loader_load($nodes) {
     array(':nids' => array_keys($nodes))
   );
   foreach ($result as $record) {
-    $nodes[$record->nid]->constants[$record->group_id][$record->record_id][$record->field_id] = array(
-      'constant_id' => $record->constant_id,
-      'group_id' => $record->group_id,
-      'chado_table' => $record->chado_table,
-      'chado_field' => $record->chado_field,
-      'record_id' => $record->record_id,
-      'field_id' => $record->field_id,
-      'value' => $record->value
-    );
+      $nodes[$record->nid]->constants[$record->group_id][$record->record_id][$record->field_id] = array(
+        'constant_id' => $record->constant_id,
+        'group_id' => $record->group_id,
+        'chado_table' => $record->chado_table,
+        'chado_field' => $record->chado_field,
+        'record_id' => $record->record_id,
+        'field_id' => $record->field_id,
+        'value' => $record->value
+      );
   }
 
 }
@@ -337,7 +337,7 @@ function tripal_bulk_loader_node_access($node, $op, $account) {
   if (is_object($node)) {
     $node_type = $node->type;
   }
-  
+
   if($node_type == 'tripal_bulk_loader') {
     if ($op == 'create') {
       if (!user_access('create tripal_bulk_loader', $account)) {
@@ -376,15 +376,15 @@ function tripal_bulk_loader_node_view($node, $view_mode, $langcode) {
     case 'tripal_bulk_loader':
       // Show feature browser and counts
       if ($view_mode == 'full') {
-        
+
         // we want to use the Tripal generic node template
         $node->content['#tripal_generic_node_template'] = TRUE;
-        
+
         $node->content['tripal_bulk_loader_base'] = array(
           '#markup' => theme('tripal_bulk_loader_base', array('node' => $node)),
           '#tripal_toc_id'    => 'base',
           '#tripal_toc_title' => 'Overview',
-          '#tripal_template_show' => FALSE, 
+          '#tripal_template_show' => FALSE,
           '#weight' => -100,
         );
         $node->content['tripal_bulk_loader_fields'] = array(

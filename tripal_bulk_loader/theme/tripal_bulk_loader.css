@@ -1,0 +1,19 @@
+
+/**
+ * @file
+ * CSS related to Tripal Bulk Loader
+ */
+
+/**
+ * Tripal Bulk Loading Job Node
+ */
+#expired-constants .fieldset-wrapper, #expired-constants fieldset {
+  border-color: #ed5;
+  background-color: #fffce5;
+}
+
+#expired-constants legend {
+  border-color: #ed5;
+  background-color: #DDDAC0;
+  color: #840;
+}

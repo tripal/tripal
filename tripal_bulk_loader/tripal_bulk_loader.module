@@ -315,6 +315,15 @@ function tripal_bulk_loader_theme($existing, $type, $theme, $path) {
       'function' => 'tripal_bulk_loader_field_regex_fieldset',
       'render element' => 'element'
     ),
+    'tripal_bulk_loader_constant_set' => array(
+      'function' => 'theme_tripal_bulk_loader_constant_set',
+      'variables' => array(
+        'nid' => NULL,
+        'constants' => NULL,
+        'template' => NULL,
+        'options' => array()
+      ),
+    ),
 
     // admin theme
     'tripal_bulk_loader_admin' => array(
