@@ -1360,10 +1360,6 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
     $resource = chado_query($sql, $args);
   }
 
-dpm($sql, 'sql');
-dpm($args, 'args');
-dpm($where, 'where');
-
   // Format results into an array.
   $results = array();
   foreach ($resource as $r) {

@@ -365,7 +365,7 @@ function chado_contact_node_access($node, $op, $account ) {
 function chado_contact_insert($node) {
 
   // remove surrounding white-space on submitted values
-  $node->contactname          = trim($node->contactname);
+  $node->contactname    = trim($node->contactname);
   $node->description    = trim($node->description);
 
   // if there is a contact_id in the $node object then this must be a sync so
