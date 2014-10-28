@@ -198,6 +198,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
   $details['base_name_field'] = (isset($details['base_name_field'])) ? $details['base_name_field'] : 'uniquename';
   $details['subject_field_name'] = (isset($details['subject_field_name'])) ? $details['subject_field_name'] : 'subject_id';
   $details['object_field_name'] = (isset($details['object_field_name'])) ? $details['object_field_name'] : 'object_id';
+  $details['form_element_name'] = (isset($details['form_element_name'])) ? $details['form_element_name'] : $details['base_name_field'];
 
   // Some relationship tables don't have a rank
   // thus we need to first check this table has a rank before trying to set it
@@ -517,15 +518,16 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     // No other fields will be validated (ie: no fields from the main form or any other api
     // added form).
     '#limit_validation_errors' => array(
-      array('relationship_table')  // Validate all fields within $form_state['values']['relationship_table']
+      array('relationships'),  // Validate all fields within $form_state['values']['relationships']
+      array('relationship_table')  // Ensure relationship table results are not discarded.
     )
   );
 
 }
 
 /**
- * Validate the user input for creating a new relationship
- * Called by the add button in chado_add_node_form_relationships
+ * Validate the user input for creating a new relationship.
+ * Called by the add button in chado_add_node_form_relationships.
  *
  * @ingroup tripal_core
  */
@@ -533,14 +535,14 @@ function chado_add_node_form_relationships_add_button_validate($form, &$form_sta
 
   $details = unserialize($form_state['values']['relationship_table']['details']);
 
-  // First deal with autocomplete fields
-  // extract the base_id assuming '(###) NAME FIELD'
+  // First deal with autocomplete fields.
+  // Extract the base_id assuming '(###) NAME FIELD'.
   if (!empty($form_state['values']['relationship_table']['new']['subject_name'])) {
     if (preg_match('/\((\d+)\) .*/', $form_state['values']['relationship_table']['new']['subject_name'], $matches)) {
       $form_state['values']['relationship_table']['new']['subject_id'] = $matches[1];
     }
     else {
-      form_set_error('subject_name', 'You need to select the subject from the autocomplete drop-down');
+      form_set_error('relationship_table][new][subject_name', 'You need to select the subject from the autocomplete drop-down');
     }
   }
   if (!empty($form_state['values']['relationship_table']['new']['object_name'])) {
@@ -548,33 +550,56 @@ function chado_add_node_form_relationships_add_button_validate($form, &$form_sta
       $form_state['values']['relationship_table']['new']['object_id'] = $matches[1];
     }
     else {
-      form_set_error('object_name', 'You need to select the subject from the autocomplete drop-down');
+      form_set_error('relationship_table][new][object_name', 'You need to select the object from the autocomplete drop-down');
     }
   }
 
-  // At least one of the participants must be the current node
+
+  // NOTE: The only way to specify the current node is via checkbox. This is by
+  // design since guessing if they meant the current node by name is a
+  // chicken-egg problem due to the name field only being set to just the name
+  // only happens once it has been determined which germplasm is the current
+  // one. Furthermore, we can't use the primary key since this will not have
+  // been set on insert.
+
+  // At least one of the participants must be the current node.
   if (!($form_state['values']['relationship_table']['new']['subject_is_current'] OR $form_state['values']['relationship_table']['new']['object_is_current'])) {
-    // If the checkbox isn't set then check to see if either has the same uniquename as the node
-    if ($form_state['values']['relationship_table']['new']['subject_name'] == $form_state['values']['uniquename']) {
-      $form_state['values']['relationship_table']['new']['subject_is_current'] = 1;
-      form_set_error('subject_is_current', 'To set the current '.$details['nodetype'].', select the
-        checkbox. You entered the unique name of the current '.$details['nodetype'].' as the subject,
-        is this what you meant to do?');
-    }
-    elseif ($form_state['values']['relationship_table']['new']['subject_name'] == $form_state['values']['uniquename']) {
-      $form_state['values']['relationship_table']['new']['object_is_current'] = 1;
-      form_set_error('subject_is_current', 'To set the current '.$details['nodetype'].', select the
-        checkbox. You entered the unique name of the current '.$details['nodetype'].' as the subject,
-        is this what you meant to do?');
-    }
-    else {
-      form_set_error('object_is_current', 'At least one member of the relationship must be
-        the current '.$details['nodetype'].'. This is specified by checking the "Current '.$details['nodetype'].'"
-        checkbox for either the subject or object.');
-    }
+    form_set_error('relationship_table][new][object_is_current', 'At least one member of the relationship must be
+      the current '.$details['nodetype'].'. This is specified by checking the "Current '.$details['nodetype'].'"
+      checkbox for either the subject or object.');
+  }
+  // Only one of the participants may be the current node.
+  // We do not support circular relationships.
+  if ($form_state['values']['relationship_table']['new']['subject_is_current']
+    AND $form_state['values']['relationship_table']['new']['object_is_current']) {
+
+    form_set_error('relationship_table][new][object_is_current', 'Only one member of the relationship may be
+      the current '.$details['nodetype'].'. This is specified by checking the "Current '.$details['nodetype'].'"
+      checkbox for either the subject or object.');
+  }
+  // If it was determined current via checkbox, we need to ensure the name
+  // provided actually matches the current node.
+  if ($form_state['values']['relationship_table']['new']['subject_is_current']
+    AND !empty($form_state['values']['relationship_table']['new']['subject_name'])
+    AND $form_state['values']['relationship_table']['new']['subject_name'] != $form_state['values'][$details['form_element_name']]) {
+
+    form_set_error('relationship_table][new][subject_name',
+      'The name you supplied for the current '.$details['nodetype'].' doesn\'t match the actual name
+      of this '.$details['nodetype'].'. If you really meant the subject should be the current '.$details['nodetype'].',
+      simply leave the textfield empty and re-add this relationship.');
+  }
+  if ($form_state['values']['relationship_table']['new']['object_is_current']
+    AND !empty($form_state['values']['relationship_table']['new']['object_name'])
+    AND $form_state['values']['relationship_table']['new']['object_name'] != $form_state['values'][$details['form_element_name']]) {
+
+    form_set_error('relationship_table][new][object_name',
+      'The name you supplied for the current '.$details['nodetype'].' doesn\'t match the actual name
+      of this '.$details['nodetype'].'. If you really meant the object should be the current '.$details['nodetype'].',
+      simply leave the textfield empty and re-add this relationship.');
   }
 
-  // The non-current uniquename must be exist in the base table (subject)
+
+  // The non-current uniquename must be exist in the base table (subject).
   if (!($form_state['values']['relationship_table']['new']['subject_is_current'])) {
     $result = chado_select_record(
       $details['base_table'],
@@ -582,7 +607,7 @@ function chado_add_node_form_relationships_add_button_validate($form, &$form_sta
       array($details['base_foreign_key'] => $form_state['values']['relationship_table']['new']['subject_id'])
     );
     if (!isset($result[0])) {
-      form_set_error('subject_name', 'The subject must be the unique name of an
+      form_set_error('relationship_table][new][subject_name', 'The subject must be the unique name of an
         existing '.$details['nodetype'].' unless the "Current '.$details['nodetype'].'" checkbox is selected');
     }
     else {
@@ -590,7 +615,7 @@ function chado_add_node_form_relationships_add_button_validate($form, &$form_sta
     }
   }
 
-  // The non-current uniquename must exist in the base table (object)
+  // The non-current uniquename must exist in the base table (object).
   if (!($form_state['values']['relationship_table']['new']['object_is_current'])) {
     $result = chado_select_record(
       $details['base_table'],
@@ -598,7 +623,7 @@ function chado_add_node_form_relationships_add_button_validate($form, &$form_sta
       array($details['base_foreign_key'] => $form_state['values']['relationship_table']['new']['object_id'])
     );
     if (!isset($result[0])) {
-      form_set_error('object_name', 'The object must be the unique name of an
+      form_set_error('relationship_table][new][object_name', 'The object must be the unique name of an
         existing '.$details['nodetype'].' unless the "Current '.$details['nodetype'].'" checkbox is selected');
     }
     else {
@@ -606,7 +631,7 @@ function chado_add_node_form_relationships_add_button_validate($form, &$form_sta
     }
   }
 
-  // The type must be a valid cvterm
+  // The type must be a valid cvterm.
   if ($form_state['values']['relationship_table']['new']['type_name']) {
     $form_state['values']['relationship_table']['new']['type_id'] = $form_state['values']['relationship_table']['new']['type_name'];
     $result = chado_select_record(
@@ -615,14 +640,14 @@ function chado_add_node_form_relationships_add_button_validate($form, &$form_sta
       array('cvterm_id' => $form_state['values']['relationship_table']['new']['type_id'])
     );
     if (!isset($result[0])) {
-      form_set_error('type_id', 'The select type is not a valid controlled vocabulary term.');
+      form_set_error('relationship_table][new][type_id', 'The select type is not a valid controlled vocabulary term.');
     }
     else {
       $form_state['values']['relationship_table']['new']['type_name'] = $result[0]->name;
     }
   }
   else {
-    form_set_error('type_id', 'Please select a type of relationship');
+    form_set_error('relationship_table][new][type_id', 'Please select a type of relationship');
   }
 }
 
@@ -636,6 +661,7 @@ function chado_add_node_form_relationships_add_button_validate($form, &$form_sta
  */
 function chado_add_node_form_relationships_add_button_submit(&$form, &$form_state) {
 
+
   $details = unserialize($form_state['values']['relationship_table']['details']);
 
   // if the chado_relationships array is not set then this is the first time modifying the
@@ -645,9 +671,6 @@ function chado_add_node_form_relationships_add_button_submit(&$form, &$form_stat
   }
 
   $name = (isset($form_state['node']->{$details['base_table']}->uniquename)) ? $form_state['node']->{$details['base_table']}->uniquename : 'CURRENT';
-
-
-
 
   // get details for the new relationship
   if ($form_state['values']['relationship_table']['new']['subject_is_current']) {
@@ -966,14 +989,20 @@ function chado_add_node_form_relationships_name_to_id_callback($base_table, $nam
 
   $base_key = $base_table.'_id';
 
-  $result = db_select('chado.'.$base_table, 'b')
+  $query = db_select('chado.'.$base_table, 'b')
     ->fields('b', array($base_key, $name_field))
-    ->condition($name_field, '%' . db_like($string) . '%', 'LIKE')
-    ->execute();
+    ->condition($name_field, '%' . db_like($string) . '%', 'LIKE');
+
+  $result = $query->execute();
 
   // save the query to matches
   foreach ($result as $row) {
-    $key = '('.$row->{$base_key}.') '.substr($row->{$name_field},0,50) . '...';
+    if (strlen($row->{$name_field}) > 50) {
+      $key = '('.$row->{$base_key}.') ' . substr($row->{$name_field}, 0, 50) . '...';
+    }
+    else {
+      $key = '('.$row->{$base_key}.') ' . $row->{$name_field};
+    }
     $matches[$key] = check_plain($row->{$name_field});
   }
 
