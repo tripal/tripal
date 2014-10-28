@@ -502,42 +502,49 @@ function tripal_featuremap_node_view($node, $view_mode, $langcode) {
       // Show feature browser and counts
       if ($view_mode == 'full') {
         $node->content['tripal_featuremap_base'] = array(
-          '#markup' => theme('tripal_featuremap_base', array('node' => $node)),
+          '#node' => 'tripal_featuremap_base',
+          '#node' => $node,
           '#tripal_toc_id'    => 'base',
           '#tripal_toc_title' => 'Overview',
           '#weight' => -100,
         );
         $node->content['tripal_featuremap_featurepos'] = array(
-          '#markup' => theme('tripal_featuremap_featurepos', array('node' => $node)),
+          '#node' => 'tripal_featuremap_featurepos',
+          '#node' => $node,
           '#tripal_toc_id'    => 'featurepos',
           '#tripal_toc_title' => 'Map Features',
         );
         $node->content['tripal_featuremap_properties'] = array(
-          '#markup' => theme('tripal_featuremap_properties', array('node' => $node)),
+          '#node' => 'tripal_featuremap_properties',
+          '#node' => $node,
           '#tripal_toc_id'    => 'properties',
           '#tripal_toc_title' => 'Properties',
         );
         $node->content['tripal_featuremap_publication'] = array(
-          '#markup' => theme('tripal_featuremap_publication', array('node' => $node)),
+          '#node' => 'tripal_featuremap_publication',
+          '#node' => $node,
           '#tripal_toc_id'    => 'publications',
           '#tripal_toc_title' => 'Publications',
         );
         $node->content['tripal_featuremap_references'] = array(
-          '#markup' => theme('tripal_featuremap_references', array('node' => $node)),
+          '#node' => 'tripal_featuremap_references',
+          '#node' => $node,
           '#tripal_toc_id'    => 'references',
           '#tripal_toc_title' => 'Cross References',
         );
       }
       if ($view_mode == 'teaser') {
         $node->content['tripal_featuremap_teaser'] = array(
-          '#markup' => theme('tripal_featuremap_teaser', array('node' => $node)),
+          '#node' => 'tripal_featuremap_teaser',
+          '#node' => $node,
         );
       }
       break;
     case 'chado_feature':
       if ($view_mode == 'full') {
         $node->content['tripal_feature_featurepos'] = array(
-          '#markup' => theme('tripal_feature_featurepos', array('node' => $node)),
+          '#node' => 'tripal_feature_featurepos',
+          '#node' => $node,
           '#tripal_toc_id'    => 'featurepos',
           '#tripal_toc_title' => 'Maps',
         );
@@ -556,9 +563,9 @@ function tripal_featuremap_node_insert($node) {
 
   switch ($node->type) {
     case 'chado_featuremap':
-      
+
       // get the feature details from chado
-      $featuremap_id = chado_get_id_from_nid('featuremap', $node->nid);      
+      $featuremap_id = chado_get_id_from_nid('featuremap', $node->nid);
       $values = array('featuremap_id' => $featuremap_id);
       $featuremap = chado_generate_var('featuremap', $values);
       $node->featuremap = $featuremap;
@@ -583,7 +590,7 @@ function tripal_featuremap_node_update($node) {
 
   switch ($node->type) {
     case 'chado_featuremap':
-      
+
       // Now get the title
       $node->title = chado_get_node_title($node);
 

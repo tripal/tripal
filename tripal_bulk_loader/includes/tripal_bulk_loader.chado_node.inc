@@ -381,14 +381,16 @@ function tripal_bulk_loader_node_view($node, $view_mode, $langcode) {
         $node->content['#tripal_generic_node_template'] = TRUE;
 
         $node->content['tripal_bulk_loader_base'] = array(
-          '#markup' => theme('tripal_bulk_loader_base', array('node' => $node)),
+          '#theme' => 'tripal_bulk_loader_base',
+          '#node' => $node,
           '#tripal_toc_id'    => 'base',
           '#tripal_toc_title' => 'Overview',
           '#tripal_template_show' => FALSE,
           '#weight' => -100,
         );
         $node->content['tripal_bulk_loader_fields'] = array(
-          '#markup' => theme('tripal_bulk_loader_fields', array('node' => $node)),
+          '#theme' => 'tripal_bulk_loader_fields',
+          '#node' => $node,
           '#tripal_toc_id'    => 'fields',
           '#tripal_toc_title' => 'Data Fields',
           '#tripal_template_show' => FALSE,
@@ -396,7 +398,8 @@ function tripal_bulk_loader_node_view($node, $view_mode, $langcode) {
       }
       if ($view_mode == 'teaser') {
         $node->content['tripal_bulk_loader_teaser'] = array(
-          '#markup' => theme('tripal_bulk_loader_teaser', array('node' => $node)),
+          '#theme' => 'tripal_bulk_loader_teaser',
+          '#node' => $node,
         );
       }
       break;

@@ -235,14 +235,14 @@ function chado_stock_form($node, $form_state) {
   $form['database_reference'] = array(
     '#type' => 'fieldset',
     '#title' => t('Stock Database Reference'),
-    '#description' => t('If this site is not the primary location for information 
+    '#description' => t('If this site is not the primary location for information
         about this stock, please provide the name of the database, the accession
         and an optional description using the fields below. If the database
-        is not present in the list, then please ') . 
+        is not present in the list, then please ') .
         l(t('add the database '), 'admin/tripal/chado/tripal_db/add', array('attributes' => array('target' => '_blank'))) .
-        t('then refresh this page.'), 
+        t('then refresh this page.'),
   );
-  
+
   $db_options = tripal_get_db_select_options();
   $form['database_reference']['database'] = array(
     '#type' => 'select',
@@ -264,7 +264,7 @@ function chado_stock_form($node, $form_state) {
     '#title' => t('Description of Database Reference'),
     '#default_value' => $dbxref_description,
     '#description' => t('Optionally enter a description about the database accession.')
-    
+
   );
 
 
@@ -441,7 +441,7 @@ function chado_stock_insert($node) {
   $node->uniquename   = trim($node->uniquename);
   $node->sname        = trim($node->sname);
   $node->accession    = trim($node->accession);
-  
+
   $stock_id = '';
 
   // if there is an stock_id in the $node object then this must be a sync so
@@ -521,7 +521,7 @@ function chado_stock_insert($node) {
   else {
     $stock_id = $node->stock_id;
   }
-  
+
   // Make sure the entry for this stock doesn't already exist in the
   // chado_stock table if it doesn't exist then we want to add it.
   $check_org_id = chado_get_id_from_nid('stock', $node->nid);
@@ -730,7 +730,7 @@ function tripal_stock_node_presave($node) {
 
   switch ($node->type) {
     // This step is for setting the title for the Drupal node.  This title
-    // is permanent and thus is created to be unique.  Title changes provided 
+    // is permanent and thus is created to be unique.  Title changes provided
     // by tokens are generated on the fly dynamically, but the node title
     // seen in the content listing needs to be set here. Do not call
     // the chado_get_node_title() function here to set the title as the node
@@ -776,52 +776,61 @@ function tripal_stock_node_view($node, $view_mode, $langcode) {
     case 'chado_stock':
       if ($view_mode == 'full') {
         $node->content['tripal_stock_base'] = array(
-          '#markup' => theme('tripal_stock_base', array('node' => $node)),
+          '#theme' => 'tripal_stock_base',
+          '#node' => $node,
           '#tripal_toc_id'    => 'base',
           '#tripal_toc_title' => 'Overview',
           '#weight' => -100,
         );
         $node->content['tripal_stock_collections'] = array(
-          '#markup' => theme('tripal_stock_collections', array('node' => $node)),
+          '#theme' => 'tripal_stock_collections',
+          '#node' => $node,
           '#tripal_toc_id'    => 'collections',
           '#tripal_toc_title' => 'Stock Collections',
         );
         $node->content['tripal_stock_properties'] = array(
-          '#markup' => theme('tripal_stock_properties', array('node' => $node)),
+          '#theme' => 'tripal_stock_properties',
+          '#node' => $node,
           '#tripal_toc_id'    => 'properties',
           '#tripal_toc_title' => 'Properties',
         );
         $node->content['tripal_stock_references'] = array(
-          '#markup' => theme('tripal_stock_references', array('node' => $node)),
+          '#theme' => 'tripal_stock_references',
+          '#node' => $node,
           '#tripal_toc_id'    => 'references',
           '#tripal_toc_title' => 'Cross References',
         );
         $node->content['tripal_stock_relationships'] = array(
-          '#markup' => theme('tripal_stock_relationships', array('node' => $node)),
+          '#theme' => 'tripal_stock_relationships',
+          '#node' => $node,
           '#tripal_toc_id'    => 'relationships',
           '#tripal_toc_title' => 'Relationships',
         );
         $node->content['tripal_stock_synonyms'] = array(
-          '#markup' => theme('tripal_stock_synonyms', array('node' => $node)),
+          '#theme' => 'tripal_stock_synonyms',
+          '#node' => $node,
           '#tripal_toc_id'    => 'synonyms',
           '#tripal_toc_title' => 'Synonyms',
         );
         $node->content['tripal_stock_publications'] = array(
-          '#markup' => theme('tripal_stock_publications', array('node' => $node)),
+          '#theme' => 'tripal_stock_publications',
+          '#node' => $node,
           '#tripal_toc_id'    => 'publications',
           '#tripal_toc_title' => 'Publications',
         );
       }
       if ($view_mode == 'teaser') {
         $node->content['tripal_stock_teaser'] = array(
-          '#markup' => theme('tripal_stock_teaser', array('node' => $node)),
+          '#theme' => 'tripal_stock_teaser',
+          '#node' => $node,
         );
       }
       break;
     case 'chado_organism':
       if ($view_mode == 'full') {
         $node->content['tripal_organism_stocks'] = array(
-          '#markup' => theme('tripal_organism_stocks', array('node' => $node)),
+          '#theme' => 'tripal_organism_stocks',
+          '#node' => $node,
           '#tripal_toc_id'    => 'stocks',
           '#tripal_toc_title' => 'Stocks',
         );

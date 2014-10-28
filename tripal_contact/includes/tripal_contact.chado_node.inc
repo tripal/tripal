@@ -595,30 +595,35 @@ function tripal_contact_node_view($node, $view_mode, $langcode) {
       // Show feature browser and counts
       if ($view_mode == 'full') {
         $node->content['tripal_contact_base'] = array(
-          '#markup' => theme('tripal_contact_base', array('node' => $node)),
+          '#theme' => 'tripal_contact_base',
+          '#node' => $node,
           '#tripal_toc_id'    => 'base',
           '#tripal_toc_title' => 'Overview',
           '#weight' => -100,
         );
         $node->content['tripal_contact_properties'] = array(
-          '#markup' => theme('tripal_contact_properties', array('node' => $node)),
+          '#theme' => 'tripal_contact_properties',
+          '#node' => $node,
           '#tripal_toc_id'    => 'properties',
           '#tripal_toc_title' => 'Properties',
         );
         $node->content['tripal_contact_publications'] = array(
-          '#markup' => theme('tripal_contact_publications', array('node' => $node)),
+          '#theme' => 'tripal_contact_publications',
+          '#node' => $node,
           '#tripal_toc_id'    => 'publications',
           '#tripal_toc_title' => 'Publications',
         );
         $node->content['tripal_contact_relationships'] = array(
-          '#markup' => theme('tripal_contact_relationships', array('node' => $node)),
+          '#theme' => 'tripal_contact_relationships',
+          '#node' => $node,
           '#tripal_toc_id'    => 'relationships',
           '#tripal_toc_title' => 'Relationships',
         );
       }
       if ($view_mode == 'teaser') {
         $node->content['tripal_contact_teaser'] = array(
-          '#markup' => theme('tripal_contact_teaser', array('node' => $node)),
+          '#theme' => 'tripal_contact_teaser',
+          '#node' => $node,
         );
       }
       break;

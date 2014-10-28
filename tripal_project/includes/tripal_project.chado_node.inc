@@ -486,35 +486,41 @@ function tripal_project_node_view($node, $view_mode, $langcode) {
       // Show feature browser and counts
       if ($view_mode == 'full') {
         $node->content['tripal_project_base'] = array(
-          '#markup' => theme('tripal_project_base', array('node' => $node)),
+          '#theme' => 'tripal_project_base',
+          '#node' => $node,
           '#tripal_toc_id'    => 'base',
           '#tripal_toc_title' => 'Overview',
           '#weight' => -100,
         );
         $node->content['tripal_project_contact'] = array(
-          '#markup' => theme('tripal_project_contact', array('node' => $node)),
+          '#theme' => 'tripal_project_contact',
+          '#node' => $node,
           '#tripal_toc_id'    => 'contacts',
           '#tripal_toc_title' => 'Contacts',
         );
         $node->content['tripal_project_properties'] = array(
-          '#markup' => theme('tripal_project_properties', array('node' => $node)),
+          '#theme' => 'tripal_project_properties',
+          '#node' => $node,
           '#tripal_toc_id'    => 'properties',
           '#tripal_toc_title' => 'Properties',
         );
         $node->content['tripal_project_publications'] = array(
-          '#markup' => theme('tripal_project_publications', array('node' => $node)),
+          '#theme' => 'tripal_project_publications',
+          '#node' => $node,
           '#tripal_toc_id'    => 'publications',
           '#tripal_toc_title' => 'Publications',
         );
         $node->content['tripal_project_relationships'] = array(
-          '#markup' => theme('tripal_project_relationships', array('node' => $node)),
+          '#theme' => 'tripal_project_relationships',
+          '#node' => $node,
           '#tripal_toc_id'    => 'relationships',
           '#tripal_toc_title' => 'Relationships',
         );
       }
       if ($view_mode == 'teaser') {
         $node->content['tripal_project_teaser'] = array(
-          '#markup' => theme('tripal_project_teaser', array('node' => $node)),
+          '#theme' => 'tripal_project_teaser',
+          '#node' => $node,
         );
       }
       break;
