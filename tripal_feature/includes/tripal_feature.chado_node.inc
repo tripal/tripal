@@ -833,60 +833,71 @@ function tripal_feature_node_view($node, $view_mode, $langcode) {
       // Show feature browser and counts
       if ($view_mode == 'full') {
         $node->content['tripal_feature_alignments'] = array(
-          '#markup' => theme('tripal_feature_alignments', array('node' => $node)),
+          '#theme' => 'tripal_feature_alignments',
+          '#node' => $node,
           '#tripal_toc_id'    => 'alignments',
           '#tripal_toc_title' => 'Alignments',
         );
         $node->content['tripal_feature_analyses'] = array(
-          '#markup' => theme('tripal_feature_analyses', array('node' => $node)),
+          '#theme' => 'tripal_feature_analyses',
+          '#node' => $node,
           '#tripal_toc_id'    => 'analyses',
           '#tripal_toc_title' => 'Analyses',
         );
         $node->content['tripal_feature_base'] = array(
-          '#markup' => theme('tripal_feature_base', array('node' => $node)),
+          '#theme' => 'tripal_feature_base',
+          '#node' => $node,
           '#tripal_toc_id'    => 'base',
           '#tripal_toc_title' => 'Overview',
           '#weight' => -100,
         );
         $node->content['tripal_feature_properties'] = array(
-          '#markup' => theme('tripal_feature_properties', array('node' => $node)),
+          '#theme' => 'tripal_feature_properties',
+          '#node' => $node,
           '#tripal_toc_id'    => 'properties',
           '#tripal_toc_title' => 'Properties',
         );
         $node->content['tripal_feature_publications'] = array(
-          '#markup' => theme('tripal_feature_publications', array('node' => $node)),
+          '#theme' => 'tripal_feature_publications',
+          '#node' => $node,
           '#tripal_toc_id'    => 'publications',
           '#tripal_toc_title' => 'Publications',
         );
         $node->content['tripal_feature_references'] = array(
-          '#markup' => theme('tripal_feature_references', array('node' => $node)),
+          '#theme' => 'tripal_feature_references',
+          '#node' => $node,
           '#tripal_toc_id'    => 'references',
           '#tripal_toc_title' => 'Cross References',
         );
         $node->content['tripal_feature_relationships'] = array(
-          '#markup' => theme('tripal_feature_relationships', array('node' => $node)),
+          '#theme' => 'tripal_feature_relationships',
+          '#node' => $node,
           '#tripal_toc_id'    => 'relationships',
           '#tripal_toc_title' => 'Relationships',
         );
         $node->content['tripal_feature_seqence'] = array(
-          '#markup' => theme('tripal_feature_sequence', array('node' => $node)),
+          '#theme' => 'tripal_feature_sequence',
+          '#node' => $node,
           '#tripal_toc_id'    => 'sequences',
           '#tripal_toc_title' => 'Sequences',
         );
         $node->content['tripal_feature_synonyms'] = array(
-          '#markup' => theme('tripal_feature_synonyms', array('node' => $node)),
+          '#theme' => 'tripal_feature_synonyms',
+          '#node' => $node,
           '#tripal_toc_id'    => 'synonyms',
           '#tripal_toc_title' => 'Synonyms',
         );
         $node->content['tripal_feature_terms'] = array(
-          '#markup' => theme('tripal_feature_terms', array('node' => $node)),
+          '#theme' => 'tripal_feature_terms',
+          '#node' => $node,
           '#tripal_toc_id'    => 'terms',
           '#tripal_toc_title' => 'Annotated Terms',
         );
       }
       if ($view_mode == 'teaser') {
         $node->content['tripal_feature_teaser'] = array(
-          '#markup' => theme('tripal_feature_teaser', array('node' => $node)),
+          '#theme' => 'tripal_feature_teaser',
+          '#node' => $node,
         );
       }
       break;
@@ -894,12 +905,14 @@ function tripal_feature_node_view($node, $view_mode, $langcode) {
       // Show feature browser and counts
       if ($view_mode == 'full') {
         $node->content['tripal_organism_feature_counts'] = array(
-          '#markup' => theme('tripal_organism_feature_counts', array('node' => $node)),
+          '#theme' => 'tripal_organism_feature_counts',
+          '#node' => $node,
           '#tripal_toc_id'    => 'feature_counts',
           '#tripal_toc_title' => 'Feature Summary',
         );
         $node->content['tripal_organism_feature_browser'] = array(
-          '#markup' => theme('tripal_organism_feature_browser', array('node' => $node)),
+          '#theme' => 'tripal_organism_feature_browser',
+          '#node' => $node,
           '#tripal_toc_id'    => 'feature_browser',
           '#tripal_toc_title' => 'Feature Browser',
         );

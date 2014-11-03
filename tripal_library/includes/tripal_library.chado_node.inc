@@ -125,9 +125,9 @@ function chado_library_form($node, &$form_state) {
   $lt_cv = tripal_get_default_cv("library", "type_id");
   $types = tripal_get_cvterm_default_select_options('library', 'type_id', 'library types');
   $types[0] = 'Select a Type';
-  $lt_message = tripal_set_message("To add additional items to the library type drop down list, 
-     add a term to the " . 
-     l($lt_cv->name . " controlled vocabulary", 
+  $lt_message = tripal_set_message("To add additional items to the library type drop down list,
+     add a term to the " .
+     l($lt_cv->name . " controlled vocabulary",
        "admin/tripal/chado/tripal_cv/cv/" . $lt_cv->cv_id . "/cvterm/add",
        array('attributes' => array('target' => '_blank'))
       ),
@@ -516,52 +516,61 @@ function tripal_library_node_view($node, $view_mode, $langcode) {
     case 'chado_library':
       if ($view_mode == 'full') {
         $node->content['tripal_library_base'] = array(
-          '#markup' => theme('tripal_library_base', array('node' => $node)),
+          '#theme' => 'tripal_library_base',
+          '#node' => $node,
           '#tripal_toc_id'    => 'base',
           '#tripal_toc_title' => 'Overview',
           '#weight' => -100,
         );
         $node->content['tripal_library_features'] = array(
-          '#markup' => theme('tripal_library_features', array('node' => $node)),
+          '#theme' => 'tripal_library_features',
+          '#node' => $node,
           '#tripal_toc_id'    => 'features',
           '#tripal_toc_title' => 'Features',
         );
         $node->content['tripal_library_properties'] = array(
-          '#markup' => theme('tripal_library_properties', array('node' => $node)),
+          '#theme' => 'tripal_library_properties',
+          '#node' => $node,
           '#tripal_toc_id'    => 'properties',
           '#tripal_toc_title' => 'Properties',
         );
         $node->content['tripal_library_publications'] = array(
-          '#markup' => theme('tripal_library_publications', array('node' => $node)),
+          '#theme' => 'tripal_library_publications',
+          '#node' => $node,
           '#tripal_toc_id'    => 'publications',
           '#tripal_toc_title' => 'Publications',
         );
         $node->content['tripal_library_references'] = array(
-          '#markup' => theme('tripal_library_references', array('node' => $node)),
+          '#theme' => 'tripal_library_references',
+          '#node' => $node,
           '#tripal_toc_id'    => 'references',
           '#tripal_toc_title' => 'Cross References',
         );
         $node->content['tripal_library_synonyms'] = array(
-          '#markup' => theme('tripal_library_synonyms', array('node' => $node)),
+          '#theme' => 'tripal_library_synonyms',
+          '#node' => $node,
           '#tripal_toc_id'    => 'synonyms',
           '#tripal_toc_title' => 'Synonyms',
         );
         $node->content['tripal_library_terms'] = array(
-          '#markup' => theme('tripal_library_terms', array('node' => $node)),
+          '#theme' => 'tripal_library_terms',
+          '#node' => $node,
           '#tripal_toc_id'    => 'terms',
           '#tripal_toc_title' => 'Annotated Terms',
         );
       }
       if ($view_mode == 'teaser') {
         $node->content['tripal_library_teaser'] = array(
-          '#markup' => theme('tripal_library_teaser', array('node' => $node)),
+          '#theme' => 'tripal_library_teaser',
+          '#node' => $node,
         );
       }
       break;
     case 'chado_organism':
       if ($view_mode == 'full') {
         $node->content['tripal_organism_libraries'] = array(
-          '#markup' => theme('tripal_organism_libraries', array('node' => $node)),
+          '#theme' => 'tripal_organism_libraries',
+          '#node' => $node,
           '#tripal_toc_id'    => 'libraries',
           '#tripal_toc_title' => 'Libraries',
         );
@@ -570,7 +579,8 @@ function tripal_library_node_view($node, $view_mode, $langcode) {
     case 'chado_feature':
       if ($view_mode == 'full') {
         $node->content['tripal_feature_libraries'] = array(
-          '#markup' => theme('tripal_feature_libraries', array('node' => $node)),
+          '#theme' => 'tripal_feature_libraries',
+          '#node' => $node,
           '#tripal_toc_id'    => 'libraries',
           '#tripal_toc_title' => 'Libraries',
         );

@@ -648,20 +648,23 @@ function tripal_analysis_node_view($node, $view_mode, $langcode) {
       // Show feature browser and counts
       if ($view_mode == 'full') {
         $node->content['tripal_analysis_base'] = array(
-          '#markup' => theme('tripal_analysis_base', array('node' => $node)),
+          '#theme' => 'tripal_analysis_base',
+          '#node' => $node,
           '#tripal_toc_id'    => 'base',
           '#tripal_toc_title' => 'Overview',
           '#weight' => -100,
         );
         $node->content['tripal_analysis_properties'] = array(
-          '#markup' => theme('tripal_analysis_properties', array('node' => $node)),
+          '#theme' => 'tripal_analysis_properties',
+          '#node' => $node,
           '#tripal_toc_id'    => 'properties',
           '#tripal_toc_title' => 'Properties',
         );
       }
       if ($view_mode == 'teaser') {
         $node->content['tripal_analysis_teaser'] = array(
-          '#markup' => theme('tripal_analysis_teaser', array('node' => $node)),
+          '#theme' => 'tripal_analysis_teaser',
+          '#node' => $node,
         );
       }
       break;
@@ -679,7 +682,7 @@ function tripal_analysis_node_presave($node) {
   $program = '';
   $programversion = '';
   $sourcename = '';
-  
+
   // This step is for setting the title for the Drupal node.  This title
   // is permanent and thus is created to be unique.  Title changes provided
   // by tokens are generated on the fly dynamically, but the node title
@@ -731,15 +734,15 @@ function tripal_analysis_node_insert($node) {
 
   switch ($node->type) {
     case 'chado_analysis':
-      
+
       // We still don't have a fully loaded node object in this hook. Therefore,
       // we need to simulate one so that the right values are available for
       // the URL to be determined.
-      $analysis_id = chado_get_id_from_nid('analysis', $node->nid);      
+      $analysis_id = chado_get_id_from_nid('analysis', $node->nid);
       $values = array('analysis_id' => $analysis_id);
       $analysis = chado_generate_var('analysis', $values);
       $node->analysis = $analysis;
-      
+
       // Now get the title
       $node->title = chado_get_node_title($node);
 
@@ -760,10 +763,10 @@ function tripal_analysis_node_update($node) {
 
   switch ($node->type) {
     case 'chado_analysis':
-      
+
       // Now get the title
       $node->title = chado_get_node_title($node);
- 
+
       // Now use the API to set the path.
       chado_set_node_url($node);
 

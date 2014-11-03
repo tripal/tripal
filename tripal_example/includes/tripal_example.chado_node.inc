@@ -597,7 +597,7 @@ function tripal_example_node_presave($node) {
 
   // EXPLANATION: This node is useful for
   // making changes to the node prior to it being saved to the database.
-  // One useful case for this is to set the title of a node using values 
+  // One useful case for this is to set the title of a node using values
   // supplied by the user.
   //
   // This function is not required. You probably won't need it if you
@@ -758,7 +758,8 @@ function tripal_example_node_view($node, $view_mode, $langcode) {
         // base template (or Overview) to ensure that it appears at the top of
         // the list. Otherwise items are sorted alphabetically.
         $node->content['tripal_example_base'] = array(
-          '#markup' => theme('tripal_example_base', array('node' => $node)),
+          '#theme' => 'tripal_example_base',
+          '#node' => $node,
           '#tripal_toc_id'    => 'base',
           '#tripal_toc_title' => 'Overview',
           '#weight' => -100,
@@ -766,17 +767,20 @@ function tripal_example_node_view($node, $view_mode, $langcode) {
         // we can add other templates as well for properties, publications,
         // dbxrefs, etc...
         $node->content['tripal_example_properties'] = array(
-          '#markup' => theme('tripal_example_properties', array('node' => $node)),
+          '#theme' => 'tripal_example_properties',
+          '#node' => $node,
           '#tripal_toc_id'    => 'properties',
           '#tripal_toc_title' => 'Properties',
         );
         $node->content['tripal_example_references'] = array(
-          '#markup' => theme('tripal_example_references', array('node' => $node)),
+          '#theme' => 'tripal_example_references',
+          '#node' => $node,
           '#tripal_toc_id'    => 'references',
           '#tripal_toc_title' => 'Cross References',
         );
         $node->content['tripal_example_relationships'] = array(
-          '#markup' => theme('tripal_example_relationships', array('node' => $node)),
+          '#theme' => 'tripal_example_relationships',
+          '#node' => $node,
           '#tripal_toc_id'    => 'relationships',
           '#tripal_toc_title' => 'Relationships',
         );
@@ -791,7 +795,8 @@ function tripal_example_node_view($node, $view_mode, $langcode) {
       if ($view_mode == 'teaser') {
         // The teaser is also a required template
         $node->content['tripal_example_teaser'] = array(
-          '#value' => theme('tripal_example_teaser', array('node' => $node)),
+          '#theme' => 'tripal_example_teaser',
+          '#node' => $node,
         );
       }
       break;
@@ -800,7 +805,8 @@ function tripal_example_node_view($node, $view_mode, $langcode) {
     case 'chado_organism':
       if ($view_mode == 'full') {
         $node->content['tripal_organism_examples'] = array(
-          '#markup' => theme('tripal_organism_examples', array('node' => $node)),
+          '#theme' => 'tripal_organism_examples',
+          '#node' => $node,
           '#tripal_toc_id'    => 'examples',
           '#tripal_toc_title' => 'Examples',
         );

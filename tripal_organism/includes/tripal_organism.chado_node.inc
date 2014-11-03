@@ -171,7 +171,7 @@ function chado_organism_form($node, $form_state) {
     '#title' => t('Description'),
     '#default_value' => $description,
   );
-  
+
   $form['organism_image']= array(
     '#type' => 'managed_file',
     '#title' => t('Organism Image'),
@@ -380,7 +380,7 @@ function chado_organism_update($node) {
   );
   $org_status = chado_update_record('organism', $match, $values);
   chado_organism_add_image($node);
-  
+
   // * Properties Form *
   $details = array(
     'property_table' => 'organismprop',   // the name of the prop table
@@ -401,13 +401,13 @@ function chado_organism_update($node) {
 
 /**
  * Adds the image to the organism node and cleans up any old images.
- * 
+ *
  * @param $node
  *   The node object.
  */
 function chado_organism_add_image($node) {
-  
-  // If there is already an organism image, then remove it it if 
+
+  // If there is already an organism image, then remove it it if
   // no other modules are using it
   $fid = db_select('file_usage', 'fu')
     ->fields('fu', array('fid'))
@@ -550,25 +550,29 @@ function tripal_organism_node_view($node, $view_mode, $langcode) {
       // Show feature browser and counts
       if ($view_mode == 'full') {
         $node->content['tripal_organism_base'] = array(
-          '#markup'  => theme('tripal_organism_base', array('node' => $node)),
+          '#theme' => 'tripal_organism_base',
+          '#node' => $node,
           '#tripal_toc_id'    => 'base',
           '#tripal_toc_title' => 'Overview',
           '#weight' => -100,
         );
         $node->content['tripal_organism_properties'] = array(
-          '#markup'  => theme('tripal_organism_properties', array('node' => $node)),
+          '#theme' => 'tripal_organism_properties',
+          '#node' => $node,
           '#tripal_toc_id'    => 'properties',
           '#tripal_toc_title' => 'Properties',
         );
         $node->content['tripal_organism_references'] = array(
-          '#markup'  => theme('tripal_organism_references', array('node' => $node)),
+          '#theme' => 'tripal_organism_references',
+          '#node' => $node,
           '#tripal_toc_id'    => 'references',
           '#tripal_toc_title' => 'Cross References',
         );
       }
       if ($view_mode == 'teaser') {
         $node->content['tripal_organism_teaser'] = array(
-          '#markup' => theme('tripal_organism_teaser', array('node' => $node)),
+          '#theme' => 'tripal_organism_teaser',
+          '#node' => $node,
         );
       }
       break;
@@ -585,7 +589,7 @@ function tripal_organism_node_insert($node) {
 
   switch ($node->type) {
     case 'chado_organism':
-      
+
       // find the organism and add in the details
       $organism_id = chado_get_id_from_nid('organism', $node->nid);
       $values = array('organism_id' => $organism_id);
@@ -612,7 +616,7 @@ function tripal_organism_node_update($node) {
 
   switch ($node->type) {
     case 'chado_organism':
-      
+
       // Now get the title.
       $node->title = chado_get_node_title($node);
 
