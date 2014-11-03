@@ -380,10 +380,6 @@ function tripal_core_tripal_token_schema() {
         'not null' => TRUE
       ),
     ),
-    'indexes' => array(
-      'tripal_format_id' => array('tripal_format_id'),
-      'type_application' => array('content_type', 'application'),
-    ),
     'unique keys' => array(
       'type_application' => array('content_type', 'application'),
     ),
