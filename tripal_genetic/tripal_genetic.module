@@ -149,7 +149,8 @@ function tripal_genetic_node_view($node, $view_mode, $langcode) {
       // template from this module as the ND module would superceed this.
       if (!array_key_exists('tripal_feature_nd_genotypes', $node->content)) {
         $node->content['tripal_feature_genotypes'] = array(
-          '#markup' => theme('tripal_feature_genotypes', array('node' => $node)),
+          '#theme' => 'tripal_feature_genotypes',
+          '#node' => $node,
           '#tripal_toc_id'    => 'genotypes',
           '#tripal_toc_title' => 'Genotypes',
         );
@@ -164,7 +165,8 @@ function tripal_genetic_node_view($node, $view_mode, $langcode) {
       // template from this module as the ND module would superceed this.
       if (!array_key_exists('tripal_stock_nd_genotypes', $node->content)) {
         $node->content['tripal_stock_genotypes'] = array(
-          '#markup' => theme('tripal_stock_genotypes', array('node' => $node)),
+          '#theme' => 'tripal_stock_genotypes',
+          '#node' => $node,
           '#tripal_toc_id'    => 'genotypes',
           '#tripal_toc_title' => 'Genotypes',
         );

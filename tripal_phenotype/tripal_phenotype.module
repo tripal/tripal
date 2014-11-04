@@ -174,7 +174,8 @@ function tripal_phenotype_node_view($node, $view_mode, $langcode) {
       // Show feature browser and counts
       if ($view_mode == 'full') {
         $node->content['tripal_feature_phenotypes'] = array(
-          '#markup' => theme('tripal_feature_phenotypes', array('node' => $node)),
+          '#theme' => 'tripal_feature_phenotypes',
+          '#node' => $node,
           '#tripal_toc_id'    => 'phenotypes',
           '#tripal_toc_title' => 'Phenotypes',
         );
