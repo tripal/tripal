@@ -25,7 +25,7 @@ if(count($references) > 0){ ?>
   // the $headers array is an array of fields to use as the colum headers.
   // additional documentation can be found here
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-  $headers = array('Dababase', 'Accession');
+  $headers = array('Database', 'Accession');
   
   // the $rows array contains an array of rows where each row is an array
   // of values for each column of the table in that row.  Additional documentation

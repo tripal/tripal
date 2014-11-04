@@ -418,13 +418,14 @@ function chado_add_admin_form_set_title_form_submit($form, $form_state) {
  *   of the specified content type.
  */
 function chado_node_get_title_format($content_type, &$tokens, $base_table = NULL) {
-  $format = '';
+  $format_record_format = $format = '';
+  $format_record_tokens = '';
 
   // Is there a title format set?
   $format_record = chado_node_get_token_format('title', $content_type, array('return_record' => TRUE));
   if (!empty($format_record)) {
-    $format = $format_record->format;
-    $tokens = $format_record->tokens;
+    $format_record_format = $format = $format_record->format;
+    $format_record_tokens = $tokens = $format_record->tokens;
   }
 
   // All three options below need the tokens to be generated so do that now
@@ -457,7 +458,11 @@ function chado_node_get_title_format($content_type, &$tokens, $base_table = NULL
   }
 
   // Add the format to table so we can use it later
-  chado_node_add_token_format('title', $content_type, $format, $tokens);
+  // (optimization: to speed up bulk updates, don't update the record if
+  // the format and tokens are unchanged)
+  if ($format != $format_record_format || $tokens != $format_record_tokens) {
+    chado_node_add_token_format('title', $content_type, $format, $tokens);
+  }
 
   return $format;
 }
@@ -947,13 +952,14 @@ function chado_add_admin_form_set_url_form_submit($form, $form_state) {
  *   of the specified content type.
  */
 function chado_node_get_url_format($content_type, &$tokens, $base_table = NULL) {
-  $format = '';
+  $format_record_format = $format = '';
+  $format_record_tokens = '';
 
   // Is there a url format set?
   $format_record = chado_node_get_token_format('url', $content_type, array('return_record' => TRUE));
   if (!empty($format_record)) {
-    $format = $format_record->format;
-    $tokens = $format_record->tokens;
+    $format_record_format = $format = $format_record->format;
+    $format_record_tokens = $tokens = $format_record->tokens;
   }
 
   // All three options below need the tokens to be generated so do that now
@@ -988,7 +994,11 @@ function chado_node_get_url_format($content_type, &$tokens, $base_table = NULL) 
   }
 
   // Add the format to table so we can use it later
-  chado_node_add_token_format('url', $content_type, $format, $tokens);
+  // (optimization: to speed up bulk updates, don't update the record if
+  // the format and tokens are unchanged)
+  if ($format != $format_record_format || $tokens != $format_record_tokens) {
+    chado_node_add_token_format('url', $content_type, $format, $tokens);
+  }
 
   return $format;
 }
