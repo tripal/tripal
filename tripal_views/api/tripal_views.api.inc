@@ -685,15 +685,15 @@ function tripal_add_views_integration($defn_array, $setup_id = FALSE) {
       if ($view_record['setup_id'] && $field['name'] && $field['title'] && $field['description'] && $field['type']) {
         if (isset($defn_array['additional_content'])) {
           // D7 TODO: Check DBTNG changes work
-          $is = db_query(
+          $is_present = db_query(
             "SELECT true as present FROM {tripal_views_field} WHERE column_name=:column AND setup_id=:setup",
             array(
               ':column' => $field_record['column_name'],
               ':setup' => $field_record['setup_id']
               )
             );
-          $is = $is->fetchObject();
-          if (!$is->present) {
+          $is_present = $is_present->fetchField();
+          if (!$is_present) {
             $status = drupal_write_record('tripal_views_field', $field_record);
           }
           else {
@@ -932,7 +932,7 @@ function tripal_update_views_integration($setup_id, $defn_array) {
   tripal_remove_views_integration(array('setup_id' => $setup_id));
 
   $defn_array['additional_content'] = TRUE;
-  tripal_add_views_integration($def_array, $setup_id);
+  tripal_add_views_integration($defn_array, $setup_id);
 }
 
 /**
@@ -979,7 +979,7 @@ function tripal_clone_views_integration($table_name, $new_priority = NULL, $temp
       ':priority' => $new_priority
     )
   );
-  $setup_id = $setup_id->fetchObject();
+  $setup_id = $setup_id->fetchField();
 
   if (empty($setup_id)) {
     tripal_report_error('tripal_views', TRIPAL_ERROR, 'Unable to clone the setup for %table in order to add the following field to the integration: %field.',
@@ -1197,7 +1197,6 @@ function tripal_add_join_to_views_integration($table_name, $priority, $join) {
   // then clone the lightest priority integration
   if (empty($setup_id)) {
     $setup_id = tripal_clone_views_integration($table_name, $priority);
-    $setup_id = $setup_id->setup_id;
   }
 
   // Add the setup_id to the join record passed in
