@@ -39,14 +39,35 @@ class TripalDaemon extends DrushDaemon {
    */
   protected function executeTask($iteration_number) {
 
+    // When sorting the job list we want to use version specific SQL and thus
+    // need to know the postgreSQL version to determine what SQL to execute.
+    $version_string = db_query('SELECT version()')->fetchField();
+    if (preg_match('/PostgreSQL (\d+)\.(\d+)/', $version_string, $matches)) {
+      $version = array('major' => $matches[1], 'minor' => $matches[2]);
+    }
+    // If we can't determine the version then use the deprecated method.
+    else {
+      $version = array('major' => 8, 'minor' => 4);
+    }
+
     // First check to see if there are any tripal jobs to be run.
-    $waiting_jobs = db_query(
-      "SELECT
-        count(*) as count,
-        array_to_string(array_agg(j.job_id ORDER BY j.priority ASC, j.job_id ASC),'|') as jobs
-      FROM {tripal_jobs} j
-      WHERE j.pid IS NULL AND j.end_time IS NULL"
-    )->fetchObject();
+    if ($version['major'] >= 9 ) {
+      $waiting_jobs = db_query(
+        "SELECT
+          count(*) as count,
+          array_to_string(array_agg(j.job_id ORDER BY j.priority ASC, j.job_id ASC),'|') as jobs
+        FROM {tripal_jobs} j
+        WHERE j.pid IS NULL AND j.end_time IS NULL"
+      )->fetchObject();
+    }
+    else {
+     $waiting_jobs = db_query(
+        "SELECT
+          count(*) as count,
+          array_to_string(array_agg(j.job_id),'|') as jobs
+        FROM (SELECT * FROM {tripal_jobs} WHERE pid IS NULL AND end_time IS NULL ORDER BY priority ASC, job_id ASC) as j"
+      )->fetchObject();
+    }
 
     $num_waiting_jobs = $waiting_jobs->count;
     $job_ids = explode('|', $waiting_jobs->jobs);
