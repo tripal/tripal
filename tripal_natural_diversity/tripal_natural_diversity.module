@@ -142,7 +142,8 @@ function tripal_natural_diversity_node_view($node, $view_mode, $langcode) {
           unset($node->content['tripal_feature_genotypes']);
         }
         $node->content['tripal_feature_nd_genotypes'] = array(
-          '#markup' => theme('tripal_feature_nd_genotypes', array('node' => $node)),
+          '#theme' => 'tripal_feature_nd_genotypes',
+          '#node' => $node,
           '#tripal_toc_id'    => 'genotypes',
           '#tripal_toc_title' => 'Genotypes',
         );
@@ -157,12 +158,14 @@ function tripal_natural_diversity_node_view($node, $view_mode, $langcode) {
           unset($node->content['tripal_stock_genotypes']);
         }
         $node->content['tripal_stock_nd_genotypes'] = array(
-          '#markup' => theme('tripal_stock_nd_genotypes', array('node' => $node)),
+          '#theme' => 'tripal_stock_nd_genotypes',
+          '#node' => $node,
           '#tripal_toc_id'    => 'genotypes',
           '#tripal_toc_title' => 'Genotypes',
         );
         $node->content['tripal_stock_nd_phenotypes'] = array(
-          '#markup' => theme('tripal_stock_nd_phenotypes', array('node' => $node)),
+          '#theme' => 'tripal_stock_nd_phenotypes',
+          '#node' => $node,
           '#tripal_toc_id'    => 'phenotypes',
           '#tripal_toc_title' => 'Phenotypes',
         );
