@@ -21,6 +21,8 @@ function tripal_feature_gff3_exporter($source, $filters) {
   ";
 
   $args = array();
+  
+  // Filter by organism
   if (array_key_exists('genus', $filters) or array_key_exists('species', $filters)) {
     $from .= "INNER JOIN {organism} O on F.organism_id = O.organism_id ";
     if (array_key_exists('genus', $filters)) { 
@@ -32,10 +34,29 @@ function tripal_feature_gff3_exporter($source, $filters) {
       $args[':species'] = $filters['species'];
     }
   }
-  
+  // Filter by types
   if (array_key_exists('types', $filters)) {
     $where .= "AND CVT.name IN (:types) ";
     $args[':types'] = $filters['types'];
+  }
+  // Filter by exact feature_id
+  if (array_key_exists('feature_id', $filters)) {
+    $where .= "AND F.feature_id = :feature_id ";
+    $args[':feature_id'] = $filters['feature_id'];
+  }
+  // Filter by analysis
+  if (array_key_exists('analysis_id', $filters) or 
+      array_key_exists('analysis_name', $filters)) {
+    $from .= "INNER JOIN {analysisfeature} AF on AF.feature_id = F.feature_id ";
+    if (array_key_exists('analysis_id', $filters)) {
+      $where .= "AND AF.analysis_id = :analysis_id ";
+      $args[':analysis_id'] = $filters['analysis_id'];
+    }
+    if (array_key_exists('analysis_name', $filters)) {
+      $from .= "INNER JOIN {analysis} A on AF.analysis_id = A.analysis_id ";
+      $where .= "AND A.name = :analysis_name ";
+      $args[':analysis_name'] = $filters['analysis_name'];
+    }
   }
 
   $sql = "$select $from $where $order";
@@ -49,9 +70,9 @@ function tripal_feature_gff3_exporter($source, $filters) {
     ORDER BY CVT.name
   ";
   
-  // The SQL statement for Dbxrefs
+  // The SQL statement for Dbxrefs associated with this feature
   $dbxref_sql = "
-    SELECT DB.name, DBX.accession
+    SELECT DB.name as dbname, DBX.accession
     FROM {dbxref} DBX
       INNER JOIN {db} DB on DB.db_id = DBX.db_id
     WHERE DBX.dbxref_id = :dbxref_id
@@ -63,7 +84,7 @@ function tripal_feature_gff3_exporter($source, $filters) {
     WHERE FDBX.feature_id = :feature_id
   ";
   
-  // The SQL statement for CVTerms
+  // The SQL statement for CVTerms assigned to this feature.
   $cvterm_sql = "
     SELECT CV.name as db_name, DBX.accession
     FROM {feature_cvterm} FCVT
@@ -72,14 +93,50 @@ function tripal_feature_gff3_exporter($source, $filters) {
       INNER JOIN {dbxref} DBX on CVT.dbxref_id = DBX.dbxref_id
     WHERE FCVT.feature_id = :feature_id
   ";
+  
+  // The SQL for finding the parents of this feature.
+  $parent_sql = "
+    SELECT F.name, F.uniquename, F.feature_id
+    FROM {feature_relationship} FR
+      INNER JOIN {cvterm} CVT on CVT.cvterm_id = FR.type_id
+      INNER JOIN {feature} F on FR.object_id = F.feature_id
+    WHERE CVT.name = 'part_of' AND FR.subject_id = :feature_id
+  ";
+  
+  // The SQL for aliases of this feature.
+  $alias_sql = "
+    SELECT S.name
+    FROM {feature_synonym} FS
+      INNER JOIN {synonym} S on FS.synonym_id = S.synonym_id
+    WHERE FS.feature_id = :feature_id
+  ";
+  
+  // Get the score
+  $score_sql = "
+    SELECT rawscore as score
+      FROM {analysisfeature} AF
+    WHERE feature_id = :feature_id
+    ORDER BY AF.analysis_id
+    OFFSET 0 LIMIT 1
+  ";
+  
   $results = chado_query($sql, $args);
   while ($line = $results->fetchObject()) {
+    
+    // Get the score for this feature
+    $score = chado_query($score_sql, array(':feature_id' => $line->feature_id))->fetchField();
     print $line->landmark_uname . "\t";
     print $source . "\t";
     print $line->type . "\t";
-    print $line->fmin . "\t";
+    print ($line->fmin + 1). "\t";
     print $line->fmax . "\t";
-    print "." . "\t";
+
+    if ($score) {
+      print $score . "\t";
+    }
+    else {
+      print "." . "\t";
+    }
     if ($line->strand) {
       print $line->strand . "\t";
     } 
@@ -93,6 +150,28 @@ function tripal_feature_gff3_exporter($source, $filters) {
       print '.' . "\t";
     }
     print "ID=" . $line->uniquename . ";Name=" . $line->name . ";";
+    
+    // Look for a parent of this feature
+    $args = array(':feature_id' => $line->feature_id);
+    $parents = chado_query($parent_sql, $args);
+    $attr = '';
+    while ($parent = $parents->fetchObject()) {
+      $attr .= $parent->uniquename . ",";
+    }
+    if ($attr) {
+      print "Parent=" . substr($attr, 0, -1) . ";";
+    }
+    
+    // Add in any aliases
+    $args = array(':feature_id' => $line->feature_id);
+    $aliases = chado_query($alias_sql, $args);
+    $attr = '';
+    while ($alias = $aliases->fetchObject()) {
+      $attr .= $alias->name . ",";
+    }
+    if ($attr) {
+      print "Alias=" . substr($attr, 0, -1) . ";";
+    }
     
     $props = chado_query($props_sql, array(':feature_id' => $line->feature_id));
     $prop_name = '';
@@ -126,16 +205,17 @@ function tripal_feature_gff3_exporter($source, $filters) {
     $dbxrefs = chado_query($dbxref_sql, $args);
     $xrefs = '';
     while ($dbxref = $dbxrefs->fetchObject()) {
-      $xrefs .= $dbxref->name . ":" . $dbxref->accession . ",";
+      if ($dbxref->dbname = 'GFF_source') {
+        continue;
+      }
+      $xrefs .= $dbxref->dbname . ":" . $dbxref->accession . ",";
     }
     if ($xrefs) {
       print "Dbxref=" . substr($xrefs, 0, -1) . ";";
     }
     
     // Add in any CVTerm records
-    $args = array(
-      ':feature_id' => $line->feature_id,
-    );
+    $args = array(':feature_id' => $line->feature_id);
     $cvterms = chado_query($cvterm_sql, $args);
     $xrefs = '';
     while ($cvterm = $cvterms->fetchObject()) {
@@ -146,5 +226,20 @@ function tripal_feature_gff3_exporter($source, $filters) {
     }
     
     print "\n";
+    
+    // Look for children of this feature and recursively add them.
+    $children_sql = "
+      SELECT FR.subject_id
+      FROM {feature_relationship} FR
+        INNER JOIN {cvterm} CVT on CVT.cvterm_id = FR.type_id
+      WHERE CVT.name = 'part_of' AND FR.object_id = :feature_id
+    ";
+    $children = chado_query($children_sql, array(':feature_id' => $line->feature_id));
+    while ($child = $children->fetchObject()) {
+      $child_filters = array(
+        'feature_id' => $child->subject_id,
+      );
+      tripal_feature_gff3_exporter($source, $child_filters);
+    }
   }
 }
