@@ -2,6 +2,15 @@
 
 function tripal_feature_gff3_exporter($source, $filters) {
   
+  // Make sure the filters array is setup properly.
+  if (!array_key_exists('types', $filters) and
+      !array_key_exists('feature_id', $filters)) {
+    tripal_report_error("tripal_feature", TRIPAL_ERROR,
+    "Please provide one or more types to include in the exported GFF file.",
+    array());
+    exit;
+  }
+  
   $select = "
     SELECT SF.uniquename as landmark_uname, SF.name as landmark_name,
       F.feature_id, F.dbxref_id, F.uniquename, F.name, CVT.name as type,
@@ -34,11 +43,20 @@ function tripal_feature_gff3_exporter($source, $filters) {
       $args[':species'] = $filters['species'];
     }
   }
-  // Filter by types
+
   if (array_key_exists('types', $filters)) {
-    $where .= "AND CVT.name IN (:types) ";
-    $args[':types'] = $filters['types'];
+    if (is_array($filters['types'])) {
+      $where .= "AND CVT.name IN (:types) ";
+      $args[':types'] = $filters['types'];
+    }
+    else {
+      tripal_report_error("tripal_feature", TRIPAL_ERROR,
+      "The 'types' element of the filters array must be an array.",
+      array());
+      exit;
+    }
   }
+  
   // Filter by exact feature_id
   if (array_key_exists('feature_id', $filters)) {
     $where .= "AND F.feature_id = :feature_id ";
@@ -60,7 +78,7 @@ function tripal_feature_gff3_exporter($source, $filters) {
   }
 
   $sql = "$select $from $where $order";
-  
+
   // The SQL statement for feature properties.
   $props_sql = "
     SELECT CVT.name, FP.value
