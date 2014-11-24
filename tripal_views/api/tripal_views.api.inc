@@ -150,10 +150,21 @@ function mymodule_admin_landing_page() {
               'filter' => array( ... ),
               ...
             ),
-            'join' => array( //describe a table that joins to this one via this field
-              'table' => 'featureprop', //table to join to
-              'field' => 'feature_id', //field in above table (featureprop)
-              'handler' => 'views_handler_join_chado_aggregator', //handler to use
+            // Describe any joins involving this field.
+            // Note: you can include both foreign keys (feature.type_id => cvterm.cvterm_id)
+            // and referring tables (ie: feature.feature_id <= feature_relationship.subject_id)
+            'joins' => array(
+              'feature_relationship' => array( //table to join to.
+                'subject_id' => array( //field in above table (feature_relationship)
+                  'table' => 'featureprop', //table to join to
+                  'field' => 'feature_id', //field in above table (feature_relationship)
+                  'handler' => 'views_join', //handler to use for joining
+                  'relationship_handler' => 'views_handler_relationship', //handler to use when a relationship is added.
+                  'relationship_only' => FALSE, //whether to join automatically (FALSE) or not (TRUE)
+                ),
+                ...
+              ),
+              ...
             ),
           )
         ),
@@ -591,10 +602,21 @@ function tripal_rebuild_views_integrations($delete_first = FALSE) {
           'filter' => array( ... ),
           ...
         ),
-        'join' => array( //describe a table that joins to this one via this field
-          'table' => 'featureprop', //table to join to
-          'field' => 'feature_id', //field in above table (featureprop)
-          'handler' => 'views_handler_join_chado_aggregator', //handler to use
+        // Describe any joins involving this field.
+        // Note: you can include both foreign keys (feature.type_id => cvterm.cvterm_id)
+        // and referring tables (ie: feature.feature_id <= feature_relationship.subject_id)
+        'joins' => array(
+          'feature_relationship' => array( //table to join to.
+            'subject_id' => array( //field in above table (feature_relationship)
+              'table' => 'featureprop', //table to join to
+              'field' => 'feature_id', //field in above table (feature_relationship)
+              'handler' => 'views_join', //handler to use for joining
+              'relationship_handler' => 'views_handler_relationship', //handler to use when a relationship is added.
+              'relationship_only' => FALSE, //whether to join automatically (FALSE) or not (TRUE)
+            ),
+            ...
+          ),
+          ...
         ),
       )
     ),
@@ -733,42 +755,59 @@ function tripal_add_views_integration($defn_array, $setup_id = FALSE) {
         }
 
         // Insert Joins
+        // Note: The new defn_array structure accounts for 1+ joins to the same
+        // table (ie: feature_relationship => feature : subject_id & object_id)
+        // by making $field['joins'] an array of left_field keys.
         if (!is_array($field['joins'])) {
           $field['joins'] = array();
         }
-        foreach ($field['joins'] as $join) {
-          $join_record = array(
-            'setup_id' => $view_record['setup_id'],
-            'base_table' => $defn_array['table'],
-            'base_field' => $field['name'],
-            'left_table' => $join['table'],
-            'left_field' => $join['field'],
-          );
-
-          $join_record['handler'] = (!empty($join['handler'])) ? $join['handler'] : 'views_join';
-          $join_record['relationship_handler'] = (!empty($join['relationship_handler'])) ? $join['relationship_handler'] : 'views_handler_relationship';
-          $join_record['relationship_only'] = (!empty($join['relationship_only'])) ? $join['relationship_only'] : 0;
-
-          if ($view_record['setup_id'] && $defn_array['table'] && $field['name'] && $join['table'] && $join['field']) {
-            $status = drupal_write_record('tripal_views_join', $join_record);
-          }
-          else {
-            $status = FALSE;
-          }
-          if (!$status) {
-            drupal_set_message(
-              t(
-                'Unable to join %left_table.%left_field with %table.%field',
-                array(
-                  '%left_table' => $join['table'],
-                  '%left_field' => $join['field'],
-                  '%table' => $defn_array['table'],
-                  '%field' => $field['name']
-                )
-              ),
-              'error'
+        foreach ($field['joins'] as $joins) {
+          // To keep backwards compatibility with the old defn_array which just
+          // jumped right into the table definition allowing only a single join,
+          // we need to check for old defn_arrays and transform them into the
+          // new format.
+          if (isset($joins['table'])) {
+            $left_field = $joins['field'];
+            $joins = array(
+              $left_field => $joins
             );
-            $no_errors = FALSE;
+          }
+
+          // Loop on left fields
+          foreach ($joins as $left_field => $join) {
+            $join_record = array(
+              'setup_id' => $view_record['setup_id'],
+              'base_table' => $defn_array['table'],
+              'base_field' => $field['name'],
+              'left_table' => $join['table'],
+              'left_field' => $left_field,
+            );
+
+            $join_record['handler'] = (!empty($join['handler'])) ? $join['handler'] : 'views_join';
+            $join_record['relationship_handler'] = (!empty($join['relationship_handler'])) ? $join['relationship_handler'] : 'views_handler_relationship';
+            $join_record['relationship_only'] = (!empty($join['relationship_only'])) ? $join['relationship_only'] : 0;
+
+            if ($view_record['setup_id'] && $defn_array['table'] && $field['name'] && $join['table'] && $left_field) {
+              $status = drupal_write_record('tripal_views_join', $join_record);
+            }
+            else {
+              $status = FALSE;
+            }
+            if (!$status) {
+              drupal_set_message(
+                t(
+                  'Unable to join %left_table.%left_field with %table.%field',
+                  array(
+                    '%left_table' => $join['table'],
+                    '%left_field' => $left_field,
+                    '%table' => $defn_array['table'],
+                    '%field' => $field['name']
+                  )
+                ),
+                'error'
+              );
+              $no_errors = FALSE;
+            }
           }
         }
 
@@ -821,7 +860,6 @@ function tripal_export_views_integration($setup_id) {
   );
 
   // Add fields
-  // D7 TODO: Check DBTNG changes work
   $resource = db_query("SELECT * FROM {tripal_views_field} WHERE setup_id=:setup", array(':setup' => $setup_id));
   foreach ($resource as $r) {
     $defn_array['fields'][ $r->column_name ] = array(
@@ -835,7 +873,6 @@ function tripal_export_views_integration($setup_id) {
   }
 
   // Add handlers
-  // D7 TODO: Check DBTNG changes work
   $resource = db_query("SELECT * FROM {tripal_views_handlers} WHERE setup_id=:setup", array(':setup' => $setup_id));
   foreach ($resource as $r) {
     $defn_array['fields'][ $r->column_name ]['handlers'][ $r->handler_type ] = array(
@@ -844,10 +881,9 @@ function tripal_export_views_integration($setup_id) {
   }
 
   // Add joins
-  // D7 TODO: Check DBTNG changes work
   $resource = db_query("SELECT * FROM {tripal_views_join} WHERE setup_id=:setup", array(':setup' => $setup_id));
   foreach ($resource as $r) {
-    $defn_array['fields'][ $r->base_field ]['joins'][ $r->left_table ] = array(
+    $defn_array['fields'][ $r->base_field ]['joins'][ $r->left_table ][ $r->left_field ] = array(
       'table' => $r->left_table,
       'field' => $r->left_field,
       'handler' => $r->handler,
@@ -970,7 +1006,6 @@ function tripal_clone_views_integration($table_name, $new_priority = NULL, $temp
     $defn_array['priority'] = $defn_array['priority'] - 1;
   }
 
-  // D7 TODO: Check DBTNG changes work
   tripal_add_views_integration($defn_array);
   $setup_id = db_query(
     "SELECT setup_id FROM {tripal_views} WHERE table_name=:table AND priority=:priority",
@@ -1103,45 +1138,62 @@ function tripal_add_field_to_views_integration($table_name, $priority, $field) {
     }
 
     // Insert Joins
+    // Note: The new defn_array structure accounts for 1+ joins to the same
+    // table (ie: feature_relationship => feature : subject_id & object_id)
+    // by making $field['joins'] an array of left_field keys.
     if (!is_array($field['joins'])) {
       $field['joins'] = array();
     }
-    foreach ($field['joins'] as $join) {
-      $join_record = array(
-        'setup_id' => $setup_id,
-        'base_table' => $defn_array['table'],
-        'base_field' => $field['name'],
-        'left_table' => $join['table'],
-        'left_field' => $join['field'],
-      );
-
-      if (!empty($join['handler'])) {
-        $join_record['handler'] = $join['handler'];
-      }
-      else {
-        $join_record['handler'] = 'views_join';
-      }
-
-      if ($setup_id && $defn_array['table'] && $field['name'] && $join['table'] && $join['field']) {
-        $status = drupal_write_record('tripal_views_join', $join_record);
-      }
-      else {
-        $status = FALSE;
-      }
-      if (!$status) {
-        drupal_set_message(
-          t(
-            'Unable to join %left_table.%left_field with %table.%field',
-            array(
-              '%left_table' => $join['table'],
-              '%left_field' => $join['field'],
-              '%table' => $defn_array['table'],
-              '%field' => $field['name']
-            )
-          ),
-          'error'
+    foreach ($field['joins'] as $joins) {
+      // To keep backwards compatibility with the old defn_array which just
+      // jumped right into the table definition allowing only a single join,
+      // we need to check for old defn_arrays and transform them into the
+      // new format.
+      if (isset($joins['table'])) {
+        $left_field = $joins['field'];
+        $joins = array(
+          $left_field => $joins
         );
-        $no_errors = FALSE;
+      }
+
+      // Loop on left fields
+      foreach ($joins as $left_field => $join) {
+        $join_record = array(
+          'setup_id' => $setup_id,
+          'base_table' => $defn_array['table'],
+          'base_field' => $field['name'],
+          'left_table' => $join['table'],
+          'left_field' => $join['field'],
+        );
+
+        if (!empty($join['handler'])) {
+          $join_record['handler'] = $join['handler'];
+        }
+        else {
+          $join_record['handler'] = 'views_join';
+        }
+
+        if ($setup_id && $defn_array['table'] && $field['name'] && $join['table'] && $join['field']) {
+          $status = drupal_write_record('tripal_views_join', $join_record);
+        }
+        else {
+          $status = FALSE;
+        }
+        if (!$status) {
+          drupal_set_message(
+            t(
+              'Unable to join %left_table.%left_field with %table.%field',
+              array(
+                '%left_table' => $join['table'],
+                '%left_field' => $join['field'],
+                '%table' => $defn_array['table'],
+                '%field' => $field['name']
+              )
+            ),
+            'error'
+          );
+          $no_errors = FALSE;
+        }
       }
     }
 

@@ -111,6 +111,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
           'field' => array('name' => 'views_handler_field_numeric'),
           'filter' => array('name' => 'views_handler_filter_numeric'),
           'sort' => array('name' => 'views_handler_sort'),
+          'argument' => array('name' => 'views_handler_argument_numeric'),
         );
       }
       elseif (preg_match('/^serial/', $field_schema['type'])) {
@@ -123,6 +124,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
           'field' => array('name' => 'views_handler_field_numeric'),
           'filter' => array('name' => 'views_handler_filter_numeric'),
           'sort' => array('name' => 'views_handler_sort'),
+          'argument' => array('name' => 'views_handler_argument_numeric'),
         );
         $defn_array['fields'][$field_name]['type'] = 'int';
       }
@@ -136,6 +138,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
           'field' => array('name' => 'views_handler_field'),
           'filter' => array('name' => 'views_handler_filter_string'),
           'sort' => array('name' => 'views_handler_sort'),
+          'argument' => array('name' => 'views_handler_argument_string'),
         );
       }
       elseif (preg_match('/^text/', $field_schema['type'])) {
@@ -148,6 +151,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
           'field' => array('name' => 'views_handler_field'),
           'filter' => array('name' => 'views_handler_filter_string'),
           'sort' => array('name' => 'views_handler_sort'),
+          'argument' => array('name' => 'views_handler_argument_string'),
         );
       }
       elseif (preg_match('/^boolean/', $field_schema['type'])) {
@@ -172,6 +176,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
           'field' => array('name' => 'views_handler_field_date'),
           'filter' => array('name' => 'views_handler_filter_date'),
           'sort' => array('name' => 'views_handler_sort_date'),
+          'argument' => array('name' => 'views_handler_argument_date'),
         );
       }
       else {
@@ -184,6 +189,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
           'field' => array('name' => 'views_handler_field'),
           'filter' => array('name' => 'views_handler_filter_string'),
           'sort' => array('name' => 'views_handler_sort'),
+          'argument' => array('name' => 'views_handler_argument_string'),
         );
       }
 
@@ -203,11 +209,13 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
   }
   foreach ($schema['foreign keys'] as $foreign_key_schema) {
     foreach ($foreign_key_schema['columns'] as $left_field => $right_field) {
-      // Join
-      $defn_array['fields'][$left_field]['joins'][ $foreign_key_schema['table'] ] = array(
+
+      // Note: Even though there can only be a single join  for a foreign key
+      // we make the joins an array keyed by left_field to ensure that both
+      // foeign key and referring_tables (see below) can be processed the same.
+      $defn_array['fields'][$left_field]['joins'][ $foreign_key_schema['table'] ][ $left_field ] = array(
         'table' => $foreign_key_schema['table'],
         'field' => $right_field,
-        /**D6 'handler' => 'views_handler_join_chado_aggregator'*/
         'handler' => 'views_handler_join',
         'relationship_handler' => 'views_handler_relationship',
       );
@@ -215,6 +223,10 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
   }
 
   // Add in reverse relationships
+  // Note: The array structure is set up with the left_field keyed array to
+  // handle more than one join between the same set of tables on different
+  // fields. For example, the reverse relationship between feature &
+  // feature_relationship needs to join on both the subject_id and object_id.
   if (isset($schema['referring_tables'])) {
     foreach ($schema['referring_tables'] as $referring_table) {
 
@@ -222,12 +234,17 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
       $referring_schema = chado_get_schema($referring_table);
       $referring_schema_fk_columns = $referring_schema['foreign keys'][$table_name]['columns'];
       foreach ($referring_schema_fk_columns as $left_field => $right_field) {
-        $defn_array['fields'][$right_field]['joins'][ $referring_table ] = array(
+
+        // Also notice that it doesn't matter whether this is the first or second
+        // reverse join on this table ($referring_table) to be added since
+        // having $left_field as the key keeps them separate.
+        $defn_array['fields'][$right_field]['joins'][ $referring_table ][ $left_field ] = array(
           'table' => $referring_table,
           'field' => $left_field,
           'relationship_handler' => 'views_handler_relationship',
           'relationship_only' => 1
         );
+
       }
     }
   }

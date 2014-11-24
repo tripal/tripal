@@ -340,7 +340,7 @@ function tripal_views_views_data() {
         if (!$join->relationship_only) {
           $data[$left_table]['table']['join'][$base_table] = array(
             'left_field' => $base_field,
-            'field' => $left_table . '_id',
+            'field' => $left_field,
           );
           if ($handler) {
             $data[$left_table]['table']['join'][$base_table]['handler'] = $handler;
@@ -356,15 +356,36 @@ function tripal_views_views_data() {
             'DEPRECATED: Currently using tripal_views_handlers to store relationship for %base => %left when you should be using tripal_views_joins.',
             array('%base' => $base_table, '%left' => $left_table));
         }
-        // add relationship entry
+
+        // Add relationship entry.
+        // NOTE: we use a fake field name to allow us to have multiple
+        // relationships for the same field (ie: feature.feature_id has many
+        // Many relationships but views only supports a single one).
         $fake_field = $base_field . '_to_' . $left_table;
+
+        // Bug Fix: The old $fake_field used above doesn't take into account
+        // multiple relationships to the same left table. To keep backwards
+        // compatibility, this old fake_field needs to continue to be used for
+        // the LAST recorded relationship. However, for all previously set
+        // relationships we can use an improved fake name which takes into
+        // account the left field and ensures all relationships for a single
+        // left table are not condensed into a single relationship.
+        if (array_key_exists($fake_field, $data[$base_table])) {
+          $improved_fake_field = $base_field . '_to_' . $left_table . "." . $left_field;
+          // Again, note that we can't just change the fake_name after finding
+          // there is more than one relationship because then the FIRST
+          // relationship would keep the old fake_name rather than the LAST
+          // which keeps backwards compatiblity since the old naming caused all
+          // previous relationships be be overridden by the next one.
+          $data[$base_table][$improved_fake_field] = $data[$base_table][$fake_field];
+        }
         $data[$base_table][$fake_field] = array(
-          'title' => "$base_title.$base_field => $left_title",
-          'help' => "Joins $base_title.$base_field to $left_title",
+          'title' => "$base_title.$base_field => $left_title.$left_field",
+          'help' => t("Joins @base to @left", array('@base' => "$base_title.$base_field", '@left' => "$left_title.$left_field")),
           'relationship' => array(
             'handler' => $join->relationship_handler,
-            'title' => t("$base_field => $left_title"),
-            'label' => t("$base_field => $left_title"),
+            'title' => t("$base_field => $left_title ($left_field)"),
+            'label' => t("$base_field => $left_title ($left_field)"),
             'real field' => $base_field,
             'base' => $left_table,
             'base field' => $left_field
@@ -582,11 +603,11 @@ function tripal_views_views_data_alter(&$data) {
           $data[$linker_table][$base_field] = array(
             'group' => $base_title,
             'title' => $base_title . 'Node',
-            'help' => "Links $base_title to it's node.",
+            'help' => t("Links @base_title to it's node.", array('@base_title' => $base_title)),
             'relationship' => array(
               'handler' => 'views_handler_relationship',
-              'title' => t("$base_title => Node"),
-              'label' => t("$base_title => Node"),
+              'title' => t("@base_title => Node", array('@base_title' => $base_title)),
+              'label' => t("@base_title => Node", array('@base_title' => $base_title)),
               'real field' => 'nid',
               'base' => 'node',
               'base field' => 'nid'
@@ -599,11 +620,11 @@ function tripal_views_views_data_alter(&$data) {
           $data['node'][$base_field] = array(
             'group' => $base_title,
             'title' => $base_title,
-            'help' => "Links node to chado $base_title.",
+            'help' => t("Links node to chado @base_title.", array('@base_title' => $base_title)),
             'relationship' => array(
               'handler' => 'views_handler_relationship',
-              'title' => t("Node => $base_title"),
-              'label' => t("Node => $base_title"),
+              'title' => t("Node => @base_title", array('@base_title' => $base_title)),
+              'label' => t("Node => @base_title", array('@base_title' => $base_title)),
               'real field' => 'nid',
               'base' => $linker_table,
               'base field' => 'nid'
