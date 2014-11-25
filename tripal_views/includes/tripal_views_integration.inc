@@ -213,7 +213,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
       // Note: Even though there can only be a single join  for a foreign key
       // we make the joins an array keyed by left_field to ensure that both
       // foeign key and referring_tables (see below) can be processed the same.
-      $defn_array['fields'][$left_field]['joins'][ $foreign_key_schema['table'] ][ $left_field ] = array(
+      $defn_array['fields'][$left_field]['joins'][ $foreign_key_schema['table'] ][ $right_field ] = array(
         'table' => $foreign_key_schema['table'],
         'field' => $right_field,
         'handler' => 'views_handler_join',

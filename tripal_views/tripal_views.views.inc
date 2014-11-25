@@ -371,12 +371,17 @@ function tripal_views_views_data() {
         // account the left field and ensures all relationships for a single
         // left table are not condensed into a single relationship.
         if (array_key_exists($fake_field, $data[$base_table])) {
-          $improved_fake_field = $base_field . '_to_' . $left_table . "." . $left_field;
+
           // Again, note that we can't just change the fake_name after finding
           // there is more than one relationship because then the FIRST
           // relationship would keep the old fake_name rather than the LAST
           // which keeps backwards compatiblity since the old naming caused all
           // previous relationships be be overridden by the next one.
+          // Thus we first need to determine the left field of the previous
+          // join for this table combination and then use that to form our
+          // improved fake field.
+          $previous_left_field = $data[$base_table][$fake_field]['relationship']['base field'];
+          $improved_fake_field = $base_field . '_to_' . $left_table . "." . $previous_left_field;
           $data[$base_table][$improved_fake_field] = $data[$base_table][$fake_field];
         }
         $data[$base_table][$fake_field] = array(
