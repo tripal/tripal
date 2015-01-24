@@ -378,8 +378,8 @@ function tripal_core_menu() {
   );
   
   // Web Services API callbacks.
-  $items['ws/chado/v1.0'] = array(
-    'title' => 'Tripal Web Services API v1.0',
+  $items['ws/chado/v0.1'] = array(
+    'title' => 'Tripal Web Services API v0.1',
     'page callback' => 'tripal_core_chado_hal_api',
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,

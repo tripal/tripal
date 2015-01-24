@@ -416,7 +416,7 @@ function chado_generate_var($table, $values, $base_options = array()) {
  * @param $type
  *   Indicates what is being expanded. Must be one of 'field', 'foreign_key',
  *   'table', 'node'. While field and node are self-explanitory, it might help
- *   to node that 'table' refers to tables that have a foreign key pointing to
+ *   to note that 'table' refers to tables that have a foreign key pointing to
  *   the current table (ie: featureprop is a table that can be expanded for
  *   features) and 'foreign_key' expands a foreign key in the current table
  *   that might have been excluded (ie: feature.type_id for features).
