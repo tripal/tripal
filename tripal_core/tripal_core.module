@@ -376,6 +376,15 @@ function tripal_core_menu() {
     'type' => MENU_LOCAL_TASK,
     'file' => '/includes/tripal_core.toc.inc',
   );
+  
+  // Web Services API callbacks.
+  $items['ws/chado/v1.0'] = array(
+    'title' => 'Tripal Web Services API v1.0',
+    'page callback' => 'tripal_core_chado_hal_api',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => '/includes/tripal_core.ws_hal.inc',
+  );
 
   return $items;
 }
