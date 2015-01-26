@@ -47,41 +47,41 @@
  */
 function tripal_core_chado_schema_v1_2_acquisition() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'acquisition_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'assay_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'protocol_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'channel_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'acquisitiondate' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'datetime',
         'not null' => FALSE,
         'default' => 'ow(',
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'uri' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
@@ -149,35 +149,35 @@ function tripal_core_chado_schema_v1_2_acquisition() {
  */
 function tripal_core_chado_schema_v1_2_acquisition_relationship() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'acquisition_relationship_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'subject_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'object_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -240,30 +240,30 @@ function tripal_core_chado_schema_v1_2_acquisition_relationship() {
  */
 function tripal_core_chado_schema_v1_2_acquisitionprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'acquisitionprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'acquisition_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -327,61 +327,61 @@ function tripal_core_chado_schema_v1_2_analysis() {
       2 => 'phylotree',
       3 => 'quantification',
     ),
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'analysis_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'description' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'program' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
       ),
       'programversion' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
       ),
       'algorithm' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'sourcename' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'sourceversion' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'sourceuri' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'timeexecuted' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'datetime',
         'not null' => TRUE,
         'default' => 'ow(',
@@ -418,43 +418,43 @@ function tripal_core_chado_schema_v1_2_analysis() {
  */
 function tripal_core_chado_schema_v1_2_analysisfeature() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'analysisfeature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'analysis_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'rawscore' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'float',
         'size' => 'big',
         'not null' => FALSE,
       ),
       'normscore' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'float',
         'size' => 'big',
         'not null' => FALSE,
       ),
       'significance' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'float',
         'size' => 'big',
         'not null' => FALSE,
       ),
       'identity' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'float',
         'size' => 'big',
         'not null' => FALSE,
@@ -513,30 +513,30 @@ function tripal_core_chado_schema_v1_2_analysisfeature() {
  */
 function tripal_core_chado_schema_v1_2_analysisfeatureprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'analysisfeatureprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'analysisfeature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -585,30 +585,30 @@ function tripal_core_chado_schema_v1_2_analysisfeatureprop() {
  */
 function tripal_core_chado_schema_v1_2_analysisprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'analysisprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'analysis_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -666,95 +666,95 @@ function tripal_core_chado_schema_v1_2_analysisprop() {
  */
 function tripal_core_chado_schema_v1_2_arraydesign() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'arraydesign_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'manufacturer_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'platformtype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'substratetype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'protocol_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'version' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'description' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'array_dimensions' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'element_dimensions' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'num_of_elements' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'num_array_columns' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'num_array_rows' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'num_grid_columns' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'num_grid_rows' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'num_sub_columns' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'num_sub_rows' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
@@ -835,30 +835,30 @@ function tripal_core_chado_schema_v1_2_arraydesign() {
  */
 function tripal_core_chado_schema_v1_2_arraydesignprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'arraydesignprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'arraydesign_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -916,56 +916,56 @@ function tripal_core_chado_schema_v1_2_arraydesignprop() {
  */
 function tripal_core_chado_schema_v1_2_assay() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'assay_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'arraydesign_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'protocol_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'assaydate' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'datetime',
         'not null' => FALSE,
         'default' => 'ow(',
       ),
       'arrayidentifier' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'arraybatchidentifier' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'operator_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'description' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
@@ -1046,30 +1046,30 @@ function tripal_core_chado_schema_v1_2_assay() {
  */
 function tripal_core_chado_schema_v1_2_assay_biomaterial() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'assay_biomaterial_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'assay_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'biomaterial_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'channel_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -1137,20 +1137,20 @@ function tripal_core_chado_schema_v1_2_assay_biomaterial() {
  */
 function tripal_core_chado_schema_v1_2_assay_project() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'assay_project_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'assay_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'project_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -1206,30 +1206,30 @@ function tripal_core_chado_schema_v1_2_assay_project() {
  */
 function tripal_core_chado_schema_v1_2_assayprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'assayprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'assay_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -1287,35 +1287,35 @@ function tripal_core_chado_schema_v1_2_assayprop() {
  */
 function tripal_core_chado_schema_v1_2_biomaterial() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'biomaterial_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'taxon_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'biosourceprovider_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'description' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
@@ -1386,20 +1386,20 @@ function tripal_core_chado_schema_v1_2_biomaterial() {
  */
 function tripal_core_chado_schema_v1_2_biomaterial_dbxref() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'biomaterial_dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'biomaterial_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -1455,25 +1455,25 @@ function tripal_core_chado_schema_v1_2_biomaterial_dbxref() {
  */
 function tripal_core_chado_schema_v1_2_biomaterial_relationship() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'biomaterial_relationship_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'subject_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'object_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -1534,35 +1534,35 @@ function tripal_core_chado_schema_v1_2_biomaterial_relationship() {
  */
 function tripal_core_chado_schema_v1_2_biomaterial_treatment() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'biomaterial_treatment_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'biomaterial_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'treatment_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'unittype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'float',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -1628,30 +1628,30 @@ function tripal_core_chado_schema_v1_2_biomaterial_treatment() {
  */
 function tripal_core_chado_schema_v1_2_biomaterialprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'biomaterialprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'biomaterial_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -1710,38 +1710,38 @@ function tripal_core_chado_schema_v1_2_biomaterialprop() {
  */
 function tripal_core_chado_schema_v1_2_cell_line() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'cell_line_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'uniquename' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
       ),
       'organism_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'timeaccessioned' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'datetime',
         'not null' => TRUE,
         'default' => 'ow(',
       ),
       'timelastmodified' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'datetime',
         'not null' => TRUE,
         'default' => 'ow(',
@@ -1793,30 +1793,30 @@ function tripal_core_chado_schema_v1_2_cell_line() {
  */
 function tripal_core_chado_schema_v1_2_cell_line_cvterm() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'cell_line_cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'cell_line_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -1875,30 +1875,30 @@ function tripal_core_chado_schema_v1_2_cell_line_cvterm() {
  */
 function tripal_core_chado_schema_v1_2_cell_line_cvtermprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'cell_line_cvtermprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'cell_line_cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -1948,25 +1948,25 @@ function tripal_core_chado_schema_v1_2_cell_line_cvtermprop() {
  */
 function tripal_core_chado_schema_v1_2_cell_line_dbxref() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'cell_line_dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'cell_line_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'is_current' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
         'default' => 'ru',
@@ -2015,25 +2015,25 @@ function tripal_core_chado_schema_v1_2_cell_line_dbxref() {
  */
 function tripal_core_chado_schema_v1_2_cell_line_feature() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'cell_line_feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'cell_line_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -2088,25 +2088,25 @@ function tripal_core_chado_schema_v1_2_cell_line_feature() {
  */
 function tripal_core_chado_schema_v1_2_cell_line_library() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'cell_line_library_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'cell_line_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'library_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -2161,20 +2161,20 @@ function tripal_core_chado_schema_v1_2_cell_line_library() {
  */
 function tripal_core_chado_schema_v1_2_cell_line_pub() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'cell_line_pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'cell_line_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -2222,25 +2222,25 @@ function tripal_core_chado_schema_v1_2_cell_line_pub() {
  */
 function tripal_core_chado_schema_v1_2_cell_line_relationship() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'cell_line_relationship_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'subject_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'object_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -2290,36 +2290,36 @@ function tripal_core_chado_schema_v1_2_cell_line_relationship() {
  */
 function tripal_core_chado_schema_v1_2_cell_line_synonym() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'cell_line_synonym_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'cell_line_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'synonym_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'is_current' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
         'default' => 'als',
       ),
       'is_internal' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
         'default' => 'als',
@@ -2375,30 +2375,30 @@ function tripal_core_chado_schema_v1_2_cell_line_synonym() {
  */
 function tripal_core_chado_schema_v1_2_cell_lineprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'cell_lineprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'cell_line_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -2450,20 +2450,20 @@ function tripal_core_chado_schema_v1_2_cell_lineprop() {
  */
 function tripal_core_chado_schema_v1_2_cell_lineprop_pub() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'cell_lineprop_pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'cell_lineprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -2511,25 +2511,25 @@ function tripal_core_chado_schema_v1_2_cell_lineprop_pub() {
  */
 function tripal_core_chado_schema_v1_2_chadoprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'chadoprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -2572,20 +2572,20 @@ function tripal_core_chado_schema_v1_2_chadoprop() {
  */
 function tripal_core_chado_schema_v1_2_channel() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'channel_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'definition' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
@@ -2623,26 +2623,26 @@ function tripal_core_chado_schema_v1_2_channel() {
  */
 function tripal_core_chado_schema_v1_2_contact() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'contact_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
       ),
       'description' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
@@ -2694,25 +2694,25 @@ function tripal_core_chado_schema_v1_2_contact() {
  */
 function tripal_core_chado_schema_v1_2_contact_relationship() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'contact_relationship_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'subject_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'object_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -2773,45 +2773,45 @@ function tripal_core_chado_schema_v1_2_contact_relationship() {
  */
 function tripal_core_chado_schema_v1_2_control() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'control_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'assay_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'tableinfo_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'row_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -2874,21 +2874,21 @@ function tripal_core_chado_schema_v1_2_control() {
  */
 function tripal_core_chado_schema_v1_2_cv() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'cv_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
       ),
       'definition' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
@@ -2927,30 +2927,30 @@ function tripal_core_chado_schema_v1_2_cv() {
  */
 function tripal_core_chado_schema_v1_2_cvprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'cvprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'cv_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -3000,42 +3000,42 @@ function tripal_core_chado_schema_v1_2_cvprop() {
  */
 function tripal_core_chado_schema_v1_2_cvterm() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'cv_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '1024',
         'not null' => TRUE,
       ),
       'definition' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'is_obsolete' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
       ),
       'is_relationshiptype' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -3192,25 +3192,25 @@ function tripal_core_chado_schema_v1_2_cvterm() {
  */
 function tripal_core_chado_schema_v1_2_cvterm_dbxref() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'cvterm_dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'is_for_definition' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -3267,25 +3267,25 @@ function tripal_core_chado_schema_v1_2_cvterm_dbxref() {
  */
 function tripal_core_chado_schema_v1_2_cvterm_relationship() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'cvterm_relationship_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'subject_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'object_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -3341,35 +3341,35 @@ function tripal_core_chado_schema_v1_2_cvterm_relationship() {
  */
 function tripal_core_chado_schema_v1_2_cvtermpath() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'cvtermpath_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'subject_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'object_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'cv_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pathdistance' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
@@ -3435,31 +3435,31 @@ function tripal_core_chado_schema_v1_2_cvtermpath() {
  */
 function tripal_core_chado_schema_v1_2_cvtermprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'cvtermprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
         'default' => '',
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -3513,26 +3513,26 @@ function tripal_core_chado_schema_v1_2_cvtermprop() {
  */
 function tripal_core_chado_schema_v1_2_cvtermsynonym() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'cvtermsynonym_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'synonym' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '1024',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
@@ -3580,33 +3580,33 @@ function tripal_core_chado_schema_v1_2_cvtermsynonym() {
  */
 function tripal_core_chado_schema_v1_2_db() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'db_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
       ),
       'description' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'urlprefix' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'url' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
@@ -3644,33 +3644,33 @@ function tripal_core_chado_schema_v1_2_db() {
  */
 function tripal_core_chado_schema_v1_2_dbxref() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'db_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'accession' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
       ),
       'version' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
         'default' => '',
       ),
       'description' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
@@ -3748,31 +3748,31 @@ function tripal_core_chado_schema_v1_2_dbxref() {
  */
 function tripal_core_chado_schema_v1_2_dbxrefprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'dbxrefprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
         'default' => '',
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -3830,26 +3830,26 @@ function tripal_core_chado_schema_v1_2_dbxrefprop() {
  */
 function tripal_core_chado_schema_v1_2_eimage() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'eimage_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'eimage_data' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'eimage_type' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
       ),
       'image_uri' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
@@ -3882,30 +3882,30 @@ function tripal_core_chado_schema_v1_2_eimage() {
  */
 function tripal_core_chado_schema_v1_2_element() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'element_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'arraydesign_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
@@ -3982,35 +3982,35 @@ function tripal_core_chado_schema_v1_2_element() {
  */
 function tripal_core_chado_schema_v1_2_element_relationship() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'element_relationship_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'subject_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'object_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -4076,25 +4076,25 @@ function tripal_core_chado_schema_v1_2_element_relationship() {
  */
 function tripal_core_chado_schema_v1_2_elementresult() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'elementresult_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'element_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'quantification_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'signal' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'float',
         'size' => 'big',
         'not null' => TRUE,
@@ -4156,35 +4156,35 @@ function tripal_core_chado_schema_v1_2_elementresult() {
  */
 function tripal_core_chado_schema_v1_2_elementresult_relationship() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'elementresult_relationship_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'subject_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'object_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -4250,20 +4250,20 @@ function tripal_core_chado_schema_v1_2_elementresult_relationship() {
  */
 function tripal_core_chado_schema_v1_2_environment() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'environment_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'uniquename' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'description' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
@@ -4308,20 +4308,20 @@ function tripal_core_chado_schema_v1_2_environment() {
  */
 function tripal_core_chado_schema_v1_2_environment_cvterm() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'environment_cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'environment_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -4377,26 +4377,26 @@ function tripal_core_chado_schema_v1_2_environment_cvterm() {
  */
 function tripal_core_chado_schema_v1_2_expression() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'expression_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'uniquename' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'md5checksum' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'char',
         'length' => '32',
         'not null' => FALSE,
       ),
       'description' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
@@ -4437,31 +4437,31 @@ function tripal_core_chado_schema_v1_2_expression() {
  */
 function tripal_core_chado_schema_v1_2_expression_cvterm() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'expression_cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'expression_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
       ),
       'cvterm_type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -4524,30 +4524,30 @@ function tripal_core_chado_schema_v1_2_expression_cvterm() {
  */
 function tripal_core_chado_schema_v1_2_expression_cvtermprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'expression_cvtermprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'expression_cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -4605,20 +4605,20 @@ function tripal_core_chado_schema_v1_2_expression_cvtermprop() {
  */
 function tripal_core_chado_schema_v1_2_expression_image() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'expression_image_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'expression_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'eimage_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -4674,20 +4674,20 @@ function tripal_core_chado_schema_v1_2_expression_image() {
  */
 function tripal_core_chado_schema_v1_2_expression_pub() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'expression_pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'expression_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -4743,30 +4743,30 @@ function tripal_core_chado_schema_v1_2_expression_pub() {
  */
 function tripal_core_chado_schema_v1_2_expressionprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'expressionprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'expression_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -4824,75 +4824,75 @@ function tripal_core_chado_schema_v1_2_expressionprop() {
  */
 function tripal_core_chado_schema_v1_2_feature() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'organism_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'uniquename' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'residues' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'seqlen' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'md5checksum' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'char',
         'length' => '32',
         'not null' => FALSE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'is_analysis' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
         'default' => 'als',
       ),
       'is_obsolete' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
         'default' => 'als',
       ),
       'timeaccessioned' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'datetime',
         'not null' => TRUE,
         'default' => 'ow(',
       ),
       'timelastmodified' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'datetime',
         'not null' => TRUE,
         'default' => 'ow(',
@@ -4984,36 +4984,36 @@ function tripal_core_chado_schema_v1_2_feature() {
  */
 function tripal_core_chado_schema_v1_2_feature_cvterm() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'feature_cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'is_not' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
         'default' => 'als',
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -5085,20 +5085,20 @@ function tripal_core_chado_schema_v1_2_feature_cvterm() {
  */
 function tripal_core_chado_schema_v1_2_feature_cvterm_dbxref() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'feature_cvterm_dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'feature_cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -5154,20 +5154,20 @@ function tripal_core_chado_schema_v1_2_feature_cvterm_dbxref() {
  */
 function tripal_core_chado_schema_v1_2_feature_cvterm_pub() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'feature_cvterm_pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'feature_cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -5223,30 +5223,30 @@ function tripal_core_chado_schema_v1_2_feature_cvterm_pub() {
  */
 function tripal_core_chado_schema_v1_2_feature_cvtermprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'feature_cvtermprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'feature_cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -5304,25 +5304,25 @@ function tripal_core_chado_schema_v1_2_feature_cvtermprop() {
  */
 function tripal_core_chado_schema_v1_2_feature_dbxref() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'feature_dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'is_current' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
         'default' => 'ru',
@@ -5379,25 +5379,25 @@ function tripal_core_chado_schema_v1_2_feature_dbxref() {
  */
 function tripal_core_chado_schema_v1_2_feature_expression() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'feature_expression_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'expression_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -5465,30 +5465,30 @@ function tripal_core_chado_schema_v1_2_feature_expression() {
  */
 function tripal_core_chado_schema_v1_2_feature_expressionprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'feature_expressionprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'feature_expression_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -5546,40 +5546,40 @@ function tripal_core_chado_schema_v1_2_feature_expressionprop() {
  */
 function tripal_core_chado_schema_v1_2_feature_genotype() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'feature_genotype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'genotype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'chromosome_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'cgroup' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -5646,20 +5646,20 @@ function tripal_core_chado_schema_v1_2_feature_genotype() {
  */
 function tripal_core_chado_schema_v1_2_feature_phenotype() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'feature_phenotype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'phenotype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -5715,20 +5715,20 @@ function tripal_core_chado_schema_v1_2_feature_phenotype() {
  */
 function tripal_core_chado_schema_v1_2_feature_pub() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'feature_pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -5786,30 +5786,30 @@ function tripal_core_chado_schema_v1_2_feature_pub() {
  */
 function tripal_core_chado_schema_v1_2_feature_pubprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'feature_pubprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'feature_pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -5864,35 +5864,35 @@ function tripal_core_chado_schema_v1_2_feature_pubprop() {
  */
 function tripal_core_chado_schema_v1_2_feature_relationship() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'feature_relationship_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'subject_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'object_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -5958,20 +5958,20 @@ function tripal_core_chado_schema_v1_2_feature_relationship() {
  */
 function tripal_core_chado_schema_v1_2_feature_relationship_pub() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'feature_relationship_pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'feature_relationship_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -6027,30 +6027,30 @@ function tripal_core_chado_schema_v1_2_feature_relationship_pub() {
  */
 function tripal_core_chado_schema_v1_2_feature_relationshipprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'feature_relationshipprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'feature_relationship_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -6110,20 +6110,20 @@ function tripal_core_chado_schema_v1_2_feature_relationshipprop() {
  */
 function tripal_core_chado_schema_v1_2_feature_relationshipprop_pub() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'feature_relationshipprop_pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'feature_relationshipprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -6180,36 +6180,36 @@ function tripal_core_chado_schema_v1_2_feature_relationshipprop_pub() {
  */
 function tripal_core_chado_schema_v1_2_feature_synonym() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'feature_synonym_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'synonym_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'is_current' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
         'default' => 'als',
       ),
       'is_internal' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
         'default' => 'als',
@@ -6276,69 +6276,69 @@ function tripal_core_chado_schema_v1_2_feature_synonym() {
  */
 function tripal_core_chado_schema_v1_2_featureloc() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'featureloc_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'srcfeature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'fmin' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'is_fmin_partial' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
         'default' => 'als',
       ),
       'fmax' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'is_fmax_partial' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
         'default' => 'als',
       ),
       'strand' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'size' => 'small',
         'not null' => FALSE,
       ),
       'phase' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'residue_info' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'locgroup' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -6405,20 +6405,20 @@ function tripal_core_chado_schema_v1_2_featureloc() {
  */
 function tripal_core_chado_schema_v1_2_featureloc_pub() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'featureloc_pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'featureloc_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -6474,26 +6474,26 @@ function tripal_core_chado_schema_v1_2_featureloc_pub() {
  */
 function tripal_core_chado_schema_v1_2_featuremap() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'featuremap_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'description' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'unittype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
@@ -6538,20 +6538,20 @@ function tripal_core_chado_schema_v1_2_featuremap() {
  */
 function tripal_core_chado_schema_v1_2_featuremap_pub() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'featuremap_pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'featuremap_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -6601,30 +6601,30 @@ function tripal_core_chado_schema_v1_2_featuremap_pub() {
  */
 function tripal_core_chado_schema_v1_2_featurepos() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'featurepos_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'featuremap_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'map_feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'mappos' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'float',
         'size' => 'big',
         'not null' => TRUE,
@@ -6679,30 +6679,30 @@ function tripal_core_chado_schema_v1_2_featurepos() {
  */
 function tripal_core_chado_schema_v1_2_featureprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'featureprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -6762,20 +6762,20 @@ function tripal_core_chado_schema_v1_2_featureprop() {
  */
 function tripal_core_chado_schema_v1_2_featureprop_pub() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'featureprop_pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'featureprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -6831,45 +6831,45 @@ function tripal_core_chado_schema_v1_2_featureprop_pub() {
  */
 function tripal_core_chado_schema_v1_2_featurerange() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'featurerange_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'featuremap_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'leftstartf_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'leftendf_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'rightstartf_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'rightendf_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'rangestr' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
@@ -6936,31 +6936,31 @@ function tripal_core_chado_schema_v1_2_featurerange() {
  */
 function tripal_core_chado_schema_v1_2_genotype() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'genotype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'uniquename' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'description' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -7017,30 +7017,30 @@ function tripal_core_chado_schema_v1_2_genotype() {
  */
 function tripal_core_chado_schema_v1_2_genotypeprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'genotypeprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'genotype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -7098,48 +7098,48 @@ function tripal_core_chado_schema_v1_2_genotypeprop() {
  */
 function tripal_core_chado_schema_v1_2_library() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'library_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'organism_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'uniquename' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'is_obsolete' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
       ),
       'timeaccessioned' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'datetime',
         'not null' => TRUE,
         'default' => 'ow(',
       ),
       'timelastmodified' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'datetime',
         'not null' => TRUE,
         'default' => 'ow(',
@@ -7212,25 +7212,25 @@ function tripal_core_chado_schema_v1_2_library() {
  */
 function tripal_core_chado_schema_v1_2_library_cvterm() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'library_cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'library_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -7296,25 +7296,25 @@ function tripal_core_chado_schema_v1_2_library_cvterm() {
  */
 function tripal_core_chado_schema_v1_2_library_dbxref() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'library_dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'library_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'is_current' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
         'default' => 'ru',
@@ -7371,20 +7371,20 @@ function tripal_core_chado_schema_v1_2_library_dbxref() {
  */
 function tripal_core_chado_schema_v1_2_library_feature() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'library_feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'library_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -7440,20 +7440,20 @@ function tripal_core_chado_schema_v1_2_library_feature() {
  */
 function tripal_core_chado_schema_v1_2_library_pub() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'library_pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'library_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -7510,36 +7510,36 @@ function tripal_core_chado_schema_v1_2_library_pub() {
  */
 function tripal_core_chado_schema_v1_2_library_synonym() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'library_synonym_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'synonym_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'library_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'is_current' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
         'default' => 'ru',
       ),
       'is_internal' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
         'default' => 'als',
@@ -7606,30 +7606,30 @@ function tripal_core_chado_schema_v1_2_library_synonym() {
  */
 function tripal_core_chado_schema_v1_2_libraryprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'libraryprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'library_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -7689,20 +7689,20 @@ function tripal_core_chado_schema_v1_2_libraryprop() {
  */
 function tripal_core_chado_schema_v1_2_libraryprop_pub() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'libraryprop_pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'libraryprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -7758,30 +7758,30 @@ function tripal_core_chado_schema_v1_2_libraryprop_pub() {
  */
 function tripal_core_chado_schema_v1_2_magedocumentation() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'magedocumentation_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'mageml_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'tableinfo_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'row_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'mageidentifier' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
@@ -7834,20 +7834,20 @@ function tripal_core_chado_schema_v1_2_magedocumentation() {
  */
 function tripal_core_chado_schema_v1_2_mageml() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'mageml_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'mage_package' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'mage_ml' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
@@ -7879,20 +7879,20 @@ function tripal_core_chado_schema_v1_2_mageml() {
  */
 function tripal_core_chado_schema_v1_2_nd_experiment() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'nd_experiment_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'nd_geolocation_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -7944,20 +7944,20 @@ function tripal_core_chado_schema_v1_2_nd_experiment() {
  */
 function tripal_core_chado_schema_v1_2_nd_experiment_contact() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'nd_experiment_contact_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'nd_experiment_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'contact_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -7999,20 +7999,20 @@ function tripal_core_chado_schema_v1_2_nd_experiment_contact() {
  */
 function tripal_core_chado_schema_v1_2_nd_experiment_dbxref() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'nd_experiment_dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'nd_experiment_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -8054,20 +8054,20 @@ function tripal_core_chado_schema_v1_2_nd_experiment_dbxref() {
  */
 function tripal_core_chado_schema_v1_2_nd_experiment_genotype() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'nd_experiment_genotype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'nd_experiment_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'genotype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -8115,20 +8115,20 @@ function tripal_core_chado_schema_v1_2_nd_experiment_genotype() {
  */
 function tripal_core_chado_schema_v1_2_nd_experiment_phenotype() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'nd_experiment_phenotype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'nd_experiment_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'phenotype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -8176,20 +8176,20 @@ function tripal_core_chado_schema_v1_2_nd_experiment_phenotype() {
  */
 function tripal_core_chado_schema_v1_2_nd_experiment_project() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'nd_experiment_project_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'project_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'nd_experiment_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -8231,20 +8231,20 @@ function tripal_core_chado_schema_v1_2_nd_experiment_project() {
  */
 function tripal_core_chado_schema_v1_2_nd_experiment_protocol() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'nd_experiment_protocol_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'nd_experiment_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'nd_protocol_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -8286,20 +8286,20 @@ function tripal_core_chado_schema_v1_2_nd_experiment_protocol() {
  */
 function tripal_core_chado_schema_v1_2_nd_experiment_pub() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'nd_experiment_pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'nd_experiment_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -8355,25 +8355,25 @@ function tripal_core_chado_schema_v1_2_nd_experiment_pub() {
  */
 function tripal_core_chado_schema_v1_2_nd_experiment_stock() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'nd_experiment_stock_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'nd_experiment_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'stock_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -8424,20 +8424,20 @@ function tripal_core_chado_schema_v1_2_nd_experiment_stock() {
  */
 function tripal_core_chado_schema_v1_2_nd_experiment_stock_dbxref() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'nd_experiment_stock_dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'nd_experiment_stock_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -8479,30 +8479,30 @@ function tripal_core_chado_schema_v1_2_nd_experiment_stock_dbxref() {
  */
 function tripal_core_chado_schema_v1_2_nd_experiment_stockprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'nd_experiment_stockprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'nd_experiment_stock_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -8552,30 +8552,30 @@ function tripal_core_chado_schema_v1_2_nd_experiment_stockprop() {
  */
 function tripal_core_chado_schema_v1_2_nd_experimentprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'nd_experimentprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'nd_experiment_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -8625,37 +8625,37 @@ function tripal_core_chado_schema_v1_2_nd_experimentprop() {
  */
 function tripal_core_chado_schema_v1_2_nd_geolocation() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'nd_geolocation_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'description' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'latitude' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'float',
         'not null' => FALSE,
       ),
       'longitude' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'float',
         'not null' => FALSE,
       ),
       'geodetic_datum' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '32',
         'not null' => FALSE,
       ),
       'altitude' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'float',
         'not null' => FALSE,
       ),
@@ -8688,30 +8688,30 @@ function tripal_core_chado_schema_v1_2_nd_geolocation() {
  */
 function tripal_core_chado_schema_v1_2_nd_geolocationprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'nd_geolocationprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'nd_geolocation_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -8761,21 +8761,21 @@ function tripal_core_chado_schema_v1_2_nd_geolocationprop() {
  */
 function tripal_core_chado_schema_v1_2_nd_protocol() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'nd_protocol_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -8820,25 +8820,25 @@ function tripal_core_chado_schema_v1_2_nd_protocol() {
  */
 function tripal_core_chado_schema_v1_2_nd_protocol_reagent() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'nd_protocol_reagent_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'nd_protocol_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'reagent_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -8886,30 +8886,30 @@ function tripal_core_chado_schema_v1_2_nd_protocol_reagent() {
  */
 function tripal_core_chado_schema_v1_2_nd_protocolprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'nd_protocolprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'nd_protocol_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -8959,26 +8959,26 @@ function tripal_core_chado_schema_v1_2_nd_protocolprop() {
  */
 function tripal_core_chado_schema_v1_2_nd_reagent() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'nd_reagent_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '80',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
@@ -9018,25 +9018,25 @@ function tripal_core_chado_schema_v1_2_nd_reagent() {
  */
 function tripal_core_chado_schema_v1_2_nd_reagent_relationship() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'nd_reagent_relationship_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'subject_reagent_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'object_reagent_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -9079,30 +9079,30 @@ function tripal_core_chado_schema_v1_2_nd_reagent_relationship() {
  */
 function tripal_core_chado_schema_v1_2_nd_reagentprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'nd_reagentprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'nd_reagent_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -9152,39 +9152,39 @@ function tripal_core_chado_schema_v1_2_nd_reagentprop() {
  */
 function tripal_core_chado_schema_v1_2_organism() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'organism_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'abbreviation' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'genus' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
       ),
       'species' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
       ),
       'common_name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'comment' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
@@ -9230,20 +9230,20 @@ function tripal_core_chado_schema_v1_2_organism() {
  */
 function tripal_core_chado_schema_v1_2_organism_dbxref() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'organism_dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'organism_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -9299,30 +9299,30 @@ function tripal_core_chado_schema_v1_2_organism_dbxref() {
  */
 function tripal_core_chado_schema_v1_2_organismprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'organismprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'organism_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -9380,35 +9380,35 @@ function tripal_core_chado_schema_v1_2_organismprop() {
  */
 function tripal_core_chado_schema_v1_2_phendesc() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'phendesc_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'genotype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'environment_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'description' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -9481,45 +9481,45 @@ function tripal_core_chado_schema_v1_2_phendesc() {
  */
 function tripal_core_chado_schema_v1_2_phenotype() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'phenotype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'uniquename' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'observable_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'attr_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'cvalue_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'assay_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
@@ -9580,50 +9580,50 @@ function tripal_core_chado_schema_v1_2_phenotype() {
  */
 function tripal_core_chado_schema_v1_2_phenotype_comparison() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'phenotype_comparison_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'genotype1_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'environment1_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'genotype2_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'environment2_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'phenotype1_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'phenotype2_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'organism_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -9709,30 +9709,30 @@ function tripal_core_chado_schema_v1_2_phenotype_comparison() {
  */
 function tripal_core_chado_schema_v1_2_phenotype_comparison_cvterm() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'phenotype_comparison_cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'phenotype_comparison_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -9795,25 +9795,25 @@ function tripal_core_chado_schema_v1_2_phenotype_comparison_cvterm() {
  */
 function tripal_core_chado_schema_v1_2_phenotype_cvterm() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'phenotype_cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'phenotype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -9871,35 +9871,35 @@ function tripal_core_chado_schema_v1_2_phenotype_cvterm() {
  */
 function tripal_core_chado_schema_v1_2_phenstatement() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'phenstatement_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'genotype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'environment_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'phenotype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -9976,51 +9976,51 @@ function tripal_core_chado_schema_v1_2_phenstatement() {
  */
 function tripal_core_chado_schema_v1_2_phylonode() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'phylonode_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'phylotree_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'parent_phylonode_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'left_idx' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'right_idx' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'label' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'distance' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'float',
         'size' => 'big',
         'not null' => FALSE,
@@ -10092,20 +10092,20 @@ function tripal_core_chado_schema_v1_2_phylonode() {
  */
 function tripal_core_chado_schema_v1_2_phylonode_dbxref() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'phylonode_dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'phylonode_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -10161,20 +10161,20 @@ function tripal_core_chado_schema_v1_2_phylonode_dbxref() {
  */
 function tripal_core_chado_schema_v1_2_phylonode_organism() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'phylonode_organism_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'phylonode_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'organism_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -10229,20 +10229,20 @@ function tripal_core_chado_schema_v1_2_phylonode_organism() {
  */
 function tripal_core_chado_schema_v1_2_phylonode_pub() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'phylonode_pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'phylonode_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -10298,35 +10298,35 @@ function tripal_core_chado_schema_v1_2_phylonode_pub() {
  */
 function tripal_core_chado_schema_v1_2_phylonode_relationship() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'phylonode_relationship_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'subject_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'object_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'phylotree_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -10393,31 +10393,31 @@ function tripal_core_chado_schema_v1_2_phylonode_relationship() {
  */
 function tripal_core_chado_schema_v1_2_phylonodeprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'phylonodeprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'phylonode_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
         'default' => '',
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -10476,36 +10476,36 @@ function tripal_core_chado_schema_v1_2_phylonodeprop() {
  */
 function tripal_core_chado_schema_v1_2_phylotree() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'phylotree_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'analysis_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'comment' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
@@ -10562,20 +10562,20 @@ function tripal_core_chado_schema_v1_2_phylotree() {
  */
 function tripal_core_chado_schema_v1_2_phylotree_pub() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'phylotree_pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'phylotree_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -10631,21 +10631,21 @@ function tripal_core_chado_schema_v1_2_phylotree_pub() {
  */
 function tripal_core_chado_schema_v1_2_project() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'project_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
       ),
       'description' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
@@ -10688,20 +10688,20 @@ function tripal_core_chado_schema_v1_2_project() {
  */
 function tripal_core_chado_schema_v1_2_project_contact() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'project_contact_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'project_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'contact_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -10757,20 +10757,20 @@ function tripal_core_chado_schema_v1_2_project_contact() {
  */
 function tripal_core_chado_schema_v1_2_project_pub() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'project_pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'project_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -10826,25 +10826,25 @@ function tripal_core_chado_schema_v1_2_project_pub() {
  */
 function tripal_core_chado_schema_v1_2_project_relationship() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'project_relationship_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'subject_project_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'object_project_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -10894,30 +10894,30 @@ function tripal_core_chado_schema_v1_2_project_relationship() {
  */
 function tripal_core_chado_schema_v1_2_projectprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'projectprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'project_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -10967,50 +10967,50 @@ function tripal_core_chado_schema_v1_2_projectprop() {
  */
 function tripal_core_chado_schema_v1_2_protocol() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'protocol_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'uri' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'protocoldescription' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'hardwaredescription' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'softwaredescription' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
@@ -11081,40 +11081,40 @@ function tripal_core_chado_schema_v1_2_protocol() {
  */
 function tripal_core_chado_schema_v1_2_protocolparam() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'protocolparam_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'protocol_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'datatype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'unittype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -11169,83 +11169,83 @@ function tripal_core_chado_schema_v1_2_protocolparam() {
  */
 function tripal_core_chado_schema_v1_2_pub() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'title' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'volumetitle' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'volume' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'series_name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'issue' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'pyear' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'pages' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'miniref' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'uniquename' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'is_obsolete' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'boolean',
         'not null' => FALSE,
         'default' => 'als',
       ),
       'publisher' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'pubplace' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
@@ -11333,25 +11333,25 @@ function tripal_core_chado_schema_v1_2_pub() {
  */
 function tripal_core_chado_schema_v1_2_pub_dbxref() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'pub_dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'is_current' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
         'default' => 'ru',
@@ -11408,25 +11408,25 @@ function tripal_core_chado_schema_v1_2_pub_dbxref() {
  */
 function tripal_core_chado_schema_v1_2_pub_relationship() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'pub_relationship_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'subject_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'object_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -11487,43 +11487,43 @@ function tripal_core_chado_schema_v1_2_pub_relationship() {
  */
 function tripal_core_chado_schema_v1_2_pubauthor() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'pubauthor_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'editor' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'boolean',
         'not null' => FALSE,
         'default' => 'als',
       ),
       'surname' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '100',
         'not null' => TRUE,
       ),
       'givennames' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '100',
         'not null' => FALSE,
       ),
       'suffix' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '100',
         'not null' => FALSE,
@@ -11571,30 +11571,30 @@ function tripal_core_chado_schema_v1_2_pubauthor() {
  */
 function tripal_core_chado_schema_v1_2_pubprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'pubprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
@@ -11651,46 +11651,46 @@ function tripal_core_chado_schema_v1_2_pubprop() {
  */
 function tripal_core_chado_schema_v1_2_quantification() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'quantification_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'acquisition_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'operator_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'protocol_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'analysis_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'quantificationdate' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'datetime',
         'not null' => FALSE,
         'default' => 'ow(',
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'uri' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
@@ -11768,25 +11768,25 @@ function tripal_core_chado_schema_v1_2_quantification() {
  */
 function tripal_core_chado_schema_v1_2_quantification_relationship() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'quantification_relationship_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'subject_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'object_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -11847,30 +11847,30 @@ function tripal_core_chado_schema_v1_2_quantification_relationship() {
  */
 function tripal_core_chado_schema_v1_2_quantificationprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'quantificationprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'quantification_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -11931,43 +11931,43 @@ function tripal_core_chado_schema_v1_2_stock() {
     'description' => 'Any stock can be globally identified by the combination of organism, uniquename and stock type. A stock is the physical entities, either living or preserved, held by collections. Stocks belong to a collection; they have IDs, type, organism, description and may have a genotype.',
     'fields' => array(
       'stock_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'organism_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'uniquename' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'description' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'is_obsolete' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
         'default' => 'als',
@@ -12049,36 +12049,36 @@ function tripal_core_chado_schema_v1_2_stock() {
  */
 function tripal_core_chado_schema_v1_2_stock_cvterm() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'stock_cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'stock_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'is_not' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
         'default' => 'als',
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -12148,30 +12148,30 @@ function tripal_core_chado_schema_v1_2_stock_cvterm() {
  */
 function tripal_core_chado_schema_v1_2_stock_cvtermprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'stock_cvtermprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'stock_cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -12229,25 +12229,25 @@ function tripal_core_chado_schema_v1_2_stock_cvtermprop() {
  */
 function tripal_core_chado_schema_v1_2_stock_dbxref() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'stock_dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'stock_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'is_current' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
         'default' => 'ru',
@@ -12306,30 +12306,30 @@ function tripal_core_chado_schema_v1_2_stock_dbxref() {
  */
 function tripal_core_chado_schema_v1_2_stock_dbxrefprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'stock_dbxrefprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'stock_dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -12387,20 +12387,20 @@ function tripal_core_chado_schema_v1_2_stock_dbxrefprop() {
  */
 function tripal_core_chado_schema_v1_2_stock_genotype() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'stock_genotype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'stock_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'genotype_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -12456,20 +12456,20 @@ function tripal_core_chado_schema_v1_2_stock_genotype() {
  */
 function tripal_core_chado_schema_v1_2_stock_pub() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'stock_pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'stock_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -12525,35 +12525,35 @@ function tripal_core_chado_schema_v1_2_stock_pub() {
  */
 function tripal_core_chado_schema_v1_2_stock_relationship() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'stock_relationship_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'subject_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'object_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -12619,25 +12619,25 @@ function tripal_core_chado_schema_v1_2_stock_relationship() {
  */
 function tripal_core_chado_schema_v1_2_stock_relationship_cvterm() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'stock_relationship_cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'stock_relationship_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'cvterm_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
@@ -12685,20 +12685,20 @@ function tripal_core_chado_schema_v1_2_stock_relationship_cvterm() {
  */
 function tripal_core_chado_schema_v1_2_stock_relationship_pub() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'stock_relationship_pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'stock_relationship_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -12754,31 +12754,31 @@ function tripal_core_chado_schema_v1_2_stock_relationship_pub() {
  */
 function tripal_core_chado_schema_v1_2_stockcollection() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'stockcollection_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'contact_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => FALSE,
       ),
       'uniquename' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
@@ -12843,20 +12843,20 @@ function tripal_core_chado_schema_v1_2_stockcollection() {
  */
 function tripal_core_chado_schema_v1_2_stockcollection_stock() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'stockcollection_stock_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'stockcollection_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'stock_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -12912,30 +12912,30 @@ function tripal_core_chado_schema_v1_2_stockcollection_stock() {
  */
 function tripal_core_chado_schema_v1_2_stockcollectionprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'stockcollectionprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'stockcollection_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -12993,30 +12993,30 @@ function tripal_core_chado_schema_v1_2_stockcollectionprop() {
  */
 function tripal_core_chado_schema_v1_2_stockprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'stockprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'stock_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -13076,20 +13076,20 @@ function tripal_core_chado_schema_v1_2_stockprop() {
  */
 function tripal_core_chado_schema_v1_2_stockprop_pub() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'stockprop_pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'stockprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -13145,35 +13145,35 @@ function tripal_core_chado_schema_v1_2_stockprop_pub() {
  */
 function tripal_core_chado_schema_v1_2_study() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'study_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'contact_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'pub_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'dbxref_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'description' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
@@ -13241,20 +13241,20 @@ function tripal_core_chado_schema_v1_2_study() {
  */
 function tripal_core_chado_schema_v1_2_study_assay() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'study_assay_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'study_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'assay_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -13310,20 +13310,20 @@ function tripal_core_chado_schema_v1_2_study_assay() {
  */
 function tripal_core_chado_schema_v1_2_studydesign() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'studydesign_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'study_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'description' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
@@ -13367,30 +13367,30 @@ function tripal_core_chado_schema_v1_2_studydesign() {
  */
 function tripal_core_chado_schema_v1_2_studydesignprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'studydesignprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'studydesign_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -13448,30 +13448,30 @@ function tripal_core_chado_schema_v1_2_studydesignprop() {
  */
 function tripal_core_chado_schema_v1_2_studyfactor() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'studyfactor_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'studydesign_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'description' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
@@ -13523,35 +13523,35 @@ function tripal_core_chado_schema_v1_2_studyfactor() {
  */
 function tripal_core_chado_schema_v1_2_studyfactorvalue() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'studyfactorvalue_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'studyfactor_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'assay_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'factorvalue' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -13602,30 +13602,30 @@ function tripal_core_chado_schema_v1_2_studyfactorvalue() {
  */
 function tripal_core_chado_schema_v1_2_studyprop() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'studyprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'study_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'value' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -13685,25 +13685,25 @@ function tripal_core_chado_schema_v1_2_studyprop() {
  */
 function tripal_core_chado_schema_v1_2_studyprop_feature() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'studyprop_feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'studyprop_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'feature_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
@@ -13765,26 +13765,26 @@ function tripal_core_chado_schema_v1_2_studyprop_feature() {
  */
 function tripal_core_chado_schema_v1_2_synonym() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'synonym_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'synonym_sgml' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
@@ -13836,49 +13836,49 @@ function tripal_core_chado_schema_v1_2_synonym() {
  */
 function tripal_core_chado_schema_v1_2_tableinfo() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'tableinfo_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '30',
         'not null' => TRUE,
       ),
       'primary_key_column' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'varchar',
         'length' => '30',
         'not null' => FALSE,
       ),
       'is_view' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
       ),
       'view_on_table_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'superclass_table_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'is_updateable' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 1,
       ),
       'modification_date' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'date',
         'not null' => TRUE,
         'default' => 'ow(',
@@ -13917,36 +13917,36 @@ function tripal_core_chado_schema_v1_2_tableinfo() {
  */
 function tripal_core_chado_schema_v1_2_treatment() {
   $description =  array(
-    'description' => 'TODO: please describe this table!',
+    'description' => '',
     'fields' => array(
       'treatment_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'serial',
         'not null' => TRUE,
       ),
       'rank' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
       ),
       'biomaterial_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'type_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'protocol_id' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'int',
         'not null' => FALSE,
       ),
       'name' => array(
-        'description' => 'TODO: please describe this field!',
+        'description' => '',
         'type' => 'text',
         'not null' => FALSE,
       ),

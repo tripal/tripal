@@ -55,7 +55,7 @@
  *     should specify the number of records to return and 'element' is a
  *     unique integer to differentiate between pagers when more than one
  *     appear on a page.  The 'element' should start with zero and increment by
- *     one for each pager.  This only works when type is a 'table'.
+ *     one for each pager.
  * @return
  *   Either an object (if only one record was selected from the base table)
  *   or an array of objects (if more than one record was selected from the base table).
