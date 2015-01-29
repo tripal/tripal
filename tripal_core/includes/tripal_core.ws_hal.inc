@@ -133,7 +133,7 @@ function tripal_core_chado_hal_api() {
       
             // recursively reformat the expanded objects to match HAL requirements.
             foreach ($var as $item) {    
-              $item = tripal_core_chado_ws_api_format_object($table_name, $item, $schema, $api_url, $query);
+              $item = tripal_core_chado_ws_api_object_format($table_name, $item, $schema, $api_url, $query);
               $result['_embedded'][$table_name][] = $item;
             }
           }
@@ -147,7 +147,7 @@ function tripal_core_chado_hal_api() {
             }
       
             // recursively reformat the expanded objects to match HAL requirements.
-            $item = tripal_core_chado_ws_api_format_object($table_name, $item, $schema, $api_url, $query);
+            $item = tripal_core_chado_ws_api_object_format($table_name, $item, $schema, $api_url, $query);
             $result = $item;
           }
       }
@@ -200,8 +200,19 @@ function tripal_core_chado_ws_api_expand_object($var, $query) {
       if(!chado_table_exists($table)) {
         throw new Exception("Table, '$table', is not a valid table and thus cannot be expanded.");
       }
+  
       // Expand the variable.
-//      $var = chado_expand_var($var, 'table', $table, $options);
+      $var = chado_expand_var($var, 'table', $table, $options);
+  
+      // if the table could not be expanded then the chado_expand_var
+      // function just returns an empty record but sets the table name
+      // in the object. For the JSON, we still want to create an _embedded
+      // record so we have to create a stdClass object and set the
+      // table name.
+      if (property_exists($var, $table) and !isset($var->$table)) {
+        $var->$table = new stdClass();
+        $var->$table->tablename = $table;
+      }
     }
   }
   if (array_key_exists('field', $query)) {
@@ -215,7 +226,7 @@ function tripal_core_chado_ws_api_expand_object($var, $query) {
     $expand_fkeys = explode(',', $query['fkey']);
     foreach($expand_fkeys as $fkey) {
       // TODO: check to make sure the fkey exists
-//      $var = chado_expand_var($var, 'foreign_key', $fkey);
+      $var = chado_expand_var($var, 'foreign_key', $fkey);
     }
   }
   
@@ -228,7 +239,7 @@ function tripal_core_chado_ws_api_expand_object($var, $query) {
  * @param $schema
  * @param $api_url
  */
-function tripal_core_chado_ws_api_format_object($table_name, $object, $schema, $api_url, $query) {
+function tripal_core_chado_ws_api_object_format($table_name, $object, $schema, $api_url, $query) {
 
   global $base_url;
   $pkey = $schema['primary key'][0];
@@ -243,7 +254,7 @@ function tripal_core_chado_ws_api_format_object($table_name, $object, $schema, $
     $object->_links['self'] = array('href' => "$api_url/$table_name");
     $object->_links['show_expansion'] = array('href' => "$api_url/$table_name?show_expansion=1");
   }
-  
+    
   // Add the links for the table.
   $object->_links["tables"] = array('href' => "$api_url");
   $object->_links["schema"] = array('href' => "$api_url/$table_name/schema");
@@ -286,8 +297,8 @@ function tripal_core_chado_ws_api_format_object($table_name, $object, $schema, $
   if (array_key_exists('expandable_tables', $object)) {
     $object->expandable_tables = array_values($object->expandable_tables);
     if (count($object->expandable_tables) > 0) {
-//      $object->_links["expand_table"][] = array('href' => "$api_url/$table_name/expand?table={table}[,{table}...]");
-//      $object->_links["expand_table"][] = array('href' => "$api_url/$table_name/$id/expand?table={table}[,{table}...]");
+      $object->_links["expand_table"][] = array('href' => "$api_url/$table_name/expand?table={table}[,{table}...]");
+      $object->_links["expand_table"][] = array('href' => "$api_url/$table_name/$id/expand?table={table}[,{table}...]");
     }
     else {
       unset($object->expandable_tables);
@@ -313,38 +324,51 @@ function tripal_core_chado_ws_api_format_object($table_name, $object, $schema, $
       unset($object->expandable_foreign_keys);
     }
   }
-  //print_r($object);
+  
   // iterate through the items in the object and see if they in turn are
   // objects.  If so, then recurse.
   foreach ($object as $key => $value) {
-
-    if (is_array($value)) {
-       foreach ($value as $subitem) {
-         if (property_exists($subitem, 'tablename')) {
-           
-           $table_name = $subitem->tablename;
-           $schema = chado_get_schema($table_name);
-           if ($schema) {
-             tripal_core_chado_ws_api_format_element($table_name, $key, $subitem, $schema, $api_url, $query);
-           }
-           else {
-             throw new Exception("Table, '$table_name', is not a valid table.");
-           }
-         } 
-       }
-    }
+    
     // If any values are objects then recurse and format them correctly.
     if (is_object($value)) {
-      if (property_exists($value, 'tablename')) {
-        $table_name = $value->tablename;
-        $schema = chado_get_schema($table_name);
-        if ($schema) {
-          tripal_core_chado_ws_api_format_element($table_name, $key, $value, $schema, $api_url, $query);
+
+      $table_name = $value->tablename;
+      $schema = chado_get_schema($table_name);
+      if ($schema) {
+        // Replace the object with the actual value if it exists.  If there is
+        // no key value then this is probably an expanded table so just unset
+        if (property_exists($value, $key)) {
+          $object->$key = $value->$key;
         }
         else {
-          throw new Exception("Table, '$table_name', is not a valid table.");
+          unset($object->$key);
+        }
+        // Recursively format the object.
+        $value = tripal_core_chado_ws_api_object_format($table_name, $value, $schema, $api_url, $query);
+        // Add the object as an "_embedded" object of the JSON.
+        if (property_exists($object,'_embedded') and 
+            array_key_exists($table_name, $object->_embedded)) {
+          // If the element is already an array then add to it, otherwise
+          // convert it into an array.
+          if (is_array($object->_embedded[$table_name])) {
+            $object->_embedded[$table_name][] = $value;
+          }
+          else {
+            $first = $object->_embedded[$table_name];
+            $object->_embedded[$table_name] = array();
+            $object->_embedded[$table_name] = $first;
+            $object->_embedded[$table_name][] = $value;
+          }
+        }
+        // This is the first time this embedded table has been seen
+        // there fore, add the value as a single element.
+        else {
+          $object->_embedded[$table_name] = $value;
         }
       }
+      else {
+        throw new Exception("Table, '$table_name', is not a valid table.");
+      } 
     }
   }
   
@@ -353,48 +377,4 @@ function tripal_core_chado_ws_api_format_object($table_name, $object, $schema, $
   }
   
   return $object;
-}
-
-/**
- * Transforms a single element from into HAL JSON format.
- * 
- * 
- * @param $object
- *   An object from the variable returned from chado_generate_var array
- *   
- * @throws Exception
- */
-function tripal_core_chado_ws_api_format_element($table_name, $field, $value, $schema, $api_url, $query) {
-    
-  // Replace the object with the actual value if it exists.  If there is
-  // no key value then this is probably an expanded table so just unset
-  if (property_exists($value, $field)) {
-    $object->$field = $value->$field;
-  }
-  else {
-    unset($object->$field);
-  }
-  // Recursively format the object.
-  $value = tripal_core_chado_ws_api_format_object($table_name, $value, $schema, $api_url, $query);
-  // Add the object as an "_embedded" object of the JSON.
-  if (property_exists($object,'_embedded') and 
-      array_key_exists($table_name, $object->_embedded)) {
-    // If the element is already an array then add to it, otherwise
-    // convert it into an array.
-    if (is_array($object->_embedded[$table_name])) {
-      $object->_embedded[$table_name][] = $value;
-    }
-    else {
-      $first = $object->_embedded[$table_name];
-      $object->_embedded[$table_name] = array();
-      $object->_embedded[$table_name] = $first;
-      $object->_embedded[$table_name][] = $value;
-    }
-  }
-  // This is the first time this embedded table has been seen
-  // there fore, add the value as a single element.
-  else {
-    $object->_embedded[$table_name] = $value;
-  }
-
 }
