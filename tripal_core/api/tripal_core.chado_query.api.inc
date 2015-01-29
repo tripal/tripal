@@ -1429,9 +1429,9 @@ function chado_select_record_check_value_type(&$op, &$value, $type) {
  * Example usage:
  * @code
  * $sql = "SELECT F.name, CVT.name as type_name, ORG.common_name
- *          FROM feature F
- *          LEFT JOIN cvterm CVT ON F.type_id = CVT.cvterm_id
- *          LEFT JOIN organism ORG ON F.organism_id = ORG.organism_id
+ *          FROM {feature} F
+ *          LEFT JOIN {cvterm} CVT ON F.type_id = CVT.cvterm_id
+ *          LEFT JOIN {organism} ORG ON F.organism_id = ORG.organism_id
  *          WHERE
  *            F.uniquename = :feature_uniquename";
  * $args = array( ':feature_uniquename' => $form_state['values']['uniquename'] );

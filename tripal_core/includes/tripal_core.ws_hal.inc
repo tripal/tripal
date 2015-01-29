@@ -52,8 +52,9 @@ function tripal_core_chado_hal_api() {
         $result = $schema;
         break;
       case 'add':
-        $message = "Action, '$action', is currently not supported.";
-        $result = array();
+      case 'edit':
+      case 'delete':
+        throw new Exception("Action, '$action', is currently not supported.");
         break;
       default: 
         // Specify the values for selecing records.
@@ -148,6 +149,12 @@ function tripal_core_chado_hal_api() {
   $response['status']  = $status;
   $response['message'] = $message;
   $response['version'] = $version;
+  $response['source'] = array(
+      'site_name' => variable_get('site_name', "Unspecified"),
+      'site_url' => $base_url,
+      'site_slogan' => variable_get('site_slogan', "Unspecified"),
+      'site_email' =>  variable_get('site_mail', "Unspecified"),
+  );
   $response['result']  = $result;
   print drupal_json_output($response);
 }
@@ -206,6 +213,7 @@ function tripal_core_chado_ws_api_expand_object($var, $query) {
       $var = chado_expand_var($var, 'foreign_key', $fkey);
     }
   }
+  
   return $var;
 }
 
@@ -252,7 +260,7 @@ function tripal_core_chado_ws_api_object_format($object, $schema, $api_url, $que
   
   // Only include links for expanding if the option to exclude them has not
   // been passed.
-  if (array_key_exists('no_expansion_details', $query)) {
+  if (!array_key_exists('show_expansion', $query)) {
      unset($object->expandable_fields);
      unset($object->expandable_foreign_keys);
      unset($object->expandable_tables);
