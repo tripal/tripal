@@ -20,121 +20,137 @@ function tripal_core_chado_hal_api() {
     $id = 0;
     $action = '';
     
-    // GET THE BASE TABLE TO QUERY
-    // The table name is always specifid as the 3rd argument in the 
-    // current Drupal path.
-    $table_name = arg(3);
-    if (!chado_table_exists($table_name)) {
-      throw new Exception("Table, '$table_name', is not a valid table.");
-    }
-    $schema = chado_get_schema($table_name);
-    $pkey = $schema['primary key'][0];
-    
-    // GET THE RECORD AND THE ACTION TO PERFORM
-    // If the fourth argument is numeric then the user is requesting a
-    // record from the table.  Otherwise the users is specifying an
-    // action to perform on the table.
-    if (is_numeric(arg(4))) {
-      $id = arg(4);
-      if (arg(5)) {
-        $action = arg(5);
+    // If we don't have a table name then return the list of all tables.
+    if (!arg(3)) {
+      $tables = chado_get_table_names(FALSE);
+      foreach ($tables as $table) {
+        $result['_links']['chado_tables'][] = array('href' => "$api_url/$table");
       }
+//       $tables = chado_get_custom_table_names(FALSE);
+//       foreach ($tables as $table) {
+//         $result['_links']['custom_tables'][] = array('href' => "$api_url/$table");
+//       }
+//       $tables = chado_get_mview_table_names();
+//       foreach ($tables as $table) {
+//         $result['_links']['mviews'][] = array('href' => "$api_url/$table");
+//       }
     }
     else {
-      $action = arg(4);
-    }
     
-    // Get any URL query arguments
-    $query = drupal_get_query_parameters();
-    
-    switch ($action) {
-      case 'schema':
-        $result = $schema;
-        break;
-      case 'add':
-      case 'edit':
-      case 'delete':
-        throw new Exception("Action, '$action', is currently not supported.");
-        break;
-      default: 
-        // Specify the values for selecing records.
-        $values = array();
-        if ($id) {
-          $values[$pkey] = $id;
+      // GET THE BASE TABLE TO QUERY
+      // The table name is always specifid as the 3rd argument in the 
+      // current Drupal path.
+      $table_name = arg(3);
+      if (!chado_table_exists($table_name)) {
+        throw new Exception("Table, '$table_name', is not a valid table.");
+      }
+      $schema = chado_get_schema($table_name);
+      $pkey = $schema['primary key'][0];
+      
+      // GET THE RECORD AND THE ACTION TO PERFORM
+      // If the fourth argument is numeric then the user is requesting a
+      // record from the table.  Otherwise the users is specifying an
+      // action to perform on the table.
+      if (is_numeric(arg(4))) {
+        $id = arg(4);
+        if (arg(5)) {
+          $action = arg(5);
         }
-
-        // Specify the options for retrieving data.
-        $options = array(
-          'return_array' => 1,
-          'pager' => array(
-            'limit' => $page_limit,
-            'element' => $pager_id
-          ),
-        );
-        
-        // Generate the chado variable.
-        $var = chado_generate_var($table_name, $values, $options);
+      }
+      else {
+        $action = arg(4);
+      }
+      
+      // Get any URL query arguments
+      $query = drupal_get_query_parameters();
+      
+      switch ($action) {
+        case 'schema':
+          $result = $schema;
+          break;
+        case 'add':
+        case 'edit':
+        case 'delete':
+          throw new Exception("Action, '$action', is currently not supported.");
+          break;
+        default: 
+          // Specify the values for selecing records.
+          $values = array();
+          if ($id) {
+            $values[$pkey] = $id;
+          }
   
-        // If we have more than one record returned then this is a collection and
-        // we should create the appropriate JSON for a collection.
-        if (count($var) > 1) {
+          // Specify the options for retrieving data.
+          $options = array(
+            'return_array' => 1,
+            'pager' => array(
+              'limit' => $page_limit,
+              'element' => $pager_id
+            ),
+          );
           
-          // Get the total number of records
-          $total = chado_pager_get_count($pager_id);
-          $curr_page = array_key_exists('page', $query) ? $query['page'] : 0;
-          
-          $first_page = '0';
-          $last_page = ceil($total / $page_limit) - 1;
-          $result['_links']['first'] = array('href' => "$api_url/$table_name");
-          if ($curr_page > 0) {
-            $prev_page = $curr_page - 1;
-            if ($prev_page != $first_page) {
-              $result['_links']['previous'] = array('href' => "$api_url/$table_name?page=$prev_page");
+          // Generate the chado variable.
+          $var = chado_generate_var($table_name, $values, $options);
+    
+          // If we have more than one record returned then this is a collection and
+          // we should create the appropriate JSON for a collection.
+          if (count($var) > 1) {
+            
+            // Get the total number of records
+            $total = chado_pager_get_count($pager_id);
+            $curr_page = array_key_exists('page', $query) ? $query['page'] : 0;
+            
+            $first_page = '0';
+            $last_page = ceil($total / $page_limit) - 1;
+            $result['_links']['first'] = array('href' => "$api_url/$table_name");
+            if ($curr_page > 0) {
+              $prev_page = $curr_page - 1;
+              if ($prev_page != $first_page) {
+                $result['_links']['previous'] = array('href' => "$api_url/$table_name?page=$prev_page");
+              }
+              else {
+                $result['_links']['previous'] = $result['_links']['first'];
+              }
             }
-            else {
-              $result['_links']['previous'] = $result['_links']['first'];
+            if ($curr_page < $last_page) { 
+              $next_page = $curr_page + 1;
+              $result['_links']['next'] = array('href' => "$api_url/$table_name?page=$next_page");
+            }
+            if ($last_page > $first_page) {
+              $result['_links']['last'] = array('href' => "$api_url/$table_name?page=$last_page");
+            }
+  
+            // Add the number of elements for this collection
+            $result['count'] = count($var);
+            $result['total'] = (integer) $total;
+            $result['current_page'] = (integer) $curr_page;
+            $result['items_per_page'] = $page_limit;
+            
+            // Do any expansion requested.
+            if ($action == 'expand') {
+              $var = tripal_core_chado_ws_api_expand_object($var, $query);
+            }
+      
+            // recursively reformat the expanded objects to match HAL requirements.
+            foreach ($var as $item) {    
+              $item = tripal_core_chado_ws_api_format_object($table_name, $item, $schema, $api_url, $query);
+              $result['_embedded'][$table_name][] = $item;
             }
           }
-          if ($curr_page < $last_page) { 
-            $next_page = $curr_page + 1;
-            $result['_links']['next'] = array('href' => "$api_url/$table_name?page=$next_page");
+          // If we only have one record then add it as a single record to the JSON.
+          else {
+            $item = $var[0];
+            
+            // Do any expansion requested.
+            if ($action == 'expand') {
+              $item = tripal_core_chado_ws_api_expand_object($item, $query);
+            }
+      
+            // recursively reformat the expanded objects to match HAL requirements.
+            $item = tripal_core_chado_ws_api_format_object($table_name, $item, $schema, $api_url, $query);
+            $result = $item;
           }
-          if ($last_page > $first_page) {
-            $result['_links']['last'] = array('href' => "$api_url/$table_name?page=$last_page");
-          }
-
-          // Add the number of elements for this collection
-          $result['count'] = count($var);
-          $result['total'] = (integer) $total;
-          $result['current_page'] = (integer) $curr_page;
-          $result['items_per_page'] = $page_limit;
-          
-          // Do any expansion requested.
-          if ($action == 'expand') {
-            $var = tripal_core_chado_ws_api_expand_object($var, $query);
-          }
-    
-          // recursively reformat the expanded objects to match HAL requirements.
-          foreach ($var as $item) {
-            $table_name = $item->tablename;
-    
-            $item = tripal_core_chado_ws_api_object_format($item, $schema, $api_url, $query);
-            $result['_embedded'][$table_name][] = $item;
-          }
-        }
-        // If we only have one record then add it as a single record to the JSON.
-        else {
-          $item = $var[0];
-          
-          // Do any expansion requested.
-          if ($action == 'expand') {
-            $item = tripal_core_chado_ws_api_expand_object($item, $query);
-          }
-    
-          // recursively reformat the expanded objects to match HAL requirements.
-          $item = tripal_core_chado_ws_api_object_format($item, $schema, $api_url, $query);
-          $result = $item;
-        }
+      }
     }
   }
   catch (Exception $e) {
@@ -143,7 +159,7 @@ function tripal_core_chado_hal_api() {
     $status = 'error';
     $result = array();
   }
-  
+
   // The responses follow the same format as the AGAVE API with a
   // status, message, version and all data in the "result" object.
   $response['status']  = $status;
@@ -177,40 +193,29 @@ function tripal_core_chado_ws_api_expand_object($var, $query) {
   );
 
   // If the user has requested to expand any fields then do that
-  if ($query['table']) {
+  if (array_key_exists('table', $query)) {
     $expand_tables = explode(',', $query['table']);
     foreach($expand_tables as $table) {
       // Does the table exist?
       if(!chado_table_exists($table)) {
         throw new Exception("Table, '$table', is not a valid table and thus cannot be expanded.");
       }
-  
       // Expand the variable.
-      $var = chado_expand_var($var, 'table', $table, $options);
-  
-      // if the table could not be expanded then the chado_expand_var
-      // function just returns an empty record but sets the table name
-      // in the object. For the JSON, we still want to create an _embedded
-      // record so we have to create a stdClass object and set the
-      // table name.
-      if(!isset($var[0]->$table)) {
-        $var[0]->$table = new stdClass();
-        $var[0]->$table->tablename = $table;
-      }
+//      $var = chado_expand_var($var, 'table', $table, $options);
     }
   }
-  if ($query['field']) {
+  if (array_key_exists('field', $query)) {
     $expand_fields = explode(',', $query['field']);
     foreach($expand_fields as $field) {
       // TODO: check to make sure the field exists
       $var = chado_expand_var($var, 'field', $field);
     }
   }
-  if ($query['fkey']) {
+  if (array_key_exists('fkey', $query)) {
     $expand_fkeys = explode(',', $query['fkey']);
     foreach($expand_fkeys as $fkey) {
       // TODO: check to make sure the fkey exists
-      $var = chado_expand_var($var, 'foreign_key', $fkey);
+//      $var = chado_expand_var($var, 'foreign_key', $fkey);
     }
   }
   
@@ -223,17 +228,24 @@ function tripal_core_chado_ws_api_expand_object($var, $query) {
  * @param $schema
  * @param $api_url
  */
-function tripal_core_chado_ws_api_object_format($object, $schema, $api_url, $query) {
+function tripal_core_chado_ws_api_format_object($table_name, $object, $schema, $api_url, $query) {
 
   global $base_url;
-  $table_name = $object->tablename;
   $pkey = $schema['primary key'][0];
   $id = $object->$pkey;
 
   // Add the self link first
-  $object->_links = array('self' => array('href' => "$api_url/$table_name/$id"));
+  if ($id) {
+    $object->_links['self'] = array('href' => "$api_url/$table_name/$id");
+    $object->_links['show_expansion'] = array('href' => "$api_url/$table_name/$id?show_expansion=1");
+  }
+  else {
+    $object->_links['self'] = array('href' => "$api_url/$table_name");
+    $object->_links['show_expansion'] = array('href' => "$api_url/$table_name?show_expansion=1");
+  }
   
   // Add the links for the table.
+  $object->_links["tables"] = array('href' => "$api_url");
   $object->_links["schema"] = array('href' => "$api_url/$table_name/schema");
   
   // Add links for editing, insert, delete but only if user has permission.
@@ -274,8 +286,8 @@ function tripal_core_chado_ws_api_object_format($object, $schema, $api_url, $que
   if (array_key_exists('expandable_tables', $object)) {
     $object->expandable_tables = array_values($object->expandable_tables);
     if (count($object->expandable_tables) > 0) {
-      $object->_links["expand_table"][] = array('href' => "$api_url/$table_name/expand?table={table}[,{table}...]");
-      $object->_links["expand_table"][] = array('href' => "$api_url/$table_name/$id/expand?table={table}[,{table}...]");
+//      $object->_links["expand_table"][] = array('href' => "$api_url/$table_name/expand?table={table}[,{table}...]");
+//      $object->_links["expand_table"][] = array('href' => "$api_url/$table_name/$id/expand?table={table}[,{table}...]");
     }
     else {
       unset($object->expandable_tables);
@@ -301,51 +313,38 @@ function tripal_core_chado_ws_api_object_format($object, $schema, $api_url, $que
       unset($object->expandable_foreign_keys);
     }
   }
-  
+  //print_r($object);
   // iterate through the items in the object and see if they in turn are
   // objects.  If so, then recurse.
   foreach ($object as $key => $value) {
-    
+
+    if (is_array($value)) {
+       foreach ($value as $subitem) {
+         if (property_exists($subitem, 'tablename')) {
+           
+           $table_name = $subitem->tablename;
+           $schema = chado_get_schema($table_name);
+           if ($schema) {
+             tripal_core_chado_ws_api_format_element($table_name, $key, $subitem, $schema, $api_url, $query);
+           }
+           else {
+             throw new Exception("Table, '$table_name', is not a valid table.");
+           }
+         } 
+       }
+    }
     // If any values are objects then recurse and format them correctly.
     if (is_object($value)) {
-
-      $table_name = $value->tablename;
-      $schema = chado_get_schema($table_name);
-      if ($schema) {
-        // Replace the object with the actual value if it exists.  If there is
-        // no key value then this is probably an expanded table so just unset
-        if (property_exists($value, $key)) {
-          $object->$key = $value->$key;
+      if (property_exists($value, 'tablename')) {
+        $table_name = $value->tablename;
+        $schema = chado_get_schema($table_name);
+        if ($schema) {
+          tripal_core_chado_ws_api_format_element($table_name, $key, $value, $schema, $api_url, $query);
         }
         else {
-          unset($object->$key);
-        }
-        // Recursively format the object.
-        $value = tripal_core_chado_ws_api_object_format($value, $schema, $api_url, $query);
-        // Add the object as an "_embedded" object of the JSON.
-        if (property_exists($object,'_embedded') and 
-            array_key_exists($table_name, $object->_embedded)) {
-          // If the element is already an array then add to it, otherwise
-          // convert it into an array.
-          if (is_array($object->_embedded[$table_name])) {
-            $object->_embedded[$table_name][] = $value;
-          }
-          else {
-            $first = $object->_embedded[$table_name];
-            $object->_embedded[$table_name] = array();
-            $object->_embedded[$table_name] = $first;
-            $object->_embedded[$table_name][] = $value;
-          }
-        }
-        // This is the first time this embedded table has been seen
-        // there fore, add the value as a single element.
-        else {
-          $object->_embedded[$table_name] = $value;
+          throw new Exception("Table, '$table_name', is not a valid table.");
         }
       }
-      else {
-        throw new Exception("Table, '$table_name', is not a valid table.");
-      } 
     }
   }
   
@@ -354,4 +353,48 @@ function tripal_core_chado_ws_api_object_format($object, $schema, $api_url, $que
   }
   
   return $object;
+}
+
+/**
+ * Transforms a single element from into HAL JSON format.
+ * 
+ * 
+ * @param $object
+ *   An object from the variable returned from chado_generate_var array
+ *   
+ * @throws Exception
+ */
+function tripal_core_chado_ws_api_format_element($table_name, $field, $value, $schema, $api_url, $query) {
+    
+  // Replace the object with the actual value if it exists.  If there is
+  // no key value then this is probably an expanded table so just unset
+  if (property_exists($value, $field)) {
+    $object->$field = $value->$field;
+  }
+  else {
+    unset($object->$field);
+  }
+  // Recursively format the object.
+  $value = tripal_core_chado_ws_api_format_object($table_name, $value, $schema, $api_url, $query);
+  // Add the object as an "_embedded" object of the JSON.
+  if (property_exists($object,'_embedded') and 
+      array_key_exists($table_name, $object->_embedded)) {
+    // If the element is already an array then add to it, otherwise
+    // convert it into an array.
+    if (is_array($object->_embedded[$table_name])) {
+      $object->_embedded[$table_name][] = $value;
+    }
+    else {
+      $first = $object->_embedded[$table_name];
+      $object->_embedded[$table_name] = array();
+      $object->_embedded[$table_name] = $first;
+      $object->_embedded[$table_name][] = $value;
+    }
+  }
+  // This is the first time this embedded table has been seen
+  // there fore, add the value as a single element.
+  else {
+    $object->_embedded[$table_name] = $value;
+  }
+
 }

@@ -276,6 +276,30 @@ function chado_get_custom_table_id($table_name) {
 
   return FALSE;
 }
+
+/**
+ * Retrieves the list of custom tables in this site.
+ *
+ * @returns
+ *   An associative array where the key and value pairs are the table names.
+ *
+ * @ingroup tripal_custom_tables_api
+ */
+function chado_get_custom_table_names($include_mview = TRUE) {
+
+  $sql = "SELECT table_name FROM {tripal_custom_tables}";
+  if (!$include_mview) {
+    $sql .= " WHERE mview_id IS NULL";
+  }
+  $resource = db_query($sql);
+
+  foreach ($resource as $r) {
+    $tables[$r->table_name] = $r->table_name;
+  }
+
+  asort($tables);
+  return $tables;
+}
 /**
  * Deletes the specified custom table
  *

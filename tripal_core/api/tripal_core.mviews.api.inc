@@ -302,6 +302,27 @@ function tripal_get_mview_id($view_name) {
 }
 
 /**
+ * Retrieves the list of materialized views in this site.
+ *
+ * @returns
+ *   An associative array where the key and value pairs are the table names.
+ *
+ * @ingroup tripal_custom_tables_api
+ */
+function chado_get_mview_table_names() {
+
+  $sql = "SELECT name FROM {tripal_mviews}";
+  $resource = db_query($sql);
+
+  foreach ($resource as $r) {
+    $tables[$r->name] = $r->name;
+  }
+
+  asort($tables);
+  return $tables;
+}
+
+/**
  * Populates the specified Materialized View
  *
  * @param $mview_id
