@@ -43,7 +43,7 @@ function tripal_feature_delete_form() {
 
   $form['organism_id'] = array(
    '#title'       => t('Organism'),
-   '#type'        => t('select'),
+   '#type'        => 'select',
    '#description' => t("Choose the organism for which features will be deleted."),
    '#options'     => $organisms,
   );
@@ -162,13 +162,11 @@ function tripal_feature_delete_features($organism_id, $analysis_id, $seq_type,
   
   // begin the transaction
   $transaction = db_transaction();
-  print "\nNOTE: Loading of this GFF file is performed using a database transaction. \n" .
+  print "\nNOTE: Deleting features is performed using a database transaction. \n" .
       "If the load fails or is terminated prematurely then the entire set of \n" .
-      "insertions/updates is rolled back and will not be found in the database\n\n";
-
+      "deletions is rolled back and will not be found in the database\n\n";
   try {
-    
-    
+
     // if feature names have been provided then handle that separately
     if ($feature_names) {
       $names = preg_split('/\s+/', $feature_names);

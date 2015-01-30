@@ -11,6 +11,7 @@ require_once 'api/tripal_analysis.api.inc';
 require_once 'api/tripal_analysis.schema.api.inc';
 require_once 'api/tripal_analysis.DEPRECATED.inc';
 
+require_once 'includes/tripal_analysis.delete.inc';
 require_once 'includes/tripal_analysis_privacy.inc';
 require_once 'includes/tripal_analysis.admin.inc';
 require_once 'includes/tripal_analysis.chado_node.inc';
@@ -78,9 +79,19 @@ function tripal_analysis_menu() {
     'page arguments' => array('chado_node_sync_form', 'tripal_analysis', 'chado_analysis'),
     'access arguments' => array('administer tripal analysis'),
     'type' => MENU_LOCAL_TASK,
-    'weight' => 2
+    'weight' => 1
   );
-
+  $items['admin/tripal/chado/tripal_analysis/delete'] = array(
+      'title' => ' Delete',
+      'description' => 'Delete multiple analyses from Chado',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('tripal_analysis_delete_form'),
+      'access arguments' => array('administer tripal feature'),
+      'type' => MENU_LOCAL_TASK,
+      'file path' => drupal_get_path('module', 'tripal_analysis'),
+      'file' =>  'includes/tripal_analysis.delete.inc',
+      'weight' => 2
+  );
   $items['admin/tripal/chado/tripal_analysis/chado_analysis_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for analysis nodes.',
