@@ -78,7 +78,7 @@ function tripal_stock_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 0
   );
-  
+
   $items['admin/tripal/chado/tripal_stock/chado_stock_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for stock nodes.',
@@ -295,7 +295,7 @@ function tripal_stock_theme($existing, $type, $theme, $path) {
       'path' => "$path/theme/templates",
     ),
     'tripal_stock_synonyms' => array(
-      'arguments' => array('node' => NULL),
+      'variables' => array('node' => NULL),
       'template' => 'tripal_stock_synonyms',
       'path' => "$path/theme/templates",
     ),
@@ -436,7 +436,7 @@ function tripal_stock_form_alter(&$form, &$form_state, $form_id) {
   // turn of preview button for insert/updates
   if ($form_id == "chado_stock_node_form") {
     $form['actions']['preview']['#access'] = FALSE;
-    
+
     //remove the body field
     unset($form['body']);
   }
