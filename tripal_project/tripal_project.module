@@ -211,8 +211,8 @@ function tripal_project_theme($existing, $type, $theme, $path) {
       'path' => "$path/theme/templates",
     ),
     'tripal_project_help' => array(
-      'variables' => 'tripal_project_help',
       'variables' =>  array(NULL),
+      'template' => 'tripal_project_help',
       'path' => "$path/theme/templates",
     ),
   );
