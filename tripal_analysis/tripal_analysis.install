@@ -124,7 +124,10 @@ function tripal_analysis_add_cvs() {
  */
 function tripal_analysis_add_cvterms() {
 
-  tripal_insert_cv('tripal_analysis', 'Terms used for managing analyses in Tripal');
+  tripal_insert_cv(
+    'tripal_analysis', 
+    'Terms used for managing analyses in Tripal'
+  );
 
   // add analysis_date.  This is no longer used (as far as we can tell) but we don't
   // get rid of it in case it is used, so just keep it in the Tripal CV

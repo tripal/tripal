@@ -123,7 +123,7 @@ class tripal_views_handler_area_action_links extends views_handler_area {
    */
   function options_submit(&$form, &$form_state) {
     parent::options_submit($form, $form_state);
-    ddl($form_state, 'form state in submit');
+    //ddl($form_state, 'form state in submit');
     $this->options['link-1']['label-1'] = $form_state['values']['options']['link-1']['label-1'];
     $this->options['link-1']['path-1'] = $form_state['values']['options']['link-1']['path-1'];
 

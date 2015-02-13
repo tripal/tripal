@@ -240,7 +240,7 @@ function tripal_featuremap_theme($existing, $type, $theme, $path) {
 
     // templates for the chado_feature nodes:
     'tripal_feature_featurepos' => array(
-      'arguments' => array('node' => NULL),
+      'variables' => array('node' => NULL),
       'template' => 'tripal_feature_featurepos',
       'path' => "$path/theme/templates",
     ),

@@ -279,8 +279,8 @@ function tripal_pub_theme($existing, $type, $theme, $path) {
 
     // instructions page for the pub module
     'tripal_pub_help' => array(
-      'template' => 'tripal_pub_help',
       'variables' =>  array(NULL),
+      'template' => 'tripal_pub_help',
       'path' => "$path/theme/templates",
     ),
 

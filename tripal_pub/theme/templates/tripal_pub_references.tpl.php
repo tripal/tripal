@@ -1,7 +1,6 @@
 <?php
 $pub = $variables['node']->pub;
 
-
 // expand the pub object to include the records from the pub_dbxref table
 $options = array('return_array' => 1);
 $pub = chado_expand_var($pub, 'table', 'pub_dbxref', $options);

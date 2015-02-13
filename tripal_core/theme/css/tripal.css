@@ -136,6 +136,8 @@
    margin-bottom: 10px;
  }
 
+
+
 /******************************************************************************
  * The teaser appears anywhere that a small snippet of the content is required.
  * When any node in Drupal is published to the home page a teaser is used.
@@ -229,4 +231,17 @@ div.messages.tripal-site-admin-only{
   background-color: #cce3ff;
   /* border: 1px solid #7DA1D4; */
   color: black;
+}
+
+/******************************************************************************
+ * Misc CSS classes
+ *****************************************************************************/
+.tripal-dl {
+  width: 100%;
+  overflow: hidden;
+}
+.tripal-dl dt {
+  float: left;
+}
+.tripal-dl dd {
 }

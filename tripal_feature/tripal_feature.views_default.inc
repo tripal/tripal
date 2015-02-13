@@ -13,8 +13,8 @@ function tripal_feature_views_default_views() {
   $views = array();
 
   // User View ("Search Biological Content")
-  // Remember, if you change the name/path of this view,
-  // you also want to change it's description in tripal_feature_search_biological_data_views()
+  // Remember, if you change the name/path of this view, you also want to 
+  // change it's description in tripal_feature_search_biological_data_views()
   $view = tripal_feature_defaultvalue_user_features();
   $view = tripal_make_view_compatible_with_external($view);
   $views[$view->name] = $view;
