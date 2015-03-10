@@ -95,7 +95,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
         'name' => $field_name,
         'title' => ucwords(str_replace('_', ' ', $field_name)),
         'type' => $field_schema['type'],
-        'description' => (isset($field_schema['description'])) ? $field_schema['description'] : ucwords(str_replace('_', ' ', $field_name)),
+        'description' => (!empty($field_schema['description'])) ? $field_schema['description'] : ucwords(str_replace('_', ' ', $field_name)),
         'handlers' => array(),
         'joins' => array()
       );
