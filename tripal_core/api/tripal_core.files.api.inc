@@ -60,6 +60,8 @@ function tripal_create_files_dir($module_name, $path = FALSE) {
 }
 
 /**
+ * Retreives the Drupal relative directory for a Tripal module.
+ * 
  * Each Tripal module has a unique data directory which was created using the
  * tripal_create_files_dir function during installation.  This function
  * retrieves the directory path.
@@ -81,4 +83,28 @@ function tripal_get_files_dir($module_name = FALSE) {
   }
 
   return $data_dir;
+}
+
+/**
+ * Retreives the Drupal stream (e.g. public://...) for a Tripal module.
+ * 
+ * Each Tripal module has a unique data directory which was created using the
+ * tripal_create_files_dir function during installation.  This function
+ * retrieves the directory path.
+ *
+ * @param $module_name
+ *   (Optional) The name of the module.
+ *
+ * @returns
+ *   The path within the Drupal installation where the data directory resides
+ *
+ * @ingroup tripal_files_api
+ */
+function tripal_get_files_stream($module_name = FALSE) {
+  $stream =  'public://tripal';
+  if ($module_name) {
+    $stream .= "/$module_name";
+  }
+  
+  return $stream;
 }
