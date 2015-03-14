@@ -182,6 +182,10 @@ function tripal_get_organism_select_options($syncd_only = TRUE) {
  */
 function tripal_get_organism_image_url($organism) {
   $url = '';
+  
+  if (!is_object($organism)) {
+    return NULL;
+  }
 
   // Get the organism's node
   $nid = chado_get_nid_from_id('organism', $organism->organism_id);

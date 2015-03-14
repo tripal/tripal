@@ -84,23 +84,27 @@ function tripal_core_get_schemas() {
   $schema = array();
 
   // get all the various schema parts and join them together
-  $temp = tripal_core_jobs_schema();
+  $temp = tripal_core_get_jobs_schema();
   foreach ($temp as $table => $arr) {
     $schema[$table] = $arr;
   }
-  $temp = tripal_core_mviews_schema();
+  $temp = tripal_core_get_mviews_schema();
   foreach ($temp as $table => $arr) {
     $schema[$table] = $arr;
   }
-  $temp = tripal_core_custom_tables_schema();
+  $temp = tripal_core_get_custom_tables_schema();
   foreach ($temp as $table => $arr) {
     $schema[$table] = $arr;
   }
-  $temp = tripal_core_tripal_token_schema();
+  $temp = tripal_core_get_tripal_token_schema();
   foreach ($temp as $table => $arr) {
     $schema[$table] = $arr;
   }
-  $temp = tripal_core_tripal_toc_schema();
+  $temp = tripal_core_get_tripal_toc_schema();
+  foreach ($temp as $table => $arr) {
+    $schema[$table] = $arr;
+  }
+  $temp = tripal_core_get_tripal_vars_schema();
   foreach ($temp as $table => $arr) {
     $schema[$table] = $arr;
   }
@@ -114,7 +118,7 @@ function tripal_core_get_schemas() {
  *
  * @ingroup tripal_core
  */
-function tripal_core_mviews_schema() {
+function tripal_core_get_mviews_schema() {
   $schema = array();
 
   $schema['tripal_mviews'] = array(
@@ -201,7 +205,7 @@ function tripal_core_mviews_schema() {
  *
  * @ingroup tripal_core
  */
-function tripal_core_jobs_schema() {
+function tripal_core_get_jobs_schema() {
   $schema = array();
   $schema['tripal_jobs'] = array(
     'fields' => array(
@@ -312,7 +316,7 @@ function tripal_core_jobs_schema() {
  *
  * @ingroup tripal_core
  */
-function tripal_core_custom_tables_schema() {
+function tripal_core_get_custom_tables_schema() {
   $schema = array();
   $schema['tripal_custom_tables'] = array(
     'fields' => array(
@@ -352,7 +356,7 @@ function tripal_core_custom_tables_schema() {
   return $schema;
 }
 
-function tripal_core_tripal_token_schema() {
+function tripal_core_get_tripal_token_schema() {
   $schema = array();
   $schema['tripal_token_formats'] = array(
     'fields' => array(
@@ -393,7 +397,7 @@ function tripal_core_tripal_token_schema() {
  * 
  * 
  */
-function tripal_core_tripal_toc_schema() {
+function tripal_core_get_tripal_toc_schema() {
   $schema = array();
   $schema['tripal_toc'] = array(
     'fields' => array(
@@ -442,6 +446,105 @@ function tripal_core_tripal_toc_schema() {
     'primary key' => array('toc_item_id'),
   );
 
+  return $schema;
+}
+
+/**
+ * 
+ */
+function tripal_core_get_tripal_vars_schema() {
+  $schema = array();
+  $schema['tripal_variables'] = array(
+    'description' => 'This table houses a list of unique variable names that ' .
+      'can be used in the tripal_node_variables table.',
+    'fields' => array(
+      'variable_id' => array (
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'description' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array (
+        0 => 'variable_id',
+    ),
+    'unique keys' => array (
+      'tripal_variables_c1' => array (
+        0 => 'name',
+      ),
+    ),
+    'indexes' => array (
+      'tripal_variable_names_idx1' => array (
+        0 => 'variable_id',
+      ),
+    ),
+  );
+  
+  $schema['tripal_node_variables'] = array(
+    'description' => 'This table is used for storing any type of variable such as ' .
+      'a property or setting that should be associated with a Tripal managed Drupal node.  This table is '.
+      'meant to store non-biological information only. All biological data should be housed ' .
+      'in the Chado tables. Be aware that any data stored here will not be made visible ' .
+      'through services such as Tripal Web Services and therefore can be a good place to ' .
+      'hide application specific settings.',
+    'fields' => array (
+      'node_variable_id' => array (
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'nid' => array (
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'variable_id' => array (
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'value' => array (
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
+      'rank' => array (
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array (
+      0 => 'node_variable_id',
+    ),
+    'unique keys' => array (
+      'tripal_node_variables_c1' => array (
+        0 => 'nid',
+        1 => 'variable_id',
+        2 => 'rank',
+      ),
+    ),
+    'indexes' => array (
+      'tripal_node_variables_idx1' => array (
+        0 => 'node_variable_id',
+      ),
+      'tripal_node_variables_idx2' => array (
+        0 => 'variable_id',
+      ),
+    ),
+    'foreign keys' => array (
+      'tripal_terms' => array (
+        'table' => 'tripal_variables',
+        'columns' => array (
+          'variable_id' => 'variable_id',
+        ),
+      ),
+    ),
+  );
+  
   return $schema;
 }
 
@@ -545,5 +648,21 @@ function tripal_core_update_7203() {
     throw new DrupalUpdateException('Could not add tripal_toc table: '. $error);
     
   }
-  
+}
+
+/**
+ * Adds the tripal_variable_terms and a tripal_node_variables tables
+ */
+function tripal_core_update_7204() {
+  try {
+    $schema = drupal_get_schema_unprocessed('tripal_core', 'tripal_variables');
+    db_create_table('tripal_variables', $schema);
+    $schema = drupal_get_schema_unprocessed('tripal_core', 'tripal_node_variables');
+    db_create_table('tripal_node_variables', $schema);
+  }
+  catch (Exception $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not add new tables table: '. $error);
+
+  }
 }

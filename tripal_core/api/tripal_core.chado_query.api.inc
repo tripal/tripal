@@ -929,6 +929,8 @@ function chado_delete_record($table, $match, $options = NULL) {
  *     unique integer to differentiate between pagers when more than one
  *     appear on a page.  The 'element' should start with zero and increment by
  *     one for each pager.
+ *  -limit:  Specifies the number of records to return.
+ *  -offset:  Indicates the number of records to skip before returning records.
  *
  * @return
  *  An array of results, FALSE if the query was not executed
@@ -1339,13 +1341,21 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
     $sql = drupal_substr($sql, 0, -4);  // get rid of the trailing 'AND '
   } // end if (empty($where)){ } else {
 
-  // Finally add any ordering of the results to the SQL statement.
+  // Add any ordering of the results to the SQL statement.
   if (count($options['order_by']) > 0) {
     $sql .= " ORDER BY ";
     foreach ($options['order_by'] as $field => $dir) {
       $sql .= "$field $dir, ";
     }
     $sql = drupal_substr($sql, 0, -2);  // get rid of the trailing ', '
+  }
+  
+  // Limit the records returned
+  if (array_key_exists('limit', $options) and is_numeric($options['limit'])) {
+    $sql .= " LIMIT " . $options['limit'];
+    if (array_key_exists('offset', $options) and is_numeric($options['offset'])) {
+      $sql .= " OFFSET " . $options['offset'];
+    }
   }
 
   // if the caller has requested the SQL rather than the results then do so.

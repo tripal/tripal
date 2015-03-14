@@ -455,8 +455,32 @@ function chado_node_sync_form_submit($form, $form_state) {
 }
 
 /**
- * Actual Sync Function. Works on a group of records
- *
+ * Generic function for syncing records in Chado with Drupal nodes.
+ * 
+ * @param $base_table
+ *   The name of the Chado table containing the record that should be synced
+ * @param $max_sync
+ *   Optional: A numeric value to indicate the maximum number of records to sync. 
+ * @param $organism_id
+ *   Optional: Limit the list of records to be synced to only those that
+ *   are associated with this organism_id. If the record is not assocaited
+ *   with an organism then this field is not needed.
+ * @param $types
+ *   Optional: Limit the list of records to be synced to only those that
+ *   match the types listed in this array. 
+ * @param $ids
+ *   Optional:  Limit the list of records to bye synced to only those whose
+ *   primary key value matches the ID provided in this array.
+ * @param $linking_table
+ *   Optional: Tripal maintains "linking" tables in the Drupal schema
+ *   to link Drupal nodes with Chado records.  By default these tables
+ *   are named as 'chado_' . $base_table.  But if for some reason the
+ *   linking table is not named in this way then it can be provided by this
+ *   argument.
+ * @param $job_id
+ *   Optional. Used by the Trpial Jobs system when running this function
+ *   as a job. It is not needed othewise.
+ * 
  * @ingroup tripal_chado_node_api
  */
 function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = FALSE,
