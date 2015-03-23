@@ -14,6 +14,11 @@
  */
 function tripal_pub_search_page() {
 
+  // This line may not be required, but on some sites the $_SESSION
+  // variable wasn't being set for anonymous users. This line solves that
+  // problem 
+  drupal_session_start();
+
   $limit = 25;
 
   // generate the search form
@@ -142,7 +147,7 @@ function tripal_pub_search_form($form, &$form_state) {
 
   // if the session has variables then use those.  This should only happen when
   // the 'Test Criteria' button is clicked.
-  if (defined($_SESSION) and array_key_exists('tripal_pub_search_form', $_SESSION)) {
+  if (array_key_exists('tripal_pub_search_form', $_SESSION)) {
     $num_criteria = $_SESSION['tripal_pub_search_form']['num_criteria'] ? $_SESSION['tripal_pub_search_form']['num_criteria'] : $num_criteria;
     $from_year    = $_SESSION['tripal_pub_search_form']['from_year']    ? $_SESSION['tripal_pub_search_form']['from_year']    : '';
     $to_year      = $_SESSION['tripal_pub_search_form']['to_year']      ? $_SESSION['tripal_pub_search_form']['to_year']      : '';
