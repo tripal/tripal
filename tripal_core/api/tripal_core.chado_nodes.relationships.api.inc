@@ -734,9 +734,7 @@ function chado_add_node_form_relationships_remove_button_submit(&$form, &$form_s
 
   // if the chado_relationships array is not set then this is the first time modifying the
   // relationship table. this means we need to include all the relationships from the db
-  if (!isset($form_state['chado_relationships'])) {
-    chado_add_node_form_relationships_create_relationship_formstate_array($form, $form_state);
-  }
+  chado_add_node_form_relationships_create_relationship_formstate_array($form, $form_state);
 
   // remove the specified relationship from the form relationship table
   if(preg_match('/rel_remove-([^-]+-[^-]+)/',$form_state['triggering_element']['#name'],$match)) {
