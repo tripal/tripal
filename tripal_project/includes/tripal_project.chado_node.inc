@@ -179,8 +179,7 @@ function chado_project_form(&$node, $form_state) {
     'cv_id' => $cv_id,                              // the cv.cv_id of the cv governing example_relationship.type_id
     'base_name_field' => 'name',                    // the base table field you want to be used as the name
     'subject_field_name' => 'subject_project_id',
-    'object_field_name' => 'object_project_id',
-    'select_options' => $select_options
+    'object_field_name' => 'object_project_id'
   );
   // Adds the form elements to your current form
   chado_add_node_form_relationships($form, $form_state, $details);
