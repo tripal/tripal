@@ -189,8 +189,6 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
 
   }
 
-  $form_state['rebuild'] = TRUE;
-
   // Set Defaults for optional fields
   $details['fieldset_title'] = (isset($details['fieldset_title'])) ? $details['fieldset_title'] : 'Relationships';
   $details['additional_instructions'] = (isset($details['additional_instructions'])) ? $details['additional_instructions'] : '';
@@ -497,13 +495,12 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
   $form['relationships']['relationship_table']['new']['rel_action'] = array(
     '#type' => 'submit',
     '#value' => t('Add'),
-    '#name' => 'rel_add',
+    '#name' => 'rel-add',
     '#ajax' => array(
       'callback' => 'chado_add_node_form_relationships_ajax_update',
       'wrapper' => 'tripal-generic-edit-relationships-table',
       'effect'   => 'fade',
       'method'   => 'replace',
-      'prevent'  => 'click'
     ),
     // When this button is clicked, the form will be validated and submitted.
     // Therefore, we set custom submit and validate functions to override the
@@ -518,7 +515,6 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     // No other fields will be validated (ie: no fields from the main form or any other api
     // added form).
     '#limit_validation_errors' => array(
-      array('relationships'),  // Validate all fields within $form_state['values']['relationships']
       array('relationship_table')  // Ensure relationship table results are not discarded.
     )
   );
@@ -709,6 +705,8 @@ function chado_add_node_form_relationships_add_button_submit(&$form, &$form_stat
   unset($form_state['input']['relationship_table']['new']['type_id']);
   unset($form_state['input']['relationship_table']['new']['type_name']);
 
+  // This is needed to ensure the form builder function is called to
+  // rebuild the form on ajax requests.
   $form_state['rebuild'] = TRUE;
 }
 
@@ -744,6 +742,8 @@ function chado_add_node_form_relationships_remove_button_submit(&$form, &$form_s
     }
   }
 
+  // This is needed to ensure the form builder function is called to
+  // rebuild the form on ajax requests.
   $form_state['rebuild'] = TRUE;
 }
 
@@ -849,7 +849,8 @@ function theme_chado_add_node_form_relationships_table($variables) {
 
   return theme('table', array(
     'header' => $header,
-    'rows' => $rows
+    'rows' => $rows,
+    'sticky' => FALSE
   ));
 }
 
