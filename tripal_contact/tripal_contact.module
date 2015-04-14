@@ -547,12 +547,12 @@ function tripal_contact_preprocess_tripal_contact_relationships(&$variables) {
   $contact = $variables['node']->contact;
 
   // normally we would use tripal_core_expand_chado_vars to expand our
-  // organism object and add in the relationships, however whan a large
+  // contact object and add in the relationships, however whan a large
   // number of relationships are present this significantly slows the
   // query, therefore we will manually perform the query
   $sql = "
     SELECT C.name, C.contact_id, CP.nid, CVT.name as rel_type
-    FROM contact_relationship PR
+    FROM {contact_relationship} PR
       INNER JOIN {contact} C              ON PR.object_id  = C.contact_id
       INNER JOIN {cvterm} CVT             ON PR.type_id    = CVT.cvterm_id
       LEFT  JOIN public.chado_contact CP  ON C.contact_id  = CP.contact_id
@@ -561,7 +561,7 @@ function tripal_contact_preprocess_tripal_contact_relationships(&$variables) {
   $as_subject = chado_query($sql, $contact->contact_id);
   $sql = "
     SELECT C.name, C.contact_id, CP.nid, CVT.name as rel_type
-    FROM contact_relationship PR
+    FROM {contact_relationship} PR
       INNER JOIN {contact} C              ON PR.subject_id = C.contact_id
       INNER JOIN {cvterm} CVT             ON PR.type_id    = CVT.cvterm_id
       LEFT  JOIN public.chado_contact CP  ON C.contact_id  = CP.contact_id

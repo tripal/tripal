@@ -410,7 +410,7 @@ function tripal_pub_get_search_results($search_array, $limit, $pager_id) {
   $select = "SELECT DISTINCT P.*, CP.nid ";
   $from   = "FROM {pub} P
                LEFT JOIN public.chado_pub CP on P.pub_id = CP.pub_id 
-               INNER JOIN cvterm CVT on CVT.cvterm_id = P.type_id
+               INNER JOIN {cvterm} CVT on CVT.cvterm_id = P.type_id
             ";
   $where  = "WHERE (NOT P.title = 'null') "; // always exclude the dummy pub
   $order  = "ORDER BY P.pyear DESC, P.title ASC";

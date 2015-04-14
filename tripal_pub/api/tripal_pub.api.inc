@@ -227,6 +227,8 @@ function tripal_pub_import_publications($report_email = FALSE, $do_update = FALS
   $do_contact = FALSE;
   $reports = array();
   while ($import = db_fetch_object($results)) {
+    $page = 0;
+    
     print "Importing: " . $import->name . "\n";
     // keep track if any of the importers want to create contacts from authors
     if ($import->do_contact == 1) {
@@ -649,6 +651,12 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     $results = tripal_pub_get_pubs_by_dbxref($pub_details['Publication Dbxref']);
     if(count($results) == 1) {
       $pub_id = $results[0];
+      if ($pub_id and !$update_if_exists) {
+        watchdog('tripal_pub', "A publication with this Dbxref already exists... Skipping: %dbxref", 
+          array('%dbxref' => $pub_details['Publication Dbxref']), WATCHDOG_WARNING);
+        $action = 'skipped';
+        return $pub_id;
+      }
     }
     elseif (count($results) > 1) {
       watchdog('tripal_pub', "There are two publications with this accession: %db:%accession. Cannot determine which to update.",
@@ -666,6 +674,13 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
     $results = tripal_pub_get_pubs_by_title_type_pyear_series($pub_details['Title'], NULL, $pub_details['Year']);
     if (count($results) == 1) {
       $pub_id = $results[0];
+      if ($pub_id and !$update_if_exists) {
+        watchdog('tripal_pub', "The publication with the same title, type and year already exists. Skipping. ".
+          " Title: '%title'. Type: '%type'. Year: '%year'", 
+          array('%title' => $pub_details['Title'], '%type' => $pub_details['Publication Type'], '%year' => $pub_details['Year']), WATCHDOG_WARNING);
+        $action = 'skipped';
+        return $pub_id;
+      }
     }
     elseif (count($results) > 1) {
       watchdog('tripal_pub', "The publication with the same title, type and year is present multiple times. Cannot ".
@@ -674,12 +689,6 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
       $action = 'error';
       return FALSE;
     }
-  }
-  //print "PUB ID: $pub_id\n";
-  // if there is a pub id and we've been told not to update then return
-  if ($pub_id and !$update_if_exists) {
-    $action = 'skipped';
-    return $pub_id;
   }
 
   // get the publication type (use the first publication type, any others will get stored as properties)
@@ -705,7 +714,7 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   $values = array(
     'title'       => $pub_details['Title'],
     'volume'      => $pub_details['Volume'],
-    'series_name' => $pub_details['Journal Name'],
+    'series_name' => substr($pub_details['Journal Name'], 0, 255),
     'issue'       => $pub_details['Issue'],
     'pyear'       => $pub_details['Year'],
     'pages'       => $pub_details['Pages'],
@@ -1197,6 +1206,11 @@ function tripal_pub_create_citation($pub) {
         $pub_type = $ptype;
         break;
       }
+      else if ($ptype == "Research Support, Non-U.S. Gov't") {
+        $pub_type = $ptype; 
+        // we don't break because if the article is also a Journal Article
+        // we prefer that type
+      }
     }
     if (!$pub_type) {
       watchdog('tripal_pub', "Cannot generate citation for publication type: %types", 
@@ -1246,6 +1260,23 @@ function tripal_pub_create_citation($pub) {
       }
       $citation .= $pub['Pages'];
     }
+    $citation .= '.';
+  }
+  //----------------------
+  // Research Support, Non-U.S. Gov't
+  //----------------------
+  elseif ($pub_type == "Research Support, Non-U.S. Gov't") {
+    $citation = $pub['Authors'] . '. ' . $pub['Title'] .  '. ';
+  
+    if ($pub['Journal Name']) {
+      $citation .= $pub['Journal Name'] . '. ';
+    }
+    if ($pub['Publication Date']) {
+      $citation .= $pub['Publication Date'];
+    }
+    elseif ($pub['Year']) {
+      $citation .= $pub['Year'];
+    }    
     $citation .= '.';
   }
   //----------------------

@@ -133,9 +133,9 @@ function tripal_feature_perm() {
  *  @return
  *  If the permission for the specified operation is not set then return FALSE. If the
  *  permission is set then return NULL as this allows other modules to disable
- *  access.  The only exception is when the $op == 'create'.  We will always
+ *  access.  The only exception is when the $op == 'create'.  We will always 
  *  return TRUE if the permission is set.
- *
+ *  
  * @ingroup tripal_feature
  */
 function chado_feature_access($op, $node, $account) {
@@ -181,14 +181,14 @@ function tripal_feature_menu() {
     'access arguments' => array('access chado_feature content'),
     'type' => MENU_CALLBACK,
   );
-
+  
   $items['find/sequences/ajax'] = array(
     'title' => 'Sequence Retrieval',
     'page callback' => 'tripal_feature_seq_extract_form_ahah_update',
     'access arguments' => array('access chado_feature content'),
     'type' => MENU_CALLBACK,
   );
-
+  
   // the administative settings menu
   $items['admin/tripal/tripal_feature'] = array(
     'title' => 'Features',
@@ -331,7 +331,7 @@ function tripal_feature_theme() {
       'arguments' =>  array(NULL),
       'path' => drupal_get_path('module', 'tripal_feature') . '/theme'
     ),
-
+    
     // themed forms
     'tripal_feature_seq_extract_form' => array(
        'arguments' => array('form'),
@@ -500,7 +500,7 @@ function chado_feature_insert($node) {
     'type_id' => $type[0]->cvterm_id,
   );
   $feature = tripal_core_chado_select('feature', array('feature_id'), $values);
-
+    
   // add the genbank accession and synonyms
   chado_feature_add_synonyms($node->synonyms, $feature[0]->feature_id);
 
@@ -561,7 +561,7 @@ function chado_feature_update($node) {
     );
     $options = array('return_record' => TRUE);
     $status = tripal_core_chado_update('feature', $match, $values, $options);
-
+    
     // add the genbank synonyms
     chado_feature_add_synonyms($node->synonyms, $feature_id);
   }
@@ -573,7 +573,7 @@ function chado_feature_update($node) {
     WATCHDOG_WARNING
     );
   }
-
+  
 
 }
 /**
@@ -830,8 +830,8 @@ function chado_feature_form($node, $param) {
 
   // get the sequence ontology CV ID
   $values = array('name' => 'sequence');
-  $cv = tripal_core_chado_select('cv', array('cv_id'), $values);
-  $cv_id = $cv[0]->cv_id;
+  $cv = tripal_core_chado_select('cv', array('cv_id'), $values); 
+  $cv_id = $cv[0]->cv_id; 
 
   $form['feature_type'] = array(
    '#title'       => t('Feature Type'),
@@ -906,11 +906,11 @@ function chado_feature_form($node, $param) {
  */
 function chado_feature_validate($node) {
   $result = 0;
-
+  
   // make sure the feature type is a real sequence ontology term
   $type = tripal_cv_get_cvterm_by_name($node->feature_type, NULL, 'sequence');
   if (!$type) {
-     form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
+     form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));	
   }
 
   // if this is an update, we want to make sure that a different feature for
@@ -969,10 +969,10 @@ function chado_feature_load($node) {
     if (strcmp($feature->name, $feature->uniquename)==0) {
       $node->title = $feature->name . " (" . $feature->type_id->name . ") " . $feature->organism_id->genus . " " . $feature->organism_id->species ;
     }
-    // in previous version of Tripal, the feature title was simply the unique name.
+    // in previous version of Tripal, the feature title was simply the unique name. 
     // so, we recreate the title just to be sure all of our feature pages are consistent
     else {
-      $node->title = $feature->name . ", " . $feature->uniquename . " (" . $feature->type_id->name . ") " . $feature->organism_id->genus . " " . $feature->organism_id->species ;
+      $node->title = $feature->name . ", " . $feature->uniquename . " (" . $feature->type_id->name . ") " . $feature->organism_id->genus . " " . $feature->organism_id->species ;  
     }
   }
   // set the title to be the feature name or uniquename as configured
@@ -980,7 +980,7 @@ function chado_feature_load($node) {
     $node->title = $feature->name;
   }
   if($title_type == 'feature_unique_name') {
-    $node->title = $feature->uniquename;
+    $node->title = $feature->uniquename;  
   }
 
   $additions = new stdClass();
@@ -1839,23 +1839,23 @@ function chado_feature_view($node, $teaser = FALSE, $page = FALSE) {
  * @ingroup tripal_feature
  */
 function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
-
+  
   switch ($op) {
-
+    
      // set the title to ensure it is always unique
     case 'presave':
       switch ($node->type) {
         case 'chado_feature':
-
+          
           $values = array('organism_id' => $node->organism_id);
           $organism = tripal_core_chado_select('organism', array('genus','species'), $values);
           $node->title = $node->fname . ', ' . $node->uniquename . ' (' . $node->feature_type . ') ' . $organism[0]->genus . ' ' . $organism[0]->species;
           break;
       }
       break;
-
-    // set the URL path after inserting.  We do it here because we do not
-    // know the feature_id in the presave
+      
+    // set the URL path after inserting.  We do it here because we do not 
+    // know the feature_id in the presave  
     case 'insert':
       switch ($node->type) {
         case 'chado_feature':
@@ -1865,34 +1865,34 @@ function tripal_feature_nodeapi(&$node, $op, $teaser, $page) {
             $node->feature_id = $chado_feature->feature_id;
           }
 
-
+          
           // remove any previous alias
           db_query("DELETE FROM {url_alias} WHERE src = '%s'", "node/$node->nid");
-
+          
           // set the URL for this feature page
           $url_alias = tripal_feature_get_feature_url($node);
           path_set_alias("node/$node->nid", $url_alias);
           break;
       }
       break;
-
-    // set the URL path after inserting.  We do it here because we do not
-    // know the feature_id in the presave
+      
+    // set the URL path after inserting.  We do it here because we do not 
+    // know the feature_id in the presave  
     case 'update':
       switch ($node->type) {
         case 'chado_feature':
-
+          
           // remove any previous alias
           db_query("DELETE FROM {url_alias} WHERE src = '%s'", "node/$node->nid");
-
+          
           // set the URL for this feature page
           $url_alias = tripal_feature_get_feature_url($node);
           path_set_alias("node/$node->nid", $url_alias);
           break;
       }
       break;
-
-
+      
+      
     // add items to other nodes, build index and search results
     case 'view':
       switch ($node->type) {
@@ -2303,7 +2303,7 @@ function tripal_feature_coder_ignore() {
  * features is shown.
  */
 function tripal_feature_match_features_page($id) {
-
+  
   // if the URL alias configuration is set such that the URL
   // always begins with 'feature' then we want to use the ID as it is and
   // forward it on. Otherwise, try to find the matching feature.
@@ -2376,16 +2376,16 @@ function tripal_feature_match_features_page($id) {
 }
 
 /**
- *
+ * 
  * @param unknown_type $form
  * @param unknown_type $form_state
  * @param unknown_type $form_id
  */
 function tripal_feature_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == "tripal_feature_seq_extract_form") {
+  if ($form_id == "tripal_feature_seq_extract_form") {    
     // updating the form through the ahah callback sets the action of
     // the form to the ahah callback URL. We need to set it back
     // to the normal form URL
     $form['#action'] = url("find/sequences");
   }
-}
+} 

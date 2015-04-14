@@ -149,6 +149,10 @@ function tripal_organism_theme() {
       'arguments' =>  array(NULL),
       'path' => drupal_get_path('module', 'tripal_organism') . '/theme'
     ),
+    'tripal_organism_references' => array(
+      'arguments' => array('node' => NULL),
+      'template' => 'tripal_organism_references',
+    ),
   );
 }
 /**

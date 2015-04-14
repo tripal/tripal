@@ -56,7 +56,7 @@ function tripal_analysis_add_cvterms(){
   // change change this property
   $term = array(
     'name' => 'analysis_type', 
-    'def' => 'The type of analysis was performed. This value is automatically set by '.
+    'def' => 'The type of analysis that was performed. This value is automatically set by '.
              'each Tripal Analysis module and should be equal to the module name '.
              '(e.g. tripal_analysis_blast, tripal_analysis_go).'
   );
@@ -83,7 +83,7 @@ function tripal_analysis_add_cvterms(){
   // an analysis_type term in the 'tripal_analysis' vocabular we duplicate it here because the 
   // tripal_analysis vocabulary is intended for use by the extension modules.  user's should not be able
   // to directly modify properties set by extension modules for an analysis.
-  tripal_cv_add_cvterm(array('name' => 'Analysis Type','def' => 'The type of analysis was performed.'), 
+  tripal_cv_add_cvterm(array('name' => 'Analysis Type','def' => 'The type of analysis that was performed.'), 
      'analysis_property', 0, 1, 'tripal');
 }
 /**

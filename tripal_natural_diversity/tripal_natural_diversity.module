@@ -2,6 +2,8 @@
 
 require_once('api/tripal_natural_diversity.api.inc');
 require_once('includes/tripal_natural_diversity.schema.inc');
+require_once('includes/tripal_natural_diversity.nd_geolocation.inc');
+require_once('includes/tripal_natural_diversity.admin.inc');
 
 /**
  *  @file
@@ -48,6 +50,19 @@ function tripal_natural_diversity_theme() {
       'arguments' => array('node' => NULL),
       'template' => 'tripal_stock_nd_phenotypes',
     ),
+    'tripal_nd_geolocation_base' => array(
+        'arguments' => array('node' => NULL),
+        'template' => 'tripal_nd_geolocation_base',
+    ),
+    'tripal_nd_geolocation_properties' => array(
+        'arguments' => array('node' => NULL),
+        'template' => 'tripal_nd_geolocation_properties',
+    ),
+    'tripal_natural_diversity_admin' => array(
+        'template' => 'tripal_natural_diversity_admin',
+        'arguments' =>  array(NULL),
+        'path' => drupal_get_path('module', 'tripal_natural_diversity') . '/theme'
+    ),
   );
 }
 
@@ -62,7 +77,7 @@ function tripal_natural_diversity_nodeapi(&$node, $op, $teaser, $page){
       if ($node->type == 'chado_feature') {
         // the tripal_genetic module provides a tripal_feature_genotype
         // template.  The only difference between them is the addition of
-        // project information by this module's template.  Therefore,
+        // natural_diversity information by this module's template.  Therefore,
         // if the tripal_genetic content is present get rid of as this
         // module superceeds it.
         if (array_key_exists('tripal_feature_genotypes', $node->content)) {
@@ -91,4 +106,122 @@ function tripal_natural_diversity_nodeapi(&$node, $op, $teaser, $page){
  */
 function tripal_natural_diversity_preprocess_tripal_stock_nd_genotypes(&$variables){
 
+}
+
+/**
+ * Implements hook_menu
+ *
+ * @ingroup tripal_natural_diversity
+ */
+function tripal_natural_diversity_menu() {
+  $items[ 'admin/tripal/tripal_natural_diversity' ]= array(
+    'title' => 'Natural Diversity',
+    'description' => ('A module for interfacing the GMOD chado database with Drupal, providing viewing of natural_diversity data'),
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_natural_diversity_admin'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM
+  );
+
+  $items[ 'admin/tripal/tripal_natural_diversity/configuration' ]= array(
+    'title' => 'Configuration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_natural_diversity_admin'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_perm()
+ *
+ *  This function sets the permission for the user to access the information in the database.
+ *  This includes creating, inserting, deleting and updating of information in the database
+ *
+ *
+ * @ingroup tripal_natural_diversity
+ */
+function tripal_natural_diversity_perm() {
+  return array(
+      'access chado_nd_geolocation content',
+      'create chado_nd_geolocation content',
+      'delete chado_nd_geolocation content',
+      'edit chado_nd_geolocation content',
+      'adminster tripal natural_diversity',
+  );
+}
+
+/**
+ * Implement hook_access().
+ *
+ * This hook allows node modules to limit access to the node types they define.
+ *
+ *  @param $op
+ *  The operation to be performed
+ *
+ *  @param $node
+ *  The node on which the operation is to be performed, or, if it does not yet exist, the
+ *  type of node to be created
+ *
+ *  @param $account
+ *  A user object representing the user for whom the operation is to be performed
+ *
+ *  @return
+ *  If the permission for the specified operation is not set then return FALSE. If the
+ *  permission is set then return NULL as this allows other modules to disable
+ *  access.  The only exception is when the $op == 'create'.  We will always
+ *  return TRUE if the permission is set.
+ *
+ * @ingroup tripal_natural_diversity
+ */
+function chado_natural_diversity_access($op, $node, $account) {
+
+  if ($op == 'create') {
+    if (!user_access('create chado_nd_geolocation content', $account)) {
+      return FALSE;
+    }
+    return TRUE;
+  }
+  if ($op == 'update') {
+    if (!user_access('edit chado_nd_geolocation content', $account)) {
+      return FALSE;
+    }
+  }
+  if ($op == 'delete') {
+    if (!user_access('delete chado_nd_geolocation content', $account)) {
+      return FALSE;
+    }
+  }
+  if ($op == 'view') {
+    if (!user_access('access chado_nd_geolocation content', $account)) {
+      return FALSE;
+    }
+  }
+  return NULL;
+}
+
+/**
+ * Implementation of hook_node_info().
+ *
+ * This node_info, is a simple node that describes the functionallity of the module. It specifies
+ * that the title(Project Name) and body(Description) set to true so that they information can be
+ * entered
+ *
+ *
+ * @ingroup tripal_natural_diversity
+ */
+function tripal_natural_diversity_node_info() {
+  return array(
+      'chado_nd_geolocation' => array(
+          'name' => t('ND Geolocation'),
+          'module' => 'chado_nd_geolocation',
+          'description' => t('A module for interfacing the GMOD chado database with Drupal, providing viewing of nd_geolocation'),
+          'has_title' => TRUE,
+          'title_label' => t('ND Geolocation'),
+          'had_body' => FALSE,
+          'body_label' => t('Full Description'),
+      )
+  );
 }
