@@ -736,7 +736,7 @@ function chado_update_existing_node_urls($content_type, $job_id = 0) {
 }
 
 /**
- * Generic "Set Node url" sub-form for setting the url of any chado node
+ * Generic "Set Node URL" sub-form for setting the url of any chado node
  *
  * @param $form
  *   The Drupal form array into which the property form elements will be added
@@ -1305,7 +1305,7 @@ function chado_get_token_value($token_info, $node) {
   $token = $token_info['token'];
   $table = $token_info['table'];
   $var = $node;
-  
+
   // Iterate through each portion of the location string. An example string
   // might be:  stock > type_id > name.
   $location = explode('>', $token_info['location']);

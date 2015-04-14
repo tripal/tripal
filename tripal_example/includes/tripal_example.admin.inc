@@ -18,10 +18,9 @@ function tripal_example_admin_examples_listing() {
   drupal_set_breadcrumb($breadcrumb);
 
 
-  // EXPLANATION:  Typically for all Tripal modules the home administrative
-  // page for the module contains a search form to help the adminstrator
-  // locate records.  The following example code adds a default View to
-  // the page
+  // EXPLANATION:  Typically for all Tripal modules the home administrative page
+  // for the module contains a search form to help the adminstrator locate
+  // records. The following example code adds a default View to the page
   /*
   // Add the view
   $view = views_embed_view('tripal_example_admin_examples','default');
@@ -55,19 +54,23 @@ function tripal_example_admin() {
     '#markup' => t('There are currently no settings to configure.')
   );
 
-  // If your module is using the Chado Node: Title & Path API to allow custom titles
-  // for your node type then you need to add the configuration form for this functionality.
+  // If your module is using the Chado Node: Title & Path API to allow custom
+  // titles for your node type then you need to add the configuration form for
+  // this functionality.
   $details = array(
-    'module' => 'tripal_example',       // the name of the MODULE implementing the content type
+      // the name of the MODULE implementing the content type
+    'module' => 'tripal_example',
       // An array of options to use under "Page Titles"
-      // the key should be the token and the value should be the human-readable option
+      // the key should be the token and the value should be the human-readable
+      // option
     'options' => array(
       '[example.name]' => 'Germplasm Name Only',
       '[example.uniquename]' => 'Germplasm Unique Name Only',
         // there should always be one options matching the unique constraint.
-        // If you have a more human-readable constraint, then that is preferrable.
+        // If you have a more human-readable constraint, then that is
+        // preferable.
         // See the tripal feature module for a good example of this.
-      '[example.example_id]' => 'Unique Contraint: The Chado ID for Examples'
+      '[example.example_id]' => 'Unique Constraint: The Chado ID for Examples'
     ),
     // the token indicating the unique constraint in the options array
     'unique_option' => '[example.example_id]'
@@ -88,4 +91,3 @@ function tripal_example_admin() {
 function tripal_example_admin_validate($form, &$form_state) {
 
 }
-

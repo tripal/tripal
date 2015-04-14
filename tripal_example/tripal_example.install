@@ -13,12 +13,12 @@
  */
 function tripal_example_disable() {
 
-  // EXPLANATION: If you are using Drupal Views you want to ensure
-  // that any default views that your module provides are disabled
-  // when the module is disabled.  Default views are specified in the
-  // [module name].views.default.inc file.  The following code will disable
-  // these views.  If your module does not create any default views you
-  // can remove the following code.
+  // EXPLANATION: If you are using Drupal Views you want to ensure that any
+  // default views that your module provides are disabled when the module is
+  // disabled. Default views are specified in the
+  // [module name].views.default.inc file. The following code will disable these
+  // views. If your module does not create any default views you can remove the
+  // following code.
 
   // Disable all default views provided by this module
   require_once("tripal_example.views_default.inc");
@@ -33,8 +33,8 @@ function tripal_example_disable() {
  * Implements hook_requirements().
  *
  * Performs check to see if all required dependencies are met. Drupal will
- * automatically check for module dependencies but here you can check for
- * other requirements.
+ * automatically check for module dependencies but here you can check for other
+ * requirements.
  *
  * @ingroup tripal_example
  */
@@ -44,9 +44,9 @@ function tripal_example_requirements($phase) {
   $requirements = array();
   if ($phase == 'install') {
     // EXPLANATION: It is essential that Chado be installed for almost all
-    // Tripal modules. Therefore, the following code checks to ensure Chado
-    // is installed and available.  If your module does not require that
-    // Chado be installed, you can remove the following check.
+    // Tripal modules. Therefore, the following code checks to ensure Chado is
+    // installed and available. If your module does not require that Chado be
+    // installed, you can remove the following check.
 
     // make sure chado is installed
     if (!$GLOBALS["chado_is_installed"]) {
@@ -71,17 +71,16 @@ function tripal_example_install() {
 
   // EXPLANATION: If your module will making data publicly available for
   // download or use by the site you can create the directory using the
-  // tripal_create_files_dir() function.  This will create a directory
-  // in the public access directory which will typcially be in
+  // tripal_create_files_dir() function. This will create a directory in the
+  // public access directory which will typically be in
   // sites/default/files/tripal/[module name]/
 
   // create the module's data directory
   tripal_create_files_dir('tripal_example');
 
-  // EXPLANATION: Here is a good place to add any materialized views,
-  // controlled vocabularies CV, databases or CV terms needed by your module.
-  // To keep this module code short, create functions to do each of those
-  // tasks
+  // EXPLANATION: Here is a good place to add any materialized views, controlled
+  // vocabularies CV, databases or CV terms needed by your module.
+  // To keep this module code short, create functions to do each of those tasks
 
   // add any materialized view
   tripal_example_add_mviews();
@@ -91,11 +90,11 @@ function tripal_example_install() {
 
   // add any controlled vocabularies used by the example module. You may need
   // to add a vocabulary if you to set it as default (see next lines of code).
-  // For example, the Sequence Ontology (SO) is used by the feature module as the
-  // default vocabulary for the feature type_id field.  But, that vocabulary
-  // does not yet exist in Chado until after the SO is loaded using the
-  // Tripal OBO loader.  But, we can add it here as a placeholder so that we can
-  // then set it as a default vocabulary (see below).
+  // For example, the Sequence Ontology (SO) is used by the feature module as
+  // the default vocabulary for the feature type_id field. But, that vocabulary
+  // does not yet exist in Chado until after the SO is loaded using the Tripal
+  // OBO loader. But, we can add it here as a place-holder so that we can then
+  // set it as a default vocabulary (see below).
   tripal_example_add_cvs();
 
 
@@ -103,12 +102,12 @@ function tripal_example_install() {
   tripal_example_add_cvterms();
 
   // EXPLANATION: Many tables in Chado have a 'type_id' column which allows for
-  // association of controlled vocabulries to describe the record.   Chado
-  // places no restrictions on which vocabularies can be used, but Tripal can
-  // be instructed to provide a default vocabulary for any given field. For
-  // example, the feature.type_id column will typically use the Sequence Ontology
-  // In that case, we can use the tripal_set_default_cv() function to specify
-  // the Sequence Ontology (sequence) as the default vocabulary.
+  // association of controlled vocabularies to describe the record. Chado places
+  // no restrictions on which vocabularies can be used, but Tripal can be
+  // instructed to provide a default vocabulary for any given field. For
+  // example, the feature.type_id column will typically use the Sequence
+  // Ontology. In that case, we can use the tripal_set_default_cv() function to
+  // specify the Sequence Ontology (sequence) as the default vocabulary.
   tripal_set_default_cv('example', 'type_id', 'example_type');
   tripal_set_default_cv('exampleprop', 'type_id', 'example_property');
   tripal_set_default_cv('example_relationship', 'type_id', 'example_relationship');
@@ -133,9 +132,9 @@ function tripal_example_uninstall() {
 /**
  * Implementation of hook_schema().
  *
- * Provides a list of tables to be created inside of the Drupal schema
- * (the 'public' schema by default). It uses the Drupal Schema API
- * array structure to define the table, its indexes and constraints.
+ * Provides a list of tables to be created inside of the Drupal schema (the
+ * 'public' schema by default). It uses the Drupal Schema API array structure to
+ * define the table, its indexes and constraints.
  *
  * Schema API documentation is here:
  * https://api.drupal.org/api/drupal/includes%21database%21schema.inc/group/schemaapi/7
@@ -145,12 +144,11 @@ function tripal_example_uninstall() {
 function tripal_example_schema() {
 
   // EXPLANATION: If your module creates a node type for data in the Chado
-  // database then you probably need to link Drupal nodes with a respective
-  // ID in the Chado table.  The following is an example array for a table
-  // that will link the 'chado_example' node type (created by this example
-  // module) with a record in the fake Chado example table.  This table
-  // will link the 'nid' of the node with the 'example_id' of the eample
-  // record.
+  // database then you probably need to link Drupal nodes with a respective ID
+  // in the Chado table. The following is an example array for a table that will
+  // link the 'chado_example' node type (created by this example module) with a
+  // record in the fake Chado example table. This table will link the 'nid' of
+  // the node with the 'example_id' of the example record.
   $schema['chado_example'] = array(
     'fields' => array(
       'vid' => array(
@@ -190,16 +188,17 @@ function tripal_example_schema() {
 };
 
 /**
- * Creates a materialized view that stores the type & number of examples per organism
+ * Creates a materialized view that stores the type & number of examples per
+ * organism.
  *
  * @ingroup tripal_example
  */
 function tripal_example_add_mviews() {
 
-  // EXPLANATION: use the tripal_add_mview() function to add a materialized
-  // view needed by your module.  If you have more than one materialized view
-  // it is best to create a single function for each one and call each
-  // function here. Otherwise this function can become quite long.
+  // EXPLANATION: use the tripal_add_mview() function to add a materialized view
+  // needed by your module. If you have more than one materialized view it is
+  // best to create a single function for each one and call each function here.
+  // Otherwise this function can become quite long.
 
 }
 /**
@@ -208,9 +207,9 @@ function tripal_example_add_mviews() {
  * @ingroup tripal_example
  */
 function tripal_example_add_dbs() {
-  // EXPLANATION: use the tripal_insert_db() function to add any
-  // external databases needed by your module.  If the database already
-  // exists then the function will gracefully return.
+  // EXPLANATION: use the tripal_insert_db() function to add any external
+  // databases needed by your module. If the database already exists then the
+  // function will gracefully return.
 
   tripal_insert_db(array(
     'name' => 'example_db',
@@ -224,10 +223,10 @@ function tripal_example_add_dbs() {
  */
 function tripal_example_add_cvs() {
 
-  // EXPLANATION: use the tripal_insert_cv() function to add any
-  // controlled vocabularies needed by your module.  If the vocabulary already
-  // exists then the function will gracefully return.  Chado convensions
-  // use a singluar name for CV names (not plural)/
+  // EXPLANATION: use the tripal_insert_cv() function to add any controlled
+  // vocabularies needed by your module. If the vocabulary already exists then
+  // the function will gracefully return. Chado conventions use a singular name
+  // for CV names (not plural).
 
   tripal_insert_cv(
     'example_property',
@@ -253,15 +252,15 @@ function tripal_example_add_cvs() {
  */
 function tripal_example_add_cvterms() {
 
-  // EXPLANATION:  for our test module to work we need to add some terms to our example_type
-  // controlled vocabulary.  Ideally we should have a full OBO file for loading
-  // but sometimes we just have a small list that won't really change so
-  // we can add those terms here.
+  // EXPLANATION: for our test module to work we need to add some terms to our
+  // example_type controlled vocabulary. Ideally we should have a full OBO file
+  // for loading but sometimes we just have a small list that won't really
+  // change so we can add those terms here.
   tripal_insert_cvterm(array(
     'id'         => 'test',         // the term accession
     'name'       => 'Test type',    // the human readable term name
     'cv_name'    => 'example_type', // the CV name this term belongs to.
-    'definition' => 'A test type for the example modlue.',
+    'definition' => 'A test type for the example module.',
     'db_name'    => 'example_db',   // the database in which the term is found.
   ));
 }
@@ -281,7 +280,7 @@ function tripal_example_add_custom_tables() {
   //   3) example_relationship (for storing relationships about examples)
   //   4) example_dbxref (for storing cross-references about an example)
   //
-  // To make the code easier to read, each table is created by a separte
+  // To make the code easier to read, each table is created by a separate
   // function called here:
 
   tripal_example_add_example_table();
@@ -289,6 +288,7 @@ function tripal_example_add_custom_tables() {
   tripal_example_add_example_relationship_table();
   tripal_example_add_example_dbxref_table();
 }
+
 /**
  * Adds the 'example' custom table to Chado.
  *
@@ -353,10 +353,9 @@ function tripal_example_add_example_table() {
         ),
       ),
     ),
-    // EXPLANATION: the 'referring_tables' array is the list of tables
-    // that have a foreign key relationships with this table. This
-    // information is required for the Tripal API to be able to expand
-    // tables in templates.
+    // EXPLANATION: the 'referring_tables' array is the list of tables that have
+    // a foreign key relationships with this table. This information is required
+    // for the Tripal API to be able to expand tables in templates.
     'referring_tables' => array(
       0 => 'example_relationship',
       1 => 'exampleprop',
@@ -584,8 +583,8 @@ function tripal_example_update_7200() {
   // https://api.drupal.org/api/drupal/modules%21system%21system.api.php/function/hook_update_N/7
   //
   // It is best not to use Tripal API calls inside of this function because an
-  // upgarde from Drupal 6 to Drupal 7 requires that all modules be disabled
-  // which means the Tripal API is not available.  This is an unfortunate
+  // upgrade from Drupal 6 to Drupal 7 requires that all modules be disabled
+  // which means the Tripal API is not available. This is an unfortunate
   // requirement, but will prevent errors during a major upgrade.
 
   // it is good to wrap any database changes inside of a try catch block:
@@ -599,17 +598,17 @@ function tripal_example_update_7200() {
 }
 
 /**
- * Implementation of hook_update_dependencies().  It specifies a list of
- * other modules whose updates must be run prior to this one.
+ * Implementation of hook_update_dependencies(). It specifies a list of other
+ * modules whose updates must be run prior to this one.
  */
 function tripal_example_update_dependencies() {
   $dependencies = array();
 
-  // EXPLANATION: here we can specify which modules must be updated prior
-  // to applying the updates in this module.  This is useful because it
-  // prevents updates from being executed out of order.  The following
-  // example code shows that the 'tripal_example' module update number 7200
-  // must be executed after the 'tripal_cv' module's 7200 update.
+  // EXPLANATION: here we can specify which modules must be updated prior to
+  // applying the updates in this module. This is useful because it prevents
+  // updates from being executed out of order. The following example code shows
+  // that the 'tripal_example' module update number 7200 must be executed after
+  // the 'tripal_cv' module's 7200 update.
   $dependencies['tripal_example'][7200] = array(
     'tripal_cv' => 7200
   );

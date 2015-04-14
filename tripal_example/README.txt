@@ -1,7 +1,7 @@
-This module is provided as a template for creating a custom Tripal Extension 
+This module is provided as a template for creating a custom Tripal Extension
 Module for Drupal 7 and Tripal 2.x.
 
-Drupal does provide quite a bit of documentation on its website at 
+Drupal does provide quite a bit of documentation on its website at
 http://www.drupal.org but the easiest way to learn to program a Drupal module
 is to purchase the following book:
 
@@ -12,7 +12,7 @@ But this quick link can help get you started:
   https://drupal.org/developing/modules/7
 
 Briefly, to create a Drupal module you must
- 
+
 1) Create a directory to house all of your module's files
 2) Create a .info inside of the directory which provides information about your
    module to Drupal
@@ -44,11 +44,11 @@ If you want to integrate with Drupal Views 3.x:
 
 Include Files
 -------------
-To limit the size of files, some functionality can be placed inside of 
+To limit the size of files, some functionality can be placed inside of
 "include" files. Include files are placed inside of an 'includes' directory.
 [module dir]/includes
 
-If your module creates a node type that uses data housed in Chado, you should 
+If your module creates a node type that uses data housed in Chado, you should
 place all of the Drupal hooks for nodes inside of an include named:
 [module dir]/includes/[module name].chado_node.inc
 
@@ -60,18 +60,18 @@ All other include files should be named in the following way:
 [module dir]/includes/[module name].[function].inc
 
 where [function] is a brief description of the functionality provided by the
-include file.  Please only use underscores inside of the [function] (no dashes
+include file. Please only use underscores inside of the [function] (no dashes
 or periods).
 
 
 Theme Files
 -------------
-Tripal primarily uses template files for displaying content from Chado. This 
+Tripal primarily uses template files for displaying content from Chado. This
 allows anyone to easily change the way data is displayed without needing to
-delve into the module's source code.  A template typically provides data for
+delve into the module's source code. A template typically provides data for
 a single data type (e.g. feature) or association (e.g. properties associated to
-features, or publications associated with featurmaps, etc.).  These template
-files and any JavaScript, CSS or images needed to suppport them are all
+features, or publications associated with featurmaps, etc.). These template
+files and any JavaScript, CSS or images needed to support them are all
 housed inside of a 'theme' directory with the following structure:
 [module dir]/theme
 [module dir]/theme/css       (for CSS files)
@@ -91,18 +91,18 @@ Template files are named in the following way
 [module dir]/theme/templates/[module name]_[function].tpl.php.
 
 Notice that templates have an underscore separating the [module name] from the
-[function].  Typically a period is used (as with include files) but for
-backwards compatibility the undescores are kept.  
+[function]. Typically a period is used (as with include files) but for
+backwards compatibility the underscores are kept.
 
 API Files
 ---------
-If your module will provide a set of functions that can be used as an 
-Application Programming Intervace (API), then those functions should be placed 
+If your module will provide a set of functions that can be used as an
+Application Programming Interface (API), then those functions should be placed
 in files housed in the 'api' directory:
 [module dir]/api
 
 When creating API functions try to organize them into groups of related function
-and separate them into files by function with the following nameing:
+and separate them into files by function with the following naming:
 [module dir]/api/[module name].[function].api.inc
 
 
