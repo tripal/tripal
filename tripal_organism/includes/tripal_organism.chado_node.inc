@@ -383,7 +383,9 @@ function chado_organism_update($node) {
     'comment' => $node->description
   );
   $org_status = chado_update_record('organism', $match, $values);
-  chado_organism_add_image($node);
+  if ( $node->organism_image != '' ) {
+    chado_organism_add_image($node);
+  }
 
   // * Properties Form *
   $details = array(
