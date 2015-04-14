@@ -86,7 +86,7 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $pr
     drupal_set_message(t("Job '%job_name' submitted.", array('%job_name' => $job_name)));
     if (user_access('administer tripal')) {
       $jobs_url = url("admin/tripal/tripal_jobs");
-      drupal_set_message(t("Check the <a href='!jobs_url'>jobs page</a> for status", array('!jobs_url' => $jobs_url)));
+      drupal_set_message(t("Check the <a href='!jobs_url'>jobs page</a> for status.", array('!jobs_url' => $jobs_url)));
     }
   }
   else {
