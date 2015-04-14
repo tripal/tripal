@@ -14,6 +14,11 @@
  */
 function tripal_pub_search_page() {
 
+  // This line may not be required, but on some sites the $_SESSION
+  // variable wasn't being set for anonymous users. This line solves that
+  // problem 
+  drupal_session_start();
+
   $limit = 25;
 
   // generate the search form

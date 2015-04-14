@@ -47,7 +47,7 @@ if (count($stocks) > 0) { ?>
     if (!$name) {
       $name = $stock->uniquename;
     }
-    if ($node->nid) {
+    if (property_exists($stock, 'nid')) {
       $name = l($name, "node/$stock->nid", array('attributes' => array('target' => '_blank')));
     }
 

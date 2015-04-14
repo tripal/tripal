@@ -647,7 +647,8 @@ function chado_add_node_form_properties_add_button_submit(&$form, &$form_state) 
     'rank' => '0',
   );
 
-  // get max rank
+  // Determine the rank for the new property based on the the data already
+  // stored in the properties table.
   $rank = chado_get_table_max_rank(
     $details['property_table'],
     array(
@@ -656,9 +657,25 @@ function chado_add_node_form_properties_add_button_submit(&$form, &$form_state) 
     )
   );
   $property['rank'] = strval($rank + 1);
-
   $key = $property['type_id'] . '-' . $property['rank'];
-  $form_state['chado_properties'][$key] = (object) $property;
+
+  // Now check to make sure a property doesn't already exist with that rank
+  // (which happens when 2+ properties of the same type are added within the
+  // same save).
+  if (isset($form_state['chado_properties'][$key])) {
+    // Then keep iterating the rank until you find there is no property in
+    // the properties list with the same type/rank combination.
+    do {
+      $property['rank']++;
+      $key = $property['type_id'] . '-' . $property['rank'];
+    } while (isset($form_state['chado_properties'][$key]));
+
+    // And then set the property to that free space.
+    $form_state['chado_properties'][$key] = (object) $property;
+  }
+  else {
+    $form_state['chado_properties'][$key] = (object) $property;
+  }
 
   // we don't want the new element to pick up the values from the previous element so wipe them out
   unset($form_state['input']['property_table']['new']['type']);

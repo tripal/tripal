@@ -1161,8 +1161,8 @@ function tripal_feature_load_gff3_dbxref($feature, $dbxrefs) {
 
     // get the database name from the reference.  If it doesn't exist then create one.
     $ref = explode(":", $dbxref);
-    $dbname = $ref[0];
-    $accession = $ref[1];
+    $dbname = trim($ref[0]);
+    $accession = trim($ref[1]);
 
     // first look for the database name if it doesn't exist then create one.
     // first check for the fully qualified URI (e.g. DB:<dbname>. If that
@@ -1253,8 +1253,8 @@ function tripal_feature_load_gff3_ontology($feature, $dbxrefs) {
 
     // get the database name from the reference.  If it doesn't exist then create one.
     $ref = explode(":", $dbxref);
-    $dbname = $ref[0];
-    $accession = $ref[1];
+    $dbname = trim($ref[0]);
+    $accession = trim($ref[1]);
 
     // first look for the database name
     $db = chado_select_record('db', array('db_id'), array('name' => "DB:$dbname"));

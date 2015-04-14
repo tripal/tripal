@@ -126,11 +126,11 @@
  */
 function chado_add_node_form_relationships(&$form, &$form_state, $details) {
 
-  // make sure the property table exists before proceeding.
+  // make sure the relationship table exists before proceeding.
   if (!chado_table_exists($details['relationship_table'])) {
     drupal_set_message("Cannot add relationship elements to the form. The relationship table, '" .
       $details['relationship_table'] . "', does not exists", "error");
-    tripal_report_error('tcprops_form', TRIPAL_ERROR, "Cannot add relationship elements to the form.
+    tripal_report_error('tcrel_form', TRIPAL_ERROR, "Cannot add relationship elements to the form.
       The relationship table, '%name', cannot be found.", array('%name' => $details['relationship_table']));
     return;
   }
@@ -142,7 +142,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     if (count($result) == 0) {
       drupal_set_message("Cannot add relationship elements to the form. The CV name, '" .
           $details['cv_name'] . "', does not exists", "error");
-          tripal_report_error('tcprops_form', TRIPAL_ERROR, "Cannot add relationship elements to the form.
+          tripal_report_error('tcrel_form', TRIPAL_ERROR, "Cannot add relationship elements to the form.
         The CV named, '%name', cannot be found.", array('%name' => $details['cv_name']));
           return;
     }
@@ -155,7 +155,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     if (count($result) == 0) {
       drupal_set_message("Cannot add relationship elements to the form. The CV ID, '" .
           $details['cv_id'] . "', does not exist", "error");
-          tripal_report_error('tcprops_form', TRIPAL_ERROR, "Cannot add relationship elements
+          tripal_report_error('tcrel_form', TRIPAL_ERROR, "Cannot add relationship elements
         to the form. The CV ID, '%id', cannot be found.", array('%id' => $details['cv_id']));
           return;
     }
@@ -181,7 +181,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
       $message = "There is not a default vocabulary set for $table Releationship Types. Please set one using the  $default_form_link.";
 
       tripal_set_message($message, TRIPAL_WARNING);
-      tripal_report_error('tcprops_form', TRIPAL_ERROR, "Please provide either a
+      tripal_report_error('tcrel_form', TRIPAL_ERROR, "Please provide either a
         'cv_name' or 'cv_id' as an option for adding relationship to the form", array());
 
       return;
@@ -205,14 +205,14 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
   $table_schema = chado_get_schema($details['relationship_table']);
   $details['table_has_rank'] = (isset($table_schema['fields']['rank'])) ? TRUE : FALSE;
 
-  // Get Property Types for the Select List
+  // Get Relationship Types for the Select List
   if (isset($details['select_options'])) {
     $type_options = $details['select_options'];
   }
   else {
     if (isset($details['cv_name'])) {
       $type_options = array();
-      $type_options[] = 'Select a Property';
+      $type_options[] = 'Select a Type';
       $sql = "
         SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition, CV.cv_id as cv_id
         FROM  {cvterm} CVT
@@ -222,15 +222,15 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
           NOT CVT.is_obsolete = 1
         ORDER BY CVT.name ASC
       ";
-      $prop_types = chado_query($sql, array(':cv_name' => $details['cv_name']));
-      while ($prop = $prop_types->fetchObject()) {
-        $type_options[$prop->cvterm_id] = $prop->name;
-        $details['cv_id'] = $prop->cv_id;
+      $cvterms = chado_query($sql, array(':cv_name' => $details['cv_name']));
+      while ($term = $cvterms->fetchObject()) {
+        $type_options[$term->cvterm_id] = $term->name;
+        $details['cv_id'] = $term->cv_id;
       }
     }
     elseif (isset($details['cv_id'])) {
       $type_options = array();
-      $type_options[] = 'Select a Property';
+      $type_options[] = 'Select a Type';
       $sql = "
         SELECT DISTINCT CVT.cvterm_id, CVT.name, CVT.definition, CV.name AS cv_name
         FROM  {cvterm} CVT
@@ -240,18 +240,18 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
           NOT CVT.is_obsolete = 1
         ORDER BY CVT.name ASC
       ";
-      $prop_types = chado_query($sql, array(':cv_id' => $details['cv_id']));
-      while ($prop = $prop_types->fetchObject()) {
-        $type_options[$prop->cvterm_id] = $prop->name;
-        $details['cv_name'] = $prop->cv_name;
+      $cvterms = chado_query($sql, array(':cv_id' => $details['cv_id']));
+      while ($term = $cvterms->fetchObject()) {
+        $type_options[$term->cvterm_id] = $term->name;
+        $details['cv_name'] = $term->cv_name;
       }
     }
   }
 
-  // Tell tripal administrators how to add terms to the property types drop down.
+  // Tell tripal administrators how to add terms to the relationship types drop down.
   if (empty($type_options)) {
     $tripal_message = tripal_set_message(
-      t('There are currently no property types! To add additional properties to the drop
+      t('There are currently no relationship types! To add additional relationship types to the drop
         down list, you need to <a href="@cvtermlink">add a controlled vocabulary term</a>
         to the %cv_name controlled vocabulary.',
         array(
@@ -265,7 +265,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
   }
   else {
     $tripal_message = tripal_set_message(
-      t('To add additional properties to the drop down list, you need to <a href="@cvtermlink">add
+      t('To add additional relationship types to the drop down list, you need to <a href="@cvtermlink">add
         a controlled vocabulary term</a> to the %cv_name controlled vocabulary.',
         array(
           '%cv_name' => $details['cv_name'],
@@ -734,9 +734,7 @@ function chado_add_node_form_relationships_remove_button_submit(&$form, &$form_s
 
   // if the chado_relationships array is not set then this is the first time modifying the
   // relationship table. this means we need to include all the relationships from the db
-  if (!isset($form_state['chado_relationships'])) {
-    chado_add_node_form_relationships_create_relationship_formstate_array($form, $form_state);
-  }
+  chado_add_node_form_relationships_create_relationship_formstate_array($form, $form_state);
 
   // remove the specified relationship from the form relationship table
   if(preg_match('/rel_remove-([^-]+-[^-]+)/',$form_state['triggering_element']['#name'],$match)) {
