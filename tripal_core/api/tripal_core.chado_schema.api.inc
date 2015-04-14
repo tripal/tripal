@@ -57,6 +57,57 @@ function chado_table_exists($table) {
 }
 
 /**
+ * A Chado-aware replacement for the db_index_exists() function.
+ *
+ * @param $table
+ *   The table to be altered.
+ * @param $name
+ *   The name of the index.
+ */
+function chado_index_exists($table, $name) {
+  global $databases;
+
+  $indexname = $table . '_' . $name . '_idx';
+
+  $default_db = $databases['default']['default']['database'];
+
+  $sql = "SELECT 1 as exists FROM pg_indexes WHERE indexname = :indexname";
+
+  $result = db_query($sql, array(':indexname' => $indexname));
+  $exists = $result->fetchObject();
+  return $exists->exists;
+}
+
+/**
+ * A Chado-aware wrapper for the db_add_index() function.
+ *
+ * @param $table
+ *   The table to be altered.
+ * @param $name
+ *   The name of the index.
+ * @param $fields
+ *   An array of field names.
+ */
+function chado_add_index($table, $name, $fields) {
+  $indexname = $table . '_' . $name . '_idx';
+
+  $query = 'CREATE INDEX "' . $indexname . '" ON {' . $table . '} ';
+  $query .= '(';
+  $temp = array();
+  foreach ($fields as $field) {
+    if (is_array($field)) {
+      $temp[] = 'substr(' . $field[0] . ', 1, ' . $field[1] . ')';
+    }
+    else {
+      $temp[] = '"' . $field . '"';
+    }
+  }
+  $query .= implode(', ', $temp);
+  $query .= ')';
+  return chado_query($query);
+}
+
+/**
  * Check that any given schema exists
  *
  * @param $schema
