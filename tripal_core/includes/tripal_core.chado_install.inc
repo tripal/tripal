@@ -32,31 +32,54 @@ function tripal_core_chado_load_form() {
         'Upgrade Chado v1.11 to v1.2' => t('Upgrade existing Chado v1.11 to v1.2 (no data is lost)'),
         'Install Chado v1.11' => t('New Install of Chado v1.11 (erases all existing Chado data if Chado already exists)')
      ),
-     '#description' => t('Select an action to perform'),
-     '#required' => TRUE
+     '#description' => t('Select an action to perform. If you want to install Chado all other Tripal modules must not be installed.'),
+     '#required' => TRUE,
   );
 
-  $form['description'] = array(
-    '#type' => 'item',
-    '#value' => t("<font color=\"red\">WARNING:</font> A new install of Chado v1.2 or v1.11 "
-      . "will install Chado within the Drupal database in a \"chado\" schema. If the \"chado\" schema already exists it will "
-      . "be overwritten and all data will be lost.  You may choose to update an existing Chado v1.11 if it was installed with a previous "
-      . "version of Tripal (e.g. v0.3b or v0.3.1). The update will not erase any data. "
-      . "If you are using chado in a database external to the "
-      . "Drupal database with a 'chado' entry in the 'settings.php' \$db_url argument "
-      . "then Chado will be installed but will not be used .  The external "
-      . "database specified in the settings.php file takes precedence."),
+  $form['warning'] = array(
+    '#markup' => "<div><font color=\"red\">WARNING:</font>" . t('A new install of
+      Chado will remove and recreate the Chado database if it already exists.') . '</div>',
   );
 
   $form['button'] = array(
     '#type' => 'submit',
     '#value' => t('Install/Upgrade Chado'),
-    '#weight' => 2,
   );
 
   return $form;
 }
 
+function tripal_core_chado_load_form_validate($form, &$form_state) {
+  // We do not want to allow re-installation of Chado if other
+  // Tripal modules are installed.  This is because the install files
+  // of those modules may add content to Chado and reinstalling Chado
+  // removes that content which may break the modules.
+
+  if ($form_state['values']['action_to_do'] == "Install Chado v1.2" or
+      $form_state['values']['action_to_do'] == "Install Chado v1.11") {
+
+    $modules = system_get_info('module');
+    $list = array();
+    foreach ($modules as $mname => $module) {
+      if (array_key_exists('dependencies', $module) and in_array('tripal_core', $module['dependencies'])) {
+        $list[] = $module['name'] . " ($mname)";
+      }
+    }
+    if (count($list) > 0) {
+      form_set_error("action_to_do", "Chado cannot be installed while other Tripal modules
+          are enabled.  You must fully uninstall the following modules if you
+          would like to install or re-install chado.<br>" .
+          implode("<br>", $list));
+    }
+  }
+  if ($form_state['values']['action_to_do'] == "Upgrade Chado v1.11 to v1.2") {
+    // Make sure we are already not at v1.2
+    $real_version = chado_get_version(TRUE);
+    if ($real_version == "1.2") {
+      form_set_error("action_to_do", "You are already at v1.2.  There is no need to upgrade.");
+    }
+  }
+}
 /**
  * Submit Load Chado Schema Form
  *
