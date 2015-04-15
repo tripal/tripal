@@ -699,14 +699,16 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       }
 
       // if a name is not specified then use the unique name as the name
-      if (strcmp($attr_name, '')==0) {
+      if (strcmp($attr_name, '') == 0) {
         $attr_name = $attr_uniquename;
       }
 
-      // if an ID attribute is not specified then use the attribute name plus the date
+      // if an ID attribute is not specified then we must generate a
+      // unique ID. Do this by combining the attribute name with the date
+      // and line number.
       if (!$attr_uniquename) {
         $date = getdate();
-        $attr_uniquename = $attr_name . '-' . $date[0];
+        $attr_uniquename = $attr_name . '-' . $date[0] . '-' . $line_num;
       }
 
       // make sure the landmark sequence exists in the database.  If the user
