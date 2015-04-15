@@ -38,26 +38,26 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
     $record->table_id = $table_id;
     $record->table_name = $table_name;
     $record->schema = serialize($schema);
-  
+
     // get the current custom table record
     $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
     $results = db_query($sql, array(':table_id' => $table_id));
     $custom_table = $results->fetchObject();
-  
+
     // if this is a materialized view then don't allow editing with this function
     if ($custom_table->mview_id) {
       tripal_report_error('tripal_core', TRIPAL_ERROR, "Please use the tripal_edit_mview() function to edit this custom table as it is a materialized view.", array());
       drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/schema/mviews') . " interface to edit it.", 'error');
       return FALSE;
     }
-    
+
     // if the user changed the table name, we want to drop the old one and force
     // creation of the new one.
     if ($custom_table->table_name != $table_name) {
       chado_query("DROP TABLE %s", $custom_table->table_name);
       $skip_if_exists = 0; // we want to create the table
     }
-  
+
     // if skip creation is not set, then drop the table from chado if it exists
     if (!$skip_if_exists) {
       if (db_table_exists($custom_table->table_name)) {
@@ -65,7 +65,7 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
         drupal_set_message(t("Custom Table " . $custom_table->table_name . " dropped"));
       }
     }
-  
+
     // update the custom table record and run the create custom table function
     drupal_write_record('tripal_custom_tables', $record, 'table_id');
     $success = chado_create_custom_table ($table_name, $schema, $skip_if_exists);
@@ -90,10 +90,10 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
  * table. This way the function cannot be used to accidentally alter existing
  * non custom tables.  If $skip_if_exists is set then the table is simply
  * added to the tripal_custom_tables and no table is created in Chado.
- * 
- * If you are creating a materialized view do not use this function, but rather 
+ *
+ * If you are creating a materialized view do not use this function, but rather
  * use the tripal_add_mview(). A materialized view is also considered a custom table
- * and an entry for it will be added to both the tripal_mviews and 
+ * and an entry for it will be added to both the tripal_mviews and
  * tripal_custom_tables tables, but only if the tripal_add_mview() function is
  * used. The optional $mview_id parameters in this function is intended
  * for use by the tripal_add_mview() function when it calls this function
@@ -129,20 +129,20 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = 1, $mview_
     $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_name = :table_name";
     $results = db_query($sql, array(':table_name' => $table));
     $centry = $results->fetchObject();
-  
+
     // check to see if the table already exists in the chado schema
     $exists = chado_table_exists($table);
-  
+
     // if the table does not exist then create it
     if (!$exists) {
       $ret = db_create_table('chado.' . $table, $schema);
       $created = 1;
     }
-  
+
     // if the table exists in Chado and in our custom table and
     // skip creation is turned off then drop and re-create the table
     if ($exists and is_object($centry) and !$skip_if_exists) {
-  
+
       // drop the table we'll recreate it with the new schema
       chado_query('DROP TABLE {' . $table . '}');
       // remove any 'referring_tables' from the array as the db_create_table doesn't use that
@@ -153,7 +153,7 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = 1, $mview_
       db_create_table('chado.' . $table, $new_schema);
       $recreated = 1;
     }
-  
+
     // add an entry in the tripal_custom_table
     $record = new stdClass();
     $record->table_name = $table;
@@ -161,17 +161,17 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = 1, $mview_
     if ($mview_id) {
       $record->mview_id = $mview_id;
     }
-  
+
     // if an entry already exists then remove it
     if ($centry) {
       $sql = "DELETE FROM {tripal_custom_tables} WHERE table_name = :table_name";
       db_query($sql, array(':table_name' => $table));
     }
-    $success = drupal_write_record('tripal_custom_tables', $record); 
+    $success = drupal_write_record('tripal_custom_tables', $record);
 
     // now add any foreign key constraints
     if (($created or !$skip_if_exists) and array_key_exists('foreign keys', $schema)) {
-  
+
       // iterate through the foreign keys and add each one
       $fkeys = $schema['foreign keys'];
       foreach ($fkeys as $fktable => $fkdetails) {
@@ -192,7 +192,7 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = 1, $mview_
     $transaction->rollback();
     watchdog_exception('tripal_core', $e);
     $error = _drupal_decode_exception($e);
-    drupal_set_message(t("Could not add custom table '%table_name': %message.", 
+    drupal_set_message(t("Could not add custom table '%table_name': %message.",
       array('%table_name' => $table, '%message' => $error['!message'])), 'error');
     return FALSE;
   }
@@ -209,25 +209,31 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = 1, $mview_
 }
 
 /**
- * This function is used to validate a Drupal Schema API array prior to 
+ * This function is used to validate a Drupal Schema API array prior to
  * passing it ot the chado_create_custom_table_schema().  This function
  * can be used in a form validate function or whenver a schema is provided by
  * a user and needs validation.
- * 
+ *
  * @param $schema_array
  *   the Drupal Schema API compatible array
- *   
+ *
  * @return
  *   An empty string for success or a message string for failure
- * 
+ *
  * @ingroup tripal_custom_tables_api
  */
 function chado_validate_custom_table_schema($schema_array) {
 
+
   if (is_array($schema_array) and !array_key_exists('table', $schema_array)) {
     return "The schema array must have key named 'table'";
   }
-  
+
+  if (!ctype_lower($schema_array['table'])) {
+    return "Postgres will automatically change the table name to lower-case. To prevent unwanted side-effects, please rename the table with all lower-case characters.";
+  }
+
+
   // check index length
   if (array_key_exists('indexes', $schema_array)) {
     foreach ($schema_array['indexes'] as $index_name => $details) {
@@ -239,7 +245,7 @@ function chado_validate_custom_table_schema($schema_array) {
       }
     }
   }
-  
+
   // check unique key length
   if (array_key_exists('unique keys', $schema_array)) {
     foreach ($schema_array['unique keys'] as $index_name => $details) {
@@ -251,7 +257,7 @@ function chado_validate_custom_table_schema($schema_array) {
       }
     }
   }
-  
+
 }
 /**
  * Retrieve the custom table id given the name

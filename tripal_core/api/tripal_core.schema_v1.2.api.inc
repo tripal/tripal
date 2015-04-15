@@ -73,7 +73,7 @@ function tripal_core_chado_schema_v1_2_acquisition() {
         'description' => '',
         'type' => 'datetime',
         'not null' => FALSE,
-        'default' => 'ow(',
+        'default' => 'now()',
       ),
       'name' => array(
         'description' => '',
@@ -384,7 +384,7 @@ function tripal_core_chado_schema_v1_2_analysis() {
         'description' => '',
         'type' => 'datetime',
         'not null' => TRUE,
-        'default' => 'ow(',
+        'default' => 'now()',
       ),
     ),
     'primary key' => array(
@@ -937,7 +937,7 @@ function tripal_core_chado_schema_v1_2_assay() {
         'description' => '',
         'type' => 'datetime',
         'not null' => FALSE,
-        'default' => 'ow(',
+        'default' => 'now()',
       ),
       'arrayidentifier' => array(
         'description' => '',
@@ -1738,13 +1738,13 @@ function tripal_core_chado_schema_v1_2_cell_line() {
         'description' => '',
         'type' => 'datetime',
         'not null' => TRUE,
-        'default' => 'ow(',
+        'default' => 'now()',
       ),
       'timelastmodified' => array(
         'description' => '',
         'type' => 'datetime',
         'not null' => TRUE,
-        'default' => 'ow(',
+        'default' => 'now()',
       ),
     ),
     'primary key' => array(
@@ -4889,13 +4889,13 @@ function tripal_core_chado_schema_v1_2_feature() {
         'description' => '',
         'type' => 'datetime',
         'not null' => TRUE,
-        'default' => 'ow(',
+        'default' => 'now()',
       ),
       'timelastmodified' => array(
         'description' => '',
         'type' => 'datetime',
         'not null' => TRUE,
-        'default' => 'ow(',
+        'default' => 'now()',
       ),
     ),
     'primary key' => array(
@@ -7136,13 +7136,13 @@ function tripal_core_chado_schema_v1_2_library() {
         'description' => '',
         'type' => 'datetime',
         'not null' => TRUE,
-        'default' => 'ow(',
+        'default' => 'now()',
       ),
       'timelastmodified' => array(
         'description' => '',
         'type' => 'datetime',
         'not null' => TRUE,
-        'default' => 'ow(',
+        'default' => 'now()',
       ),
     ),
     'primary key' => array(
@@ -11682,7 +11682,7 @@ function tripal_core_chado_schema_v1_2_quantification() {
         'description' => '',
         'type' => 'datetime',
         'not null' => FALSE,
-        'default' => 'ow(',
+        'default' => 'now()',
       ),
       'name' => array(
         'description' => '',
@@ -13881,7 +13881,7 @@ function tripal_core_chado_schema_v1_2_tableinfo() {
         'description' => '',
         'type' => 'date',
         'not null' => TRUE,
-        'default' => 'ow(',
+        'default' => 'now()',
       ),
     ),
     'primary key' => array(

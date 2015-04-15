@@ -323,22 +323,22 @@ function chado_stock_validate(&$node, $form, &$form_state) {
   // Since this validate can be called on AJAX and Deletion of the node
   // we need to make this check to ensure queries are not executed
   // without the proper values.
-  if(!isset($node->op) OR $node->op != 'Save') {
+  if(property_exists($node, "op") and $node->op != 'Save') {
     return;
   }
 
   // we are syncing if we do not have a node ID but we do have a stock_id. We don't
   // need to validate during syncing so just skip it.
-  if (is_null($node->nid) and property_exists($node, 'stock_id') and $node->stock_id != 0) {
+  if (!property_exists($node, 'nid') and property_exists($node, 'stock_id') and $node->stock_id != 0) {
     return;
   }
 
   // remove surrounding whitespace
-  $node->uniquename = trim($node->uniquename);
-  $node->sname = trim($node->sname);
-  $node->stock_description = trim($node->stock_description);
-  $node->accession = trim($node->accession);
-  $node->db_description = trim($node->db_description);
+  $node->uniquename = property_exists($node, 'uniquename') ? trim($node->uniquename) : '';
+  $node->sname = property_exists($node, 'sname') ? trim($node->sname) : '';
+  $node->stock_description = property_exists($node, 'stock_description') ? trim($node->stock_description) : '';
+  $node->accession = property_exists($node, 'accession') ? trim($node->accession) : '';
+  $node->db_description = property_exists($node, 'db_description') ? trim($node->db_description) : '';
 
   $int_in_chado_sql = "SELECT count(*) as count FROM {:table} WHERE :column = :value";
   $string_in_chado_sql = "SELECT count(*) as count FROM {:table} WHERE :column = :value";
@@ -441,16 +441,17 @@ function chado_stock_validate(&$node, $form, &$form_state) {
  */
 function chado_stock_insert($node) {
 
-  $node->uniquename   = trim($node->uniquename);
-  $node->sname        = trim($node->sname);
-  $node->accession    = trim($node->accession);
 
   $stock_id = '';
 
   // if there is an stock_id in the $node object then this must be a sync so
   // we can skip adding the stock to chado as it is already there, although
-  // we do need to proceed with the rest of the insert
+  // we do need to proceed with insertion into the chado/drupal linking table.
   if (!property_exists($node, 'stock_id')) {
+
+    $node->uniquename   = trim($node->uniquename);
+    $node->sname        = trim($node->sname);
+    $node->accession    = trim($node->accession);
 
     // before we can add the stock, we must add the dbxref if one has been
     // provided by the user.

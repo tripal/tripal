@@ -2,14 +2,14 @@
 
 /**
  * @file
- * This file contains all Drupal hooks for the module other than any
- * node hooks and block hooks. Those go in the [module name].chado_node.inc file
- * and [module_name].blocks.inc respectively
+ * This file contains all Drupal hooks for the module other than any node hooks
+ * and block hooks. Those go in the [module name].chado_node.inc file and
+ * [module_name].blocks.inc respectively
  *
  */
 
-// EXPLANATION: include any files needed for this module.  That includes any 
-// API file, the theme file, or include files.
+// EXPLANATION: include any files needed for this module. That includes any API
+// file, the theme file, or include files.
 require('api/tripal_example.api.inc');
 require('theme/tripal_example.theme.inc');
 require('includes/tripal_example.admin.inc');
@@ -18,21 +18,20 @@ require('includes/tripal_example.chado_node.inc');
 
 /**
  * Implementation of hook_permissions()
- * 
+ *
  * Set the permission types that this module uses.
- * 
+ *
  * @ingroup tripal_example
  */
 function tripal_example_permission() {
-  
-  // EXPLANATION:  here we want to setup any of the permission types
-  // that this module needs.  Our exmample module creates a new
-  // chado node type called 'chado_example'.  Therefore, we need 
-  // permissions to view, edit, delete, create our new node type.  Additionally,
-  // we want to add a permission that allows for administration of this 
-  // module.  These permissions will appear in the 'People' -> 'Permissions'
-  // configuration page and allow the site admin to specify which user roles
-  // are allowed to perform specific actions.
+
+  // EXPLANATION:  here we want to setup any of the permission types that this
+  // module needs. Our example module creates a new chado node type called
+  // 'chado_example'. Therefore, we need permissions to view, edit, delete,
+  // create our new node type. Additionally, we want to add a permission that
+  // allows for administration of this module. These permissions will appear in
+  // the 'People' -> 'Permissions' configuration page and allow the site admin
+  // to specify which user roles are allowed to perform specific actions.
   return array(
     'access chado_example content' => array(
       'title' => t('View Examples'),
@@ -59,32 +58,32 @@ function tripal_example_permission() {
 
 /**
  * Implements hook_menu()
- * 
+ *
  * Specifies menu items and URLs used by this module.
  *
  * @ingroup tripal_example
  */
 function tripal_example_menu() {
   $items = array();
-  
-  // EXPLANATION:  the $items array should be popluated to contain a list of 
-  // menu items or URL callbacks that our module needs.  
-  // all Tripal Extension modules shoudl provide at least these menu items:
+
+  // EXPLANATION:  the $items array should be populated to contain a list of
+  // menu items or URL callbacks that our module needs.
+  // all Tripal Extension modules should provide at least these menu items:
   //  * A menu item for an administrative home page
   //  * A menu item for 'Help' documentation
   //  * A menu item for a module configuration page
   //
   // Additionally, if your module defines a custom node type that is linked
   // to a record in Chado:
-  //  * A menu item for syncing drupal nodes with Chado records.   
-  //    
-  
+  //  * A menu item for syncing drupal nodes with Chado records.
+  //
+
   // EXPLANATION:  all extension modules should have an administrative menu item
-  // with the path set to 'admin/tripal/extension/[module name]'.  This will
-  // place the menu item in the 'Tripal' -> 'Extesion Modules' page.  Because this
-  // is an administrative menu item we must be sure to set the 'access arguments'
-  // to be 'administer tripal example' which is a permission type we created
-  // in the tripal_example_permissions() function above.
+  // with the path set to 'admin/tripal/extension/[module name]'. This will
+  // place the menu item in the 'Tripal' -> 'Extension Modules' page. Because
+  // this is an administrative menu item we must be sure to set the
+  // 'access arguments' to be 'administer tripal example' which is a permission
+  // type we created in the tripal_example_permissions() function above.
   $items['admin/tripal/extension/tripal_example'] = array(
     'title' => 'Examples',
     'description' => 'Example module for help with development of new extension modules.',
@@ -93,14 +92,14 @@ function tripal_example_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
-  // EXPLANATION: all extension modules should provide help documentation to 
+  // EXPLANATION: all extension modules should provide help documentation to
   // describe the functionality of the module and any installation or setup
-  // tasks that may be required.  The menu 'type' is MENU_LOCAL_TASK so that
-  // the link appears in a tab on the extension module's administrative page.
-  // here the 'page callback' specifies that we are using Drupal's theme 
+  // tasks that may be required. The menu 'type' is MENU_LOCAL_TASK so that the
+  // link appears in a tab on the extension module's administrative page.
+  // Here the 'page callback' specifies that we are using Drupal's theme
   // function and the 'page_arguments' indicate the name of the template file
-  // Thus, all help documentation should be provided in the 
-  // [module name]/theme/tripal_example_help.tpl.php file. 
+  // Thus, all help documentation should be provided in the
+  // [module name]/theme/tripal_example_help.tpl.php file.
   $items['admin/tripal/extension/tripal_example/help'] = array(
     'title' => 'Help',
     'description' => 'Basic Description of Tripal Library Module Functionality',
@@ -111,14 +110,14 @@ function tripal_example_menu() {
     'weight' => 10
   );
 
-  // EXPLANATION: all extension modules should provide a configuration page. 
+  // EXPLANATION: all extension modules should provide a configuration page.
   // Even if your module does not need configuration the menu item and page
   // should be created. This helps users recognize that the module is installed
-  // and working.  The configuration page can simply state that no 
-  // configuration settings are available.  Typically a form is provided for the 
-  // module's configuration settings. Therefore the 'page callback' uses the
+  // and working. The configuration page can simply state that no configuration
+  // settings are available. Typically a form is provided for the module's
+  // configuration settings. Therefore the 'page callback' uses the
   // drupal_get_form() function and the 'page argument' indicates the form
-  // to call is named 'tripal_eample_admin'.  The function that describes
+  // to call is named 'tripal_eample_admin'. The function that describes
   // to form is in the includes/tripal_example.admin.inc file.
   $items['admin/tripal/extension/tripal_example/configuration'] = array(
     'title' => 'Settings',
@@ -129,10 +128,10 @@ function tripal_example_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 5
   );
-  
+
   // EXPLANATION: If your module defines a new chado node type and that node
   // type directly links to a record in Chado, then you can use the Tripal API
-  // to quickly provide syncing functionality.  See the API documentation here
+  // to quickly provide syncing functionality. See the API documentation here
   // for more information on how that is setup:
   // http://api.tripal.info/api/tripal/tripal_core%21api%21tripal_core.chado_nodes.api.inc/function/chado_node_sync_form/2.x
   $items['admin/tripal/extension/tripal_example/sync'] = array(
@@ -144,15 +143,15 @@ function tripal_example_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 2
   );
-  
+
   // EXPLANATION: If your module defines a new node type that uses the default
-  // table of contents (left-side bar of content panes on a page). Then a 
-  // 'TOC' link will automatically appear on the node page to allow for 
-  // customization of the TOC.  However those customizations are only node
-  // specific.  To provide a tab in the module's administrative pages add the
-  // following menu item. This menu will provide a form similar to the one
-  // found on the node that allows the user to set global TOC settings for the
-  // content type.  Be sure to always use a menu path of the form:
+  // table of contents (left-side bar of content panes on a page). Then a 'TOC'
+  // link will automatically appear on the node page to allow for customization
+  // of the TOC. However those customizations are only node specific. To provide
+  // a tab in the module's administrative pages add the following menu item.
+  // This menu will provide a form similar to the one found on the node that
+  // allows the user to set global TOC settings for the content type. Be sure to
+  // always use a menu path of the form:
   //   admin/tripal/chado/[module name]/[content type name]_toc
   // this allows for a module to support TOC management when there are multiple
   // content types provided by the module, as the content type is specified
@@ -168,16 +167,16 @@ function tripal_example_menu() {
     'file path' => drupal_get_path('module', 'tripal_core'),
     'weight' => 3
   );
-  
+
   return $items;
 }
 
 /**
  * Implements hook_views_api()
- * 
- * This hook tells drupal that there is views support for
- * for this module which then automatically includes the tripal_db.views.inc 
- * where all the views integration code is found.
+ *
+ * This hook tells Drupal that there is views support for this module which then
+ * automatically includes the tripal_db.views.inc where all the views
+ * integration code is found.
  *
  * @ingroup tripal_example
  */
@@ -189,35 +188,34 @@ function tripal_example_views_api() {
 
 
 /**
- *  We need to let drupal know about our theme functions and their arguments.
- *  We create theme functions to allow users of the module to customize the
- *  look and feel of the output generated in this module
+ * We need to let Drupal know about our theme functions and their arguments.
+ * We create theme functions to allow users of the module to customize the look
+ * and feel of the output generated in this module.
  *
  * @ingroup tripal_example
  */
 function tripal_example_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
 
-  // EXPLANATION: this function defines all of the functions and templates
-  // that this module needs to provide content.  These details are provided
-  // in the form of an array the indicates which functions or templates
-  // provide content.  Please see the Drupal theming guide for an in-depth
-  // description for how theming works in Drupal:
+  // EXPLANATION: this function defines all of the functions and templates that
+  // this module needs to provide content. These details are provided in the
+  // form of an array the indicates which functions or templates provide
+  // content. Please see the Drupal theming guide for an in-depth description
+  // for how theming works in Drupal:
   // https://drupal.org/documentation/theme
-  
+
   $items = array(
-    
-    // EXPLANATION:  If this module defines a new node type that displays
-    // Chado data then we should use Tripal's default node template.  This
-    // template ensures that all content provided by Tripal and Tripal 
-    // extension modules has the same look and feel.  It is designed to be
-    // generic such that it won't intefer with the look-and-feel of the default
-    // theme.  This generic template will organize the node into a table
-    // of contents found on the left-side of the page and place the content
-    // in the center of the page.  User's will cycle through content on the 
-    // page by clicking the links in the table of contents. If you do not want
-    // to use the default Tripal template you can change this array to your
-    // liking.
+
+    // EXPLANATION:  If this module defines a new node type that displays Chado
+    // data then we should use Tripal's default node template. This template
+    // ensures that all content provided by Tripal and Tripal extension modules
+    // has the same look and feel. It is designed to be generic such that it
+    // won't interfere with the look-and-feel of the default theme. This generic
+    // template will organize the node into a table of contents found on the
+    // left-side of the page and place the content in the center of the page.
+    // User's will cycle through content on the page by clicking the links in
+    // the table of contents. If you do not want to use the default Tripal
+    // template you can change this array to your liking.
     'node__chado_example' => array(
       'template' => 'node--chado-generic',
       'render element' => 'node',
@@ -230,12 +228,12 @@ function tripal_example_theme($existing, $type, $theme, $path) {
     // correspond directly to a file with the extension '.tpl.php'. For example
     // the 'tripal_example_base' template will have a corresponding
     // tripal_example_base.tpl.php file where the display code is housed.
-    // The only required templates are the 'base',  'help' and 'teaseer' templates.
-    // The base template provides the basic information about the record in 
-    // in Chado.  The 'help' template provides the adminstrative help documenation,
-    // and the teaser provides a brief summary of the record that can be used
-    // as short description of the record in aggregated lists.
-    
+    // The only required templates are the 'base',  'help' and 'teaser'
+    // templates. The base template provides the basic information about the
+    // record in Chado. The 'help' template provides the administrative help
+    // documentation, and the teaser provides a brief summary of the record that
+    // can be used as short description of the record in aggregated lists.
+
     // the base template
     'tripal_example_base' => array(
       'variables' => array('node' => NULL),
@@ -254,13 +252,14 @@ function tripal_example_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_example_teaser',
       'path' => "$path/theme/templates",
     ),
-    
-    
-    // EXPLANATION: Typically, a different template is created for each subset of data.
-    // for example, most Chado tables have a 'XXXXprop', 'XXXX_cvterm',
+
+
+    // EXPLANATION: Typically, a different template is created for each subset
+    // of data.
+    // For example, most Chado tables have a 'XXXXprop', 'XXXX_cvterm',
     // 'XXXX_dbxref', 'XXXX_synonyms', 'XXXX_relationships' tables. Therefore,
     // a template is created to display data from each of these tables.
-    
+
     'tripal_example_properties' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_example_properties',
@@ -279,11 +278,11 @@ function tripal_example_theme($existing, $type, $theme, $path) {
 
     // EXPLANATION: sometimes a module may want to add content to another
     // modules' node types. For example, the feature module does this by
-    // adding a 'feature summary' data to an organism.  To add data to another
-    // module's node, the templates belong to this module and are 
-    // specified in the same way as above.  However, the naming of the 
-    // template is changed to include the name of the module that supplies
-    // the node type followed by our record name: 
+    // adding a 'feature summary' data to an organism. To add data to another
+    // module's node, the templates belong to this module and are specified in
+    // the same way as above. However, the naming of the template is changed to
+    // include the name of the module that supplies the node type followed by
+    // our record name:
 
     // tripal_organism templates
     'tripal_organism_examples' => array(
@@ -292,25 +291,24 @@ function tripal_example_theme($existing, $type, $theme, $path) {
       'path' => "$path/theme/templates",
     ),
   );
-  
+
   return $items;
 }
 
 /**
  * Implements hook_help()
- * 
+ *
  * Adds a help page to the module list
  */
 function tripal_example_help ($path, $arg) {
-  
-  // EXPLANATION: in the tripal_example_menu() function above we created 
-  // a menu item for the help documentation.  The menu item specified 
-  // a function that should be called when the menu item is clicked.  This 
-  // is that function.  But, rather than place HTML code in this function
-  // we want to have our help documentation in a template file.  We 
-  // specified in the tripal_example_theme() function that we have a template
-  // file so now we want to use get the contents of that template file and
-  // return it.
+
+  // EXPLANATION: in the tripal_example_menu() function above we created a menu
+  // item for the help documentation. The menu item specified a function that
+  // should be called when the menu item is clicked. This is that function. But,
+  // rather than place HTML code in this function we want to have our help
+  // documentation in a template file. We specified in the
+  // tripal_example_theme() function that we have a template file so now we want
+  // to use get the contents of that template file and return it.
   if ($path == 'admin/help#tripal_example') {
     return theme('tripal_example_help', array());
   }
@@ -324,38 +322,38 @@ function tripal_example_help ($path, $arg) {
  */
 function tripal_example_cron() {
 
-  // EXPLANATION: here we can add any code that needs to be executed when
-  // the Drupal cron is run.
+  // EXPLANATION: here we can add any code that needs to be executed when the
+  // Drupal cron is run.
 }
 
 
 /**
  * Implementation of hook_form_alter()
- * 
+ *
  * Allows a module to alter any form prior to it being rendered. For more
  * details about Drupal's Form API see this page:
- * 
+ *
  * https://api.drupal.org/api/drupal/includes!form.inc/group/form_api/7
  *
  */
 function tripal_example_form_alter(&$form, &$form_state, $form_id) {
-  
+
   if ($form_id == "chado_example_node_form") {
-    
-    // EXPLANATION:  The hook_form_alter() Drupal hook is used to alter
-    // a form before it is displayed.  This allows any module to provide new
-    // form elements or change the form that another module creates.  We do
-    // not need to alter a form created by another module, but we do want to
-    // alter the form for our new node type.  For example, all node types
-    // will automatically have a 'Preview' button.  For inserting or updating
-    // data for Chado we don't really need a Preview button and it complicates
-    // the form.  So, we use the following code to disable the Preview button.
-    // if you want to keep the preview button then remove this code.
-    // turn of preview button for insert/updates
+
+    // EXPLANATION:  The hook_form_alter() Drupal hook is used to alter a form
+    // before it is displayed. This allows any module to provide new form
+    // elements or change the form that another module creates. We do not need
+    // to alter a form created by another module, but we do want to alter the
+    // form for our new node type. For example, all node types will
+    // automatically have a 'Preview' button. For inserting or updating data
+    // for Chado we don't really need a Preview button and it complicates the
+    // form. So, we use the following code to disable the Preview button. If
+    // you want to keep the preview button then remove this code. turn of
+    // preview button for insert/updates
     $form['actions']['preview']['#access'] = FALSE;
-    
+
     // EXPLANATION: Drupal always adds a 'body' field to all node types.
-    // Our node type doens't use the 'body' field so we remove it from the form.
+    // Our node type doesn't use the 'body' field so we remove it from the form.
     unset($form['body']);
   }
 }

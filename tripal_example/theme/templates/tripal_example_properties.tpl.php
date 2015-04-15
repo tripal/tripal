@@ -11,24 +11,25 @@ $exampleprops = $example->exampleprop;
 $properties = array();
 
 if (count($properties)) { ?>
-  <div class="tripal_example-data-block-desc tripal-data-block-desc">Additional details for this example include:</div> <?php 
+  <div class="tripal_example-data-block-desc tripal-data-block-desc">Additional details for this example include:</div> <?php
 
-  // the $headers array is an array of fields to use as the colum headers.
+  // the $headers array is an array of fields to use as the column headers.
   // additional documentation can be found here
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
   $headers = array('Property Name', 'Value');
-  
+
   // the $rows array contains an array of rows where each row is an array
-  // of values for each column of the table in that row.  Additional documentation
-  // can be found here:
+  // of values for each column of the table in that row. Additional
+  // documentation can be found here:
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
   $rows = array();
-  
+
   $keywords = array();
   foreach ($properties as $property) {
-    // each keyword is stored as a seperate properties. We want to show them
-    // only in a single field not as a bunc of individual properties, so when we see one, 
-    // save it in an array for later and down't add it yet to the table yet.
+    // each keyword is stored as a separate properties. We want to show them
+    // only in a single field not as a bunch of individual properties, so when
+    // we see one, save it in an array for later and don't add it yet to the
+    // table yet.
     if ($property->type_id->name == 'Keywords') {
       $keywords[] = $property->value;
       continue;
@@ -44,11 +45,11 @@ if (count($properties)) { ?>
       'Keywords',
       implode(', ', $keywords),
     );
-  } 
+  }
 
   // the $table array contains the headers and rows array as well as other
-  // options for controlling the display of the table.  Additional
-  // documentation can be found here:
+  // options for controlling the display of the table. Additional documentation
+  // can be found here:
   // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
   $table = array(
     'header' => $headers,
@@ -62,8 +63,8 @@ if (count($properties)) { ?>
     'colgroups' => array(),
     'empty' => '',
   );
-  
-  // once we have our table array structure defined, we call Drupal's theme_table()
-  // function to generate the table.
+
+  // once we have our table array structure defined, we call Drupal's
+  // theme_table() function to generate the table.
   print theme_table($table);
 }

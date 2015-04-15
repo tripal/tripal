@@ -477,6 +477,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       // check to see if we have FASTA section, if so then set the variable
       // to start parsing
       if (preg_match('/^##FASTA/i', $line)) {
+        print "Parsing FASTA portion...\n";
         if ($remove) {
           // we're done because this is a delete operation so break out of the loop.
           break;
@@ -498,7 +499,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           $result = chado_query($sel_cvterm_sql, $query);
           $cvterm = $result->fetchObject();
           if (!$cvterm) {
-            tripal_report_error('tripal_feature', TRIPAL_ERROR, 
+            tripal_report_error('tripal_feature', TRIPAL_ERROR,
              'cannot find feature type \'%landmark_type\' on line %line_num of the GFF file',
               array('%landmark_type' => $landmark_type, '%line_num' => $line_num));
             return '';
@@ -672,11 +673,6 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           }
         }
       }
-
-      if ($skip_line) {
-        continue;
-      }
-
       // if neither name nor uniquename are provided then generate one
       if (!$attr_uniquename and !$attr_name) {
         // check if an alternate ID field is suggested, if so, then use
@@ -703,14 +699,16 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       }
 
       // if a name is not specified then use the unique name as the name
-      if (strcmp($attr_name, '')==0) {
+      if (strcmp($attr_name, '') == 0) {
         $attr_name = $attr_uniquename;
       }
 
-      // if an ID attribute is not specified then use the attribute name plus the date
+      // if an ID attribute is not specified then we must generate a
+      // unique ID. Do this by combining the attribute name with the date
+      // and line number.
       if (!$attr_uniquename) {
         $date = getdate();
-        $attr_uniquename = $attr_name . '-' . $date[0];
+        $attr_uniquename = $attr_name . '-' . $date[0] . '-' . $line_num;
       }
 
       // make sure the landmark sequence exists in the database.  If the user

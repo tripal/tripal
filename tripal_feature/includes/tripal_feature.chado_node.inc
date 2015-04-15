@@ -260,25 +260,26 @@ function chado_feature_form($node, &$form_state) {
  */
 function chado_feature_validate($node, $form, &$form_state) {
 
+
   // We only want to validate when the node is saved.
   // Since this validate can be called on AJAX and Deletion of the node
   // we need to make this check to ensure queries are not executed
   // without the proper values.
-  if(!isset($node->op) OR $node->op != 'Save') {
+  if(property_exists($node, "op") and $node->op != 'Save') {
     return;
   }
 
   // we are syncing if we do not have a node ID but we do have a feature_id. We don't
   // need to validate during syncing so just skip it.
-  if (is_null($node->nid) and property_exists($node, 'feature_id') and $node->feature_id != 0) {
+  if (!property_exists($node, 'nid') and property_exists($node, 'feature_id') and $node->feature_id != 0) {
     return;
   }
 
   // remove surrounding white-space on submitted values
-  $node->uniquename   = trim($node->uniquename);
-  $node->fname        = trim($node->fname);
-  $node->feature_type = trim($node->feature_type);
-  $node->residues     = trim($node->residues);
+  $node->uniquename   = property_exists($node, 'uniquename') ? trim($node->uniquename) : '';
+  $node->fname        = property_exists($node, 'fname') ? trim($node->fname) : '';
+  $node->feature_type = property_exists($node, 'feature_type') ? trim($node->feature_type) : '';
+  $node->residues     = property_exists($node, 'residues') ? trim($node->residues) : '';
 
   // Validating for an update
   if (property_exists($node, 'nid')) {
@@ -338,6 +339,7 @@ function chado_feature_validate($node, $form, &$form_state) {
         CVT.name      = :cvtname
     ";
     $args = array(':name' => $node->uniquename, ':organism_id' => $node->organism_id, ':cvtname' => $node->feature_type);
+
     $result = chado_query($sql, $args)->fetchObject();
     if ($result) {
       form_set_error('uniquename', t("Feature insert cannot proceed. The feature name '$node->uniquename' already exists for this organism. Please provide a unique name for this feature."));
@@ -412,33 +414,33 @@ function chado_feature_node_access($node, $op, $account) {
  */
 function chado_feature_insert($node) {
 
-  $node->uniquename   = trim($node->uniquename);
-  $node->fname        = trim($node->fname);
-  $node->feature_type = trim($node->feature_type);
-  $node->residues     = trim($node->residues);
-
-  // remove spaces, newlines from residues
-  $residues = preg_replace("/[\n\r\s]/", "", $node->residues);
-  $obsolete = 'FALSE';
-  if ($node->is_obsolete) {
-    $obsolete = 'TRUE';
-  }
-
-  // get the feature type id
-  $values = array(
-    'cv_id' => array(
-      'name' => 'sequence'
-    ),
-    'name' => $node->feature_type
-  );
-  $type = chado_select_record('cvterm', array('cvterm_id'), $values);
-
   $feature_id = '';
 
   // if there is a feature_id in the $node object then this must be a sync so
   // we can skip adding the feature as it is already there, although
-  // we do need to proceed with the rest of the insert
+  // we do need to proceed with insertion into the chado/drupal linking table.
   if (!property_exists($node, 'feature_id')) {
+    $node->uniquename   = trim($node->uniquename);
+    $node->fname        = trim($node->fname);
+    $node->feature_type = trim($node->feature_type);
+    $node->residues     = trim($node->residues);
+
+    // remove spaces, newlines from residues
+    $residues = preg_replace("/[\n\r\s]/", "", $node->residues);
+    $obsolete = 'FALSE';
+    if ($node->is_obsolete) {
+      $obsolete = 'TRUE';
+    }
+
+    // get the feature type id
+    $values = array(
+        'cv_id' => array(
+            'name' => 'sequence'
+        ),
+        'name' => $node->feature_type
+    );
+    $type = chado_select_record('cvterm', array('cvterm_id'), $values);
+
     $values = array(
       'organism_id' => $node->organism_id,
       'name' => $node->fname,

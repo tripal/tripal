@@ -905,7 +905,7 @@ function chado_delete_record($table, $match, $options = NULL) {
  * Additional Options Include:
  *  - has_record
  *     Set this argument to 'TRUE' to have this function return a numeric
- *     value for the number of recrods rather than the array of records.  this
+ *     value for the number of records rather than the array of records.  this
  *     can be useful in 'if' statements to check the presence of particula records.
  *  - return_sql
  *     Set this to 'TRUE' to have this function return an array where the first
@@ -1349,7 +1349,7 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
     }
     $sql = drupal_substr($sql, 0, -2);  // get rid of the trailing ', '
   }
-  
+
   // Limit the records returned
   if (array_key_exists('limit', $options) and is_numeric($options['limit'])) {
     $sql .= " LIMIT " . $options['limit'];

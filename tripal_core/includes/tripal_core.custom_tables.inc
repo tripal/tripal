@@ -57,7 +57,7 @@ function tripal_custom_table_admin_view() {
  * @ingroup tripal_custom_tables
  */
 function tripal_custom_table_new_page() {
- 
+
   $form = drupal_get_form('tripal_custom_tables_form');
   return drupal_render($form);
 }
@@ -140,7 +140,7 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
     $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id ";
     $results = db_query($sql, array(':table_id' => $table_id));
     $custom_table = $results->fetchObject();
-    
+
     // if this is a materialized view then don't allow editing with this function
     if (property_exists($custom_table, 'mview_id') and $custom_table->mview_id) {
       drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/schema/mviews') . " interface to edit it.", 'error');
@@ -161,7 +161,7 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
       $default_schema = preg_replace('/=>\s+\n\s+array/', '=> array', $default_schema);
     }
   }
-  
+
   $form['return'] = array(
     '#type' => 'markup',
     '#markup' => "<p>" . l("Return to list of custom tables", "admin/tripal/schema/custom_tables") . "</p>",
@@ -178,49 +178,33 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
     '#value' => $table_id
   );
 
-  $form['instructions']= array(
+  $form['instructions'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Instructions',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['instructions']['text'] = array(
     '#type'          => 'item',
-    '#description'         => t('At times it is necessary to add a custom table to the Chado schema.
-       These are not offically sanctioned tables but may be necessary for local data requirements.
-       Avoid creating custom tables when possible as other GMOD tools may not recognize these tables
-       nor the data in them.  Linker tables or property tables are often a good candidate for
-       a custom table. For example a table to link stocks and libraries (e.g. library_stock). 
-       Try to model linker or propery tables after existing tables.  If the
-       table already exists it will not be modified.  To force dropping and recreation of the table
-       click the checkbox below.  Tables are defined usign the ' . l('Drupal Schema API', 'https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7', array('attributes' => array('target' => '_blank')))
+    '#description'         => '<p>' . t('At times it is necessary to add a custom table
+       to the Chado schema. These are not offically sanctioned tables but may
+       be necessary for local data requirements. Avoid creating custom tables
+       when possible as other GMOD tools may not recognize these tables nor
+       the data in them.  Linker tables or property tables are often a good
+       candidate for a custom table. For example a table to link stocks and
+       libraries (e.g. library_stock). Try to model linker or propery tables
+       after existing tables.  If the table already exists it will not be
+       modified.  To force dropping and recreation of the table
+       click the checkbox below.  Tables are defined usign the ' .
+       l('Drupal Schema API', 'https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7',
+         array('attributes' => array('target' => '_blank'))) . '</p>' .
+      '<p>Please note that table names should be all lower-case.</p>'
     ),
   );
 
-  $form['force_drop']= array(
-    '#type'          => 'checkbox',
-    '#title'         => t('Re-create table'),
-    '#description'   => t('Check this box if your table already exists and you would like to drop it and recreate it.'),
-    '#default_value' => $default_force_drop,
-  );
-  $form['schema']= array(
-    '#type'          => 'textarea',
-    '#title'         => t('Schema Array'),
-    '#description'   => t('Please enter the ' . l('Drupal Schema API', 'https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7', array('attributes' => array('target' => '_blank'))) . ' compatible array that defines the table.'),
-    '#required'      => FALSE,
-    '#default_value' => $default_schema,
-    '#rows'          => 25,
-  );
-
-  if ($action == 'Edit') {
-    $value = 'Save';
-  }
-  if ($action == 'Add') {
-    $value = 'Add';
-  }
-  $form['submit'] = array(
-    '#type'         => 'submit',
-    '#value'        => t($value),
-    '#executes_submit_callback' => TRUE,
-  );
-
-  $form['example']= array(
-    '#type'          => 'item',
-    '#description'         => "<br>Example library_stock table: <pre>
+  $form['instructions']['example']= array(
+      '#type'          => 'item',
+      '#description'         => "Example library_stock table: <pre>
 array (
   'table' => 'library_stock',
   'fields' => array (
@@ -264,6 +248,35 @@ array (
     </pre>",
   );
 
+  $form['force_drop']= array(
+    '#type'          => 'checkbox',
+    '#title'         => t('Re-create table'),
+    '#description'   => t('Check this box if your table already exists and you would like to drop it and recreate it.'),
+    '#default_value' => $default_force_drop,
+  );
+  $form['schema']= array(
+    '#type'          => 'textarea',
+    '#title'         => t('Schema Array'),
+    '#description'   => t('Please enter the ' . l('Drupal Schema API', 'https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7', array('attributes' => array('target' => '_blank'))) . ' compatible array that defines the table.'),
+    '#required'      => FALSE,
+    '#default_value' => $default_schema,
+    '#rows'          => 25,
+  );
+
+  if ($action == 'Edit') {
+    $value = 'Save';
+  }
+  if ($action == 'Add') {
+    $value = 'Add';
+  }
+  $form['submit'] = array(
+    '#type'         => 'submit',
+    '#value'        => t($value),
+    '#executes_submit_callback' => TRUE,
+  );
+
+
+
 
   return $form;
 }
@@ -301,13 +314,13 @@ function tripal_custom_tables_form_validate($form, &$form_state) {
       if (is_array($schema_array) and !array_key_exists('table', $schema_array)) {
         form_set_error('schema', t("The schema array must have key named 'table'"));
       }
-      
+
       // validate the contents of the array
       $error = chado_validate_custom_table_schema($schema_array);
       if ($error) {
         form_set_error('schema', $error);
       }
-      
+
       if ($action == 'Edit') {
         // see if the table name has changed. If so, then check to make sure
         // it doesn't already exists. We don't want to drop a table we didn't mean to
@@ -359,7 +372,7 @@ function tripal_custom_tables_form_submit($form, &$form_state) {
   else {
     drupal_set_message(t("No action performed."));
   }
-  
+
   drupal_goto("admin/tripal/schema/custom_tables");
 }
 
@@ -369,26 +382,26 @@ function tripal_custom_tables_form_submit($form, &$form_state) {
  * @ingroup tripal_custom_tables
  */
 function tripal_custom_tables_delete_form($form, &$form_state, $table_id) {
-  
+
   // get details about this table entry
   $sql = "SELECT * FROM {tripal_custom_tables} WHERE table_id = :table_id";
   $results = db_query($sql, array(':table_id' => $table_id));
   $entry = $results->fetchObject();
-  
+
   // if this is a materialized view then don't allow editing with this function
   if ($entry->mview_id) {
     drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/schema/mviews') . " interface to delete it.", 'error');
     drupal_goto("admin/tripal/schema/custom_tables");
     return array();
   }
-  
-  
+
+
   $form = array();
   $form['table_id'] = array(
     '#type' => 'value',
     '#value' => $table_id
   );
-  
+
   $form['sure'] = array(
     '#type' => 'markup',
     '#markup' => '<p>Are you sure you want to delete the "' . $entry->table_name . '" custom table?</p>'
@@ -406,14 +419,14 @@ function tripal_custom_tables_delete_form($form, &$form_state, $table_id) {
 
 /**
  * form submit hook for the tripal_custom_tables_delete_form form.
- * 
+ *
  * @param $form
  * @param $form_state
  */
 function tripal_custom_tables_delete_form_submit($form, &$form_state) {
   $action   = $form_state['clicked_button']['#value'];
   $table_id = $form_state['values']['table_id'];
-    
+
   if (strcmp($action, 'Delete') == 0) {
     chado_delete_custom_table($table_id);
   }
