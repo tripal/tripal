@@ -264,7 +264,7 @@ function chado_feature_validate($node, $form, &$form_state) {
   // Since this validate can be called on AJAX and Deletion of the node
   // we need to make this check to ensure queries are not executed
   // without the proper values.
-  if($node->op != 'Save') {
+  if(!isset($node->op) OR $node->op != 'Save') {
     return;
   }
 

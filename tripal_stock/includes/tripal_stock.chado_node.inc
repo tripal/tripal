@@ -145,13 +145,13 @@ function chado_stock_form($node, $form_state) {
 
   // 2) if we are re constructing the form from a failed validation or ajax callback
   // then use the $form_state['values'] values
-  if (array_key_exists('values', $form_state)) {
+  if (array_key_exists('values', $form_state) AND isset($form_state['values']['uniquename'])) {
     $sname = $form_state['values']['sname'];
     $uniquename = $form_state['values']['uniquename'];
     $stock_id = $form_state['values']['stock_id'];
     $type_id = $form_state['values']['type_id'];
     $organism_id = $form_state['values']['organism_id'];
-    $sdescription = $form_state['values']['description'];
+    $sdescription = $form_state['values']['stock_description'];
     $dbxref_accession = $form_state['values']['accession'];
     $dbxref_description = $form_state['values']['db_description'];
     $dbxref_database = $form_state['values']['database'];
@@ -165,7 +165,7 @@ function chado_stock_form($node, $form_state) {
     $stock_id = $form_state['input']['stock_id'];
     $type_id = $form_state['input']['type_id'];
     $organism_id = $form_state['input']['organism_id'];
-    $sdescription = $form_state['input']['description'];
+    $sdescription = $form_state['input']['stock_description'];
     $dbxref_accession = $form_state['input']['accession'];
     $dbxref_description = $form_state['input']['db_description'];
     $dbxref_database = $form_state['input']['database'];
@@ -323,7 +323,7 @@ function chado_stock_validate(&$node, $form, &$form_state) {
   // Since this validate can be called on AJAX and Deletion of the node
   // we need to make this check to ensure queries are not executed
   // without the proper values.
-  if($node->op != 'Save') {
+  if(!isset($node->op) OR $node->op != 'Save') {
     return;
   }
 

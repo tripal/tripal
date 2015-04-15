@@ -482,8 +482,13 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
 
       $form['properties']['property_table'][$property->type_id][$property->rank]['type'] = array(
         '#type' => 'markup',
-        '#markup' => $property->type_name . '<br><i>' . $property->definition . '</i>'
+        '#markup' => $property->type_name
       );
+      // If a definition is available we want to add that to the type column
+      // to make it easier for users to determine what an added property means.
+      if (isset($property->definition)) {
+        $form['properties']['property_table'][$property->type_id][$property->rank]['type']['#markup'] = $property->type_name . '<br><i>' . $property->definition . '</i>';
+      }
 
       $form['properties']['property_table'][$property->type_id][$property->rank]['value'] = array(
         '#type' => 'markup',
