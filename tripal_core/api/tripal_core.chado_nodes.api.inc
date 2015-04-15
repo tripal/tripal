@@ -616,11 +616,11 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
       //print "\nLoading $base_table " . ($i + 1) . " of $count ($base_table_id=" . $record->{$base_table_id} . ")...";
 
       // update the job status every 1% features
-      //if ($job_id and $i % $interval == 0) {
+      if ($job_id and $i % $interval == 0) {
         $percent = sprintf("%.2f", (($i + 1) / $count) * 100);
         print "Syncing $base_table " . ($i + 1) . " of $count (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
         tripal_set_job_progress($job_id, intval(($i/$count)*100));
-      //}
+      }
 
       // Check if it is in the chado linking table (ie: check to see if it is already linked to a node)
       $result = db_select($linking_table, 'lnk')

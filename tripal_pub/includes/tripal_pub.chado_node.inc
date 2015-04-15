@@ -1166,7 +1166,6 @@ function tripal_pub_node_insert($node) {
  * @ingroup tripal_pub
  */
 function tripal_pub_node_load($nodes, $types) {
-
   if (count(array_intersect(array('chado_pub'), $types))) {
     foreach ($nodes as $nid => $node) {
       if ($node->type == 'chado_pub' and !property_exists($node, 'path')) {

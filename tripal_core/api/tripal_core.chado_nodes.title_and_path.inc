@@ -576,7 +576,10 @@ function chado_get_node_url($node) {
  *   error is displayed.
  *
  * @param $node
- *   The node to set the URL for.
+ *   The node to set the URL for.  The node object must have at a
+ *   minimum the 'nid' and 'type' properties, as well as the
+ *   chado object (e.g. 'organism' for chado_organism node type, and
+ *   'feature' for chado_feature node type, etc.).
  *
  * @return
  *   The URL alias that was set.
@@ -663,9 +666,7 @@ function chado_update_existing_node_urls($content_type, $job_id = 0) {
 
   try {
     // Get the number of records we need to set URLs for.
-    $num_nodes = db_query(
-        'SELECT count(*) FROM {' . $content_type . '}'
-      )->fetchField();
+    $num_nodes = db_query('SELECT count(*) FROM {' . $content_type . '}')->fetchField();
 
     // Calculate the interval at which we will print an update on the screen.
     $num_set = 0;
@@ -673,8 +674,8 @@ function chado_update_existing_node_urls($content_type, $job_id = 0) {
 
     if ($num_nodes > 0) {
 
-      print "There are $num_nodes nodes to update URLs for. You will be \n"
-       . "updated on the progress every 100 nodes.\n\n";
+      print "There are $num_nodes nodes to update URLs for. You will be \n" .
+            "updated on the progress every 100 nodes.\n\n";
 
       // Get the list of nodes of this particular content type.
       $query = new EntityFieldQuery();
@@ -687,10 +688,16 @@ function chado_update_existing_node_urls($content_type, $job_id = 0) {
 
         foreach ($nids as $nid) {
 
-          // Load the current node.
-          // We do it this way instead of using noad_load_multiple to load them
-          // all at once to avoid overloading the memory.
-          $node = node_load($nid);
+          // Load the current node. Normally here we would use the node_load()
+          // function that is part of the Drupal API.  However, this seems
+          // to have memory leaks that have not yet been identified, so
+          // we'll create the object by hand:
+          $node = new stdClass();
+          $node->nid = $nid;
+          $node->type = $content_type;
+          $table = preg_replace('/chado_/', '', $content_type);
+          $id = chado_get_id_from_nid($table, $nid);
+          $node->$table = chado_generate_var($table, array($table . "_id" => $id));
 
           // Now set the URL for the current node.
           $alias = chado_set_node_url($node);
@@ -699,14 +706,14 @@ function chado_update_existing_node_urls($content_type, $job_id = 0) {
           if ($num_set % $num_per_interval == 0) {
             $percent = ($num_set / $num_nodes) * 100;
 
+            // Update the user on progress.
+            $percent = sprintf("%.2f", $percent);
+            print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
+
             // Update the tripal job.
             if ($job_id) {
               tripal_set_job_progress($job_id, intval($percent));
             }
-
-            // Update the user on progress.
-            $percent = sprintf("%.2f", $percent);
-            print "Setting URLs (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
           }
           $num_set++;
         }
