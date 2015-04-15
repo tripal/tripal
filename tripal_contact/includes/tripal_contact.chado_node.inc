@@ -250,19 +250,19 @@ function chado_contact_validate($node, $form, &$form_state) {
   // Since this validate can be called on AJAX and Deletion of the node
   // we need to make this check to ensure queries are not executed
   // without the proper values.
-  if($node->op != 'Save') {
+  if(property_exists($node, "op") and $node->op != 'Save') {
     return;
   }
 
   // we are syncing if we do not have a node ID but we do have a contact_id. We don't
   // need to validate during syncing so just skip it.
-  if (is_null($node->nid) and property_exists($node, 'contact_id') and $node->contact_id != 0) {
+  if (!property_exists($node, 'nid') and property_exists($node, 'contact_id') and $node->contact_id != 0) {
     return;
   }
 
   // remove surrounding white-space on submitted values
-  $node->contactname    = trim($node->contactname);
-  $node->description    = trim($node->description);
+  $node->contactname = property_exists($node, 'contactname') ? trim($node->contactname) : '';
+  $node->description = property_exists($node, 'description') ? trim($node->description) : '';
 
 
   // Validating for an update
@@ -367,15 +367,17 @@ function chado_contact_node_access($node, $op, $account ) {
  * @ingroup tripal_contact
  */
 function chado_contact_insert($node) {
-
-  // remove surrounding white-space on submitted values
-  $node->contactname    = trim($node->contactname);
-  $node->description    = trim($node->description);
+  $contact_id = '';
 
   // if there is a contact_id in the $node object then this must be a sync so
   // we can skip adding the contact as it is already there, although
-  // we do need to proceed with the rest of the insert
+  // we do need to proceed with insertion into the chado/drupal linking table.
   if (!property_exists($node, 'contact_id')) {
+    // remove surrounding white-space on submitted values
+    $node->contactname    = trim($node->contactname);
+    $node->description    = trim($node->description);
+
+
     // insert and then get the newly inserted contact record
     $values = array(
       'name'           => $node->contactname,

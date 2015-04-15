@@ -337,22 +337,22 @@ function chado_pub_validate($node, $form, &$form_state) {
   // Since this validate can be called on AJAX and Deletion of the node
   // we need to make this check to ensure queries are not executed
   // without the proper values.
-  if($node->op != 'Save') {
+  if(property_exists($node, "op") and $node->op != 'Save') {
     return;
   }
 
   // we are syncing if we do not have a node ID but we do have a pub_id. We don't
   // need to validate during syncing so just skip it.
-  if (is_null($node->nid) and property_exists($node, 'pub_id') and $node->pub_id != 0) {
+  if (!property_exists($node, 'nid') and property_exists($node, 'pub_id') and $node->pub_id != 0) {
     return;
   }
 
   // get the submitted values
-  $title        = trim($node->pubtitle);
-  $pyear        = trim($node->pyear);
-  $uniquename   = trim($node->uniquename);
-  $is_obsolete  = $node->is_obsolete;
-  $type_id      = $node->type_id;
+  $title        = property_exists($node, 'pubtitle') ? trim($node->pubtitle) : '';
+  $pyear        = property_exists($node, 'pyear') ? trim($node->pyear) : '';
+  $uniquename   = property_exists($node, 'uniquename') ? trim($node->uniquename) : '';
+  $is_obsolete  = property_exists($node, 'is_obsolete') ? trim($node->is_obsolete) : 0;
+  $type_id      = property_exists($node, 'type_id') ? trim($node->type_id) : '';
 
   $pub = array();
 
@@ -573,20 +573,22 @@ function chado_pub_node_access($node, $op, $account) {
  */
 function chado_pub_insert($node) {
 
-  $node->pubtitle     = trim($node->pubtitle);
-  $node->pyear        = trim($node->pyear);
-  $node->uniquename   = trim($node->uniquename);
-  $is_obsolete  = $node->is_obsolete;
-  $type_id      = $node->type_id;
-
-  // we need an array suitable for the tripal_pub_create_citation() function
-  // to automatically generate a citation if a uniquename doesn't already exist
-  $pub_arr = array();
+  $pub_id = '';
 
   // if there is an pub_id in the $node object then this must be a sync so
   // we can skip adding the pub as it is already there, although
-  // we do need to proceed with the rest of the insert
+  // we do need to proceed with insertion into the chado/drupal linking table.
   if (!property_exists($node, 'pub_id')) {
+
+    $node->pubtitle     = trim($node->pubtitle);
+    $node->pyear        = trim($node->pyear);
+    $node->uniquename   = trim($node->uniquename);
+    $is_obsolete  = $node->is_obsolete;
+    $type_id      = $node->type_id;
+
+    // we need an array suitable for the tripal_pub_create_citation() function
+    // to automatically generate a citation if a uniquename doesn't already exist
+    $pub_arr = array();
 
     $properties = array(); // stores all of the properties we need to add
     $cross_refs = array(); // stores any cross references for this publication

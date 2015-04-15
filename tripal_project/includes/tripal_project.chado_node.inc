@@ -200,19 +200,19 @@ function chado_project_validate($node, $form, &$form_state) {
   // Since this validate can be called on AJAX and Deletion of the node
   // we need to make this check to ensure queries are not executed
   // without the proper values.
-  if($node->op != 'Save') {
+  if(property_exists($node, "op") and $node->op != 'Save') {
     return;
   }
 
   // we are syncing if we do not have a node ID but we do have a project_id. We don't
   // need to validate during syncing so just skip it.
-  if (is_null($node->nid) and property_exists($node, 'project_id') and $node->project_id != 0) {
+  if (!property_exists($node, 'nid') and property_exists($node, 'project_id') and $node->project_id != 0) {
     return;
   }
 
   // trim white space from text fields
-  $node->title = trim($node->title);
-  $node->description = trim($node->description);
+  $node->title = property_exists($node, 'title') ? trim($node->title) : '';
+  $node->description = property_exists($node, 'description') ? trim($node->description) : '';
 
   $project = 0;
   // check to make sure the name on the project is unique
@@ -240,13 +240,15 @@ function chado_project_validate($node, $form, &$form_state) {
  */
 function chado_project_insert($node) {
 
-  $node->title = trim($node->title);
-  $node->description = trim($node->description);
+  $project_id = '';
 
   // if there is an project_id in the $node object then this must be a sync so
   // we can skip adding the project as it is already there, although
-  // we do need to proceed with the rest of the insert
+  // we do need to proceed with insertion into the chado/drupal linking table.
   if (!property_exists($node, 'project_id')) {
+    $node->title = trim($node->title);
+    $node->description = trim($node->description);
+
     $values = array(
       'name' => $node->title,
       'description' => '',

@@ -312,19 +312,19 @@ function chado_example_validate($node, $form, &$form_state) {
   // Since this validate can be called on AJAX and Deletion of the node
   // we need to make this check to ensure queries are not executed
   // without the proper values.
-  if($node->op != 'Save') {
+  if(property_exists($node, "op") and $node->op != 'Save') {
     return;
   }
 
   // we are syncing if we do not have a node ID but we do have a example_id. We
   // don't need to validate during syncing so just skip it.
-  if (is_null($node->nid) and property_exists($node, 'example_id') and $node->example_id != 0) {
+  if (!property_exists($node, 'nid') and property_exists($node, 'example_id') and $node->example_id != 0) {
     return;
   }
 
   // be sure to always trim text fields
-  $node->uniquename   = trim($node->uniquename);
-  $node->description  = trim($node->description);
+  $node->uniquename   = property_exists($node, 'uniquename') ? trim($node->uniquename) : '';
+  $node->description  = property_exists($node, 'description') ? trim($node->description) : '';
 
   // Validating for an update. If the 'nid' property is present in the node then
   // this is an update and validation can be different for updates
@@ -375,21 +375,24 @@ function chado_example_validate($node, $form, &$form_state) {
  * @ingroup tripal_example
  */
 function chado_example_insert($node) {
-  // be sure to always trim text fields
-  $node->uniquename   = trim($node->uniquename);
-  $node->description  = trim($node->description);
 
-  // get the example type record
-  $type_cv = tripal_get_default_cv('example', 'type_id');
-  $type = tripal_get_cvterm(array(
-    'name' => $node->example_type,
-    'cv_id' => $type_cv->cv_id,
-  ));
+  $example_id = '';
 
   // if there is an example_id in the $node object then this must be a sync so
   // we can skip adding the example as it is already there, although we do need
-  // to proceed with the rest of the insert
+  // to proceed with insertion into the chado/drupal linking table.
   if (!property_exists($node, 'example_id')) {
+
+    // be sure to always trim text fields
+    $node->uniquename   = trim($node->uniquename);
+    $node->description  = trim($node->description);
+
+    // get the example type record
+    $type_cv = tripal_get_default_cv('example', 'type_id');
+    $type = tripal_get_cvterm(array(
+        'name' => $node->example_type,
+        'cv_id' => $type_cv->cv_id,
+    ));
 
     // perform the insert using the chado_insert_record function();
     $values = array(

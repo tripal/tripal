@@ -222,20 +222,20 @@ function chado_library_validate($node, $form, &$form_state) {
   // Since this validate can be called on AJAX and Deletion of the node
   // we need to make this check to ensure queries are not executed
   // without the proper values.
-  if($node->op != 'Save') {
+  if(property_exists($node, "op") and $node->op != 'Save') {
     return;
   }
 
   // we are syncing if we do not have a node ID but we do have a featuremap_id. We don't
   // need to validate during syncing so just skip it.
-  if (is_null($node->nid) and property_exists($node, 'library_id') and $node->library_id != 0) {
+  if (!property_exists($node, 'nid') and property_exists($node, 'library_id') and $node->library_id != 0) {
     return;
   }
 
   // trim white space from text fields
-  $node->libraryname = trim($node->libraryname);
-  $node->uniquename  = trim($node->uniquename);
-  $node->description = trim($node->description);
+  $node->libraryname = property_exists($node, 'libraryname') ? trim($node->libraryname) : '';
+  $node->uniquename  = property_exists($node, 'uniquename') ? trim($node->uniquename) : '';
+  $node->description = property_exists($node, 'description') ? trim($node->description) : '';
 
   $lib = 0;
   // check to make sure the unique name on the library is unique
@@ -268,14 +268,16 @@ function chado_library_validate($node, $form, &$form_state) {
  */
 function chado_library_insert($node) {
 
-  $node->libraryname = trim($node->libraryname);
-  $node->uniquename  = trim($node->uniquename);
-  $node->description = trim($node->description);
+  $library_id = '';
 
   // if there is an library_id in the $node object then this must be a sync so
   // we can skip adding the library as it is already there, although
-  // we do need to proceed with the rest of the insert
+  // we do need to proceed with insertion into the chado/drupal linking table.
   if (!property_exists($node, 'library_id')) {
+    $node->libraryname = trim($node->libraryname);
+    $node->uniquename  = trim($node->uniquename);
+    $node->description = trim($node->description);
+
     $values = array(
       'name' => $node->libraryname,
       'uniquename' => $node->uniquename,

@@ -115,7 +115,7 @@ function chado_node_get_base_table($content_type, $module = FALSE) {
   }
   else {
     $node_types = module_invoke_all('node_info');
-  
+
     if (isset($node_types[$content_type])) {
       $node_info = $node_types[$content_type];
     }
@@ -123,7 +123,7 @@ function chado_node_get_base_table($content_type, $module = FALSE) {
       return FALSE;
     }
   }
-  
+
   if (isset($node_info['chado_node_api']['base_table'])) {
     return $node_info['chado_node_api']['base_table'];
   }
@@ -456,18 +456,18 @@ function chado_node_sync_form_submit($form, $form_state) {
 
 /**
  * Generic function for syncing records in Chado with Drupal nodes.
- * 
+ *
  * @param $base_table
  *   The name of the Chado table containing the record that should be synced
  * @param $max_sync
- *   Optional: A numeric value to indicate the maximum number of records to sync. 
+ *   Optional: A numeric value to indicate the maximum number of records to sync.
  * @param $organism_id
  *   Optional: Limit the list of records to be synced to only those that
  *   are associated with this organism_id. If the record is not assocaited
  *   with an organism then this field is not needed.
  * @param $types
  *   Optional: Limit the list of records to be synced to only those that
- *   match the types listed in this array. 
+ *   match the types listed in this array.
  * @param $ids
  *   Optional:  Limit the list of records to bye synced to only those whose
  *   primary key value matches the ID provided in this array.
@@ -480,7 +480,7 @@ function chado_node_sync_form_submit($form, $form_state) {
  * @param $job_id
  *   Optional. Used by the Trpial Jobs system when running this function
  *   as a job. It is not needed othewise.
- * 
+ *
  * @ingroup tripal_chado_node_api
  */
 function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = FALSE,
@@ -539,9 +539,9 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
   $hook_query_alter = $linking_table . '_chado_node_sync_select_query';
   if (function_exists($hook_query_alter)) {
     $update = call_user_func($hook_query_alter, array(
-      'select' => $select, 
-      'joins' => $joins, 
-      'where_clauses' => $where_clauses, 
+      'select' => $select,
+      'joins' => $joins,
+      'where_clauses' => $where_clauses,
       'where_args' => $where_args,
     ));
     // Now add in any new changes
@@ -573,7 +573,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
     $where .= ') ';
     $sql_args = array_merge($sql_args, $where_args[$category]);
   }
-  
+
   if ($where) {
     $query .= $where;
   }
@@ -610,16 +610,17 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
       "If the sync fails or is terminated prematurely then the entire set of \n" .
       "synced items is rolled back and will not be found in the database\n\n";
   try {
+    $percent = 0;
     foreach ($results as $record) {
 
       //print "\nLoading $base_table " . ($i + 1) . " of $count ($base_table_id=" . $record->{$base_table_id} . ")...";
 
       // update the job status every 1% features
-      if ($job_id and $i % $interval == 0) {
+      //if ($job_id and $i % $interval == 0) {
         $percent = sprintf("%.2f", (($i + 1) / $count) * 100);
         print "Syncing $base_table " . ($i + 1) . " of $count (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
         tripal_set_job_progress($job_id, intval(($i/$count)*100));
-      }
+      //}
 
       // Check if it is in the chado linking table (ie: check to see if it is already linked to a node)
       $result = db_select($linking_table, 'lnk')
@@ -652,6 +653,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
         $form = array();
         $form_state = array();
         node_validate($new_node, $form, $form_state);
+
         if (!form_get_errors()) {
           $node = node_submit($new_node);
           node_save($node);
@@ -665,14 +667,13 @@ function chado_node_sync_records($base_table, $max_sync = FALSE, $organism_id = 
     }
     print "\n\nComplete!\n";
   }
-  
+
   catch (Exception $e) {
     $transaction->rollback();
     print "\n"; // make sure we start errors on new line
     watchdog_exception('trp-fsync', $e);
     print "FAILED: Rolling back database changes...\n";
   }
-
 }
 
 /**
@@ -883,43 +884,43 @@ function hook_chado_node_sync_form_submit ($form, $form_state) {
  * Note: For your own module, replace hook in the function name with the machine-name of
  * your chado node type (ie: chado_feature).
  *
- * @param $query 
- *   An array containing the following: 
+ * @param $query
+ *   An array containing the following:
  *    'select': An array of select clauses
- *    'joins:  An array of joins (ie: a single join could be 
+ *    'joins:  An array of joins (ie: a single join could be
  *      'LEFT JOIN {chadotable} alias ON base.id=alias.id')
- *    'where_clauses: An array of where clauses which will all be AND'ed 
+ *    'where_clauses: An array of where clauses which will all be AND'ed
  *      together. Use :placeholders for values.
- *    'where_args: An associative array of arguments to be subbed in to the 
+ *    'where_args: An associative array of arguments to be subbed in to the
  *      where clause where the
  *
  * @ingroup tripal_chado_node_api
  */
 function hook_chado_node_sync_select_query($query) {
 
-  // You can add fields to be selected. Be sure to prefix each field with the 
+  // You can add fields to be selected. Be sure to prefix each field with the
   // tale name.
   $query['select'][] = 'example.myfavfield';
 
-  // Provide any join you may need to the joins array. Be sure to wrap the 
+  // Provide any join you may need to the joins array. Be sure to wrap the
   // table name in curly brackets.
   $query['joins'][] = 'LEFT JOIN {exampleprop} PROP ON PROP.example_id=EXAMPLE.example_id';
 
-  // The category should be a unique id for a group of items that will be 
+  // The category should be a unique id for a group of items that will be
   // concatenated together via an SQL 'OR'.  By default the $where_clases
-  // variable will come with categories of 'id', 'organism' and 'type'.  
+  // variable will come with categories of 'id', 'organism' and 'type'.
   // you can add your own unique category or alter the contents of the existing
   // categories.  Be sure to make sure the category doesn't already exist
   // in the $query['where_clauses']
-  $category = 'my_category'; 
-  
+  $category = 'my_category';
+
   // Provide any aditionall where clauses and their necessary arguments.
-  // Be sure to prefix the field with the table name.   Be sure that the 
-  // placeholder is unique across all categories (perhaps add a unique 
+  // Be sure to prefix the field with the table name.   Be sure that the
+  // placeholder is unique across all categories (perhaps add a unique
   // prefix/suffix).
   $query['where_clauses'][$category][] = 'example.myfavfield = :favvalue';
   $query['where_args'][$category][':favvalue'] = 'awesome-ness';
-  
+
   // Must return the updated query
   return $query;
 }
