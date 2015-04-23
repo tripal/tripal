@@ -503,9 +503,9 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
       $form['properties']['property_table'][$property->type_id][$property->rank]['property_action'] = array(
         '#type' => 'submit',
         '#value' => t('Remove'),
-        '#name' => "property_remove-".$property->type_id.'-'.$property->rank,
+        '#name' => "properties_remove-".$property->type_id.'-'.$property->rank,
         '#ajax' => array(
-          'callback' => "chado_add_node_form_properties_ajax_update",
+          'callback' => "chado_add_node_form_subtable_ajax_update",
           'wrapper' => 'tripal-generic-edit-properties-table',
           'effect'   => 'fade',
           'method'   => 'replace',
@@ -518,8 +518,8 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
         // from the chado_properties array. In order to keep validate errors
         // from the node form validate and Drupal required errors for non-property fields
         // preventing the user from removing properties we set the #limit_validation_errors below
-        '#validate' => array('chado_add_node_form_properties_remove_button_validate'),
-        '#submit' => array('chado_add_node_form_properties_remove_button_submit'),
+        '#validate' => array('chado_add_node_form_subtables_remove_button_validate'),
+        '#submit' => array('chado_add_node_form_subtables_remove_button_submit'),
         // Limit the validation of the form upon clicking this button to the property_table tree
         // No other fields will be validated (ie: no fields from the main form or any other api
         // added form).
@@ -570,9 +570,9 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
   $form['properties']['property_table']['new']['property_action'] = array(
     '#type' => 'submit',
     '#value' => t('Add'),
-    '#name' => "property-add",
+    '#name' => "properties-add",
     '#ajax' => array(
-      'callback' => "chado_add_node_form_properties_ajax_update",
+      'callback' => "chado_add_node_form_subtable_ajax_update",
       'wrapper' => 'tripal-generic-edit-properties-table',
       'effect'   => 'fade',
       'method'   => 'replace',
@@ -585,8 +585,8 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     // array. In order to keep validate errors from the node form validate and Drupal
     // required errors for non-property fields preventing the user from adding properties we
     // set the #limit_validation_errors below
-    '#validate' => array('chado_update_node_form_properties_add_button_validate'),
-    '#submit' => array('chado_add_node_form_properties_add_button_submit'),
+    '#validate' => array('chado_add_node_form_subtables_add_button_validate'),
+    '#submit' => array('chado_add_node_form_subtables_add_button_submit'),
     // Limit the validation of the form upon clicking this button to the property_table tree
     // No other fields will be validated (ie: no fields from the main form or any other api
     // added form).
@@ -602,8 +602,8 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
  *
  * @ingroup tripal_core
  */
-function chado_update_node_form_properties_add_button_validate($form, &$form_state) {
-
+function chado_add_node_form_properties_add_button_validate($form, &$form_state) {
+  
   // Ensure the type_id is supplied & Valid
   $cvterm = chado_select_record(
     'cvterm',
@@ -632,7 +632,7 @@ function chado_update_node_form_properties_add_button_validate($form, &$form_sta
  *
  * @ingroup tripal_core
  */
-function chado_add_node_form_properties_add_button_submit(&$form, &$form_state) {
+function chado_add_node_form_properties_add_button_submit($form, &$form_state) {
 
   $details = unserialize($form_state['values']['property_table']['details']);
 
@@ -688,19 +688,15 @@ function chado_add_node_form_properties_add_button_submit(&$form, &$form_state) 
   unset($form_state['input']['property_table']['new']['definition']);
   unset($form_state['input']['property_table']['new']['value']);
 
-  $form_state['rebuild'] = TRUE;
 }
 
 /**
- * There is no user input for the remove buttons so there is no need to validate
- * However, both a submit & validate need to be specified so this is just a placeholder
- *
  * Called by the many remove buttons in chado_add_node_form_properties
  *
  * @ingroup tripal_core
  */
-function chado_add_node_form_properties_remove_button_validate($form, $form_state) {
-  // No Validation needed for remove
+function chado_add_node_form_properties_remove_button_validate($form, &$form_state) {
+  // No validation needed.
 }
 
 /**
@@ -718,26 +714,16 @@ function chado_add_node_form_properties_remove_button_submit(&$form, &$form_stat
   }
 
   // remove the specified property from the form property table
-  if(preg_match('/property_remove-([^-]+-[^-]+)/',$form_state['triggering_element']['#name'],$match)) {
+  if(preg_match('/properties_remove-([^-]+-[^-]+)/',$form_state['triggering_element']['#name'],$match)) {
     $key = $match[1];
     if (array_key_exists($key, $form_state['chado_properties'])) {
       unset($form_state['chado_properties'][$key]);
     }
   }
-
-  $form_state['rebuild'] = TRUE;
 }
 
 function chado_add_node_form_properties_ajax_desc($form, $form_state) {
   return $form['properties']['property_table']['new']['type'];
-}
-/**
- * Ajax function which returns the section of the form to be re-rendered
- *
- * @ingroup tripal_core
- */
-function chado_add_node_form_properties_ajax_update($form, $form_state) {
-  return $form['properties']['property_table'];
 }
 
 /**

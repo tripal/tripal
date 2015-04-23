@@ -133,6 +133,205 @@ function chado_node_get_base_table($content_type, $module = FALSE) {
 
 }
 
+/** 
+ * @section
+ * Common Functionality for Properties, Dbxrefs and relationships chado node API
+ */
+
+/**
+ * Validate the Triggering element from a node form.
+ * 
+ * We are going to inspect the post to determine what PHP knows is the triggering
+ * element and if it doesn't agree with Drupal then we are actually going to
+ * change it in Drupal.
+ * 
+ * This fixes an obscure bug triggered when a property is added and then
+ * a relationship removed, Drupal thinks the first property remove button was
+ * clicked and instead removes a property (not a relationship) and renders the new
+ * property table in the relationship table page space.
+ * 
+ * NOTE: Many Drupal issues state that this problem is solved if the #name
+ * of the button is unique (which it is in our case) but we are still experiencing
+ * incorrectly determined triggering elements so we need to handle it ourselves.
+ */
+function chado_validate_node_form_triggering_element($form, &$form_state) {
+  
+  // We are going to inspect the post to determine what PHP knows is the triggering
+  // element and if it doesn't agree with Drupal then we are actually going to
+  // change it in Drupal.
+  if ($_POST['_triggering_element_name'] != $form_state['triggering_element']['#name']) {
+    $form_state['triggering_element']['#name'] = $_POST['_triggering_element_name'];
+  }
+  
+}
+
+/**
+ * Validate Adding Subtables entries from the node forms.
+ * Supported subtables: Properties, Relationships, Additional DBxrefs.
+ *
+ * @param array $form
+ * @param array $form_state
+ */
+function chado_add_node_form_subtables_add_button_validate($form, &$form_state) {
+
+  // Based on triggering element call the correct validation function
+  // ASUMPTION #1: each of the buttons must have property, dbxref or relationship
+  // as the first part of the #name to uniquely identify the subsection.
+  if (preg_match('/^([a-z]+).*/', $form_state['triggering_element']['#name'], $matches)) {
+    $subsection = $matches[1];
+
+    switch($subsection) {
+      case 'properties':
+        chado_add_node_form_properties_add_button_validate($form, $form_state);
+        break;
+      case 'dbxrefs':
+        chado_add_node_form_dbxrefs_add_button_validate($form, $form_state);
+        break;
+      case 'relationships':
+        chado_add_node_form_relationships_add_button_validate($form, $form_state);
+        break;
+    }
+  }
+}
+
+/**
+ * Add subtable entries to the node forms.
+ * Supported subtables: Properties, Relationships, Additional DBxrefs.
+ *
+ * @param array $form
+ * @param array $form_state
+ */
+function chado_add_node_form_subtables_add_button_submit($form, &$form_state) {
+
+  // Based on triggering element call the correct submit function
+  // ASUMPTION #1: each of the buttons must have properties, dbxrefs or relationships
+  // as the first part of the #name to uniquely identify the subsection.
+  if (preg_match('/^([a-z]+).*/', $form_state['triggering_element']['#name'], $matches)) {
+    $subsection = $matches[1];
+
+     switch($subsection) {
+      case 'properties':
+        chado_add_node_form_properties_add_button_submit($form, $form_state);
+        break;
+      case 'dbxrefs':
+        chado_add_node_form_dbxrefs_add_button_submit($form, $form_state);
+        break;
+      case 'relationships':
+        chado_add_node_form_relationships_add_button_submit($form, $form_state);
+        break;
+    }
+  }
+  
+  // This is needed to ensure the form builder function is called for the node
+  // form in order for any of these changes to be seen.
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Validate Removing Subtables entries from the node forms.
+ * Supported subtables: Properties, Relationships, Additional DBxrefs.
+ * 
+ * Since Removing isn't associated with any user input the only thing we
+ * need to validate is that Drupal has determined the triggering element correctly.
+ * That said, we will call each subtables associated validate function just incase
+ * there is some case-specific validation we do not know of or have not anticipated.
+ * 
+ * @param array $form
+ * @param array $form_state
+ */
+function chado_add_node_form_subtables_remove_button_validate($form, &$form_state) {
+ 
+  // We need to validate the trigerring element since Drupal has known
+  // issues determining this correctly when there are multiple buttons
+  // with the same label.
+  chado_validate_node_form_triggering_element($form, $form_state);
+  
+  // Based on triggering element call the correct validation function
+  // ASUMPTION #1: each of the buttons must have property, dbxref or relationship
+  // as the first part of the #name to uniquely identify the subsection.
+  if (preg_match('/^([a-z]+).*/', $form_state['triggering_element']['#name'], $matches)) {
+    $subsection = $matches[1];
+    
+      switch($subsection) {
+      case 'properties':
+        chado_add_node_form_properties_remove_button_validate($form, $form_state);
+        break;
+      case 'dbxrefs':
+        chado_add_node_form_dbxrefs_remove_button_validate($form, $form_state);
+        break;
+      case 'relationships':
+        chado_add_node_form_relationships_remove_button_validate($form, $form_state);
+        break;
+    }
+  }
+}
+
+/**
+ * Remove subtable entries to the node forms.
+ * Supported subtables: Properties, Relationships, Additional DBxrefs.
+ *
+ * @param array $form
+ * @param array $form_state
+ */
+function chado_add_node_form_subtables_remove_button_submit($form, &$form_state) {
+
+  // Based on triggering element call the correct submit function
+  // ASUMPTION #1: each of the buttons must have properties, dbxrefs or relationships
+  // as the first part of the #name to uniquely identify the subsection.
+  if (preg_match('/^([a-z]+).*/', $form_state['triggering_element']['#name'], $matches)) {
+    $subsection = $matches[1];
+
+    switch($subsection) {
+      case 'properties':
+        chado_add_node_form_properties_remove_button_submit($form, $form_state);
+        break;
+      case 'dbxrefs':
+        chado_add_node_form_dbxrefs_remove_button_submit($form, $form_state);
+        break;
+      case 'relationships':
+        chado_add_node_form_relationships_remove_button_submit($form, $form_state);
+        break;
+    }
+  }
+
+  // This is needed to ensure the form builder function is called for the node
+  // form in order for any of these changes to be seen.
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Ajax function which returns the section of the form to be re-rendered
+ * for either the properties, dbxref or relationship sub-sections.
+ *
+ * @ingroup tripal_core
+ */
+function chado_add_node_form_subtable_ajax_update($form, &$form_state) {
+  
+  // We need to validate the trigerring element since Drupal has known
+  // issues determining this correctly when there are multiple buttons
+  // with the same label.
+  chado_validate_node_form_triggering_element($form, $form_state);
+  
+  // Based on triggering element render the correct part of the form.
+  // ASUMPTION: each of the buttons must have property, dbxref or relationship
+  // as the first part of the #name to uniquely identify the subsection.
+  if (preg_match('/^([a-z]+).*/', $form_state['triggering_element']['#name'], $matches)) {
+    $subsection = $matches[1];
+    
+    switch($subsection) {
+      case 'properties':
+        return $form['properties']['property_table'];
+        break;
+      case 'dbxrefs':
+        return $form['addtl_dbxrefs']['dbxref_table'];
+        break;
+      case 'relationships':
+        return $form['relationships']['relationship_table'];
+        break;
+    }
+  }
+}
+
 /**
  * @section
  * Sync Form

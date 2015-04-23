@@ -435,9 +435,9 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
       $form['relationships']['relationship_table'][$relationship->type_id][$rank]['rel_action'] = array(
         '#type' => 'submit',
         '#value' => t('Remove'),
-        '#name' => "rel_remove-".$relationship->type_id.'-'.$rank,
+        '#name' => "relationships_remove-".$relationship->type_id.'-'.$rank,
         '#ajax' => array(
-          'callback' => 'chado_add_node_form_relationships_ajax_update',
+          'callback' => 'chado_add_node_form_subtable_ajax_update',
           'wrapper' => 'tripal-generic-edit-relationships-table',
           'effect'   => 'fade',
           'method'   => 'replace',
@@ -450,8 +450,8 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
         // from the chado_relationships array. In order to keep validate errors
         // from the node form validate and Drupal required errors for non-relationship fields
         // preventing the user from removing relationships we set the #limit_validation_errors below
-        '#validate' => array('chado_add_node_form_relationships_form_remove_button_validate'),
-        '#submit' => array('chado_add_node_form_relationships_remove_button_submit'),
+        '#validate' => array('chado_add_node_form_subtables_remove_button_validate'),
+        '#submit' => array('chado_add_node_form_subtables_remove_button_submit'),
         // Limit the validation of the form upon clicking this button to the relationship_table tree
         // No other fields will be validated (ie: no fields from the main form or any other api
         // added form).
@@ -495,9 +495,9 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
   $form['relationships']['relationship_table']['new']['rel_action'] = array(
     '#type' => 'submit',
     '#value' => t('Add'),
-    '#name' => 'rel-add',
+    '#name' => 'relationships-add',
     '#ajax' => array(
-      'callback' => 'chado_add_node_form_relationships_ajax_update',
+      'callback' => 'chado_add_node_form_subtable_ajax_update',
       'wrapper' => 'tripal-generic-edit-relationships-table',
       'effect'   => 'fade',
       'method'   => 'replace',
@@ -509,8 +509,8 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     // array. In order to keep validate errors from the node form validate and Drupal
     // required errors for non-relationship fields preventing the user from adding relationships we
     // set the #limit_validation_errors below
-    '#validate' => array('chado_add_node_form_relationships_add_button_validate'),
-    '#submit' => array('chado_add_node_form_relationships_add_button_submit'),
+    '#validate' => array('chado_add_node_form_subtables_add_button_validate'),
+    '#submit' => array('chado_add_node_form_subtables_add_button_submit'),
     // Limit the validation of the form upon clicking this button to the relationship_table tree
     // No other fields will be validated (ie: no fields from the main form or any other api
     // added form).
@@ -530,7 +530,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
 function chado_add_node_form_relationships_add_button_validate($form, &$form_state) {
 
   $details = unserialize($form_state['values']['relationship_table']['details']);
-
+  
   // First deal with autocomplete fields.
   // Extract the base_id assuming '(###) NAME FIELD'.
   if (!empty($form_state['values']['relationship_table']['new']['subject_name'])) {
@@ -655,7 +655,7 @@ function chado_add_node_form_relationships_add_button_validate($form, &$form_sta
  *
  * @ingroup tripal_core
  */
-function chado_add_node_form_relationships_add_button_submit(&$form, &$form_state) {
+function chado_add_node_form_relationships_add_button_submit($form, &$form_state) {
 
 
   $details = unserialize($form_state['values']['relationship_table']['details']);
@@ -704,22 +704,15 @@ function chado_add_node_form_relationships_add_button_submit(&$form, &$form_stat
   // we don't want the new element to pick up the values from the previous element so wipe them out
   unset($form_state['input']['relationship_table']['new']['type_id']);
   unset($form_state['input']['relationship_table']['new']['type_name']);
-
-  // This is needed to ensure the form builder function is called to
-  // rebuild the form on ajax requests.
-  $form_state['rebuild'] = TRUE;
 }
 
 /**
- * There is no user input for the remove buttons so there is no need to validate
- * However, both a submit & validate need to be specified so this is just a placeholder
- *
  * Called by the many remove buttons in chado_add_node_form_relationships
  *
  * @ingroup tripal_core
  */
-function chado_add_node_form_relationships_form_remove_button_validate($form, $form_state) {
-  // No Validation needed for remove
+function chado_add_node_form_relationships_remove_button_validate($form, &$form_state) {
+  // No validation needed.
 }
 
 /**
@@ -735,25 +728,12 @@ function chado_add_node_form_relationships_remove_button_submit(&$form, &$form_s
   chado_add_node_form_relationships_create_relationship_formstate_array($form, $form_state);
 
   // remove the specified relationship from the form relationship table
-  if(preg_match('/rel_remove-([^-]+-[^-]+)/',$form_state['triggering_element']['#name'],$match)) {
+  if(preg_match('/relationships_remove-([^-]+-[^-]+)/',$form_state['triggering_element']['#name'],$match)) {
     $key = $match[1];
     if (array_key_exists($key, $form_state['chado_relationships'])) {
       unset($form_state['chado_relationships'][$key]);
     }
   }
-
-  // This is needed to ensure the form builder function is called to
-  // rebuild the form on ajax requests.
-  $form_state['rebuild'] = TRUE;
-}
-
-/**
- * Ajax function which returns the section of the form to be re-rendered
- *
- * @ingroup tripal_core
- */
-function chado_add_node_form_relationships_ajax_update($form, $form_state) {
-  return $form['relationships']['relationship_table'];
 }
 
 /**

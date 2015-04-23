@@ -298,9 +298,9 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
       $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['dbxref_action'] = array(
         '#type' => 'submit',
         '#value' => t('Remove'),
-        '#name' => "dbxref_remove-".$dbxref->db_id.'-'.$version,
+        '#name' => "dbxrefs_remove-".$dbxref->db_id.'-'.$version,
         '#ajax' => array(
-          'callback' => "chado_add_node_form_dbxrefs_ajax_update",
+          'callback' => "chado_add_node_form_subtable_ajax_update",
           'wrapper' => 'tripal-generic-edit-addtl_dbxrefs-table',
           'effect'   => 'fade',
           'method'   => 'replace',
@@ -313,8 +313,8 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
         // from the chado_additional_dbxrefs array. In order to keep validate errors
         // from the node form validate and Drupal required errors for non-dbxref fields
         // preventing the user from removing dbxrefs we set the #limit_validation_errors below
-        '#validate' => array('chado_add_node_form_dbxrefs_remove_button_validate'),
-        '#submit' => array('chado_add_node_form_dbxrefs_remove_button_submit'),
+        '#validate' => array('chado_add_node_form_subtables_add_button_validate'),
+        '#submit' => array('chado_add_node_form_subtables_remove_button_submit'),
         // Limit the validation of the form upon clicking this button to the dbxref_table tree
         // No other fields will be validated (ie: no fields from the main form or any other api
         // added form).
@@ -352,9 +352,9 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
   $form['addtl_dbxrefs']['dbxref_table']['new']['dbxref_action'] = array(
     '#type' => 'submit',
     '#value' => t('Add'),
-    '#name' => "dbxref-add",
+    '#name' => "dbxrefs-add",
     '#ajax' => array(
-      'callback' => "chado_add_node_form_dbxrefs_ajax_update",
+      'callback' => "chado_add_node_form_subtable_ajax_update",
       'wrapper' => 'tripal-generic-edit-addtl_dbxrefs-table',
       'effect'   => 'fade',
       'method'   => 'replace',
@@ -367,8 +367,8 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
     // array. In order to keep validate errors from the node form validate and Drupal
     // required errors for non-dbxref fields preventing the user from adding dbxrefs we
     // set the #limit_validation_errors below
-    '#validate' => array('chado_add_node_form_dbxrefs_add_button_validate'),
-    '#submit' => array('chado_add_node_form_dbxrefs_add_button_submit'),
+    '#validate' => array('chado_add_node_form_subtables_add_button_validate'),
+    '#submit' => array('chado_add_node_form_subtables_add_button_submit'),
     // Limit the validation of the form upon clicking this button to the dbxref_table tree
     // No other fields will be validated (ie: no fields from the main form or any other api
     // added form).
@@ -386,7 +386,7 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
  * @ingroup tripal_core
  */
 function chado_add_node_form_dbxrefs_add_button_validate($form, &$form_state) {
-
+  
   // Ensure the db_id is supplied & Valid
   $db = chado_select_record(
     'db',
@@ -414,7 +414,7 @@ function chado_add_node_form_dbxrefs_add_button_validate($form, &$form_state) {
  *
  * @ingroup tripal_core
  */
-function chado_add_node_form_dbxrefs_add_button_submit(&$form, &$form_state) {
+function chado_add_node_form_dbxrefs_add_button_submit($form, &$form_state) {
 
   // if the chado_additional_dbxrefs array is not set then this is the first time modifying the
   // dbxref table. this means we need to include all the dbxrefs from the db
@@ -440,20 +440,15 @@ function chado_add_node_form_dbxrefs_add_button_submit(&$form, &$form_state) {
   unset($form_state['input']['dbxref_table']['new']['db_name']);
   unset($form_state['input']['dbxref_table']['new']['dbxref_version']);
   unset($form_state['input']['dbxref_table']['new']['dbxref_accession']);
-
-  $form_state['rebuild'] = TRUE;
 }
 
 /**
- * There is no user input for the remove buttons so there is no need to validate
- * However, both a submit & validate need to be specified so this is just a placeholder
- *
  * Called by the many remove buttons in chado_add_node_form_dbxrefs
  *
  * @ingroup tripal_core
  */
 function chado_add_node_form_dbxrefs_remove_button_validate($form, $form_state) {
-  // No Validation needed for remove
+  // No validation needed.
 }
 
 /**
@@ -471,23 +466,12 @@ function chado_add_node_form_dbxrefs_remove_button_submit(&$form, &$form_state) 
   }
 
   // remove the specified dbxref from the form dbxref table
-  if(preg_match('/dbxref_remove-([^-]+-[^-]+)/',$form_state['triggering_element']['#name'],$match)) {
+  if(preg_match('/dbxrefs_remove-([^-]+-[^-]+)/',$form_state['triggering_element']['#name'],$match)) {
     $key = $match[1];
     if (array_key_exists($key, $form_state['chado_additional_dbxrefs'])) {
       unset($form_state['chado_additional_dbxrefs'][$key]);
     }
   }
-
-  $form_state['rebuild'] = TRUE;
-}
-
-/**
- * Ajax function which returns the section of the form to be re-rendered
- *
- * @ingroup tripal_core
- */
-function chado_add_node_form_dbxrefs_ajax_update($form, $form_state) {
-  return $form['addtl_dbxrefs']['dbxref_table'];
 }
 
 /**
