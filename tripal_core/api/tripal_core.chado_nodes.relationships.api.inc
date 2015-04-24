@@ -332,6 +332,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     $existing_rels = chado_query(
       "SELECT
           rel.*,
+          rel.".$details['relationship_table']."_id as relationship_id,
           rel.".$details['subject_field_name']." as subject_id,
           rel.".$details['object_field_name']." as object_id,
           base1.".$details['base_name_field']." as object_name,
@@ -351,14 +352,15 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
    *
    * From the chado_relationships array:
    * $form_state['chado_relationships'] = array(
-   *   '[type_id]-[rank]' => array(
+   *   '[type_id]-[_relationship_id]' => array(
+   *     'relationship_id' => [the _relationship._relationship_id value OR a temporary value if not yet saved to the database],
    *     'object_id' => [the _relationship.object_id value],
    *     'object_name' => [the base_table.uniquename value linked on base_foreign_key=object_id],
    *     'subject_id' => [the _relationship.subject_id value],
    *     'subject_name' => [the base_table.uniquename value linked on base_foreign_key=subject_id],
    *     'type_id' => [the _relationship.type_id value],
    *     'type_name' => [the cvterm.name value linked on type_id],
-   *     'rank' => [the _relationship.rank value],
+   *     'rank' => [the _relationship.rank value OR NULL if not yet saved to the database],
    *   ),
    * );
    *
@@ -366,7 +368,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
    * Populated from the database:
    * $existing_rels = array(
    *   0 => array(
-   *     'relationship_id' => [the _relationship.relationship_id value],
+   *     'relationship_id' => [the _relationship._relationship_id value],
    *     'object_id' => [the _relationship.object_id value],
    *     'object_name' => [the base_table.uniquename value linked on base_foreign_key=object_id],
    *     'subject_id' => [the _relationship.subject_id value],
@@ -385,57 +387,56 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
   foreach ($existing_rels as $relationship) {
     if (array_key_exists($relationship->type_id, $type_options)) {
 
-      // We're using a unique id as a rank placeholder to ensure all relationships are shown
-      // We can't use the actual rank b/c there can be two relationships with the same type
-      // and rank as long as the subject_id and object_id are switched. For example, you can
-      // have Fred is_paternal_parent_of Max and Max is_paternal_parent_of Lui (both rank=0)
-      $rank = uniqid();
-
       $form['relationships']['relationship_table'][$relationship->type_id]['#type'] = 'markup';
       $form['relationships']['relationship_table'][$relationship->type_id]['#type'] = '';
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['#type'] = 'markup';
-      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['#value'] = '';
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['#type'] = 'markup';
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['#value'] = '';
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['object_id'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['relationship_id'] = array(
+        '#type' => 'markup',
+        '#markup' => $relationship->relationship_id
+      );
+
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['object_id'] = array(
         '#type' => 'hidden',
         '#value' => $relationship->object_id
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['subject_id'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['subject_id'] = array(
         '#type' => 'hidden',
         '#value' => $relationship->subject_id
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['type_id'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['type_id'] = array(
         '#type' => 'hidden',
         '#value' => $relationship->type_id
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['object_name'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['object_name'] = array(
         '#type' => 'markup',
         '#markup' => $relationship->object_name
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['type_name'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['type_name'] = array(
         '#type' => 'markup',
         '#markup' => $relationship->type_name
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['subject_name'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['subject_name'] = array(
         '#type' => 'markup',
         '#markup' => $relationship->subject_name
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['rank'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['rank'] = array(
         '#type' => 'markup',
-        '#markup' => $rank
+        '#markup' => (isset($relationship->rank)) ? $relationship->rank : NULL
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['rel_action'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['rel_action'] = array(
         '#type' => 'submit',
         '#value' => t('Remove'),
-        '#name' => "relationships_remove-".$relationship->type_id.'-'.$rank,
+        '#name' => "relationships_remove-".$relationship->type_id.'-'.$relationship->relationship_id,
         '#ajax' => array(
           'callback' => 'chado_add_node_form_subtable_ajax_update',
           'wrapper' => 'tripal-generic-edit-relationships-table',
@@ -677,7 +678,8 @@ function chado_add_node_form_relationships_add_button_submit($form, &$form_state
       'object_name' => $form_state['values']['relationship_table']['new']['object_name'],
       'subject_id' => $form_state['node']->{$details['base_table']}->{$details['base_foreign_key']},
       'subject_name' => $name,
-      'rank' => uniqid(),
+      'rank' => NULL,
+      'relationship_id' => uniqid()
     );
     // we don't want the new element to pick up the values from the previous element so wipe them out
     unset($form_state['input']['relationship_table']['new']['object_id']);
@@ -691,14 +693,15 @@ function chado_add_node_form_relationships_add_button_submit($form, &$form_state
       'object_name' => $name,
       'subject_id' => $form_state['values']['relationship_table']['new']['subject_id'],
       'subject_name' => $form_state['values']['relationship_table']['new']['subject_name'],
-      'rank' => uniqid(),
+      'rank' => NULL,
+      'relationship_id' => uniqid(),
     );
     // we don't want the new element to pick up the values from the previous element so wipe them out
     unset($form_state['input']['relationship_table']['new']['subject_id']);
     unset($form_state['input']['relationship_table']['new']['subject_name']);
   }
 
-  $key = $relationship['type_id'] . '-' . $relationship['rank'];
+  $key = $relationship['type_id'] . '-' . $relationship['relationship_id'];
   $form_state['chado_relationships'][$key] = (object) $relationship;
 
   // we don't want the new element to pick up the values from the previous element so wipe them out
@@ -760,8 +763,8 @@ function chado_add_node_form_relationships_create_relationship_formstate_array($
 
   foreach (element_children($form['relationships']['relationship_table']) as $type_id) {
     if ($type_id != 'new') {
-      foreach (element_children($form['relationships']['relationship_table'][$type_id]) as $rank) {
-          $element = $form['relationships']['relationship_table'][$type_id][$rank];
+      foreach (element_children($form['relationships']['relationship_table'][$type_id]) as $relationship_id) {
+          $element = $form['relationships']['relationship_table'][$type_id][$relationship_id];
           $rel = array(
             'type_id' => $element['type_id']['#value'],
             'object_id' => $element['object_id']['#value'],
@@ -769,9 +772,10 @@ function chado_add_node_form_relationships_create_relationship_formstate_array($
             'type_name' => $element['type_name']['#markup'],
             'object_name' => $element['object_name']['#markup'],
             'subject_name' => $element['subject_name']['#markup'],
-            'rank' => $element['rank']['#markup']
+            'rank' => $element['rank']['#markup'],
+            'relationship_id' => $relationship_id,
           );
-          $key = $rel['type_id'] . '-' . $rel['rank'];
+          $key = $rel['type_id'] . '-' . $rel['relationship_id'];
           $form_state['chado_relationships'][$key] = (object) $rel;
       }
     }
