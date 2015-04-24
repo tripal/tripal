@@ -200,9 +200,12 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
   else {
     $existing_dbxrefs = chado_query(
       "SELECT
-         db.name as db_name, db.db_id as db_id,
-         dbxref.dbxref_id, dbxref.accession as accession,
-         dbxref.description as description, dbxref.version
+         db.name as db_name, 
+         db.db_id as db_id,
+         dbxref.dbxref_id, 
+         dbxref.accession as accession,
+         dbxref.description as description, 
+         dbxref.version
        FROM {dbxref} dbxref
          LEFT JOIN {db} db ON db.db_id = dbxref.db_id
          LEFT JOIN {".$details['linking_table']."} linking_table ON linking_table.dbxref_id = dbxref.dbxref_id
@@ -218,7 +221,7 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
    *   '[db_id]-[version]' => array(
    *     'db_id' => [the db.db_id value]
    *     'db_name' => [the db.name value]
-   *     'dbxref_id' => [the dbxref.dbxref_id value, or NULL if it doesn't yet exists],
+   *     'dbxref_id' => [the dbxref.dbxref_id value, or temporary value if it doesn't yet exists],
    *     'version' => [the dbxref.version value],
    *     'accession' => [the dbxref.accession value],
    *   ),
@@ -246,59 +249,53 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
 
     if (array_key_exists($dbxref->db_id, $db_options)) {
 
-      /* Since the dbxref version is part of the unique constraint, when it is
-       * empty we need to use something in the key to indicate this case. Otherwise,
-       * you wouldn't be able to select those elements from the array
-       * (ie: $form['addtl_dbxrefs']['dbxref_table'][9999][''] doesn't work as
-       * expected whereas $form['addtl_dbxrefs']['dbxref_table'][9999][NONE]
-       * is much better)
-       */
-      $version = (!empty($dbxref->version)) ? $dbxref->version : 'NONE';
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id]['#type'] = 'markup';
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id]['#value'] = '';
 
-      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id] = array(
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id] = array(
         '#type' => 'markup',
         '#value' => ''
       );
 
-      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version] = array(
-        '#type' => 'markup',
-        '#value' => ''
-      );
-
-      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['db_id'] = array(
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['db_id'] = array(
         '#type' => 'hidden',
         '#value' => $dbxref->db_id
       );
 
-      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['accession'] = array(
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['accession'] = array(
         '#type' => 'hidden',
         '#value' => $dbxref->accession
       );
 
-      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['dbxref_id'] = array(
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['version'] = array(
+        '#type' => 'hidden',
+        '#value' => $dbxref->version,
+      );
+
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['dbxref_id'] = array(
         '#type' => 'hidden',
         '#value' => $dbxref->dbxref_id
       );
 
-      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['db'] = array(
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['db'] = array(
         '#type' => 'markup',
         '#markup' => $dbxref->db_name
       );
 
-      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['dbxref_version'] = array(
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['dbxref_version'] = array(
         '#type' => 'markup',
         '#markup' => $dbxref->version,
       );
 
-      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['dbxref_accession'] = array(
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['dbxref_accession'] = array(
         '#type' => 'markup',
         '#markup' => $dbxref->accession
       );
       // remove button
-      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['dbxref_action'] = array(
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['dbxref_action'] = array(
         '#type' => 'submit',
         '#value' => t('Remove'),
-        '#name' => "dbxrefs_remove-".$dbxref->db_id.'-'.$version,
+        '#name' => "dbxrefs_remove-".$dbxref->db_id.'-'.$dbxref->dbxref_id,
         '#ajax' => array(
           'callback' => "chado_add_node_form_subtable_ajax_update",
           'wrapper' => 'tripal-generic-edit-addtl_dbxrefs-table',
@@ -313,7 +310,7 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
         // from the chado_additional_dbxrefs array. In order to keep validate errors
         // from the node form validate and Drupal required errors for non-dbxref fields
         // preventing the user from removing dbxrefs we set the #limit_validation_errors below
-        '#validate' => array('chado_add_node_form_subtables_add_button_validate'),
+        '#validate' => array('chado_add_node_form_subtables_remove_button_validate'),
         '#submit' => array('chado_add_node_form_subtables_remove_button_submit'),
         // Limit the validation of the form upon clicking this button to the dbxref_table tree
         // No other fields will be validated (ie: no fields from the main form or any other api
@@ -404,6 +401,7 @@ function chado_add_node_form_dbxrefs_add_button_validate($form, &$form_state) {
   if (empty($form_state['values']['dbxref_table']['new']['dbxref_accession'])) {
     form_set_error('dbxref_table][new][dbxref_accession','You must enter the accession before attempting to add a new database reference.');
   }
+
 }
 
 /**
@@ -426,12 +424,11 @@ function chado_add_node_form_dbxrefs_add_button_submit($form, &$form_state) {
   $dbxref = array(
     'db_id' => $form_state['values']['dbxref_table']['new']['db'],
     'db_name' => $form_state['values']['dbxref_table']['new']['db_name'],
-    'dbxref_id' => NULL,
+    'dbxref_id' => 'TEMP' . uniqid(),
     'version' => $form_state['values']['dbxref_table']['new']['dbxref_version'],
     'accession' => $form_state['values']['dbxref_table']['new']['dbxref_accession'],
   );
-  $version = (!empty($dbxref['version'])) ? $dbxref['version'] : 'NONE';
-  $key = $dbxref['db_id'] . '-' . $version;
+  $key = $dbxref['db_id'] . '-' . $dbxref['dbxref_id'];
   $form_state['chado_additional_dbxrefs'][$key] = (object) $dbxref;
 
 
@@ -484,7 +481,7 @@ function chado_add_node_form_dbxrefs_remove_button_submit(&$form, &$form_state) 
  *   '[db_id]-[version]' => array(
  *     'db_id' => [the db.db_id value]
  *     'db_name' => [the db.name value]
- *     'dbxref_id' => [the dbxref.dbxref_id value, or NULL if it doesn't yet exists],
+ *     'dbxref_id' => [the dbxref.dbxref_id value, or temporary value if it doesn't yet exists],
  *     'version' => [the dbxref.version value],
  *     'accession' => [the dbxref.accession value],
  *   ),
@@ -507,8 +504,7 @@ function chado_add_node_form_dbxrefs_create_dbxref_formstate_array($form, &$form
             'version' => $element['dbxref_version']['#markup'],
             'accession' => $element['dbxref_accession']['#markup'],
           );
-          $version = (!empty($dbxref['version'])) ? $dbxref['version'] : 'NONE';
-          $key = $dbxref['db_id'] . '-' . $version;
+          $key = $dbxref['db_id'] . '-' . $dbxref['dbxref_id'];
           $form_state['chado_additional_dbxrefs'][$key] = (object) $dbxref;
       }
     }
@@ -583,8 +579,8 @@ function chado_retrieve_node_form_dbxrefs($node) {
   if (isset($node->dbxref_table)) {
     foreach ($node->dbxref_table as $db_id => $elements) {
       if ($db_id != 'new') {
-        foreach ($elements as $version => $dbxref) {
-          $dbxref_id = (!empty($dbxref['dbxref_id'])) ? $dbxref['dbxref_id'] : 'NONE';
+        foreach ($elements as $dbxref_id => $dbxref) {
+          $version = (!empty($dbxref['version'])) ? $dbxref['version'] : 'NONE';
           $dbxrefs[$db_id][$version][$dbxref_id] = $dbxref['accession'];
         }
       }
@@ -631,7 +627,7 @@ function chado_update_node_form_dbxrefs($node, $details, $retrieved_dbxrefs = FA
       foreach ($versions as $version => $elements) {
         foreach ($elements as $dbxref_id => $accession) {
           // If there is no dbxref then we have to create that first
-          if ($dbxref_id == 'NONE') {
+          if (preg_match('/^TEMP/',$dbxref_id)) {
             $version = ($version == 'NONE') ? '' : $version;
             $success = tripal_insert_dbxref(array(
               'db_id' => $db_id,
