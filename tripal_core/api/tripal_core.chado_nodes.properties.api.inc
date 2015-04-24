@@ -358,7 +358,6 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     $existing_properties = $form_state['chado_properties'];
   }
   else {
-    $ranks = array(); // a temporary array used for calculating rank
 
     // build the SQL for extracting properties already assigned to this record
     $sql_args = array();
@@ -387,18 +386,6 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
          $cv_where
        ORDER BY CVT.name, PP.rank", $sql_args)->fetchAll();
 
-    // iterate through the results and get the largest rank for each type
-    foreach ($existing_properties as $property) {
-      if (array_key_exists($property->type_id, $ranks)) {
-        if($ranks[$property->type_id] < $property->rank) {
-          $ranks[$property->type_id] = $property->rank;
-        }
-      }
-      else {
-        $ranks[$property->type_id] = $property->rank;
-      }
-    }
-
     // next add in any default properties
     if (array_key_exists('default_properties', $details)) {
 
@@ -410,16 +397,8 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
         $new_prop->type_name   = $property['cvterm']->name;
         $new_prop->definition  = $property['cvterm']->definition;
         $new_prop->value       = $property['value'];
-        $new_prop->property_id = NULL;
-        // to set the rank for this property, we need to make sure we set
-        // it greater than any already existing rank
-        if (array_key_exists($property['cvterm']->cvterm_id, $ranks)) {
-          $ranks[$property['cvterm']->cvterm_id]++;
-        }
-        else {
-          $ranks[$property['cvterm']->cvterm_id] = 0;
-        }
-        $new_prop->rank = $ranks[$property['cvterm']->cvterm_id];
+        $new_prop->property_id = 'TEMP' . uniqid();
+        $new_prop->rank = 'TEMP' . uniqid();
         $existing_properties[] = $new_prop;
       }
     }
@@ -432,9 +411,9 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
    *   '[type_id]-[rank]' => array(
    *     'type_id' => [the cvterm.cvterm_id value]
    *     'type_name' => [the cvterm.name value]
-   *     'property_id' => [the property.property_id value, or NULL if it doesn't yet exist],
+   *     'property_id' => [the property.property_id value, or temporary value if it doesn't yet exist],
    *     'value' => [the BASEprop.value value],
-   *     'rank' => [the BASEprop.rank value],
+   *     'rank' => [the BASEprop.rank value or NULL if not saved yet],
    *   ),
    * );
    *
@@ -442,7 +421,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
    * Populated from the database:
    * $existing_property = array(
    *   0 => array(
-   *     'property_id' => [the property.property_id value, or NULL if it doesn't yet exist],
+   *     'property_id' => [the property.property_id value],
    *     'type_id' => [the cvterm.cvterm_id value]
    *     'type_name' => [the cvterm.name value]
    *     'value' => [the BASEprop.value value],
@@ -462,48 +441,53 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
       $form['properties']['property_table'][$property->type_id]['#type'] = 'markup';
       $form['properties']['property_table'][$property->type_id]['#value'] = '';
 
-      $form['properties']['property_table'][$property->type_id][$property->rank]['#type'] = 'markup';
-      $form['properties']['property_table'][$property->type_id][$property->rank]['#value'] = '';
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['#type'] = 'markup';
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['#value'] = '';
 
-      $form['properties']['property_table'][$property->type_id][$property->rank]['prop_type_id'] = array(
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['prop_type_id'] = array(
         '#type' => 'hidden',
         '#value' => $property->type_id
       );
 
-      $form['properties']['property_table'][$property->type_id][$property->rank]['prop_value'] = array(
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['prop_value'] = array(
         '#type' => 'hidden',
         '#value' => $property->value
       );
 
-      $form['properties']['property_table'][$property->type_id][$property->rank]['property_id'] = array(
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['prop_rank'] = array(
+        '#type' => 'hidden',
+        '#value' => $property->rank
+      );
+
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['property_id'] = array(
         '#type' => 'hidden',
         '#value' => $property->property_id
       );
 
-      $form['properties']['property_table'][$property->type_id][$property->rank]['type'] = array(
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['type'] = array(
         '#type' => 'markup',
         '#markup' => $property->type_name
       );
       // If a definition is available we want to add that to the type column
       // to make it easier for users to determine what an added property means.
       if (isset($property->definition)) {
-        $form['properties']['property_table'][$property->type_id][$property->rank]['type']['#markup'] = $property->type_name . '<br><i>' . $property->definition . '</i>';
+        $form['properties']['property_table'][$property->type_id][$property->property_id]['type']['#markup'] = $property->type_name . '<br><i>' . $property->definition . '</i>';
       }
 
-      $form['properties']['property_table'][$property->type_id][$property->rank]['value'] = array(
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['value'] = array(
         '#type' => 'markup',
         '#markup' => $property->value,
       );
 
-      $form['properties']['property_table'][$property->type_id][$property->rank]['rank'] = array(
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['rank'] = array(
         '#type' => 'markup',
         '#markup' => $property->rank
       );
       // remove button
-      $form['properties']['property_table'][$property->type_id][$property->rank]['property_action'] = array(
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['property_action'] = array(
         '#type' => 'submit',
         '#value' => t('Remove'),
-        '#name' => "properties_remove-".$property->type_id.'-'.$property->rank,
+        '#name' => "properties_remove-".$property->type_id.'-'.$property->property_id,
         '#ajax' => array(
           'callback' => "chado_add_node_form_subtable_ajax_update",
           'wrapper' => 'tripal-generic-edit-properties-table',
@@ -647,40 +631,13 @@ function chado_add_node_form_properties_add_button_submit($form, &$form_state) {
     'type_id' => $form_state['values']['property_table']['new']['type'],
     'type_name' => $form_state['values']['property_table']['new']['type_name'],
     'definition' => $form_state['values']['property_table']['new']['definition'],
-    'property_id' => NULL,
+    'property_id' => 'TEMP' . uniqid(),
     'value' => $form_state['values']['property_table']['new']['value'],
-    'rank' => '0',
+    'rank' => 'TEMP' . uniqid(),
   );
 
-  // Determine the rank for the new property based on the the data already
-  // stored in the properties table.
-  $rank = chado_get_table_max_rank(
-    $details['property_table'],
-    array(
-      $details['chado_id_field'] => $details['chado_id'],
-      'type_id' => $property['type_id']
-    )
-  );
-  $property['rank'] = strval($rank + 1);
-  $key = $property['type_id'] . '-' . $property['rank'];
-
-  // Now check to make sure a property doesn't already exist with that rank
-  // (which happens when 2+ properties of the same type are added within the
-  // same save).
-  if (isset($form_state['chado_properties'][$key])) {
-    // Then keep iterating the rank until you find there is no property in
-    // the properties list with the same type/rank combination.
-    do {
-      $property['rank']++;
-      $key = $property['type_id'] . '-' . $property['rank'];
-    } while (isset($form_state['chado_properties'][$key]));
-
-    // And then set the property to that free space.
-    $form_state['chado_properties'][$key] = (object) $property;
-  }
-  else {
-    $form_state['chado_properties'][$key] = (object) $property;
-  }
+  $key = $property['type_id'] . '-' . $property['property_id'];
+  $form_state['chado_properties'][$key] = (object) $property;
 
   // we don't want the new element to pick up the values from the previous element so wipe them out
   unset($form_state['input']['property_table']['new']['type']);
@@ -750,8 +707,8 @@ function chado_add_node_form_properties_create_property_formstate_array($form, &
 
   foreach (element_children($form['properties']['property_table']) as $type_id) {
     if ($type_id != 'new') {
-      foreach (element_children($form['properties']['property_table'][$type_id]) as $rank) {
-          $element = $form['properties']['property_table'][$type_id][$rank];
+      foreach (element_children($form['properties']['property_table'][$type_id]) as $property_id) {
+          $element = $form['properties']['property_table'][$type_id][$property_id];
           $property = array(
             'type_id' => $element['prop_type_id']['#value'],
             'type_name' => $element['type']['#markup'],
@@ -759,7 +716,7 @@ function chado_add_node_form_properties_create_property_formstate_array($form, &
             'value' => $element['value']['#markup'],
             'rank' => $element['rank']['#markup']
           );
-          $key = $property['type_id'] . '-' . $property['rank'];
+          $key = $property['type_id'] . '-' . $property['property_id'];
           $form_state['chado_properties'][$key] = (object) $property;
       }
     }
@@ -832,8 +789,8 @@ function chado_retrieve_node_form_properties($node) {
   if (isset($node->property_table)) {
     foreach ($node->property_table as $type_id => $elements) {
       if ($type_id != 'new' AND $type_id != 'details') {
-        foreach ($elements as $rank => $element) {
-          $properties[$type_id][$rank] = $element['prop_value'];
+        foreach ($elements as $property_id => $element) {
+          $properties[$type_id][$element['prop_rank']] = $element['prop_value'];
         }
       }
     }
@@ -877,6 +834,16 @@ function chado_update_node_form_properties($node, $details, $retrieved_propertie
     foreach ($properties as $type_id => $ranks) {
       foreach ($ranks as $rank => $value) {
 
+        if (preg_match('/^TEMP/', $rank)) {
+          $rank = chado_get_table_max_rank(
+            $details['property_table'],
+            array(
+              $details['foreignkey_name'] => $details['foreignkey_value'],
+              'type_id' => $type_id
+            )
+          );
+          $rank = strval($rank + 1);
+        }
         $success = chado_insert_record(
           $details['property_table'],
           array(

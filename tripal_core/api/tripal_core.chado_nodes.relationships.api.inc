@@ -679,7 +679,7 @@ function chado_add_node_form_relationships_add_button_submit($form, &$form_state
       'subject_id' => $form_state['node']->{$details['base_table']}->{$details['base_foreign_key']},
       'subject_name' => $name,
       'rank' => NULL,
-      'relationship_id' => uniqid()
+      'relationship_id' => 'TEMP' . uniqid()
     );
     // we don't want the new element to pick up the values from the previous element so wipe them out
     unset($form_state['input']['relationship_table']['new']['object_id']);
@@ -694,7 +694,7 @@ function chado_add_node_form_relationships_add_button_submit($form, &$form_state
       'subject_id' => $form_state['values']['relationship_table']['new']['subject_id'],
       'subject_name' => $form_state['values']['relationship_table']['new']['subject_name'],
       'rank' => NULL,
-      'relationship_id' => uniqid(),
+      'relationship_id' => 'TEMP' . uniqid(),
     );
     // we don't want the new element to pick up the values from the previous element so wipe them out
     unset($form_state['input']['relationship_table']['new']['subject_id']);
