@@ -310,6 +310,16 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     );
   }
 
+  // Group all of the chado node api fieldsets into vertical tabs.
+  $form['chado_node_api'] = array(
+    '#type' => 'vertical_tabs',
+    '#attached' => array(
+      'css' => array(
+        'chado-node-api' => drupal_get_path('module', 'tripal_core') . '/theme/css/chado_node_api.css',
+      ),
+    ),
+  );
+
   // the fieldset of the property elements
   $form['properties'] = array(
     '#type' => 'fieldset',
@@ -317,9 +327,16 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     '#description' => t('Add properties by selecting a type
       from the dropdown, enter a value and click the "Add" button. To
       remove a property, click the remove button.' . $details['additional_instructions']),
-    '#prefix' => "<div id='properties-fieldset'>",
-    '#suffix' => '</div>',
-    '#weight'      => 8
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'chado_node_api',
+    '#weight'      => 8,
+    '#attributes' => array('class' => array('chado-node-api','properties')),
+    '#attached' => array(
+      'js' => array(
+        'chado-node-api-vertical-tabs' => drupal_get_path('module', 'tripal_core') . '/theme/js/chadoNodeApi_updateVerticalTabSummary.js',
+      ),
+    ),
   );
 
   $form['properties']['admin_message'] = array(
@@ -435,14 +452,28 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
    * an element to the form for each one as long as it's also in the
    * $properties_options array.
    */
+  $num_properties = 0;
   foreach ($existing_properties as $property) {
     if (array_key_exists($property->type_id, $property_options)) {
+      $num_properties++;
 
       $form['properties']['property_table'][$property->type_id]['#type'] = 'markup';
       $form['properties']['property_table'][$property->type_id]['#value'] = '';
 
       $form['properties']['property_table'][$property->type_id][$property->property_id]['#type'] = 'markup';
       $form['properties']['property_table'][$property->type_id][$property->property_id]['#value'] = '';
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['#attributes'] = array(
+        'class' => array('property', 'saved')
+      );
+
+      // Determine whether this property is unsaved or not.
+      // We can tell this by looking at the property_id: if it's not
+      // saved yet we will have entered a TEMP###.
+      if (preg_match('/^TEMP/', $property->property_id)) {
+        $form['properties']['property_table'][$property->type_id][$property->property_id]['#attributes'] = array(
+          'class' => array('property', 'unsaved')
+        );
+      }
 
       $form['properties']['property_table'][$property->type_id][$property->property_id]['prop_type_id'] = array(
         '#type' => 'hidden',
@@ -509,10 +540,17 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
         // added form).
         '#limit_validation_errors' => array(
           array('property_table')  // Validate all fields within $form_state['values']['property_table']
-        )
+        ),
       );
     }
   }
+
+  // Quickly add a hidden field stating how many properties are currently added.
+  $form['properties']['num_properties'] = array(
+    '#type' => 'hidden',
+    '#value' => $num_properties,
+    '#attributes' => array('class' => 'num-properties')
+  );
 
   // Form elements for adding a new property
   //---------------------------------------------
@@ -753,6 +791,7 @@ function theme_chado_add_node_form_properties($variables) {
         $row = array();
 
         $row['data'] = array();
+        $row['class'] = $element[$type_id][$version]['#attributes']['class'];
         foreach ($header as $fieldname => $title) {
           $row['data'][] = drupal_render($element[$type_id][$version][$fieldname]);
         }

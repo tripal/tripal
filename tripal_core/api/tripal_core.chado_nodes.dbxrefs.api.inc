@@ -125,7 +125,7 @@
 function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
 
   // Set defaults for optional fields
-  $details['fieldset_title'] = 'Additional Database References';
+  $details['fieldset_title'] = 'External References';
   $details['additional_instructions'] = '';
 
   // Get the list of databases to display in the dropdown.
@@ -156,6 +156,16 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
     array('return_html' => TRUE)
   );
 
+  // Group all of the chado node api fieldsets into vertical tabs.
+  $form['chado_node_api'] = array(
+    '#type' => 'vertical_tabs',
+    '#attached' => array(
+      'css' => array(
+        'chado-node-api' => drupal_get_path('module', 'tripal_core') . '/theme/css/chado_node_api.css',
+      ),
+    ),
+  );
+
   // the fieldset of the dbxref elements
   $form['addtl_dbxrefs'] = array(
     '#type' => 'fieldset',
@@ -164,9 +174,16 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
       selecting a database reference type from the dropdown and adding text.  You may add
       as many database references as desired by clicking the add button on the right.  To
       remove a database reference, click the remove button. ' . $details['additional_instructions']),
-    '#prefix' => "<div id='addtl-dbxrefs-fieldset'>",
-    '#suffix' => '</div>',
-    '#weight'      => 9
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'chado_node_api',
+    '#weight'      => 9,
+    '#attributes' => array('class' => array('chado-node-api','dbxrefs')),
+    '#attached' => array(
+      'js' => array(
+        'chado-node-api-vertical-tabs' => drupal_get_path('module', 'tripal_core') . '/theme/js/chadoNodeApi_updateVerticalTabSummary.js',
+      ),
+    ),
   );
 
   $form['addtl_dbxrefs']['admin_message'] = array(
@@ -245,17 +262,28 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
    * Loop on the array elements of the $existing_dbxrefs array and add
    * an element to the form for each one.
    */
+  $num_dbxrefs = 0;
   foreach ($existing_dbxrefs as $dbxref) {
-
     if (array_key_exists($dbxref->db_id, $db_options)) {
+      $num_dbxrefs++;
 
       $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id]['#type'] = 'markup';
       $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id]['#value'] = '';
 
-      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id] = array(
-        '#type' => 'markup',
-        '#value' => ''
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['#type'] = 'markup';
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['#value'] = '';
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['#attributes'] = array(
+        'class' => array('dbxref', 'saved')
       );
+
+      // Determine whether this dbxref is unsaved or not.
+      // We can tell this by looking at the dbxref_id: if it's not
+      // saved yet we will have entered a TEMP###.
+      if (preg_match('/^TEMP/', $dbxref->dbxref_id)) {
+        $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['#attributes'] = array(
+          'class' => array('dbxref', 'unsaved')
+        );
+      }
 
       $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['db_id'] = array(
         '#type' => 'hidden',
@@ -321,6 +349,13 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
       );
     }
   }
+
+  // Quickly add a hidden field stating how many dbxrefs are currently added.
+  $form['addtl_dbxrefs']['num_dbxrefs'] = array(
+    '#type' => 'hidden',
+    '#value' => $num_dbxrefs,
+    '#attributes' => array('class' => 'num-dbxrefs')
+  );
 
   // Form elements for adding a new dbxref
   //---------------------------------------------
@@ -542,6 +577,7 @@ function theme_chado_add_node_form_dbxrefs_table($variables) {
         $row = array();
 
         $row['data'] = array();
+        $row['class'] = $element[$db_id][$version]['#attributes']['class'];
         foreach ($header as $fieldname => $title) {
           $row['data'][] = drupal_render($element[$db_id][$version][$fieldname]);
         }

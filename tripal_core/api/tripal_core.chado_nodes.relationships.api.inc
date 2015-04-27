@@ -275,12 +275,29 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     );
   }
 
+  // Group all of the chado node api fieldsets into vertical tabs.
+  $form['chado_node_api'] = array(
+    '#type' => 'vertical_tabs',
+    '#attached' => array(
+      'css' => array(
+        'chado-node-api' => drupal_get_path('module', 'tripal_core') . '/theme/css/chado_node_api.css',
+      ),
+    ),
+  );
+
   $form['relationships'] = array(
     '#type' => 'fieldset',
     '#title' => t($details['fieldset_title']),
-    '#prefix' => "<div id='relationships-fieldset'>",
-    '#suffix' => '</div>',
-    '#weight'      => 10
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'chado_node_api',
+    '#weight'      => 10,
+    '#attributes' => array('class' => array('chado-node-api','relationships')),
+    '#attached' => array(
+      'js' => array(
+        'chado-node-api-vertical-tabs' => drupal_get_path('module', 'tripal_core') . '/theme/js/chadoNodeApi_updateVerticalTabSummary.js',
+      ),
+    ),
   );
 
   $form['relationships']['descrip'] = array(
@@ -384,14 +401,28 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
    * Loop on the array elements of the $existing_rels array and add
    * an element to the form for each one.
    */
+  $num_relationships = 0;
   foreach ($existing_rels as $relationship) {
     if (array_key_exists($relationship->type_id, $type_options)) {
+      $num_relationships++;
 
       $form['relationships']['relationship_table'][$relationship->type_id]['#type'] = 'markup';
       $form['relationships']['relationship_table'][$relationship->type_id]['#type'] = '';
 
       $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['#type'] = 'markup';
       $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['#value'] = '';
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['#attributes'] = array(
+        'class' => array('relationship', 'saved')
+      );
+
+      // Determine whether this relationship is unsaved or not.
+      // We can tell this by looking at the relationship_id: if it's not
+      // saved yet we will have entered a TEMP###.
+      if (preg_match('/^TEMP/', $relationship->relationship_id)) {
+        $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['#attributes'] = array(
+          'class' => array('relationship', 'unsaved')
+        );
+      }
 
       $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['relationship_id'] = array(
         '#type' => 'markup',
@@ -463,6 +494,15 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     }
   }
 
+  // Quickly add a hidden field stating how many relationships are currently added.
+  $form['relationships']['num_relationships'] = array(
+    '#type' => 'hidden',
+    '#value' => $num_relationships,
+    '#attributes' => array('class' => 'num-relationships')
+  );
+
+  // Form elements for adding a new relationship
+  //---------------------------------------------
   $form['relationships']['relationship_table']['new']['object_name'] = array(
     '#type' => 'textfield',
     '#autocomplete_path' => 'tripal_ajax/relationship_nodeform/' . $details['base_table'] . '/' . $details['base_name_field'].'/name_to_id'
@@ -823,6 +863,7 @@ function theme_chado_add_node_form_relationships_table($variables) {
         $row = array();
 
         $row['data'] = array();
+        $row['class'] = $element[$type_id][$rank]['#attributes']['class'];
         foreach ($header as $fieldname => $title) {
           $row['data'][] = drupal_render($element[$type_id][$rank][$fieldname]);
         }
