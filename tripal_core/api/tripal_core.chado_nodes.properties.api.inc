@@ -172,7 +172,11 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
   if (!array_key_exists('chado_id_field', $details)) {
     $chado_id_table = preg_replace('/prop$/', '', $details['property_table']);
     $chado_id_field = $chado_id_table . '_id';
+    $details['nodetype'] = $chado_id_table;
     $details['chado_id_field'] = $chado_id_field;
+  }
+  else {
+    $details['nodetype'] = str_replace('_id', '', $details['chado_id_field']);
   }
 
   // make sure the specified cv exists
@@ -321,12 +325,16 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
   );
 
   // the fieldset of the property elements
+  $instructions = 'To add properties of the current %nodetype, select the type of 
+      information from the drop-down below and enter the information in the text box before 
+      clicking "Add". To remove incorrect information, click the "Remove" button. 
+      Note: you cannot edit previously added information but instead need to 
+      remove and re-add it.';
   $form['properties'] = array(
     '#type' => 'fieldset',
     '#title' => t($details['fieldset_title']),
-    '#description' => t('Add properties by selecting a type
-      from the dropdown, enter a value and click the "Add" button. To
-      remove a property, click the remove button.' . $details['additional_instructions']),
+    '#description' => t('<p><strong>Additional information about a 
+      %nodetype.</strong></p><p>'. $instructions . $details['additional_instructions'] . '</p>', array('%nodetype' => $details['nodetype'])) ,
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#group' => 'chado_node_api',
@@ -337,11 +345,6 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
         'chado-node-api-vertical-tabs' => drupal_get_path('module', 'tripal_core') . '/theme/js/chadoNodeApi_updateVerticalTabSummary.js',
       ),
     ),
-  );
-
-  $form['properties']['admin_message'] = array(
-    '#type' => 'markup',
-    '#markup' => $tripal_message
   );
 
   // this form element is a tree, so that we don't puke all of the values into then node variable
@@ -615,6 +618,11 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     '#limit_validation_errors' => array(
       array('property_table')  // Validate all fields within $form_state['values']['property_table']
     )
+  );
+
+  $form['properties']['admin_message'] = array(
+    '#type' => 'markup',
+    '#markup' => $tripal_message
   );
 }
 

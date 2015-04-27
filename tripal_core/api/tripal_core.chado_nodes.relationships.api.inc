@@ -300,18 +300,18 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     ),
   );
 
+  $instructions = 'Relationships should be read like a sentence ([subject] [type] 
+    [object]) in order to determine their direction and thus their meaning. When 
+    adding a relationship, it is easiest to first select the type of relationship you would 
+    like to enter and then select whether the current %nodetype is the subject
+    or object (based on which "sentence" makes sense). Finally enter the other 
+    %nodetype in the remaining text box (making sure to select from the 
+    autocomplete drop-down) before clicking "Add". To remove incorrect relationships, click the 
+    "Remove" button. Note: you cannot edit previously added relationships 
+    but instead need to remove and re-add them.';
   $form['relationships']['descrip'] = array(
     '#type' => 'item',
-    '#markup' => t('You may add relationships between this %nodetype and other
-      %nodetype_plural by entering the details below.  You may add
-      as many relationships as desired by clicking the add button on the right.  To
-      remove a relationship, click the remove button. ' . $details['additional_instructions'],
-      array('%nodetype' => $details['nodetype'], '%nodetype_plural' => $details['nodetype_plural'])),
-  );
-
-  $form['relationships']['admin_message'] = array(
-    '#type' => 'markup',
-    '#markup' => $tripal_message
+    '#markup' => t('<p><strong>Relate the current %nodetype with others that already exist.</strong></p><p>'. $instructions . $details['additional_instructions'] . '</p>', array('%nodetype' => $details['nodetype'])),
   );
 
   // this form element is a tree, so that we don't puke all of the values into then node variable
@@ -560,6 +560,10 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     )
   );
 
+  $form['relationships']['admin_message'] = array(
+    '#type' => 'markup',
+    '#markup' => $tripal_message
+  );
 }
 
 /**

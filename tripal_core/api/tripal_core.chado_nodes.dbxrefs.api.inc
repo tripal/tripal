@@ -142,6 +142,9 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
       $db_options[$db->db_id] = $db->name;
     }
   }
+  
+  // Determine the node type using the name of the foreign key.
+  $details['nodetype'] = str_replace('_id', '', $details['base_foreign_key']);
 
   // Tell tripal administrators how to add terms to the property types drop down.
   $importance = (empty($db_options)) ? TRIPAL_WARNING : TRIPAL_INFO;
@@ -167,13 +170,19 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
   );
 
   // the fieldset of the dbxref elements
+  $instructions = 'To add an external reference, select the database you want to reference from the 
+    drop-down below. Then enter the name/accession (as it is shown in the external database) of this 
+    particular %nodetype into the text box before clicking "Add". The version can be used to 
+    indicate the version of the external database or the version of the reference 
+    depending upon what is available. To remove incorrect references, click the 
+    "Remove" button. Note: you cannot edit previously added references but instead 
+    need to remove and re-add them.';
   $form['addtl_dbxrefs'] = array(
     '#type' => 'fieldset',
     '#title' => t($details['fieldset_title']),
-    '#description' => t('You may add additional database references by
-      selecting a database reference type from the dropdown and adding text.  You may add
-      as many database references as desired by clicking the add button on the right.  To
-      remove a database reference, click the remove button. ' . $details['additional_instructions']),
+    '#description' => t('<p><strong>Indicate that this %nodetype either originates from 
+      or is present in another database.</strong></p><p>'. $instructions . $details['additional_instructions'] . '</p>', 
+      array('%nodetype' => $details['nodetype'])),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#group' => 'chado_node_api',
@@ -184,11 +193,6 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
         'chado-node-api-vertical-tabs' => drupal_get_path('module', 'tripal_core') . '/theme/js/chadoNodeApi_updateVerticalTabSummary.js',
       ),
     ),
-  );
-
-  $form['addtl_dbxrefs']['admin_message'] = array(
-    '#type' => 'markup',
-    '#markup' => $tripal_message
   );
 
   // this form element is a tree, so that we don't puke all of the values into then node variable
@@ -409,6 +413,10 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
     )
   );
 
+  $form['addtl_dbxrefs']['admin_message'] = array(
+    '#type' => 'markup',
+    '#markup' => $tripal_message
+  );
 }
 
 /**
