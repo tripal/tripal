@@ -394,8 +394,8 @@ function tripal_core_get_tripal_token_schema() {
 }
 
 /**
- * 
- * 
+ *
+ *
  */
 function tripal_core_get_tripal_toc_schema() {
   $schema = array();
@@ -450,7 +450,7 @@ function tripal_core_get_tripal_toc_schema() {
 }
 
 /**
- * 
+ *
  */
 function tripal_core_get_tripal_vars_schema() {
   $schema = array();
@@ -486,7 +486,7 @@ function tripal_core_get_tripal_vars_schema() {
       ),
     ),
   );
-  
+
   $schema['tripal_node_variables'] = array(
     'description' => 'This table is used for storing any type of variable such as ' .
       'a property or setting that should be associated with a Tripal managed Drupal node.  This table is '.
@@ -544,7 +544,7 @@ function tripal_core_get_tripal_vars_schema() {
       ),
     ),
   );
-  
+
   return $schema;
 }
 
@@ -646,7 +646,7 @@ function tripal_core_update_7203() {
   catch (Exception $e) {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Could not add tripal_toc table: '. $error);
-    
+
   }
 }
 

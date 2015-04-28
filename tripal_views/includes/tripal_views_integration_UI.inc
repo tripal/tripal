@@ -694,6 +694,9 @@ function tripal_views_integration_form($form, &$form_state) {
          '#default_value' => $default_field_handler,
       );
 
+      // Assign the default filter handler for this field.  Use the handler provided
+      // by the user through the form if provided, or set the default using the
+      // column type.
       $default_filter_handler = 0;
       if (isset($setup_id) && !isset($form_state['values']["fields_filter_handler_$table_id-$i"])) {
         $default_filter_handler = array_key_exists('filter', $default_handlers[$column_name]) ? $default_handlers[$column_name]['filter']['handler_name'] : "";
@@ -712,7 +715,7 @@ function tripal_views_integration_form($form, &$form_state) {
             $default_filter_handler = 'views_handler_filter_boolean';
           }
           elseif ($column_type == 'float') {
-            $default_filter_handler = 'views_handler_filter_float';
+            $default_filter_handler = 'views_handler_filter_numeric';
           }
           elseif ($column_type == 'datetime') {
             $default_filter_handler = 'views_handler_filter_date';
@@ -1391,7 +1394,6 @@ function tripal_views_integration_discover_handlers() {
   $handlers[] = 'views_handler_filter_boolean_operator_string';
   $handlers[] = 'views_handler_filter_in_operator';
   $handlers[] = 'views_handler_filter_numeric';
-  $handlers[] = 'views_handler_filter_float';
   $handlers[] = 'views_handler_filter_date';
   $handlers[] = 'views_handler_filter_many_to_one';
 

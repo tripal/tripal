@@ -120,7 +120,7 @@ function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NUL
        'Must have a table name when creating an mview.', array());
      return NULL;
   }
-  
+
   $mv_table = $mv_schema['table'];
 
   // see if the mv_table name already exsists
@@ -138,16 +138,16 @@ function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NUL
       $record->mv_table = $mv_table;
       $record->query = $query;
       $record->comment = $comment;
-      
+
       // convert the schema into a string format
       $str_schema = var_export($mv_schema, TRUE);
       $str_schema = preg_replace('/=>\s+\n\s+array/', '=> array', $str_schema);
       $record->mv_schema = $str_schema;
-  
+
       // add the record to the tripal_mviews table and if successful
       // create the new materialized view in the chado schema
       if (drupal_write_record('tripal_mviews', $record)) {
-  
+
         // drop the table from chado if it exists
         if (chado_table_exists($mv_table)) {
           $sql = 'DROP TABLE {' . $mv_table . '}';
@@ -220,7 +220,7 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
       eval("\$schema_arr = $mv_schema;");
       $mv_table = $schema_arr['table'];
     }
-  
+
     $record = new stdClass();
     $record->mview_id    = $mview_id;
     $record->name        = $name;
@@ -231,10 +231,10 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
     $record->comment     = $comment;
     $record->mv_schema   = $mv_schema;
     $record->mv_table    = $mv_table;
-    
+
     // update the record to the tripal_mviews table
     drupal_write_record('tripal_mviews', $record, 'mview_id');
-  
+
     // get the view before we update and check to see if the table structure has
     // changed. If so, then we want to drop and recreate the table. If not, then
     // just save the updated SQL.
@@ -253,7 +253,7 @@ function tripal_edit_mview($mview_id, $name, $modulename, $mv_table, $mv_specs,
       }
       drupal_set_message(t($message, array('%name' => $name)));
     }
-      
+
     // construct the indexes SQL if needed
     $index = '';
     if ($indexed) {
@@ -347,6 +347,28 @@ function tripal_refresh_mview($mview_id) {
   tripal_add_job("Populate materialized view '$mview->name'", 'tripal_core',
      'tripal_populate_mview', $args, $user->uid);
 
+}
+
+/**
+ * Retrieves the list of materialized view IDs and their names
+ *
+ * @return
+ *   An array of objects with the following properties:  mview_id, name
+ *
+ * @ingroup tripal_mviews_api
+ *
+ */
+function tripal_get_mviews() {
+
+  $results = db_select('tripal_mviews', 'tm')
+    ->fields('tm', array('mview_id', 'name'))
+    ->execute();
+
+  $list = array();
+  while ($mview = $results->fetchObject()) {
+    $list[] = $mview;
+  }
+  return $list;
 }
 
 /**

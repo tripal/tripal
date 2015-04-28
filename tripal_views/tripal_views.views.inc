@@ -96,7 +96,8 @@ function tripal_views_views_pre_render(&$view) {
 }
 
 /**
- * Implements hook_views_date().
+ * Implements hook_views_data().
+ *
  * Generates a dynamic data array for Views
  *
  * This function is a hook used by the Views module. It populates and

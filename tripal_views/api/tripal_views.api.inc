@@ -563,6 +563,9 @@ function tripal_rebuild_views_integrations($delete_first = FALSE) {
   }
 
   tripal_views_integrate_all_chado_tables();
+
+  // TODO: the function above should have a return value from which we can
+  // determine if the message below is approprite.
   drupal_set_message('Successfully rebuilt default Tripal Views Integrations');
 }
 

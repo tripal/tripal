@@ -28,8 +28,9 @@ function tripal_views_delete_all_integrations() {
  */
 function tripal_views_integrate_all_chado_tables() {
 
+  // First integrate all of the Chado tables. Those that are base tables
+  // get special treatment.
   $tables = chado_get_table_names(TRUE);
-
   $base_tables = array(
     'acquisition', 'analysis', 'assay', 'biomaterial', 'contact', 'cv', 'cvterm',
     'db', 'dbxref', 'environment', 'expression', 'feature', 'featuremap', 'genotype',
@@ -39,7 +40,6 @@ function tripal_views_integrate_all_chado_tables() {
   );
 
   foreach ($tables as $tablename) {
-
     $priority = 10;
     if (!tripal_is_table_integrated($tablename, $priority)) {
       if (in_array($tablename, $base_tables)) {
@@ -114,6 +114,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
           'argument' => array('name' => 'views_handler_argument_numeric'),
         );
       }
+      // Set the defaults for a serial type.
       elseif (preg_match('/^serial/', $field_schema['type'])) {
         $defn_array['fields'][$field_name]['handlers'] = array(
           /** D6
@@ -128,6 +129,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
         );
         $defn_array['fields'][$field_name]['type'] = 'int';
       }
+      // Set the defaults for a varchar type.
       elseif (preg_match('/^varchar/', $field_schema['type'])) {
         $defn_array['fields'][$field_name]['handlers'] = array(
           /** D6
@@ -141,6 +143,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
           'argument' => array('name' => 'views_handler_argument_string'),
         );
       }
+      // Set the defaults for a text type.
       elseif (preg_match('/^text/', $field_schema['type'])) {
         $defn_array['fields'][$field_name]['handlers'] = array(
           /** D6
@@ -154,6 +157,21 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
           'argument' => array('name' => 'views_handler_argument_string'),
         );
       }
+      // Set the defaults for a char type.
+      elseif (preg_match('/^char/', $field_schema['type'])) {
+        $defn_array['fields'][$field_name]['handlers'] = array(
+          /** D6
+           'field' => array('name' => 'chado_views_handler_field'),
+        'filter' => array('name' => 'chado_views_handler_filter_string'),
+        'sort' => array('name' => 'chado_views_handler_sort'),
+        */
+          'field' => array('name' => 'views_handler_field'),
+          'filter' => array('name' => 'views_handler_filter_string'),
+          'sort' => array('name' => 'views_handler_sort'),
+          'argument' => array('name' => 'views_handler_argument_string'),
+        );
+      }
+      // Set the defaults for a boolean type.
       elseif (preg_match('/^boolean/', $field_schema['type'])) {
         $defn_array['fields'][$field_name]['handlers'] = array(
           /**
@@ -166,6 +184,7 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
           'sort' => array('name' => 'views_handler_sort'),
         );
       }
+      // Set the defaults for a datatime type.
       elseif (preg_match('/^datetime/', $field_schema['type'])) {
         $defn_array['fields'][$field_name]['handlers'] = array(
           /** D6
@@ -179,6 +198,16 @@ function tripal_views_get_integration_array_for_chado_table($table_name, $base_t
           'argument' => array('name' => 'views_handler_argument_date'),
         );
       }
+      // Set the defaults for a float type.
+      elseif (preg_match('/^float/', $field_schema['type'])) {
+        $defn_array['fields'][$field_name]['handlers'] = array(
+          'field' => array('name' => 'views_handler_field_numeric'),
+          'filter' => array('name' => 'views_handler_filter_numeric'),
+          'sort' => array('name' => 'views_handler_sort'),
+          'argument' => array('name' => 'views_handler_argument_numeric'),
+        );
+      }
+      // If the type is not recognize the default to a string handler.
       else {
         $defn_array['fields'][$field_name]['handlers'] = array(
           /** D6
