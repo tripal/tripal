@@ -1,0 +1,15 @@
+
+.chado-node-api.new {
+  color: #3A7127;
+  font-style: italic;
+  font-weight: bold;
+}
+.chado-node-api.removed {
+  color: #680000;
+  font-style: italic;
+  font-weight: bold;
+}
+tr.unsaved td {
+  background-color: #fffce5;
+  color: #840;
+}

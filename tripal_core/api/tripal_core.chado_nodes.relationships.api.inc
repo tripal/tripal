@@ -275,26 +275,43 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     );
   }
 
+  // Group all of the chado node api fieldsets into vertical tabs.
+  $form['chado_node_api'] = array(
+    '#type' => 'vertical_tabs',
+    '#attached' => array(
+      'css' => array(
+        'chado-node-api' => drupal_get_path('module', 'tripal_core') . '/theme/css/chado_node_api.css',
+      ),
+    ),
+  );
+
   $form['relationships'] = array(
     '#type' => 'fieldset',
     '#title' => t($details['fieldset_title']),
-    '#prefix' => "<div id='relationships-fieldset'>",
-    '#suffix' => '</div>',
-    '#weight'      => 10
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'chado_node_api',
+    '#weight'      => 10,
+    '#attributes' => array('class' => array('chado-node-api','relationships')),
+    '#attached' => array(
+      'js' => array(
+        'chado-node-api-vertical-tabs' => drupal_get_path('module', 'tripal_core') . '/theme/js/chadoNodeApi_updateVerticalTabSummary.js',
+      ),
+    ),
   );
 
+  $instructions = 'Relationships should be read like a sentence ([subject] [type] 
+    [object]) in order to determine their direction and thus their meaning. When 
+    adding a relationship, it is easiest to first select the type of relationship you would 
+    like to enter and then select whether the current %nodetype is the subject
+    or object (based on which "sentence" makes sense). Finally enter the other 
+    %nodetype in the remaining text box (making sure to select from the 
+    autocomplete drop-down) before clicking "Add". To remove incorrect relationships, click the 
+    "Remove" button. Note: you cannot edit previously added relationships 
+    but instead need to remove and re-add them.';
   $form['relationships']['descrip'] = array(
     '#type' => 'item',
-    '#markup' => t('You may add relationships between this %nodetype and other
-      %nodetype_plural by entering the details below.  You may add
-      as many relationships as desired by clicking the add button on the right.  To
-      remove a relationship, click the remove button. ' . $details['additional_instructions'],
-      array('%nodetype' => $details['nodetype'], '%nodetype_plural' => $details['nodetype_plural'])),
-  );
-
-  $form['relationships']['admin_message'] = array(
-    '#type' => 'markup',
-    '#markup' => $tripal_message
+    '#markup' => t('<p><strong>Relate the current %nodetype with others that already exist.</strong></p><p>'. $instructions . $details['additional_instructions'] . '</p>', array('%nodetype' => $details['nodetype'])),
   );
 
   // this form element is a tree, so that we don't puke all of the values into then node variable
@@ -311,6 +328,20 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
   $form['relationships']['relationship_table']['details'] = array(
     '#type' => 'hidden',
     '#value' => serialize($details)
+  );
+
+  // We need to provide feedback to the user that changes made
+  // are not saved until the node is saved.
+  $form['relationships']['relationship_table']['save_warning'] = array(
+    '#type' => 'markup',
+    '#prefix' => '<div id="relationship-save-warning" class="messages warning" style="display:none;">',
+    '#suffix' => '</div>',
+    '#markup' => '* The changes to these relationships will not be saved until the "Save" button at the bottom of this form is clicked. <span class="specific-changes"></span>',
+    '#attached' => array(
+      'js' => array(
+        'chado-node-api-unsaved' => drupal_get_path('module', 'tripal_core') . '/theme/js/chadoNodeApi_unsavedNotify.js',
+      ),
+    ),
   );
 
   // Add relationships already attached to the node
@@ -332,6 +363,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     $existing_rels = chado_query(
       "SELECT
           rel.*,
+          rel.".$details['relationship_table']."_id as relationship_id,
           rel.".$details['subject_field_name']." as subject_id,
           rel.".$details['object_field_name']." as object_id,
           base1.".$details['base_name_field']." as object_name,
@@ -351,14 +383,15 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
    *
    * From the chado_relationships array:
    * $form_state['chado_relationships'] = array(
-   *   '[type_id]-[rank]' => array(
+   *   '[type_id]-[_relationship_id]' => array(
+   *     'relationship_id' => [the _relationship._relationship_id value OR a temporary value if not yet saved to the database],
    *     'object_id' => [the _relationship.object_id value],
    *     'object_name' => [the base_table.uniquename value linked on base_foreign_key=object_id],
    *     'subject_id' => [the _relationship.subject_id value],
    *     'subject_name' => [the base_table.uniquename value linked on base_foreign_key=subject_id],
    *     'type_id' => [the _relationship.type_id value],
    *     'type_name' => [the cvterm.name value linked on type_id],
-   *     'rank' => [the _relationship.rank value],
+   *     'rank' => [the _relationship.rank value OR NULL if not yet saved to the database],
    *   ),
    * );
    *
@@ -366,7 +399,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
    * Populated from the database:
    * $existing_rels = array(
    *   0 => array(
-   *     'relationship_id' => [the _relationship.relationship_id value],
+   *     'relationship_id' => [the _relationship._relationship_id value],
    *     'object_id' => [the _relationship.object_id value],
    *     'object_name' => [the base_table.uniquename value linked on base_foreign_key=object_id],
    *     'subject_id' => [the _relationship.subject_id value],
@@ -382,62 +415,76 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
    * Loop on the array elements of the $existing_rels array and add
    * an element to the form for each one.
    */
+  $num_relationships = 0;
   foreach ($existing_rels as $relationship) {
     if (array_key_exists($relationship->type_id, $type_options)) {
-
-      // We're using a unique id as a rank placeholder to ensure all relationships are shown
-      // We can't use the actual rank b/c there can be two relationships with the same type
-      // and rank as long as the subject_id and object_id are switched. For example, you can
-      // have Fred is_paternal_parent_of Max and Max is_paternal_parent_of Lui (both rank=0)
-      $rank = uniqid();
+      $num_relationships++;
 
       $form['relationships']['relationship_table'][$relationship->type_id]['#type'] = 'markup';
       $form['relationships']['relationship_table'][$relationship->type_id]['#type'] = '';
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['#type'] = 'markup';
-      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['#value'] = '';
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['#type'] = 'markup';
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['#value'] = '';
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['#attributes'] = array(
+        'class' => array('relationship', 'saved')
+      );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['object_id'] = array(
+      // Determine whether this relationship is unsaved or not.
+      // We can tell this by looking at the relationship_id: if it's not
+      // saved yet we will have entered a TEMP###.
+      if (preg_match('/^TEMP/', $relationship->relationship_id)) {
+        $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['#attributes'] = array(
+          'class' => array('relationship', 'unsaved')
+        );
+      }
+
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['relationship_id'] = array(
+        '#type' => 'markup',
+        '#markup' => $relationship->relationship_id
+      );
+
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['object_id'] = array(
         '#type' => 'hidden',
         '#value' => $relationship->object_id
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['subject_id'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['subject_id'] = array(
         '#type' => 'hidden',
         '#value' => $relationship->subject_id
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['type_id'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['type_id'] = array(
         '#type' => 'hidden',
         '#value' => $relationship->type_id
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['object_name'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['object_name'] = array(
         '#type' => 'markup',
         '#markup' => $relationship->object_name
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['type_name'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['type_name'] = array(
         '#type' => 'markup',
         '#markup' => $relationship->type_name
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['subject_name'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['subject_name'] = array(
         '#type' => 'markup',
-        '#markup' => $relationship->subject_name
+        '#markup' => $relationship->subject_name,
+        '#prefix' => '<span class="row-unsaved-warning"></span>'
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['rank'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['rank'] = array(
         '#type' => 'markup',
-        '#markup' => $rank
+        '#markup' => (isset($relationship->rank)) ? $relationship->rank : NULL
       );
 
-      $form['relationships']['relationship_table'][$relationship->type_id][$rank]['rel_action'] = array(
+      $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['rel_action'] = array(
         '#type' => 'submit',
         '#value' => t('Remove'),
-        '#name' => "rel_remove-".$relationship->type_id.'-'.$rank,
+        '#name' => "relationships_remove-".$relationship->type_id.'-'.$relationship->relationship_id,
         '#ajax' => array(
-          'callback' => 'chado_add_node_form_relationships_ajax_update',
+          'callback' => 'chado_add_node_form_subtable_ajax_update',
           'wrapper' => 'tripal-generic-edit-relationships-table',
           'effect'   => 'fade',
           'method'   => 'replace',
@@ -450,8 +497,8 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
         // from the chado_relationships array. In order to keep validate errors
         // from the node form validate and Drupal required errors for non-relationship fields
         // preventing the user from removing relationships we set the #limit_validation_errors below
-        '#validate' => array('chado_add_node_form_relationships_form_remove_button_validate'),
-        '#submit' => array('chado_add_node_form_relationships_remove_button_submit'),
+        '#validate' => array('chado_add_node_form_subtables_remove_button_validate'),
+        '#submit' => array('chado_add_node_form_subtables_remove_button_submit'),
         // Limit the validation of the form upon clicking this button to the relationship_table tree
         // No other fields will be validated (ie: no fields from the main form or any other api
         // added form).
@@ -462,6 +509,15 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     }
   }
 
+  // Quickly add a hidden field stating how many relationships are currently added.
+  $form['relationships']['num_relationships'] = array(
+    '#type' => 'hidden',
+    '#value' => $num_relationships,
+    '#attributes' => array('class' => 'num-relationships')
+  );
+
+  // Form elements for adding a new relationship
+  //---------------------------------------------
   $form['relationships']['relationship_table']['new']['object_name'] = array(
     '#type' => 'textfield',
     '#autocomplete_path' => 'tripal_ajax/relationship_nodeform/' . $details['base_table'] . '/' . $details['base_name_field'].'/name_to_id'
@@ -495,9 +551,9 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
   $form['relationships']['relationship_table']['new']['rel_action'] = array(
     '#type' => 'submit',
     '#value' => t('Add'),
-    '#name' => 'rel-add',
+    '#name' => 'relationships-add',
     '#ajax' => array(
-      'callback' => 'chado_add_node_form_relationships_ajax_update',
+      'callback' => 'chado_add_node_form_subtable_ajax_update',
       'wrapper' => 'tripal-generic-edit-relationships-table',
       'effect'   => 'fade',
       'method'   => 'replace',
@@ -509,8 +565,8 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     // array. In order to keep validate errors from the node form validate and Drupal
     // required errors for non-relationship fields preventing the user from adding relationships we
     // set the #limit_validation_errors below
-    '#validate' => array('chado_add_node_form_relationships_add_button_validate'),
-    '#submit' => array('chado_add_node_form_relationships_add_button_submit'),
+    '#validate' => array('chado_add_node_form_subtables_add_button_validate'),
+    '#submit' => array('chado_add_node_form_subtables_add_button_submit'),
     // Limit the validation of the form upon clicking this button to the relationship_table tree
     // No other fields will be validated (ie: no fields from the main form or any other api
     // added form).
@@ -519,6 +575,10 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     )
   );
 
+  $form['relationships']['admin_message'] = array(
+    '#type' => 'markup',
+    '#markup' => $tripal_message
+  );
 }
 
 /**
@@ -530,7 +590,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
 function chado_add_node_form_relationships_add_button_validate($form, &$form_state) {
 
   $details = unserialize($form_state['values']['relationship_table']['details']);
-
+  
   // First deal with autocomplete fields.
   // Extract the base_id assuming '(###) NAME FIELD'.
   if (!empty($form_state['values']['relationship_table']['new']['subject_name'])) {
@@ -655,7 +715,7 @@ function chado_add_node_form_relationships_add_button_validate($form, &$form_sta
  *
  * @ingroup tripal_core
  */
-function chado_add_node_form_relationships_add_button_submit(&$form, &$form_state) {
+function chado_add_node_form_relationships_add_button_submit($form, &$form_state) {
 
 
   $details = unserialize($form_state['values']['relationship_table']['details']);
@@ -677,7 +737,8 @@ function chado_add_node_form_relationships_add_button_submit(&$form, &$form_stat
       'object_name' => $form_state['values']['relationship_table']['new']['object_name'],
       'subject_id' => $form_state['node']->{$details['base_table']}->{$details['base_foreign_key']},
       'subject_name' => $name,
-      'rank' => uniqid(),
+      'rank' => NULL,
+      'relationship_id' => 'TEMP' . uniqid()
     );
     // we don't want the new element to pick up the values from the previous element so wipe them out
     unset($form_state['input']['relationship_table']['new']['object_id']);
@@ -691,35 +752,29 @@ function chado_add_node_form_relationships_add_button_submit(&$form, &$form_stat
       'object_name' => $name,
       'subject_id' => $form_state['values']['relationship_table']['new']['subject_id'],
       'subject_name' => $form_state['values']['relationship_table']['new']['subject_name'],
-      'rank' => uniqid(),
+      'rank' => NULL,
+      'relationship_id' => 'TEMP' . uniqid(),
     );
     // we don't want the new element to pick up the values from the previous element so wipe them out
     unset($form_state['input']['relationship_table']['new']['subject_id']);
     unset($form_state['input']['relationship_table']['new']['subject_name']);
   }
 
-  $key = $relationship['type_id'] . '-' . $relationship['rank'];
+  $key = $relationship['type_id'] . '-' . $relationship['relationship_id'];
   $form_state['chado_relationships'][$key] = (object) $relationship;
 
   // we don't want the new element to pick up the values from the previous element so wipe them out
   unset($form_state['input']['relationship_table']['new']['type_id']);
   unset($form_state['input']['relationship_table']['new']['type_name']);
-
-  // This is needed to ensure the form builder function is called to
-  // rebuild the form on ajax requests.
-  $form_state['rebuild'] = TRUE;
 }
 
 /**
- * There is no user input for the remove buttons so there is no need to validate
- * However, both a submit & validate need to be specified so this is just a placeholder
- *
  * Called by the many remove buttons in chado_add_node_form_relationships
  *
  * @ingroup tripal_core
  */
-function chado_add_node_form_relationships_form_remove_button_validate($form, $form_state) {
-  // No Validation needed for remove
+function chado_add_node_form_relationships_remove_button_validate($form, &$form_state) {
+  // No validation needed.
 }
 
 /**
@@ -735,25 +790,12 @@ function chado_add_node_form_relationships_remove_button_submit(&$form, &$form_s
   chado_add_node_form_relationships_create_relationship_formstate_array($form, $form_state);
 
   // remove the specified relationship from the form relationship table
-  if(preg_match('/rel_remove-([^-]+-[^-]+)/',$form_state['triggering_element']['#name'],$match)) {
+  if(preg_match('/relationships_remove-([^-]+-[^-]+)/',$form_state['triggering_element']['#name'],$match)) {
     $key = $match[1];
     if (array_key_exists($key, $form_state['chado_relationships'])) {
       unset($form_state['chado_relationships'][$key]);
     }
   }
-
-  // This is needed to ensure the form builder function is called to
-  // rebuild the form on ajax requests.
-  $form_state['rebuild'] = TRUE;
-}
-
-/**
- * Ajax function which returns the section of the form to be re-rendered
- *
- * @ingroup tripal_core
- */
-function chado_add_node_form_relationships_ajax_update($form, $form_state) {
-  return $form['relationships']['relationship_table'];
 }
 
 /**
@@ -780,8 +822,8 @@ function chado_add_node_form_relationships_create_relationship_formstate_array($
 
   foreach (element_children($form['relationships']['relationship_table']) as $type_id) {
     if ($type_id != 'new') {
-      foreach (element_children($form['relationships']['relationship_table'][$type_id]) as $rank) {
-          $element = $form['relationships']['relationship_table'][$type_id][$rank];
+      foreach (element_children($form['relationships']['relationship_table'][$type_id]) as $relationship_id) {
+          $element = $form['relationships']['relationship_table'][$type_id][$relationship_id];
           $rel = array(
             'type_id' => $element['type_id']['#value'],
             'object_id' => $element['object_id']['#value'],
@@ -789,9 +831,10 @@ function chado_add_node_form_relationships_create_relationship_formstate_array($
             'type_name' => $element['type_name']['#markup'],
             'object_name' => $element['object_name']['#markup'],
             'subject_name' => $element['subject_name']['#markup'],
-            'rank' => $element['rank']['#markup']
+            'rank' => $element['rank']['#markup'],
+            'relationship_id' => $relationship_id,
           );
-          $key = $rel['type_id'] . '-' . $rel['rank'];
+          $key = $rel['type_id'] . '-' . $rel['relationship_id'];
           $form_state['chado_relationships'][$key] = (object) $rel;
       }
     }
@@ -839,6 +882,7 @@ function theme_chado_add_node_form_relationships_table($variables) {
         $row = array();
 
         $row['data'] = array();
+        $row['class'] = $element[$type_id][$rank]['#attributes']['class'];
         foreach ($header as $fieldname => $title) {
           $row['data'][] = drupal_render($element[$type_id][$rank][$fieldname]);
         }
@@ -847,7 +891,7 @@ function theme_chado_add_node_form_relationships_table($variables) {
     }
   }
 
-  return theme('table', array(
+  return render($element['save_warning']) . theme('table', array(
     'header' => $header,
     'rows' => $rows,
     'sticky' => FALSE

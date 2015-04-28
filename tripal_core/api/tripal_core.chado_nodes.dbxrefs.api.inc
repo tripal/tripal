@@ -125,7 +125,7 @@
 function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
 
   // Set defaults for optional fields
-  $details['fieldset_title'] = 'Additional Database References';
+  $details['fieldset_title'] = 'External References';
   $details['additional_instructions'] = '';
 
   // Get the list of databases to display in the dropdown.
@@ -142,6 +142,9 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
       $db_options[$db->db_id] = $db->name;
     }
   }
+  
+  // Determine the node type using the name of the foreign key.
+  $details['nodetype'] = str_replace('_id', '', $details['base_foreign_key']);
 
   // Tell tripal administrators how to add terms to the property types drop down.
   $importance = (empty($db_options)) ? TRIPAL_WARNING : TRIPAL_INFO;
@@ -156,22 +159,40 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
     array('return_html' => TRUE)
   );
 
+  // Group all of the chado node api fieldsets into vertical tabs.
+  $form['chado_node_api'] = array(
+    '#type' => 'vertical_tabs',
+    '#attached' => array(
+      'css' => array(
+        'chado-node-api' => drupal_get_path('module', 'tripal_core') . '/theme/css/chado_node_api.css',
+      ),
+    ),
+  );
+
   // the fieldset of the dbxref elements
+  $instructions = 'To add an external reference, select the database you want to reference from the 
+    drop-down below. Then enter the name/accession (as it is shown in the external database) of this 
+    particular %nodetype into the text box before clicking "Add". The version can be used to 
+    indicate the version of the external database or the version of the reference 
+    depending upon what is available. To remove incorrect references, click the 
+    "Remove" button. Note: you cannot edit previously added references but instead 
+    need to remove and re-add them.';
   $form['addtl_dbxrefs'] = array(
     '#type' => 'fieldset',
     '#title' => t($details['fieldset_title']),
-    '#description' => t('You may add additional database references by
-      selecting a database reference type from the dropdown and adding text.  You may add
-      as many database references as desired by clicking the add button on the right.  To
-      remove a database reference, click the remove button. ' . $details['additional_instructions']),
-    '#prefix' => "<div id='addtl-dbxrefs-fieldset'>",
-    '#suffix' => '</div>',
-    '#weight'      => 9
-  );
-
-  $form['addtl_dbxrefs']['admin_message'] = array(
-    '#type' => 'markup',
-    '#markup' => $tripal_message
+    '#description' => t('<p><strong>Indicate that this %nodetype either originates from 
+      or is present in another database.</strong></p><p>'. $instructions . $details['additional_instructions'] . '</p>', 
+      array('%nodetype' => $details['nodetype'])),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'chado_node_api',
+    '#weight'      => 9,
+    '#attributes' => array('class' => array('chado-node-api','dbxrefs')),
+    '#attached' => array(
+      'js' => array(
+        'chado-node-api-vertical-tabs' => drupal_get_path('module', 'tripal_core') . '/theme/js/chadoNodeApi_updateVerticalTabSummary.js',
+      ),
+    ),
   );
 
   // this form element is a tree, so that we don't puke all of the values into then node variable
@@ -182,6 +203,20 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
     '#prefix' => '<div id="tripal-generic-edit-addtl_dbxrefs-table">',
     '#suffix' => '</div>',
     '#theme' => 'chado_node_additional_dbxrefs_form_table'
+  );
+
+  // We need to provide feedback to the user that changes made
+  // are not saved until the node is saved.
+  $form['addtl_dbxrefs']['dbxref_table']['save_warning'] = array(
+    '#type' => 'markup',
+    '#prefix' => '<div id="dbxref-save-warning" class="messages warning" style="display:none;">',
+    '#suffix' => '</div>',
+    '#markup' => '* The changes to these references will not be saved until the "Save" button at the bottom of this form is clicked. <span class="specific-changes"></span>',
+    '#attached' => array(
+      'js' => array(
+        'chado-node-api-unsaved' => drupal_get_path('module', 'tripal_core') . '/theme/js/chadoNodeApi_unsavedNotify.js',
+      ),
+    ),
   );
 
   /* DBxrefs can come to us in two ways:
@@ -200,9 +235,12 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
   else {
     $existing_dbxrefs = chado_query(
       "SELECT
-         db.name as db_name, db.db_id as db_id,
-         dbxref.dbxref_id, dbxref.accession as accession,
-         dbxref.description as description, dbxref.version
+         db.name as db_name, 
+         db.db_id as db_id,
+         dbxref.dbxref_id, 
+         dbxref.accession as accession,
+         dbxref.description as description, 
+         dbxref.version
        FROM {dbxref} dbxref
          LEFT JOIN {db} db ON db.db_id = dbxref.db_id
          LEFT JOIN {".$details['linking_table']."} linking_table ON linking_table.dbxref_id = dbxref.dbxref_id
@@ -218,7 +256,7 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
    *   '[db_id]-[version]' => array(
    *     'db_id' => [the db.db_id value]
    *     'db_name' => [the db.name value]
-   *     'dbxref_id' => [the dbxref.dbxref_id value, or NULL if it doesn't yet exists],
+   *     'dbxref_id' => [the dbxref.dbxref_id value, or temporary value if it doesn't yet exists],
    *     'version' => [the dbxref.version value],
    *     'accession' => [the dbxref.accession value],
    *   ),
@@ -242,65 +280,71 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
    * Loop on the array elements of the $existing_dbxrefs array and add
    * an element to the form for each one.
    */
+  $num_dbxrefs = 0;
   foreach ($existing_dbxrefs as $dbxref) {
-
     if (array_key_exists($dbxref->db_id, $db_options)) {
+      $num_dbxrefs++;
 
-      /* Since the dbxref version is part of the unique constraint, when it is
-       * empty we need to use something in the key to indicate this case. Otherwise,
-       * you wouldn't be able to select those elements from the array
-       * (ie: $form['addtl_dbxrefs']['dbxref_table'][9999][''] doesn't work as
-       * expected whereas $form['addtl_dbxrefs']['dbxref_table'][9999][NONE]
-       * is much better)
-       */
-      $version = (!empty($dbxref->version)) ? $dbxref->version : 'NONE';
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id]['#type'] = 'markup';
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id]['#value'] = '';
 
-      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id] = array(
-        '#type' => 'markup',
-        '#value' => ''
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['#type'] = 'markup';
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['#value'] = '';
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['#attributes'] = array(
+        'class' => array('dbxref', 'saved')
       );
 
-      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version] = array(
-        '#type' => 'markup',
-        '#value' => ''
-      );
+      // Determine whether this dbxref is unsaved or not.
+      // We can tell this by looking at the dbxref_id: if it's not
+      // saved yet we will have entered a TEMP###.
+      if (preg_match('/^TEMP/', $dbxref->dbxref_id)) {
+        $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['#attributes'] = array(
+          'class' => array('dbxref', 'unsaved')
+        );
+      }
 
-      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['db_id'] = array(
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['db_id'] = array(
         '#type' => 'hidden',
         '#value' => $dbxref->db_id
       );
 
-      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['accession'] = array(
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['accession'] = array(
         '#type' => 'hidden',
         '#value' => $dbxref->accession
       );
 
-      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['dbxref_id'] = array(
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['version'] = array(
+        '#type' => 'hidden',
+        '#value' => $dbxref->version,
+      );
+
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['dbxref_id'] = array(
         '#type' => 'hidden',
         '#value' => $dbxref->dbxref_id
       );
 
-      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['db'] = array(
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['db'] = array(
         '#type' => 'markup',
-        '#markup' => $dbxref->db_name
+        '#markup' => $dbxref->db_name,
+        '#prefix' => '<span class="row-unsaved-warning"></span>'
       );
 
-      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['dbxref_version'] = array(
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['dbxref_version'] = array(
         '#type' => 'markup',
         '#markup' => $dbxref->version,
       );
 
-      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['dbxref_accession'] = array(
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['dbxref_accession'] = array(
         '#type' => 'markup',
         '#markup' => $dbxref->accession
       );
       // remove button
-      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$version]['dbxref_action'] = array(
+      $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['dbxref_action'] = array(
         '#type' => 'submit',
         '#value' => t('Remove'),
-        '#name' => "dbxref_remove-".$dbxref->db_id.'-'.$version,
+        '#name' => "dbxrefs_remove-".$dbxref->db_id.'-'.$dbxref->dbxref_id,
         '#ajax' => array(
-          'callback' => "chado_add_node_form_dbxrefs_ajax_update",
+          'callback' => "chado_add_node_form_subtable_ajax_update",
           'wrapper' => 'tripal-generic-edit-addtl_dbxrefs-table',
           'effect'   => 'fade',
           'method'   => 'replace',
@@ -313,8 +357,8 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
         // from the chado_additional_dbxrefs array. In order to keep validate errors
         // from the node form validate and Drupal required errors for non-dbxref fields
         // preventing the user from removing dbxrefs we set the #limit_validation_errors below
-        '#validate' => array('chado_add_node_form_dbxrefs_remove_button_validate'),
-        '#submit' => array('chado_add_node_form_dbxrefs_remove_button_submit'),
+        '#validate' => array('chado_add_node_form_subtables_remove_button_validate'),
+        '#submit' => array('chado_add_node_form_subtables_remove_button_submit'),
         // Limit the validation of the form upon clicking this button to the dbxref_table tree
         // No other fields will be validated (ie: no fields from the main form or any other api
         // added form).
@@ -324,6 +368,13 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
       );
     }
   }
+
+  // Quickly add a hidden field stating how many dbxrefs are currently added.
+  $form['addtl_dbxrefs']['num_dbxrefs'] = array(
+    '#type' => 'hidden',
+    '#value' => $num_dbxrefs,
+    '#attributes' => array('class' => 'num-dbxrefs')
+  );
 
   // Form elements for adding a new dbxref
   //---------------------------------------------
@@ -352,9 +403,9 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
   $form['addtl_dbxrefs']['dbxref_table']['new']['dbxref_action'] = array(
     '#type' => 'submit',
     '#value' => t('Add'),
-    '#name' => "dbxref-add",
+    '#name' => "dbxrefs-add",
     '#ajax' => array(
-      'callback' => "chado_add_node_form_dbxrefs_ajax_update",
+      'callback' => "chado_add_node_form_subtable_ajax_update",
       'wrapper' => 'tripal-generic-edit-addtl_dbxrefs-table',
       'effect'   => 'fade',
       'method'   => 'replace',
@@ -367,8 +418,8 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
     // array. In order to keep validate errors from the node form validate and Drupal
     // required errors for non-dbxref fields preventing the user from adding dbxrefs we
     // set the #limit_validation_errors below
-    '#validate' => array('chado_add_node_form_dbxrefs_add_button_validate'),
-    '#submit' => array('chado_add_node_form_dbxrefs_add_button_submit'),
+    '#validate' => array('chado_add_node_form_subtables_add_button_validate'),
+    '#submit' => array('chado_add_node_form_subtables_add_button_submit'),
     // Limit the validation of the form upon clicking this button to the dbxref_table tree
     // No other fields will be validated (ie: no fields from the main form or any other api
     // added form).
@@ -377,6 +428,10 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
     )
   );
 
+  $form['addtl_dbxrefs']['admin_message'] = array(
+    '#type' => 'markup',
+    '#markup' => $tripal_message
+  );
 }
 
 /**
@@ -386,7 +441,7 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
  * @ingroup tripal_core
  */
 function chado_add_node_form_dbxrefs_add_button_validate($form, &$form_state) {
-
+  
   // Ensure the db_id is supplied & Valid
   $db = chado_select_record(
     'db',
@@ -404,6 +459,7 @@ function chado_add_node_form_dbxrefs_add_button_validate($form, &$form_state) {
   if (empty($form_state['values']['dbxref_table']['new']['dbxref_accession'])) {
     form_set_error('dbxref_table][new][dbxref_accession','You must enter the accession before attempting to add a new database reference.');
   }
+
 }
 
 /**
@@ -414,7 +470,7 @@ function chado_add_node_form_dbxrefs_add_button_validate($form, &$form_state) {
  *
  * @ingroup tripal_core
  */
-function chado_add_node_form_dbxrefs_add_button_submit(&$form, &$form_state) {
+function chado_add_node_form_dbxrefs_add_button_submit($form, &$form_state) {
 
   // if the chado_additional_dbxrefs array is not set then this is the first time modifying the
   // dbxref table. this means we need to include all the dbxrefs from the db
@@ -426,12 +482,11 @@ function chado_add_node_form_dbxrefs_add_button_submit(&$form, &$form_state) {
   $dbxref = array(
     'db_id' => $form_state['values']['dbxref_table']['new']['db'],
     'db_name' => $form_state['values']['dbxref_table']['new']['db_name'],
-    'dbxref_id' => NULL,
+    'dbxref_id' => 'TEMP' . uniqid(),
     'version' => $form_state['values']['dbxref_table']['new']['dbxref_version'],
     'accession' => $form_state['values']['dbxref_table']['new']['dbxref_accession'],
   );
-  $version = (!empty($dbxref['version'])) ? $dbxref['version'] : 'NONE';
-  $key = $dbxref['db_id'] . '-' . $version;
+  $key = $dbxref['db_id'] . '-' . $dbxref['dbxref_id'];
   $form_state['chado_additional_dbxrefs'][$key] = (object) $dbxref;
 
 
@@ -440,20 +495,15 @@ function chado_add_node_form_dbxrefs_add_button_submit(&$form, &$form_state) {
   unset($form_state['input']['dbxref_table']['new']['db_name']);
   unset($form_state['input']['dbxref_table']['new']['dbxref_version']);
   unset($form_state['input']['dbxref_table']['new']['dbxref_accession']);
-
-  $form_state['rebuild'] = TRUE;
 }
 
 /**
- * There is no user input for the remove buttons so there is no need to validate
- * However, both a submit & validate need to be specified so this is just a placeholder
- *
  * Called by the many remove buttons in chado_add_node_form_dbxrefs
  *
  * @ingroup tripal_core
  */
 function chado_add_node_form_dbxrefs_remove_button_validate($form, $form_state) {
-  // No Validation needed for remove
+  // No validation needed.
 }
 
 /**
@@ -471,23 +521,12 @@ function chado_add_node_form_dbxrefs_remove_button_submit(&$form, &$form_state) 
   }
 
   // remove the specified dbxref from the form dbxref table
-  if(preg_match('/dbxref_remove-([^-]+-[^-]+)/',$form_state['triggering_element']['#name'],$match)) {
+  if(preg_match('/dbxrefs_remove-([^-]+-[^-]+)/',$form_state['triggering_element']['#name'],$match)) {
     $key = $match[1];
     if (array_key_exists($key, $form_state['chado_additional_dbxrefs'])) {
       unset($form_state['chado_additional_dbxrefs'][$key]);
     }
   }
-
-  $form_state['rebuild'] = TRUE;
-}
-
-/**
- * Ajax function which returns the section of the form to be re-rendered
- *
- * @ingroup tripal_core
- */
-function chado_add_node_form_dbxrefs_ajax_update($form, $form_state) {
-  return $form['addtl_dbxrefs']['dbxref_table'];
 }
 
 /**
@@ -500,7 +539,7 @@ function chado_add_node_form_dbxrefs_ajax_update($form, $form_state) {
  *   '[db_id]-[version]' => array(
  *     'db_id' => [the db.db_id value]
  *     'db_name' => [the db.name value]
- *     'dbxref_id' => [the dbxref.dbxref_id value, or NULL if it doesn't yet exists],
+ *     'dbxref_id' => [the dbxref.dbxref_id value, or temporary value if it doesn't yet exists],
  *     'version' => [the dbxref.version value],
  *     'accession' => [the dbxref.accession value],
  *   ),
@@ -523,8 +562,7 @@ function chado_add_node_form_dbxrefs_create_dbxref_formstate_array($form, &$form
             'version' => $element['dbxref_version']['#markup'],
             'accession' => $element['dbxref_accession']['#markup'],
           );
-          $version = (!empty($dbxref['version'])) ? $dbxref['version'] : 'NONE';
-          $key = $dbxref['db_id'] . '-' . $version;
+          $key = $dbxref['db_id'] . '-' . $dbxref['dbxref_id'];
           $form_state['chado_additional_dbxrefs'][$key] = (object) $dbxref;
       }
     }
@@ -562,6 +600,7 @@ function theme_chado_add_node_form_dbxrefs_table($variables) {
         $row = array();
 
         $row['data'] = array();
+        $row['class'] = $element[$db_id][$version]['#attributes']['class'];
         foreach ($header as $fieldname => $title) {
           $row['data'][] = drupal_render($element[$db_id][$version][$fieldname]);
         }
@@ -570,7 +609,7 @@ function theme_chado_add_node_form_dbxrefs_table($variables) {
     }
   }
 
-  return theme('table', array(
+  return render($element['save_warning']) . theme('table', array(
     'header' => $header,
     'rows' => $rows
   ));
@@ -599,8 +638,8 @@ function chado_retrieve_node_form_dbxrefs($node) {
   if (isset($node->dbxref_table)) {
     foreach ($node->dbxref_table as $db_id => $elements) {
       if ($db_id != 'new') {
-        foreach ($elements as $version => $dbxref) {
-          $dbxref_id = (!empty($dbxref['dbxref_id'])) ? $dbxref['dbxref_id'] : 'NONE';
+        foreach ($elements as $dbxref_id => $dbxref) {
+          $version = (!empty($dbxref['version'])) ? $dbxref['version'] : 'NONE';
           $dbxrefs[$db_id][$version][$dbxref_id] = $dbxref['accession'];
         }
       }
@@ -647,7 +686,7 @@ function chado_update_node_form_dbxrefs($node, $details, $retrieved_dbxrefs = FA
       foreach ($versions as $version => $elements) {
         foreach ($elements as $dbxref_id => $accession) {
           // If there is no dbxref then we have to create that first
-          if ($dbxref_id == 'NONE') {
+          if (preg_match('/^TEMP/',$dbxref_id)) {
             $version = ($version == 'NONE') ? '' : $version;
             $success = tripal_insert_dbxref(array(
               'db_id' => $db_id,

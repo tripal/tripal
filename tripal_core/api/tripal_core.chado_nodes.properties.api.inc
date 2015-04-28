@@ -172,7 +172,11 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
   if (!array_key_exists('chado_id_field', $details)) {
     $chado_id_table = preg_replace('/prop$/', '', $details['property_table']);
     $chado_id_field = $chado_id_table . '_id';
+    $details['nodetype'] = $chado_id_table;
     $details['chado_id_field'] = $chado_id_field;
+  }
+  else {
+    $details['nodetype'] = str_replace('_id', '', $details['chado_id_field']);
   }
 
   // make sure the specified cv exists
@@ -310,21 +314,37 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     );
   }
 
+  // Group all of the chado node api fieldsets into vertical tabs.
+  $form['chado_node_api'] = array(
+    '#type' => 'vertical_tabs',
+    '#attached' => array(
+      'css' => array(
+        'chado-node-api' => drupal_get_path('module', 'tripal_core') . '/theme/css/chado_node_api.css',
+      ),
+    ),
+  );
+
   // the fieldset of the property elements
+  $instructions = 'To add properties of the current %nodetype, select the type of 
+      information from the drop-down below and enter the information in the text box before 
+      clicking "Add". To remove incorrect information, click the "Remove" button. 
+      Note: you cannot edit previously added information but instead need to 
+      remove and re-add it.';
   $form['properties'] = array(
     '#type' => 'fieldset',
     '#title' => t($details['fieldset_title']),
-    '#description' => t('Add properties by selecting a type
-      from the dropdown, enter a value and click the "Add" button. To
-      remove a property, click the remove button.' . $details['additional_instructions']),
-    '#prefix' => "<div id='properties-fieldset'>",
-    '#suffix' => '</div>',
-    '#weight'      => 8
-  );
-
-  $form['properties']['admin_message'] = array(
-    '#type' => 'markup',
-    '#markup' => $tripal_message
+    '#description' => t('<p><strong>Additional information about a 
+      %nodetype.</strong></p><p>'. $instructions . $details['additional_instructions'] . '</p>', array('%nodetype' => $details['nodetype'])) ,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'chado_node_api',
+    '#weight'      => 8,
+    '#attributes' => array('class' => array('chado-node-api','properties')),
+    '#attached' => array(
+      'js' => array(
+        'chado-node-api-vertical-tabs' => drupal_get_path('module', 'tripal_core') . '/theme/js/chadoNodeApi_updateVerticalTabSummary.js',
+      ),
+    ),
   );
 
   // this form element is a tree, so that we don't puke all of the values into then node variable
@@ -335,6 +355,21 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     '#prefix' => '<div id="tripal-generic-edit-properties-table">',
     '#suffix' => '</div>',
     '#theme' => 'chado_node_properties_form_table'
+  );
+
+  // We need to provide feedback to the user that changes made
+  // are not saved until the node is saved.
+  $form['properties']['property_table']['save_warning'] = array(
+    '#type' => 'markup',
+    '#prefix' => '<div id="property-save-warning" class="messages warning" style="display:none;">',
+    '#suffix' => '</div>',
+    '#markup' => '* The changes to these properties will not be saved until the 
+      "Save" button at the bottom of this form is clicked. <span class="specific-changes"></span>',
+    '#attached' => array(
+      'js' => array(
+        'chado-node-api-unsaved' => drupal_get_path('module', 'tripal_core') . '/theme/js/chadoNodeApi_unsavedNotify.js',
+      ),
+    ),
   );
 
   // Add defaults into form_state to be used elsewhere
@@ -358,7 +393,6 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     $existing_properties = $form_state['chado_properties'];
   }
   else {
-    $ranks = array(); // a temporary array used for calculating rank
 
     // build the SQL for extracting properties already assigned to this record
     $sql_args = array();
@@ -387,18 +421,6 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
          $cv_where
        ORDER BY CVT.name, PP.rank", $sql_args)->fetchAll();
 
-    // iterate through the results and get the largest rank for each type
-    foreach ($existing_properties as $property) {
-      if (array_key_exists($property->type_id, $ranks)) {
-        if($ranks[$property->type_id] < $property->rank) {
-          $ranks[$property->type_id] = $property->rank;
-        }
-      }
-      else {
-        $ranks[$property->type_id] = $property->rank;
-      }
-    }
-
     // next add in any default properties
     if (array_key_exists('default_properties', $details)) {
 
@@ -410,16 +432,8 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
         $new_prop->type_name   = $property['cvterm']->name;
         $new_prop->definition  = $property['cvterm']->definition;
         $new_prop->value       = $property['value'];
-        $new_prop->property_id = NULL;
-        // to set the rank for this property, we need to make sure we set
-        // it greater than any already existing rank
-        if (array_key_exists($property['cvterm']->cvterm_id, $ranks)) {
-          $ranks[$property['cvterm']->cvterm_id]++;
-        }
-        else {
-          $ranks[$property['cvterm']->cvterm_id] = 0;
-        }
-        $new_prop->rank = $ranks[$property['cvterm']->cvterm_id];
+        $new_prop->property_id = 'TEMP' . uniqid();
+        $new_prop->rank = 'TEMP' . uniqid();
         $existing_properties[] = $new_prop;
       }
     }
@@ -432,9 +446,9 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
    *   '[type_id]-[rank]' => array(
    *     'type_id' => [the cvterm.cvterm_id value]
    *     'type_name' => [the cvterm.name value]
-   *     'property_id' => [the property.property_id value, or NULL if it doesn't yet exist],
+   *     'property_id' => [the property.property_id value, or temporary value if it doesn't yet exist],
    *     'value' => [the BASEprop.value value],
-   *     'rank' => [the BASEprop.rank value],
+   *     'rank' => [the BASEprop.rank value or NULL if not saved yet],
    *   ),
    * );
    *
@@ -442,7 +456,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
    * Populated from the database:
    * $existing_property = array(
    *   0 => array(
-   *     'property_id' => [the property.property_id value, or NULL if it doesn't yet exist],
+   *     'property_id' => [the property.property_id value],
    *     'type_id' => [the cvterm.cvterm_id value]
    *     'type_name' => [the cvterm.name value]
    *     'value' => [the BASEprop.value value],
@@ -456,56 +470,76 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
    * an element to the form for each one as long as it's also in the
    * $properties_options array.
    */
+  $num_properties = 0;
   foreach ($existing_properties as $property) {
     if (array_key_exists($property->type_id, $property_options)) {
+      $num_properties++;
 
       $form['properties']['property_table'][$property->type_id]['#type'] = 'markup';
       $form['properties']['property_table'][$property->type_id]['#value'] = '';
 
-      $form['properties']['property_table'][$property->type_id][$property->rank]['#type'] = 'markup';
-      $form['properties']['property_table'][$property->type_id][$property->rank]['#value'] = '';
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['#type'] = 'markup';
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['#value'] = '';
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['#attributes'] = array(
+        'class' => array('property', 'saved')
+      );
 
-      $form['properties']['property_table'][$property->type_id][$property->rank]['prop_type_id'] = array(
+      // Determine whether this property is unsaved or not.
+      // We can tell this by looking at the property_id: if it's not
+      // saved yet we will have entered a TEMP###.
+      if (preg_match('/^TEMP/', $property->property_id)) {
+        $form['properties']['property_table'][$property->type_id][$property->property_id]['#attributes'] = array(
+          'class' => array('property', 'unsaved')
+        );
+      }
+
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['prop_type_id'] = array(
         '#type' => 'hidden',
         '#value' => $property->type_id
       );
 
-      $form['properties']['property_table'][$property->type_id][$property->rank]['prop_value'] = array(
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['prop_value'] = array(
         '#type' => 'hidden',
         '#value' => $property->value
       );
 
-      $form['properties']['property_table'][$property->type_id][$property->rank]['property_id'] = array(
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['prop_rank'] = array(
+        '#type' => 'hidden',
+        '#value' => $property->rank
+      );
+
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['property_id'] = array(
         '#type' => 'hidden',
         '#value' => $property->property_id
       );
 
-      $form['properties']['property_table'][$property->type_id][$property->rank]['type'] = array(
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['type'] = array(
         '#type' => 'markup',
-        '#markup' => $property->type_name
+        '#markup' => $property->type_name,
+        '#prefix' => '<span class="row-unsaved-warning"></span>'
       );
       // If a definition is available we want to add that to the type column
       // to make it easier for users to determine what an added property means.
       if (isset($property->definition)) {
-        $form['properties']['property_table'][$property->type_id][$property->rank]['type']['#markup'] = $property->type_name . '<br><i>' . $property->definition . '</i>';
+        $form['properties']['property_table'][$property->type_id][$property->property_id]['type']['#markup'] = $property->type_name . '<br><i>' . $property->definition . '</i>';
       }
 
-      $form['properties']['property_table'][$property->type_id][$property->rank]['value'] = array(
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['value'] = array(
         '#type' => 'markup',
         '#markup' => $property->value,
       );
 
-      $form['properties']['property_table'][$property->type_id][$property->rank]['rank'] = array(
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['rank'] = array(
         '#type' => 'markup',
         '#markup' => $property->rank
       );
       // remove button
-      $form['properties']['property_table'][$property->type_id][$property->rank]['property_action'] = array(
+      $form['properties']['property_table'][$property->type_id][$property->property_id]['property_action'] = array(
         '#type' => 'submit',
         '#value' => t('Remove'),
-        '#name' => "property_remove-".$property->type_id.'-'.$property->rank,
+        '#name' => "properties_remove-".$property->type_id.'-'.$property->property_id,
         '#ajax' => array(
-          'callback' => "chado_add_node_form_properties_ajax_update",
+          'callback' => "chado_add_node_form_subtable_ajax_update",
           'wrapper' => 'tripal-generic-edit-properties-table',
           'effect'   => 'fade',
           'method'   => 'replace',
@@ -518,17 +552,24 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
         // from the chado_properties array. In order to keep validate errors
         // from the node form validate and Drupal required errors for non-property fields
         // preventing the user from removing properties we set the #limit_validation_errors below
-        '#validate' => array('chado_add_node_form_properties_remove_button_validate'),
-        '#submit' => array('chado_add_node_form_properties_remove_button_submit'),
+        '#validate' => array('chado_add_node_form_subtables_remove_button_validate'),
+        '#submit' => array('chado_add_node_form_subtables_remove_button_submit'),
         // Limit the validation of the form upon clicking this button to the property_table tree
         // No other fields will be validated (ie: no fields from the main form or any other api
         // added form).
         '#limit_validation_errors' => array(
           array('property_table')  // Validate all fields within $form_state['values']['property_table']
-        )
+        ),
       );
     }
   }
+
+  // Quickly add a hidden field stating how many properties are currently added.
+  $form['properties']['num_properties'] = array(
+    '#type' => 'hidden',
+    '#value' => $num_properties,
+    '#attributes' => array('class' => 'num-properties')
+  );
 
   // Form elements for adding a new property
   //---------------------------------------------
@@ -570,9 +611,9 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
   $form['properties']['property_table']['new']['property_action'] = array(
     '#type' => 'submit',
     '#value' => t('Add'),
-    '#name' => "property-add",
+    '#name' => "properties-add",
     '#ajax' => array(
-      'callback' => "chado_add_node_form_properties_ajax_update",
+      'callback' => "chado_add_node_form_subtable_ajax_update",
       'wrapper' => 'tripal-generic-edit-properties-table',
       'effect'   => 'fade',
       'method'   => 'replace',
@@ -585,14 +626,19 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     // array. In order to keep validate errors from the node form validate and Drupal
     // required errors for non-property fields preventing the user from adding properties we
     // set the #limit_validation_errors below
-    '#validate' => array('chado_update_node_form_properties_add_button_validate'),
-    '#submit' => array('chado_add_node_form_properties_add_button_submit'),
+    '#validate' => array('chado_add_node_form_subtables_add_button_validate'),
+    '#submit' => array('chado_add_node_form_subtables_add_button_submit'),
     // Limit the validation of the form upon clicking this button to the property_table tree
     // No other fields will be validated (ie: no fields from the main form or any other api
     // added form).
     '#limit_validation_errors' => array(
       array('property_table')  // Validate all fields within $form_state['values']['property_table']
     )
+  );
+
+  $form['properties']['admin_message'] = array(
+    '#type' => 'markup',
+    '#markup' => $tripal_message
   );
 }
 
@@ -602,8 +648,8 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
  *
  * @ingroup tripal_core
  */
-function chado_update_node_form_properties_add_button_validate($form, &$form_state) {
-
+function chado_add_node_form_properties_add_button_validate($form, &$form_state) {
+  
   // Ensure the type_id is supplied & Valid
   $cvterm = chado_select_record(
     'cvterm',
@@ -632,7 +678,7 @@ function chado_update_node_form_properties_add_button_validate($form, &$form_sta
  *
  * @ingroup tripal_core
  */
-function chado_add_node_form_properties_add_button_submit(&$form, &$form_state) {
+function chado_add_node_form_properties_add_button_submit($form, &$form_state) {
 
   $details = unserialize($form_state['values']['property_table']['details']);
 
@@ -647,40 +693,13 @@ function chado_add_node_form_properties_add_button_submit(&$form, &$form_state) 
     'type_id' => $form_state['values']['property_table']['new']['type'],
     'type_name' => $form_state['values']['property_table']['new']['type_name'],
     'definition' => $form_state['values']['property_table']['new']['definition'],
-    'property_id' => NULL,
+    'property_id' => 'TEMP' . uniqid(),
     'value' => $form_state['values']['property_table']['new']['value'],
-    'rank' => '0',
+    'rank' => 'TEMP' . uniqid(),
   );
 
-  // Determine the rank for the new property based on the the data already
-  // stored in the properties table.
-  $rank = chado_get_table_max_rank(
-    $details['property_table'],
-    array(
-      $details['chado_id_field'] => $details['chado_id'],
-      'type_id' => $property['type_id']
-    )
-  );
-  $property['rank'] = strval($rank + 1);
-  $key = $property['type_id'] . '-' . $property['rank'];
-
-  // Now check to make sure a property doesn't already exist with that rank
-  // (which happens when 2+ properties of the same type are added within the
-  // same save).
-  if (isset($form_state['chado_properties'][$key])) {
-    // Then keep iterating the rank until you find there is no property in
-    // the properties list with the same type/rank combination.
-    do {
-      $property['rank']++;
-      $key = $property['type_id'] . '-' . $property['rank'];
-    } while (isset($form_state['chado_properties'][$key]));
-
-    // And then set the property to that free space.
-    $form_state['chado_properties'][$key] = (object) $property;
-  }
-  else {
-    $form_state['chado_properties'][$key] = (object) $property;
-  }
+  $key = $property['type_id'] . '-' . $property['property_id'];
+  $form_state['chado_properties'][$key] = (object) $property;
 
   // we don't want the new element to pick up the values from the previous element so wipe them out
   unset($form_state['input']['property_table']['new']['type']);
@@ -688,19 +707,15 @@ function chado_add_node_form_properties_add_button_submit(&$form, &$form_state) 
   unset($form_state['input']['property_table']['new']['definition']);
   unset($form_state['input']['property_table']['new']['value']);
 
-  $form_state['rebuild'] = TRUE;
 }
 
 /**
- * There is no user input for the remove buttons so there is no need to validate
- * However, both a submit & validate need to be specified so this is just a placeholder
- *
  * Called by the many remove buttons in chado_add_node_form_properties
  *
  * @ingroup tripal_core
  */
-function chado_add_node_form_properties_remove_button_validate($form, $form_state) {
-  // No Validation needed for remove
+function chado_add_node_form_properties_remove_button_validate($form, &$form_state) {
+  // No validation needed.
 }
 
 /**
@@ -718,26 +733,16 @@ function chado_add_node_form_properties_remove_button_submit(&$form, &$form_stat
   }
 
   // remove the specified property from the form property table
-  if(preg_match('/property_remove-([^-]+-[^-]+)/',$form_state['triggering_element']['#name'],$match)) {
+  if(preg_match('/properties_remove-([^-]+-[^-]+)/',$form_state['triggering_element']['#name'],$match)) {
     $key = $match[1];
     if (array_key_exists($key, $form_state['chado_properties'])) {
       unset($form_state['chado_properties'][$key]);
     }
   }
-
-  $form_state['rebuild'] = TRUE;
 }
 
 function chado_add_node_form_properties_ajax_desc($form, $form_state) {
   return $form['properties']['property_table']['new']['type'];
-}
-/**
- * Ajax function which returns the section of the form to be re-rendered
- *
- * @ingroup tripal_core
- */
-function chado_add_node_form_properties_ajax_update($form, $form_state) {
-  return $form['properties']['property_table'];
 }
 
 /**
@@ -764,8 +769,8 @@ function chado_add_node_form_properties_create_property_formstate_array($form, &
 
   foreach (element_children($form['properties']['property_table']) as $type_id) {
     if ($type_id != 'new') {
-      foreach (element_children($form['properties']['property_table'][$type_id]) as $rank) {
-          $element = $form['properties']['property_table'][$type_id][$rank];
+      foreach (element_children($form['properties']['property_table'][$type_id]) as $property_id) {
+          $element = $form['properties']['property_table'][$type_id][$property_id];
           $property = array(
             'type_id' => $element['prop_type_id']['#value'],
             'type_name' => $element['type']['#markup'],
@@ -773,7 +778,7 @@ function chado_add_node_form_properties_create_property_formstate_array($form, &
             'value' => $element['value']['#markup'],
             'rank' => $element['rank']['#markup']
           );
-          $key = $property['type_id'] . '-' . $property['rank'];
+          $key = $property['type_id'] . '-' . $property['property_id'];
           $form_state['chado_properties'][$key] = (object) $property;
       }
     }
@@ -810,6 +815,7 @@ function theme_chado_add_node_form_properties($variables) {
         $row = array();
 
         $row['data'] = array();
+        $row['class'] = $element[$type_id][$version]['#attributes']['class'];
         foreach ($header as $fieldname => $title) {
           $row['data'][] = drupal_render($element[$type_id][$version][$fieldname]);
         }
@@ -818,7 +824,7 @@ function theme_chado_add_node_form_properties($variables) {
     }
   }
 
-  return theme('table', array(
+  return render($element['save_warning']) . theme('table', array(
     'header' => $header,
     'rows' => $rows
   ));
@@ -846,8 +852,8 @@ function chado_retrieve_node_form_properties($node) {
   if (isset($node->property_table)) {
     foreach ($node->property_table as $type_id => $elements) {
       if ($type_id != 'new' AND $type_id != 'details') {
-        foreach ($elements as $rank => $element) {
-          $properties[$type_id][$rank] = $element['prop_value'];
+        foreach ($elements as $property_id => $element) {
+          $properties[$type_id][$element['prop_rank']] = $element['prop_value'];
         }
       }
     }
@@ -891,6 +897,16 @@ function chado_update_node_form_properties($node, $details, $retrieved_propertie
     foreach ($properties as $type_id => $ranks) {
       foreach ($ranks as $rank => $value) {
 
+        if (preg_match('/^TEMP/', $rank)) {
+          $rank = chado_get_table_max_rank(
+            $details['property_table'],
+            array(
+              $details['foreignkey_name'] => $details['foreignkey_value'],
+              'type_id' => $type_id
+            )
+          );
+          $rank = strval($rank + 1);
+        }
         $success = chado_insert_record(
           $details['property_table'],
           array(
