@@ -205,6 +205,20 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
     '#theme' => 'chado_node_additional_dbxrefs_form_table'
   );
 
+  // We need to provide feedback to the user that changes made
+  // are not saved until the node is saved.
+  $form['addtl_dbxrefs']['dbxref_table']['save_warning'] = array(
+    '#type' => 'markup',
+    '#prefix' => '<div id="dbxref-save-warning" class="messages warning" style="display:none;">',
+    '#suffix' => '</div>',
+    '#markup' => '* The changes to these references will not be saved until the "Save" button at the bottom of this form is clicked. <span class="specific-changes"></span>',
+    '#attached' => array(
+      'js' => array(
+        'chado-node-api-unsaved' => drupal_get_path('module', 'tripal_core') . '/theme/js/chadoNodeApi_unsavedNotify.js',
+      ),
+    ),
+  );
+
   /* DBxrefs can come to us in two ways:
    *
    * 1) In the form state in the $form_state['chado_additional_dbxrefs']. Data is in this field
@@ -311,7 +325,8 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
 
       $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['db'] = array(
         '#type' => 'markup',
-        '#markup' => $dbxref->db_name
+        '#markup' => $dbxref->db_name,
+        '#prefix' => '<span class="row-unsaved-warning"></span>'
       );
 
       $form['addtl_dbxrefs']['dbxref_table'][$dbxref->db_id][$dbxref->dbxref_id]['dbxref_version'] = array(
@@ -594,7 +609,7 @@ function theme_chado_add_node_form_dbxrefs_table($variables) {
     }
   }
 
-  return theme('table', array(
+  return render($element['save_warning']) . theme('table', array(
     'header' => $header,
     'rows' => $rows
   ));

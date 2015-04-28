@@ -357,6 +357,21 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     '#theme' => 'chado_node_properties_form_table'
   );
 
+  // We need to provide feedback to the user that changes made
+  // are not saved until the node is saved.
+  $form['properties']['property_table']['save_warning'] = array(
+    '#type' => 'markup',
+    '#prefix' => '<div id="property-save-warning" class="messages warning" style="display:none;">',
+    '#suffix' => '</div>',
+    '#markup' => '* The changes to these properties will not be saved until the 
+      "Save" button at the bottom of this form is clicked. <span class="specific-changes"></span>',
+    '#attached' => array(
+      'js' => array(
+        'chado-node-api-unsaved' => drupal_get_path('module', 'tripal_core') . '/theme/js/chadoNodeApi_unsavedNotify.js',
+      ),
+    ),
+  );
+
   // Add defaults into form_state to be used elsewhere
   $form['properties']['property_table']['details'] = array(
     '#type' => 'hidden',
@@ -500,7 +515,8 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
 
       $form['properties']['property_table'][$property->type_id][$property->property_id]['type'] = array(
         '#type' => 'markup',
-        '#markup' => $property->type_name
+        '#markup' => $property->type_name,
+        '#prefix' => '<span class="row-unsaved-warning"></span>'
       );
       // If a definition is available we want to add that to the type column
       // to make it easier for users to determine what an added property means.
@@ -808,7 +824,7 @@ function theme_chado_add_node_form_properties($variables) {
     }
   }
 
-  return theme('table', array(
+  return render($element['save_warning']) . theme('table', array(
     'header' => $header,
     'rows' => $rows
   ));

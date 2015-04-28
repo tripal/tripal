@@ -330,6 +330,20 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     '#value' => serialize($details)
   );
 
+  // We need to provide feedback to the user that changes made
+  // are not saved until the node is saved.
+  $form['relationships']['relationship_table']['save_warning'] = array(
+    '#type' => 'markup',
+    '#prefix' => '<div id="relationship-save-warning" class="messages warning" style="display:none;">',
+    '#suffix' => '</div>',
+    '#markup' => '* The changes to these relationships will not be saved until the "Save" button at the bottom of this form is clicked. <span class="specific-changes"></span>',
+    '#attached' => array(
+      'js' => array(
+        'chado-node-api-unsaved' => drupal_get_path('module', 'tripal_core') . '/theme/js/chadoNodeApi_unsavedNotify.js',
+      ),
+    ),
+  );
+
   // Add relationships already attached to the node
   //---------------------------------------------
   /* Relationships can come to us in two ways:
@@ -456,7 +470,8 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
 
       $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['subject_name'] = array(
         '#type' => 'markup',
-        '#markup' => $relationship->subject_name
+        '#markup' => $relationship->subject_name,
+        '#prefix' => '<span class="row-unsaved-warning"></span>'
       );
 
       $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['rank'] = array(
@@ -876,7 +891,7 @@ function theme_chado_add_node_form_relationships_table($variables) {
     }
   }
 
-  return theme('table', array(
+  return render($element['save_warning']) . theme('table', array(
     'header' => $header,
     'rows' => $rows,
     'sticky' => FALSE

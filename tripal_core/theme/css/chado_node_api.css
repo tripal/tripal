@@ -9,3 +9,7 @@
   font-style: italic;
   font-weight: bold;
 }
+tr.unsaved td {
+  background-color: #FFB;
+  color: #840;
+}
