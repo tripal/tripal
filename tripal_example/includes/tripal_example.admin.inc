@@ -56,10 +56,13 @@ function tripal_example_admin() {
 
   // If your module is using the Chado Node: Title & Path API to allow custom
   // titles for your node type then you need to add the configuration form for
-  // this functionality.
+  // this functionality. To do so, we first have to preapre a $details array
+  // the describe our node type.  Then we call the function to create the form
+  // elements.
   $details = array(
       // the name of the MODULE implementing the content type
     'module' => 'tripal_example',
+    'content_type' => 'chado_example',
       // An array of options to use under "Page Titles"
       // the key should be the token and the value should be the human-readable
       // option

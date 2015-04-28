@@ -330,14 +330,14 @@ function chado_example_validate($node, $form, &$form_state) {
   // this is an update and validation can be different for updates
   if (property_exists($node, 'nid')) {
 
-    // make sure the feature type is an allowed term
+    // make sure the example type is an allowed term
     $type_cv = tripal_get_default_cv('example', 'type_id');
     $type = tripal_get_cvterm(array(
       'name' => $node->example_type,
       'cv_id' => $type_cv->cv_id,
     ));
     if (!$type) {
-      form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
+      form_set_error('example_type', t("The example type is not a valid name from the Sequence Ontology."));
     }
 
     // TODO: also we should check that the unique constraint is not invalidated
@@ -345,14 +345,14 @@ function chado_example_validate($node, $form, &$form_state) {
   }
   // Validating for an insert
   else {
-    // make sure the feature type is an allowed term
+    // make sure the example type is an allowed term
     $type_cv = tripal_get_default_cv('example', 'type_id');
     $type = tripal_get_cvterm(array(
       'name' => $node->example_type,
       'cv_id' => $type_cv->cv_id,
     ));
     if (!$type) {
-      form_set_error('feature_type', t("The feature type is not a valid name from the Sequence Ontology."));
+      form_set_error('example_type', t("The example type is not a valid name from the Sequence Ontology."));
     }
 
     // TODO: also we should check that the unique constraint doesn't already exist
@@ -703,17 +703,23 @@ function tripal_example_node_insert($node) {
       $example = chado_generate_var('example', $values);
       $node->example = $example;
 
-      // If your module is using the 'Chado Node: Title & Path API' to allow
-      // custom titles for your node type. Every time you want the title of the
-      // node, you need to use the following API function:
-      $example->title = chado_get_node_title($node);
 
-      // set the URL for this example page
-      // see the code in the tripal_feature/includes/tripal_feature.chado_node.inc
-      // file in the function tripal_feature_node_insert for an example of how
-      // that module sets the URL. It uses a configuration file to allow the
-      // user to dynamically build a URL schema and then uses that schema to
-      // generate a URL string.
+      // EXPLANATION: You can allow the site admin to customize the
+      // title and URL of your node.  The 'Chado Node: Title & Path API'
+      // contains two functions that can be called to generate the title and
+      // URL based a schema provided by the site admin. These functions are
+      // named chado_get_node_title() and chado_set_node_url().  These
+      // functions use a string of tokens to build the URL and titles and the
+      // site admin has the ability to set these tokens.  There are
+      // form elements made available in the tripal_example_admin() function
+      // that allow the admin to set these tokens.  The default token string
+      // is provided to Tripal using two hook functions, and are found below.
+      // These are: chado_exmaple_chado_node_default_title() and
+      // chado_example_chdo_node_default_url().
+
+      // Set the Title and URL for this node.
+      $example->title = chado_get_node_title($node);
+      chado_set_node_url($node);
       break;
   }
 }
@@ -852,4 +858,24 @@ function tripal_example_node_view($node, $view_mode, $langcode) {
       break;
     // ... etc
   }
+}
+
+
+/**
+ * Implements [content_type]_chado_node_default_title_format().
+ *
+ * Defines a default title format for the Chado Node API to set the titles on
+ * Chado example nodes based on chado fields.
+ */
+function chado_example_chado_node_default_title_format() {
+  return '[example.name], [example.uniquename] ([example.type_id>cvterm.name]) [example.organism_id>organism.genus] [example.organism_id>organism.species]';
+}
+
+/**
+ * Implements hook_chado_node_default_url_format().
+ *
+ * Designates a default URL format for example nodes.
+ */
+function chado_example_chado_node_default_url_format() {
+  return '/example/[example.organism_id>organism.genus]/[example.organism_id>organism.species]/[example.type_id>cvterm.name]/[example.uniquename]';
 }
