@@ -185,8 +185,8 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
     '#collapsed' => TRUE,
   );
   $form['instructions']['text'] = array(
-    '#type'          => 'item',
-    '#description'         => '<p>' . t('At times it is necessary to add a custom table
+    '#type'   => 'item',
+    '#markup' => '<p>' . t('At times it is necessary to add a custom table
        to the Chado schema. These are not offically sanctioned tables but may
        be necessary for local data requirements. Avoid creating custom tables
        when possible as other GMOD tools may not recognize these tables nor
@@ -195,7 +195,7 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
        libraries (e.g. library_stock). Try to model linker or propery tables
        after existing tables.  If the table already exists it will not be
        modified.  To force dropping and recreation of the table
-       click the checkbox below.  Tables are defined usign the ' .
+       click the checkbox below.  Tables are defined using the ' .
        l('Drupal Schema API', 'https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7',
          array('attributes' => array('target' => '_blank'))) . '</p>' .
       '<p>Please note that table names should be all lower-case.</p>'
@@ -203,8 +203,8 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
   );
 
   $form['instructions']['example']= array(
-      '#type'          => 'item',
-      '#description'         => "Example library_stock table: <pre>
+      '#type'    => 'item',
+      '#markup'  => "Example library_stock table: <pre>
 array (
   'table' => 'library_stock',
   'fields' => array (

@@ -258,6 +258,89 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
     '#description' => l("Return to table of materialized views", "admin/tripal/schema/mviews/"),
   );
 
+  $form['instructions'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Instructions',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['instructions']['text'] = array(
+    '#type'          => 'item',
+    '#markup'   =>  t('Materialized views are used to help speed data
+      querying, particularly for searching.  A materialized view is essentially
+      a database table that is pre-populated with the desired data to search on.
+      Rows in the materialized view are typically a combination of data from
+      multiple tables with indexes on searchable columns. The table structure
+      for materialized views is defined using the ' .
+      l('Drupal Schema API', 'https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7',
+        array('attributes' => array('target' => '_blank'))) . '. '. t('Additionally,
+      an SQL statement is provided that populates the table with data. ' .
+      'Please note that table names should be all lower-case.')
+    ),
+  );
+  $form['instructions']['example_schema']= array(
+    '#type'          => 'item',
+    '#markup'         => "An example Schema API definition for a materialized view: <pre>
+array (
+  'description' => 'Stores the type and number of features per organism',
+  'table' => 'organism_feature_count',
+  'fields' => array (
+    'organism_id' => array (
+      'type' => 'int',
+      'not null' => true,
+    ),
+    'genus' => array (
+      'type' => 'varchar',
+      'length' => '255',
+      'not null' => true,
+    ),
+    'species' => array (
+      'type' => 'varchar',
+      'length' => '255',
+      'not null' => true,
+    ),
+    'common_name' => array (
+      'type' => 'varchar',
+      'length' => '255',
+      'not null' => false,
+    ),
+    'num_features' => array (
+      'type' => 'int',
+      'not null' => true,
+    ),
+    'cvterm_id' => array (
+      'type' => 'int',
+      'not null' => true,
+    ),
+    'feature_type' => array (
+      'type' => 'varchar',
+      'length' => '255',
+      'not null' => true,
+    ),
+  ),
+  'indexes' => array (
+    'organism_id_idx'  => array ('organism_id'),
+    'cvterm_id_idx'    => array ('cvterm_id'),
+    'feature_type_idx' => array ('feature_type'),
+  ),
+)
+</pre>"
+  );
+  $form['instructions']['example_sql'] = array(
+    '#type' => 'item',
+    '#markup' => "An example SQL statement to populate the table: <pre>
+SELECT
+    O.organism_id, O.genus, O.species, O.common_name,
+    count(F.feature_id) as num_features,
+    CVT.cvterm_id, CVT.name as feature_type
+ FROM organism O
+    INNER JOIN feature F  ON O.Organism_id = F.organism_id
+    INNER JOIN cvterm CVT ON F.type_id     = CVT.cvterm_id
+ GROUP BY
+    O.Organism_id, O.genus, O.species, O.common_name, CVT.cvterm_id, CVT.name
+    </pre>"
+  );
+
 
   $form['name']= array(
     '#type'          => 'textfield',
@@ -279,7 +362,7 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
   $form['schema'] = array(
     '#type' => 'fieldset',
     '#title' => 'Table Schema',
-    '#description' => t('Use a ' . l("Drupal Schema API", "https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7", array('attributes' => array('target' => '_blank'))) . 
+    '#description' => t('Use a ' . l("Drupal Schema API", "https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7", array('attributes' => array('target' => '_blank'))) .
         ' array to describe the table. See the bottom of this page for an example.'),
     '#collapsible' => 1,
     '#collapsed' => $schema_collapsed ,
@@ -288,7 +371,7 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
   $form['schema']['schema']= array(
     '#type'          => 'textarea',
     '#title'         => t('Schema Array'),
-    '#description'   => t('Please enter the ' . l("Drupal Schema API", "https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7", array('attributes' => array('target' => '_blank'))) . 
+    '#description'   => t('Please enter the ' . l("Drupal Schema API", "https://api.drupal.org/api/drupal/includes!database!schema.inc/group/schemaapi/7", array('attributes' => array('target' => '_blank'))) .
         ' compatible array that defines the table. There must also be a "table" key with the name of the table as the value. See the example at the bottom of this page.'),
     '#required'      => FALSE,
     '#default_value' => $default_schema,
@@ -370,55 +453,8 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
     '#value'        => t($value),
     '#executes_submit_callback' => TRUE,
   );
-  
-  $form['example']= array(
-    '#type'          => 'item',
-    '#description'         => "<br>An example Schema API definition for a materialized view: <pre>
-array (
-  'description' => 'Stores the type and number of features per organism',
-  'table' => 'organism_feature_count',
-  'fields' => array (
-    'organism_id' => array (
-      'type' => 'int',
-      'not null' => true,
-    ),
-    'genus' => array (
-      'type' => 'varchar',
-      'length' => '255',
-      'not null' => true,
-    ),
-    'species' => array (
-      'type' => 'varchar',
-      'length' => '255',
-      'not null' => true,
-    ),
-    'common_name' => array (
-      'type' => 'varchar',
-      'length' => '255',
-      'not null' => false,
-    ),
-    'num_features' => array (
-      'type' => 'int',
-      'not null' => true,
-    ),
-    'cvterm_id' => array (
-      'type' => 'int',
-      'not null' => true,
-    ),
-    'feature_type' => array (
-      'type' => 'varchar',
-      'length' => '255',
-      'not null' => true,
-    ),
-  ),
-  'indexes' => array (
-    'organism_id_idx'  => array ('organism_id'),
-    'cvterm_id_idx'    => array ('cvterm_id'),
-    'feature_type_idx' => array ('feature_type'),
-  ),
-)
-</pre>"
-  );
+
+
   return $form;
 }
 
@@ -429,14 +465,14 @@ array (
  * @ingroup tripal_mviews
  */
 function tripal_mviews_form_validate($form, &$form_state) {
-  
-  
+
+
   $action    = $form_state['values']['action'];
   $mview_id  = $form_state['values']['mview_id'];
   $name      = trim($form_state['values']['name']);
   $is_legacy = $form_state['values']['is_legacy'];
   $query     = $form_state['values']['mvquery'];
-  
+
   // if this is a legacy materialized view (no longer supported in Tripal v2.0
   // but code left just in case)
   if ($is_legacy) {
@@ -453,7 +489,7 @@ function tripal_mviews_form_validate($form, &$form_state) {
   }
   $comment = trim($form_state['values']['comment']);
   $schema  = $form_state['values']['schema'];
-  
+
   // validate the contents of the array
   $schema_array = array();
   $success = eval("\$schema_array = $schema;");
@@ -469,7 +505,7 @@ function tripal_mviews_form_validate($form, &$form_state) {
       t('You can create an MView using the Drupal Schema API method or the ' .
         'traditional method but not both.'));
   }
-  
+
   // if we don't have a schema and are missing fields for the legacy views then
   // inform the user.
   if (!$schema) {
@@ -508,7 +544,7 @@ function tripal_mviews_form_validate($form, &$form_state) {
 function tripal_mviews_form_submit($form, &$form_state) {
 
   $ret = array();
-  
+
   $action     = $form_state['values']['action'];
   $mview_id   = $form_state['values']['mview_id'];
   $name       = trim($form_state['values']['name']);
@@ -521,7 +557,7 @@ function tripal_mviews_form_submit($form, &$form_state) {
   $mv_specs = '';
   $indexed = '';
   $special_index = '';
-  
+
   // if this is a legacy materialized view (no longer supported in Tripal v2.0
   // but code left just in case)
   if ($is_legacy) {
@@ -611,11 +647,11 @@ function tripal_mviews_delete_form_submit($form, &$form_state) {
 /**
  * A wrapper for the tripal_refresh_mview() API function, which
  * then redirects back to the admin page for mviews.
- * 
+ *
  * @param $mview_id
  */
 function tripal_mviews_add_populate_job($mview_id) {
-  
+
   tripal_refresh_mview($mview_id);
   drupal_goto("admin/tripal/schema/mviews");
 }

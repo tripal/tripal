@@ -229,7 +229,7 @@ function chado_validate_custom_table_schema($schema_array) {
     return "The schema array must have key named 'table'";
   }
 
-  if (!ctype_lower($schema_array['table'])) {
+  if (preg_match('/[ABCDEFGHIJKLMNOPQRSTUVWXYZ]/', $schema_array['table'])) {
     return "Postgres will automatically change the table name to lower-case. To prevent unwanted side-effects, please rename the table with all lower-case characters.";
   }
 
