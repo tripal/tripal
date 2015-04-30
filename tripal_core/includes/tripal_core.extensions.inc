@@ -45,18 +45,32 @@ function tripal_core_extensions_form($form, &$form_state = NULL) {
   );
 
   // Iterate through the compatible extensions
-  foreach ($items[$tripal_version][$chado_version] as $category) {
-     $markup = '';
-     switch ($category) {
-       case 'Bulk Loader Template':
-         break;
-       case 'Materialized View':
-         break;
-       case 'Extension Module':
-         break;
-       default:
-         break;
-     }
+  foreach ($items[$tripal_version][$chado_version] as $category => $items) {
+    foreach ($items as $item) {
+      $guid = (string) $item->guid;
+      $markup = '';
+      $markup .= "<h3>" . (string) $item->title . "</h3>";
+      $markup .= "<p>" . $category . "</p>";
+      $markup .= "<p>" . (string) $item->description . "</p>";
+      $form[$category][$guid] = array(
+        '#type' => 'item',
+        '#markup' => $markup,
+      );
+      switch ($category) {
+        case 'Bulk Loader Template':
+          $form[$category][$guid]['add'] = array(
+            '#type' => 'submit',
+            '#title' => 'Import'
+          );
+          break;
+        case 'Materialized View':
+          break;
+        case 'Extension Module':
+           break;
+        default:
+          break;
+      }
+    }
   }
 
   return $form;
