@@ -529,14 +529,11 @@ function tripal_core_get_tripal_vars_schema() {
     ),
     'indexes' => array (
       'tripal_node_variables_idx1' => array (
-        0 => 'node_variable_id',
-      ),
-      'tripal_node_variables_idx2' => array (
         0 => 'variable_id',
       ),
     ),
     'foreign keys' => array (
-      'tripal_terms' => array (
+      'tripal_variables' => array (
         'table' => 'tripal_variables',
         'columns' => array (
           'variable_id' => 'variable_id',

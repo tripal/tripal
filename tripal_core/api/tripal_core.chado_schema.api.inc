@@ -108,7 +108,7 @@ function chado_add_index($table, $name, $fields) {
 }
 
 /**
- * Check that any given schema exists
+ * Check that any given schema exists.
  *
  * @param $schema
  *   The name of the schema to check the existence of
@@ -120,7 +120,6 @@ function chado_add_index($table, $name, $fields) {
  */
 function chado_dbschema_exists($schema) {
 
-  // check that the chado schema now exists
   $sql = "
     SELECT nspname
     FROM pg_namespace
@@ -129,12 +128,11 @@ function chado_dbschema_exists($schema) {
       nspname = :nspname
     ORDER BY nspname
   ";
-  $results = db_query($sql, array(':nspname' => $schema));
-  $name = $results->fetchObject();
-  if (strcmp($name->nspname, $schema) != 0) {
-    return FALSE;
+  $schema = db_query($sql, array(':nspname' => $schema))->fetchField();
+  if ($schema) {
+    return TRUE;
   }
-  return TRUE;
+  return FALSE;
 }
 
 /**

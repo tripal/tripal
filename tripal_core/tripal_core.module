@@ -37,7 +37,7 @@ require_once 'api/tripal_core.tripal_variables.api.inc';
 
 require_once 'api/tripal_core.DEPRECATED.inc';
 
-// INCLUDES 
+// INCLUDES
 require_once 'includes/tripal_core.jobs.inc';
 require_once 'includes/tripal_core.mviews.inc';
 require_once 'includes/tripal_core.custom_tables.inc';
@@ -163,11 +163,21 @@ function tripal_core_menu() {
     'weight' => -4
   );
   $items['admin/tripal/extension'] = array(
-    'title' => 'Extension Modules',
-    'description' => t('Configuration for Tripal extension modules.'),
+    'title' => 'Extensions',
+    'description' => t('Configuration for Tripal extensions.'),
     'access arguments' => array('administer tripal'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => 0
+  );
+  $items['admin/tripal/extension/available'] = array(
+    'title' => 'Available Extensions',
+    'description' => 'Queries the tripal.info site to find extensions that may be compatible with this site.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_core_extensions_form'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_LOCAL_TASK,
+    'file' =>  'includes/tripal_core.extensions.inc',
+    'file path' => drupal_get_path('module', 'tripal_core'),
   );
 
   // Tripal Setup
@@ -366,7 +376,7 @@ function tripal_core_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK
   );
-  
+
   // The node's TOC tab
   $items['node/%node/tripal_toc'] = array(
     'title' => 'TOC',
@@ -377,7 +387,7 @@ function tripal_core_menu() {
     'type' => MENU_LOCAL_TASK,
     'file' => '/includes/tripal_core.toc.inc',
   );
-  
+
   // Web Services API callbacks.
 //   $items['ws/chado/v0.1'] = array(
 //     'title' => 'Tripal Web Services API v0.1',
@@ -401,7 +411,7 @@ function tripal_core_menu() {
  */
 function tripal_core_access_node_toc_form($node) {
   $types = module_invoke_all('node_info');
-  if (array_key_exists($node->type, $types) and 
+  if (array_key_exists($node->type, $types) and
       array_key_exists('chado_node_api', $types[$node->type])) {
     return user_access('administer tripal');
   }
@@ -429,18 +439,18 @@ function tripal_core_permission() {
     ),
     'view dev helps' => array(
       'title' => t('View Developer Hints'),
-      'description' => t('Tripal will provide blue shaded boxes that provide 
-          instructions for how to customize or setup specific pages on a 
-          site.  This permission should be enabled for developers. But can 
+      'description' => t('Tripal will provide blue shaded boxes that provide
+          instructions for how to customize or setup specific pages on a
+          site.  This permission should be enabled for developers. But can
           be disabled once developers are accustomed to these hints.'),
       'restrict access' => TRUE,
     ),
     'view ids' => array(
       'title' => t('View Internal IDs'),
       'description' => t('On content pages Tripal will typically provide
-          a table of information pulled from the Chado database but the 
-          primary key IDs for that data is typically not shown.  The 
-          default Tripal templates can show the primary key ID inside of a 
+          a table of information pulled from the Chado database but the
+          primary key IDs for that data is typically not shown.  The
+          default Tripal templates can show the primary key ID inside of a
           blue shaded table row if this permission is enabled. This can
           be useful for site developers who might want these IDs when working
           with the underlying database.'),
@@ -503,7 +513,7 @@ function tripal_core_theme($existing, $type, $theme, $path) {
       'function' => 'theme_tripal_admin_message',
       'variables' => array('message' => NULL),
     ),
-    
+
     // Form and form element themes.
     // --------------------------------
     'tripal_node_toc_items_table' => array(
@@ -595,7 +605,7 @@ function tripal_core_node_view_alter(&$build) {
 
 /**
  * Implements hook_node_view()
- * 
+ *
  * @ingroup tripal_core
  */
 function tripal_core_node_view($node, $view_mode, $langcode) {
