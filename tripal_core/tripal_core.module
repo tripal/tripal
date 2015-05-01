@@ -519,6 +519,10 @@ function tripal_core_theme($existing, $type, $theme, $path) {
     'tripal_node_toc_items_table' => array(
       'render element' => 'element',
     ),
+    // Theme function for the extension admin page.
+    'tripal_core_extensions_form_tables' => array(
+      'render element' => 'element',
+    )
   );
 }
 
