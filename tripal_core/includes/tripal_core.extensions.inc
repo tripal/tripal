@@ -330,10 +330,10 @@ function tripal_core_extension_form_add_extensions(&$form, $form_state, $extensi
       $tvs_temp = preg_split('/, /', $extension[$namespace]['tripal_version']);
       $cvs_temp = preg_split('/, /', $extension[$namespace]['chado_version']);
       if (!in_array($my_tripal_version, $tvs_temp)) {
-        $incompatible .= "<li>This extensions is not compatible with this version of Tripal.</li>";
+        $incompatible .= "<li>This extension is not compatible with this version of Tripal.</li>";
       }
       if (!in_array($my_chado_version, $cvs_temp)) {
-        $incompatible .= "<li>This extensions is not compatible with the installed Chado version.</li>";
+        $incompatible .= "<li>This extension is not compatible with the installed Chado version.</li>";
       }
       $incompatible = t($incompatible);
 
@@ -407,11 +407,14 @@ function tripal_core_extension_form_add_extensions(&$form, $form_state, $extensi
         $notices = '<div class="messages status"><ul>' . $is_installed . '</ul></div>';
       }
       $warnings = '';
-      if ($incompatible or $project or $other) {
+      if ($project or $other) {
         $warnings = '<div class="messages warning"><ul>' .
-          $incompatible . ' ' .
           $project .  ' ' .
           $other . '</ul></div>';
+      }
+      $errors = '';
+      if ($incompatible) {
+        $errors = '<div class="messages error"><ul>' . $incompatible .  '</ul></div>';
       }
 
       $state = '';
@@ -435,6 +438,7 @@ function tripal_core_extension_form_add_extensions(&$form, $form_state, $extensi
         "<strong>tripal.info Page: </strong>" . l($extension['link'], $extension['link']) . "</br>" .
         $notices .
         $warnings .
+        $errors .
         "<p>" . $extension['description'] . "</p>",
       );
       // Add an import button to each of types that can support import.
