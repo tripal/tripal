@@ -414,6 +414,11 @@ function tripal_core_extension_form_add_extensions(&$form, $form_state, $extensi
           $other . '</ul></div>';
       }
 
+      $state = '';
+      if (array_key_exists('dev_stage', $extension[$namespace])) {
+        $state = '<strong>Development State: </strong>' . $extension[$namespace]['dev_stage'] . "</br>";
+      }
+
       // Create the form elements that we'll later theme into tables.
       $form[$type][$guid]['header'] = array(
         '#markup' => l($extension['title'], $extension['link']),
@@ -423,6 +428,7 @@ function tripal_core_extension_form_add_extensions(&$form, $form_state, $extensi
         "<strong>Type:</strong> " . $type . "</br>" .
         "<strong>Categories: </strong>" . $extension[$namespace]['categories'] . "</br>" .
         "<strong>Authors: </strong>" . $extension[$namespace]['authors'] . "</br>" .
+        $state .
         "<strong>Chado compatible versions: </strong>" . $extension[$namespace]['chado_version'] . "</br>" .
         "<strong>Tripal compatible versions: </strong>" . $extension[$namespace]['tripal_version'] . "</br>" .
         $home_page .
