@@ -163,21 +163,22 @@ function tripal_core_menu() {
     'weight' => -4
   );
   $items['admin/tripal/extension'] = array(
-    'title' => 'Available Extensions',
+    'title' => 'Extensions',
     'description' => t('Configuration for Tripal extensions.'),
     'access arguments' => array('administer tripal'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => 0
   );
-  $items['admin/tripal/extension/available'] = array(
-    'title' => 'Available Extensions',
-    'description' => 'Queries the tripal.info site to find extensions that may be compatible with this site.',
+  $items['admin/tripal/extension/import'] = array(
+    'title' => 'Import Extensions',
+    'description' => 'Provides a list of the available extensions that are registered at the tripal.info site. From this page you can easily import or install extensions to your site.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_core_extensions_form'),
     'access arguments' => array('administer tripal'),
-    'type' => MENU_LOCAL_TASK,
+    'type' => MENU_NORMAL_ITEM,
     'file' =>  'includes/tripal_core.extensions.inc',
     'file path' => drupal_get_path('module', 'tripal_core'),
+    'weight' => -100,
   );
 
   // Tripal Setup

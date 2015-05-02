@@ -357,7 +357,8 @@ function tripal_core_extension_form_add_extensions(&$form, $form_state, $extensi
           }
           break;
         case 'Extension Module':
-          if (module_exists($extension[$namespace]['module_name'])) {
+          if (array_key_exists('drupal_project', $extension[$namespace]) and
+              module_exists($extension[$namespace]['drupal_project'])) {
             $is_installed = '<li>A module with this name is already installed.</li>';
           }
           break;
@@ -401,11 +402,14 @@ function tripal_core_extension_form_add_extensions(&$form, $form_state, $extensi
         '#value' => $extension,
       );
 
+      $notices = '';
+      if ($is_installed) {
+        $notices = '<div class="messages status"><ul>' . $is_installed . '</ul></div>';
+      }
       $warnings = '';
-      if ($incompatible or $is_installed  or $project or $other) {
+      if ($incompatible or $project or $other) {
         $warnings = '<div class="messages warning"><ul>' .
           $incompatible . ' ' .
-          $is_installed . ' ' .
           $project .  ' ' .
           $other . '</ul></div>';
       }
@@ -423,6 +427,7 @@ function tripal_core_extension_form_add_extensions(&$form, $form_state, $extensi
         "<strong>Tripal compatible versions: </strong>" . $extension[$namespace]['tripal_version'] . "</br>" .
         $home_page .
         "<strong>tripal.info Page: </strong>" . l($extension['link'], $extension['link']) . "</br>" .
+        $notices .
         $warnings .
         "<p>" . $extension['description'] . "</p>",
       );
