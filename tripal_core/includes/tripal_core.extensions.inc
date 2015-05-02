@@ -375,11 +375,11 @@ function tripal_core_extension_form_add_extensions(&$form, $form_state, $extensi
           // Since it doesn't have a drupal project name is it in a sandbox?
           if (!preg_match('/www.drupal.org\/sandbox/', $extension[$namespace]['home_page'])) {
             $project = t("<li>This module does not appear to be available as a " .
-              "full Drupal project or within a Drupal sandbox and thus cannot ".
+              "full Drupal project and thus cannot ".
               "be downloaded here. You may have to manually download it.</li>");
           }
           else {
-            $project = ("<li>This module is still in a Sandbox on Drupal.org, and
+            $project = ("<li>This module is in a sandbox on Drupal.org, and
               cannot be downloaded from here. You will have to manually download
               this module.</li>");
           }
