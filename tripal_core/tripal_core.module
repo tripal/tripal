@@ -163,7 +163,7 @@ function tripal_core_menu() {
     'weight' => -4
   );
   $items['admin/tripal/extension'] = array(
-    'title' => 'Extensions',
+    'title' => 'Available Extensions',
     'description' => t('Configuration for Tripal extensions.'),
     'access arguments' => array('administer tripal'),
     'type' => MENU_NORMAL_ITEM,

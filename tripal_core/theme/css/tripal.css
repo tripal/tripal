@@ -202,14 +202,6 @@ div.messages.tripal-site-admin-only{
   padding: 0px;
 }
 
-.tripal-serverity-string {
-  font-weight: bold;
-}
-
-.tripal-serverity-string.critical, .tripal-serverity-string.error {
-  color: #FF0000;
-}
-
 .tripal-code {
   font-family: "Courier New", Courier, monospace;
   word-wrap: break-word;
@@ -218,7 +210,17 @@ div.messages.tripal-site-admin-only{
   padding-bottom: 10px;
 }
 
-.tripal-serverity-string.warning {
+.tripal-severity-string {
+  font-weight: bold;
+}
+
+.tripal-severity-string-critical, .tripal-severity-string-error, 
+.tripal-severity-string.critical, .tripal-severity-string.error {
+  color: #FF0000;
+}
+
+.tripal-severity-string-warning,
+.tripal-severity-string.warning {
   color: #FF8000;
 }
 

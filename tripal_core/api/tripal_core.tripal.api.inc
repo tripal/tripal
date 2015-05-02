@@ -188,7 +188,7 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = arra
   // Mark-up the Message
   $full_message =
      '<div class="tripal-site-admin-message">'
-       . '<span class="tripal-serverity-string ' . strtolower($importance_string) . '">' . $importance_string . ': </span>'
+       . '<span class="tripal-severity-string ' . strtolower($importance_string) . '">' . $importance_string . ': </span>'
        . $message
    . '</div>';
 
