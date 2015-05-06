@@ -38426,6 +38426,8 @@ CREATE TABLE analysisfeatureprop (
     rank INTEGER NOT NULL,
     CONSTRAINT analysisfeature_id_type_id_rank UNIQUE(analysisfeature_id, type_id, rank)
 );
+create index analysisfeatureprop_idx1 on analysisfeatureprop (analysisfeature_id);
+create index analysisfeatureprop_idx2 on analysisfeatureprop (type_id);
 
 CREATE OR REPLACE FUNCTION store_analysis (VARCHAR,VARCHAR,VARCHAR) 
   RETURNS INT AS 

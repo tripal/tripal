@@ -125,17 +125,17 @@ function chado_get_table_max_rank($tablename, $where_options) {
  * Retrieve a property for a given base table record.
  *
  * @param $record
- *   An associative array used to identify the record to which the property
- *   should be updated.  The following keys must be used:
- *     -table: The base table for which the property should be updated. 
+ *   An array used to identify the record to which the property is associated.
+ *   The following keys must be used:
+ *     -table: The base table for which the property should be updated.
  *         Thus to update a property for a feature the base_table=feature.
  *     -id: The primary key value of the base table. The property will be
  *         associated with the record that matches this id.
  *     -prop_id: The primary key in the [table]prop table.  If this value
  *         is supplied then the 'table' and 'id' keys are not needed.
  * @param $property
- *   An associative array used to specify the property to be updated.  It can 
- *   contain the following keys. The keys must be specified to uniquely identify 
+ *   An associative array used to specify the property to be selected.  It can
+ *   contain the following keys. The keys must be specified to uniquely identify
  *   the term to be applied.  If the options identify more than one CV term
  *   then an error will occur.
  *     -type_name: The cvterm name to be selected.
@@ -153,11 +153,11 @@ function chado_get_table_max_rank($tablename, $where_options) {
  * @ingroup tripal_chado_api
  */
 function chado_get_property($record, $property) {
-  
+
   $base_table  = array_key_exists('table', $record) ? $record['table'] : '';
   $base_id     = array_key_exists('id', $record) ? $record['id'] : '';
   $prop_id     = array_key_exists('prop_id', $record) ? $record['prop_id'] : '';
-  
+
   $type_name   = array_key_exists('type_name', $property) ? $property['type_name'] : '';
   $type_id     = array_key_exists('type_id', $property) ? $property['type_id'] : '';
   $cv_name     = array_key_exists('cv_name', $property) ? $property['cv_name'] : '';
@@ -165,9 +165,9 @@ function chado_get_property($record, $property) {
   $value       = array_key_exists('value', $property) ? $property['value'] : '';
   $rank        = array_key_exists('rank', $property) ? $property['rank'] : 0;
 
-  
+
   // Build the values array for checking if the CVterm exists and for
-  // inserting the term as a property.
+  // retrieving the term as a property.
   $type = array();
   if ($cv_id) {
     $type['cv_id'] = $cv_id;
@@ -183,7 +183,7 @@ function chado_get_property($record, $property) {
   if ($type_id) {
     $type['cvterm_id'] = $type_id;
   }
-  
+
   // Make sure the CV term exists;
   $options = array();
   $term = chado_select_record('cvterm', array('cvterm_id'), $type, $options);
@@ -199,7 +199,7 @@ function chado_get_property($record, $property) {
         "by: %property.",
         array('%property' => print_r($property, TRUE)));    return FALSE;
   }
-  
+
   // get the foreign key for this property table
   $table_desc = chado_get_schema($base_table . 'prop');
   $fkcol = key($table_desc['foreign keys'][$base_table]['columns']);
@@ -209,7 +209,7 @@ function chado_get_property($record, $property) {
     $fkcol => $base_id,
     'type_id' => $type,
   );
-  
+
   // if we have the unique property_id make sure to add that to the values
   if ($prop_id) {
     $property_pkey = $table_desc['primary key'][0];
@@ -224,23 +224,23 @@ function chado_get_property($record, $property) {
 }
 
 /**
- * Insert a property for a given base table.  
- * 
- * By default if the property already exists a new property is added with the 
- * next available rank.  If the option 'update_if_present' is specified then 
+ * Insert a property for a given base table.
+ *
+ * By default if the property already exists a new property is added with the
+ * next available rank.  If the option 'update_if_present' is specified then
  * the record will be updated if it exists rather than adding a new property.
  *
  * @param $record
  *   An associative array used to identify the record to which the property
  *   should be assigned.  The following keys must be used:
- *     -table: The base table for which the property should be inserted. 
- *         Thus to insert a property for a feature the base_table=feature and 
+ *     -table: The base table for which the property should be inserted.
+ *         Thus to insert a property for a feature the base_table=feature and
  *         property is inserted into featureprop
  *     -id: The primary key value of the base table. The property will be
  *         associated with the record that matches this id.
  * @param $property
- *   An associative array used to specify the property to be added.  It can 
- *   contain the following keys. The keys must be specified to uniquely identify 
+ *   An associative array used to specify the property to be added.  It can
+ *   contain the following keys. The keys must be specified to uniquely identify
  *   the term to be applied.  If the options identify more than one CV term
  *   then an error will occur.
  *     -type_name: The cvterm name to be selected.
@@ -251,13 +251,13 @@ function chado_get_property($record, $property) {
  *     -rank: The specific rank for the property.
  * @param $options
  *   An associative array containing the following keys:
- *     -update_if_present:  A boolean indicating whether an existing record 
- *        should be updated. If the property already exists and this value is 
- *        not specified or is zero then a new property will be added with the 
+ *     -update_if_present:  A boolean indicating whether an existing record
+ *        should be updated. If the property already exists and this value is
+ *        not specified or is zero then a new property will be added with the
  *        next largest rank.
  *     -force_rank:  If the specified rank is already used by another property
- *        recrod for the same base_id, then set force_rank to TRUE to require 
- *        that only the specified rank can be used. Otherwise, the next 
+ *        recrod for the same base_id, then set force_rank to TRUE to require
+ *        that only the specified rank can be used. Otherwise, the next
  *        available rank will be used.  If 'update_if_present' is FALSE and
  *        'force_rank' is set then an error will occur.
  *
@@ -308,7 +308,7 @@ function chado_insert_property($record, $property, $options = array()) {
         $rank++;
       }
       else {
-        tripal_report_error('tripal_core', TRIPAL_ERROR, "chado_insert_property: " . 
+        tripal_report_error('tripal_core', TRIPAL_ERROR, "chado_insert_property: " .
          "The property is already assigned to the record with the following " .
          "rank.  And, because the 'force_rank' option is used, the property " .
          "cannot be added: %property.",
@@ -319,7 +319,7 @@ function chado_insert_property($record, $property, $options = array()) {
   }
 
   // Build the values array for checking if the CVterm exists and for
-  // inserting the term as a property. 
+  // inserting the term as a property.
   $values = array();
   if ($cv_id) {
     $values['cv_id'] = $cv_id;
@@ -351,7 +351,7 @@ function chado_insert_property($record, $property, $options = array()) {
       "by: %property.",
       array('%property' => print_r($property, TRUE)));    return FALSE;
   }
-  
+
   // Get the foreign key for this property table
   $table_desc = chado_get_schema($base_table . 'prop');
   $fkcol = key($table_desc['foreign keys'][$base_table]['columns']);
@@ -369,19 +369,19 @@ function chado_insert_property($record, $property, $options = array()) {
 
 /**
  * Update a property for a given base table record and property name.
- * 
+ *
  * @param $record
  *   An associative array used to identify the record to which the property
  *   should be updated.  The following keys must be used:
- *     -table: The base table for which the property should be updated. 
+ *     -table: The base table for which the property should be updated.
  *         Thus to update a property for a feature the base_table=feature.
  *     -id: The primary key value of the base table. The property will be
  *         associated with the record that matches this id.
  *     -prop_id: The primary key in the [table]prop table.  If this value
  *         is supplied then the 'table' and 'id' keys are not needed.
  * @param $property
- *   An associative array used to specify the property to be updated.  It can 
- *   contain the following keys. The keys must be specified to uniquely identify 
+ *   An associative array used to specify the property to be updated.  It can
+ *   contain the following keys. The keys must be specified to uniquely identify
  *   the term to be applied.  If the options identify more than one CV term
  *   then an error will occur.
  *     -type_name: The cvterm name to be selected.
@@ -392,7 +392,7 @@ function chado_insert_property($record, $property, $options = array()) {
  *     -rank: The specific rank for the property.
  * @param $options
  *   An associative array containing the following keys:
- *     -insert_if_missing: A boolean indicating whether a record should be 
+ *     -insert_if_missing: A boolean indicating whether a record should be
  *         inserted if one doesn't exist to update.
  *
  *
@@ -406,7 +406,7 @@ function chado_update_property($record, $property, $options) {
   $base_table  = array_key_exists('table', $record) ? $record['table'] : '';
   $base_id     = array_key_exists('id', $record) ? $record['id'] : '';
   $prop_id     = array_key_exists('prop_id', $record) ? $record['prop_id'] : '';
-  
+
   $type_name   = array_key_exists('type_name', $property) ? $property['type_name'] : '';
   $type_id     = array_key_exists('type_id', $property) ? $property['type_id'] : '';
   $cv_name     = array_key_exists('cv_name', $property) ? $property['cv_name'] : '';
@@ -426,7 +426,7 @@ function chado_update_property($record, $property, $options) {
       return FALSE;
     }
   }
-  
+
   // Build the values array for checking if the CVterm exists.
   $type = array();
   if ($cv_id) {
@@ -443,7 +443,7 @@ function chado_update_property($record, $property, $options) {
   if ($type_id) {
     $type['cvterm_id'] = $type_id;
   }
-  
+
   // Make sure the CV term exists;
   $options = array();
   $term = chado_select_record('cvterm', array('cvterm_id'), $type, $options);
@@ -457,10 +457,10 @@ function chado_update_property($record, $property, $options) {
     tripal_report_error('tripal_core', TRIPAL_ERROR, "chado_update_property: " .
         "Multiple terms found. Cannot add the property. Property was described " .
         "by: %property.",
-        array('%property' => print_r($property, TRUE)));    
+        array('%property' => print_r($property, TRUE)));
     return FALSE;
   }
-  
+
 
   // Get the foreign key for this property table
   $table_desc = chado_get_schema($base_table . 'prop');
@@ -471,8 +471,8 @@ function chado_update_property($record, $property, $options) {
     $fkcol => $base_id,
     'type_id' => $type,
   );
-  // If we have the unique property_id, make sure to use it in the match to 
-  // ensure we get the exact record. Doesn't rely on there only being one 
+  // If we have the unique property_id, make sure to use it in the match to
+  // ensure we get the exact record. Doesn't rely on there only being one
   // property of that type.
   if ($prop_id) {
     $property_pkey = $table_desc['primary key'][0];
@@ -487,7 +487,7 @@ function chado_update_property($record, $property, $options) {
   if ($rank) {
     $values['rank'] = $rank;
   }
-  
+
   // If we have the unique property_id then we can also update the type
   // thus add it to the values to be updated
   if ($prop_id) {
@@ -499,19 +499,19 @@ function chado_update_property($record, $property, $options) {
 
 /**
  * Deletes a property for a given base table record using the property name
- * 
+ *
  * @param $record
  *   An associative array used to identify the record to which the property
  *   should be deleted.  The following keys must be used:
- *     -table: The base table for which the property should be deleted. 
+ *     -table: The base table for which the property should be deleted.
  *         Thus to update a property for a feature the base_table=feature.
  *     -id: The primary key value of the base table. The property will be
  *         deleted from the record that matches this id.
- *     -prop_id: The primary key in the [table]prop table to be deleted.  If 
+ *     -prop_id: The primary key in the [table]prop table to be deleted.  If
  *         this value is supplied then the 'table' and 'id' keys are not needed.
  * @param $property
- *   An associative array used to specify the property to be updated.  It can 
- *   contain the following keys. The keys must be specified to uniquely identify 
+ *   An associative array used to specify the property to be updated.  It can
+ *   contain the following keys. The keys must be specified to uniquely identify
  *   the term to be applied.  If the options identify more than one CV term
  *   then an error will occur.
  *     -type_name: The cvterm name to be selected.
@@ -531,15 +531,15 @@ function chado_delete_property($record, $property) {
   $base_table  = array_key_exists('table', $record) ? $record['table'] : '';
   $base_id     = array_key_exists('id', $record) ? $record['id'] : '';
   $prop_id     = array_key_exists('prop_id', $record) ? $record['prop_id'] : '';
-  
+
   $type_name   = array_key_exists('type_name', $property) ? $property['type_name'] : '';
   $type_id     = array_key_exists('type_id', $property) ? $property['type_id'] : '';
   $cv_name     = array_key_exists('cv_name', $property) ? $property['cv_name'] : '';
   $cv_id       = array_key_exists('cv_id', $property) ? $property['cv_id'] : '';
   $value       = array_key_exists('value', $property) ? $property['value'] : '';
   $rank        = array_key_exists('rank', $property) ? $property['rank'] : 0;
-  
-  
+
+
   // Build the values array for checking if the CVterm exists
   $type = array();
   if ($cv_id) {
@@ -556,7 +556,7 @@ function chado_delete_property($record, $property) {
   if ($type_id) {
     $type['cvterm_id'] = $type_id;
   }
-  
+
   // Make sure the CV term exists;
   $options = array();
   $term = chado_select_record('cvterm', array('cvterm_id'), $type, $options);
@@ -572,7 +572,7 @@ function chado_delete_property($record, $property) {
         "by: %property.",
         array('%property' => print_r($property, TRUE)));    return FALSE;
   }
-  
+
   // get the foreign key for this property table
   $table_desc = chado_get_schema($base_table . 'prop');
   $fkcol = key($table_desc['foreign keys'][$base_table]['columns']);
@@ -597,21 +597,21 @@ function chado_delete_property($record, $property) {
 
 /**
  * Get all records in the base table assigned one or more properties.
- * 
+ *
  * The property or properties of interest are specified using the $property
  * argument.
  *
  * @param $record
  *   An associative array used to identify the table and subset of records to
  *   to be searched:
- *     -table: The base table for which the property should be updated. 
+ *     -table: The base table for which the property should be updated.
  *         Thus to update a property for a feature the base_table=feature.
  *     -base_records: An array in the format accepted by the chado_select_record
  *         for specifying a subset of records in the base table.
  * @param $property
- *   An associative array used to specify the property to be selected for. It 
- *   can contain the following keys. The keys must be specified to uniquely 
- *   identify the term to be searched.  If the options identify more than one 
+ *   An associative array used to specify the property to be selected for. It
+ *   can contain the following keys. The keys must be specified to uniquely
+ *   identify the term to be searched.  If the options identify more than one
  *   CV term then an error will occur.
  *     -type_name: The cvterm name to be selected.
  *     -type_id: The cvterm_id of the term to be selected.
@@ -629,10 +629,10 @@ function chado_delete_property($record, $property) {
  * @ingroup tripal_chado_api
  */
 function chado_get_record_with_property($record, $property, $options = array()) {
-  
+
   $base_table  = array_key_exists('table', $record) ? $record['table'] : '';
   $base_records= array_key_exists('base_records', $record) ? $record['base_records'] : array();
-  
+
   $type_name   = array_key_exists('type_name', $property) ? $property['type_name'] : '';
   $type_id     = array_key_exists('type_id', $property) ? $property['type_id'] : '';
   $cv_name     = array_key_exists('cv_name', $property) ? $property['cv_name'] : '';
@@ -660,7 +660,7 @@ function chado_get_record_with_property($record, $property, $options = array()) 
   if ($type_id) {
     $type['cvterm_id'] = $type_id;
   }
-  
+
   // Make sure the CV term exists;
   $term = chado_select_record('cvterm', array('cvterm_id'), $type);
   if (!$term or count($term) == 0) {
@@ -685,7 +685,7 @@ function chado_get_record_with_property($record, $property, $options = array()) 
   if ($value) {
     $values['value'] = $value;
   }
-  
+
   // Add the base records details to the values array.
   if (!empty($base_records)) {
     $values[$foreignkey_name] = $base_records;

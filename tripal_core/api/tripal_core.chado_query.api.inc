@@ -332,6 +332,7 @@ function chado_insert_record($table, $values, $options = array()) {
           array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)),
           array('print' => $print_errors)
         );
+        return FALSE;
       }
       elseif (sizeof($results) < 1) {
         tripal_report_error('tripal_core', TRIPAL_DEBUG,
@@ -339,6 +340,7 @@ function chado_insert_record($table, $values, $options = array()) {
           array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)),
           array('print' => $print_errors)
         );
+        return FALSE;
       }
       else {
         $insert_values[$field] = $results[0];
@@ -629,6 +631,7 @@ function chado_update_record($table, $match, $values, $options = NULL) {
           array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)),
           array('print' => $print_errors)
         );
+        return FALSE;
       }
       elseif (sizeof($results) < 1) {
         tripal_report_error('tripal_core', TRIPAL_DEBUG,
@@ -636,6 +639,7 @@ function chado_update_record($table, $match, $values, $options = NULL) {
           array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)),
           array('print' => $print_errors)
         );
+        return FALSE;
       }
       else {
         $update_matches[$field] = $results[0];
@@ -658,6 +662,7 @@ function chado_update_record($table, $match, $values, $options = NULL) {
           array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)),
           array('print' => $print_errors)
         );
+        return FALSE;
       }
       elseif (sizeof($results) < 1) {
         tripal_report_error('tripal_core', TRIPAL_DEBUG,
@@ -665,6 +670,7 @@ function chado_update_record($table, $match, $values, $options = NULL) {
           array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)),
           array('print' => $print_errors)
         );
+        return FALSE;
       }
       else {
         $update_values[$field] = $results[0];
@@ -828,6 +834,7 @@ function chado_delete_record($table, $match, $options = NULL) {
           tripal_report_error('tripal_core', TRIPAL_ERROR,
             'chado_delete_record: When trying to find record to delete, too many records match the criteria supplied for !foreign_key foreign key constraint (!criteria)',
             array('!foreign_key' => $field, '!criteria' => print_r($value, TRUE)));
+          return FALSE;
         }
         elseif (sizeof($results) < 1) {
           //tripal_report_error('tripal_core', TRIPAL_ERROR, 'chado_delete_record: When trying to find record to delete, no record matches criteria supplied for !foreign_key foreign key constraint (!criteria)', array('!foreign_key' => $field, '!criteria' => print_r($value,TRUE)));
@@ -1233,14 +1240,16 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
               for %field where the definition supplied was %value',
               array('%field' => $field, '%value' => print_r($value, TRUE))
             );
+            return FALSE;
           }
           // Ensure that there were results returned.
-          elseif (count($results)==0) {
+          elseif (count($results) == 0) {
             tripal_report_error('tripal_core', TRIPAL_ERROR,
               'chado_select_record: the foreign key definition for %field
               returned no results where the definition supplied was %value',
               array('%field' => $field, '%value' => print_r($value, TRUE))
             );
+            return FALSE;
           }
           // If there was only a single resutlt then add it using an op of =.
           elseif (count($results) == 1) {
