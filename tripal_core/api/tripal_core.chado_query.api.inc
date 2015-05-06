@@ -1240,16 +1240,16 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
               for %field where the definition supplied was %value',
               array('%field' => $field, '%value' => print_r($value, TRUE))
             );
-            return FALSE;
+            return array();
           }
           // Ensure that there were results returned.
-          elseif (count($results) == 0) {
+          elseif (count($results)==0) {
             tripal_report_error('tripal_core', TRIPAL_ERROR,
               'chado_select_record: the foreign key definition for %field
               returned no results where the definition supplied was %value',
               array('%field' => $field, '%value' => print_r($value, TRUE))
             );
-            return FALSE;
+            return array();
           }
           // If there was only a single resutlt then add it using an op of =.
           elseif (count($results) == 1) {
