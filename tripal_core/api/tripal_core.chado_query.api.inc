@@ -1233,6 +1233,7 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
               for %field where the definition supplied was %value',
               array('%field' => $field, '%value' => print_r($value, TRUE))
             );
+            return array();
           }
           // Ensure that there were results returned.
           elseif (count($results)==0) {
@@ -1241,6 +1242,7 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
               returned no results where the definition supplied was %value',
               array('%field' => $field, '%value' => print_r($value, TRUE))
             );
+            return array();
           }
           // If there was only a single resutlt then add it using an op of =.
           elseif (count($results) == 1) {
