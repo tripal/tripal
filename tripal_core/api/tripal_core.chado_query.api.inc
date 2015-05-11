@@ -595,9 +595,15 @@ function chado_update_record($table, $match, $values, $options = NULL) {
   $update_values = array();   // contains the values to be updated
   $update_matches = array();  // contains the values for the where clause
 
-
   // get the table description
   $table_desc = chado_get_schema($table);
+  if (!$table_desc) {
+    tripal_report_error('tripal_core', TRIPAL_ERROR,
+      'The table name, %table, does not exist.',
+      array('%table', $table), array('print' => $print_errors)
+    );
+    return FALSE;
+  }
 
   // if the user wants us to return the record then we need to get the
   // unique primary key if one exists.  That way we can add it to the
