@@ -614,14 +614,14 @@ function chado_example_load($nodes) {
     // should be included by using this function in the templates.
     $example = chado_expand_var($example, 'field', 'example.description');
 
+    // add the new example object to this node.
+    $nodes[$nid]->example = $example;
 
     // If your module is using the Chado Node: Title & Path API to allow custom
     // titles for your node type. Every time you want the title of the node, you
     // need to use the following API function:
     $node->title = chado_get_node_title($node);
 
-    // add the new example object to this node.
-    $nodes[$nid]->example = $example;
   }
 }
 
