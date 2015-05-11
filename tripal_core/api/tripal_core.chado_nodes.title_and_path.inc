@@ -1261,7 +1261,7 @@ function chado_node_generate_tokens($base_table, $token_prefix = FALSE, $locatio
       'location' => $location
     );
 
-    if (preg_match('/TODO/',$field_details['description'])) {
+    if (!array_key_exists('description', $field_details) or preg_match('/TODO/',$field_details['description'])) {
       $tokens[$token]['description'] = 'The '.$field_name.' field of the '.$base_table.' table.';
     }
   }
