@@ -297,7 +297,7 @@ function chado_generate_var($table, $values, $base_options = array()) {
       }
 
       // recursively follow foreign key relationships nesting objects as we go------------------------
-      if ($table_desc['foreign keys']) {
+      if (array_key_exists('foreign keys', $table_desc) and $table_desc['foreign keys']) {
         foreach ($table_desc['foreign keys'] as $foreign_key_array) {
           $foreign_table = $foreign_key_array['table'];
           foreach ($foreign_key_array['columns'] as $foreign_key => $primary_key) {
