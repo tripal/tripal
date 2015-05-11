@@ -1268,20 +1268,22 @@ function chado_node_generate_tokens($base_table, $token_prefix = FALSE, $locatio
 
   // RECURSION:
   // Follow the foreign key relationships recursively
-  foreach (array_key_exists('foreign keys', $table_descrip) and $table_descrip['foreign keys'] as $table => $details) {
-    foreach ($details['columns'] as $left_field => $right_field) {
-      if (empty($token_prefix)) {
-        $sub_token_prefix = $base_table . '.' . $left_field;
-        $sub_location_prefix = implode(' > ',array($base_table, $left_field));
-      }
-      else {
-        $sub_token_prefix = $token_prefix . '>' . $base_table . ':' . $left_field;
-        $sub_location_prefix = $location_prefix . ' > ' . implode(' > ',array($base_table, $left_field));
-      }
+  if (array_key_exists('foreign keys', $table_descrip)) {
+    foreach ($table_descrip['foreign keys'] as $table => $details) {
+      foreach ($details['columns'] as $left_field => $right_field) {
+        if (empty($token_prefix)) {
+          $sub_token_prefix = $base_table . '.' . $left_field;
+          $sub_location_prefix = implode(' > ',array($base_table, $left_field));
+        }
+        else {
+          $sub_token_prefix = $token_prefix . '>' . $base_table . ':' . $left_field;
+          $sub_location_prefix = $location_prefix . ' > ' . implode(' > ',array($base_table, $left_field));
+        }
 
-      $sub_tokens = chado_node_generate_tokens($table, $sub_token_prefix, $sub_location_prefix);
-      if (is_array($sub_tokens)) {
-        $tokens = array_merge($tokens, $sub_tokens);
+        $sub_tokens = chado_node_generate_tokens($table, $sub_token_prefix, $sub_location_prefix);
+        if (is_array($sub_tokens)) {
+          $tokens = array_merge($tokens, $sub_tokens);
+        }
       }
     }
   }
