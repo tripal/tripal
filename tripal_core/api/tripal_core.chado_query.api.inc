@@ -825,6 +825,12 @@ function chado_delete_record($table, $match, $options = NULL) {
   // get the table description
   $table_desc = chado_get_schema($table);
   $fields = $table_desc['fields'];
+  if (empty($table_desc)) {
+    tripal_report_error('tripal_core', TRIPAL_WARNING,
+      'chado_insert_record; There is no table description for !table_name',
+      array('!table_name' => $table), array('print' => $print_errors)
+    );
+  }
 
   // get the values needed for matching in the SQL statement
   foreach ($match as $field => $value) {
@@ -1074,6 +1080,12 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
 
   // Get the table description.
   $table_desc = chado_get_schema($table);
+  if (empty($table_desc)) {
+    tripal_report_error('tripal_core', TRIPAL_WARNING,
+      'chado_insert_record; There is no table description for !table_name',
+      array('!table_name' => $table), array('print' => $print_errors)
+    );
+  }
 
   $select = '';
   $from = '';
