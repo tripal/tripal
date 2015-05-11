@@ -233,8 +233,8 @@ function chado_get_node_title($node) {
  *      the module is tripal_feature.
  *     -options: an array of quick-choice options to supply to the user. The key should be
  *      the token and the value should be a human-readable description of the option
- *   Optional keys include:
  *     -content_type: the name of the content type. Defaults to module name.
+ *   Optional keys include:
  *     -fieldset_title: the title to use for the fieldset. Defaults to "Set Page Title".
  *     -default_option: the default format to use which matches one of those in $details['options']
  *     -custom_tokens: an array of custom tokens that follow the same format as those
@@ -1257,7 +1257,7 @@ function chado_node_generate_tokens($base_table, $token_prefix = FALSE, $locatio
       'table' => $base_table,
       'field' => $field_name,
       'token' => $token,
-      'description' => $field_details['description'],
+      'description' => array_key_exists('description', $field_details) ? $field_details['description'] : '',
       'location' => $location
     );
 
