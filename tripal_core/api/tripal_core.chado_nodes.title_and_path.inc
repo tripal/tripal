@@ -1268,7 +1268,7 @@ function chado_node_generate_tokens($base_table, $token_prefix = FALSE, $locatio
 
   // RECURSION:
   // Follow the foreign key relationships recursively
-  foreach ($table_descrip['foreign keys'] as $table => $details) {
+  foreach (array_key_exists('foreign keys', $table_descrip) and $table_descrip['foreign keys'] as $table => $details) {
     foreach ($details['columns'] as $left_field => $right_field) {
       if (empty($token_prefix)) {
         $sub_token_prefix = $base_table . '.' . $left_field;
