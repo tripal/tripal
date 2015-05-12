@@ -300,14 +300,14 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     ),
   );
 
-  $instructions = 'Relationships should be read like a sentence ([subject] [type] 
-    [object]) in order to determine their direction and thus their meaning. When 
-    adding a relationship, it is easiest to first select the type of relationship you would 
+  $instructions = 'Relationships should be read like a sentence ([subject] [type]
+    [object]) in order to determine their direction and thus their meaning. When
+    adding a relationship, it is easiest to first select the type of relationship you would
     like to enter and then select whether the current %nodetype is the subject
-    or object (based on which "sentence" makes sense). Finally enter the other 
-    %nodetype in the remaining text box (making sure to select from the 
-    autocomplete drop-down) before clicking "Add". To remove incorrect relationships, click the 
-    "Remove" button. Note: you cannot edit previously added relationships 
+    or object (based on which "sentence" makes sense). Finally enter the other
+    %nodetype in the remaining text box (making sure to select from the
+    autocomplete drop-down) before clicking "Add". To remove incorrect relationships, click the
+    "Remove" button. Note: you cannot edit previously added relationships
     but instead need to remove and re-add them.';
   $form['relationships']['descrip'] = array(
     '#type' => 'item',
@@ -321,7 +321,8 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     '#tree' => TRUE,
     '#prefix' => '<div id="tripal-generic-edit-relationships-table">',
     '#suffix' => '</div>',
-    '#theme' => 'chado_node_relationships_form_table'
+    '#theme' => 'chado_node_relationships_form_table',
+    '#weight' => 5
   );
 
   // Add defaults into form_state to be used elsewhere
@@ -420,13 +421,24 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     if (array_key_exists($relationship->type_id, $type_options)) {
       $num_relationships++;
 
+      $type_class = str_replace(array(' ','_'), '-', $relationship->type_name);
+      $current_class = 'current-unknown';
+      if ($details['base_key_value']) {
+        if ($relationship->object_id == $details['base_key_value']) {
+          $current_class = 'current-object';
+        }
+        elseif ($relationship->subject_id == $details['base_key_value']) {
+          $current_class = 'current-subject';
+        }
+      }
+
       $form['relationships']['relationship_table'][$relationship->type_id]['#type'] = 'markup';
       $form['relationships']['relationship_table'][$relationship->type_id]['#type'] = '';
 
       $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['#type'] = 'markup';
       $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['#value'] = '';
       $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['#attributes'] = array(
-        'class' => array('relationship', 'saved')
+        'class' => array('relationship', 'saved', $type_class, $current_class)
       );
 
       // Determine whether this relationship is unsaved or not.
@@ -434,7 +446,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
       // saved yet we will have entered a TEMP###.
       if (preg_match('/^TEMP/', $relationship->relationship_id)) {
         $form['relationships']['relationship_table'][$relationship->type_id][$relationship->relationship_id]['#attributes'] = array(
-          'class' => array('relationship', 'unsaved')
+          'class' => array('relationship', 'unsaved', $type_class, $current_class)
         );
       }
 
@@ -577,7 +589,8 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
 
   $form['relationships']['admin_message'] = array(
     '#type' => 'markup',
-    '#markup' => $tripal_message
+    '#markup' => $tripal_message,
+    '#weight' => 10
   );
 }
 
@@ -590,7 +603,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
 function chado_add_node_form_relationships_add_button_validate($form, &$form_state) {
 
   $details = unserialize($form_state['values']['relationship_table']['details']);
-  
+
   // First deal with autocomplete fields.
   // Extract the base_id assuming '(###) NAME FIELD'.
   if (!empty($form_state['values']['relationship_table']['new']['subject_name'])) {
@@ -630,8 +643,9 @@ function chado_add_node_form_relationships_add_button_validate($form, &$form_sta
     AND $form_state['values']['relationship_table']['new']['object_is_current']) {
 
     form_set_error('relationship_table][new][object_is_current', 'Only one member of the relationship may be
-      the current '.$details['nodetype'].'. This is specified by checking the "Current '.$details['nodetype'].'"
-      checkbox for either the subject or object.');
+      the current '.$details['nodetype'].' in order to avoid a circular relationship. If you really meant to
+      add a circular relationship then check the "Current '.$details['nodetype'].'" for one side of the
+      relationship and enter the current stock name via the autocomplete for the other side of the relationship.');
   }
   // If it was determined current via checkbox, we need to ensure the name
   // provided actually matches the current node.
