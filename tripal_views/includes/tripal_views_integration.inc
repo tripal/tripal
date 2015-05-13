@@ -37,7 +37,7 @@ function tripal_views_integrate_all_chado_tables() {
   // corresponding mview_id and table_id are associated with these tables.
   // @TODO: Add some way to show which integrations are for custom tables.
   //$custom_tables = chado_get_custom_table_names();
-  $mview_tables = chado_get_custom_table_names();
+  $mview_tables = chado_get_mview_table_names();
 
   // Hardcode a list of base tables since there isn't really a programatic way
   // to determine which tables in the chado schema should be base tables.
@@ -57,7 +57,7 @@ function tripal_views_integrate_all_chado_tables() {
 
       // Assuming that we have a default chado table, genereate an integration
       // array describing it's Tripal Views integration.
-      if (in_array($tablename, $base_tables)) {
+      if (in_array($tablename, $base_tables) OR in_array($tablename, $mview_tables)) {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
       }
       else {
