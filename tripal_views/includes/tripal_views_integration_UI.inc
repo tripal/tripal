@@ -306,7 +306,7 @@ function tripal_views_integration_form($form, &$form_state) {
   $chado_tables = array_merge(array('Select'), $chado_tables);
   $default = '';
   if ($setup_id) {
-    $default = (!$setup_obj->mview_id) ? $setup_obj->table_name : '';
+    $default = ($setup_obj->table_name) ? $setup_obj->table_name : '';
   }
   $form['base_table_type']['table_name'] = array(
     '#title' => t('Chado/Custom Table'),
@@ -326,7 +326,6 @@ function tripal_views_integration_form($form, &$form_state) {
 
 
   // build the form element that lists the materialized views
-  // D7 TODO: Check DBTNG changes work
   $query = db_query("SELECT mview_id, name FROM {tripal_mviews} WHERE mv_schema is NULL or mv_schema = '' ORDER BY name");
   $mview_tables = array();
   $mview_tables['0'] = 'Select';
@@ -334,24 +333,29 @@ function tripal_views_integration_form($form, &$form_state) {
     $mview_tables[$mview->mview_id] = $mview->name;
   }
   $default = '';
-  if ($setup_id && isset($setup_obj->mview_id)) {
+  $legacy_mview = FALSE;
+  if ($setup_id && !empty($setup_obj->mview_id)) {
     $default = $setup_obj->mview_id;
   }
-  $form['base_table_type']['mview_id'] = array(
-    '#title' => t('Legacy Materialized View'),
-    '#type' => 'select',
-    '#options' => $mview_tables,
-    '#description' => 'Which materialized view to use.',
-    '#default_value' => $default,
-    '#ajax' => array(
-       //D6: 'path' => 'tripal/views-integration/ajax/view_setup_table',
-       'callback' => 'tripal_views_integration_ajax_view_setup_table',
-       'wrapper' => 'tripal-views-integration-form',
-       'effect' => 'fade',
-       'event' => 'change',
-       'method' => 'replace',
-    ),
-  );
+  if (isset($mview_tables[$setup_obj->mview_id])) {
+    $legacy_mview = TRUE;
+
+    $form['base_table_type']['mview_id'] = array(
+      '#title' => t('Legacy Materialized View'),
+      '#type' => 'select',
+      '#options' => $mview_tables,
+      '#description' => 'Which materialized view to use.',
+      '#default_value' => $default,
+      '#ajax' => array(
+         //D6: 'path' => 'tripal/views-integration/ajax/view_setup_table',
+         'callback' => 'tripal_views_integration_ajax_view_setup_table',
+         'wrapper' => 'tripal-views-integration-form',
+         'effect' => 'fade',
+         'event' => 'change',
+         'method' => 'replace',
+      ),
+    );
+  }
 
   $form['views_type'] = array(
     '#type' => 'fieldset',
@@ -470,8 +474,7 @@ function tripal_views_integration_form($form, &$form_state) {
     // get the columns in this materialized view.  They are separated by commas
     // where the first word is the column name and the rest is the type
     $columns = array();
-    if ($mview_id) {
-      // D7 TODO: Check DBTNG changes work
+    if ($legacy_mview) {
       $sql = "SELECT mv_specs FROM {tripal_mviews} WHERE mview_id = :id";
       $mview = db_query($sql, array(':id' => $mview_id));
       $mview = $mview->fetchObject();
