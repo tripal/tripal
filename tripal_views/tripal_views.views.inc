@@ -165,6 +165,7 @@ function tripal_views_views_data() {
     // POPULATE THE BASE TABLE NAME AND FIELDS
     // If an $mview_id is given then get the materialized view info,
     // otherwise get the Chado table info
+    $legacy_mview = FALSE;
     if ($mview_id) {
 
       // get the base table name from the materialized view
@@ -174,6 +175,12 @@ function tripal_views_views_data() {
       $mview_table = $mview_table->fetchObject();
       $base_table = $mview_table->name;
 
+      if (!empty($mview_table->mv_specs)) {
+        $legacy_mview = TRUE;
+      }
+    }
+
+    if ($legacy_mview) {
       // get the columns in this materialized view.  They are separated by commas
       // where the first word is the column name and the rest is the type
       $columns = explode(",", $mview_table->mv_specs);

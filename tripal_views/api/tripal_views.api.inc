@@ -650,7 +650,6 @@ function tripal_add_views_integration($defn_array, $setup_id = FALSE) {
     $view_record['setup_id'] = $setup_id;
   }
   if ($defn_array['type'] == 'mview') {
-    // D7 TODO: Check DBTNG changes work
     $mview = db_query("SELECT mview_id FROM {tripal_mviews} WHERE mv_table=:table", array(':table' => $defn_array['table']));
     $mview = $mview->fetchObject();
     $view_record['mview_id'] = $mview->mview_id;
