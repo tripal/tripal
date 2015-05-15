@@ -24,6 +24,8 @@ require_once 'includes/tripal_cv.cv_form.inc';
 require_once 'includes/tripal_cv.cvterm_form.inc';
 require_once 'includes/tripal_cv.cvtermpath_form.inc';
 
+require_once 'entities/tripal_cv.entities.inc';
+
 /**
  * Implements hook_init().
  * Adds CSS and JS needed for this modules rendered content

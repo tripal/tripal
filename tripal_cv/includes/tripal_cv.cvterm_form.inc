@@ -199,13 +199,18 @@ function tripal_cv_add_cvterm_form_fields(&$form, $form_state, $cv_id = 0, $cvte
     '#collapsible' => 0,
   );
 
-
   $form['fields']['name']= array(
     '#type'          => 'textfield',
     '#title'         => t("Term Name"),
     '#default_value' => $name,
     '#description'   => t('The term must be unique within the database selected below.'),
     '#required'      => TRUE,
+  );
+
+  $form['fields']['internal_id']= array(
+    '#type'          => 'item',
+    '#title'         => t("Internal ID"),
+    '#markup'        => $cvterm->cvterm_id,
   );
 
   $form['fields']['definition']= array(

@@ -9,7 +9,7 @@ configure = admin/tripal
 stylesheets[all][] = theme/css/tripal.css
 scripts[]          = theme/js/tripal.js
 
-dependencies[]     = views
-dependencies[]     = path
-dependencies[]     = search
-dependencies[]     = php
+dependencies[] = views
+dependencies[] = path
+dependencies[] = search
+dependencies[] = php

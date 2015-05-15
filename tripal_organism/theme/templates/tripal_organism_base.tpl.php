@@ -1,5 +1,12 @@
 <?php
 
+$cv = entity_load('trp_vocabulary', array(20, 21, 22));
+$cvterm = entity_load('trp_vocabulary_term', array(489, 44099, 45222, 527));
+$gene = entity_load('trp_SO_0000704', array(3));
+dpm($cv);
+dpm($cvterm);
+dpm($gene);
+
 $organism  = $variables['node']->organism;
 $organism = chado_expand_var($organism,'field','organism.comment'); ?>
 
@@ -7,13 +14,13 @@ $organism = chado_expand_var($organism,'field','organism.comment'); ?>
 
 // generate the image tag
 $image = '';
-$image_url = tripal_get_organism_image_url($organism); 
+$image_url = tripal_get_organism_image_url($organism);
 if ($image_url) {
   $image = "<img class=\"tripal-organism-img\" src=\"$image_url\">";
 }
 
-// the $headers array is an array of fields to use as the colum headers. 
-// additional documentation can be found here 
+// the $headers array is an array of fields to use as the colum headers.
+// additional documentation can be found here
 // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
 // This table for the organism has a vertical header (down the first column)
 // so we do not provide headers here, but specify them in the $rows array below.
@@ -22,13 +29,13 @@ $headers = array();
 // the $rows array contains an array of rows where each row is an array
 // of values for each column of the table in that row.  Additional documentation
 // can be found here:
-// https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7 
+// https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
 $rows = array();
 
 // genus row
 $rows[] = array(
   array(
-    'data' => 'Genus', 
+    'data' => 'Genus',
     'header' => TRUE,
     'width' => '20%',
   ),
@@ -38,9 +45,9 @@ $rows[] = array(
 // species row
 $rows[] = array(
   array(
-    'data' => 'Species', 
+    'data' => 'Species',
     'header' => TRUE
-  ), 
+  ),
   '<i>' . $organism->species . '</i>'
 );
 
@@ -56,7 +63,7 @@ $rows[] = array(
 // abbreviation row
 $rows[] = array(
   array(
-    'data' => 'Abbreviation', 
+    'data' => 'Abbreviation',
     'header' => TRUE
   ),
   $organism->abbreviation
@@ -79,23 +86,23 @@ if (user_access('view ids')) {
 }
 
 // the $table array contains the headers and rows array as well as other
-// options for controlling the display of the table.  Additional 
+// options for controlling the display of the table.  Additional
 // documentation can be found here:
 // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
 $table = array(
-  'header' => $headers, 
-  'rows' => $rows, 
+  'header' => $headers,
+  'rows' => $rows,
   'attributes' => array(
     'id' => 'tripal_organism-table-base',
     'class' => 'tripal-organism-data-table tripal-data-table',
-  ), 
+  ),
   'sticky' => FALSE,
   'caption' => '',
-  'colgroups' => array(), 
-  'empty' => '', 
-); 
+  'colgroups' => array(),
+  'empty' => '',
+);
 
 // once we have our table array structure defined, we call Drupal's theme_table()
 // function to generate the table.
 print theme_table($table); ?>
-<div style="text-align: justify"><?php print $image . $organism->comment?></div>  
+<div style="text-align: justify"><?php print $image . $organism->comment?></div>

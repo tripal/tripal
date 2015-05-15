@@ -226,7 +226,7 @@ function tripal_get_cvterm($identifiers, $options = array()) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
     $cvterm = chado_get_record_with_property(
-      array('table' => 'cvterm', 'base_records' => $identifiers), 
+      array('table' => 'cvterm', 'base_records' => $identifiers),
       array('type_name' => $property),
       $options
     );
@@ -277,7 +277,7 @@ function tripal_get_cvterm($identifiers, $options = array()) {
  *
  * @param $cv_id
  *   The chado cv_id; only cvterms with the supplied cv_id will be returned
- *   
+ *
  * @return
  *   An associative array with the cvterm_id's as keys. The first
  *   element in the array has a key of '0' and a value of 'Select a Type'
@@ -289,7 +289,7 @@ function tripal_get_cvterm_select_options($cv_id) {
   $values = array('cv_id' => $cv_id);
   $s_options = array('order_by' => array('name' => 'ASC'));
 
-  $cvterms = chado_select_record('cvterm', $columns, $values, $s_options); 
+  $cvterms = chado_select_record('cvterm', $columns, $values, $s_options);
 
   $options = array();
   $options[0] = 'Select a Type';
@@ -818,8 +818,8 @@ function tripal_submit_obo_job($obo) {
 
 /**
  * Add the OBO to the tripal_cv_obo table in the Drupal database.
- * 
- * If the OBO name already exists in the table then the path is updated. 
+ *
+ * If the OBO name already exists in the table then the path is updated.
  *
  * @param $name
  *   The human readable name of this ontology
@@ -838,7 +838,7 @@ function tripal_insert_obo($name, $path) {
     ->condition('name', $name)
     ->execute()
     ->fetchField();
-  
+
   if ($obo_id) {
     db_update('tripal_cv_obo')
       ->fields(array(
@@ -896,8 +896,8 @@ function tripal_autocomplete_cvterm($cv_id, $string = '') {
  * @param $record_id
  *   The primary key of the basetable to associate the cvterm with. This should be in integer.
  * @param $cvterm
- *   An associative array describing the cvterm. Valid keys include: 
- *     - name: the name for the cvterm, 
+ *   An associative array describing the cvterm. Valid keys include:
+ *     - name: the name for the cvterm,
  *     - cv_name: the name of the cv the cvterm belongs to.
  *     - cv_id: the primary key of the cv the cvterm belongs to.
  * @param $options
@@ -920,7 +920,7 @@ function tripal_associate_cvterm($basetable, $record_id, $cvterm, $options = arr
     );
     if (isset($cvterm['cv_id'])) {
       $values['cv_id'] = $cvterm['cv_id'];
-    } 
+    }
     elseif (isset($cvterm['cv_name'])) {
       $values['cv_id'] = array(
         'name' => $cvterm['cv_name']
@@ -964,7 +964,7 @@ function tripal_associate_cvterm($basetable, $record_id, $cvterm, $options = arr
       return FALSE;
     }
   }
-  
+
   // Now add the link between the record & cvterm
   if ($cvterm['cvterm_id'] > 0) {
     $values = array(
