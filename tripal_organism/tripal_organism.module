@@ -96,6 +96,12 @@ function tripal_organism_menu() {
     'access arguments' => array('administer tripal organism'),
     'type' => MENU_CALLBACK,
   );
+  $items['admin/tripal/chado/tripal_organism/organism/auto_name/%'] = array(
+    'page callback' => 'tripal_autocomplete_organism',
+    'page arguments' => array(6),
+    'access arguments' => array('administer tripal phylotree'),
+    'type' => MENU_CALLBACK,
+  );
 
 
   return $items;
