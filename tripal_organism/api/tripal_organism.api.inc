@@ -182,7 +182,7 @@ function tripal_get_organism_select_options($syncd_only = TRUE) {
  */
 function tripal_get_organism_image_url($organism) {
   $url = '';
-  
+
   if (!is_object($organism)) {
     return NULL;
   }
@@ -230,3 +230,40 @@ function tripal_get_organism_image_url($organism) {
   return NULL;
 }
 
+/**
+ * This function is intended to be used in autocomplete forms
+ * for searching for organisms that begin with the provided string
+ *
+ * @param $text
+ *   The string to search for
+ *
+ * @return
+ *   A json array of terms that begin with the provided string
+ *
+ * @ingroup tripal_organism_api
+ */
+function tripal_autocomplete_organism($text) {
+  $matches = array();
+  $genus = $text;
+  $species = '';
+  if (preg_match('/^(.*?) (.*)$/', $text, $matches)) {
+    $genus = $matches[1];
+    $species = $matches[2];
+  }
+  $sql = "SELECT * FROM {organism} WHERE lower(genus) like lower(:genus) ";
+  $args = array();
+  $args[':genus'] = $genus . '%';
+  if ($species) {
+    $sql .= "AND lower(species) like lower(:species) ";
+    $args[':species'] =  $species . '%';
+  }
+  $sql .= "ORDER BY genus, species ";
+  $sql .= "LIMIT 25 OFFSET 0 ";
+  $results = chado_query($sql, $args);
+  $items = array();
+  foreach ($results as $organism) {
+    $name = $organism->genus . ' ' .$organism->species;
+    $items[$name] = $name;
+  }
+  drupal_json_output($items);
+}

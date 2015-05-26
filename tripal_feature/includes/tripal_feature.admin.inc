@@ -56,7 +56,7 @@ function tripal_feature_admin() {
     'options' => array(
       '[feature.name]' => 'Feature Name Only',
       '[feature.uniquename]' => 'Feature Unique Name Only',
-        // there should always be one options matching the unique constraint.
+      // there should always be one options matching the unique constraint.
       '[feature.name], [feature.uniquename] ([feature.type_id>cvterm.name]) [feature.organism_id>organism.genus] [feature.organism_id>organism.species]' => 'Unique Contraint: Includes the name, uniquename, type and scientific name'
     ),
     // the token indicating the unique constraint in the options array
