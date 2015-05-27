@@ -95,7 +95,10 @@ function tripal_library_admin_defaultviews_library() {
   $handler->display->display_options['access']['perm'] = 'access chado_library content';
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
-  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['exposed_form']['type'] = 'input_required';
+  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Search';
+  $handler->display->display_options['exposed_form']['options']['text_input_required'] = 'Click search to see a listing of libraries that meet the filter requirements. Use the filters to restrict this set to a more reasonable number of libraries or to find a specific library.';
+  $handler->display->display_options['exposed_form']['options']['text_input_required_format'] = 'full_html';
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '25';
   $handler->display->display_options['pager']['options']['offset'] = '0';
@@ -258,7 +261,6 @@ function tripal_library_admin_defaultviews_library() {
   $handler->display->display_options['filters']['type_id']['id'] = 'type_id';
   $handler->display->display_options['filters']['type_id']['table'] = 'library';
   $handler->display->display_options['filters']['type_id']['field'] = 'type_id';
-  $handler->display->display_options['filters']['type_id']['value'] = 'All';
   $handler->display->display_options['filters']['type_id']['group'] = '0';
   $handler->display->display_options['filters']['type_id']['exposed'] = TRUE;
   $handler->display->display_options['filters']['type_id']['expose']['operator_id'] = 'type_id_op';
