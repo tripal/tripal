@@ -48,19 +48,21 @@ function tripal_feature_requirements($phase) {
  * @ingroup tripal_feature
  */
 function tripal_feature_install() {
-  // create the module's data directory
+  // Create the module's data directory.
   tripal_create_files_dir('tripal_feature');
 
-  // add the materialized view
+  // Add the materialized view.
   tripal_feature_add_organism_count_mview();
 
-  // create the temp table we will use for loading GFF files
-  tripal_cv_create_tripal_gff_temp();
+  // Add the custom tables.
+  tripal_feature_add_tripal_gff_temp_table();
+  tripal_feature_add_tripal_gffcds_temp_table();
+  tripal_feature_add_tripal_gffprotein_temp_table();
 
-  // add the vocabularies used by the feature module:
+  // Add the vocabularies used by the feature module.
   tripal_feature_add_cvs();
 
-  // set the default vocabularies
+  // Set the default vocabularies.
   tripal_set_default_cv('feature', 'type_id', 'sequence');
   tripal_set_default_cv('featureprop', 'type_id', 'feature_property');
   tripal_set_default_cv('feature_relationship', 'type_id', 'feature_relationship');
@@ -75,36 +77,117 @@ function tripal_feature_uninstall() {
 
 }
 
+function tripal_feature_add_tripal_gff_temp_table() {
+  $schema = array(
+    'table' => 'tripal_gff_temp',
+    'fields' => array(
+      'feature_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'organism_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'uniquename' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'type_name' => array(
+        'type' => 'varchar',
+        'length' => '1024',
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'tripal_gff_temp_idx0' => array('feature_id'),
+      'tripal_gff_temp_idx0' => array('organism_id'),
+      'tripal_gff_temp_idx1' => array('uniquename'),
+    ),
+    'unique keys' => array(
+      'tripal_gff_temp_uq0' => array('feature_id'),
+      'tripal_gff_temp_uq1' => array('uniquename', 'organism_id', 'type_name'),
+    ),
+  );
+  chado_create_custom_table('tripal_gff_temp', $schema, TRUE);
+}
+
 /**
- * Create a temporary table used for loading gff3 files
  *
- * @ingroup tripal_feature
  */
-function tripal_cv_create_tripal_gff_temp() {
-  // the tripal_obo_temp table is used for temporary housing of records when loading OBO files
-  // we create it here using plain SQL because we want it to be in the chado schema but we
-  // do not want to use the Tripal Custom Table API because we don't want it to appear in the
-  // list of custom tables.  It needs to be available for the Tripal Chado API so we create it
-  // here and then define it in the tripal_cv/api/tripal_cv.schema.api.inc
-  if (!db_table_exists('chado.tripal_gff_temp')) {
-    $sql = "
-      CREATE TABLE {tripal_gff_temp} (
-        feature_id integer NOT NULL,
-        organism_id integer NOT NULL,
-        uniquename text NOT NULL,
-        type_name character varying(1024) NOT NULL,
-        CONSTRAINT tripal_gff_temp_uq0 UNIQUE (feature_id),
-        CONSTRAINT tripal_gff_temp_uq1 UNIQUE (uniquename, organism_id, type_name)
-      );
-    ";
-    chado_query($sql);
-    $sql = "CREATE INDEX tripal_gff_temp_idx0 ON {tripal_gff_temp} USING btree (feature_id)";
-    chado_query($sql);
-    $sql = "CREATE INDEX tripal_gff_temp_idx1 ON {tripal_gff_temp} USING btree (organism_id)";
-    chado_query($sql);
-    $sql = "CREATE INDEX tripal_gff_temp_idx2 ON {tripal_gff_temp} USING btree (uniquename)";
-    chado_query($sql);
-  }
+function tripal_feature_add_tripal_gffcds_temp_table() {
+  $schema = array(
+    'table' => 'tripal_gffcds_temp',
+    'fields' => array(
+      'feature_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'parent_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'phase' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'strand' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'fmin' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'fmax' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'tripal_gff_temp_idx0' => array('feature_id'),
+      'tripal_gff_temp_idx0' => array('parent_id'),
+    ),
+    'unique keys' => array(
+      'tripal_gff_temp_uq0' => array('feature_id'),
+    ),
+  );
+  chado_create_custom_table('tripal_gffcds_temp', $schema, TRUE);
+}
+
+/**
+ *
+ */
+function tripal_feature_add_tripal_gffprotein_temp_table() {
+  $schema = array(
+    'table' => 'tripal_gffprotein_temp',
+    'fields' => array(
+      'feature_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'parent_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'fmin' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'fmax' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'tripal_gff_temp_idx0' => array('feature_id'),
+      'tripal_gff_temp_idx0' => array('parent_id'),
+    ),
+    'unique keys' => array(
+      'tripal_gff_temp_uq0' => array('feature_id'),
+    ),
+  );
+  chado_create_custom_table('tripal_gffprotein_temp', $schema, TRUE);
 }
 
 /**
@@ -412,4 +495,13 @@ function tripal_feature_update_7201() {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to complete update' . $error);
   }
+}
+
+/**
+ * Adds the temporary tables used for loading GFF files.
+ */
+function tripal_feature_update_7202() {
+  tripal_feature_add_tripal_gff_temp_table();
+  tripal_feature_add_tripal_gffcds_temp_table();
+  tripal_feature_add_tripal_gffprotein_temp_table();
 }
