@@ -95,7 +95,10 @@ function tripal_project_defaultview_admin_projects() {
   $handler->display->display_options['access']['perm'] = 'administer tripal project';
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
-  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['exposed_form']['type'] = 'input_required';
+  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Search';
+  $handler->display->display_options['exposed_form']['options']['text_input_required'] = 'Click search to see a listing of projects that meet the filter requirements. Use the filters to restrict this set to a more reasonable number of projects or to find a specific project.';
+  $handler->display->display_options['exposed_form']['options']['text_input_required_format'] = 'full_html';
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '25';
   $handler->display->display_options['style_plugin'] = 'table';
