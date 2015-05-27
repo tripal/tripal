@@ -365,10 +365,10 @@ function chado_stock_validate(&$node, $form, &$form_state) {
 
   // if this is an insert then we just need to make sure this name doesn't
   // already exist for this organism if it does then we need to throw an error
-  else {
+  elseif (!empty($node->organism_id) AND !empty($node->type_id)) {
     $sql = "
       SELECT *
-      FROM {Stock} S
+      FROM {stock} S
         INNER JOIN {cvterm} CVT ON S.type_id = CVT.cvterm_id
       WHERE uniquename = :uname AND organism_id = :organism_id AND CVT.name = :cvtname";
     $result = chado_query($sql, array(':uname' => $node->uniquename,
