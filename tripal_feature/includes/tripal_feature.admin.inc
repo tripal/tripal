@@ -36,6 +36,75 @@ function tripal_feature_admin_feature_view() {
     $output .= '</ul>';
   }
 
+  // Add a summary chart.
+  $organism_feature_count = chado_select_record(
+    'organism_feature_count',
+    array('*'),
+    array(),
+    array('order_by' => array('genus' => 'ASC', 'species' => 'ASC', 'feature_type' => 'ASC', 'num_features' => 'DESC'))
+  );
+  $summary = array();
+  $organisms = array();
+  $types = array();
+  $chart = array();
+  foreach ($organism_feature_count as $row) {
+
+    $summary[$row->organism_id][$row->cvterm_id] = $row->num_features;
+
+    $organisms[$row->organism_id]['organism_id'] = $row->organism_id;
+    $organisms[$row->organism_id]['genus'] = $row->genus;
+    $organisms[$row->organism_id]['species'] = $row->species;
+    $organisms[$row->organism_id]['common_name'] = $row->common_name;
+    $organisms[$row->organism_id]['scientific_name'] = $row->genus . ' ' . $row->species;
+    $organisms[$row->organism_id]['total_features'] = (isset($organisms[$row->organism_id]['total_features'])) ? $organisms[$row->organism_id]['total_features'] + $row->num_features : $row->num_features;
+
+    $types[$row->cvterm_id]['cvterm_id'] = $row->cvterm_id;
+    $types[$row->cvterm_id]['name'] = $row->feature_type;
+    $types[$row->cvterm_id]['total_features'] = (isset($types[$row->cvterm_id]['total_features'])) ? $types[$row->cvterm_id]['total_features'] + $row->num_features : $row->num_features;
+
+
+    $chart[$row->cvterm_id]['cvterm_id'] = $row->cvterm_id;
+    $chart[$row->cvterm_id]['name'] = $row->feature_type;
+    $chart[$row->cvterm_id]['max_features'] = (isset($types[$row->cvterm_id]['max_features'])) ? max($types[$row->cvterm_id]['max_features'], $row->num_features) : $row->num_features;
+    $chart[$row->cvterm_id]['organisms'][] = array(
+      'name' => $row->genus . ' ' . $row->species,
+      'value' => (int) $row->num_features
+    );
+    $type_names[$row->cvterm_id] = $row->feature_type;
+    $organism_names[$row->organism_id] = $row->genus . ' ' . $row->species;
+  }
+
+  // Quick processing of the organisms array per type
+  // to build-up the stacked bars.
+  foreach ($chart as $type_id => $bar) {
+    $y0 = 0;
+    $y1 = 0;
+    $chart[$type_id]['bars'] = array();
+    foreach ($bar['organisms'] as $k => $org) {
+      $y0 = $y1;
+      $y1 = $y0 + $org['value'];
+      $chart[$type_id]['bars'][$k]['name'] = $org['name'];
+      $chart[$type_id]['bars'][$k]['y0'] = $y0;
+      $chart[$type_id]['bars'][$k]['y1'] = $y1;
+    }
+    $chart[$type_id]['total_features'] = $y1;
+  }
+
+  $variables['organisms'] = $organisms;
+  $variables['types'] = $types;
+
+  // Sort based on the total number of features.
+  // NOTE: This changes the keys so it's no longer the organism/type_id.
+  usort($chart, 'tripal_feature_admin_summary_sort');
+  sort($type_names);
+  sort($organism_names);
+
+  drupal_add_js('http://d3js.org/d3.v3.min.js');
+  drupal_add_js('http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js');
+  drupal_add_js(drupal_get_path('module','tripal_feature') . '/theme/js/tripalFeature.adminChart.js');
+  drupal_add_js(array('tripalFeature' => array('admin' => array('summary' => $chart, 'types' => $type_names, 'organisms' => $organism_names))), 'setting');
+  drupal_add_css(drupal_get_path('module','tripal_feature') . '/theme/css/tripal_feature.css');
+
   return $output;
 }
 
@@ -158,4 +227,13 @@ function tripal_feature_admin_validate($form, &$form_state) {
 
   }
 
+}
+
+/**
+ * USort function for the admin summary chart.
+ * Not meant to be called directly.
+ */
+function tripal_feature_admin_summary_sort($a, $b) {
+  if ($a['total_features'] == $b['total_features']) return 0;
+  return $b['total_features'] - $a['total_features'];
 }
