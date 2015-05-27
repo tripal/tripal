@@ -313,6 +313,24 @@ function tripal_core_menu() {
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );
+  // TODO: complete the code for exporting and importing of MViews.
+  // Need to address security issues of sharing SQL.
+  $items['admin/tripal/schema/mviews/import'] = array(
+    'title' => 'Import MView',
+    'description' => 'Import a materialized view from another Tripal instance.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_mviews_import_form'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/schema/mviews/%tblid/export'] = array(
+    'title' => 'Export MView',
+    'description' => 'Export a materialized view for use by another Tripal instance.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_mviews_export_form', 5),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
 
   // Custom Tables
   $items['admin/tripal/schema/custom_tables'] = array(

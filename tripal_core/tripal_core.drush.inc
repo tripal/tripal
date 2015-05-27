@@ -21,7 +21,7 @@
  */
 function tripal_core_drush_help($command) {
   switch ($command) {
-    
+
     // TRIPAL JOBS
     case 'trp-run-jobs':
       return dt('Launches pending jobs waiting in the queue.');
@@ -101,14 +101,16 @@ function tripal_core_drush_command() {
   $items['trp-run-jobs'] = array(
     'description' => dt('Launches jobs waiting in the queue. Only one job can execute at a time unless the --parllel=1 option is provided.'),
     'examples' => array(
-      'Single Job' => 'drush trp-run-jobs --user=administrator',
-      'Parallel Job' => 'drush trp-run-jobs --user=administrator --parallel=1'
+      'Single Job' => 'drush trp-run-jobs --username=administrator',
+      'Parallel Job' => 'drush trp-run-jobs --username=administrator --parallel=1'
     ),
     'arguments' => array(),
     'options' => array(
       'user' => array(
+        'description' => dt('DEPRECATED. Conflicts with Drush 7.x --user argument. Please use the --username argument.'),
+      ),
+      'username' => array(
         'description' => dt('The Drupal user name for which the job should be run.  The permissions for this user will be used.'),
-        'required' => TRUE,
       ),
       'parallel' => dt('Normally jobs are executed one at a time. But if you are certain no conflicts will occur with other currently running jobs you may set this argument to a value of 1 to make the job run in parallel with other running jobs.'),
       'job_id' => dt('Provide a job_id to run a specific job. Only jobs that have not been run already can be used'),
@@ -117,14 +119,16 @@ function tripal_core_drush_command() {
   $items['trp-rerun-job'] = array(
     'description' => dt('Re-run a specific job from the queue.'),
     'examples' => array(
-      'Single Job' => 'drush trp-rerun-job --user=administrator --job_id=2',
-      'Parallel Job' => 'drush trp-rerun-job --user=administrator  --job_id=2 --parallel=1'
+      'Single Job' => 'drush trp-rerun-job --username=administrator --job_id=2',
+      'Parallel Job' => 'drush trp-rerun-job --username=administrator  --job_id=2 --parallel=1'
     ),
     'arguments' => array(),
     'options' => array(
       'user' => array(
+        'description' => dt('DEPRECATED. Conflicts with Drush 7.x --user argument. Please use the --username argument.'),
+      ),
+      'username' => array(
         'description' => dt('The Drupal user name for which the job should be run.  The permissions for this user will be used.'),
-        'required' => TRUE,
       ),
       'job_id' => array(
         'description' => dt('The job ID to run.'),
@@ -199,7 +203,7 @@ function tripal_core_drush_command() {
       'Parallel Job' => 'drush tripal-jobs-launch admin --parallel=1'
     ),
     'arguments' => array(
-      'user' => dt('The Drupal username under which the job should be run.  The permissions for this user will be used.'),
+      'username' => dt('The Drupal username under which the job should be run.  The permissions for this user will be used.'),
     ),
     'options' => array(
       'parallel' => dt('Normally jobs are executed one at a time. But if you are certain no conflicts will occur with other currently running jobs you may set this argument to a value of 1 to make the job run in parallel with other running jobs.'),
@@ -214,7 +218,7 @@ function tripal_core_drush_command() {
       'Parallel Job' => 'drush tripal-jobs-rerun admin  2 --parallel=1'
     ),
     'arguments' => array(
-      'user' => dt('The Drupal username under which the job should be run.  The permissions for this user will be used.'),
+      'username' => dt('The Drupal username under which the job should be run.  The permissions for this user will be used.'),
       'job_id' => dt('The job ID to run.'),
     ),
     'options' => array(
@@ -269,7 +273,7 @@ function drush_tripal_core_set_user($username) {
     $results = db_query($sql, array(':name' => $username));
     $u = $results->fetchObject();
     if (!$u) {
-      drush_print('ERROR: Please provide a valid username for running this job.');
+      drush_print('ERROR: Please provide a valid username (--username argument) for running this job.');
       exit;
     }
     global $user;
@@ -277,7 +281,7 @@ function drush_tripal_core_set_user($username) {
     return $u->uid;
   }
   else {
-    drush_print('ERROR: Please provide a username for running this job.');
+    drush_print('ERROR: Please provide a username (--username argument) for running this job.');
     exit;
   }
 }
@@ -290,9 +294,24 @@ function drush_tripal_core_set_user($username) {
  * @ingroup tripal_drush
  */
 function drush_tripal_core_trp_run_jobs() {
-  $username = drush_get_option('user');
   $parallel = drush_get_option('parallel');
   $job_id   = drush_get_option('job_id');
+
+  // Unfortunately later versions of Drush use the '--user' argument which
+  // makes it incompatible with how Tripal was using it.  For backwards
+  // compatabiliy we will accept --user with a non numeric value only. The
+  // numeric value should be for Drush. Tripal will instead use the
+  // --username argument for the fture.
+  $user = drush_get_option('user');
+  $uname = drush_get_option('username');
+  if ($user and is_numeric($user)) {
+  }
+  elseif ($user) {
+    $username = $user;
+  }
+  if ($uname) {
+    $username = $uname;
+  }
 
   drush_tripal_core_set_user($username);
 
@@ -321,7 +340,7 @@ function drush_tripal_core_tripal_jobs_launch($username) {
   $job_id = drush_get_option('job_id');
 
   drush_tripal_core_set_user($username);
-  
+
   drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will ".
     "continue to work but please consider using the 'trp-run-jobs' command.\n\n");
 
@@ -347,10 +366,26 @@ function drush_tripal_core_tripal_jobs_launch($username) {
  * @ingroup tripal_drush
  */
 function drush_tripal_core_trp_rerun_job() {
-  $username = drush_get_option('user');
+  // Unfortunately later versions of Drush use the '--user' argument which
+  // makes it incompatible with how Tripal was using it.  For backwards
+  // compatabiliy we will accept --user with a non numeric value only. The
+  // numeric value should be for Drush. Tripal will instead use the
+  // --username argument for the fture.
+  $user = drush_get_option('user');
+  $uname = drush_get_option('username');
+  print "USER: '$user', UNAME: '$uname'\n";
+  if ($user and is_numeric($user)) {
+  }
+  elseif ($user) {
+    $username = $user;
+  }
+  if ($uname) {
+    $username = $uname;
+  }
+
   $parallel = drush_get_option('parallel');
   $job_id   = drush_get_option('job_id');
-  
+
   drush_tripal_core_set_user($username);
   $new_job_id = tripal_rerun_job($job_id, FALSE);
 
@@ -377,10 +412,10 @@ function drush_tripal_core_trp_rerun_job() {
  * @ingroup tripal_drush
  */
 function drush_tripal_core_tripal_jobs_rerun($username, $job_id) {
-  
+
   drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will ".
       "continue to work but please consider using the 'trp-rerun-job' command.\n\n");
-  
+
   drush_tripal_core_set_user($username);
   $new_job_id = tripal_rerun_job($job_id, FALSE);
   drush_tripal_core_tripal_jobs_launch($username, $new_job_id);
@@ -430,7 +465,7 @@ function drush_tripal_core_trp_get_currjob() {
 function drush_tripal_core_tripal_jobs_current() {
   drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will ".
       "continue to work but please consider using the 'trp-get-currjob' command.\n\n");
-  
+
   drush_tripal_core_trp_get_currjob();
 }
 
@@ -476,10 +511,10 @@ function drush_tripal_core_trp_refresh_mview() {
  * @ingroup tripal_drush
  */
 function drush_tripal_core_tripal_update_mview() {
-  
+
   $mview_id = drush_get_option('mview_id');
   $table_name = drush_get_option('table_name');
-  
+
   drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will ".
       "continue to work but please consider using the 'trp-refresh-mview' command.\n\n");
 
@@ -518,7 +553,7 @@ function drush_tripal_core_tripal_update_mview() {
 function drush_tripal_core_tripal_chado_version() {
   drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will ".
       "continue to work but please consider using the 'trp-get-cversion' command.\n\n");
-  
+
   drush_tripal_core_trp_get_cversion();
 }
 
@@ -562,7 +597,7 @@ function drush_tripal_core_trp_get_table() {
  */
 function drush_tripal_core_tripal_chadotable_desc($table_name) {
   $section = drush_get_option('section');
-  
+
   drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will ".
       "continue to work but please consider using the 'trp-get-table' command.\n\n");
 
@@ -584,7 +619,7 @@ function drush_tripal_core_tripal_chadotable_desc($table_name) {
  */
 function drush_tripal_core_trp_clean_nodes() {
   $table = drush_get_option('table');
-  
+
   chado_cleanup_orphaned_nodes($table, 0);
 }
 
