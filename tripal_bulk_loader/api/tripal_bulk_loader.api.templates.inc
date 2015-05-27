@@ -157,8 +157,12 @@ function tripal_insert_bulk_loader_template($options, &$errors, &$warnings) {
     // do nothing it's in PHP serialized format
   }
   // The typical format is JSON
-  elseif (preg_match('/^\{/', $template_array)) {
+  elseif (json_decode($template_array)) {
     $template_array = serialize(json_decode($template_array, TRUE));
+  }
+  else {
+    $errors['template_array'] = t('Unrecognized array type.');
+    return FALSE;
   }
 
   $record = array(
