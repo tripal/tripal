@@ -108,7 +108,7 @@ function tripal_get_analysis($identifier, $options) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
     $analysis = chado_get_record_with_property(
-      array('table' => 'analysis', 'base_records' => $identifiers), 
+      array('table' => 'analysis', 'base_records' => $identifiers),
       array('type_name' => $property)
     );
   }
@@ -154,4 +154,46 @@ function tripal_get_analysis($identifier, $options) {
   else {
     return $analysis;
   }
+}
+/**
+ * Returns a list of analyses that are currently synced with Drupal to use in select lists
+ *
+ * @param $syncd_only
+ *   Whether or not to return all chado analyses or just those sync'd with drupal. Defaults
+ *   to TRUE (only sync'd analyses)
+ * @return
+ *   An array of analyses sync'd with Drupal where each value is the analysis scientific
+ *   name and the keys are analysis_id's
+ *
+ * @ingroup tripal_analysis_api
+ */
+function tripal_get_analysis_select_options($syncd_only = TRUE) {
+  $analysis_list = array();
+  $analysis_list[] = 'Select an analysis';
+
+  if ($syncd_only) {
+    $sql = "
+      SELECT *
+      FROM public.chado_analysis CA
+        INNER JOIN {analysis} A ON A.analysis_id = CO.analysis_id
+      ORDER BY A.name
+    ";
+    $orgs = chado_query($sql);
+
+    // iterate through the analyses and build an array of those that are synced
+    foreach ($analyses as $analysis) {
+      $analysis_list[$analysis->analysis_id] = $analysis->name;
+    }
+  }
+  else {
+    // use this SQL statement for getting the analyses
+    $csql =  "SELECT * FROM {analysis} ORDER BY name";
+    $analyses = chado_query($csql);
+
+    // iterate through the analyses and build an array of those that are synced
+    foreach ($analyses as $analysis) {
+      $analysis_list[$analysis->analysis_id] = $analysis->name;
+    }
+  }
+  return $analysis_list;
 }

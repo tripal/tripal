@@ -10,14 +10,6 @@
  * @ingroup tripal_feature
  */
 function tripal_feature_delete_form() {
-  // get the list of organisms
-  $sql = "SELECT * FROM {organism} ORDER BY genus, species";
-  $org_rset = chado_query($sql);
-  $organisms = array();
-  $organisms[''] = '';
-  while ($organism = $org_rset->fetchObject()) {
-    $organisms[$organism->organism_id] = "$organism->genus $organism->species ($organism->common_name)";
-  }
   $form['desc'] = array(
     '#markup' => t("Use one or more of the following fields to identify sets of features to be deleted."),
   );
@@ -35,12 +27,15 @@ function tripal_feature_delete_form() {
     '#description' => t('Select this checbox if the names listed in the feature
       names box above are the unique name of the feature rather than the human readable names.'),
   );
+  $cv = tripal_get_cv(array('name' => 'sequence'));
   $form['seq_type']= array(
-    '#type' => 'textfield',
-    '#title' => t('Sequence Type'),
-    '#description' => t('Please enter the Sequence Ontology term that describes the features to be deleted. Use in conjunction with an organism or anaylysis.'),
+   '#title'       => t('Feature Type'),
+   '#type'        => 'textfield',
+   '#description' => t("Choose the feature type."),
+   '#autocomplete_path' => "admin/tripal/chado/tripal_cv/cvterm/auto_name/$cv->cv_id",
   );
 
+  $organisms = tripal_get_organism_select_options(FALSE);
   $form['organism_id'] = array(
    '#title'       => t('Organism'),
    '#type'        => 'select',
@@ -48,23 +43,13 @@ function tripal_feature_delete_form() {
    '#options'     => $organisms,
   );
 
-
-  // get the list of analyses
-  $sql = "SELECT * FROM {analysis} ORDER BY name";
-  $org_rset = chado_query($sql);
-  $analyses = array();
-  $analyses[''] = '';
-  while ($analysis = $org_rset->fetchObject()) {
-    $analyses[$analysis->analysis_id] = "$analysis->name ($analysis->program $analysis->programversion, $analysis->sourcename)";
-  }
-  //  TODO: ADD THIS BACK IN LATER
-  //
-  //   $form['analysis']['analysis_id'] = array (
-  //     '#title'       => t('Analysis'),
-  //     '#type'        => t('select'),
-  //     '#description' => t("Choose the analysis for which associated features will be deleted."),
-  //     '#options'     => $analyses,
-  //   );
+  $analyses = tripal_get_analysis_select_options(FALSE);
+  $form['analysis_id'] = array (
+    '#title'       => t('Analysis'),
+    '#type'        => t('select'),
+    '#description' => t("Choose the analysis for which associated features will be deleted."),
+    '#options'     => $analyses,
+  );
 
   $form['button'] = array(
     '#type' => 'submit',
@@ -81,29 +66,12 @@ function tripal_feature_delete_form() {
 function tripal_feature_delete_form_validate($form, &$form_state) {
   $organism_id   = $form_state['values']['organism_id'];
   $seq_type      = trim($form_state['values']['seq_type']);
-  //$analysis_id   = $form_state['values']['analysis_id'];
+  $analysis_id   = $form_state['values']['analysis_id'];
   $is_unique     = $form_state['values']['is_unique'];
   $feature_names = $form_state['values']['feature_names'];
 
-  if (!$organism_id and !$seq_type and !$feature_names) { // !$anaysis_id and
+  if (!$analysis_id and !$organism_id and !$seq_type and !$feature_names) {
     form_set_error('feature_names', t("Please select at least one option"));
-  }
-
-  // check to make sure the types exists
-  if ($seq_type) {
-    $cvtermsql = "
-      SELECT CVT.cvterm_id
-      FROM {cvterm} CVT
-        INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
-        LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
-      WHERE cv.name = :cvname and (CVT.name = :name or CVTS.synonym = :synonym)
-    ";
-    $cvterm = chado_query($cvtermsql,
-      array(':cvname' => 'sequence', ':name' => $seq_type, ':synonym' => $seq_type))->fetchObject();
-    if (!$cvterm) {
-      form_set_error('seq_type', t("The Sequence Ontology (SO) term selected for the " .
-      "sequence type is not available in the database. Please check spelling or select another."));
-    }
   }
 }
 
@@ -117,13 +85,11 @@ function tripal_feature_delete_form_submit($form, &$form_state) {
 
   $organism_id   = $form_state['values']['organism_id'];
   $seq_type      = trim($form_state['values']['seq_type']);
-  //$analysis_id   = $form_state['values']['analysis_id'];
+  $analysis_id   = $form_state['values']['analysis_id'];
   $is_unique     = $form_state['values']['is_unique'];
   $feature_names = $form_state['values']['feature_names'];
-  $analysis_id = NULL;
 
   $args = array($organism_id, $analysis_id, $seq_type, $is_unique, $feature_names);
-
   tripal_add_job("Delete features", 'tripal_feature',
     'tripal_feature_delete_features', $args, $user->uid);
 }
@@ -153,21 +119,14 @@ function tripal_feature_delete_features($organism_id, $analysis_id, $seq_type,
   global $user;
   $match = array();
 
-  // Deleting of features will cause a cascade delete on the
-  // featureloc table which in turn will wind up calling create_point
-  // function which is not prefix with the schema, and an error occurs.
-  // Therefore, we set the active database to chado to get around that
-  // problem.
-  $previous_db = chado_set_active('chado');
-  
-  // begin the transaction
+  // Begin the transaction.
   $transaction = db_transaction();
   print "\nNOTE: Deleting features is performed using a database transaction. \n" .
       "If the load fails or is terminated prematurely then the entire set of \n" .
       "deletions is rolled back and will not be found in the database\n\n";
   try {
 
-    // if feature names have been provided then handle that separately
+    // If feature names have been provided then handle those
     if ($feature_names) {
       $names = preg_split('/\s+/', $feature_names);
       if (sizeof($names) == 1) {
@@ -181,33 +140,59 @@ function tripal_feature_delete_features($organism_id, $analysis_id, $seq_type,
       }
       $num_deletes = chado_select_record('feature', array('count(*) as cnt'), $match);
       print "Deleting " . $num_deletes[0]->cnt . " features\n";
-      
+
       chado_delete_record('feature', $match);
+      return;
     }
-  
-    // if the user has provided an analysis_id then handle that separately
-    elseif ($analysis_id) {
-      tripal_feature_delete_by_analysis();
+
+    // Now handle the combintation of all other inputs.
+    $args = array();
+    $sql = "";
+    $join = '';
+    $where = '';
+    if ($analysis_id) {
+      $join .= 'INNER JOIN {analysisfeature} AF on F.feature_id = AF.feature_id ';
+      $join .= 'INNER JOIN {analysis} A on A.analysis_id = AF.analysis_id ';
+      $where .= 'AND A.analysis_id = :analysis_id ';
+      $args[':analysis_id'] = $analysis_id;
     }
-    else {
-  
-      if ($organism_id) {
-        $match['organism_id'] = $organism_id;
-      }
-      if ($seq_type) {
-        $match['type_id'] = array(
-          'name' => $seq_type,
-          'cv_id' => array(
-            'name' => 'sequence'
-          ),
-        );
-      }
-      $num_deletes = chado_select_record('feature', array('count(*) as cnt'), $match);
-      print "Deleting " . $num_deletes[0]->cnt . " features\n";
-      chado_delete_record('feature', $match);
+    if ($organism_id) {
+      $where .= 'AND F.organism_id = :organism_id ';
+      $args[':organism_id'] = $organism_id;
     }
-  
-    print "Removing orphaned feature pages\n";
+    if ($seq_type) {
+      $join .= 'INNER JOIN {cvterm} CVT ON CVT.cvterm_id = F.type_id';
+      $where .= 'AND CVT.name = :type_name';
+      $args[':type_name'] = $seq_type;
+    }
+
+    // Do not perform a delete if we have no additions to the where clause
+    // otherwise all features will be deleted and this is probably not what
+    // is wanted.
+    if (!$where) {
+      throw new Exception('Cannot delete features as no filters are available');
+    }
+    // First, count the number of records to be deleted
+    $sql = "
+      SELECT count(F.feature_id)
+      FROM {feature} F
+        $join
+      WHERE 1=1 $where
+    ";
+    $num_deleted = chado_query($sql, $args)->fetchField();
+    // Second, delete the records.
+    $sql = "
+      DELETE FROM {feature} WHERE feature_id IN (
+        SELECT F.feature_id
+        FROM {feature} F
+          $join
+        WHERE 1=1 $where
+      )
+    ";
+    chado_query($sql, $args);
+    print "Deletiong completed successfully. Deleted $num_deleted feature(s).\n";
+
+    print "Now removing orphaned feature pages\n";
     chado_cleanup_orphaned_nodes('feature');
   }
   catch (Exception $e) {
@@ -217,33 +202,6 @@ function tripal_feature_delete_features($organism_id, $analysis_id, $seq_type,
     watchdog_exception('tripal_feature', $e);
     return 0;
   }
-  chado_set_active($previous_db);
   print "\nDone\n";
 }
 
-/**
- * Function to delete features based on an analysis passed in. This has not yet been
- * implemented in the form
- *
- * @todo: Implement this functionality and then add back in the form field
- *
- * @param $organism_id
- *   (Optional) The organism_id of the features to delete
- * @param $analysis_id
- *   (Optional) The analysis_id of the features to delete
- * @param $seq_type
- *   (Optional) The cvterm.name of the feature types to delete
- * @param $is_unique
- *   (Optional) A Boolean stating whether the names are unique (ie: feature.uniquename)
- *   or not (ie: feature.name)
- * @param $feature_names
- *   (Optional) A space separated list of the names of features to delete
- * @param $job
- *   The tripal_job id
- *
- * @ingroup tripal_feature
- */
-function tripal_feature_delete_by_analysis($organism_id, $analysis_id, $seq_type,
-  $is_unique, $feature_names, $job = NULL) {
-
-}

@@ -125,20 +125,26 @@ function tripal_feature_gff3_load_form() {
                          database will not be altered.'),
     '#default_value' => 1,
   );
-  $form['import_options']['refresh']= array(
-    '#type' => 'checkbox',
-    '#title' => t('Import all and replace'),
-    '#required' => FALSE,
-    '#description' => t('Existing features will be updated and feature properties not
-                         present in the GFF file will be removed.'),
-  );
-  $form['import_options']['remove']= array(
-    '#type' => 'checkbox',
-    '#title' => t('Delete features'),
-    '#required' => FALSE,
-    '#description' => t('Features present in the GFF file that exist in the database
-                         will be removed rather than imported'),
-  );
+// SPF: there are bugs in refreshing and removing features.  The bugs arise
+//      if a feature in the GFF does not have a uniquename. GenSAS will auto
+//      generate this uniquename and it will not be the same as a previous
+//      load because it uses the date.  This causes orphaned CDS/exons, UTRs
+//      to be left behind during a delete or refresh.  So, the short term
+//      fix is to remove these options.
+//   $form['import_options']['refresh']= array(
+//     '#type' => 'checkbox',
+//     '#title' => t('Import all and replace'),
+//     '#required' => FALSE,
+//     '#description' => t('Existing features will be updated and feature properties not
+//                          present in the GFF file will be removed.'),
+//   );
+//   $form['import_options']['remove']= array(
+//     '#type' => 'checkbox',
+//     '#title' => t('Delete features'),
+//     '#required' => FALSE,
+//     '#description' => t('Features present in the GFF file that exist in the database
+//                          will be removed rather than imported'),
+//   );
   $form['import_options']['create_organism']= array(
     '#type' => 'checkbox',
     '#title' => t('Create organism'),
@@ -218,8 +224,8 @@ function tripal_feature_gff3_load_form_validate($form, &$form_state) {
   $create_organism = $form_state['values']['create_organism'];
   $add_only = $form_state['values']['add_only'];
   $update   = $form_state['values']['update'];
-  $refresh  = $form_state['values']['refresh'];
-  $remove   = $form_state['values']['remove'];
+  $refresh  = 0; //$form_state['values']['refresh'];
+  $remove   = 0; //$form_state['values']['remove'];
   $use_transaction   = $form_state['values']['use_transaction'];
   $line_number   = trim($form_state['values']['line_number']);
   $landmark_type   = trim($form_state['values']['landmark_type']);
@@ -264,8 +270,8 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
   $organism_id = $form_state['values']['organism_id'];
   $add_only = $form_state['values']['add_only'];
   $update   = $form_state['values']['update'];
-  $refresh  = $form_state['values']['refresh'];
-  $remove   = $form_state['values']['remove'];
+  $refresh  = 0; //$form_state['values']['refresh'];
+  $remove   = 0; //$form_state['values']['remove'];
   $analysis_id = $form_state['values']['analysis_id'];
   $use_transaction   = $form_state['values']['use_transaction'];
   $target_organism_id = $form_state['values']['target_organism_id'];
@@ -381,10 +387,16 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   $job = NULL) {
 
   $ret = array();
+  $date = getdate();
 
-  // empty the temp table
+  // empty the temp tables
   $sql = "DELETE FROM {tripal_gff_temp}";
   chado_query($sql);
+  $sql = "DELETE FROM {tripal_gffcds_temp}";
+  chado_query($sql);
+  $sql = "DELETE FROM {tripal_gffprotein_temp}";
+  chado_query($sql);
+
 
   // begin the transaction
   $transaction = null;
@@ -650,7 +662,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
               }
             }
             else {
-              // we found the organism in the database so use it
+              // We found the organism in the database so use it.
               $feature_organism = $org[0];
             }
           }
@@ -661,7 +673,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
             $skip_feature = 1;
           }
         }
-        // get the list of non-reserved attributes
+        // Get the list of non-reserved attributes.
         elseif (strcmp($tag_name, 'Alias') != 0        and strcmp($tag_name, 'Parent') != 0 and
                 strcmp($tag_name, 'Target') != 0       and strcmp($tag_name, 'Gap') != 0 and
                 strcmp($tag_name, 'Derives_from') != 0 and strcmp($tag_name, 'Note') != 0 and
@@ -673,49 +685,46 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           }
         }
       }
-      // if neither name nor uniquename are provided then generate one
+      // If neither name nor uniquename are provided then generate one.
       if (!$attr_uniquename and !$attr_name) {
-        // check if an alternate ID field is suggested, if so, then use
-        // that for the name
+        // Check if an alternate ID field is suggested, if so, then use
+        // that for the name.
         if (array_key_exists($alt_id_attr, $tags)) {
           $attr_uniquename = $tags[$alt_id_attr][0];
           $attr_name = $attr_uniquename;
         }
-        // if the row has a parent then generate a uniquename using the parent name
+        // If the row has a parent then generate a uniquename using the parent name
         // add the date to the name in the event there are more than one child with
         // the same parent.
         elseif (array_key_exists('Parent', $tags)) {
-          $date = getdate();
           $attr_uniquename = $tags['Parent'][0] . "-$type-$landmark-" . $date[0] . ":" . ($fmin + 1) . ".." . $fmax;
           $attr_name = $attr_uniquename;
         }
-        // generate a unique name based on the date, type and location
-        // and set the name to simply be the type
+        // Generate a unique name based on the date, type and location
+        // and set the name to simply be the type.
         else {
-          $date = getdate();
           $attr_uniquename = $date[0] . "-$type-$landmark:" . ($fmin + 1) . ".." . $fmax;
           $attr_name = $type;
         }
       }
 
-      // if a name is not specified then use the unique name as the name
+      // If a name is not specified then use the unique name as the name
       if (strcmp($attr_name, '') == 0) {
         $attr_name = $attr_uniquename;
       }
 
-      // if an ID attribute is not specified then we must generate a
+      // If an ID attribute is not specified then we must generate a
       // unique ID. Do this by combining the attribute name with the date
       // and line number.
       if (!$attr_uniquename) {
-        $date = getdate();
         $attr_uniquename = $attr_name . '-' . $date[0] . '-' . $line_num;
       }
 
-      // make sure the landmark sequence exists in the database.  If the user
-      // has not specified a landmark type (and it's not requiredin the GFF foramt)
-      // then We don't know the type of the landmark so we'll hope that it's unique across
-      // all types for the orgnaism. Only do this test if the landmark and the feature are
-      // different.
+      // Make sure the landmark sequence exists in the database.  If the user
+      // has not specified a landmark type (and it's not required in the GFF
+      // format) then we don't know the type of the landmark so we'll hope
+      // that it's unique across all types for the orgnaism. Only do this
+      // test if the landmark and the feature are different.
       if (!$remove and !(strcmp($landmark, $attr_uniquename) == 0 or strcmp($landmark, $attr_name) == 0)) {
         $select = array(
           'organism_id' => $organism->organism_id,
@@ -760,16 +769,17 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           return '';
         }
       }
-
-      // if the option is to remove or refresh then we want to remove
+/*
+      // If the option is to remove or refresh then we want to remove
       // the feature from the database.
       if ($remove or $refresh) {
+        // Next remove the feature itself.
         $sql = "DELETE FROM {feature}
                 WHERE organism_id = %d and uniquename = '%s' and type_id = %d";
         $match = array(
-           'organism_id' => $feature_organism->organism_id,
-           'uniquename'  => $attr_uniquename,
-           'type_id'     => $cvterm->cvterm_id
+          'organism_id' => $feature_organism->organism_id,
+          'uniquename'  => $attr_uniquename,
+          'type_id'     => $cvterm->cvterm_id
         );
         $result = chado_delete_record('feature', $match);
         if (!$result) {
@@ -779,19 +789,19 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         $feature = 0;
         unset($result);
       }
-
-      // add or update the feature and all properties
+ */
+      // Add or update the feature and all properties.
       if ($update or $refresh or $add_only) {
 
-        // add/update the feature
+        // Add/update the feature.
         $feature = tripal_feature_load_gff3_feature($feature_organism, $analysis_id, $cvterm,
           $attr_uniquename, $attr_name, $residues, $attr_is_analysis,
           $attr_is_obsolete, $add_only, $score);
 
         if ($feature) {
 
-          // add a record for this feature to the tripal_gff_temp table for
-          // later lookup
+          // Add a record for this feature to the tripal_gff_temp table for
+          // later lookup.
           $values = array(
             'feature_id' => $feature->feature_id,
             'organism_id' => $feature->organism_id,
@@ -830,7 +840,8 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           }
           // add parent relationships
           if (array_key_exists('Parent', $tags)) {
-            tripal_feature_load_gff3_parents($feature, $cvterm, $tags['Parent'], $feature_organism->organism_id, $fmin);
+            tripal_feature_load_gff3_parents($feature, $cvterm, $tags['Parent'],
+              $feature_organism->organism_id, $strand, $phase, $fmin, $fmax);
           }
 
           // add target relationships
@@ -851,7 +862,8 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           }
           // add the Derives_from relationship (e.g. polycistronic genes).
           if (array_key_exists('Derives_from', $tags)) {
-            tripal_feature_load_gff3_derives_from($feature, $tags['Derives_from'][0], $feature_organism);
+            tripal_feature_load_gff3_derives_from($feature, $cvterm, $tags['Derives_from'][0],
+              $feature_organism, $fmin, $fmax);
           }
           // add in the GFF3_source dbxref so that GBrowse can find the feature using the source column
           $source_ref = array('GFF_source:' . $source);
@@ -869,7 +881,76 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       }
     }
 
+    // Do some last bit of processing.
     if (!$remove) {
+
+      // First, add any protein sequences if needed.
+      $sql = "SELECT feature_id FROM {tripal_gffcds_temp} LIMIT 1 OFFSET 1";
+      $has_cds = chado_query($sql)->fetchField();
+      if ($has_cds) {
+        print "\nAdding protein sequences if CDS exist and no proteins in GFF...\n";
+        $sql = "
+          SELECT F.feature_id, F.name, F.uniquename, TGCT.strand,
+            CVT.cvterm_id, CVT.name as feature_type,
+            min(TGCT.fmin) as fmin, max(TGCT.fmax) as fmax,
+            TGPT.feature_id as protein_id, TGPT.fmin as protein_fmin,
+            TGPT.fmax as protein_fmax
+          FROM {tripal_gffcds_temp} TGCT
+            INNER JOIN {feature} F on F.feature_id = TGCT.parent_id
+            INNER JOIN {cvterm} CVT on CVT.cvterm_id = F.type_id
+            LEFT JOIN {tripal_gffprotein_temp} TGPT on TGPT.parent_id = F.feature_id
+          GROUP BY F.feature_id, F.name, F.uniquename, CVT.cvterm_id, CVT.name,
+            TGPT.feature_id, TGPT.fmin, TGPT.fmax, TGCT.strand
+        ";
+        $results = chado_query($sql);
+        $protein_cvterm = tripal_get_cvterm(array(
+          'name' => 'polypeptide',
+          'cv_id' => array(
+            'name' => 'sequence'
+          )
+        ));
+        while ($result = $results->fetchObject()) {
+          // If a protein exists with this same parent then don't add a new
+          // protein.
+          if (!$result->protein_id) {
+            // Get details about this protein
+            $uname = $result->uniquename . '-protein';
+            $name =  $result->name;
+            $values = array(
+              'parent_id' => $result->feature_id,
+              'fmin' => $result->fmin
+            );
+            $min_phase = chado_select_record('tripal_gffcds_temp', array('phase'), $values);
+            $values = array(
+              'parent_id' => $result->feature_id,
+              'fmax' => $result->fmax
+            );
+            $max_phase = chado_select_record('tripal_gffcds_temp', array('phase'), $values);
+
+            $pfmin = $result->fmin;
+            $pfmax = $result->fmax;
+            if ($result->strand == '-1') {
+              $pfmax -= $max_phase[0]->phase;
+            }
+            else {
+              $pfmin += $min_phase[0]->phase;
+            }
+            // Add the new protein record.
+            $feature = tripal_feature_load_gff3_feature($organism, $analysis_id,
+              $protein_cvterm, $uname, $name, '', 'f', 'f', 1, 0);
+            // Add the derives_from relationship.
+            $cvterm = tripal_get_cvterm(array('cvterm_id' => $result->cvterm_id));
+            tripal_feature_load_gff3_derives_from($feature, $cvterm,
+              $result->uniquename, $organism, $pfmin, $pfmax);
+            // Add the featureloc record. Set the start of the protein to
+            // be the start of the coding sequence minus the phase.
+            tripal_feature_load_gff3_featureloc($feature, $organism, $landmark,
+              $pfmin, $pfmax, $strand, '', 'f', 'f', '', 0);
+          }
+        }
+      }
+
+
       print "\nSetting ranks of children...\n";
 
       // get features in a relationship that are also children of an alignment
@@ -977,37 +1058,42 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
  *
  * @ingroup gff3_loader
  */
-function tripal_feature_load_gff3_derives_from($feature, $subject, $organism) {
+function tripal_feature_load_gff3_derives_from($feature, $cvterm, $object,
+  $organism, $fmin, $fmax) {
 
-  // get the subject. If the subject is not in the tripal_gff_temp table
-  // then look for the subject in the feature table using the unique name.
-  // if it is not unique then we can provide an error
+  $type = $cvterm->name;
+
+  // First look for the object feature in the temp table to get it's type.
   $values = array(
     'organism_id' => $organism->organism_id,
-    'uniquename' => $subject,
+    'uniquename' => $object,
   );
   $result = chado_select_record('tripal_gff_temp', array('type_name'), $values);
-  $type_id = array();
+  $type_id = NULL;
   if (count($result) > 0) {
-    $type_id = array(
+    $otype = tripal_get_cvterm(array(
       'name' => $result[0]->type_name,
       'cv_id' => array(
         'name' => 'sequence'
-      ),
-    );
+      )
+    ));
+    if ($otype) {
+      $type_id = $otype->cvterm_id;
+    }
   }
 
-  // if we don't have a subject type then look for the feature in the feature table
-  if (empty($type_id)) {
+  // If the object wasn't in the temp table then look for it in the
+  // feature table and get it's type.
+  if (!$type_id) {
     $result = chado_select_record('feature', array('type_id'), $values);
     if (count($result) > 1) {
-      watchdog("tripal_feature", "Cannot find subject type for feature,'%subject' , in 'derives_from' relationship. Multiple matching features exist with this uniquename.",
-        array('%subject' => $subject), WATCHDOG_WARNING);
+      watchdog("tripal_feature", "Cannot find feature type for, '%subject' , in 'derives_from' relationship. Multiple matching features exist with this uniquename.",
+        array('%subject' => $object), WATCHDOG_WARNING);
       return '';
     }
     else if (count($result) == 0) {
-      watchdog("tripal_feature", "Cannot find subject type for feature,'%subject' , in 'derives_from' relationship.",
-        array('%subject' => $subject), WATCHDOG_WARNING);
+      watchdog("tripal_feature", "Cannot find feature type for, '%subject' , in 'derives_from' relationship.",
+        array('%subject' => $object), WATCHDOG_WARNING);
       return '';
     }
     else {
@@ -1015,28 +1101,39 @@ function tripal_feature_load_gff3_derives_from($feature, $subject, $organism) {
     }
   }
 
-  // get the subject feature
+  // Get the object feature.
   $match = array(
     'organism_id' => $organism->organism_id,
-    'uniquename' => $subject,
-    'type_id' => array(
-      'name' => $subject_type,
-      'cv_id' => array(
-        'name' => 'sequence'
-      ),
-    ),
+    'uniquename' => $object,
+    'type_id' => $type_id,
   );
-  $sfeature = chado_select_record('feature', array('feature_id'), $match);
-  if (count($sfeature)==0) {
+  $ofeature = chado_select_record('feature', array('feature_id'), $match);
+  if (count($ofeature) == 0) {
     tripal_report_error('tripal_feature', TRIPAL_ERROR, "Could not add 'Derives_from' relationship " .
       "for %uniquename and %subject.  Subject feature, '%subject', " .
       "cannot be found", array('%uniquename' => $feature->uniquename, '%subject' => $subject));
     return;
   }
 
-   // now check to see if the relationship already exists
+  // If this feature is a protein then add it to the tripal_gffprotein_temp.
+  if ($type == 'protein' or $type == 'polypeptide') {
+    $values = array(
+      'feature_id' => $feature->feature_id,
+      'parent_id' => $ofeature[0]->feature_id,
+      'fmin' => $fmin,
+      'fmax' => $fmax
+    );
+    $result = chado_insert_record('tripal_gffprotein_temp', $values);
+    if (!$result) {
+      tripal_report_error('tripal_feature', TRIPAL_ERROR, "Cound not save record in temporary protein table, Cannot continue.", array());
+      exit;
+    }
+  }
+
+   // Now check to see if the relationship already exists. If it does
+   // then just return.
   $values = array(
-    'object_id' => $sfeature[0]->feature_id,
+    'object_id' => $ofeature[0]->feature_id,
     'subject_id' => $feature->feature_id,
     'type_id' => array(
        'cv_id' => array(
@@ -1070,13 +1167,14 @@ function tripal_feature_load_gff3_derives_from($feature, $subject, $organism) {
  *
  * @ingroup gff3_loader
  */
-function tripal_feature_load_gff3_parents($feature, $cvterm, $parents, $organism_id, $fmin) {
+function tripal_feature_load_gff3_parents($feature, $cvterm, $parents,
+  $organism_id, $strand, $phase, $fmin, $fmax) {
 
   $uname = $feature->uniquename;
   $type = $cvterm->name;
   $rel_type = 'part_of';
 
-  // prepare these SQL statements that will be used repeatedly.
+  // Prepare these SQL statements that will be used repeatedly.
   $cvterm_sql = "
     SELECT CVT.cvterm_id
     FROM {cvterm} CVT
@@ -1085,9 +1183,9 @@ function tripal_feature_load_gff3_parents($feature, $cvterm, $parents, $organism
     WHERE cv.name = :cvname and (CVT.name = :name or CVTS.synonym = :synonym)
   ";
 
-  // iterate through the parents in the list
+  // Iterate through the parents in the list.
   foreach ($parents as $parent) {
-    // get the parent cvterm
+    // Get the parent cvterm.
     $values = array(
       'organism_id' => $organism_id,
       'uniquename' => $parent,
@@ -1134,6 +1232,24 @@ function tripal_feature_load_gff3_parents($feature, $cvterm, $parents, $organism
         if (!$result) {
           tripal_report_error("tripal_feature", TRIPAL_WARNING, "Failed to insert feature relationship '$uname' ($type) $rel_type '$parent' ($parent_type)",
             array());
+        }
+      }
+
+      // If this feature is a CDS and now that we know the parent we can
+      // add it to the tripal_gffcds_temp table for later lookup.
+      if ($type == 'CDS') {
+        $values = array(
+          'feature_id' => $feature->feature_id,
+          'parent_id' => $parent_feature->feature_id,
+          'fmin' => $fmin,
+          'fmax' => $fmax,
+          'strand' => $strand,
+          'phase' => $phase,
+        );
+        $result = chado_insert_record('tripal_gffcds_temp', $values);
+        if (!$result) {
+          tripal_report_error('tripal_feature', TRIPAL_ERROR, "Cound not save record in temporary CDS table, Cannot continue.", array());
+          exit;
         }
       }
     }
@@ -1482,12 +1598,12 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
 function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uniquename,
   $name, $residues, $is_analysis = 'f', $is_obsolete = 'f', $add_only, $score) {
 
-  // check to see if the feature already exists
+  // Check to see if the feature already exists.
   $feature = NULL;
   $fselect = array(
-     'organism_id' => $organism->organism_id,
-     'uniquename' => $uniquename,
-     'type_id' => $cvterm->cvterm_id
+    'organism_id' => $organism->organism_id,
+    'uniquename' => $uniquename,
+    'type_id' => $cvterm->cvterm_id
   );
   $columns = array('feature_id', 'name', 'uniquename', 'seqlen', 'organism_id', 'type_id');
   $result = chado_select_record('feature', $columns, $fselect);
@@ -1508,21 +1624,21 @@ function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uni
     $is_analysis = 'TRUE';
   }
 
-  // insert the feature if it does not exist otherwise perform an update
+  // Insert the feature if it does not exist otherwise perform an update.
   if (!$feature) {
     $values = array(
-       'organism_id' => $organism->organism_id,
-       'name' => $name,
-       'uniquename' => $uniquename,
-//       'residues' => $residues,
-//       'seqlen' => drupal_strlen($residues),
-       'md5checksum' => md5($residues),
-       'type_id' => $cvterm->cvterm_id,
-       'is_analysis' => $is_analysis,
-       'is_obsolete' => $is_obsolete,
+      'organism_id' => $organism->organism_id,
+      'name' => $name,
+      'uniquename' => $uniquename,
+//      'residues' => $residues,
+//      'seqlen' => drupal_strlen($residues),
+      'md5checksum' => md5($residues),
+      'type_id' => $cvterm->cvterm_id,
+      'is_analysis' => $is_analysis,
+      'is_obsolete' => $is_obsolete,
     );
-    $result = chado_insert_record('feature', $values);
-    if (!$result) {
+    $feature = (object) chado_insert_record('feature', $values);
+    if (!$feature) {
       tripal_report_error("tripal_feature", TRIPAL_WARNING, "Failed to insert feature '$uniquename' ($cvterm->name)", array());
       return 0;
     }
@@ -1548,17 +1664,13 @@ function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uni
     }
   }
   else {
-    // the feature exists and we don't want to update it so return
+    // The feature exists and we don't want to update it so return
     // a value of 0.  This will stop all downstream property additions
-    return 0;
+    return $feature;
   }
 
-  // get the newly added feature
-  $columns = array('feature_id', 'name', 'uniquename', 'seqlen', 'organism_id', 'type_id');
-  $result = chado_select_record('feature', $columns, $fselect);
-  $feature = $result[0];
-
-  // add the analysisfeature entry to the analysisfeature table if it doesn't already exist
+  // Add the analysisfeature entry to the analysisfeature table if
+  // it doesn't already exist.
   $af_values = array(
     'analysis_id' => $analysis_id,
     'feature_id' => $feature->feature_id
@@ -1589,6 +1701,7 @@ function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uni
       }
     }
   }
+
   return $feature;
 }
 
