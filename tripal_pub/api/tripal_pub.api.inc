@@ -75,7 +75,7 @@ function tripal_get_publication($identifiers, $options = array()) {
     unset($identifiers['property']);
     $pub = chado_get_record_with_property(
       array('table' => 'pub', 'base_records' => $identifiers),
-      array('type_name' => $property), 
+      array('type_name' => $property),
       $options
     );
   }
@@ -84,21 +84,22 @@ function tripal_get_publication($identifiers, $options = array()) {
       $dbname = $matches[1];
       $accession = $matches[2];
 
+      // First make sure the dbxref is present.
       $values = array(
-        'dbxref_id' => array (
-          'accession' => $accession,
-          'db_id' => array(
-            'name' => $dbname
-          ),
+        'accession' => $accession,
+        'db_id' => array(
+          'name' => $dbname
         ),
       );
-      $pub_dbxref = chado_select_record('pub_dbxref', array('pub_id'), $values);
-      if (count($pub_dbxref) > 0) {
-        $pub = chado_generate_var('pub', array('pub_id' => $pub_dbxref[0]->pub_id), $options);
-      }
-      else {
+      $dbxref = chado_select_record('dbxref', array('dbxref_id'), $values);
+      if (count($dbxref) == 0) {
         return FALSE;
       }
+      $pub_dbxref = chado_select_record('pub_dbxref', array('pub_id'), array('dbxref_id' => $dbxref[0]->dbxref_id));
+      if (count($pub_dbxref) == 0) {
+        return FALSE;
+      }
+      $pub = chado_generate_var('pub', array('pub_id' => $pub_dbxref[0]->pub_id), $options);
     }
     else {
       tripal_report_error('tripal_pub_api', TRIPAL_ERROR,
@@ -215,13 +216,13 @@ function tripal_publication_exists($pub_details) {
     $pub_type = tripal_get_cvterm($identifiers);
   }
   else {
-    tripal_report_error('tripal_pub', TRIPAL_ERROR, 
+    tripal_report_error('tripal_pub', TRIPAL_ERROR,
       "tripal_publication_exists(): The Publication Type is a " .
       "required property but is missing", array());
     return array();
   }
   if (!$pub_type) {
-    tripal_report_error('tripal_pub', TRIPAL_ERROR, 
+    tripal_report_error('tripal_pub', TRIPAL_ERROR,
      "tripal_publication_exists(): Cannot find publication type: '%type'",
       array('%type' => $pub_details['Publication Type'][0]));
     return array();
@@ -238,7 +239,7 @@ function tripal_publication_exists($pub_details) {
   if (array_key_exists('Conference Name', $pub_details)) {
     $series_name = substr($pub_details['Conference Name'], 0, 255);
   }
-  
+
   // make sure the publication is unique using the prefereed import duplication check
   $import_dups_check = variable_get('tripal_pub_import_duplicate_check', 'title_year_media');
   $pubs = array();
