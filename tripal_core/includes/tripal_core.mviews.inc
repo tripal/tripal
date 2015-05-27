@@ -76,6 +76,7 @@ function tripal_mview_report($mview_id) {
   $update_url = url("admin/tripal/schema/mviews/action/update/$mview->mview_id");
   $delete_url = url("admin/tripal/schema/mviews/action/delete/$mview->mview_id");
   $edit_url = url("admin/tripal/schema/mviews/edit/$mview->mview_id");
+  $export_url = url("admin/tripal/schema/mviews/export/$mview->mview_id");
   $rows[] = array('Actions', "<a href='$update_url'>Populate</a>, <a href='$edit_url'>Edit</a>,  <a href='$delete_url'>Delete</a>");
 
   if ($mview->last_update > 0) {

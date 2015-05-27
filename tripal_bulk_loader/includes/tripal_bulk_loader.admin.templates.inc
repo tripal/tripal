@@ -807,7 +807,7 @@ function tripal_bulk_loader_export_template_form($form, &$form_state) {
   if ($template_id > 0) {
     $result = db_select('tripal_bulk_loader_template','t')
       ->fields('t')
-      ->condition('t.template_id',$template_id)
+      ->condition('t.template_id', $template_id)
       ->execute();
     $template = $result->fetchObject();
     $form_state['storage']['template_array'] = $template->template_array;
@@ -822,7 +822,7 @@ function tripal_bulk_loader_export_template_form($form, &$form_state) {
   $form['template_array'] = array(
     '#type' => 'textarea',
     '#title' => 'Export',
-    '#default_value' => json_encode(unserialize($form_state['storage']['template_array'])),
+    '#default_value' => json_encode(unserialize($template->template_array)),
     '#description' => t('Use this JSON array for import of this bulk loader template into another Tripal site.'),
     '#rows' => 30,
     '#weight' => 5,
