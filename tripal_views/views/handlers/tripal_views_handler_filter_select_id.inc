@@ -33,6 +33,8 @@ class tripal_views_handler_filter_select_id extends tripal_views_handler_filter_
    *   An array of options where the key is the value of this field in the database
    */
   function get_select_options() {
+
+    // @TODO: Make name field configurable.
     $name_field = 'common_name';
 
     // First check that this table has a name field.
@@ -45,10 +47,16 @@ class tripal_views_handler_filter_select_id extends tripal_views_handler_filter_
     // the table referenced by the foreign key constraint.
     if (isset($this->options['show_all']) AND $this->options['show_all'] == TRUE) {
 
+      // We still want to use any hidden fitlers on the parent table
+      // but the arguements will need to be field names rather than
+      // generic placeholders so we need to tell get_select_option_where() that.
+      $return = $this->get_select_option_where($this->parent_table, FALSE);
+      $args = $return['arguements'];
+
       // Simply grab all the values from the table referenced by
       // the foreign key constraint. Since we use the id as the key of
       // the options there is no need to use DISTRINCT in the query.
-      $resource = chado_select_record($this->parent_table, array($this->field, $name_field), array());
+      $resource = chado_select_record($this->parent_table, array($this->field, $name_field), $args);
       $options = array();
       foreach ($resource as $r) {
         $options[$r->{$this->field}] = $r->{$name_field};
@@ -57,11 +65,14 @@ class tripal_views_handler_filter_select_id extends tripal_views_handler_filter_
     // Otherwise, only show those that are actually used in the base table.
     else {
 
-      $where_clauses = $this->get_select_option_where();
+      $return = $this->get_select_option_where($this->parent_table);
+      $where_clauses = $return['where_clauses'];
+      $arguements = $return['arguements'];
       $where = '';
       if (!empty($where_clauses)) {
-        $where = ' AND ' . implode(' AND ', $where_clauses);
+        $where = implode(' AND ', $where_clauses);
       }
+
 
       // Using a "Loose Index Scan" to get a list of all the unique values for
       // the name in the table referenced by the foreign key constraint.
@@ -88,11 +99,10 @@ class tripal_views_handler_filter_select_id extends tripal_views_handler_filter_
         '!filter_table' => $this->table,
         '!foreign_table' => $this->parent_table,
         '!id_field' => $this->field,
-        // @TODO: Make name field configurable.
         '!name_field' => $name_field
       ));
 
-      $resource = chado_query($sql);
+      $resource = chado_query($sql, $arguements);
       $options = array();
 
       if ($this->options['select_optional']) {
@@ -114,10 +124,8 @@ class tripal_views_handler_filter_select_id extends tripal_views_handler_filter_
    * @return
    *   An array of full qualified where clauses (ie: table.myfield = 'fred')
    */
-  function get_select_option_where() {
-    $where = parent::get_select_option_where();
-
-    return $where;
+  function get_select_option_where($table = NULL, $generic_placeholder = TRUE) {
+    return parent::get_select_option_where($table, $generic_placeholder);
   }
 
   /**
