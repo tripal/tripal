@@ -33,44 +33,28 @@ class tripal_views_handler_filter_select_id extends tripal_views_handler_filter_
    *   An array of options where the key is the value of this field in the database
    */
   function get_select_options() {
+    $name_field = 'common_name';
 
-    if (isset($this->options['show_all'])) {
-      $cv_id = variable_get('chado_' . $this->view->base_table . '_cv', NULL);
-      if ($cv_id) {
-        $results = chado_select_record('cvterm', array('cvterm_id', 'name'), array('cv_id' => $cv_id));
-        if (empty($results)) {
-          $results = array();
-        }
-        foreach ($results as $c) {
-          $cvterms[$c->cvterm_id] = $c->name;
-        }
-      }
-      else {
-        //get a list of cvs currently used
-        if ($this->view->base_table == 'cvterm') {
-          $sql = 'SELECT distinct(cv.cv_id) FROM chado.' . $this->view->base_table
-            .' LEFT JOIN chado.cv cv ON cv.cv_id=cvterm.cv_id';
-        }
-        else {
-          $sql = 'SELECT distinct(cv.cv_id) FROM chado.' . $this->view->base_table
-            .' LEFT JOIN chado.cvterm cvterm ON cvterm.cvterm_id=' . $this->view->base_table . '.type_id '
-            .'LEFT JOIN chado.cv cv ON cv.cv_id=cvterm.cv_id';
-        }
-        // D7 TODO: Check DBTNG changes work
-        $resource = chado_query($sql);
-        $cvterms = array();
-        foreach ($resource as $r) {
-          $results = chado_select_record('cvterm', array('cvterm_id', 'name'), array('cv_id' => $r->cv_id));
-          if (empty($results)) {
-            $results = array();
-          }
-          foreach ($results as $c) {
-            $cvterms[$c->cvterm_id] = $c->name;
-          }
-        }
-      }// end of if variable not defined
-
+    // First check that this table has a name field.
+    $table_desc = chado_get_schema($this->parent_table);
+    if (!isset($table_desc['fields'][$name_field])) {
+      return array();
     }
+
+    // If the "Show All" options is set then show all the "names" from
+    // the table referenced by the foreign key constraint.
+    if (isset($this->options['show_all']) AND $this->options['show_all'] == TRUE) {
+
+      // Simply grab all the values from the table referenced by
+      // the foreign key constraint. Since we use the id as the key of
+      // the options there is no need to use DISTRINCT in the query.
+      $resource = chado_select_record($this->parent_table, array($this->field, $name_field), array());
+      $options = array();
+      foreach ($resource as $r) {
+        $options[$r->{$this->field}] = $r->{$name_field};
+      }
+    }
+    // Otherwise, only show those that are actually used in the base table.
     else {
 
       $where_clauses = $this->get_select_option_where();
@@ -79,13 +63,35 @@ class tripal_views_handler_filter_select_id extends tripal_views_handler_filter_
         $where = ' AND ' . implode(' AND ', $where_clauses);
       }
 
-      $sql = "SELECT PARENT.%field as id, PARENT.name as name
-              FROM {%parent_table} PARENT
-                LEFT JOIN {%table} CHILD ON CHILD.%field = PARENT.%field
-              WHERE CHILD.%field IS NOT NULL $where
-              GROUP BY PARENT.%field
-              ORDER BY name";
-      $sql = str_replace(array('%field', '%table','%parent_table'),array($this->field, $this->table, $this->parent_table), $sql);
+      // Using a "Loose Index Scan" to get a list of all the unique values for
+      // the name in the table referenced by the foreign key constraint.
+      // See https://wiki.postgresql.org/wiki/Loose_indexscan
+      $sql = "WITH RECURSIVE t AS (
+            SELECT MIN(filter_table.!id_field) AS col
+              FROM {!filter_table} filter_table
+              LEFT JOIN {!foreign_table} foreign_table ON filter_table.!id_field=foreign_table.!id_field
+              " . ($where == '' ? '' : "WHERE " . $where) . "
+            UNION ALL
+            SELECT (
+                SELECT MIN(filter_table.!id_field)
+                FROM {!filter_table} filter_table
+                LEFT JOIN {!foreign_table} foreign_table ON filter_table.!id_field=foreign_table.!id_field
+                WHERE filter_table.!id_field > col " . ($where == '' ? '' : " AND " . $where) . "
+              )
+              FROM t WHERE col IS NOT NULL
+          )
+          SELECT !id_field as id, !name_field as name
+            FROM {!foreign_table}
+            WHERE !id_field IN (SELECT col FROM t where col IS NOT NULL)
+            ORDER BY !name_field ASC";
+      $sql = format_string($sql, array(
+        '!filter_table' => $this->table,
+        '!foreign_table' => $this->parent_table,
+        '!id_field' => $this->field,
+        // @TODO: Make name field configurable.
+        '!name_field' => $name_field
+      ));
+
       $resource = chado_query($sql);
       $options = array();
 
@@ -97,8 +103,6 @@ class tripal_views_handler_filter_select_id extends tripal_views_handler_filter_
         $options[$r->id] = $r->name;
       }
     }
-    //sort options by name (case insensitive)
-    natcasesort($options);
 
     return $options;
 
