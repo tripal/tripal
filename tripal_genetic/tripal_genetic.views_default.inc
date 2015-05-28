@@ -140,6 +140,11 @@ function tripal_genetic_defaultviews_admin_genotypes() {
   $handler->display->display_options['fields']['description']['id'] = 'description';
   $handler->display->display_options['fields']['description']['table'] = 'genotype';
   $handler->display->display_options['fields']['description']['field'] = 'description';
+  /* Sort criterion: Chado Genotype: Id */
+  $handler->display->display_options['sorts']['genotype_id']['id'] = 'genotype_id';
+  $handler->display->display_options['sorts']['genotype_id']['table'] = 'genotype';
+  $handler->display->display_options['sorts']['genotype_id']['field'] = 'genotype_id';
+  $handler->display->display_options['sorts']['genotype_id']['order'] = 'DESC';
   /* Filter criterion: Chado Genotype: Uniquename */
   $handler->display->display_options['filters']['uniquename']['id'] = 'uniquename';
   $handler->display->display_options['filters']['uniquename']['table'] = 'genotype';

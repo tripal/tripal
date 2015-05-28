@@ -213,10 +213,11 @@ function tripal_featuremap_defaultview_admin_featuremaps() {
   $handler->display->display_options['fields']['nothing']['label'] = '';
   $handler->display->display_options['fields']['nothing']['alter']['text'] = '[edit_node]   [delete_node]';
   $handler->display->display_options['fields']['nothing']['element_label_colon'] = FALSE;
-  /* Sort criterion: Chado Featuremap: Name */
-  $handler->display->display_options['sorts']['name']['id'] = 'name';
-  $handler->display->display_options['sorts']['name']['table'] = 'featuremap';
-  $handler->display->display_options['sorts']['name']['field'] = 'name';
+  /* Sort criterion: Chado Featuremap: Id */
+  $handler->display->display_options['sorts']['featuremap_id']['id'] = 'featuremap_id';
+  $handler->display->display_options['sorts']['featuremap_id']['table'] = 'featuremap';
+  $handler->display->display_options['sorts']['featuremap_id']['field'] = 'featuremap_id';
+  $handler->display->display_options['sorts']['featuremap_id']['order'] = 'DESC';
   /* Filter criterion: Chado Featuremap: Name */
   $handler->display->display_options['filters']['name_1']['id'] = 'name_1';
   $handler->display->display_options['filters']['name_1']['table'] = 'featuremap';

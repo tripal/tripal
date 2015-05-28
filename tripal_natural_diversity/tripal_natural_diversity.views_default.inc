@@ -101,14 +101,11 @@ function tripal_natural_diversity_defaultview_admin_natdiv_exp() {
   $handler->display->display_options['fields']['description']['table'] = 'nd_geolocation';
   $handler->display->display_options['fields']['description']['field'] = 'description';
   $handler->display->display_options['fields']['description']['label'] = 'Location Experiment Performed';
-  /* Sort criterion: Chado Cvterm: Name */
-  $handler->display->display_options['sorts']['name']['id'] = 'name';
-  $handler->display->display_options['sorts']['name']['table'] = 'cvterm';
-  $handler->display->display_options['sorts']['name']['field'] = 'name';
-  /* Sort criterion: Chado Nd Geolocation: Description */
-  $handler->display->display_options['sorts']['description']['id'] = 'description';
-  $handler->display->display_options['sorts']['description']['table'] = 'nd_geolocation';
-  $handler->display->display_options['sorts']['description']['field'] = 'description';
+  /* Sort criterion: Chado Nd Experiment: Id */
+  $handler->display->display_options['sorts']['nd_experiment_id']['id'] = 'nd_experiment_id';
+  $handler->display->display_options['sorts']['nd_experiment_id']['table'] = 'nd_experiment';
+  $handler->display->display_options['sorts']['nd_experiment_id']['field'] = 'nd_experiment_id';
+  $handler->display->display_options['sorts']['nd_experiment_id']['order'] = 'DESC';
   /* Filter criterion: Chado Nd Experiment: Type Id */
   $handler->display->display_options['filters']['type_id']['id'] = 'type_id';
   $handler->display->display_options['filters']['type_id']['table'] = 'nd_experiment';
@@ -251,6 +248,11 @@ function tripal_natural_diversity_defaultview_admin_geolocations() {
   $handler->display->display_options['fields']['geodetic_datum']['id'] = 'geodetic_datum';
   $handler->display->display_options['fields']['geodetic_datum']['table'] = 'nd_geolocation';
   $handler->display->display_options['fields']['geodetic_datum']['field'] = 'geodetic_datum';
+  /* Sort criterion: Chado Nd Geolocation: Id */
+  $handler->display->display_options['sorts']['nd_geolocation_id']['id'] = 'nd_geolocation_id';
+  $handler->display->display_options['sorts']['nd_geolocation_id']['table'] = 'nd_geolocation';
+  $handler->display->display_options['sorts']['nd_geolocation_id']['field'] = 'nd_geolocation_id';
+  $handler->display->display_options['sorts']['nd_geolocation_id']['order'] = 'DESC';
   /* Filter criterion: Chado Nd Geolocation: Geodetic Datum */
   $handler->display->display_options['filters']['geodetic_datum']['id'] = 'geodetic_datum';
   $handler->display->display_options['filters']['geodetic_datum']['table'] = 'nd_geolocation';
@@ -384,6 +386,11 @@ function tripal_natural_diversity_defaultview_admin_reagents() {
   $handler->display->display_options['fields']['name']['table'] = 'cvterm';
   $handler->display->display_options['fields']['name']['field'] = 'name';
   $handler->display->display_options['fields']['name']['label'] = 'Type';
+  /* Sort criterion: Chado Nd Reagent: Id */
+  $handler->display->display_options['sorts']['nd_reagent_id']['id'] = 'nd_reagent_id';
+  $handler->display->display_options['sorts']['nd_reagent_id']['table'] = 'nd_reagent';
+  $handler->display->display_options['sorts']['nd_reagent_id']['field'] = 'nd_reagent_id';
+  $handler->display->display_options['sorts']['nd_reagent_id']['order'] = 'DESC';
   /* Filter criterion: Chado Nd Reagent: Type Id */
   $handler->display->display_options['filters']['type_id']['id'] = 'type_id';
   $handler->display->display_options['filters']['type_id']['table'] = 'nd_reagent';
@@ -495,6 +502,11 @@ function tripal_natural_diversity_defaultview_admin_protocols() {
   $handler->display->display_options['fields']['name']['id'] = 'name';
   $handler->display->display_options['fields']['name']['table'] = 'nd_protocol';
   $handler->display->display_options['fields']['name']['field'] = 'name';
+  /* Sort criterion: Chado Nd Protocol: Id */
+  $handler->display->display_options['sorts']['nd_protocol_id']['id'] = 'nd_protocol_id';
+  $handler->display->display_options['sorts']['nd_protocol_id']['table'] = 'nd_protocol';
+  $handler->display->display_options['sorts']['nd_protocol_id']['field'] = 'nd_protocol_id';
+  $handler->display->display_options['sorts']['nd_protocol_id']['order'] = 'DESC';
   /* Filter criterion: Chado Nd Protocol: Name */
   $handler->display->display_options['filters']['name']['id'] = 'name';
   $handler->display->display_options['filters']['name']['table'] = 'nd_protocol';

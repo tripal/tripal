@@ -208,6 +208,11 @@ function tripal_contact_defaultview_admin_contacts() {
   $handler->display->display_options['fields']['nothing']['label'] = '';
   $handler->display->display_options['fields']['nothing']['alter']['text'] = '[edit_node]  [delete_node]';
   $handler->display->display_options['fields']['nothing']['element_label_colon'] = FALSE;
+  /* Sort criterion: Chado Analysis: Contact Id */
+  $handler->display->display_options['sorts']['contact_id']['id'] = 'contact_id';
+  $handler->display->display_options['sorts']['contact_id']['table'] = 'contact';
+  $handler->display->display_options['sorts']['contact_id']['field'] = 'contact_id';
+  $handler->display->display_options['sorts']['contact_id']['order'] = 'DESC';
   /* Filter criterion: Chado Contact: Type Id */
   $handler->display->display_options['filters']['type_id']['id'] = 'type_id';
   $handler->display->display_options['filters']['type_id']['table'] = 'contact';
