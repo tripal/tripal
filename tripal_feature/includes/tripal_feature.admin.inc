@@ -99,11 +99,27 @@ function tripal_feature_admin_feature_view() {
   sort($type_names);
   sort($organism_names);
 
-  drupal_add_js('http://d3js.org/d3.v3.min.js');
-  drupal_add_js('http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js');
-  drupal_add_js(drupal_get_path('module','tripal_feature') . '/theme/js/tripalFeature.adminChart.js');
-  drupal_add_js(array('tripalFeature' => array('admin' => array('summary' => $chart, 'types' => $type_names, 'organisms' => $organism_names))), 'setting');
+  // We also need to add information about the materialized views
+  // so that admin can update it and know how recent the data is.
+  $mview = db_query('
+    SELECT mview_id, name, last_update
+    FROM tripal_mviews
+    WHERE mv_table=:mv_table',
+    array(':mv_table' => 'organism_feature_count')
+  )->fetchObject();
+
+  tripal_add_d3js();
   drupal_add_css(drupal_get_path('module','tripal_feature') . '/theme/css/tripal_feature.css');
+  drupal_add_js(drupal_get_path('module','tripal_feature') . '/theme/js/tripalFeature.adminChart.js');
+  drupal_add_js(array('tripalFeature' => array('admin' => array(
+    'summary' => $chart,
+    'types' => $type_names,
+    'organisms' => $organism_names,
+    'mviewUrl' => url('admin/tripal/schema/mviews/action/update/' . $mview->mview_id),
+    'mviewUable' => $mview->name,
+    'mviewLastUpdate' => format_date($mview->last_update),
+  ))), 'setting');
+
 
   return $output;
 }

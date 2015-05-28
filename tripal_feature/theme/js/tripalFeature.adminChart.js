@@ -111,9 +111,11 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
           .text(function(d) { return formatNum(d.y1 - d.y0); });
 
       // Add the total to the top of the bar.
-      svg.selectAll("text.bar")
+      svg.selectAll("g.bar-totals")
         .data(data)
-      .enter().append("text")
+      .enter().append('g')
+        .classed('bar-totals', true)
+      .append("text")
         .attr("class", "bar-label")
         .attr("text-anchor", "middle")
         .attr("x", function(d) { return x0(d.name) + x0.rangeBand()/2; })
@@ -138,6 +140,18 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
           .style("text-anchor", "end")
           .attr('font-style','italic')
           .text(function(d) { return d; });
+
+      // Add a small blurb mentioning this is from an mview and you should update ;).
+      var blurb = svg.append('g')
+          .classed('figure-legend', true)
+        .append('text')
+          .attr('x', width - 18)
+          .attr('y', height + 70)
+          .attr('font-style','italic')
+          .style("fill", '#7F7F7F')
+          .style("font-size","10px")
+          .style("text-anchor", "end")
+          .text('Updated on ' + Drupal.settings.tripalFeature.admin.mviewLastUpdate);
 
       function wrap(text, width) {
         text.each(function() {

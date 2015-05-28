@@ -34,7 +34,7 @@ require_once 'api/tripal_core.files.api.inc';
 require_once 'api/tripal_core.jobs.api.inc';
 require_once 'api/tripal_core.tripal.api.inc';
 require_once 'api/tripal_core.tripal_variables.api.inc';
-
+require_once 'api/tripal_core.d3js.api.inc';
 require_once 'api/tripal_core.DEPRECATED.inc';
 
 // INCLUDES
