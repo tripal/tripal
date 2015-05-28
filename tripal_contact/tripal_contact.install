@@ -51,9 +51,6 @@ function tripal_contact_requirements($phase) {
  */
 function tripal_contact_install() {
 
-  // Create the module's data directory.
-  tripal_create_files_dir('tripal_contact');
-
   // Add the contactprop table to Chado.
   tripal_contact_add_custom_tables();
 
@@ -406,7 +403,7 @@ function tripal_contact_update_7202() {
     db_delete('tripal_cv_obo')
       ->condition('name', 'Tripal Contacts')
       ->execute();
-    
+
     // Add in the updated path.
     $obo_path = '{tripal_contact}/files/tcontact.obo';
     $obo_id = tripal_insert_obo('Tripal Contacts', $obo_path);

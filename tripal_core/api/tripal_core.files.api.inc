@@ -16,10 +16,16 @@
  */
 
 /**
- * This function is typically used in the '.install' file for a Tripal module
- * Each module should call this function during installation to create
- * the module data directory which is sites/default/files/tripal/[module_name].
- * This directory can then be used by the module for storing files.
+ * Creates a directory for a module in the Drupal's public files directory.
+ *
+ * Previously it was recommended that this function be called during
+ * installation of the module in the .install file.  However this causes
+ * permission problems if the module is installed via drush with a
+ * user account that is not the same as the web user.  Therefore, this
+ * function should not be called in a location accessiblve via a drush
+ * command.  The tripal_get_files_dir() and tripal_get_files_stream()
+ * will automatically create the directory if it doesn't exist so there is
+ * little need to call this function directly.
  *
  * @param $module_name
  *   the name of the module being installed
@@ -61,7 +67,7 @@ function tripal_create_files_dir($module_name, $path = FALSE) {
 
 /**
  * Retreives the Drupal relative directory for a Tripal module.
- * 
+ *
  * Each Tripal module has a unique data directory which was created using the
  * tripal_create_files_dir function during installation.  This function
  * retrieves the directory path.
@@ -76,10 +82,16 @@ function tripal_create_files_dir($module_name, $path = FALSE) {
  */
 function tripal_get_files_dir($module_name = FALSE) {
 
+  // Build the directory path.
   $data_dir = variable_get('file_public_path', conf_path() . '/files/tripal');
 
+  // If a module name is provided then append the module directory.
   if ($module_name) {
     $data_dir .= "/$module_name";
+
+    // Make sure the directory exists.
+    tripal_create_files_dir($module_name, "/$module_name");
+
   }
 
   return $data_dir;
@@ -87,7 +99,7 @@ function tripal_get_files_dir($module_name = FALSE) {
 
 /**
  * Retreives the Drupal stream (e.g. public://...) for a Tripal module.
- * 
+ *
  * Each Tripal module has a unique data directory which was created using the
  * tripal_create_files_dir function during installation.  This function
  * retrieves the directory path.
@@ -101,10 +113,16 @@ function tripal_get_files_dir($module_name = FALSE) {
  * @ingroup tripal_files_api
  */
 function tripal_get_files_stream($module_name = FALSE) {
+  // Build the directory path.
   $stream =  'public://tripal';
+
+  // If a module name is provided then append the module directory.
   if ($module_name) {
     $stream .= "/$module_name";
+
+    // Make sure the directory exists.
+    tripal_create_files_dir($module_name, "/$module_name");
   }
-  
+
   return $stream;
 }

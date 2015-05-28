@@ -48,9 +48,6 @@ function tripal_natural_diversity_requirements($phase) {
  */
 function tripal_natural_diversity_install() {
 
-  // create the module's data directory
-  tripal_create_files_dir('tripal_natural_diversity');
-
   // add cvterms
   tripal_natural_diversity_add_cvterms();
 

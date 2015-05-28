@@ -47,9 +47,6 @@ function tripal_stock_requirements($phase) {
  * @ingroup tripal_stock
  */
 function tripal_stock_install() {
-  // create the module's data directory
-  tripal_create_files_dir('tripal_stock');
-
   // add some controlled vocabularies
   tripal_stock_add_cvs();
 

@@ -47,8 +47,6 @@ function tripal_featuremap_requirements($phase) {
  * @ingroup tripal_featuremap
  */
 function tripal_featuremap_install() {
-  // create the module's data directory
-  tripal_create_files_dir('tripal_featuremap');
 
   // add the featuremapprop table to Chado
   tripal_featuremap_add_custom_tables();

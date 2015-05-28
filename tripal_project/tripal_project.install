@@ -48,9 +48,6 @@ function tripal_project_requirements($phase) {
  */
 function tripal_project_install() {
 
-  // create the module's data directory
-  tripal_create_files_dir('tripal_project');
-
   tripal_project_add_cvs();
   tripal_project_add_cvterms();
 

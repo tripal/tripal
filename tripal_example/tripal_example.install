@@ -69,15 +69,6 @@ function tripal_example_requirements($phase) {
  */
 function tripal_example_install() {
 
-  // EXPLANATION: If your module will making data publicly available for
-  // download or use by the site you can create the directory using the
-  // tripal_create_files_dir() function. This will create a directory in the
-  // public access directory which will typically be in
-  // sites/default/files/tripal/[module name]/
-
-  // create the module's data directory
-  tripal_create_files_dir('tripal_example');
-
   // EXPLANATION: Here is a good place to add any materialized views, controlled
   // vocabularies CV, databases or CV terms needed by your module.
   // To keep this module code short, create functions to do each of those tasks

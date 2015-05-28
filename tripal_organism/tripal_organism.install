@@ -27,13 +27,6 @@ function tripal_organism_disable() {
  * @ingroup tripal_organism
  */
 function tripal_organism_install() {
-
-  // create the module's data directory
-  tripal_create_files_dir('tripal_organism');
-
-  // create the directory where image files will be stored.  We create this
-  tripal_create_files_dir('tripal_organism', '/images');
-
   // cvs & cvterms
   tripal_organism_add_cvs();
   tripal_organism_add_cvterms();
