@@ -64,6 +64,11 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
       'bool' => TRUE,
       'export' => TRUE
     );
+    $options['show_all'] = array(
+      'default' => FALSE,
+      'bool' => TRUE,
+      'export' => TRUE
+    );
     $options['max_length'] = array(
       'default' => 40,
       'export' => TRUE
@@ -172,6 +177,13 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
       '#default_value' => $this->options['values_form_type'],
     );
 
+    $form['show_all'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Show All'),
+      '#description' => t('When selected all terms from the controlled vocaulbary used by the table will be shown where the default is to only show those that are used.'),
+      '#default_value' => $this->options['show_all'],
+    );
+
     $form['select_multiple'] = array(
       '#type' => 'checkbox',
       '#title' => t('Select Multiple'),
@@ -212,6 +224,7 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
     $this->options['select_multiple'] = $form_state['values']['options']['select_multiple'];
     $this->options['select_optional'] = $form_state['values']['options']['select_optional'];
     $this->options['max_length'] = $form_state['values']['options']['max_length'];
+    $this->options['show_all'] = $form_state['values']['options']['show_all'];
   }
 
   /**
@@ -222,6 +235,7 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
     $this->options['select_multiple'] = FALSE;
     $this->options['select_optional'] = FALSE;
     $this->options['max_length'] = 40;
+    $this->options['show_all'] = FALSE;
   }
 
   /**

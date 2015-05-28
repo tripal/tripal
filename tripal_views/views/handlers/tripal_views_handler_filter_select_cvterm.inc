@@ -39,9 +39,10 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
         $sql = "
           WITH RECURSIVE t AS (
             SELECT MIN(cv_id) AS col FROM {!table}
+              " . ($where == '' ? '' : "WHERE " . $where) . "
             UNION ALL
-            SELECT (SELECT MIN(cv_id) FROM {!table} WHERE cv_id > col)
-            FROM t WHERE col IS NOT NULL
+            SELECT (SELECT MIN(cv_id) FROM {!table} WHERE cv_id > col " . ($where == '' ? '' : " AND " . $where) . ")
+              FROM t WHERE col IS NOT NULL
           )
           SELECT cv_id, name
             FROM {cv}
@@ -60,17 +61,18 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
             SELECT MIN(cvterm.cv_id) AS col
               FROM {!table} filter_table
               LEFT JOIN {cvterm} ON filter_table.!field=cvterm.cvterm_id
+              " . ($where == '' ? '' : "WHERE " . $where) . "
             UNION ALL
             SELECT (
                 SELECT MIN(cv_id)
                 FROM {!table} filter_table
                 LEFT JOIN {cvterm} ON filter_table.!field=cvterm.cvterm_id
-                WHERE cv_id > col
+                WHERE cv_id > col " . ($where == '' ? '' : " AND " . $where) . "
               )
               FROM t WHERE col IS NOT NULL
           )
           SELECT cv_id, name
-            FROM chado.cv
+            FROM {cv}
             WHERE cv_id IN (SELECT col FROM t where col IS NOT NULL)
             ORDER BY cv.name ASC";
         $sql = format_string($sql, array('!table' => $this->table, '!field' => $this->field));
@@ -98,7 +100,7 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
       $where_clauses = $this->get_select_option_where();
       $where = '';
       if (!empty($where_clauses)) {
-        $where = ' AND ' . implode(' AND ', $where_clauses);
+        $where = implode(' AND ', $where_clauses);
       }
 
       // Using a "Loose Index Scan" to get a list of all the cvterms used
@@ -107,7 +109,7 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
         WITH RECURSIVE t AS (
           SELECT MIN(!field) AS col FROM {!table} " . ($where == '' ? '' : "WHERE " . $where) . "
           UNION ALL
-          SELECT (SELECT MIN(!field) FROM {!table} WHERE !field > col " . $where . ")
+          SELECT (SELECT MIN(!field) FROM {!table} WHERE !field > col " . ($where == '' ? '' : " AND " . $where) . ")
           FROM t WHERE col IS NOT NULL
         )
         SELECT cvterm_id, name
