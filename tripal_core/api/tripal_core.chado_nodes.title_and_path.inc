@@ -546,14 +546,9 @@ function chado_get_node_url($node) {
           $url = str_replace($token, $value, $url);
         }
         else {
-          tripal_report_error(
-            'chado_node_api',
-            TRIPAL_ERROR,
-            'Unable to replace %token. The value in the node should be a string but is instead: %value',
-            array(
-              '%token' => $token,
-              '%value' => print_r($value, TRUE)
-            )
+          tripal_report_error('chado_node_api',TRIPAL_ERROR,
+            'Unable to replace %token. The value in the node should be a string but is instead: \'%value\'',
+            array('%token' => $token, '%value' => print_r($value, TRUE))
           );
         }
       }
@@ -1332,7 +1327,7 @@ function chado_get_token_value($token_info, $node) {
       else {
         tripal_report_error('chado_node_api', TRIPAL_WARNING,
           'Tokens: Unable to determine the value of %token. Things went awry when trying ' .
-          'to access %index for the following: %var.',
+          'to access \'%index\' for the following: \'%var\'.',
           array('%token' => $token, '%index' => $index, '%var' => print_r($var,TRUE))
         );
         return '';
@@ -1346,7 +1341,7 @@ function chado_get_token_value($token_info, $node) {
     else {
       tripal_report_error('chado_node_api', TRIPAL_WARNING,
         'Tokens: Unable to determine the value of %token. Things went awry when trying ' .
-        'to access %index for the following: %var.',
+        'to access \'%index\' for the following: \'%var\'.',
         array('%token' => $token, '%index' => $index, '%var' => print_r($var,TRUE))
       );
       return '';

@@ -215,7 +215,7 @@ function tripal_pub_create_citation($pub) {
     if (array_key_exists('Authors', $pub)) {
       $citation = $pub['Authors'] . '. ';
     }
-    
+
     $citation .= $pub['Title'] .  '. ';
 
     if (array_key_exists('Journal Name', $pub)) {
@@ -260,7 +260,7 @@ function tripal_pub_create_citation($pub) {
     if (array_key_exists('Authors', $pub)) {
       $citation = $pub['Authors'] . '. ';
     }
-    
+
     $citation .= $pub['Title'] .  '. ';
 
     if (array_key_exists('Journal Name', $pub)) {
@@ -305,7 +305,7 @@ function tripal_pub_create_citation($pub) {
     if (array_key_exists('Authors', $pub)) {
       $citation = $pub['Authors'] . '. ';
     }
-    
+
     $citation .= $pub['Title'] .  '. ';
 
     if (array_key_exists('Journal Name', $pub)) {
@@ -326,7 +326,7 @@ function tripal_pub_create_citation($pub) {
     if (array_key_exists('Authors', $pub)) {
       $citation = $pub['Authors'] . '. ';
     }
-    
+
     $citation .= $pub['Title'] .  '. ';
     if (array_key_exists('Journal Name', $pub)) {
       $citation .= $pub['Journal Name'] . '. ';
@@ -364,25 +364,13 @@ function tripal_pub_create_citation($pub) {
     $citation .= '.';
   }
   //----------------------
-  // Book
-  //----------------------
-  elseif ($pub_type == 'Book') {
-
-  }
-  //----------------------
-  // Book Chapter
-  //----------------------
-  elseif ($pub_type == 'Book Chapter') {
-
-  }
-  //----------------------
   // Conference Proceedings
   //----------------------
   elseif ($pub_type == 'Conference Proceedings') {
     if (array_key_exists('Authors', $pub)) {
       $citation = $pub['Authors'] . '. ';
     }
-    
+
     $citation .= $pub['Title'] .  '. ';
     if (array_key_exists('Conference Name', $pub)) {
       $citation .= $pub['Conference Name'] . '. ';

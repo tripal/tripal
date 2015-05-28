@@ -1641,8 +1641,6 @@ function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uni
       'organism_id' => $organism->organism_id,
       'name' => $name,
       'uniquename' => $uniquename,
-//      'residues' => $residues,
-//      'seqlen' => drupal_strlen($residues),
       'md5checksum' => md5($residues),
       'type_id' => $cvterm->cvterm_id,
       'is_analysis' => $is_analysis,
@@ -1657,8 +1655,6 @@ function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uni
   elseif (!$add_only) {
     $values = array(
       'name' => $name,
-//      'residues' => $residues,
-//      'seqlen' => drupal_strlen($residues),
       'md5checksum' => md5($residues),
       'is_analysis' => $is_analysis,
       'is_obsolete' => $is_obsolete,
@@ -2040,14 +2036,18 @@ function tripal_feature_load_gff3_fasta($fh, $interval, &$num_read, &$intv_read,
         else {
           // if we have a feature then add the residues
           $feature = $result[0];
-          $values = array('residues' => $residues);
+          $values = array(
+            'residues' => $residues,
+            'seqlen' => strlen($residues)
+          );
           $match = array('feature_id' => $feature->feature_id);
           chado_update_record('feature', $match, $values);
         }
       }
 
-      // get the feature ID for this ID from the tripal_gff_temp table
-      $id = preg_replace('/^>(.*)$/', '\1', $line);
+      // get the feature ID for this ID from the tripal_gff_temp table. It
+      // should be the name up to the first space
+      $id = preg_replace('/^>([^\s]+).*$/', '\1', $line);
       $residues = '';
     }
     else {
@@ -2065,7 +2065,10 @@ function tripal_feature_load_gff3_fasta($fh, $interval, &$num_read, &$intv_read,
   else {
     // if we have a feature then add the residues
     $feature = $result[0];
-    $values = array('residues' => $residues);
+    $values = array(
+      'residues' => $residues,
+      'seqlen' => strlen($residues)
+    );
     $match = array('feature_id' => $feature->feature_id);
     chado_update_record('feature', $match, $values);
   }

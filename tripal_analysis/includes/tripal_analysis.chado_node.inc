@@ -39,6 +39,18 @@ function tripal_analysis_node_info() {
 }
 
 /**
+ * Implements hook_chado_node_sync_form()
+ */
+function chado_analysis_chado_node_sync_form($form, &$form_state) {
+  if (array_key_exists('sync', $form) and array_key_exists('ids', $form['sync'])) {
+    $form['sync']['ids']['#prefix'] .= t('Please note that if analyses exist
+      that were created by other Tripal modules (e.g. Tripal Analysis Blast)
+      then you should sync those using that module\'s sync interface. Otherwise
+      they may not have all of the proper functionality.');
+  }
+  return $form;
+}
+/**
  * Implements hook_form().
  * When editing or creating a new node of type 'chado_analysis' we need
  * a form.  This function creates the form that will be used for this.
@@ -415,7 +427,7 @@ function chado_analysis_insert($node) {
     $year  = $time['year'];
     $timestamp = $month . '/' . $day . '/' . $year;
 
-    // insert and then get the newly inserted analysis record
+    // Insert and then get the newly inserted analysis record
     $values = array(
       'name'           => $node->analysisname,
       'description'    => $node->description,
@@ -793,5 +805,5 @@ function chado_analysis_chado_node_default_title_format() {
  * Designates a default URL format for analysis nodes.
  */
 function chado_analysis_chado_node_default_url_format() {
-  return '/analysis/[analysis.program]/[analysis.programversion]/[analysis.sourcename]';
+  return '/analysis/[analysis.analysis_id]';
 }
