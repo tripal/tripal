@@ -30,10 +30,13 @@ function tripal_core_libraries_info() {
  * Load D3.js releated javascripts for the current page.
  */
 function tripal_add_d3js() {
+  $library = array('loaded' => FALSE);
 
   // First try to load d3.js using the libraries API.
   // This will work if the site admin has saved d3.js in their libraries folder.
-  $library = libraries_load('d3');
+  if (module_exists('libraries_api')) {
+    $library = libraries_load('d3');
+  }
 
   // If we were not able to load d3.js using the libraries API
   // then revert to loading the remote files manually.
