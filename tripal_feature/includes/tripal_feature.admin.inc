@@ -115,7 +115,7 @@ function tripal_feature_admin_feature_view() {
     'summary' => $chart,
     'types' => $type_names,
     'organisms' => $organism_names,
-    'mviewUrl' => url('admin/tripal/schema/mviews/action/update/' . $mview->mview_id),
+    'mviewUrl' => url('admin/tripal/schema/mviews/update/' . $mview->mview_id),
     'mviewUable' => $mview->name,
     'mviewLastUpdate' => format_date($mview->last_update),
   ))), 'setting');

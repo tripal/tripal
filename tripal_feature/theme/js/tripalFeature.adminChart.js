@@ -144,14 +144,24 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
       // Add a small blurb mentioning this is from an mview and you should update ;).
       var blurb = svg.append('g')
           .classed('figure-legend', true)
+          .attr("transform", function(d, i) { return "translate(" + (width - 18) + "," + (height + 50) + ")"; });
+
+      blurb.append("svg:a")
+        .attr("xlink:href", Drupal.settings.tripalFeature.admin.mviewUrl)
         .append('text')
-          .attr('x', width - 18)
-          .attr('y', height + 70)
           .attr('font-style','italic')
           .style("fill", '#7F7F7F')
           .style("font-size","10px")
           .style("text-anchor", "end")
-          .text('Updated on ' + Drupal.settings.tripalFeature.admin.mviewLastUpdate);
+          .text("Update Materialized View");
+      blurb.append('text')
+        .attr('x', 0)
+        .attr('y', 20)
+        .attr('font-style','italic')
+        .style("fill", '#7F7F7F')
+        .style("font-size","10px")
+        .style("text-anchor", "end")
+        .text('Updated on ' + Drupal.settings.tripalFeature.admin.mviewLastUpdate);
 
       function wrap(text, width) {
         text.each(function() {
