@@ -19,8 +19,9 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
 
     // Set-up the dimensions for our chart canvas.
     // Note: these are adjusted below so think of these are your minimum size.
-    var margin = {top: 20, right: 20, bottom: 20, left: 20},
-        width = 960 - margin.left - margin.right,
+    var margin = {top: 20, right: 50, bottom: 20, left: 100},
+        fullWidth = document.getElementById('tripal-feature-admin-summary').offsetWidth,
+        width = fullWidth - margin.left - margin.right,
         height = 300 - margin.top - margin.bottom;
 
     var color = d3.scale.ordinal()
@@ -60,22 +61,25 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
       // Adjust the width of the chart based on the number or bars (types)
       // and the length of the bar totals which need to fit on the top of the bar.
       // Assume 9px/character since it's not rotated.
-      width = numBars * (maxTotalLength * 9);
+      if ((width + margin.left + margin.right) < (numBars * (maxTotalLength * 9))) {
+        width = numBars * (maxTotalLength * 9);
+      }
 
       // Also if we need to put the legend along the top we need to
       // increase the top margin.
       if (Drupal.settings.tripalFeature.admin.legendPosition == 'top') {
         // Draw a top legend in the margin.
-        var columnWidth = d3.max(Drupal.settings.tripalFeature.admin.organisms, function(d,i) {return d.length;}) * 8;
+        var columnWidth = d3.max(Drupal.settings.tripalFeature.admin.organisms, function(d,i) {return d.length;}) * 10;
         var maxNumColumns = Math.round(width / columnWidth);
         var numRows = Math.ceil(Drupal.settings.tripalFeature.admin.organisms.length / maxNumColumns);
         var idealNumColumns = Math.round(Drupal.settings.tripalFeature.admin.organisms.length / numRows);
         var legendMargin = {
           left: (width - (idealNumColumns * columnWidth))/2,
-          right: (width - (idealNumColumns * columnWidth))/2
+          right: (width - (idealNumColumns * columnWidth))/2,
+          bottom: 25
         };
 
-        margin.top = margin.top + (numRows * 20);
+        margin.top = margin.top + (numRows * 20) + legendMargin.bottom;
       }
 
       // Set-up the scales of the chart.
