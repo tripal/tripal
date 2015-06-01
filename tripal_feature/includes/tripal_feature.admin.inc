@@ -100,10 +100,10 @@ function tripal_feature_admin_feature_view() {
     );
 
     // We also need to keep track of the total number of features for a single bar (Type).
-    $chart[$row->cvterm_id]['total_features'] = $chart[$row->cvterm_id]['y1'];
+    $chart[$row->cvterm_id]['total_features'] = (int) $chart[$row->cvterm_id]['y1'];
     // And the maximum "height" for all bars.
     if ($max_bar_height < $chart[$row->cvterm_id]['total_features']) {
-      $max_bar_height = $chart[$row->cvterm_id]['total_features'];
+      $max_bar_height = (int) $chart[$row->cvterm_id]['total_features'];
     }
   }
 

@@ -65,6 +65,18 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
         width = numBars * (maxTotalLength * 9);
       }
 
+      // Determine the best place for the legend. Default to top since that
+      // will for sure not cause conflict... even though it looks better
+      // on the right ;).
+      // Logic: If the difference between the max & min bar heights is greater
+      // than 1/2 the chart height (max bar height) then there "should"
+      // be room for the chart nested on the right.
+      minBarHeight = d3.min(Drupal.settings.tripalFeature.admin.summary, function(d,i) { return d.total_features; });
+      barHeightDifference = Drupal.settings.tripalFeature.admin.maxBarHeight - minBarHeight;
+      if (barHeightDifference >= Drupal.settings.tripalFeature.admin.maxBarHeight/2) {
+        Drupal.settings.tripalFeature.admin.legendPosition = 'right';
+      }
+
       // Also if we need to put the legend along the top we need to
       // increase the top margin.
       if (Drupal.settings.tripalFeature.admin.legendPosition == 'top') {
