@@ -126,7 +126,7 @@ function tripal_insert_contact($values) {
 function tripal_autocomplete_contact($text) {
   $matches = array();
 
-  $sql = "SELECT * FROM {contact} WHERE lower(new) like lower(:name) ";
+  $sql = "SELECT * FROM {contact} WHERE lower(name) like lower(:name) ";
   $args = array();
   $args[':name'] = $name . '%';
   $sql .= "ORDER BY name ";
@@ -134,6 +134,10 @@ function tripal_autocomplete_contact($text) {
   $results = chado_query($sql, $args);
   $items = array();
   foreach ($results as $contact) {
+    // Don't include the null contact
+    if ($contact->name == 'null') {
+      continue;
+    }
     $items[$contact->contact_id] = $contact->name;
   }
   drupal_json_output($items);
