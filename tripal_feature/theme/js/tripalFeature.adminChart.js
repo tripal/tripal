@@ -7,10 +7,19 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
       container = d3.select('.view-header').append('div')
         .attr('id', 'tripal-feature-admin-summary')
         .classed('tripal-admin-summary',true);
+
+      container.append('div')
+        .attr('id', 'tripal-feature-admin-summary-chart')
+        .classed('tripal-admin-chart',true);
+
+      container.append('div')
+        .attr('id', 'tripal-feature-admin-summary-figure-desc')
+        .classed('tripal-admin-figure-desc',true);
     }
 
     // Set-up the dimensions for our chart canvas.
-    var margin = {top: 20, right: 20, bottom: 100, left: 100},
+    // Note: these are adjusted below so think of these are your minimum size.
+    var margin = {top: 20, right: 20, bottom: 140, left: 100},
         width = 960 - margin.left - margin.right,
         height = 500 - margin.top - margin.bottom;
 
@@ -19,54 +28,84 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
 
     var formatNum = d3.format("0,000");
 
-    // Set-up the scales of the chart.
-    var x0 = d3.scale.ordinal()
+    // The data was parsed and saved into tripalFeature.admin.summary
+    // in the preprocess function for this template.
+    if (Drupal.settings.tripalFeature.admin.summary) {
+
+      // Determine the max number of characters in both the type name
+      // and the total number of features per bar for use in width/magin adjustments.
+      var maxTypeLength = 0;
+      var maxTotalLength = 0;
+      var numBars = Drupal.settings.tripalFeature.admin.summary.length;
+      for(var i=0; i < numBars; i++){
+        var element = Drupal.settings.tripalFeature.admin.summary[i];
+
+        if(element.name.length > maxTypeLength){
+          maxTypeLength = element.name.length;
+        }
+
+        if(element.total_features.length > maxTotalLength){
+          maxTotalLength = element.total_features.length;
+        }
+      }
+      // Ensure a minimum in case something goes wrong...
+      if (maxTotalLength < 4) { maxTotalLength = 4; }
+      if (maxTypeLength < 10) { maxTypeLength = 10; }
+
+      // Adjust our bottom margin based on the length of type names in the data.
+      // Assume 4px/character based on the slope of the label.
+      margin.bottom = maxTypeLength * 4;
+
+      // Adjust the width of the chart based on the number or bars (types)
+      // and the length of the bar totals which need to fit on the top of the bar.
+      // Assume 9px/character since it's not rotated.
+      width = numBars * (maxTotalLength * 9);
+
+      // Set-up the scales of the chart.
+      var x0 = d3.scale.ordinal()
         .rangeRoundBands([0, width], .1);
-    var x1 = d3.scale.ordinal();
-    var y = d3.scale.linear()
+      var x1 = d3.scale.ordinal();
+      var y = d3.scale.linear()
         .range([height, 0]);
 
-    // Now set-up the axis functions.
-    var xAxis = d3.svg.axis()
+      // Now set-up the axis functions.
+      var xAxis = d3.svg.axis()
         .scale(x0)
         .orient('bottom');
-    var yAxis = d3.svg.axis()
+      var yAxis = d3.svg.axis()
         .scale(y)
         .orient('left')
         .ticks(10, '');
 
-    // Create our chart canvas.
-    var svg = d3.select('#tripal-feature-admin-summary').append('svg')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-      .append('g')
-        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
-    // The data was parsed and saved into tripalFeature.admin.summary
-    // in the preprocess function for this template.
-    if (Drupal.settings.tripalFeature.admin.summary) {
+      // Create our chart canvas.
+      var svg = d3.select('#tripal-feature-admin-summary-chart').append('svg')
+          .attr('width', width + margin.left + margin.right)
+          .attr('height', height + margin.top + margin.bottom)
+        .append('g')
+          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
       // map the data to the x & y axis' of our chart.
       data = Drupal.settings.tripalFeature.admin.summary;
       x0.domain(data.map(function(d) { return d.name; }));
       x1.domain(Drupal.settings.tripalFeature.admin.organisms).rangeRoundBands([0, x0.rangeBand()]);
-      //y.domain([0, d3.max(data, function(d) { return d3.max(d.organisms, function(d) { return d.value; }); })]);
-      y.domain([0, d3.max(data, function(d) { return d.total_features; })]);
+      y.domain([0, Drupal.settings.tripalFeature.admin.maxBarHeight]);
 
       // Create the x-axis.
       var xaxis = svg.append('g')
-          .attr('class', 'x axis')
-          .attr('transform', 'translate(0,' + height + ')')
-          .call(xAxis);
+        .attr('class', 'x axis')
+        .attr('transform', 'translate(0,' + height + ')')
+        .call(xAxis);
 
-      // Wrap the scientific names so they fit better.
-      xaxis.selectAll(".tick text")
-          .call(wrap, x0.rangeBand());
+      xaxis.selectAll("text")
+        .style("text-anchor", "end")
+        .attr("dx", "-.8em")
+        .attr("dy", ".15em")
+        .attr("transform", function(d) { return "rotate(-25)"; });
 
       // Label the  x-axis.
       xaxis.append('g')
         .attr('class', 'axis-label')
-          .attr('transform', 'translate(' + width/2 + ',60)')
+          .attr('transform', 'translate(' + width/2 + ',' + (margin.bottom - 20) + ')')
         .append('text')
           .attr('font-size', '16px')
           .attr('dy', '.71em')
@@ -118,6 +157,7 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
       .append("text")
         .attr("class", "bar-label")
         .attr("text-anchor", "middle")
+        .attr('font-size', '10px')
         .attr("x", function(d) { return x0(d.name) + x0.rangeBand()/2; })
         .attr("y", function(d) { return y(d.total_features) -5; })
         .text(function(d) { return formatNum(d.total_features); });
@@ -142,42 +182,9 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
           .text(function(d) { return d; });
 
       // Add a small blurb mentioning this is from an mview and you should update ;).
-      var blurb = svg.append('g')
-          .classed('figure-legend', true)
-          .attr("transform", function(d, i) { return "translate(" + (width - 18) + "," + (height + 50) + ")"; });
+      d3.selectAll('#tripal-feature-admin-summary-figure-desc')
+        .html(Drupal.settings.tripalFeature.admin.figureDesc);
 
-      blurb.append("svg:a")
-        .attr("xlink:href", Drupal.settings.tripalFeature.admin.mviewUrl)
-        .append('text')
-          .attr('font-style','italic')
-          .style("fill", '#7F7F7F')
-          .style("font-size","10px")
-          .style("text-anchor", "end")
-          .text("Update Materialized View");
-      blurb.append('text')
-        .attr('x', 0)
-        .attr('y', 20)
-        .attr('font-style','italic')
-        .style("fill", '#7F7F7F')
-        .style("font-size","10px")
-        .style("text-anchor", "end")
-        .text('Updated on ' + Drupal.settings.tripalFeature.admin.mviewLastUpdate);
-
-      function wrap(text, width) {
-        text.each(function() {
-          var text = d3.select(this),
-              words = text.text().split(/[\s_]+/).reverse(),
-              word,
-              lineNumber = 0,
-              lineHeight = 1.1, // ems
-              y = text.attr("y"),
-              dy = parseFloat(text.attr("dy")),
-              tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
-          while (word = words.pop()) {
-            tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
-          }
-        });
-      }
     }
   }
 };

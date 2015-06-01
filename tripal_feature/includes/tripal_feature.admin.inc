@@ -51,6 +51,7 @@ function tripal_feature_admin_feature_view() {
   $chart = array();
   $type_names = array();
   $organism_names = array();
+  $max_bar_height = 0;
 
   // Process each row of the materialzied view into the chart array.
   // Note: it's first keyed by type since each type will be a bar. Each type will have
@@ -62,7 +63,7 @@ function tripal_feature_admin_feature_view() {
     // Build up the easy details for the current row's type. These will be overridden
     // multiple times but that's more efficient than checking each time.
     $chart[$row->cvterm_id]['cvterm_id'] = $row->cvterm_id;
-    $chart[$row->cvterm_id]['name'] = $row->feature_type;
+    $chart[$row->cvterm_id]['name'] = str_replace('_', ' ', $row->feature_type);
 
     // Save the name of the type and organism into their respective arrays
     // for generation of axis' and legends for the chart.
@@ -100,6 +101,10 @@ function tripal_feature_admin_feature_view() {
 
     // We also need to keep track of the total number of features for a single bar (Type).
     $chart[$row->cvterm_id]['total_features'] = $chart[$row->cvterm_id]['y1'];
+    // And the maximum "height" for all bars.
+    if ($max_bar_height < $chart[$row->cvterm_id]['total_features']) {
+      $max_bar_height = $chart[$row->cvterm_id]['total_features'];
+    }
   }
 
   // Sort based on the total number of features.
@@ -119,13 +124,16 @@ function tripal_feature_admin_feature_view() {
 
   // Save everything we just determined as a Drupal JS settings so that we have access to
   // it in our js script.
+  $last_updated = $mview->last_update ? format_date($mview->last_update) : '';
   drupal_add_js(array('tripalFeature' => array('admin' => array(
     'summary' => $chart,
     'types' => $type_names,
     'organisms' => $organism_names,
+    'maxBarHeight' => $max_bar_height,
     'mviewUrl' => url('admin/tripal/schema/mviews/update/' . $mview->mview_id),
     'mviewUable' => $mview->name,
-    'mviewLastUpdate' => $mview->last_update ? format_date($mview->last_update) : '',
+    'mviewLastUpdate' => $last_updated,
+    'figureDesc' => '<span class="figure-title">Feature Composition</span>: This figure depicts the type and source organism of features in your Tripal site. It is populated from the <em>'.$mview->name.'</em> materialized view which was last updated on <em>'.$last_updated.'</em>. <strong><em>To update this chart, <a href="'.url('admin/tripal/schema/mviews/update/' . $mview->mview_id).'">submit a job to update the materialized view</a></em></strong>.'
   ))), 'setting');
 
   // Finally add all the javascript and css needed to render the chart.
@@ -188,7 +196,7 @@ function tripal_feature_admin() {
      '#collapsed' => TRUE,
   );
   $form['browser']['browser_desc'] = array(
-     '#markup' => t('<font color="red">NOTE: the feature browser will be removed in a future Tripal version. It remains to give time for sites to cycle it out.</font> A feature browser can be added to an organism page to allow users to quickly ' .
+     '#markup' => t('A feature browser can be added to an organism page to allow users to quickly ' .
         'access a feature.  This will most likely not be the ideal mechanism for accessing feature ' .
         'information, especially for large sites, but it will alow users exploring the site (such ' .
         'as students) to better understand the data types available on the site.'),
@@ -199,7 +207,7 @@ function tripal_feature_admin() {
      '#type'        => 'textarea',
      '#description' => t("Enter the Sequence Ontology (SO) terms for the feature types that " .
                          "will be shown in the feature browser."),
-     '#default_value' => variable_get('chado_browser_feature_types'),
+     '#default_value' => variable_get('chado_browser_feature_types', 'gene mRNA'),
   );
 
 
