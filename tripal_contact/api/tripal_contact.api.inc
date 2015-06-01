@@ -110,3 +110,31 @@ function tripal_insert_contact($values) {
   }
   return $contact;
 }
+
+
+/**
+ * This function is intended to be used in autocomplete forms for contacts.
+ *
+ * @param $text
+ *   The string to search for
+ *
+ * @return
+ *   A json array of terms that begin with the provided string
+ *
+ * @ingroup tripal_organism_api
+ */
+function tripal_autocomplete_contact($text) {
+  $matches = array();
+
+  $sql = "SELECT * FROM {contact} WHERE lower(new) like lower(:name) ";
+  $args = array();
+  $args[':name'] = $name . '%';
+  $sql .= "ORDER BY name ";
+  $sql .= "LIMIT 25 OFFSET 0 ";
+  $results = chado_query($sql, $args);
+  $items = array();
+  foreach ($results as $contact) {
+    $items[$contact->contact_id] = $contact->name;
+  }
+  drupal_json_output($items);
+}

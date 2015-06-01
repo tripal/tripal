@@ -925,11 +925,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
         ->execute()
         ->fetchObject();
 
-      if (!empty($result)) {
-        //print " Previously Sync'd";
-      }
-      else {
-
+      if (empty($result)) {
         // Create generic new node
         $new_node = new stdClass();
         $new_node->type = $node_type;
@@ -956,7 +952,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
           //print " Node Created (nid=".$node->nid.")";
         }
         else {
-          watchdog('trp-fsync', "Failed to insert $base_table: %title", array('%title' => $new_node->title), WATCHDOG_ERROR);
+          throw new Exception(t("Failed to insert $base_table: %title", array('%title' => $new_node->title)));
         }
       }
       $i++;
