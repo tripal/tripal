@@ -44,10 +44,13 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
           maxTypeLength = element.name.length;
         }
 
-        if(element.total_features.length > maxTypeLength){
+        if(element.total_features.length > maxTotalLength){
           maxTotalLength = element.total_features.length;
         }
       }
+      // Ensure a minimum in case something goes wrong...
+      if (maxTotalLength < 4) { maxTotalLength = 4; }
+      if (maxTypeLength < 10) { maxTypeLength = 10; }
 
       // Adjust our bottom margin based on the length of type names in the data.
       // Assume 4px/character based on the slope of the label.
