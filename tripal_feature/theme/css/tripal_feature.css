@@ -96,3 +96,6 @@ span.tripal_feature-featureloc_sequence-intron {
   stroke: #000;
   shape-rendering: crispEdges;
 }
+.tripal-admin-figure-desc .figure-title {
+  font-weight: bold;
+}

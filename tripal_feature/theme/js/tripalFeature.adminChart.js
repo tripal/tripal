@@ -7,6 +7,14 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
       container = d3.select('.view-header').append('div')
         .attr('id', 'tripal-feature-admin-summary')
         .classed('tripal-admin-summary',true);
+
+      container.append('div')
+        .attr('id', 'tripal-feature-admin-summary-chart')
+        .classed('tripal-admin-chart',true);
+
+      container.append('div')
+        .attr('id', 'tripal-feature-admin-summary-figure-desc')
+        .classed('tripal-admin-figure-desc',true);
     }
 
     // Set-up the dimensions for our chart canvas.
@@ -36,7 +44,7 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
         .ticks(10, '');
 
     // Create our chart canvas.
-    var svg = d3.select('#tripal-feature-admin-summary').append('svg')
+    var svg = d3.select('#tripal-feature-admin-summary-chart').append('svg')
         .attr('width', width + margin.left + margin.right)
         .attr('height', height + margin.top + margin.bottom)
       .append('g')
@@ -142,26 +150,8 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
           .text(function(d) { return d; });
 
       // Add a small blurb mentioning this is from an mview and you should update ;).
-      var blurb = svg.append('g')
-          .classed('figure-legend', true)
-          .attr("transform", function(d, i) { return "translate(" + (width - 18) + "," + (height + 50) + ")"; });
-
-      blurb.append("svg:a")
-        .attr("xlink:href", Drupal.settings.tripalFeature.admin.mviewUrl)
-        .append('text')
-          .attr('font-style','italic')
-          .style("fill", '#7F7F7F')
-          .style("font-size","10px")
-          .style("text-anchor", "end")
-          .text("Update Materialized View");
-      blurb.append('text')
-        .attr('x', 0)
-        .attr('y', 20)
-        .attr('font-style','italic')
-        .style("fill", '#7F7F7F')
-        .style("font-size","10px")
-        .style("text-anchor", "end")
-        .text('Updated on ' + Drupal.settings.tripalFeature.admin.mviewLastUpdate);
+      d3.selectAll('#tripal-feature-admin-summary-figure-desc')
+        .html(Drupal.settings.tripalFeature.admin.figureDesc);
 
       function wrap(text, width) {
         text.each(function() {
