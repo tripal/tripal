@@ -138,7 +138,7 @@ function tripal_autocomplete_contact($text) {
     if ($contact->name == 'null') {
       continue;
     }
-    $items[$contact->contact_id] = $contact->name;
+    $items[$contact->name] = $contact->name;
   }
   drupal_json_output($items);
 }
