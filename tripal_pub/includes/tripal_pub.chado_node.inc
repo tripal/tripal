@@ -35,6 +35,7 @@ function tripal_pub_node_info() {
       ),
     ),
   );
+  return $nodes;
 }
 
 /**
