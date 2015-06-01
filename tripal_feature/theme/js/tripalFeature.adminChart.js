@@ -58,8 +58,7 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
       data = Drupal.settings.tripalFeature.admin.summary;
       x0.domain(data.map(function(d) { return d.name; }));
       x1.domain(Drupal.settings.tripalFeature.admin.organisms).rangeRoundBands([0, x0.rangeBand()]);
-      //y.domain([0, d3.max(data, function(d) { return d3.max(d.organisms, function(d) { return d.value; }); })]);
-      y.domain([0, d3.max(data, function(d) { return d.total_features; })]);
+      y.domain([0, Drupal.settings.tripalFeature.admin.maxBarHeight]);
 
       // Create the x-axis.
       var xaxis = svg.append('g')

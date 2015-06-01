@@ -51,6 +51,7 @@ function tripal_feature_admin_feature_view() {
   $chart = array();
   $type_names = array();
   $organism_names = array();
+  $max_bar_height = 0;
 
   // Process each row of the materialzied view into the chart array.
   // Note: it's first keyed by type since each type will be a bar. Each type will have
@@ -100,6 +101,10 @@ function tripal_feature_admin_feature_view() {
 
     // We also need to keep track of the total number of features for a single bar (Type).
     $chart[$row->cvterm_id]['total_features'] = $chart[$row->cvterm_id]['y1'];
+    // And the maximum "height" for all bars.
+    if ($max_bar_height < $chart[$row->cvterm_id]['total_features']) {
+      $max_bar_height = $chart[$row->cvterm_id]['total_features'];
+    }
   }
 
   // Sort based on the total number of features.
@@ -123,6 +128,7 @@ function tripal_feature_admin_feature_view() {
     'summary' => $chart,
     'types' => $type_names,
     'organisms' => $organism_names,
+    'maxBarHeight' => $max_bar_height,
     'mviewUrl' => url('admin/tripal/schema/mviews/update/' . $mview->mview_id),
     'mviewUable' => $mview->name,
     'mviewLastUpdate' => format_date($mview->last_update),
