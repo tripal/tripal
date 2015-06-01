@@ -56,7 +56,6 @@ function tripal_create_files_dir($module_name, $path = FALSE) {
 
     // now make sure the sub dir exists
     $sub_dir = tripal_get_files_dir() . '/' . $module_name . '/' . $path;
-    print "$sub_dir\n";
     if (!file_prepare_directory($sub_dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
       $message = "Can not create directory $sub_dir. ";
       drupal_set_message(check_plain(t($message)), 'error');

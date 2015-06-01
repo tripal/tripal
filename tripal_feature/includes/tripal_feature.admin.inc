@@ -124,6 +124,7 @@ function tripal_feature_admin_feature_view() {
 
   // Save everything we just determined as a Drupal JS settings so that we have access to
   // it in our js script.
+  $last_updated = $mview->last_update ? format_date($mview->last_update) : '';
   drupal_add_js(array('tripalFeature' => array('admin' => array(
     'summary' => $chart,
     'types' => $type_names,
@@ -131,8 +132,8 @@ function tripal_feature_admin_feature_view() {
     'maxBarHeight' => $max_bar_height,
     'mviewUrl' => url('admin/tripal/schema/mviews/update/' . $mview->mview_id),
     'mviewUable' => $mview->name,
-    'mviewLastUpdate' => format_date($mview->last_update),
-    'figureDesc' => '<span class="figure-title">Feature Composition</span>: This figure depicts the type and source organism of features in your Tripal site. It is populated from the <em>'.$mview->name.'</em> materialized view which was last updated on <em>'.format_date($mview->last_update).'</em>. <strong><em>To update this chart, <a href="'.url('admin/tripal/schema/mviews/update/' . $mview->mview_id).'">submit a job to update the materialized view</a></em></strong>.'
+    'mviewLastUpdate' => $last_updated,
+    'figureDesc' => '<span class="figure-title">Feature Composition</span>: This figure depicts the type and source organism of features in your Tripal site. It is populated from the <em>'.$mview->name.'</em> materialized view which was last updated on <em>'.$last_updated.'</em>. <strong><em>To update this chart, <a href="'.url('admin/tripal/schema/mviews/update/' . $mview->mview_id).'">submit a job to update the materialized view</a></em></strong>.'
   ))), 'setting');
 
   // Finally add all the javascript and css needed to render the chart.
