@@ -19,9 +19,9 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
 
     // Set-up the dimensions for our chart canvas.
     // Note: these are adjusted below so think of these are your minimum size.
-    var margin = {top: 20, right: 20, bottom: 140, left: 100},
+    var margin = {top: 20, right: 20, bottom: 20, left: 20},
         width = 960 - margin.left - margin.right,
-        height = 500 - margin.top - margin.bottom;
+        height = 300 - margin.top - margin.bottom;
 
     var color = d3.scale.ordinal()
         .range(["#a6cee3","#1f78b4","#b2df8a","#33a02c","#fb9a99","#e31a1c","#fdbf6f","#ff7f00","#cab2d6","#6a3d9a","#ffff99","#b15928"]);
@@ -54,12 +54,29 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
 
       // Adjust our bottom margin based on the length of type names in the data.
       // Assume 4px/character based on the slope of the label.
-      margin.bottom = maxTypeLength * 4;
+      xAxisHeight = maxTypeLength * 3;
+      margin.bottom = xAxisHeight + 25;
 
       // Adjust the width of the chart based on the number or bars (types)
       // and the length of the bar totals which need to fit on the top of the bar.
       // Assume 9px/character since it's not rotated.
       width = numBars * (maxTotalLength * 9);
+
+      // Also if we need to put the legend along the top we need to
+      // increase the top margin.
+      if (Drupal.settings.tripalFeature.admin.legendPosition == 'top') {
+        // Draw a top legend in the margin.
+        var columnWidth = d3.max(Drupal.settings.tripalFeature.admin.organisms, function(d,i) {return d.length;}) * 8;
+        var maxNumColumns = Math.round(width / columnWidth);
+        var numRows = Math.ceil(Drupal.settings.tripalFeature.admin.organisms.length / maxNumColumns);
+        var idealNumColumns = Math.round(Drupal.settings.tripalFeature.admin.organisms.length / numRows);
+        var legendMargin = {
+          left: (width - (idealNumColumns * columnWidth))/2,
+          right: (width - (idealNumColumns * columnWidth))/2
+        };
+
+        margin.top = margin.top + (numRows * 20);
+      }
 
       // Set-up the scales of the chart.
       var x0 = d3.scale.ordinal()
@@ -105,7 +122,7 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
       // Label the  x-axis.
       xaxis.append('g')
         .attr('class', 'axis-label')
-          .attr('transform', 'translate(' + width/2 + ',' + (margin.bottom - 20) + ')')
+          .attr('transform', 'translate(' + width/2 + ',' + xAxisHeight + ')')
         .append('text')
           .attr('font-size', '16px')
           .attr('dy', '.71em')
@@ -162,24 +179,66 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
         .attr("y", function(d) { return y(d.total_features) -5; })
         .text(function(d) { return formatNum(d.total_features); });
 
-      // Finally add in a simple legend.
-      var legend = svg.selectAll(".legend")
-          .data(Drupal.settings.tripalFeature.admin.organisms.slice().reverse())
-        .enter().append("g")
-          .attr("class", "legend")
-          .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
-      legend.append("rect")
-          .attr("x", width - 18)
-          .attr("width", 18)
-          .attr("height", 18)
-          .style("fill", color);
-      legend.append("text")
-          .attr("x", width - 24)
-          .attr("y", 9)
-          .attr("dy", ".35em")
-          .style("text-anchor", "end")
-          .attr('font-style','italic')
-          .text(function(d) { return d; });
+      // Legend
+      //---------
+      // NOTE: we would prefer to have the legend overlapping the chart on the
+      // right side but this could be a problem if you have a similar count
+      // for all features (legend overlaps bars) or a large number of types
+      // (legend gets pushed out of the viewable screen area). In these cases
+      // switch to a bottom legend.
+      if (Drupal.settings.tripalFeature.admin.legendPosition == 'top') {
+        // Draw a bottom legend in the margin.
+        var legend = svg.append('g')
+          .classed('legend', true)
+          .attr('transform', 'translate(' + (legendMargin.left - 20) + ',-' + margin.top + ')');
+
+        var legendItem = legend.selectAll('g')
+            .data(Drupal.settings.tripalFeature.admin.organisms.slice().reverse())
+          .enter().append("g")
+            .attr("class", "legend-item")
+            .attr("transform", function(d,i) {
+              xOff = (i % idealNumColumns) * columnWidth;
+              yOff = Math.floor(i  / idealNumColumns) * 25;
+              return "translate(" + xOff + "," + yOff + ")"
+          });
+        legendItem.append("rect")
+            //.attr("x", width - 18)
+            .attr("width", 18)
+            .attr("height", 18)
+            .style("fill", color);
+        legendItem.append("text")
+            .attr("x", 24)
+            .attr("y", 9)
+            .attr("dy", ".35em")
+            .style("text-anchor", "start")
+            .attr('font-style','italic')
+            .text(function(d) { return d; });
+      }
+      else {
+        // Draw a right inset legend.
+        var legend = svg.append('g')
+          .classed('legend', true)
+          .attr('transform', 'translate(0,-' + margin.top + ')');
+
+        var legendItem = legend.selectAll('g')
+            .data(Drupal.settings.tripalFeature.admin.organisms.slice().reverse())
+          .enter().append("g")
+            .attr("class", "legend")
+            .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+        legendItem.append("rect")
+            .attr("x", width - 18)
+            .attr("width", 18)
+            .attr("height", 18)
+            .style("fill", color);
+        legendItem.append("text")
+            .attr("x", width - 24)
+            .attr("y", 9)
+            .attr("dy", ".35em")
+            .style("text-anchor", "end")
+            .attr('font-style','italic')
+            .text(function(d) { return d; });
+      }
+
 
       // Add a small blurb mentioning this is from an mview and you should update ;).
       d3.selectAll('#tripal-feature-admin-summary-figure-desc')

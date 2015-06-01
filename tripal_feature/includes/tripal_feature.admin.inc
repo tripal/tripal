@@ -129,6 +129,7 @@ function tripal_feature_admin_feature_view() {
     'summary' => $chart,
     'types' => $type_names,
     'organisms' => $organism_names,
+    'legendPosition' => 'top',
     'maxBarHeight' => $max_bar_height,
     'mviewUrl' => url('admin/tripal/schema/mviews/update/' . $mview->mview_id),
     'mviewUable' => $mview->name,
