@@ -1153,8 +1153,9 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
         else {
           tripal_report_error('tripal_core', TRIPAL_ERROR,
             'chado_select_record: There is no value for %field thus we cannot ' .
-            ' check if this record for table, %table, is unique.',
-            array('%field' => $field, '%table' => $table), array('print' => $print_errors));
+            'check if this record for table, %table, is unique. %values',
+            array('%field' => $field, '%table' => $table, '%values' => print_r($values, TRUE)),
+            array('print' => $print_errors));
           return FALSE;
         }
       }

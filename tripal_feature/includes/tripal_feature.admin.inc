@@ -125,7 +125,7 @@ function tripal_feature_admin_feature_view() {
     'organisms' => $organism_names,
     'mviewUrl' => url('admin/tripal/schema/mviews/update/' . $mview->mview_id),
     'mviewUable' => $mview->name,
-    'mviewLastUpdate' => format_date($mview->last_update),
+    'mviewLastUpdate' => $mview->last_update ? format_date($mview->last_update) : '',
   ))), 'setting');
 
   // Finally add all the javascript and css needed to render the chart.
@@ -188,7 +188,7 @@ function tripal_feature_admin() {
      '#collapsed' => TRUE,
   );
   $form['browser']['browser_desc'] = array(
-     '#markup' => t('A feature browser can be added to an organism page to allow users to quickly ' .
+     '#markup' => t('<font color="red">NOTE: the feature browser will be removed in a future Tripal version. It remains to give time for sites to cycle it out.</font> A feature browser can be added to an organism page to allow users to quickly ' .
         'access a feature.  This will most likely not be the ideal mechanism for accessing feature ' .
         'information, especially for large sites, but it will alow users exploring the site (such ' .
         'as students) to better understand the data types available on the site.'),
@@ -199,7 +199,7 @@ function tripal_feature_admin() {
      '#type'        => 'textarea',
      '#description' => t("Enter the Sequence Ontology (SO) terms for the feature types that " .
                          "will be shown in the feature browser."),
-     '#default_value' => variable_get('chado_browser_feature_types', 'gene mRNA'),
+     '#default_value' => variable_get('chado_browser_feature_types'),
   );
 
 

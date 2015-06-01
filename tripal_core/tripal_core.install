@@ -11,18 +11,8 @@
  */
 function tripal_core_install() {
 
-  // make the data directory for this module
-  $data_dir = tripal_get_files_dir();
-  if (!file_prepare_directory($data_dir, FILE_CREATE_DIRECTORY)) {
-    $message = "Cannot create directory $data_dir. This module may not " .
-               "behave correctly without this directory.  Please  create " .
-               "the directory manually or fix the problem and reinstall.";
-    drupal_set_message(check_plain($message), 'error');
-    tripal_report_error('tripal_core', TRIPAL_ERROR, $message, array());
-  }
-
-  // the foreign key specification doesn't really add one to the
-  // Drupal schema, it is just used internally, but we want one
+  // The foreign key specification doesn't really add one to the
+  // Drupal schema, it is just used internally, but we want one.
   db_query('
       ALTER TABLE {tripal_custom_tables}
       ADD CONSTRAINT tripal_custom_tables_fk1

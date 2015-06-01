@@ -57,7 +57,7 @@ function tripal_views_integrate_all_chado_tables() {
 
       // Assuming that we have a default chado table, genereate an integration
       // array describing it's Tripal Views integration.
-      if (in_array($tablename, $base_tables) OR in_array($tablename, $mview_tables)) {
+      if (in_array($tablename, $base_tables) OR (is_array($mview_tables) and in_array($tablename, $mview_tables))) {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
       }
       else {
@@ -66,7 +66,7 @@ function tripal_views_integrate_all_chado_tables() {
 
       // Check to see if this table is a Materialized view and if it is,
       // treat it specially :).
-      if (in_array($tablename, $mview_tables)) {
+      if (is_array($mview_tables) and in_array($tablename, $mview_tables)) {
         $table_integration_array['type'] = 'mview';
       }
 
