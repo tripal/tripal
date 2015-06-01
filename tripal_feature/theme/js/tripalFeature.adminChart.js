@@ -18,7 +18,7 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
     }
 
     // Set-up the dimensions for our chart canvas.
-    var margin = {top: 20, right: 20, bottom: 100, left: 100},
+    var margin = {top: 20, right: 20, bottom: 140, left: 100},
         width = 960 - margin.left - margin.right,
         height = 500 - margin.top - margin.bottom;
 
@@ -43,16 +43,28 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
         .orient('left')
         .ticks(10, '');
 
-    // Create our chart canvas.
-    var svg = d3.select('#tripal-feature-admin-summary-chart').append('svg')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-      .append('g')
-        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
     // The data was parsed and saved into tripalFeature.admin.summary
     // in the preprocess function for this template.
     if (Drupal.settings.tripalFeature.admin.summary) {
+
+      // Adjust our bottom margin based on the length of type names in the data.
+      // First determine the max. number of characters in a type name.
+      var maxTypeLength = 0;
+      for(var i=0; i < Drupal.settings.tripalFeature.admin.summary.length; i++){
+        var element = Drupal.settings.tripalFeature.admin.summary[i].name;
+        if(element.length > maxTypeLength){
+          maxTypeLength = element.length;
+        }
+      }
+      // Then assume 4px/character based on the slope of the label.
+      margin.bottom = maxTypeLength * 4;
+
+      // Create our chart canvas.
+      var svg = d3.select('#tripal-feature-admin-summary-chart').append('svg')
+          .attr('width', width + margin.left + margin.right)
+          .attr('height', height + margin.top + margin.bottom)
+        .append('g')
+          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
       // map the data to the x & y axis' of our chart.
       data = Drupal.settings.tripalFeature.admin.summary;
@@ -66,14 +78,16 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
           .attr('transform', 'translate(0,' + height + ')')
           .call(xAxis);
 
-      // Wrap the scientific names so they fit better.
-      xaxis.selectAll(".tick text")
-          .call(wrap, x0.rangeBand());
+      xaxis.selectAll("text")
+            .style("text-anchor", "end")
+            .attr("dx", "-.8em")
+            .attr("dy", ".15em")
+            .attr("transform", function(d) { return "rotate(-25)"; });
 
       // Label the  x-axis.
       xaxis.append('g')
         .attr('class', 'axis-label')
-          .attr('transform', 'translate(' + width/2 + ',60)')
+          .attr('transform', 'translate(' + width/2 + ',' + (margin.bottom - 20) + ')')
         .append('text')
           .attr('font-size', '16px')
           .attr('dy', '.71em')
@@ -152,21 +166,6 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
       d3.selectAll('#tripal-feature-admin-summary-figure-desc')
         .html(Drupal.settings.tripalFeature.admin.figureDesc);
 
-      function wrap(text, width) {
-        text.each(function() {
-          var text = d3.select(this),
-              words = text.text().split(/[\s_]+/).reverse(),
-              word,
-              lineNumber = 0,
-              lineHeight = 1.1, // ems
-              y = text.attr("y"),
-              dy = parseFloat(text.attr("dy")),
-              tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
-          while (word = words.pop()) {
-            tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
-          }
-        });
-      }
     }
   }
 };

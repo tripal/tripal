@@ -63,7 +63,7 @@ function tripal_feature_admin_feature_view() {
     // Build up the easy details for the current row's type. These will be overridden
     // multiple times but that's more efficient than checking each time.
     $chart[$row->cvterm_id]['cvterm_id'] = $row->cvterm_id;
-    $chart[$row->cvterm_id]['name'] = $row->feature_type;
+    $chart[$row->cvterm_id]['name'] = str_replace('_', ' ', $row->feature_type);
 
     // Save the name of the type and organism into their respective arrays
     // for generation of axis' and legends for the chart.
