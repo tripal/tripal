@@ -307,6 +307,7 @@ function drush_tripal_core_trp_run_jobs() {
   if ($user and is_numeric($user)) {
   }
   elseif ($user) {
+    print "\nNOTE: Use of the --user argument is deprecated as it conflicts with the --user argument of Drush 7.x. Please now use --username instead.\n\n";
     $username = $user;
   }
   if ($uname) {
@@ -377,6 +378,7 @@ function drush_tripal_core_trp_rerun_job() {
   if ($user and is_numeric($user)) {
   }
   elseif ($user) {
+    print "\nNOTE: Use of the --user argument is deprecated as it conflicts with the --user argument of Drush 7.x. Please now use --username instead.\n\n";
     $username = $user;
   }
   if ($uname) {

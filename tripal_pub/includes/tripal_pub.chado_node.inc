@@ -371,7 +371,7 @@ function chado_pub_validate($node, $form, &$form_state) {
     return;
   }
 
-  // get the media name looking at the properties
+  // Get the media name looking at the properties
   $series_name = '';
   $properties = chado_retrieve_node_form_properties($node);
   foreach ($properties as $key => $prop_values) {
@@ -380,13 +380,13 @@ function chado_pub_validate($node, $form, &$form_state) {
     if ($prop_type[0]->name == 'Conference Name' or
         $prop_type[0]->name == 'Journal Name' or
         $prop_type[0]->name == 'Series Name') {
-      $series_name = $prop_values[0];
+      $series_name = array_values($prop_values)[0];
     }
     if ($prop_type[0]->name == 'Citation') {
-      $uniquename = $prop_values[0];
+      $uniquename = array_values($prop_values)[0];
     }
     if (count($prop_values) == 1) {
-      $pub[$prop_type[0]->name] = $prop_values[0];
+      $pub[$prop_type[0]->name] = array_values($prop_values)[0];
     }
     else {
       $pub[$prop_type[0]->name] = $prop_values;
