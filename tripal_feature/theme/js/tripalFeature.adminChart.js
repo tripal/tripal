@@ -18,6 +18,7 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
     }
 
     // Set-up the dimensions for our chart canvas.
+    // Note: these are adjusted below so think of these are your minimum size.
     var margin = {top: 20, right: 20, bottom: 140, left: 100},
         width = 960 - margin.left - margin.right,
         height = 500 - margin.top - margin.bottom;
@@ -27,37 +28,51 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
 
     var formatNum = d3.format("0,000");
 
-    // Set-up the scales of the chart.
-    var x0 = d3.scale.ordinal()
-        .rangeRoundBands([0, width], .1);
-    var x1 = d3.scale.ordinal();
-    var y = d3.scale.linear()
-        .range([height, 0]);
-
-    // Now set-up the axis functions.
-    var xAxis = d3.svg.axis()
-        .scale(x0)
-        .orient('bottom');
-    var yAxis = d3.svg.axis()
-        .scale(y)
-        .orient('left')
-        .ticks(10, '');
-
     // The data was parsed and saved into tripalFeature.admin.summary
     // in the preprocess function for this template.
     if (Drupal.settings.tripalFeature.admin.summary) {
 
-      // Adjust our bottom margin based on the length of type names in the data.
-      // First determine the max. number of characters in a type name.
+      // Determine the max number of characters in both the type name
+      // and the total number of features per bar for use in width/magin adjustments.
       var maxTypeLength = 0;
-      for(var i=0; i < Drupal.settings.tripalFeature.admin.summary.length; i++){
-        var element = Drupal.settings.tripalFeature.admin.summary[i].name;
-        if(element.length > maxTypeLength){
-          maxTypeLength = element.length;
+      var maxTotalLength = 0;
+      var numBars = Drupal.settings.tripalFeature.admin.summary.length;
+      for(var i=0; i < numBars; i++){
+        var element = Drupal.settings.tripalFeature.admin.summary[i];
+
+        if(element.name.length > maxTypeLength){
+          maxTypeLength = element.name.length;
+        }
+
+        if(element.total_features.length > maxTypeLength){
+          maxTotalLength = element.total_features.length;
         }
       }
-      // Then assume 4px/character based on the slope of the label.
+
+      // Adjust our bottom margin based on the length of type names in the data.
+      // Assume 4px/character based on the slope of the label.
       margin.bottom = maxTypeLength * 4;
+
+      // Adjust the width of the chart based on the number or bars (types)
+      // and the length of the bar totals which need to fit on the top of the bar.
+      // Assume 9px/character since it's not rotated.
+      width = numBars * (maxTotalLength * 9);
+
+      // Set-up the scales of the chart.
+      var x0 = d3.scale.ordinal()
+        .rangeRoundBands([0, width], .1);
+      var x1 = d3.scale.ordinal();
+      var y = d3.scale.linear()
+        .range([height, 0]);
+
+      // Now set-up the axis functions.
+      var xAxis = d3.svg.axis()
+        .scale(x0)
+        .orient('bottom');
+      var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient('left')
+        .ticks(10, '');
 
       // Create our chart canvas.
       var svg = d3.select('#tripal-feature-admin-summary-chart').append('svg')
@@ -74,15 +89,15 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
 
       // Create the x-axis.
       var xaxis = svg.append('g')
-          .attr('class', 'x axis')
-          .attr('transform', 'translate(0,' + height + ')')
-          .call(xAxis);
+        .attr('class', 'x axis')
+        .attr('transform', 'translate(0,' + height + ')')
+        .call(xAxis);
 
       xaxis.selectAll("text")
-            .style("text-anchor", "end")
-            .attr("dx", "-.8em")
-            .attr("dy", ".15em")
-            .attr("transform", function(d) { return "rotate(-25)"; });
+        .style("text-anchor", "end")
+        .attr("dx", "-.8em")
+        .attr("dy", ".15em")
+        .attr("transform", function(d) { return "rotate(-25)"; });
 
       // Label the  x-axis.
       xaxis.append('g')
@@ -139,6 +154,7 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
       .append("text")
         .attr("class", "bar-label")
         .attr("text-anchor", "middle")
+        .attr('font-size', '10px')
         .attr("x", function(d) { return x0(d.name) + x0.rangeBand()/2; })
         .attr("y", function(d) { return y(d.total_features) -5; })
         .text(function(d) { return formatNum(d.total_features); });
