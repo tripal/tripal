@@ -152,18 +152,11 @@ function tripal_pub_defaultview_admin_publications() {
   $handler->display->display_options['fields']['type']['table'] = 'cvterm';
   $handler->display->display_options['fields']['type']['field'] = 'name';
   $handler->display->display_options['fields']['type']['label'] = 'Type';
-  /* Sort criterion: Chado Pub: Pyear */
-  $handler->display->display_options['sorts']['pyear']['id'] = 'year';
-  $handler->display->display_options['sorts']['pyear']['table'] = 'pub';
-  $handler->display->display_options['sorts']['pyear']['field'] = 'pyear';
-  /* Sort criterion: Chado Pub: Title */
-  $handler->display->display_options['sorts']['title']['id'] = 'title';
-  $handler->display->display_options['sorts']['title']['table'] = 'pub';
-  $handler->display->display_options['sorts']['title']['field'] = 'title';
-  /* Sort criterion: Chado Cvterm: Name */
-  $handler->display->display_options['sorts']['type']['id'] = 'type';
-  $handler->display->display_options['sorts']['type']['table'] = 'cvterm';
-  $handler->display->display_options['sorts']['type']['field'] = 'name';
+  /* Sort criterion: Chado Pub: Id */
+  $handler->display->display_options['sorts']['pub_id']['id'] = 'pub_id';
+  $handler->display->display_options['sorts']['pub_id']['table'] = 'pub';
+  $handler->display->display_options['sorts']['pub_id']['field'] = 'pub_id';
+  $handler->display->display_options['sorts']['pub_id']['order'] = 'DESC';
   /* Filter criterion: Chado Pub: Title */
   $handler->display->display_options['filters']['title']['id'] = 'title';
   $handler->display->display_options['filters']['title']['table'] = 'pub';

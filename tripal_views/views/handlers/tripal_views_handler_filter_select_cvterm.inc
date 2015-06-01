@@ -33,15 +33,25 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
       // we can't assume that tripal admin won't do this) then we only need
       // to make one-hop to the cv table.
       if ($this->table == 'cvterm') {
+
+        $return = $this->get_select_option_where($this->table);
+        $where_clauses = $return['where_clauses'];
+        $arguements = $return['arguements'];
+        $base_where = '';
+        if (!empty($where_clauses)) {
+          $base_where = implode(' AND ', $where_clauses);
+        }
+
         // Using a "Loose Index Scan" to get a list of all the cvs used
         // in the cvterm table (ie: all the cv's with at least one term).
         // See https://wiki.postgresql.org/wiki/Loose_indexscan
         $sql = "
           WITH RECURSIVE t AS (
             SELECT MIN(cv_id) AS col FROM {!table}
+              " . ($base_where == '' ? '' : "WHERE " . $base_where) . "
             UNION ALL
-            SELECT (SELECT MIN(cv_id) FROM {!table} WHERE cv_id > col)
-            FROM t WHERE col IS NOT NULL
+            SELECT (SELECT MIN(cv_id) FROM {!table} WHERE cv_id > col " . ($base_where == '' ? '' : " AND " . $base_where) . ")
+              FROM t WHERE col IS NOT NULL
           )
           SELECT cv_id, name
             FROM {cv}
@@ -52,6 +62,30 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
       // Otherwise, (most often the case) we need to make two-hops
       // to the cv table through the cvterm table.
       else {
+
+        // There are actually two sets of conditions we care about and of course
+        // they are placed in different places in the query :p.
+        // 1. Restrictions on the cvterm table. This lets users specify: only
+        // show these exact types.
+        $return = $this->get_select_option_where('cvterm');
+        $where_clauses = $return['where_clauses'];
+        $cvterm_args = $return['arguements'];
+        $cvterm_where = '';
+        if (!empty($where_clauses)) {
+          $cvterm_where = implode(' AND ', $where_clauses);
+        }
+        // 2. Restrictions on the filter table Since those affect which types
+        // have been used.
+        $return = $this->get_select_option_where($this->table);
+        $where_clauses = $return['where_clauses'];
+        $base_args = $return['arguements'];
+        $base_where = '';
+        if (!empty($where_clauses)) {
+          $base_where = implode(' AND ', $where_clauses);
+        }
+        // We only supply one set or arguements those so merge the two.
+        $arguements = array_merge($cvterm_args, $base_args);
+
         // Using a "Loose Index Scan" to get a list of all the cvs used
         // in the table the drop-down filter is from.
         // See https://wiki.postgresql.org/wiki/Loose_indexscan
@@ -60,34 +94,29 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
             SELECT MIN(cvterm.cv_id) AS col
               FROM {!table} filter_table
               LEFT JOIN {cvterm} ON filter_table.!field=cvterm.cvterm_id
+              " . ($base_where == '' ? '' : "WHERE " . $base_where) . "
             UNION ALL
             SELECT (
                 SELECT MIN(cv_id)
                 FROM {!table} filter_table
                 LEFT JOIN {cvterm} ON filter_table.!field=cvterm.cvterm_id
-                WHERE cv_id > col
+                WHERE cv_id > col " . ($base_where == '' ? '' : " AND " . $base_where) . "
               )
               FROM t WHERE col IS NOT NULL
           )
-          SELECT cv_id, name
-            FROM chado.cv
-            WHERE cv_id IN (SELECT col FROM t where col IS NOT NULL)
-            ORDER BY cv.name ASC";
+          SELECT cvterm_id, name
+            FROM {cvterm}
+            WHERE cv_id IN (SELECT col FROM t where col IS NOT NULL) " . ($cvterm_where == '' ? '' : " AND " . $cvterm_where) . "
+            ORDER BY cvterm.name ASC";
         $sql = format_string($sql, array('!table' => $this->table, '!field' => $this->field));
       }
-      $resource = chado_query($sql);
+      $resource = chado_query($sql, $arguements);
 
       // Now actually gerenate the select list
       // based on the results from the above query.
       $cvterms = array();
       foreach ($resource as $r) {
-        $results = chado_select_record('cvterm', array('cvterm_id', 'name'), array('cv_id' => $r->cv_id));
-        if (empty($results)) {
-          $results = array();
-        }
-        foreach ($results as $c) {
-          $cvterms[$c->cvterm_id] = $c->name;
-        }
+        $cvterms[$r->cvterm_id] = $r->name;
       }
 
     }
@@ -95,28 +124,50 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
     // the base table.
     else {
 
-      $where_clauses = $this->get_select_option_where();
-      $where = '';
+      // There are actually two sets of conditions we care about and of course
+      // they are placed in different places in the query :p.
+      // 1. Restrictions on the cvterm table. This lets users specify: only
+      // show these exact types.
+      $return = $this->get_select_option_where('cvterm');
+      $where_clauses = $return['where_clauses'];
+      $cvterm_args = $return['arguements'];
+      $cvterm_where = '';
       if (!empty($where_clauses)) {
-        $where = ' AND ' . implode(' AND ', $where_clauses);
+        $cvterm_where = implode(' AND ', $where_clauses);
       }
+      // 2. Restrictions on the filter table Since those affect which types
+      // have been used.
+      $return = $this->get_select_option_where($this->table);
+      $where_clauses = $return['where_clauses'];
+      $base_args = $return['arguements'];
+      $base_where = '';
+      if (!empty($where_clauses)) {
+        $base_where = implode(' AND ', $where_clauses);
+      }
+      // We only supply one set or arguements those so merge the two.
+      $arguements = array_merge($cvterm_args, $base_args);
 
       // Using a "Loose Index Scan" to get a list of all the cvterms used
       // in the base table. See https://wiki.postgresql.org/wiki/Loose_indexscan
       $sql = "
         WITH RECURSIVE t AS (
-          SELECT MIN(!field) AS col FROM {!table} " . ($where == '' ? '' : "WHERE " . $where) . "
+          SELECT MIN(!field) AS col FROM {!table}
+            " . ($base_where == '' ? '' : "WHERE " . $base_where) . "
           UNION ALL
-          SELECT (SELECT MIN(!field) FROM {!table} WHERE !field > col " . $where . ")
+          SELECT (
+            SELECT MIN(!field)
+            FROM {!table}
+            WHERE !field > col " . ($base_where == '' ? '' : " AND " . $base_where) . "
+          )
           FROM t WHERE col IS NOT NULL
         )
         SELECT cvterm_id, name
           FROM {cvterm}
-          WHERE cvterm_id IN (SELECT col FROM t where col IS NOT NULL)
+          WHERE cvterm_id IN (SELECT col FROM t where col IS NOT NULL) " . ($cvterm_where == '' ? '' : " AND " . $cvterm_where) . "
           ORDER BY cvterm.name ASC";
       $sql = format_string($sql, array('!table' => $this->table, '!field' => $this->field));
 
-      $resource = chado_query($sql);
+      $resource = chado_query($sql, $arguements);
       $cvterms = array();
 
       // Add an "- Any - " option to allow a type to not be set by default.
@@ -141,9 +192,10 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
    * @return
    *   An array of full qualified where clauses (ie: table.myfield = 'fred')
    */
-  function get_select_option_where() {
-    $where = array();
-
+  function get_select_option_where($table = NULL, $generic_placeholder = TRUE) {
+    return parent::get_select_option_where($table, $generic_placeholder);
+  }
+/*
     // build a where clause that will filter the list in the drop box
     // using fields that are not exposed and that are for the table
     // from whcih the values in the drop box will be slected and
@@ -180,7 +232,7 @@ class tripal_views_handler_filter_select_cvterm extends tripal_views_handler_fil
 
     return $where;
   }
-
+*/
   /**
    * {@inheritdoc}
    */

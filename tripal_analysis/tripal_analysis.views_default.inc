@@ -217,6 +217,11 @@ function tripal_analysis_defaultvalue_admin_analysis() {
   $handler->display->display_options['fields']['nothing']['label'] = '';
   $handler->display->display_options['fields']['nothing']['alter']['text'] = '[edit_node]   [delete_node]';
   $handler->display->display_options['fields']['nothing']['element_label_colon'] = FALSE;
+  /* Sort criterion: Chado Analysis: Analysis Id */
+  $handler->display->display_options['sorts']['analysis_id']['id'] = 'analysis_id';
+  $handler->display->display_options['sorts']['analysis_id']['table'] = 'analysis';
+  $handler->display->display_options['sorts']['analysis_id']['field'] = 'analysis_id';
+  $handler->display->display_options['sorts']['analysis_id']['order'] = 'DESC';
   /* Filter criterion: Chado Analysis: Name */
   $handler->display->display_options['filters']['name']['id'] = 'name';
   $handler->display->display_options['filters']['name']['table'] = 'analysis';

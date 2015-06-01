@@ -233,14 +233,11 @@ function tripal_stock_defaultview_admin_stocks() {
   $handler->display->display_options['fields']['nothing']['label'] = '';
   $handler->display->display_options['fields']['nothing']['alter']['text'] = '[edit_node]   [delete_node]';
   $handler->display->display_options['fields']['nothing']['element_label_colon'] = FALSE;
-  /* Sort criterion: Chado Organism: Common Name */
-  $handler->display->display_options['sorts']['common_name']['id'] = 'common_name';
-  $handler->display->display_options['sorts']['common_name']['table'] = 'organism';
-  $handler->display->display_options['sorts']['common_name']['field'] = 'common_name';
-  /* Sort criterion: Chado Stock: Uniquename */
-  $handler->display->display_options['sorts']['uniquename']['id'] = 'uniquename';
-  $handler->display->display_options['sorts']['uniquename']['table'] = 'stock';
-  $handler->display->display_options['sorts']['uniquename']['field'] = 'uniquename';
+  /* Sort criterion: Chado Stock: Id */
+  $handler->display->display_options['sorts']['stock_id']['id'] = 'stock_id';
+  $handler->display->display_options['sorts']['stock_id']['table'] = 'stock';
+  $handler->display->display_options['sorts']['stock_id']['field'] = 'stock_id';
+  $handler->display->display_options['sorts']['stock_id']['order'] = 'DESC';
   /* Filter criterion: Chado Organism: Common Name */
   $handler->display->display_options['filters']['common_name']['id'] = 'common_name';
   $handler->display->display_options['filters']['common_name']['table'] = 'organism';

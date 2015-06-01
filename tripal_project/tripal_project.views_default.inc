@@ -223,6 +223,11 @@ function tripal_project_defaultview_admin_projects() {
   $handler->display->display_options['fields']['nothing']['element_class'] = 'short-column';
   $handler->display->display_options['fields']['nothing']['element_label_class'] = 'short-column';
   $handler->display->display_options['fields']['nothing']['element_label_colon'] = FALSE;
+  /* Sort criterion: Chado Project: Id */
+  $handler->display->display_options['sorts']['project_id']['id'] = 'project_id';
+  $handler->display->display_options['sorts']['project_id']['table'] = 'project';
+  $handler->display->display_options['sorts']['project_id']['field'] = 'project_id';
+  $handler->display->display_options['sorts']['project_id']['order'] = 'DESC';
   /* Filter criterion: Chado Project: Name */
   $handler->display->display_options['filters']['name']['id'] = 'name';
   $handler->display->display_options['filters']['name']['table'] = 'project';

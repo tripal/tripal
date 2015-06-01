@@ -475,18 +475,11 @@ function tripal_feature_defaultview_admin_features() {
   $handler->display->display_options['fields']['nothing']['label'] = '';
   $handler->display->display_options['fields']['nothing']['alter']['text'] = '[edit_node]   [delete_node]';
   $handler->display->display_options['fields']['nothing']['element_label_colon'] = FALSE;
-  /* Sort criterion: Chado Organism: Common Name */
-  $handler->display->display_options['sorts']['common_name']['id'] = 'common_name';
-  $handler->display->display_options['sorts']['common_name']['table'] = 'organism';
-  $handler->display->display_options['sorts']['common_name']['field'] = 'common_name';
-  /* Sort criterion: Chado Cvterm: Name */
-  $handler->display->display_options['sorts']['name']['id'] = 'name';
-  $handler->display->display_options['sorts']['name']['table'] = 'cvterm';
-  $handler->display->display_options['sorts']['name']['field'] = 'name';
-  /* Sort criterion: Chado Feature: Name */
-  $handler->display->display_options['sorts']['name_1']['id'] = 'name_1';
-  $handler->display->display_options['sorts']['name_1']['table'] = 'feature';
-  $handler->display->display_options['sorts']['name_1']['field'] = 'name';
+  /* Sort criterion: Chado Feature: Feature Id */
+  $handler->display->display_options['sorts']['feature_id']['id'] = 'feature_id';
+  $handler->display->display_options['sorts']['feature_id']['table'] = 'feature';
+  $handler->display->display_options['sorts']['feature_id']['field'] = 'feature_id';
+  $handler->display->display_options['sorts']['feature_id']['order'] = 'DESC';
   /* Filter criterion: Chado Organism: Common Name */
   $handler->display->display_options['filters']['common_name']['id'] = 'common_name';
   $handler->display->display_options['filters']['common_name']['table'] = 'organism';

@@ -64,6 +64,11 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
       'bool' => TRUE,
       'export' => TRUE
     );
+    $options['show_all'] = array(
+      'default' => FALSE,
+      'bool' => TRUE,
+      'export' => TRUE
+    );
     $options['max_length'] = array(
       'default' => 40,
       'export' => TRUE
@@ -81,7 +86,9 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
    */
   function get_select_options() {
 
-    $where_clauses = $this->get_select_option_where();
+    $return = $this->get_select_option_where();
+    $where_clauses = $return['where_clauses'];
+    $arguements = $return['arguements'];
     $where = '';
     if (!empty($where_clauses)) {
       $where = ' WHERE ' . implode(' AND ', $where_clauses);
@@ -89,7 +96,7 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
 
     // get the values from the table
     $sql = 'SELECT ' . $this->real_field . ' FROM {' . $this->table . '} ' . $where . ' ORDER BY ' . $this->field . ' ASC';
-    $results = chado_query($sql);
+    $results = chado_query($sql, $arguements);
 
     // Build the select box options
     $max_length = (isset($this->options['max_length'])) ? $this->options['max_length'] : 40;
@@ -118,8 +125,11 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
    * @return
    *   An array of full qualified where clauses (ie: table.myfield = 'fred')
    */
-  function get_select_option_where() {
+  function get_select_option_where($table = NULL, $generic_placeholder = TRUE) {
     $where = array();
+    $values = array();
+
+    $table = (is_null($table)) ? $this->table : $table;
 
     // build a where clause that will filter the list in the drop box
     // using fields that are not exposed and that are for the table
@@ -128,32 +138,47 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
     // available to the user to edit--they're fixed.
     $where = array();
     $filters = (is_array($this->view->filter)) ? $this->view->filter : array();
+    $placeholder_prefix = 'arg';
+    $i = 0;
     foreach ($filters as $filter_name => $details) {
       // we only want to inclue non-exposed filters
       if ($details->options['exposed'] == FALSE) {
+        $i++;
 
         $value = $details->value;
         if (is_array($details->value) AND isset($details->value['value'])) {
          $value = $details->value['value'];
         }
 
-        if (is_array($value)) {
-          // we only want to filter on the table we're getting the list from
-          if (strcmp($details->table, $this->table)==0 AND !empty($value)) {
-            $where[] = "$details->field IN (" . implode(', ', $value) . ')';
-          }
-
+        // Generate the current placeholder.
+        if ($generic_placeholder) {
+          $placeholder = ':'.$placeholder_prefix.$i;
         }
         else {
-          // we only want to filter on the table we're getting the list from
-          if (strcmp($details->table, $this->table)==0 AND !empty($value)) {
-            $where[] = "$details->field $details->operator " . $value;
+          $placeholder = $details->real_field;
+        }
+
+        // we only want to filter on the table we're getting the list from
+        if (strcmp($details->table, $table)==0 AND !empty($value)) {
+
+          // If the value is an array then use IN instead of the choosen operator.
+          if (is_array($value)) {
+              $where[] = "$details->field IN ($placeholder)";
+              $values[$placeholder] = $value;
+          }
+          // Otherwise, just use the operator choosen by the admin.
+          else {
+            $where[] = "$details->field $details->operator $placeholder";
+            $values[$placeholder] = $value;
           }
         }
       }
     }
 
-    return $where;
+    return array(
+      'where_clauses' => $where,
+      'arguements' => $values
+    );
   }
 
   /**
@@ -170,6 +195,13 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
         'select' => 'Drop-Down Box',
       ),
       '#default_value' => $this->options['values_form_type'],
+    );
+
+    $form['show_all'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Show All'),
+      '#description' => t('When selected all terms from the controlled vocaulbary used by the table will be shown where the default is to only show those that are used.'),
+      '#default_value' => $this->options['show_all'],
     );
 
     $form['select_multiple'] = array(
@@ -212,6 +244,7 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
     $this->options['select_multiple'] = $form_state['values']['options']['select_multiple'];
     $this->options['select_optional'] = $form_state['values']['options']['select_optional'];
     $this->options['max_length'] = $form_state['values']['options']['max_length'];
+    $this->options['show_all'] = $form_state['values']['options']['show_all'];
   }
 
   /**
@@ -222,6 +255,7 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
     $this->options['select_multiple'] = FALSE;
     $this->options['select_optional'] = FALSE;
     $this->options['max_length'] = 40;
+    $this->options['show_all'] = FALSE;
   }
 
   /**

@@ -177,6 +177,11 @@ function tripal_phenotype_defaultview_admin_phenotypes() {
   $handler->display->display_options['fields']['name']['field'] = 'name';
   $handler->display->display_options['fields']['name']['relationship'] = 'assay_id_to_cvterm';
   $handler->display->display_options['fields']['name']['label'] = 'Evidence Type';
+  /* Sort criterion: Chado Phenotype: Id */
+  $handler->display->display_options['sorts']['phenotype_id']['id'] = 'phenotype_id';
+  $handler->display->display_options['sorts']['phenotype_id']['table'] = 'phenotype';
+  $handler->display->display_options['sorts']['phenotype_id']['field'] = 'phenotype_id';
+  $handler->display->display_options['sorts']['phenotype_id']['order'] = 'DESC';
   /* Filter criterion: Chado Phenotype: Attr Id */
   $handler->display->display_options['filters']['attr_id']['id'] = 'attr_id';
   $handler->display->display_options['filters']['attr_id']['table'] = 'phenotype';
