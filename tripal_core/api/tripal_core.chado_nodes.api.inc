@@ -788,6 +788,9 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
   if (!$linking_table) {
     $linking_table = 'chado_' . $base_table;
   }
+  if (!$node_type) {
+    $node_type = 'chado_' . $base_table;
+  }
 
   print "\nSync'ing $base_table records.  ";
 

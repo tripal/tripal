@@ -161,7 +161,7 @@ function tripal_pub_create_citation($pub) {
   // Therefore, we need to select the type that makes most sense for
   // construction of the citation. Here we'll iterate through them all
   // and select the one that matches best.
-  if(is_array($pub['Publication Type'])) {
+  if (is_array($pub['Publication Type'])) {
     foreach ($pub['Publication Type'] as $ptype) {
       if ($ptype == 'Journal Article' ) {
         $pub_type = $ptype;
@@ -193,16 +193,10 @@ function tripal_pub_create_citation($pub) {
         // we prefer that type
       }
     }
+    // If we don't have a recognized publication type, then just use the
+    // first one in the list.
     if (!$pub_type) {
-      tripal_report_error('tripal_pub', TRIPAL_ERROR,
-        "Cannot generate citation for publication type: %types.\nTitle: %title.\nDbxref: %dbxref",
-        array(
-          '%types' => print_r($pub['Publication Type'], TRUE),
-          '%title' => $pub['Title'],
-          '%dbxref' => $pub['Publication Dbxref'],
-        )
-      );
-      return FALSE;
+      $pub_type = $pub['Publication Type'][0];
     }
   }
   else {
@@ -363,9 +357,9 @@ function tripal_pub_create_citation($pub) {
     }
     $citation .= '.';
   }
-  //----------------------
+  //-----------------------
   // Conference Proceedings
-  //----------------------
+  //-----------------------
   elseif ($pub_type == 'Conference Proceedings') {
     if (array_key_exists('Authors', $pub)) {
       $citation = $pub['Authors'] . '. ';
@@ -376,6 +370,43 @@ function tripal_pub_create_citation($pub) {
       $citation .= $pub['Conference Name'] . '. ';
     }
     elseif (array_key_exists('Series Name', $pub)) {
+      $citation .= $pub['Series Name'] . '. ';
+    }
+    elseif (array_key_exists('Series Abbreviation', $pub)) {
+      $citation .= $pub['Series Abbreviation'] . '. ';
+    }
+    if (array_key_exists('Publication Date', $pub)) {
+      $citation .= $pub['Publication Date'];
+    }
+    elseif (array_key_exists('Year', $pub)) {
+      $citation .= $pub['Year'];
+    }
+    if (array_key_exists('Volume', $pub) or array_key_exists('Issue', $pub) or array_key_exists('Pages',$pub)) {
+      $citation .= '; ';
+    }
+    if (array_key_exists('Volume', $pub)) {
+      $citation .= $pub['Volume'];
+    }
+    if (array_key_exists('Issue', $pub)) {
+      $citation .= '(' . $pub['Issue'] . ')';
+    }
+    if (array_key_exists('Pages', $pub)) {
+      if (array_key_exists('Volume', $pub)) {
+        $citation .= ':';
+      }
+      $citation .= $pub['Pages'];
+    }
+    $citation .= '.';
+  }
+  //-----------------------
+  // Default
+  //-----------------------
+  else {
+    if (array_key_exists('Authors', $pub)) {
+      $citation = $pub['Authors'] . '. ';
+    }
+    $citation .= $pub['Title'] .  '. ';
+    if (array_key_exists('Series Name', $pub)) {
       $citation .= $pub['Series Name'] . '. ';
     }
     elseif (array_key_exists('Series Abbreviation', $pub)) {

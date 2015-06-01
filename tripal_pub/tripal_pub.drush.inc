@@ -31,7 +31,7 @@ function tripal_pub_drush_help($command) {
  */
 function tripal_pub_drush_command() {
   $items = array();
-  
+
   $items['trp-import-pubs'] = array(
     'description' => dt('Imports publications from remote databases using saved configuration settings.'),
     'options' => array(
@@ -39,6 +39,9 @@ function tripal_pub_drush_command() {
       'dbxref' => dt('An accession number for a publication from a remote database (e.g. PMID:23582642).'),
       'report' => dt("Set to the email address of the recipient who should receive an HTML report of the publications that have been added."),
       'update' => dt("Set to 'Y' to update existing pubs.  By default only new pubs are inserted."),
+      'username' => array(
+        'description' => dt('The Drupal user name for which the job should be run.  The permissions for this user will be used.'),
+      ),
     ),
     'examples' => array(
       'Standard example' => 'drush tripal-pubs-import',
@@ -60,7 +63,7 @@ function tripal_pub_drush_command() {
       'Update all records for a single database' => 'drush tripal-pubs-update --db=PMID'
     ),
   );
-  
+
   // Deprecated commands
   $items['tripal-pubs-import'] = array(
     'description' => dt('DEPRECATED. Please see: trp-import-pubs.'),
@@ -106,6 +109,8 @@ function drush_tripal_pub_trp_import_pubs() {
   $dbxref = drush_get_option('dbxref');
   $do_report = drush_get_option('report');
   $update = drush_get_option('update');
+  $uname = drush_get_option('username');
+  drush_tripal_core_set_user($uname);
 
   if($update == 'Y') {
     $update = TRUE;
@@ -154,6 +159,6 @@ function drush_tripal_pub_trp_update_pubs() {
 function drush_tripal_pub_tripal_pubs_update() {
   drush_print("\n\nDEPRECATED: This drush command is outdated.\nIt will ".
       "continue to work but please consider using the 'trp-update-pubs' command.\n\n");
-  
+
   drush_tripal_pub_trp_update_pubs();
 }

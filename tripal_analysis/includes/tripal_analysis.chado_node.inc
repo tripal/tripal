@@ -8,6 +8,7 @@
 
 /**
  * Implements hook_node_info().
+ *
  * Provide information to drupal about the node types that we're creating
  * in this module
  *
