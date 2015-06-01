@@ -128,7 +128,7 @@ function tripal_autocomplete_contact($text) {
 
   $sql = "SELECT * FROM {contact} WHERE lower(name) like lower(:name) ";
   $args = array();
-  $args[':name'] = $name . '%';
+  $args[':name'] = $text . '%';
   $sql .= "ORDER BY name ";
   $sql .= "LIMIT 25 OFFSET 0 ";
   $results = chado_query($sql, $args);

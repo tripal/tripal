@@ -908,17 +908,15 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
   try {
     $percent = 0;
     foreach ($results as $record) {
-
-      //print "\nLoading $base_table " . ($i + 1) . " of $count ($base_table_id=" . $record->{$base_table_id} . ")...";
-
-      // update the job status every 1% features
+      // Update the job status every 1% features.
       if ($job_id and $i % $interval == 0) {
         $percent = sprintf("%.2f", (($i + 1) / $count) * 100);
         print "Syncing $base_table " . ($i + 1) . " of $count (" . $percent . "%). Memory: " . number_format(memory_get_usage()) . " bytes.\r";
         tripal_set_job_progress($job_id, intval(($i/$count)*100));
       }
 
-      // Check if it is in the chado linking table (ie: check to see if it is already linked to a node)
+      // Check if the record is already in the chado linking table
+      // (ie: check to see if it is already linked to a node).
       $result = db_select($linking_table, 'lnk')
         ->fields('lnk',array('nid'))
         ->condition($base_table_id, $record->{$base_table_id}, '=')
@@ -926,7 +924,7 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
         ->fetchObject();
 
       if (empty($result)) {
-        // Create generic new node
+        // Create generic new node.
         $new_node = new stdClass();
         $new_node->type = $node_type;
         $new_node->uid = $user->uid;
@@ -948,8 +946,9 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
 
         if (!form_get_errors()) {
           $node = node_submit($new_node);
+          // If there are memory leaks on the node_save it is probably
+          // caused by the hook_node_insert() function.
           node_save($node);
-          //print " Node Created (nid=".$node->nid.")";
         }
         else {
           throw new Exception(t("Failed to insert $base_table: %title", array('%title' => $new_node->title)));
@@ -1001,12 +1000,23 @@ function chado_cleanup_orphaned_nodes($table, $nentries = 25000, $linking_table,
     $count = $temp->count;
   }
 
-  $m = ceil($count / $nentries);
-  for ($i = 0; $i < $m; $i++) {
-    $offset = ($nentries * $i);
-    chado_cleanup_orphaned_nodes_part($table, $job_id, $nentries, $offset, $linking_table, $node_type);
+  $transaction = db_transaction();
+  print "\nNOTE: Syncing is performed using a database transaction. \n" .
+    "If the sync fails or is terminated prematurely then the entire set of \n" .
+    "synced items is rolled back and will not be found in the database\n\n";
+  try {
+    $m = ceil($count / $nentries);
+    for ($i = 0; $i < $m; $i++) {
+      $offset = ($nentries * $i);
+      chado_cleanup_orphaned_nodes_part($table, $job_id, $nentries, $offset, $linking_table, $node_type);
+    }
   }
-
+  catch (Exception $e) {
+    $transaction->rollback();
+    print "\n"; // make sure we start errors on new line
+    watchdog_exception('trp-fsync', $e);
+    print "FAILED: Rolling back database changes...\n";
+  }
   return '';
 }
 
@@ -1023,7 +1033,9 @@ function chado_cleanup_orphaned_nodes($table, $nentries = 25000, $linking_table,
  *
  * @ingroup tripal_chado_node_api
  */
-function chado_cleanup_orphaned_nodes_part($table, $job_id = NULL, $nentries, $offset, $linking_table, $node_type) {
+function chado_cleanup_orphaned_nodes_part($table, $job_id = NULL, $nentries,
+    $offset, $linking_table, $node_type) {
+
   $count = 0;
 
   // Retrieve all of the entries in the linker table for a given node type
@@ -1126,19 +1138,21 @@ function chado_cleanup_orphaned_nodes_part($table, $job_id = NULL, $nentries, $o
 
       // check to see if the node has a corresponding entry
       // in the $linking_table table. If not then delete the node.
-      $csql = "SELECT * FROM {" . $linking_table . "} WHERE nid = :nid ";
-      $results = db_query($csql, array(':nid' => $node->nid));
-      $link = $results->fetchObject();
-      if (!$link) {
-        if (node_access('delete', $node)) {
-          $deleted++;
-          //print "Node missing in $linking_table table.... DELETING node $node->nid\n";
-          node_delete($node->nid);
-        }
-        else {
-          print "\nNode missing in $linking_table table.... but cannot delete due to improper permissions (node $node->nid)\n";
-        }
-      }
+       $csql = "SELECT * FROM {" . $linking_table . "} WHERE nid = :nid ";
+       $results = db_query($csql, array(':nid' => $node->nid));
+       $link = $results->fetchObject();
+       if (!$link) {
+         // Checking node_access creates a memory leak. Commenting out for now
+         // assuming that this code can only be run by a site administrator
+         // anyway.
+//         if (node_access('delete', $node)) {
+           $deleted++;
+           node_delete($node->nid);
+//         }
+//         else {
+//           print "\nNode missing in $linking_table table.... but cannot delete due to improper permissions (node $node->nid)\n";
+//         }
+       }
       $i++;
     }
     $percent = sprintf("%.2f", ($i / $count) * 100);
