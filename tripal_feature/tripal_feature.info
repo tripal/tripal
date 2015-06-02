@@ -3,7 +3,7 @@ description = Supports the sequence (feature) tables of Chado by providing pages
 core = 7.x
 project = tripal
 package = Tripal
-version = 7.x-2.0-rc1
+version = 7.x-2.0
 
 stylesheets[all][] = theme/css/tripal_feature.css
 scripts[]          = theme/js/tripal_feature.js

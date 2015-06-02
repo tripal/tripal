@@ -3,7 +3,7 @@ description = Provides support for all Tripal modules and includes the Tripal AP
 core = 7.x
 project = tripal
 package = Tripal
-version = 7.x-2.0-rc1
+version = 7.x-2.0
 configure = admin/tripal
 
 stylesheets[all][] = theme/css/tripal.css
