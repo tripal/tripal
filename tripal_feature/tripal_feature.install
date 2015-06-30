@@ -112,7 +112,7 @@ function tripal_feature_add_tripal_gff_temp_table() {
 /**
  *
  */
-function tripal_feature_add_tripal_gffcds_temp_table() {
+function tripal_feature_add_tripal_gffcds_temp_table($skip_recreate = TRUE) {
   $schema = array(
     'table' => 'tripal_gffcds_temp',
     'fields' => array(
@@ -145,11 +145,8 @@ function tripal_feature_add_tripal_gffcds_temp_table() {
       'tripal_gff_temp_idx0' => array('feature_id'),
       'tripal_gff_temp_idx0' => array('parent_id'),
     ),
-    'unique keys' => array(
-      'tripal_gff_temp_uq0' => array('feature_id'),
-    ),
   );
-  chado_create_custom_table('tripal_gffcds_temp', $schema, TRUE);
+  chado_create_custom_table('tripal_gffcds_temp', $schema, $skip_recreate);
 }
 
 /**
@@ -498,7 +495,26 @@ function tripal_feature_update_7201() {
  * Adds the temporary tables used for loading GFF files.
  */
 function tripal_feature_update_7202() {
-  tripal_feature_add_tripal_gff_temp_table();
-  tripal_feature_add_tripal_gffcds_temp_table();
-  tripal_feature_add_tripal_gffprotein_temp_table();
+  try {
+    tripal_feature_add_tripal_gff_temp_table();
+    tripal_feature_add_tripal_gffcds_temp_table();
+    tripal_feature_add_tripal_gffprotein_temp_table();
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to complete update' . $error);
+  }
+}
+
+/**
+ * Removes the unique constraint on the tripal_gffcds_temp table.
+ */
+function tripal_feature_update_7203() {
+  try {
+    tripal_feature_add_tripal_gffcds_temp_table(FALSE);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to complete update' . $error);
+  }
 }

@@ -946,6 +946,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
             else {
               $pfmin += $min_phase[0]->phase;
             }
+
             // Add the new protein record.
             $feature = tripal_feature_load_gff3_feature($organism, $analysis_id,
               $protein_cvterm, $uname, $name, '', 'f', 'f', 1, 0);
@@ -961,10 +962,9 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         }
       }
 
-
       print "\nSetting ranks of children...\n";
 
-      // get features in a relationship that are also children of an alignment
+      // Get features in a relationship that are also children of an alignment.
       $sql = "
         SELECT DISTINCT F.feature_id, F.organism_id, F.type_id,
           F.uniquename, FL.strand
@@ -977,15 +977,17 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       ";
       $parents = chado_query($sql);
 
-      // build and prepare the SQL for selecting the children relationship
+      // Build and prepare the SQL for selecting the children relationship.
       $sel_gffchildren_sql = "
         SELECT DISTINCT FR.feature_relationship_id, FL.fmin, FR.rank
         FROM {feature_relationship} FR
           INNER JOIN {featureloc} FL on FL.feature_id = FR.subject_id
-        WHERE FR.object_id = :feature_id ORDER BY FL.fmin ASC
+          INNER JOIN {cvterm} CVT on CVT.cvterm_id = FR.type_id
+        WHERE FR.object_id = :feature_id AND CVT.name = 'part_of'
+        ORDER BY FL.fmin ASC
       ";
 
-      // now set the rank of any parent/child relationships.  The order is based
+      // Now set the rank of any parent/child relationships.  The order is based
       // on the fmin.  The start rank is 1.  This allows features with other
       // relationships to be '0' (the default), and doesn't interfer with the
       // ordering defined here.
