@@ -1,22 +1,6 @@
 Drupal.behaviors.tripalFeature_adminSummaryChart = {
   attach: function (context, settings) {
 
-    // First add the container after the view header.
-    var container = d3.select('#tripal-feature-admin-summary');
-    if (container.empty) {
-      container = d3.select('.view-header').append('div')
-        .attr('id', 'tripal-feature-admin-summary')
-        .classed('tripal-admin-summary',true);
-
-      container.append('div')
-        .attr('id', 'tripal-feature-admin-summary-chart')
-        .classed('tripal-admin-chart',true);
-
-      container.append('div')
-        .attr('id', 'tripal-feature-admin-summary-figure-desc')
-        .classed('tripal-admin-figure-desc',true);
-    }
-
     // Set-up the dimensions for our chart canvas.
     // Note: these are adjusted below so think of these are your minimum size.
     var margin = {top: 20, right: 50, bottom: 20, left: 100},
@@ -254,12 +238,6 @@ Drupal.behaviors.tripalFeature_adminSummaryChart = {
             .attr('font-style','italic')
             .text(function(d) { return d; });
       }
-
-
-      // Add a small blurb mentioning this is from an mview and you should update ;).
-      d3.selectAll('#tripal-feature-admin-summary-figure-desc')
-        .html(Drupal.settings.tripalFeature.admin.figureDesc);
-
     }
   }
 };

@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 
 /**
@@ -27,9 +27,9 @@ function tripal_feature_preprocess_tripal_feature_sequence(&$variables) {
   // now extract the sequences
   $featureloc_sequences = tripal_feature_load_featureloc_sequences($feature->feature_id, $ffeaturelocs);
   $feature->featureloc_sequences = $featureloc_sequences;
-  
+
   // if this feature has associated protein sequences (or others via relationships
-  // then we want to make sure the relationships are added so that we can 
+  // then we want to make sure the relationships are added so that we can
   // show the protein sequences
   if (!$feature->all_relationships) {
     $feature->all_relationships = tripal_feature_get_feature_relationships($feature);
@@ -145,7 +145,7 @@ function tripal_feature_load_featureloc_sequences($feature_id, $featurelocs) {
       $args = array(':feature_id' => $featureloc->srcfeature_id->feature_id);
       $start = $featureloc->fmin + 1;
       $size = $featureloc->fmax - $featureloc->fmin;
-      
+
       // TODO: fix the hard coded $start and $size
       // the $start and $size variables are hard-coded in the SQL statement
       // because the db_query function places quotes around all placeholders
@@ -852,11 +852,11 @@ function tripal_feature_get_feature_relationships($feature) {
         }
       }
       $rel->record = $relationship;
-       
+
       // get the relationship and child types
       $rel_type = t(preg_replace('/_/', " ", $relationship->type_id->name));
       $child_type = $relationship->subject_id->type_id->name;
-       
+
       // get the node id of the subject
       $sql = "SELECT nid FROM {chado_feature} WHERE feature_id = :feature_id";
       $n = db_query($sql, array(':feature_id' => $relationship->subject_id->feature_id))->fetchObject();
@@ -893,14 +893,14 @@ function tripal_feature_get_feature_relationships($feature) {
       $rel->record = $relationship;
       $rel_type = t(preg_replace('/_/', " ", $relationship->type_id->name));
       $parent_type = $relationship->object_id->type_id->name;
-       
+
       // get the node id of the subject
       $sql = "SELECT nid FROM {chado_feature} WHERE feature_id = :feature_id";
       $n = db_query($sql, array(':feature_id' => $relationship->object_id->feature_id))->fetchObject();
       if ($n) {
         $rel->record->nid = $n->nid;
       }
-       
+
       if (!array_key_exists($rel_type, $relationships['subject'])) {
         $relationships['subject'][$rel_type] = array();
       }
@@ -911,4 +911,117 @@ function tripal_feature_get_feature_relationships($feature) {
     }
   }
   return $relationships;
+}
+
+/**
+ *
+ */
+function tripal_feature_preprocess_tripal_feature_bar_chart_type_organism_summary(&$vars) {
+
+  // Add in all the javascript/css files.
+  tripal_add_d3js();
+  drupal_add_css(drupal_get_path('module','tripal_feature') . '/theme/css/tripal_feature.css');
+  drupal_add_js(drupal_get_path('module','tripal_feature') . '/theme/js/tripalFeature.adminChart.js');
+
+  // Retrieve and process all the data and save it as javascript settings.
+  //'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+  // We are using the organism_feature_count materialized view as the source for our data.
+  // Thus grab all the records from this materialized view.
+  $organism_feature_count = chado_select_record(
+    'organism_feature_count',
+    array('*'),
+    array(),
+    array('order_by' => array('genus' => 'ASC', 'species' => 'ASC', 'feature_type' => 'ASC', 'num_features' => 'DESC'))
+  );
+
+  // Initialize variables.
+  $chart = array();
+  $type_names = array();
+  $organism_names = array();
+  $max_bar_height = 0;
+
+  // Process each row of the materialzied view into the chart array.
+  // Note: it's first keyed by type since each type will be a bar. Each type will have
+  // a "bars" array with the start (y0) and end (y1) height on the bar for a given
+  // organism. Finally we keep a record of the names of the types & organisms
+  // for axis' and legend generation respectively.
+  foreach ($organism_feature_count as $row) {
+
+    // Build up the easy details for the current row's type. These will be overridden
+    // multiple times but that's more efficient than checking each time.
+    $chart[$row->cvterm_id]['cvterm_id'] = $row->cvterm_id;
+    $chart[$row->cvterm_id]['name'] = str_replace('_', ' ', $row->feature_type);
+
+    // Save the name of the type and organism into their respective arrays
+    // for generation of axis' and legends for the chart.
+    $type_names[$row->cvterm_id] = $row->feature_type;
+    $organism_names[$row->organism_id] = $row->genus . ' ' . $row->species;
+
+    // Save information about the current organism. This isn't actually used by the
+    // chart but can be used to debug the bar generation to follow.
+    $chart[$row->cvterm_id]['organisms'][] = array(
+      'name' => $row->genus . ' ' . $row->species,
+      'value' => (int) $row->num_features
+    );
+
+    // Now to build the bar array with the start (y0) and end (y1) height on the
+    // bar for a given organism.
+    // NOTE: we cannot assume the types are all in order so store y0 & y1 in the
+    // $chart[type] array.
+    // If y0 has not yet been set for this type then we're starting with the first
+    // chunk (organism) on the bar.
+    if (!isset($chart[$row->cvterm_id]['y0'])) {
+      $chart[$row->cvterm_id]['y0'] = 0;
+      $chart[$row->cvterm_id]['y1'] = $row->num_features;
+    }
+    // Otherwise, add the next chunk (organism) on top of the pre-existing bar.
+    else {
+      $chart[$row->cvterm_id]['y0'] = $chart[$row->cvterm_id]['y1'];
+      $chart[$row->cvterm_id]['y1'] = $chart[$row->cvterm_id]['y0'] + $row->num_features;
+    }
+    // Now save the bar chunk we just determined.
+    $chart[$row->cvterm_id]['bars'][] = array(
+      'name' => $row->genus . ' ' . $row->species,
+      'y0' => $chart[$row->cvterm_id]['y0'],
+      'y1' => $chart[$row->cvterm_id]['y1'],
+    );
+
+    // We also need to keep track of the total number of features for a single bar (Type).
+    $chart[$row->cvterm_id]['total_features'] = (int) $chart[$row->cvterm_id]['y1'];
+    // And the maximum "height" for all bars.
+    if ($max_bar_height < $chart[$row->cvterm_id]['total_features']) {
+      $max_bar_height = (int) $chart[$row->cvterm_id]['total_features'];
+    }
+  }
+
+  // Sort based on the total number of features.
+  // NOTE: This changes the keys so it's no longer the organism/type_id.
+  usort($chart, 'tripal_feature_admin_summary_sort');
+  sort($type_names);
+  sort($organism_names);
+
+  // We also need to add information about the materialized views
+  // so that admin can update it and know how recent the data is.
+  $mview = db_query('
+    SELECT mview_id, name, last_update
+    FROM tripal_mviews
+    WHERE mv_table=:mv_table',
+    array(':mv_table' => 'organism_feature_count')
+  )->fetchObject();
+
+  $vars['chart_details'] = array(
+    'summary' => $chart,
+    'types' => $type_names,
+    'organisms' => $organism_names,
+    'legendPosition' => 'top',
+    'maxBarHeight' => $max_bar_height,
+    'mviewUrl' => url('admin/tripal/schema/mviews/update/' . $mview->mview_id),
+    'mviewTable' => $mview->name,
+    'mviewLastUpdate' => $mview->last_update ? format_date($mview->last_update) : '',
+  );
+
+  // Save everything we just determined as a Drupal JS settings so that we have access to
+  // it in our js script.
+  drupal_add_js(array('tripalFeature' => array('admin' => $vars['chart_details'])), 'setting');
 }
