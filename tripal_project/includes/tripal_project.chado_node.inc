@@ -131,7 +131,7 @@ function chado_project_form(&$node, $form_state) {
   );
 
   $form['description']= array(
-    '#type'          => 'textarea',
+    '#type'          => 'text_format',
     '#title'         => t('Project Description'),
     '#description'   => t('A brief description of the project'),
     '#required'      => TRUE,
@@ -212,7 +212,6 @@ function chado_project_validate($node, $form, &$form_state) {
 
   // trim white space from text fields
   $node->title = property_exists($node, 'title') ? trim($node->title) : '';
-  $node->description = property_exists($node, 'description') ? trim($node->description) : '';
 
   $project = 0;
   // check to make sure the name on the project is unique
@@ -247,7 +246,7 @@ function chado_project_insert($node) {
   // we do need to proceed with insertion into the chado/drupal linking table.
   if (!property_exists($node, 'project_id')) {
     $node->title = trim($node->title);
-    $node->description = trim($node->description);
+    $node->description  = trim($node->description['value']);
 
     $values = array(
       'name' => $node->title,
@@ -348,7 +347,7 @@ function chado_project_delete($node) {
 function chado_project_update($node) {
 
   $node->title = trim($node->title);
-  $node->description = trim($node->description);
+  $node->description  = trim($node->description['value']);
 
   // update the project and the description
   $project_id = chado_get_id_from_nid('project', $node->nid) ;

@@ -231,7 +231,7 @@ function chado_analysis_form($node, &$form_state) {
     ),
   );
   $form['description']= array(
-    '#type' => 'textarea',
+    '#type' => 'text_format',
     '#rows' => 15,
     '#title' => t('Materials & Methods (Description and/or Program Settings)'),
     '#required' => FALSE,
@@ -319,7 +319,6 @@ function tripal_analysis_validate($node, $form, &$form_state) {
 
   // remove surrounding white-space on submitted values
   $node->analysisname = trim($node->analysisname);
-  $node->description = trim($node->description);
   $node->program = trim($node->program);
   $node->programversion = trim($node->programversion);
   $node->algorithm = trim($node->algorithm);
@@ -408,13 +407,13 @@ function tripal_analysis_validate($node, $form, &$form_state) {
 function chado_analysis_insert($node) {
 
   $node->analysisname = trim($node->analysisname);
-  $node->description = trim($node->description);
   $node->program = trim($node->program);
   $node->programversion = trim($node->programversion);
   $node->algorithm = trim($node->algorithm);
   $node->sourcename = trim($node->sourcename);
   $node->sourceversion = trim($node->sourceversion);
   $node->sourceuri = trim($node->sourceuri);
+  $node->description  = trim($node->description['value']);
 
   // if there is an analysis_id in the $node object then this must be a sync so
   // we can skip adding the analysis as it is already there, although
@@ -514,13 +513,13 @@ function chado_analysis_delete($node) {
  */
 function chado_analysis_update($node) {
   $node->analysisname = trim($node->analysisname);
-  $node->description = trim($node->description);
   $node->program = trim($node->program);
   $node->programversion = trim($node->programversion);
   $node->algorithm = trim($node->algorithm);
   $node->sourcename = trim($node->sourcename);
   $node->sourceversion = trim($node->sourceversion);
   $node->sourceuri = trim($node->sourceuri);
+  $node->description  = trim($node->description['value']);
 
   // Create a timestamp so we can insert it into the chado database
   $time = $node->timeexecuted;

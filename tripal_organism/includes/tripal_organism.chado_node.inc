@@ -166,7 +166,7 @@ function chado_organism_form($node, $form_state) {
     '#default_value' => $common_name,
   );
   $form['description']= array(
-    '#type' => 'textarea',
+    '#type' => 'text_format',
     '#rows' => 15,
     '#title' => t('Description'),
     '#default_value' => $description,
@@ -235,7 +235,6 @@ function chado_organism_validate($node, $form, &$form_state) {
   $node->species      = property_exists($node, 'species') ? trim($node->species) : '';
   $node->abbreviation = property_exists($node, 'abbreviation') ? trim($node->abbreviation) : '';
   $node->common_name  = property_exists($node, 'common_name') ? trim($node->common_name) : '';
-  $node->description  = property_exists($node, 'description') ? trim($node->description) : '';
 
   // Validating for an update
   if (property_exists($node, 'organism_id')) {
@@ -296,7 +295,7 @@ function chado_organism_insert($node) {
     $node->species      = trim($node->species);
     $node->abbreviation = trim($node->abbreviation);
     $node->common_name  = trim($node->common_name);
-    $node->description  = trim($node->description);
+    $node->description  = trim($node->description['value']);
 
     $values = array(
       'genus'        => $node->genus,
@@ -367,7 +366,7 @@ function chado_organism_update($node) {
   $node->species      = trim($node->species);
   $node->abbreviation = trim($node->abbreviation);
   $node->common_name  = trim($node->common_name);
-  $node->description  = trim($node->description);
+  $node->description  = trim($node->description['value']);
 
   $organism_id = chado_get_id_from_nid('organism', $node->nid);
 
