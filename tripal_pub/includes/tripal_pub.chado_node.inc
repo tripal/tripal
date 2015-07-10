@@ -384,13 +384,16 @@ function chado_pub_validate($node, $form, &$form_state) {
     if ($prop_type[0]->name == 'Conference Name' or
         $prop_type[0]->name == 'Journal Name' or
         $prop_type[0]->name == 'Series Name') {
-      $series_name = array_values($prop_values)[0];
+      $v = array_values($prop_values);
+      $series_name = $v[0];
     }
     if ($prop_type[0]->name == 'Citation') {
-      $uniquename = array_values($prop_values)[0];
+      $v = array_values($prop_values);
+      $uniquename = $v[0];
     }
     if (count($prop_values) == 1) {
-      $pub[$prop_type[0]->name] = array_values($prop_values)[0];
+      $v = array_values($prop_values);
+      $pub[$prop_type[0]->name] = $v[0];
     }
     else {
       $pub[$prop_type[0]->name] = $prop_values;
