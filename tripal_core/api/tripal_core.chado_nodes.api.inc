@@ -772,6 +772,11 @@ function chado_node_sync_form_submit($form, $form_state) {
  *   are named as 'chado_' . $base_table.  But if for some reason the
  *   linking table is not named in this way then it can be provided by this
  *   argument.
+ * @param $node_type
+ *   Optional: Tripal maintains "linking" tables in the Drupal schema
+ *   to link Drupal nodes with Chado records. By default, Tripal expects that
+ *   the node_type and linking table are named the same. However, if this
+ *   is not the case, you can provide the node type name here.
  * @param $job_id
  *   Optional. Used by the Trpial Jobs system when running this function
  *   as a job. It is not needed othewise.
