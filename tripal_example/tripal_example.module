@@ -9,10 +9,11 @@
  */
 
 // EXPLANATION: include any files needed for this module. That includes any API
-// file, the theme file, or include files.
+// file, the theme file, or files with functions for new node types.  Try to
+// include other files only when needed so as to reduce the loading time
+// for the module.
 require('api/tripal_example.api.inc');
 require('theme/tripal_example.theme.inc');
-require('includes/tripal_example.admin.inc');
 require('includes/tripal_example.chado_node.inc');
 
 
@@ -90,6 +91,11 @@ function tripal_example_menu() {
     'page callback' => 'tripal_example_admin_examples_listing',
     'access arguments' => array('administer tripal example'),
     'type' => MENU_NORMAL_ITEM,
+    // We include the file where the 'page callback' function
+    // is located.  This removes the need to include all of the
+    // include files at the top of the module, and speeds
+    // module loading time.
+    'file' => '/includes/tripal_example.admin.inc',
   );
 
   // EXPLANATION: all extension modules should provide help documentation to
@@ -107,7 +113,7 @@ function tripal_example_menu() {
     'page arguments' => array('tripal_example_help'),
     'access arguments' => array('administer tripal example'),
     'type' => MENU_LOCAL_TASK,
-    'weight' => 10
+    'weight' => 10,
   );
 
   // EXPLANATION: all extension modules should provide a configuration page.
@@ -126,7 +132,7 @@ function tripal_example_menu() {
     'page arguments' => array('tripal_example_admin'),
     'access arguments' => array('administer tripal example'),
     'type' => MENU_LOCAL_TASK,
-    'weight' => 5
+    'weight' => 5,
   );
 
   // EXPLANATION: If your module defines a new chado node type and that node
@@ -141,7 +147,7 @@ function tripal_example_menu() {
     'page arguments' => array('chado_node_sync_form', 'tripal_example', 'chado_example'),
     'access arguments' => array('administer tripal example'),
     'type' => MENU_LOCAL_TASK,
-    'weight' => 2
+    'weight' => 2,
   );
 
   // EXPLANATION: If your module defines a new node type that uses the default
