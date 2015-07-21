@@ -151,7 +151,14 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
   print "Template: " . $node->template->name . " (" . $node->template_id . ")\n";
 
   // Determine the total number of lines in the file.
-  $total_lines = trim(`wc --lines < $node->file`);
+  $total_lines = 0;
+  $handle = fopen($node->file, "r");
+  while(!feof($handle)){
+    $line = fgets($handle);
+    $total_lines++;
+  }
+  fclose($handle);
+
   // Correct for files with a single line and no enter character.
   $total_lines = ($total_lines == 0) ? 1 : $total_lines;
   print "File: " . $node->file . " (" . $total_lines . " lines)\n";
