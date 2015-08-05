@@ -983,29 +983,51 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
  * @param $table
  *   The name of the table that corresonds to the node type we want to clean up.
  * @param $nentries
- *   The number of entries to parse at one time (ie: the batch size).
+ *   Optional. The number of entries to parse at one time (ie: the batch size).
+ *   Set to zero if no limit is needed.
+ * @param $linking_table
+ *   Optional. The name of the linking table that maps Drupal nodes to Chado
+ *   records. This is only required if the linking table name is not of the
+ *   form: chado_[table] where [table] is the value provided to the $table
+ *   argument.
+ * @param $node_type
+ *   Optional. The name of the node type for the records.  This is only
+ *   required if the node type is not of the form: chado_[table] where
+ *   [table] is the value provided to the $table.
  * @param $job_id
- *   This should be the job id from the Tripal jobs system.  This function
- *   will update the job status using the provided job ID.
+ *   Optional. This should be the job id from the Tripal jobs system. Typically,
+ *   only the Tripal jobs system will use the argument.
  *
  * @ingroup tripal_chado_node_api
  */
-function chado_cleanup_orphaned_nodes($table, $nentries = 25000, $linking_table, $node_type, $job_id = NULL) {
+function chado_cleanup_orphaned_nodes($table, $nentries = 25000, $linking_table = NULL, $node_type = NULL, $job_id = NULL) {
+  // The max number of records either as nodes or linked records.
   $count = 0;
+  // Will hold the number of nodes of this type.
+  $ncount = 0;
+  // Will hold the number of linked records.
+  $clcount = 0;
 
-  // Find the total number of entries in the table.
-  $dsql = "SELECT COUNT(*) FROM {node} WHERE type = :node_type";
-  $clsql= "SELECT COUNT(*) FROM {$linking_table}";
-
+  if (!$node_type) {
+    $node_type = 'chado_' . $table;
+  }
+  if (!$linking_table) {
+    $linking_table = 'chado_' . $table;
+  }
   // Find the number nodes of type chado_$table and find the number of entries
   // in chado_$table; keep the larger of the two numbers.
+  $dsql = "SELECT COUNT(*) FROM {node} WHERE type = :node_type";
   $ndat = db_query($dsql, array(':node_type' => $node_type));
   $temp = $ndat->fetchObject();
-  $count = $temp->count;
+  $ncount = $temp->count;
+  $clsql= "SELECT COUNT(*) FROM {" . $linking_table . "}";
   $cdat = db_query($clsql);
-  $temp = $cdat->fetchObject();
-  if (count < $temp->count) {
-    $count = $temp->count;
+  $clcount = $cdat->fetchObject();
+  if ($ncount < $clcount) {
+    $count = $clcount;
+  }
+  else {
+    $count = $ncount;
   }
 
   $transaction = db_transaction();
