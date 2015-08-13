@@ -123,14 +123,18 @@ function tripal_feature_fasta_load_form() {
     '#description' => t('Enter the regular expression that will extract the
        feature name from the FASTA definition line. For example, for a
        defintion line with a name and unique name separated by a bar \'|\' (>seqname|uniquename),
-       the regular expression for the name would be, "^(.*?)\|.*$".')
+       the regular expression for the name would be, "^(.*?)\|.*$".  All FASTA
+       definition lines begin with the ">" symbol.  You do not need to incldue
+       this symbol in your regular expression.')
   );
   $form['advanced']['re_uname'] = array('#type' => 'textfield',
     '#title' => t('Regular expression for the unique name'),'#required' => FALSE,
     '#description' => t('Enter the regular expression that will extract the
        feature name from the FASTA definition line. For example, for a
        defintion line with a name and unique name separated by a bar \'|\' (>seqname|uniquename),
-       the regular expression for the unique name would be "^.*?\|(.*)$").')
+       the regular expression for the unique name would be "^.*?\|(.*)$").  All FASTA
+       definition lines begin with the ">" symbol.  You do not need to incldue
+       this symbol in your regular expression.')
   );
 
   // Advanced database cross-reference optoins

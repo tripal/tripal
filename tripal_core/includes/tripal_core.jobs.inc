@@ -283,7 +283,7 @@ function tripal_jobs_view($job_id) {
   }
 
   // build the links
-  $links  = l('Return to jobs list', "admin/tripal/tripal_jobs/") . ' | ' .
+  $links  = l('Return to jobs list', "admin/tripal/tripal_jobs/") . ' | ';
   $links .= l('Re-run this job', "admin/tripal/tripal_jobs/rerun/" . $job->job_id) . ' | ';
   if ($job->start_time == 0 and $job->end_time == 0) {
     $links .= l('Cancel this job', "admin/tripal/tripal_jobs/cancel/" . $job->job_id) . ' | ';

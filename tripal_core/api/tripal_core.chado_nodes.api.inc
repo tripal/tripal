@@ -1031,9 +1031,9 @@ function chado_cleanup_orphaned_nodes($table, $nentries = 25000, $linking_table 
   }
 
   $transaction = db_transaction();
-  print "\nNOTE: Syncing is performed using a database transaction. \n" .
-    "If the sync fails or is terminated prematurely then the entire set of \n" .
-    "synced items is rolled back and will not be found in the database\n\n";
+  print "\nNOTE: This operation is performed using a database transaction. \n" .
+    "If it fails or is terminated prematurely then the entire set of \n" .
+    "changes is rolled back and will not be found in the database\n\n";
   try {
     $m = ceil($count / $nentries);
     for ($i = 0; $i < $m; $i++) {
