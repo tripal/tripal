@@ -1150,7 +1150,7 @@ function tripal_feature_load_gff3_derives_from($feature, $cvterm, $object,
     'subject_id' => $feature->feature_id,
     'type_id' => array(
        'cv_id' => array(
-          'name' => 'relationship'
+          'name' => 'sequence'
         ),
        'name' => 'derives_from',
     ),
@@ -1212,7 +1212,7 @@ function tripal_feature_load_gff3_parents($feature, $cvterm, $parents,
 
     // try to find the parent
     $parentcvterm = chado_query($cvterm_sql, array(':cvname' => 'sequence', ':name' => $parent_type, ':synonym' => $parent_type))->fetchObject();
-    $relcvterm = chado_query($cvterm_sql, array(':cvname' => 'relationship', ':name' => $rel_type, ':synonym' => $rel_type))->fetchObject();
+    $relcvterm = chado_query($cvterm_sql, array(':cvname' => 'sequence', ':name' => $rel_type, ':synonym' => $rel_type))->fetchObject();
     $values = array(
         'organism_id' => $organism_id,
         'uniquename' => $parent,

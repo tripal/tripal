@@ -41,10 +41,8 @@ function tripal_feature_fasta_load_form() {
   );
 
   // get the sequence ontology CV ID
-  $values = array('name' => 'sequence'
-  );
-  $cv = chado_select_record('cv', array('cv_id'
-  ), $values);
+  $values = array('name' => 'sequence');
+  $cv = chado_select_record('cv', array('cv_id'), $values);
   $cv_id = $cv[0]->cv_id;
 
   $form['seqtype'] = array('#type' => 'textfield','#title' => t('Sequence Type'),
@@ -167,7 +165,7 @@ function tripal_feature_fasta_load_form() {
   $rels = array();
   $rels[''] = '';
   $rels['part_of'] = 'part of';
-  $rels['derives_from'] = 'produced by';
+  $rels['derives_from'] = 'produced by (derives from)';
 
   // Advanced references options
   $form['advanced']['relationship']['rel_type'] = array('#title' => t('Relationship Type'),
