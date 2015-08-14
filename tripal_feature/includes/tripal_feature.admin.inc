@@ -36,6 +36,16 @@ function tripal_feature_admin_feature_view() {
     $output .= '</ul>';
   }
 
+  // Add a summary chart.
+  //-----------------------------------
+  $output .= theme('tripal_feature_bar_chart_type_organism_summary');
+  drupal_add_js('
+    Drupal.behaviors.tripalFeature_moveAdminSummaryChart = {
+      attach: function (context, settings) {
+        jQuery("#tripal-feature-admin-summary").insertBefore( jQuery(".view-filters") );
+    }};
+  ', 'inline');
+
   return $output;
 }
 
@@ -56,7 +66,7 @@ function tripal_feature_admin() {
     'options' => array(
       '[feature.name]' => 'Feature Name Only',
       '[feature.uniquename]' => 'Feature Unique Name Only',
-        // there should always be one options matching the unique constraint.
+      // there should always be one options matching the unique constraint.
       '[feature.name], [feature.uniquename] ([feature.type_id>cvterm.name]) [feature.organism_id>organism.genus] [feature.organism_id>organism.species]' => 'Unique Contraint: Includes the name, uniquename, type and scientific name'
     ),
     // the token indicating the unique constraint in the options array
@@ -158,4 +168,13 @@ function tripal_feature_admin_validate($form, &$form_state) {
 
   }
 
+}
+
+/**
+ * USort function for the admin summary chart.
+ * Not meant to be called directly.
+ */
+function tripal_feature_admin_summary_sort($a, $b) {
+  if ($a['total_features'] == $b['total_features']) return 0;
+  return $b['total_features'] - $a['total_features'];
 }

@@ -1153,8 +1153,9 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
         else {
           tripal_report_error('tripal_core', TRIPAL_ERROR,
             'chado_select_record: There is no value for %field thus we cannot ' .
-            ' check if this record for table, %table, is unique.',
-            array('%field' => $field, '%table' => $table), array('print' => $print_errors));
+            'check if this record for table, %table, is unique. %values',
+            array('%field' => $field, '%table' => $table, '%values' => print_r($values, TRUE)),
+            array('print' => $print_errors));
           return FALSE;
         }
       }
@@ -1263,8 +1264,8 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
           // Ensure that there were results returned.
           elseif (count($results)==0) {
             tripal_report_error('tripal_core', TRIPAL_ERROR,
-              'chado_select_record: the foreign key definition for %field
-              returned no results where the definition supplied was %value',
+              'chado_select_record: the foreign key definition for \'%field\' '.
+              'returned no results where the definition supplied was %value',
               array('%field' => $field, '%value' => print_r($value, TRUE))
             );
             return array();
@@ -1499,7 +1500,7 @@ function chado_query($sql, $args = array()) {
     // the featureloc table has some indexes that use function that call other functions
     // and those calls do not reference a schema, therefore, any tables with featureloc
     // must automaticaly have the chado schema set as active to find
-    if (preg_match('/chado.featureloc/i', $sql)) {
+    if (preg_match('/chado.featureloc/i', $sql) or preg_match('/chado.feature/i', $sql)) {
       $previous_db = chado_set_active('chado') ;
       $results = db_query($sql, $args);
       chado_set_active($previous_db);

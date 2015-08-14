@@ -34,7 +34,7 @@ require_once 'api/tripal_core.files.api.inc';
 require_once 'api/tripal_core.jobs.api.inc';
 require_once 'api/tripal_core.tripal.api.inc';
 require_once 'api/tripal_core.tripal_variables.api.inc';
-
+require_once 'api/tripal_core.d3js.api.inc';
 require_once 'api/tripal_core.DEPRECATED.inc';
 
 // INCLUDES
@@ -310,6 +310,24 @@ function tripal_core_menu() {
     'description' => t('Materialized views are used to improve speed of large or complex queries.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_mviews_delete_form', 5),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  // TODO: complete the code for exporting and importing of MViews.
+  // Need to address security issues of sharing SQL.
+  $items['admin/tripal/schema/mviews/import'] = array(
+    'title' => 'Import MView',
+    'description' => 'Import a materialized view from another Tripal instance.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_mviews_import_form'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/schema/mviews/%tblid/export'] = array(
+    'title' => 'Export MView',
+    'description' => 'Export a materialized view for use by another Tripal instance.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_mviews_export_form', 5),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );

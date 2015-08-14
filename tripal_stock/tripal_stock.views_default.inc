@@ -95,7 +95,10 @@ function tripal_stock_defaultview_admin_stocks() {
   $handler->display->display_options['access']['perm'] = 'access chado_stock content';
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
-  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['exposed_form']['type'] = 'input_required';
+  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Search';
+  $handler->display->display_options['exposed_form']['options']['text_input_required'] = 'Click search to see a listing of stocks that meet the filter requirements. Use the filters to restrict this set to a more reasonable number of stocks or to find a specific stock.';
+  $handler->display->display_options['exposed_form']['options']['text_input_required_format'] = 'full_html';
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '25';
   $handler->display->display_options['pager']['options']['offset'] = '0';
@@ -230,14 +233,11 @@ function tripal_stock_defaultview_admin_stocks() {
   $handler->display->display_options['fields']['nothing']['label'] = '';
   $handler->display->display_options['fields']['nothing']['alter']['text'] = '[edit_node]   [delete_node]';
   $handler->display->display_options['fields']['nothing']['element_label_colon'] = FALSE;
-  /* Sort criterion: Chado Organism: Common Name */
-  $handler->display->display_options['sorts']['common_name']['id'] = 'common_name';
-  $handler->display->display_options['sorts']['common_name']['table'] = 'organism';
-  $handler->display->display_options['sorts']['common_name']['field'] = 'common_name';
-  /* Sort criterion: Chado Stock: Uniquename */
-  $handler->display->display_options['sorts']['uniquename']['id'] = 'uniquename';
-  $handler->display->display_options['sorts']['uniquename']['table'] = 'stock';
-  $handler->display->display_options['sorts']['uniquename']['field'] = 'uniquename';
+  /* Sort criterion: Chado Stock: Id */
+  $handler->display->display_options['sorts']['stock_id']['id'] = 'stock_id';
+  $handler->display->display_options['sorts']['stock_id']['table'] = 'stock';
+  $handler->display->display_options['sorts']['stock_id']['field'] = 'stock_id';
+  $handler->display->display_options['sorts']['stock_id']['order'] = 'DESC';
   /* Filter criterion: Chado Organism: Common Name */
   $handler->display->display_options['filters']['common_name']['id'] = 'common_name';
   $handler->display->display_options['filters']['common_name']['table'] = 'organism';

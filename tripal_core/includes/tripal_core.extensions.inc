@@ -319,6 +319,8 @@ function tripal_core_extension_form_add_extensions(&$form, $form_state, $extensi
         continue;
       }
 
+      $extension['title'] = trim($extension['title']);
+
       // If this is an extension module then there will be a home page for it
       $home_page = '';
       if (array_key_exists('home_page', $extension[$namespace])) {
@@ -347,7 +349,7 @@ function tripal_core_extension_form_add_extensions(&$form, $form_state, $extensi
             ->execute()
             ->fetchField();
           if ($blk_id) {
-            $is_installed = '<li>A bulk loader tempalte with this name is already installed.</li>';
+            $is_installed = '<li>A bulk loader template with this name is already installed.</li>';
           }
           break;
         case 'Materialized View':
@@ -524,20 +526,24 @@ function tripal_core_extensions_form_submit($form, &$form_state) {
     $type = $extension['category'];
     switch ($type) {
       case 'Bulk Loader Template':
-        // TODO: we need an API function for adding a bulk loader
-        $id = db_insert('tripal_bulk_loader_template')
-          ->fields(array(
-            'name' => $extension['title'],
-            'template_array' => $extension[$namespace]['bulkldr_export'],
-            'created' => time(),
-            'changed' => time()
-          ))
-          ->execute();
-        if (!$id) {
-          drupal_set_message("Cannot import this bulk loader. Please view the 'Recent log messages' report for more details.",  'error');
+        $options = array(
+          'template_name' => $extension['title'],
+          'template_array' => $extension[$namespace]['bulkldr_export'],
+          'strict' => TRUE,
+        );
+        $errors = array();
+        $warnings = array();
+        $success = tripal_insert_bulk_loader_template($options, $errors, $warnings);
+        if ($success) {
+          drupal_set_message("Bulk loader succesfully added.");
         }
         else {
-          drupal_set_message("Bulk loader succesfully added.");
+          drupal_set_message("Error importing this bulk loader.",  'error');
+          if (count($errors) > 0) {
+            foreach($errors as $field => $message) {
+              drupal_set_message($message, 'error');
+            }
+          }
         }
         break;
       case 'Materialized View':

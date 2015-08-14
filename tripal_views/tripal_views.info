@@ -3,7 +3,7 @@ description = Integrates all Chado tables with Drupal Views and provides basic s
 core = 7.x
 project = tripal
 package = Tripal
-version = 7.x-2.0-rc1
+version = 7.x-2.0
 configure = admin/tripal/views-integration
 
 files[] = views/handlers/tripal_views_handler_filter_textarea.inc

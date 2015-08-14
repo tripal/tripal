@@ -31,6 +31,16 @@ function tripal_views_integrate_all_chado_tables() {
   // First integrate all of the Chado tables. Those that are base tables
   // get special treatment.
   $tables = chado_get_table_names(TRUE);
+
+  // Some chado tables might have been created via the Tripal Custom Tables
+  // or Tripal Materialized Views interfaces. We need to ensure that the
+  // corresponding mview_id and table_id are associated with these tables.
+  // @TODO: Add some way to show which integrations are for custom tables.
+  //$custom_tables = chado_get_custom_table_names();
+  $mview_tables = chado_get_mview_table_names();
+
+  // Hardcode a list of base tables since there isn't really a programatic way
+  // to determine which tables in the chado schema should be base tables.
   $base_tables = array(
     'acquisition', 'analysis', 'assay', 'biomaterial', 'contact', 'cv', 'cvterm',
     'db', 'dbxref', 'environment', 'expression', 'feature', 'featuremap', 'genotype',
@@ -39,15 +49,29 @@ function tripal_views_integrate_all_chado_tables() {
     'project', 'protocol', 'pub', 'stock', 'study', 'synonym'
   );
 
+  // For each chado table, generate an integration array, keeping the above
+  // details in mind, and save that integration with Tripal Views through the API.
   foreach ($tables as $tablename) {
     $priority = 10;
     if (!tripal_is_table_integrated($tablename, $priority)) {
-      if (in_array($tablename, $base_tables)) {
+
+      // Assuming that we have a default chado table, genereate an integration
+      // array describing it's Tripal Views integration.
+      if (in_array($tablename, $base_tables) OR (is_array($mview_tables) and in_array($tablename, $mview_tables))) {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, TRUE, $priority);
       }
       else {
         $table_integration_array = tripal_views_get_integration_array_for_chado_table($tablename, FALSE, $priority);
       }
+
+      // Check to see if this table is a Materialized view and if it is,
+      // treat it specially :).
+      if (is_array($mview_tables) and in_array($tablename, $mview_tables)) {
+        $table_integration_array['type'] = 'mview';
+      }
+
+      // As long as we were able to generate an integration array,
+      // Integrate It!
       if ($table_integration_array) {
         tripal_add_views_integration($table_integration_array);
       }

@@ -65,6 +65,7 @@
  * @ingroup tripal_jobs_api
  */
 function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $priority = 10) {
+  global $user;
 
   // convert the arguments into a string for storage in the database
   $args = array();
@@ -86,7 +87,11 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $pr
     drupal_set_message(t("Job '%job_name' submitted.", array('%job_name' => $job_name)));
     if (user_access('administer tripal')) {
       $jobs_url = url("admin/tripal/tripal_jobs");
-      drupal_set_message(t("Check the <a href='!jobs_url'>jobs page</a> for status.", array('!jobs_url' => $jobs_url)));
+      drupal_set_message(t("Check the <a href='!jobs_url'>jobs page</a> for status.",
+        array('!jobs_url' => $jobs_url)));
+      drupal_set_message(t("You can execute the job queue manually on the command line " .
+        "using the following Drush command: <br>drush trp-run-jobs --username=%uname --root=%base_path",
+        array('%base_path' => DRUPAL_ROOT, '%uname' => $user->name)));
     }
   }
   else {

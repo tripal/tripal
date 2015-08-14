@@ -151,7 +151,7 @@ function tripal_cv_load_obo_v1_2_id($obo_id, $jobid = NULL) {
     $module = $matches[1];
     $path = drupal_realpath(drupal_get_path('module', $module));
     $obo->path = preg_replace("/\{.*?\}/", $path, $obo->path);
-  } 
+  }
 
   // if the reference is for a remote URL then run the URL processing function
   if (preg_match("/^http:\/\//", $obo->path) or preg_match("/^ftp:\/\//", $obo->path)) {
@@ -871,11 +871,10 @@ function tripal_cv_obo_add_synonyms($term, $cvterm) {
           'name' => 'synonym_type',
         ),
       );
-      $options = array('is_duplicate' => 1);
-      $results = chado_select_record('cvterm', array('*'), $values, $options);
+      $syntype = tripal_get_cvterm($values);
 
       // if it doesn't exist then add it
-      if (!$results) {
+      if (!$syntype) {
         // build a 'term' object so we can add the missing term
         $term = array(
            'name' => $scope,
@@ -889,9 +888,6 @@ function tripal_cv_obo_add_synonyms($term, $cvterm) {
         if (!$syntype) {
           tripal_cv_obo_quiterror("Cannot add synonym type: internal:$scope");
         }
-      }
-      else {
-        $syntype = $results[0];
       }
 
       // make sure the synonym doesn't already exists

@@ -13,7 +13,6 @@
  */
 
 require_once 'api/tripal_feature.api.inc';
-require_once 'api/tripal_feature.schema.api.inc';
 require_once 'api/tripal_feature.DEPRECATED.inc';
 
 require_once 'theme/tripal_feature.theme.inc';
@@ -170,7 +169,7 @@ function tripal_feature_menu() {
     'access arguments' => array('administer tripal feature'),
     'type' => MENU_LOCAL_TASK,
     'file' =>  'includes/tripal_core.toc.inc',
-    'file path' => drupal_get_path('module', 'tripal_core'), 
+    'file path' => drupal_get_path('module', 'tripal_core'),
     'weight' => 3
   );
   $items['admin/tripal/chado/tripal_feature/configuration'] = array(
@@ -250,6 +249,7 @@ function tripal_feature_search_biological_data_views() {
 function tripal_feature_theme($existing, $type, $theme, $path) {
   $core_path = drupal_get_path('module', 'tripal_core');
 
+  // Feature Node Page Templates.
   $items = array(
     'node__chado_feature' => array(
       'template' => 'node--chado-generic',
@@ -312,36 +312,46 @@ function tripal_feature_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_feature_relationships',
       'path' => "$path/theme/templates",
     ),
-    // help template
-    'tripal_feature_help' => array(
-      'template' => 'tripal_feature_help',
-      'variables' =>  array(NULL),
-      'path' => "$path/theme/templates"
-    ),
+  );
 
-    // template for the organism page
-    'tripal_organism_feature_browser' => array(
-      'variables' => array('node' => NULL),
-      'template' => 'tripal_organism_feature_browser',
-      'path' => "$path/theme/templates",
-    ),
-    'tripal_organism_feature_counts' => array(
-      'variables' => array('node' => NULL),
-      'template' => 'tripal_organism_feature_counts',
-      'path' => "$path/theme/templates",
-    ),
+  // Feature Node Teaser
+  $items['tripal_feature_teaser'] = array(
+    'variables' => array('node' => NULL),
+    'template' => 'tripal_feature_teaser',
+    'path' => "$path/theme/templates",
+  );
 
-    // themed forms
-    'tripal_feature_seq_extract_form' => array(
-       'arguments' => array('form'),
-    ),
+  // Templates for other node pages.
+  // Organism Feature Browser.
+  $items['tripal_organism_feature_browser'] = array(
+    'variables' => array('node' => NULL),
+    'template' => 'tripal_organism_feature_browser',
+    'path' => "$path/theme/templates",
+  );
+  $items['tripal_organism_feature_counts'] = array(
+    'variables' => array('node' => NULL),
+    'template' => 'tripal_organism_feature_counts',
+    'path' => "$path/theme/templates",
+  );
 
-    // themed teaser
-    'tripal_feature_teaser' => array(
-      'variables' => array('node' => NULL),
-      'template' => 'tripal_feature_teaser',
-      'path' => "$path/theme/templates",
-    ),
+  // Administrative Help Template.
+  $items['tripal_feature_help'] = array(
+    'template' => 'tripal_feature_help',
+    'variables' =>  array(NULL),
+    'path' => "$path/theme/templates"
+  );
+
+  // Themed Forms
+  $items['tripal_feature_seq_extract_form'] = array(
+     'arguments' => array('form'),
+  );
+
+  // D3 Charts.
+  // Feature Type/Organism Stacked Bar Chart.
+  $items['tripal_feature_bar_chart_type_organism_summary'] = array(
+    'template' => 'tripal_feature_bar_chart_type_organism_summary',
+    'variables' =>  array(NULL),
+    'path' => "$path/theme/templates"
   );
 
   return $items;
@@ -401,9 +411,8 @@ function tripal_feature_job_describe_args($callback, $args) {
     }
 
     $new_args['Sequence Type'] = $args[2];
-    $new_args['Is Unique Name'] = $args[3];
+    $new_args['Is Unique Name'] = $args[3] ? 'Yes' : 'No';
     $new_args['Features Names'] = $args[4];
-
   }
   elseif ($callback == 'tripal_feature_load_gff3') {
 
@@ -492,8 +501,8 @@ function tripal_feature_match_features_page($id) {
     GROUP BY F.name, F.uniquename, F.feature_id, O.genus, O.species,
       O.organism_id, CVT.cvterm_id, CVT.name, CF.nid
   ";
-  
-  $args = array(':uname' => $id, ':fname' => $id, ':sname' => $id); 
+
+  $args = array(':uname' => $id, ':fname' => $id, ':sname' => $id);
   $results = chado_query($sql, $args);
 
   $num_matches = 0;

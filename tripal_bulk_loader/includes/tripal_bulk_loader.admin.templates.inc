@@ -692,7 +692,7 @@ function tripal_bulk_loader_import_template_form($form, &$form_state) {
   $breadcrumb[] = l('Templates', 'admin/tripal/loaders/bulk/templates');
   drupal_set_breadcrumb($breadcrumb);
 
-  $form['new_template_name'] = array(
+  $form['template_name'] = array(
     '#type' => 'textfield',
     '#title' => 'Template Name',
     '#weight' => 1,
@@ -717,6 +717,35 @@ function tripal_bulk_loader_import_template_form($form, &$form_state) {
 }
 
 /**
+ * Validates the import template form
+ */
+function tripal_bulk_loader_import_template_form_validate($form, &$form_state) {
+
+  $options = array(
+    'template_name' => trim($form_state['values']['template_name']),
+    'template_array' => trim($form_state['values']['template_array'])
+  );
+  $errors = array();
+  $warnings = array();
+
+  // Use the API function to Validate the submission.
+  tripal_validate_bulk_loader_template('insert', $options, $errors, $warnings);
+
+  // Now set form errors if any errors were detected.
+  if (count($errors) > 0) {
+    foreach($errors as $field => $message) {
+      form_set_error($field, $message);
+    }
+  }
+  // Add any warnings if any were detected
+  if (count($warnings) > 0) {
+    foreach($warnings as $field => $message) {
+      drupal_set_message($message, 'warning');
+    }
+  }
+}
+
+/**
  * Import Template Form Submit
  *
  * @param $form
@@ -727,21 +756,22 @@ function tripal_bulk_loader_import_template_form($form, &$form_state) {
  * @ingroup tripal_bulk_loader
  */
 function tripal_bulk_loader_import_template_form_submit($form, &$form_state) {
-
-  $record = array(
-    'name' => $form_state['values']['new_template_name'],
-    'template_array' => $form_state['values']['template_array'],
-    'created' => time(),
-    'changed' => time()
+  $options = array(
+    'template_name' => trim($form_state['values']['template_name']),
+    'template_array' => trim($form_state['values']['template_array'])
   );
-  $result = drupal_write_record('tripal_bulk_loader_template', $record);
-  if ($result) {
-    drupal_set_message(t('Successfully imported Tripal Bulk Loader Template.'));
+  $errors = array();
+  $warnings = array();
+
+  // Use the API function to insert a bulk loader.
+  if (tripal_insert_bulk_loader_template($options, $errors, $warnings)) {
+    drupal_set_message(t('Successfully imported Tripal bulk loader template.'));
+    $form_state['rebuild'] = FALSE;
+    $form_state['redirect'] = 'admin/tripal/loaders/bulk/templates';
   }
-
-  $form_state['rebuild'] = FALSE;
-  $form_state['redirect'] = 'admin/tripal/loaders/bulk/templates';
-
+  else {
+    drupal_set_message(t('Unable to import Tripal bulk loader template.'), 'error');
+  }
 }
 
 /**
@@ -777,7 +807,7 @@ function tripal_bulk_loader_export_template_form($form, &$form_state) {
   if ($template_id > 0) {
     $result = db_select('tripal_bulk_loader_template','t')
       ->fields('t')
-      ->condition('t.template_id',$template_id)
+      ->condition('t.template_id', $template_id)
       ->execute();
     $template = $result->fetchObject();
     $form_state['storage']['template_array'] = $template->template_array;
@@ -792,8 +822,8 @@ function tripal_bulk_loader_export_template_form($form, &$form_state) {
   $form['template_array'] = array(
     '#type' => 'textarea',
     '#title' => 'Export',
-    '#default_value' => $form_state['storage']['template_array'],
-    '#description' => t('Use this serialized array for import.'),
+    '#default_value' => json_encode(unserialize($template->template_array)),
+    '#description' => t('Use this JSON array for import of this bulk loader template into another Tripal site.'),
     '#rows' => 30,
     '#weight' => 5,
 

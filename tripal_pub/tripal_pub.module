@@ -65,8 +65,6 @@ function tripal_pub_menu() {
     'access arguments' => array('access chado_pub content'),
     'type' => MENU_CALLBACK
   );
-  
-
 
   $items['find/publications/criteria/%/%'] = array(
     'page callback' => 'tripal_pub_search_page_update_criteria',
@@ -112,7 +110,7 @@ function tripal_pub_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 2
   );
-  
+
   $items['admin/tripal/chado/tripal_pub/chado_pub_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for pub nodes.',
@@ -399,7 +397,7 @@ function tripal_pub_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == "chado_pub_node_form") {
     // turn of preview button for insert/updates
     $form['actions']['preview']['#access'] = FALSE;
-    
+
     //remove the body field
     unset($form['body']);
   }
@@ -445,9 +443,9 @@ function tripal_pub_job_describe_args($callback, $args) {
 }
 
 
-/** 
+/**
  * A simple wrapper function to put <pre> tags around the raw results
- * returned by the 
+ * returned by the
  * @param unknown $dbxref
  * @return string
  */
@@ -462,7 +460,7 @@ function tripal_get_remote_pub_raw_page($dbxref) {
 }
 
 /**
- * 
+ *
  */
 function tripal_pub_search_biological_data_views() {
   return array(

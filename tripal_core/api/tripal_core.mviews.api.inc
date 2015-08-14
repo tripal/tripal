@@ -41,7 +41,7 @@
  * @ingroup tripal_mviews_api
  *
 function tripal_add_legacy_mview($name, $modulename, $mv_table, $mv_specs, $indexed,
-  $query, $special_index, $comment = NULL) {
+  $query, $special_index, $comment =OR NULL) {
 
   // Create a new record
   $record = new stdClass();
@@ -314,6 +314,7 @@ function chado_get_mview_table_names() {
   $sql = "SELECT name FROM {tripal_mviews}";
   $resource = db_query($sql);
 
+  $tables = array();
   foreach ($resource as $r) {
     $tables[$r->name] = $r->name;
   }

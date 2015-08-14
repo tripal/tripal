@@ -101,6 +101,13 @@ function tripal_contact_menu() {
     'file path' => drupal_get_path('module', 'tripal_core'),
     'weight' => 3
   );
+
+  $items['admin/tripal/chado/tripal_contact/contact/auto_name/%'] = array(
+    'page callback' => 'tripal_autocomplete_contact',
+    'page arguments' => array(6),
+    'access arguments' => array('administer tripal contact'),
+    'type' => MENU_CALLBACK,
+  );
   return $items;
 }
 

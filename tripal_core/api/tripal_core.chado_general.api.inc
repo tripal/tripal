@@ -283,8 +283,13 @@ function chado_insert_property($record, $property, $options = array()) {
 
   // First see if the property is already assigned to the record. I
   $props = chado_get_property($record, $property);
-  if (!is_array($props) and $props) {
-    $props = array($props);
+  if (!is_array($props)) {
+    if ($props) {
+      $props = array($props);
+    }
+    else {
+      $props = array();
+    }
   }
   if (count($props) > 0) {
     // The property is already assigned, so, see if we should update it.
@@ -401,7 +406,7 @@ function chado_insert_property($record, $property, $options = array()) {
  *
  * @ingroup tripal_chado_api
  */
-function chado_update_property($record, $property, $options) {
+function chado_update_property($record, $property, $options = array()) {
 
   $base_table  = array_key_exists('table', $record) ? $record['table'] : '';
   $base_id     = array_key_exists('id', $record) ? $record['id'] : '';

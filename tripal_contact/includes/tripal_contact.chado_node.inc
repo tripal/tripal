@@ -171,7 +171,7 @@ function chado_contact_form(&$node, $form_state) {
   );
 
   $form['description']= array(
-    '#type'          => 'textarea',
+    '#type'          => 'text_format',
     '#title'         => t('Contact Description'),
     '#description'   => t('A brief description of the contact'),
     '#required'      => TRUE,
@@ -262,8 +262,6 @@ function chado_contact_validate($node, $form, &$form_state) {
 
   // remove surrounding white-space on submitted values
   $node->contactname = property_exists($node, 'contactname') ? trim($node->contactname) : '';
-  $node->description = property_exists($node, 'description') ? trim($node->description) : '';
-
 
   // Validating for an update
   if (!is_null($node->nid)) {
@@ -374,8 +372,8 @@ function chado_contact_insert($node) {
   // we do need to proceed with insertion into the chado/drupal linking table.
   if (!property_exists($node, 'contact_id')) {
     // remove surrounding white-space on submitted values
-    $node->contactname    = trim($node->contactname);
-    $node->description    = trim($node->description);
+    $node->contactname = trim($node->contactname);
+    $node->description = trim($node->description['value']);
 
 
     // insert and then get the newly inserted contact record
@@ -451,8 +449,8 @@ function chado_contact_insert($node) {
  */
 function chado_contact_update($node) {
   // remove surrounding white-space on submitted values
-  $node->contactname          = trim($node->contactname);
-  $node->description    = trim($node->description);
+  $node->contactname = trim($node->contactname);
+  $node->description = trim($node->description['value']);
 
   $contact_id = chado_get_id_from_nid('contact', $node->nid) ;
 

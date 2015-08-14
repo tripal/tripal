@@ -3,7 +3,7 @@ description = Supports the organism tables of Chado by providing pages for viewi
 core = 7.x
 project = tripal
 package = Tripal
-version = 7.x-2.0-rc1
+version = 7.x-2.0
 configure = admin/tripal/chado/tripal_organism
 
 stylesheets[all][] = theme/css/tripal_organism.css

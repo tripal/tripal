@@ -15,6 +15,169 @@
  */
 
 /**
+ * Validates an $options array for insert or update of a bulk loader record.
+ *
+ * @param $val_type
+ *   The type of validation. Can be either 'insert' or 'update'.
+ * @param $options
+ *   An array of key/value pairs containing the following keys:
+ *     'template_name':   The name of the template.
+ *     'template_array':  The JSON array representing the template.
+ *   Optional:
+ *     'strict':          If set then only JSON formatted templates are allowed.
+ * @param $errors
+ *   An empty array where validation error messages will be set. The keys
+ *   of the array will be name of the field from the options array and the
+ *   value is the error message.
+ * @param $warnings
+ *   An empty array where validation warning messagges will be set. The
+ *   warnings should not stop an insert or an update but should be provided
+ *   to the user as information by a drupal_set_message() if appropriate. The
+ *   keys of the array will be name of the field from the options array and the
+ *   value is the error message.
+ *
+ * @return
+ *   If validation failes then FALSE is returned.  Any options that do not pass
+ *   validation checks will be added in the $errors array with the key being
+ *   the option and the value being the error message.  If validation
+ *   is successful then TRUE is returned.
+ *
+ */
+function tripal_validate_bulk_loader_template($val_type, &$options, &$errors, &$warnings = array()) {
+  $template_array = trim($options['template_array']);
+  $template_name = trim($options['template_name']);
+  $strict = array_key_exists('strict', $options)  ? $options['strict'] : FALSE;
+
+  // Make sure the template array is one of the supported types
+  // DEPRECATED: A stringified version of the array (causes security issues)
+  if (preg_match('/^array/', $template_array)) {
+    if ($strict) {
+      $errors['template_array'] = t('Invalid template array. Please provide
+        a JSON formatted array');
+      return FALSE;
+    }
+    else {
+      $warnings['template_array'] = t('Please note that import of
+        bulk loader templates as PHP arrays as a stringified array is deprecated
+        and will be removed in future versions of Tripal. Export and import
+        format will be JSON.');
+    }
+  }
+  // DEPRECATED: A serialized PHP array
+  elseif (preg_match('/^a:/', $template_array)) {
+    if ($strict) {
+      $errors['template_array'] = t('Invalid template array. Please provide
+        a JSON formatted array');
+      return FALSE;
+    }
+    else {
+      $warnings['template_array'] = t('Please note that import of
+        bulk loader templates as PHP serialized arrays is deprecated and will
+        be removed in future versions of Tripal. Export and import format will
+        be JSON.');
+    }
+  }
+  // JSON FORMAT
+  elseif (json_decode($template_array)) {
+    // This is correct!
+  }
+  else {
+    $errors['template_array'] = t('The template array must be in
+      JSON format (although PHP strigified arrays and PHP serialized
+      arrays are temporarily supported for backwards compatibility).');
+    return FALSE;
+  }
+
+  // Make sure the template name is unique
+  $name_exists = db_select('tripal_bulk_loader_template', 'tblt')
+    ->fields('tblt', array('template_id'))
+    ->condition('name', $template_name)
+    ->execute()
+    ->fetchField();
+  if ($name_exists) {
+    $errors['template_name'] = t('The template name already exists. Please
+      choose another name.');
+    return FALSE;
+  }
+  return TRUE;
+}
+
+/**
+ * Inserts a bulk loader template record.
+ *
+ * This function validates the options passed prior to insertion of the record,
+ *
+ * @param $options
+ *   An array of key/value pairs containing the following keys:
+ *     'template_name':   The name of the template.
+ *     'template_array':  The JSON array representing the template.
+ *   Optional:
+ *     'strict':          If set then only JSON formatted templates are allowed.
+ * @param $errors
+ *   An empty array where validation error messages will be set. The keys
+ *   of the array will be name of the field from the options array and the
+ *   value is the error message.
+ * @param $warnings
+ *   An empty array where validation warning messagges will be set. The
+ *   warnings should not stop an insert or an update but should be provided
+ *   to the user as information by a drupal_set_message() if appropriate. The
+ *   keys of the array will be name of the field from the options array and the
+ *   value is the error message.
+ * @return
+ *   TRUE for success and FALSE for failure.
+ */
+function tripal_insert_bulk_loader_template($options, &$errors, &$warnings) {
+
+  $success = tripal_validate_bulk_loader_template('insert', $options, $errors, $warnings);
+  if (!$success) {
+    foreach ($errors as $field => $message) {
+      tripal_report_error('tripal_bulkldr', TRIPAL_ERROR, $message);
+    }
+    return FALSE;
+  }
+
+  // Insert the bulk loader template.
+  $template_array = trim($options['template_array']);
+  $template_name = trim($options['template_name']);
+
+  // Previous version of Tripal would export the template as a PHP array.
+  // This has security implications and is deprecated. This support should
+  // be reomved in future versions of Tripal, but to support transfers of
+  // templates between v1.1 and v2.x sites we support it.
+  if (preg_match('/^array/', $template_array)) {
+    $tarray = array();
+    eval("\$tarray = $template_array;");
+    $template_array = serialize($tarray);
+  }
+  // For a brief period, the bulk loader templates were exported as a PHP
+  // serialized array. We have moved to exporting in JSON as JSON is more
+  // user friendly. But we must support the serialized PHP array for
+  // backwards compatibility of v2.0-rc1 sites and v2.x sites.
+  elseif (preg_match('/^a:/', $template_array)) {
+    // do nothing it's in PHP serialized format
+  }
+  // The typical format is JSON
+  elseif (json_decode($template_array)) {
+    $template_array = serialize(json_decode($template_array, TRUE));
+  }
+  else {
+    $errors['template_array'] = t('Unrecognized array type.');
+    return FALSE;
+  }
+
+  $record = array(
+    'name' => $template_name,
+    'template_array' => $template_array,
+    'created' => time(),
+    'changed' => time()
+  );
+  if (!drupal_write_record('tripal_bulk_loader_template', $record)) {
+    return FALSE;
+  }
+  return TRUE;
+}
+
+/**
  * Meant to be called from a form_validate function to ensure a newly added bulk loader record
  * name is unique and not empty.
  *

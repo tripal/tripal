@@ -196,8 +196,17 @@ function chado_stock_form($node, $form_state) {
 
   // TODO: Should we make this a textfield with an autocomplete field like the
   // feature type_id field?.
+  $st_cv = tripal_get_default_cv("stock", "type_id");
   $type_options = tripal_get_cvterm_default_select_options('stock', 'type_id', 'stock types');
   $type_options[0] = 'Select a Type';
+  $st_message = tripal_set_message("To add additional items to the stock type drop down list,
+     add a term to the " .
+    l($st_cv->name . " controlled vocabulary",
+      "admin/tripal/chado/tripal_cv/cv/" . $st_cv->cv_id . "/cvterm/add",
+      array('attributes' => array('target' => '_blank'))
+    ),
+    TRIPAL_INFO, array('return_html' => TRUE)
+  );
 
   $form['type_id'] = array(
     '#type' => 'select',
@@ -205,7 +214,8 @@ function chado_stock_form($node, $form_state) {
     '#description' => t('Select the stock type.'),
     '#options' => $type_options,
     '#default_value' => $type_id,
-    '#required'    => TRUE,
+    '#required' => TRUE,
+    '#suffix' => $st_message,
   );
 
   // get the list of organisms
@@ -226,7 +236,7 @@ function chado_stock_form($node, $form_state) {
   );
 
   $form['stock_description'] = array(
-    '#type' => 'textarea',
+    '#type' => 'text_format',
     '#title' => t('Notes'),
     '#default_value' => $sdescription,
     '#description' => t('Briefly enter any notes on the above stock. This should not include phenotypes or genotypes.'),
@@ -336,7 +346,6 @@ function chado_stock_validate(&$node, $form, &$form_state) {
   // remove surrounding whitespace
   $node->uniquename = property_exists($node, 'uniquename') ? trim($node->uniquename) : '';
   $node->sname = property_exists($node, 'sname') ? trim($node->sname) : '';
-  $node->stock_description = property_exists($node, 'stock_description') ? trim($node->stock_description) : '';
   $node->accession = property_exists($node, 'accession') ? trim($node->accession) : '';
   $node->db_description = property_exists($node, 'db_description') ? trim($node->db_description) : '';
 
@@ -365,10 +374,10 @@ function chado_stock_validate(&$node, $form, &$form_state) {
 
   // if this is an insert then we just need to make sure this name doesn't
   // already exist for this organism if it does then we need to throw an error
-  else {
+  elseif (!empty($node->organism_id) AND !empty($node->type_id)) {
     $sql = "
       SELECT *
-      FROM {Stock} S
+      FROM {stock} S
         INNER JOIN {cvterm} CVT ON S.type_id = CVT.cvterm_id
       WHERE uniquename = :uname AND organism_id = :organism_id AND CVT.name = :cvtname";
     $result = chado_query($sql, array(':uname' => $node->uniquename,
@@ -449,9 +458,10 @@ function chado_stock_insert($node) {
   // we do need to proceed with insertion into the chado/drupal linking table.
   if (!property_exists($node, 'stock_id')) {
 
-    $node->uniquename   = trim($node->uniquename);
-    $node->sname        = trim($node->sname);
-    $node->accession    = trim($node->accession);
+    $node->uniquename = trim($node->uniquename);
+    $node->sname = trim($node->sname);
+    $node->accession = trim($node->accession);
+    $node->stock_description = trim($node->stock_description['value']);
 
     // before we can add the stock, we must add the dbxref if one has been
     // provided by the user.
@@ -554,8 +564,9 @@ function chado_stock_insert($node) {
  */
 function chado_stock_update($node) {
 
-  $node->uniquename   = trim($node->uniquename);
-  $node->sname        = trim($node->sname);
+  $node->uniquename = trim($node->uniquename);
+  $node->sname = trim($node->sname);
+  $node->stock_description = trim($node->stock_description['value']);
 
   if ($node->revision) {
     // there is no way to handle revisions in Chado but leave

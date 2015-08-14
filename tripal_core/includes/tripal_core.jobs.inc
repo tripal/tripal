@@ -252,10 +252,17 @@ function tripal_jobs_view($job_id) {
 
   // We do not know what the arguments are for and we want to provide a
   // meaningful description to the end-user. So we use a callback function
-  // deinfed in the module that created the job to describe in an array
+  // defined in the module that created the job to describe in an array
   // the arguments provided.  If the callback fails then just use the
-  // arguments as they are
-  $args = preg_split("/::/", $job->arguments);
+  // arguments as they are.  Historically, job arguments were separated with
+  // two colon. We now store them as a serialized array. So, we need to handle
+  // both cases.
+  if (preg_match("/::/", $job->arguments)) {
+    $args = preg_split("/::/", $job->arguments);
+  }
+  else {
+    $args = unserialize($job->arguments);
+  }
   $arg_hook = $job->modulename . "_job_describe_args";
   if (is_callable($arg_hook)) {
     $new_args = call_user_func_array($arg_hook, array($job->callback, $args));
@@ -276,7 +283,7 @@ function tripal_jobs_view($job_id) {
   }
 
   // build the links
-  $links  = l('Return to jobs list', "admin/tripal/tripal_jobs/") . ' | ' .
+  $links  = l('Return to jobs list', "admin/tripal/tripal_jobs/") . ' | ';
   $links .= l('Re-run this job', "admin/tripal/tripal_jobs/rerun/" . $job->job_id) . ' | ';
   if ($job->start_time == 0 and $job->end_time == 0) {
     $links .= l('Cancel this job', "admin/tripal/tripal_jobs/cancel/" . $job->job_id) . ' | ';

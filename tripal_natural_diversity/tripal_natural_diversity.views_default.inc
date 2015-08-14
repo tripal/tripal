@@ -59,8 +59,10 @@ function tripal_natural_diversity_defaultview_admin_natdiv_exp() {
   $handler->display->display_options['access']['type'] = 'perm';
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
-  $handler->display->display_options['exposed_form']['type'] = 'basic';
-  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Filter';
+  $handler->display->display_options['exposed_form']['type'] = 'input_required';
+  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Search';
+  $handler->display->display_options['exposed_form']['options']['text_input_required'] = 'Click search to see a listing of natural diversity experiments that meet the filter requirements. Use the filters to restrict this set to a more reasonable number of experiments or to find a specific experiment.';
+  $handler->display->display_options['exposed_form']['options']['text_input_required_format'] = 'full_html';
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '25';
   $handler->display->display_options['pager']['options']['offset'] = '0';
@@ -99,14 +101,11 @@ function tripal_natural_diversity_defaultview_admin_natdiv_exp() {
   $handler->display->display_options['fields']['description']['table'] = 'nd_geolocation';
   $handler->display->display_options['fields']['description']['field'] = 'description';
   $handler->display->display_options['fields']['description']['label'] = 'Location Experiment Performed';
-  /* Sort criterion: Chado Cvterm: Name */
-  $handler->display->display_options['sorts']['name']['id'] = 'name';
-  $handler->display->display_options['sorts']['name']['table'] = 'cvterm';
-  $handler->display->display_options['sorts']['name']['field'] = 'name';
-  /* Sort criterion: Chado Nd Geolocation: Description */
-  $handler->display->display_options['sorts']['description']['id'] = 'description';
-  $handler->display->display_options['sorts']['description']['table'] = 'nd_geolocation';
-  $handler->display->display_options['sorts']['description']['field'] = 'description';
+  /* Sort criterion: Chado Nd Experiment: Id */
+  $handler->display->display_options['sorts']['nd_experiment_id']['id'] = 'nd_experiment_id';
+  $handler->display->display_options['sorts']['nd_experiment_id']['table'] = 'nd_experiment';
+  $handler->display->display_options['sorts']['nd_experiment_id']['field'] = 'nd_experiment_id';
+  $handler->display->display_options['sorts']['nd_experiment_id']['order'] = 'DESC';
   /* Filter criterion: Chado Nd Experiment: Type Id */
   $handler->display->display_options['filters']['type_id']['id'] = 'type_id';
   $handler->display->display_options['filters']['type_id']['table'] = 'nd_experiment';
@@ -181,8 +180,10 @@ function tripal_natural_diversity_defaultview_admin_geolocations() {
   $handler->display->display_options['access']['type'] = 'perm';
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
-  $handler->display->display_options['exposed_form']['type'] = 'basic';
-  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Filter';
+  $handler->display->display_options['exposed_form']['type'] = 'input_required';
+  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Search';
+  $handler->display->display_options['exposed_form']['options']['text_input_required'] = 'Click search to see a listing of natural diversity experiment locations that meet the filter requirements. Use the filters to restrict this set to a more reasonable number of locations or to find a specific location.';
+  $handler->display->display_options['exposed_form']['options']['text_input_required_format'] = 'full_html';
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '25';
   $handler->display->display_options['pager']['options']['offset'] = '0';
@@ -247,6 +248,11 @@ function tripal_natural_diversity_defaultview_admin_geolocations() {
   $handler->display->display_options['fields']['geodetic_datum']['id'] = 'geodetic_datum';
   $handler->display->display_options['fields']['geodetic_datum']['table'] = 'nd_geolocation';
   $handler->display->display_options['fields']['geodetic_datum']['field'] = 'geodetic_datum';
+  /* Sort criterion: Chado Nd Geolocation: Id */
+  $handler->display->display_options['sorts']['nd_geolocation_id']['id'] = 'nd_geolocation_id';
+  $handler->display->display_options['sorts']['nd_geolocation_id']['table'] = 'nd_geolocation';
+  $handler->display->display_options['sorts']['nd_geolocation_id']['field'] = 'nd_geolocation_id';
+  $handler->display->display_options['sorts']['nd_geolocation_id']['order'] = 'DESC';
   /* Filter criterion: Chado Nd Geolocation: Geodetic Datum */
   $handler->display->display_options['filters']['geodetic_datum']['id'] = 'geodetic_datum';
   $handler->display->display_options['filters']['geodetic_datum']['table'] = 'nd_geolocation';
@@ -355,8 +361,10 @@ function tripal_natural_diversity_defaultview_admin_reagents() {
   $handler->display->display_options['access']['type'] = 'perm';
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
-  $handler->display->display_options['exposed_form']['type'] = 'basic';
-  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Filter';
+  $handler->display->display_options['exposed_form']['type'] = 'input_required';
+  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Search';
+  $handler->display->display_options['exposed_form']['options']['text_input_required'] = 'Click search to see a listing of natural diversity protocol reagents that meet the filter requirements. Use the filters to restrict this set to a more reasonable number of reagents or to find a specific reagent.';
+  $handler->display->display_options['exposed_form']['options']['text_input_required_format'] = 'full_html';
   $handler->display->display_options['pager']['type'] = 'full';
   $handler->display->display_options['pager']['options']['items_per_page'] = '25';
   $handler->display->display_options['pager']['options']['offset'] = '0';
@@ -378,6 +386,11 @@ function tripal_natural_diversity_defaultview_admin_reagents() {
   $handler->display->display_options['fields']['name']['table'] = 'cvterm';
   $handler->display->display_options['fields']['name']['field'] = 'name';
   $handler->display->display_options['fields']['name']['label'] = 'Type';
+  /* Sort criterion: Chado Nd Reagent: Id */
+  $handler->display->display_options['sorts']['nd_reagent_id']['id'] = 'nd_reagent_id';
+  $handler->display->display_options['sorts']['nd_reagent_id']['table'] = 'nd_reagent';
+  $handler->display->display_options['sorts']['nd_reagent_id']['field'] = 'nd_reagent_id';
+  $handler->display->display_options['sorts']['nd_reagent_id']['order'] = 'DESC';
   /* Filter criterion: Chado Nd Reagent: Type Id */
   $handler->display->display_options['filters']['type_id']['id'] = 'type_id';
   $handler->display->display_options['filters']['type_id']['table'] = 'nd_reagent';
@@ -462,8 +475,10 @@ function tripal_natural_diversity_defaultview_admin_protocols() {
   $handler->display->display_options['access']['type'] = 'perm';
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
-  $handler->display->display_options['exposed_form']['type'] = 'basic';
-  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Filter';
+  $handler->display->display_options['exposed_form']['type'] = 'input_required';
+  $handler->display->display_options['exposed_form']['options']['submit_button'] = 'Search';
+  $handler->display->display_options['exposed_form']['options']['text_input_required'] = 'Click search to see a listing of natural diversity experiment protocols that meet the filter requirements. Use the filters to restrict this set to a more reasonable number of protocols or to find a specific protocol.';
+  $handler->display->display_options['exposed_form']['options']['text_input_required_format'] = 'full_html';
   $handler->display->display_options['pager']['type'] = 'none';
   $handler->display->display_options['style_plugin'] = 'table';
   $handler->display->display_options['style_options']['grouping'] = '';
@@ -487,6 +502,11 @@ function tripal_natural_diversity_defaultview_admin_protocols() {
   $handler->display->display_options['fields']['name']['id'] = 'name';
   $handler->display->display_options['fields']['name']['table'] = 'nd_protocol';
   $handler->display->display_options['fields']['name']['field'] = 'name';
+  /* Sort criterion: Chado Nd Protocol: Id */
+  $handler->display->display_options['sorts']['nd_protocol_id']['id'] = 'nd_protocol_id';
+  $handler->display->display_options['sorts']['nd_protocol_id']['table'] = 'nd_protocol';
+  $handler->display->display_options['sorts']['nd_protocol_id']['field'] = 'nd_protocol_id';
+  $handler->display->display_options['sorts']['nd_protocol_id']['order'] = 'DESC';
   /* Filter criterion: Chado Nd Protocol: Name */
   $handler->display->display_options['filters']['name']['id'] = 'name';
   $handler->display->display_options['filters']['name']['table'] = 'nd_protocol';

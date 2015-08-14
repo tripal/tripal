@@ -1,37 +1,41 @@
 <?php
 /**
  * @file
- * Implements the pub node content type
+ * Implements Drupal Node hooks to create the chado_analysis node content type.
+ *
+ * @ingroup tripal_pub
  */
 
 /**
  * Implements hook_node_info().
  *
+ * Provide information to drupal about the node types that we're creating
+ * in this module
+ *
  * @ingroup tripal_pub
  */
 function tripal_pub_node_info() {
-
-  return array(
-    'chado_pub' => array(
-      'name'        => t('Publication'),
-      'base'        => 'chado_pub',
-      'description' => t('A publication from the Chado database'),
-      'has_title'   => TRUE,
-      'locked'      => TRUE,
-      'chado_node_api' => array(
-        'base_table' => 'pub',
-        'hook_prefix' => 'chado_pub',
-        'record_type_title' => array(
-          'singular' => t('Publication'),
-          'plural' => t('Publications')
-        ),
-        'sync_filters' => array(
-          'type_id' => FALSE,
-          'organism_id' => FALSE
-        ),
+  $nodes = array();
+  $nodes['chado_pub'] = array(
+    'name'        => t('Publication'),
+    'base'        => 'chado_pub',
+    'description' => t('A publication from the Chado database'),
+    'has_title'   => TRUE,
+    'locked'      => TRUE,
+    'chado_node_api' => array(
+      'base_table' => 'pub',
+      'hook_prefix' => 'chado_pub',
+      'record_type_title' => array(
+        'singular' => t('Publication'),
+        'plural' => t('Publications')
+      ),
+      'sync_filters' => array(
+        'type_id' => FALSE,
+        'organism_id' => FALSE,
       ),
     ),
   );
+  return $nodes;
 }
 
 /**
@@ -371,7 +375,7 @@ function chado_pub_validate($node, $form, &$form_state) {
     return;
   }
 
-  // get the media name looking at the properties
+  // Get the media name looking at the properties
   $series_name = '';
   $properties = chado_retrieve_node_form_properties($node);
   foreach ($properties as $key => $prop_values) {
@@ -380,13 +384,16 @@ function chado_pub_validate($node, $form, &$form_state) {
     if ($prop_type[0]->name == 'Conference Name' or
         $prop_type[0]->name == 'Journal Name' or
         $prop_type[0]->name == 'Series Name') {
-      $series_name = $prop_values[0];
+      $v = array_values($prop_values);
+      $series_name = $v[0];
     }
     if ($prop_type[0]->name == 'Citation') {
-      $uniquename = $prop_values[0];
+      $v = array_values($prop_values);
+      $uniquename = $v[0];
     }
     if (count($prop_values) == 1) {
-      $pub[$prop_type[0]->name] = $prop_values[0];
+      $v = array_values($prop_values);
+      $pub[$prop_type[0]->name] = $v[0];
     }
     else {
       $pub[$prop_type[0]->name] = $prop_values;

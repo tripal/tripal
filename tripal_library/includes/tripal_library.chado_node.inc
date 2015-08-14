@@ -165,7 +165,7 @@ function chado_library_form($node, &$form_state) {
   );
 
   $form['description']= array(
-    '#type'          => 'textarea',
+    '#type'          => 'text_format',
     '#title'         => t('Library Description'),
     '#description'   => t('A brief description of the library'),
     '#required'      => TRUE,
@@ -235,7 +235,6 @@ function chado_library_validate($node, $form, &$form_state) {
   // trim white space from text fields
   $node->libraryname = property_exists($node, 'libraryname') ? trim($node->libraryname) : '';
   $node->uniquename  = property_exists($node, 'uniquename') ? trim($node->uniquename) : '';
-  $node->description = property_exists($node, 'description') ? trim($node->description) : '';
 
   $lib = 0;
   // check to make sure the unique name on the library is unique
@@ -276,7 +275,7 @@ function chado_library_insert($node) {
   if (!property_exists($node, 'library_id')) {
     $node->libraryname = trim($node->libraryname);
     $node->uniquename  = trim($node->uniquename);
-    $node->description = trim($node->description);
+    $node->description  = trim($node->description['value']);
 
     $values = array(
       'name' => $node->libraryname,
@@ -344,7 +343,7 @@ function chado_library_update($node) {
 
   $node->libraryname = trim($node->libraryname);
   $node->uniquename  = trim($node->uniquename);
-  $node->description = trim($node->description);
+  $node->description  = trim($node->description['value']);
 
   // update the library record
   $library_id = chado_get_id_from_nid('library', $node->nid);

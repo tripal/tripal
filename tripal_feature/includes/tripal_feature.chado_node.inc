@@ -599,13 +599,13 @@ function chado_feature_delete($node) {
 
   $feature_id  = chado_get_id_from_nid('feature', $node->nid);
 
-  // if we don't have a library id for this node then this isn't a node of
+  // If we don't have a feature id for this node then this isn't a node of
   // type chado_library or the entry in the chado_library table was lost.
   if (!$feature_id) {
     return;
   }
 
-  // remove the drupal content
+  // Remove the drupal content.
   $sql_del = "DELETE FROM {chado_feature} WHERE nid = :nid AND vid = :vid";
   db_query($sql_del, array(':nid' => $node->nid, ':vid' => $node->vid));
   $sql_del = "DELETE FROM {node} WHERE nid = :nid AND vid = :vid";
@@ -793,7 +793,6 @@ function tripal_feature_node_presave($node) {
  * @ingroup tripal_feature
  */
 function tripal_feature_node_insert($node) {
-
   // set the URL path after inserting.  We do it here because we do not
   // know the feature_id in the presave
   switch ($node->type) {
@@ -810,7 +809,6 @@ function tripal_feature_node_insert($node) {
 
       // Now get the title.
       $node->title = chado_get_node_title($node);
-
       break;
   }
 }

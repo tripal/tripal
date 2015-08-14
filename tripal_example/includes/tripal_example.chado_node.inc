@@ -220,7 +220,7 @@ function chado_example_form($node, &$form_state) {
   );
 
   $form['description'] = array(
-    '#type' => 'textarea',
+    '#type' => 'text_format',
     '#title' => t('Description'),
     '#required' => TRUE,
     '#default_value' => $description,
@@ -324,7 +324,6 @@ function chado_example_validate($node, $form, &$form_state) {
 
   // be sure to always trim text fields
   $node->uniquename   = property_exists($node, 'uniquename') ? trim($node->uniquename) : '';
-  $node->description  = property_exists($node, 'description') ? trim($node->description) : '';
 
   // Validating for an update. If the 'nid' property is present in the node then
   // this is an update and validation can be different for updates
@@ -385,7 +384,7 @@ function chado_example_insert($node) {
 
     // be sure to always trim text fields
     $node->uniquename   = trim($node->uniquename);
-    $node->description  = trim($node->description);
+    $node->description  = trim($node->description['value']);
 
     // get the example type record
     $type_cv = tripal_get_default_cv('example', 'type_id');
@@ -484,7 +483,7 @@ function chado_example_insert($node) {
 function chado_example_update($node) {
   // be sure to always trim text fields
   $node->uniquename   = trim($node->uniquename);
-  $node->description  = trim($node->description);
+  $node->description  = trim($node->description['value']);
 
   // use the chado_update_record() function to update the record
   $match = array(

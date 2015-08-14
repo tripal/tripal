@@ -49,9 +49,6 @@ function tripal_pub_requirements($phase) {
 function tripal_pub_install() {
   global $base_path;
 
-  // create the module's data directory
-  tripal_create_files_dir('tripal_pub');
-
   // add loading of the the tripal pub ontology to the job queue
   $obo_path = '{tripal_pub}/files/tpub.obo';
   $obo_id = tripal_insert_obo('Tripal Publication', $obo_path);

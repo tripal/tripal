@@ -150,7 +150,17 @@ function tripal_bulk_loader_load_data($nid, $job_id) {
   $node = node_load($nid);
   print "Template: " . $node->template->name . " (" . $node->template_id . ")\n";
 
-  $total_lines = trim(`wc --lines < $node->file`);
+  // Determine the total number of lines in the file.
+  $total_lines = 0;
+  $handle = fopen($node->file, "r");
+  while(!feof($handle)){
+    $line = fgets($handle);
+    $total_lines++;
+  }
+  fclose($handle);
+
+  // Correct for files with a single line and no enter character.
+  $total_lines = ($total_lines == 0) ? 1 : $total_lines;
   print "File: " . $node->file . " (" . $total_lines . " lines)\n";
 
   //print "\nClearing all prepared statements from previous runs of this loader...\n";
@@ -577,7 +587,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   // skip optional fields
   if ($skip_optional) {
     // SPF -- Commented out the following line.  This state is intentional due
-    // to the loader setup and and is not an error.  If informational it 
+    // to the loader setup and and is not an error.  If informational it
     // prints too much to the terminal.
     // tripal_bulk_loader_throw_error('Skipping an optional record (%record)',array('%record'=>$table_data['record_id']),TRIPAL_NOTICE);
     return $no_errors;
@@ -586,7 +596,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   // check if it is already inserted
   if (array_key_exists('inserted', $table_data) and $table_data['inserted']) {
     // SPF -- Commented out the following line.  This state is intentional due
-    // to the loader setup and and is not an error.  If informational it 
+    // to the loader setup and and is not an error.  If informational it
     // prints too much to the terminal.
     // tripal_bulk_loader_throw_error('Skipping %record since it is already inserted',array('%record'=>$table_data['record_id']),TRIPAL_NOTICE);
     return $no_errors;
@@ -597,7 +607,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
   if (array_key_exists('selected', $table_data) and $table_data['selected']) {
     $data[$priority]['values_array'] = $default_data[$priority]['values_array'];
     // SPF -- Commented out the following line.  This state is intentional due
-    // to the loader setup and and is not an error.  If informational it 
+    // to the loader setup and and is not an error.  If informational it
     // prints too much to the terminal.
     // tripal_bulk_loader_throw_error('%record was already selected thus we are just returning the values previously selected.',array('%record'=>$table_data['record_id']),TRIPAL_NOTICE);
     return $no_errors;
@@ -651,7 +661,7 @@ function process_data_array_for_line($priority, &$data, &$default_data, $addt) {
       // return if this is a select_if_duplicate
       if ($table_data['select_if_duplicate'] == 1) {
         // SPF -- Commented out the following line.  This state is intentional due
-        // to the loader setup and and is not an error.  If informational it 
+        // to the loader setup and and is not an error.  If informational it
         // prints too much to the terminal.
         // tripal_bulk_loader_throw_error('Simply returning values for %record since it was already inserted',array('%record'=>$table_data['record_id']),TRIPAL_NOTICE);
         return $no_errors;

@@ -41,10 +41,8 @@ function tripal_feature_fasta_load_form() {
   );
 
   // get the sequence ontology CV ID
-  $values = array('name' => 'sequence'
-  );
-  $cv = chado_select_record('cv', array('cv_id'
-  ), $values);
+  $values = array('name' => 'sequence');
+  $cv = chado_select_record('cv', array('cv_id'), $values);
   $cv_id = $cv[0]->cv_id;
 
   $form['seqtype'] = array('#type' => 'textfield','#title' => t('Sequence Type'),
@@ -123,14 +121,18 @@ function tripal_feature_fasta_load_form() {
     '#description' => t('Enter the regular expression that will extract the
        feature name from the FASTA definition line. For example, for a
        defintion line with a name and unique name separated by a bar \'|\' (>seqname|uniquename),
-       the regular expression for the name would be, "^(.*?)\|.*$".')
+       the regular expression for the name would be, "^(.*?)\|.*$".  All FASTA
+       definition lines begin with the ">" symbol.  You do not need to incldue
+       this symbol in your regular expression.')
   );
   $form['advanced']['re_uname'] = array('#type' => 'textfield',
     '#title' => t('Regular expression for the unique name'),'#required' => FALSE,
     '#description' => t('Enter the regular expression that will extract the
        feature name from the FASTA definition line. For example, for a
        defintion line with a name and unique name separated by a bar \'|\' (>seqname|uniquename),
-       the regular expression for the unique name would be "^.*?\|(.*)$").')
+       the regular expression for the unique name would be "^.*?\|(.*)$").  All FASTA
+       definition lines begin with the ">" symbol.  You do not need to incldue
+       this symbol in your regular expression.')
   );
 
   // Advanced database cross-reference optoins
@@ -163,7 +165,7 @@ function tripal_feature_fasta_load_form() {
   $rels = array();
   $rels[''] = '';
   $rels['part_of'] = 'part of';
-  $rels['derives_from'] = 'produced by';
+  $rels['derives_from'] = 'produced by (derives from)';
 
   // Advanced references options
   $form['advanced']['relationship']['rel_type'] = array('#title' => t('Relationship Type'),
@@ -400,21 +402,16 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
         LEFT JOIN {cvtermsynonym} CVTS on CVTS.cvterm_id = CVT.cvterm_id
       WHERE cv.name = :cvname and (CVT.name = :name or CVTS.synonym = :synonym)
     ";
-    $cvterm = chado_query($cvtermsql, array(':cvname' => 'sequence',':name' => $type,
-      ':synonym' => $type
-    ))->fetchObject();
+    $cvterm = chado_query($cvtermsql, array(':cvname' => 'sequence',':name' => $type,':synonym' => $type))->fetchObject();
     if (!$cvterm) {
-      tripal_report_error("T_fasta_loader", TRIPAL_ERROR, "Cannot find the term type: '%type'", array(
-        '%type' => $type
-      ));
+      tripal_report_error("T_fasta_loader", TRIPAL_ERROR,
+        "Cannot find the term type: '%type'", array('%type' => $type));
       return 0;
     }
 
     // Second, if there is a parent type then get that.
     if ($parent_type) {
-      $parentcvterm = chado_query($cvtermsql, array(':cvname' => 'sequence',
-        ':name' => $parent_type,':synonym' => $parent_type
-      ))->fetchObject();
+      $parentcvterm = chado_query($cvtermsql, array(':cvname' => 'sequence', ':name' => $parent_type,':synonym' => $parent_type))->fetchObject();
       if (!$parentcvterm) {
         tripal_report_error("T_fasta_loader", TRIPAL_ERROR, "Cannot find the paretne term type: '%type'", array(
           '%type' => $parentcvterm
@@ -425,9 +422,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
 
     // Third, if there is a relationship type then get that.
     if ($rel_type) {
-      $relcvterm = chado_query($cvtermsql, array(':cvname' => 'sequence',':name' => $rel_type,
-        ':synonym' => $rel_type
-      ))->fetchObject();
+      $relcvterm = chado_query($cvtermsql, array(':cvname' => 'sequence',':name' => $rel_type,':synonym' => $rel_type))->fetchObject();
       if (!$relcvterm) {
         tripal_report_error("T_fasta_loader", TRIPAL_ERROR, "Cannot find the relationship term type: '%type'", array(
           '%type' => $relcvterm
@@ -498,8 +493,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
           if (preg_match("/^\s*(.*?)[\s\|].*$/", $defline, $matches)) {
             if (strlen($matches[1]) > $feature_tbl['fields']['name']['length']) {
               tripal_report_error('trp-fasta', "WARNING: Regular expression retrieves a feature name too long for the feature name. Line %line.", array(
-                '%line' => $i
-              ), 'error');
+                '%line' => $i), 'error');
             }
             else {
               $name = trim($matches[1]);
@@ -507,8 +501,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
           }
           else {
             tripal_report_error('trp-fasta', "ERROR: Cannot find a feature name. Line %line.", array(
-              '%line' => $i
-            ), 'error');
+              '%line' => $i), 'error');
           }
         }
 
@@ -516,8 +509,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
         if ($re_uname) {
           if (!preg_match("/$re_uname/", $defline, $matches)) {
             tripal_report_error('trp-fasta', "ERROR: Regular expression for the feature unique name finds nothing. Line %line.", array(
-              '%line' => $i
-            ), 'error');
+              '%line' => $i), 'error');
           }
           $uname = trim($matches[1]);
         }
@@ -530,8 +522,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
           }
           else {
             tripal_report_error('trp-fasta', "ERROR: Cannot find a feature unique name. Line %line.", array(
-              '%line' => $i
-            ), 'error');
+              '%line' => $i), 'error');
           }
         }
 
@@ -551,8 +542,12 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
         $subject = trim($matches[1]);
 
         // Add the details to the sequence.
-        $seqs[$num_seqs] = array('name' => $name,'uname' => $uname,'accession' => $accession,
-          'subject' => $subject,'seq_start' => ftell($fh)
+        $seqs[$num_seqs] = array(
+          'name' => $name,
+          'uname' => $uname,
+          'accession' => $accession,
+          'subject' => $subject,
+          'seq_start' => ftell($fh)
         );
         $set_start = TRUE;
         // If this isn't the first sequence, then we want to specify where
@@ -634,9 +629,7 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
     ), $values);
     if (count($results) > 1) {
       tripal_report_error('T_fasta_loader', "Multiple features exist with the name '%name' of type
-               '%type' for the organism.  skipping", array(
-        '%name' => $name,'%type' => $type
-      ));
+               '%type' for the organism.  skipping", array('%name' => $name,'%type' => $type));
       return 0;
     }
     if (count($results) == 1) {
@@ -646,16 +639,16 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
 
   // Check if this feature already exists if the match_type is 'Unique Name'.
   if (strcmp($match_type, 'Unique name') == 0) {
-    $values = array('organism_id' => $organism_id,'uniquename' => $uname,
+    $values = array(
+      'organism_id' => $organism_id,
+      'uniquename' => $uname,
       'type_id' => $cvterm->cvterm_id
     );
 
-    $results = chado_select_record('feature', array('feature_id'
-    ), $values);
+    $results = chado_select_record('feature', array('feature_id'), $values);
     if (count($results) > 1) {
       tripal_report_error('T_fasta_loader', TRIPAL_WARNING, "Multiple features exist with the name '%name' of type '%type' for the organism.  skipping", array(
-        '%name' => $name,'%type' => $type
-      ));
+        '%name' => $name,'%type' => $type));
       return 0;
     }
     if (count($results) == 1) {
@@ -683,31 +676,33 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
     }
 
     // Insert the feature record.
-    $values = array('organism_id' => $organism_id,'name' => $name,'uniquename' => $uname,
+    $values = array(
+      'organism_id' => $organism_id,
+      'name' => $name,
+      'uniquename' => $uname,
       'type_id' => $cvterm->cvterm_id
     );
     $success = chado_insert_record('feature', $values);
     if (!$success) {
       tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Failed to insert feature '%name (%uname)'", array(
-        '%name' => $name,'%uname' => $numane
-      ));
+        '%name' => $name,'%uname' => $numane));
       return 0;
     }
 
     // now get the feature we just inserted
-    $values = array('organism_id' => $organism_id,'uniquename' => $uname,
+    $values = array(
+      'organism_id' => $organism_id,
+      'uniquename' => $uname,
       'type_id' => $cvterm->cvterm_id
     );
-    $results = chado_select_record('feature', array('feature_id'
-    ), $values);
+    $results = chado_select_record('feature', array('feature_id'), $values);
     if (count($results) == 1) {
       $inserted = 1;
       $feature = $results[0];
     }
     else {
       tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Failed to retreive newly inserted feature '%name (%uname)'", array(
-        '%name' => $name,'%uname' => $numane
-      ));
+        '%name' => $name,'%uname' => $numane));
       return 0;
     }
 
@@ -719,8 +714,7 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
   if (!$feature and (strcmp($method, 'Update only') == 0 or
      drupal_strcmp($method, 'Insert and update') == 0)) {
     tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Failed to find feature '%name' ('%uname') while matching on " .
-     drupal_strtolower($match_type), array('%name' => $name,'%uname' => $uname
-    ));
+      drupal_strtolower($match_type), array('%name' => $name,'%uname' => $uname));
     return 0;
   }
 
@@ -739,7 +733,9 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
         // First check to make sure that by changing the unique name of this
         // feature that we won't conflict with another existing feature of
         // the same name
-        $values = array('organism_id' => $organism_id,'uniquename' => $uname,
+        $values = array(
+          'organism_id' => $organism_id,
+          'uniquename' => $uname,
           'type_id' => $cvterm->cvterm_id
         );
         $results = chado_select_record('feature', array('feature_id'
@@ -753,9 +749,10 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
         }
 
         // the changes to the uniquename don't conflict so proceed with the update
-        $values = array('uniquename' => $uname
-        );
-        $match = array('name' => $name,'organism_id' => $organism_id,
+        $values = array('uniquename' => $uname);
+        $match = array(
+          'name' => $name,
+          'organism_id' => $organism_id,
           'type_id' => $cvterm->cvterm_id
         );
 
@@ -776,9 +773,10 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
       // we want to update the name.
       $values = array();
       if ($name) {
-        $values = array('name' => $name
-        );
-        $match = array('uniquename' => $uname,'organism_id' => $organism_id,
+        $values = array('name' => $name);
+        $match = array(
+          'uniquename' => $uname,
+          'organism_id' => $organism_id,
           'type_id' => $cvterm->cvterm_id
         );
         $success = chado_update_record('feature', $match, $values);
@@ -798,10 +796,11 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
   // add in the analysis link
   if ($analysis_id) {
     // if the association doens't alredy exist then add one
-    $values = array('analysis_id' => $analysis_id,'feature_id' => $feature->feature_id
+    $values = array(
+      'analysis_id' => $analysis_id,
+      'feature_id' => $feature->feature_id
     );
-    $results = chado_select_record('analysisfeature', array('analysisfeature_id'
-    ), $values);
+    $results = chado_select_record('analysisfeature', array('analysisfeature_id'), $values);
     if (count($results) == 0) {
       $success = chado_insert_record('analysisfeature', $values);
       if (!$success) {
@@ -816,28 +815,26 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
   // now add the database cross reference
   if ($db_id) {
     // check to see if this accession reference exists, if not add it
-    $values = array('db_id' => $db_id,'accession' => $accession
+    $values = array(
+      'db_id' => $db_id,
+      'accession' => $accession
     );
-    $results = chado_select_record('dbxref', array('dbxref_id'
-    ), $values);
+    $results = chado_select_record('dbxref', array('dbxref_id'), $values);
     // if the accession doesn't exist then add it
     if (count($results) == 0) {
       $results = chado_insert_record('dbxref', $values);
       if (!$results) {
         tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Failed to add database accession '%accession'", array(
-          '%accession' => $accession
-        ));
+          '%accession' => $accession));
         return 0;
       }
-      $results = chado_select_record('dbxref', array('dbxref_id'
-      ), $values);
+      $results = chado_select_record('dbxref', array('dbxref_id'), $values);
       if (count($results) == 1) {
         $dbxref = $results[0];
       }
       else {
         tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Failed to retreive newly inserted dbxref '%name (%uname)'", array(
-          '%name' => $name,'%uname' => $numane
-        ));
+          '%name' => $name,'%uname' => $numane));
         return 0;
       }
     }
@@ -846,10 +843,11 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
     }
 
     // check to see if the feature dbxref record exists if not, then add it
-    $values = array('feature_id' => $feature->feature_id,'dbxref_id' => $dbxref->dbxref_id
+    $values = array(
+      'feature_id' => $feature->feature_id,
+      'dbxref_id' => $dbxref->dbxref_id
     );
-    $results = chado_select_record('feature_dbxref', array('feature_dbxref_id'
-    ), $values);
+    $results = chado_select_record('feature_dbxref', array('feature_dbxref_id'), $values);
     if (count($results) == 0) {
       $success = chado_insert_record('feature_dbxref', $values);
       if (!$success) {
@@ -878,11 +876,12 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
     $parent_feature = $results[0];
 
     // check to see if the relationship already exists if not then add it
-    $values = array('subject_id' => $feature->feature_id,'object_id' => $parent_feature->feature_id,
+    $values = array(
+      'subject_id' => $feature->feature_id,
+      'object_id' => $parent_feature->feature_id,
       'type_id' => $relcvterm->cvterm_id
     );
-    $results = chado_select_record('feature_relationship', array('feature_relationship_id'
-    ), $values);
+    $results = chado_select_record('feature_relationship', array('feature_relationship_id'), $values);
     if (count($results) == 0) {
       $success = chado_insert_record('feature_relationship', $values);
       if (!$success) {
