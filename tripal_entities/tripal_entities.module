@@ -1,0 +1,181 @@
+<?php
+// http://www.bluespark.com/blog/drupal-entities-part-3-programming-hello-drupal-entity
+/**
+ * Implement hook_entity_info().
+ */
+function tripal_entities_entity_info() {
+  $entities = array();
+
+  $entities['cvterm'] = array(
+    'label' => t('Vocabulary Term'),
+    'uri callback' => 'tripal_entities_vocbulary_term_uri',
+    'plural label' => t('Vocabulary Terms'),
+    'entity class' => 'TrpVocabularyTerm',
+    'controller class' => 'TrpVocabularyTermController',
+    'fieldable' => TRUE,
+    'entity keys' => array(
+      'id' => 'internal_id'
+    ),
+    // Bundles are defined by the model types below
+    'bundles' => array(),
+  );
+
+  // We want to dynamically add the bundles (or term types) to the entity.
+  $values = array(
+    'cv_id' => array(
+      'name' => 'sequence'
+    ),
+    'name' => 'gene'
+  );
+  $cvterm = chado_generate_var('cvterm', $values);
+  $bundle_id = 'trp_' . $cvterm->dbxref_id->db_id->name . '_' . $cvterm->dbxref_id->accession;
+  $label = preg_replace('/_/', ' ', ucwords($cvterm->name));
+  $entities['trp_vocabulary_term']['bundles'][$bundle_id] = array(
+    'label' => $label,
+  );
+  return $entities;
+}
+
+function tripal_entities_load($pid = NULL, $reset = FALSE){
+  $pids = (isset ($pid) ? array($pid) : array());
+  $cvterm = trp_vocabulary_term_load_multiple($pids, $reset);
+  return $cvterm ? reset ($cvterm) : FALSE;
+}
+
+function tripal_entities_load_multiple($pids = array(), $conditions = array(), $reset = FALSE){
+  return entity_load('cvterm', $pids, $conditions, $reset);
+}
+
+function tripal_entities_menu() {
+  $items['admin/structure/cvterm/manage'] = array(
+    'title' => 'Term Admin',
+    'description' => 'Manage cvterm structure',
+    'page callback' => 'cvterm_info',
+    'access arguments' => array('administer cvterms'),
+  );
+  $items['cvterm/%cvterm'] = array(
+    'title callback' => 'cvterm_page_title',
+    'title arguments' => array(1),
+    'page callback' => 'cvterm_page_view',
+    'page arguments' => array(1),
+    'access arguments' => array('view cvterms'),
+    'type' => MENU_CALLBACK,
+  );
+
+
+  $items['data/gene/add'] = array(
+    'title' => 'Add a gene',
+    'page callback' => 'cvterm_add',
+    'access arguments' => array('create cvterm'),
+  );
+  return $items;
+}
+
+function tripal_entities_permission(){
+  return array(
+    'administer cvterms' =>  array(
+      'title' => t('Administer cvterms'),
+      'restrict access' => TRUE,
+    ),
+    'view postsits' => array(
+      'title' => t('View cvterms'),
+    )
+  );
+}
+
+
+function cvterm_info() {
+  return ('Welcome to the administration page for your CV Terms!');
+}
+
+function cvterm_page_title($cvterm){
+  return $cvterm->pid;
+}
+
+function cvterm_page_view($cvterm, $view_mode = 'full'){
+  $cvterm->content = array();
+
+  // Build fields content.
+  field_attach_prepare_view('cvterm', array($cvterm->pid => $cvterm), $view_mode);
+  entity_prepare_view('cvterm', array($cvterm->pid => $cvterm));
+  $cvterm->content += field_attach_view('cvterm', $cvterm, $view_mode);
+
+  return $cvterm->content;
+}
+
+
+function tripal_entities_field_extra_fields() {
+  $return = array();
+  $return['cvterm']['cvterm'] = array(
+    'form' => array(
+      'note' => array(
+        'label' => t('Note'),
+        'description' => t('Term Note'),
+      ),
+    ),
+  );
+
+  return $return;
+}
+function tripal_entities_vocbulary_term_uri($cvterm) {
+  return array(
+    'path' => 'cvterm/' . $cvterm->id,
+  );
+}
+
+function cvterm_add() {
+  $cvterm = (object) array (
+    'pid' => '',
+    'type' => 'cvterm',
+    'note' => '',
+  );
+
+  return drupal_get_form('cvterm_add_form', $cvterm);
+}
+
+
+function cvterm_add_form($form, &$form_state, $cvterm) {
+  $form['note'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Note'),
+    '#required' => TRUE,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+  );
+
+  field_attach_form('cvterm', $cvterm, $form, $form_state);
+
+  return $form;
+}
+function cvterm_add_form_validate($form, &$form_state) {
+  $cvterm_submission = (object) $form_state['values'];
+  field_attach_form_validate('cvterm', $cvterm_submission, $form, $form_state);
+}
+
+function cvterm_add_form_submit($form, &$form_state) {
+  $cvterm_submission = (object) $form_state['values'];
+  field_attach_submit('cvterm', $cvterm_submission, $form, $form_state);
+  $cvterm = cvterm_save($cvterm_submission);
+  $form_state['redirect'] = "cvterm/$cvterm->pid";
+}
+
+function cvterm_save(&$cvterm) {
+  return entity_get_controller('cvterm')->save($cvterm);
+}
+/**
+ *
+ *
+ */
+class TrpVocabularyTermController extends DrupalDefaultEntityController {
+
+  public function save($cvterm) {
+//     drupal_write_record('cvterm', $cvterm);
+//     field_attach_insert('cvterm', $cvterm);
+//     module_invoke_all('entity_insert', 'cvterm', $cvterm);
+    return $cvterm;
+  }
+
+}
