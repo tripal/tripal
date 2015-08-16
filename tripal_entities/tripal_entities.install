@@ -1,0 +1,82 @@
+<?php
+/**
+ * Implementation of hook_schema().
+ *
+ */
+function tripal_entities_schema() {
+  $schema['tripal_entity'] = array(
+    'description' => 'The base table for Tripal Vocabulary-based entities.',
+    'fields' => array(
+      'entity_id' => array(
+        'description' => 'The primary identifier for a vocabulary entity.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'cvterm_id' => array(
+        'description' => 'The type of entity. This cvterm_id should match a record in the Chado cvterm table.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'tablename' => array(
+        'description' => 'The Chado table that contains the record that this entity is associated with.',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => ''
+      ),
+      'record_id' => array(
+        'description' => 'The unique numerical identifier for the record that this entity is associated with (e.g. feature_id, stock_id, library_id, etc.).',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'title' => array(
+        'description' => 'The title of this node, always treated as non-markup plain text.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'uid' => array(
+        'description' => 'The {users}.uid that owns this node; initially, this is the user that created it.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'status' => array(
+        'description' => 'Boolean indicating whether the node is published (visible to non-administrators).',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp when the node was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'changed' => array(
+        'description' => 'The Unix timestamp when the node was most recently saved.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'entity_changed' => array('changed'),
+      'entity_created' => array('created'),
+      'tablename' => array('tablename'),
+      'record_id' => array('record_id'),
+      'chado_record' => array('tablename', 'record_id'),
+      'cvterm_id' => array('cvterm_id'),
+      'uid' => array('uid'),
+    ),
+    'unique keys' => array(
+      'record' => array('tablename', 'record_id'),
+    ),
+    'primary key' => array('entity_id'),
+  );
+  return $schema;
+}

@@ -55,19 +55,19 @@ function tripal_entities_menu() {
     'page callback' => 'chado_data_info',
     'access arguments' => array('administer chado_datas'),
   );
-  $items['chado_data/%chado_data'] = array(
+  $items['chado_data/%'] = array(
     'title callback' => 'chado_data_page_title',
     'title arguments' => array(1),
     'page callback' => 'chado_data_page_view',
     'page arguments' => array(1),
-    'access arguments' => array('view chado_datas'),
+    'access arguments' => array('view chado_data'),
     'type' => MENU_CALLBACK,
   );
 
   $items['data/add'] = array(
     'title' => 'Add new data',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_entities_add'),
+    'page arguments' => array('tripal_entities_add_form'),
     'access arguments' => array('create chado_data'),
   );
   return $items;
@@ -163,7 +163,6 @@ function tripal_entities_add_form($form, &$form_state) {
     );
   }
 
-
   // Once the CV term is selected then provide the other fields.
   if ($term_name) {
     // Get the cvterm that matches
@@ -198,10 +197,10 @@ function tripal_entities_add_form($form, &$form_state) {
       '#weight' => -100,
     );
 
-/*     // Drupal field types and settings:
+/*      // Drupal field types and settings:
     // https://www.drupal.org/node/1879542
     $field = array(
-      'field_name' => 'feature_name',
+      'field_name' => 'feature__name',
       'type' => 'text',
       'cardinality' => 1,
       'storage' => array(
@@ -210,19 +209,60 @@ function tripal_entities_add_form($form, &$form_state) {
     );
     field_create_field($field);
     $field_instance = array(
-      'field_name' => 'feature_name',
+      'field_name' => 'feature__name',
       'label' => 'Name',
       'widget' => array(
         'type' => 'text_textfield'
       ),
-      'entity_type' => 'cvterm',
+      'entity_type' => 'chado_data',
       'required' => 'true',
       'settings' => array(
         'max_length' => 255
       ),
       'bundle' => $cvterm->name,
     );
-    field_create_instance($field_instance); */
+    field_create_instance($field_instance);
+    $field = array(
+      'field_name' => 'feature__uniquename',
+      'type' => 'text',
+      'cardinality' => 1,
+      'storage' => array(
+        'type' => 'tripal_entities_storage'
+      ),
+    );
+    field_create_field($field);
+    $field_instance = array(
+      'field_name' => 'feature__uniquename',
+      'label' => 'Unique Name',
+      'widget' => array(
+        'type' => 'text_textfield'
+      ),
+      'entity_type' => 'chado_data',
+      'required' => 'true',
+      'settings' => array(
+        'max_length' => 255
+      ),
+      'bundle' => $cvterm->name,
+    );
+    field_create_instance($field_instance);
+    $field = array(
+      'field_name' => 'feature__organism_id',
+      'type' => 'organism_id',
+      'cardinality' => 1,
+      'storage' => array(
+        'type' => 'tripal_entities_storage'
+      ),
+    );
+    field_create_field($field);
+    $field_instance = array(
+      'field_name' => 'feature__organism_id',
+      'label' => 'Organism',
+      'entity_type' => 'chado_data',
+      'required' => 'true',
+      'settings' => array(),
+      'bundle' => $cvterm->name,
+    );
+    field_create_instance($field_instance);*/
 
 
 
@@ -238,6 +278,7 @@ function tripal_entities_add_form($form, &$form_state) {
       '#type' => 'submit',
       '#value' => t('Add a new ' . $cvterm->name),
       '#name' => 'add_data',
+      '#weight' => 1000
     );
   }
 
@@ -251,11 +292,12 @@ function tripal_entities_add_form($form, &$form_state) {
  */
 function tripal_entities_field_info() {
   $fields = array(
-    'chado_text' => array(
-      'label' => t('Chado Text'),
-      'description' => t('This field is used for mapping data into a Chado varchar field.'),
-      'default_widget' => 'tripal_entities_text_widget',
-      'default_formatter' => 'tripal_entities_text_formatter',
+    'organism_id' => array(
+      'label' => t('Organism'),
+      'description' => t('A field for specifying an organism.'),
+      'default_widget' => 'tripal_entities_organism_select_widget',
+      'default_formatter' => 'tripal_entities_organism_formatter',
+      'settings' => array(),
       'storage' => array(
         'type' => 'tripal_entities_storage',
         'module' => 'tripal_entities',
@@ -271,9 +313,9 @@ function tripal_entities_field_info() {
  */
 function tripal_entities_field_widget_info() {
   return array(
-    'tripal_entities_text_widget' => array(
-      'label' => t('Chado Text Widget'),
-      'field types' => array('chado_text')
+    'tripal_entities_organism_select_widget' => array(
+      'label' => t('Organism Select'),
+      'field types' => array('organism_id')
     ),
   );
 }
@@ -282,9 +324,9 @@ function tripal_entities_field_widget_info() {
  */
 function tripal_entities_field_formatter_info() {
   return array(
-    'tripal_entities_text_formatter' => array(
-      'label' => t('Chado Text Formatter'),
-      'field types' => array('chado_text')
+    'tripal_entities_organism_formatter' => array(
+      'label' => t('Organism'),
+      'field types' => array('organism_id')
     ),
   );
 }
@@ -292,34 +334,59 @@ function tripal_entities_field_formatter_info() {
 /**
  * Implements hook_field_widget_form().
  */
-function tripal_entities_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function tripal_entities_field_widget_form(&$form, &$form_state, $field,
+  $instance, $langcode, $items, $delta, $element) {
+
+  $widget = $element;
+  $widget['#delta'] = $delta;
+
   switch ($instance['widget']['type']) {
-    case 'tripal_entities_text_widget':
-      $element['tripal_entities_text_widget'] = array(
-        '#type' => 'textfield',
+    case 'tripal_entities_organism_select_widget':
+      $options = tripal_get_organism_select_options();
+      $widget += array(
+        '#type' => 'select',
         '#title' => $element['#title'],
         '#description' => $element['#description'],
+        '#options' => $options,
         '#default_value' => '',
         '#required' => $element['#required'],
         '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
         '#delta' => $delta,
+        '#element_validate' => array('tripal_entities_organism_select_widget_validate'),
       );
+      $element['value'] = $widget;
       break;
   }
   return $element;
 }
 
 /**
+ * Callback function for validating the tripal_entities_organism_select_widget.
+ */
+function tripal_entities_organism_select_widget_validate($element, &$form_state) {
+
+  $field_name = $element['#field_name'];
+  // Make sure we have a valid organism
+   foreach ($form_state['values'][$field_name] as $langcode => $items) {
+     foreach ($items as $delta => $value) {
+       $organism_id = chado_select_record('organism', array('organism_id'),
+         array('organism_id' => $value['value']), array('has_record' => TRUE));
+       if (!$organism_id) {
+         form_error($element, t("Please specify an organism that already exists in the database."));
+       }
+     }
+   }
+}
+
+/**
  * Implements hook_field_is_empty().
  */
 function tripal_entities_field_is_empty($item, $field) {
-  // If there's nothing in $item['textf'].
-  if (empty($item['tripal_entities_text_widget'])) {
-    // Then we return 1, i.e. we say to Drupal that everything is fine).
+  if (empty($item['tripal_entities_organism_select_widget'])) {
     return TRUE;
-    // And if it's empty, nothing will be displayed.
   }
 }
+
 
 /**
  * Implements hook_field_storage_info().
@@ -338,19 +405,54 @@ function tripal_entities_field_storage_info() {
 /**
  * Implements hook_field_storage_write().
  */
-function tripal_entities_storage_field_storage_write($entity_type, $entity, $op, $fields) {
-  dpm($entity);
+function tripal_entities_field_storage_write($entity_type, $entity, $op, $fields) {
+
+  // Get the IDs for this entity.
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
-  if (!isset($vid)) {
-    $vid = $id;
-  }
+
+  // Find out which table should receive the insert.
+  $tablename = 'feature';
+  $type_field = 'type_id';
+  $schema = chado_get_schema($tablename);
+  $pkey_field = $schema['primary key'][0];
+
+  // Construct the values array that will be used to insert into the table.
+  $values = array();
   foreach ($fields as $field_id) {
-    switch ($op) {
-      case FIELD_STORAGE_INSERT:
-        break;
-      case FIELD_STORAGE_UPDATE:
-        break;
+    $field = field_info_field_by_id($field_id);
+    $field_name = $field['field_name'];
+
+    $matches = array();
+    if (preg_match('/^' . $tablename . '__(.*)/', $field_name, $matches)) {
+      $chado_field = $matches[1];
+      // Currently, we only support one language, but for for the sake of
+      // thoroughness we'll iterate through all possible languages.
+      $all_languages = field_available_languages($entity_type, $field);
+      $field_languages = array_intersect($all_languages, array_keys((array) $entity->$field_name));
+      foreach ($field_languages as $langcode) {
+        $items = (array) $entity->{$field_name}[$langcode];
+        // The number of items is related to the cardinatily of the field.
+        foreach ($items as $delta => $item) {
+          $values[$chado_field] = $item['value'];
+        }
+      }
     }
+  }
+  // Add in the type_id field.
+  $values[$type_field] = $entity->cvterm_id;
+
+  switch ($op) {
+    case FIELD_STORAGE_INSERT:
+      $record = chado_insert_record($tablename, $values);
+      if (!$record) {
+        drupal_set_message('Could not insert record.', 'error');
+      }
+      $entity->record_id  = $record[$pkey_field];
+      break;
+    case FIELD_STORAGE_UPDATE:
+      $match[$pkey_field] = $entity->record_id;
+      chado_update_record($tablename, $match, $values);
+      break;
   }
 }
 /**
@@ -359,7 +461,7 @@ function tripal_entities_storage_field_storage_write($entity_type, $entity, $op,
  * Responsible for loading the fields from the Chado database and adding
  * their values to the entity.
  */
-function tripal_entities_storage_field_storage_load($entity_type, $entities, $age, $fields, $options) {
+function tripal_entities_field_storage_load($entity_type, $entities, $age, $fields, $options) {
 
 }
 /**
@@ -390,26 +492,22 @@ function tripal_entities_add_form_submit($form, &$form_state) {
     $form_state['rebuild'] = TRUE;
   }
   else {
-    dpm($form_state['values']);
-
     // Build and entity instance object.
-    $entity = new stdClass();
-    $entity->entity_id = NULL;
-    $entity->bundle = $form_state['values']['bundle'];
-    $entity->cvterm_id = $form_state['values']['cvterm_id'];
-    $entity->cv_id = $form_state['values']['cv_id'];
+    $entity = (object) $form_state['values'];
 
+    // This is an update if the entity_id is in the form_state.
+    if (array_key_exists('entity_id', $form_state['values'])) {
+      $entity->entity_id = $form_state['values']['entity_id'];
+      field_attach_update('chado_data', $entity);
+    }
+    else {
+      field_attach_insert('chado_data', $entity);
+    }
 
-
-    // Perform necessary operations on field data submitted by a form.
-    // Currently, this accounts for drag-and-drop reordering of field values,
-    // and filtering of empty values.
-    field_attach_submit('chado_data', $entity, $form, $form_state);
-dpm($entity);
-    // Save the Entity.
+    // Now save the entity
     $entity = entity_get_controller('chado_data')->save($entity);
-//   $form_state['redirect'] = "chado_data/$chado_data->entity_id";
 
+//   $form_state['redirect'] = "chado_data/$chado_data->entity_id";
   }
 }
 /**
@@ -428,10 +526,23 @@ function tripal_entities_theme($existing, $type, $theme, $path) {
 class TrpVocabularyTermController extends DrupalDefaultEntityController {
 
   public function save($entity) {
-    dpm($entity);
-//     drupal_write_record('chado_data', $chado_data);
-//     field_attach_insert('chado_data', $chado_data);
-//     module_invoke_all('entity_insert', 'chado_data', $chado_data);
+    global $user;
+
+    $tablename = 'feature';
+    $type_field = 'type_id';
+    $schema = chado_get_schema($tablename);
+    $pkey_field = $schema['primary key'][0];
+
+    $record = array(
+      'cvterm_id' => $entity->cvterm_id,
+      'tablename' => $tablename,
+      'record_id' => $entity->record_id,
+      'title' => 'title',
+      'uid' => $user->uid,
+      'created' => time(),
+      'changed' => time(),
+    );
+    $success = drupal_write_record('tripal_entity', $record);
     return $entity;
   }
 
