@@ -8,102 +8,322 @@ function tripal_entities_entity_info() {
   $entities = array();
 
   $entities['chado_data'] = array(
-    'label' => t('Vocabulary Term'),
-    'uri callback' => 'tripal_entities_vocbulary_term_uri',
+    // A human readable label to identify our entity.
+    'label' => t('Chado Data'),
     'plural label' => t('Vocabulary Terms'),
-    'entity class' => 'TrpVocabularyTerm',
-    'controller class' => 'TrpVocabularyTermController',
+
+    // The controller for our Entity, extending the Drupal core controller.
+    'controller class' => 'ChadoDataController',
+
+    // The table for this entity defined in hook_schema()
+    'base table' => 'chado_data',
+
+    // Returns the uri elements of an entity.
+    'uri callback' => 'tripal_entities_vocbulary_term_uri',
+
+    // IF fieldable == FALSE, we can't attach fields.
     'fieldable' => TRUE,
+
+    // entity_keys tells the controller what database fields are used for key
+    // functions. It is not required if we don't have bundles or revisions.
+    // Here we do not support a revision, so that entity key is omitted.
     'entity keys' => array(
       'id' => 'entity_id',
-      'bundle' => 'bundle',
+      'bundle' => 'type',
     ),
+    'bundle keys' => array(
+      'bundle' => 'type',
+    ),
+
+    // FALSE disables caching. Caching functionality is handled by Drupal core.
+    'static cache' => FALSE,
+
     // Bundles are defined by the model types below
     'bundles' => array(),
   );
 
+  // Bundles are alternative groups of fields or configuration
+  // associated with a base entity type.
   // We want to dynamically add the bundles (or term types) to the entity.
   $values = array(
     'cv_id' => array(
       'name' => 'sequence'
     ),
-    'name' => 'gene'
+    'name' => 'gene',
   );
   $cvterm = chado_generate_var('cvterm', $values);
-  $bundle_id = 'trp_' . $cvterm->dbxref_id->db_id->name . '_' . $cvterm->dbxref_id->accession;
   $label = preg_replace('/_/', ' ', ucwords($cvterm->name));
+  $bundle_id = $cvterm->dbxref_id->db_id->name . '_' . $cvterm->dbxref_id->accession;
   $entities['trp_vocabulary_term']['bundles'][$bundle_id] = array(
     'label' => $label,
+    'admin' => array(
+      'path' => 'admin/structure/chado_data/manage',
+      'access arguments' => array('administer chado_data entities'),
+    ),
+    'entity keys' => array(
+      'id' => 'entity_id',
+      'bundle' => 'bundle',
+    ),
   );
   return $entities;
 }
 
-function tripal_entities_load($entity_id = NULL, $reset = FALSE){
-  $ids = (isset ($entity_id) ? array($entity_id) : array());
-  $chado_data = tripal_entities_load_multiple($entity_ids, $reset);
-  return $chado_data ? reset ($chado_data) : FALSE;
+/**
+ * Fetch a basic object.
+ *
+ * This function ends up being a shim between the menu system and
+ * chado_data_load_multiple().
+ *
+ * @param int $entity_id
+ *   Integer specifying the basic entity id.
+ * @param bool $reset
+ *   A boolean indicating that the internal cache should be reset.
+ *
+ * @return object
+ *   A fully-loaded $chado_data object or FALSE if it cannot be loaded.
+ *
+ */
+function chado_data_load($entity_id = NULL, $reset = FALSE) {
+  $entity_ids = (isset($entity_id) ? array($entity_id) : array());
+  $basic = chado_data_load_multiple($entity_ids, array(), $reset);
+  return $basic ? reset($basic) : FALSE;
 }
 
-function tripal_entities_load_multiple($entity_ids = array(), $conditions = array(), $reset = FALSE){
+/**
+ * Loads multiple basic entities.
+ *
+ * We only need to pass this request along to entity_load(), which
+ * will in turn call the load() method of our entity controller class.
+ */
+function chado_data_load_multiple($entity_ids = array(), $conditions = array(), $reset = FALSE){
   return entity_load('chado_data', $entity_ids, $conditions, $reset);
 }
 
+/**
+ * Implements hook_menu().
+ */
 function tripal_entities_menu() {
+
+  // This provides a place for Field API to hang its own
+  // interface and has to be the same as what was defined
+  // in basic_entity_info() above.
   $items['admin/structure/chado_data/manage'] = array(
-    'title' => 'Term Admin',
-    'description' => 'Manage chado_data structure',
-    'page callback' => 'chado_data_info',
-    'access arguments' => array('administer chado_datas'),
+    'title' => 'Chado Data',
+    'description' => t('Manage chado records, including default status, fields, settings, etc.'),
+    'page callback' => 'tripal_entities_list_entities',
+    'access arguments' => array('administer chado_data'),
   );
-  $items['chado_data/%'] = array(
-    'title callback' => 'chado_data_page_title',
+  // Add entities.
+  $items['admin/structure/chado_data/manage/add'] = array(
+    'title' => 'Add Chado Data',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('chado_data_form'),
+    'access arguments' => array('create chado_data entities'),
+    'type' => MENU_LOCAL_ACTION,
+  );
+  // List of all chado_data entities.
+  $items['admin/structure/chado_data/manage/list'] = array(
+    'title' => 'List',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  // The page to view our entities - needs to follow what
+  // is defined in basic_uri and will use load_basic to retrieve
+  // the necessary entity info.
+  $items['chado_data/%chado_data'] = array(
+    'title callback' => 'chado_data_title',
     'title arguments' => array(1),
-    'page callback' => 'chado_data_page_view',
+    'page callback' => 'chado_data_view',
     'page arguments' => array(1),
     'access arguments' => array('view chado_data'),
     'type' => MENU_CALLBACK,
   );
 
-  $items['data/add'] = array(
-    'title' => 'Add new data',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_entities_add_form'),
-    'access arguments' => array('create chado_data'),
+  // 'View' tab for an individual entity page.
+  $items['chado_data/%chado_data/view'] = array(
+    'title' => 'View',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
   );
+
+  // 'Edit' tab for an individual entity page.
+  $items['chado_data/%chado_data/edit'] = array(
+    'title' => 'Edit',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('chado_data_form', 1),
+    'access arguments' => array('edit any chado_data entity'),
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  // Add example entities.
+  $items['examples/entity_example/basic/add'] = array(
+    'title' => 'Add Chado Data',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('chado_data_form'),
+    'access arguments' => array('create chado_data entities'),
+  );
+
   return $items;
 }
 
-function tripal_entities_permission(){
-  return array(
-    'administer chado_datas' =>  array(
-      'title' => t('Administer chado_datas'),
-      'restrict access' => TRUE,
+/**
+ * We save the entity by calling the controller.
+ */
+function chado_data_save(&$entity) {
+  return entity_get_controller('chado_data')->save($entity);
+}
+
+/**
+ * Use the controller to delete the entity.
+ */
+function chado_data_delete($entity) {
+  entity_get_controller('chado_data')->delete($entity);
+}
+
+/**
+ * Implements hook_permission().
+ */
+function tripal_entities_permission() {
+  $permissions = array(
+    'administer chado_data entities' => array(
+      'title' => t('Administer Chado data entity'),
     ),
-    'view postsits' => array(
-      'title' => t('View chado_datas'),
-    )
+    'view any chado_data entity' => array(
+      'title' => t('View any Chado data entity'),
+    ),
+    'edit any chado_data entity' => array(
+      'title' => t('Edit any Chado data entity'),
+    ),
+    'create chado_data entities' => array(
+      'title' => t('Create Chado data entities'),
+    ),
+  );
+  return $permissions;
+}
+
+/**
+ * Returns a render array with all chado_data entities.
+ *
+ * @see pager_example.module
+ */
+function tripal_entities_list_entities() {
+  $content = array();
+  // Load all of our entities.
+  $entities = chado_data_load_multiple();
+  if (!empty($entities)) {
+    foreach ($entities as $entity) {
+      // Create tabular rows for our entities.
+      $rows[] = array(
+        'data' => array(
+          'id' => $entity->entity_id,
+          'title' => l($entity->title, 'chado_data/' . $entity->entity_id),
+          'type' => $entity->type,
+        ),
+      );
+    }
+    // Put our entities into a themed table. See theme_table() for details.
+    $content['entity_table'] = array(
+      '#theme' => 'table',
+      '#rows' => $rows,
+      '#header' => array(t('ID'), t('Item Description'), t('Bundle')),
+    );
+  }
+  else {
+    // There were no entities. Tell the user.
+    $content[] = array(
+      '#type' => 'item',
+      '#markup' => t('No chado data entities currently exist.'),
+    );
+  }
+  return $content;
+}
+
+/**
+ *
+ */
+function chado_data_title($entity){
+  return $entity->title;
+}
+
+/**
+ * Implements the uri callback.
+ */
+function chado_data_uri($entity) {
+  return array(
+    'path' => 'chado_data/' . $entity->entity_id,
   );
 }
 
+/**
+ * Menu callback to display an entity.
+ *
+ * As we load the entity for display, we're responsible for invoking a number
+ * of hooks in their proper order.
+ *
+ * @see hook_entity_prepare_view()
+ * @see hook_entity_view()
+ * @see hook_entity_view_alter()
+ */
+function chado_data_view($entity, $view_mode = 'full') {
 
-function chado_data_info() {
-  return ('Welcome to the administration page for your CV Terms!');
+  // Our entity type, for convenience.
+  $entity_type = 'chado_data';
+
+  // Start setting up the content.
+  $entity->content = array(
+    '#view_mode' => $view_mode,
+  );
+
+  // Build fields content - this is where the Field API really comes in to play.
+  // The task has very little code here because it all gets taken care of by
+  // field module. field_attach_prepare_view() lets the fields load any
+  // data they need before viewing.
+  field_attach_prepare_view($entity_type, array($entity->entity_id => $entity),
+    $view_mode);
+
+  // We call entity_prepare_view() so it can invoke hook_entity_prepare_view()
+  // for us.
+  entity_prepare_view($entity_type, array($entity->entity_id => $entity));
+
+  // Now field_attach_view() generates the content for the fields.
+  $entity->content += field_attach_view($entity_type, $entity, $view_mode);
+
+  // OK, Field API done, now we can set up some of our own data.
+//   $entity->content['created'] = array(
+//     '#type' => 'item',
+//     '#title' => t('Created date'),
+//     '#markup' => format_date($entity->created),
+//   );
+
+  // Now to invoke some hooks. We need the language code for
+  // hook_entity_view(), so let's get that.
+  global $language;
+  $langcode = $language->language;
+
+  // And now invoke hook_entity_view().
+  module_invoke_all('entity_view', $entity, $entity_type, $view_mode, $langcode);
+
+  // Now invoke hook_entity_view_alter().
+  drupal_alter(array('chado_data', 'entity_view'), $entity->content, $entity_type);
+
+
+  // And finally return the content.
+  return $entity->content;
 }
 
-function chado_data_page_title($chado_data){
-  return $chado_data->entity_id;
-}
-
-function chado_data_page_view($chado_data, $view_mode = 'full'){
-  $chado_data->content = array();
+/**
+ *
+ */
+function chado_data_page_view($entity, $view_mode = 'full'){
+  $entity->content = array();
 
   // Build fields content.
-  field_attach_prepare_view('chado_data', array($chado_data->entity_id => $chado_data), $view_mode);
-  entity_prepare_view('chado_data', array($chado_data->entity_id => $chado_data));
-  $chado_data->content += field_attach_view('chado_data', $chado_data, $view_mode);
+  field_attach_prepare_view('chado_data', array($entity->entity_id => $entity), $view_mode);
+  entity_prepare_view('chado_data', array($entity->entity_id => $entity));
+  $entity->content += field_attach_view('chado_data', $entity, $view_mode);
 
-  return $chado_data->content;
+  return $entity->content;
 }
+
 /**
  *
  */
@@ -116,13 +336,45 @@ function tripal_entities_vocbulary_term_uri($entity) {
 /**
  *
  */
-function tripal_entities_add_form($form, &$form_state) {
+function chado_data_form($form, &$form_state, $entity = NULL) {
+
   // Set the defaults.
   $cv_id = NULL;
   $term_name = NULL;
+  $entity_id = NULL;
+  $cvterm = NULL;
+
+  // Set defaults if an entity was provided.
+  if ($entity) {
+    $entity_id = $entity->entity_id;
+    $values = array('cvterm_id' => $entity->cvterm_id);
+    $cvterm = chado_generate_var('cvterm', $values);
+    $cv_id = $cvterm->cv_id->cv_id;
+    $term_name = $cvterm->name;
+  }
+
+  // Set defaults using the form state.
   if (array_key_exists('values', $form_state)) {
     $cv_id = array_key_exists('cv_id', $form_state['values']) ? $form_state['values']['cv_id'] : NULL;
     $term_name = array_key_exists('term_name', $form_state['values']) ? $form_state['values']['term_name'] : NULL;
+    // Get the cvterm that matches
+    $values = array(
+      'cv_id' => $cv_id,
+      'name' => $term_name
+    );
+    $cvterm = chado_generate_var('cvterm', $values);
+  }
+
+  // Add in the IDs for the entity.
+  if ($entity) {
+    $form['entity_id'] = array(
+      '#type'  => 'hidden',
+      '#value' => $entity_id,
+    );
+    $form['record_id'] = array(
+      '#type'  => 'hidden',
+      '#value' => $entity->record_id,
+    );
   }
 
   // Let the user select the vocabulary and chado_data but only if they haven't
@@ -137,8 +389,8 @@ function tripal_entities_add_form($form, &$form_state) {
       '#description' => t('Select a vocabulary that contains the term for the type of data you want to add.'),
       '#default_value' => $cv_id,
       '#ajax' => array(
-        'callback' => "tripal_entities_add_form_ajax_callback",
-        'wrapper' => 'tripal_entities_add_form',
+        'callback' => "chado_data_form_ajax_callback",
+        'wrapper' => 'chado_data_form',
         'effect' => 'fade',
         'method' => 'replace'
       )
@@ -164,27 +416,26 @@ function tripal_entities_add_form($form, &$form_state) {
   }
 
   // Once the CV term is selected then provide the other fields.
-  if ($term_name) {
-    // Get the cvterm that matches
-    $values = array(
-      'cv_id' => $cv_id,
-      'name' => $term_name
-    );
-    $cvterm = tripal_get_cvterm($values);
+  if ($cvterm) {
+    $bundle_id = $cvterm->dbxref_id->db_id->name . '_' . $cvterm->dbxref_id->accession;
 
     $form['cv_id'] = array(
       '#type'  => 'hidden',
       '#value' => $cv_id,
     );
+    $form['term_name'] = array(
+      '#type'  => 'hidden',
+      '#value' => $term_name,
+    );
     $form['cvterm_id'] = array(
       '#type'  => 'hidden',
       '#value' => $cvterm->cvterm_id,
     );
-    $form['bundle'] = array(
+    $form['type'] = array(
       '#type'  => 'hidden',
-      '#value' => $term_name,
+      '#value' => $bundle_id,
     );
-    $form['cv_name'] = array(
+    $form['cv_name_shown'] = array(
       '#type' => 'item',
       '#title' => 'Vocabulary',
       '#markup' => $cvterm->cv_id->name,
@@ -196,8 +447,9 @@ function tripal_entities_add_form($form, &$form_state) {
       '#markup' => $cvterm->name,
       '#weight' => -100,
     );
+/*
 
-/*      // Drupal field types and settings:
+    // Drupal field types and settings:
     // https://www.drupal.org/node/1879542
     $field = array(
       'field_name' => 'feature__name',
@@ -219,7 +471,7 @@ function tripal_entities_add_form($form, &$form_state) {
       'settings' => array(
         'max_length' => 255
       ),
-      'bundle' => $cvterm->name,
+      'bundle' => $bundle_id,
     );
     field_create_instance($field_instance);
     $field = array(
@@ -242,7 +494,7 @@ function tripal_entities_add_form($form, &$form_state) {
       'settings' => array(
         'max_length' => 255
       ),
-      'bundle' => $cvterm->name,
+      'bundle' => $bundle_id,
     );
     field_create_instance($field_instance);
     $field = array(
@@ -260,17 +512,17 @@ function tripal_entities_add_form($form, &$form_state) {
       'entity_type' => 'chado_data',
       'required' => 'true',
       'settings' => array(),
-      'bundle' => $cvterm->name,
+      'bundle' => $bundle_id,
     );
-    field_create_instance($field_instance);*/
-
+    field_create_instance($field_instance);
+ */
 
 
     // Create the object for this entity instance. The entity instance type
     // is always the name of the term.
     $entity = new stdClass();
     $entity->entity_id = NULL;
-    $entity->bundle = $cvterm->name;
+    $entity->type = $bundle_id;
     $form['#parents'] = array('attached');
     field_attach_form('chado_data', $entity, $form, $form_state);
 
@@ -282,7 +534,7 @@ function tripal_entities_add_form($form, &$form_state) {
     );
   }
 
-  $form['#prefix'] = '<div id="tripal_entities_add_form">';
+  $form['#prefix'] = '<div id="chado_data_form">';
   $form['#suffix'] = '</div>';
   return $form;
 }
@@ -329,6 +581,40 @@ function tripal_entities_field_formatter_info() {
       'field types' => array('organism_id')
     ),
   );
+}
+/**
+ * Implements hook_field_formatter_view().
+ *
+ * Two formatters are implemented.
+ * - field_example_simple_text just outputs markup indicating the color that
+ *   was entered and uses an inline style to set the text color to that value.
+ * - field_example_color_background does the same but also changes the
+ *   background color of div.region-content.
+ *
+ * @see field_example_field_formatter_info()
+ */
+function tripal_entities_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+
+  switch ($display['type']) {
+    // This formatter simply outputs the field as text and with a color.
+    case 'tripal_entities_organism_formatter':
+      foreach ($items as $delta => $item) {
+        $organism = chado_select_record('organism', array('genus', 'species'), array('organism_id' => $item['value']));
+        $element[$delta] = array(
+          // We create a render array to produce the desired markup,
+          // "<p>Genus Species</p>".
+          // See theme_html_tag().
+          '#type' => 'html_tag',
+          '#tag' => 'p',
+          '#value' => '<i>' . $organism[0]->genus .' ' . $organism[0]->species . '</i>',
+        );
+      }
+      break;
+
+  }
+
+  return $element;
 }
 
 /**
@@ -444,10 +730,10 @@ function tripal_entities_field_storage_write($entity_type, $entity, $op, $fields
   switch ($op) {
     case FIELD_STORAGE_INSERT:
       $record = chado_insert_record($tablename, $values);
-      if (!$record) {
-        drupal_set_message('Could not insert record.', 'error');
+      if ($record === FALSE) {
+        drupal_set_message('Could not insert Chado record.', 'error');
       }
-      $entity->record_id  = $record[$pkey_field];
+      $entity->record_id = $record[$pkey_field];
       break;
     case FIELD_STORAGE_UPDATE:
       $match[$pkey_field] = $entity->record_id;
@@ -462,20 +748,67 @@ function tripal_entities_field_storage_write($entity_type, $entity, $op, $fields
  * their values to the entity.
  */
 function tripal_entities_field_storage_load($entity_type, $entities, $age, $fields, $options) {
+  $load_current = $age == FIELD_LOAD_CURRENT;
 
+  global $language;
+  $langcode = $language->language;
+
+  foreach ($entities as $entity_id => $entity) {
+    // Find out which table should receive the insert.
+    $tablename = 'feature';
+    $type_field = 'type_id';
+    $schema = chado_get_schema($tablename);
+    $pkey_field = $schema['primary key'][0];
+    $record_id = $entity->record_id;
+
+    // Iterate through the field names to get the list of tables and fields
+    // that should be queried.
+    $columns = array();
+    foreach ($fields as $field_id => $ids) {
+      // By the time this hook runs, the relevant field definitions have been
+      // populated and cached in FieldInfo, so calling field_info_field_by_id()
+      // on each field individually is more efficient than loading all fields in
+      // memory upfront with field_info_field_by_ids().
+      $field = field_info_field_by_id($field_id);
+      $field_name = $field['field_name'];
+
+      $matches = array();
+      if (preg_match('/^(.*?)__(.*?)$/', $field_name, $matches)) {
+        $table = $matches[1];
+        $field = $matches[2];
+        $columns[$table][] = $field;
+      }
+    }
+
+    // Get the record
+    $record = chado_select_record($tablename, $columns[$tablename], array($pkey_field => $entity->record_id));
+
+    // Now set the field values
+    foreach ($fields as $field_id => $ids) {
+      $field = field_info_field_by_id($field_id);
+      $field_name = $field['field_name'];
+      $matches = array();
+      if (preg_match('/^(.*?)__(.*?)$/', $field_name, $matches)) {
+        $table = $matches[1];
+        $field = $matches[2];
+        $entity->{$field_name}['und'][] = array('value' => $record[0]->$field);
+      }
+    }
+  }
 }
+
 /**
- * An Ajax callback for the tripal_entities_add_form.
+ * An Ajax callback for the chado_data_form.
  */
-function tripal_entities_add_form_ajax_callback($form, $form_state) {
+function chado_data_form_ajax_callback($form, $form_state) {
   // return the form so Drupal can update the content on the page
   return $form;
 
 }
 /**
- * Implements hook_validate() for the tripal_entities_add_form.
+ * Implements hook_validate() for the chado_data_form.
  */
-function tripal_entities_add_form_validate($form, &$form_state) {
+function chado_data_form_validate($form, &$form_state) {
    if ($form_state['clicked_button']['#name'] == 'add_data') {
      $chado_data = (object) $form_state['values'];
      field_attach_form_validate('chado_data', $chado_data, $form, $form_state);
@@ -483,10 +816,10 @@ function tripal_entities_add_form_validate($form, &$form_state) {
 }
 
 /**
- * Implements hook_submit() for the tripal_entities_add_form.
+ * Implements hook_submit() for the chado_data_form.
  *
  */
-function tripal_entities_add_form_submit($form, &$form_state) {
+function chado_data_form_submit($form, &$form_state) {
   if ($form_state['clicked_button']['#name'] == 'select_cvterm') {
     // don't do anything, we just need to know what the term name is.
     $form_state['rebuild'] = TRUE;
@@ -505,11 +838,13 @@ function tripal_entities_add_form_submit($form, &$form_state) {
     }
 
     // Now save the entity
-    $entity = entity_get_controller('chado_data')->save($entity);
+    $entity = chado_data_save($entity);
 
-//   $form_state['redirect'] = "chado_data/$chado_data->entity_id";
+    $form_state['redirect'] = "chado_data/$entity->entity_id";
   }
 }
+
+
 /**
  * Implements hook_theme().
  */
@@ -520,30 +855,187 @@ function tripal_entities_theme($existing, $type, $theme, $path) {
 }
 
 /**
- *
- *
+ * https://api.drupal.org/api/drupal/modules!rdf!rdf.module/group/rdf/7
  */
-class TrpVocabularyTermController extends DrupalDefaultEntityController {
+function tripal_entities_rdf_mapping() {
+  return array();
+/*   return array(
+    'type' => 'chado_data',
+    'bundle' => 'gene',
+    'mapping' => array(
+      'rdftype' => array('sioc:Item', 'foaf:Document'),
+      'title' => array(
+        'predicates' => array('dc:title'),
+      ),
+      'uid' => array(
+        'predicates' => array('sioc:has_creator'),
+        'type' => 'rel',
+      ),
+      'name' => array(
+        'predicates' => array('foaf:name'),
+      ),
+      'uniquename' => array(
+        'predicates' => array('foaf:name'),
+      ),
+      'organism_id' => array(
+        'predicates' => array('sioc:has_parent'),
+        'type' => 'rel'
+      )
+    ),
+  ); */
+}
 
+/**
+ * ChadoDataControllerInterface definition.
+ *
+ * We create an interface here because anyone could come along and
+ * use hook_entity_info_alter() to change our controller class.
+ * We want to let them know what methods our class needs in order
+ * to function with the rest of the module, so here's a handy list.
+ *
+ * @see hook_entity_info_alter()
+ */
+interface ChadoDataControllerInterface
+extends DrupalEntityControllerInterface {
+
+  /**
+   * Create an entity.
+   */
+  public function create();
+
+  /**
+   * Save an entity.
+   *
+   * @param object $entity
+   *   The entity to save.
+  */
+  public function save($entity);
+
+  /**
+   * Delete an entity.
+   *
+   * @param object $entity
+   *   The entity to delete.
+  */
+  public function delete($entity);
+
+}
+
+/**
+ * ChadoDataController extends DrupalDefaultEntityController.
+ *
+ * Our subclass of DrupalDefaultEntityController lets us add a few
+ * important create, update, and delete methods.
+ */
+class ChadoDataController
+  extends DrupalDefaultEntityController
+  implements ChadoDataControllerInterface {
+
+  /**
+   * Create and return a new tripal_entities entity.
+   */
+  public function create() {
+    $entity = new stdClass();
+    $entity->type = 'chado_data';
+    $entity->entity_id = 0;
+    return $entity;
+  }
+
+  /**
+   * Delete a single entity.
+   *
+   * Really a convenience function for deleteMultiple().
+   */
+  public function delete($entity) {
+    $this->deleteMultiple(array($entity));
+  }
+
+  /**
+   * Delete one or more tripal_entities entities.
+   *
+   * Deletion is unfortunately not supported in the base
+   * DrupalDefaultEntityController class.
+   *
+   * @param array $entities
+   *   An array of entity IDs or a single numeric ID.
+   */
+  public function deleteMultiple($entities) {
+    $entity_ids = array();
+    if (!empty($entities)) {
+      $transaction = db_transaction();
+      try {
+        foreach ($entities as $entity) {
+          // Invoke hook_entity_delete().
+          module_invoke_all('entity_delete', $entity, 'chado_data');
+          field_attach_delete('chado_data', $entity);
+          $entity_ids[] = $entity->entity_id;
+        }
+        db_delete('chado_data')
+        ->condition('entity_id', $entity_ids, 'IN')
+        ->execute();
+      }
+      catch (Exception $e) {
+        $transaction->rollback();
+        watchdog_exception('entity_example', $e);
+        throw $e;
+      }
+    }
+  }
+
+  /**
+   * Saves the custom fields using drupal_write_record().
+   */
   public function save($entity) {
     global $user;
 
+    // If our entity has no entity_id, then we need to give it a
+    // time of creation.
+    if (empty($entity->entity_id)) {
+      $entity->created = time();
+      $invocation = 'entity_insert';
+    }
+    else {
+      $invocation = 'entity_update';
+    }
+
+    // Invoke hook_entity_presave().
+    module_invoke_all('entity_presave', $entity, 'chado_data');
+
+    // Write out the entity record.
     $tablename = 'feature';
     $type_field = 'type_id';
     $schema = chado_get_schema($tablename);
     $pkey_field = $schema['primary key'][0];
-
     $record = array(
       'cvterm_id' => $entity->cvterm_id,
+      'type'      => $entity->type,
       'tablename' => $tablename,
       'record_id' => $entity->record_id,
-      'title' => 'title',
-      'uid' => $user->uid,
-      'created' => time(),
-      'changed' => time(),
+      'title'     => 'title',
+      'uid'       => $user->uid,
+      'created'   => $entity->created,
+      'changed'   => time(),
     );
-    $success = drupal_write_record('tripal_entity', $record);
+    $success = drupal_write_record('chado_data', $record);
+    if ($success == SAVED_NEW) {
+      $entity->entity_id = $record['entity_id'];
+    }
+
+    // Now we need to either insert or update the fields which are
+    // attached to this entity. We use the same primary_keys logic
+    // to determine whether to update or insert, and which hook we
+    // need to invoke.
+    if ($invocation == 'entity_insert') {
+      field_attach_insert('chado_data', $entity);
+    }
+    else {
+      field_attach_update('chado_data', $entity);
+    }
+    // Invoke either hook_entity_update() or hook_entity_insert().
+    module_invoke_all($invocation, $entity, 'chado_data');
+
     return $entity;
   }
 
 }
+

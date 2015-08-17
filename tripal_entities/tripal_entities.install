@@ -1,10 +1,16 @@
 <?php
 /**
- * Implementation of hook_schema().
+ * @file
+ * Install for a chado data entity - creates the base table for our entity.
+ */
+
+/**
+ * Implements hook_schema().
  *
+ * @ingroup entity_example
  */
 function tripal_entities_schema() {
-  $schema['tripal_entity'] = array(
+  $schema['chado_data'] = array(
     'description' => 'The base table for Tripal Vocabulary-based entities.',
     'fields' => array(
       'entity_id' => array(
@@ -13,8 +19,15 @@ function tripal_entities_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
+      'type' => array(
+        'description' => 'The type of entity. This should be an official term ID.',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+      ),
       'cvterm_id' => array(
-        'description' => 'The type of entity. This cvterm_id should match a record in the Chado cvterm table.',
+        'description' => 'The cvterm_id for the type of entity. This cvterm_id should match a record in the Chado cvterm table.',
         'type' => 'varchar',
         'length' => 32,
         'not null' => TRUE,
@@ -34,8 +47,7 @@ function tripal_entities_schema() {
       ),
       'title' => array(
         'description' => 'The title of this node, always treated as non-markup plain text.',
-        'type' => 'varchar',
-        'length' => 255,
+        'type' => 'text',
         'not null' => TRUE,
         'default' => '',
       ),
@@ -70,6 +82,7 @@ function tripal_entities_schema() {
       'tablename' => array('tablename'),
       'record_id' => array('record_id'),
       'chado_record' => array('tablename', 'record_id'),
+      'type' => array('type'),
       'cvterm_id' => array('cvterm_id'),
       'uid' => array('uid'),
     ),
@@ -79,4 +92,17 @@ function tripal_entities_schema() {
     'primary key' => array('entity_id'),
   );
   return $schema;
+}
+
+/**
+ * Implements hook_uninstall().
+ *
+ * At uninstall time we'll notify field.module that the entity was deleted
+ * so that attached fields can be cleaned up.
+ *
+ * @ingroup entity_example
+ */
+function tripal_entities_uninstall() {
+  // TODO: make this dynamic (not hardcoded bundle).
+  field_attach_delete_bundle('chado_data', 'gene');
 }
