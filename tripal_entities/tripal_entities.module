@@ -520,9 +520,11 @@ function chado_data_form($form, &$form_state, $entity = NULL) {
 
     // Create the object for this entity instance. The entity instance type
     // is always the name of the term.
-    $entity = new stdClass();
-    $entity->entity_id = NULL;
-    $entity->type = $bundle_id;
+    if (!$entity) {
+      $entity = new stdClass();
+      $entity->entity_id = NULL;
+      $entity->type = $bundle_id;
+    }
     $form['#parents'] = array('attached');
     field_attach_form('chado_data', $entity, $form, $form_state);
 
@@ -634,7 +636,7 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
         '#title' => $element['#title'],
         '#description' => $element['#description'],
         '#options' => $options,
-        '#default_value' => '',
+        '#default_value' => $items[0]['value'],
         '#required' => $element['#required'],
         '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
         '#delta' => $delta,
