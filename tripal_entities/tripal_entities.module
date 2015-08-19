@@ -1,5 +1,6 @@
 <?php
 
+require_once "api/tripal_entities.api.inc";
 require_once "includes/tripal_entities.field_storage.inc";
 require_once "includes/tripal_entities.fields.inc";
 require_once "includes/ChadoData.inc";
@@ -196,6 +197,9 @@ function tripal_entities_entity_info() {
     // Bundles are defined below.
     'bundles' => array(),
 
+    'label callback' => 'entity_class_label',
+    'creation callback' => 'chado_data_create',
+
     // The information below is used by the ChadoDataUIController
     // (which extends the EntityDefaultUIController).  The admin_ui
     // key here is mean to appear on the 'Find Content' page of the
@@ -251,7 +255,6 @@ function tripal_entities_entity_info() {
     // Enable the entity API's admin UI.
     'admin ui' => array(
       'path' => 'admin/structure/chado_data_types',
-      'file' => 'includes/tripal_entities.admin.inc',
       'controller class' => 'ChadoDataTypeUIController',
     ),
   );

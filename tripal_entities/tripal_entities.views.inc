@@ -6,25 +6,11 @@
  */
 
 /**
- * Implements hook_views_handlers().
- *
- * Purpose: Register all custom handlers with views
- *   where a handler describes either "the type of field",
- *   "how a field should be filtered", "how a field should be sorted"
- *
- * @return: An array of handler definitions
- *
- * @ingroup tripal_feature
+ * Implements hook_views_api().
  */
-function tripal_entities_views_handlers() {
+function tripal_entities_views_api() {
   return array(
-    'info' => array(
-      'path' => drupal_get_path('module', 'tripal_entities') . '/views_handlers',
-    ),
-    'handlers' => array(
-      'views_handler_field_residues' => array(
-        'parent' => 'views_handler_field',
-      ),
-    ),
+    'api' => 3,
+    'path' => drupal_get_path('module', 'tripal_entities') . '/views',
   );
 }

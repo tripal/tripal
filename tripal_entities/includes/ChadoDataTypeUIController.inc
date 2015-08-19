@@ -106,14 +106,3 @@ function chado_data_type_form_submit_delete(&$form, &$form_state) {
   $form_state['redirect'] = 'admin/structure/chado_data_types/manage/' . $form_state['chado_data_type']->type . '/delete';
 }
 
-/**
- * Menu argument loader; Load a model type by string.
- *
- * @param $type
- *   The machine-readable name of a model type to load.
- * @return
- *   A model type array or FALSE if $type does not exist.
- */
-function chado_data_type_load($type) {
-  return chado_data_get_types($type);
-}

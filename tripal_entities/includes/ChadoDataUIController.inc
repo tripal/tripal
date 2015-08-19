@@ -26,11 +26,17 @@ class ChadoDataUIController extends EntityDefaultUIController {
       'type' => MENU_LOCAL_TASK,
     );
 
-    $items[$this->path . '/list'] = array(
-      'title' => 'Chado Data',
-      'type' => MENU_DEFAULT_LOCAL_TASK,
-      'weight' => -10,
-    );
+    foreach (chado_data_get_types() as $type) {
+      $items[$this->path . '/add/' . $type->type] = array(
+        'title' => 'Add ' . $type->label,
+        'page callback' => 'model_form_wrapper',
+        'page arguments' => array(chado_data_create(array('type' => $type->type))),
+        'access callback' => 'model_access',
+        'access arguments' => array('edit', 'edit ' . $type->type),
+        'file' => 'model.admin.inc',
+        'file path' => drupal_get_path('module', $this->entityInfo['module'])
+      );
+    }
 
     // Add an action link to the admin page for adding new data.
     $items[$this->path . '/add'] = array(
@@ -56,9 +62,7 @@ class ChadoDataUIController extends EntityDefaultUIController {
       'weight' => 20,
     );
 
-    // The page to view our entities - needs to follow what
-    // is defined in basic_uri and will use load_basic to retrieve
-    // the necessary entity info.
+    // Link for viewing a chado data type.
     $items['data/' . $wildcard] = array(
       'title callback' => 'chado_data_title',
       'title arguments' => array(1),
@@ -72,8 +76,13 @@ class ChadoDataUIController extends EntityDefaultUIController {
     // 'View' tab for an individual entity page.
     $items['data/' . $wildcard . '/view'] = array(
       'title' => 'View',
+      'page callback' => 'chado_data_view',
+      'page arguments' => array(1),
+      'access callback' => 'chado_data_access',
+      'access arguments' => array('view', 1),
       'type' => MENU_DEFAULT_LOCAL_TASK,
       'weight' => -10,
+
     );
 
     // 'Edit' tab for an individual entity page.
@@ -84,17 +93,18 @@ class ChadoDataUIController extends EntityDefaultUIController {
       'access callback' => 'chado_data_access',
       'access arguments' => array('edit', 1),
       'type' => MENU_LOCAL_TASK,
+
     );
 
     // Menu item for deleting chado data entities.
     $items['data/' . $wildcard . '/delete'] = array(
-      'title' => 'Delete',
+      'title'  => 'Delete',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('chado_data_delete_form', 1),
       'access callback' => 'chado_data_access',
       'access arguments' => array('edit', 1),
-      'type' => MENU_LOCAL_TASK,
-      'context' => MENU_CONTEXT_INLINE,
+      'type' => MENU_CALLBACK,
+
       'weight' => 10,
     );
     return $items;
@@ -139,6 +149,7 @@ function chado_data_form($form, &$form_state, $entity = NULL) {
 
   // Set defaults if an entity was provided.
   if ($entity) {
+    drupal_set_title('Edit ' . $entity->title);
     $entity_id = $entity->entity_id;
     $values = array('cvterm_id' => $entity->cvterm_id);
     $cvterm = chado_generate_var('cvterm', $values);
@@ -326,12 +337,6 @@ function chado_data_form($form, &$form_state, $entity = NULL) {
     // the Entity API to work.  It must have a key of the entity name.
     $form_state['chado_data'] = $entity;
   }
-  $form['cancel'] = array(
-    '#type' => 'submit',
-    '#value' => t('Cancel'),
-    '#name' => 'cancel',
-    '#weight' => 1000
-  );
   $form['#prefix'] = '<div id="chado_data_form">';
   $form['#suffix'] = '</div>';
   return $form;
@@ -533,50 +538,8 @@ function chado_data_view($entity, $view_mode = 'full') {
 }
 
 /**
- *
- * @param unknown $entity
+ * Menu title callback for showing individual entities
  */
-function chado_data_title($entity) {
+function chado_data_title(ChadoData $entity){
   return $entity->title;
-}
-
-
-
-
-/**
- * Fetch an entity object. Make sure that the wildcard you choose
- * in the model entity definition fits the function name here.
- *
- * @param $entity_id
- *   Integer specifying the entity id.
- * @param $reset
- *   A boolean indicating that the internal cache should be reset.
- * @return
- *   A fully-loaded $model object or FALSE if it cannot be loaded.
- *
- * @see chado_data_load_multiple()
- */
-function chado_data_load($entity_id, $reset = FALSE) {
-  $entities = model_load_multiple(array($entity_id), array(), $reset);
-  return reset($entities);
-}
-
-
-/**
- * Load multiple entiies based on certain conditions.
- *
- * @param $entity_ids
- *   An array of entity IDs.
- * @param $conditions
- *   An array of conditions to match against the {chado_data} table.
- * @param $reset
- *   A boolean indicating that the internal cache should be reset.
- * @return
- *   An array of entity objects, indexed by entity_ids.
- *
- * @see entity_load()
- * @see chado_data_load()
- */
-function chado_data_load_multiple($entity_ids = array(), $conditions = array(), $reset = FALSE) {
-  return entity_load('chado_data', $entity_ids, $conditions, $reset);
 }
