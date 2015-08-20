@@ -10,6 +10,14 @@ require_once "includes/ChadoDataType.inc";
 require_once "includes/ChadoDataTypeController.inc";
 require_once "includes/ChadoDataTypeUIController.inc";
 
+/**
+ * Implements hook_views_api().
+ */
+function tripal_entities_views_api() {
+  return array(
+    'api' => 3,
+  );
+}
 
 /**
  * Implements hook_permission().
@@ -98,7 +106,7 @@ function tripal_entities_entity_info() {
   $entities['chado_data'] = array(
     // A human readable label to identify our entity.
     'label' => t('Chado Data'),
-    'plural label' => t('Vocabulary Terms'),
+    'plural label' => t('Chado Data'),
 
     // The entity class and controller class extend the classes provided by the
     // Entity API.

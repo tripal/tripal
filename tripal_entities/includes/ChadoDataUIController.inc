@@ -14,19 +14,26 @@ class ChadoDataUIController extends EntityDefaultUIController {
     // Set this on the object so classes that extend hook_menu() can use it.
     $this->id_count = count(explode('/', $this->path));
     $wildcard = isset($this->entityInfo['admin ui']['menu wildcard']) ? $this->entityInfo['admin ui']['menu wildcard'] : '%entity_object';
-
+    $plural_label = isset($this->entityInfo['plural label']) ? $this->entityInfo['plural label'] : $this->entityInfo['label'] . 's';
 
     $items[$this->path] = array(
-      'title' => 'Chado Data',
-      'description' => 'Add edit and update chado data.',
-      'page callback' => 'system_admin_menu_block_page',
-      'access arguments' => array('access administration pages'),
-      'file path' => drupal_get_path('module', 'system'),
-      'file' => 'system.admin.inc',
+      'title' => $plural_label,
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array($this->entityType . '_overview_form', $this->entityType),
+      'description' => 'Manage ' . $plural_label . '.',
+      'access callback' => 'entity_access',
+      'access arguments' => array('view', $this->entityType),
+      'file' => 'includes/entity.ui.inc',
     );
 
     // Change the overview menu type for the list of models.
     $items[$this->path]['type'] = MENU_LOCAL_TASK;
+
+    $items[$this->path . '/list'] = array(
+      'title' => 'List',
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+      'weight' => -10,
+    );
 
     // Add an action link to the admin page for adding new data.
     $items[$this->path . '/add'] = array(

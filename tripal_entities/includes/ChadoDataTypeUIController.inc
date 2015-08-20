@@ -19,8 +19,8 @@ class ChadoDataTypeUIController extends EntityDefaultUIController {
 
     // We don't want to let the user add new Chado data types. They
     // are added automatically.
-//     unset($items[$this->path . '/add']);
-//     unset($items[$this->path . '/import']);
+     unset($items[$this->path . '/add']);
+     unset($items[$this->path . '/import']);
 
     return $items;
   }
