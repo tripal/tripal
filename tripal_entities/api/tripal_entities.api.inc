@@ -1,4 +1,19 @@
 <?php
+
+/**
+ * Menu argument loader; Load a chado data type by string.
+ *
+ * @param $type
+ *   The machine-readable name of a chado data type to load.
+ * @return
+ *   A chado data type array or FALSE if $type does not exist.
+ */
+
+function chado_data_type_load($type) {
+  $entity = chado_data_get_types($type);
+  return $entity;
+}
+
 /**
  * Gets an array of all chado_data types, keyed by the type name.
  *
@@ -13,20 +28,6 @@ function chado_data_get_types($type_name = NULL) {
   $types = entity_load_multiple_by_name('chado_data_type', isset($type_name) ? array($type_name) : FALSE);
   return isset($type_name) ? reset($types) : $types;
 }
-
-
-/**
- * Menu argument loader; Load a chado_data type by string.
- *
- * @param $type
- *   The machine-readable name of a chado_data type to load.
- * @return
- *   A chado_data type array or FALSE if $type does not exist.
- */
-function chado_data_type_load($type) {
-  return chado_data_get_types($type);
-}
-
 
 /**
  * Fetch a chado_data object. Make sure that the wildcard you choose
@@ -92,7 +93,9 @@ function chado_data_delete_multiple(array $entity_ids) {
 function chado_data_create($values = array()) {
   return entity_get_controller('chado_data')->create($values);
 }
-
+function chado_data_type_create($values = array()) {
+  return entity_get_controller('chado_data_type')->create($values);
+}
 
 /**
  * Saves a chado_data to the database.

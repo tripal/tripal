@@ -15,28 +15,18 @@ class ChadoDataUIController extends EntityDefaultUIController {
     $this->id_count = count(explode('/', $this->path));
     $wildcard = isset($this->entityInfo['admin ui']['menu wildcard']) ? $this->entityInfo['admin ui']['menu wildcard'] : '%entity_object';
 
-    // Create a new menu item on the Administer -> Find Content page.
+
     $items[$this->path] = array(
       'title' => 'Chado Data',
-      'description' => 'Add, edit and update chado data.',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array($this->entityType . '_overview_form', $this->entityType),
+      'description' => 'Add edit and update chado data.',
+      'page callback' => 'system_admin_menu_block_page',
       'access arguments' => array('access administration pages'),
-      'file' => 'includes/entity.ui.inc',
-      'type' => MENU_LOCAL_TASK,
+      'file path' => drupal_get_path('module', 'system'),
+      'file' => 'system.admin.inc',
     );
 
-    foreach (chado_data_get_types() as $type) {
-      $items[$this->path . '/add/' . $type->type] = array(
-        'title' => 'Add ' . $type->label,
-        'page callback' => 'model_form_wrapper',
-        'page arguments' => array(chado_data_create(array('type' => $type->type))),
-        'access callback' => 'model_access',
-        'access arguments' => array('edit', 'edit ' . $type->type),
-        'file' => 'model.admin.inc',
-        'file path' => drupal_get_path('module', $this->entityInfo['module'])
-      );
-    }
+    // Change the overview menu type for the list of models.
+    $items[$this->path]['type'] = MENU_LOCAL_TASK;
 
     // Add an action link to the admin page for adding new data.
     $items[$this->path . '/add'] = array(
@@ -243,7 +233,18 @@ function chado_data_form($form, &$form_state, $entity = NULL) {
       '#title' => 'Term',
       '#markup' => $cvterm->name,
     );
+
 /*
+
+    // Create the Chado data type entity.
+    $data_type_entity = chado_data_type_create(array(
+      'type' => $bundle_id,
+      'label' => $cvterm->name,
+      'module' => 'tripal_entities'
+    ));
+
+    $data_type_entity->save();
+
     // Drupal field types and settings:
     // https://www.drupal.org/node/1879542
     $field = array(

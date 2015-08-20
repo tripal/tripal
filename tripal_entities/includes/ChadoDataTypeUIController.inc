@@ -19,8 +19,8 @@ class ChadoDataTypeUIController extends EntityDefaultUIController {
 
     // We don't want to let the user add new Chado data types. They
     // are added automatically.
-    unset($items[$this->path . '/add']);
-    unset($items[$this->path . '/import']);
+//     unset($items[$this->path . '/add']);
+//     unset($items[$this->path . '/import']);
 
     return $items;
   }
@@ -50,43 +50,7 @@ function chado_data_type_form($form, &$form_state, $chado_data_type, $op = 'edit
     '#required' => TRUE,
     '#size' => 30,
   );
-  // Machine-readable type name.
-  $form['type'] = array(
-    '#type' => 'machine_name',
-    '#default_value' => isset($chado_data_type->type) ? $chado_data_type->type : '',
-    '#maxlength' => 32,
-    //    '#disabled' => $chado_data_type->isLocked() && $op != 'clone',
-    '#machine_name' => array(
-      'exists' => 'chado_data_get_types',
-      'source' => array('label'),
-    ),
-    '#description' => t('A unique machine-readable name for this chado data type. It must only contain lowercase letters, numbers, and underscores.'),
-  );
 
-  $form['data']['#tree'] = TRUE;
-  $form['data']['sample_data'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('An interesting chado data switch'),
-    '#default_value' => !empty($chado_data_type->data['sample_data']),
-  );
-
-  $form['actions'] = array('#type' => 'actions');
-  $form['actions']['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save chado data type'),
-    '#weight' => 40,
-  );
-
-  //Locking not supported yet
-  /*if (!$chado_data_type->isLocked() && $op != 'add') {
-  $form['actions']['delete'] = array(
-  '#type' => 'submit',
-  '#value' => t('Delete chado data type'),
-  '#weight' => 45,
-  '#limit_validation_errors' => array(),
-  '#submit' => array('chado_data_type_form_submit_delete')
-  );
-  }*/
   return $form;
 }
 

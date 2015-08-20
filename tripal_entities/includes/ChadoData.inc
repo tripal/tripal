@@ -1,6 +1,6 @@
 <?php
 /**
- * The class used for chado data entities.
+ * A class the controller will use for instantiating the ChadoData entity.
  */
 class ChadoData extends Entity {
   public function __construct($values = array()) {
