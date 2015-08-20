@@ -66,9 +66,8 @@ function tripal_entities_field_formatter_view($entity_type, $entity, $field, $in
           // We create a render array to produce the desired markup,
           // "<p>Genus Species</p>".
           // See theme_html_tag().
-          '#type' => 'html_tag',
-          '#tag' => 'p',
-          '#value' => '<i>' . $organism[0]->genus .' ' . $organism[0]->species . '</i>',
+          '#type' => 'markup',
+          '#markup' => '<i>' . $organism[0]->genus .' ' . $organism[0]->species . '</i>',
         );
       }
       break;

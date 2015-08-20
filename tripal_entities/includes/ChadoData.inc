@@ -8,11 +8,11 @@ class ChadoData extends Entity {
   }
 
   protected function defaultLabel() {
-    return $this->name;
+    return $this->title;
   }
 
   protected function defaultUri() {
-    return array('path' => 'chado_data/' . $this->entity_id);
+    return array('path' => 'data/' . $this->entity_id);
   }
 
 }

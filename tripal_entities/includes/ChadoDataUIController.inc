@@ -244,13 +244,15 @@ function chado_data_form($form, &$form_state, $entity = NULL) {
     ));
 
     $data_type_entity->save();
-
+*/
+/*
     // Drupal field types and settings:
     // https://www.drupal.org/node/1879542
     $field = array(
       'field_name' => 'feature__name',
       'type' => 'text',
       'cardinality' => 1,
+      'locked' => TRUE,
       'storage' => array(
         'type' => 'tripal_entities_storage'
       ),
@@ -274,6 +276,7 @@ function chado_data_form($form, &$form_state, $entity = NULL) {
       'field_name' => 'feature__uniquename',
       'type' => 'text',
       'cardinality' => 1,
+      'locked' => TRUE,
       'storage' => array(
         'type' => 'tripal_entities_storage'
       ),
@@ -297,6 +300,7 @@ function chado_data_form($form, &$form_state, $entity = NULL) {
       'field_name' => 'feature__organism_id',
       'type' => 'organism_id',
       'cardinality' => 1,
+      'locked' => TRUE,
       'storage' => array(
        'type' => 'tripal_entities_storage'
       ),
@@ -311,7 +315,7 @@ function chado_data_form($form, &$form_state, $entity = NULL) {
       'bundle' => $bundle_id,
     );
     field_create_instance($field_instance);
- */
+*/
     // If the entity doesn't exist then create one.
     if (!$entity) {
       $entity = entity_get_controller('chado_data')->create(array('type' => $bundle_id));
@@ -440,34 +444,6 @@ function chado_data_delete_form_submit($form, &$form_state) {
 }
 
 /**
- * Displays the list of available chado_data types for chado_data creation.
- *
- * @ingroup themeable
- */
-function theme_chado_data_add_list($variables) {
-  $content = $variables['content'];
-  $output = '';
-  if ($content) {
-    $output = '<dl class="chado_data-type-list">';
-    foreach ($content as $item) {
-      $output .= '<dt>' . l($item['title'], $item['href']) . '</dt>';
-      $output .= '<dd>' . filter_xss_admin($item['description']) . '</dd>';
-    }
-    $output .= '</dl>';
-  }
-  else {
-    if (user_access('administer chado_data types')) {
-      $output = '<p>' . t('Chado Data Entities cannot be added because you have not created any chado_data types yet. Go to the <a href="@create-chado_data-type">chado_data type creation page</a> to add a new chado_data type.', array('@create-chado_data-type' => url('admin/structure/chado_data_types/add'))) . '</p>';
-    }
-    else {
-      $output = '<p>' . t('No chado_data types have been created yet for you to use.') . '</p>';
-    }
-  }
-
-  return $output;
-}
-
-/**
  * Sets the breadcrumb for administrative chado_data pages.
  */
 function chado_data_set_breadcrumb() {
@@ -492,50 +468,10 @@ function chado_data_set_breadcrumb() {
  * @see hook_entity_view_alter()
  */
 function chado_data_view($entity, $view_mode = 'full') {
-
-  // Our entity type, for convenience.
-  $entity_type = 'chado_data';
-
-  // Start setting up the content.
-  $entity->content = array(
-    '#view_mode' => $view_mode,
-  );
-
-  // Build fields content - this is where the Field API really comes in to play.
-  // The task has very little code here because it all gets taken care of by
-  // field module. field_attach_prepare_view() lets the fields load any
-  // data they need before viewing.
-  field_attach_prepare_view($entity_type, array($entity->entity_id => $entity),
-    $view_mode);
-
-  // We call entity_prepare_view() so it can invoke hook_entity_prepare_view()
-  // for us.
-  entity_prepare_view($entity_type, array($entity->entity_id => $entity));
-
-  // Now field_attach_view() generates the content for the fields.
-  $entity->content += field_attach_view($entity_type, $entity, $view_mode);
-
-  // OK, Field API done, now we can set up some of our own data.
-  //   $entity->content['created'] = array(
-  //     '#type' => 'item',
-  //     '#title' => t('Created date'),
-  //     '#markup' => format_date($entity->created),
-  //   );
-
-  // Now to invoke some hooks. We need the language code for
-  // hook_entity_view(), so let's get that.
-  global $language;
-  $langcode = $language->language;
-
-  // And now invoke hook_entity_view().
-  module_invoke_all('entity_view', $entity, $entity_type, $view_mode, $langcode);
-
-  // Now invoke hook_entity_view_alter().
-  drupal_alter(array('chado_data', 'entity_view'), $entity->content, $entity_type);
-
-
-  // And finally return the content.
-  return $entity->content;
+  $controller = entity_get_controller('chado_data');
+  $content = $controller->view(array($entity->entity_id => $entity));
+  drupal_set_title($entity->title);
+  return $content;
 }
 
 /**

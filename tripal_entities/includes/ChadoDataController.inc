@@ -35,15 +35,6 @@ class ChadoDataController extends EntityAPIController {
   }
 
   /**
-   * Overriding the buildContent function to add entity specific fields
-   */
-  public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
-    $content = parent::buildContent($entity, $view_mode, $langcode, $content);
-
-    return $content;
-  }
-
-  /**
    * Delete a single entity.
    *
    * Really a convenience function for deleteMultiple().
