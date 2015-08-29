@@ -88,7 +88,7 @@ function tripal_analysis_delete_analyses($analyses, $job = NULL) {
   // function which is not prefix with the schema, and an error occurs.
   // Therefore, we set the active database to chado to get around that
   // problem.
-  $previous_db = chado_set_active('chado');
+//  $previous_db = chado_set_active('chado');
 
   // begin the transaction
   $transaction = db_transaction();
@@ -114,6 +114,6 @@ function tripal_analysis_delete_analyses($analyses, $job = NULL) {
     watchdog_exception('tripal_analysis', $e);
     return 0;
   }
-  chado_set_active($previous_db);
+//  chado_set_active($previous_db);
   print "\nDone\n";
 }

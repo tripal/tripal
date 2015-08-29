@@ -19,11 +19,11 @@ function tripal_organism_delete_form() {
   }
 
   $form['desc'] = array(
-    '#markup' => t("Use the following form to delete organisms which may or may 
-        not be synced. Please be cautious. Deleting an organism will cause all 
+    '#markup' => t("Use the following form to delete organisms which may or may
+        not be synced. Please be cautious. Deleting an organism will cause all
         data associated with the organism to also be deleted."),
   );
-  
+
   $form['organisms'] = array(
     '#title'       => t('Organism'),
     '#type'        => 'checkboxes',
@@ -55,10 +55,10 @@ function tripal_organism_delete_form_submit($form, &$form_state) {
       $org_ids[] = $id;
     }
   }
-  
+
   if (count($org_ids) > 0) {
     $args = array($org_ids);
-  
+
     tripal_add_job("Delete Organism", 'tripal_organism',
       'tripal_organism_delete_organisms', $args, $user->uid);
     drupal_set_message(t("Organisms will disappear from the list below once the job completes."));
@@ -87,8 +87,8 @@ function tripal_organism_delete_organisms($organisms, $job = NULL) {
   // function which is not prefix with the schema, and an error occurs.
   // Therefore, we set the active database to chado to get around that
   // problem.
-  $previous_db = chado_set_active('chado');
-  
+//  $previous_db = chado_set_active('chado');
+
   // begin the transaction
   $transaction = db_transaction();
   print "\nNOTE: Deleting organisms is performed using a database transaction. \n" .
@@ -102,7 +102,7 @@ function tripal_organism_delete_organisms($organisms, $job = NULL) {
     $num_deletes = chado_select_record('organism', array('count(*) as cnt'), $values);
     print "Deleting " . $num_deletes[0]->cnt . " organisms\n";
     chado_delete_record('organism', $values);
-  
+
     print "Removing orphaned organism pages\n";
     chado_cleanup_orphaned_nodes('organism');
   }
@@ -113,6 +113,6 @@ function tripal_organism_delete_organisms($organisms, $job = NULL) {
     watchdog_exception('tripal_organism', $e);
     return 0;
   }
-  chado_set_active($previous_db);
+//  chado_set_active($previous_db);
   print "\nDone\n";
 }
