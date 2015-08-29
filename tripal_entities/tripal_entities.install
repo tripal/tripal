@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Install for a chado data entity - creates the base table for our entity.
+ * Install for a tripal data entity - creates the base table for our entity.
  */
 
 /**
@@ -11,7 +11,7 @@
  */
 function tripal_entities_schema() {
 
-  $schema['chado_data'] = array(
+  $schema['tripal_data'] = array(
     'description' => 'The base table for Tripal Vocabulary-based entities.',
     'fields' => array(
       'entity_id' => array(
@@ -82,7 +82,7 @@ function tripal_entities_schema() {
       'entity_created' => array('created'),
       'tablename' => array('tablename'),
       'record_id' => array('record_id'),
-      'chado_record' => array('tablename', 'record_id'),
+      'tripal_record' => array('tablename', 'record_id'),
       'type' => array('type'),
       'cvterm_id' => array('cvterm_id'),
       'uid' => array('uid'),
@@ -93,8 +93,8 @@ function tripal_entities_schema() {
     'primary key' => array('entity_id'),
   );
 
-  $schema['chado_data_type'] = array(
-    'description' => 'Stores information about defined chado data types.',
+  $schema['tripal_data_type'] = array(
+    'description' => 'Stores information about defined tripal data types.',
     'fields' => array(
       'id' => array(
         'type' => 'serial',
@@ -102,13 +102,13 @@ function tripal_entities_schema() {
         'description' => 'Primary Key: Unique Chado data type identifier.',
       ),
       'type' => array(
-        'description' => 'The machine-readable name of this chado data type.',
+        'description' => 'The machine-readable name of this tripal data type.',
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
       ),
       'label' => array(
-        'description' => 'The human-readable name of this chado data type.',
+        'description' => 'The human-readable name of this tripal data type.',
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
@@ -119,14 +119,14 @@ function tripal_entities_schema() {
         'not null' => TRUE,
         'default' => 0,
         'size' => 'tiny',
-        'description' => 'The weight of this chado data type in relation to others.',
+        'description' => 'The weight of this tripal data type in relation to others.',
       ),
       'data' => array(
         'type' => 'text',
         'not null' => FALSE,
         'size' => 'big',
         'serialize' => TRUE,
-        'description' => 'A serialized array of additional data related to this chado data type.',
+        'description' => 'A serialized array of additional data related to this tripal data type.',
       ),
     ) + entity_exportable_schema_fields(),
     'primary key' => array('id'),
@@ -147,5 +147,5 @@ function tripal_entities_schema() {
  */
 function tripal_entities_uninstall() {
   // TODO: make this dynamic (not hardcoded bundle).
-  field_attach_delete_bundle('chado_data', 'gene');
+  field_attach_delete_bundle('tripal_data', 'gene');
 }

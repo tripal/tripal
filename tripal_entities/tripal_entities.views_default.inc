@@ -4,18 +4,18 @@ function tripal_entities_views_default_views() {
   $views = array();
 
 $view = new view();
-$view->name = 'chado_data';
+$view->name = 'tripal_data';
 $view->description = '';
 $view->tag = 'default';
-$view->base_table = 'chado_data_type';
-$view->human_name = 'Chado Data';
+$view->base_table = 'tripal_data_type';
+$view->human_name = 'Tripal Data';
 $view->core = 7;
 $view->api_version = '3.0';
 $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
 
 /* Display: Master */
 $handler = $view->new_display('default', 'Master', 'default');
-$handler->display->display_options['title'] = 'Chado Data';
+$handler->display->display_options['title'] = 'Biological Data';
 $handler->display->display_options['use_more_always'] = FALSE;
 $handler->display->display_options['access']['type'] = 'perm';
 $handler->display->display_options['access']['perm'] = 'administer blocks';
@@ -45,28 +45,28 @@ $handler->display->display_options['empty']['area']['label'] = 'No Data';
 $handler->display->display_options['empty']['area']['empty'] = TRUE;
 $handler->display->display_options['empty']['area']['content'] = 'There is currently no data available.';
 $handler->display->display_options['empty']['area']['format'] = 'filtered_html';
-/* Field: Chado Data Type: Internal, numeric chado data type ID */
+/* Field: Tripal Data Type: Internal, numeric tripal data type ID */
 $handler->display->display_options['fields']['id']['id'] = 'id';
-$handler->display->display_options['fields']['id']['table'] = 'chado_data_type';
+$handler->display->display_options['fields']['id']['table'] = 'tripal_data_type';
 $handler->display->display_options['fields']['id']['field'] = 'id';
 $handler->display->display_options['fields']['id']['label'] = 'Data ID';
-/* Field: Chado Data Type: Label */
+/* Field: Tripal Data Type: Label */
 $handler->display->display_options['fields']['label']['id'] = 'label';
-$handler->display->display_options['fields']['label']['table'] = 'chado_data_type';
+$handler->display->display_options['fields']['label']['table'] = 'tripal_data_type';
 $handler->display->display_options['fields']['label']['field'] = 'label';
 $handler->display->display_options['fields']['label']['label'] = 'Type ID';
-/* Field: Chado Data Type: Machine-readable name */
+/* Field: Tripal Data Type: Machine-readable name */
 $handler->display->display_options['fields']['type']['id'] = 'type';
-$handler->display->display_options['fields']['type']['table'] = 'chado_data_type';
+$handler->display->display_options['fields']['type']['table'] = 'tripal_data_type';
 $handler->display->display_options['fields']['type']['field'] = 'type';
 $handler->display->display_options['fields']['type']['label'] = 'Type Name';
-/* Field: Chado Data Type: Status */
+/* Field: Tripal Data Type: Status */
 $handler->display->display_options['fields']['status']['id'] = 'status';
-$handler->display->display_options['fields']['status']['table'] = 'chado_data_type';
+$handler->display->display_options['fields']['status']['table'] = 'tripal_data_type';
 $handler->display->display_options['fields']['status']['field'] = 'status';
-/* Filter criterion: Chado Data Type: Machine-readable name */
+/* Filter criterion: Tripal Data Type: Machine-readable name */
 $handler->display->display_options['filters']['type']['id'] = 'type';
-$handler->display->display_options['filters']['type']['table'] = 'chado_data_type';
+$handler->display->display_options['filters']['type']['table'] = 'tripal_data_type';
 $handler->display->display_options['filters']['type']['field'] = 'type';
 $handler->display->display_options['filters']['type']['exposed'] = TRUE;
 $handler->display->display_options['filters']['type']['expose']['operator_id'] = 'type_op';

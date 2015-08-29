@@ -1,133 +1,133 @@
 <?php
 
 /**
- * Menu argument loader; Load a chado data type by string.
+ * Menu argument loader; Load a tripal data type by string.
  *
  * @param $type
- *   The machine-readable name of a chado data type to load.
+ *   The machine-readable name of a tripal data type to load.
  * @return
- *   A chado data type array or FALSE if $type does not exist.
+ *   A tripal data type array or FALSE if $type does not exist.
  */
 
-function chado_data_type_load($type) {
-  $entity = chado_data_get_types($type);
+function tripal_data_type_load($type) {
+  $entity = tripal_data_get_types($type);
   return $entity;
 }
 
 /**
- * Gets an array of all chado_data types, keyed by the type name.
+ * Gets an array of all tripal_data types, keyed by the type name.
  *
  * @param $type_name
  *   If set, the type with the given name is returned.
- * @return ChadoDataType[]
- *   Depending whether $type isset, an array of chado_data types or a single one.
+ * @return TripalDataType[]
+ *   Depending whether $type isset, an array of tripal_data types or a single one.
  */
-function chado_data_get_types($type_name = NULL) {
-  // entity_load will get the Entity controller for our chado_data entity and call the load
+function tripal_data_get_types($type_name = NULL) {
+  // entity_load will get the Entity controller for our tripal_data entity and call the load
   // function of that object - we are loading entities by name here.
-  $types = entity_load_multiple_by_name('chado_data_type', isset($type_name) ? array($type_name) : FALSE);
+  $types = entity_load_multiple_by_name('tripal_data_type', isset($type_name) ? array($type_name) : FALSE);
   return isset($type_name) ? reset($types) : $types;
 }
 
 /**
- * Fetch a chado_data object. Make sure that the wildcard you choose
- * in the chado_data entity definition fits the function name here.
+ * Fetch a tripal_data object. Make sure that the wildcard you choose
+ * in the tripal_data entity definition fits the function name here.
  *
  * @param $entity_id
- *   Integer specifying the chado_data id.
+ *   Integer specifying the tripal_data id.
  * @param $reset
  *   A boolean indicating that the internal cache should be reset.
  * @return
- *   A fully-loaded $chado_data object or FALSE if it cannot be loaded.
+ *   A fully-loaded $tripal_data object or FALSE if it cannot be loaded.
  *
- * @see chado_data_load_multiple()
+ * @see tripal_data_load_multiple()
  */
-function chado_data_load($entity_id, $reset = FALSE) {
-  $chado_datas = chado_data_load_multiple(array($entity_id), array(), $reset);
-  return reset($chado_datas);
+function tripal_data_load($entity_id, $reset = FALSE) {
+  $tripal_datas = tripal_data_load_multiple(array($entity_id), array(), $reset);
+  return reset($tripal_datas);
 }
 
 
 /**
- * Load multiple chado_datas based on certain conditions.
+ * Load multiple tripal_datas based on certain conditions.
  *
  * @param $entity_ids
- *   An array of chado_data IDs.
+ *   An array of tripal_data IDs.
  * @param $conditions
- *   An array of conditions to match against the {chado_data} table.
+ *   An array of conditions to match against the entity table.
  * @param $reset
  *   A boolean indicating that the internal cache should be reset.
  * @return
- *   An array of chado_data objects, indexed by entity_id.
+ *   An array of tripal_data objects, indexed by entity_id.
  *
  * @see entity_load()
- * @see chado_data_load()
+ * @see tripal_data_load()
  */
-function chado_data_load_multiple($entity_ids = array(), $conditions = array(), $reset = FALSE) {
-  return entity_load('chado_data', $entity_ids, $conditions, $reset);
+function tripal_data_load_multiple($entity_ids = array(), $conditions = array(), $reset = FALSE) {
+  return entity_load('tripal_data', $entity_ids, $conditions, $reset);
 }
 
 
 /**
- * Deletes a chado_data.
+ * Deletes a tripal_data.
  */
-function chado_data_delete(ChadoData $chado_data) {
-  $chado_data->delete();
+function tripal_data_delete(TripalData $tripal_data) {
+  $tripal_data->delete();
 }
 
 
 /**
- * Delete multiple chado_datas.
+ * Delete multiple tripal_datas.
  *
  * @param $entity_ids
- *   An array of chado_data IDs.
+ *   An array of tripal_data IDs.
  */
-function chado_data_delete_multiple(array $entity_ids) {
-  entity_get_controller('chado_data')->delete($entity_ids);
+function tripal_data_delete_multiple(array $entity_ids) {
+  entity_get_controller('tripal_data')->delete($entity_ids);
 }
 
 
 /**
- * Create a chado_data object.
+ * Create a tripal_data object.
  */
-function chado_data_create($values = array()) {
-  return entity_get_controller('chado_data')->create($values);
+function tripal_data_create($values = array()) {
+  return entity_get_controller('tripal_data')->create($values);
 }
-function chado_data_type_create($values = array()) {
-  return entity_get_controller('chado_data_type')->create($values);
+function tripal_data_type_create($values = array()) {
+  return entity_get_controller('tripal_data_type')->create($values);
 }
 
 /**
- * Saves a chado_data to the database.
+ * Saves a tripal_data to the database.
  *
- * @param $chado_data
- *   The chado_data object.
+ * @param $tripal_data
+ *   The tripal_data object.
  */
-function chado_data_save(ChadoData $chado_data) {
-  return $chado_data->save();
+function tripal_data_save(TripalData $tripal_data) {
+  return $tripal_data->save();
 }
 
 
 /**
- * Saves a chado_data type to the db.
+ * Saves a tripal_data type to the db.
  */
-function chado_data_type_save(ChadoDataType $type) {
+function tripal_data_type_save(TripalDataType $type) {
   $type->save();
 }
 
 
 /**
- * Deletes a chado_data type from the db.
+ * Deletes a tripal_data type from the db.
  */
-function chado_data_type_delete(ChadoDataType $type) {
+function tripal_data_type_delete(TripalDataType $type) {
   $type->delete();
 }
 
 
 /**
- * URI callback for chado_datas
+ * URI callback for tripal_datas
  */
-function chado_data_uri(ChadoData $entity){
+function tripal_data_uri(TripalData $entity){
   return array(
     'path' => 'data/' . $entity->entity_id,
   );

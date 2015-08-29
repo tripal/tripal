@@ -3,12 +3,12 @@
 require_once "api/tripal_entities.api.inc";
 require_once "includes/tripal_entities.field_storage.inc";
 require_once "includes/tripal_entities.fields.inc";
-require_once "includes/ChadoData.inc";
-require_once "includes/ChadoDataController.inc";
-require_once "includes/ChadoDataUIController.inc";
-require_once "includes/ChadoDataType.inc";
-require_once "includes/ChadoDataTypeController.inc";
-require_once "includes/ChadoDataTypeUIController.inc";
+require_once "includes/TripalData.inc";
+require_once "includes/TripalDataController.inc";
+require_once "includes/TripalDataUIController.inc";
+require_once "includes/TripalDataType.inc";
+require_once "includes/TripalDataTypeController.inc";
+require_once "includes/TripalDataTypeUIController.inc";
 
 /**
  * Implements hook_views_api().
@@ -26,18 +26,18 @@ function tripal_entities_permission() {
   // We set up permisssions to manage entity types, manage all entities and the
   // permissions for each individual entity
   $permissions = array(
-    'administer chado data types' => array(
-      'title' => t('Administer Chado data types'),
-      'description' => t('Create and delete fields for Chado data types, and set their permissions.'),
+    'administer tripal data types' => array(
+      'title' => t('Administer Tripal data types'),
+      'description' => t('Create and delete fields for Tripal data types, and set their permissions.'),
     ),
-    'administer chado data' => array(
-      'title' => t('Administer Chado data'),
-      'description' => t('Edit and delete all chado data'),
+    'administer tripal data' => array(
+      'title' => t('Administer Tripal data'),
+      'description' => t('Edit and delete all tripal data'),
     ),
   );
 
   // Generate permissions per each data type.
-  foreach (chado_data_get_types() as $type) {
+  foreach (tripal_data_get_types() as $type) {
     $type_name = check_plain($type->type);
     $permissions += array(
       "edit any $type_name data" => array(
@@ -56,9 +56,9 @@ function tripal_entities_permission() {
  */
 function tripal_entities_theme($existing, $type, $theme, $path) {
   return array(
-    'chado_data' => array(
+    'tripal_data' => array(
       'render element' => 'elements',
-      'template' => 'chado_data',
+      'template' => 'tripal_data',
       'path' => "$path/theme/templates"
     ),
   );
@@ -70,7 +70,7 @@ function tripal_entities_theme($existing, $type, $theme, $path) {
 function tripal_entities_rdf_mapping() {
   return array();
 /*   return array(
-    'type' => 'chado_data',
+    'type' => 'tripal_data',
     'bundle' => 'gene',
     'mapping' => array(
       'rdftype' => array('sioc:Item', 'foaf:Document'),
@@ -103,18 +103,18 @@ function tripal_entities_rdf_mapping() {
 function tripal_entities_entity_info() {
   $entities = array();
 
-  $entities['chado_data'] = array(
+  $entities['tripal_data'] = array(
     // A human readable label to identify our entity.
-    'label' => t('Chado Data'),
-    'plural label' => t('Chado Data'),
+    'label' => t('Tripal Data'),
+    'plural label' => t('Tripal Data'),
 
     // The entity class and controller class extend the classes provided by the
     // Entity API.
-    'entity class' => 'ChadoData',
-    'controller class' => 'ChadoDataController',
+    'entity class' => 'TripalData',
+    'controller class' => 'TripalDataController',
 
     // The table for this entity defined in hook_schema()
-    'base table' => 'chado_data',
+    'base table' => 'tripal_data',
 
     // Returns the uri elements of an entity.
     'uri callback' => 'tripal_entities_vocbulary_term_uri',
@@ -134,7 +134,7 @@ function tripal_entities_entity_info() {
     ),
 
     // Callback function for access to this entity.
-    'access callback' => 'chado_data_access',
+    'access callback' => 'tripal_data_access',
 
     // FALSE disables caching. Caching functionality is handled by Drupal core.
     'static cache' => FALSE,
@@ -143,17 +143,17 @@ function tripal_entities_entity_info() {
     'bundles' => array(),
 
     'label callback' => 'entity_class_label',
-    'creation callback' => 'chado_data_create',
+    'creation callback' => 'tripal_data_create',
 
-    // The information below is used by the ChadoDataUIController
+    // The information below is used by the TripalDataUIController
     // (which extends the EntityDefaultUIController).  The admin_ui
     // key here is mean to appear on the 'Find Content' page of the
     // administrative menu.
     'admin ui' => array(
       'path' => 'admin/content/data',
-      'controller class' => 'ChadoDataUIController',
-      'menu wildcard' => '%chado_data',
-      'file' => 'includes/ChadoDataUIController.inc',
+      'controller class' => 'TripalDataUIController',
+      'menu wildcard' => '%tripal_data',
+      'file' => 'includes/TripalDataUIController.inc',
     ),
     'view modes' => array(
       'full' => array(
@@ -168,28 +168,28 @@ function tripal_entities_entity_info() {
   );
 
   // The entity that holds information about the entity types
-  $entities['chado_data_type'] = array(
-    'label' => t('Chado Data Type'),
-    'entity class' => 'ChadoDataType',
-    'controller class' => 'ChadoDataTypeController',
-    'base table' => 'chado_data_type',
+  $entities['tripal_data_type'] = array(
+    'label' => t('Tripal Data Type'),
+    'entity class' => 'TripalDataType',
+    'controller class' => 'TripalDataTypeController',
+    'base table' => 'tripal_data_type',
     'fieldable' => FALSE,
     // If this entity can be used as a bundle of another entity then
     // that can be specified via the 'bundle of' key.
-    'bundle of' => 'chado_data',
+    'bundle of' => 'tripal_data',
     'exportable' => TRUE,
     'entity keys' => array(
       'id' => 'id',
       'name' => 'type',
       'label' => 'label',
     ),
-    'access callback' => 'chado_data_type_access',
+    'access callback' => 'tripal_data_type_access',
     'module' => 'tripal_entities',
     // Enable the entity API's admin UI.
     'admin ui' => array(
       'path' => 'admin/structure/data_types',
-      'controller class' => 'ChadoDataTypeUIController',
-      'file' => 'includes/ChadoDataTypeUIController.inc',
+      'controller class' => 'TripalDataTypeUIController',
+      'file' => 'includes/TripalDataTypeUIController.inc',
     ),
   );
   return $entities;
@@ -197,7 +197,7 @@ function tripal_entities_entity_info() {
 /**
  * Implements hook_entity_info_alter().
  *
- * We are adding the info about the chado data types via a hook to avoid a
+ * We are adding the info about the tripal data types via a hook to avoid a
  * recursion issue as loading the model types requires the entity info as well.
  *
  */
@@ -215,13 +215,13 @@ function tripal_entities_entity_info_alter(&$entity_info) {
   $cvterm = chado_generate_var('cvterm', $values);
   $label = preg_replace('/_/', ' ', ucwords($cvterm->name));
   $type = $cvterm->dbxref_id->db_id->name . '_' . $cvterm->dbxref_id->accession;
-  $entity_info['chado_data']['bundles'][$type] = array(
+  $entity_info['tripal_data']['bundles'][$type] = array(
     'label' => $label,
     'admin' => array(
-      'path' => 'admin/structure/data_types/manage/%chado_data_type',
+      'path' => 'admin/structure/data_types/manage/%tripal_data_type',
       'real path' => 'admin/structure/data_types/manage/' . $type,
       'bundle argument' => 4,
-      'access arguments' => array('administer chado data types'),
+      'access arguments' => array('administer tripal data types'),
     ),
   );
 }

@@ -1,18 +1,18 @@
 <?php
 /**
- * ChadoDataController extends DrupalDefaultEntityController.
+ * TripalDataController extends DrupalDefaultEntityController.
  *
  * Our subclass of DrupalDefaultEntityController lets us add a few
  * important create, update, and delete methods.
  */
-class ChadoDataController extends EntityAPIController {
+class TripalDataController extends EntityAPIController {
 
   public function __construct($entityType) {
     parent::__construct($entityType);
   }
 
   /**
-   * Create a Chado data entity - we first set up the values that are specific
+   * Create a Tripal data entity - we first set up the values that are specific
    * to our data schema but then also go through the EntityAPIController
    * function.
    *
@@ -59,11 +59,11 @@ class ChadoDataController extends EntityAPIController {
       try {
         foreach ($entities as $entity) {
           // Invoke hook_entity_delete().
-          module_invoke_all('entity_delete', $entity, 'chado_data');
-          field_attach_delete('chado_data', $entity);
+          module_invoke_all('entity_delete', $entity, 'tripal_data');
+          field_attach_delete('tripal_data', $entity);
           $entity_ids[] = $entity->entity_id;
         }
-        db_delete('chado_data')
+        db_delete('tripal_data')
         ->condition('entity_id', $entity_ids, 'IN')
         ->execute();
       }
@@ -95,14 +95,14 @@ class ChadoDataController extends EntityAPIController {
     // to determine whether to update or insert, and which hook we
     // need to invoke.
     if ($invocation == 'entity_insert') {
-      field_attach_insert('chado_data', $entity);
+      field_attach_insert('tripal_data', $entity);
     }
     else {
-      field_attach_update('chado_data', $entity);
+      field_attach_update('tripal_data', $entity);
     }
 
     // Invoke hook_entity_presave().
-    module_invoke_all('entity_presave', $entity, 'chado_data');
+    module_invoke_all('entity_presave', $entity, 'tripal_data');
 
     // Write out the entity record.
     $tablename = 'feature';
@@ -119,13 +119,13 @@ class ChadoDataController extends EntityAPIController {
       'created'   => $entity->created,
       'changed'   => time(),
     );
-    $success = drupal_write_record('chado_data', $record);
+    $success = drupal_write_record('tripal_data', $record);
     if ($success == SAVED_NEW) {
       $entity->entity_id = $record['entity_id'];
     }
 
     // Invoke either hook_entity_update() or hook_entity_insert().
-    module_invoke_all($invocation, $entity, 'chado_data');
+    module_invoke_all($invocation, $entity, 'tripal_data');
 
     return $entity;
   }

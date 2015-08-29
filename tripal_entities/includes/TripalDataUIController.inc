@@ -2,7 +2,7 @@
 /**
  * UI controller.
  */
-class ChadoDataUIController extends EntityDefaultUIController {
+class TripalDataUIController extends EntityDefaultUIController {
 
   /**
    * Overrides hook_menu() defaults. Main reason for doing this is that
@@ -37,35 +37,35 @@ class ChadoDataUIController extends EntityDefaultUIController {
 
     // Add an action link to the admin page for adding new data.
     $items[$this->path . '/add'] = array(
-      'title' => 'Add Chado Data',
-      'description' => 'Add a new chado data record',
+      'title' => 'Add Tripal Data',
+      'description' => 'Add a new tripal data record',
       'page callback'  => 'drupal_get_form',
-      'page arguments' => array('chado_data_form'),
-      'access callback'  => 'chado_data_access',
+      'page arguments' => array('tripal_data_form'),
+      'access callback'  => 'tripal_data_access',
       'access arguments' => array('edit'),
       'type' => MENU_LOCAL_ACTION,
       'weight' => 20,
     );
 
-    // Set a custom page for adding new chado data entities.
+    // Set a custom page for adding new tripal data entities.
     $items['data/add'] = array(
-      'title' => 'Add Chado data',
-      'description' => 'Add a new chado data record',
+      'title' => 'Add Tripal data',
+      'description' => 'Add a new tripal data record',
       'page callback'  => 'drupal_get_form',
-      'page arguments' => array('chado_data_form'),
-      'access callback'  => 'chado_data_access',
+      'page arguments' => array('tripal_data_form'),
+      'access callback'  => 'tripal_data_access',
       'access arguments' => array('edit'),
       'type' => MENU_NORMAL_ITEM,
       'weight' => 20,
     );
 
-    // Link for viewing a chado data type.
+    // Link for viewing a tripal data type.
     $items['data/' . $wildcard] = array(
-      'title callback' => 'chado_data_title',
+      'title callback' => 'tripal_data_title',
       'title arguments' => array(1),
-      'page callback' => 'chado_data_view',
+      'page callback' => 'tripal_data_view',
       'page arguments' => array(1),
-      'access callback' => 'chado_data_access',
+      'access callback' => 'tripal_data_access',
       'access arguments' => array('view', 1),
       'type' => MENU_CALLBACK,
     );
@@ -73,9 +73,9 @@ class ChadoDataUIController extends EntityDefaultUIController {
     // 'View' tab for an individual entity page.
     $items['data/' . $wildcard . '/view'] = array(
       'title' => 'View',
-      'page callback' => 'chado_data_view',
+      'page callback' => 'tripal_data_view',
       'page arguments' => array(1),
-      'access callback' => 'chado_data_access',
+      'access callback' => 'tripal_data_access',
       'access arguments' => array('view', 1),
       'type' => MENU_DEFAULT_LOCAL_TASK,
       'weight' => -10,
@@ -86,19 +86,19 @@ class ChadoDataUIController extends EntityDefaultUIController {
     $items['data/' . $wildcard . '/edit'] = array(
       'title' => 'Edit',
       'page callback' => 'drupal_get_form',
-      'page arguments' => array('chado_data_form', 1),
-      'access callback' => 'chado_data_access',
+      'page arguments' => array('tripal_data_form', 1),
+      'access callback' => 'tripal_data_access',
       'access arguments' => array('edit', 1),
       'type' => MENU_LOCAL_TASK,
 
     );
 
-    // Menu item for deleting chado data entities.
+    // Menu item for deleting tripal data entities.
     $items['data/' . $wildcard . '/delete'] = array(
       'title'  => 'Delete',
       'page callback' => 'drupal_get_form',
-      'page arguments' => array('chado_data_delete_form', 1),
-      'access callback' => 'chado_data_access',
+      'page arguments' => array('tripal_data_delete_form', 1),
+      'access callback' => 'tripal_data_access',
       'access arguments' => array('edit', 1),
       'type' => MENU_CALLBACK,
 
@@ -109,21 +109,21 @@ class ChadoDataUIController extends EntityDefaultUIController {
 
 }
 /**
- * Determines whether the given user has access to a chado data entity.
+ * Determines whether the given user has access to a tripal data entity.
  *
  * @param $op
  *   The operation being performed. One of 'view', 'update', 'create', 'delete'
  *   or just 'edit' (being the same as 'create' or 'update').
  * @param $entity
- *   Optionally a chado data entity or a chado data type to check access for.
+ *   Optionally a tripal data entity or a tripal data type to check access for.
  *   If nothing is given, access for all types is determined.
  * @param $account
  *   The user to check for. Leave it to NULL to check for the global user.
  * @return boolean
  *   Whether access is allowed or not.
  */
-function chado_data_access($op, $entity = NULL, $account = NULL) {
-  if (user_access('administer chado data', $account)) {
+function tripal_data_access($op, $entity = NULL, $account = NULL) {
+  if (user_access('administer tripal data', $account)) {
     return TRUE;
   }
   if (isset($entity) && $type_name = $entity->type) {
@@ -137,7 +137,7 @@ function chado_data_access($op, $entity = NULL, $account = NULL) {
 /**
  *
  */
-function chado_data_form($form, &$form_state, $entity = NULL) {
+function tripal_data_form($form, &$form_state, $entity = NULL) {
 
   // Set the defaults.
   $cv_id = NULL;
@@ -166,8 +166,8 @@ function chado_data_form($form, &$form_state, $entity = NULL) {
     $cvterm = chado_generate_var('cvterm', $values);
   }
 
-  // Let the user select the vocabulary and chado_data but only if they haven't
-  // already selected a chado_data.
+  // Let the user select the vocabulary and tripal_data but only if they haven't
+  // already selected a tripal_data.
   $cvs = tripal_get_cv_select_options();
   if (!$term_name) {
     $form['cv_id'] = array(
@@ -178,8 +178,8 @@ function chado_data_form($form, &$form_state, $entity = NULL) {
       '#description' => t('Select a vocabulary that contains the term for the type of data you want to add.'),
       '#default_value' => $cv_id,
       '#ajax' => array(
-        'callback' => "chado_data_form_ajax_callback",
-        'wrapper' => 'chado_data_form',
+        'callback' => "tripal_data_form_ajax_callback",
+        'wrapper' => 'tripal_data_form',
         'effect' => 'fade',
         'method' => 'replace'
       )
@@ -243,8 +243,8 @@ function chado_data_form($form, &$form_state, $entity = NULL) {
 
 /*
 
-    // Create the Chado data type entity.
-    $data_type_entity = chado_data_type_create(array(
+    // Create the Tripal data type entity.
+    $data_type_entity = tripal_data_type_create(array(
       'type' => $bundle_id,
       'label' => $cvterm->name,
       'module' => 'tripal_entities'
@@ -271,7 +271,7 @@ function chado_data_form($form, &$form_state, $entity = NULL) {
       'widget' => array(
         'type' => 'text_textfield'
       ),
-      'entity_type' => 'chado_data',
+      'entity_type' => 'tripal_data',
       'required' => 'true',
       'settings' => array(
         'max_length' => 255
@@ -295,7 +295,7 @@ function chado_data_form($form, &$form_state, $entity = NULL) {
       'widget' => array(
        'type' => 'text_textfield'
       ),
-      'entity_type' => 'chado_data',
+      'entity_type' => 'tripal_data',
       'required' => 'true',
       'settings' => array(
        'max_length' => 255
@@ -316,7 +316,7 @@ function chado_data_form($form, &$form_state, $entity = NULL) {
     $field_instance = array(
       'field_name' => 'feature__organism_id',
       'label' => 'Organism',
-      'entity_type' => 'chado_data',
+      'entity_type' => 'tripal_data',
       'required' => 'true',
       'settings' => array(),
       'bundle' => $bundle_id,
@@ -325,8 +325,8 @@ function chado_data_form($form, &$form_state, $entity = NULL) {
 */
     // If the entity doesn't exist then create one.
     if (!$entity) {
-      $entity = entity_get_controller('chado_data')->create(array('type' => $bundle_id));
-      field_attach_form('chado_data', $entity, $form, $form_state);
+      $entity = entity_get_controller('tripal_data')->create(array('type' => $bundle_id));
+      field_attach_form('tripal_data', $entity, $form, $form_state);
 
       $form['submit'] = array(
         '#type' => 'submit',
@@ -336,7 +336,7 @@ function chado_data_form($form, &$form_state, $entity = NULL) {
       );
     }
     else {
-      field_attach_form('chado_data', $entity, $form, $form_state);
+      field_attach_form('tripal_data', $entity, $form, $form_state);
 
       $form['submit'] = array(
         '#type' => 'submit',
@@ -347,44 +347,44 @@ function chado_data_form($form, &$form_state, $entity = NULL) {
     }
     // The entity object must be added to the $form_state in order for
     // the Entity API to work.  It must have a key of the entity name.
-    $form_state['chado_data'] = $entity;
+    $form_state['tripal_data'] = $entity;
   }
-  $form['#prefix'] = '<div id="chado_data_form">';
+  $form['#prefix'] = '<div id="tripal_data_form">';
   $form['#suffix'] = '</div>';
   return $form;
 }
 
 /**
- * An Ajax callback for the chado_data_form.
+ * An Ajax callback for the tripal_data_form.
  */
-function chado_data_form_ajax_callback($form, $form_state) {
+function tripal_data_form_ajax_callback($form, $form_state) {
   // return the form so Drupal can update the content on the page
   return $form;
 
 }
 /**
- * Implements hook_validate() for the chado_data_form.
+ * Implements hook_validate() for the tripal_data_form.
  */
-function chado_data_form_validate($form, &$form_state) {
+function tripal_data_form_validate($form, &$form_state) {
 
   if ($form_state['clicked_button']['#name'] == 'add_data') {
-    $chado_data = (object) $form_state['values'];
-    field_attach_form_validate('chado_data', $chado_data, $form, $form_state);
+    $tripal_data = (object) $form_state['values'];
+    field_attach_form_validate('tripal_data', $tripal_data, $form, $form_state);
   }
 }
 
 /**
- * Implements hook_submit() for the chado_data_form.
+ * Implements hook_submit() for the tripal_data_form.
  *
  */
-function chado_data_form_submit($form, &$form_state) {
+function tripal_data_form_submit($form, &$form_state) {
   if ($form_state['clicked_button']['#name'] == 'cancel') {
     if (array_key_exists('entity_id', $form_state['values'])){
       $entity = $form_state['values']['entity'];
       $form_state['redirect'] = "data/$entity->entity_id";
     }
     else {
-      $form_state['redirect'] = "admin/structure/chado_data";
+      $form_state['redirect'] = "admin/structure/tripal_data";
     }
     return;
   }
@@ -396,7 +396,7 @@ function chado_data_form_submit($form, &$form_state) {
       $form_state['clicked_button']['#name'] == 'add_data') {
     // Use the Entity API to get the entity from the form state, then
     // attach the fields and save.
-    $entity = entity_ui_controller('chado_data')->entityFormSubmitBuildEntity($form, $form_state);
+    $entity = entity_ui_controller('tripal_data')->entityFormSubmitBuildEntity($form, $form_state);
     $entity->save();
     $form_state['redirect'] = "data/$entity->entity_id";
   }
@@ -406,27 +406,27 @@ function chado_data_form_submit($form, &$form_state) {
  *
  * @todo Remove hard-coded path
  */
-function chado_data_form_submit_delete(&$form, &$form_state) {
-  $form_state['redirect'] = 'admin/content/chado_datas/chado_data/' . $form_state['chado_data']->chado_data_id . '/delete';
+function tripal_data_form_submit_delete(&$form, &$form_state) {
+  $form_state['redirect'] = 'admin/content/tripal_datas/tripal_data/' . $form_state['tripal_data']->tripal_data_id . '/delete';
 }
 
 
 /**
- * Form callback: confirmation form for deleting a chado_data.
+ * Form callback: confirmation form for deleting a tripal_data.
  *
- * @param $chado_data
- *   The chado_data to delete
+ * @param $tripal_data
+ *   The tripal_data to delete
  *
  * @see confirm_form()
  */
-function chado_data_delete_form($form, &$form_state, $chado_data) {
-  $form_state['chado_data'] = $chado_data;
+function tripal_data_delete_form($form, &$form_state, $tripal_data) {
+  $form_state['tripal_data'] = $tripal_data;
 
-  $form['#submit'][] = 'chado_data_delete_form_submit';
+  $form['#submit'][] = 'tripal_data_delete_form_submit';
 
   $form = confirm_form($form,
-    t('Are you sure you want to delete chado_data %name?', array('%name' => $chado_data->name)),
-    'admin/content/chado_datas/chado_data',
+    t('Are you sure you want to delete tripal_data %name?', array('%name' => $tripal_data->name)),
+    'admin/content/tripal_datas/tripal_data',
     '<p>' . t('This action cannot be undone.') . '</p>',
     t('Delete'),
     t('Cancel'),
@@ -437,28 +437,28 @@ function chado_data_delete_form($form, &$form_state, $chado_data) {
 }
 
 /**
- * Submit callback for chado_data_delete_form
+ * Submit callback for tripal_data_delete_form
  */
-function chado_data_delete_form_submit($form, &$form_state) {
-  $chado_data = $form_state['chado_data'];
+function tripal_data_delete_form_submit($form, &$form_state) {
+  $tripal_data = $form_state['tripal_data'];
 
-  chado_data_delete($chado_data);
+  tripal_data_delete($tripal_data);
 
-  drupal_set_message(t('The chado_data %name has been deleted.', array('%name' => $chado_data->name)));
-  watchdog('chado_data', 'Deleted chado_data %name.', array('%name' => $chado_data->name));
+  drupal_set_message(t('The tripal_data %name has been deleted.', array('%name' => $tripal_data->name)));
+  watchdog('tripal_data', 'Deleted tripal_data %name.', array('%name' => $tripal_data->name));
 
-  $form_state['redirect'] = 'admin/content/chado_datas';
+  $form_state['redirect'] = 'admin/content/tripal_datas';
 }
 
 /**
- * Sets the breadcrumb for administrative chado_data pages.
+ * Sets the breadcrumb for administrative tripal_data pages.
  */
-function chado_data_set_breadcrumb() {
+function tripal_data_set_breadcrumb() {
   $breadcrumb = array(
     l(t('Home'), '<front>'),
     l(t('Administration'), 'admin'),
     l(t('Content'), 'admin/content'),
-    l(t('Chado Data'), 'admin/content/chado_data'),
+    l(t('Tripal Data'), 'admin/content/tripal_data'),
   );
 
   drupal_set_breadcrumb($breadcrumb);
@@ -474,8 +474,8 @@ function chado_data_set_breadcrumb() {
  * @see hook_entity_view()
  * @see hook_entity_view_alter()
  */
-function chado_data_view($entity, $view_mode = 'full') {
-  $controller = entity_get_controller('chado_data');
+function tripal_data_view($entity, $view_mode = 'full') {
+  $controller = entity_get_controller('tripal_data');
   $content = $controller->view(array($entity->entity_id => $entity));
   drupal_set_title($entity->title);
   return $content;
@@ -484,6 +484,6 @@ function chado_data_view($entity, $view_mode = 'full') {
 /**
  * Menu title callback for showing individual entities
  */
-function chado_data_title(ChadoData $entity){
+function tripal_data_title(TripalData $entity){
   return $entity->title;
 }

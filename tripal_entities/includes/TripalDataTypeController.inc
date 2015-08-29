@@ -1,8 +1,8 @@
 <?php
 /**
- * The Controller for Chado data type entities
+ * The Controller for Tripal data type entities
  */
-class ChadoDataTypeController extends EntityAPIControllerExportable {
+class TripalDataTypeController extends EntityAPIControllerExportable {
   public function __construct($entityType) {
     parent::__construct($entityType);
   }
@@ -13,7 +13,7 @@ class ChadoDataTypeController extends EntityAPIControllerExportable {
    * function.
    *
    * @param $type
-   *   The machine-readable type of the chado data entity.
+   *   The machine-readable type of the tripal data entity.
    *
    * @return
    *   A type object with all default fields initialized.

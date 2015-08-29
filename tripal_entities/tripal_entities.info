@@ -1,5 +1,5 @@
 name = Tripal Entities
-description = Exposes data in Chado as Drupal Entities.
+description = Creates Drupal entities using Controlled Vocabulary terms and integrtates those with Chado.
 core = 7.x
 project = tripal
 package = Tripal
