@@ -1,6 +1,7 @@
 <?php
 
 require_once "api/tripal_entities.api.inc";
+require_once "includes/tripal_entities.admin.inc";
 require_once "includes/tripal_entities.field_storage.inc";
 require_once "includes/tripal_entities.fields.inc";
 require_once "includes/TripalData.inc";

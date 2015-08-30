@@ -18,6 +18,9 @@ function tripal_entities_install() {
   // add any custom tables. For this case we will add an 'file' table to the
   // chado schema
   tripal_entities_add_custom_tables();
+
+  drupal_set_message('The current Entity Example (Genes) requires the Sequence Ontology.', 'warning');
+
 }
 
 /**
@@ -38,7 +41,7 @@ function tripal_entities_add_tripal_entity_type_table() {
   $schema = array (
     'table' => 'tripal_entity_type',
     'fields' => array (
-      'vocab_id' => array(
+      'entity_type_id' => array(
         'type' => 'serial',
         'not null' => TRUE
       ),
@@ -57,7 +60,7 @@ function tripal_entities_add_tripal_entity_type_table() {
       ),
     ),
     'primary key' => array (
-      0 => 'vocab_id'
+      0 => 'entity_type_id'
     ),
     'foreign keys' => array (
       'cv' => array (
@@ -74,7 +77,7 @@ function tripal_entities_add_tripal_entity_type_table() {
       ),
     ),
     'unique keys' => array (
-      'vocab_cvdb' => array (
+      'tripal_entity_type_cvdb' => array (
         'cv_id', 'db_id'
       ),
     ),
@@ -96,7 +99,7 @@ function tripal_entities_add_tripal_entity_bundle_table() {
         'type' => 'serial',
         'not null' => TRUE
       ),
-      'vocab_id' => array (
+      'entity_type_id' => array (
         'type' => 'int',
         'not null' => TRUE
       ),
@@ -123,17 +126,17 @@ function tripal_entities_add_tripal_entity_bundle_table() {
       'tripal_entity_type' => array (
         'table' => 'tripal_entity_type',
         'columns' => array (
-          'vocab_id' => 'vocab_id'
+          'entity_type_id' => 'entity_type_id'
         )
       ),
     ),
     'unique keys' => array (
       'tripal_entity_bundle_unq' => array (
-        'vocab_id', 'cvterm_id'
+        'entity_type_id', 'cvterm_id'
       ),
     ),
     'indexes' => array(
-      'tripal_entity_bundle_vocab_id' => array('vocab_id'),
+      'tripal_entity_bundle_entity_type_id' => array('entity_type_id'),
       'tripal_entity_bundle_cvterm_id' => array('cvterm_id'),
     ),
   );
@@ -146,11 +149,11 @@ function tripal_entities_add_tripal_entity_type_source_table(){
   $schema = array (
     'table' => 'tripal_entity_type_source',
     'fields' => array (
-      'vocab_table_id' => array(
+      'entity_type_source_id' => array(
         'type' => 'serial',
         'not null' => TRUE
       ),
-      'vocab_id' => array (
+      'entity_type_id' => array (
         'type' => 'int',
         'not null' => TRUE
       ),
@@ -171,23 +174,23 @@ function tripal_entities_add_tripal_entity_type_source_table(){
       ),
     ),
     'primary key' => array (
-      0 => 'vocab_table_id'
+      0 => 'entity_type_source_id'
     ),
     'foreign keys' => array (
       'tripal_entity_type' => array (
         'table' => 'tripal_entity_type',
         'columns' => array (
-          'vocab_id' => 'vocab_id'
+          'entity_type_id' => 'entity_type_id'
         ),
       ),
     ),
     'unique keys' => array (
       'tripal_entity_type_ridbase' => array (
-        'vocab_id', 'data_table'
+        'entity_type_id', 'data_table'
       ),
     ),
     'indexes' => array(
-      'tripal_entity_type_vocab_id' => array('vocab_id'),
+      'tripal_entity_type_entity_type_id' => array('entity_type_id'),
       'tripal_entity_type_data_table' => array('data_table'),
       'tripal_entity_type_type_table' => array('type_table'),
     ),
@@ -432,18 +435,6 @@ function tripal_entities_schema() {
     ),
   );
   return $schema;
-}
-
-/**
- * Implements hook_install().
- *
- * The current implementation assumes we are using the sequence ontology so we should
- * warn people trying this out that they need to first load the sequence ontology.
- */
-function tripal_entities_install() {
-  
-  drupal_set_message('The current Entity Example (Genes) requires the Sequence Ontology.', 'warning');
-  
 }
 
 /**
