@@ -435,12 +435,22 @@ function tripal_entities_schema() {
 }
 
 /**
+ * Implements hook_install().
+ *
+ * The current implementation assumes we are using the sequence ontology so we should
+ * warn people trying this out that they need to first load the sequence ontology.
+ */
+function tripal_entities_install() {
+  
+  drupal_set_message('The current Entity Example (Genes) requires the Sequence Ontology.', 'warning');
+  
+}
+
+/**
  * Implements hook_uninstall().
  *
  * At uninstall time we'll notify field.module that the entity was deleted
  * so that attached fields can be cleaned up.
- *
- * @ingroup entity_example
  */
 function tripal_entities_uninstall() {
   // TODO: make this dynamic (not hardcoded bundle).
