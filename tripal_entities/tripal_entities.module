@@ -1,7 +1,6 @@
 <?php
 
 require_once "api/tripal_entities.api.inc";
-require_once "includes/tripal_entities.admin.inc";
 require_once "includes/tripal_entities.field_storage.inc";
 require_once "includes/tripal_entities.fields.inc";
 require_once "includes/TripalData.inc";
@@ -18,6 +17,47 @@ function tripal_entities_views_api() {
   return array(
     'api' => 3,
   );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function tripal_entities_menu() {
+
+  $items = array();
+  // the administative settings menu
+  $items['admin/tripal/data_types'] = array(
+    'title' => 'Manage Data Types',
+    'description' => 'Tools for publishing, configurating and managing biological data.',
+    'page callback' => 'tripal_entities_admin_view',
+    'access arguments' => array('administer tripal data types'),
+    'file' =>  'includes/tripal_entities.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['admin/tripal/data_types/publish'] = array(
+    'title' => 'Publish',
+    'description' => 'Publish Data',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_entities_admin_publish_form'),
+    'access arguments' => array('administer tripal data types'),
+    'file' =>  'includes/tripal_entities.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2
+  );
+
+  $items['admin/tripal/data_types/access'] = array(
+    'title' => 'Access',
+    'description' => 'Set default access permissions for collections of data.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_entities_admin_access_form'),
+    'access arguments' => array('administer tripal data types'),
+    'file' =>  'includes/tripal_entities.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 3
+  );
+
+  return $items;
 }
 
 /**
