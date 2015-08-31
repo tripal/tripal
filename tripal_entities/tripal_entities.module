@@ -167,7 +167,7 @@ function tripal_entities_entity_info() {
     // functions. It is not required if we don't have bundles or revisions.
     // Here we do not support a revision, so that entity key is omitted.
     'entity keys' => array(
-      'id' => 'entity_id',
+      'id' => 'id',
       'bundle' => 'type',
     ),
     'bundle keys' => array(

@@ -279,7 +279,7 @@ function tripal_entities_add_bundle_fields($tablename, $entity_type_name, $bundl
         $settings['max_length'] = '';
         break;
       case 'blob':
-        // not sure how to support a blobl field.
+        // not sure how to support a blob field.
         continue;
         break;
       case 'int':
@@ -298,7 +298,7 @@ function tripal_entities_add_bundle_fields($tablename, $entity_type_name, $bundl
         $widget_type = 'number';
         break;
       case 'serial':
-        // Serial fields are not every added as fields.
+        // Serial fields are most likely not needed as a field.
         break;
       case 'boolean':
         // TODO: what is the proper field for booleans?????
@@ -325,7 +325,6 @@ function tripal_entities_add_bundle_fields($tablename, $entity_type_name, $bundl
       }
       continue;
     }
-
 
     // If this field is a foreign key field then we will have a special custom
     // field provided by Tripal.

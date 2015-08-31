@@ -33,7 +33,7 @@ function tripal_data_get_types($type_name = NULL) {
  * Fetch a tripal_data object. Make sure that the wildcard you choose
  * in the tripal_data entity definition fits the function name here.
  *
- * @param $entity_id
+ * @param $id
  *   Integer specifying the tripal_data id.
  * @param $reset
  *   A boolean indicating that the internal cache should be reset.
@@ -42,8 +42,8 @@ function tripal_data_get_types($type_name = NULL) {
  *
  * @see tripal_data_load_multiple()
  */
-function tripal_data_load($entity_id, $reset = FALSE) {
-  $tripal_datas = tripal_data_load_multiple(array($entity_id), array(), $reset);
+function tripal_data_load($id, $reset = FALSE) {
+  $tripal_datas = tripal_data_load_multiple(array($id), array(), $reset);
   return reset($tripal_datas);
 }
 
@@ -51,20 +51,20 @@ function tripal_data_load($entity_id, $reset = FALSE) {
 /**
  * Load multiple tripal_datas based on certain conditions.
  *
- * @param $entity_ids
+ * @param $ids
  *   An array of tripal_data IDs.
  * @param $conditions
  *   An array of conditions to match against the entity table.
  * @param $reset
  *   A boolean indicating that the internal cache should be reset.
  * @return
- *   An array of tripal_data objects, indexed by entity_id.
+ *   An array of tripal_data objects, indexed by id.
  *
  * @see entity_load()
  * @see tripal_data_load()
  */
-function tripal_data_load_multiple($entity_ids = array(), $conditions = array(), $reset = FALSE) {
-  return entity_load('tripal_data', $entity_ids, $conditions, $reset);
+function tripal_data_load_multiple($ids = array(), $conditions = array(), $reset = FALSE) {
+  return entity_load('tripal_data', $ids, $conditions, $reset);
 }
 
 
@@ -79,11 +79,11 @@ function tripal_data_delete(TripalData $tripal_data) {
 /**
  * Delete multiple tripal_datas.
  *
- * @param $entity_ids
+ * @param $ids
  *   An array of tripal_data IDs.
  */
-function tripal_data_delete_multiple(array $entity_ids) {
-  entity_get_controller('tripal_data')->delete($entity_ids);
+function tripal_data_delete_multiple(array $ids) {
+  entity_get_controller('tripal_data')->delete($ids);
 }
 
 
@@ -129,7 +129,7 @@ function tripal_data_type_delete(TripalDataType $type) {
  */
 function tripal_data_uri(TripalData $entity){
   return array(
-    'path' => 'data/' . $entity->entity_id,
+    'path' => 'data/' . $entity->id,
   );
 }
 

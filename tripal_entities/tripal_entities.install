@@ -314,7 +314,7 @@ function tripal_entities_schema() {
   $schema['tripal_data'] = array(
     'description' => 'The base table for Tripal Vocabulary-based entities.',
     'fields' => array(
-      'entity_id' => array(
+      'id' => array(
         'description' => 'The primary identifier for a vocabulary entity.',
         'type' => 'serial',
         'unsigned' => TRUE,
@@ -390,7 +390,7 @@ function tripal_entities_schema() {
     'unique keys' => array(
       'record' => array('tablename', 'record_id'),
     ),
-    'primary key' => array('entity_id'),
+    'primary key' => array('id'),
   );
 
   $schema['tripal_data_type'] = array(

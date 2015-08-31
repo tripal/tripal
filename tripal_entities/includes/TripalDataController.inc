@@ -25,7 +25,7 @@ class TripalDataController extends EntityAPIController {
   public function create(array $values = array()) {
     // Add values that are specific to our entity
     $values += array(
-      'entity_id' => '',
+      'id' => '',
       'title' => '',
       'created' => '',
       'changed' => '',
@@ -53,7 +53,7 @@ class TripalDataController extends EntityAPIController {
    *   An array of entity IDs or a single numeric ID.
    */
   public function deleteMultiple($entities) {
-    $entity_ids = array();
+    $ids = array();
     if (!empty($entities)) {
       $transaction = db_transaction();
       try {
@@ -61,10 +61,10 @@ class TripalDataController extends EntityAPIController {
           // Invoke hook_entity_delete().
           module_invoke_all('entity_delete', $entity, 'tripal_data');
           field_attach_delete('tripal_data', $entity);
-          $entity_ids[] = $entity->entity_id;
+          $ids[] = $entity->id;
         }
         db_delete('tripal_data')
-        ->condition('entity_id', $entity_ids, 'IN')
+        ->condition('id', $ids, 'IN')
         ->execute();
       }
       catch (Exception $e) {
@@ -81,9 +81,9 @@ class TripalDataController extends EntityAPIController {
   public function save($entity) {
     global $user;
 
-    // If our entity has no entity_id, then we need to give it a
+    // If our entity has no id, then we need to give it a
     // time of creation.
-    if (empty($entity->entity_id)) {
+    if (empty($entity->id)) {
       $entity->created = time();
       $invocation = 'entity_insert';
     }
@@ -121,7 +121,7 @@ class TripalDataController extends EntityAPIController {
     );
     $success = drupal_write_record('tripal_data', $record);
     if ($success == SAVED_NEW) {
-      $entity->entity_id = $record['entity_id'];
+      $entity->id = $record['id'];
     }
 
     // Invoke either hook_entity_update() or hook_entity_insert().

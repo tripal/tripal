@@ -147,7 +147,7 @@ function tripal_data_form($form, &$form_state, $entity = NULL) {
   // Set defaults if an entity was provided.
   if ($entity) {
     drupal_set_title('Edit ' . $entity->title);
-    $entity_id = $entity->entity_id;
+    $id = $entity->id;
     $values = array('cvterm_id' => $entity->cvterm_id);
     $cvterm = chado_generate_var('cvterm', $values);
     $cv_id = $cvterm->cv_id->cv_id;
@@ -379,9 +379,9 @@ function tripal_data_form_validate($form, &$form_state) {
  */
 function tripal_data_form_submit($form, &$form_state) {
   if ($form_state['clicked_button']['#name'] == 'cancel') {
-    if (array_key_exists('entity_id', $form_state['values'])){
+    if (array_key_exists('id', $form_state['values'])){
       $entity = $form_state['values']['entity'];
-      $form_state['redirect'] = "data/$entity->entity_id";
+      $form_state['redirect'] = "data/$entity->id";
     }
     else {
       $form_state['redirect'] = "admin/structure/tripal_data";
@@ -398,7 +398,7 @@ function tripal_data_form_submit($form, &$form_state) {
     // attach the fields and save.
     $entity = entity_ui_controller('tripal_data')->entityFormSubmitBuildEntity($form, $form_state);
     $entity->save();
-    $form_state['redirect'] = "data/$entity->entity_id";
+    $form_state['redirect'] = "data/$entity->id";
   }
 }
 /**
@@ -476,7 +476,7 @@ function tripal_data_set_breadcrumb() {
  */
 function tripal_data_view($entity, $view_mode = 'full') {
   $controller = entity_get_controller('tripal_data');
-  $content = $controller->view(array($entity->entity_id => $entity));
+  $content = $controller->view(array($entity->id => $entity));
   drupal_set_title($entity->title);
   return $content;
 }

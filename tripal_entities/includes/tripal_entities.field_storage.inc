@@ -77,7 +77,7 @@ function tripal_entities_field_storage_load($entity_type, $entities, $age, $fiel
   global $language;
   $langcode = $language->language;
 
-  foreach ($entities as $entity_id => $entity) {
+  foreach ($entities as $id => $entity) {
     // Find out which table should receive the insert.
     $tablename = 'feature';
     $type_field = 'type_id';
