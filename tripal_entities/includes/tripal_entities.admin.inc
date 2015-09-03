@@ -6,14 +6,15 @@
  * @ingroup tripal_feature
  */
 function tripal_entities_admin_view() {
-  $output = '';
+  
+  $output = drupal_render(drupal_get_form('tripal_entities_admin_data_types_form')) . "<br>[ Image Place Holder for Data Type Summary ]<br>";
 
   // set the breadcrumb
   $breadcrumb = array();
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Manage Data types', 'admin/tripal/data_types');
+  $breadcrumb[] = l('Biological Data', 'admin/tripal/data_types');
   drupal_set_breadcrumb($breadcrumb);
 
 /*   // Add the view
@@ -50,6 +51,78 @@ function tripal_entities_admin_view() {
  * @param unknown $form_state
  * @return multitype:
  */
+function tripal_entities_admin_data_types_form($form, &$form_state) {
+  $form = array();
+
+  // Set the defaults.
+  $cv_id = NULL;
+  $term_name = NULL;
+
+  // Set defaults using the form state.
+  if (array_key_exists('values', $form_state)) {
+    $cv_id = array_key_exists('cv_id', $form_state['values']) ? $form_state['values']['cv_id'] : NULL;
+    $term_name = array_key_exists('term_name', $form_state['values']) ? $form_state['values']['term_name'] : NULL;
+  }
+
+  // Let the user select the vocabulary and tripal_data but only if they haven't
+  // already selected a tripal_data.
+  $sql = "
+    SELECT CV.cv_id, CV.name
+    FROM {cv} CV 
+    ORDER BY CV.name
+  ";
+  $vocabs = chado_query($sql);
+  $cvs = array();
+  while ($vocab = $vocabs->fetchObject()) {
+    $cvs[$vocab->cv_id] = $vocab->name;
+  }
+  $form['cv_id'] = array(
+    '#type' => 'select',
+    '#title' => t('Vocabulary'),
+    '#options' => $cvs,
+    '#required' => FALSE,
+    '#description' => t('Select a vocabulary to view potential data types in the chart below. Limit the chart to only published data types by selecting the checkbox.'),
+    '#default_value' => $cv_id,
+    '#ajax' => array(
+      'callback' => "tripal_entities_admin_data_types_form_ajax_callback",
+      'wrapper' => 'tripal_entities_admin_data_types_form',
+      'effect' => 'fade',
+      'method' => 'replace'
+    )
+  );
+
+  $form['refresh_data_types'] = array(
+    '#type' => 'submit',
+    '#value' => t('Refresh Data Types'),
+    '#submit' => array('tripal_entity_admin_data_types_form_submit_refresh_data_types'),
+  );
+  
+  $form['publish_new_data'] = array(
+    '#type' => 'submit',
+    '#value' => t('Publish New Data'),
+    '#submit' => array('tripal_entity_admin_data_types_form_submit_publish_new_data'),
+  );
+
+  $form['#prefix'] = '<div id="tripal_entities_admin_data_type_form">';
+  $form['#suffix'] = '</div>';
+  return $form;
+}
+
+/**
+ * Submit a job to populate the entity tables 
+ * This operation makes available data types in the database publishable
+ */
+function tripal_entity_admin_data_types_form_submit_refresh_data_types () {
+  global $user;
+  tripal_add_job('Create publishable data types', 'tripal_entity', 'tripal_entities_populate_entity_tables', array(), $user->uid);
+}
+
+/**
+ *
+ * @param unknown $form
+ * @param unknown $form_state
+ * @return multitype:
+ */
 function tripal_entities_admin_publish_form($form, &$form_state) {
   $form = array();
 
@@ -67,7 +140,7 @@ function tripal_entities_admin_publish_form($form, &$form_state) {
   // already selected a tripal_data.
   $sql = "
     SELECT CV.cv_id, CV.name
-    FROM {tripal_entity_type} TET
+    FROM {tripal_vocabulary} TET
       INNER JOIN {cv} CV on CV.cv_id = TET.cv_id
     ORDER BY CV.name
   ";
@@ -143,7 +216,7 @@ function tripal_entities_admin_publish_form_validate($form, &$form_state) {
   $values = array(
     'cvterm_id' => $type->cvterm_id,
   );
-  $bundles = chado_select_record('tripal_entity_bundle', array('bundle_id'), $values);
+  $bundles = chado_select_record('tripal_term', array('term_id'), $values);
   if (count($bundles) == 0) {
     form_set_error('term_name', t("The data type, %type, is not associated with data on this site and thus cannot be set as publishable.", array('%type' => $term_name)));
   }
@@ -153,7 +226,7 @@ function tripal_entities_admin_publish_form_validate($form, &$form_state) {
     'cvterm_id' => $type->cvterm_id,
     'publish' => 1,
   );
-  $bundles = chado_select_record('tripal_entity_bundle', array('bundle_id'), $values);
+  $bundles = chado_select_record('tripal_term', array('term_id'), $values);
   if (count($bundles) > 0) {
     form_set_error('term_name', t("This data type is already set as publishable."));
   }
@@ -180,7 +253,7 @@ function tripal_entities_admin_publish_form_submit($form, &$form_state) {
     // Mark this entity as published.
     $match = array('cv_id' => $cv_id);
     $values = array('publish' => 1);
-    $success = chado_update_record('tripal_entity_type', $match, $values);
+    $success = chado_update_record('tripal_vocabulary', $match, $values);
     if (!$success) {
       throw new Exception('Cannot set the vocabulary as publishable');
     }
@@ -189,20 +262,20 @@ function tripal_entities_admin_publish_form_submit($form, &$form_state) {
     // as a bundle. So, if we're here we can enable it.
     $match = array('cvterm_id' => $type->cvterm_id);
     $values = array('publish' => 1);
-    $success = chado_update_record('tripal_entity_bundle', $match, $values);
+    $success = chado_update_record('tripal_term', $match, $values);
     if (!$success) {
       throw new Exception('Cannot set the data type as publishable');
     }
 
     // Get the bundle
-    $records = chado_select_record('tripal_entity_bundle', array('*'), $match);
+    $records = chado_select_record('tripal_term', array('*'), $match);
     $bundle = $records[0];
     $bundle_name = $type->dbxref_id->db_id->name . '_' . $type->dbxref_id->accession;
     $entity_type_name = $type->dbxref_id->db_id->name;
 
     // Get the list of tables where this cvterm is used.
-    $values = array('bundle_id' => $bundle->bundle_id);
-    $tables = chado_select_record('tripal_entity_bundle_source', array('*'), $values);
+    $values = array('term_id' => $bundle->term_id);
+    $tables = chado_select_record('tripal_term_usage', array('*'), $values);
 
     // Iterate through the tables.
     foreach ($tables as $table) {
@@ -391,115 +464,4 @@ function tripal_entities_admin_access_form($form, &$form_state) {
   $form = array();
 
   return $form;
-}
-
-/**
- * This function populates the Tripal entity tables using existing
- * data in the database.
- */
-function tripal_entities_populate_entity_tables() {
-  // Get the cvterm table and look for all of the tables that link to it.
-  $schema = chado_get_schema('cvterm');
-  $referring = $schema['referring_tables'];
-
-  // Perform this action in a transaction
-  $transaction = db_transaction();
-  print "\nNOTE: Populating of tripal entity tables is performed using a database transaction. \n" .
-    "If the load fails or is terminated prematurely then the entire set of \n" .
-    "insertions/updates is rolled back and will not be found in the database\n\n";
-  try {
-
-    // Iterate through the referring tables to see what records are there.
-    foreach ($referring as $tablename) {
-
-      // We only want to look at base tables.
-      if ($tablename == 'cvterm_dbxref' || $tablename == 'cvterm_relationship' ||
-          $tablename == 'cvtermpath' || $tablename == 'cvtermprop' || $tablename == 'chadoprop' ||
-          $tablename == 'cvtermsynonym' || preg_match('/_relationship$/', $tablename) ||
-          preg_match('/_cvterm$/', $tablename)) {
-        continue;
-      }
-
-      print "Examining $tablename...\n";
-      $ref_schema = chado_get_schema($tablename);
-      $fkeys = $ref_schema['foreign keys'];
-      foreach ($fkeys['cvterm']['columns'] as $local_id => $remote_id) {
-
-        // Get the list of cvterm_ids from existing records in the table.
-        $sql = "
-          SELECT $local_id
-          FROM { " . $tablename . "}
-          GROUP BY $local_id
-        ";
-        $results = chado_query($sql);
-        while ($cvterm_id = $results->fetchField()) {
-
-          // Get the CV term details and add it to the tripal_entity_type table if
-          // it doesn't already exist.
-          $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
-
-          // First add a record to the tripal_entity_type table.
-          $values = array(
-            'cv_id' => $cvterm->cv_id->cv_id,
-            'db_id' => $cvterm->dbxref_id->db_id->db_id,
-            'publish' => 0,
-          );
-          $entity_type_id = 0;
-          $entity_type = chado_select_record('tripal_entity_type', array('entity_type_id'), $values);
-          if (count($entity_type) == 0) {
-            $entity_type = chado_insert_record('tripal_entity_type', $values);
-            $entity_type_id = $entity_type['entity_type_id'];
-          }
-          else {
-            $entity_type_id = $entity_type[0]->entity_type_id;
-          }
-
-          // Next add a record to the tripal_entity_bundle table.
-          $values = array(
-            'entity_type_id' => $entity_type_id,
-            'cvterm_id' => $cvterm_id,
-            'publish' => 0
-          );
-          $bundle_id = 0;
-          $bundle = chado_select_record('tripal_entity_bundle', array('bundle_id'), $values);
-          if (count($bundle) == 0) {
-            $bundle = chado_insert_record('tripal_entity_bundle', $values);
-            $bundle_id = $bundle['bundle_id'];
-          }
-          else {
-            $bundle_id = $bundle[0]->bundle_id;
-          }
-
-          // Add the table where the records are found.
-          $values = array(
-            'bundle_id' => $bundle_id,
-            'data_table' => $tablename,
-            'type_table' => $tablename,
-            'field' => $local_id
-          );
-          if (!chado_select_record('tripal_entity_bundle_source', array('bundle_source_id'), $values, array('has_record' => TRUE))) {
-            chado_insert_record('tripal_entity_bundle_source', $values);
-          }
-
-          // Add the table where the records are found.
-          $values = array(
-            'entity_type_id' => $entity_type_id,
-            'data_table' => $tablename,
-            'type_table' => $tablename,
-            'field' => $local_id
-          );
-          if (!chado_select_record('tripal_entity_type_source', array('entity_type_id'), $values, array('has_record' => TRUE))) {
-            chado_insert_record('tripal_entity_type_source', $values);
-          }
-        }
-      }
-    }
-  }
-  catch (Exception $e) {
-    print "\n"; // make sure we start errors on new line
-    $transaction->rollback();
-    watchdog_exception('tripal_ws', $e);
-    print "FAILED: Rolling back database changes...\n";
-  }
-  print "\nDone.\n";
 }

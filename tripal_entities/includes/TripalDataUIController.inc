@@ -17,7 +17,7 @@ class TripalDataUIController extends EntityDefaultUIController {
     $plural_label = isset($this->entityInfo['plural label']) ? $this->entityInfo['plural label'] : $this->entityInfo['label'] . 's';
 
     $items[$this->path] = array(
-      'title' => $plural_label,
+      'title' => 'Biological Data',
       'page callback' => 'drupal_get_form',
       'page arguments' => array($this->entityType . '_overview_form', $this->entityType),
       'description' => 'Manage ' . $plural_label . '.',
@@ -212,6 +212,10 @@ function tripal_data_form($form, &$form_state, $entity = NULL) {
       '#type'  => 'hidden',
       '#value' => $cv_id,
     );
+    $form['entity_type'] = array(
+      '#type'  => 'hidden',
+      '#value' => $cvterm->dbxref_id->db_id->name,
+    );
     $form['term_name'] = array(
       '#type'  => 'hidden',
       '#value' => $term_name,
@@ -325,8 +329,8 @@ function tripal_data_form($form, &$form_state, $entity = NULL) {
 */
     // If the entity doesn't exist then create one.
     if (!$entity) {
-      $entity = entity_get_controller('tripal_data')->create(array('type' => $bundle_id));
-      field_attach_form('tripal_data', $entity, $form, $form_state);
+      $entity = entity_get_controller($cvterm->dbxref_id->db_id->name)->create(array('type' => $bundle_id));
+      field_attach_form($cvterm->dbxref_id->db_id->name, $entity, $form, $form_state);
 
       $form['submit'] = array(
         '#type' => 'submit',
@@ -336,7 +340,7 @@ function tripal_data_form($form, &$form_state, $entity = NULL) {
       );
     }
     else {
-      field_attach_form('tripal_data', $entity, $form, $form_state);
+      field_attach_form($cvterm->dbxref_id->db_id->name, $entity, $form, $form_state);
 
       $form['submit'] = array(
         '#type' => 'submit',
@@ -396,7 +400,9 @@ function tripal_data_form_submit($form, &$form_state) {
       $form_state['clicked_button']['#name'] == 'add_data') {
     // Use the Entity API to get the entity from the form state, then
     // attach the fields and save.
-    $entity = entity_ui_controller('tripal_data')->entityFormSubmitBuildEntity($form, $form_state);
+    $entity_type = $form_state['values']['entity_type'];
+    dpm($form_state);
+    $entity = entity_ui_controller($entity_type)->entityFormSubmitBuildEntity($form, $form_state);
     $entity->save();
     $form_state['redirect'] = "data/$entity->id";
   }
@@ -475,7 +481,7 @@ function tripal_data_set_breadcrumb() {
  * @see hook_entity_view_alter()
  */
 function tripal_data_view($entity, $view_mode = 'full') {
-  $controller = entity_get_controller('tripal_data');
+  $controller = entity_get_controller($entity->type);
   $content = $controller->view(array($entity->id => $entity));
   drupal_set_title($entity->title);
   return $content;

@@ -3,6 +3,7 @@
 require_once "api/tripal_entities.api.inc";
 require_once "includes/tripal_entities.field_storage.inc";
 require_once "includes/tripal_entities.fields.inc";
+require_once "includes/tripal_entities.tables.inc";
 require_once "includes/TripalData.inc";
 require_once "includes/TripalDataController.inc";
 require_once "includes/TripalDataUIController.inc";
@@ -27,14 +28,21 @@ function tripal_entities_menu() {
   $items = array();
   // the administative settings menu
   $items['admin/tripal/data_types'] = array(
-    'title' => 'Manage Data Types',
+    'title' => 'Biological Data',
     'description' => 'Tools for publishing, configurating and managing biological data.',
     'page callback' => 'tripal_entities_admin_view',
     'access arguments' => array('administer tripal data types'),
     'file' =>  'includes/tripal_entities.admin.inc',
     'type' => MENU_NORMAL_ITEM,
   );
-
+  
+  // the default tab
+  $items['admin/tripal/data_types/default'] = array(
+    'title' => 'Biological Data',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' =>  1,
+  );
+  
   $items['admin/tripal/data_types/publish'] = array(
     'title' => 'Publish',
     'description' => 'Publish Data',
@@ -144,95 +152,100 @@ function tripal_entities_rdf_mapping() {
 function tripal_entities_entity_info() {
   $entities = array();
 
-  $entities['tripal_data'] = array(
-    // A human readable label to identify our entity.
-    'label' => t('Tripal Data'),
-    'plural label' => t('Tripal Data'),
-
-    // The entity class and controller class extend the classes provided by the
-    // Entity API.
-    'entity class' => 'TripalData',
-    'controller class' => 'TripalDataController',
-
-    // The table for this entity defined in hook_schema()
-    'base table' => 'tripal_data',
-
-    // Returns the uri elements of an entity.
-    'uri callback' => 'tripal_entities_vocbulary_term_uri',
-
-    // IF fieldable == FALSE, we can't attach fields.
-    'fieldable' => TRUE,
-
-    // entity_keys tells the controller what database fields are used for key
-    // functions. It is not required if we don't have bundles or revisions.
-    // Here we do not support a revision, so that entity key is omitted.
-    'entity keys' => array(
-      'id' => 'id',
-      'bundle' => 'type',
-    ),
-    'bundle keys' => array(
-      'bundle' => 'type',
-    ),
-
-    // Callback function for access to this entity.
-    'access callback' => 'tripal_data_access',
-
-    // FALSE disables caching. Caching functionality is handled by Drupal core.
-    'static cache' => FALSE,
-
-    // Bundles are added in the hook_entities_info_alter() function.
-    'bundles' => array(),
-
-    'label callback' => 'entity_class_label',
-    'creation callback' => 'tripal_data_create',
-
-    // The information below is used by the TripalDataUIController
-    // (which extends the EntityDefaultUIController).  The admin_ui
-    // key here is mean to appear on the 'Find Content' page of the
-    // administrative menu.
-    'admin ui' => array(
-      'path' => 'admin/content/data',
-      'controller class' => 'TripalDataUIController',
-      'menu wildcard' => '%tripal_data',
-      'file' => 'includes/TripalDataUIController.inc',
-    ),
-    'view modes' => array(
-      'full' => array(
-        'label' => t('Full content'),
-        'custom settings' => FALSE,
+  // Get a list of published vocabularies from 'tripal_vocabulary
+  $published_vocs = chado_generate_var('tripal_vocabulary', array('publish' => 1), array('return_array' => 1));
+  
+  foreach ($published_vocs as $voc) {
+    $entities [$voc->db_id->name] = array (
+      // A human readable label to identify our entity.
+      'label' => $voc->db_id->name . ' (' . $voc->cv_id->name . ')',
+      'plural label' => $voc->db_id->name . ' (' . $voc->cv_id->name . ')',
+      
+      // The entity class and controller class extend the classes provided by the
+      // Entity API.
+      'entity class' => 'TripalData',
+      'controller class' => 'TripalDataController',
+      
+      // The table for this entity defined in hook_schema()
+      'base table' => 'tripal_data',
+      
+      // Returns the uri elements of an entity.
+      'uri callback' => 'tripal_entities_vocbulary_term_uri',
+      
+      // IF fieldable == FALSE, we can't attach fields.
+      'fieldable' => TRUE,
+      
+      // entity_keys tells the controller what database fields are used for key
+      // functions. It is not required if we don't have bundles or revisions.
+      // Here we do not support a revision, so that entity key is omitted.
+      'entity keys' => array (
+        'id' => 'id',
+        'bundle' => 'type' 
       ),
-      'teaser' => array(
-        'label' => t('Teaser'),
-        'custom settings' => TRUE,
+      'bundle keys' => array (
+        'bundle' => 'type' 
       ),
-    ),
-  );
-
-  // The entity that holds information about the entity types
-  $entities['tripal_data_type'] = array(
-    'label' => t('Tripal Data Type'),
-    'entity class' => 'TripalDataType',
-    'controller class' => 'TripalDataTypeController',
-    'base table' => 'tripal_data_type',
-    'fieldable' => FALSE,
-    // If this entity can be used as a bundle of another entity then
-    // that can be specified via the 'bundle of' key.
-    'bundle of' => 'tripal_data',
-    'exportable' => TRUE,
-    'entity keys' => array(
-      'id' => 'id',
-      'name' => 'type',
-      'label' => 'label',
-    ),
-    'access callback' => 'tripal_data_type_access',
-    'module' => 'tripal_entities',
-    // Enable the entity API's admin UI.
-    'admin ui' => array(
-      'path' => 'admin/structure/data_types',
-      'controller class' => 'TripalDataTypeUIController',
-      'file' => 'includes/TripalDataTypeUIController.inc',
-    ),
-  );
+      
+      // Callback function for access to this entity.
+      'access callback' => 'tripal_data_access',
+      
+      // FALSE disables caching. Caching functionality is handled by Drupal core.
+      'static cache' => FALSE,
+      
+      // Bundles are added in the hook_entities_info_alter() function.
+      'bundles' => array (),
+      
+      'label callback' => 'tripal_data_label',
+      'creation callback' => 'tripal_data_create',
+      
+      // The information below is used by the TripalDataUIController
+      // (which extends the EntityDefaultUIController). The admin_ui
+      // key here is mean to appear on the 'Find Content' page of the
+      // administrative menu.
+      'admin ui' => array (
+        'path' => 'admin/content/data',
+        'controller class' => 'TripalDataUIController',
+        'menu wildcard' => '%tripal_data',
+        'file' => 'includes/TripalDataUIController.inc' 
+      ),
+      'view modes' => array (
+        'full' => array (
+          'label' => t ( 'Full content' ),
+          'custom settings' => FALSE 
+        ),
+        'teaser' => array (
+          'label' => t ( 'Teaser' ),
+          'custom settings' => TRUE 
+        ) 
+      ) 
+    );
+    
+    // The entity that holds information about the entity types
+    $entities [$voc->db_id->name . '_type'] = array (
+      'label' => t ($voc->db_id->name . ' (' . $voc->cv_id->name . ')' . ' Type' ),
+      'entity class' => 'TripalDataType',
+      'controller class' => 'TripalDataTypeController',
+      'base table' => 'tripal_data_type',
+      'fieldable' => FALSE,
+      // If this entity can be used as a bundle of another entity then
+      // that can be specified via the 'bundle of' key.
+      'bundle of' => $voc->db_id->name,
+      'exportable' => TRUE,
+      'entity keys' => array (
+        'id' => 'id',
+        'name' => 'type',
+        'label' => 'label' 
+      ),
+      'access callback' => 'tripal_data_type_access',
+      'module' => 'tripal_entities',
+      // Enable the entity API's admin UI.
+      'admin ui' => array (
+        'path' => 'admin/structure/data_types',
+        'controller class' => 'TripalDataTypeUIController',
+        'file' => 'includes/TripalDataTypeUIController.inc' 
+      ) 
+    );
+  }
   return $entities;
 }
 /**
@@ -243,26 +256,27 @@ function tripal_entities_entity_info() {
  *
  */
 function tripal_entities_entity_info_alter(&$entity_info) {
-
-  // Bundles are alternative groups of fields or configuration
-  // associated with a base entity type.
-  // We want to dynamically add the bundles (or term types) to the entity.
-  $values = array(
-    'cv_id' => array(
-      'name' => 'sequence'
-    ),
-    'name' => 'gene',
-  );
-  $cvterm = chado_generate_var('cvterm', $values);
-  $label = preg_replace('/_/', ' ', ucwords($cvterm->name));
-  $type = $cvterm->dbxref_id->db_id->name . '_' . $cvterm->dbxref_id->accession;
-  $entity_info['tripal_data']['bundles'][$type] = array(
-    'label' => $label,
-    'admin' => array(
-      'path' => 'admin/structure/data_types/manage/%tripal_data_type',
-      'real path' => 'admin/structure/data_types/manage/' . $type,
-      'bundle argument' => 4,
-      'access arguments' => array('administer tripal data types'),
-    ),
-  );
+  
+  // Get a list of published terms from 'tripal_term
+  $published_terms = chado_generate_var('tripal_term', array('publish' => 1), array('return_array' => 1));
+  foreach ( $published_terms as $term ) {
+    
+    // Bundles are alternative groups of fields or configuration
+    // associated with a base entity type.
+    // We want to dynamically add the bundles (or term types) to the entity.
+    $cvterm = $term->cvterm_id;
+    $bundle_id = $cvterm->dbxref_id->db_id->name . '_' . $cvterm->dbxref_id->accession;
+    $label = preg_replace ( '/_/', ' ', ucwords ( $cvterm->name ) );
+    $entity_info [$cvterm->dbxref_id->db_id->name] ['bundles'] [$bundle_id] = array (
+      'label' => $label,
+      'admin' => array (
+        'path' => 'admin/structure/data_types/manage/%tripal_data_type',
+        'real path' => 'admin/structure/data_types/manage/' . $bundle_id,
+        'bundle argument' => 4,
+        'access arguments' => array (
+          'administer tripal data types' 
+        ) 
+      ) 
+    );
+  }
 }

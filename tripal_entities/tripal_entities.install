@@ -27,21 +27,21 @@ function tripal_entities_install() {
  *
  */
 function tripal_entities_add_custom_tables() {
-  tripal_entities_add_tripal_entity_type_table();
-  tripal_entities_add_tripal_entity_type_source_table();
-  tripal_entities_add_tripal_entity_bundle_table();
-  tripal_entities_add_tripal_entity_bundle_source_table();
-  tripal_entities_add_tripal_entity_relationship_table();
+  tripal_entities_add_tripal_vocabulary_table();
+  tripal_entities_add_tripal_vocabulary_usage_table();
+  tripal_entities_add_tripal_term_table();
+  tripal_entities_add_tripal_term_usage_table();
+  tripal_entities_add_tripal_term_relationship_table();
 }
 
 /**
  *
  */
-function tripal_entities_add_tripal_entity_type_table() {
+function tripal_entities_add_tripal_vocabulary_table() {
   $schema = array (
-    'table' => 'tripal_entity_type',
+    'table' => 'tripal_vocabulary',
     'fields' => array (
-      'entity_type_id' => array(
+      'vocabulary_id' => array(
         'type' => 'serial',
         'not null' => TRUE
       ),
@@ -60,7 +60,7 @@ function tripal_entities_add_tripal_entity_type_table() {
       ),
     ),
     'primary key' => array (
-      0 => 'entity_type_id'
+      0 => 'vocabulary_id'
     ),
     'foreign keys' => array (
       'cv' => array (
@@ -77,29 +77,29 @@ function tripal_entities_add_tripal_entity_type_table() {
       ),
     ),
     'unique keys' => array (
-      'tripal_entity_type_cvdb' => array (
+      'tripal_vocabulary_cvdb' => array (
         'cv_id', 'db_id'
       ),
     ),
     'indexes' => array(
-      'tripal_entity_type_cv_id' => array('cv_id'),
-      'tripal_entity_type_db_id' => array('db_id'),
+      'tripal_vocabulary_cv_id' => array('cv_id'),
+      'tripal_vocabulary_db_id' => array('db_id'),
     )
   );
-  chado_create_custom_table('tripal_entity_type', $schema, TRUE);
+  chado_create_custom_table('tripal_vocabulary', $schema, TRUE);
 }
 /**
  *
  */
-function tripal_entities_add_tripal_entity_bundle_table() {
+function tripal_entities_add_tripal_term_table() {
   $schema = array (
-    'table' => 'tripal_entity_bundle',
+    'table' => 'tripal_term',
     'fields' => array (
-      'bundle_id' => array(
+      'term_id' => array(
         'type' => 'serial',
         'not null' => TRUE
       ),
-      'entity_type_id' => array (
+      'vocabulary_id' => array (
         'type' => 'int',
         'not null' => TRUE
       ),
@@ -114,7 +114,7 @@ function tripal_entities_add_tripal_entity_bundle_table() {
       ),
     ),
     'primary key' => array (
-      0 => 'bundle_id'
+      0 => 'term_id'
     ),
     'foreign keys' => array (
       'cvterm' => array (
@@ -123,37 +123,37 @@ function tripal_entities_add_tripal_entity_bundle_table() {
           'cvterm_id' => 'cvterm_id'
         )
       ),
-      'tripal_entity_type' => array (
-        'table' => 'tripal_entity_type',
+      'tripal_vocabulary' => array (
+        'table' => 'tripal_vocabulary',
         'columns' => array (
-          'entity_type_id' => 'entity_type_id'
+          'vocabulary_id' => 'vocabulary_id'
         )
       ),
     ),
     'unique keys' => array (
-      'tripal_entity_bundle_unq' => array (
-        'entity_type_id', 'cvterm_id'
+      'tripal_term_unq' => array (
+        'vocabulary_id', 'cvterm_id'
       ),
     ),
     'indexes' => array(
-      'tripal_entity_bundle_entity_type_id' => array('entity_type_id'),
-      'tripal_entity_bundle_cvterm_id' => array('cvterm_id'),
+      'tripal_term_vocabulary_id' => array('vocabulary_id'),
+      'tripal_term_cvterm_id' => array('cvterm_id'),
     ),
   );
-  chado_create_custom_table('tripal_entity_bundle', $schema, TRUE);
+  chado_create_custom_table('tripal_term', $schema, TRUE);
 }
 /**
  *
  */
-function tripal_entities_add_tripal_entity_type_source_table(){
+function tripal_entities_add_tripal_vocabulary_usage_table(){
   $schema = array (
-    'table' => 'tripal_entity_type_source',
+    'table' => 'tripal_vocabulary_usage',
     'fields' => array (
       'entity_type_source_id' => array(
         'type' => 'serial',
         'not null' => TRUE
       ),
-      'entity_type_id' => array (
+      'vocabulary_id' => array (
         'type' => 'int',
         'not null' => TRUE
       ),
@@ -177,38 +177,38 @@ function tripal_entities_add_tripal_entity_type_source_table(){
       0 => 'entity_type_source_id'
     ),
     'foreign keys' => array (
-      'tripal_entity_type' => array (
-        'table' => 'tripal_entity_type',
+      'tripal_vocabulary' => array (
+        'table' => 'tripal_vocabulary',
         'columns' => array (
-          'entity_type_id' => 'entity_type_id'
+          'vocabulary_id' => 'vocabulary_id'
         ),
       ),
     ),
     'unique keys' => array (
-      'tripal_entity_type_ridbase' => array (
-        'entity_type_id', 'data_table'
+      'tripal_vocabulary_ridbase' => array (
+        'vocabulary_id', 'data_table'
       ),
     ),
     'indexes' => array(
-      'tripal_entity_type_entity_type_id' => array('entity_type_id'),
-      'tripal_entity_type_data_table' => array('data_table'),
-      'tripal_entity_type_type_table' => array('type_table'),
+      'tripal_vocabulary_vocabulary_id' => array('vocabulary_id'),
+      'tripal_vocabulary_data_table' => array('data_table'),
+      'tripal_vocabulary_type_table' => array('type_table'),
     ),
   );
-  chado_create_custom_table('tripal_entity_type_source', $schema, TRUE);
+  chado_create_custom_table('tripal_vocabulary_usage', $schema, TRUE);
 }
 /**
  *
  */
-function tripal_entities_add_tripal_entity_bundle_source_table(){
+function tripal_entities_add_tripal_term_usage_table(){
   $schema = array (
-    'table' => 'tripal_entity_bundle_source',
+    'table' => 'tripal_term_usage',
     'fields' => array (
       'bundle_source_id' => array(
         'type' => 'serial',
         'not null' => TRUE
       ),
-      'bundle_id' => array (
+      'term_id' => array (
         'type' => 'int',
         'not null' => TRUE
       ),
@@ -232,30 +232,30 @@ function tripal_entities_add_tripal_entity_bundle_source_table(){
       0 => 'bundle_source_id'
     ),
     'foreign keys' => array (
-      'tripal_entity_bundle' => array (
-        'table' => 'tripal_entity_bundle',
+      'tripal_term' => array (
+        'table' => 'tripal_term',
         'columns' => array (
-          'bundle_id' => 'bundle_id'
+          'term_id' => 'term_id'
         ),
       ),
     ),
     'unique keys' => array (
-      'tripal_entity_bundle_source_ridbase' => array (
-        'bundle_id', 'type_table', 'field'
+      'tripal_term_usage_ridbase' => array (
+        'term_id', 'type_table', 'field'
       ),
     ),
     'indexes' => array(
-      'tripal_entity_bundle_source_bundle_id' => array('bundle_id'),
+      'tripal_term_usage_term_id' => array('term_id'),
     ),
   );
-  chado_create_custom_table('tripal_entity_bundle_source', $schema, TRUE);
+  chado_create_custom_table('tripal_term_usage', $schema, TRUE);
 }
 /**
  *
  */
-function tripal_entities_add_tripal_entity_relationship_table(){
+function tripal_entities_add_tripal_term_relationship_table(){
   $schema = array (
-    'table' => 'tripal_entity_relationship',
+    'table' => 'tripal_term_relationship',
     'fields' => array (
       'relationship_id' => array(
         'type' => 'serial',
@@ -283,26 +283,26 @@ function tripal_entities_add_tripal_entity_relationship_table(){
       0 => 'relationship_id'
     ),
     'foreign keys' => array (
-      'tripal_entity_bundle' => array (
-        'table' => 'tripal_entity_bundle',
+      'tripal_term' => array (
+        'table' => 'tripal_term',
         'columns' => array (
-          'subject_id' => 'bundle_id',
-          'object_id'  => 'bundle_id',
+          'subject_id' => 'term_id',
+          'object_id'  => 'term_id',
         ),
       ),
     ),
     'unique keys' => array (
-      'tripal_entity_relationship_unq' => array (
+      'tripal_term_relationship_unq' => array (
         'subject_id', 'type_id', 'object_id'
       ),
     ),
     'indexes' => array(
-      'tripal_entity_relationship_subject_id' => array('subject_id'),
-      'tripal_entity_relationship_object_id' => array('object_id'),
-      'tripal_entity_relationship_type_id' => array('type_id'),
+      'tripal_term_relationship_subject_id' => array('subject_id'),
+      'tripal_term_relationship_object_id' => array('object_id'),
+      'tripal_term_relationship_type_id' => array('type_id'),
     ),
   );
-  chado_create_custom_table('tripal_entity_relationship', $schema, TRUE);
+  chado_create_custom_table('tripal_term_relationship', $schema, TRUE);
 }
 /**
  * Implements hook_schema().
