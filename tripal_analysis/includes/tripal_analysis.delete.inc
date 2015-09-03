@@ -98,7 +98,7 @@ function tripal_analysis_delete_analyses($analyses, $job = NULL) {
 
   try {
     $values = array(
-        analysis_id => $analyses
+        'analysis_id' => $analyses
     );
     $num_deletes = chado_select_record('analysis', array('count(*) as cnt'), $values);
     print "Deleting " . $num_deletes[0]->cnt . " analyses\n";

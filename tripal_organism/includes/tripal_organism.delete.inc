@@ -97,7 +97,7 @@ function tripal_organism_delete_organisms($organisms, $job = NULL) {
 
   try {
     $values = array(
-      organism_id => $organisms
+      'organism_id' => $organisms
     );
     $num_deletes = chado_select_record('organism', array('count(*) as cnt'), $values);
     print "Deleting " . $num_deletes[0]->cnt . " organisms\n";
