@@ -312,14 +312,14 @@ function tripal_data_form_submit_delete(&$form, &$form_state) {
  *
  * @see confirm_form()
  */
-function tripal_data_delete_form($form, &$form_state, $tripal_data) {
-  $form_state['tripal_data'] = $tripal_data;
+function tripal_data_delete_form($form, &$form_state, $entity) {
+  $form_state['entity'] = $entity;
 
   $form['#submit'][] = 'tripal_data_delete_form_submit';
 
   $form = confirm_form($form,
-    t('Are you sure you want to delete tripal_data %name?', array('%name' => $tripal_data->name)),
-    'admin/content/tripal_datas/tripal_data',
+    t('Click the delete button below to confirm deltion of the record titled: %title', array('%title' => $entity->title)),
+    'admin/content/tripal_data',
     '<p>' . t('This action cannot be undone.') . '</p>',
     t('Delete'),
     t('Cancel'),
@@ -333,9 +333,9 @@ function tripal_data_delete_form($form, &$form_state, $tripal_data) {
  * Submit callback for tripal_data_delete_form
  */
 function tripal_data_delete_form_submit($form, &$form_state) {
-  $tripal_data = $form_state['tripal_data'];
+  $entity = $form_state['entity'];
 
-  tripal_data_delete($tripal_data);
+  tripal_data_delete($entity);
 
   drupal_set_message(t('The tripal_data %name has been deleted.', array('%name' => $tripal_data->name)));
   watchdog('tripal_data', 'Deleted tripal_data %name.', array('%name' => $tripal_data->name));
