@@ -11,8 +11,23 @@
 
 function tripal_data_type_load($type) {
 
-  $entity = tripal_data_get_types($type);
-  return $entity;
+  // Get the type of entity by the ID.
+  $bundle_type = db_select('tripal_data_type', 'tdt')
+    ->fields('tdt', array('type'))
+    ->condition('id', $id)
+    ->execute()
+    ->fetchField();
+
+  // Get the type of entity by the ID.
+  $entity_type = db_select('tripal_data', 'td')
+    ->fields('td', array('type'))
+    ->condition('bundle', $bundle_type)
+    ->execute()
+    ->fetchField();
+
+  // Load the entity.
+  $entity =  entity_load($entity_type, array($id), array(), $reset);
+  return reset($entity);
 }
 
 /**
@@ -26,8 +41,8 @@ function tripal_data_type_load($type) {
 function tripal_data_get_types($type_name = NULL) {
   // entity_load will get the Entity controller for our tripal_data entity and call the load
   // function of that object - we are loading entities by name here.
-  $types = entity_load_multiple_by_name('tripal_data_type', isset($type_name) ? array($type_name) : FALSE);
-  return isset($type_name) ? reset($types) : $types;
+//   $types = entity_load_multiple_by_name('tripal_data_type', isset($type_name) ? array($type_name) : FALSE);
+//   return isset($type_name) ? reset($types) : $types;
 }
 
 /**

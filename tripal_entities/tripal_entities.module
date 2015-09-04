@@ -27,7 +27,7 @@ function tripal_entities_menu() {
 
   $items = array();
 
-  // The content menu.
+/*   // The content menu.
   $items['admin/content/tripal_data'] = array(
     'title' => 'Biological Data',
     'page callback' => 'tripal_entities_content_view',
@@ -42,7 +42,7 @@ function tripal_entities_menu() {
     'page arguments' => array('tripal_data_form'),
     'access arguments' => array('administer tripal data'),
     'type' => MENU_LOCAL_ACTION,
-  );
+  ); */
 
 
   // The administative settings menu.
@@ -260,7 +260,8 @@ function tripal_entities_entity_info() {
       'admin ui' => array (
         'path' => 'admin/structure/data_types',
         'controller class' => 'TripalDataTypeUIController',
-        'file' => 'includes/TripalDataTypeUIController.inc'
+        'file' => 'includes/TripalDataTypeUIController.inc',
+        'menu wildcard' => '%tripal_data_type',
       )
     );
   }
