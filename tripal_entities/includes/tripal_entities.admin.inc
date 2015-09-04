@@ -6,8 +6,9 @@
  * @ingroup tripal_feature
  */
 function tripal_entities_admin_view() {
-  
-  $output = drupal_render(drupal_get_form('tripal_entities_admin_data_types_form')) . "<br>[ Image Place Holder for Data Type Summary ]<br>";
+
+  $form = drupal_get_form('tripal_entities_admin_data_types_form');
+  $output = drupal_render($form) . "<br>[ Image Place Holder for Data Type Summary ]<br>";
 
   // set the breadcrumb
   $breadcrumb = array();
@@ -47,6 +48,72 @@ function tripal_entities_admin_view() {
 
 /**
  *
+ */
+function tripal_entities_content_view() {
+  $form = drupal_get_form('tripal_entities_content_overview_form');
+  $output = drupal_render($form);
+
+  // set the breadcrumb
+  $breadcrumb = array();
+  $breadcrumb[] = l('Home', '<front>');
+  $breadcrumb[] = l('Administration', 'admin');
+  drupal_set_breadcrumb($breadcrumb);
+
+  return $output;
+
+}
+
+/**
+ *
+ * @param unknown $form
+ * @param unknown $form_state
+ * @return multitype:
+ */
+function tripal_entities_content_overview_form($form, &$form_state) {
+  $form = array();
+
+  $entities = db_select('tripal_data', 'td')
+    ->fields('td')
+    ->orderBy('created', 'DESC')//ORDER BY created
+    ->range(0,25)
+    ->execute();
+
+  $headers = array('Title', 'Vocabulary', 'Term', 'Author', 'Status', 'Updated', 'Operations');
+  $rows = array();
+  while ($entity = $entities->fetchObject()) {
+    $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $entity->cvterm_id));
+    $author = user_load($entity->uid);
+    $rows[] = array(
+      l($entity->title, 'data/' . $entity->id),
+      $entity->type . ' (' . $cvterm->cv_id->name . ')',
+      $entity->bundle  . ' (' . $cvterm->name . ')',
+      l($author->name, 'user/' . $entity->uid),
+      $entity->status == 1 ? 'published' : 'unpublished',
+      format_date($entity->changed, 'short'),
+      l('edit', 'data/' . $entity->id . '/edit') . '&nbsp;&nbsp;' .
+      l('delete', 'data/' . $entity->id . '/delete')
+    );
+  }
+
+  $table_vars = array(
+    'header'     => $headers,
+    'rows'       => $rows,
+    'attributes' => array(),
+    'sticky'     => TRUE,
+    'caption'    => '',
+    'colgroups'  => array(),
+    'empty'      => '',
+  );
+  $results_table = theme('table', $table_vars);
+
+  $form['results'] = array(
+    '#markup' => $results_table
+  );
+  return $form;
+}
+
+/**
+ *
  * @param unknown $form
  * @param unknown $form_state
  * @return multitype:
@@ -68,7 +135,7 @@ function tripal_entities_admin_data_types_form($form, &$form_state) {
   // already selected a tripal_data.
   $sql = "
     SELECT CV.cv_id, CV.name
-    FROM {cv} CV 
+    FROM {cv} CV
     ORDER BY CV.name
   ";
   $vocabs = chado_query($sql);
@@ -96,7 +163,7 @@ function tripal_entities_admin_data_types_form($form, &$form_state) {
     '#value' => t('Refresh Data Types'),
     '#submit' => array('tripal_entity_admin_data_types_form_submit_refresh_data_types'),
   );
-  
+
   $form['publish_new_data'] = array(
     '#type' => 'submit',
     '#value' => t('Publish New Data'),
@@ -109,7 +176,7 @@ function tripal_entities_admin_data_types_form($form, &$form_state) {
 }
 
 /**
- * Submit a job to populate the entity tables 
+ * Submit a job to populate the entity tables
  * This operation makes available data types in the database publishable
  */
 function tripal_entity_admin_data_types_form_submit_refresh_data_types () {
@@ -402,9 +469,9 @@ function tripal_entities_add_bundle_fields($tablename, $entity_type_name, $bundl
     // If this field is a foreign key field then we will have a special custom
     // field provided by Tripal.
     $is_fk = FALSE;
-    if (array_key_exists('foreign keys', $details)) {
-      foreach ($details['foreign keys'] as $remote_table => $fk_details) {
-        if (array_key_exists($field_name, $fk_details['columns'])) {
+    if (array_key_exists('foreign keys', $schema)) {
+      foreach ($schema['foreign keys'] as $remote_table => $fk_details) {
+        if (array_key_exists($column_name, $fk_details['columns'])) {
           $is_fk = TRUE;
         }
       }
@@ -420,11 +487,10 @@ function tripal_entities_add_bundle_fields($tablename, $entity_type_name, $bundl
         case 'organism_id':
           $field_type = 'organism_id';
           $label = 'Organism';
+          $widget_type = 'tripal_entities_organism_select_widget';
           break;
       }
-      continue;
     }
-
     // If the field doesn't exist then create it.
     if (!$field) {
       $field = array(

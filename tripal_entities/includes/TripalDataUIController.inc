@@ -14,38 +14,6 @@ class TripalDataUIController extends EntityDefaultUIController {
     // Set this on the object so classes that extend hook_menu() can use it.
     $this->id_count = count(explode('/', $this->path));
     $wildcard = isset($this->entityInfo['admin ui']['menu wildcard']) ? $this->entityInfo['admin ui']['menu wildcard'] : '%entity_object';
-    $plural_label = isset($this->entityInfo['plural label']) ? $this->entityInfo['plural label'] : $this->entityInfo['label'] . 's';
-
-    $items[$this->path] = array(
-      'title' => 'Biological Data',
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array($this->entityType . '_overview_form', $this->entityType),
-      'description' => 'Manage ' . $plural_label . '.',
-      'access callback' => 'entity_access',
-      'access arguments' => array('view', $this->entityType),
-      'file' => 'includes/entity.ui.inc',
-    );
-
-    // Change the overview menu type for the list of models.
-    $items[$this->path]['type'] = MENU_LOCAL_TASK;
-
-    $items[$this->path . '/list'] = array(
-      'title' => 'List',
-      'type' => MENU_DEFAULT_LOCAL_TASK,
-      'weight' => -10,
-    );
-
-    // Add an action link to the admin page for adding new data.
-    $items[$this->path . '/add'] = array(
-      'title' => 'Add Tripal Data',
-      'description' => 'Add a new tripal data record',
-      'page callback'  => 'drupal_get_form',
-      'page arguments' => array('tripal_data_form'),
-      'access callback'  => 'tripal_data_access',
-      'access arguments' => array('edit'),
-      'type' => MENU_LOCAL_ACTION,
-      'weight' => 20,
-    );
 
     // Set a custom page for adding new tripal data entities.
     $items['data/add'] = array(
@@ -166,7 +134,7 @@ function tripal_data_form($form, &$form_state, $entity = NULL) {
     $cvterm = chado_generate_var('cvterm', $values);
   }
 
-  // Let the user select the vocabulary and tripal_data but only if they haven't
+  // Let the user select the vocabulary          defaut and tripal_data but only if they haven't
   // already selected a tripal_data.
   $cvs = tripal_entities_get_published_vocabularies_as_select_options();
   if (!$term_name) {
@@ -224,7 +192,7 @@ function tripal_data_form($form, &$form_state, $entity = NULL) {
       '#type'  => 'hidden',
       '#value' => $cvterm->cvterm_id,
     );
-    $form['type'] = array(
+    $form['bundle'] = array(
       '#type'  => 'hidden',
       '#value' => $bundle_id,
     );
@@ -245,91 +213,9 @@ function tripal_data_form($form, &$form_state, $entity = NULL) {
       '#markup' => $cvterm->name,
     );
 
-/*
-
-    // Create the Tripal data type entity.
-    $data_type_entity = tripal_data_type_create(array(
-      'type' => $bundle_id,
-      'label' => $cvterm->name,
-      'module' => 'tripal_entities'
-    ));
-
-    $data_type_entity->save();
-*/
-/*
-    // Drupal field types and settings:
-    // https://www.drupal.org/node/1879542
-    $field = array(
-      'field_name' => 'feature__name',
-      'type' => 'text',
-      'cardinality' => 1,
-      'locked' => TRUE,
-      'storage' => array(
-        'type' => 'tripal_entities_storage'
-      ),
-    );
-    field_create_field($field);
-    $field_instance = array(
-      'field_name' => 'feature__name',
-      'label' => 'Name',
-      'widget' => array(
-        'type' => 'text_textfield'
-      ),
-      'entity_type' => 'tripal_data',
-      'required' => 'true',
-      'settings' => array(
-        'max_length' => 255
-      ),
-      'bundle' => $bundle_id,
-    );
-    field_create_instance($field_instance);
-    $field = array(
-      'field_name' => 'feature__uniquename',
-      'type' => 'text',
-      'cardinality' => 1,
-      'locked' => TRUE,
-      'storage' => array(
-        'type' => 'tripal_entities_storage'
-      ),
-    );
-    field_create_field($field);
-    $field_instance = array(
-      'field_name' => 'feature__uniquename',
-      'label' => 'Unique Name',
-      'widget' => array(
-       'type' => 'text_textfield'
-      ),
-      'entity_type' => 'tripal_data',
-      'required' => 'true',
-      'settings' => array(
-       'max_length' => 255
-      ),
-      'bundle' => $bundle_id,
-    );
-    field_create_instance($field_instance);
-    $field = array(
-      'field_name' => 'feature__organism_id',
-      'type' => 'organism_id',
-      'cardinality' => 1,
-      'locked' => TRUE,
-      'storage' => array(
-       'type' => 'tripal_entities_storage'
-      ),
-    );
-    field_create_field($field);
-    $field_instance = array(
-      'field_name' => 'feature__organism_id',
-      'label' => 'Organism',
-      'entity_type' => 'tripal_data',
-      'required' => 'true',
-      'settings' => array(),
-      'bundle' => $bundle_id,
-    );
-    field_create_instance($field_instance);
-*/
     // If the entity doesn't exist then create one.
     if (!$entity) {
-      $entity = entity_get_controller($cvterm->dbxref_id->db_id->name)->create(array('type' => $bundle_id));
+      $entity = entity_get_controller($cvterm->dbxref_id->db_id->name)->create(array('bundle' => $bundle_id));
       field_attach_form($cvterm->dbxref_id->db_id->name, $entity, $form, $form_state);
 
       $form['submit'] = array(
@@ -349,9 +235,10 @@ function tripal_data_form($form, &$form_state, $entity = NULL) {
         '#weight' => 1000
       );
     }
+
     // The entity object must be added to the $form_state in order for
     // the Entity API to work.  It must have a key of the entity name.
-    $form_state['tripal_data'] = $entity;
+    $form_state[$cvterm->dbxref_id->db_id->name] = $entity;
   }
   $form['#prefix'] = '<div id="tripal_data_form">';
   $form['#suffix'] = '</div>';
@@ -402,9 +289,7 @@ function tripal_data_form_submit($form, &$form_state) {
     // Use the Entity API to get the entity from the form state, then
     // attach the fields and save.
     $entity_type = $form_state['values']['entity_type'];
-    dpm($form_state);
     $entity = entity_ui_controller($entity_type)->entityFormSubmitBuildEntity($form, $form_state);
-dpm($entity);
     $entity->save();
     $form_state['redirect'] = "data/$entity->id";
   }
@@ -456,20 +341,6 @@ function tripal_data_delete_form_submit($form, &$form_state) {
   watchdog('tripal_data', 'Deleted tripal_data %name.', array('%name' => $tripal_data->name));
 
   $form_state['redirect'] = 'admin/content/tripal_datas';
-}
-
-/**
- * Sets the breadcrumb for administrative tripal_data pages.
- */
-function tripal_data_set_breadcrumb() {
-  $breadcrumb = array(
-    l(t('Home'), '<front>'),
-    l(t('Administration'), 'admin'),
-    l(t('Content'), 'admin/content'),
-    l(t('Tripal Data'), 'admin/content/tripal_data'),
-  );
-
-  drupal_set_breadcrumb($breadcrumb);
 }
 
 /**

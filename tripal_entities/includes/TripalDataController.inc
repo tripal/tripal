@@ -26,6 +26,7 @@ class TripalDataController extends EntityAPIController {
     // Add values that are specific to our entity
     $values += array(
       'id' => '',
+      'bundle' => '',
       'title' => '',
       'created' => '',
       'changed' => '',
@@ -59,13 +60,13 @@ class TripalDataController extends EntityAPIController {
       try {
         foreach ($entities as $entity) {
           // Invoke hook_entity_delete().
-          module_invoke_all('entity_delete', $entity, 'tripal_data');
-          field_attach_delete('tripal_data', $entity);
+          module_invoke_all('entity_delete', $entity, $entity->type);
+          field_attach_delete($entity->type, $entity);
           $ids[] = $entity->id;
         }
         db_delete('tripal_data')
-        ->condition('id', $ids, 'IN')
-        ->execute();
+          ->condition('id', $ids, 'IN')
+          ->execute();
       }
       catch (Exception $e) {
         $transaction->rollback();
@@ -80,6 +81,7 @@ class TripalDataController extends EntityAPIController {
    */
   public function save($entity) {
     global $user;
+    $pkeys = array();
 
     // If our entity has no id, then we need to give it a
     // time of creation.
@@ -89,29 +91,30 @@ class TripalDataController extends EntityAPIController {
     }
     else {
       $invocation = 'entity_update';
+      $pkeys = array('id');
     }
     // Now we need to either insert or update the fields which are
     // attached to this entity. We use the same primary_keys logic
     // to determine whether to update or insert, and which hook we
     // need to invoke.
     if ($invocation == 'entity_insert') {
-      field_attach_insert('tripal_data', $entity);
+      field_attach_insert($entity->entity_type, $entity);
     }
     else {
-      field_attach_update('tripal_data', $entity);
+      field_attach_update($entity->entity_type, $entity);
     }
 
     // Invoke hook_entity_presave().
-    module_invoke_all('entity_presave', $entity, 'tripal_data');
+    module_invoke_all('entity_presave', $entity, $entity->entity_type);
 
     // Write out the entity record.
     $tablename = 'feature';
-    $type_field = 'type_id';
     $schema = chado_get_schema($tablename);
     $pkey_field = $schema['primary key'][0];
     $record = array(
       'cvterm_id' => $entity->cvterm_id,
-      'type'      => $entity->type,
+      'type'      => $entity->entity_type,
+      'bundle'    => $entity->bundle,
       'tablename' => $tablename,
       'record_id' => $entity->record_id,
       'title'     => 'title',
@@ -119,13 +122,16 @@ class TripalDataController extends EntityAPIController {
       'created'   => $entity->created,
       'changed'   => time(),
     );
-    $success = drupal_write_record('tripal_data', $record);
+    if ($invocation == 'entity_update') {
+      $record['id'] = $entity->id;
+    }
+    $success = drupal_write_record('tripal_data', $record, $pkeys);
     if ($success == SAVED_NEW) {
       $entity->id = $record['id'];
     }
 
     // Invoke either hook_entity_update() or hook_entity_insert().
-    module_invoke_all($invocation, $entity, 'tripal_data');
+    module_invoke_all($invocation, $entity, $entity->entity_type);
 
     return $entity;
   }

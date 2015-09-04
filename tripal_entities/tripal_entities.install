@@ -321,9 +321,16 @@ function tripal_entities_schema() {
         'not null' => TRUE,
       ),
       'type' => array(
-        'description' => 'The type of entity. This should be an official term ID.',
+        'description' => 'The type of entity. This should be an official vocabulary ID (e.g. SO, RO, GO).',
         'type' => 'varchar',
         'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'bundle' => array(
+        'description' => 'The type of bundle. This should be an official vocabulary ID (e.g. SO, RO, GO) followed by an underscore and the term accession.',
+        'type' => 'varchar',
+        'length' => 1024,
         'not null' => TRUE,
         'default' => '',
       ),
@@ -445,5 +452,12 @@ function tripal_entities_schema() {
  */
 function tripal_entities_uninstall() {
   // TODO: make this dynamic (not hardcoded bundle).
-  field_attach_delete_bundle('tripal_data', 'gene');
+  $terms = chado_generate_var('tripal_term', array('publish' => 1), array('return_array' => 1));
+
+  foreach ($terms as $term) {
+    $entity_type = $term->vocab_id->db_id->name;
+    $bundle_id = $term->cvterm_id->dbxref_id->db_id->name . '_' . $term->cvterm_id->dbxref_id->accession;
+    print "$entity_type : $bundle_id\n";
+    field_attach_delete_bundle($entity_type, $bundle_id);
+  }
 }

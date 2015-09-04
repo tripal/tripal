@@ -56,7 +56,6 @@ function tripal_entities_field_formatter_info() {
  */
 function tripal_entities_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
-
   switch ($display['type']) {
     // This formatter simply outputs the field as text and with a color.
     case 'tripal_entities_organism_formatter':
@@ -71,9 +70,7 @@ function tripal_entities_field_formatter_view($entity_type, $entity, $field, $in
         );
       }
       break;
-
   }
-
   return $element;
 }
 
@@ -94,7 +91,7 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
         '#title' => $element['#title'],
         '#description' => $element['#description'],
         '#options' => $options,
-        '#default_value' => $items[0]['value'],
+        '#default_value' => count($items) > 0 ? $items[0]['value'] : 0,
         '#required' => $element['#required'],
         '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
         '#delta' => $delta,

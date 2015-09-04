@@ -10,6 +10,7 @@
  */
 
 function tripal_data_type_load($type) {
+
   $entity = tripal_data_get_types($type);
   return $entity;
 }
@@ -43,28 +44,17 @@ function tripal_data_get_types($type_name = NULL) {
  * @see tripal_data_load_multiple()
  */
 function tripal_data_load($id, $reset = FALSE) {
-  $tripal_datas = tripal_data_load_multiple(array($id), array(), $reset);
-  return reset($tripal_datas);
-}
 
+  // Get the type of entity by the ID.
+  $entity_type = db_select('tripal_data', 'td')
+    ->fields('td', array('type'))
+    ->condition('id', $id)
+    ->execute()
+    ->fetchField();
 
-/**
- * Load multiple tripal_datas based on certain conditions.
- *
- * @param $ids
- *   An array of tripal_data IDs.
- * @param $conditions
- *   An array of conditions to match against the entity table.
- * @param $reset
- *   A boolean indicating that the internal cache should be reset.
- * @return
- *   An array of tripal_data objects, indexed by id.
- *
- * @see entity_load()
- * @see tripal_data_load()
- */
-function tripal_data_load_multiple($ids = array(), $conditions = array(), $reset = FALSE) {
-  return entity_load('tripal_data', $ids, $conditions, $reset);
+  // Load the entity.
+  $entity =  entity_load($entity_type, array($id), array(), $reset);
+  return reset($entity);
 }
 
 
@@ -75,44 +65,22 @@ function tripal_data_delete(TripalData $tripal_data) {
   $tripal_data->delete();
 }
 
-
-/**
- * Delete multiple tripal_datas.
- *
- * @param $ids
- *   An array of tripal_data IDs.
- */
-function tripal_data_delete_multiple(array $ids) {
-  entity_get_controller('tripal_data')->delete($ids);
-}
-
-
-/**
- * Create a tripal_data object.
- */
-function tripal_data_create($values = array()) {
-  return entity_get_controller('tripal_data')->create($values);
-}
-function tripal_data_type_create($values = array()) {
-  return entity_get_controller('tripal_data_type')->create($values);
-}
-
 /**
  * Saves a tripal_data to the database.
  *
  * @param $tripal_data
  *   The tripal_data object.
  */
-function tripal_data_save(TripalData $tripal_data) {
-  return $tripal_data->save();
+function tripal_data_save(TripalData $entity) {
+  return $entity->save();
 }
 
 
 /**
  * Saves a tripal_data type to the db.
  */
-function tripal_data_type_save(TripalDataType $type) {
-  $type->save();
+function tripal_data_type_save(TripalDataType $entity) {
+  $entity->save();
 }
 
 
