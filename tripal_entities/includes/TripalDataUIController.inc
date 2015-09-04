@@ -168,11 +168,11 @@ function tripal_data_form($form, &$form_state, $entity = NULL) {
 
   // Let the user select the vocabulary and tripal_data but only if they haven't
   // already selected a tripal_data.
-  $cvs = tripal_get_cv_select_options();
+  $cvs = tripal_entities_get_published_vocabularies_as_select_options();
   if (!$term_name) {
     $form['cv_id'] = array(
       '#type' => 'select',
-      '#title' => t('Vocabulary'),
+      '#title' => t('Published vocabulary'),
       '#options' => $cvs,
       '#required' => TRUE,
       '#description' => t('Select a vocabulary that contains the term for the type of data you want to add.'),
@@ -188,13 +188,13 @@ function tripal_data_form($form, &$form_state, $entity = NULL) {
 
   // If we have a CV ID then we want to provide an autocomplete field
   if ($cv_id and !$term_name) {
+    $cvterms = tripal_entities_get_published_terms_as_select_options ($cv_id);
     $form['cvterm_select']['term_name'] = array(
-      '#title'       => t('Record Type'),
-      '#type'        => 'textfield',
+      '#title'       => t('Published term'),
+      '#type'        => 'select',
+      '#options' => $cvterms,
       '#description' => t("Enter the name of a term within the selected vocabulary for the record type you want to enter."),
       '#required'    => TRUE,
-      '#default_value' => $term_name,
-      '#autocomplete_path' => "admin/tripal/chado/tripal_cv/cvterm/auto_name/$cv_id",
     );
 
     $form['cvterm_select']['select_button'] = array(
@@ -373,7 +373,8 @@ function tripal_data_form_validate($form, &$form_state) {
 
   if ($form_state['clicked_button']['#name'] == 'add_data') {
     $tripal_data = (object) $form_state['values'];
-    field_attach_form_validate('tripal_data', $tripal_data, $form, $form_state);
+    $entity_type = $form_state['values']['entity_type'];
+    field_attach_form_validate($entity_type, $tripal_data, $form, $form_state);
   }
 }
 
@@ -403,6 +404,7 @@ function tripal_data_form_submit($form, &$form_state) {
     $entity_type = $form_state['values']['entity_type'];
     dpm($form_state);
     $entity = entity_ui_controller($entity_type)->entityFormSubmitBuildEntity($form, $form_state);
+dpm($entity);
     $entity->save();
     $form_state['redirect'] = "data/$entity->id";
   }
