@@ -9,40 +9,18 @@
  *   A tripal data type array or FALSE if $type does not exist.
  */
 
-function tripal_data_type_load($type) {
+function tripal_data_type_load($bundle_type, $reset = FALSE) {
 
   // Get the type of entity by the ID.
-  $bundle_type = db_select('tripal_data_type', 'tdt')
-    ->fields('tdt', array('type'))
-    ->condition('id', $id)
-    ->execute()
-    ->fetchField();
-
-  // Get the type of entity by the ID.
-  $entity_type = db_select('tripal_data', 'td')
-    ->fields('td', array('type'))
+  $bundle_types = db_select('tripal_data_type', 'tdt')
+    ->fields('tdt', array('id', 'type'))
     ->condition('bundle', $bundle_type)
     ->execute()
-    ->fetchField();
+    ->fetchObject();
 
   // Load the entity.
-  $entity =  entity_load($entity_type, array($id), array(), $reset);
+  $entity = entity_load($bundle_types->type, array($bundle_types->id), array(), $reset);
   return reset($entity);
-}
-
-/**
- * Gets an array of all tripal_data types, keyed by the type name.
- *
- * @param $type_name
- *   If set, the type with the given name is returned.
- * @return TripalDataType[]
- *   Depending whether $type isset, an array of tripal_data types or a single one.
- */
-function tripal_data_get_types($type_name = NULL) {
-  // entity_load will get the Entity controller for our tripal_data entity and call the load
-  // function of that object - we are loading entities by name here.
-//   $types = entity_load_multiple_by_name('tripal_data_type', isset($type_name) ? array($type_name) : FALSE);
-//   return isset($type_name) ? reset($types) : $types;
 }
 
 /**

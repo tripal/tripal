@@ -363,7 +363,7 @@ function tripal_entities_admin_publish_form_submit($form, &$form_state) {
       // Therefore, we need to add a new entity for each bundle "type".
        $vals = array(
         'label' => $bundle_name  . ' (' . $type->name . ')',
-        'type' => $bundle_name,
+        'type' => $entity_type_name,
         'bundle' => $bundle_name,
         'data' => serialize(array()),
         'module' => 'tripal_entities'

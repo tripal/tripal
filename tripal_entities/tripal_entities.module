@@ -27,26 +27,8 @@ function tripal_entities_menu() {
 
   $items = array();
 
-/*   // The content menu.
-  $items['admin/content/tripal_data'] = array(
-    'title' => 'Biological Data',
-    'page callback' => 'tripal_entities_content_view',
-    'file' =>  'includes/tripal_entities.admin.inc',
-    'access arguments' => array('administer tripal data'),
-    'type' => MENU_LOCAL_TASK,
-  );
-
-  $items['admin/content/tripal_data/add'] = array(
-    'title' => 'Add Biological Data',
-    'page callback'  => 'drupal_get_form',
-    'page arguments' => array('tripal_data_form'),
-    'access arguments' => array('administer tripal data'),
-    'type' => MENU_LOCAL_ACTION,
-  ); */
-
-
   // The administative settings menu.
-  $items['admin/tripal/data_types'] = array(
+  $items['admin/tripal/bio_data'] = array(
     'title' => 'Biological Data',
     'description' => 'Tools for publishing, configurating and managing biological data.',
     'page callback' => 'tripal_entities_admin_view',
@@ -56,13 +38,13 @@ function tripal_entities_menu() {
   );
 
   // The default tab.
-  $items['admin/tripal/data_types/default'] = array(
+  $items['admin/tripal/bio_data/default'] = array(
     'title' => 'Biological Data',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' =>  1,
   );
 
-  $items['admin/tripal/data_types/publish'] = array(
+  $items['admin/tripal/bio_data/publish'] = array(
     'title' => 'Publish',
     'description' => 'Publish Data',
     'page callback' => 'drupal_get_form',
@@ -73,7 +55,7 @@ function tripal_entities_menu() {
     'weight' => 2
   );
 
-  $items['admin/tripal/data_types/access'] = array(
+  $items['admin/tripal/bio_data/access'] = array(
     'title' => 'Access',
     'description' => 'Set default access permissions for collections of data.',
     'page callback' => 'drupal_get_form',
@@ -103,19 +85,6 @@ function tripal_entities_permission() {
       'description' => t('Edit and delete all tripal data'),
     ),
   );
-
-  // Generate permissions per each data type.
-  foreach (tripal_data_get_types() as $type) {
-    $type_name = check_plain($type->type);
-    $permissions += array(
-      "edit any $type_name data" => array(
-        'title' => t('%type_name: Edit any', array('%type_name' => $type->label)),
-      ),
-      "view any $type_name data" => array(
-        'title' => t('%type_name: View any', array('%type_name' => $type->label)),
-      ),
-    );
-  }
   return $permissions;
 }
 
@@ -175,7 +144,7 @@ function tripal_entities_entity_info() {
   $published_vocs = chado_generate_var('tripal_vocabulary', array('publish' => 1), array('return_array' => 1));
 
   foreach ($published_vocs as $voc) {
-    $entities [$voc->db_id->name] = array (
+    $entities[$voc->db_id->name] = array (
       // A human readable label to identify our entity.
       'label' => $voc->db_id->name . ' (' . $voc->cv_id->name . ')',
       'plural label' => $voc->db_id->name . ' (' . $voc->cv_id->name . ')',
@@ -221,7 +190,7 @@ function tripal_entities_entity_info() {
       // key here is mean to appear on the 'Find Content' page of the
       // administrative menu.
       'admin ui' => array (
-        'path' => 'admin/content/data',
+        'path' => 'admin/content/bio_data',
         'controller class' => 'TripalDataUIController',
         'menu wildcard' => '%tripal_data',
         'file' => 'includes/TripalDataUIController.inc'
@@ -237,28 +206,24 @@ function tripal_entities_entity_info() {
         )
       )
     );
-
-    // The entity that holds information about the entity types
+    // The entity that holds information about the entity types.
     $entities [$voc->db_id->name . '_type'] = array (
-      'label' => t ($voc->db_id->name . ' (' . $voc->cv_id->name . ')' . ' Type' ),
+      'label' => $voc->db_id->name . ' (' . $voc->cv_id->name . ') Data Types',
       'entity class' => 'TripalDataType',
       'controller class' => 'TripalDataTypeController',
       'base table' => 'tripal_data_type',
       'fieldable' => FALSE,
-      // If this entity can be used as a bundle of another entity then
-      // that can be specified via the 'bundle of' key.
-      'bundle of' => $voc->db_id->name,
-      'exportable' => TRUE,
+      'exportable' => FALSE,
       'entity keys' => array (
         'id' => 'id',
-        'name' => 'type',
+        'name' => 'bundle',
         'label' => 'label'
       ),
       'access callback' => 'tripal_data_type_access',
       'module' => 'tripal_entities',
       // Enable the entity API's admin UI.
       'admin ui' => array (
-        'path' => 'admin/structure/data_types',
+        'path' => 'admin/structure/bio_data',
         'controller class' => 'TripalDataTypeUIController',
         'file' => 'includes/TripalDataTypeUIController.inc',
         'menu wildcard' => '%tripal_data_type',
@@ -278,7 +243,7 @@ function tripal_entities_entity_info_alter(&$entity_info) {
 
   // Get a list of published terms from 'tripal_term
   $published_terms = chado_generate_var('tripal_term', array('publish' => 1), array('return_array' => 1));
-  foreach ( $published_terms as $term ) {
+  foreach ($published_terms as $term) {
 
     // Bundles are alternative groups of fields or configuration
     // associated with a base entity type.
@@ -289,8 +254,8 @@ function tripal_entities_entity_info_alter(&$entity_info) {
     $entity_info[$cvterm->dbxref_id->db_id->name]['bundles'][$bundle_id] = array (
       'label' => $label,
       'admin' => array (
-        'path' => 'admin/structure/data_types/manage/%tripal_data_type',
-        'real path' => 'admin/structure/data_types/manage/' . $bundle_id,
+        'path' => 'admin/structure/bio_data/manage/%tripal_data_type',
+        'real path' => 'admin/structure/bio_data/manage/' . $bundle_id,
         'bundle argument' => 4,
         'access arguments' => array (
           'administer tripal data types'

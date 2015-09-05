@@ -16,7 +16,6 @@ function tripal_entities_field_storage_info() {
  * Implements hook_field_storage_write().
  */
 function tripal_entities_field_storage_write($entity_type, $entity, $op, $fields) {
-  dpm($entity_type);
   drupal_debug($entity_type);
   // Get the IDs for this entity.
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);

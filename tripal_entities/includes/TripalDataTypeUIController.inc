@@ -9,6 +9,22 @@
  */
 class TripalDataTypeUIController extends EntityDefaultUIController {
 
+  public function __construct($entity_type, $entity_info) {
+    // The 'bundle of' property is usually set in the hook_entity_info()
+    // function for the "entity type" entity.  This allows the Entity API
+    // to provide the user interface for managing fields attached to the
+    // bundle.  But, we are using the same controller classes for
+    // all entity types and we do not want new links for every
+    // entity type (vocabulary) on the Administration >> Structure menu.
+    // We just want one menu item.  So to support one menu item that
+    // can handle all of the Tripal entity types, we have to set the
+    // 'bundle of' property here rather than in the hook_entity_info() function.
+    $bundle_of = $entity_type;
+    $bundle_of = preg_replace('/_type/', '', $bundle_of);
+    $entity_info['bundle of'] = $bundle_of;
+    parent::__construct($entity_type, $entity_info);
+  }
+
   /**
    * Overrides hook_menu() defaults.
    */
@@ -19,10 +35,22 @@ class TripalDataTypeUIController extends EntityDefaultUIController {
 
     // We don't want to let the user add new Tripal data types. They
     // are added automatically.
-    //unset($items[$this->path . '/add']);
-    //unset($items[$this->path . '/import']);
+    unset($items[$this->path . '/add']);
+    unset($items[$this->path . '/import']);
 
-    drupal_debug($items);
+
+    $items[$this->path . '/publish'] = array(
+      'title' => 'Add new biological data type',
+      'description' => 'Publish Data',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('tripal_entities_admin_publish_form'),
+      'access arguments' => array('administer tripal data types'),
+      'file' =>  'includes/tripal_entities.admin.inc',
+      'file path' => drupal_get_path('module', 'tripal_entities'),
+      'type' => MENU_LOCAL_ACTION,
+      'weight' => 2
+    );
+
     return $items;
   }
 }
@@ -61,13 +89,13 @@ function tripal_data_type_form($form, &$form_state, $tripal_data_type, $op = 'ed
 function tripal_data_type_form_submit(&$form, &$form_state) {
   $tripal_data_type = entity_ui_form_submit_build_entity($form, $form_state);
   $tripal_data_type->save();
-  $form_state['redirect'] = 'admin/structure/tripal_data_types';
+  $form_state['redirect'] = 'admin/structure/bio_data_types';
 }
 
 /**
  * Form API submit callback for the delete button.
  */
 function tripal_data_type_form_submit_delete(&$form, &$form_state) {
-  $form_state['redirect'] = 'admin/structure/tripal_data_types/manage/' . $form_state['tripal_data_type']->type . '/delete';
+  $form_state['redirect'] = 'admin/structure/bio_data_types/manage/' . $form_state['tripal_data_type']->type . '/delete';
 }
 

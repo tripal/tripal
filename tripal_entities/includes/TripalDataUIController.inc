@@ -16,17 +16,15 @@ class TripalDataUIController extends EntityDefaultUIController {
     $wildcard = isset($this->entityInfo['admin ui']['menu wildcard']) ? $this->entityInfo['admin ui']['menu wildcard'] : '%entity_object';
     $id_count = count(explode('/', $this->path));
 
+    // The content menu.
     $items[$this->path] = array(
-      'title' => 'Biological Content',
-      'description' => 'Add edit and update models.',
-      'page callback' => 'system_admin_menu_block_page',
-      'access arguments' => array('access administration pages'),
-      'file path' => drupal_get_path('module', 'system'),
-      'file' => 'system.admin.inc',
+      'title' => 'Biological Data',
+      'page callback' => 'tripal_entities_content_view',
+      'file' =>  'includes/tripal_entities.admin.inc',
+      'file path' => drupal_get_path('module', 'tripal_entities'),
+      'access arguments' => array('administer tripal data'),
+      'type' => MENU_LOCAL_TASK,
     );
-
-    // Change the overview menu type for the list of models.
-    $items[$this->path]['type'] = MENU_LOCAL_TASK;
 
     // Change the add page menu to multiple types of entities
     $items[$this->path . '/add'] = array(
@@ -35,69 +33,12 @@ class TripalDataUIController extends EntityDefaultUIController {
       'page callback'  => 'drupal_get_form',
       'page arguments' => array('tripal_data_form'),
       'access callback'  => 'tripal_data_access',
-      'access arguments' => array('edit'),
+      'access arguments' => array('administer tripal data'),
       'type' => MENU_LOCAL_ACTION,
       'weight' => 20,
     );
 
-    // Add menu items to add each different type of entity.
-//     foreach (tripal_data_get_types() as $type) {
-//       $items[$this->path . '/add/' . $type->type] = array(
-//         'title' => 'Add ' . $type->label,
-//         'page callback' => 'model_form_wrapper',
-//         'page arguments' => array(model_create(array('type' => $type->type))),
-//         'access callback' => 'model_access',
-//         'access arguments' => array('edit', 'edit ' . $type->type),
-//         'file' => 'model.admin.inc',
-//         'file path' => drupal_get_path('module', $this->entityInfo['module'])
-//       );
-//     }
-
-    // Loading and editing model entities
-    $items[$this->path . '/model/' . $wildcard] = array(
-      'page callback' => 'model_form_wrapper',
-      'page arguments' => array($id_count + 1),
-      'access callback' => 'model_access',
-      'access arguments' => array('edit', $id_count + 1),
-      'weight' => 0,
-      'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
-      'file' => 'model.admin.inc',
-      'file path' => drupal_get_path('module', $this->entityInfo['module'])
-    );
-    $items[$this->path . '/model/' . $wildcard . '/edit'] = array(
-      'title' => 'Edit',
-      'type' => MENU_DEFAULT_LOCAL_TASK,
-      'weight' => -10,
-      'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
-    );
-
-    $items[$this->path . '/model/' . $wildcard . '/delete'] = array(
-      'title' => 'Delete',
-      'page callback' => 'model_delete_form_wrapper',
-      'page arguments' => array($id_count + 1),
-      'access callback' => 'model_access',
-      'access arguments' => array('edit', $id_count + 1),
-      'type' => MENU_LOCAL_TASK,
-      'context' => MENU_CONTEXT_INLINE,
-      'weight' => 10,
-      'file' => 'model.admin.inc',
-      'file path' => drupal_get_path('module', $this->entityInfo['module'])
-    );
-
-    // Menu item for viewing models
-    $items['model/' . $wildcard] = array(
-      //'title' => 'Title',
-      'title callback' => 'model_page_title',
-      'title arguments' => array(1),
-      'page callback' => 'model_page_view',
-      'page arguments' => array(1),
-      'access callback' => 'model_access',
-      'access arguments' => array('view', 1),
-      'type' => MENU_CALLBACK,
-    );
-    return $items;
-
-/*     // Set a custom page for adding new tripal data entities.
+     // Set a custom page for adding new tripal data entities.
     $items['data/add'] = array(
       'title' => 'Add Tripal data',
       'description' => 'Add a new tripal data record',
@@ -153,7 +94,7 @@ class TripalDataUIController extends EntityDefaultUIController {
       'type' => MENU_CALLBACK,
 
       'weight' => 10,
-    ); */
+    );
     return $items;
   }
 
