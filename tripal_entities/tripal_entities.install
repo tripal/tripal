@@ -446,7 +446,7 @@ function tripal_entities_schema() {
     ) + entity_exportable_schema_fields(),
     'primary key' => array('id'),
     'unique keys' => array(
-      'type' => array('type'),
+      'bundle' => array('bundle'),
     ),
   );
   return $schema;

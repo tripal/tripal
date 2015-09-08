@@ -368,7 +368,7 @@ function tripal_entities_admin_publish_form_submit($form, &$form_state) {
         'data' => serialize(array()),
         'module' => 'tripal_entities'
       );
-      $tripal_data_type = new TripalDataType($vals, $entity_type_name);
+      $tripal_data_type = new TripalDataType($vals, $entity_type_name . '_type');
       $tripal_data_type->save();
     }
     drupal_set_message(t('Data type, %type, is now set as publishable.', array('%type' => $term_name)));

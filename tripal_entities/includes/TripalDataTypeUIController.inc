@@ -38,7 +38,6 @@ class TripalDataTypeUIController extends EntityDefaultUIController {
     unset($items[$this->path . '/add']);
     unset($items[$this->path . '/import']);
 
-
     $items[$this->path . '/publish'] = array(
       'title' => 'Add new biological data type',
       'description' => 'Publish Data',
@@ -50,9 +49,39 @@ class TripalDataTypeUIController extends EntityDefaultUIController {
       'type' => MENU_LOCAL_ACTION,
       'weight' => 2
     );
-
     return $items;
   }
+
+  /**
+   * Allows us to change the forms created by the parent class.
+   */
+  function hook_forms() {
+    $forms = parent::hook_forms();
+
+    // The edit form for the entity type by default expects a function,
+    // named after the entity type but we can't dynamically create these
+    // functions. We'll use a single form for all entity types.
+    $forms[$this->entityType . '_form'] = array(
+      'callback' => 'tripal_entities_tripal_data_type_form',
+      'callback arguments' => array($this->entityType)
+    );
+
+    return $forms;
+  }
+}
+/**
+ *
+ * @param $form
+ * @param $form_state
+ * @param $entity
+ */
+function tripal_entities_tripal_data_type_form($form, &$form_state, $entityDataType) {
+  $form = array();
+  $form['message'] = array(
+    '#type' => 'item',
+    '#markup' => 'Edit the function "tripal_entities_tripal_data_type_form()" to add a form each type. Put access controls here?',
+  );
+  return $form;
 }
 /**
  * Access callback for the entity API.
@@ -89,13 +118,13 @@ function tripal_data_type_form($form, &$form_state, $tripal_data_type, $op = 'ed
 function tripal_data_type_form_submit(&$form, &$form_state) {
   $tripal_data_type = entity_ui_form_submit_build_entity($form, $form_state);
   $tripal_data_type->save();
-  $form_state['redirect'] = 'admin/structure/bio_data_types';
+  $form_state['redirect'] = $this->path;
 }
 
 /**
  * Form API submit callback for the delete button.
  */
 function tripal_data_type_form_submit_delete(&$form, &$form_state) {
-  $form_state['redirect'] = 'admin/structure/bio_data_types/manage/' . $form_state['tripal_data_type']->type . '/delete';
+  $form_state['redirect'] = $this->path;
 }
 
