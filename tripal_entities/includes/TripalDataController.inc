@@ -104,9 +104,6 @@ class TripalDataController extends EntityAPIController {
       field_attach_update($entity->entity_type, $entity);
     }
 
-    // Invoke hook_entity_presave().
-    module_invoke_all('entity_presave', $entity, $entity->entity_type);
-
     // Write out the entity record.
     $tablename = 'feature';
     $schema = chado_get_schema($tablename);
@@ -129,9 +126,6 @@ class TripalDataController extends EntityAPIController {
     if ($success == SAVED_NEW) {
       $entity->id = $record['id'];
     }
-
-    // Invoke either hook_entity_update() or hook_entity_insert().
-//    module_invoke_all($invocation, $entity, $entity->entity_type);
 
     return $entity;
   }
