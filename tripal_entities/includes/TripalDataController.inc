@@ -131,7 +131,7 @@ class TripalDataController extends EntityAPIController {
     }
 
     // Invoke either hook_entity_update() or hook_entity_insert().
-    module_invoke_all($invocation, $entity, $entity->entity_type);
+//    module_invoke_all($invocation, $entity, $entity->entity_type);
 
     return $entity;
   }

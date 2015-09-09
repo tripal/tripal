@@ -4,7 +4,7 @@
  */
 function tripal_entities_field_storage_info() {
   return array(
-    'tripal_entities_storage' => array(
+    'field_chado_storage' => array(
       'label' => t('Chado storage'),
       'description' => t('Stores fields in the local Chado database.'),
       'settings' => array(),
@@ -73,7 +73,6 @@ function tripal_entities_field_storage_write($entity_type, $entity, $op, $fields
  */
 function tripal_entities_field_storage_load($entity_type, $entities, $age, $fields, $options) {
   $load_current = $age == FIELD_LOAD_CURRENT;
-
   global $language;
   $langcode = $language->language;
 

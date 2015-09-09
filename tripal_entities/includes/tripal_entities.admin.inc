@@ -510,7 +510,7 @@ function tripal_entities_add_bundle_fields($tablename, $entity_type_name, $bundl
         'cardinality' => 1,
         'locked' => TRUE,
         'storage' => array(
-          'type' => 'tripal_entities_storage'
+          'type' => 'field_chado_storage'
         ),
       );
       field_create_field($field);

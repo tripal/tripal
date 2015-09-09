@@ -12,7 +12,7 @@ function tripal_entities_field_info() {
       'default_formatter' => 'tripal_entities_organism_formatter',
       'settings' => array(),
       'storage' => array(
-        'type' => 'tripal_entities_storage',
+        'type' => 'field_chado_storage',
         'module' => 'tripal_entities',
         'active' => TRUE
       ),
