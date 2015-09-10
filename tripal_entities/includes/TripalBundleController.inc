@@ -2,7 +2,7 @@
 /**
  * The Controller for Tripal data type entities
  */
-class TripalDataTypeController extends EntityAPIControllerExportable {
+class TripalBundleController extends EntityAPIControllerExportable {
   public function __construct($entityType) {
     parent::__construct($entityType);
     // The 'bundle of' property is usually set in the hook_entity_info()
@@ -15,7 +15,7 @@ class TripalDataTypeController extends EntityAPIControllerExportable {
     // can handle all of the Tripal entity types, we have to set the
     // 'bundle of' property here rather than in the hook_entity_info() function.
     $bundle_of = $entityType;
-    $bundle_of = preg_replace('/_type/', '', $bundle_of);
+    $bundle_of = preg_replace('/_bundle/', '', $bundle_of);
     $info = entity_get_info($bundle_of);
     $this->bundleKey = $info['bundle keys']['bundle'];
     $this->entityInfo['bundle of'] = $bundle_of;

@@ -1,8 +1,8 @@
 <?php
 /**
- * A class the controller will use for instantiating the TripalData entity.
+ * A class the controller will use for instantiating the TripalEntity entity.
  */
-class TripalData extends Entity {
+class TripalEntity extends Entity {
   public function __construct($values = array(), $entity_type) {
     parent::__construct($values, $entity_type);
   }

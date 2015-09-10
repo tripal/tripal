@@ -1,11 +1,11 @@
 <?php
 /**
- * TripalDataController extends DrupalDefaultEntityController.
+ * TripalEntityController extends DrupalDefaultEntityController.
  *
  * Our subclass of DrupalDefaultEntityController lets us add a few
  * important create, update, and delete methods.
  */
-class TripalDataController extends EntityAPIController {
+class TripalEntityController extends EntityAPIController {
 
   public function __construct($entityType) {
     parent::__construct($entityType);
@@ -64,7 +64,7 @@ class TripalDataController extends EntityAPIController {
           field_attach_delete($entity->type, $entity);
           $ids[] = $entity->id;
         }
-        db_delete('tripal_data')
+        db_delete('tripal_entity')
           ->condition('id', $ids, 'IN')
           ->execute();
       }
@@ -122,7 +122,7 @@ class TripalDataController extends EntityAPIController {
     if ($invocation == 'entity_update') {
       $record['id'] = $entity->id;
     }
-    $success = drupal_write_record('tripal_data', $record, $pkeys);
+    $success = drupal_write_record('tripal_entity', $record, $pkeys);
     if ($success == SAVED_NEW) {
       $entity->id = $record['id'];
     }

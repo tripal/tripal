@@ -7,7 +7,7 @@
  */
 function tripal_entities_admin_view() {
 
-  $form = drupal_get_form('tripal_entities_admin_data_types_form');
+  $form = drupal_get_form('tripal_entities_admin_bundles_form');
   $output = drupal_render($form) . "<br>[ Image Place Holder for Data Type Summary ]<br>";
 
   // set the breadcrumb
@@ -15,7 +15,7 @@ function tripal_entities_admin_view() {
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Biological Data', 'admin/tripal/data_types');
+  $breadcrumb[] = l('Biological Data', 'admin/tripal/bundles');
   drupal_set_breadcrumb($breadcrumb);
 
 /*   // Add the view
@@ -72,7 +72,7 @@ function tripal_entities_content_view() {
 function tripal_entities_content_overview_form($form, &$form_state) {
   $form = array();
 
-  $entities = db_select('tripal_data', 'td')
+  $entities = db_select('tripal_entity', 'td')
     ->fields('td')
     ->orderBy('created', 'DESC')//ORDER BY created
     ->range(0,25)
@@ -118,7 +118,7 @@ function tripal_entities_content_overview_form($form, &$form_state) {
  * @param unknown $form_state
  * @return multitype:
  */
-function tripal_entities_admin_data_types_form($form, &$form_state) {
+function tripal_entities_admin_bundles_form($form, &$form_state) {
   $form = array();
 
   // Set the defaults.
@@ -131,8 +131,8 @@ function tripal_entities_admin_data_types_form($form, &$form_state) {
     $term_name = array_key_exists('term_name', $form_state['values']) ? $form_state['values']['term_name'] : NULL;
   }
 
-  // Let the user select the vocabulary and tripal_data but only if they haven't
-  // already selected a tripal_data.
+  // Let the user select the vocabulary and tripal_entity but only if they haven't
+  // already selected a tripal_entity.
   $sql = "
     SELECT CV.cv_id, CV.name
     FROM {cv} CV
@@ -151,26 +151,26 @@ function tripal_entities_admin_data_types_form($form, &$form_state) {
     '#description' => t('Select a vocabulary to view potential data types in the chart below. Limit the chart to only published data types by selecting the checkbox.'),
     '#default_value' => $cv_id,
     '#ajax' => array(
-      'callback' => "tripal_entities_admin_data_types_form_ajax_callback",
-      'wrapper' => 'tripal_entities_admin_data_types_form',
+      'callback' => "tripal_entities_admin_bundles_form_ajax_callback",
+      'wrapper' => 'tripal_entities_admin_bundles_form',
       'effect' => 'fade',
       'method' => 'replace'
     )
   );
 
-  $form['refresh_data_types'] = array(
+  $form['refresh_bundles'] = array(
     '#type' => 'submit',
     '#value' => t('Refresh Data Types'),
-    '#submit' => array('tripal_entity_admin_data_types_form_submit_refresh_data_types'),
+    '#submit' => array('tripal_entity_admin_bundles_form_submit_refresh_bundles'),
   );
 
   $form['publish_new_data'] = array(
     '#type' => 'submit',
     '#value' => t('Publish New Data'),
-    '#submit' => array('tripal_entity_admin_data_types_form_submit_publish_new_data'),
+    '#submit' => array('tripal_entity_admin_bundles_form_submit_publish_new_data'),
   );
 
-  $form['#prefix'] = '<div id="tripal_entities_admin_data_type_form">';
+  $form['#prefix'] = '<div id="tripal_entities_admin_bundle_form">';
   $form['#suffix'] = '</div>';
   return $form;
 }
@@ -179,7 +179,7 @@ function tripal_entities_admin_data_types_form($form, &$form_state) {
  * Submit a job to populate the entity tables
  * This operation makes available data types in the database publishable
  */
-function tripal_entity_admin_data_types_form_submit_refresh_data_types () {
+function tripal_entity_admin_bundles_form_submit_refresh_bundles () {
   global $user;
   tripal_add_job('Create publishable data types', 'tripal_entity', 'tripal_entities_populate_entity_tables', array(), $user->uid);
 }
@@ -203,8 +203,8 @@ function tripal_entities_admin_publish_form($form, &$form_state) {
     $term_name = array_key_exists('term_name', $form_state['values']) ? $form_state['values']['term_name'] : NULL;
   }
 
-  // Let the user select the vocabulary and tripal_data but only if they haven't
-  // already selected a tripal_data.
+  // Let the user select the vocabulary and tripal_entity but only if they haven't
+  // already selected a tripal_entity.
   $sql = "
     SELECT CV.cv_id, CV.name
     FROM {tripal_vocabulary} TET
@@ -359,7 +359,7 @@ function tripal_entities_admin_publish_form_submit($form, &$form_state) {
       // Add in the bundle's fields.
       tripal_entities_add_bundle_fields($tablename, $entity_type_name, $bundle_name);
 
-      // The TripalDataType Entity manages the bundles we have available.
+      // The TripalBundle Entity manages the bundles we have available.
       // Therefore, we need to add a new entity for each bundle "type".
        $vals = array(
         'label' => $bundle_name  . ' (' . $type->name . ')',
@@ -368,8 +368,8 @@ function tripal_entities_admin_publish_form_submit($form, &$form_state) {
         'data' => serialize(array()),
         'module' => 'tripal_entities'
       );
-      $tripal_data_type = new TripalDataType($vals, $entity_type_name . '_type');
-      $tripal_data_type->save();
+      $tripal_bundle = new TripalBundle($vals, $entity_type_name . '_bundle');
+      $tripal_bundle->save();
     }
     drupal_set_message(t('Data type, %type, is now set as publishable.', array('%type' => $term_name)));
   }

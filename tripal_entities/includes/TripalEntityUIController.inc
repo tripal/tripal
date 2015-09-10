@@ -2,7 +2,7 @@
 /**
  * UI controller.
  */
-class TripalDataUIController extends EntityDefaultUIController {
+class TripalEntityUIController extends EntityDefaultUIController {
 
   /**
    * Overrides hook_menu() defaults. Main reason for doing this is that
@@ -31,8 +31,8 @@ class TripalDataUIController extends EntityDefaultUIController {
       'title' => 'Add new biological data',
       'description' => 'Add new biological data',
       'page callback'  => 'drupal_get_form',
-      'page arguments' => array('tripal_data_form'),
-      'access callback'  => 'tripal_data_access',
+      'page arguments' => array('tripal_entity_form'),
+      'access callback'  => 'tripal_entity_access',
       'access arguments' => array('administer tripal data'),
       'type' => MENU_LOCAL_ACTION,
       'weight' => 20,
@@ -43,8 +43,8 @@ class TripalDataUIController extends EntityDefaultUIController {
       'title' => 'Add Tripal data',
       'description' => 'Add a new tripal data record',
       'page callback'  => 'drupal_get_form',
-      'page arguments' => array('tripal_data_form'),
-      'access callback'  => 'tripal_data_access',
+      'page arguments' => array('tripal_entity_form'),
+      'access callback'  => 'tripal_entity_access',
       'access arguments' => array('edit'),
       'type' => MENU_NORMAL_ITEM,
       'weight' => 20,
@@ -52,11 +52,11 @@ class TripalDataUIController extends EntityDefaultUIController {
 
     // Link for viewing a tripal data type.
     $items['data/' . $wildcard] = array(
-      'title callback' => 'tripal_data_title',
+      'title callback' => 'tripal_entity_title',
       'title arguments' => array(1),
-      'page callback' => 'tripal_data_view',
+      'page callback' => 'tripal_entity_view',
       'page arguments' => array(1),
-      'access callback' => 'tripal_data_access',
+      'access callback' => 'tripal_entity_access',
       'access arguments' => array('view', 1),
       'type' => MENU_CALLBACK,
     );
@@ -64,9 +64,9 @@ class TripalDataUIController extends EntityDefaultUIController {
     // 'View' tab for an individual entity page.
     $items['data/' . $wildcard . '/view'] = array(
       'title' => 'View',
-      'page callback' => 'tripal_data_view',
+      'page callback' => 'tripal_entity_view',
       'page arguments' => array(1),
-      'access callback' => 'tripal_data_access',
+      'access callback' => 'tripal_entity_access',
       'access arguments' => array('view', 1),
       'type' => MENU_DEFAULT_LOCAL_TASK,
       'weight' => -10,
@@ -77,8 +77,8 @@ class TripalDataUIController extends EntityDefaultUIController {
     $items['data/' . $wildcard . '/edit'] = array(
       'title' => 'Edit',
       'page callback' => 'drupal_get_form',
-      'page arguments' => array('tripal_data_form', 1),
-      'access callback' => 'tripal_data_access',
+      'page arguments' => array('tripal_entity_form', 1),
+      'access callback' => 'tripal_entity_access',
       'access arguments' => array('edit', 1),
       'type' => MENU_LOCAL_TASK,
 
@@ -88,8 +88,8 @@ class TripalDataUIController extends EntityDefaultUIController {
     $items['data/' . $wildcard . '/delete'] = array(
       'title'  => 'Delete',
       'page callback' => 'drupal_get_form',
-      'page arguments' => array('tripal_data_delete_form', 1),
-      'access callback' => 'tripal_data_access',
+      'page arguments' => array('tripal_entity_delete_form', 1),
+      'access callback' => 'tripal_entity_access',
       'access arguments' => array('edit', 1),
       'type' => MENU_CALLBACK,
 
@@ -113,7 +113,7 @@ class TripalDataUIController extends EntityDefaultUIController {
  * @return boolean
  *   Whether access is allowed or not.
  */
-function tripal_data_access($op, $entity = NULL, $account = NULL) {
+function tripal_entity_access($op, $entity = NULL, $account = NULL) {
   if (user_access('administer tripal data', $account)) {
     return TRUE;
   }
@@ -128,7 +128,7 @@ function tripal_data_access($op, $entity = NULL, $account = NULL) {
 /**
  *
  */
-function tripal_data_form($form, &$form_state, $entity = NULL) {
+function tripal_entity_form($form, &$form_state, $entity = NULL) {
 
   // Set the defaults.
   $cv_id = NULL;
@@ -157,8 +157,8 @@ function tripal_data_form($form, &$form_state, $entity = NULL) {
     $cvterm = chado_generate_var('cvterm', $values);
   }
 
-  // Let the user select the vocabulary          defaut and tripal_data but only if they haven't
-  // already selected a tripal_data.
+  // Let the user select the vocabulary          defaut and tripal_entity but only if they haven't
+  // already selected a tripal_entity.
   $cvs = tripal_entities_get_published_vocabularies_as_select_options();
   if (!$term_name) {
     $form['cv_id'] = array(
@@ -169,8 +169,8 @@ function tripal_data_form($form, &$form_state, $entity = NULL) {
       '#description' => t('Select a vocabulary that contains the term for the type of data you want to add.'),
       '#default_value' => $cv_id,
       '#ajax' => array(
-        'callback' => "tripal_data_form_ajax_callback",
-        'wrapper' => 'tripal_data_form',
+        'callback' => "tripal_entity_form_ajax_callback",
+        'wrapper' => 'tripal_entity_form',
         'effect' => 'fade',
         'method' => 'replace'
       )
@@ -263,43 +263,43 @@ function tripal_data_form($form, &$form_state, $entity = NULL) {
     // the Entity API to work.  It must have a key of the entity name.
     $form_state[$cvterm->dbxref_id->db_id->name] = $entity;
   }
-  $form['#prefix'] = '<div id="tripal_data_form">';
+  $form['#prefix'] = '<div id="tripal_entity_form">';
   $form['#suffix'] = '</div>';
   return $form;
 }
 
 /**
- * An Ajax callback for the tripal_data_form.
+ * An Ajax callback for the tripal_entity_form.
  */
-function tripal_data_form_ajax_callback($form, $form_state) {
+function tripal_entity_form_ajax_callback($form, $form_state) {
   // return the form so Drupal can update the content on the page
   return $form;
 
 }
 /**
- * Implements hook_validate() for the tripal_data_form.
+ * Implements hook_validate() for the tripal_entity_form.
  */
-function tripal_data_form_validate($form, &$form_state) {
+function tripal_entity_form_validate($form, &$form_state) {
 
   if ($form_state['clicked_button']['#name'] == 'add_data') {
-    $tripal_data = (object) $form_state['values'];
+    $tripal_entity = (object) $form_state['values'];
     $entity_type = $form_state['values']['entity_type'];
-    field_attach_form_validate($entity_type, $tripal_data, $form, $form_state);
+    field_attach_form_validate($entity_type, $tripal_entity, $form, $form_state);
   }
 }
 
 /**
- * Implements hook_submit() for the tripal_data_form.
+ * Implements hook_submit() for the tripal_entity_form.
  *
  */
-function tripal_data_form_submit($form, &$form_state) {
+function tripal_entity_form_submit($form, &$form_state) {
   if ($form_state['clicked_button']['#name'] == 'cancel') {
     if (array_key_exists('id', $form_state['values'])){
       $entity = $form_state['values']['entity'];
       $form_state['redirect'] = "data/$entity->id";
     }
     else {
-      $form_state['redirect'] = "admin/structure/tripal_data";
+      $form_state['redirect'] = "admin/structure/tripal_entity";
     }
     return;
   }
@@ -322,27 +322,27 @@ function tripal_data_form_submit($form, &$form_state) {
  *
  * @todo Remove hard-coded path
  */
-function tripal_data_form_submit_delete(&$form, &$form_state) {
-  $form_state['redirect'] = 'admin/content/tripal_datas/tripal_data/' . $form_state['tripal_data']->tripal_data_id . '/delete';
+function tripal_entity_form_submit_delete(&$form, &$form_state) {
+  $form_state['redirect'] = 'admin/content/tripal_entitys/tripal_entity/' . $form_state['tripal_entity']->tripal_entity_id . '/delete';
 }
 
 
 /**
- * Form callback: confirmation form for deleting a tripal_data.
+ * Form callback: confirmation form for deleting a tripal_entity.
  *
- * @param $tripal_data
- *   The tripal_data to delete
+ * @param $tripal_entity
+ *   The tripal_entity to delete
  *
  * @see confirm_form()
  */
-function tripal_data_delete_form($form, &$form_state, $entity) {
+function tripal_entity_delete_form($form, &$form_state, $entity) {
   $form_state['entity'] = $entity;
 
-  $form['#submit'][] = 'tripal_data_delete_form_submit';
+  $form['#submit'][] = 'tripal_entity_delete_form_submit';
 
   $form = confirm_form($form,
     t('Click the delete button below to confirm deltion of the record titled: %title', array('%title' => $entity->title)),
-    'admin/content/tripal_data',
+    'admin/content/tripal_entity',
     '<p>' . t('This action cannot be undone.') . '</p>',
     t('Delete'),
     t('Cancel'),
@@ -353,17 +353,17 @@ function tripal_data_delete_form($form, &$form_state, $entity) {
 }
 
 /**
- * Submit callback for tripal_data_delete_form
+ * Submit callback for tripal_entity_delete_form
  */
-function tripal_data_delete_form_submit($form, &$form_state) {
+function tripal_entity_delete_form_submit($form, &$form_state) {
   $entity = $form_state['entity'];
 
-  tripal_data_delete($entity);
+  tripal_entity_delete($entity);
 
-  drupal_set_message(t('The tripal_data %name has been deleted.', array('%name' => $tripal_data->name)));
-  watchdog('tripal_data', 'Deleted tripal_data %name.', array('%name' => $tripal_data->name));
+  drupal_set_message(t('The tripal_entity %name has been deleted.', array('%name' => $tripal_entity->name)));
+  watchdog('tripal_entity', 'Deleted tripal_entity %name.', array('%name' => $tripal_entity->name));
 
-  $form_state['redirect'] = 'admin/content/tripal_datas';
+  $form_state['redirect'] = 'admin/content/tripal_entitys';
 }
 
 /**
@@ -376,7 +376,7 @@ function tripal_data_delete_form_submit($form, &$form_state) {
  * @see hook_entity_view()
  * @see hook_entity_view_alter()
  */
-function tripal_data_view($entity, $view_mode = 'full') {
+function tripal_entity_view($entity, $view_mode = 'full') {
   $controller = entity_get_controller($entity->type);
   $content = $controller->view(array($entity->id => $entity));
   drupal_set_title($entity->title);
@@ -386,6 +386,6 @@ function tripal_data_view($entity, $view_mode = 'full') {
 /**
  * Menu title callback for showing individual entities
  */
-function tripal_data_title(TripalData $entity){
+function tripal_entity_title(TripalEntity $entity){
   return $entity->title;
 }

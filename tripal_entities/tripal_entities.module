@@ -5,12 +5,12 @@ require_once "includes/tripal_entities.chado_entity.inc";
 require_once "includes/tripal_entities.field_storage.inc";
 require_once "includes/tripal_entities.fields.inc";
 require_once "includes/tripal_entities.tables.inc";
-require_once "includes/TripalData.inc";
-require_once "includes/TripalDataController.inc";
-require_once "includes/TripalDataUIController.inc";
-require_once "includes/TripalDataType.inc";
-require_once "includes/TripalDataTypeController.inc";
-require_once "includes/TripalDataTypeUIController.inc";
+require_once "includes/TripalEntity.inc";
+require_once "includes/TripalEntityController.inc";
+require_once "includes/TripalEntityUIController.inc";
+require_once "includes/TripalBundle.inc";
+require_once "includes/TripalBundleController.inc";
+require_once "includes/TripalBundleUIController.inc";
 
 /**
  * Implements hook_views_api().
@@ -94,9 +94,9 @@ function tripal_entities_permission() {
  */
 function tripal_entities_theme($existing, $type, $theme, $path) {
   return array(
-    'tripal_data' => array(
+    'tripal_entity' => array(
       'render element' => 'elements',
-      'template' => 'tripal_data',
+      'template' => 'tripal_entity',
       'path' => "$path/theme/templates"
     ),
   );
@@ -108,7 +108,7 @@ function tripal_entities_theme($existing, $type, $theme, $path) {
 function tripal_entities_rdf_mapping() {
   return array();
 /*   return array(
-    'type' => 'tripal_data',
+    'type' => 'tripal_entity',
     'bundle' => 'gene',
     'mapping' => array(
       'rdftype' => array('sioc:Item', 'foaf:Document'),
@@ -152,11 +152,11 @@ function tripal_entities_entity_info() {
 
       // The entity class and controller class extend the classes provided by the
       // Entity API.
-      'entity class' => 'TripalData',
-      'controller class' => 'TripalDataController',
+      'entity class' => 'TripalEntity',
+      'controller class' => 'TripalEntityController',
 
       // The table for this entity defined in hook_schema()
-      'base table' => 'tripal_data',
+      'base table' => 'tripal_entity',
 
       // Returns the uri elements of an entity.
       'uri callback' => 'tripal_entities_vocbulary_term_uri',
@@ -176,7 +176,7 @@ function tripal_entities_entity_info() {
       ),
 
       // Callback function for access to this entity.
-      'access callback' => 'tripal_data_access',
+      'access callback' => 'tripal_entity_access',
 
       // FALSE disables caching. Caching functionality is handled by Drupal core.
       'static cache' => FALSE,
@@ -184,17 +184,17 @@ function tripal_entities_entity_info() {
       // Bundles are added in the hook_entities_info_alter() function.
       'bundles' => array (),
 
-      'label callback' => 'tripal_data_label',
+      'label callback' => 'tripal_entity_label',
 
-      // The information below is used by the TripalDataUIController
+      // The information below is used by the TripalEntityUIController
       // (which extends the EntityDefaultUIController). The admin_ui
       // key here is mean to appear on the 'Find Content' page of the
       // administrative menu.
       'admin ui' => array (
         'path' => 'admin/content/bio_data',
-        'controller class' => 'TripalDataUIController',
-        'menu wildcard' => '%tripal_data',
-        'file' => 'includes/TripalDataUIController.inc'
+        'controller class' => 'TripalEntityUIController',
+        'menu wildcard' => '%tripal_entity',
+        'file' => 'includes/TripalEntityUIController.inc'
       ),
       'view modes' => array (
         'full' => array (
@@ -208,11 +208,11 @@ function tripal_entities_entity_info() {
       )
     );
     // The entity that holds information about the entity types.
-    $entities [$voc->db_id->name . '_type'] = array (
-      'label' => $voc->db_id->name . ' (' . $voc->cv_id->name . ') Data Types',
-      'entity class' => 'TripalDataType',
-      'controller class' => 'TripalDataTypeController',
-      'base table' => 'tripal_data_type',
+    $entities [$voc->db_id->name . '_bundle'] = array (
+      'label' => $voc->db_id->name . ' (' . $voc->cv_id->name . ') Data Type',
+      'entity class' => 'TripalBundle',
+      'controller class' => 'TripalBundleController',
+      'base table' => 'tripal_bundle',
       'fieldable' => FALSE,
       'exportable' => FALSE,
       'entity keys' => array (
@@ -220,14 +220,14 @@ function tripal_entities_entity_info() {
         'name' => 'bundle',
         'label' => 'label'
       ),
-      'access callback' => 'tripal_data_type_access',
+      'access callback' => 'tripal_bundle_access',
       'module' => 'tripal_entities',
       // Enable the entity API's admin UI.
       'admin ui' => array (
         'path' => 'admin/structure/bio_data/' . $voc->db_id->name,
-        'controller class' => 'TripalDataTypeUIController',
-        'file' => 'includes/TripalDataTypeUIController.inc',
-        'menu wildcard' => '%tripal_data_type',
+        'controller class' => 'TripalBundleUIController',
+        'file' => 'includes/TripalBundleUIController.inc',
+        'menu wildcard' => '%tripal_bundle',
       )
     );
   }
@@ -258,7 +258,7 @@ function tripal_entities_entity_info_alter(&$entity_info) {
     $entity_info[$entity_type]['bundles'][$bundle_id] = array (
       'label' => $label,
       'admin' => array (
-        'path' => 'admin/structure/bio_data/' . $entity_type . '/manage/%tripal_data_type',
+        'path' => 'admin/structure/bio_data/' . $entity_type . '/manage/%tripal_bundle',
         'real path' => 'admin/structure/bio_data/' . $entity_type . '/manage/' . $bundle_id,
         'bundle argument' => 5,
         'access arguments' => array (
@@ -311,37 +311,37 @@ function tripal_entities_get_published_terms_as_select_options($cv_id = NULL) {
  *   A tripal data type array or FALSE if $type does not exist.
  */
 
-function tripal_data_type_load($bundle_type, $reset = FALSE) {
+function tripal_bundle_load($bundle_type, $reset = FALSE) {
   // Get the type of entity by the ID.
-  $bundle_types = db_select('tripal_data_type', 'tdt')
+  $bundle_types = db_select('tripal_bundle', 'tdt')
     ->fields('tdt', array('id', 'type'))
     ->condition('bundle', $bundle_type)
     ->execute()
     ->fetchObject();
 
-  // Load the tripal_data_type entity. These entities are always the same
-  // as an Tripal entity type but with a '_type' extension.
-  $entity = entity_load($bundle_types->type . '_type', array($bundle_types->id), array(), $reset);
+  // Load the tripal_bundle entity. These entities are always the same
+  // as an Tripal entity type but with a '_bundle' extension.
+  $entity = entity_load($bundle_types->type . '_bundle', array($bundle_types->id), array(), $reset);
   return reset($entity);
 }
 
 /**
- * Fetch a tripal_data object. Make sure that the wildcard you choose
- * in the tripal_data entity definition fits the function name here.
+ * Fetch a tripal_entity object. Make sure that the wildcard you choose
+ * in the tripal_entity entity definition fits the function name here.
  *
  * @param $id
- *   Integer specifying the tripal_data id.
+ *   Integer specifying the tripal_entity id.
  * @param $reset
  *   A boolean indicating that the internal cache should be reset.
  * @return
- *   A fully-loaded $tripal_data object or FALSE if it cannot be loaded.
+ *   A fully-loaded $tripal_entity object or FALSE if it cannot be loaded.
  *
- * @see tripal_data_load_multiple()
+ * @see tripal_entity_load_multiple()
  */
-function tripal_data_load($id, $reset = FALSE) {
+function tripal_entity_load($id, $reset = FALSE) {
 
   // Get the type of entity by the ID.
-  $entity_type = db_select('tripal_data', 'td')
+  $entity_type = db_select('tripal_entity', 'td')
     ->fields('td', array('type'))
     ->condition('id', $id)
     ->execute()

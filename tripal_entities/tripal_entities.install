@@ -311,7 +311,7 @@ function tripal_entities_add_tripal_term_relationship_table(){
  */
 function tripal_entities_schema() {
 
-  $schema['tripal_data'] = array(
+  $schema['tripal_entity'] = array(
     'description' => 'The base table for Tripal Vocabulary-based entities.',
     'fields' => array(
       'id' => array(
@@ -400,7 +400,7 @@ function tripal_entities_schema() {
     'primary key' => array('id'),
   );
 
-  $schema['tripal_data_type'] = array(
+  $schema['tripal_bundle'] = array(
     'description' => 'Stores information about defined tripal data types.',
     'fields' => array(
       'id' => array(

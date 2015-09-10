@@ -7,7 +7,7 @@
 /**
  * UI controller.
  */
-class TripalDataTypeUIController extends EntityDefaultUIController {
+class TripalBundleUIController extends EntityDefaultUIController {
 
   public function __construct($entity_type, $entity_info) {
     // The 'bundle of' property is usually set in the hook_entity_info()
@@ -20,7 +20,7 @@ class TripalDataTypeUIController extends EntityDefaultUIController {
     // can handle all of the Tripal entity types, we have to set the
     // 'bundle of' property here rather than in the hook_entity_info() function.
     $bundle_of = $entity_type;
-    $bundle_of = preg_replace('/_type/', '', $bundle_of);
+    $bundle_of = preg_replace('/_bundle/', '', $bundle_of);
     $entity_info['bundle of'] = $bundle_of;
     parent::__construct($entity_type, $entity_info);
   }
@@ -62,7 +62,7 @@ class TripalDataTypeUIController extends EntityDefaultUIController {
     // named after the entity type but we can't dynamically create these
     // functions. We'll use a single form for all entity types.
     $forms[$this->entityType . '_form'] = array(
-      'callback' => 'tripal_entities_tripal_data_type_form',
+      'callback' => 'tripal_entities_tripal_bundle_form',
       'callback arguments' => array($this->entityType)
     );
 
@@ -75,35 +75,35 @@ class TripalDataTypeUIController extends EntityDefaultUIController {
  * @param $form_state
  * @param $entity
  */
-function tripal_entities_tripal_data_type_form($form, &$form_state, $entityDataType) {
+function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType) {
   $form = array();
   $form['message'] = array(
     '#type' => 'item',
-    '#markup' => 'Edit the function "tripal_entities_tripal_data_type_form()" to add a form each type. Put access controls here?',
+    '#markup' => 'Edit the function "tripal_entities_tripal_bundle_form()" to add a form each type. Put access controls here?',
   );
   return $form;
 }
 /**
  * Access callback for the entity API.
  */
-function tripal_data_type_access($op, $type = NULL, $account = NULL) {
+function tripal_bundle_access($op, $type = NULL, $account = NULL) {
   return user_access('administer tripal data types', $account);
 }
 
 /**
  * Generates the tripal data type editing form.
  */
-function tripal_data_type_form($form, &$form_state, $tripal_data_type, $op = 'edit') {
+function tripal_bundle_form($form, &$form_state, $tripal_bundle, $op = 'edit') {
 
   if ($op == 'clone') {
-    $tripal_data_type->label .= ' (cloned)';
-    $tripal_data_type->type = '';
+    $tripal_bundle->label .= ' (cloned)';
+    $tripal_bundle->type = '';
   }
 
   $form['label'] = array(
     '#title' => t('Label'),
     '#type' => 'textfield',
-    '#default_value' => $tripal_data_type->label,
+    '#default_value' => $tripal_bundle->label,
     '#description' => t('The human-readable name of this tripal data type.'),
     '#required' => TRUE,
     '#size' => 30,
@@ -115,16 +115,16 @@ function tripal_data_type_form($form, &$form_state, $tripal_data_type, $op = 'ed
 /**
  * Form API submit callback for the type form.
  */
-function tripal_data_type_form_submit(&$form, &$form_state) {
-  $tripal_data_type = entity_ui_form_submit_build_entity($form, $form_state);
-  $tripal_data_type->save();
+function tripal_bundle_form_submit(&$form, &$form_state) {
+  $tripal_bundle = entity_ui_form_submit_build_entity($form, $form_state);
+  $tripal_bundle->save();
   $form_state['redirect'] = $this->path;
 }
 
 /**
  * Form API submit callback for the delete button.
  */
-function tripal_data_type_form_submit_delete(&$form, &$form_state) {
+function tripal_bundle_form_submit_delete(&$form, &$form_state) {
   $form_state['redirect'] = $this->path;
 }
 
