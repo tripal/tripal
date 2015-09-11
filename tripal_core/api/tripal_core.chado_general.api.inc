@@ -44,33 +44,90 @@ require_once 'tripal_core.schema_v1.11.api.inc';
  * Set the Tripal Database
  *
  * The chado_set_active function is used to prevent namespace collisions
- * when chado and drupal are installed in the same database but in different
- * schemas.  It is also used for backwards compatibility with older versions
- * of tripal or in cases where chado is located outside of the Drupal database.
- * or when using Drupal functions such as db_table_exists()
+ * when Chado and Drupal are installed in the same database but in different
+ * schemas. It is also used when using Drupal functions such as
+ * db_table_exists().
+ *
+ * The connection settings can be altered through the hook
+ * hook_chado_connection_alter.
+ *
+ * Current active connection name is stored in the global variable
+ * $GLOBALS['chado_active_db'].
+ *
+ * @see hook_chado_connection_alter()
  *
  * @ingroup tripal_chado_api
  */
-function chado_set_active($dbname  = 'default') {
-  global $databases, $active_db;
+function chado_set_active($dbname = 'default') {
 
-  if ($dbname ) {
-    if ($dbname == 'chado') {
-      db_query('set search_path to chado,public');
-      return 'default';
-    }
-    else {
-      db_query('set search_path to public');
-      return 'chado';
-    }
+  // Check if the chado_active_db has been set yet.
+  if (!array_key_exists('chado_active_db', $GLOBALS)) {
+    $GLOBALS['chado_active_db'] = 'default';
   }
-  // if the 'chado' database is in the $db_url variable then chado is
-  // not in the same Drupal database, so we don't need to set any
-  // search_path and can just change the database
-  elseif (array_key_exists($dbname, $databases)) {
-    return db_set_active($dbname);
+
+  $previous_db = $active_db = $GLOBALS['chado_active_db'];
+  $search_path = 'public';
+
+  // Change only if 'chado' has been specified.
+  if ($dbname == 'chado') {
+    $active_db = 'chado';
+    $search_path = 'chado,public';
+  }
+
+  $settings = array(
+    'dbname'          => $dbname,
+    'new_active_db'   => &$active_db,
+    'new_search_path' => &$search_path,
+  );
+
+  // Will call all modules implementing hook_chado_search_path_alter
+  // note: hooks can alter $active_db and $search_path.  This hook can be
+  // useful in multi-chado instances because Tripal core functions call it
+  // (e.g. chado_query) but there is no opportunity elsewhere to set the
+  // active database.  This is useful in two cases:  1) Users are managed at
+  // the database level as in the case of SouthGreen Bioinformatics
+  // Platform tools (e.g. Banana Genone Hub).  This allows custom modules
+  // to change the database connections on a per-user basis, and each
+  // user permissions is managed at the database level.  Users are managed
+  // at the database level to provid the same access restrictions across
+  // various tools that use Chado (e,g, Artemis) 2) When there are simply
+  // two Chado instances housed in different Chado databases and the module
+  // needs to control which one is being used at any given time.
+  drupal_alter('chado_connection', $settings);
+
+  // set chado_active_db to remember active db
+  $GLOBALS['chado_active_db'] = $active_db;
+
+  // set PostgreSQL search_path
+  db_query('SET search_path TO ' . $search_path);
+
+  return $previous_db;
+}
+
+
+/**
+ * Alter Chado connection settings.
+ *
+ * Allows modules to change Chado connection settings.
+ *
+ * @param $settings
+ *   An array containing
+ *
+ * @see chado_set_active()
+ *
+ * @ingroup tripal_chado_api
+ */
+function hook_chado_connection_alter(&$settings) {
+  // this example shows how we could make sure no table of the 'public' schema
+  // would be allowed in the coming queries:
+  // to do so, the caller will call "chado_set_active('chado_only');"
+  // and the hook will remove 'public' from the search path
+  if ('chado_only' == $settings['dbname']) {
+    $settings['new_active_db']   = 'chado';
+    $settings['new_search_path'] = 'chado'; # we don't include 'public' in search path
   }
 }
+
 
 /**
  * Get max rank for a given set of criteria
