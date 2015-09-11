@@ -81,18 +81,7 @@ function chado_set_active($dbname = 'default') {
   );
 
   // Will call all modules implementing hook_chado_search_path_alter
-  // note: hooks can alter $active_db and $search_path.  This hook can be
-  // useful in multi-chado instances because Tripal core functions call it
-  // (e.g. chado_query) but there is no opportunity elsewhere to set the
-  // active database.  This is useful in two cases:  1) Users are managed at
-  // the database level as in the case of SouthGreen Bioinformatics
-  // Platform tools (e.g. Banana Genone Hub).  This allows custom modules
-  // to change the database connections on a per-user basis, and each
-  // user permissions is managed at the database level.  Users are managed
-  // at the database level to provid the same access restrictions across
-  // various tools that use Chado (e,g, Artemis) 2) When there are simply
-  // two Chado instances housed in different Chado databases and the module
-  // needs to control which one is being used at any given time.
+  // note: hooks can alter $active_db and $search_path.
   drupal_alter('chado_connection', $settings);
 
   // set chado_active_db to remember active db
@@ -108,7 +97,17 @@ function chado_set_active($dbname = 'default') {
 /**
  * Alter Chado connection settings.
  *
- * Allows modules to change Chado connection settings.
+ * This hook is useful for multi-chado instances. Tripal core functions
+ * call the chado_set_active() function (e.g. chado_query) but there is no
+ * opportunity elsewhere to set the active database.  This is useful in two
+ * cases:  1) Users are managed at the database level as in the case of
+ * SouthGreen Bioinformatics Platform tools (e.g. Banana Genone Hub).
+ * This allows custom modules to change the database connections on a per-user
+ * basis, and each user permissions is managed at the database level.  Users
+ * are managed at the database level to provid the same access restrictions
+ * across various tools that use Chado (e,g, Artemis) 2) When there are
+ * simply two Chado instances housed in different Chado databases and the
+ * module needs to control which one is being used at any given time.
  *
  * @param $settings
  *   An array containing
@@ -118,13 +117,14 @@ function chado_set_active($dbname = 'default') {
  * @ingroup tripal_chado_api
  */
 function hook_chado_connection_alter(&$settings) {
-  // this example shows how we could make sure no table of the 'public' schema
-  // would be allowed in the coming queries:
-  // to do so, the caller will call "chado_set_active('chado_only');"
-  // and the hook will remove 'public' from the search path
+  // This example shows how we could make sure no table of the 'public' schema
+  // would be allowed in the coming queries: to do so, the caller will call
+  // "chado_set_active('chado_only');" and the hook will remove 'public' from
+  // the search path.
   if ('chado_only' == $settings['dbname']) {
     $settings['new_active_db']   = 'chado';
-    $settings['new_search_path'] = 'chado'; # we don't include 'public' in search path
+    // We don't include 'public' in search path.
+    $settings['new_search_path'] = 'chado';
   }
 }
 
