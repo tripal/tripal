@@ -84,7 +84,7 @@ function tripal_entities_populate_entity_tables() {
                 'type_table' => $tablename,
                 'field' => $local_id
               );
-              if (!chado_select_record('tripal_term_usage', array('bundle_source_id'), $values, array('has_record' => TRUE))) {
+              if (!chado_select_record('tripal_term_usage', array('term_usage_id'), $values, array('has_record' => TRUE))) {
                 chado_insert_record('tripal_term_usage', $values);
               }
 

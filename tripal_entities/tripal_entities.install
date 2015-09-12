@@ -149,7 +149,7 @@ function tripal_entities_add_tripal_vocabulary_usage_table(){
   $schema = array (
     'table' => 'tripal_vocabulary_usage',
     'fields' => array (
-      'entity_type_source_id' => array(
+      'vocabulary_usage_id' => array(
         'type' => 'serial',
         'not null' => TRUE
       ),
@@ -174,7 +174,7 @@ function tripal_entities_add_tripal_vocabulary_usage_table(){
       ),
     ),
     'primary key' => array (
-      0 => 'entity_type_source_id'
+      0 => 'vocabulary_usage_id'
     ),
     'foreign keys' => array (
       'tripal_vocabulary' => array (
@@ -204,7 +204,7 @@ function tripal_entities_add_tripal_term_usage_table(){
   $schema = array (
     'table' => 'tripal_term_usage',
     'fields' => array (
-      'bundle_source_id' => array(
+      'term_usage_id' => array(
         'type' => 'serial',
         'not null' => TRUE
       ),
@@ -229,7 +229,7 @@ function tripal_entities_add_tripal_term_usage_table(){
       ),
     ),
     'primary key' => array (
-      0 => 'bundle_source_id'
+      0 => 'term_usage_id'
     ),
     'foreign keys' => array (
       'tripal_term' => array (
@@ -449,6 +449,7 @@ function tripal_entities_schema() {
       'bundle' => array('bundle'),
     ),
   );
+  
   return $schema;
 }
 
