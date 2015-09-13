@@ -105,15 +105,12 @@ class TripalEntityController extends EntityAPIController {
     }
 
     // Write out the entity record.
-    $tablename = 'feature';
+    /* $tablename = 'feature';
     $schema = chado_get_schema($tablename);
-    $pkey_field = $schema['primary key'][0];
+    $pkey_field = $schema['primary key'][0]; */
     $record = array(
-      'cvterm_id' => $entity->cvterm_id,
       'type'      => $entity->entity_type,
       'bundle'    => $entity->bundle,
-      'tablename' => $tablename,
-      'record_id' => $entity->record_id,
       'title'     => 'title',
       'uid'       => $user->uid,
       'created'   => $entity->created,
