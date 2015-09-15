@@ -51,16 +51,34 @@ function tripal_entities_field_storage_write($entity_type, $entity, $op, $fields
   // Add in the type_id field.
   $values[$type_field] = $entity->cvterm_id;
 
+  $entity->storage = array();
   switch ($op) {
     case FIELD_STORAGE_INSERT:
       $record = chado_insert_record($tablename, $values);
       if ($record === FALSE) {
         drupal_set_message('Could not insert Chado record.', 'error');
       }
-      $entity->record_id = $record[$pkey_field];
+      $entity->storage['chado']['record_id'] = $record[$pkey_field];
+      $entity->storage['chado']['data_table'] = $tablename;
+      $entity->storage['chado']['type_table'] = $tablename;
+      $entity->storage['chado']['field'] = $type_field;
+
+      // Add a record to the chado_entity table so that the data for the
+      // fields can be pulled from Chado when loaded the next time.
+      $record = array(
+        'entity_id' => $entity->id,
+        'record_id' => $entity->storage['chado']['record_id'],
+        'data_table' => $entity->storage['chado']['data_table'],
+        'type_table' => $entity->storage['chado']['type_table'],
+        'field' => $entity->storage['chado']['field'],
+      );
+      $success = drupal_write_record('chado_entity', $record);
+      if (!$success) {
+        drupal_set_message('Unable to insert new data.', 'error');
+      }
       break;
     case FIELD_STORAGE_UPDATE:
-      $match[$pkey_field] = $entity->record_id;
+      $match[$pkey_field] = $entity->storage['chado']['record_id'];
       chado_update_record($tablename, $match, $values);
       break;
   }
@@ -77,12 +95,26 @@ function tripal_entities_field_storage_load($entity_type, $entities, $age, $fiel
   $langcode = $language->language;
 
   foreach ($entities as $id => $entity) {
+   // Get the base table and record id for the fields of this entity.
+   $details = db_select('chado_entity', 'ce')
+      ->fields('ce')
+      ->condition('entity_id', $entity->id)
+      ->execute()
+      ->fetchObject();
+    if (!$details) {
+      // TODO: what to do if record is missing!
+    }
+    $entity->storage['chado']['record_id'] = $details->record_id;
+    $entity->storage['chado']['data_table'] = $details->data_table;
+    $entity->storage['chado']['type_table'] = $details->type_table;
+    $entity->storage['chado']['field'] = $details->field;
+
     // Find out which table should receive the insert.
-    $tablename = 'feature';
-    $type_field = 'type_id';
+    $tablename = $entity->storage['chado']['data_table'];
+    $type_field = $entity->storage['chado']['field'];
     $schema = chado_get_schema($tablename);
     $pkey_field = $schema['primary key'][0];
-    $record_id = $entity->record_id;
+    $record_id = $entity->storage['chado']['record_id'];
 
     // Iterate through the field names to get the list of tables and fields
     // that should be queried.
@@ -104,7 +136,7 @@ function tripal_entities_field_storage_load($entity_type, $entities, $age, $fiel
     }
 
     // Get the record
-    $values = array($pkey_field => $entity->record_id);
+    $values = array($pkey_field => $record_id);
     $record = chado_select_record($tablename, $columns[$tablename], $values);
 
     // Now set the field values

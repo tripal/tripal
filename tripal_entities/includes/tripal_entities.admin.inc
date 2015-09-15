@@ -81,12 +81,11 @@ function tripal_entities_content_overview_form($form, &$form_state) {
   $headers = array('Title', 'Vocabulary', 'Term', 'Author', 'Status', 'Updated', 'Operations');
   $rows = array();
   while ($entity = $entities->fetchObject()) {
-    $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $entity->cvterm_id));
     $author = user_load($entity->uid);
     $rows[] = array(
       l($entity->title, 'data/' . $entity->id),
-      $entity->type . ' (' . $cvterm->cv_id->name . ')',
-      $entity->bundle  . ' (' . $cvterm->name . ')',
+      $entity->type,
+      $entity->bundle,
       l($author->name, 'user/' . $entity->uid),
       $entity->status == 1 ? 'published' : 'unpublished',
       format_date($entity->changed, 'short'),

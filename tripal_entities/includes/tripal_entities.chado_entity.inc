@@ -5,9 +5,7 @@
  * Implements hook_entity_load().
  */
 function tripal_entities_entity_load($entities, $type) {
-  foreach ($entities as $id => $entity) {
 
-  }
 }
 
 /**

@@ -326,8 +326,10 @@ function tripal_bundle_load($bundle_type, $reset = FALSE) {
 }
 
 /**
- * Fetch a tripal_entity object. Make sure that the wildcard you choose
- * in the tripal_entity entity definition fits the function name here.
+ * Allows the menu system to use a wildcard to fetch the entity.
+ *
+ * Make sure that the wildcard you choose in the tripal_entity entity
+ * definition fits the function name here.
  *
  * @param $id
  *   Integer specifying the tripal_entity id.
@@ -348,6 +350,6 @@ function tripal_entity_load($id, $reset = FALSE) {
     ->fetchField();
 
   // Load the entity.
-  $entity =  entity_load($entity_type, array($id), array(), $reset);
+  $entity = entity_load($entity_type, array($id), array(), $reset);
   return reset($entity);
 }

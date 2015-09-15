@@ -19,8 +19,6 @@ function tripal_entities_install() {
   // chado schema
   tripal_entities_add_custom_tables();
 
-  drupal_set_message('The current Entity Example (Genes) requires the Sequence Ontology.', 'warning');
-
 }
 
 /**
@@ -34,7 +32,8 @@ function tripal_entities_add_custom_tables() {
   tripal_entities_add_tripal_term_relationship_table();
 }
 
-/**
+/**The current Entity Example (Genes) requires the Sequence Ontology.                                     [warning]
+
  *
  */
 function tripal_entities_add_tripal_vocabulary_table() {
@@ -425,7 +424,7 @@ function tripal_entities_schema() {
       'bundle' => array('bundle'),
     ),
   );
-  
+
   $schema['chado_entity'] = array(
     'description' => 'The linker table that associates an enitity from the public.tripal_entity table with a "base" record in Chado',
     'fields' => array(
