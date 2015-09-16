@@ -93,24 +93,11 @@ class TripalEntityController extends EntityAPIController {
       $invocation = 'entity_update';
       $pkeys = array('id');
     }
-    // Now we need to either insert or update the fields which are
-    // attached to this entity. We use the same primary_keys logic
-    // to determine whether to update or insert, and which hook we
-    // need to invoke.
-    if ($invocation == 'entity_insert') {
-      field_attach_insert($entity->entity_type, $entity);
-    }
-    else {
-      field_attach_update($entity->entity_type, $entity);
-    }
 
     // Invoke hook_entity_presave().
     module_invoke_all('entity_presave', $entity, $entity->entity_type);
 
     // Write out the entity record.
-    /* $tablename = 'feature';
-    $schema = chado_get_schema($tablename);
-    $pkey_field = $schema['primary key'][0]; */
     $record = array(
       'type'      => $entity->entity_type,
       'bundle'    => $entity->bundle,
@@ -125,6 +112,17 @@ class TripalEntityController extends EntityAPIController {
     $success = drupal_write_record('tripal_entity', $record, $pkeys);
     if ($success == SAVED_NEW) {
       $entity->id = $record['id'];
+    }
+
+    // Now we need to either insert or update the fields which are
+    // attached to this entity. We use the same primary_keys logic
+    // to determine whether to update or insert, and which hook we
+    // need to invoke.
+    if ($invocation == 'entity_insert') {
+      field_attach_insert($entity->entity_type, $entity);
+    }
+    else {
+      field_attach_update($entity->entity_type, $entity);
     }
 
     // Invoke either hook_entity_update() or hook_entity_insert().
