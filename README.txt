@@ -36,8 +36,8 @@ Chado Schema
 
 Installation
 --------------
-Please follow the online tutorial for installation instructions:
-http://www.gmod.org/wiki/Tripal_Tutorial_v1.1
+Please follow the instructions in the online Tripal User's Guide:
+http://tripal.info/tutorials/v2.0/installation
 
 Customization
 --------------
