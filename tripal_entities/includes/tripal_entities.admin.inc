@@ -160,13 +160,13 @@ function tripal_entities_admin_bundles_form($form, &$form_state) {
   $form['refresh_bundles'] = array(
     '#type' => 'submit',
     '#value' => t('Refresh Data Types'),
-    '#submit' => array('tripal_entity_admin_bundles_form_submit_refresh_bundles'),
+    '#name' => 'refresh_bundles',
   );
 
   $form['publish_new_data'] = array(
     '#type' => 'submit',
     '#value' => t('Publish New Data'),
-    '#submit' => array('tripal_entity_admin_bundles_form_submit_publish_new_data'),
+    '#name' => 'publish_new_data',
   );
 
   $form['#prefix'] = '<div id="tripal_entities_admin_bundle_form">';
@@ -178,9 +178,13 @@ function tripal_entities_admin_bundles_form($form, &$form_state) {
  * Submit a job to populate the entity tables
  * This operation makes available data types in the database publishable
  */
-function tripal_entity_admin_bundles_form_submit_refresh_bundles () {
+function tripal_entities_admin_bundles_form_submit($form, $form_state) {
   global $user;
-  tripal_add_job('Create publishable data types', 'tripal_entity', 'tripal_entities_populate_entity_tables', array(), $user->uid);
+  if ($form_state['clicked_button']['#name'] == 'refresh_bundles') {
+    tripal_add_job('Create publishable data types', 'tripal_entity', 'tripal_entities_populate_entity_tables', array(), $user->uid);
+  }
+  if ($form_state['clicked_button']['#name'] == 'publish_new_data') {
+  }
 }
 
 /**
@@ -306,8 +310,7 @@ function tripal_entities_admin_publish_form_submit($form, &$form_state) {
   $term_name = $form_state['values']['term_name'];
 
   // Get the data type using the $term_name and $cv_id.
-  $type = chado_generate_var('cvterm', array('cv_id' => $cv_id, 'name' => $term_name));
-
+  $cvterm = chado_generate_var('cvterm', array('cv_id' => $cv_id, 'name' => $term_name));
 
   // Start the transaction.
   $transaction = db_transaction();
@@ -326,51 +329,31 @@ function tripal_entities_admin_publish_form_submit($form, &$form_state) {
 
     // We have already checked in the validate if the term already exists
     // as a bundle. So, if we're here we can enable it.
-    $match = array('cvterm_id' => $type->cvterm_id);
+    $match = array('cvterm_id' => $cvterm->cvterm_id);
     $values = array('publish' => 1);
     $success = chado_update_record('tripal_term', $match, $values);
     if (!$success) {
       throw new Exception('Cannot set the data type as publishable');
     }
 
-    // Get the bundle
-    $records = chado_select_record('tripal_term', array('*'), $match);
-    $bundle = $records[0];
-    $bundle_name = $type->dbxref_id->db_id->name . '_' . $type->dbxref_id->accession;
-    $entity_type_name = $type->dbxref_id->db_id->name;
+    // Create the bundle name and entity type name.
+    $bundle_name = $cvterm->dbxref_id->db_id->name . '_' . $cvterm->dbxref_id->accession;
+    $entity_type_name = $cvterm->dbxref_id->db_id->name;
 
-    // Get the list of tables where this cvterm is used.
-    $values = array('term_id' => $bundle->term_id);
-    $tables = chado_select_record('tripal_term_usage', array('*'), $values);
+    // The TripalBundle Entity manages the bundles we have available.
+    // Therefore, we need to add a new entity for each bundle "type".
+    $vals = array(
+      'label' => $bundle_name  . ' (' . $cvterm->name . ')',
+      'type' => $entity_type_name,
+      'bundle' => $bundle_name,
+      'data' => serialize(array()),
+      'module' => 'tripal_entities'
+    );
+    $tripal_bundle = new TripalBundle($vals, $entity_type_name . '_bundle');
+    $tripal_bundle->save();
 
-    // Iterate through the tables.
-    foreach ($tables as $table) {
-      $tablename = $table->data_table;
-
-      // We only want to look at base tables.
-      if ($tablename == 'cvterm_dbxref' || $tablename == 'cvterm_relationship' ||
-          $tablename == 'cvtermpath' || $tablename == 'cvtermprop' || $tablename == 'chadoprop' ||
-          $tablename == 'cvtermsynonym' || preg_match('/_relationship$/', $tablename) ||
-          preg_match('/_cvterm$/', $tablename)) {
-        continue;
-      }
-
-      // Add in the bundle's fields.
-      tripal_entities_add_bundle_fields($tablename, $entity_type_name, $bundle_name);
-
-      // The TripalBundle Entity manages the bundles we have available.
-      // Therefore, we need to add a new entity for each bundle "type".
-       $vals = array(
-        'label' => $bundle_name  . ' (' . $type->name . ')',
-        'type' => $entity_type_name,
-        'bundle' => $bundle_name,
-        'data' => serialize(array()),
-        'module' => 'tripal_entities'
-      );
-      $tripal_bundle = new TripalBundle($vals, $entity_type_name . '_bundle');
-      $tripal_bundle->save();
-    }
-    drupal_set_message(t('Data type, %type, is now set as publishable.', array('%type' => $term_name)));
+    // Allow modules to now add fields to the bundle
+    module_invoke_all('add_bundle_fields', $entity_type_name, $bundle_name, $cvterm);
   }
   catch (Exception $e) {
     $transaction->rollback();
@@ -378,156 +361,175 @@ function tripal_entities_admin_publish_form_submit($form, &$form_state) {
     watchdog_exception('trp_entities', $e);
   }
 
+  drupal_set_message(t('Data type, %type, is now set as publishable.', array('%type' => $term_name)));
 }
-
 /**
  *
  * @param $table
  * @param $entity_type
  * @param $bundle_name
  */
-function tripal_entities_add_bundle_fields($tablename, $entity_type_name, $bundle_name) {
+function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvterm) {
 
-  // Iterate through the columns of the table and see if fields have been
-  // created for each one. If not, then create them.
-  $schema = chado_get_schema($tablename);
-  $columns = $schema['fields'];
-  foreach ($columns as $column_name => $details) {
-    $field_name = $tablename . '__' . $column_name;
-    $field = field_info_field($field_name);
+  // Get the list of tables where this cvterm is used.
+  $match = array('cvterm_id' => $cvterm->cvterm_id);
+  $term = chado_select_record('tripal_term', array('*'), $match);
+  $values = array('term_id' => $term[0]->term_id);
+  $tables = chado_select_record('tripal_term_usage', array('*'), $values);
 
-    // Skip the primary key field.
-    if ($column_name == $schema['primary key'][0]) {
+  // Iterate through the tables.
+  foreach ($tables as $table) {
+    $tablename = $table->data_table;
+
+    // We only want to look at base tables.
+    if ($tablename == 'cvterm_dbxref' || $tablename == 'cvterm_relationship' ||
+        $tablename == 'cvtermpath' || $tablename == 'cvtermprop' || $tablename == 'chadoprop' ||
+        $tablename == 'cvtermsynonym' || preg_match('/_relationship$/', $tablename) ||
+        preg_match('/_cvterm$/', $tablename)) {
       continue;
     }
 
-    // Determine if the field is required.
-    $is_required = 0;
-    if (array_key_exists('not null', $details)) {
-      $is_required = $details['not null'] ? 1 : 0;
-    }
+    // Iterate through the columns of the table and see if fields have been
+    // created for each one. If not, then create them.
+    $schema = chado_get_schema($tablename);
+    $columns = $schema['fields'];
+    foreach ($columns as $column_name => $details) {
+      $field_name = $tablename . '__' . $column_name;
+      $field = field_info_field($field_name);
 
-    // Determine what type of field this should be.
-    // Drupal data types are: https://www.drupal.org/node/159605.
-    // Field types are here:  https://www.drupal.org/node/1879542
-    $field_type = '';
-    $widget_type = '';
-    $settings = array();
-    $label = '';
-    switch($details['type']) {
-      case 'char':
-        // unsupported by postgres
-        break;
-      case 'varchar':
-        $field_type = 'text';
-        $widget_type = 'text_textfield';
-        $settings['max_length'] = $details['length'];
-        break;
-      case 'text':
-        $field_type = 'text';
-        $widget_type = 'text_textarea';
-        $settings['max_length'] = '';
-        break;
-      case 'blob':
-        // not sure how to support a blob field.
+      // Skip the primary key field.
+      if ($column_name == $schema['primary key'][0]) {
         continue;
-        break;
-      case 'int':
-        $field_type = 'number_integer';
-        $widget_type = 'number';
-        break;
-      case 'float':
-        $field_type = 'number_float';
-        $widget_type = 'number';
-        $settings['precision'] = 10;
-        $settings['scale'] = 2;
-        $settings['decimal_separator'] = '.';
-        break;
-      case 'numeric':
-        $field_type = 'number_decimal';
-        $widget_type = 'number';
-        break;
-      case 'serial':
-        // Serial fields are most likely not needed as a field.
-        break;
-      case 'boolean':
-        // TODO: what is the proper field for booleans?????
-        break;
-      case 'datetime':
-        // TODO: What is the proper datetime fields ??????
-        break;
-      default:
-        drupal_set_message(t("Unhandled field type: %type", array('%type' => $details['type'])), 'warning');
-        $field_type = 'text';
-        $widget_type = 'text_textarea';
-        if (array_key_exists('length', $details)) {
-          $settings['max_length'] = $details['length'];
-        }
-    }
-
-    // If we don't have a field type then we don't need to create a field.
-    if (!$field_type) {
-      // If we don't have a field type but it is required and doesn't have
-      // a default value then we are in trouble.
-      if ($is_required and !array_key_exists('default', $details)) {
-        throw new Exception(t('The %table.%field type, %type, is not yet supported for Entity fields, but it is required,',
-          array('%table' => $tablename, '%field' => $column_name, '%type' => $details['type'])));
       }
-      continue;
-    }
 
-    // If this field is a foreign key field then we will have a special custom
-    // field provided by Tripal.
-    $is_fk = FALSE;
-    if (array_key_exists('foreign keys', $schema)) {
-      foreach ($schema['foreign keys'] as $remote_table => $fk_details) {
-        if (array_key_exists($column_name, $fk_details['columns'])) {
-          $is_fk = TRUE;
-        }
+      // Determine if the field is required.
+      $is_required = 0;
+      if (array_key_exists('not null', $details)) {
+        $is_required = $details['not null'] ? 1 : 0;
       }
-    }
 
-    // If this column is a FK relationship then use a custom Tripal
-    // defined field type for it.
-    if ($is_fk) {
-      // TODO: We need a better way to get the fields for FK relationships.
-      // It's not a good idea to enumerate them all here. We need some sort
-      // of hook or something that will let us lookup the correct field.
-      switch ($column_name) {
-        case 'organism_id':
-          $field_type = 'organism_id';
-          $label = 'Organism';
-          $widget_type = 'tripal_entities_organism_select_widget';
+      // Determine what type of field this should be.
+      // Drupal data types are: https://www.drupal.org/node/159605.
+      // Field types are here:  https://www.drupal.org/node/1879542
+      $field_type = '';
+      $widget_type = '';
+      $settings = array();
+      $label = '';
+      switch($details['type']) {
+        case 'char':
+          // unsupported by postgres
           break;
+        case 'varchar':
+          $field_type = 'text';
+          $widget_type = 'text_textfield';
+          $settings['max_length'] = $details['length'];
+          break;
+        case 'text':
+          $field_type = 'text';
+          $widget_type = 'text_textarea';
+          $settings['max_length'] = '';
+          break;
+        case 'blob':
+          // not sure how to support a blob field.
+          continue;
+          break;
+        case 'int':
+          $field_type = 'number_integer';
+          $widget_type = 'number';
+          break;
+        case 'float':
+          $field_type = 'number_float';
+          $widget_type = 'number';
+          $settings['precision'] = 10;
+          $settings['scale'] = 2;
+          $settings['decimal_separator'] = '.';
+          break;
+        case 'numeric':
+          $field_type = 'number_decimal';
+          $widget_type = 'number';
+          break;
+        case 'serial':
+          // Serial fields are most likely not needed as a field.
+          break;
+        case 'boolean':
+          // TODO: what is the proper field for booleans?????
+          break;
+        case 'datetime':
+          // TODO: What is the proper datetime fields ??????
+          break;
+        default:
+          drupal_set_message(t("Unhandled field type: %type", array('%type' => $details['type'])), 'warning');
+          $field_type = 'text';
+          $widget_type = 'text_textarea';
+          if (array_key_exists('length', $details)) {
+            $settings['max_length'] = $details['length'];
+          }
       }
-    }
-    // If the field doesn't exist then create it.
-    if (!$field) {
-      $field = array(
-        'field_name' => $field_name,
-        'type' => $field_type,
-        'cardinality' => 1,
-        'locked' => TRUE,
-        'storage' => array(
-          'type' => 'field_chado_storage'
-        ),
-      );
-      field_create_field($field);
-    }
 
-    // Attach the field to the bundle.
-    $field_instance = array(
-      'field_name' => $field_name,
-      'label' => $label ? $label : ucwords(preg_replace('/_/', ' ', $column_name)),
-      'widget' => array(
-        'type' => $widget_type
-      ),
-      'entity_type' => $entity_type_name,
-      'required' => $is_required,
-      'settings' => $settings,
-      'bundle' => $bundle_name,
-    );
-    field_create_instance($field_instance);
+      // If we don't have a field type then we don't need to create a field.
+      if (!$field_type) {
+        // If we don't have a field type but it is required and doesn't have
+        // a default value then we are in trouble.
+        if ($is_required and !array_key_exists('default', $details)) {
+          throw new Exception(t('The %table.%field type, %type, is not yet supported for Entity fields, but it is required,',
+            array('%table' => $tablename, '%field' => $column_name, '%type' => $details['type'])));
+        }
+        continue;
+      }
+
+      // If this field is a foreign key field then we will have a special custom
+      // field provided by Tripal.
+      $is_fk = FALSE;
+      if (array_key_exists('foreign keys', $schema)) {
+        foreach ($schema['foreign keys'] as $remote_table => $fk_details) {
+          if (array_key_exists($column_name, $fk_details['columns'])) {
+            $is_fk = TRUE;
+          }
+        }
+      }
+
+      // If this column is a FK relationship then use a custom Tripal
+      // defined field type for it.
+      if ($is_fk) {
+        // TODO: We need a better way to get the fields for FK relationships.
+        // It's not a good idea to enumerate them all here. We need some sort
+        // of hook or something that will let us lookup the correct field.
+        switch ($column_name) {
+          case 'organism_id':
+            $field_type = 'organism_id';
+            $label = 'Organism';
+            $widget_type = 'tripal_entities_organism_select_widget';
+            break;
+        }
+      }
+      // If the field doesn't exist then create it.
+      if (!$field) {
+        $field = array(
+          'field_name' => $field_name,
+          'type' => $field_type,
+          'cardinality' => 1,
+          'locked' => TRUE,
+          'storage' => array(
+            'type' => 'field_chado_storage'
+          ),
+        );
+        field_create_field($field);
+      }
+
+      // Attach the field to the bundle.
+      $field_instance = array(
+        'field_name' => $field_name,
+        'label' => $label ? $label : ucwords(preg_replace('/_/', ' ', $column_name)),
+        'widget' => array(
+          'type' => $widget_type
+        ),
+        'entity_type' => $entity_type_name,
+        'required' => $is_required,
+        'settings' => $settings,
+        'bundle' => $bundle_name,
+      );
+      field_create_instance($field_instance);
+    }
   }
 }
 /**
