@@ -333,6 +333,11 @@ function tripal_entities_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
+      'cvterm_id' => array(
+        'description' => 'The cvterm_id for the type of entity. This cvterm_id should match a record in the Chado cvterm table.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
       'title' => array(
         'description' => 'The title of this node, always treated as non-markup plain text.',
         'type' => 'text',
@@ -365,6 +370,7 @@ function tripal_entities_schema() {
       ),
     ),
     'indexes' => array(
+      'cvterm_id' => array('cvterm_id'),
       'entity_changed' => array('changed'),
       'entity_created' => array('created'),
       'type' => array('type'),

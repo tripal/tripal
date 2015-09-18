@@ -99,6 +99,7 @@ class TripalEntityController extends EntityAPIController {
 
     // Write out the entity record.
     $record = array(
+      'cvterm_id' => $entity->cvterm_id,
       'type'      => $entity->entity_type,
       'bundle'    => $entity->bundle,
       'title'     => 'title',
