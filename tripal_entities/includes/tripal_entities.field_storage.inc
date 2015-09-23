@@ -16,8 +16,34 @@ function tripal_entities_field_storage_info() {
  * Implements hook_field_storage_write().
  */
 function tripal_entities_field_storage_write($entity_type, $entity, $op, $fields) {
+ 
+  // Use the cvterm_id to look up tables where this term is used
+  $cvterm_id = $entity->cvterm_id;
+  $sel_values = array(
+    'term_id' => array(
+        'cvterm_id' => $cvterm_id
+    ),
+  );
+  $term_usage = chado_generate_var('tripal_term_usage', $sel_values, array('return_array' => 1));
+  
+  // For each table that uses this term, insert the field recursively
+  foreach ($term_usage as $usage) {
+    $data_table = $usage->data_table;
+    //$type_table = $usage->type_table;
+    $type_field = $usage->field;
+    switch ($op) {
+      case FIELD_STORAGE_INSERT :
+        tripal_entities_field_storage_write_recursive($entity_type, $entity, $op, $fields, $data_table, $type_field);
+        break;
+      
+      case FIELD_STORAGE_UPDATE :
+        
+        break;
+    }
+  }
+
   // Get the IDs for this entity.
-  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+/*   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
 
   // Find out which table should receive the insert.
   $tablename = 'feature';
@@ -80,8 +106,34 @@ function tripal_entities_field_storage_write($entity_type, $entity, $op, $fields
       $match[$pkey_field] = $entity->storage['chado']['record_id'];
       chado_update_record($tablename, $match, $values);
       break;
+  } */
+}
+
+/**
+ * Implements hook_field_storage_write_recursive().
+ */
+function tripal_entities_field_storage_write_recursive($entity_type, $entity, $op, $fields, $tablename, $type_field = NULL, $record_id = NULL) {
+  $values = array ();
+  $schema = chado_get_schema($tablename);
+  $pkey_field = $schema['primary key'][0];
+  $fkey_fields = $schema['foreign keys'];
+
+  //Loop through the foreign keys
+  foreach ($fkey_fields AS $fkey) {
+    $foreign_table = $fkey['table'];
+    $foreign_column = key($fkey['columns']);
+    // Do not recurse on the $type_field
+    if ($foreign_column == $type_field) {
+      continue;
+    }
+    $record_field = $tablename . "__" . $foreign_column;
+    $record_id = $entity->{$record_field}['und'][0]['value'];
+    if($record_id) {
+      tripal_entities_field_storage_write_recursive($entity_type, $entity, $op, $fields, $foreign_table, NULL, $record_id);
+    }
   }
 }
+
 /**
  * Implements hook_field_storage_load().
  *
