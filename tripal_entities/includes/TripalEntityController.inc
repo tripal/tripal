@@ -77,6 +77,21 @@ class TripalEntityController extends EntityAPIController {
   }
 
   /**
+   * Sets the title for an entity.
+   *
+   * @param $entity
+   * @param $title
+   */
+  public function setTitle($entity, $title) {
+    db_update('tripal_entity')
+      ->fields(array(
+        'title' => $title
+      ))
+      ->condition('id', $entity->id)
+      ->execute();
+  }
+
+  /**
    * Saves the custom fields using drupal_write_record().
    */
   public function save($entity) {
@@ -95,14 +110,14 @@ class TripalEntityController extends EntityAPIController {
     }
 
     // Invoke hook_entity_presave().
-    module_invoke_all('entity_presave', $entity, $entity->entity_type);
+    module_invoke_all('entity_presave', $entity, $entity->type);
 
     // Write out the entity record.
     $record = array(
       'cvterm_id' => $entity->cvterm_id,
-      'type'      => $entity->entity_type,
+      'type'      => $entity->type,
       'bundle'    => $entity->bundle,
-      'title'     => 'title',
+      'title'     => $entity->title,
       'uid'       => $user->uid,
       'created'   => $entity->created,
       'changed'   => time(),
@@ -120,14 +135,15 @@ class TripalEntityController extends EntityAPIController {
     // to determine whether to update or insert, and which hook we
     // need to invoke.
     if ($invocation == 'entity_insert') {
-      field_attach_insert($entity->entity_type, $entity);
+      field_attach_insert($entity->type, $entity);
     }
     else {
-      field_attach_update($entity->entity_type, $entity);
+      field_attach_update($entity->type, $entity);
     }
 
     // Invoke either hook_entity_update() or hook_entity_insert().
-    module_invoke_all($invocation, $entity, $entity->entity_type);
+    module_invoke_all('entity_postsave', $entity, $entity->type);
+    module_invoke_all($invocation, $entity, $entity->type);
 
     return $entity;
   }

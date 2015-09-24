@@ -144,7 +144,7 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
       $accession = '';
       $version = '';
       $description = '';
-      if ($items[0]['value']) {
+      if (count($items) > 0 and $items[0]['value']) {
         $dbxref = chado_generate_var('dbxref', array('dbxref_id' => $items[0]['value']));
         $dbxref_id = $dbxref->dbxref_id;
         $db_id = $dbxref->db_id->db_id;

@@ -203,7 +203,7 @@ function tripal_entity_form($form, &$form_state, $entity = NULL) {
       '#type'  => 'hidden',
       '#value' => $cv_id,
     );
-    $form['entity_type'] = array(
+    $form['type'] = array(
       '#type'  => 'hidden',
       '#value' => $cvterm->dbxref_id->db_id->name,
     );
@@ -283,7 +283,7 @@ function tripal_entity_form_validate($form, &$form_state) {
 
   if ($form_state['clicked_button']['#name'] == 'add_data') {
     $tripal_entity = (object) $form_state['values'];
-    $entity_type = $form_state['values']['entity_type'];
+    $entity_type = $form_state['values']['type'];
     field_attach_form_validate($entity_type, $tripal_entity, $form, $form_state);
   }
 }
@@ -311,7 +311,7 @@ function tripal_entity_form_submit($form, &$form_state) {
       $form_state['clicked_button']['#name'] == 'add_data') {
     // Use the Entity API to get the entity from the form state, then
     // attach the fields and save.
-    $entity_type = $form_state['values']['entity_type'];
+    $entity_type = $form_state['values']['type'];
     $entity = entity_ui_controller($entity_type)->entityFormSubmitBuildEntity($form, $form_state);
     $entity->save();
     $form_state['redirect'] = "data/$entity->id";
