@@ -19,7 +19,7 @@ function tripal_entities_field_info() {
     ),
     'dbxref_id' => array(
       'label' => t('Primary Cross-reference'),
-      'description' => t('If this record is found in another online database you may link to it by providing a database cross reference.'),
+      'description' => t('This record can be cross-referenced with a record in another online database. This field is intended for the most prominent reference.  At a minimum, the database and accession must be provided.'),
       'default_widget' => 'tripal_entities_primary_dbxref_widget',
       'default_formatter' => 'tripal_entities_primary_dbxref_formatter',
       'settings' => array(),
@@ -44,7 +44,8 @@ function tripal_entities_field_widget_info() {
     ),
     'tripal_entities_primary_dbxref_widget' => array(
       'label' => t('Primary Cross-reference'),
-      'field types' => array('dbxref_id')
+      'field types' => array('dbxref_id'),
+      'description' => t('This record can be cross-referenced with a record in another online database. This field is intended for the most prominent reference.  At a minimum, the database and accession must be provided.'),
     ),
   );
 }
@@ -77,7 +78,7 @@ function tripal_entities_field_formatter_info() {
 function tripal_entities_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
   switch ($display['type']) {
-    // This formatter simply outputs the field as text and with a color.
+
     case 'tripal_entities_organism_formatter':
       foreach ($items as $delta => $item) {
         $organism = chado_select_record('organism', array('genus', 'species'), array('organism_id' => $item['value']));
@@ -87,6 +88,23 @@ function tripal_entities_field_formatter_view($entity_type, $entity, $field, $in
           // See theme_html_tag().
           '#type' => 'markup',
           '#markup' => '<i>' . $organism[0]->genus .' ' . $organism[0]->species . '</i>',
+        );
+      }
+      break;
+    case 'tripal_entities_primary_dbxref_formatter':
+      foreach ($items as $delta => $item) {
+        $accession = '';
+        if ($item['value']) {
+          $dbxref = chado_generate_var('dbxref', array('dbxref_id' => $item['value']));
+          $accession = $dbxref->db_id->name . ':' . $dbxref->accession;
+          if ($dbxref->db_id->urlprefix) {
+            $accession = l($accession, $dbxref->db_id->urlprefix . '/' . $dbxref->accession);
+          }
+        }
+        $element[$delta] = array(
+          // We create a render array to produce the desired markup,
+          '#type' => 'markup',
+          '#markup' => $accession,
         );
       }
       break;
@@ -120,40 +138,63 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
       $element['value'] = $widget;
       break;
     case 'tripal_entities_primary_dbxref_widget':
+      // Get the field defaults from the database if a record exists.
+      $dbxref_id = '';
+      $db_id = '';
+      $accession = '';
+      $version = '';
+      $description = '';
+      if ($items[0]['value']) {
+        $dbxref = chado_generate_var('dbxref', array('dbxref_id' => $items[0]['value']));
+        $dbxref_id = $dbxref->dbxref_id;
+        $db_id = $dbxref->db_id->db_id;
+        $accession  = $dbxref->accession;
+        $version = $dbxref->version;
+        $description = $dbxref->description;
+      }
+
+      $schema = chado_get_schema('dbxref');
       $options = tripal_get_db_select_options();
       $widget += array(
-        'dbxref_id' => array(
-          '#type' => 'fieldset',
-          '#title' => $element['#title'],
-          '#description' => $element['#description'],
-          '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-          '#delta' => $delta,
-          array(
-            'dbxref_id_db_id' => array(
-              '#type' => 'select',
-              '#title' => t('Database'),
-              '#options' => $options,
-              '#default_value' => count($items) > 0 ? $items[0]['value'] : 0,
-              '#required' => $element['#required'],
-            ),
-            'dbxref_id_accession' => array(
-              '#type' => 'textfield',
-              '#title' => t('Accession'),
-              '#default_value' => count($items) > 0 ? $items[0]['value'] : '',
-              '#required' => $element['#required'],
-            ),
-            'dbxref_id_version' => array(
-              '#type' => 'textfield',
-              '#title' => t('Version'),
-              '#default_value' => count($items) > 0 ? $items[0]['value'] : '',
-              '#required' => $element['#required'],
-            ),
-            'dbxref_id_description' => array(
-              '#type' => 'textfield',
-              '#title' => t('Description'),
-              '#default_value' => count($items) > 0 ? $items[0]['value'] : '',
-              '#required' => $element['#required'],
-            ),
+        '#element_validate' => array('tripal_entities_primary_dbxref_widget_validate'),
+        '#type' => 'fieldset',
+        '#title' => $element['#title'],
+        '#description' => 'Hi', // $element['#description'],
+        '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
+        '#delta' => $delta,
+        '#theme' => 'tripal_entities_primary_dbxref_widget',
+        array(
+          $element['#field_name'] => array(
+            '#type' => 'hidden',
+            '#default_value' => $dbxref_id,
+          ),
+          'dbxref__db_id' => array(
+            '#type' => 'select',
+            '#title' => t('Database'),
+            '#options' => $options,
+            '#required' => $element['#required'],
+            '#default_value' => $db_id,
+          ),
+          'dbxref__accession' => array(
+            '#type' => 'textfield',
+            '#title' => t('Accession'),
+            '#default_value' => $accession,
+            '#required' => $element['#required'],
+            '#maxlength' => array_key_exists('length', $schema['fields']['accession']) ? $schema['fields']['accession']['length'] : 255,
+            '#size' => 15,
+          ),
+          'dbxref__version' => array(
+            '#type' => 'textfield',
+            '#title' => t('Version'),
+            '#default_value' => $version,
+            '#maxlength' => array_key_exists('length', $schema['fields']['version']) ? $schema['fields']['version']['length'] : 255,
+            '#size' => 5,
+          ),
+          'dbxref__description' => array(
+            '#type' => 'textfield',
+            '#title' => t('Description'),
+            '#default_value' => $description,
+            '#size' => 20,
           ),
         ),
       );
@@ -177,16 +218,81 @@ function tripal_entities_field_is_empty($item, $field) {
  * Callback function for validating the tripal_entities_organism_select_widget.
  */
 function tripal_entities_organism_select_widget_validate($element, &$form_state) {
-
   $field_name = $element['#field_name'];
-  // Make sure we have a valid organism
+
+  $organism_id = tripal_entities_get_field_form_values($field_name, $form_state);
+
+  if (count($organism_id) == 0) {
+    form_error($element, t("Please specify an organism that already exists in the database."));
+  }
+}
+/**
+ * Callback function for validating the tripal_entities_organism_select_widget.
+ */
+function tripal_entities_primary_dbxref_widget_validate($element, &$form_state) {
+  $field_name = $element['#field_name'];
+
+  // Get the field values.
+  $db_id = tripal_entities_get_field_form_values($field_name, $form_state, "dbxref__db_id");
+  $accession = tripal_entities_get_field_form_values($field_name, $form_state, "dbxref__accession");
+  $version = tripal_entities_get_field_form_values($field_name, $form_state, "dbxref__version");
+  $description = tripal_entities_get_field_form_values($field_name, $form_state, "dbxref__description");
+
+  // Make sure that if a database ID is provided that an accession is also
+  // provided.  Here we use the form_set_error function rather than the
+  // form_error function because the form_error will add a red_highlight
+  // around all of the fields in the fieldset which is confusing as it's not
+  // clear to the user what field is required and which isn't. Therefore,
+  // we borrow the code from the 'form_error' function and append the field
+  // so that the proper field is highlighted on error.
+  if (count($db_id) == 0 and count($accession) > 0) {
+    form_set_error(implode('][', $element ['#parents']) . '][0][dbxref__db_id', t("A database and the accession must both be provided for the primary cross reference."));
+  }
+  if (count($db_id) > 0 and count($accession) == 0) {
+    form_set_error(implode('][', $element ['#parents']) . '][0][dbxref__accession', t("A database and the accession must both be provided for the primary cross reference."));
+  }
+}
+
+/**
+ * Theme function for the primary_dbxref_widget.
+ *
+ * @param $variables
+ */
+function theme_tripal_entities_primary_dbxref_widget($variables) {
+  $element = $variables['element'];
+  $layout = "
+    <div class=\"primary-dbxref-widget\">
+      <div class=\"primary-dbxref-widget-item\">" .
+        drupal_render($element[0]['dbxref__db_id']) . "
+      </div>
+      <div class=\"primary-dbxref-widget-item\">" .
+        drupal_render($element[0]['dbxref__accession']) . "
+      </div>
+      <div class=\"primary-dbxref-widget-item\">" .
+        drupal_render($element[0]['dbxref__version']) . "
+      </div>
+      <div class=\"primary-dbxref-widget-item\">" .
+        drupal_render($element[0]['dbxref__description']) . "
+      </div>
+    </div>
+  ";
+  return $layout;
+}
+
+/**
+ * Returns the values of the field from the $form_state.
+ */
+function tripal_entities_get_field_form_values($field_name, $form_state, $child = NULL) {
+  $values = array();
   foreach ($form_state['values'][$field_name] as $langcode => $items) {
     foreach ($items as $delta => $value) {
-      $organism_id = chado_select_record('organism', array('organism_id'),
-        array('organism_id' => $value['value']), array('has_record' => TRUE));
-      if (!$organism_id) {
-        form_error($element, t("Please specify an organism that already exists in the database."));
+      if ($child and array_key_exists($child, $value['value'][0]) and $value['value'][0][$child]) {
+        $values[] = $value['value'][0][$child];
+      }
+      else if (!$child and $value['value']) {
+        $values[] = $value['value'];
       }
     }
   }
+  return $values;
 }

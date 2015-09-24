@@ -99,6 +99,10 @@ function tripal_entities_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_entity',
       'path' => "$path/theme/templates"
     ),
+    // Field themes.
+    'tripal_entities_primary_dbxref_widget' => array(
+      'render element' => 'element',
+    ),
   );
 }
 

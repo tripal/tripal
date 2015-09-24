@@ -380,6 +380,8 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
   // Iterate through the tables.
   foreach ($tables as $table) {
     $tablename = $table->data_table;
+    $type_table = $table->type_table;
+    $type_field = $table->field;
 
     // We only want to look at base tables.
     if ($tablename == 'cvterm_dbxref' || $tablename == 'cvterm_relationship' ||
@@ -399,6 +401,11 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
 
       // Skip the primary key field.
       if ($column_name == $schema['primary key'][0]) {
+        continue;
+      }
+
+      // Skip the type field.
+      if ($tablename == $type_table and $column_name == $field_type) {
         continue;
       }
 
