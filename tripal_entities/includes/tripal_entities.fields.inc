@@ -43,7 +43,7 @@ function tripal_entities_field_widget_info() {
       'field types' => array('organism_id')
     ),
     'tripal_entities_primary_dbxref_widget' => array(
-      'label' => t('Primary Cross-reference'),
+      'label' => t('Cross-reference'),
       'field types' => array('dbxref_id'),
       'description' => t('This record can be cross-referenced with a record in another online database. This field is intended for the most prominent reference.  At a minimum, the database and accession must be provided.'),
     ),
@@ -59,7 +59,7 @@ function tripal_entities_field_formatter_info() {
       'field types' => array('organism_id')
     ),
     'tripal_entities_primary_dbxref_formatter' => array(
-      'label' => t('Primary Cross-reference'),
+      'label' => t('Cross-reference'),
       'field types' => array('dbxref_id')
     ),
   );
