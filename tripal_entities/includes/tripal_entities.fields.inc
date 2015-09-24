@@ -18,7 +18,7 @@ function tripal_entities_field_info() {
       ),
     ),
     'dbxref_id' => array(
-      'label' => t('Primary Cross-reference'),
+      'label' => t('Cross-reference'),
       'description' => t('This record can be cross-referenced with a record in another online database. This field is intended for the most prominent reference.  At a minimum, the database and accession must be provided.'),
       'default_widget' => 'tripal_entities_primary_dbxref_widget',
       'default_formatter' => 'tripal_entities_primary_dbxref_formatter',
@@ -82,6 +82,8 @@ function tripal_entities_field_formatter_view($entity_type, $entity, $field, $in
     case 'tripal_entities_organism_formatter':
       foreach ($items as $delta => $item) {
         $organism = chado_select_record('organism', array('genus', 'species'), array('organism_id' => $item['value']));
+        // TODO: add hook here to allow other modules to change this display
+        // if they want.
         $element[$delta] = array(
           // We create a render array to produce the desired markup,
           // "<p>Genus Species</p>".
@@ -101,6 +103,8 @@ function tripal_entities_field_formatter_view($entity_type, $entity, $field, $in
             $accession = l($accession, $dbxref->db_id->urlprefix . '/' . $dbxref->accession);
           }
         }
+        // TODO: add hook here to allow other modules to change this display
+        // if they want.
         $element[$delta] = array(
           // We create a render array to produce the desired markup,
           '#type' => 'markup',
@@ -159,7 +163,7 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
         '#element_validate' => array('tripal_entities_primary_dbxref_widget_validate'),
         '#type' => 'fieldset',
         '#title' => $element['#title'],
-        '#description' => 'Hi', // $element['#description'],
+        '#description' =>  $element['#description'],
         '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
         '#delta' => $delta,
         '#theme' => 'tripal_entities_primary_dbxref_widget',

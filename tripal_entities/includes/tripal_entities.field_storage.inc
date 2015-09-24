@@ -18,7 +18,7 @@ function tripal_entities_field_storage_info() {
 function tripal_entities_field_storage_write($entity_type, $entity, $op, $fields) {
 
   // Conver the fields into a key/value list of fields and their values.
-  $field_vals = tripal_entities_field_storage_reformat_fields($fields, $entity_type, $entity);
+  $field_vals = tripal_entities_field_storage_unnest_fields($fields, $entity_type, $entity);
   $transaction = db_transaction();
   try {
     switch ($op) {
@@ -254,7 +254,7 @@ function tripal_entities_field_storage_load($entity_type, $entities, $age, $fiel
  *
  * @param $fields
  */
-function tripal_entities_field_storage_reformat_fields($fields, $entity_type, $entity) {
+function tripal_entities_field_storage_unnest_fields($fields, $entity_type, $entity) {
   $new_fields = array();
   foreach ($fields as $field_id => $ids) {
     $field = field_info_field_by_id($field_id);
