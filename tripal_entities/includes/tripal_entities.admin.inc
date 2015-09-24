@@ -405,7 +405,7 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
       }
 
       // Skip the type field.
-      if ($tablename == $type_table and $column_name == $field_type) {
+      if ($tablename == $type_table and $column_name == $type_field) {
         continue;
       }
 
@@ -422,9 +422,12 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
       $widget_type = '';
       $settings = array();
       $label = '';
+
       switch($details['type']) {
         case 'char':
-          // unsupported by postgres
+          $field_type = 'text';
+          $widget_type = 'text_textfield';
+          $settings['max_length'] = $details['length'];
           break;
         case 'varchar':
           $field_type = 'text';
@@ -459,7 +462,9 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
           // Serial fields are most likely not needed as a field.
           break;
         case 'boolean':
-          // TODO: what is the proper field for booleans?????
+          $field_type = 'list_boolean';
+          $widget_type = 'options_onoff';
+          $is_required = 0;
           break;
         case 'datetime':
           // TODO: What is the proper datetime fields ??????
@@ -525,6 +530,10 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
             'type' => 'field_chado_storage'
           ),
         );
+        //add the default values for the boolean field
+        if ($field_type == 'list_boolean') {
+          $field['settings'] = array('allowed_values' => array(0 => 0, 1 => 1),);
+        }
         field_create_field($field);
       }
 
@@ -533,7 +542,8 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
         'field_name' => $field_name,
         'label' => $label ? $label : ucwords(preg_replace('/_/', ' ', $column_name)),
         'widget' => array(
-          'type' => $widget_type
+          'type' => $widget_type,
+          'settings' => array('display_label' => 1)
         ),
         'entity_type' => $entity_type_name,
         'required' => $is_required,
