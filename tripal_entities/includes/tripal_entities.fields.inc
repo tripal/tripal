@@ -17,6 +17,18 @@ function tripal_entities_field_info() {
         'active' => TRUE
       ),
     ),
+    'dbxref_id' => array(
+      'label' => t('Primary Cross-reference'),
+      'description' => t('If this record is found in another online database you may link to it by providing a database cross reference.'),
+      'default_widget' => 'tripal_entities_primary_dbxref_widget',
+      'default_formatter' => 'tripal_entities_primary_dbxref_formatter',
+      'settings' => array(),
+      'storage' => array(
+        'type' => 'field_chado_storage',
+        'module' => 'tripal_entities',
+        'active' => TRUE
+      ),
+    ),
   );
   return $fields;
 }
@@ -30,6 +42,10 @@ function tripal_entities_field_widget_info() {
       'label' => t('Organism Select'),
       'field types' => array('organism_id')
     ),
+    'tripal_entities_primary_dbxref_widget' => array(
+      'label' => t('Primary Cross-reference'),
+      'field types' => array('dbxref_id')
+    ),
   );
 }
 /**
@@ -40,6 +56,10 @@ function tripal_entities_field_formatter_info() {
     'tripal_entities_organism_formatter' => array(
       'label' => t('Organism'),
       'field types' => array('organism_id')
+    ),
+    'tripal_entities_primary_dbxref_formatter' => array(
+      'label' => t('Primary Cross-reference'),
+      'field types' => array('dbxref_id')
     ),
   );
 }
@@ -96,6 +116,46 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
         '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
         '#delta' => $delta,
         '#element_validate' => array('tripal_entities_organism_select_widget_validate'),
+      );
+      $element['value'] = $widget;
+      break;
+    case 'tripal_entities_primary_dbxref_widget':
+      $options = tripal_get_db_select_options();
+      $widget += array(
+        'dbxref_id' => array(
+          '#type' => 'fieldset',
+          '#title' => $element['#title'],
+          '#description' => $element['#description'],
+          '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
+          '#delta' => $delta,
+          array(
+            'dbxref_id_db_id' => array(
+              '#type' => 'select',
+              '#title' => t('Database'),
+              '#options' => $options,
+              '#default_value' => count($items) > 0 ? $items[0]['value'] : 0,
+              '#required' => $element['#required'],
+            ),
+            'dbxref_id_accession' => array(
+              '#type' => 'textfield',
+              '#title' => t('Accession'),
+              '#default_value' => count($items) > 0 ? $items[0]['value'] : '',
+              '#required' => $element['#required'],
+            ),
+            'dbxref_id_version' => array(
+              '#type' => 'textfield',
+              '#title' => t('Version'),
+              '#default_value' => count($items) > 0 ? $items[0]['value'] : '',
+              '#required' => $element['#required'],
+            ),
+            'dbxref_id_description' => array(
+              '#type' => 'textfield',
+              '#title' => t('Description'),
+              '#default_value' => count($items) > 0 ? $items[0]['value'] : '',
+              '#required' => $element['#required'],
+            ),
+          ),
+        ),
       );
       $element['value'] = $widget;
       break;

@@ -500,6 +500,11 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
             $label = 'Organism';
             $widget_type = 'tripal_entities_organism_select_widget';
             break;
+          case 'dbxref_id':
+            $field_type = 'dbxref_id';
+            $label = 'Primary Cross Reference';
+            $widget_type = 'tripal_entities_primary_dbxref_widget';
+            break;
         }
       }
       // If the field doesn't exist then create it.
