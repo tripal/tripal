@@ -117,7 +117,7 @@ function tripal_entities_field_storage_write_recursive($entity_type, $entity,
   // are for this table.  Then add their values to the $values array.
   foreach ($field_vals as $field_name => $field_val) {
     // If the field value is empty then continue.
-    if (!$field_val) {
+    if (!isset($field_val) or $field_val === '' or $field_val === NULL) {
       continue;
     }
     if (preg_match('/^' . $tablename . '__(.*)/', $field_name, $matches)) {

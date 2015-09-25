@@ -411,7 +411,7 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
 
       // Determine if the field is required.
       $is_required = 0;
-      if (array_key_exists('not null', $details)) {
+      if (array_key_exists('not null', $details) and $details['not null'] === TRUE) {
         $is_required = $details['not null'] ? 1 : 0;
       }
 
@@ -464,9 +464,13 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
         case 'boolean':
           $field_type = 'list_boolean';
           $widget_type = 'options_onoff';
+          $settings['allowed_values'] = array(0 => "No", 1 => "Yes");
+          // Turn off the is_required, even if it is because a non-checked
+          // field is a value.
           $is_required = 0;
           break;
         case 'datetime':
+          //$field_type = 'datestamp';
           // TODO: What is the proper datetime fields ??????
           break;
         default:
@@ -529,11 +533,8 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
           'storage' => array(
             'type' => 'field_chado_storage'
           ),
+          'settings' => $settings,
         );
-        //add the default values for the boolean field
-        if ($field_type == 'list_boolean') {
-          $field['settings'] = array('allowed_values' => array(0 => 0, 1 => 1),);
-        }
         field_create_field($field);
       }
 

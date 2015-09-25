@@ -13,4 +13,5 @@ dependencies[] = tripal_views
 dependencies[] = tripal_db
 dependencies[] = tripal_cv
 
+dependencies[] = date_api
 dependencies[] = entity
