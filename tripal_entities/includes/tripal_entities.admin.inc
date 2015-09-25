@@ -420,7 +420,7 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
       // Determine if the field is required.
       $is_required = 0;
       if (array_key_exists('not null', $details) and $details['not null'] === TRUE) {
-        $is_required = $details['not null'] ? 1 : 0;
+        $is_required = array_key_exists('default', $details) ? 0 : 1;
       }
 
       // Determine what type of field this should be.
@@ -473,9 +473,6 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
           $field_type = 'list_boolean';
           $widget_type = 'options_onoff';
           $settings['allowed_values'] = array(0 => "No", 1 => "Yes");
-          // Turn off the is_required, even if it is because a non-checked
-          // field is a value.
-          $is_required = 0;
           break;
         case 'datetime':
           // Use the Drupal Date and Date API to create the field/widget
