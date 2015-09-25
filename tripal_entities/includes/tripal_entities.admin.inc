@@ -340,6 +340,14 @@ function tripal_entities_admin_publish_form_submit($form, &$form_state) {
     $bundle_name = $cvterm->dbxref_id->db_id->name . '_' . $cvterm->dbxref_id->accession;
     $entity_type_name = $cvterm->dbxref_id->db_id->name;
 
+    // Clear the entity cache so that Drupal will read our
+    // hook_entity_info() implementation which now will have the entities
+    // described because we set the publish column to 1 in the tripal_term
+    // table.
+    global $language;
+    $langcode = $language->language;
+    cache_clear_all("entity_info:$langcode", 'cache');
+
     // The TripalBundle Entity manages the bundles we have available.
     // Therefore, we need to add a new entity for each bundle "type".
     $vals = array(
@@ -354,14 +362,14 @@ function tripal_entities_admin_publish_form_submit($form, &$form_state) {
 
     // Allow modules to now add fields to the bundle
     module_invoke_all('add_bundle_fields', $entity_type_name, $bundle_name, $cvterm);
+
+    drupal_set_message(t('Data type, %type, is now set as publishable.', array('%type' => $term_name)));
   }
   catch (Exception $e) {
     $transaction->rollback();
     drupal_set_message('Failure publishing this data type: ' . $e->getMessage(), 'error');
     watchdog_exception('trp_entities', $e);
   }
-
-  drupal_set_message(t('Data type, %type, is now set as publishable.', array('%type' => $term_name)));
 }
 /**
  *
