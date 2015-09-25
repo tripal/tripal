@@ -385,7 +385,8 @@ function chado_insert_record($table, $values, $options = array()) {
       }
     }
 
-    // if trying to insert a field that is the primary key, make sure it also is unique
+    // If trying to insert a field that is the primary key, make sure it also
+    // is unique.
     if (array_key_exists('primary key', $table_desc)) {
       $pkey = $table_desc['primary key'][0];
       if (array_key_exists($pkey, $insert_values)) {
@@ -401,7 +402,7 @@ function chado_insert_record($table, $values, $options = array()) {
       }
     }
 
-    // make sure required fields have a value
+    // Make sure required fields have a value.
     if (!is_array($table_desc['fields'])) {
       $table_desc['fields'] = array();
       tripal_report_error('tripal_core', TRIPAL_WARNING,
@@ -411,8 +412,8 @@ function chado_insert_record($table, $values, $options = array()) {
       );
     }
     foreach ($table_desc['fields'] as $field => $def) {
-      // a field is considered missing if it cannot be NULL and there is no default
-      // value for it or it is of type 'serial'
+      // A field is considered missing if it cannot be NULL and there is no
+      // default value for it or it is of type 'serial'.
       if (array_key_exists('NOT NULL', $def) and
           !array_key_exists($field, $insert_values) and
           !array_key_exists('default', $def) and
@@ -425,7 +426,8 @@ function chado_insert_record($table, $values, $options = array()) {
         return FALSE;
       }
     }
-  } //end of validation
+  }
+  // End of validation.
 
   // Now build the insert SQL statement
   $ifields = array();       // contains the names of the fields
@@ -438,6 +440,14 @@ function chado_insert_record($table, $values, $options = array()) {
     $i++;
     if (strcmp($value, '__NULL__')==0) {
       $itypes[] = "NULL";
+    }
+    // Format the values of datetime fields for insertion.
+    if ($def['type'] == 'datetime') {
+      // Convert UNIX timestamps into the format expected by PostgreSQL.
+      if(is_numeric($value)) {
+        $ivalues[":$field"] == date("Ymd G:i:s", $value);
+      }
+      $itypes[] = ":$field";
     }
     else {
       $itypes[] = ":$field";
