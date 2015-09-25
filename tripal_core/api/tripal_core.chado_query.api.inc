@@ -441,14 +441,6 @@ function chado_insert_record($table, $values, $options = array()) {
     if (strcmp($value, '__NULL__')==0) {
       $itypes[] = "NULL";
     }
-    // Format the values of datetime fields for insertion.
-    if ($def['type'] == 'datetime') {
-      // Convert UNIX timestamps into the format expected by PostgreSQL.
-      if(is_numeric($value)) {
-        $ivalues[":$field"] == date("Ymd G:i:s", $value);
-      }
-      $itypes[] = ":$field";
-    }
     else {
       $itypes[] = ":$field";
     }
