@@ -476,7 +476,7 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
           break;
         case 'datetime':
           // Use the Drupal Date and Date API to create the field/widget
-          $field_type = 'datestamp';
+          $field_type = 'datetime';
           $widget_type = 'date_select';
           break;
         default:
