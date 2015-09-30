@@ -54,7 +54,7 @@ class TripalEntityController extends EntityAPIController {
    *   An array of entity IDs or a single numeric ID.
    */
   public function deleteMultiple($entities) {
-    dpm($entities);
+
     $ids = array();
     if (!empty($entities)) {
       $transaction = db_transaction();

@@ -19,6 +19,11 @@ function tripal_entities_field_storage_write($entity_type, $entity, $op, $fields
 
   // Conver the fields into a key/value list of fields and their values.
   $field_vals = tripal_entities_field_storage_unnest_fields($fields, $entity_type, $entity);
+  // Calculate the md5 checksum for the sequence per user's request
+  if (key_exists('feature__md5checksum', $field_vals) && key_exists('feature__residues', $field_vals)) {
+    $residues = $field_vals['feature__residues'];
+    $field_vals['feature__md5checksum'] = $field_vals['feature__md5checksum'] ? md5($residues) : NULL;
+  }
   $transaction = db_transaction();
   try {
     switch ($op) {

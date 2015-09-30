@@ -29,6 +29,18 @@ function tripal_entities_field_info() {
         'active' => TRUE
       ),
     ),
+    'md5checksum' => array(
+      'label' => t('MD5 checksum'),
+      'description' => t('A field for generating MD5 checksum for a sequence.'),
+      'default_widget' => 'tripal_entities_md5checksum_checkbox_widget',
+      'default_formatter' => 'tripal_entities_md5checksum_formatter',
+      'settings' => array(),
+      'storage' => array(
+        'type' => 'field_chado_storage',
+        'module' => 'tripal_entities',
+        'active' => TRUE
+      ),
+    ),
   );
   return $fields;
 }
@@ -47,6 +59,10 @@ function tripal_entities_field_widget_info() {
       'field types' => array('dbxref_id'),
       'description' => t('This record can be cross-referenced with a record in another online database. This field is intended for the most prominent reference.  At a minimum, the database and accession must be provided.'),
     ),
+    'tripal_entities_md5checksum_checkbox_widget' => array(
+      'label' => t('MD5 Checksum Checkbox'),
+      'field types' => array('md5checksum')
+    ),
   );
 }
 /**
@@ -61,6 +77,10 @@ function tripal_entities_field_formatter_info() {
     'tripal_entities_primary_dbxref_formatter' => array(
       'label' => t('Cross-reference'),
       'field types' => array('dbxref_id')
+    ),
+    'tripal_entities_md5checksum_formatter' => array(
+      'label' => t('MD5 checksum'),
+      'field types' => array('md5checksum')
     ),
   );
 }
@@ -112,6 +132,17 @@ function tripal_entities_field_formatter_view($entity_type, $entity, $field, $in
         );
       }
       break;
+      case 'tripal_entities_md5checksum_formatter':
+        foreach ($items as $delta => $item) {
+          // TODO: add hook here to allow other modules to change this display
+          // if they want.
+          $element[$delta] = array(
+            // We create a render array to produce the desired markup,
+            '#type' => 'markup',
+            '#markup' => key_exists('value', $item) ? $item['value'] : '',
+          );
+        }
+        break;
   }
   return $element;
 }
@@ -204,6 +235,19 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
       );
       $element['value'] = $widget;
       break;
+      case 'tripal_entities_md5checksum_checkbox_widget':
+        $widget += array(
+          '#type' => 'checkbox',
+          '#title' => $element['#title'],
+          '#description' => $element['#description'],
+          '#options' => array(0, 1),
+          '#default_value' => 1,
+          '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
+          '#delta' => $delta,
+          '#element_validate' => array('tripal_entities_md5checksum_checkbox_widget_validate'),
+        );
+        $element['value'] = $widget;
+        break;
   }
   return $element;
 }
@@ -256,7 +300,12 @@ function tripal_entities_primary_dbxref_widget_validate($element, &$form_state) 
     form_set_error(implode('][', $element ['#parents']) . '][0][dbxref__accession', t("A database and the accession must both be provided for the primary cross reference."));
   }
 }
+/**
+ * Callback function for validating the tripal_entities_md5checksum_checkbox_widget.
+ */
+function tripal_entities_md5checksum_checkbox_widget_validate($element, &$form_state) {
 
+}
 /**
  * Theme function for the primary_dbxref_widget.
  *

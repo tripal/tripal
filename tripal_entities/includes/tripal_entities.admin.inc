@@ -430,6 +430,7 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
       $widget_type = '';
       $settings = array();
       $label = '';
+      $desc = '';
 
       switch($details['type']) {
         case 'char':
@@ -520,15 +521,26 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
           case 'organism_id':
             $field_type = 'organism_id';
             $label = 'Organism';
+            $desc = 'Select an organism.';
             $widget_type = 'tripal_entities_organism_select_widget';
             break;
           case 'dbxref_id':
             $field_type = 'dbxref_id';
             $label = 'Primary Cross Reference';
+            $desc = 'This record can be cross-referenced with a record in another online database. This field is intended for the most prominent reference.  At a minimum, the database and accession must be provided.';
             $widget_type = 'tripal_entities_primary_dbxref_widget';
             break;
         }
       }
+
+      // If this column is the md5checksum
+      if ($column_name == 'md5checksum') {
+        $field_type = 'md5checksum';
+        $label = 'MD5 Checksum';
+        $desc = 'Generating MD5 checksum for the sequence.';
+        $widget_type = 'tripal_entities_md5checksum_checkbox_widget';
+      }
+
       // If the field doesn't exist then create it.
       if (!$field) {
         $field = array(
@@ -548,6 +560,7 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
       $field_instance = array(
         'field_name' => $field_name,
         'label' => $label ? $label : ucwords(preg_replace('/_/', ' ', $column_name)),
+        'description' => $desc,
         'widget' => array(
           'type' => $widget_type,
           'settings' => array('display_label' => 1)
