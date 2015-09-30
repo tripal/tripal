@@ -41,41 +41,23 @@ class TripalEntityController extends EntityAPIController {
    * Really a convenience function for deleteMultiple().
    */
   public function delete($entity) {
-    $this->deleteMultiple(array($entity));
-  }
+    $transaction = db_transaction();
+    try {
+      // Invoke hook_entity_delete().
+      module_invoke_all('entity_delete', $entity, $entity->type);
+      field_attach_delete($entity->type, $entity);
 
-  /**
-   * Delete one or more tripal_entities entities.
-   *
-   * Deletion is unfortunately not supported in the base
-   * DrupalDefaultEntityController class.
-   *
-   * @param array $entities
-   *   An array of entity IDs or a single numeric ID.
-   */
-  public function deleteMultiple($entities) {
-
-    $ids = array();
-    if (!empty($entities)) {
-      $transaction = db_transaction();
-      try {
-        foreach ($entities as $entity_id) {
-          // Invoke hook_entity_delete().
-          $entity = entity_load($entity_id);
-          module_invoke_all('entity_delete', $entity, $entity->type);
-          field_attach_delete($entity->type, $entity);
-          $ids[] = $entity->id;
-        }
-        db_delete('tripal_entity')
-          ->condition('id', $ids, 'IN')
-          ->execute();
-      }
-      catch (Exception $e) {
-        $transaction->rollback();
-        watchdog_exception('entity_example', $e);
-        throw $e;
-      }
+      db_delete('tripal_entity')
+        ->condition('id', $entity->id)
+        ->execute();
     }
+    catch (Exception $e) {
+      $transaction->rollback();
+      watchdog_exception('tripal_entities', $e);
+      throw $e;
+      return FALSE;
+    }
+    return TRUE;
   }
 
   /**

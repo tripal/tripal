@@ -47,5 +47,6 @@ function tripal_entities_entity_update($entity, $type) {
  * Implements hook_entity_delete().
  */
 function tripal_entities_entity_delete($entity, $type) {
-
+  // TODO: delete the record in the public.chado_entity table
+  // and delete the corresponding record in Chado.
 }

@@ -92,7 +92,6 @@ class TripalEntityUIController extends EntityDefaultUIController {
       'access callback' => 'tripal_entity_access',
       'access arguments' => array('edit', 1),
       'type' => MENU_CALLBACK,
-
       'weight' => 10,
     );
     return $items;
@@ -241,7 +240,7 @@ function tripal_entity_form($form, &$form_state, $entity = NULL) {
       $entity = entity_get_controller($cvterm->dbxref_id->db_id->name)->create(array('bundle' => $bundle_id));
       field_attach_form($cvterm->dbxref_id->db_id->name, $entity, $form, $form_state);
 
-      $form['submit'] = array(
+      $form['add_button'] = array(
         '#type' => 'submit',
         '#value' => t('Add a new ' . $cvterm->name),
         '#name' => 'add_data',
@@ -250,12 +249,21 @@ function tripal_entity_form($form, &$form_state, $entity = NULL) {
     }
     else {
       field_attach_form($cvterm->dbxref_id->db_id->name, $entity, $form, $form_state);
-
-      $form['submit'] = array(
+      $form['entity_id'] = array(
+        '#type'  => 'hidden',
+        '#value' => $entity->id,
+      );
+      $form['update_button'] = array(
         '#type' => 'submit',
         '#value' => t('Update'),
         '#name' => 'update_data',
         '#weight' => 1000
+      );
+      $form['delete_button'] = array(
+        '#type' => 'submit',
+        '#value' => t('Delete'),
+        '#name' => 'delete_data',
+        '#weight' => 1000,
       );
     }
 
@@ -295,8 +303,8 @@ function tripal_entity_form_validate($form, &$form_state) {
 function tripal_entity_form_submit($form, &$form_state) {
   if ($form_state['clicked_button']['#name'] == 'cancel') {
     if (array_key_exists('id', $form_state['values'])){
-      $entity = $form_state['values']['entity'];
-      $form_state['redirect'] = "data/$entity->id";
+      $entity_id = $form_state['values']['entity_id'];
+      $form_state['redirect'] = "data/$entity_id";
     }
     else {
       $form_state['redirect'] = "admin/structure/tripal_entity";
@@ -316,14 +324,10 @@ function tripal_entity_form_submit($form, &$form_state) {
     $entity->save();
     $form_state['redirect'] = "data/$entity->id";
   }
-}
-/**
- * Form API submit callback for the delete button.
- *
- * @todo Remove hard-coded path
- */
-function tripal_entity_form_submit_delete(&$form, &$form_state) {
-  $form_state['redirect'] = 'admin/content/tripal_entitys/tripal_entity/' . $form_state['tripal_entity']->tripal_entity_id . '/delete';
+  if ($form_state['clicked_button']['#name'] == 'delete_data') {
+    $entity_id = $form_state['values']['entity_id'];
+    $form_state['redirect'] = 'data/' . $entity_id . '/delete';
+  }
 }
 
 
@@ -337,11 +341,11 @@ function tripal_entity_form_submit_delete(&$form, &$form_state) {
  */
 function tripal_entity_delete_form($form, &$form_state, $entity) {
   $form_state['entity'] = $entity;
-
+dpm($entity);
   $form['#submit'][] = 'tripal_entity_delete_form_submit';
 
   $form = confirm_form($form,
-    t('Click the delete button below to confirm deltion of the record titled: %title', array('%title' => $entity->title)),
+    t('Click the delete button below to confirm deletion of the record titled: %title', array('%title' => $entity->title)),
     'admin/content/tripal_entity',
     '<p>' . t('This action cannot be undone.') . '</p>',
     t('Delete'),
@@ -358,12 +362,14 @@ function tripal_entity_delete_form($form, &$form_state, $entity) {
 function tripal_entity_delete_form_submit($form, &$form_state) {
   $entity = $form_state['entity'];
 
-  tripal_entity_delete($entity);
-
-  drupal_set_message(t('The tripal_entity %name has been deleted.', array('%name' => $tripal_entity->name)));
-  watchdog('tripal_entity', 'Deleted tripal_entity %name.', array('%name' => $tripal_entity->name));
-
-  $form_state['redirect'] = 'admin/content/tripal_entitys';
+  $entity_controller = new TripalEntityController($entity->type);
+  if($entity_controller->delete($entity)) {
+    drupal_set_message(t('The record title "%name" has been deleted.', array('%name' => $entity->title)));
+    $form_state['redirect'] = 'admin/content/tripal_entitys';
+  }
+  else {
+    drupal_set_message(t('The tripal_entity %name was not deleted.', array('%name' => $entity->title)), "error");
+  }
 }
 
 /**
