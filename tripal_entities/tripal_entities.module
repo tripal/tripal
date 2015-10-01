@@ -287,6 +287,19 @@ function tripal_entities_get_published_vocabularies_as_select_options() {
 }
 
 /**
+ * Get published vocabularies as select options
+ * @return multitype:NULL
+ */
+function tripal_entities_get_db_names_for_published_vocabularies() {
+  $published_vocs = chado_generate_var('tripal_vocabulary', array('publish' => 1), array('return_array' => 1));
+  $db = array();
+  foreach ($published_vocs as $voc) {
+    $db [$voc->db_id->db_id] = $voc->db_id->name;
+  }
+  return $db;
+}
+
+/**
  * Get published terms as select options
  * @return multitype:NULL
  */
@@ -370,8 +383,8 @@ function tripal_entities_form_alter(&$form, &$form_state, $form_id) {
       // For entity fields added by Tripal Entities we don't want the
       // the end-user to change the cardinality and the required fields
       // such that record can't be saved in Chado.
-      // TODO: don't hard-code the 'SO' entity type.
-      if ($form['#instance']['entity_type'] == 'SO') {
+      $dbs = tripal_entities_get_db_names_for_published_vocabularies ();
+      if (in_array($form['#instance']['entity_type'], $dbs)) {
          $form['field']['cardinality']['#access'] = FALSE;
          $form['instance']['required']['#access'] = FALSE;
       }
