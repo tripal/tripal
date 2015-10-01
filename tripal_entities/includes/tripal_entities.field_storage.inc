@@ -85,7 +85,7 @@ function tripal_entities_field_storage_write($entity_type, $entity, $op, $fields
  * Implements hook_field_storage_write_recursive().
  */
 function tripal_entities_field_storage_write_recursive($entity_type, $entity,
-    $op, $field_vals, $tablename, $type_field = NULL, $record_id = NULL, $depth = 0) {
+   $op, $field_vals, $tablename, $type_field = NULL, $record_id = NULL, $depth = 0) {
 
   // Intialize the values array and $record_id;
   $values = array();
@@ -161,6 +161,15 @@ function tripal_entities_field_storage_write_recursive($entity_type, $entity,
   }
   // If we don't have an incoming record ID then this is an insert.
   if (!$record_id) {
+    // STEP 4: Before inserting, we want to make sure the record does not already exist
+    $existing = chado_select_record($tablename, array('*'), $values);
+    if(count($existing) > 0) {
+      $existing_record = $existing[0];
+      $record_id = $existing_record->$pkey_field;
+      return $record_id;
+    }
+    
+    // STEP 5: Insert the reocrd
     // Insert the values array as a new record in the table.
     $record = chado_insert_record($tablename, $values);
     if ($record === FALSE) {

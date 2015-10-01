@@ -53,13 +53,15 @@ function tripal_entities_entity_delete($entity, $type) {
    ->execute()
    ->fetchObject();
   
-  // Delete the corresponding record in Chado
-  $table = $record->data_table;
-  $record_id = $record->record_id;  
-  chado_delete_record($table, array($table . '_id' => $record_id));
+  if ($record && property_exists($record, 'chado_entity_id')) {
+    // Delete the corresponding record in Chado
+    $table = $record->data_table;
+    $record_id = $record->record_id;  
+    chado_delete_record($table, array($table . '_id' => $record_id));
   
-  //Delete the record in the public.chado_entity table
-  $sql = "DELETE FROM {chado_entity} WHERE chado_entity_id = :id";
-  db_query($sql, array(':id' => $record->chado_entity_id));
+    //Delete the record in the public.chado_entity table
+    $sql = "DELETE FROM {chado_entity} WHERE chado_entity_id = :id";
+    db_query($sql, array(':id' => $record->chado_entity_id));
+  }
   
 }
