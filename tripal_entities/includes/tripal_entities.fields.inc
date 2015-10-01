@@ -268,6 +268,12 @@ function tripal_entities_field_is_empty($item, $field) {
 function tripal_entities_organism_select_widget_validate($element, &$form_state) {
   $field_name = $element['#field_name'];
 
+  // If the form ID is field_ui_field_edit_form, then the user is editing the
+  // field's values in the manage fields form of Drupal.  We don't want
+  // to validate it as if it were being used in a data entry form.
+  if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
+    return;
+  }
   $organism_id = tripal_entities_get_field_form_values($field_name, $form_state);
 
   if (count($organism_id) == 0) {
@@ -279,6 +285,13 @@ function tripal_entities_organism_select_widget_validate($element, &$form_state)
  */
 function tripal_entities_primary_dbxref_widget_validate($element, &$form_state) {
   $field_name = $element['#field_name'];
+
+  // If the form ID is field_ui_field_edit_form, then the user is editing the
+  // field's values in the manage fields form of Drupal.  We don't want
+  // to validate it as if it were being used in a data entry form.
+  if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
+    return;
+  }
 
   // Get the field values.
   $db_id = tripal_entities_get_field_form_values($field_name, $form_state, "dbxref__db_id");

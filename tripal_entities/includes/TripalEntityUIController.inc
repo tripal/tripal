@@ -341,7 +341,6 @@ function tripal_entity_form_submit($form, &$form_state) {
  */
 function tripal_entity_delete_form($form, &$form_state, $entity) {
   $form_state['entity'] = $entity;
-dpm($entity);
   $form['#submit'][] = 'tripal_entity_delete_form_submit';
 
   $form = confirm_form($form,

@@ -357,3 +357,20 @@ function tripal_entity_load($id, $reset = FALSE) {
   $entity = entity_load($entity_type, array($id), array(), $reset);
   return reset($entity);
 }
+
+/**
+ * Implements hook_form_alter().
+ *
+ * @param unknown $form
+ * @param unknown $form_state
+ */
+function tripal_entities_form_alter(&$form, &$form_state, $form_id) {
+  switch ($form_id) {
+    case 'field_ui_field_edit_form':
+      if ($form['#instance']['entity_type'] == 'SO') {
+        $form['field']['cardinality']['#default_value'] = 1;
+        $form['field']['#access'] = FALSE;
+      }
+      break;
+  }
+}

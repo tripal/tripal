@@ -13,6 +13,14 @@ function tripal_entities_field_storage_info() {
 }
 
 /**
+ * Implements hook_field_storage_query().
+ *
+ * @param $query
+ */
+function tripal_entities_field_storage_query($query) {
+  // TODO: figure out what this function does.
+}
+/**
  * Implements hook_field_storage_write().
  */
 function tripal_entities_field_storage_write($entity_type, $entity, $op, $fields) {
