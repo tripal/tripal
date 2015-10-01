@@ -267,7 +267,7 @@ function tripal_entities_field_is_empty($item, $field) {
  */
 function tripal_entities_organism_select_widget_validate($element, &$form_state) {
   $field_name = $element['#field_name'];
-
+dpm($form_state);
   // If the form ID is field_ui_field_edit_form, then the user is editing the
   // field's values in the manage fields form of Drupal.  We don't want
   // to validate it as if it were being used in a data entry form.

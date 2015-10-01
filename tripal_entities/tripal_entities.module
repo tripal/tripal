@@ -367,9 +367,13 @@ function tripal_entity_load($id, $reset = FALSE) {
 function tripal_entities_form_alter(&$form, &$form_state, $form_id) {
   switch ($form_id) {
     case 'field_ui_field_edit_form':
+      // For entity fields added by Tripal Entities we don't want the
+      // the end-user to change the cardinality and the required fields
+      // such that record can't be saved in Chado.
+      // TODO: don't hard-code the 'SO' entity type.
       if ($form['#instance']['entity_type'] == 'SO') {
-        $form['field']['cardinality']['#default_value'] = 1;
-        $form['field']['#access'] = FALSE;
+         $form['field']['cardinality']['#access'] = FALSE;
+         $form['instance']['required']['#access'] = FALSE;
       }
       break;
   }
