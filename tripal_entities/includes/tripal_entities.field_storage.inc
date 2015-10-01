@@ -32,52 +32,45 @@ function tripal_entities_field_storage_write($entity_type, $entity, $op, $fields
     $residues = $field_vals['feature__residues'];
     $field_vals['feature__md5checksum'] = $field_vals['feature__md5checksum'] ? md5($residues) : NULL;
   }
-  $transaction = db_transaction();
-  try {
-    switch ($op) {
-      case FIELD_STORAGE_INSERT:
-        // Use the cvterm_id to look up tables where this term is used
-        $sel_values = array(
-          'term_id' => array(
-            'cvterm_id' => $entity->cvterm_id,
-          ),
-        );
-        $term_usage = chado_generate_var('tripal_term_usage', $sel_values, array('return_array' => 1));
+dpm($field_vals);
+  switch ($op) {
+    case FIELD_STORAGE_INSERT:
+      // Use the cvterm_id to look up tables where this term is used
+      $sel_values = array(
+        'term_id' => array(
+          'cvterm_id' => $entity->cvterm_id,
+        ),
+      );
+      $term_usage = chado_generate_var('tripal_term_usage', $sel_values, array('return_array' => 1));
 
-        // For each table that uses this term, insert the field recursively
-        foreach ($term_usage as $usage) {
-          $data_table = $usage->data_table;
-          //$type_table = $usage->type_table;
-          $type_field = $usage->field;
-          tripal_entities_field_storage_write_recursive($entity_type, $entity,
-            $op, $field_vals, $data_table, $type_field);
-        }
-        break;
-
-      case FIELD_STORAGE_UPDATE :
-
-        // Get the base table and record id for the fields of this entity.
-        $details = db_select('chado_entity', 'ce')
-          ->fields('ce')
-          ->condition('entity_id', $entity->id)
-          ->execute()
-          ->fetchObject();
-        $tablename = $details->data_table;
-        $type_field = $details->field;
-        $record_id = $details->record_id;
-
+      // For each table that uses this term, insert the field recursively
+      foreach ($term_usage as $usage) {
+        $data_table = $usage->data_table;
+        //$type_table = $usage->type_table;
+        $type_field = $usage->field;
         tripal_entities_field_storage_write_recursive($entity_type, $entity,
-          $op, $field_vals, $tablename, $type_field, $record_id);
-        if (!$details) {
-          // TODO: what to do if record is missing!
-        }
-        break;
-    }
-  }
-  catch (Exception $e) {
-    $transaction->rollback();
-    watchdog_exception('tripal_feature', $e);
-    drupal_set_message('Could not write record to Chado.  See recent logs', 'error');
+          $op, $field_vals, $data_table, $type_field);
+      }
+      break;
+
+    case FIELD_STORAGE_UPDATE :
+
+      // Get the base table and record id for the fields of this entity.
+      $details = db_select('chado_entity', 'ce')
+        ->fields('ce')
+        ->condition('entity_id', $entity->id)
+        ->execute()
+        ->fetchObject();
+      $tablename = $details->data_table;
+      $type_field = $details->field;
+      $record_id = $details->record_id;
+
+      tripal_entities_field_storage_write_recursive($entity_type, $entity,
+        $op, $field_vals, $tablename, $type_field, $record_id);
+      if (!$details) {
+        // TODO: what to do if record is missing!
+      }
+      break;
   }
 }
 
@@ -86,7 +79,7 @@ function tripal_entities_field_storage_write($entity_type, $entity, $op, $fields
  */
 function tripal_entities_field_storage_write_recursive($entity_type, $entity,
    $op, $field_vals, $tablename, $type_field = NULL, $record_id = NULL, $depth = 0) {
-
+  dpm($tablename);
   // Intialize the values array and $record_id;
   $values = array();
 
@@ -119,7 +112,7 @@ function tripal_entities_field_storage_write_recursive($entity_type, $entity,
       $fk_val = array_key_exists($fk_field_name, $field_vals) ? $field_vals[$fk_field_name] : NULL;
       $fk_val = tripal_entities_field_storage_write_recursive($entity_type,
         $entity, $op, $field_vals, $fk_table, NULL, $fk_val, $depth + 1);
-      if ($fk_val) {
+      if (!isset($fk_val) or $fk_value != '') {
         $values[$local_id] = $fk_val;
       }
     }
@@ -161,19 +154,19 @@ function tripal_entities_field_storage_write_recursive($entity_type, $entity,
   }
   // If we don't have an incoming record ID then this is an insert.
   if (!$record_id) {
-    // STEP 4: Before inserting, we want to make sure the record does not already exist
-    $existing = chado_select_record($tablename, array('*'), $values);
-    if(count($existing) > 0) {
-      $existing_record = $existing[0];
-      $record_id = $existing_record->$pkey_field;
-      return $record_id;
+    // STEP 3a: Before inserting, we want to make sure the record does not
+    // already exist.  Using the unique constraint check for a matching record.
+    $options = array('is_duplicate' => TRUE);
+    $is_duplicate = chado_select_record($tablename, array('*'), $values, $options);
+    if($is_duplicate) {
+      throw new Exception('Could not insert Chado record into table: "' . $tablename . '".');
     }
-    
-    // STEP 5: Insert the reocrd
+
+    // STEP 3b: Insert the reocrd
     // Insert the values array as a new record in the table.
     $record = chado_insert_record($tablename, $values);
     if ($record === FALSE) {
-      drupal_set_message('Could not insert Chado record into table, "$table".', 'error');
+      throw new Exception('Could not insert Chado record into table: "' . $tablename . '".');
     }
     $record_id = $record[$pkey_field];
 

@@ -941,8 +941,8 @@ function chado_delete_record($table, $match, $options = NULL) {
  *     and the type of sort (i.e. ASC, DESC) as the values.  The results in the
  *     query will be sorted by the key values in the direction listed by the value
  *  - is_duplicate: TRUE or FALSE.  Checks the values submited to see if
- *     they violate any of the unique constraints. If so, the record
- *     is returned, if not, FALSE is returned.
+ *     they violate any of the unique constraints. If not, the record
+ *     is returned, if so, FALSE is returned.
  *  - pager:  Use this option if it is desired to return only a subset of results
  *     so that they may be shown with in a Drupal-style pager. This should be
  *     an array with two keys: 'limit' and 'element'.  The value of 'limit'
