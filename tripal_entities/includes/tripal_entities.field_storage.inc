@@ -32,7 +32,7 @@ function tripal_entities_field_storage_write($entity_type, $entity, $op, $fields
     $residues = $field_vals['feature__residues'];
     $field_vals['feature__md5checksum'] = $field_vals['feature__md5checksum'] ? md5($residues) : NULL;
   }
-dpm($field_vals);
+
   switch ($op) {
     case FIELD_STORAGE_INSERT:
       // Use the cvterm_id to look up tables where this term is used
@@ -79,7 +79,7 @@ dpm($field_vals);
  */
 function tripal_entities_field_storage_write_recursive($entity_type, $entity,
    $op, $field_vals, $tablename, $type_field = NULL, $record_id = NULL, $depth = 0) {
-  dpm($tablename);
+
   // Intialize the values array and $record_id;
   $values = array();
 
@@ -112,7 +112,7 @@ function tripal_entities_field_storage_write_recursive($entity_type, $entity,
       $fk_val = array_key_exists($fk_field_name, $field_vals) ? $field_vals[$fk_field_name] : NULL;
       $fk_val = tripal_entities_field_storage_write_recursive($entity_type,
         $entity, $op, $field_vals, $fk_table, NULL, $fk_val, $depth + 1);
-      if (!isset($fk_val) or $fk_value != '') {
+      if (!isset($fk_val) or $fk_val != '') {
         $values[$local_id] = $fk_val;
       }
     }

@@ -312,6 +312,14 @@ function tripal_entities_primary_dbxref_widget_validate($element, &$form_state) 
   if (count($db_id) > 0 and count($accession) == 0) {
     form_set_error(implode('][', $element ['#parents']) . '][0][dbxref__accession', t("A database and the accession must both be provided for the primary cross reference."));
   }
+  
+  // If user did not select a database, we want to remove dbxref_id from the 
+  // feature table but keep the dbxref record
+  if (count($db_id) == 0) {
+    foreach ($form_state['values'][$field_name] as $langcode => $items) {
+      $form_state['values']['feature__dbxref_id'][$langcode][0]['value'][0]['feature__dbxref_id'] = '__NULL__';
+    }
+  }
 }
 /**
  * Callback function for validating the tripal_entities_md5checksum_checkbox_widget.
