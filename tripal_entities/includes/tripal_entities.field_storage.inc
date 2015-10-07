@@ -32,7 +32,6 @@ function tripal_entities_field_storage_write($entity_type, $entity, $op, $fields
     $residues = $field_vals['feature__residues'];
     $field_vals['feature__md5checksum'] = $field_vals['feature__md5checksum'] ? md5($residues) : NULL;
   }
-
   switch ($op) {
     case FIELD_STORAGE_INSERT:
       // Use the cvterm_id to look up tables where this term is used
@@ -80,6 +79,9 @@ function tripal_entities_field_storage_write($entity_type, $entity, $op, $fields
 function tripal_entities_field_storage_write_recursive($entity_type, $entity,
    $op, $field_vals, $tablename, $type_field = NULL, $record_id = NULL, $depth = 0) {
 
+  dpm(array($record_id, $tablename, $field_vals));
+
+
   // Intialize the values array and $record_id;
   $values = array();
 
@@ -105,15 +107,21 @@ function tripal_entities_field_storage_write_recursive($entity_type, $entity,
       // loop through the $fk_fields again.
       $fkey_fields_list[] = $local_id;
 
-      // Recurse on the FK field.  Pass in the ID for the FK field if one
-      // exists in the $field_vals;
+      // Get the value of the FK field as provided by the user.
       $fk_val = NULL;
       $fk_field_name = $tablename . '__' . $local_id;
       $fk_val = array_key_exists($fk_field_name, $field_vals) ? $field_vals[$fk_field_name] : NULL;
-      $fk_val = tripal_entities_field_storage_write_recursive($entity_type,
-        $entity, $op, $field_vals, $fk_table, NULL, $fk_val, $depth + 1);
-      if (!isset($fk_val) or $fk_val != '') {
-        $values[$local_id] = $fk_val;
+
+      // If the value of the field is 0 then the user specifically set this
+      // value to be ignore (i.e in a select box). Don't recurse.
+      if ($fk_val != 0) {
+        // Recurse on the FK field.  Pass in the ID for the FK field if one
+        // exists in the $field_vals;
+        $fk_val = tripal_entities_field_storage_write_recursive($entity_type,
+          $entity, $op, $field_vals, $fk_table, NULL, $fk_val, $depth + 1);
+        if (isset($fk_val) and $fk_val != '') {
+          $values[$local_id] = $fk_val;
+        }
       }
     }
   }
@@ -147,19 +155,21 @@ function tripal_entities_field_storage_write_recursive($entity_type, $entity,
     }
   }
 
+  dpm($values);
   // STEP 3: Insert/Update the record.
   // If there are no values then return.
   if (count($values) == 0) {
     return $record_id;
   }
   // If we don't have an incoming record ID then this is an insert.
-  if (!$record_id) {
+  if ($record_id == NULL) {
     // STEP 3a: Before inserting, we want to make sure the record does not
     // already exist.  Using the unique constraint check for a matching record.
     $options = array('is_duplicate' => TRUE);
     $is_duplicate = chado_select_record($tablename, array('*'), $values, $options);
     if($is_duplicate) {
-      throw new Exception('Could not insert Chado record into table: "' . $tablename . '".');
+      $record = chado_select_record($tablename, array('*'), $values);
+      return $record[0]->$pkey_field;
     }
 
     // STEP 3b: Insert the reocrd

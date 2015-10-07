@@ -312,13 +312,12 @@ function tripal_entities_primary_dbxref_widget_validate($element, &$form_state) 
   if (count($db_id) > 0 and count($accession) == 0) {
     form_set_error(implode('][', $element ['#parents']) . '][0][dbxref__accession', t("A database and the accession must both be provided for the primary cross reference."));
   }
-  
-  // If user did not select a database, we want to remove dbxref_id from the 
-  // feature table but keep the dbxref record
+
+  // If user did not select a database, we want to remove dbxref_id from the
+  // table, we can do this by changing the '0' field value to a __NULL__
+  // which the Tripal Chado API understands as a NULL value.
   if (count($db_id) == 0) {
-    foreach ($form_state['values'][$field_name] as $langcode => $items) {
-      $form_state['values']['feature__dbxref_id'][$langcode][0]['value'][0]['feature__dbxref_id'] = '__NULL__';
-    }
+    tripal_entities_set_field_form_values($field_name, $form_state, '', 'dbxref__dbxref_id');
   }
 }
 /**
@@ -365,6 +364,24 @@ function tripal_entities_get_field_form_values($field_name, $form_state, $child 
       }
       else if (!$child and $value['value']) {
         $values[] = $value['value'];
+      }
+    }
+  }
+  return $values;
+}
+
+/**
+ * Returns the values of the field from the $form_state.
+ */
+function tripal_entities_set_field_form_values($field_name, &$form_state, $value, $child = NULL) {
+  $values = array();
+  foreach ($form_state['values'][$field_name] as $langcode => $items) {
+    foreach ($items as $delta => $value) {
+      if ($child and array_key_exists($child, $value['value'][0]) and $value['value'][0][$child]) {
+        $form_state['values'][$field_name][$langcode][$delta]['value'][0][$child] = $value;
+      }
+      else if (!$child and $value['value']) {
+        $form_state['values'][$field_name][$langcode][$delta]['value'] = $value;
       }
     }
   }
