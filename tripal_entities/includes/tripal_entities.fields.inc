@@ -314,10 +314,9 @@ function tripal_entities_primary_dbxref_widget_validate($element, &$form_state) 
   }
 
   // If user did not select a database, we want to remove dbxref_id from the
-  // table, we can do this by changing the '0' field value to a __NULL__
-  // which the Tripal Chado API understands as a NULL value.
+  // field.
   if (count($db_id) == 0) {
-    tripal_entities_set_field_form_values($field_name, $form_state, '', 'dbxref__dbxref_id');
+    tripal_entities_set_field_form_values($field_name, $form_state, '__NULL__', 'dbxref__dbxref_id');
   }
 }
 /**
