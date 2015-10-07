@@ -25,13 +25,9 @@ function tripal_entities_field_storage_query($query) {
  */
 function tripal_entities_field_storage_write($entity_type, $entity, $op, $fields) {
 
-  // Conver the fields into a key/value list of fields and their values.
+  // Convert the fields into a key/value list of fields and their values.
   $field_vals = tripal_entities_field_storage_unnest_fields($fields, $entity_type, $entity);
-  // Calculate the md5 checksum for the sequence per user's request
-  if (key_exists('feature__md5checksum', $field_vals) && key_exists('feature__residues', $field_vals)) {
-    $residues = $field_vals['feature__residues'];
-    $field_vals['feature__md5checksum'] = $field_vals['feature__md5checksum'] ? md5($residues) : NULL;
-  }
+
   switch ($op) {
     case FIELD_STORAGE_INSERT:
       // Use the cvterm_id to look up tables where this term is used
@@ -79,9 +75,6 @@ function tripal_entities_field_storage_write($entity_type, $entity, $op, $fields
 function tripal_entities_field_storage_write_recursive($entity_type, $entity,
    $op, $field_vals, $tablename, $type_field = NULL, $record_id = NULL, $depth = 0) {
 
-  dpm(array($record_id, $tablename, $field_vals));
-
-
   // Intialize the values array and $record_id;
   $values = array();
 
@@ -112,16 +105,18 @@ function tripal_entities_field_storage_write_recursive($entity_type, $entity,
       $fk_field_name = $tablename . '__' . $local_id;
       $fk_val = array_key_exists($fk_field_name, $field_vals) ? $field_vals[$fk_field_name] : NULL;
 
-      // If the value of the field is 0 then the user specifically set this
-      // value to be ignore (i.e in a select box). Don't recurse.
-      if ($fk_val != 0) {
-        // Recurse on the FK field.  Pass in the ID for the FK field if one
-        // exists in the $field_vals;
-        $fk_val = tripal_entities_field_storage_write_recursive($entity_type,
-          $entity, $op, $field_vals, $fk_table, NULL, $fk_val, $depth + 1);
-        if (isset($fk_val) and $fk_val != '') {
-          $values[$local_id] = $fk_val;
-        }
+      // Don't recurse if the value of the FK field is set to NULL.  The
+      // Tripal Chado API value for NULL is '__NULL__'.
+      if ($fk_val == "__NULL__") {
+        $values[$local_id] = $fk_val;
+        continue;
+      }
+      // Recurse on the FK field.  Pass in the ID for the FK field if one
+      // exists in the $field_vals;
+      $fk_val = tripal_entities_field_storage_write_recursive($entity_type,
+        $entity, $op, $field_vals, $fk_table, NULL, $fk_val, $depth + 1);
+      if (isset($fk_val) and $fk_val != '') {
+        $values[$local_id] = $fk_val;
       }
     }
   }
@@ -155,7 +150,6 @@ function tripal_entities_field_storage_write_recursive($entity_type, $entity,
     }
   }
 
-  dpm($values);
   // STEP 3: Insert/Update the record.
   // If there are no values then return.
   if (count($values) == 0) {
@@ -201,7 +195,7 @@ function tripal_entities_field_storage_write_recursive($entity_type, $entity,
   else {
     $match[$pkey_field] = $record_id;
     if (!chado_update_record($tablename, $match, $values)) {
-      drupal_set_message('Could not update Chado record for in table, "$table".', 'error');
+      drupal_set_message("Could not update Chado record in table: $tablename.", 'error');
     }
   }
   return $record_id;

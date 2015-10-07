@@ -316,14 +316,18 @@ function tripal_entities_primary_dbxref_widget_validate($element, &$form_state) 
   // If user did not select a database, we want to remove dbxref_id from the
   // field.
   if (count($db_id) == 0) {
-    tripal_entities_set_field_form_values($field_name, $form_state, '__NULL__', 'dbxref__dbxref_id');
+    tripal_entities_set_field_form_values($field_name, $form_state, '__NULL__', $field_name);
   }
 }
 /**
  * Callback function for validating the tripal_entities_md5checksum_checkbox_widget.
  */
 function tripal_entities_md5checksum_checkbox_widget_validate($element, &$form_state) {
-
+  // Calculate the md5 checksum for the sequence per user's request
+  if (key_exists('feature__md5checksum', $field_vals) && key_exists('feature__residues', $field_vals)) {
+    $residues = $field_vals['feature__residues'];
+    $field_vals['feature__md5checksum'] = $field_vals['feature__md5checksum'] ? md5($residues) : NULL;
+  }
 }
 /**
  * Theme function for the primary_dbxref_widget.
@@ -372,15 +376,15 @@ function tripal_entities_get_field_form_values($field_name, $form_state, $child 
 /**
  * Returns the values of the field from the $form_state.
  */
-function tripal_entities_set_field_form_values($field_name, &$form_state, $value, $child = NULL) {
+function tripal_entities_set_field_form_values($field_name, &$form_state, $newvalue, $child = NULL) {
   $values = array();
   foreach ($form_state['values'][$field_name] as $langcode => $items) {
     foreach ($items as $delta => $value) {
       if ($child and array_key_exists($child, $value['value'][0]) and $value['value'][0][$child]) {
-        $form_state['values'][$field_name][$langcode][$delta]['value'][0][$child] = $value;
+        $form_state['values'][$field_name][$langcode][$delta]['value'][0][$child] = $newvalue;
       }
       else if (!$child and $value['value']) {
-        $form_state['values'][$field_name][$langcode][$delta]['value'] = $value;
+        $form_state['values'][$field_name][$langcode][$delta]['value'] = $newvalue;
       }
     }
   }

@@ -263,7 +263,7 @@ function tripal_entity_form($form, &$form_state, $entity = NULL) {
         '#type' => 'submit',
         '#value' => t('Delete'),
         '#name' => 'delete_data',
-        '#weight' => 1000,
+        '#weight' => 1001,
       );
     }
 

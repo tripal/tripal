@@ -426,71 +426,70 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
       // Determine what type of field this should be.
       // Drupal data types are: https://www.drupal.org/node/159605.
       // Field types are here:  https://www.drupal.org/node/1879542
-      $field_type = '';
-      $widget_type = '';
-      $settings = array();
-      $label = '';
-      $desc = '';
 
+      // Create an array with information about this field.
+      $field_info = array(
+        'field_type' => '',
+        'widget_type' => '',
+        'settings' => array(),
+        'description' => '',
+        'label' => $label ? $label : ucwords(preg_replace('/_/', ' ', $column_name)),
+        'chado_table' => $tablename,
+        'chado_column' => $column_name
+      );
+
+      // Alter the field info array dependiing on the column details.
       switch($details['type']) {
         case 'char':
-          $field_type = 'text';
-          $widget_type = 'text_textfield';
-          $settings['max_length'] = $details['length'];
+          $field_info['field_type'] = 'text';
+          $field_info['settings']['max_length'] = $details['length'];
           break;
         case 'varchar':
-          $field_type = 'text';
-          $widget_type = 'text_textfield';
-          $settings['max_length'] = $details['length'];
+          $field_info['field_type'] = 'text';
+          $field_info['settings']['max_length'] = $details['length'];
           break;
         case 'text':
-          $field_type = 'text';
-          $widget_type = 'text_textarea';
-          $settings['max_length'] = '';
+          $field_info['field_type'] = 'text';
+          $field_info['widget_type'] = 'text_textarea';
           break;
         case 'blob':
           // not sure how to support a blob field.
           continue;
           break;
         case 'int':
-          $field_type = 'number_integer';
-          $widget_type = 'number';
+          $field_info['field_type'] = 'number_integer';
+          $field_info['widget_type'] = 'number';
           break;
         case 'float':
-          $field_type = 'number_float';
-          $widget_type = 'number';
-          $settings['precision'] = 10;
-          $settings['scale'] = 2;
-          $settings['decimal_separator'] = '.';
+          $field_info['field_type'] = 'number_float';
+          $field_info['widget_type'] = 'number';
+          $field_info['settings']['precision'] = 10;
+          $field_info['settings']['scale'] = 2;
+          $field_info['settings']['decimal_separator'] = '.';
           break;
         case 'numeric':
-          $field_type = 'number_decimal';
-          $widget_type = 'number';
+          $field_info['field_type'] = 'number_decimal';
+          $field_info['widget_type'] = 'number';
           break;
         case 'serial':
           // Serial fields are most likely not needed as a field.
           break;
         case 'boolean':
-          $field_type = 'list_boolean';
-          $widget_type = 'options_onoff';
-          $settings['allowed_values'] = array(0 => "No", 1 => "Yes");
+          $field_info['field_type'] = 'list_boolean';
+          $field_info['widget_type'] = 'options_onoff';
+          $field_info['settings']['allowed_values'] = array(0 => "No", 1 => "Yes");
           break;
         case 'datetime':
           // Use the Drupal Date and Date API to create the field/widget
-          $field_type = 'datetime';
-          $widget_type = 'date_select';
+          $field_info['field_type'] = 'datetime';
+          $field_info['widget_type'] = 'date_select';
+          // TODO: Add settings so that the minutes increment by 1.
+          // And turn off the timezone, as the Chado field doesn't support it.
           break;
-        default:
-          drupal_set_message(t("Unhandled field type: %type", array('%type' => $details['type'])), 'warning');
-          $field_type = 'text';
-          $widget_type = 'text_textarea';
-          if (array_key_exists('length', $details)) {
-            $settings['max_length'] = $details['length'];
-          }
       }
 
       // If we don't have a field type then we don't need to create a field.
-      if (!$field_type) {
+      if (!$field_info['field_type']) {
         // If we don't have a field type but it is required and doesn't have
         // a default value then we are in trouble.
         if ($is_required and !array_key_exists('default', $details)) {
@@ -511,47 +510,20 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
         }
       }
 
-      // If this column is a FK relationship then use a custom Tripal
-      // defined field type for it.
-      if ($is_fk) {
-        // TODO: We need a better way to get the fields for FK relationships.
-        // It's not a good idea to enumerate them all here. We need some sort
-        // of hook or something that will let us lookup the correct field.
-        switch ($column_name) {
-          case 'organism_id':
-            $field_type = 'organism_id';
-            $label = 'Organism';
-            $desc = 'Select an organism.';
-            $widget_type = 'tripal_entities_organism_select_widget';
-            break;
-          case 'dbxref_id':
-            $field_type = 'dbxref_id';
-            $label = 'Primary Cross Reference';
-            $desc = 'This record can be cross-referenced with a record in another online database. This field is intended for the most prominent reference.  At a minimum, the database and accession must be provided.';
-            $widget_type = 'tripal_entities_primary_dbxref_widget';
-            break;
-        }
-      }
-
-      // If this column is the md5checksum
-      if ($column_name == 'md5checksum') {
-        $field_type = 'md5checksum';
-        $label = 'MD5 Checksum';
-        $desc = 'Generating MD5 checksum for the sequence.';
-        $widget_type = 'tripal_entities_md5checksum_checkbox_widget';
-      }
+      // Allow other modules to alter the field information array.
+      drupal_alter('chado_field', $field_info);
 
       // If the field doesn't exist then create it.
       if (!$field) {
         $field = array(
           'field_name' => $field_name,
-          'type' => $field_type,
+          'type' => $field_info['field_type'],
           'cardinality' => 1,
           'locked' => FALSE,
           'storage' => array(
             'type' => 'field_chado_storage'
           ),
-          'settings' => $settings,
+          'settings' => $field_info['settings'],
         );
         field_create_field($field);
       }
@@ -559,20 +531,33 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
       // Attach the field to the bundle.
       $field_instance = array(
         'field_name' => $field_name,
-        'label' => $label ? $label : ucwords(preg_replace('/_/', ' ', $column_name)),
-        'description' => $desc,
+        'label' => $field_info['label'],
+        'description' => $field_info['description'],
         'widget' => array(
-          'type' => $widget_type,
+          'type' => $field_info['widget_type'],
           'settings' => array('display_label' => 1)
         ),
         'entity_type' => $entity_type_name,
         'required' => $is_required,
-        'settings' => $settings,
+        'settings' => $field_info['settings'],
         'bundle' => $bundle_name,
       );
       field_create_instance($field_instance);
     }
   }
+}
+
+/**
+ * Implements hook_chado_field_alter.
+ *
+ * This function is used when new Chado fields are addd to an Entity.  It
+ * allows modules to customize the field, widget types and settings for
+ * a field before it is created.
+ *
+ * @param $field
+ */
+function hook_chado_field_alter(&$field) {
+  // TODO: add example code for how to use this hook.
 }
 /**
  *
