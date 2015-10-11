@@ -433,7 +433,7 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
         'widget_type' => '',
         'settings' => array(),
         'description' => '',
-        'label' => $label ? $label : ucwords(preg_replace('/_/', ' ', $column_name)),
+        'label' => ucwords(preg_replace('/_/', ' ', $column_name)),
         'chado_table' => $tablename,
         'chado_column' => $column_name
       );
@@ -442,10 +442,12 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
       switch($details['type']) {
         case 'char':
           $field_info['field_type'] = 'text';
+          $field_info['widget_type'] = 'text_textfield';
           $field_info['settings']['max_length'] = $details['length'];
           break;
         case 'varchar':
           $field_info['field_type'] = 'text';
+          $field_info['widget_type'] = 'text_textfield';
           $field_info['settings']['max_length'] = $details['length'];
           break;
         case 'text':
@@ -483,6 +485,9 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
           // Use the Drupal Date and Date API to create the field/widget
           $field_info['field_type'] = 'datetime';
           $field_info['widget_type'] = 'date_select';
+          $field_info['settings']['increment '] = 1;
+          $field_info['settings']['tz_handling'] = 'none';
+          
           // TODO: Add settings so that the minutes increment by 1.
           // And turn off the timezone, as the Chado field doesn't support it.
           break;

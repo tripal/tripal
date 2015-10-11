@@ -82,7 +82,7 @@ function tripal_entities_field_widget_form_alter(&$element, &$form_state, $conte
       $colname = $matches[2];
       $schema = chado_get_schema($tablename);
       if ($colname == 'timelastmodified' and
-          $schema['fields'][$colname]['type'] == 'datetime') {
+        $schema['fields'][$colname]['type'] == 'datetime') {
         $element['#default_value']['value'] = format_date(time(), 'custom', "Y-m-d H:i:s");
         $element['#date_items']['value'] = $element['#default_value']['value'];
         $form_state['rebuild'] = TRUE;
@@ -94,7 +94,7 @@ function tripal_entities_field_widget_form_alter(&$element, &$form_state, $conte
  * Implements hook_chado_field_alter().
  *
  */
-function tripal_entities_chado_field_alter($field) {
+function tripal_entities_chado_field_alter(&$field) {
 
   // Here we provide new field types and widgets for FK fields
   // and fields that need special attention.
@@ -111,14 +111,13 @@ function tripal_entities_chado_field_alter($field) {
     $field['description'] = 'This record can be cross-referenced with a record in another online database. This field is intended for the most prominent reference.  At a minimum, the database and accession must be provided.';
   }
   else if ($field['chado_table'] == 'feature' and
-           $field['chado_column'] == 'md5checksum') {
+    $field['chado_column'] == 'md5checksum') {
     $field['field_type'] = 'md5checksum';
     $field['widget_type'] = 'tripal_entities_md5checksum_checkbox_widget';
     $field['label'] = 'MD5 Checksum';
     $field['description'] = 'Generating MD5 checksum for the sequence.';
   }
   else if ($field['chado_table'] == 'feature' and
-           $field['chado_column'] == 'seqlen') {
-
+    $field['chado_column'] == 'seqlen') {
   }
 }

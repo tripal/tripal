@@ -323,11 +323,19 @@ function tripal_entities_primary_dbxref_widget_validate($element, &$form_state) 
  * Callback function for validating the tripal_entities_md5checksum_checkbox_widget.
  */
 function tripal_entities_md5checksum_checkbox_widget_validate($element, &$form_state) {
-  // Calculate the md5 checksum for the sequence per user's request
-  if (key_exists('feature__md5checksum', $field_vals) && key_exists('feature__residues', $field_vals)) {
-    $residues = $field_vals['feature__residues'];
-    $field_vals['feature__md5checksum'] = $field_vals['feature__md5checksum'] ? md5($residues) : NULL;
+  
+  $field_name = $element['#field_name'];
+
+  // Calculate the md5 checksum for the sequence only if md5 box is checked and the residues exist
+  $residues = tripal_entities_get_field_form_values('feature__residues', $form_state);
+  if (count($residues) > 0 && trim($residues[0]) != '') {    
+    tripal_entities_set_field_form_values ($field_name, $form_state, md5($residues[0]));
   }
+  else {
+    // Otherwise, remove the md5 value
+    tripal_entities_set_field_form_values ($field_name, $form_state, '__NULL__');
+  }
+
 }
 /**
  * Theme function for the primary_dbxref_widget.

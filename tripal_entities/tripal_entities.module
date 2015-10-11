@@ -378,6 +378,7 @@ function tripal_entity_load($id, $reset = FALSE) {
  * @param unknown $form_state
  */
 function tripal_entities_form_alter(&$form, &$form_state, $form_id) {
+
   switch ($form_id) {
     case 'field_ui_field_edit_form':
       // For entity fields added by Tripal Entities we don't want the
