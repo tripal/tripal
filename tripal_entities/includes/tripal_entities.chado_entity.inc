@@ -119,5 +119,7 @@ function tripal_entities_chado_field_alter(&$field) {
   }
   else if ($field['chado_table'] == 'feature' and
     $field['chado_column'] == 'seqlen') {
+      $field['field_type'] = 'seqlen';
+      $field['widget_type'] = 'tripal_entities_seqlen_hidden_widget';
   }
 }

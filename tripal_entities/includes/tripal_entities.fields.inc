@@ -41,6 +41,18 @@ function tripal_entities_field_info() {
         'active' => TRUE
       ),
     ),
+    'seqlen' => array(
+      'label' => t('Sequence length'),
+      'description' => t('A field for calculating the length of a sequence.'),
+      'default_widget' => 'tripal_entities_seqlen_hidden_widget',
+      'default_formatter' => 'tripal_entities_seqlen_formatter',
+      'settings' => array(),
+      'storage' => array(
+        'type' => 'field_chado_storage',
+        'module' => 'tripal_entities',
+        'active' => TRUE
+      ),
+    ),
   );
   return $fields;
 }
@@ -63,6 +75,9 @@ function tripal_entities_field_widget_info() {
       'label' => t('MD5 Checksum Checkbox'),
       'field types' => array('md5checksum')
     ),
+    'tripal_entities_seqlen_hidden_widget' => array(
+      'field types' => array('seqlen')
+    ),
   );
 }
 /**
@@ -81,6 +96,10 @@ function tripal_entities_field_formatter_info() {
     'tripal_entities_md5checksum_formatter' => array(
       'label' => t('MD5 checksum'),
       'field types' => array('md5checksum')
+    ),
+    'tripal_entities_seqlen_formatter' => array(
+      'label' => t('Sequence length'),
+      'field types' => array('seqlen')
     ),
   );
 }
@@ -132,17 +151,28 @@ function tripal_entities_field_formatter_view($entity_type, $entity, $field, $in
         );
       }
       break;
-      case 'tripal_entities_md5checksum_formatter':
-        foreach ($items as $delta => $item) {
-          // TODO: add hook here to allow other modules to change this display
-          // if they want.
-          $element[$delta] = array(
-            // We create a render array to produce the desired markup,
-            '#type' => 'markup',
-            '#markup' => key_exists('value', $item) ? $item['value'] : '',
-          );
-        }
-        break;
+    case 'tripal_entities_md5checksum_formatter':
+      foreach ($items as $delta => $item) {
+        // TODO: add hook here to allow other modules to change this display
+        // if they want.
+        $element[$delta] = array(
+          // We create a render array to produce the desired markup,
+          '#type' => 'markup',
+          '#markup' => key_exists('value', $item) ? $item['value'] : '',
+        );
+      }
+      break;
+    case 'tripal_entities_seqlen_formatter':
+      foreach ($items as $delta => $item) {
+        // TODO: add hook here to allow other modules to change this display
+        // if they want.
+        $element[$delta] = array(
+          // We create a render array to produce the desired markup,
+          '#type' => 'markup',
+          '#markup' => key_exists('value', $item) ? $item['value'] : '',
+        );
+      }
+      break;
   }
   return $element;
 }
@@ -235,19 +265,30 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
       );
       $element['value'] = $widget;
       break;
-      case 'tripal_entities_md5checksum_checkbox_widget':
-        $widget += array(
-          '#type' => 'checkbox',
-          '#title' => $element['#title'],
-          '#description' => $element['#description'],
-          '#options' => array(0, 1),
-          '#default_value' => 1,
-          '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-          '#delta' => $delta,
-          '#element_validate' => array('tripal_entities_md5checksum_checkbox_widget_validate'),
-        );
-        $element['value'] = $widget;
-        break;
+    case 'tripal_entities_md5checksum_checkbox_widget':
+      $widget += array(
+        '#type' => 'checkbox',
+        '#title' => $element['#title'],
+        '#description' => $element['#description'],
+        '#options' => array(0, 1),
+        '#default_value' => 1,
+        '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
+        '#delta' => $delta,
+        '#element_validate' => array('tripal_entities_md5checksum_checkbox_widget_validate'),
+      );
+      $element['value'] = $widget;
+      break;
+    case 'tripal_entities_seqlen_hidden_widget':
+      $widget += array(
+        '#type' => 'hidden',
+        '#title' => $element['#title'],
+        '#description' => $element['#description'],
+        '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
+        '#delta' => $delta,
+        '#element_validate' => array('tripal_entities_seqlen_hidden_widget_validate'),
+      );
+      $element['value'] = $widget;
+      break;
   }
   return $element;
 }
@@ -319,11 +360,11 @@ function tripal_entities_primary_dbxref_widget_validate($element, &$form_state) 
     tripal_entities_set_field_form_values($field_name, $form_state, '__NULL__', $field_name);
   }
 }
+
 /**
  * Callback function for validating the tripal_entities_md5checksum_checkbox_widget.
  */
-function tripal_entities_md5checksum_checkbox_widget_validate($element, &$form_state) {
-  
+function tripal_entities_md5checksum_checkbox_widget_validate($element, &$form_state) {  
   $field_name = $element['#field_name'];
 
   // Calculate the md5 checksum for the sequence only if md5 box is checked and the residues exist
@@ -335,8 +376,25 @@ function tripal_entities_md5checksum_checkbox_widget_validate($element, &$form_s
     // Otherwise, remove the md5 value
     tripal_entities_set_field_form_values ($field_name, $form_state, '__NULL__');
   }
-
 }
+
+/**
+ * Callback function for validating the tripal_entities_seqlen_hidden_widget.
+ */
+function tripal_entities_seqlen_hidden_widget_validate($element, &$form_state) {
+  $field_name = $element['#field_name'];
+
+  // Calculate the md5 checksum for the sequence only if md5 box is checked and the residues exist
+  $residues = tripal_entities_get_field_form_values('feature__residues', $form_state);
+  if (count($residues) > 0) {
+    tripal_entities_set_field_form_values ($field_name, $form_state, strlen($residues[0]));
+  }
+  else {
+    // Otherwise, remove the md5 value
+    tripal_entities_set_field_form_values ($field_name, $form_state, '__NULL__');
+  }
+}
+
 /**
  * Theme function for the primary_dbxref_widget.
  *
@@ -391,7 +449,7 @@ function tripal_entities_set_field_form_values($field_name, &$form_state, $newva
       if ($child and array_key_exists($child, $value['value'][0]) and $value['value'][0][$child]) {
         $form_state['values'][$field_name][$langcode][$delta]['value'][0][$child] = $newvalue;
       }
-      else if (!$child and $value['value']) {
+      else if (!$child) {
         $form_state['values'][$field_name][$langcode][$delta]['value'] = $newvalue;
       }
     }
