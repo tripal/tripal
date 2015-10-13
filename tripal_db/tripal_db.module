@@ -81,6 +81,12 @@ function tripal_db_menu() {
     'access arguments' => array('administer db cross-references'),
     'type' => MENU_CALLBACK,
   );
+  $items['admin/tripal/chado/tripal_db/dbxref/auto_name/%/%'] = array(
+    'page callback' => 'tripal_db_dbxref_accession_autocomplete',
+    'page arguments' => array(6, 7),
+    'access arguments' => array('administer db cross-references'),
+    'type' => MENU_CALLBACK,
+  );
 
   return $items;
 }
@@ -146,4 +152,39 @@ function tripal_db_theme($existing, $type, $theme, $path) {
     )
   );
   return $items;
+}
+
+
+/**
+ * This function is intended to be used in autocomplete forms
+ * for searching for accession that begin with the provided string
+ *
+ * @param $db_id
+ * The DB ID in which to search for the term
+ * @param $string
+ * The string to search for
+ *
+ * @return
+ * A json array of terms that begin with the provided string
+ *
+ * @ingroup tripal_db_api
+ */
+function tripal_db_dbxref_accession_autocomplete ($db_id, $string = '') {
+  if (!$db_id) {
+    return drupal_json_output(array());
+  }
+  $sql = "
+    SELECT dbxref_id, accession
+    FROM {dbxref}
+    WHERE db_id = :db_id and lower(accession) like lower(:accession)
+    ORDER by accession
+    LIMIT 25 OFFSET 0
+  ";
+  $results = chado_query($sql, array(':db_id' => $db_id, ':accession' => $string . '%'));
+  $items = array();
+  foreach ($results as $ref) {
+    $items[$ref->accession] = $ref->accession;
+  }
+  
+  drupal_json_output($items);
 }

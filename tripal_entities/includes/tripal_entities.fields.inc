@@ -217,7 +217,7 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
         $version = $dbxref->version;
         $description = $dbxref->description;
       }
-
+      
       $schema = chado_get_schema('dbxref');
       $options = tripal_get_db_select_options();
       $widget += array(
@@ -239,6 +239,12 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
             '#options' => $options,
             '#required' => $element['#required'],
             '#default_value' => $db_id,
+            '#ajax' => array(
+              'callback' => "tripal_entities_field_widget_form_ajax_callback",
+              'wrapper' => 'tripal_entities_field_widget_form',
+              'effect' => 'fade',
+              'method' => 'replace'
+            )
           ),
           'dbxref__accession' => array(
             '#type' => 'textfield',
@@ -247,6 +253,7 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
             '#required' => $element['#required'],
             '#maxlength' => array_key_exists('length', $schema['fields']['accession']) ? $schema['fields']['accession']['length'] : 255,
             '#size' => 15,
+            '#autocomplete_path' => "admin/tripal/chado/tripal_db/dbxref/auto_name/$db_id",
           ),
           'dbxref__version' => array(
             '#type' => 'textfield',
@@ -455,4 +462,12 @@ function tripal_entities_set_field_form_values($field_name, &$form_state, $newva
     }
   }
   return $values;
+}
+
+/**
+ * An Ajax callback for the tripal_entities_admin_publish_form..
+ */
+function tripal_entities_field_widget_form_ajax_callback($form, $form_state) {
+  // return the form so Drupal can update the content on the page
+  return $form;
 }
