@@ -450,7 +450,7 @@ function tripal_fields_residues_textarea_widget_validate($element, &$form_state)
   $field_name = $element['#field_name'];
 
   // Remove any white spaces.
-  $residues = tripal_fields_get_field_form_values('feature__residues', $form_state);
+  $residues = tripal_fields_get_field_form_values($field_name, $form_state);
   if (count($residues) > 0) {
     $residues = preg_replace('/\s/', '', $residues[0]);
     tripal_fields_set_field_form_values($field_name, $form_state, $residues);
@@ -463,13 +463,13 @@ function tripal_fields_residues_textarea_widget_validate($element, &$form_state)
 function tripal_fields_seqlen_hidden_widget_validate($element, &$form_state) {
   $field_name = $element['#field_name'];
 
-  // Calculate the md5 checksum for the sequence only if md5 box is checked and the residues exist
+  // Get the residues so we can calculate teh length.
   $residues = tripal_fields_get_field_form_values('feature__residues', $form_state);
 
   // Remove any white spaces.
   if (count($residues) > 0) {
     $residues = preg_replace('/\s/', '', $residues[0]);
-    tripal_fields_set_field_form_values($field_name, $form_state, strlen($residues[0]));
+    tripal_fields_set_field_form_values($field_name, $form_state, strlen($residues));
   }
   else {
     // Otherwise, remove the md5 value
