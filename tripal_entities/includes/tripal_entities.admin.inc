@@ -431,7 +431,8 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
       $field_info = array(
         'field_type' => '',
         'widget_type' => '',
-        'settings' => array(),
+        'field_settings' => array(),
+        'widget_settings' => array('display_label' => 1),
         'description' => '',
         'label' => ucwords(preg_replace('/_/', ' ', $column_name)),
         'chado_table' => $tablename,
@@ -443,16 +444,17 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
         case 'char':
           $field_info['field_type'] = 'text';
           $field_info['widget_type'] = 'text_textfield';
-          $field_info['settings']['max_length'] = $details['length'];
+          $field_info['field_settings']['max_length'] = $details['length'];
           break;
         case 'varchar':
           $field_info['field_type'] = 'text';
           $field_info['widget_type'] = 'text_textfield';
-          $field_info['settings']['max_length'] = $details['length'];
+          $field_info['field_settings']['max_length'] = $details['length'];
           break;
         case 'text':
           $field_info['field_type'] = 'text';
           $field_info['widget_type'] = 'text_textarea';
+          $field_info['field_settings']['max_length'] = 17179869184;
           break;
         case 'blob':
           // not sure how to support a blob field.
@@ -465,9 +467,9 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
         case 'float':
           $field_info['field_type'] = 'number_float';
           $field_info['widget_type'] = 'number';
-          $field_info['settings']['precision'] = 10;
-          $field_info['settings']['scale'] = 2;
-          $field_info['settings']['decimal_separator'] = '.';
+          $field_info['field_settings']['precision'] = 10;
+          $field_info['field_settings']['scale'] = 2;
+          $field_info['field_settings']['decimal_separator'] = '.';
           break;
         case 'numeric':
           $field_info['field_type'] = 'number_decimal';
@@ -479,15 +481,15 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
         case 'boolean':
           $field_info['field_type'] = 'list_boolean';
           $field_info['widget_type'] = 'options_onoff';
-          $field_info['settings']['allowed_values'] = array(0 => "No", 1 => "Yes");
+          $field_info['field_settings']['allowed_values'] = array(0 => "No", 1 => "Yes");
           break;
         case 'datetime':
           // Use the Drupal Date and Date API to create the field/widget
           $field_info['field_type'] = 'datetime';
           $field_info['widget_type'] = 'date_select';
-          $field_info['settings']['increment '] = 1;
-          $field_info['settings']['tz_handling'] = 'none';
-          
+          $field_info['widget_settings']['increment'] = 1;
+          $field_info['widget_settings']['tz_handling'] = 'none';
+
           // TODO: Add settings so that the minutes increment by 1.
           // And turn off the timezone, as the Chado field doesn't support it.
           break;
@@ -528,7 +530,7 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
           'storage' => array(
             'type' => 'field_chado_storage'
           ),
-          'settings' => $field_info['settings'],
+          'settings' => $field_info['field_settings'],
         );
         field_create_field($field);
       }
@@ -540,11 +542,11 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
         'description' => $field_info['description'],
         'widget' => array(
           'type' => $field_info['widget_type'],
-          'settings' => array('display_label' => 1)
+          'settings' => $field_info['widget_settings'],
         ),
         'entity_type' => $entity_type_name,
         'required' => $is_required,
-        'settings' => $field_info['settings'],
+        'settings' => $field_info['field_settings'],
         'bundle' => $bundle_name,
       );
       field_create_instance($field_instance);

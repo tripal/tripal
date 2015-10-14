@@ -29,6 +29,18 @@ function tripal_fields_field_info() {
         'active' => TRUE
       ),
     ),
+    'residues' => array(
+      'label' => t('Residues'),
+      'description' => t('A field for managing nucleotide and protein residues.'),
+      'default_widget' => 'tripal_fields_residue_textarea_widget',
+      'default_formatter' => 'tripal_fields_residues_formatter',
+      'settings' => array(),
+      'storage' => array(
+        'type' => 'field_chado_storage',
+        'module' => 'tripal_fields',
+        'active' => TRUE
+      ),
+    ),
     'md5checksum' => array(
       'label' => t('MD5 checksum'),
       'description' => t('A field for generating MD5 checksum for a sequence.'),
@@ -75,6 +87,10 @@ function tripal_fields_field_widget_info() {
       'label' => t('MD5 Checksum Checkbox'),
       'field types' => array('md5checksum')
     ),
+    'tripal_fields_residues_textarea_widget' => array(
+      'label' => t('Residues'),
+      'field types' => array('residues')
+    ),
     'tripal_fields_seqlen_hidden_widget' => array(
       'field types' => array('seqlen')
     ),
@@ -97,6 +113,10 @@ function tripal_fields_field_formatter_info() {
       'label' => t('MD5 checksum'),
       'field types' => array('md5checksum')
     ),
+    'tripal_fields_residues_formatter' => array(
+      'label' => t('Residues'),
+      'field types' => array('residues')
+    ),
     'tripal_fields_seqlen_formatter' => array(
       'label' => t('Sequence length'),
       'field types' => array('seqlen')
@@ -114,7 +134,8 @@ function tripal_fields_field_formatter_info() {
  *
  * @see field_example_field_formatter_info()
  */
-function tripal_fields_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+function tripal_fields_field_formatter_view($entity_type, $entity, $field,
+    $instance, $langcode, $items, $display) {
   $element = array();
   switch ($display['type']) {
 
@@ -159,6 +180,18 @@ function tripal_fields_field_formatter_view($entity_type, $entity, $field, $inst
           // We create a render array to produce the desired markup,
           '#type' => 'markup',
           '#markup' => key_exists('value', $item) ? $item['value'] : '',
+        );
+      }
+      break;
+    case 'tripal_fields_residues_formatter':
+      foreach ($items as $delta => $item) {
+        // TODO: add hook here to allow other modules to change this display
+        // if they want.
+        $residues = key_exists('value', $item) ? $item['value'] : '';
+        $element[$delta] = array(
+          // We create a render array to produce the desired markup,
+          '#type' => 'markup',
+          '#markup' =>  '<pre>' . $residues . '</pre>',
         );
       }
       break;
@@ -298,6 +331,18 @@ function tripal_fields_field_widget_form(&$form, &$form_state, $field,
       );
       $element['value'] = $widget;
       break;
+    case 'tripal_fields_residues_textarea_widget':
+        $widget += array(
+          '#type' => 'textarea',
+          '#title' => $element['#title'],
+          '#description' => $element['#description'],
+          '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
+          '#default_value' => count($items) > 0 ? $items[0]['value'] : 0,
+          '#delta' => $delta,
+          '#element_validate' => array('tripal_fields_residues_textarea_widget_validate'),
+        );
+        $element['value'] = $widget;
+        break;
     case 'tripal_fields_seqlen_hidden_widget':
       $widget += array(
         '#type' => 'hidden',
@@ -399,6 +444,20 @@ function tripal_fields_md5checksum_checkbox_widget_validate($element, &$form_sta
 }
 
 /**
+ * Callback function for validating the tripal_fields_residues_textarea_widget.
+ */
+function tripal_fields_residues_textarea_widget_validate($element, &$form_state) {
+  $field_name = $element['#field_name'];
+
+  // Remove any white spaces.
+  $residues = tripal_fields_get_field_form_values('feature__residues', $form_state);
+  if (count($residues) > 0) {
+    $residues = preg_replace('/\s/', '', $residues[0]);
+    tripal_fields_set_field_form_values($field_name, $form_state, $residues);
+  }
+}
+
+/**
  * Callback function for validating the tripal_fields_seqlen_hidden_widget.
  */
 function tripal_fields_seqlen_hidden_widget_validate($element, &$form_state) {
@@ -406,8 +465,11 @@ function tripal_fields_seqlen_hidden_widget_validate($element, &$form_state) {
 
   // Calculate the md5 checksum for the sequence only if md5 box is checked and the residues exist
   $residues = tripal_fields_get_field_form_values('feature__residues', $form_state);
+
+  // Remove any white spaces.
   if (count($residues) > 0) {
-    tripal_fields_set_field_form_values ($field_name, $form_state, strlen($residues[0]));
+    $residues = preg_replace('/\s/', '', $residues[0]);
+    tripal_fields_set_field_form_values($field_name, $form_state, strlen($residues[0]));
   }
   else {
     // Otherwise, remove the md5 value

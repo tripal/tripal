@@ -116,9 +116,14 @@ function tripal_entities_chado_field_alter(&$field) {
     $field['label'] = 'MD5 Checksum';
     $field['description'] = 'Generating MD5 checksum for the sequence.';
   }
-  else if ($field['chado_table'] == 'feature' and
-    $field['chado_column'] == 'seqlen') {
-      $field['field_type'] = 'seqlen';
-      $field['widget_type'] = 'tripal_fields_seqlen_hidden_widget';
+  else if ($field['chado_table'] == 'feature' and $field['chado_column'] == 'seqlen') {
+    $field['field_type'] = 'seqlen';
+    $field['widget_type'] = 'tripal_fields_seqlen_hidden_widget';
+  }
+  else if ($field['chado_table'] == 'feature' and $field['chado_column'] == 'residues') {
+    $field['field_type'] = 'residues';
+    $field['widget_type'] = 'tripal_fields_residues_textarea_widget';
+    $field['label'] = 'Residues';
+    $field['description'] = 'Please provide an IUPAC compatible residues for this feature. Spaces and new lines are allowed.';
   }
 }
