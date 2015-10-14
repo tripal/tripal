@@ -85,7 +85,6 @@ function tripal_entities_field_widget_form_alter(&$element, &$form_state, $conte
         $schema['fields'][$colname]['type'] == 'datetime') {
         $element['#default_value']['value'] = format_date(time(), 'custom', "Y-m-d H:i:s");
         $element['#date_items']['value'] = $element['#default_value']['value'];
-        $form_state['rebuild'] = TRUE;
       }
     }
   }

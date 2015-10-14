@@ -222,7 +222,6 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
       if (count($temp) > 0) {
         $db_id = $temp[0];
       }
-      drupal_debug(array($field_name, $temp, $db_id));
 
       $schema = chado_get_schema('dbxref');
       $options = tripal_get_db_select_options();
@@ -260,6 +259,12 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
             '#maxlength' => array_key_exists('length', $schema['fields']['accession']) ? $schema['fields']['accession']['length'] : 255,
             '#size' => 15,
             '#autocomplete_path' => "admin/tripal/chado/tripal_db/dbxref/auto_name/$db_id",
+            '#ajax' => array(
+              'callback' => "tripal_entities_primary_dbxref_widget_form_ajax_callback",
+              'wrapper' => "$field_name-dbxref--db-id",
+              'effect' => 'fade',
+              'method' => 'replace'
+            )
           ),
           'dbxref__version' => array(
             '#type' => 'textfield',
@@ -441,6 +446,9 @@ function theme_tripal_entities_primary_dbxref_widget($variables) {
  */
 function tripal_entities_get_field_form_values($field_name, $form_state, $child = NULL) {
   $values = array();
+  if (!array_key_exists('values', $form_state)) {
+    return $values;
+  }
   if (array_key_exists($field_name, $form_state['values'])) {
     foreach ($form_state['values'][$field_name] as $langcode => $items) {
       foreach ($items as $delta => $value) {
@@ -478,8 +486,19 @@ function tripal_entities_set_field_form_values($field_name, &$form_state, $newva
  * An Ajax callback for the tripal_entities_admin_publish_form..
  */
 function tripal_entities_primary_dbxref_widget_form_ajax_callback($form, $form_state) {
-  // return the form so Drupal can update the content on the page
-//  return $form['][', $element ['#parents']) . '][0][dbxref__accession',
-drupal_debug($form_state['triggering_element']);
-  return $form[$form_state['triggering_element']['#parents'][0]];
+  $field_name = $form_state['triggering_element']['#parents'][0];
+  $db_id = tripal_entities_get_field_form_values($field_name, $form_state, 'dbxref__db_id');
+  $accession = tripal_entities_get_field_form_values($field_name, $form_state, 'dbxref__accession');
+  if (count($db_id) > 0 and count($accession) > 0) {
+    $values = array(
+      'db_id' => $db_id[0],
+      'accession' => $accession[0],
+    );
+    $options = array('is_duplicate' => TRUE);
+    $has_duplicate = chado_select_record('dbxref', array('*'), $values, $options);
+    if (!$has_duplicate) {
+      drupal_set_message('The selected cross reference is new and will be added for future auto completions.');
+    }
+  }
+  return $form[$field_name];
 }

@@ -433,16 +433,14 @@ function chado_insert_record($table, $values, $options = array()) {
   $ifields = array();       // contains the names of the fields
   $itypes  = array();       // contains placeholders for the sql query
   $ivalues = array();       // contains the values of the fields
-  $i = 1;
   foreach ($insert_values as $field => $value) {
     $ifields[] = $field;
-    $ivalues[":$field"] = $value;
-    $i++;
     if (strcmp($value, '__NULL__')==0) {
       $itypes[] = "NULL";
     }
     else {
       $itypes[] = ":$field";
+      $ivalues[":$field"] = $value;
     }
   }
 
@@ -1029,7 +1027,6 @@ function chado_delete_record($table, $match, $options = NULL) {
  * @ingroup tripal_chado_query_api
  */
 function chado_select_record($table, $columns, $values, $options = NULL) {
-
   // Set defaults for options. If we don't set defaults then
   // we get memory leaks when we try to access the elements.
   if (!is_array($options)) {
@@ -1094,7 +1091,6 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
   $where = array();
   $args = array();
 
-  // if the 'is_duplicate' option is turned on then we want to remove all but unique keys
   if ($options['is_duplicate'] and array_key_exists('unique keys', $table_desc)) {
     $ukeys = $table_desc['unique keys'];
     $has_results = 0;
@@ -1110,7 +1106,6 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
       $new_options = array();
       $uq_sname = "uq_" . $table . "_";
       $has_pkey = 0;
-
 
       // include the primary key in the results returned
       if (array_key_exists('primary key', $table_desc)) {
@@ -1161,7 +1156,6 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
           return FALSE;
         }
       }
-
       $results = chado_select_record($table, $new_columns, $new_values, $new_options);
       // if we have a duplicate record then return the results
       if (count($results) > 0) {

@@ -115,7 +115,7 @@ function tripal_entities_field_storage_write_recursive($entity_type, $entity,
       // exists in the $field_vals;
       $fk_val = tripal_entities_field_storage_write_recursive($entity_type,
         $entity, $op, $field_vals, $fk_table, NULL, $fk_val, $depth + 1);
-      if (isset($fk_val) and $fk_val != '') {
+      if (isset($fk_val) and $fk_val != '' and $fk_val != 0) {
         $values[$local_id] = $fk_val;
       }
     }

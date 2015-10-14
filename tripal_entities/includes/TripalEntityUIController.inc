@@ -289,7 +289,8 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
  */
 function tripal_entity_form_validate($form, &$form_state) {
 
-  if ($form_state['clicked_button']['#name'] == 'add_data') {
+  if (array_key_exists('clicked_button', $form_state) and
+      $form_state['clicked_button']['#name'] == 'add_data') {
     $tripal_entity = (object) $form_state['values'];
     $entity_type = $form_state['values']['type'];
     field_attach_form_validate($entity_type, $tripal_entity, $form, $form_state);
@@ -382,15 +383,19 @@ function tripal_entity_delete_form_submit($form, &$form_state) {
  * @see hook_entity_view_alter()
  */
 function tripal_entity_view($entity, $view_mode = 'full') {
-  $controller = entity_get_controller($entity->type);
-  $content = $controller->view(array($entity->id => $entity));
-  drupal_set_title($entity->title);
-  return $content;
+  if ($entity) {
+    $controller = entity_get_controller($entity->type);
+    $content = $controller->view(array($entity->id => $entity));
+    drupal_set_title($entity->title);
+    return $content;
+  }
 }
 
 /**
  * Menu title callback for showing individual entities
  */
-function tripal_entity_title(TripalEntity $entity){
-  return $entity->title;
+function tripal_entity_title($entity){
+  if ($entity) {
+    return $entity->title;
+  }
 }
