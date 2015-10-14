@@ -185,6 +185,7 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
 
   $widget = $element;
   $widget['#delta'] = $delta;
+  $field_name = $field['field_name'];
 
   switch ($instance['widget']['type']) {
     case 'tripal_entities_organism_select_widget':
@@ -217,7 +218,12 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
         $version = $dbxref->version;
         $description = $dbxref->description;
       }
-      
+      $temp = tripal_entities_get_field_form_values($field_name, $form_state, 'dbxref__db_id');
+      if (count($temp) > 0) {
+        $db_id = $temp[0];
+      }
+      drupal_debug(array($field_name, $temp, $db_id));
+
       $schema = chado_get_schema('dbxref');
       $options = tripal_get_db_select_options();
       $widget += array(
@@ -240,8 +246,8 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
             '#required' => $element['#required'],
             '#default_value' => $db_id,
             '#ajax' => array(
-              'callback' => "tripal_entities_field_widget_form_ajax_callback",
-              'wrapper' => 'tripal_entities_field_widget_form',
+              'callback' => "tripal_entities_primary_dbxref_widget_form_ajax_callback",
+              'wrapper' => "$field_name-dbxref--db-id",
               'effect' => 'fade',
               'method' => 'replace'
             )
@@ -269,6 +275,8 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
             '#size' => 20,
           ),
         ),
+        '#prefix' => "<span id='$field_name-dbxref--db-id'>",
+        '#suffix' => "</span>"
       );
       $element['value'] = $widget;
       break;
@@ -371,12 +379,12 @@ function tripal_entities_primary_dbxref_widget_validate($element, &$form_state) 
 /**
  * Callback function for validating the tripal_entities_md5checksum_checkbox_widget.
  */
-function tripal_entities_md5checksum_checkbox_widget_validate($element, &$form_state) {  
+function tripal_entities_md5checksum_checkbox_widget_validate($element, &$form_state) {
   $field_name = $element['#field_name'];
 
   // Calculate the md5 checksum for the sequence only if md5 box is checked and the residues exist
   $residues = tripal_entities_get_field_form_values('feature__residues', $form_state);
-  if (count($residues) > 0 && trim($residues[0]) != '') {    
+  if (count($residues) > 0 && trim($residues[0]) != '') {
     tripal_entities_set_field_form_values ($field_name, $form_state, md5($residues[0]));
   }
   else {
@@ -433,13 +441,15 @@ function theme_tripal_entities_primary_dbxref_widget($variables) {
  */
 function tripal_entities_get_field_form_values($field_name, $form_state, $child = NULL) {
   $values = array();
-  foreach ($form_state['values'][$field_name] as $langcode => $items) {
-    foreach ($items as $delta => $value) {
-      if ($child and array_key_exists($child, $value['value'][0]) and $value['value'][0][$child]) {
-        $values[] = $value['value'][0][$child];
-      }
-      else if (!$child and $value['value']) {
-        $values[] = $value['value'];
+  if (array_key_exists($field_name, $form_state['values'])) {
+    foreach ($form_state['values'][$field_name] as $langcode => $items) {
+      foreach ($items as $delta => $value) {
+        if ($child and array_key_exists($child, $value['value'][0]) and $value['value'][0][$child]) {
+          $values[] = $value['value'][0][$child];
+        }
+        else if (!$child and $value['value']) {
+          $values[] = $value['value'];
+        }
       }
     }
   }
@@ -467,7 +477,9 @@ function tripal_entities_set_field_form_values($field_name, &$form_state, $newva
 /**
  * An Ajax callback for the tripal_entities_admin_publish_form..
  */
-function tripal_entities_field_widget_form_ajax_callback($form, $form_state) {
+function tripal_entities_primary_dbxref_widget_form_ajax_callback($form, $form_state) {
   // return the form so Drupal can update the content on the page
-  return $form;
+//  return $form['][', $element ['#parents']) . '][0][dbxref__accession',
+drupal_debug($form_state['triggering_element']);
+  return $form[$form_state['triggering_element']['#parents'][0]];
 }
