@@ -2,8 +2,6 @@
 
 require_once "api/tripal_entities.api.inc";
 require_once "includes/tripal_entities.chado_entity.inc";
-require_once "includes/tripal_entities.field_storage.inc";
-require_once "includes/tripal_entities.fields.inc";
 require_once "includes/tripal_entities.tables.inc";
 require_once "includes/TripalEntity.inc";
 require_once "includes/TripalEntityController.inc";
@@ -98,10 +96,6 @@ function tripal_entities_theme($existing, $type, $theme, $path) {
       'render element' => 'elements',
       'template' => 'tripal_entity',
       'path' => "$path/theme/templates"
-    ),
-    // Field themes.
-    'tripal_entities_primary_dbxref_widget' => array(
-      'render element' => 'element',
     ),
   );
 }

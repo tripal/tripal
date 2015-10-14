@@ -485,7 +485,6 @@ function tripal_entities_schema() {
   );
   return $schema;
 }
-
 /**
  * Implements hook_uninstall().
  *
@@ -493,9 +492,7 @@ function tripal_entities_schema() {
  * so that attached fields can be cleaned up.
  */
 function tripal_entities_uninstall() {
-  // TODO: make this dynamic (not hardcoded bundle).
   $terms = chado_generate_var('tripal_term', array('publish' => 1), array('return_array' => 1));
-
   foreach ($terms as $term) {
     $entity_type = $term->vocab_id->db_id->name;
     $bundle_id = $term->cvterm_id->dbxref_id->db_id->name . '_' . $term->cvterm_id->dbxref_id->accession;

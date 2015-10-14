@@ -3,53 +3,53 @@
 /**
  * Implements hook_field_info().
  */
-function tripal_entities_field_info() {
+function tripal_fields_field_info() {
   $fields = array(
     'organism_id' => array(
       'label' => t('Organism'),
       'description' => t('A field for specifying an organism.'),
-      'default_widget' => 'tripal_entities_organism_select_widget',
-      'default_formatter' => 'tripal_entities_organism_formatter',
+      'default_widget' => 'tripal_fields_organism_select_widget',
+      'default_formatter' => 'tripal_fields_organism_formatter',
       'settings' => array(),
       'storage' => array(
         'type' => 'field_chado_storage',
-        'module' => 'tripal_entities',
+        'module' => 'tripal_fields',
         'active' => TRUE
       ),
     ),
     'dbxref_id' => array(
       'label' => t('Cross-reference'),
       'description' => t('This record can be cross-referenced with a record in another online database. This field is intended for the most prominent reference.  At a minimum, the database and accession must be provided.'),
-      'default_widget' => 'tripal_entities_primary_dbxref_widget',
-      'default_formatter' => 'tripal_entities_primary_dbxref_formatter',
+      'default_widget' => 'tripal_fields_primary_dbxref_widget',
+      'default_formatter' => 'tripal_fields_primary_dbxref_formatter',
       'settings' => array(),
       'storage' => array(
         'type' => 'field_chado_storage',
-        'module' => 'tripal_entities',
+        'module' => 'tripal_fields',
         'active' => TRUE
       ),
     ),
     'md5checksum' => array(
       'label' => t('MD5 checksum'),
       'description' => t('A field for generating MD5 checksum for a sequence.'),
-      'default_widget' => 'tripal_entities_md5checksum_checkbox_widget',
-      'default_formatter' => 'tripal_entities_md5checksum_formatter',
+      'default_widget' => 'tripal_fields_md5checksum_checkbox_widget',
+      'default_formatter' => 'tripal_fields_md5checksum_formatter',
       'settings' => array(),
       'storage' => array(
         'type' => 'field_chado_storage',
-        'module' => 'tripal_entities',
+        'module' => 'tripal_fields',
         'active' => TRUE
       ),
     ),
     'seqlen' => array(
       'label' => t('Sequence length'),
       'description' => t('A field for calculating the length of a sequence.'),
-      'default_widget' => 'tripal_entities_seqlen_hidden_widget',
-      'default_formatter' => 'tripal_entities_seqlen_formatter',
+      'default_widget' => 'tripal_fields_seqlen_hidden_widget',
+      'default_formatter' => 'tripal_fields_seqlen_formatter',
       'settings' => array(),
       'storage' => array(
         'type' => 'field_chado_storage',
-        'module' => 'tripal_entities',
+        'module' => 'tripal_fields',
         'active' => TRUE
       ),
     ),
@@ -60,22 +60,22 @@ function tripal_entities_field_info() {
 /**
  * Implements hook_field_widget_info().
  */
-function tripal_entities_field_widget_info() {
+function tripal_fields_field_widget_info() {
   return array(
-    'tripal_entities_organism_select_widget' => array(
+    'tripal_fields_organism_select_widget' => array(
       'label' => t('Organism Select'),
       'field types' => array('organism_id')
     ),
-    'tripal_entities_primary_dbxref_widget' => array(
+    'tripal_fields_primary_dbxref_widget' => array(
       'label' => t('Cross-reference'),
       'field types' => array('dbxref_id'),
       'description' => t('This record can be cross-referenced with a record in another online database. This field is intended for the most prominent reference.  At a minimum, the database and accession must be provided.'),
     ),
-    'tripal_entities_md5checksum_checkbox_widget' => array(
+    'tripal_fields_md5checksum_checkbox_widget' => array(
       'label' => t('MD5 Checksum Checkbox'),
       'field types' => array('md5checksum')
     ),
-    'tripal_entities_seqlen_hidden_widget' => array(
+    'tripal_fields_seqlen_hidden_widget' => array(
       'field types' => array('seqlen')
     ),
   );
@@ -83,21 +83,21 @@ function tripal_entities_field_widget_info() {
 /**
  * Implements hook_field_formatter_info().
  */
-function tripal_entities_field_formatter_info() {
+function tripal_fields_field_formatter_info() {
   return array(
-    'tripal_entities_organism_formatter' => array(
+    'tripal_fields_organism_formatter' => array(
       'label' => t('Organism'),
       'field types' => array('organism_id')
     ),
-    'tripal_entities_primary_dbxref_formatter' => array(
+    'tripal_fields_primary_dbxref_formatter' => array(
       'label' => t('Cross-reference'),
       'field types' => array('dbxref_id')
     ),
-    'tripal_entities_md5checksum_formatter' => array(
+    'tripal_fields_md5checksum_formatter' => array(
       'label' => t('MD5 checksum'),
       'field types' => array('md5checksum')
     ),
-    'tripal_entities_seqlen_formatter' => array(
+    'tripal_fields_seqlen_formatter' => array(
       'label' => t('Sequence length'),
       'field types' => array('seqlen')
     ),
@@ -114,11 +114,11 @@ function tripal_entities_field_formatter_info() {
  *
  * @see field_example_field_formatter_info()
  */
-function tripal_entities_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+function tripal_fields_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
   switch ($display['type']) {
 
-    case 'tripal_entities_organism_formatter':
+    case 'tripal_fields_organism_formatter':
       foreach ($items as $delta => $item) {
         $organism = chado_select_record('organism', array('genus', 'species'), array('organism_id' => $item['value']));
         // TODO: add hook here to allow other modules to change this display
@@ -132,7 +132,7 @@ function tripal_entities_field_formatter_view($entity_type, $entity, $field, $in
         );
       }
       break;
-    case 'tripal_entities_primary_dbxref_formatter':
+    case 'tripal_fields_primary_dbxref_formatter':
       foreach ($items as $delta => $item) {
         $accession = '';
         if ($item['value']) {
@@ -151,7 +151,7 @@ function tripal_entities_field_formatter_view($entity_type, $entity, $field, $in
         );
       }
       break;
-    case 'tripal_entities_md5checksum_formatter':
+    case 'tripal_fields_md5checksum_formatter':
       foreach ($items as $delta => $item) {
         // TODO: add hook here to allow other modules to change this display
         // if they want.
@@ -162,7 +162,7 @@ function tripal_entities_field_formatter_view($entity_type, $entity, $field, $in
         );
       }
       break;
-    case 'tripal_entities_seqlen_formatter':
+    case 'tripal_fields_seqlen_formatter':
       foreach ($items as $delta => $item) {
         // TODO: add hook here to allow other modules to change this display
         // if they want.
@@ -180,7 +180,7 @@ function tripal_entities_field_formatter_view($entity_type, $entity, $field, $in
 /**
  * Implements hook_field_widget_form().
  */
-function tripal_entities_field_widget_form(&$form, &$form_state, $field,
+function tripal_fields_field_widget_form(&$form, &$form_state, $field,
   $instance, $langcode, $items, $delta, $element) {
 
   $widget = $element;
@@ -188,7 +188,7 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
   $field_name = $field['field_name'];
 
   switch ($instance['widget']['type']) {
-    case 'tripal_entities_organism_select_widget':
+    case 'tripal_fields_organism_select_widget':
       $options = tripal_get_organism_select_options();
       $widget += array(
         '#type' => 'select',
@@ -199,11 +199,11 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
         '#required' => $element['#required'],
         '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
         '#delta' => $delta,
-        '#element_validate' => array('tripal_entities_organism_select_widget_validate'),
+        '#element_validate' => array('tripal_fields_organism_select_widget_validate'),
       );
       $element['value'] = $widget;
       break;
-    case 'tripal_entities_primary_dbxref_widget':
+    case 'tripal_fields_primary_dbxref_widget':
       // Get the field defaults from the database if a record exists.
       $dbxref_id = '';
       $db_id = '';
@@ -218,7 +218,7 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
         $version = $dbxref->version;
         $description = $dbxref->description;
       }
-      $temp = tripal_entities_get_field_form_values($field_name, $form_state, 'dbxref__db_id');
+      $temp = tripal_fields_get_field_form_values($field_name, $form_state, 'dbxref__db_id');
       if (count($temp) > 0) {
         $db_id = $temp[0];
       }
@@ -226,13 +226,13 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
       $schema = chado_get_schema('dbxref');
       $options = tripal_get_db_select_options();
       $widget += array(
-        '#element_validate' => array('tripal_entities_primary_dbxref_widget_validate'),
+        '#element_validate' => array('tripal_fields_primary_dbxref_widget_validate'),
         '#type' => 'fieldset',
         '#title' => $element['#title'],
         '#description' =>  $element['#description'],
         '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
         '#delta' => $delta,
-        '#theme' => 'tripal_entities_primary_dbxref_widget',
+        '#theme' => 'tripal_fields_primary_dbxref_widget',
         array(
           $element['#field_name'] => array(
             '#type' => 'hidden',
@@ -245,7 +245,7 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
             '#required' => $element['#required'],
             '#default_value' => $db_id,
             '#ajax' => array(
-              'callback' => "tripal_entities_primary_dbxref_widget_form_ajax_callback",
+              'callback' => "tripal_fields_primary_dbxref_widget_form_ajax_callback",
               'wrapper' => "$field_name-dbxref--db-id",
               'effect' => 'fade',
               'method' => 'replace'
@@ -260,7 +260,7 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
             '#size' => 15,
             '#autocomplete_path' => "admin/tripal/chado/tripal_db/dbxref/auto_name/$db_id",
             '#ajax' => array(
-              'callback' => "tripal_entities_primary_dbxref_widget_form_ajax_callback",
+              'callback' => "tripal_fields_primary_dbxref_widget_form_ajax_callback",
               'wrapper' => "$field_name-dbxref--db-id",
               'effect' => 'fade',
               'method' => 'replace'
@@ -285,7 +285,7 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
       );
       $element['value'] = $widget;
       break;
-    case 'tripal_entities_md5checksum_checkbox_widget':
+    case 'tripal_fields_md5checksum_checkbox_widget':
       $widget += array(
         '#type' => 'checkbox',
         '#title' => $element['#title'],
@@ -294,18 +294,18 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
         '#default_value' => 1,
         '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
         '#delta' => $delta,
-        '#element_validate' => array('tripal_entities_md5checksum_checkbox_widget_validate'),
+        '#element_validate' => array('tripal_fields_md5checksum_checkbox_widget_validate'),
       );
       $element['value'] = $widget;
       break;
-    case 'tripal_entities_seqlen_hidden_widget':
+    case 'tripal_fields_seqlen_hidden_widget':
       $widget += array(
         '#type' => 'hidden',
         '#title' => $element['#title'],
         '#description' => $element['#description'],
         '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
         '#delta' => $delta,
-        '#element_validate' => array('tripal_entities_seqlen_hidden_widget_validate'),
+        '#element_validate' => array('tripal_fields_seqlen_hidden_widget_validate'),
       );
       $element['value'] = $widget;
       break;
@@ -317,16 +317,16 @@ function tripal_entities_field_widget_form(&$form, &$form_state, $field,
 /**
  * Implements hook_field_is_empty().
  */
-function tripal_entities_field_is_empty($item, $field) {
+function tripal_fields_field_is_empty($item, $field) {
   if (empty($item['value']) && (string) $item['value'] !== '0') {
     return TRUE;
   }
   return FALSE;
 }
 /**
- * Callback function for validating the tripal_entities_organism_select_widget.
+ * Callback function for validating the tripal_fields_organism_select_widget.
  */
-function tripal_entities_organism_select_widget_validate($element, &$form_state) {
+function tripal_fields_organism_select_widget_validate($element, &$form_state) {
   $field_name = $element['#field_name'];
 
   // If the form ID is field_ui_field_edit_form, then the user is editing the
@@ -335,16 +335,16 @@ function tripal_entities_organism_select_widget_validate($element, &$form_state)
   if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
     return;
   }
-  $organism_id = tripal_entities_get_field_form_values($field_name, $form_state);
+  $organism_id = tripal_fields_get_field_form_values($field_name, $form_state);
 
   if (count($organism_id) == 0) {
     form_error($element, t("Please specify an organism that already exists in the database."));
   }
 }
 /**
- * Callback function for validating the tripal_entities_organism_select_widget.
+ * Callback function for validating the tripal_fields_organism_select_widget.
  */
-function tripal_entities_primary_dbxref_widget_validate($element, &$form_state) {
+function tripal_fields_primary_dbxref_widget_validate($element, &$form_state) {
   $field_name = $element['#field_name'];
 
   // If the form ID is field_ui_field_edit_form, then the user is editing the
@@ -355,10 +355,10 @@ function tripal_entities_primary_dbxref_widget_validate($element, &$form_state) 
   }
 
   // Get the field values.
-  $db_id = tripal_entities_get_field_form_values($field_name, $form_state, "dbxref__db_id");
-  $accession = tripal_entities_get_field_form_values($field_name, $form_state, "dbxref__accession");
-  $version = tripal_entities_get_field_form_values($field_name, $form_state, "dbxref__version");
-  $description = tripal_entities_get_field_form_values($field_name, $form_state, "dbxref__description");
+  $db_id = tripal_fields_get_field_form_values($field_name, $form_state, "dbxref__db_id");
+  $accession = tripal_fields_get_field_form_values($field_name, $form_state, "dbxref__accession");
+  $version = tripal_fields_get_field_form_values($field_name, $form_state, "dbxref__version");
+  $description = tripal_fields_get_field_form_values($field_name, $form_state, "dbxref__description");
 
   // Make sure that if a database ID is provided that an accession is also
   // provided.  Here we use the form_set_error function rather than the
@@ -377,41 +377,41 @@ function tripal_entities_primary_dbxref_widget_validate($element, &$form_state) 
   // If user did not select a database, we want to remove dbxref_id from the
   // field.
   if (count($db_id) == 0) {
-    tripal_entities_set_field_form_values($field_name, $form_state, '__NULL__', $field_name);
+    tripal_fields_set_field_form_values($field_name, $form_state, '__NULL__', $field_name);
   }
 }
 
 /**
- * Callback function for validating the tripal_entities_md5checksum_checkbox_widget.
+ * Callback function for validating the tripal_fields_md5checksum_checkbox_widget.
  */
-function tripal_entities_md5checksum_checkbox_widget_validate($element, &$form_state) {
+function tripal_fields_md5checksum_checkbox_widget_validate($element, &$form_state) {
   $field_name = $element['#field_name'];
 
   // Calculate the md5 checksum for the sequence only if md5 box is checked and the residues exist
-  $residues = tripal_entities_get_field_form_values('feature__residues', $form_state);
+  $residues = tripal_fields_get_field_form_values('feature__residues', $form_state);
   if (count($residues) > 0 && trim($residues[0]) != '') {
-    tripal_entities_set_field_form_values ($field_name, $form_state, md5($residues[0]));
+    tripal_fields_set_field_form_values ($field_name, $form_state, md5($residues[0]));
   }
   else {
     // Otherwise, remove the md5 value
-    tripal_entities_set_field_form_values ($field_name, $form_state, '__NULL__');
+    tripal_fields_set_field_form_values ($field_name, $form_state, '__NULL__');
   }
 }
 
 /**
- * Callback function for validating the tripal_entities_seqlen_hidden_widget.
+ * Callback function for validating the tripal_fields_seqlen_hidden_widget.
  */
-function tripal_entities_seqlen_hidden_widget_validate($element, &$form_state) {
+function tripal_fields_seqlen_hidden_widget_validate($element, &$form_state) {
   $field_name = $element['#field_name'];
 
   // Calculate the md5 checksum for the sequence only if md5 box is checked and the residues exist
-  $residues = tripal_entities_get_field_form_values('feature__residues', $form_state);
+  $residues = tripal_fields_get_field_form_values('feature__residues', $form_state);
   if (count($residues) > 0) {
-    tripal_entities_set_field_form_values ($field_name, $form_state, strlen($residues[0]));
+    tripal_fields_set_field_form_values ($field_name, $form_state, strlen($residues[0]));
   }
   else {
     // Otherwise, remove the md5 value
-    tripal_entities_set_field_form_values ($field_name, $form_state, '__NULL__');
+    tripal_fields_set_field_form_values ($field_name, $form_state, '__NULL__');
   }
 }
 
@@ -420,7 +420,7 @@ function tripal_entities_seqlen_hidden_widget_validate($element, &$form_state) {
  *
  * @param $variables
  */
-function theme_tripal_entities_primary_dbxref_widget($variables) {
+function theme_tripal_fields_primary_dbxref_widget($variables) {
   $element = $variables['element'];
   $layout = "
     <div class=\"primary-dbxref-widget\">
@@ -444,7 +444,7 @@ function theme_tripal_entities_primary_dbxref_widget($variables) {
 /**
  * Returns the values of the field from the $form_state.
  */
-function tripal_entities_get_field_form_values($field_name, $form_state, $child = NULL) {
+function tripal_fields_get_field_form_values($field_name, $form_state, $child = NULL) {
   $values = array();
   if (!array_key_exists('values', $form_state)) {
     return $values;
@@ -467,7 +467,7 @@ function tripal_entities_get_field_form_values($field_name, $form_state, $child 
 /**
  * Returns the values of the field from the $form_state.
  */
-function tripal_entities_set_field_form_values($field_name, &$form_state, $newvalue, $child = NULL) {
+function tripal_fields_set_field_form_values($field_name, &$form_state, $newvalue, $child = NULL) {
   $values = array();
   foreach ($form_state['values'][$field_name] as $langcode => $items) {
     foreach ($items as $delta => $value) {
@@ -483,12 +483,12 @@ function tripal_entities_set_field_form_values($field_name, &$form_state, $newva
 }
 
 /**
- * An Ajax callback for the tripal_entities_admin_publish_form..
+ * An Ajax callback for the tripal_fields_admin_publish_form..
  */
-function tripal_entities_primary_dbxref_widget_form_ajax_callback($form, $form_state) {
+function tripal_fields_primary_dbxref_widget_form_ajax_callback($form, $form_state) {
   $field_name = $form_state['triggering_element']['#parents'][0];
-  $db_id = tripal_entities_get_field_form_values($field_name, $form_state, 'dbxref__db_id');
-  $accession = tripal_entities_get_field_form_values($field_name, $form_state, 'dbxref__accession');
+  $db_id = tripal_fields_get_field_form_values($field_name, $form_state, 'dbxref__db_id');
+  $accession = tripal_fields_get_field_form_values($field_name, $form_state, 'dbxref__accession');
   if (count($db_id) > 0 and count($accession) > 0) {
     $values = array(
       'db_id' => $db_id[0],

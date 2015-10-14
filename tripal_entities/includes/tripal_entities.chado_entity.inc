@@ -99,26 +99,26 @@ function tripal_entities_chado_field_alter(&$field) {
   // and fields that need special attention.
   if ($field['chado_column'] =='organism_id') {
     $field['field_type'] = 'organism_id';
-    $field['widget_type'] = 'tripal_entities_organism_select_widget';
+    $field['widget_type'] = 'tripal_fields_organism_select_widget';
     $field['label'] = 'Organism';
     $field['description'] = 'Select an organism.';
   }
   else if ($field['chado_column'] =='dbxref_id') {
     $field['field_type'] = 'dbxref_id';
-    $field['widget_type'] = 'tripal_entities_primary_dbxref_widget';
+    $field['widget_type'] = 'tripal_fields_primary_dbxref_widget';
     $field['label'] = 'Primary Cross Reference';;
     $field['description'] = 'This record can be cross-referenced with a record in another online database. This field is intended for the most prominent reference.  At a minimum, the database and accession must be provided.';
   }
   else if ($field['chado_table'] == 'feature' and
     $field['chado_column'] == 'md5checksum') {
     $field['field_type'] = 'md5checksum';
-    $field['widget_type'] = 'tripal_entities_md5checksum_checkbox_widget';
+    $field['widget_type'] = 'tripal_fields_md5checksum_checkbox_widget';
     $field['label'] = 'MD5 Checksum';
     $field['description'] = 'Generating MD5 checksum for the sequence.';
   }
   else if ($field['chado_table'] == 'feature' and
     $field['chado_column'] == 'seqlen') {
       $field['field_type'] = 'seqlen';
-      $field['widget_type'] = 'tripal_entities_seqlen_hidden_widget';
+      $field['widget_type'] = 'tripal_fields_seqlen_hidden_widget';
   }
 }
