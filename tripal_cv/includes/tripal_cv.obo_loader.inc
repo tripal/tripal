@@ -33,33 +33,132 @@ function tripal_cv_obo_form($form, &$form_state) {
   $results = db_query($sql);
 
   $obos = array();
-  $obos[] = '';
+  $obos[] = 'Select a Vocabulary';
   foreach ($results as $obo) {
-//    $obos[$obo->obo_id] = "$obo->name  | $obo->path";
     $obos[$obo->obo_id] = $obo->name;
   }
 
-  $form['obo_existing'] = array(
+  $obo_id = '';
+  if (array_key_exists('values', $form_state)) {
+    $obo_id = array_key_exists('obo_id', $form_state['values']) ? $form_state['values']['obo_id'] : '';
+  }
+
+  $form['instructions'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Use a Saved Ontology OBO Reference')
+    '#title' => 'instructions',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  $form['instructions']['info'] = array(
+    '#type' => 'item',
+    '#markup' => t('This page allows you to load vocabularies and ontologies
+      that are in OBO format. Once loaded, the terms from these
+      vocabularies can be used to categorize data in the database.
+      You may use the form below to either reload a vocabulary that is already
+      loaded (as when new updates to that vocabulary are available) or load a new
+      vocabulary.'),
   );
 
-  $form['obo_new'] = array(
+  $form['obo_existing'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Use a New Ontology OBO Reference')
+    '#title' => t('Use a Saved Ontology OBO Reference'),
+    '#prefix' => '<span id="obo-existing-fieldset">',
+    '#suffix' => '</span>'
   );
 
   $form['obo_existing']['existing_instructions']= array(
-    '#value' => t('The Ontology OBO files listed in the drop down below have been automatically added upon
-                   installation of the Tripal CV module or were added from a previous upload.  Select
-                   an OBO, then click the submit button to load the vocabulary into the database.  If the
-                   vocabularies already exist then the ontology will be updated.'),
+    '#type' => 'item',
+    '#markup' => t('The vocabularies listed in the select box below have bene pre-populated
+      upon installation of Tripal or have been previously loaded.  Select one to edit
+      its settings or submit for loading.  You may reload any vocabulary that has
+      already been loaded to retrieve any new updates.'),
   );
 
   $form['obo_existing']['obo_id'] = array(
     '#title' => t('Ontology OBO File Reference'),
     '#type' => 'select',
     '#options' => $obos,
+    '#ajax' => array(
+      'callback' => 'tripal_cv_obo_form_ajax_callback',
+      'wrapper' => 'obo-existing-fieldset',
+    ),
+  );
+
+  // If the user has selected an OBO ID then get the form elements for
+  // updating.
+  if ($obo_id) {
+    $uobo_name = '';
+    $uobo_url = '';
+    $uobo_file = '';
+
+    $vocab = db_select('tripal_cv_obo', 't')
+      ->fields('t', array('name', 'path'))
+      ->condition('obo_id', $obo_id)
+      ->execute()
+      ->fetchObject();
+    $uobo_name = $vocab->name;
+    if (preg_match('/^http/', $vocab->path)) {
+      $uobo_url = $vocab->path;
+    }
+    else {
+      $uobo_file = trim($vocab->path);
+      $matches = array();
+      if (preg_match('/\{(.*?)\}/', $uobo_file, $matches)) {
+        $modpath = drupal_get_path('module', $matches[1]);
+        $uobo_file = '/' . preg_replace('/\{.*?\}/', $modpath, $uobo_file);
+      }
+    }
+    // We don't want the previous value to remain. We want the new default to
+    // show up, so remove the input values
+    unset($form_state['input']['uobo_name']);
+    unset($form_state['input']['uobo_url']);
+    unset($form_state['input']['uobo_file']);
+
+    $form['obo_existing']['uobo_name']= array(
+      '#type'          => 'textfield',
+      '#title'         => t('Vocabulary Name'),
+      '#description'   => t('Please provide a name for this vocabulary.  After upload, this name will appear in the drop down
+                           list above for use again later.'),
+      '#default_value'  => $uobo_name,
+    );
+
+    $form['obo_existing']['uobo_url']= array(
+      '#type'          => 'textfield',
+      '#title'         => t('Remote URL'),
+      '#description'   => t('Please enter a URL for the online OBO file.  The file will be downloaded and parsed.
+                           (e.g. http://www.obofoundry.org/ro/ro.obo'),
+      '#default_value' => $uobo_url,
+    );
+
+    $form['obo_existing']['uobo_file']= array(
+      '#type'          => 'textfield',
+      '#title'         => t('Local File'),
+      '#description'   => t('Please enter the file system path for an OBO
+        definition file. If entering a path relative to
+        the Drupal installation you may use a relative path that excludes the
+        Drupal installation directory (e.g. sites/default/files/xyz.obo). Note
+        that Drupal relative paths have no preceeding slash.
+        Otherwise, please provide the full path on the filesystem.  The path
+        must be accessible to the web server on which this Drupal instance is running.'),
+      '#default_value' => $uobo_file,
+    );
+    $form['obo_existing']['update_obo_details']= array(
+      '#type' => 'submit',
+      '#value' => 'Update Ontology Details',
+      '#name' => 'update_obo_details'
+    );
+    $form['obo_existing']['update_load_obo']= array(
+      '#type' => 'submit',
+      '#value' => 'Load Vocabulary',
+      '#name' => 'update_load_obo'
+    );
+  }
+
+  $form['obo_new'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Add a New Ontology OBO Reference'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
   );
 
   $form['obo_new']['path_instructions']= array(
@@ -83,22 +182,88 @@ function tripal_cv_obo_form($form, &$form_state) {
   );
 
   $form['obo_new']['obo_file']= array(
-    '#type'          => 'textfield',
-    '#title'         => t('Local File'),
-    '#description'   => t('Please enter the full system path for an OBO definition file, or a path within the Drupal
-                           installation (e.g. /sites/default/files/xyz.obo).  The path must be accessible to the
-                           server on which this Drupal instance is running.'),
+    '#type'  => 'textfield',
+    '#title'  => t('Local File'),
+    '#description' => t('Please enter the full system path for an OBO definition
+      file, or a path within the Drupal installation (e.g. /sites/default/files/xyz.obo).
+      The path must be accessible to the server on which this Drupal instance is running.'),
   );
 
-  $form['submit'] = array(
-    '#type'         => 'submit',
-    '#value'        => t('Submit'),
-    '#executes_submit_callback' => TRUE,
+  $form['obo_new']['add_new_obo'] = array(
+    '#type'  => 'submit',
+    '#value' => t('Add this vocabulary'),
+    '#name' => 'add_new_obo',
   );
 
   $form['#redirect'] = 'admin/tripal/tripal_cv/obo_loader';
 
   return $form;
+}
+
+/**
+ *
+ * @param $form
+ * @param $form_state
+ */
+function tripal_cv_obo_form_validate($form, &$form_state) {
+  $obo_id    = $form_state['values']['obo_id'];
+  $obo_name  = trim($form_state['values']['obo_name']);
+  $obo_url   = trim($form_state['values']['obo_url']);
+  $obo_file  = trim($form_state['values']['obo_file']);
+  $uobo_name  = array_key_exists('uobo_name', $form_state['values']) ? trim($form_state['values']['uobo_name']) : '';
+  $uobo_url   = array_key_exists('uobo_url', $form_state['values']) ? trim($form_state['values']['uobo_url']) : '';
+  $uobo_file  = array_key_exists('uobo_file', $form_state['values']) ? trim($form_state['values']['uobo_file']) : '';
+
+  // Make sure if the name is changed it doesn't conflict with another OBO.
+  if ($form_state['clicked_button']['#name'] == 'update_obo_details' or
+      $form_state['clicked_button']['#name'] == 'update_load_obo') {
+    // Get the current record
+    $vocab = db_select('tripal_cv_obo', 't')
+      ->fields('t', array('obo_id', 'name', 'path'))
+      ->condition('name', $uobo_name)
+      ->execute()
+      ->fetchObject();
+    if ($vocab and $vocab->obo_id != $obo_id) {
+      form_set_error('uobo_name', 'The vocabulary name must be different from existing vocabularies');
+    }
+    // Make sure the file exists. First check if it is a relative path
+    $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $uobo_file;
+    if (!file_exists($dfile)) {
+      if (!file_exists($uobo_file)) {
+        form_set_error('uobo_file', 'The specified path does not exist or cannot be read.');
+      }
+    }
+    if (!$uobo_url and !$uobo_file) {
+      form_set_error('uobo_url', 'Please provide a URL or a path for the vocabulary.');
+    }
+    if ($uobo_url and $uobo_file) {
+      form_set_error('uobo_url', 'Please provide only a URL or a path for the vocabulary, but not both.');
+    }
+  }
+  if ($form_state['clicked_button']['#name'] == 'add_new_obo') {
+    // Get the current record
+    $vocab = db_select('tripal_cv_obo', 't')
+      ->fields('t', array('obo_id', 'name', 'path'))
+      ->condition('name', $obo_name)
+      ->execute()
+      ->fetchObject();
+    if ($vocab) {
+      form_set_error('obo_name', 'The vocabulary name must be different from existing vocabularies');
+    }
+    // Make sure the file exists. First check if it is a relative path
+    $dfile = $_SERVER['DOCUMENT_ROOT'] . base_path() . $obo_file;
+    if (!file_exists($dfile)) {
+      if (!file_exists($obo_file)) {
+        form_set_error('obo_file', 'The specified path does not exist or cannot be read.');
+      }
+    }
+    if (!$obo_url and !$obo_file) {
+      form_set_error('obo_url', 'Please provide a URL or a path for the vocabulary.');
+    }
+    if ($obo_url and $obo_file) {
+      form_set_error('obo_url', 'Please provide only a URL or a path for the vocabulary, but not both.');
+    }
+  }
 }
 
 /**
@@ -114,17 +279,52 @@ function tripal_cv_obo_form($form, &$form_state) {
  * @ingroup tripal_obo_loader
  */
 function tripal_cv_obo_form_submit($form, &$form_state) {
+
   $obo_id    = $form_state['values']['obo_id'];
   $obo_name  = trim($form_state['values']['obo_name']);
   $obo_url   = trim($form_state['values']['obo_url']);
   $obo_file  = trim($form_state['values']['obo_file']);
+  $uobo_name  = array_key_exists('uobo_name', $form_state['values']) ? trim($form_state['values']['uobo_name']) : '';
+  $uobo_url   = array_key_exists('uobo_url', $form_state['values']) ? trim($form_state['values']['uobo_url']) : '';
+  $uobo_file  = array_key_exists('uobo_file', $form_state['values']) ? trim($form_state['values']['uobo_file']) : '';
 
-  tripal_submit_obo_job(array(
-    'obo_id' => $obo_id,
-    'name' => $obo_name,
-    'url' => $obo_url,
-    'file' => $obo_file
-  ));
+  // If the user requested to alter the details then do that.
+  if ($form_state['clicked_button']['#name'] == 'update_obo_details' or
+      $form_state['clicked_button']['#name'] == 'update_load_obo') {
+    $success = db_update('tripal_cv_obo')
+      ->fields(array(
+        'name' => $uobo_name,
+        'path' => $uobo_url ? $uobo_url : $uobo_file,
+      ))
+      ->condition('obo_id', $obo_id)
+      ->execute();
+    if ($success) {
+      drupal_set_message(t("The vocabulary %vocab has been updated.", array('%vocab' => $uobo_name)));
+    }
+    else {
+      drupal_set_message(t("The vocabulary %vocab could not be updated.", array('%vocab' => $uobo_name)), 'error');
+    }
+
+  }
+  // If the user requested to update and load then we've already handled the
+  // update now we just need to load.
+  if ($form_state['clicked_button']['#name'] == 'update_load_obo') {
+    tripal_submit_obo_job(array('obo_id' => $obo_id));
+  }
+  if ($form_state['clicked_button']['#name'] == 'add_new_obo') {
+    $success = db_insert('tripal_cv_obo')
+    ->fields(array(
+      'name' => $obo_name,
+      'path' => $obo_url ? $obo_url : $obo_file,
+    ))
+    ->execute();
+    if ($success) {
+      drupal_set_message(t("The vocabulary %vocab has been added.", array('%vocab' => $obo_name)));
+    }
+    else {
+      drupal_set_message(t("The vocabulary %vocab could not be added.", array('%vocab' => $obo_name)), 'error');
+    }
+  }
 }
 
 /**
@@ -1230,4 +1430,9 @@ function tripal_cv_obo_add_dbxref($db_id, $accession, $version='', $description=
     $result = chado_select_record('dbxref', array('dbxref_id'), $values, $options);
   }
   return $result[0];
+}
+
+
+function tripal_cv_obo_form_ajax_callback($form, $form_state) {
+  return $form['obo_existing'];
 }

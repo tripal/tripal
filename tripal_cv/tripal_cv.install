@@ -49,13 +49,19 @@ function tripal_cv_requirements($phase) {
  */
 function tripal_cv_install() {
 
-  // add the cv_root_mview
+  // Add the cv_root_mview.
   tripal_cv_add_cv_root_mview();
 
-  // add defaults to the tables that correlate OBO files/references with a chado CV
+  // Add defaults to the tables that correlate OBO files/references with
+  // a chado CV.
   tripal_cv_add_obo_defaults();
 
-  // create the temp table we will use for loading OBO files
+  // Add the Chado ontology CV.
+  $obo_path = '{tripal_cv}/files/cv_property.obo';
+  $obo_id = tripal_insert_obo('Chado CV Properties', $obo_path);
+  tripal_submit_obo_job(array('obo_id' => $obo_id));
+
+  // Create the temp table we will use for loading OBO files.
   tripal_cv_create_tripal_obo_temp();
 }
 
@@ -236,15 +242,15 @@ function tripal_cv_add_cv_root_mview() {
  */
 function tripal_cv_add_obo_defaults() {
 
-  // insert commonly used ontologies into the tables
+  // Insert commonly used ontologies into the tables.
   $ontologies = array(
-    array('Chado Feature Properties', drupal_get_path('module', 'tripal_cv') . '/feature_property.obo'),
-    array('Relationship Ontology', 'http://www.obofoundry.org/ro/ro.obo'),
-    array('Sequence Ontology', 'http://song.cvs.sourceforge.net/*checkout*/song/ontology/so.obo'),
+    array('Relationship Ontology', 'http://purl.obolibrary.org/obo/ro.obo'),
+//    array('Relationship Ontology (older deprecated version)', 'http://www.obofoundry.org/ro/ro.obo'),
+    array('Sequence Ontology', 'https://github.com/The-Sequence-Ontology/SO-Ontologies/blob/master/so-xp-simple.obo'),
     array('Gene Ontology', 'http://www.geneontology.org/ontology/gene_ontology.obo'),
-    array('Cell Ontology', 'http://obo.cvs.sourceforge.net/obo/obo/ontology/anatomy/cell_type/cell.obo?rev=HEAD'),
-    array('Plant Structure Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_anatomy.obo?view=co'),
-    array('Plant Growth and Development Stages Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_temporal.obo?view=co')
+//    array('Cell Ontology', 'https://raw.githubusercontent.com/obophenotype/cell-ontology/master/cl.obo'),
+//    array('Plant Structure Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_anatomy.obo?view=co'),
+//    array('Plant Growth and Development Stages Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_temporal.obo?view=co')
   );
   foreach ($ontologies as $o) {
     db_query("INSERT INTO {tripal_cv_obo} (name,path) VALUES (:name, :path)", array(':name' => $o[0], ':path' => $o[1]));
