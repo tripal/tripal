@@ -119,6 +119,9 @@ function tripal_entities_chado_field_alter(&$field) {
   else if ($field['chado_table'] == 'feature' and $field['chado_column'] == 'seqlen') {
     $field['field_type'] = 'seqlen';
     $field['widget_type'] = 'tripal_fields_seqlen_hidden_widget';
+    $field['label'] = 'Seqlen';
+    $field['description'] = 'The length of the residues.';
+
   }
   else if ($field['chado_table'] == 'feature' and $field['chado_column'] == 'residues') {
     $field['field_type'] = 'residues';

@@ -1,0 +1,50 @@
+<?php
+
+/**
+ *
+ */
+function tripal_entities_add_tripal_bundle_panes_table(){
+  $schema = array (
+    'table' => 'tripal_bundle_panes',
+    'fields' => array (
+      'pane_id' => array (
+        'type' => 'serial',
+        'not null' => TRUE
+      ),
+      'bundle_id' => array(
+        'type' => 'int',
+        'not null' => TRUE
+      ),
+      'name' => array (
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE
+      ),
+      'weight' => array (
+        'type' => 'int',
+        'not null' => TRUE
+      ),
+      'settings' => array(
+        'type' => 'text'
+      ),
+    ),
+    'primary key' => array (
+      0 => 'pane_id'
+    ),
+    'foreign keys' => array (
+      'tripal_bundle' => array (
+        'table' => 'tripal_bundle',
+        'columns' => array (
+          'bundle_id' => 'bundle_id'
+        ),
+      ),
+    ),
+    'unique keys' => array (
+      'tripal_bundle_panes_name' => array ('name'),
+    ),
+    'indexes' => array(
+      'tripal_bundle_panes_bundle_id' => array('bundle_id'),
+    ),
+  );
+  chado_create_custom_table('tripal_bundle_panes', $schema, TRUE);
+}

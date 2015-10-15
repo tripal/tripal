@@ -6,15 +6,6 @@
 
 function tripal_entities_install() {
 
-  // add any external databases used by the file module.
-  //  tripal_entities_add_dbs();
-
-  // add any controlled vocabularies used by the file module.
-  //  tripal_entities_add_cvs();
-
-  // add any controlled vocabulary terms
-  //  tripal_entities_add_cvterms();
-
   // add any custom tables. For this case we will add an 'file' table to the
   // chado schema
   tripal_entities_add_custom_tables();
@@ -500,3 +491,4 @@ function tripal_entities_uninstall() {
     field_attach_delete_bundle($entity_type, $bundle_id);
   }
 }
+

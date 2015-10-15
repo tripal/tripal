@@ -1,0 +1,25 @@
+<?php
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, &$form_state) {
+  $form['tripal_fields'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Biological Data Layout',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['tripal_fields']['new_pane'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Add a new pane',
+    '#description' => 'Panes can be used to organize related fields. You may
+      create as many panes as desired. Once a pane is created you can use
+      the interface above to move fields into an appropriate pane. '
+  );
+  $form['tripal_fields']['new_pane_button'] = array(
+    '#type' => 'button',
+    '#name' => 'new_pane_button',
+    '#value' => 'Add',
+  );
+}
