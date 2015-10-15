@@ -184,9 +184,13 @@ function tripal_cv_obo_form($form, &$form_state) {
   $form['obo_new']['obo_file']= array(
     '#type'  => 'textfield',
     '#title'  => t('Local File'),
-    '#description' => t('Please enter the full system path for an OBO definition
-      file, or a path within the Drupal installation (e.g. /sites/default/files/xyz.obo).
-      The path must be accessible to the server on which this Drupal instance is running.'),
+    '#description' => t('Please enter the file system path for an OBO
+        definition file. If entering a path relative to
+        the Drupal installation you may use a relative path that excludes the
+        Drupal installation directory (e.g. sites/default/files/xyz.obo). Note
+        that Drupal relative paths have no preceeding slash.
+        Otherwise, please provide the full path on the filesystem.  The path
+        must be accessible to the web server on which this Drupal instance is running.'),
   );
 
   $form['obo_new']['add_new_obo'] = array(
