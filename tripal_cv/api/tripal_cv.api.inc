@@ -872,18 +872,39 @@ function tripal_insert_obo($name, $path) {
  * @ingroup tripal_cv_api
  */
 function tripal_autocomplete_cvterm($cv_id, $string = '') {
-  $sql = "
-    SELECT cvterm_id, name
-    FROM {cvterm}
-    WHERE cv_id = :cv_id and lower(name) like lower(:name)
-    ORDER by name
-    LIMIT 25 OFFSET 0
-  ";
-  $results = chado_query($sql, array(':cv_id' => $cv_id, ':name' => $string . '%'));
-  $items = array();
-  foreach ($results as $term) {
-     $items[$term->name] = $term->name;
+  if ($cv_id) {
+    $sql = "
+      SELECT cvterm_id, name
+      FROM {cvterm}
+      WHERE cv_id = :cv_id and lower(name) like lower(:name)
+      ORDER by name
+      LIMIT 25 OFFSET 0
+    ";
+    $results = chado_query($sql, array(':cv_id' => $cv_id, ':name' => $string . '%'));
+    $items = array();
+    foreach ($results as $term) {
+      $items[$term->name] = $term->name;
+    }
   }
+  // If a CV wasn't provided then search all of them, and include the cv
+  // in the results.
+  else {
+    $sql = "
+      SELECT cvterm_id, CVT.name, CV.name as cvname, CVT.cv_id
+      FROM {cvterm} CVT
+          INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+      WHERE lower(CVT.name) like lower(:name)
+      ORDER by CVT.name
+      LIMIT 25 OFFSET 0
+    ";
+    $results = chado_query($sql, array(':name' => $string . '%'));
+    $items = array();
+    foreach ($results as $term) {
+      $items[$term->name] = '(' . $term->cvname .') ' . $term->name;
+    }
+  }
+
+
   drupal_json_output($items);
 }
 

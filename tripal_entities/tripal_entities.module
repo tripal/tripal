@@ -2,6 +2,7 @@
 
 require_once "api/tripal_entities.api.inc";
 require_once "includes/tripal_entities.chado_entity.inc";
+require_once "includes/tripal_entities.entity_form.inc";
 require_once "includes/tripal_entities.tables.inc";
 require_once "includes/TripalEntity.inc";
 require_once "includes/TripalEntityController.inc";
@@ -46,8 +47,7 @@ function tripal_entities_menu() {
   $items['admin/tripal/bio_data/publish'] = array(
     'title' => 'Publish',
     'description' => 'Publish Data',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_entities_admin_publish_form'),
+    'page callback' => 'tripal_entities_publish',
     'access arguments' => array('administer tripal data types'),
     'file' =>  'includes/tripal_entities.admin.inc',
     'type' => MENU_LOCAL_TASK,

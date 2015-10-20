@@ -130,3 +130,57 @@ function tripal_entities_chado_field_alter(&$field) {
     $field['description'] = 'Please provide an IUPAC compatible residues for this feature. Spaces and new lines are allowed.';
   }
 }
+
+/**
+ * Determines whether the given user has access to a tripal data entity.
+ *
+ * @param $op
+ *   The operation being performed. One of 'view', 'update', 'create', 'delete'
+ *   or just 'edit' (being the same as 'create' or 'update').
+ * @param $entity
+ *   Optionally a tripal data entity or a tripal data type to check access for.
+ *   If nothing is given, access for all types is determined.
+ * @param $account
+ *   The user to check for. Leave it to NULL to check for the global user.
+ * @return boolean
+ *   Whether access is allowed or not.
+ */
+function tripal_entities_entity_access($op, $entity = NULL, $account = NULL) {
+  if (user_access('administer tripal data', $account)) {
+    return TRUE;
+  }
+  if (isset($entity) && $type_name = $entity->type) {
+    $op = ($op == 'view') ? 'view' : 'edit';
+    if (user_access("$op any $type_name data", $account)) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Menu callback to display an entity.
+ *
+ * As we load the entity for display, we're responsible for invoking a number
+ * of hooks in their proper order.
+ *
+ * @see hook_entity_prepare_view()
+ * @see hook_entity_view()
+ * @see hook_entity_view_alter()
+ */
+function tripal_entities_view_entity($entity, $view_mode = 'full') {
+  $content = '';
+  $controller = entity_get_controller($entity->type);
+  $content = $controller->view(array($entity->id => $entity));
+  drupal_set_title($entity->title);
+  return $content;
+}
+
+/**
+ * Menu title callback for showing individual entities
+ */
+function tripal_entities_entity_title($entity){
+  if ($entity) {
+    return $entity->title;
+  }
+}
