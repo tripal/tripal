@@ -39,7 +39,7 @@ class TripalBundleUIController extends EntityDefaultUIController {
     unset($items[$this->path . '/import']);
 
     $items[$this->path . '/publish'] = array(
-      'title' => 'Add new biological data type',
+      'title' => 'Add new biological data',
       'description' => 'Publish Data',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_entities_admin_publish_form'),
