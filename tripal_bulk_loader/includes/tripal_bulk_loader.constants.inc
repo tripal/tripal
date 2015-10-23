@@ -252,7 +252,7 @@ function tripal_bulk_loader_set_constants_form($form, &$form_state, $node) {
           case 'table field':
             $form['exposed_fields']['new'][$record_id . '-' . $field_id] = array(
               '#type' => 'textfield',
-              '#title' => t('%title', array('%title' => $field['title'])),
+              '#title' => t('@title', array('@title' => $field['title'])),
               '#description' => t('%exposed_description', array('%exposed_description' => $field['exposed_description'])),
               '#default_value' => $default_value,
             );
@@ -260,7 +260,7 @@ function tripal_bulk_loader_set_constants_form($form, &$form_state, $node) {
           case 'constant':
             $form['exposed_fields']['new'][$record_id . '-' . $field_id] = array(
               '#type' => 'textfield',
-              '#title' => t('%title', array('%title' => $field['title']) ),
+              '#title' => t('@title', array('@title' => $field['title']) ),
               '#description' => t('Enter the case-sensitive value of this constant for your data file'),
               '#default_value' => $default_value,
             );

@@ -1,9 +1,9 @@
 <?php
 /**
  * @file
- * 
- * Functions responsible for creating the publication search form that 
- * allows a user of the site to search for publications that are currently 
+ *
+ * Functions responsible for creating the publication search form that
+ * allows a user of the site to search for publications that are currently
  * in Chado.
  */
 
@@ -16,7 +16,7 @@ function tripal_pub_search_page() {
 
   // This line may not be required, but on some sites the $_SESSION
   // variable wasn't being set for anonymous users. This line solves that
-  // problem 
+  // problem
   drupal_session_start();
 
   $limit = 25;
@@ -49,7 +49,7 @@ function tripal_pub_search_page() {
     $total_records = 0;
     $pubs = tripal_search_publications($search_array, $offset, $limit, $total_records);
     pager_default_initialize($total_records, $limit, 0);
-    
+
     // iterate through the results and construct the table displaying the publications
     $rows = array();
     $i = $page * $limit + 1;
@@ -96,7 +96,7 @@ function tripal_pub_search_page() {
       'header' => $headers,
       'rows' => $rows,
       'attributes' => array(
-        'id' => 'tripal-pub-search-results-table', 
+        'id' => 'tripal-pub-search-results-table',
         'border' => '0',
         'class' => array('tripal-data-table')
       ),
@@ -147,41 +147,38 @@ function tripal_pub_search_form($form, &$form_state) {
 
   // if the session has variables then use those.  This should only happen when
   // the 'Test Criteria' button is clicked.
+  if (array_key_exists('storage', $form_state)) {
+    $num_criteria = $form_state['storage']['num_criteria'];
+  }
   if (array_key_exists('tripal_pub_search_form', $_SESSION)) {
     $num_criteria = $_SESSION['tripal_pub_search_form']['num_criteria'] ? $_SESSION['tripal_pub_search_form']['num_criteria'] : $num_criteria;
     $from_year    = $_SESSION['tripal_pub_search_form']['from_year']    ? $_SESSION['tripal_pub_search_form']['from_year']    : '';
     $to_year      = $_SESSION['tripal_pub_search_form']['to_year']      ? $_SESSION['tripal_pub_search_form']['to_year']      : '';
   }
   if (array_key_exists('values', $form_state)) {
-    $num_criteria = $form_state['values']['num_criteria'] ? $form_state['values']['num_criteria'] : $num_criteria;
     $from_year    = $form_state['values']['from_year']    ? $form_state['values']['from_year']    : $from_year;
     $to_year      = $form_state['values']['to_year']      ? $form_state['values']['to_year']      : $to_year;
   }
   if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
-    $num_criteria = $form_state['input']['num_criteria'] ? $form_state['input']['num_criteria'] : $num_criteria;
     $from_year    = $form_state['input']['from_year']    ? $form_state['input']['from_year']    : $from_year;
     $to_year      = $form_state['input']['to_year']      ? $form_state['input']['to_year']      : $to_year;
-
   }
 
   if (array_key_exists('triggering_element', $form_state) and
-  $form_state['triggering_element']['#name'] == 'add') {
+      $form_state['triggering_element']['#name'] == 'add') {
     $num_criteria++;
   }
   if (array_key_exists('triggering_element', $form_state) and
-  $form_state['triggering_element']['#name'] == 'remove') {
+      $form_state['triggering_element']['#name'] == 'remove') {
     $num_criteria--;
   }
 
-  $form['num_criteria']= array(
-    '#type'          => 'hidden',
-    '#default_value' => $num_criteria,
-  );
+  $form_state['storage']['num_criteria'] = $num_criteria;
 
   $form['admin-instructions'] = array(
-    '#markup'  =>  tripal_set_message( 
+    '#markup'  =>  tripal_set_message(
       t('Administrators, you can select the fields with which a user can use to search, by checking the desired fields on the ' .
-        l('Publication Module Settings Page', 'admin/tripal/chado/tripal_pub/configuration', array('attributes' => array('target' => '_blank'))) . ' 
+        l('Publication Module Settings Page', 'admin/tripal/chado/tripal_pub/configuration', array('attributes' => array('target' => '_blank'))) . '
         in the section titled "Search Options".  The selected fields will appear in the dropdowns below.'),
       TRIPAL_INFO,
       array('return_html' => 1)),
@@ -464,7 +461,7 @@ function tripal_pub_search_form_submit($form, &$form_state) {
 
 /**
  * Ajax callback to update the form
- * 
+ *
  * @param $form
  *   The form array
  * @param $form_state
@@ -523,7 +520,7 @@ function theme_tripal_pub_search_setup_form_elements($variables) {
     'header' => $headers,
     'rows' => $rows,
     'attributes' => array(
-      'id' => 'tripal-pub-search-form-table', 
+      'id' => 'tripal-pub-search-form-table',
       'border' => '0',
       'class' => 'tripal-data-table'
     ),

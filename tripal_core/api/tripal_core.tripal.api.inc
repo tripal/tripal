@@ -126,7 +126,7 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
   }
 
   // Print to the Tripal error log
-  tripal_log( $severity_string . ' (' . strtoupper($type) . '): ' . $print_message . "\n", 'error');
+  tripal_log('[' . strtoupper($type) . '] ' . $print_message . "\n", $severity_string);
 
 }
 
@@ -221,14 +221,14 @@ function tripal_set_message($message, $importance = TRIPAL_INFO, $options = arra
  */
 function tripal_log($message, $type = 'error', $options = array()) {
   global $base_url;
-  $prefix = '[TRIPAL ' . strtoupper(check_plain($type)) . '] ';
+  $prefix = '[site ' . $base_url . '] [TRIPAL ' . strtoupper(check_plain($type)) . '] ';
 
   if (!isset($options['is_progress_bar'])) {
     $message = $prefix . str_replace("\n", "", trim($message));
   }
 
   if (isset($options['first_progress_bar'])) {
-    $message = trim($message);
+    $message = $prefix . trim($message);
   }
 
   return error_log($message);

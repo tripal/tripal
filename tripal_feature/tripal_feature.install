@@ -48,6 +48,12 @@ function tripal_feature_requirements($phase) {
  * @ingroup tripal_feature
  */
 function tripal_feature_install() {
+
+  // Add the feature properties vocabulary provided by Chado.
+  $obo_path = '{tripal_feature}/files/feature_property.obo';
+  $obo_id = tripal_insert_obo('Chado Feature Properties', $obo_path);
+  tripal_submit_obo_job(array('obo_id' => $obo_id));
+
   // Add the materialized view.
   tripal_feature_add_organism_count_mview();
 

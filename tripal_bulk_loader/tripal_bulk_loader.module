@@ -84,7 +84,8 @@ function tripal_bulk_loader_menu() {
   $items['admin/tripal/loaders/bulk/help'] = array(
     'title' => 'Help',
     'description' => "A description of the Tripal Bulk Loader module including a short description of it's usage.",
-    'page callback' => 'tripal_bulk_loader_admin_manage_templates',
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_bulk_loader_help'),
     'access arguments' => array('administer tripal_bulk_loader'),
     'weight' => 10,
     'type' => MENU_LOCAL_TASK,
@@ -325,9 +326,9 @@ function tripal_bulk_loader_theme($existing, $type, $theme, $path) {
       ),
     ),
 
-    // admin theme
-    'tripal_bulk_loader_admin' => array(
-      'template' => 'tripal_bulk_loader_admin',
+    // help page
+    'tripal_bulk_loader_help' => array(
+      'template' => 'tripal_bulk_loader_help',
       'path' => "$path/theme/templates",
     ),
 

@@ -155,9 +155,6 @@ function chado_featuremap_form($node, &$form_state) {
  */
 function chado_featuremap_validate($node, $form, &$form_state) {
 
-  if ($node->unittype_id == 0) {
-    form_set_error('unittype_id', 'Please provide a unit type for this map.');
-  }
   // We only want to validate when the node is saved.
   // Since this validate can be called on AJAX and Deletion of the node
   // we need to make this check to ensure queries are not executed
@@ -172,6 +169,10 @@ function chado_featuremap_validate($node, $form, &$form_state) {
     return;
   }
 
+  if ($node->unittype_id == 0) {
+    form_set_error('unittype_id', 'Please provide a unit type for this map.');
+  }
+  
   // trim white space from text fields
   $node->fmapname = property_exists($node, 'fmapname') ? trim($node->fmapname) : '';
 
