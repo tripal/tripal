@@ -287,6 +287,7 @@ function tripal_entities_add_term_usage($cvterm, &$form_state) {
     // Convert the values array into an object.
     $vocab = new stdClass();
     $vocab->vocabulary_id = $values['vocabulary_id'];
+    $vocab->cv_id = $values['cv_id'];
   }
   else {
     // Make sure the vocabulary is set to publish
