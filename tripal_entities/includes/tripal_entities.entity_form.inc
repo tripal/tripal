@@ -15,7 +15,7 @@ function tripal_entities_entity_form($form, &$form_state, $entity = NULL) {
 
   // Set defaults if an entity was provided.
   if ($entity) {
-    drupal_set_title('Edit ' .$entity->title);
+    drupal_set_title('Edit ' . $entity->title);
     $id = $entity->id;
     $values = array('cvterm_id' => $entity->cvterm_id);
     $cvterm = chado_generate_var('cvterm', $values);
@@ -123,7 +123,6 @@ function tripal_entities_entity_form($form, &$form_state, $entity = NULL) {
       '#weight' => -1000,
     );
 
-
     if(!$do_sync) {
       tripal_entities_entity_form_add_new($bundle_id, $cvterm, $form, $form_state, $entity);
     }
@@ -149,6 +148,12 @@ function tripal_entities_entity_form_add_sync($bundle_id, $cvterm, &$form, &$for
  * Adds fields to the tripal_entities_entity_form for editing/adding an entity.
  */
 function tripal_entities_entity_form_add_new($bundle_id, $cvterm, &$form, &$form_state, $entity) {
+
+  // Add a vertical tabs element
+  $form['entity_vetical_tabs'] = array(
+    '#type' => 'vertical_tabs',
+    '#weight' => 999,
+  );
 
   // If the entity doesn't exist then create one.
   if (!$entity) {
@@ -497,19 +502,58 @@ function tripal_entities_add_bundle($cvterm) {
     );
     $tripal_bundle = new TripalBundle($vals, $entity_type_name . '_bundle');
     $tripal_bundle->save();
-
-    // Allow modules to now add fields to the bundle
-    module_invoke_all('add_bundle_fields', $entity_type_name, $bundle_name, $cvterm);
   }
+
+  // Allow modules to now add fields to the bundle
+  module_invoke_all('add_bundle_fields', $entity_type_name, $bundle_name, $cvterm);
+
 }
 /**
+ * Implements hook_add_bundle_fields().
  *
- * @param $table
- * @param $entity_type
+ * @param $entity_type_name
  * @param $bundle_name
+ * @param $cvterm
  */
 function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvterm) {
 
+  // Adds the fields for the base table to the entity.
+  tripal_entities_add_bundle_base_fields($entity_type_name, $bundle_name, $cvterm);
+
+  // Check to see if there are any kv-property tables associated to this
+  // base table. If so, add the fields for that type of table.
+  tripal_entities_add_bundle_kv_property_fields($entity_type_name, $bundle_name, 'featureprop');
+}
+
+/**
+ * Adds the fields for a kv-property table fields
+ *
+ * @param $entity_type_name
+ * @param $bundle_name
+ * @param $kv_table
+ */
+function tripal_entities_add_bundle_kv_property_fields($entity_type_name, $bundle_name, $kv_table) {
+  // First add a generic property field so that users can add new proeprty types.
+  $field_name = $kv_table;
+
+  // Initialize the field array.
+  $field_info = array(
+    'field_type' => 'kvproperty',
+    'widget_type' => 'tripal_fields_kvproperty_widget',
+    'field_settings' => array(),
+    'widget_settings' => array('display_label' => 1),
+    'description' => '',
+    'label' => 'Additional Properties',
+    'chado_table' => $kv_table,
+    'chado_column' => '',
+    'is_required' => 0,
+  );
+  tripal_entities_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
+}
+/**
+ * Adds the fields for the base table to the entity.
+ */
+function tripal_entities_add_bundle_base_fields($entity_type_name, $bundle_name, $cvterm) {
   // Get the list of tables where this cvterm is used.
   $match = array('cvterm_id' => $cvterm->cvterm_id);
   $term = chado_select_record('tripal_term', array('*'), $match);
@@ -518,25 +562,24 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
 
   // Iterate through the tables.
   foreach ($tables as $table) {
-    $tablename = $table->data_table;
+    $table_name = $table->data_table;
     $type_table = $table->type_table;
     $type_field = $table->field;
 
     // We only want to look at base tables.
-    if ($tablename == 'cvterm_dbxref' || $tablename == 'cvterm_relationship' ||
-        $tablename == 'cvtermpath' || $tablename == 'cvtermprop' || $tablename == 'chadoprop' ||
-        $tablename == 'cvtermsynonym' || preg_match('/_relationship$/', $tablename) ||
-        preg_match('/_cvterm$/', $tablename)) {
+    if ($table_name == 'cvterm_dbxref' || $table_name == 'cvterm_relationship' ||
+        $table_name == 'cvtermpath' || $table_name == 'cvtermprop' || $table_name == 'chadoprop' ||
+        $table_name == 'cvtermsynonym' || preg_match('/_relationship$/', $table_name) ||
+      preg_match('/_cvterm$/', $table_name)) {
       continue;
     }
 
     // Iterate through the columns of the table and see if fields have been
     // created for each one. If not, then create them.
-    $schema = chado_get_schema($tablename);
+    $schema = chado_get_schema($table_name);
     $columns = $schema['fields'];
     foreach ($columns as $column_name => $details) {
-      $field_name = $tablename . '__' . $column_name;
-      $field = field_info_field($field_name);
+      $field_name = $table_name . '__' . $column_name;
 
       // Skip the primary key field.
       if ($column_name == $schema['primary key'][0]) {
@@ -544,95 +587,26 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
       }
 
       // Skip the type field.
-      if ($tablename == $type_table and $column_name == $type_field) {
+      if ($table_name == $type_table and $column_name == $type_field) {
         continue;
       }
 
+      // Get the field defaults for this column.
+      $field_info = tripal_entities_get_table_column_field_default($table_name, $schema, $column_name);
+
+
       // Determine if the field is required.
-      $is_required = 0;
       if (array_key_exists('not null', $details) and $details['not null'] === TRUE) {
-        $is_required = array_key_exists('default', $details) ? 0 : 1;
-      }
-
-      // Determine what type of field this should be.
-      // Drupal data types are: https://www.drupal.org/node/159605.
-      // Field types are here:  https://www.drupal.org/node/1879542
-
-      // Create an array with information about this field.
-      $field_info = array(
-        'field_type' => '',
-        'widget_type' => '',
-        'field_settings' => array(),
-        'widget_settings' => array('display_label' => 1),
-        'description' => '',
-        'label' => ucwords(preg_replace('/_/', ' ', $column_name)),
-        'chado_table' => $tablename,
-        'chado_column' => $column_name
-      );
-
-      // Alter the field info array dependiing on the column details.
-      switch($details['type']) {
-        case 'char':
-          $field_info['field_type'] = 'text';
-          $field_info['widget_type'] = 'text_textfield';
-          $field_info['field_settings']['max_length'] = $details['length'];
-          break;
-        case 'varchar':
-          $field_info['field_type'] = 'text';
-          $field_info['widget_type'] = 'text_textfield';
-          $field_info['field_settings']['max_length'] = $details['length'];
-          break;
-        case 'text':
-          $field_info['field_type'] = 'text';
-          $field_info['widget_type'] = 'text_textarea';
-          $field_info['field_settings']['max_length'] = 17179869184;
-          break;
-        case 'blob':
-          // not sure how to support a blob field.
-          continue;
-          break;
-        case 'int':
-          $field_info['field_type'] = 'number_integer';
-          $field_info['widget_type'] = 'number';
-          break;
-        case 'float':
-          $field_info['field_type'] = 'number_float';
-          $field_info['widget_type'] = 'number';
-          $field_info['field_settings']['precision'] = 10;
-          $field_info['field_settings']['scale'] = 2;
-          $field_info['field_settings']['decimal_separator'] = '.';
-          break;
-        case 'numeric':
-          $field_info['field_type'] = 'number_decimal';
-          $field_info['widget_type'] = 'number';
-          break;
-        case 'serial':
-          // Serial fields are most likely not needed as a field.
-          break;
-        case 'boolean':
-          $field_info['field_type'] = 'list_boolean';
-          $field_info['widget_type'] = 'options_onoff';
-          $field_info['field_settings']['allowed_values'] = array(0 => "No", 1 => "Yes");
-          break;
-        case 'datetime':
-          // Use the Drupal Date and Date API to create the field/widget
-          $field_info['field_type'] = 'datetime';
-          $field_info['widget_type'] = 'date_select';
-          $field_info['widget_settings']['increment'] = 1;
-          $field_info['widget_settings']['tz_handling'] = 'none';
-
-          // TODO: Add settings so that the minutes increment by 1.
-          // And turn off the timezone, as the Chado field doesn't support it.
-          break;
+        $field_info['is_required'] = array_key_exists('default', $details) ? 0 : 1;
       }
 
       // If we don't have a field type then we don't need to create a field.
       if (!$field_info['field_type']) {
         // If we don't have a field type but it is required and doesn't have
         // a default value then we are in trouble.
-        if ($is_required and !array_key_exists('default', $details)) {
+        if ($field_info['is_required'] and !array_key_exists('default', $details)) {
           throw new Exception(t('The %table.%field type, %type, is not yet supported for Entity fields, but it is required,',
-              array('%table' => $tablename, '%field' => $column_name, '%type' => $details['type'])));
+              array('%table' => $table_name, '%field' => $column_name, '%type' => $details['type'])));
         }
         continue;
       }
@@ -648,39 +622,142 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
         }
       }
 
-      // Allow other modules to alter the field information array.
-      drupal_alter('chado_field', $field_info);
-
-      // If the field doesn't exist then create it.
-      if (!$field) {
-        $field = array(
-          'field_name' => $field_name,
-          'type' => $field_info['field_type'],
-          'cardinality' => 1,
-          'locked' => FALSE,
-          'storage' => array(
-            'type' => 'field_chado_storage'
-          ),
-          'settings' => $field_info['field_settings'],
-        );
-        field_create_field($field);
-      }
-
-      // Attach the field to the bundle.
-      $field_instance = array(
-        'field_name' => $field_name,
-        'label' => $field_info['label'],
-        'description' => $field_info['description'],
-        'widget' => array(
-          'type' => $field_info['widget_type'],
-          'settings' => $field_info['widget_settings'],
-        ),
-        'entity_type' => $entity_type_name,
-        'required' => $is_required,
-        'settings' => $field_info['field_settings'],
-        'bundle' => $bundle_name,
-      );
-      field_create_instance($field_instance);
+      // Add the field to the bundle.
+      tripal_entities_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
     }
   }
+}
+
+/**
+ * Returns a $field_info array for a field based on a databaes column.
+ *
+ */
+function tripal_entities_get_table_column_field_default($table_name, $schema, $column_name) {
+  $details = $schema['fields'][$column_name];
+
+  // Create an array with information about this field.
+  $field_info = array(
+    'field_type' => '',
+    'widget_type' => '',
+    'field_settings' => array(),
+    'widget_settings' => array('display_label' => 1),
+    'description' => '',
+    'label' => ucwords(preg_replace('/_/', ' ', $column_name)),
+    'chado_table' => $table_name,
+    'chado_column' => $column_name,
+    'is_required' => 0,
+  );
+
+  // Alter the field info array depending on the column details.
+  switch($details['type']) {
+    case 'char':
+      $field_info['field_type'] = 'text';
+      $field_info['widget_type'] = 'text_textfield';
+      $field_info['field_settings']['max_length'] = $details['length'];
+      break;
+    case 'varchar':
+      $field_info['field_type'] = 'text';
+      $field_info['widget_type'] = 'text_textfield';
+      $field_info['field_settings']['max_length'] = $details['length'];
+      break;
+    case 'text':
+      $field_info['field_type'] = 'text';
+      $field_info['widget_type'] = 'text_textarea';
+      $field_info['field_settings']['max_length'] = 17179869184;
+      break;
+    case 'blob':
+      // not sure how to support a blob field.
+      continue;
+      break;
+    case 'int':
+      $field_info['field_type'] = 'number_integer';
+      $field_info['widget_type'] = 'number';
+      break;
+    case 'float':
+      $field_info['field_type'] = 'number_float';
+      $field_info['widget_type'] = 'number';
+      $field_info['field_settings']['precision'] = 10;
+      $field_info['field_settings']['scale'] = 2;
+      $field_info['field_settings']['decimal_separator'] = '.';
+      break;
+    case 'numeric':
+      $field_info['field_type'] = 'number_decimal';
+      $field_info['widget_type'] = 'number';
+      break;
+    case 'serial':
+      // Serial fields are most likely not needed as a field.
+      break;
+    case 'boolean':
+      $field_info['field_type'] = 'list_boolean';
+      $field_info['widget_type'] = 'options_onoff';
+      $field_info['field_settings']['allowed_values'] = array(0 => "No", 1 => "Yes");
+      break;
+    case 'datetime':
+      // Use the Drupal Date and Date API to create the field/widget
+      $field_info['field_type'] = 'datetime';
+      $field_info['widget_type'] = 'date_select';
+      $field_info['widget_settings']['increment'] = 1;
+      $field_info['widget_settings']['tz_handling'] = 'none';
+
+      // TODO: Add settings so that the minutes increment by 1.
+      // And turn off the timezone, as the Chado field doesn't support it.
+      break;
+  }
+
+  return $field_info;
+}
+/**
+ * Adds a field to a bundle.
+ *
+ * @param $field_name
+ *   The name of the field.
+ * @param $field_info
+ *   An associative array containing the field information.
+ */
+function tripal_entities_add_bundle_field($field_name, $field_info,
+    $entity_type_name, $bundle_name) {
+
+  $field = field_info_field($field_name);
+
+  // If the field exists and is attached to this bundle then just return,
+  // there is nothing left to do.
+  if ($field and array_key_exists('bundles', $field) and
+      array_key_exists($entity_type_name, $field['bundles']) and
+      in_array($bundle_name, $field['bundles'][$entity_type_name])) {
+    return;
+  }
+
+  // Allow other modules to alter the field information array.
+  drupal_alter('chado_field', $field_info);
+
+  // If the field doesn't exist then create it.
+  if (!$field) {
+    $field = array(
+      'field_name' => $field_name,
+      'type' => $field_info['field_type'],
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage'
+      ),
+      'settings' => $field_info['field_settings'],
+    );
+    field_create_field($field);
+  }
+
+  // Attach the field to the bundle.
+  $field_instance = array(
+    'field_name' => $field_name,
+    'label' => $field_info['label'],
+    'description' => $field_info['description'],
+    'widget' => array(
+      'type' => $field_info['widget_type'],
+      'settings' => $field_info['widget_settings'],
+    ),
+    'entity_type' => $entity_type_name,
+    'required' => $field_info['is_required'],
+    'settings' => $field_info['field_settings'],
+    'bundle' => $bundle_name,
+  );
+  field_create_instance($field_instance);
 }

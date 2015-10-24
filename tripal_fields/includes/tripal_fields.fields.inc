@@ -65,6 +65,21 @@ function tripal_fields_field_info() {
         'active' => TRUE
       ),
     ),
+    // The field provides a widget for adding new properties
+    // to an entity that is connected to a base table that has a prop table
+    // in Chado.
+    'kvproperty' => array(
+      'label' => t('Add a Property Type'),
+      'description' => t('This record may have any number of properties. Use this field to first add the type.'),
+      'default_widget' => 'tripal_fields_kvproperty_widget',
+      'default_formatter' => 'tripal_fields_kvproperty_formatter',
+      'settings' => array(),
+      'storage' => array(
+        'type' => 'field_chado_storage',
+        'module' => 'tripal_fields',
+        'active' => TRUE
+      ),
+    ),
   );
   return $fields;
 }
@@ -85,14 +100,19 @@ function tripal_fields_field_widget_info() {
     ),
     'tripal_fields_md5checksum_checkbox_widget' => array(
       'label' => t('MD5 Checksum Checkbox'),
-      'field types' => array('md5checksum')
+      'field types' => array('md5checksum'),
     ),
     'tripal_fields_residues_textarea_widget' => array(
       'label' => t('Residues'),
-      'field types' => array('residues')
+      'field types' => array('residues'),
     ),
     'tripal_fields_seqlen_hidden_widget' => array(
-      'field types' => array('seqlen')
+      'label' => t('Sequence Length'),
+      'field types' => array('seqlen'),
+    ),
+    'tripal_fields_kvproperty_widget' => array(
+      'label' => t('Property'),
+      'field types' => array('kvproperty'),
     ),
   );
 }
@@ -120,6 +140,10 @@ function tripal_fields_field_formatter_info() {
     'tripal_fields_seqlen_formatter' => array(
       'label' => t('Sequence length'),
       'field types' => array('seqlen')
+    ),
+    'tripal_fields_kvproperty_formatter' => array(
+      'label' => t('Property'),
+      'field types' => array('kvproperty')
     ),
   );
 }
@@ -206,6 +230,10 @@ function tripal_fields_field_formatter_view($entity_type, $entity, $field,
         );
       }
       break;
+    case 'tripal_fields_kvproperty_formatter':
+      // Do nothing. This field is only used in the form.
+      $element[$delta] = '';
+      break;
   }
   return $element;
 }
@@ -266,6 +294,7 @@ function tripal_fields_field_widget_form(&$form, &$form_state, $field,
         '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
         '#delta' => $delta,
         '#theme' => 'tripal_fields_primary_dbxref_widget',
+        '#group' => 'entity_vetical_tabs',
         array(
           $element['#field_name'] => array(
             '#type' => 'hidden',
@@ -354,6 +383,31 @@ function tripal_fields_field_widget_form(&$form, &$form_state, $field,
       );
       $element['value'] = $widget;
       break;
+    case 'tripal_fields_kvproperty_widget':
+      $widget += array(
+        '#element_validate' => array('tripal_fields_kvproperty_widget_validate'),
+        '#type' => 'fieldset',
+        '#title' => $element['#title'],
+        '#description' =>  $element['#description'],
+        '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
+        '#delta' => $delta,
+        '#group' => 'entity_vetical_tabs',
+        array(
+          'kvproperty' => array(
+            '#title' => t('Property Type'),
+            '#type' => 'textfield',
+            '#description' => t("Please enter the type of property that you want to add.  As you type, suggestions will be provided."),
+            '#autocomplete_path' => "eadmin/tripal/chado/tripal_cv/cvterm/auto_name/",
+          ),
+          'kvproperty_add' => array(
+            '#value' => t('Add fields for property type'),
+            '#type' => 'button',
+            '#name' => 'kvproperty_add',
+          ),
+        ),
+      );
+      $element['value'] = $widget;
+      break;
   }
   return $element;
 }
@@ -425,7 +479,13 @@ function tripal_fields_primary_dbxref_widget_validate($element, &$form_state) {
     tripal_fields_set_field_form_values($field_name, $form_state, '__NULL__', $field_name);
   }
 }
-
+/**
+ * Callback function for validating the tripal_fields_kvproperty_widget.
+ */
+function tripal_fields_kvproperty_widget_validate($element, &$form_state) {
+  // Add the new field to the entity
+  $form_state['rebuild'] = TRUE;
+}
 /**
  * Callback function for validating the tripal_fields_md5checksum_checkbox_widget.
  */
@@ -502,6 +562,7 @@ function theme_tripal_fields_primary_dbxref_widget($variables) {
   ";
   return $layout;
 }
+
 
 /**
  * Returns the values of the field from the $form_state.
