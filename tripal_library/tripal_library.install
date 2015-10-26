@@ -375,13 +375,21 @@ function tripal_library_update_7200() {
   // library_type
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'library_type'")->fetchField();
-    db_insert('tripal_cv_defaults')
-      ->fields(array(
-        'table_name' => 'library',
-        'field_name' => 'type_id',
-        'cv_id' => $cv_id
-      ))
-      ->execute();
+    $cdi = db_select('tripal_cv_defaults', 't')
+      ->fields('t', array('cv_default_id'))
+      ->condition('table_name', 'library')
+      ->condition('field_name', 'type_id')
+      ->execute()
+      ->fetchField();
+    if (!$cdi) {
+      db_insert('tripal_cv_defaults')
+        ->fields(array(
+          'table_name' => 'library',
+          'field_name' => 'type_id',
+          'cv_id' => $cv_id
+        ))
+        ->execute();
+    }
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
@@ -390,13 +398,21 @@ function tripal_library_update_7200() {
   // library_property
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'library_property'")->fetchField();
-    db_insert('tripal_cv_defaults')
-      ->fields(array(
-        'table_name' => 'libraryprop',
-        'field_name' => 'type_id',
-        'cv_id' => $cv_id
-      ))
-      ->execute();
+    $cdi = db_select('tripal_cv_defaults', 't')
+      ->fields('t', array('cv_default_id'))
+      ->condition('table_name', 'libraryprop')
+      ->condition('field_name', 'type_id')
+      ->execute()
+      ->fetchField();
+    if (!$cdi) {
+      db_insert('tripal_cv_defaults')
+        ->fields(array(
+          'table_name' => 'libraryprop',
+          'field_name' => 'type_id',
+          'cv_id' => $cv_id
+        ))
+        ->execute();
+    }
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();

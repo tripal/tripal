@@ -1025,30 +1025,30 @@ function tripal_set_default_cv($table, $field, $cv_name, $cv_id = FALSE) {
   if ($cv) {
     // first delete any entries for this table and field
     $num_deleted = db_delete('tripal_cv_defaults')
-    ->condition('table_name', $table)
-    ->condition('field_name', $field)
-    ->execute();
+      ->condition('table_name', $table)
+      ->condition('field_name', $field)
+      ->execute();
 
     // now add the default value
     $cv_default_id = db_insert('tripal_cv_defaults')
-    ->fields(array(
-      'table_name' => $table,
-      'field_name' => $field,
-      'cv_id'      => $cv->cv_id,
-    ))
-    ->execute();
+      ->fields(array(
+        'table_name' => $table,
+        'field_name' => $field,
+        'cv_id'      => $cv->cv_id,
+      ))
+      ->execute();
 
     if (!$cv_default_id) {
       tripal_report_error('tripal_cv', TRIPAL_WARNING,
-      "Cannot set default vocabulary for %table.%field. Check the error logs.",
-      array('%table' => $table, '%field' => $field));
+        "Cannot set default vocabulary for %table.%field. Check the error logs.",
+        array('%table' => $table, '%field' => $field));
       return FALSE;
     }
   }
   else {
     tripal_report_error('tripal_cv', TRIPAL_WARNING,
-    "Cannot set default vocabulary for %table.%field. The vocabulary name, '%cvname', doesn't exist.",
-    array('%table' => $table, '%field' => $field, '%cvname' => $cv_name));
+      "Cannot set default vocabulary for %table.%field. The vocabulary name, '%cvname', doesn't exist.",
+      array('%table' => $table, '%field' => $field, '%cvname' => $cv_name));
     return FALSE;
   }
 }

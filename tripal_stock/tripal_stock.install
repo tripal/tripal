@@ -230,13 +230,21 @@ function tripal_stock_update_7200() {
     // for backwards compatibility, get the previously set stock relationship CV, otherwise
     // use the new stock_relationship CV we just added
     $default_stockrel_cv = variable_get('chado_stock_relationship_cv', $cv_id);
-    db_insert('tripal_cv_defaults')
-      ->fields(array(
-        'table_name' => 'stock_relationship',
-        'field_name' => 'type_id',
-        'cv_id' => $default_stockrel_cv
-      ))
-      ->execute();
+    $cdi = db_select('tripal_cv_defaults', 't')
+      ->fields('t', array('cv_default_id'))
+      ->condition('table_name', 'stock_relationship')
+      ->condition('field_name', 'type_id')
+      ->execute()
+      ->fetchField();
+    if (!$cdi) {
+      db_insert('tripal_cv_defaults')
+        ->fields(array(
+          'table_name' => 'stock_relationship',
+          'field_name' => 'type_id',
+          'cv_id' => $default_stockrel_cv
+        ))
+        ->execute();
+    }
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
@@ -258,13 +266,21 @@ function tripal_stock_update_7200() {
     // for backwards compatibility, get the previously set stock property CV, otherwise
     // use the new stock_property CV we just added
     $default_stockprop_cv = variable_get('chado_stock_prop_types_cv', $cv_id);
-    db_insert('tripal_cv_defaults')
-      ->fields(array(
-      'table_name' => 'stockprop',
-      'field_name' => 'type_id',
-      'cv_id' => $default_stockprop_cv
-      ))
-      ->execute();
+    $cdi = db_select('tripal_cv_defaults', 't')
+      ->fields('t', array('cv_default_id'))
+      ->condition('table_name', 'stockprop')
+      ->condition('field_name', 'type_id')
+      ->execute()
+      ->fetchField();
+    if (!$cdi) {
+      db_insert('tripal_cv_defaults')
+        ->fields(array(
+        'table_name' => 'stockprop',
+        'field_name' => 'type_id',
+        'cv_id' => $default_stockprop_cv
+        ))
+        ->execute();
+    }
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
@@ -287,13 +303,21 @@ function tripal_stock_update_7200() {
     // for backwards compatibility, get the previously set stock types CV, otherwise
     // use the new stock_type CV we just added
     $default_stocktype_cv = variable_get('chado_stock_types_cv', $cv_id);
-    db_insert('tripal_cv_defaults')
-      ->fields(array(
-      'table_name' => 'stock',
-      'field_name' => 'type_id',
-      'cv_id' => $default_stocktype_cv
-      ))
-      ->execute();
+    $cdi = db_select('tripal_cv_defaults', 't')
+      ->fields('t', array('cv_default_id'))
+      ->condition('table_name', 'stock')
+      ->condition('field_name', 'type_id')
+      ->execute()
+      ->fetchField();
+    if (!$cdi) {
+      db_insert('tripal_cv_defaults')
+        ->fields(array(
+        'table_name' => 'stock',
+        'field_name' => 'type_id',
+        'cv_id' => $default_stocktype_cv
+        ))
+        ->execute();
+    }
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();

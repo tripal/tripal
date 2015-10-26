@@ -497,13 +497,21 @@ function tripal_featuremap_update_7200() {
   // featuremap_units
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'featuremap_units'")->fetchField();
-    db_insert('tripal_cv_defaults')
-      ->fields(array(
-        'table_name' => 'featuremap',
-        'field_name' => 'unittype_id',
-        'cv_id' => $cv_id
-      ))
-      ->execute();
+    $cdi = db_select('tripal_cv_defaults', 't')
+      ->fields('t', array('cv_default_id'))
+      ->condition('table_name', 'featuremap')
+      ->condition('field_name', 'type_id')
+      ->execute()
+      ->fetchField();
+    if (!$cdi) {
+      db_insert('tripal_cv_defaults')
+        ->fields(array(
+          'table_name' => 'featuremap',
+          'field_name' => 'unittype_id',
+          'cv_id' => $cv_id
+        ))
+        ->execute();
+    }
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
@@ -513,13 +521,21 @@ function tripal_featuremap_update_7200() {
   // featurepos_property
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'featurepos_property'")->fetchField();
-    db_insert('tripal_cv_defaults')
-      ->fields(array(
-        'table_name' => 'featureposprop',
-        'field_name' => 'type_id',
-        'cv_id' => $cv_id
-      ))
-      ->execute();
+    $cdi = db_select('tripal_cv_defaults', 't')
+      ->fields('t', array('cv_default_id'))
+      ->condition('table_name', 'featureposprop')
+      ->condition('field_name', 'type_id')
+      ->execute()
+      ->fetchField();
+    if (!$cdi) {
+      db_insert('tripal_cv_defaults')
+        ->fields(array(
+          'table_name' => 'featureposprop',
+          'field_name' => 'type_id',
+          'cv_id' => $cv_id
+        ))
+        ->execute();
+    }
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
@@ -529,13 +545,21 @@ function tripal_featuremap_update_7200() {
   // featuremap_property
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'featuremap_property'")->fetchField();
-    db_insert('tripal_cv_defaults')
-     ->fields(array(
-       'table_name' => 'featuremapprop',
-       'field_name' => 'type_id',
-       'cv_id' => $cv_id
-      ))
-      ->execute();
+    $cdi = db_select('tripal_cv_defaults', 't')
+      ->fields('t', array('cv_default_id'))
+      ->condition('table_name', 'featuremapprop')
+      ->condition('field_name', 'type_id')
+      ->execute()
+      ->fetchField();
+    if (!$cdi) {
+      db_insert('tripal_cv_defaults')
+       ->fields(array(
+         'table_name' => 'featuremapprop',
+         'field_name' => 'type_id',
+         'cv_id' => $cv_id
+        ))
+        ->execute();
+    }
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();

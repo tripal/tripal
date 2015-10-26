@@ -375,13 +375,21 @@ function tripal_feature_update_7200() {
   // set the default feature property vocabulary
   try {
     $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'feature_property'")->fetchField();
-    db_insert('tripal_cv_defaults')
-      ->fields(array(
-        'table_name' => 'featureprop',
-        'field_name' => 'type_id',
-        'cv_id' => $cv_id
-        ))
-      ->execute();
+    $cdi = db_select('tripal_cv_defaults', 't')
+      ->fields('t', array('cv_default_id'))
+      ->condition('table_name', 'featureprop')
+      ->condition('field_name', 'type_id')
+      ->execute()
+      ->fetchField();
+    if (!$cdi) {
+      db_insert('tripal_cv_defaults')
+        ->fields(array(
+          'table_name' => 'featureprop',
+          'field_name' => 'type_id',
+          'cv_id' => $cv_id
+          ))
+        ->execute();
+    }
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
@@ -400,14 +408,22 @@ function tripal_feature_update_7200() {
       ))
       ->execute();
     }
-    // use the new feature_relationship CV we just added
-    db_insert('tripal_cv_defaults')
-      ->fields(array(
-        'table_name' => 'feature_relationship',
-        'field_name' => 'type_id',
-        'cv_id' => $cv_id
-      ))
-      ->execute();
+    // use the new featureprop CV we just added
+    $cdi = db_select('tripal_cv_defaults', 't')
+      ->fields('t', array('cv_default_id'))
+      ->condition('table_name', 'feature_relationship')
+      ->condition('field_name', 'type_id')
+      ->execute()
+      ->fetchField();
+    if (!$cdi) {
+      db_insert('tripal_cv_defaults')
+        ->fields(array(
+          'table_name' => 'feature_relationship',
+          'field_name' => 'type_id',
+          'cv_id' => $cv_id
+        ))
+        ->execute();
+    }
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
@@ -426,13 +442,21 @@ function tripal_feature_update_7200() {
       ))
       ->execute();
     }
-    db_insert('tripal_cv_defaults')
-      ->fields(array(
-        'table_name' => 'feature',
-        'field_name' => 'type_id',
-        'cv_id' => $cv_id
-      ))
-      ->execute();
+    $cdi = db_select('tripal_cv_defaults', 't')
+      ->fields('t', array('cv_default_id'))
+      ->condition('table_name', 'feature')
+      ->condition('field_name', 'type_id')
+      ->execute()
+      ->fetchField();
+    if (!$cdi) {
+      db_insert('tripal_cv_defaults')
+        ->fields(array(
+          'table_name' => 'feature',
+          'field_name' => 'type_id',
+          'cv_id' => $cv_id
+        ))
+        ->execute();
+    }
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();

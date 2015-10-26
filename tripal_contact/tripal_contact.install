@@ -255,21 +255,40 @@ function tripal_contact_update_7200() {
       ))
       ->execute();
     }
+
     // make this CV the defaults for the contact properties and contact types
-    db_insert('tripal_cv_defaults')
-      ->fields(array(
-         'table_name' => 'contact',
-         'field_name' => 'type_id',
-         'cv_id' => $cv_id
-       ))
-      ->execute();
-    db_insert('tripal_cv_defaults')
-      ->fields(array(
-        'table_name' => 'contactprop',
-        'field_name' => 'type_id',
-        'cv_id' => $cv_id
-      ))
-      ->execute();
+    // If a record already exists then don't change it.
+    $cdi = db_select('tripal_cv_defaults', 't')
+      ->fields('t', array('cv_default_id'))
+      ->condition('table_name', 'contact')
+      ->condition('field_name', 'type_id')
+      ->execute()
+      ->fetchField();
+    if (!$cdi) {
+      db_insert('tripal_cv_defaults')
+        ->fields(array(
+           'table_name' => 'contact',
+           'field_name' => 'type_id',
+           'cv_id' => $cv_id
+         ))
+        ->execute();
+    }
+    $cdi = db_select('tripal_cv_defaults', 't')
+      ->fields('t', array('cv_default_id'))
+      ->condition('table_name', 'contactprop')
+      ->condition('field_name', 'type_id')
+      ->execute()
+      ->fetchField();
+
+    if (!$cdi) {
+      db_insert('tripal_cv_defaults')
+        ->fields(array(
+          'table_name' => 'contactprop',
+          'field_name' => 'type_id',
+          'cv_id' => $cv_id
+        ))
+        ->execute();
+    }
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
@@ -289,14 +308,22 @@ function tripal_contact_update_7200() {
       ))
       ->execute();
     }
-    // add the default
-    db_insert('tripal_cv_defaults')
-      ->fields(array(
-        'table_name' => 'contact_relationship',
-        'field_name' => 'type_id',
-        'cv_id' => $cv_id
-        ))
-      ->execute();
+    $cdi = db_select('tripal_cv_defaults', 't')
+      ->fields('t', array('cv_default_id'))
+      ->condition('table_name', 'contact_relationship')
+      ->condition('field_name', 'type_id')
+      ->execute()
+      ->fetchField();
+    if (!$cdi) {
+      // add the default
+      db_insert('tripal_cv_defaults')
+        ->fields(array(
+          'table_name' => 'contact_relationship',
+          'field_name' => 'type_id',
+          'cv_id' => $cv_id
+          ))
+        ->execute();
+    }
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
