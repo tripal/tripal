@@ -342,29 +342,31 @@ function tripal_feature_update_7200() {
   $vid = db_query("SELECT vid FROM {taxonomy_vocabulary} WHERE name = 'Feature Type'")->fetchField();
   if ($vid) {
     try {
-      // first move from the field_data_taxonomyextra table
-      $sql = "
-        INSERT INTO {field_data_taxonomy_vocabulary_$vid}
-          (entity_type, bundle, deleted, entity_id, revision_id, language, delta, taxonomy_vocabulary_" . $vid. "_tid)
-        (SELECT entity_type, bundle, deleted, entity_id, revision_id, language, delta, taxonomyextra_tid
-         FROM field_data_taxonomyextra
-         WHERE bundle = 'chado_feature')
-      ";
-      db_query($sql);
-      $sql = "DELETE FROM field_data_taxonomyextra WHERE bundle = 'chado_feature'";
-      db_query($sql);
+      if (db_table_exists('field_data_taxonomyextra')) {
+        // first move from the field_data_taxonomyextra table
+        $sql = "
+          INSERT INTO {field_data_taxonomy_vocabulary_$vid}
+            (entity_type, bundle, deleted, entity_id, revision_id, language, delta, taxonomy_vocabulary_" . $vid. "_tid)
+          (SELECT entity_type, bundle, deleted, entity_id, revision_id, language, delta, taxonomyextra_tid
+           FROM field_data_taxonomyextra
+           WHERE bundle = 'chado_feature')
+        ";
+        db_query($sql);
+        $sql = "DELETE FROM field_data_taxonomyextra WHERE bundle = 'chado_feature'";
+        db_query($sql);
 
-      // next move from the field_revision_taxonomyextra table
-      $sql = "
-        INSERT INTO {field_revision_taxonomy_vocabulary_$vid}
-          (entity_type, bundle, deleted, entity_id, revision_id, language, delta, taxonomy_vocabulary_" . $vid. "_tid)
-        (SELECT entity_type, bundle, deleted, entity_id, revision_id, language, delta, taxonomyextra_tid
-         FROM field_revision_taxonomyextra
-         WHERE bundle = 'chado_feature')
-      ";
-      db_query($sql);
-      $sql = "DELETE FROM field_revision_taxonomyextra WHERE bundle = 'chado_feature'";
-      db_query($sql);
+        // next move from the field_revision_taxonomyextra table
+        $sql = "
+          INSERT INTO {field_revision_taxonomy_vocabulary_$vid}
+            (entity_type, bundle, deleted, entity_id, revision_id, language, delta, taxonomy_vocabulary_" . $vid. "_tid)
+          (SELECT entity_type, bundle, deleted, entity_id, revision_id, language, delta, taxonomyextra_tid
+           FROM field_revision_taxonomyextra
+           WHERE bundle = 'chado_feature')
+        ";
+        db_query($sql);
+        $sql = "DELETE FROM field_revision_taxonomyextra WHERE bundle = 'chado_feature'";
+        db_query($sql);
+      }
     }
     catch (\PDOException $e) {
       $error = $e->getMessage();
