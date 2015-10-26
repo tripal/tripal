@@ -10,7 +10,7 @@
  * @param unknown $items
  * @param unknown $display
  */
-function tripal_fields_primary_dbxref_formatter($entity_type, $entity, $field,
+function tripal_fields_primary_dbxref_formatter(&$element, $entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
 
   foreach ($items as $delta => $item) {
@@ -22,8 +22,11 @@ function tripal_fields_primary_dbxref_formatter($entity_type, $entity, $field,
         $accession = l($accession, $dbxref->db_id->urlprefix . '/' . $dbxref->accession);
       }
     }
+    $element[$delta] = array(
+      '#type' => 'markup',
+      '#markup' => $accession,
+    );
   }
-  return $accession;
 }
 /**
  *
@@ -181,4 +184,29 @@ function tripal_fields_primary_dbxref_widget_validate($element, &$form_state) {
   if (count($db_id) == 0) {
     tripal_fields_set_field_form_values($field_name, $form_state, '__NULL__', $field_name);
   }
+}
+/**
+ * Theme function for the primary_dbxref_widget.
+ *
+ * @param $variables
+ */
+function theme_tripal_fields_primary_dbxref_widget($variables) {
+  $element = $variables['element'];
+  $layout = "
+    <div class=\"primary-dbxref-widget\">
+      <div class=\"primary-dbxref-widget-item\">" .
+      drupal_render($element[0]['dbxref__db_id']) . "
+      </div>
+      <div class=\"primary-dbxref-widget-item\">" .
+      drupal_render($element[0]['dbxref__accession']) . "
+      </div>
+      <div class=\"primary-dbxref-widget-item\">" .
+      drupal_render($element[0]['dbxref__version']) . "
+      </div>
+      <div class=\"primary-dbxref-widget-item\">" .
+      drupal_render($element[0]['dbxref__description']) . "
+      </div>
+    </div>
+  ";
+      return $layout;
 }

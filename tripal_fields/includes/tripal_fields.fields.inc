@@ -160,70 +160,39 @@ function tripal_fields_field_formatter_info() {
  */
 function tripal_fields_field_formatter_view($entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
+
   $element = array();
   switch ($display['type']) {
 
     case 'tripal_fields_organism_formatter':
-      foreach ($items as $delta => $item) {
-        $organism = chado_select_record('organism', array('genus', 'species'), array('organism_id' => $item['value']));
-        // TODO: add hook here to allow other modules to change this display
-        // if they want.
-        $element[$delta] = array(
-          // We create a render array to produce the desired markup,
-          // "<p>Genus Species</p>".
-          // See theme_html_tag().
-          '#type' => 'markup',
-          '#markup' => '<i>' . $organism[0]->genus .' ' . $organism[0]->species . '</i>',
-        );
-      }
+      module_load_include('inc', 'tripal_fields', 'includes/fields/organism_id');
+      tripal_fields_organism_select_formatter($element, $entity_type, $entity, $field,
+          $instance, $langcode, $items, $display);
       break;
     case 'tripal_fields_primary_dbxref_formatter':
-      module_load_include('inc', 'tripal_fields', 'includes/tripal_fields/fields/primary_dbxref');
-      $content = tripal_fields_primary_dbxref_formatter($entity_type, $entity, $field,
+      module_load_include('inc', 'tripal_fields', 'includes/fields/primary_dbxref');
+      tripal_fields_primary_dbxref_formatter($element, $entity_type, $entity, $field,
         $instance, $langcode, $items, $display);
-
-      $element[$delta] = array(
-        // We create a render array to produce the desired markup,
-        '#type' => 'markup',
-        '#markup' => $content,
-      );
       break;
     case 'tripal_fields_md5checksum_formatter':
-      module_load_include('inc', 'tripal_fields', 'includes/tripal_fields/fields/md5checksum');
-      $content = tripal_fields_md5checksum_checkbox_formatter($entity_type, $entity, $field,
+      module_load_include('inc', 'tripal_fields', 'includes/fields/md5checksum');
+      tripal_fields_md5checksum_checkbox_formatter($element, $entity_type, $entity, $field,
         $instance, $langcode, $items, $display);
-      $element[$delta] = array(
-        // We create a render array to produce the desired markup,
-        '#type' => 'markup',
-        '#markup' => $content,
-      );
       break;
     case 'tripal_fields_residues_formatter':
-      foreach ($items as $delta => $item) {
-        // TODO: add hook here to allow other modules to change this display
-        // if they want.
-        $residues = key_exists('value', $item) ? $item['value'] : '';
-        $element[$delta] = array(
-          // We create a render array to produce the desired markup,
-          '#type' => 'markup',
-          '#markup' =>  '<pre>' . $residues . '</pre>',
-        );
-      }
+      module_load_include('inc', 'tripal_fields', 'includes/fields/residues');
+      tripal_fields_residues_textarea_formatter($element, $entity_type, $entity, $field,
+          $instance, $langcode, $items, $display);
       break;
     case 'tripal_fields_seqlen_formatter':
-      foreach ($items as $delta => $item) {
-        // TODO: add hook here to allow other modules to change this display
-        // if they want.
-        $element[$delta] = array(
-          // We create a render array to produce the desired markup,
-          '#type' => 'markup',
-          '#markup' => key_exists('value', $item) ? $item['value'] : '',
-        );
-      }
+      module_load_include('inc', 'tripal_fields', 'includes/fields/seqlen');
+      tripal_fields_seqlen_hidden_formatter($element, $entity_type, $entity, $field,
+          $instance, $langcode, $items, $display);
       break;
     case 'tripal_fields_kvproperty_formatter':
-      // Do nothing. This field is only used in the form.
-      $element[$delta] = '';
+      module_load_include('inc', 'tripal_fields', 'includes/fields/kvproperty');
+      tripal_fields_kvproperty_formatter($element, $entity_type, $entity, $field,
+          $instance, $langcode, $items, $display);
       break;
   }
   return $element;
@@ -241,82 +210,47 @@ function tripal_fields_field_widget_form(&$form, &$form_state, $field,
 
   switch ($instance['widget']['type']) {
     case 'tripal_fields_organism_select_widget':
-      $options = tripal_get_organism_select_options();
-      $widget += array(
-        '#type' => 'select',
-        '#title' => $element['#title'],
-        '#description' => $element['#description'],
-        '#options' => $options,
-        '#default_value' => count($items) > 0 ? $items[0]['value'] : 0,
-        '#required' => $element['#required'],
-        '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-        '#delta' => $delta,
-        '#element_validate' => array('tripal_fields_organism_select_widget_validate'),
-      );
+      // Make sure the include files get parsed now and for the form submits.
+      form_load_include($form_state, 'inc', 'tripal_fields', 'includes/fields/organism_id');
+      module_load_include('inc', 'tripal_fields', 'includes/fields/organism_id');
+      // Update the widget with the new field.
+      tripal_fields_organism_select_widget($field_name, $widget, $form,
+          $form_state, $field, $instance, $langcode, $items, $delta, $element);
       $element['value'] = $widget;
       break;
     case 'tripal_fields_primary_dbxref_widget':
-      // Make sure the include files get parsed now and for the form submits.
       form_load_include($form_state, 'inc', 'tripal_fields', 'includes/fields/primary_dbxref');
       module_load_include('inc', 'tripal_fields', 'includes/fields/primary_dbxref');
-      // Update the widget with the new field.
       tripal_fields_primary_dbxref_widget($field_name, $widget, $form,
         $form_state, $field, $instance, $langcode, $items, $delta, $element);
       $element['value'] = $widget;
       break;
     case 'tripal_fields_md5checksum_checkbox_widget':
-      form_load_include($form_state, 'inc', 'tripal_fields', 'includes/tripal_fields/fields/md5checksum');
-      module_load_include('inc', 'tripal_fields', 'includes/tripal_fields/fields/md5checksum');
+      form_load_include($form_state, 'inc', 'tripal_fields', 'includes/fields/md5checksum');
+      module_load_include('inc', 'tripal_fields', 'includes/fields/md5checksum');
       tripal_fields_md5checksum_checkbox_widget($field_name, $widget,
           $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
       $element['value'] = $widget;
       break;
     case 'tripal_fields_residues_textarea_widget':
-        $widget += array(
-          '#type' => 'textarea',
-          '#title' => $element['#title'],
-          '#description' => $element['#description'],
-          '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-          '#default_value' => count($items) > 0 ? $items[0]['value'] : 0,
-          '#delta' => $delta,
-          '#element_validate' => array('tripal_fields_residues_textarea_widget_validate'),
-        );
-        $element['value'] = $widget;
-        break;
+      form_load_include($form_state, 'inc', 'tripal_fields', 'includes/fields/residues');
+      module_load_include('inc', 'tripal_fields', 'includes/fields/residues');
+      tripal_fields_residues_textarea_widget($field_name, $widget,
+          $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
+      $element['value'] = $widget;
+      break;
     case 'tripal_fields_seqlen_hidden_widget':
-      $widget += array(
-        '#type' => 'hidden',
-        '#title' => $element['#title'],
-        '#description' => $element['#description'],
-        '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-        '#delta' => $delta,
-        '#element_validate' => array('tripal_fields_seqlen_hidden_widget_validate'),
-      );
+      form_load_include($form_state, 'inc', 'tripal_fields', 'includes/fields/seqlen');
+      module_load_include('inc', 'tripal_fields', 'includes/fields/seqlen');
+      tripal_fields_seqlen_hidden_widget($field_name, $widget,
+          $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
       $element['value'] = $widget;
       break;
     case 'tripal_fields_kvproperty_widget':
-      $widget += array(
-        '#element_validate' => array('tripal_fields_kvproperty_widget_validate'),
-        '#type' => 'fieldset',
-        '#title' => $element['#title'],
-        '#description' =>  $element['#description'],
-        '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-        '#delta' => $delta,
-        '#group' => 'entity_vetical_tabs',
-        array(
-          'kvproperty' => array(
-            '#title' => t('Property Type'),
-            '#type' => 'textfield',
-            '#description' => t("Please enter the type of property that you want to add.  As you type, suggestions will be provided."),
-            '#autocomplete_path' => "eadmin/tripal/chado/tripal_cv/cvterm/auto_name/",
-          ),
-          'kvproperty_add' => array(
-            '#value' => t('Add fields for property type'),
-            '#type' => 'button',
-            '#name' => 'kvproperty_add',
-          ),
-        ),
-      );
+      form_load_include($form_state, 'inc', 'tripal_fields', 'includes/fields/kvproperty');
+      module_load_include('inc', 'tripal_fields', 'includes/fields/kvproperty');
+      tripal_fields_kvproperty_widget($field_name, $widget,
+          $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
       $element['value'] = $widget;
       break;
   }
@@ -333,94 +267,6 @@ function tripal_fields_field_is_empty($item, $field) {
   }
   return FALSE;
 }
-/**
- * Callback function for validating the tripal_fields_organism_select_widget.
- */
-function tripal_fields_organism_select_widget_validate($element, &$form_state) {
-  $field_name = $element['#field_name'];
-
-  // If the form ID is field_ui_field_edit_form, then the user is editing the
-  // field's values in the manage fields form of Drupal.  We don't want
-  // to validate it as if it were being used in a data entry form.
-  if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
-    return;
-  }
-  $organism_id = tripal_fields_get_field_form_values($field_name, $form_state);
-
-  if (count($organism_id) == 0) {
-    form_error($element, t("Please specify an organism that already exists in the database."));
-  }
-}
-
-/**
- * Callback function for validating the tripal_fields_kvproperty_widget.
- */
-function tripal_fields_kvproperty_widget_validate($element, &$form_state) {
-  // Add the new field to the entity
-  $form_state['rebuild'] = TRUE;
-}
-
-
-/**
- * Callback function for validating the tripal_fields_residues_textarea_widget.
- */
-function tripal_fields_residues_textarea_widget_validate($element, &$form_state) {
-  $field_name = $element['#field_name'];
-
-  // Remove any white spaces.
-  $residues = tripal_fields_get_field_form_values($field_name, $form_state);
-  if (count($residues) > 0) {
-    $residues = preg_replace('/\s/', '', $residues[0]);
-    tripal_fields_set_field_form_values($field_name, $form_state, $residues);
-  }
-}
-
-/**
- * Callback function for validating the tripal_fields_seqlen_hidden_widget.
- */
-function tripal_fields_seqlen_hidden_widget_validate($element, &$form_state) {
-  $field_name = $element['#field_name'];
-
-  // Get the residues so we can calculate teh length.
-  $residues = tripal_fields_get_field_form_values('feature__residues', $form_state);
-
-  // Remove any white spaces.
-  if (count($residues) > 0) {
-    $residues = preg_replace('/\s/', '', $residues[0]);
-    tripal_fields_set_field_form_values($field_name, $form_state, strlen($residues));
-  }
-  else {
-    // Otherwise, remove the md5 value
-    tripal_fields_set_field_form_values ($field_name, $form_state, '__NULL__');
-  }
-}
-
-/**
- * Theme function for the primary_dbxref_widget.
- *
- * @param $variables
- */
-function theme_tripal_fields_primary_dbxref_widget($variables) {
-  $element = $variables['element'];
-  $layout = "
-    <div class=\"primary-dbxref-widget\">
-      <div class=\"primary-dbxref-widget-item\">" .
-        drupal_render($element[0]['dbxref__db_id']) . "
-      </div>
-      <div class=\"primary-dbxref-widget-item\">" .
-        drupal_render($element[0]['dbxref__accession']) . "
-      </div>
-      <div class=\"primary-dbxref-widget-item\">" .
-        drupal_render($element[0]['dbxref__version']) . "
-      </div>
-      <div class=\"primary-dbxref-widget-item\">" .
-        drupal_render($element[0]['dbxref__description']) . "
-      </div>
-    </div>
-  ";
-  return $layout;
-}
-
 
 /**
  * Returns the values of the field from the $form_state.

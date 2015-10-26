@@ -10,12 +10,16 @@
  * @param unknown $items
  * @param unknown $display
  */
-function tripal_fields_md5checksum_checkbox_formatter($entity_type, $entity, $field,
+function tripal_fields_md5checksum_checkbox_formatter(&$element, $entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
   foreach ($items as $delta => $item) {
     $content = key_exists('value', $item) ? $item['value'] : '';
+    $element[$delta] = array(
+      // We create a render array to produce the desired markup,
+      '#type' => 'markup',
+      '#markup' => $content,
+    );
   }
-  return $content;
 }
 /**
  *
