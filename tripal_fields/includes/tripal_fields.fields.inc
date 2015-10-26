@@ -178,34 +178,25 @@ function tripal_fields_field_formatter_view($entity_type, $entity, $field,
       }
       break;
     case 'tripal_fields_primary_dbxref_formatter':
-      foreach ($items as $delta => $item) {
-        $accession = '';
-        if ($item['value']) {
-          $dbxref = chado_generate_var('dbxref', array('dbxref_id' => $item['value']));
-          $accession = $dbxref->db_id->name . ':' . $dbxref->accession;
-          if ($dbxref->db_id->urlprefix) {
-            $accession = l($accession, $dbxref->db_id->urlprefix . '/' . $dbxref->accession);
-          }
-        }
-        // TODO: add hook here to allow other modules to change this display
-        // if they want.
-        $element[$delta] = array(
-          // We create a render array to produce the desired markup,
-          '#type' => 'markup',
-          '#markup' => $accession,
-        );
-      }
+      module_load_include('inc', 'tripal_fields', 'includes/tripal_fields/fields/primary_dbxref');
+      $content = tripal_fields_primary_dbxref_formatter($entity_type, $entity, $field,
+        $instance, $langcode, $items, $display);
+
+      $element[$delta] = array(
+        // We create a render array to produce the desired markup,
+        '#type' => 'markup',
+        '#markup' => $content,
+      );
       break;
     case 'tripal_fields_md5checksum_formatter':
-      foreach ($items as $delta => $item) {
-        // TODO: add hook here to allow other modules to change this display
-        // if they want.
-        $element[$delta] = array(
-          // We create a render array to produce the desired markup,
-          '#type' => 'markup',
-          '#markup' => key_exists('value', $item) ? $item['value'] : '',
-        );
-      }
+      module_load_include('inc', 'tripal_fields', 'includes/tripal_fields/fields/md5checksum');
+      $content = tripal_fields_md5checksum_checkbox_formatter($entity_type, $entity, $field,
+        $instance, $langcode, $items, $display);
+      $element[$delta] = array(
+        // We create a render array to produce the desired markup,
+        '#type' => 'markup',
+        '#markup' => $content,
+      );
       break;
     case 'tripal_fields_residues_formatter':
       foreach ($items as $delta => $item) {
@@ -265,99 +256,19 @@ function tripal_fields_field_widget_form(&$form, &$form_state, $field,
       $element['value'] = $widget;
       break;
     case 'tripal_fields_primary_dbxref_widget':
-      // Get the field defaults from the database if a record exists.
-      $dbxref_id = '';
-      $db_id = '';
-      $accession = '';
-      $version = '';
-      $description = '';
-      if (count($items) > 0 and $items[0]['value']) {
-        $dbxref = chado_generate_var('dbxref', array('dbxref_id' => $items[0]['value']));
-        $dbxref_id = $dbxref->dbxref_id;
-        $db_id = $dbxref->db_id->db_id;
-        $accession  = $dbxref->accession;
-        $version = $dbxref->version;
-        $description = $dbxref->description;
-      }
-      $temp = tripal_fields_get_field_form_values($field_name, $form_state, 'dbxref__db_id');
-      if (count($temp) > 0) {
-        $db_id = $temp[0];
-      }
-
-      $schema = chado_get_schema('dbxref');
-      $options = tripal_get_db_select_options();
-      $widget += array(
-        '#element_validate' => array('tripal_fields_primary_dbxref_widget_validate'),
-        '#type' => 'fieldset',
-        '#title' => $element['#title'],
-        '#description' =>  $element['#description'],
-        '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-        '#delta' => $delta,
-        '#theme' => 'tripal_fields_primary_dbxref_widget',
-        '#group' => 'entity_vetical_tabs',
-        array(
-          $element['#field_name'] => array(
-            '#type' => 'hidden',
-            '#default_value' => $dbxref_id,
-          ),
-          'dbxref__db_id' => array(
-            '#type' => 'select',
-            '#title' => t('Database'),
-            '#options' => $options,
-            '#required' => $element['#required'],
-            '#default_value' => $db_id,
-            '#ajax' => array(
-              'callback' => "tripal_fields_primary_dbxref_widget_form_ajax_callback",
-              'wrapper' => "$field_name-dbxref--db-id",
-              'effect' => 'fade',
-              'method' => 'replace'
-            )
-          ),
-          'dbxref__accession' => array(
-            '#type' => 'textfield',
-            '#title' => t('Accession'),
-            '#default_value' => $accession,
-            '#required' => $element['#required'],
-            '#maxlength' => array_key_exists('length', $schema['fields']['accession']) ? $schema['fields']['accession']['length'] : 255,
-            '#size' => 15,
-            '#autocomplete_path' => "admin/tripal/chado/tripal_db/dbxref/auto_name/$db_id",
-            '#ajax' => array(
-              'callback' => "tripal_fields_primary_dbxref_widget_form_ajax_callback",
-              'wrapper' => "$field_name-dbxref--db-id",
-              'effect' => 'fade',
-              'method' => 'replace'
-            )
-          ),
-          'dbxref__version' => array(
-            '#type' => 'textfield',
-            '#title' => t('Version'),
-            '#default_value' => $version,
-            '#maxlength' => array_key_exists('length', $schema['fields']['version']) ? $schema['fields']['version']['length'] : 255,
-            '#size' => 5,
-          ),
-          'dbxref__description' => array(
-            '#type' => 'textfield',
-            '#title' => t('Description'),
-            '#default_value' => $description,
-            '#size' => 20,
-          ),
-        ),
-        '#prefix' => "<span id='$field_name-dbxref--db-id'>",
-        '#suffix' => "</span>"
-      );
+      // Make sure the include files get parsed now and for the form submits.
+      form_load_include($form_state, 'inc', 'tripal_fields', 'includes/fields/primary_dbxref');
+      module_load_include('inc', 'tripal_fields', 'includes/fields/primary_dbxref');
+      // Update the widget with the new field.
+      tripal_fields_primary_dbxref_widget($field_name, $widget, $form,
+        $form_state, $field, $instance, $langcode, $items, $delta, $element);
       $element['value'] = $widget;
       break;
     case 'tripal_fields_md5checksum_checkbox_widget':
-      $widget += array(
-        '#type' => 'checkbox',
-        '#title' => $element['#title'],
-        '#description' => $element['#description'],
-        '#options' => array(0, 1),
-        '#default_value' => 1,
-        '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-        '#delta' => $delta,
-        '#element_validate' => array('tripal_fields_md5checksum_checkbox_widget_validate'),
-      );
+      form_load_include($form_state, 'inc', 'tripal_fields', 'includes/tripal_fields/fields/md5checksum');
+      module_load_include('inc', 'tripal_fields', 'includes/tripal_fields/fields/md5checksum');
+      tripal_fields_md5checksum_checkbox_widget($field_name, $widget,
+          $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
       $element['value'] = $widget;
       break;
     case 'tripal_fields_residues_textarea_widget':
@@ -440,45 +351,7 @@ function tripal_fields_organism_select_widget_validate($element, &$form_state) {
     form_error($element, t("Please specify an organism that already exists in the database."));
   }
 }
-/**
- * Callback function for validating the tripal_fields_organism_select_widget.
- */
-function tripal_fields_primary_dbxref_widget_validate($element, &$form_state) {
-  $field_name = $element['#field_name'];
 
-  // If the form ID is field_ui_field_edit_form, then the user is editing the
-  // field's values in the manage fields form of Drupal.  We don't want
-  // to validate it as if it were being used in a data entry form.
-  if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
-    return;
-  }
-
-  // Get the field values.
-  $db_id = tripal_fields_get_field_form_values($field_name, $form_state, "dbxref__db_id");
-  $accession = tripal_fields_get_field_form_values($field_name, $form_state, "dbxref__accession");
-  $version = tripal_fields_get_field_form_values($field_name, $form_state, "dbxref__version");
-  $description = tripal_fields_get_field_form_values($field_name, $form_state, "dbxref__description");
-
-  // Make sure that if a database ID is provided that an accession is also
-  // provided.  Here we use the form_set_error function rather than the
-  // form_error function because the form_error will add a red_highlight
-  // around all of the fields in the fieldset which is confusing as it's not
-  // clear to the user what field is required and which isn't. Therefore,
-  // we borrow the code from the 'form_error' function and append the field
-  // so that the proper field is highlighted on error.
-  if (count($db_id) == 0 and count($accession) > 0) {
-    form_set_error(implode('][', $element ['#parents']) . '][0][dbxref__db_id', t("A database and the accession must both be provided for the primary cross reference."));
-  }
-  if (count($db_id) > 0 and count($accession) == 0) {
-    form_set_error(implode('][', $element ['#parents']) . '][0][dbxref__accession', t("A database and the accession must both be provided for the primary cross reference."));
-  }
-
-  // If user did not select a database, we want to remove dbxref_id from the
-  // field.
-  if (count($db_id) == 0) {
-    tripal_fields_set_field_form_values($field_name, $form_state, '__NULL__', $field_name);
-  }
-}
 /**
  * Callback function for validating the tripal_fields_kvproperty_widget.
  */
@@ -486,22 +359,7 @@ function tripal_fields_kvproperty_widget_validate($element, &$form_state) {
   // Add the new field to the entity
   $form_state['rebuild'] = TRUE;
 }
-/**
- * Callback function for validating the tripal_fields_md5checksum_checkbox_widget.
- */
-function tripal_fields_md5checksum_checkbox_widget_validate($element, &$form_state) {
-  $field_name = $element['#field_name'];
 
-  // Calculate the md5 checksum for the sequence only if md5 box is checked and the residues exist
-  $residues = tripal_fields_get_field_form_values('feature__residues', $form_state);
-  if (count($residues) > 0 && trim($residues[0]) != '') {
-    tripal_fields_set_field_form_values ($field_name, $form_state, md5($residues[0]));
-  }
-  else {
-    // Otherwise, remove the md5 value
-    tripal_fields_set_field_form_values ($field_name, $form_state, '__NULL__');
-  }
-}
 
 /**
  * Callback function for validating the tripal_fields_residues_textarea_widget.
@@ -605,23 +463,3 @@ function tripal_fields_set_field_form_values($field_name, &$form_state, $newvalu
   return $values;
 }
 
-/**
- * An Ajax callback for the tripal_fields_admin_publish_form..
- */
-function tripal_fields_primary_dbxref_widget_form_ajax_callback($form, $form_state) {
-  $field_name = $form_state['triggering_element']['#parents'][0];
-  $db_id = tripal_fields_get_field_form_values($field_name, $form_state, 'dbxref__db_id');
-  $accession = tripal_fields_get_field_form_values($field_name, $form_state, 'dbxref__accession');
-  if (count($db_id) > 0 and count($accession) > 0) {
-    $values = array(
-      'db_id' => $db_id[0],
-      'accession' => $accession[0],
-    );
-    $options = array('is_duplicate' => TRUE);
-    $has_duplicate = chado_select_record('dbxref', array('*'), $values, $options);
-    if (!$has_duplicate) {
-      drupal_set_message('The selected cross reference is new and will be added for future auto completions.');
-    }
-  }
-  return $form[$field_name];
-}
