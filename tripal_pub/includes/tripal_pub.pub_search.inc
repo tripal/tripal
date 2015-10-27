@@ -386,7 +386,7 @@ function tripal_pub_search_form_ajax_button_validate() {
  * @ingroup tripal_pub
  */
 function tripal_pub_search_form_validate($form, &$form_state) {
-  $num_criteria = $form_state['values']['num_criteria'];
+  $num_criteria = $form_state['storage']['num_criteria'];
   $from_year    = $form_state['values']['from_year'];
   $to_year      = $form_state['values']['to_year'];
   $op           = $form_state['values']['op'];
@@ -416,7 +416,7 @@ function tripal_pub_search_form_validate($form, &$form_state) {
  * @ingroup tripal_pub
  */
 function tripal_pub_search_form_submit($form, &$form_state) {
-  $num_criteria = $form_state['values']['num_criteria'];
+  $num_criteria = $form_state['storage']['num_criteria'];
   $from_year    = $form_state['values']['from_year'];
   $to_year      = $form_state['values']['to_year'];
   $op           = $form_state['values']['op'];
