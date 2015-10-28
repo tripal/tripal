@@ -53,6 +53,15 @@ function tripal_entities_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 2
   );
+  $items['admin/tripal/bio_data/publish/%'] = array(
+    'title' => 'Publish',
+    'description' => 'Publish Data',
+    'page callback' => 'tripal_entities_publish',
+    'page arguments' => array(4),
+    'access arguments' => array('administer tripal data types'),
+    'file' =>  'includes/tripal_entities.admin.inc',
+    'type' => MENU_CALLBACK,
+  );
 
   $items['admin/tripal/bio_data/access'] = array(
     'title' => 'Access',
@@ -96,6 +105,10 @@ function tripal_entities_theme($existing, $type, $theme, $path) {
       'render element' => 'elements',
       'template' => 'tripal_entity',
       'path' => "$path/theme/templates"
+    ),
+    'tripal_entities_date_combo' => array(
+      'render element' => 'element',
+      'file' => 'includes/tripal_entities.chado_entity.inc',
     ),
   );
 }

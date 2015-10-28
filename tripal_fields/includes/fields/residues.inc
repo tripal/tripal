@@ -37,9 +37,10 @@ function tripal_fields_residues_textarea_formatter(&$element, $entity_type, $ent
  * @param unknown $delta
  * @param unknown $element
  */
-function tripal_fields_residues_textarea_widget($field_name, &$widget,
-  &$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function tripal_fields_residues_textarea_widget($form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
+  $field_name = $field['field_name'];
+  $widget = $element;
   $widget += array(
     '#type' => 'textarea',
     '#title' => $element['#title'],
@@ -49,7 +50,8 @@ function tripal_fields_residues_textarea_widget($field_name, &$widget,
     '#delta' => $delta,
     '#element_validate' => array('tripal_fields_residues_textarea_widget_validate'),
   );
-  $element['value'] = $widget;
+   return $widget;
+
 }
 /**
  * Callback function for validating the tripal_fields_residues_textarea_widget.

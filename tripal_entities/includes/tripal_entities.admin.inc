@@ -63,8 +63,9 @@ function tripal_entities_content_view() {
 
 }
 
-function tripal_entities_publish() {
-  $form = drupal_get_form('tripal_entities_entity_form');
+function tripal_entities_publish($term_name = '') {
+
+  $form = drupal_get_form('tripal_entities_entity_form', $term_name);
   $output = drupal_render($form);
 
   // set the breadcrumb

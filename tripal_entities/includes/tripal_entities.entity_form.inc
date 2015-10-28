@@ -3,11 +3,9 @@
 /**
  *
  */
-function tripal_entities_entity_form($form, &$form_state, $entity = NULL) {
-
+function tripal_entities_entity_form($form, &$form_state, $term_name = '', $entity = NULL) {
   // Set the defaults.
   $cv_id = NULL;
-  $term_name = NULL;
   $cvterm = NULL;
   $do_sync = 0;
   $terms = array();
@@ -30,6 +28,24 @@ function tripal_entities_entity_form($form, &$form_state, $entity = NULL) {
       array_key_exists('terms', $form_state['storage'])) {
     $terms = $form_state['storage']['terms'];
     $num_terms = count($terms);
+  }
+  // If we have a term name but the $form_state['storage']['terms'] isn't set
+  // then the term_name is being passed in, and we should try to get the
+  // terms.
+  else if ($term_name) {
+    $match = array(
+      'name' => $term_name,
+    );
+    $terms = chado_generate_var('cvterm', $match, array('return_array' => TRUE));
+    $form_state['storage']['terms'] = $terms;
+    $num_terms = count($terms);
+
+    // Make sure the term is set as published.
+    if ($num_terms == 1) {
+      tripal_entities_add_term_usage($terms[0], $form_state);
+    }
+    $einfo = entity_get_info($terms[0]->dbxref_id->db_id->name);
+    tripal_entities_add_bundle($terms[0]);
   }
   if (array_key_exists('values', $form_state) and
       array_key_exists('term_name', $form_state['values'])) {
@@ -63,6 +79,7 @@ function tripal_entities_entity_form($form, &$form_state, $entity = NULL) {
       );
     }
   }
+
 
   // If the term belongs to more than one vocabulary then add additional fields
   // to let the user select the vocabulary.
@@ -118,7 +135,7 @@ function tripal_entities_entity_form($form, &$form_state, $entity = NULL) {
     );
     $form['details'] = array(
       '#type' => 'item',
-      '#title' => 'Data Type',
+      '#title' => 'Record Type',
       '#markup' => '(' . $cvterm->cv_id->name . ') ' . $cvterm->name,
       '#weight' => -1000,
     );
@@ -129,10 +146,13 @@ function tripal_entities_entity_form($form, &$form_state, $entity = NULL) {
     else {
       tripal_entities_entity_form_add_sync($bundle_id, $cvterm, $form, $form_state, $entity);
     }
+
+    // Add a prefix and a suffix around this form so that fields may
+    // replace the entire form on an ajax call if they want.
+    $form['#prefix'] = "<div id='$bundle_id-entity-form'>";
+    $form['#suffix'] = "</div>";
   }
 
-  $form['#prefix'] = '<div id="tripal-entities-entity-form">';
-  $form['#suffix'] = '</div>';
   return $form;
 }
 /**
@@ -150,7 +170,7 @@ function tripal_entities_entity_form_add_sync($bundle_id, $cvterm, &$form, &$for
 function tripal_entities_entity_form_add_new($bundle_id, $cvterm, &$form, &$form_state, $entity) {
 
   // Add a vertical tabs element
-  $form['entity_vetical_tabs'] = array(
+  $form['ev_tabs'] = array(
     '#type' => 'vertical_tabs',
     '#weight' => 999,
   );
@@ -162,7 +182,7 @@ function tripal_entities_entity_form_add_new($bundle_id, $cvterm, &$form, &$form
 
     $form['add_button'] = array(
       '#type' => 'submit',
-      '#value' => t('Add a new ' .$cvterm->name),
+      '#value' => t('Save'),
       '#name' => 'add_data',
       '#weight' => 1000
     );
@@ -190,6 +210,8 @@ function tripal_entities_entity_form_add_new($bundle_id, $cvterm, &$form, &$form
   // The entity object must be added to the $form_state in order for
   // the Entity API to work. It must have a key of the entity name.
   $form_state[$cvterm->dbxref_id->db_id->name] = $entity;
+
+
 }
 /**
  * An Ajax callback for the tripal_entities_entity_form.
@@ -522,7 +544,7 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
 
   // Check to see if there are any kv-property tables associated to this
   // base table. If so, add the fields for that type of table.
-  tripal_entities_add_bundle_kv_property_fields($entity_type_name, $bundle_name, 'featureprop');
+  tripal_entities_add_bundle_kvproperty_adder_field($entity_type_name, $bundle_name, 'featureprop');
 }
 
 /**
@@ -532,14 +554,14 @@ function tripal_entities_add_bundle_fields($entity_type_name, $bundle_name, $cvt
  * @param $bundle_name
  * @param $kv_table
  */
-function tripal_entities_add_bundle_kv_property_fields($entity_type_name, $bundle_name, $kv_table) {
+function tripal_entities_add_bundle_kvproperty_adder_field($entity_type_name, $bundle_name, $kv_table) {
   // First add a generic property field so that users can add new proeprty types.
   $field_name = $kv_table;
 
   // Initialize the field array.
   $field_info = array(
-    'field_type' => 'kvproperty',
-    'widget_type' => 'tripal_fields_kvproperty_widget',
+    'field_type' => 'kvproperty_adder',
+    'widget_type' => 'tripal_fields_kvproperty_adder_widget',
     'field_settings' => array(),
     'widget_settings' => array('display_label' => 1),
     'description' => '',
@@ -548,7 +570,7 @@ function tripal_entities_add_bundle_kv_property_fields($entity_type_name, $bundl
     'chado_column' => '',
     'is_required' => 0,
   );
-  tripal_entities_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
+  tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
 }
 /**
  * Adds the fields for the base table to the entity.
@@ -623,7 +645,7 @@ function tripal_entities_add_bundle_base_fields($entity_type_name, $bundle_name,
       }
 
       // Add the field to the bundle.
-      tripal_entities_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
+      tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
     }
   }
 }
@@ -698,6 +720,7 @@ function tripal_entities_get_table_column_field_default($table_name, $schema, $c
       $field_info['widget_type'] = 'date_select';
       $field_info['widget_settings']['increment'] = 1;
       $field_info['widget_settings']['tz_handling'] = 'none';
+      $field_info['widget_settings']['collapsible'] = TRUE;
 
       // TODO: Add settings so that the minutes increment by 1.
       // And turn off the timezone, as the Chado field doesn't support it.
@@ -705,59 +728,4 @@ function tripal_entities_get_table_column_field_default($table_name, $schema, $c
   }
 
   return $field_info;
-}
-/**
- * Adds a field to a bundle.
- *
- * @param $field_name
- *   The name of the field.
- * @param $field_info
- *   An associative array containing the field information.
- */
-function tripal_entities_add_bundle_field($field_name, $field_info,
-    $entity_type_name, $bundle_name) {
-
-  $field = field_info_field($field_name);
-
-  // If the field exists and is attached to this bundle then just return,
-  // there is nothing left to do.
-  if ($field and array_key_exists('bundles', $field) and
-      array_key_exists($entity_type_name, $field['bundles']) and
-      in_array($bundle_name, $field['bundles'][$entity_type_name])) {
-    return;
-  }
-
-  // Allow other modules to alter the field information array.
-  drupal_alter('chado_field', $field_info);
-
-  // If the field doesn't exist then create it.
-  if (!$field) {
-    $field = array(
-      'field_name' => $field_name,
-      'type' => $field_info['field_type'],
-      'cardinality' => 1,
-      'locked' => FALSE,
-      'storage' => array(
-        'type' => 'field_chado_storage'
-      ),
-      'settings' => $field_info['field_settings'],
-    );
-    field_create_field($field);
-  }
-
-  // Attach the field to the bundle.
-  $field_instance = array(
-    'field_name' => $field_name,
-    'label' => $field_info['label'],
-    'description' => $field_info['description'],
-    'widget' => array(
-      'type' => $field_info['widget_type'],
-      'settings' => $field_info['widget_settings'],
-    ),
-    'entity_type' => $entity_type_name,
-    'required' => $field_info['is_required'],
-    'settings' => $field_info['field_settings'],
-    'bundle' => $bundle_name,
-  );
-  field_create_instance($field_instance);
 }

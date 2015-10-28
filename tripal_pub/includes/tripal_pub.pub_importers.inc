@@ -300,11 +300,11 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
   }
 
   if (array_key_exists('triggering_element', $form_state) and
-  $form_state['triggering_element']['#name'] == 'add') {
+      $form_state['triggering_element']['#name'] == 'add') {
     $num_criteria++;
   }
   if (array_key_exists('triggering_element', $form_state) and
-  $form_state['triggering_element']['#name'] == 'remove') {
+      $form_state['triggering_element']['#name'] == 'remove') {
     $num_criteria--;
   }
 

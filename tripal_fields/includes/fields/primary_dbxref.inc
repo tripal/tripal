@@ -41,8 +41,10 @@ function tripal_fields_primary_dbxref_formatter(&$element, $entity_type, $entity
  * @param unknown $delta
  * @param unknown $element
  */
-function tripal_fields_primary_dbxref_widget($field_name, &$widget,
-  &$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function tripal_fields_primary_dbxref_widget($form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
+
+  $widget = $element;
+  $field_name = $field['field_name'];
 
   // Get the field defaults from the database if a record exists.
   $dbxref_id = '';
@@ -65,7 +67,7 @@ function tripal_fields_primary_dbxref_widget($field_name, &$widget,
 
   $schema = chado_get_schema('dbxref');
   $options = tripal_get_db_select_options();
-  $widget += array(
+  $widget +=  array(
     '#element_validate' => array('tripal_fields_primary_dbxref_widget_validate'),
     '#type' => 'fieldset',
     '#title' => $element['#title'],
@@ -73,7 +75,9 @@ function tripal_fields_primary_dbxref_widget($field_name, &$widget,
     '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
     '#delta' => $delta,
     '#theme' => 'tripal_fields_primary_dbxref_widget',
-#    '#group' => 'entity_vetical_tabs',
+    '#group' => 'entity_vetical_tabs',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
     array(
       $element['#field_name'] => array(
         '#type' => 'hidden',
@@ -124,6 +128,7 @@ function tripal_fields_primary_dbxref_widget($field_name, &$widget,
     '#prefix' => "<span id='$field_name-dbxref--db-id'>",
     '#suffix' => "</span>"
   );
+  return $widget;
 }
 /**
  * An Ajax callback for the tripal_fields_admin_publish_form..

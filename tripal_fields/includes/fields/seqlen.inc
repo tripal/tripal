@@ -36,10 +36,11 @@ function tripal_fields_seqlen_hidden_formatter(&$element, $entity_type, $entity,
  * @param unknown $delta
  * @param unknown $element
  */
-function tripal_fields_seqlen_hidden_widget($field_name, &$widget,
-  &$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function tripal_fields_seqlen_hidden_widget($form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
-  $widget += array(
+  $field_name = $field['field_name'];
+  $widget = $element;
+  $widget +=  array(
     '#type' => 'hidden',
     '#title' => $element['#title'],
     '#description' => $element['#description'],
@@ -47,7 +48,7 @@ function tripal_fields_seqlen_hidden_widget($field_name, &$widget,
     '#delta' => $delta,
     '#element_validate' => array('tripal_fields_seqlen_hidden_widget_validate'),
   );
-  $element['value'] = $widget;
+  return $widget;
 }
 /**
  * Callback function for validating the tripal_fields_seqlen_hidden_widget.
@@ -65,6 +66,6 @@ function tripal_fields_seqlen_hidden_widget_validate($element, &$form_state) {
   }
   else {
     // Otherwise, remove the md5 value
-    tripal_fields_set_field_form_values ($field_name, $form_state, '__NULL__');
+    tripal_fields_set_field_form_values($field_name, $form_state, '__NULL__');
   }
 }

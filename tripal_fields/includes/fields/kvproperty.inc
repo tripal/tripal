@@ -30,37 +30,65 @@ function tripal_fields_kvproperty_formatter(&$element, $entity_type, $entity, $f
  * @param unknown $delta
  * @param unknown $element
  */
-function tripal_fields_kvproperty_widget($field_name, &$widget,
-  &$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function tripal_fields_kvproperty_widget($form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
-  $widget += array(
+  $field_name = $field['field_name'];
+  $widget = array();
+  $element += array(
     '#element_validate' => array('tripal_fields_kvproperty_widget_validate'),
-    '#type' => 'fieldset',
-    '#title' => $element['#title'],
-    '#description' =>  $element['#description'],
-    '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
+    '#type' => 'textfield',
     '#delta' => $delta,
-    '#group' => 'entity_vetical_tabs',
-    array(
-      'kvproperty' => array(
-        '#title' => t('Property Type'),
-        '#type' => 'textfield',
-        '#description' => t("Please enter the type of property that you want to add.  As you type, suggestions will be provided."),
-        '#autocomplete_path' => "eadmin/tripal/chado/tripal_cv/cvterm/auto_name/",
-      ),
-      'kvproperty_add' => array(
-        '#value' => t('Add fields for property type'),
-        '#type' => 'button',
-        '#name' => 'kvproperty_add',
-      ),
-    ),
   );
+
+  if ($field['cardinality'] == 1) {
+    $element['#default_value'] = !empty($items) ? $items[0] : '';
+    $widget = array($element);
+  }
+  else {
+    foreach ($items as $item) {
+      $widget[$delta] = $element;
+      $widget[$delta]['#default_value'] = $item;
+      $widget[$delta]['#weight'] = $delta;
+      $delta++;
+    }
+  }
+  // Add one more row if delta is less than the cardinality.
+  if ($field['cardinality'] == FIELD_CARDINALITY_UNLIMITED || $delta < $field['cardinality']){
+    $widget[$delta] = $element;
+    $widget[$delta]['#default_value'] = '';
+    $widget[$delta]['#weight'] = $delta;
+    $widget[$delta]['#required'] = ($element['#required'] && $delta == 0);
+  }
+
+  // The group of elements all-together need some extra functionality
+  // after building up the full list (like draggable table rows).
+  $widget['#theme'] = 'field_multiple_value_form';
+  $widget['#title'] = $element['#title'];
+  $widget['#description'] = $element['#description'];
+  $widget['#field_name'] = $element['#field_name'];
+  $widget['#language'] = $element['#language'];
+  $widget['#weight'] = isset($element['#weight']) ? $element['#weight'] : 0;
+  $widget['#cardinality'] = 1;
+  return $widget;
 }
 
+/**
+ *
+ * @param unknown $form
+ * @param unknown $form_state
+ */
+function tripal_fields_kvproperty_widget_form_ajax_callback($form, $form_state) {
+  $field_name = $form_state['triggering_element']['#parents'][0];
+  return $form[$field_name];
+}
 /**
  * Callback function for validating the tripal_fields_kvproperty_widget.
  */
 function tripal_fields_kvproperty_widget_validate($element, &$form_state) {
-  // Add the new field to the entity
-  //$form_state['rebuild'] = TRUE;
+   $field_name = $element['#field_name'];
+}
+/**
+ * Callback function for submitting the tripal_fields_kvproperty_widget.
+ */
+function tripal_fields_kvproperty_widget_submit($element, &$form_state) {
 }

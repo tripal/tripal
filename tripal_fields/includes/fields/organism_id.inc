@@ -35,10 +35,10 @@ function tripal_fields_organism_select_formatter(&$element, $entity_type, $entit
  * @param unknown $delta
  * @param unknown $element
  */
-function tripal_fields_organism_select_widget($field_name, &$widget,
-  &$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
-
+function tripal_fields_organism_select_widget($form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  $field_name = $field['field_name'];
   $options = tripal_get_organism_select_options();
+  $widget = $element;
   $widget += array(
     '#type' => 'select',
     '#title' => $element['#title'],
@@ -50,13 +50,14 @@ function tripal_fields_organism_select_widget($field_name, &$widget,
     '#delta' => $delta,
     '#element_validate' => array('tripal_fields_organism_select_widget_validate'),
   );
-  $element['value'] = $widget;
+  return $widget;
 }
 
 /**
  * Callback function for validating the tripal_fields_organism_select_widget.
  */
 function tripal_fields_organism_select_widget_validate($element, &$form_state) {
+  //dpm($element);
   $field_name = $element['#field_name'];
 
   // If the form ID is field_ui_field_edit_form, then the user is editing the
@@ -68,6 +69,6 @@ function tripal_fields_organism_select_widget_validate($element, &$form_state) {
   $organism_id = tripal_fields_get_field_form_values($field_name, $form_state);
 
   if (count($organism_id) == 0) {
-    form_error($element, t("Please specify an organism that already exists in the database."));
+    form_error($element, t("Please specify an organism."));
   }
 }
