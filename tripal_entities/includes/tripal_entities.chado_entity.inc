@@ -75,6 +75,7 @@ function tripal_entities_field_widget_form_alter(&$element, &$form_state, $conte
   if (array_key_exists('#field_name', $element)) {
     $field_name = $element['#field_name'];
     $matches = array();
+
     if (preg_match('/(.+?)__(.+?)$/', $field_name, $matches)) {
       $tablename = $matches[1];
       $colname = $matches[2];
@@ -91,7 +92,7 @@ function tripal_entities_field_widget_form_alter(&$element, &$form_state, $conte
       // We want the date combo fieldset to be collaspible so we will
       // add our own theme_wrapper to replace the one added by the date
       // module.
-      if ($schema['fields'][$colname]['type'] == 'datetime') {
+      if (array_key_exists($colname, $schema['fields']) and $schema['fields'][$colname]['type'] == 'datetime') {
         $element['#theme_wrappers'] = array('tripal_entities_date_combo');
       }
     }
@@ -140,7 +141,11 @@ function tripal_entities_chado_field_alter(&$field) {
     $field['field_type'] = 'dbxref_id';
     $field['widget_type'] = 'tripal_fields_primary_dbxref_widget';
     $field['label'] = 'Primary Cross Reference';;
-    $field['description'] = 'This record can be cross-referenced with a record in another online database. This field is intended for the most prominent reference.  At a minimum, the database and accession must be provided.';
+    $field['description'] = 'This record can be cross-referenced with a
+        record in another online database. The primary reference is for the
+        most prominent reference.  At a minimum, the database and accession
+        must be provided.  To remove a set reference, change the database
+        field to "Select a Database".';
   }
   else if ($field['chado_table'] == 'feature' and
     $field['chado_column'] == 'md5checksum') {

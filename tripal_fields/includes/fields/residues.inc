@@ -15,7 +15,7 @@ function tripal_fields_residues_textarea_formatter(&$element, $entity_type, $ent
 
   foreach ($items as $delta => $item) {
     $residues = key_exists('value', $item) ? $item['value'] : '';
-    $content = '<pre>' . $residues . '</pre>';
+    $content = '<pre class="residues-formatter">' . $residues . '</pre>';
     $element[$delta] = array(
       // We create a render array to produce the desired markup,
       '#type' => 'markup',

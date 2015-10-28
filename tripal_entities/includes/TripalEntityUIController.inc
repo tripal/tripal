@@ -81,12 +81,25 @@ class TripalEntityUIController extends EntityDefaultUIController {
     $items['data/' . $wildcard . '/edit'] = array(
       'title' => 'Edit',
       'page callback' => 'drupal_get_form',
-      'page arguments' => array('tripal_entities_entity_form', 1),
+      'page arguments' => array('tripal_entities_entity_form', NULL, 1),
       'access callback' => 'tripal_entities_entity_access',
       'access arguments' => array('edit', 1),
       'file' =>  'includes/tripal_entities.entity_form.inc',
       'file path' => drupal_get_path('module', 'tripal_entities'),
       'type' => MENU_LOCAL_TASK,
+      'weight' => -8,
+    );
+
+    $items['data/' . $wildcard . '/manage'] = array(
+      'title' => 'Manage',
+      'page callback' => 'tripal_entity_manage_fields',
+      'page arguments' => array(1),
+      'access callback' => 'tripal_entities_entity_access',
+      'access arguments' => array('manage', 1),
+      'file' =>  'includes/TripalEntityUIController.inc',
+      'file path' => drupal_get_path('module', 'tripal_entities'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => -6,
     );
 
     // Menu item for deleting tripal data entities.
@@ -103,4 +116,13 @@ class TripalEntityUIController extends EntityDefaultUIController {
     );
     return $items;
   }
+}
+
+/**
+ *
+ * @param unknown $entity
+ */
+function tripal_entity_manage_fields($entity) {
+  drupal_goto('admin/structure/bio_data/' . $entity->type . '/manage/' . $entity->bundle . '/fields');
+  return '';
 }

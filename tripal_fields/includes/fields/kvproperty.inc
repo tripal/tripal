@@ -13,8 +13,13 @@
 function tripal_fields_kvproperty_formatter(&$element, $entity_type, $entity, $field,
   $instance, $langcode, $items, $display) {
 
+  $content = '';
   foreach ($items as $delta => $item) {
-    // Do nothing, this field is only meant for the form.
+    $content =  key_exists('value', $item) ? $item['value'] : '';
+    $element[$delta] = array(
+      '#type' => 'markup',
+      '#markup' => $content,
+    );
   }
 }
 /**

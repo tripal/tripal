@@ -4,8 +4,21 @@
    float: left;
    margin-right: 10px;
 }
+.primary-dbxref-widget-links {
+   clear: both;
+}
 
 .kvproperty-adder-widget-item {
    float: left;
    margin-right: 10px;
+}
+
+.residues-formatter {
+   border: 1px solid #dddddd;
+   color: #000000;
+   height: 300px;
+   max-width: 500px;
+   overflow: scroll;
+   white-space: normal;
+   background-color: white;
 }

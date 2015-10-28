@@ -19,7 +19,7 @@ function tripal_fields_primary_dbxref_formatter(&$element, $entity_type, $entity
       $dbxref = chado_generate_var('dbxref', array('dbxref_id' => $item['value']));
       $accession = $dbxref->db_id->name . ':' . $dbxref->accession;
       if ($dbxref->db_id->urlprefix) {
-        $accession = l($accession, $dbxref->db_id->urlprefix . '/' . $dbxref->accession);
+        $accession = l($accession, $dbxref->db_id->urlprefix . '/' . $dbxref->accession, array('attributes' => array('target' => '_blank')));
       }
     }
     $element[$delta] = array(
@@ -64,6 +64,14 @@ function tripal_fields_primary_dbxref_widget($form, $form_state, $field, $instan
   if (count($temp) > 0) {
     $db_id = $temp[0];
   }
+  // If we are here because our parent was triggered in a form submit
+  // then that means an ajax call was made and we don't want the fieldset to
+  // be closed when it returns from the ajax call.
+  $collapsed = TRUE;
+  if (array_key_exists('triggering_element', $form_state) and
+      $form_state['triggering_element']['#parents'][0] == $field_name) {
+    $collapsed = FALSE;
+  }
 
   $schema = chado_get_schema('dbxref');
   $options = tripal_get_db_select_options();
@@ -77,7 +85,7 @@ function tripal_fields_primary_dbxref_widget($form, $form_state, $field, $instan
     '#theme' => 'tripal_fields_primary_dbxref_widget',
     '#group' => 'entity_vetical_tabs',
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+    '#collapsed' => $collapsed,
     array(
       $element['#field_name'] => array(
         '#type' => 'hidden',
@@ -124,6 +132,10 @@ function tripal_fields_primary_dbxref_widget($form, $form_state, $field, $instan
         '#default_value' => $description,
         '#size' => 20,
       ),
+      'links' => array(
+        '#type' => 'item',
+        '#markup' => l('Add a new database', 'admin/tripal/chado/tripal_db/add', array('attrbutes', array('target' => '_blank')))
+      )
     ),
     '#prefix' => "<span id='$field_name-dbxref--db-id'>",
     '#suffix' => "</span>"
@@ -148,6 +160,7 @@ function tripal_fields_primary_dbxref_widget_form_ajax_callback($form, $form_sta
       drupal_set_message('The selected cross reference is new and will be added for future auto completions.');
     }
   }
+
   return $form[$field_name];
 }
 
@@ -211,6 +224,7 @@ function theme_tripal_fields_primary_dbxref_widget($variables) {
       <div class=\"primary-dbxref-widget-item\">" .
       drupal_render($element[0]['dbxref__description']) . "
       </div>
+      <div class=\"primary-dbxref-widget-links\">" . drupal_render($element[0]['links']) . "</div>
     </div>
   ";
       return $layout;
