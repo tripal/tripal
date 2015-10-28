@@ -124,13 +124,10 @@ function theme_tripal_entities_date_combo($variables) {
  *
  */
 function tripal_entities_chado_field_alter(&$field) {
-dpm($field);
   // If the field doesn't list the Chado table or column then just return.
   if (!array_key_exists('chado_table', $field) or !array_key_exists('chado_column', $field)) {
     return;
   }
-
-
   // Here we provide new field types and widgets for FK fields
   // and fields that need special attention.
   if ($field['chado_column'] =='organism_id') {
