@@ -109,7 +109,10 @@ function tripal_fields_kvproperty_adder_widget_validate($element, &$form_state) 
        $field_info = array(
          'field_type' => 'kvproperty',
          'widget_type' => 'tripal_fields_kvproperty_widget',
-         'field_settings' => array(),
+         'field_settings' => array(
+           'chado_table' => $field_name,
+           'chado_column' => 'type_id',
+         ),
          'widget_settings' => array(),
          'description' => $term[0]->definition ? $term[0]->definition : '',
          'label' => ucfirst(preg_replace('/_/', ' ', $term[0]->name)),

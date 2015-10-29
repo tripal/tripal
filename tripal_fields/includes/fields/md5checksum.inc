@@ -65,3 +65,20 @@ function tripal_fields_md5checksum_checkbox_widget_validate($element, &$form_sta
     tripal_fields_set_field_form_values($field_name, $form_state, '__NULL__');
   }
 }
+
+/**
+ * Loads the field values with appropriate data.
+ *
+ * This function is called by the tripal_fields_field_storage_load() for
+ * each property managed by the field_chado_storage storage type.
+ *
+ * @param $field
+ * @param $entity
+ * @param $record
+ */
+function tripal_fields_md5checksum_field_load($field, $entity, $record) {
+  $field_name = $field['field_name'];
+  if ($record and property_exists($record, 'md5checksum')) {
+    $entity->{$field_name}['und'][] = array('value' => $record->md5checksum);
+  }
+}

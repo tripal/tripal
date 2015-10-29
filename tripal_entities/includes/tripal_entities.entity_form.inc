@@ -560,10 +560,7 @@ function tripal_entities_add_bundle_kvproperty_adder_field($entity_type_name, $b
   $field_info = array(
     'field_type' => 'kvproperty_adder',
     'widget_type' => 'tripal_fields_kvproperty_adder_widget',
-    'field_settings' => array(
-      'chado_table' => $kv_table . '_adder',
-      'chado_column' => '',
-    ),
+    'field_settings' => array(),
     'widget_settings' => array('display_label' => 1),
     'description' => '',
     'label' => 'Additional Properties',

@@ -247,7 +247,9 @@ function tripal_fields_field_storage_write_recursive($entity_type, $entity,
  * Responsible for loading the fields from the Chado database and adding
  * their values to the entity.
  */
-function tripal_fields_field_storage_load($entity_type, $entities, $age, $fields, $options) {
+function tripal_fields_field_storage_load($entity_type, $entities, $age,
+    $fields, $options) {
+
   $load_current = $age == FIELD_LOAD_CURRENT;
   global $language;
   $langcode = $language->language;
@@ -265,50 +267,77 @@ function tripal_fields_field_storage_load($entity_type, $entities, $age, $fields
       // TODO: what to do if record is missing!
     }
 
-    // Find out which table should receive the insert.
-    $tablename = $details->data_table;
+    // Get some values needed for loading the values from Chado.
+    $base_table = $details->data_table;
     $type_field = $details->field;
-    $schema = chado_get_schema($tablename);
-    $pkey_field = $schema['primary key'][0];
     $record_id = $details->record_id;
 
-    // Iterate through the field names to get the list of tables and fields
-    // that should be queried.
-    $columns = array();
+    // Get this table's schema.
+    $schema = chado_get_schema($base_table);
+    $pkey_field = $schema['primary key'][0];
+
+    // Get the base record if one exists
+    $columns = array('*');
+    $match = array($pkey_field => $record_id);
+    $record = chado_select_record($base_table, $columns, $match);
+    $record = $record[0];
+
+    // Iterate through the entity's fields so we can get the column names
+    // that need to be selected from each of the tables represented.
+    $tables = array();
     foreach ($fields as $field_id => $ids) {
+
       // By the time this hook runs, the relevant field definitions have been
       // populated and cached in FieldInfo, so calling field_info_field_by_id()
       // on each field individually is more efficient than loading all fields in
       // memory upfront with field_info_field_by_ids().
       $field = field_info_field_by_id($field_id);
       $field_name = $field['field_name'];
+      $field_type = $field['type'];
+      $field_module = $field['module'];
 
-      $matches = array();
-      if (preg_match('/^(.*?)__(.*?)$/', $field_name, $matches)) {
-        $table = $matches[1];
-        $field = $matches[2];
-        $columns[$table][] = $field;
+      // Skip fields that don't map to a Chado table (e.g. kvproperty_adder).
+      if (!array_key_exists('settings', $field) or !array_key_exists('chado_table', $field['settings'])) {
+        continue;
       }
-    }
 
-    // Get the record
-    $values = array($pkey_field => $record_id);
-    $record = chado_select_record($tablename, $columns[$tablename], $values);
+      // Get the Chado table and column for this field.
+      $field_table = $field['settings']['chado_table'];
+      $field_column = $field['settings']['chado_column'];
 
-    // Now set the field values
-    foreach ($fields as $field_id => $ids) {
-      $field = field_info_field_by_id($field_id);
-      $field_name = $field['field_name'];
-      $matches = array();
-      if (preg_match('/^(.*?)__(.*?)$/', $field_name, $matches)) {
-        $table = $matches[1];
-        $field = $matches[2];
-        $entity->{$field_name}['und'][] = array('value' => $record[0]->$field);
+      // There are only two types of fields: 1) fields that represent a single
+      // column of the base table, or 2) fields that represent a linked record
+      // in a many-to-one relationship with the base table.
+
+      // Type 1: fields from base tables.
+      if ($field_table == $base_table) {
+        if ($record and property_exists($record, $field_column)) {
+          $entity->{$field_name}['und'][0]['value'] = $record->$field_column;
+        }
+        // Allow the creating module to alter the value if desired.  The
+        // module should do this if the field has any other form elements
+        // that need populationg besides the default value.
+        $load_function = $field_module . '_' . $field_type . '_field_load';
+        module_load_include('inc', $field_module, 'includes/fields/' . $field_type);
+        if (function_exists($load_function)) {
+          $load_function($field, $entity, $record);
+        }
       }
-    }
-  }
+
+      // Type 2: fields for linked records.  These fields will have any number
+      // of form elements that might need populating so we'll offload the
+      // loading of these fields to the field itself.
+      if ($field_table != $base_table) {
+        $load_function = $field_module . '_' . $field_type . '_field_load';
+        module_load_include('inc', $field_module, 'includes/fields/' . $field_type);
+        if (function_exists($load_function)) {
+          $load_function($field, $entity, $record);
+        }
+      }
+
+    } // end: foreach ($fields as $field_id => $ids) {
+  } // end: foreach ($entities as $id => $entity) {
 }
-
 /**
  * Iterates through all of the fields reformats to a key/value array.
  *

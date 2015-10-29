@@ -23,8 +23,8 @@ function tripal_fields_field_info() {
     'dbxref_id' => array(
       'label' => t('Cross-reference'),
       'description' => t('This record can be cross-referenced with a record in another online database. This field is intended for the most prominent reference.  At a minimum, the database and accession must be provided.'),
-      'default_widget' => 'tripal_fields_primary_dbxref_widget',
-      'default_formatter' => 'tripal_fields_primary_dbxref_formatter',
+      'default_widget' => 'tripal_fields_dbxref_id_widget',
+      'default_formatter' => 'tripal_fields_dbxref_id_formatter',
       'settings' => array(),
       'storage' => array(
         'type' => 'field_chado_storage',
@@ -111,7 +111,7 @@ function tripal_fields_field_widget_info() {
       'label' => t('Organism Select'),
       'field types' => array('organism_id')
     ),
-    'tripal_fields_primary_dbxref_widget' => array(
+    'tripal_fields_dbxref_id_widget' => array(
       'label' => t('Cross-reference'),
       'field types' => array('dbxref_id'),
       'description' => t('This record can be cross-referenced with a record in another online database. This field is intended for the most prominent reference.  At a minimum, the database and accession must be provided.'),
@@ -147,7 +147,7 @@ function tripal_fields_field_formatter_info() {
       'label' => t('Organism'),
       'field types' => array('organism_id')
     ),
-    'tripal_fields_primary_dbxref_formatter' => array(
+    'tripal_fields_dbxref_id_formatter' => array(
       'label' => t('Cross-reference'),
       'field types' => array('dbxref_id')
     ),
@@ -173,6 +173,7 @@ function tripal_fields_field_formatter_info() {
     ),
   );
 }
+
 /**
  * Implements hook_field_formatter_view().
  *
@@ -195,9 +196,9 @@ function tripal_fields_field_formatter_view($entity_type, $entity, $field,
           tripal_fields_organism_select_formatter($element, $entity_type, $entity, $field,
               $instance, $langcode, $items, $display);
           break;
-        case 'tripal_fields_primary_dbxref_formatter':
-          module_load_include('inc', 'tripal_fields', 'includes/fields/primary_dbxref');
-          tripal_fields_primary_dbxref_formatter($element, $entity_type, $entity, $field,
+        case 'tripal_fields_dbxref_id_formatter':
+          module_load_include('inc', 'tripal_fields', 'includes/fields/dbxref_id');
+          tripal_fields_dbxref_id_formatter($element, $entity_type, $entity, $field,
               $instance, $langcode, $items, $display);
           break;
         case 'tripal_fields_md5checksum_formatter':
@@ -244,10 +245,10 @@ function tripal_fields_field_widget_form(&$form, &$form_state, $field,
       // Update the widget with the new field.
       tripal_fields_organism_select_widget($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
       break;
-    case 'tripal_fields_primary_dbxref_widget':
-      form_load_include($form_state, 'inc', 'tripal_fields', 'includes/fields/primary_dbxref');
-      module_load_include('inc', 'tripal_fields', 'includes/fields/primary_dbxref');
-      tripal_fields_primary_dbxref_widget($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
+    case 'tripal_fields_dbxref_id_widget':
+      form_load_include($form_state, 'inc', 'tripal_fields', 'includes/fields/dbxref_id');
+      module_load_include('inc', 'tripal_fields', 'includes/fields/dbxref_id');
+      tripal_fields_dbxref_id_widget($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
       break;
     case 'tripal_fields_md5checksum_checkbox_widget':
       form_load_include($form_state, 'inc', 'tripal_fields', 'includes/fields/md5checksum');
@@ -363,13 +364,13 @@ function tripal_fields_set_field_form_values($field_name, &$form_state, $newvalu
  */
 function tripal_fields_theme($existing, $type, $theme, $path) {
   return array(
-    'tripal_fields_primary_dbxref_widget' => array(
+    'tripal_fields_dbxref_id_widget' => array(
       'render element' => 'element',
-      'file' => 'includes/fields/primary_dbxref.inc',
+      'file' => 'includes/fields/dbxref_id.inc',
     ),
     'tripal_fields_kvproperty_addr_widget' => array(
       'render element' => 'element',
-      'file' => 'includes/fields/primary_dbxref.inc',
+      'file' => 'includes/fields/dbxref_id.inc',
     ),
   );
 }

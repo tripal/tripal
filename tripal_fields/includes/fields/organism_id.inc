@@ -36,7 +36,6 @@ function tripal_fields_organism_select_formatter(&$element, $entity_type, $entit
  * @param $element
  */
 function tripal_fields_organism_select_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
-
   $options = tripal_get_organism_select_options(FALSE);
   $widget['value'] = array(
     '#type' => 'select',
@@ -72,3 +71,5 @@ function tripal_fields_organism_select_widget_validate($element, &$form_state) {
     form_error($element, t("Please specify an organism."));
   }
 }
+
+
