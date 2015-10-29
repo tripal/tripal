@@ -367,6 +367,10 @@ function tripal_fields_theme($existing, $type, $theme, $path) {
       'render element' => 'element',
       'file' => 'includes/fields/primary_dbxref.inc',
     ),
+    'tripal_fields_kvproperty_addr_widget' => array(
+      'render element' => 'element',
+      'file' => 'includes/fields/primary_dbxref.inc',
+    ),
   );
 }
 

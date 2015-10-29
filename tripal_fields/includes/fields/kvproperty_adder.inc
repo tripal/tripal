@@ -26,21 +26,16 @@ function tripal_fields_kvproperty_adder_formatter(&$element, $entity_type, $enti
  * @param unknown $field
  * @param unknown $instance
  * @param unknown $langcode
- * @param unknown $items
+ * @param unknown $itemsG
  * @param unknown $delta
  * @param unknown $element
  */
 function tripal_fields_kvproperty_adder_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
-
   // This field has no value field.  Just a fieldset for adding new properties.
+  $widget['#theme'] = 'tripal_fields_kvproperty_addr_widget';
+  $widget['#element_validate'] = array('tripal_fields_kvproperty_adder_widget_validate');
 
-  $widget['kvproperty_adder_fieldset'] = array(
-    '#element_validate' => array('tripal_fields_kvproperty_adder_widget_validate'),
-    '#type' => 'fieldset',
-    '#title' => $element['#title'],
-//    '#group' => 'ev_tabs',
-  );
-  $widget['kvproperty_adder_fieldset']['kvproperty_instructions'] = array(
+  $widget['kvproperty_instructions'] = array(
     '#type' => 'item',
     '#markup' => t('You may add additional properties to this form by
         providing a property name (from a vocabulary) in the field below
@@ -49,13 +44,13 @@ function tripal_fields_kvproperty_adder_widget(&$widget, $form, $form_state, $fi
         In the future, this field will be present for all records
         of this type.'),
   );
-  $widget['kvproperty_adder_fieldset']['kvproperty_adder'] = array(
+  $widget['value'] = array(
     '#title' => t('Property Type'),
     '#type' => 'textfield',
     '#description' => t("Please enter the type of property that you want to add.  As you type, suggestions will be provided."),
     '#autocomplete_path' => "admin/tripal/chado/tripal_cv/cvterm/auto_name/",
   );
-  $widget['kvproperty_adder_fieldset']['kvproperty_adder_link'] = array(
+  $widget['kvproperty_adder_link'] = array(
     '#type' => 'item',
     '#markup' => '<span class="kvproperty-adder-link">' . l('Add a term', 'admin/tripal/chado/tripal_cv/cvterm/add', array('attributes' => array('target' => '_blank'))) . '</span>',
   );
@@ -66,16 +61,32 @@ function tripal_fields_kvproperty_adder_widget(&$widget, $form, $form_state, $fi
   // but we need it or Drupal will run the default validate anyway.
   // we also set #limit_validation_errors to empty so fields that
   // are required that don't have values won't generate warnings.
-  $widget['kvproperty_adder_fieldset']['kvproperty_adder_button'] = array(
+  $widget['kvproperty_adder_button'] = array(
     '#value' => t('Add Property'),
     '#type' => 'submit',
     '#name' => 'kvproperty_adder_button',
-    '#validate' => 'tripal_fields_kvproperty_adder_widget_validate',
-    '#submit' => 'tripal_fields_kvproperty_adder_widget_submit',
+    '#submit' => array('tripal_fields_kvproperty_adder_widget_submit'),
     '#limit_validation_errors' => array(array($field['field_name'])),
   );
 }
+/**
+ * Theme function for the kvproperty_addr_widget.
+ *
+ * @param $variables
+ */
+function theme_tripal_fields_kvproperty_addr_widget($variables) {
+  $element = $variables['element'];
+  $fieldset = array(
+    '#title' => $element['#title'],
+    '#value' => '',
+    '#description' => $element['#description'],
+    '#children' => drupal_render_children($element),
+    '#group' => 'ev_tabs',
+    '#attributes' => array(),
+  );
 
+  return theme('fieldset', array('element' => $fieldset));
+}
 /**
  * Callback function for validating the tripal_fields_kvproperty_adder_widget.
  */
@@ -86,13 +97,12 @@ function tripal_fields_kvproperty_adder_widget_validate($element, &$form_state) 
        $form_state['triggering_element']['#name'] == 'kvproperty_adder_button') {
 
      $form_state['rebuild'] = TRUE;
-
-     $field_name = $element['#field_name'];
-     $entity_type = $element['#entity_type'];
-     $bundle = $element['#bundle'];
+     $field_name = $element['#parents'][0];
+     $entity_type = $element['#entity']->type;
+     $bundle = $element['#entity']->bundle;
 
      // Get the term for the property
-     $kvproperty = tripal_fields_get_field_form_values($field_name, $form_state, 0, 'kvproperty_adder');
+     $kvproperty = tripal_fields_get_field_form_values($field_name, $form_state);
      $term = chado_generate_var('cvterm', array('name' => $kvproperty), $options = array('return_array' => TRUE));
      if (count($term) == 1) {
        $prop_field_name = $field_name . '__' . $term[0]->cvterm_id;
@@ -110,10 +120,10 @@ function tripal_fields_kvproperty_adder_widget_validate($element, &$form_state) 
        tripal_add_bundle_field($prop_field_name, $field_info, $entity_type, $bundle);
      }
      else if (count($term) > 1) {
-       form_set_error(implode('][', $element ['#parents']) . '][kvproperty_adder', t("This term is present in multiple vocabularies. Please select the appropriate one."));
+       form_set_error(implode('][', $element ['#parents']) . '][value', t("This term is present in multiple vocabularies. Please select the appropriate one."));
      }
      else {
-       form_set_error(implode('][', $element ['#parents']) . '][kvproperty_adder', t("Please provide a property type to add."));
+       form_set_error(implode('][', $element ['#parents']) . '][value', t("Please provide a property type to add."));
      }
    }
 }
