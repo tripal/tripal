@@ -34,11 +34,9 @@ function tripal_fields_md5checksum_checkbox_formatter(&$element, $entity_type, $
  * @param unknown $delta
  * @param unknown $element
  */
-function tripal_fields_md5checksum_checkbox_widget($form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function tripal_fields_md5checksum_checkbox_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
-  $field_name = $field['field_name'];
-  $widget = $element;
-  $widget +=  array(
+  $widget['value'] = array(
     '#type' => 'checkbox',
     '#title' => $element['#title'],
     '#description' => $element['#description'],
@@ -48,19 +46,19 @@ function tripal_fields_md5checksum_checkbox_widget($form, $form_state, $field, $
     '#delta' => $delta,
     '#element_validate' => array('tripal_fields_md5checksum_checkbox_widget_validate'),
   );
-  return $widget;
 }
 /**
  * Callback function for validating the tripal_fields_md5checksum_checkbox_widget.
  */
 function tripal_fields_md5checksum_checkbox_widget_validate($element, &$form_state) {
-  $field_name = $element['#field_name'];
+  $field_name = $element['#parents'][0];
 
   // Calculate the md5 checksum for the sequence only if md5 box is checked and
   // the residues exist.
   $residues = tripal_fields_get_field_form_values('feature__residues', $form_state);
-  if (count($residues) > 0 && trim($residues[0]) != '') {
-    tripal_fields_set_field_form_values($field_name, $form_state, md5($residues[0]));
+  if ($residues) {
+    $residues = preg_replace('/\s/', '', $residues);
+    tripal_fields_set_field_form_values($field_name, $form_state, md5($residues));
   }
   else {
     // Otherwise, remove the md5 value

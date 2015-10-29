@@ -1,12 +1,5 @@
 <?php
 
-//$cv = entity_load('trp_vocabulary', array(20, 21, 22));
-//$cvterm = entity_load('trp_vocabulary_term', array(489, 44099, 45222, 527));
-//$gene = entity_load('trp_SO_0000704', array(3));
-//dpm($cv);
-//dpm($cvterm);
-//dpm($gene);
-
 $organism  = $variables['node']->organism;
 $organism = chado_expand_var($organism,'field','organism.comment'); ?>
 

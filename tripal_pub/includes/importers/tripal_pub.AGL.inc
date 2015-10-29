@@ -1,16 +1,16 @@
 <?php
 /**
  * @file
- * This file provides support for importing and parsing of results from the 
+ * This file provides support for importing and parsing of results from the
  * USDA National Agricultural Library (AGL) database.  The functions here are used by
  * both the publication importer setup form and the publication importer.
- * 
+ *
  * The USDA AGL database uses a YAZ protocol for querying and retrieving records.
- * 
+ *
  */
 
 /**
- * A hook for altering the publication importer form.  It Changes the 
+ * A hook for altering the publication importer form.  It Changes the
  * 'Days' element to 'Year' and removes the 'Journal Name' filter.
  *
  * @param $form
@@ -47,7 +47,7 @@ function tripal_pub_remote_alter_form_AGL($form, $form_state, $num_criteria = 1)
  *   The Drupal form array
  * @param $form_state
  *   The form state array
- *  
+ *
  * @return
  *  The form (drupal form api)
  *
@@ -414,9 +414,9 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
  * @param $num_to_retrieve
  *   The number of publications to retrieve
  * @param $total_records
- *   The total number of records in the dataset.  This value should have 
+ *   The total number of records in the dataset.  This value should have
  *   been retrieved by tripal_pub_AGL_count() function.
- *   
+ *
  * @return
  *  An array containing the total_records in the dataaset, the search string
  *  and an array of the publications that were retreived.
@@ -468,7 +468,7 @@ function tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $tot
  *   The YAZC connection object.
  * @param $search_str
  *   The search string to use for searching.
- *   
+ *
  * @return
  *   a count of the total number of publications that match the search string
  *
@@ -859,7 +859,6 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
       }
     }
   }
-  //dpm($unhandled);
 
   // build the Dbxref
   if ($pub['Publication Database'] != 'AGL') {
@@ -918,12 +917,12 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
   $pub['Citation'] = tripal_pub_create_citation($pub);
 
   $pub['raw'] = $pub_xml;
-  
+
   return $pub;
 }
 
 /**
- * Used for parsing of the XML results to get a set of subfields 
+ * Used for parsing of the XML results to get a set of subfields
  *
  * @param $xml
  *   The XMl object to read
@@ -952,14 +951,14 @@ function tripal_pub_remote_search_AGL_get_subfield($xml) {
 }
 
 /**
- * Used for parsing of the XML results to get details about an author 
+ * Used for parsing of the XML results to get details about an author
  *
  * @param $xml
  *   The XML object to read
  * @param $ind1
  *   Indicates how an author record is stored; 0 means given name is first
  *   1 means surname is first, 3 means a family name is given
- *   
+ *
  * @return
  *
  *

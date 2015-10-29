@@ -30,51 +30,50 @@ function tripal_fields_kvproperty_adder_formatter(&$element, $entity_type, $enti
  * @param unknown $delta
  * @param unknown $element
  */
-function tripal_fields_kvproperty_adder_widget($form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function tripal_fields_kvproperty_adder_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
-  $field_name = $field['field_name'];
-  $widget = $element;
-  $widget += array(
+  // This field has no value field.  Just a fieldset for adding new properties.
+
+  $widget['kvproperty_adder_fieldset'] = array(
     '#element_validate' => array('tripal_fields_kvproperty_adder_widget_validate'),
     '#type' => 'fieldset',
     '#title' => $element['#title'],
-    '#group' => 'ev_tabs',
-    array(
-      'kvproperty_instructions' => array(
-        '#type' => 'item',
-        '#markup' => t('You may add additional properties to this form by
-            providing a property name (from a vocabulary) in the field below
-            and clicking the "Add Property" button.  This will add a
-            new field to the form above for the property you entered.'),
-      ),
-      'kvproperty_adder' => array(
-        '#title' => t('Property Type'),
-        '#type' => 'textfield',
-        '#description' => t("Please enter the type of property that you want to add.  As you type, suggestions will be provided."),
-        '#autocomplete_path' => "admin/tripal/chado/tripal_cv/cvterm/auto_name/",
-      ),
-      'kvproperty_adder_link' => array(
-        '#type' => 'item',
-        '#markup' => '<span class="kvproperty-adder-link">' . l('Add a term', 'admin/tripal/chado/tripal_cv/cvterm/add', array('attributes' => array('target' => '_blank'))) . '</span>',
-      ),
-      // When this button is clicked, the form will be validated and submitted.
-      // Therefore, we set custom submit and validate functions to override the
-      // default form submit.  In the validate function we set the form_state
-      // to rebuild the form so the submit function never actually gets called,
-      // but we need it or Drupal will run the default validate anyway.
-      // we also set #limit_validation_errors to empty so fields that
-      // are required that don't have values won't generate warnings.
-      'kvproperty_adder_button' => array(
-        '#value' => t('Add Property'),
-        '#type' => 'submit',
-        '#name' => 'kvproperty_adder_button',
-        '#validate' => 'tripal_fields_kvproperty_adder_widget_validate',
-        '#submit' => 'tripal_fields_kvproperty_adder_widget_submit',
-        '#limit_validation_errors' => array(array($field_name)),
-      ),
-    ),
+//    '#group' => 'ev_tabs',
   );
-  return $widget;
+  $widget['kvproperty_adder_fieldset']['kvproperty_instructions'] = array(
+    '#type' => 'item',
+    '#markup' => t('You may add additional properties to this form by
+        providing a property name (from a vocabulary) in the field below
+        and clicking the "Add Property" button.  This will add a
+        new field to the form above for the property you entered.
+        In the future, this field will be present for all records
+        of this type.'),
+  );
+  $widget['kvproperty_adder_fieldset']['kvproperty_adder'] = array(
+    '#title' => t('Property Type'),
+    '#type' => 'textfield',
+    '#description' => t("Please enter the type of property that you want to add.  As you type, suggestions will be provided."),
+    '#autocomplete_path' => "admin/tripal/chado/tripal_cv/cvterm/auto_name/",
+  );
+  $widget['kvproperty_adder_fieldset']['kvproperty_adder_link'] = array(
+    '#type' => 'item',
+    '#markup' => '<span class="kvproperty-adder-link">' . l('Add a term', 'admin/tripal/chado/tripal_cv/cvterm/add', array('attributes' => array('target' => '_blank'))) . '</span>',
+  );
+  // When this button is clicked, the form will be validated and submitted.
+  // Therefore, we set custom submit and validate functions to override the
+  // default form submit.  In the validate function we set the form_state
+  // to rebuild the form so the submit function never actually gets called,
+  // but we need it or Drupal will run the default validate anyway.
+  // we also set #limit_validation_errors to empty so fields that
+  // are required that don't have values won't generate warnings.
+  $widget['kvproperty_adder_fieldset']['kvproperty_adder_button'] = array(
+    '#value' => t('Add Property'),
+    '#type' => 'submit',
+    '#name' => 'kvproperty_adder_button',
+    '#validate' => 'tripal_fields_kvproperty_adder_widget_validate',
+    '#submit' => 'tripal_fields_kvproperty_adder_widget_submit',
+    '#limit_validation_errors' => array(array($field['field_name'])),
+  );
 }
 
 /**
@@ -93,7 +92,7 @@ function tripal_fields_kvproperty_adder_widget_validate($element, &$form_state) 
      $bundle = $element['#bundle'];
 
      // Get the term for the property
-     $kvproperty = tripal_fields_get_field_form_values($field_name, $form_state, 'kvproperty_adder');
+     $kvproperty = tripal_fields_get_field_form_values($field_name, $form_state, 0, 'kvproperty_adder');
      $term = chado_generate_var('cvterm', array('name' => $kvproperty), $options = array('return_array' => TRUE));
      if (count($term) == 1) {
        $prop_field_name = $field_name . '__' . $term[0]->cvterm_id;
@@ -111,10 +110,10 @@ function tripal_fields_kvproperty_adder_widget_validate($element, &$form_state) 
        tripal_add_bundle_field($prop_field_name, $field_info, $entity_type, $bundle);
      }
      else if (count($term) > 1) {
-       form_set_error(implode('][', $element ['#parents']) . '][0][kvproperty_adder', t("This term is present in multiple vocabularies. Please select the appropriate one."));
+       form_set_error(implode('][', $element ['#parents']) . '][kvproperty_adder', t("This term is present in multiple vocabularies. Please select the appropriate one."));
      }
      else {
-       form_set_error(implode('][', $element ['#parents']) . '][0][kvproperty_adder', t("Please provide a property type to add."));
+       form_set_error(implode('][', $element ['#parents']) . '][kvproperty_adder', t("Please provide a property type to add."));
      }
    }
 }

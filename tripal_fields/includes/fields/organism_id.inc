@@ -35,11 +35,10 @@ function tripal_fields_organism_select_formatter(&$element, $entity_type, $entit
  * @param $delta
  * @param $element
  */
-function tripal_fields_organism_select_widget($form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
-  $field_name = $field['field_name'];
-  $options = tripal_get_organism_select_options();
-  $widget = $element;
-  $widget += array(
+function tripal_fields_organism_select_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
+
+  $options = tripal_get_organism_select_options(FALSE);
+  $widget['value'] = array(
     '#type' => 'select',
     '#title' => $element['#title'],
     '#description' => $element['#description'],
@@ -50,14 +49,16 @@ function tripal_fields_organism_select_widget($form, $form_state, $field, $insta
     '#delta' => $delta,
     '#element_validate' => array('tripal_fields_organism_select_widget_validate'),
   );
-  return $widget;
+  $widget['add_organism'] = array(
+    '#type' => 'item',
+    '#markup' => l('Add a new species', 'admin/content/bio_data/add/species', array('attributes' => array('target' => '_blank'))),
+  );
 }
-
 /**
  * Callback function for validating the tripal_fields_organism_select_widget.
  */
 function tripal_fields_organism_select_widget_validate($element, &$form_state) {
-  $field_name = $element['#field_name'];
+  $field_name = $element['#parents'][0];
 
   // If the form ID is field_ui_field_edit_form, then the user is editing the
   // field's values in the manage fields form of Drupal.  We don't want
@@ -67,7 +68,7 @@ function tripal_fields_organism_select_widget_validate($element, &$form_state) {
   }
   $organism_id = tripal_fields_get_field_form_values($field_name, $form_state);
 
-  if (count($organism_id) == 0) {
+  if (!$organism_id) {
     form_error($element, t("Please specify an organism."));
   }
 }

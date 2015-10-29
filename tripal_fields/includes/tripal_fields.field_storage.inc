@@ -27,6 +27,7 @@ function tripal_fields_field_storage_write($entity_type, $entity, $op, $fields) 
 
   // Convert the fields into a key/value list of fields and their values.
   $field_vals = tripal_fields_field_storage_unnest_fields($fields, $entity_type, $entity);
+
   $data_table = NULL;
   $type_field = NULL;
   $record_id = NULL;
@@ -86,25 +87,24 @@ function tripal_fields_field_storage_write($entity_type, $entity, $op, $fields) 
   // Recursively write fields for any referring tables that have
   // values in the $field_vals array.  There should be a key for each
   // FK table in the $field_vals array.
-  $schema = chado_get_schema($data_table);
-  $rtables = $schema['referring_tables'];
-  dpm($schema);
-  foreach ($rtables as $rtable) {
-    dpm($rtable);
-    if (array_key_exists($rtable, $field_vals)) {
-      tripal_fields_field_storage_write_recursive($entity_type, $entity,
-          $op, $field_vals, $rtable, $type_field, $record_id, 1);
-    }
-  }
+//   $schema = chado_get_schema($data_table);
+//   $rtables = $schema['referring_tables'];
+//   foreach ($rtables as $rtable) {
+//     if (array_key_exists($rtable, $field_vals)) {
+//       tripal_fields_field_storage_write_recursive($entity_type, $entity,
+//           $op, $field_vals, $rtable, NULL, NULL, 1);
+//     }
+//   }
 }
 
 /**
  * Implements hook_field_storage_write_recursive().
  */
 function tripal_fields_field_storage_write_recursive($entity_type, $entity,
-   $op, $field_vals, $tablename, $type_field = NULL, $record_id = NULL, $depth = 0) {
+   $op, $field_vals, $tablename, $type_field = NULL,
+   $record_id = NULL, $depth = 0) {
 
-  // Intialize the values array and $record_id;
+  // Intialize the values array.
   $values = array();
 
   // Get the schema for this table so that we can identify the primary key
@@ -132,22 +132,12 @@ function tripal_fields_field_storage_write_recursive($entity_type, $entity,
 
       // Get the value of the FK field as provided by the user.
       $fk_val = NULL;
+      $fk_vals = array();
       $fk_field_name = $tablename . '__' . $local_id;
-
-      // If this is the base table then we'll find any values for the FK
-      // fields as any other field.  IF we are not at the base table,
-      // then the FK values are in a sub element of the array where the
-      // key of the field is the table name. Because we are looping
-      // on FKs that are members of the current table we should always only
-      // have one value.
-      if ($depth == 0) {
-        $fk_val = array_key_exists($fk_field_name, $field_vals) ? $field_vals[$fk_field_name] : NULL;
-      }
-      else {
-        if (array_key_exists($fk_table, $field_vals) and
-            array_key_exists($fk_field_name, $field_vals[$fk_table])) {
-          $fk_val = $field_vals[$fk_table][$fk_field_name];
-        }
+      if (array_key_exists($fk_field_name, $field_vals)) {
+        $fk_val = $field_vals[$fk_field_name][0]['value'];
+        $fk_vals = $field_vals[$fk_field_name][0];
+        unset($fk_vals['value']);
       }
 
       // Don't recurse if the value of the FK field is set to NULL.  The
@@ -156,28 +146,32 @@ function tripal_fields_field_storage_write_recursive($entity_type, $entity,
         $values[$local_id] = $fk_val;
         continue;
       }
+
+      // Don't recuse if there are no values to select/insert a foreign key.
+      if (count(array_keys($fk_vals)) == 0) {
+        $values[$local_id] = $fk_val;
+        continue;
+      }
+
       // Recurse on the FK field.  Pass in the ID for the FK field if one
       // exists in the $field_vals;
       $fk_val = tripal_fields_field_storage_write_recursive($entity_type,
-        $entity, $op, $field_vals, $fk_table, NULL, $fk_val, $depth + 1);
+        $entity, $op, $fk_vals, $fk_table, NULL, $fk_val, $depth + 1);
       if (isset($fk_val) and $fk_val != '' and $fk_val != 0) {
         $values[$local_id] = $fk_val;
       }
     }
   }
 
-  // STEP 2: Loop through the incoming fields.
+  // STEP 2: Loop through the non FK fields.
   // Loop through the fields passed to the function and find any that
   // are for this table.  Then add their values to the $values array.
-  foreach ($field_vals as $field_name => $field_val) {
-    // If the field value is empty then continue.
-    if (!isset($field_val) or $field_val === '' or $field_val === NULL) {
-      continue;
-    }
+  foreach ($field_vals as $field_name => $items) {
+
     if (preg_match('/^' . $tablename . '__(.*)/', $field_name, $matches)) {
       $chado_field = $matches[1];
 
-      // Skip the Pkey field. We won't ever insert a primary key and if
+      // Skip the PKey field. We won't ever insert a primary key and if
       // one is provided in the fields then we use it for matching on an
       // update.  We don't add it to the $values array in either case.
       if ($chado_field == $pkey_field) {
@@ -191,7 +185,7 @@ function tripal_fields_field_storage_write_recursive($entity_type, $entity,
       }
 
       // Add the value of the field to the $values arr for later insert/update.
-      $values[$chado_field] = $field_vals[$field_name];
+      $values[$chado_field] = $items[0]['value'];
     }
   }
 
@@ -222,19 +216,19 @@ function tripal_fields_field_storage_write_recursive($entity_type, $entity,
     // Add a record to the chado_entity table so that the data for the
     // fields can be pulled from Chado when loaded the next time. Only do
     // this for the base table record.
-    if ($depth == 0) {
-      $record = array(
-        'entity_id' => $entity->id,
-        'record_id' => $record_id,
-        'data_table' => $tablename,
-        'type_table' => $tablename, // TODO: this must be fixed.
-        'field' => $type_field,
-      );
-      $success = drupal_write_record('chado_entity', $record);
-      if (!$success) {
-        drupal_set_message('Unable to insert new Chado entity.', 'error');
+      if ($depth == 0) {
+        $record = array(
+          'entity_id' => $entity->id,
+          'record_id' => $record_id,
+          'data_table' => $tablename,
+          'type_table' => $tablename, // TODO: this must be fixed.
+          'field' => $type_field,
+        );
+        $success = drupal_write_record('chado_entity', $record);
+        if (!$success) {
+          drupal_set_message('Unable to insert new Chado entity.', 'error');
+        }
       }
-    }
   }
   // We have an incoming record_id so this is an update.
   else {
@@ -243,6 +237,7 @@ function tripal_fields_field_storage_write_recursive($entity_type, $entity,
       drupal_set_message("Could not update Chado record in table: $tablename.", 'error');
     }
   }
+
   return $record_id;
 }
 
@@ -322,54 +317,26 @@ function tripal_fields_field_storage_load($entity_type, $entities, $age, $fields
 function tripal_fields_field_storage_unnest_fields($fields, $entity_type, $entity) {
   $new_fields = array();
 
+  // Iterate through all of the fields.
   foreach ($fields as $field_id => $ids) {
+
+    // Get the field name and all of it's items.
     $field = field_info_field_by_id($field_id);
     $field_name = $field['field_name'];
+    $items = field_get_items($entity_type, $entity, $field_name);
 
-    // Currently, we only support one language, but for for the sake of
-    // thoroughness we'll iterate through all possible languages.
-    $all_languages = field_available_languages($entity_type, $field);
-    $field_languages = array_intersect($all_languages, array_keys((array) $entity->$field_name));
-    foreach ($field_languages as $langcode) {
-
-      // The number of items is related to the cardinatily of the field.
-      $items = (array) $entity->{$field_name}[$langcode];
-      foreach ($items as $delta => $item) {
-        // There must be a 'value' field.
-        if (!array_key_exists('value', $item)) {
+    // Iterate through the field's items. Fields with cardinality ($delta) > 1
+    // are multi-valued.
+    foreach ($items as $delta => $item) {
+      foreach ($item as $item_name => $value) {
+        if ($item_name == 'value') {
+          $new_fields[$field_name][$delta]['value'] = $value;
           continue;
         }
-
-        // Case 1: base table fields.
-        // If the value is not an array then we can just use the value as is.
-        // This occurs for fields of the base table.
-        if (!is_array($item['value'])) {
-          $new_fields[$field_name] = $item['value'];
-          continue;
-        }
-
-        // Case 2: foreign key fields.
-        // If the value is an array then there are sub fields. This occurs
-        // for fields that represent FKs with the base table.
-        $i = 0;
-        foreach ($item['value'] as $children) {
-          foreach ($children as $child_field_name => $child_value) {
-            $matches = array();
-            if (preg_match('/^(.*?)__.*?$/', $child_field_name, $matches)) {
-              $table_name = $matches[1];
-              // Case 2a: the FK field is in the basee table.
-              if ($table_name == $entity->chado_entity->data_table) {
-                $new_fields[$child_field_name] = $child_value;
-              }
-              // Case 2b: the fields of the FK relationship are in the non
-              // base table. We store these in an array with the key being
-              // the table name.
-              else {
-                $new_fields[$table_name][$i][$child_field_name] = $child_value;
-              }
-            }
-          }
-          $i++;
+        $matches = array();
+        if (preg_match('/^(.*?)__.*?$/', $item_name, $matches)) {
+          $table_name = $matches[1];
+          $new_fields[$field_name][$delta][$item_name][0]['value'] = $value;
         }
       }
     }

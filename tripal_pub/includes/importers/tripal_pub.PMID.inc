@@ -1,15 +1,15 @@
 <?php
 /**
  * @file
- * This file provides support for importing and parsing of results from the 
+ * This file provides support for importing and parsing of results from the
  * NCBI PubMed database.  The functions here are used by
  * both the publication importer setup form and the publication importer.
- * 
+ *
  */
 
 
 /**
- * A hook for altering the publication importer form.  It Changes the 
+ * A hook for altering the publication importer form.  It Changes the
  * 'Abstract' filter to be 'Abstract/Title'.
  *
  * @param $form
@@ -41,7 +41,7 @@ function tripal_pub_remote_alter_form_PMID($form, $form_state, $num_criteria = 1
  *   The Drupal form array
  * @param $form_state
  *   The form state array
- *  
+ *
  * @return
  *  The form (drupal form api)
  *
@@ -193,8 +193,8 @@ function tripal_pub_remote_search_PMID($search_array, $num_to_retrieve, $page) {
  *   The PubMed Search string
  * @param $retmax
  *   The maximum number of records to return
- *   
- * @return 
+ *
+ * @return
  *   An array containing the Count, WebEnv and QueryKey as return
  *   by PubMed's esearch utility
  *
@@ -211,7 +211,6 @@ function tripal_pub_PMID_search_init($search_str, $retmax){
     "&usehistory=y".
     "&term=" . urlencode($search_str);
 
-  //dpm($query_url);
   $rfh = fopen($query_url, "r");
   if (!$rfh) {
     drupal_set_message('Could not perform Pubmed query. Cannot connect to Entrez.', 'error');
@@ -226,7 +225,6 @@ function tripal_pub_PMID_search_init($search_str, $retmax){
     $query_xml .= fread($rfh, 255);
   }
   fclose($rfh);
-  //dpm("<pre>$query_xml</pre>");
   $xml = new XMLReader();
   $xml->xml($query_xml);
 
@@ -270,7 +268,7 @@ function tripal_pub_PMID_search_init($search_str, $retmax){
  * @param $web_env
  *   The esearch WebEnv
  * @param $rettype
- *   The efetch return type 
+ *   The efetch return type
  * @param $retmod
  *   The efetch return mode
  * @param $start
@@ -279,7 +277,7 @@ function tripal_pub_PMID_search_init($search_str, $retmax){
  *   The number of publications to retrieve
  * @param $args
  *   Any additional arguments to add the efetch query URL
- *   
+ *
  * @return
  *  An array containing the total_records in the dataaset, the search string
  *  and an array of the publications that were retreived.
@@ -312,7 +310,6 @@ function tripal_pub_PMID_fetch($query_key, $web_env, $rettype = 'null',
       $fetch_url .= "&$key=$value";
     }
   }
-  //dpm($fetch_url);
   $rfh = fopen($fetch_url, "r");
   if (!$rfh) {
     drupal_set_message('ERROR: Could not perform PubMed query.', 'error');
@@ -445,7 +442,7 @@ function tripal_pub_PMID_parse_pubxml($pub_xml) {
 
 /**
  * Parses the section from the XML returned from PubMed that contains
- * information about the Journal 
+ * information about the Journal
  *
  * @param $xml
  *   The XML to parse
@@ -612,7 +609,7 @@ function tripal_pub_PMID_parse_publication_type($xml, &$pub) {
         case 'PublicationType':
           $xml->read();
           $value = $xml->value;
-          
+
           $identifiers = array(
             'name' => $value,
             'cv_id' => array(
@@ -631,7 +628,7 @@ function tripal_pub_PMID_parse_publication_type($xml, &$pub) {
             );
             $pub_cvterm = tripal_get_cvterm($identifiers, $options);
             if (!$pub_cvterm) {
-              tripal_report_error('tripal_pubmed', TRIPAL_ERROR, 
+              tripal_report_error('tripal_pubmed', TRIPAL_ERROR,
                 'Cannot find a valid vocabulary term for the publication type: "%term".',
                 array('%term' => $value));
             }

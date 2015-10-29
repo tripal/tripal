@@ -41,9 +41,8 @@ function tripal_fields_primary_dbxref_formatter(&$element, $entity_type, $entity
  * @param unknown $delta
  * @param unknown $element
  */
-function tripal_fields_primary_dbxref_widget($form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function tripal_fields_primary_dbxref_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
-  $widget = $element;
   $field_name = $field['field_name'];
 
   // Get the field defaults from the database if a record exists.
@@ -60,10 +59,8 @@ function tripal_fields_primary_dbxref_widget($form, $form_state, $field, $instan
     $version = $dbxref->version;
     $description = $dbxref->description;
   }
-  $temp = tripal_fields_get_field_form_values($field_name, $form_state, 'dbxref__db_id');
-  if (count($temp) > 0) {
-    $db_id = $temp[0];
-  }
+  $db_id = tripal_fields_get_field_form_values($field_name, $form_state, 0, 'dbxref__db_id');
+
   // If we are here because our parent was triggered in a form submit
   // then that means an ajax call was made and we don't want the fieldset to
   // be closed when it returns from the ajax call.
@@ -78,84 +75,84 @@ function tripal_fields_primary_dbxref_widget($form, $form_state, $field, $instan
 
   $schema = chado_get_schema('dbxref');
   $options = tripal_get_db_select_options();
-  $widget +=  array(
-    '#element_validate' => array('tripal_fields_primary_dbxref_widget_validate'),
-    '#type' => 'fieldset',
+
+  $widget['#element_validate'] = array('tripal_fields_primary_dbxref_widget_validate');
+  $widget['#theme'] = 'tripal_fields_primary_dbxref_widget';
+  $widget['#prefix'] =  "<span id='$field_name-dbxref--db-id'>";
+  $widget['#suffix'] =  "</span>";
+
+  // A temporary element used for theming the fieldset.
+  $widget['#theme_settings'] = array(
     '#title' => $element['#title'],
     '#description' =>  $element['#description'],
     '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-    '#delta' => $delta,
     '#theme' => 'tripal_fields_primary_dbxref_widget',
-    '#group' => 'entity_vetical_tabs',
     '#collapsible' => TRUE,
     '#collapsed' => $collapsed,
-    array(
-      $element['#field_name'] => array(
-        '#type' => 'hidden',
-        '#default_value' => $dbxref_id,
-      ),
-      'dbxref__db_id' => array(
-        '#type' => 'select',
-        '#title' => t('Database'),
-        '#options' => $options,
-        '#required' => $element['#required'],
-        '#default_value' => $db_id,
-        '#ajax' => array(
-          'callback' => "tripal_fields_primary_dbxref_widget_form_ajax_callback",
-          'wrapper' => "$field_name-dbxref--db-id",
-          'effect' => 'fade',
-          'method' => 'replace'
-        )
-      ),
-      'dbxref__accession' => array(
-        '#type' => 'textfield',
-        '#title' => t('Accession'),
-        '#default_value' => $accession,
-        '#required' => $element['#required'],
-        '#maxlength' => array_key_exists('length', $schema['fields']['accession']) ? $schema['fields']['accession']['length'] : 255,
-        '#size' => 15,
-        '#autocomplete_path' => "admin/tripal/chado/tripal_db/dbxref/auto_name/$db_id",
-        '#ajax' => array(
-          'callback' => "tripal_fields_primary_dbxref_widget_form_ajax_callback",
-          'wrapper' => "$field_name-dbxref--db-id",
-          'effect' => 'fade',
-          'method' => 'replace'
-        )
-      ),
-      'dbxref__version' => array(
-        '#type' => 'textfield',
-        '#title' => t('Version'),
-        '#default_value' => $version,
-        '#maxlength' => array_key_exists('length', $schema['fields']['version']) ? $schema['fields']['version']['length'] : 255,
-        '#size' => 5,
-      ),
-      'dbxref__description' => array(
-        '#type' => 'textfield',
-        '#title' => t('Description'),
-        '#default_value' => $description,
-        '#size' => 20,
-      ),
-      'links' => array(
-        '#type' => 'item',
-        '#markup' => l('Add a new database', 'admin/tripal/chado/tripal_db/add', array('attrbutes', array('target' => '_blank')))
-      )
-    ),
-    '#prefix' => "<span id='$field_name-dbxref--db-id'>",
-    '#suffix' => "</span>"
   );
-  return $widget;
+
+  $widget['value'] = array(
+    '#type' => 'hidden',
+    '#default_value' => $dbxref_id,
+  );
+
+  $widget['dbxref__db_id'] = array(
+    '#type' => 'select',
+    '#title' => t('Database'),
+    '#options' => $options,
+    '#required' => $element['#required'],
+    '#default_value' => $db_id,
+    '#ajax' => array(
+      'callback' => "tripal_fields_primary_dbxref_widget_form_ajax_callback",
+      'wrapper' => "$field_name-dbxref--db-id",
+      'effect' => 'fade',
+      'method' => 'replace'
+    ),
+  );
+  $widget['dbxref__accession'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Accession'),
+    '#default_value' => $accession,
+    '#required' => $element['#required'],
+    '#maxlength' => array_key_exists('length', $schema['fields']['accession']) ? $schema['fields']['accession']['length'] : 255,
+    '#size' => 15,
+    '#autocomplete_path' => "admin/tripal/chado/tripal_db/dbxref/auto_name/$db_id",
+    '#ajax' => array(
+      'callback' => "tripal_fields_primary_dbxref_widget_form_ajax_callback",
+      'wrapper' => "$field_name-dbxref--db-id",
+      'effect' => 'fade',
+      'method' => 'replace'
+    )
+  );
+  $widget['dbxref__version'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Version'),
+    '#default_value' => $version,
+    '#maxlength' => array_key_exists('length', $schema['fields']['version']) ? $schema['fields']['version']['length'] : 255,
+    '#size' => 5,
+  );
+  $widget['dbxref__description'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Description'),
+    '#default_value' => $description,
+    '#size' => 20,
+  );
+  $widget['links'] = array(
+    '#type' => 'item',
+    '#markup' => l('Add a new database', 'admin/tripal/chado/tripal_db/add', array('attributes' => array('target' => '_blank')))
+  );
 }
 /**
  * An Ajax callback for the tripal_fields_admin_publish_form..
  */
 function tripal_fields_primary_dbxref_widget_form_ajax_callback($form, $form_state) {
   $field_name = $form_state['triggering_element']['#parents'][0];
-  $db_id = tripal_fields_get_field_form_values($field_name, $form_state, 'dbxref__db_id');
-  $accession = tripal_fields_get_field_form_values($field_name, $form_state, 'dbxref__accession');
-  if (count($db_id) > 0 and count($accession) > 0) {
+  $db_id = tripal_fields_get_field_form_values($field_name, $form_state, 0, 'dbxref__db_id');
+  $accession = tripal_fields_get_field_form_values($field_name, $form_state, 0, 'dbxref__accession');
+  if ($db_id and $accession) {
     $values = array(
-      'db_id' => $db_id[0],
-      'accession' => $accession[0],
+      'db_id' => $db_id,
+      'accession' => $accession,
     );
     $options = array('is_duplicate' => TRUE);
     $has_duplicate = chado_select_record('dbxref', array('*'), $values, $options);
@@ -171,7 +168,7 @@ function tripal_fields_primary_dbxref_widget_form_ajax_callback($form, $form_sta
  * Callback function for validating the tripal_fields_organism_select_widget.
  */
 function tripal_fields_primary_dbxref_widget_validate($element, &$form_state) {
-  $field_name = $element['#field_name'];
+  $field_name = $element['#parents'][0];
 
   // If the form ID is field_ui_field_edit_form, then the user is editing the
   // field's values in the manage fields form of Drupal.  We don't want
@@ -181,11 +178,11 @@ function tripal_fields_primary_dbxref_widget_validate($element, &$form_state) {
   }
 
   // Get the field values.
-  $dbxref_id = tripal_fields_get_field_form_values($field_name, $form_state, $field_name);
-  $db_id = tripal_fields_get_field_form_values($field_name, $form_state, "dbxref__db_id");
-  $accession = tripal_fields_get_field_form_values($field_name, $form_state, "dbxref__accession");
-  $version = tripal_fields_get_field_form_values($field_name, $form_state, "dbxref__version");
-  $description = tripal_fields_get_field_form_values($field_name, $form_state, "dbxref__description");
+  $dbxref_id = tripal_fields_get_field_form_values($field_name, $form_state, 0, $field_name);
+  $db_id = tripal_fields_get_field_form_values($field_name, $form_state, 0, "dbxref__db_id");
+  $accession = tripal_fields_get_field_form_values($field_name, $form_state, 0, "dbxref__accession");
+  $version = tripal_fields_get_field_form_values($field_name, $form_state, 0, "dbxref__version");
+  $description = tripal_fields_get_field_form_values($field_name, $form_state, 0, "dbxref__description");
 
   // Make sure that if a database ID is provided that an accession is also
   // provided.  Here we use the form_set_error function rather than the
@@ -194,25 +191,28 @@ function tripal_fields_primary_dbxref_widget_validate($element, &$form_state) {
   // clear to the user what field is required and which isn't. Therefore,
   // we borrow the code from the 'form_error' function and append the field
   // so that the proper field is highlighted on error.
-  if (count($db_id) == 0 and count($accession) > 0) {
-    form_set_error(implode('][', $element ['#parents']) . '][0][dbxref__db_id', t("A database and the accession must both be provided for the primary cross reference."));
+  if (!$db_id and $accession) {
+    form_set_error(implode('][', $element ['#parents']) . '][dbxref__db_id', t("A database and the accession must both be provided for the primary cross reference."));
   }
-  if (count($db_id) > 0 and count($accession) == 0) {
-    form_set_error(implode('][', $element ['#parents']) . '][0][dbxref__accession', t("A database and the accession must both be provided for the primary cross reference."));
+  if ($db_id and !$accession) {
+    form_set_error(implode('][', $element ['#parents']) . '][dbxref__accession', t("A database and the accession must both be provided for the primary cross reference."));
+  }
+  if (!$db_id and !$accession and ($version or $description)) {
+    form_set_error(implode('][', $element ['#parents']) . '][dbxref__db_id', t("A database and the accession must both be provided for the primary cross reference."));
   }
 
   // If user did not select a database, we want to remove dbxref_id from the
   // field.
-  if (count($db_id) == 0) {
-    tripal_fields_set_field_form_values($field_name, $form_state, '__NULL__', $field_name);
+  if (!$db_id) {
+    tripal_fields_set_field_form_values($field_name, $form_state, '__NULL__');
   }
   // If the dbxref_id does not match the db_id + accession then the user
   // has selected a new dbxref record and we need to update the hidden
   // value accordingly.
-  if (count($db_id) == 1 and count($accession) == 1) {
-    $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id[0], 'accession' => $accession[0]));
-    if ($dbxref->dbxref_id != $dbxref_id[0]) {
-      tripal_fields_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id, $field_name);
+  if ($db_id and $accession) {
+    $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id, 'accession' => $accession));
+    if ($dbxref and $dbxref->dbxref_id != $dbxref_id) {
+      tripal_fields_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id);
     }
   }
 }
@@ -223,22 +223,38 @@ function tripal_fields_primary_dbxref_widget_validate($element, &$form_state) {
  */
 function theme_tripal_fields_primary_dbxref_widget($variables) {
   $element = $variables['element'];
+
   $layout = "
     <div class=\"primary-dbxref-widget\">
       <div class=\"primary-dbxref-widget-item\">" .
-      drupal_render($element[0]['dbxref__db_id']) . "
+        drupal_render($element['dbxref__db_id']) . "
       </div>
       <div class=\"primary-dbxref-widget-item\">" .
-      drupal_render($element[0]['dbxref__accession']) . "
+        drupal_render($element['dbxref__accession']) . "
       </div>
       <div class=\"primary-dbxref-widget-item\">" .
-      drupal_render($element[0]['dbxref__version']) . "
+        drupal_render($element['dbxref__version']) . "
       </div>
       <div class=\"primary-dbxref-widget-item\">" .
-      drupal_render($element[0]['dbxref__description']) . "
+        drupal_render($element['dbxref__description']) . "
       </div>
-      <div class=\"primary-dbxref-widget-links\">" . drupal_render($element[0]['links']) . "</div>
+      <div class=\"primary-dbxref-widget-links\">" . drupal_render($element['links']) . "</div>
     </div>
   ";
-      return $layout;
+
+  $classes = array();
+  $classes[] = 'collapsible';
+  $theme_settings = $element['#theme_settings'];
+  if ($theme_settings['#collapsed'] == TRUE) {
+    $classes[] = 'collapsed';
+  }
+  $fieldset = array(
+    '#title' => $element['#title'],
+    '#value' => '',
+    '#description' => $element['#description'],
+    '#children' => $layout,
+    '#attributes' => array('class' => $classes),
+  );
+
+  return theme('fieldset', array('element' => $fieldset));
 }

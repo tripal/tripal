@@ -35,11 +35,10 @@ function tripal_fields_kvproperty_formatter(&$element, $entity_type, $entity, $f
  * @param unknown $delta
  * @param unknown $element
  */
-function tripal_fields_kvproperty_widget($form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function tripal_fields_kvproperty_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
   $chado_entity = $form['#entity']->chado_entity;
   $field_name = $field['field_name'];
-  $widget = $element;
 
   $matches = array();
   preg_match('/(.*?)__(\d+)/', $field_name, $matches);
@@ -73,28 +72,29 @@ function tripal_fields_kvproperty_widget($form, $form_state, $field, $instance, 
   $widget['#element_validate'] = array('tripal_fields_kvproperty_widget_validate');
   $widget['#cardinality'] = 1;
 
-  $widget[$delta] = $element;
-  $widget[$delta] += array(
-    $table_name . '__' . $pkey => array(
-      '#type' => 'hidden',
-      '#value' => $pkey_value,
-    ),
-    $table_name . '__' . $fk => array(
-      '#type' => 'hidden',
-      '#value' => $fk_value,
-    ),
-    $table_name . '__value' => array(
-      '#type' => 'textfield',
-      '#default_value' => !empty($items) ? $items[0] : '',
-    ),
-    $table_name . '__type_id' => array(
-      '#type' => 'hidden',
-      '#value' => $cvterm_id,
-    ),
-    $table_name . '__rank' => array(
-      '#type' => 'hidden',
-      '#value' => $delta,
-    ),
+  $widget['value'][$delta] = array(
+    '#type' => 'hidden',
+    '#value' => $pkey_value,
+  );
+  $widget[$table_name . '__' . $pkey] = array(
+    '#type' => 'hidden',
+    '#value' => $pkey_value,
+  );
+  $widget[$table_name . '__' . $fk] = array(
+    '#type' => 'hidden',
+    '#value' => $fk_value,
+  );
+  $widget[$table_name . '__value'] = array(
+    '#type' => 'textfield',
+    '#default_value' => !empty($items) ? $items[0] : '',
+  );
+  $widget[$table_name . '__type_id'] = array(
+    '#type' => 'hidden',
+    '#value' => $cvterm_id,
+  );
+  $widget[$table_name . '__rank'] = array(
+    '#type' => 'hidden',
+    '#value' => $delta,
   );
 
   return $widget;

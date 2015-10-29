@@ -152,7 +152,6 @@ function tripal_entities_entity_form($form, &$form_state, $term_name = '', $enti
     $form['#prefix'] = "<div id='$bundle_id-entity-form'>";
     $form['#suffix'] = "</div>";
   }
-
   return $form;
 }
 /**
@@ -210,7 +209,6 @@ function tripal_entities_entity_form_add_new($bundle_id, $cvterm, &$form, &$form
   // The entity object must be added to the $form_state in order for
   // the Entity API to work. It must have a key of the entity name.
   $form_state[$cvterm->dbxref_id->db_id->name] = $entity;
-
 
 }
 /**
@@ -562,16 +560,18 @@ function tripal_entities_add_bundle_kvproperty_adder_field($entity_type_name, $b
   $field_info = array(
     'field_type' => 'kvproperty_adder',
     'widget_type' => 'tripal_fields_kvproperty_adder_widget',
-    'field_settings' => array(),
+    'field_settings' => array(
+      'chado_table' => $kv_table . '_adder',
+      'chado_column' => '',
+    ),
     'widget_settings' => array('display_label' => 1),
     'description' => '',
     'label' => 'Additional Properties',
-    'chado_table' => $kv_table,
-    'chado_column' => '',
     'is_required' => 0,
   );
   tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
 }
+
 /**
  * Adds the fields for the base table to the entity.
  */
@@ -661,12 +661,13 @@ function tripal_entities_get_table_column_field_default($table_name, $schema, $c
   $field_info = array(
     'field_type' => '',
     'widget_type' => '',
-    'field_settings' => array(),
+    'field_settings' => array(
+      'chado_table' => $table_name,
+      'chado_column' => $column_name,
+    ),
     'widget_settings' => array('display_label' => 1),
     'description' => '',
     'label' => ucwords(preg_replace('/_/', ' ', $column_name)),
-    'chado_table' => $table_name,
-    'chado_column' => $column_name,
     'is_required' => 0,
   );
 

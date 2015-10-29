@@ -140,19 +140,24 @@ function theme_tripal_entities_date_combo($variables) {
  *
  */
 function tripal_entities_chado_field_alter(&$field) {
+
+  if (!array_key_exists('field_settings', $field)) {
+    return;
+  }
   // If the field doesn't list the Chado table or column then just return.
-  if (!array_key_exists('chado_table', $field) or !array_key_exists('chado_column', $field)) {
+  if (!array_key_exists('chado_table', $field['field_settings']) or
+      !array_key_exists('chado_column', $field['field_settings'])) {
     return;
   }
   // Here we provide new field types and widgets for FK fields
   // and fields that need special attention.
-  if ($field['chado_column'] =='organism_id') {
+  if ($field['field_settings']['chado_column'] =='organism_id') {
     $field['field_type'] = 'organism_id';
     $field['widget_type'] = 'tripal_fields_organism_select_widget';
     $field['label'] = 'Organism';
     $field['description'] = 'Select an organism.';
   }
-  else if ($field['chado_column'] =='dbxref_id') {
+  else if ($field['field_settings']['chado_column'] =='dbxref_id') {
     $field['field_type'] = 'dbxref_id';
     $field['widget_type'] = 'tripal_fields_primary_dbxref_widget';
     $field['label'] = 'Primary Cross Reference';;
@@ -162,21 +167,20 @@ function tripal_entities_chado_field_alter(&$field) {
         must be provided.  To remove a set reference, change the database
         field to "Select a Database".';
   }
-  else if ($field['chado_table'] == 'feature' and
-    $field['chado_column'] == 'md5checksum') {
+  else if ($field['field_settings']['chado_table'] == 'feature' and
+    $field['field_settings']['chado_column'] == 'md5checksum') {
     $field['field_type'] = 'md5checksum';
     $field['widget_type'] = 'tripal_fields_md5checksum_checkbox_widget';
     $field['label'] = 'MD5 Checksum';
     $field['description'] = 'Generating MD5 checksum for the sequence.';
   }
-  else if ($field['chado_table'] == 'feature' and $field['chado_column'] == 'seqlen') {
+  else if ($field['field_settings']['chado_table'] == 'feature' and $field['field_settings']['chado_column'] == 'seqlen') {
     $field['field_type'] = 'seqlen';
     $field['widget_type'] = 'tripal_fields_seqlen_hidden_widget';
     $field['label'] = 'Seqlen';
     $field['description'] = 'The length of the residues.';
-
   }
-  else if ($field['chado_table'] == 'feature' and $field['chado_column'] == 'residues') {
+  else if ($field['field_settings']['chado_table'] == 'feature' and $field['field_settings']['chado_column'] == 'residues') {
     $field['field_type'] = 'residues';
     $field['widget_type'] = 'tripal_fields_residues_textarea_widget';
     $field['label'] = 'Residues';

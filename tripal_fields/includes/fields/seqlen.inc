@@ -36,11 +36,9 @@ function tripal_fields_seqlen_hidden_formatter(&$element, $entity_type, $entity,
  * @param unknown $delta
  * @param unknown $element
  */
-function tripal_fields_seqlen_hidden_widget($form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function tripal_fields_seqlen_hidden_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
-  $field_name = $field['field_name'];
-  $widget = $element;
-  $widget +=  array(
+  $widget['value'] =  array(
     '#type' => 'hidden',
     '#title' => $element['#title'],
     '#description' => $element['#description'],
@@ -48,20 +46,19 @@ function tripal_fields_seqlen_hidden_widget($form, $form_state, $field, $instanc
     '#delta' => $delta,
     '#element_validate' => array('tripal_fields_seqlen_hidden_widget_validate'),
   );
-  return $widget;
 }
 /**
  * Callback function for validating the tripal_fields_seqlen_hidden_widget.
  */
 function tripal_fields_seqlen_hidden_widget_validate($element, &$form_state) {
-  $field_name = $element['#field_name'];
+  $field_name = $element['#parents'][0];
 
   // Get the residues so we can calculate teh length.
   $residues = tripal_fields_get_field_form_values('feature__residues', $form_state);
 
   // Remove any white spaces.
-  if (count($residues) > 0) {
-    $residues = preg_replace('/\s/', '', $residues[0]);
+  if ($residues) {
+    $residues = preg_replace('/\s/', '', $residues);
     tripal_fields_set_field_form_values($field_name, $form_state, strlen($residues));
   }
   else {

@@ -22,14 +22,6 @@
  *     'cardinality' : indicates the number of values this field can support.
  *       the default is 1 (meaning only one value). Use a value of
  *       FIELD_CARDINALITY_UNLIMITED for unlimited number of values.
- *   You may add additional key/value pairs as needed by your custom module
- *   if your module adds a new field type.  The following fields are examples
- *   that are added automatically by the tripal_fields module.  These
- *   fields are expected when modules implement the hook_chado_field_alter()
- *   function:
- *     'chado_table' : the name of the table in Chado that will house the
- *       value(s) of this field.
- *     'chado_column' : the column in the Chado table where the field will go.
  * @param $entity_type_name
  *   The entity type name.
  * @param $bundle_name

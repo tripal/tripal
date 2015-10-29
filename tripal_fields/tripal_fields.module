@@ -235,54 +235,48 @@ function tripal_fields_field_formatter_view($entity_type, $entity, $field,
 function tripal_fields_field_widget_form(&$form, &$form_state, $field,
     $instance, $langcode, $items, $delta, $element) {
 
+  $widget = $element;
   switch ($instance['widget']['type']) {
     case 'tripal_fields_organism_select_widget':
       // Make sure the include files get parsed now and for the form submits.
       form_load_include($form_state, 'inc', 'tripal_fields', 'includes/fields/organism_id');
       module_load_include('inc', 'tripal_fields', 'includes/fields/organism_id');
       // Update the widget with the new field.
-      $element['value'] = tripal_fields_organism_select_widget($form,
-          $form_state, $field, $instance, $langcode, $items, $delta, $element);
+      tripal_fields_organism_select_widget($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
       break;
     case 'tripal_fields_primary_dbxref_widget':
       form_load_include($form_state, 'inc', 'tripal_fields', 'includes/fields/primary_dbxref');
       module_load_include('inc', 'tripal_fields', 'includes/fields/primary_dbxref');
-      $element['value'] = tripal_fields_primary_dbxref_widget($form,
-          $form_state, $field, $instance, $langcode, $items, $delta, $element);
+      tripal_fields_primary_dbxref_widget($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
       break;
     case 'tripal_fields_md5checksum_checkbox_widget':
       form_load_include($form_state, 'inc', 'tripal_fields', 'includes/fields/md5checksum');
       module_load_include('inc', 'tripal_fields', 'includes/fields/md5checksum');
-      $element['value'] = tripal_fields_md5checksum_checkbox_widget($form,
-          $form_state, $field, $instance, $langcode, $items, $delta, $element);
+      tripal_fields_md5checksum_checkbox_widget($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
       break;
     case 'tripal_fields_residues_textarea_widget':
       form_load_include($form_state, 'inc', 'tripal_fields', 'includes/fields/residues');
       module_load_include('inc', 'tripal_fields', 'includes/fields/residues');
-      $element['value'] = tripal_fields_residues_textarea_widget($form,
-          $form_state, $field, $instance, $langcode, $items, $delta, $element);
+      tripal_fields_residues_textarea_widget($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
       break;
     case 'tripal_fields_seqlen_hidden_widget':
       form_load_include($form_state, 'inc', 'tripal_fields', 'includes/fields/seqlen');
       module_load_include('inc', 'tripal_fields', 'includes/fields/seqlen');
-      $element['value'] = tripal_fields_seqlen_hidden_widget($form,
-          $form_state, $field, $instance, $langcode, $items, $delta, $element);
+      tripal_fields_seqlen_hidden_widget($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
       break;
     case 'tripal_fields_kvproperty_adder_widget':
       form_load_include($form_state, 'inc', 'tripal_fields', 'includes/fields/kvproperty_adder');
       module_load_include('inc', 'tripal_fields', 'includes/fields/kvproperty_adder');
-      $element['value'] = tripal_fields_kvproperty_adder_widget($form,
-          $form_state, $field, $instance, $langcode, $items, $delta, $element);
+      tripal_fields_kvproperty_adder_widget($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
       break;
     case 'tripal_fields_kvproperty_widget':
       form_load_include($form_state, 'inc', 'tripal_fields', 'includes/fields/kvproperty');
       module_load_include('inc', 'tripal_fields', 'includes/fields/kvproperty');
-      $element['value'] = tripal_fields_kvproperty_widget($form,
-          $form_state, $field, $instance, $langcode, $items, $delta, $element);
+      tripal_fields_kvproperty_widget($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
       break;
   }
 
-  return $element;
+  return $widget;
 }
 
 
@@ -290,51 +284,77 @@ function tripal_fields_field_widget_form(&$form, &$form_state, $field,
  * Implements hook_field_is_empty().
  */
 function tripal_fields_field_is_empty($item, $field) {
-  if (empty($item['value']) && (string) $item['value'] !== '0') {
+  // If there is no value field then the field is empty.
+  if (!array_key_exists('value', $item)) {
     return TRUE;
   }
-  return FALSE;
+
+  // Iterate through all of the fields and if at least one has a value
+  // the field is not empty.
+  foreach ($item as $form_field_name => $value) {
+    if (isset($value) and $value != NULL and $value != '') {
+      return FALSE;
+    }
+  }
+
+  // Otherwise, the field is empty.
+  return TRUE;
 }
 
 /**
  * Returns the values of the field from the $form_state.
  */
-function tripal_fields_get_field_form_values($field_name, $form_state, $child = NULL) {
-  $values = array();
+function tripal_fields_get_field_form_values($field_name, $form_state, $delta = 0, $child = NULL) {
+
+  $value = NULL;
+  // The form_state must have the 'values' key. If not then just return.
   if (!array_key_exists('values', $form_state)) {
-    return $values;
+    return $value;
   }
-  if (array_key_exists($field_name, $form_state['values'])) {
-    foreach ($form_state['values'][$field_name] as $langcode => $items) {
-      foreach ($items as $delta => $value) {
-        if ($child and array_key_exists($child, $value['value'][0]) and $value['value'][0][$child]) {
-          $values[] = $value['value'][0][$child];
-        }
-        else if (!$child and is_array($value) and $value['value']) {
-          $values[] = $value['value'];
-        }
+
+  // If the field name is not in the form_state['values'] then return.
+  if (!array_key_exists($field_name, $form_state['values'])) {
+    return $value;
+  }
+
+  // Iterate through the values looking for the field_name provided.
+  foreach ($form_state['values'][$field_name] as $langcode => $items) {
+    $item = $items[$delta];
+    if ($child){
+      if(array_key_exists($child, $item) and $item[$child] != '') {
+        $value = $item[$child];
       }
     }
+    else {
+      $value = $item['value'];
+    }
   }
-  return $values;
+  return $value;
 }
 
 /**
- * Returns the values of the field from the $form_state.
+ * Sets the values of the field from the $form_state.
  */
-function tripal_fields_set_field_form_values($field_name, &$form_state, $newvalue, $child = NULL) {
-  $values = array();
+function tripal_fields_set_field_form_values($field_name, &$form_state, $newvalue, $delta = 0, $child = NULL) {
+  // The form_state must have the 'values' key. If not then just return.
+  if (!array_key_exists('values', $form_state)) {
+    return FALSE;
+  }
+
+  // If the field name is not in the form_state['values'] then reutrn.
+  if (!array_key_exists($field_name, $form_state['values'])) {
+    return FALSE;
+  }
+
   foreach ($form_state['values'][$field_name] as $langcode => $items) {
-    foreach ($items as $delta => $value) {
-      if ($child and array_key_exists($child, $value['value'][0]) and $value['value'][0][$child]) {
-        $form_state['values'][$field_name][$langcode][$delta]['value'][0][$child] = $newvalue;
-      }
-      else if (!$child) {
-        $form_state['values'][$field_name][$langcode][$delta]['value'] = $newvalue;
-      }
+    if ($child) {
+      $form_state['values'][$field_name][$langcode][$delta][$child] = $newvalue;
+    }
+    else {
+      $form_state['values'][$field_name][$langcode][$delta]['value'] = $newvalue;
     }
   }
-  return $values;
+  return TRUE;
 }
 
 
