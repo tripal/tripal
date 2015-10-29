@@ -72,6 +72,9 @@ function tripal_fields_primary_dbxref_widget($form, $form_state, $field, $instan
       $form_state['triggering_element']['#parents'][0] == $field_name) {
     $collapsed = FALSE;
   }
+  if ($dbxref_id) {
+    $collapsed = FALSE;
+  }
 
   $schema = chado_get_schema('dbxref');
   $options = tripal_get_db_select_options();
@@ -178,6 +181,7 @@ function tripal_fields_primary_dbxref_widget_validate($element, &$form_state) {
   }
 
   // Get the field values.
+  $dbxref_id = tripal_fields_get_field_form_values($field_name, $form_state, $field_name);
   $db_id = tripal_fields_get_field_form_values($field_name, $form_state, "dbxref__db_id");
   $accession = tripal_fields_get_field_form_values($field_name, $form_state, "dbxref__accession");
   $version = tripal_fields_get_field_form_values($field_name, $form_state, "dbxref__version");
@@ -201,6 +205,15 @@ function tripal_fields_primary_dbxref_widget_validate($element, &$form_state) {
   // field.
   if (count($db_id) == 0) {
     tripal_fields_set_field_form_values($field_name, $form_state, '__NULL__', $field_name);
+  }
+  // If the dbxref_id does not match the db_id + accession then the user
+  // has selected a new dbxref record and we need to update the hidden
+  // value accordingly.
+  if (count($db_id) == 1 and count($accession) == 1) {
+    $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id[0], 'accession' => $accession[0]));
+    if ($dbxref->dbxref_id != $dbxref_id[0]) {
+      tripal_fields_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id, $field_name);
+    }
   }
 }
 /**

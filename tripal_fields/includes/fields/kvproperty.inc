@@ -37,33 +37,30 @@ function tripal_fields_kvproperty_formatter(&$element, $entity_type, $entity, $f
  */
 function tripal_fields_kvproperty_widget($form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
+  $chado_entity = $form['#entity']->chado_entity;
   $field_name = $field['field_name'];
-  $widget = array();
-  $element += array(
-    '#element_validate' => array('tripal_fields_kvproperty_widget_validate'),
-    '#type' => 'textfield',
-    '#delta' => $delta,
-  );
+  $widget = $element;
 
-  if ($field['cardinality'] == 1) {
-    $element['#default_value'] = !empty($items) ? $items[0] : '';
-    $widget = array($element);
+  $matches = array();
+  preg_match('/(.*?)__(\d+)/', $field_name, $matches);
+  // If the field name is not properly formatted then we can't tell what
+  // table and type this is.  So just return.
+  if (count($matches) != 3) {
+    return $widget;
   }
-  else {
-    foreach ($items as $item) {
-      $widget[$delta] = $element;
-      $widget[$delta]['#default_value'] = $item;
-      $widget[$delta]['#weight'] = $delta;
-      $delta++;
-    }
-  }
-  // Add one more row if delta is less than the cardinality.
-  if ($field['cardinality'] == FIELD_CARDINALITY_UNLIMITED || $delta < $field['cardinality']){
-    $widget[$delta] = $element;
-    $widget[$delta]['#default_value'] = '';
-    $widget[$delta]['#weight'] = $delta;
-    $widget[$delta]['#required'] = ($element['#required'] && $delta == 0);
-  }
+  $table_name = $matches[1];
+  $cvterm_id = $matches[2];
+
+  // Get the name of the pkey field for this property table.
+  $schema = chado_get_schema($table_name);
+  $pkey = $schema['primary key'][0];
+
+  // Get the name of the FK field that links to the base data table.
+  $schema = chado_get_schema($chado_entity->data_table);
+  $fk = $schema['primary key'][0];
+
+  $pkey_value = '';
+  $fk_value = $chado_entity->record_id;
 
   // The group of elements all-together need some extra functionality
   // after building up the full list (like draggable table rows).
@@ -73,7 +70,33 @@ function tripal_fields_kvproperty_widget($form, $form_state, $field, $instance, 
   $widget['#field_name'] = $element['#field_name'];
   $widget['#language'] = $element['#language'];
   $widget['#weight'] = isset($element['#weight']) ? $element['#weight'] : 0;
+  $widget['#element_validate'] = array('tripal_fields_kvproperty_widget_validate');
   $widget['#cardinality'] = 1;
+
+  $widget[$delta] = $element;
+  $widget[$delta] += array(
+    $table_name . '__' . $pkey => array(
+      '#type' => 'hidden',
+      '#value' => $pkey_value,
+    ),
+    $table_name . '__' . $fk => array(
+      '#type' => 'hidden',
+      '#value' => $fk_value,
+    ),
+    $table_name . '__value' => array(
+      '#type' => 'textfield',
+      '#default_value' => !empty($items) ? $items[0] : '',
+    ),
+    $table_name . '__type_id' => array(
+      '#type' => 'hidden',
+      '#value' => $cvterm_id,
+    ),
+    $table_name . '__rank' => array(
+      '#type' => 'hidden',
+      '#value' => $delta,
+    ),
+  );
+
   return $widget;
 }
 

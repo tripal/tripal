@@ -5,5 +5,7 @@ project = tripal
 package = Tripal
 version = 7.x-2.0
 
+stylesheets[all][] = theme/css/tripal_fields.css
+
 dependencies[] = tripal_core
 dependencies[] = date

@@ -2,13 +2,13 @@
 
 /**
  *
- * @param unknown $entity_type
- * @param unknown $entity
- * @param unknown $field
- * @param unknown $instance
- * @param unknown $langcode
- * @param unknown $items
- * @param unknown $display
+ * @param $entity_type
+ * @param $entity
+ * @param $field
+ * @param $instance
+ * @param $langcode
+ * @param $items
+ * @param $display
  * @return string
  */
 function tripal_fields_organism_select_formatter(&$element, $entity_type, $entity, $field,
@@ -24,16 +24,16 @@ function tripal_fields_organism_select_formatter(&$element, $entity_type, $entit
 }
 /**
  *
- * @param unknown $field_name
- * @param unknown $widget
- * @param unknown $form
- * @param unknown $form_state
- * @param unknown $field
- * @param unknown $instance
- * @param unknown $langcode
- * @param unknown $items
- * @param unknown $delta
- * @param unknown $element
+ * @param $field_name
+ * @param $widget
+ * @param $form
+ * @param $form_state
+ * @param $field
+ * @param $instance
+ * @param $langcode
+ * @param $items
+ * @param $delta
+ * @param $element
  */
 function tripal_fields_organism_select_widget($form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
   $field_name = $field['field_name'];
@@ -57,7 +57,6 @@ function tripal_fields_organism_select_widget($form, $form_state, $field, $insta
  * Callback function for validating the tripal_fields_organism_select_widget.
  */
 function tripal_fields_organism_select_widget_validate($element, &$form_state) {
-  //dpm($element);
   $field_name = $element['#field_name'];
 
   // If the form ID is field_ui_field_edit_form, then the user is editing the

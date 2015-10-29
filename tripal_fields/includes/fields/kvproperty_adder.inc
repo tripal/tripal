@@ -96,13 +96,13 @@ function tripal_fields_kvproperty_adder_widget_validate($element, &$form_state) 
      $kvproperty = tripal_fields_get_field_form_values($field_name, $form_state, 'kvproperty_adder');
      $term = chado_generate_var('cvterm', array('name' => $kvproperty), $options = array('return_array' => TRUE));
      if (count($term) == 1) {
-       $prop_field_name = $field_name . '__' . strtolower($term[0]->dbxref_id->db_id->name) . '_' . $term[0]->dbxref_id->accession;
+       $prop_field_name = $field_name . '__' . $term[0]->cvterm_id;
        $field_info = array(
          'field_type' => 'kvproperty',
          'widget_type' => 'tripal_fields_kvproperty_widget',
          'field_settings' => array(),
          'widget_settings' => array(),
-         'description' => '',
+         'description' => $term[0]->definition ? $term[0]->definition : '',
          'label' => ucfirst(preg_replace('/_/', ' ', $term[0]->name)),
          'is_required' => FALSE,
          // All properties are unlimited.
