@@ -42,15 +42,14 @@ function tripal_fields_dbxref_id_formatter(&$element, $entity_type, $entity, $fi
  * @param unknown $element
  */
 function tripal_fields_dbxref_id_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
-
   $field_name = $field['field_name'];
 
   // Get the field defaults.
-  $dbxref_id = $items[0]['value'];
-  $db_id = $items[0]['dbxref__db_id'];
-  $accession = $items[0]['dbxref__accession'];
-  $version = $items[0]['dbxref__version'];
-  $description = $items[0]['dbxref__description'];
+  $dbxref_id = $items[$delta]['value'];
+  $db_id = $items[$delta]['dbxref__db_id'];
+  $accession = $items[$delta]['dbxref__accession'];
+  $version = $items[$delta]['dbxref__version'];
+  $description = $items[$delta]['dbxref__description'];
 
   // If we are here because our parent was triggered in a form submit
   // then that means an ajax call was made and we don't want the fieldset to
@@ -254,18 +253,30 @@ function theme_tripal_fields_dbxref_id_widget($variables) {
  * Loads the field values with appropriate data.
  *
  * This function is called by the tripal_fields_field_storage_load() for
- * each property managed by the field_chado_storage storage type.
+ * each property managed by the field_chado_storage storage type.  This is
+ * an optional hook function that is only needed if the field has
+ * multiple form elements.
  *
  * @param $field
  * @param $entity
+ * @param $base_table
  * @param $record
  */
-function tripal_fields_dbxref_id_field_load($field, $entity, $record) {
+function tripal_fields_dbxref_id_field_load($field, $entity, $base_table, $record) {
+
   $field_name = $field['field_name'];
   $field_type = $field['type'];
   $field_table = $field['settings']['chado_table'];
   $field_column = $field['settings']['chado_column'];
 
+  // Set some defauls for the empty record
+  $entity->{$field_name}['und'][0] = array(
+    'value' => '',
+    'dbxref__db_id' => '',
+    'dbxref__accession' => '',
+    'dbxref__version' => '',
+    'dbxref__description' => '',
+  );
 
   // Get the primary dbxref record.  Because we have a dbxref_id passed in
   // by the base record, we will only have one record.

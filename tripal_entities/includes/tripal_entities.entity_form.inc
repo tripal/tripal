@@ -176,7 +176,8 @@ function tripal_entities_entity_form_add_new($bundle_id, $cvterm, &$form, &$form
 
   // If the entity doesn't exist then create one.
   if (!$entity) {
-    $entity = entity_get_controller($cvterm->dbxref_id->db_id->name)->create(array('bundle' => $bundle_id));
+    $entity_type = $cvterm->dbxref_id->db_id->name;
+    $entity = entity_get_controller($entity_type)->create(array('bundle' => $bundle_id));
     field_attach_form($cvterm->dbxref_id->db_id->name, $entity, $form, $form_state);
 
     $form['add_button'] = array(

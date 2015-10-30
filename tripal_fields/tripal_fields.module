@@ -190,7 +190,6 @@ function tripal_fields_field_formatter_view($entity_type, $entity, $field,
 
       $element = array();
       switch ($display['type']) {
-
         case 'tripal_fields_organism_formatter':
           module_load_include('inc', 'tripal_fields', 'includes/fields/organism_id');
           tripal_fields_organism_select_formatter($element, $entity_type, $entity, $field,
@@ -285,6 +284,7 @@ function tripal_fields_field_widget_form(&$form, &$form_state, $field,
  * Implements hook_field_is_empty().
  */
 function tripal_fields_field_is_empty($item, $field) {
+
   // If there is no value field then the field is empty.
   if (!array_key_exists('value', $item)) {
     return TRUE;
@@ -306,7 +306,6 @@ function tripal_fields_field_is_empty($item, $field) {
  * Returns the values of the field from the $form_state.
  */
 function tripal_fields_get_field_form_values($field_name, $form_state, $delta = 0, $child = NULL) {
-
   $value = NULL;
   // The form_state must have the 'values' key. If not then just return.
   if (!array_key_exists('values', $form_state)) {

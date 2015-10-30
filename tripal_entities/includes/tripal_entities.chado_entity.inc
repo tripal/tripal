@@ -23,22 +23,7 @@ function tripal_entities_entity_postsave($entity, $type) {
  * Implements hook_entity_load().
  */
 function tripal_entities_entity_load($entities, $type) {
-  foreach ($entities as $entity) {
 
-    // For Tripal created entities add in the chado_entity details.
-    $dbs = tripal_entities_get_db_names_for_published_vocabularies();
-    if (in_array($entity->type, $dbs)) {
-      $details = db_select('chado_entity', 'ce')
-        ->fields('ce')
-        ->condition('entity_id', $entity->id)
-        ->execute()
-        ->fetchObject();
-
-      // Add teh chado entity details to the entity in case it's needed
-      // downstream (e.g. in field widget construction).
-      $entity->chado_entity = $details;
-    }
-  }
 }
 
 /**

@@ -25,83 +25,75 @@ function tripal_fields_field_storage_query($query) {
  */
 function tripal_fields_field_storage_write($entity_type, $entity, $op, $fields) {
 
+  // Get the base table, type field and record_id from the entity.
+  $base_table = $entity->chado_table;
+  $type_field = $entity->chado_field;
+  $record_id  = property_exists($entity, 'chado_record_id') ? $entity->chado_record_id : NULL;
+
   // Convert the fields into a key/value list of fields and their values.
   $field_vals = tripal_fields_field_storage_unnest_fields($fields, $entity_type, $entity);
 
-  $data_table = NULL;
-  $type_field = NULL;
-  $record_id = NULL;
-  switch ($op) {
-    case FIELD_STORAGE_INSERT:
-      // Use the cvterm_id to look up tables where this term is used
-      $sel_values = array(
-        'term_id' => array(
-          'cvterm_id' => $entity->cvterm_id,
-        ),
-      );
-      $term_usage = chado_generate_var('tripal_term_usage', $sel_values, array('return_array' => 1));
+  // Recursively write fields for the base table.
+  $record_id = tripal_fields_field_storage_write_recursive($entity_type, $entity,
+      $op, $field_vals, $base_table, $base_table, $type_field, $record_id);
 
-      // For each table that uses this term, insert the field recursively
-      foreach ($term_usage as $usage) {
-        $data_table = $usage->data_table;
-        //$type_table = $usage->type_table;
-        $type_field = $usage->field;
-
-        // Recursively write fields for the base table.
-        tripal_fields_field_storage_write_recursive($entity_type, $entity,
-          $op, $field_vals, $data_table, $type_field);
-
-        // Now get the new chado_entity that was just added.
-        $details = db_select('chado_entity', 'ce')
-          ->fields('ce')
-          ->condition('entity_id', $entity->id)
-          ->execute()
-          ->fetchObject();
-        $data_table = $details->data_table;
-        $type_field = $details->field;
-        $record_id = $details->record_id;
-
-      }
-      break;
-
-    case FIELD_STORAGE_UPDATE :
-
-      // Get the base table and record id for the fields of this entity.
-      $details = db_select('chado_entity', 'ce')
-        ->fields('ce')
-        ->condition('entity_id', $entity->id)
-        ->execute()
-        ->fetchObject();
-      $data_table = $details->data_table;
-      $type_field = $details->field;
-      $record_id = $details->record_id;
-
-      tripal_fields_field_storage_write_recursive($entity_type, $entity,
-        $op, $field_vals, $data_table, $type_field, $record_id);
-      if (!$details) {
-        // TODO: what to do if record is missing!
-      }
-      break;
+  // If this is an insert then add the chado_entity record.
+  if ($op == FIELD_STORAGE_INSERT) {
+    // Add a record to the chado_entity table so that the data for the
+    // fields can be pulled from Chado when loaded the next time.
+    $record = array(
+      'entity_id' => $entity->id,
+      'record_id' => $record_id,
+      'data_table' => $tablename,
+      'type_table' => $tablename, // TODO: this must be fixed.
+      'field' => $type_field,
+    );
+    $success = drupal_write_record('chado_entity', $record);
+    if (!$success) {
+      drupal_set_message('Unable to insert new Chado entity.', 'error');
+    }
   }
 
-  // Recursively write fields for any referring tables that have
-  // values in the $field_vals array.  There should be a key for each
-  // FK table in the $field_vals array.
-//   $schema = chado_get_schema($data_table);
-//   $rtables = $schema['referring_tables'];
-//   foreach ($rtables as $rtable) {
-//     if (array_key_exists($rtable, $field_vals)) {
-//       tripal_fields_field_storage_write_recursive($entity_type, $entity,
-//           $op, $field_vals, $rtable, NULL, NULL, 1);
-//     }
-//   }
+  // Now that we have handled the base table, we need to handle fields that
+  // are not part of the base table.
+  foreach ($fields as $field_id) {
+    // Get the field using the id.
+    $field = field_info_field_by_id($field_id);
+    $field_name = $field['field_name'];
+
+    // If the field has a chado_table setting then we can try to write.
+    if (array_key_exists('settings', $field) and array_key_exists('chado_table', $field['settings'])) {
+
+      // Skip fields that use the base table, as we've already handled those.
+      if ($field['settings']['chado_table'] != $base_table){
+        $field_table = $field['settings']['chado_table'];
+
+        // Iterate through each record.
+        foreach ($field_vals[$field_name] as $delta => $fvals) {
+          tripal_fields_field_storage_write_recursive($entity_type, $entity,
+              $op, $fvals, $base_table, $field_table);
+        }
+      }
+    }
+  }
 }
 
 /**
- * Implements hook_field_storage_write_recursive().
+ *
+ * @param $entity_type
+ * @param $entity
+ * @param $op
+ * @param $field_vals
+ * @param $tablename
+ * @param $type_field
+ * @param $record_id
+ * @param $depth
+ * @throws Exception
+ * @return
+ *   The record_id of the table if a matching record exists.
  */
 function tripal_fields_field_storage_write_recursive($entity_type, $entity,
-   $op, $field_vals, $tablename, $type_field = NULL,
+   $op, $field_vals, $base_table, $tablename, $type_field = NULL,
    $record_id = NULL, $depth = 0) {
 
   // Intialize the values array.
@@ -113,22 +105,25 @@ function tripal_fields_field_storage_write_recursive($entity_type, $entity,
   $pkey_field = $schema['primary key'][0];
   $fkey_fields = $schema['foreign keys'];
   $fkey_fields_list = array();
+  $fkey_base_linker = NULL;
 
   // STEP 1: Recurse on the FK fields.
   // Loop through the foreign keys so that we can recurse on those first.
   foreach ($fkey_fields as $fk_table => $details) {
     foreach ($details['columns'] as $local_id => $remote_id) {
-      // If this is the base table then do not recurse on the type_id.  The
-      // type_id is set in the entity.  We are at the base table when
-      // the depth is 0.
-      if ($depth == 0 && $local_id == $type_field) {
+
+      // If this is the base table then do not recurse on the type_id.
+      if ($tablename == $base_table && $local_id == $type_field) {
         $values[$local_id] = $entity->cvterm_id;
         continue;
       }
 
-      // Keep track of the FK fields so that in STEP 2 we don't have to
-      // loop through the $fk_fields again.
-      $fkey_fields_list[] = $local_id;
+      // If this is not the base table then do not recurse on the FK field
+      // that links this table to the base table.
+      if ($tablename != $base_table && $details['table'] == $base_table) {
+        $fkey_base_linker = $local_id;
+        continue;
+      }
 
       // Get the value of the FK field as provided by the user.
       $fk_val = NULL;
@@ -147,16 +142,19 @@ function tripal_fields_field_storage_write_recursive($entity_type, $entity,
         continue;
       }
 
-      // Don't recuse if there are no values to select/insert a foreign key.
+      // Don't recuse if there are no fkvals.
       if (count(array_keys($fk_vals)) == 0) {
-        $values[$local_id] = $fk_val;
         continue;
       }
+
+      // Keep track of the FK fields so that in STEP 2 we don't have to
+      // loop through the $fk_fields again.
+      $fkey_fields_list[] = $local_id;
 
       // Recurse on the FK field.  Pass in the ID for the FK field if one
       // exists in the $field_vals;
       $fk_val = tripal_fields_field_storage_write_recursive($entity_type,
-        $entity, $op, $fk_vals, $fk_table, NULL, $fk_val, $depth + 1);
+        $entity, $op, $fk_vals, $base_table, $fk_table, NULL, $fk_val, $depth + 1);
       if (isset($fk_val) and $fk_val != '' and $fk_val != 0) {
         $values[$local_id] = $fk_val;
       }
@@ -167,7 +165,6 @@ function tripal_fields_field_storage_write_recursive($entity_type, $entity,
   // Loop through the fields passed to the function and find any that
   // are for this table.  Then add their values to the $values array.
   foreach ($field_vals as $field_name => $items) {
-
     if (preg_match('/^' . $tablename . '__(.*)/', $field_name, $matches)) {
       $chado_field = $matches[1];
 
@@ -184,16 +181,21 @@ function tripal_fields_field_storage_write_recursive($entity_type, $entity,
         continue;
       }
 
+      // If the value is empty then exclude this field
+      if (!$items[0]['value']) {
+        continue;
+      }
+
       // Add the value of the field to the $values arr for later insert/update.
       $values[$chado_field] = $items[0]['value'];
     }
   }
-
   // STEP 3: Insert/Update the record.
   // If there are no values then return.
   if (count($values) == 0) {
     return $record_id;
   }
+
   // If we don't have an incoming record ID then this is an insert.
   if ($record_id == NULL) {
     // STEP 3a: Before inserting, we want to make sure the record does not
@@ -212,23 +214,6 @@ function tripal_fields_field_storage_write_recursive($entity_type, $entity,
       throw new Exception('Could not insert Chado record into table: "' . $tablename . '".');
     }
     $record_id = $record[$pkey_field];
-
-    // Add a record to the chado_entity table so that the data for the
-    // fields can be pulled from Chado when loaded the next time. Only do
-    // this for the base table record.
-      if ($depth == 0) {
-        $record = array(
-          'entity_id' => $entity->id,
-          'record_id' => $record_id,
-          'data_table' => $tablename,
-          'type_table' => $tablename, // TODO: this must be fixed.
-          'field' => $type_field,
-        );
-        $success = drupal_write_record('chado_entity', $record);
-        if (!$success) {
-          drupal_set_message('Unable to insert new Chado entity.', 'error');
-        }
-      }
   }
   // We have an incoming record_id so this is an update.
   else {
@@ -311,6 +296,8 @@ function tripal_fields_field_storage_load($entity_type, $entities, $age,
 
       // Type 1: fields from base tables.
       if ($field_table == $base_table) {
+        // Set an empty value by default, and if there is a record, then update.
+        $entity->{$field_name}['und'][0]['value'] = '';
         if ($record and property_exists($record, $field_column)) {
           $entity->{$field_name}['und'][0]['value'] = $record->$field_column;
         }
@@ -320,7 +307,7 @@ function tripal_fields_field_storage_load($entity_type, $entities, $age,
         $load_function = $field_module . '_' . $field_type . '_field_load';
         module_load_include('inc', $field_module, 'includes/fields/' . $field_type);
         if (function_exists($load_function)) {
-          $load_function($field, $entity, $record);
+          $load_function($field, $entity, $base_table, $record);
         }
       }
 
@@ -328,10 +315,12 @@ function tripal_fields_field_storage_load($entity_type, $entities, $age,
       // of form elements that might need populating so we'll offload the
       // loading of these fields to the field itself.
       if ($field_table != $base_table) {
+        // Set an empty value by default, and let the hook function update it.
+        $entity->{$field_name}['und'][0]['value'] = '';
         $load_function = $field_module . '_' . $field_type . '_field_load';
         module_load_include('inc', $field_module, 'includes/fields/' . $field_type);
         if (function_exists($load_function)) {
-          $load_function($field, $entity, $record);
+          $load_function($field, $entity, $base_table, $record);
         }
       }
 

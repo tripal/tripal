@@ -106,12 +106,18 @@ function tripal_fields_kvproperty_adder_widget_validate($element, &$form_state) 
      $term = chado_generate_var('cvterm', array('name' => $kvproperty), $options = array('return_array' => TRUE));
      if (count($term) == 1) {
        $prop_field_name = $field_name . '__' . $term[0]->cvterm_id;
+
+       // The field name is the table name in this case. We want to get the
+       // primary key as this should be the field that maps th the value.
+       $schema = chado_get_schema($field_name);
+       $pkey = $schema['primary key'][0];
+
        $field_info = array(
          'field_type' => 'kvproperty',
          'widget_type' => 'tripal_fields_kvproperty_widget',
          'field_settings' => array(
            'chado_table' => $field_name,
-           'chado_column' => 'type_id',
+           'chado_column' => $pkey,
          ),
          'widget_settings' => array(),
          'description' => $term[0]->definition ? $term[0]->definition : '',
