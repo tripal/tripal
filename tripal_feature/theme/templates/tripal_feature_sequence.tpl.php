@@ -45,7 +45,7 @@ if ($residues or count($featureloc_sequences) > 0) {
     $sequences_html .= '<div id="residues" class="tripal_feature-sequence-item">';
     $sequences_html .= '<p><b>' . $feature->type_id->name . ' sequence</b></p>';
     $sequences_html .= '<pre class="tripal_feature-sequence">';
-    $sequences_html .= '>' . tripal_get_fasta_defline($feature, '', NULL, '', strlen($feature->residues)) . "\n";
+    $sequences_html .= '>' . tripal_get_fasta_defline($feature, '', NULL, '', strlen($feature->residues)) . "<br>";
     $sequences_html .= wordwrap($feature->residues, $num_bases, "<br>", TRUE);
     $sequences_html .= '</pre>';
     $sequences_html .= '<a href="#sequences-top">back to top</a>';
