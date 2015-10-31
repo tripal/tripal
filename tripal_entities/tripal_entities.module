@@ -428,22 +428,60 @@ function tripal_entities_form_field_ui_display_overview_form_alter(&$form, &$for
   );
   $form['modes']['#group'] = 'overview_vert_tabs';
   $form['modes']['#weight'] = 1000;
-  $form['tripal_entity_layout'] = array(
+  $form['te_add_panels'] = array(
     '#type' => 'fieldset',
-    '#title' => 'Panels',
+    '#title' => 'Add a Panel',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#group' => 'overview_vert_tabs'
   );
-  $form['tripal_entity_layout']['panel_name'] = array(
-    '#type' => 'textfield',
-    '#title' => 'Add a new Panel',
-    '#description' => t('You may add as many panels to your page layout as
+  $form['te_add_panels']['instructions'] = array(
+    '#type' => 'item',
+    '#markup' => t('You may add as many panels to your page layout as
         desired. Panels can be used to organize fields into categories....')
+  );
+  $form['te_add_panels']['panel_name'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Panel Name',
+    '#description' => t('Please provide a computer readable name for this
+        panel.  The name should only contain alphanumeric values and
+        underscores. It must not begin with a number.')
+  );
+  $form['te_add_panels']['panel_label'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Panel Label',
+    '#description' => t('Please provide a human readable label for this
+        panel. This is the name that will appear to site visitors.')
+  );
+  $form['te_add_panels']['message'] = array(
+    '#type' => 'textarea',
+    '#title' => 'Empty Message',
+    '#rows' => 2,
+    '#description' => t('When the panel has no fields the following
+        message will be shown in the form above.')
+  );
+  $form['te_add_panels']['add_button'] = array(
+    '#type' => 'submit',
+    '#value' => 'Add Panel',
+    '#name' => 'add-panel-submit'
+  );
+  $form['te_layout_panels'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Order Panels',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'overview_vert_tabs'
+  );
+  $form['te_configure_panels'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Configure Panels',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'overview_vert_tabs'
   );
 
   // Make sure our default panels are in the database.
-  _tripal_entities_check_default_field_panels();
+  _tripal_entities_check_default_field_panels($bundle);
 
   // Now add each panel as a region.
   $form['fields']['#regions'] = array();
@@ -499,7 +537,7 @@ function tripal_entities_form_field_ui_display_overview_form_alter(&$form, &$for
 /**
  * A helper function for checking if the default panels are in the database.
  */
-function _tripal_entities_check_default_field_panels() {
+function _tripal_entities_check_default_field_panels($bundle) {
   // Make sure we have records for our default regions: te_base and te_hidden.
   // First check if the base region is in the database. If not, add it.
   $te_base = db_select('tripal_panels', 'tp')
@@ -524,7 +562,7 @@ function _tripal_entities_check_default_field_panels() {
   // Next check if the hidden region is in the database. If not, add it.
   $te_base = db_select('tripal_panels', 'tp')
     ->fields('tp')
-    ->condition('name', 'te_hidden')
+    ->condition('name', 'te_disabled')
     ->execute()
     ->fetchObject();
   if (!$te_base) {
@@ -534,8 +572,8 @@ function _tripal_entities_check_default_field_panels() {
     db_insert('tripal_panels')
       ->fields(array(
         'bundle_id' => $bundle->id,
-        'name' => 'te_hidden',
-        'label' => 'Hidden',
+        'name' => 'te_disabled',
+        'label' => 'Disabled',
         'settings' => serialize($settings),
         'weight' => 9999999
       ))
