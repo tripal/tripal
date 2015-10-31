@@ -44,9 +44,9 @@ function tripal_fields_field_storage_write($entity_type, $entity, $op, $fields) 
     $record = array(
       'entity_id' => $entity->id,
       'record_id' => $record_id,
-      'data_table' => $tablename,
-      'type_table' => $tablename, // TODO: this must be fixed.
-      'field' => $type_field,
+      'data_table' => $entity->chado_table,
+      'type_table' => $entity->chado_table,
+      'field' => $entity->chado_field,
     );
     $success = drupal_write_record('chado_entity', $record);
     if (!$success) {
