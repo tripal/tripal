@@ -51,7 +51,7 @@ if (count($featuremap_pubs) > 0) { ?>
         '/(\+)/', '/(\.)/', '/(\?)/', 
       );
       $fixed_title = preg_replace($patterns, "\\\\$1", $pub->title);
-      $citation = preg_replace('/' . $fixed_title . '/', $link, $citation);
+      $citation = preg_replace('/' . str_replace('/', ' ', $fixed_title) . '/', $link, $citation);
     }
     
     $rows[] = array(

@@ -1549,7 +1549,7 @@ function chado_pager_query($query, $args, $limit, $element, $count_query = '') {
   $pages = explode(',', $page_arg);
   $page = 0;
   if (count($pages) >= $element) {
-    $page = $pages[$element];
+    $page = key_exists($element, $pages) ? $pages[$element] : 0;
   }
   $offset = $limit * $page;
   $q = $_GET['q'];
