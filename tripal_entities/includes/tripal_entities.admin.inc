@@ -97,14 +97,14 @@ function tripal_entities_content_overview_form($form, &$form_state) {
   while ($entity = $entities->fetchObject()) {
     $author = user_load($entity->uid);
     $rows[] = array(
-      l($entity->title, 'data/' . $entity->id),
+      l($entity->title, 'BioData/' . $entity->id),
       $entity->type,
       $entity->bundle,
       l($author->name, 'user/' . $entity->uid),
       $entity->status == 1 ? 'published' : 'unpublished',
       format_date($entity->changed, 'short'),
-      l('edit', 'data/' . $entity->id . '/edit') . '&nbsp;&nbsp;' .
-      l('delete', 'data/' . $entity->id . '/delete')
+      l('edit', 'BioData/' . $entity->id . '/edit') . '&nbsp;&nbsp;' .
+      l('delete', 'BioData/' . $entity->id . '/delete')
     );
   }
 
@@ -354,7 +354,7 @@ function tripal_entities_admin_publish_form_submit($form, &$form_state) {
 
     // Create the bundle name and entity type name.
     $bundle_name = $cvterm->dbxref_id->db_id->name . '_' . $cvterm->dbxref_id->accession;
-    $entity_type_name = $cvterm->dbxref_id->db_id->name;
+    $entity_type_name = 'BioData'; // $cvterm->dbxref_id->db_id->name;
 
     // Clear the entity cache so that Drupal will read our
     // hook_entity_info() implementation which now will have the entities

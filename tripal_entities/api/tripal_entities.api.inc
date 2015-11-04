@@ -40,7 +40,7 @@ function tripal_bundle_delete(TripalBundle $type) {
  */
 function tripal_entity_uri(TripalEntity $entity){
   return array(
-    'path' => 'data/' . $entity->id,
+    'path' => 'BioData/' . $entity->id,
   );
 }
 

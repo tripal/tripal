@@ -41,7 +41,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
     );
 
      // Set a custom page for adding new tripal data entities.
-    $items['data/add'] = array(
+    $items['BioData/add'] = array(
       'title' => 'Add Tripal data',
       'description' => 'Add a new tripal data record',
       'page callback'  => 'drupal_get_form',
@@ -55,7 +55,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
     );
 
     // Link for viewing a tripal data type.
-    $items['data/' . $wildcard] = array(
+    $items['BioData/' . $wildcard] = array(
       'title callback' => 'tripal_entities_entity_title',
       'title arguments' => array(1),
       'page callback' => 'tripal_entities_view_entity',
@@ -66,7 +66,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
     );
 
     // 'View' tab for an individual entity page.
-    $items['data/' . $wildcard . '/view'] = array(
+    $items['BioData/' . $wildcard . '/view'] = array(
       'title' => 'View',
       'page callback' => 'tripal_entities_view_entity',
       'page arguments' => array(1),
@@ -78,7 +78,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
     );
 
     // 'Edit' tab for an individual entity page.
-    $items['data/' . $wildcard . '/edit'] = array(
+    $items['BioData/' . $wildcard . '/edit'] = array(
       'title' => 'Edit',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_entities_entity_form', NULL, 1),
@@ -90,7 +90,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
       'weight' => -8,
     );
 
-    $items['data/' . $wildcard . '/manage'] = array(
+    $items['BioData/' . $wildcard . '/manage'] = array(
       'title' => 'Manage',
       'page callback' => 'tripal_entity_manage_fields',
       'page arguments' => array(1),
@@ -103,7 +103,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
     );
 
     // Menu item for deleting tripal data entities.
-    $items['data/' . $wildcard . '/delete'] = array(
+    $items['BioData/' . $wildcard . '/delete'] = array(
       'title'  => 'Delete',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_entities_entity_delete_form', 1),
@@ -123,6 +123,6 @@ class TripalEntityUIController extends EntityDefaultUIController {
  * @param unknown $entity
  */
 function tripal_entity_manage_fields($entity) {
-  drupal_goto('admin/structure/bio_data/' . $entity->type . '/manage/' . $entity->bundle . '/fields');
+  drupal_goto('admin/structure/BioData/manage/' . $entity->bundle . '/fields');
   return '';
 }

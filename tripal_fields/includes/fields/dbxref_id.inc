@@ -45,11 +45,18 @@ function tripal_fields_dbxref_id_widget(&$widget, $form, $form_state, $field, $i
   $field_name = $field['field_name'];
 
   // Get the field defaults.
-  $dbxref_id = $items[$delta]['value'];
-  $db_id = $items[$delta]['dbxref__db_id'];
-  $accession = $items[$delta]['dbxref__accession'];
-  $version = $items[$delta]['dbxref__version'];
-  $description = $items[$delta]['dbxref__description'];
+  $dbxref_id = '';
+  $db_id = '';
+  $accession = '';
+  $version = '';
+  $description = '';
+  if (array_key_exists($delta, $items)) {
+    $dbxref_id = $items[$delta]['value'];
+    $db_id = $items[$delta]['dbxref__db_id'];
+    $accession = $items[$delta]['dbxref__accession'];
+    $version = $items[$delta]['dbxref__version'];
+    $description = $items[$delta]['dbxref__description'];
+  }
 
   // If we are here because our parent was triggered in a form submit
   // then that means an ajax call was made and we don't want the fieldset to

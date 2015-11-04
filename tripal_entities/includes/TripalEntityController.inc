@@ -68,7 +68,7 @@ class TripalEntityController extends EntityAPIController {
     try {
       // Invoke hook_entity_delete().
       module_invoke_all('entity_delete', $entity, $entity->type);
-      field_attach_delete($entity->type, $entity);
+      field_attach_delete('BioData', $entity);
 
       db_delete('tripal_entity')
         ->condition('id', $entity->id)
@@ -144,10 +144,10 @@ class TripalEntityController extends EntityAPIController {
       // to determine whether to update or insert, and which hook we
       // need to invoke.
       if ($invocation == 'entity_insert') {
-        field_attach_insert($entity->type, $entity);
+        field_attach_insert('BioData', $entity);
       }
       else {
-        field_attach_update($entity->type, $entity);
+        field_attach_update('BioData', $entity);
       }
 
       // Invoke either hook_entity_update() or hook_entity_insert().

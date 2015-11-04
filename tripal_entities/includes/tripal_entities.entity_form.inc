@@ -111,7 +111,8 @@ function tripal_entities_entity_form($form, &$form_state, $term_name = '', $enti
   // records.
   if ($num_terms == 1){
     $cvterm = $terms[0];
-    $bundle_id = $cvterm->dbxref_id->db_id->name .'_' .$cvterm->dbxref_id->accession;
+    //$bundle_id = $cvterm->dbxref_id->db_id->name .'_' .$cvterm->dbxref_id->accession;
+    $bundle_id = 'dbxref_' . $cvterm->dbxref_id->dbxref_id;
 
     $form['cv_id'] = array(
       '#type' => 'hidden',
@@ -176,9 +177,8 @@ function tripal_entities_entity_form_add_new($bundle_id, $cvterm, &$form, &$form
 
   // If the entity doesn't exist then create one.
   if (!$entity) {
-    $entity_type = $cvterm->dbxref_id->db_id->name;
-    $entity = entity_get_controller($entity_type)->create(array('bundle' => $bundle_id));
-    field_attach_form($cvterm->dbxref_id->db_id->name, $entity, $form, $form_state);
+    $entity = entity_get_controller('BioData')->create(array('bundle' => $bundle_id));
+    field_attach_form('BioData', $entity, $form, $form_state);
 
     $form['add_button'] = array(
       '#type' => 'submit',
@@ -188,7 +188,7 @@ function tripal_entities_entity_form_add_new($bundle_id, $cvterm, &$form, &$form
     );
   }
   else {
-    field_attach_form($cvterm->dbxref_id->db_id->name, $entity, $form, $form_state);
+    field_attach_form('BioData', $entity, $form, $form_state);
     $form['entity_id'] = array(
       '#type' => 'hidden',
       '#value' => $entity->id
@@ -279,7 +279,7 @@ function tripal_entities_entity_form_validate($form, &$form_state) {
       $form_state['clicked_button']['#name'] =='add_data') {
     $tripal_entity = (object) $form_state['values'];
     $entity_type = $form_state['values']['type'];
-    field_attach_form_validate($entity_type, $tripal_entity, $form, $form_state);
+    field_attach_form_validate('BioData', $tripal_entity, $form, $form_state);
   }
 }
 
@@ -425,7 +425,7 @@ function tripal_entities_entity_form_submit($form, &$form_state) {
   if ($form_state['clicked_button']['#name'] =='cancel') {
     if (array_key_exists('id', $form_state['values'])) {
       $entity_id = $form_state['values']['entity_id'];
-      $form_state['redirect'] = "data/$entity_id";
+      $form_state['redirect'] = "BioData/$entity_id";
     }
     else {
       $form_state['redirect'] = "admin/structure/tripal_entity";
@@ -442,16 +442,13 @@ function tripal_entities_entity_form_submit($form, &$form_state) {
   }
   if ($form_state['clicked_button']['#name'] =='update_data' or
       $form_state['clicked_button']['#name'] =='add_data') {
-    // Use the Entity API to get the entity from the form state, then
-    // attach the fields and save.
-    $entity_type = $form_state['values']['type'];
-    $entity = entity_ui_controller($entity_type)->entityFormSubmitBuildEntity($form, $form_state);
+    $entity = entity_ui_controller('BioData')->entityFormSubmitBuildEntity($form, $form_state);
     $entity->save();
-    $form_state['redirect'] = "data/$entity->id";
+    $form_state['redirect'] = "BioData/$entity->id";
   }
   if ($form_state['clicked_button']['#name'] =='delete_data') {
     $entity_id = $form_state['values']['entity_id'];
-    $form_state['redirect'] = 'data/' .$entity_id .'/delete';
+    $form_state['redirect'] = 'BioData/' .$entity_id .'/delete';
   }
 }
 
@@ -498,15 +495,15 @@ function tripal_entities_entity_delete_form_submit($form, &$form_state) {
  */
 function tripal_entities_add_bundle($cvterm) {
 
-  // Create the bundle name and entity type name.
-  $type = $cvterm->dbxref_id->db_id->name;
-  $bundle_name = $type . '_' . $cvterm->dbxref_id->accession;
-  $entity_type_name = $cvterm->dbxref_id->db_id->name;
+  // Create the bundle name and entity type name.  The bundle name is the
+  // dbxref ID.  This isn't very human readable, but the alternative is to
+  // use the accession which may not always be alpha-numeric.
+  $bundle_name = 'dbxref_' . $cvterm->dbxref_id->dbxref_id;
 
   // Check to see if this bundle exists. If not then create it
   $bundle = db_select('tripal_bundle', 't')
     ->fields('t')
-    ->condition('type', $type)
+    ->condition('type', 'BioData')
     ->condition('bundle', $bundle_name)
     ->execute()
     ->fetchObject();
@@ -515,18 +512,18 @@ function tripal_entities_add_bundle($cvterm) {
     // The TripalBundle Entity manages the bundles we have available.
     // Therefore, we need to add a new entity for each bundle "type".
     $vals = array(
-      'label' => $bundle_name  . ' (' . $cvterm->name . ')',
-      'type' => $entity_type_name,
+      'label' => $cvterm->name,
+      'type' => 'BioData',
       'bundle' => $bundle_name,
       'data' => serialize(array()),
       'module' => 'tripal_entities'
     );
-    $tripal_bundle = new TripalBundle($vals, $entity_type_name . '_bundle');
+    $tripal_bundle = new TripalBundle($vals, 'BioData_bundles');
     $tripal_bundle->save();
   }
 
   // Allow modules to now add fields to the bundle
-  module_invoke_all('add_bundle_fields', $entity_type_name, $bundle_name, $cvterm);
+  module_invoke_all('add_bundle_fields', 'BioData', $bundle_name, $cvterm);
 
 }
 /**

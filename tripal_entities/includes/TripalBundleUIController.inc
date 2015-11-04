@@ -19,10 +19,10 @@ class TripalBundleUIController extends EntityDefaultUIController {
     // We just want one menu item.  So to support one menu item that
     // can handle all of the Tripal entity types, we have to set the
     // 'bundle of' property here rather than in the hook_entity_info() function.
-    $bundle_of = $entity_type;
-    $bundle_of = preg_replace('/_bundle/', '', $bundle_of);
-    $entity_info['bundle of'] = $bundle_of;
-    parent::__construct($entity_type, $entity_info);
+//     $bundle_of = $entity_type;
+//     $bundle_of = preg_replace('/_bundle/', '', $bundle_of);
+//     $entity_info['bundle of'] = $bundle_of;
+//     parent::__construct($entity_type, $entity_info);
   }
 
   /**

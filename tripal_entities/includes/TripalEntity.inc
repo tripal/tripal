@@ -35,20 +35,23 @@ class TripalEntity extends Entity {
     // If we do not have an ID then we need to do a few queries to get
     // information about the chado table this entity maps to.
     else {
-      // Use the cvterm_id to look up the base table for this term.  We find
-      // the base table by looking in the term_usage table for the mapping.
-      $sel_values = array(
-        'term_id' => array(
-          'cvterm_id' => $this->cvterm_id,
-        ),
-      );
-      $term_usage = chado_generate_var('tripal_term_usage', $sel_values, array('return_array' => 1));
+//       // Use the cvterm_id to look up the base table for this term.  We find
+//       // the base table by looking in the term_usage table for the mapping.
+//       $sel_values = array(
+//         'term_id' => array(
+//           'cvterm_id' => $this->cvterm_id,
+//         ),
+//       );
+//       $term_usage = chado_generate_var('tripal_term_usage', $sel_values, array('return_array' => 1));
 
-      // For each table that uses this term, insert the field recursively
-      foreach ($term_usage as $usage) {
-        $this->chado_table = $usage->data_table;
-        $this->chado_field = $usage->field;
-      }
+//       // For each table that uses this term, insert the field recursively
+//       foreach ($term_usage as $usage) {
+//         $this->chado_table = $usage->data_table;
+//         $this->chado_field = $usage->field;
+//       }
+      $this->chado_table = '';
+      $this->chado_field = '';
+      $this->chado_entity_id = NULL;
     }
   }
 
@@ -57,7 +60,7 @@ class TripalEntity extends Entity {
   }
 
   protected function defaultUri() {
-    return array('path' => 'data/' . $this->id);
+    return array('path' => 'BioData/' . $this->id);
   }
 
 }
