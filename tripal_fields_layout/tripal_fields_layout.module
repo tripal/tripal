@@ -88,6 +88,8 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
     '#value' => 'Add Panel',
     '#name' => 'add-panel-submit'
   );
+  
+  // Layout Panels
   $form['te_layout_panels'] = array(
     '#type' => 'fieldset',
     '#title' => 'Order Panels',
@@ -95,6 +97,42 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
     '#collapsed' => TRUE,
     '#group' => 'overview_vert_tabs'
   );
+  $form['te_layout_panels']['instructions'] = array(
+    '#type' => 'item',
+    '#markup' => t('Drag and drop the panel to change its order.')
+  );
+  $form['te_layout_panels']['panel_items']['#tree'] = TRUE;
+  // Get available panels
+  $result = db_query('SELECT panel_id, name, label, weight FROM {tripal_panels} ORDER BY weight ASC');
+  foreach ($result as $item) {
+    $form['te_layout_panels']['panel_items'][$item->panel_id] = array(
+      'name' => array(
+        '#markup' => check_plain($item->name),
+      ),
+      'label' => array(
+        '#markup' => check_plain($item->label),
+      ),
+      'weight' => array(
+        '#type' => 'weight',
+        '#title' => t('Weight'),
+        '#default_value' => $item->weight,
+        '#delta' => 50,
+        '#title_display' => 'invisible',
+      ),
+    );
+  }
+  $form['te_layout_panels']['panel_items']['#theme_wrappers'] = array('tripal_fields_layout_form_draggable_panel_table');
+  // Now we add our submit button, for submitting the form results.
+  //
+  // The 'actions' wrapper used here isn't strictly necessary for tabledrag,
+  // but is included as a Form API recommended practice.
+  $form['te_layout_panels']['add_button'] = array(
+    '#type' => 'submit',
+    '#value' => 'Save Panel Order',
+    '#name' => 'order-panel-submit'
+  );
+  
+  // Configure Panels
   $form['te_configure_panels'] = array(
     '#type' => 'fieldset',
     '#title' => 'Configure Panels',
@@ -214,17 +252,41 @@ function tripal_fields_layout_field_ui_row_region($row) {
   $default_panel =  'te_base';
   $panel = '';
 
+  // Get field
   $field_name = $row['#parents'][1];
   $field = field_info_field($field_name);
+
+  // Get field instance
+  $field_id = $field['id'];
+  $bundle_keys = array_keys($field['bundles']);
+  $entity_type = $bundle_keys[0];
+  $bundle = $field['bundles'][$entity_type][0];
+  $field_instance = field_info_instance($entity_type, $field_name, $bundle);
+
+  // Get panel_id
+  $panel_id = db_select('tripal_panel_fields', 'tpf')
+  ->fields('tpf', array('panel_id'))
+  ->condition('field_id', $field_instance['id'])
+  ->execute()
+  ->fetchField();
+  
+  // Get panel name
+  if ($panel_id) {
+    $panel = db_select('tripal_panels', 'tp')
+    ->fields('tp', array('name'))
+    ->condition('panel_id', $panel_id)
+    ->execute()
+    ->fetchField();
+  }
 
   // First get the panel
   if (!$panel) {
     $panel = $default_panel;
   }
-
+  
   // See if there is a record in the tripal_panel_fields for this field.
 
-  return $default_panel;
+  return $panel;
 
 }
 /**
@@ -234,7 +296,33 @@ function tripal_fields_layout_field_ui_row_region($row) {
  * @param $form_state
  */
 function tripal_fields_layout_field_ui_validate($form, &$form_state) {
-
+  
+  if ($form_state ['clicked_button'] ['#name'] == 'add-panel-submit') {
+    // Check if a valide panel name is provided
+    $name = $form_state ['values'] ['panel_name'];
+    if (! $name) {
+      form_set_error ( 'panel_name', t ( "Please provide a name for the new panel." ) );
+    }
+    else if (preg_match ( '/^\d+/', $name )) {
+      form_set_error ( 'panel_name', t ( "Panel name must not begin with a number." ) );
+    }
+    else if (preg_match ( '/\s+/', $name )) {
+      form_set_error ( 'panel_name', t ( "Panel name should only contain alphanumeric values and underscores." ) );
+    }
+    
+    // Check if a panel label is provided
+    $label = $form_state ['values'] ['panel_label'];
+    if (! $label) {
+      form_set_error ( 'panel_label', t ( "Please provide a label for the new panel." ) );
+    }
+  }
+  else if ($form_state ['clicked_button'] ['#name'] == 'order-panel-submit') {
+    
+  }
+  else if ($form_state ['clicked_button'] ['#name'] == 'op') {
+    
+  }
+  
 }
 /**
  * Responds to a submit from the field UI form for saving panel assignments.
@@ -243,5 +331,176 @@ function tripal_fields_layout_field_ui_validate($form, &$form_state) {
  * @param $form_state
  */
 function tripal_fields_layout_field_ui_submit($form, &$form_state) {
+  // Add a new panel
+  if ($form_state ['clicked_button'] ['#name'] == 'add-panel-submit') {
+    $bundle_id = $form_state['build_info']['args'][1]->id;
+    $name      = $form_state['values']['panel_name'];
+    $label     = $form_state['values']['panel_label'];
+    $message   = $form_state['values']['message'];
+    $settings = array(
+      'message' => $message,
+    );
+    db_insert('tripal_panels')
+    ->fields(array(
+      'bundle_id' => $bundle_id,
+      'name' => $name,
+      'label' => $label,
+      'settings' => serialize($settings),
+      'weight' => 0
+    ))
+    ->execute();
+  }
+  // Order panel
+  else if ($form_state ['clicked_button'] ['#name'] == 'order-panel-submit') {
 
+    $panels = $form_state['values']['panel_items'];
+    foreach ($panels AS $id => $panel) {
+      db_query(
+        'UPDATE {tripal_panels} SET weight = :weight WHERE panel_id = :id',
+        array(
+          ':weight' => $panel['weight'],
+          ':id' => $id
+        )
+      );
+    }
+  }
+  // Save field regions
+  else if ($form_state ['clicked_button'] ['#name'] == 'op') {
+    $fields = $form_state['values']['fields'];
+    foreach($fields AS $field_name => $field_data){
+      
+      // Get field instance id
+      $field = field_info_field($field_name);
+      $field_id = $field['id'];
+      $bundle_keys = array_keys($field['bundles']);
+      $entity_type = $bundle_keys[0];
+      $bundle = $field['bundles'][$entity_type][0];
+      $field_instance = field_info_instance($entity_type, $field_name, $bundle);
+      $field_instance_id = $field_instance['id'];
+      
+      // Get region panel_id
+      $region = $field_data['region'];
+      $panel_id = db_select('tripal_panels', 'tp')
+      ->fields('tp', array('panel_id'))
+      ->condition('name', $region)
+      ->execute()
+      ->fetchField();
+      
+      // Save
+      $penal_field_id = db_select('tripal_panel_fields', 'tpf')
+      ->fields('tpf', array('panel_field_id'))
+      ->condition('field_id', $field_instance_id)
+      ->condition('panel_id', $panel_id)
+      ->execute()
+      ->fetchField();
+      if ($penal_field_id) {
+        db_query(
+          'UPDATE tripal_panel_fields SET panel_id = :panel_id WHERE panel_field_id = :panel_field_id',
+          array(
+            ':panel_id' => $panel_id,
+            ':panel_field_id' => $penal_field_id
+          )
+        )
+        ->execute();
+      }
+      else {
+        db_insert('tripal_panel_fields')
+        ->fields(array(
+          'panel_id' => $panel_id,
+          'field_id' => $field_instance_id
+        ))
+        ->execute();
+      }
+    }
+  }
+}
+
+/**
+ *  Theme the Panel Order Table as a draggable table
+ *  
+ * @param unknown $variables
+ * @return unknown
+ */
+function theme_tripal_fields_layout_form_draggable_panel_table ($variables) {
+  $element = $variables['element'];
+
+  $rows = array();
+
+  foreach (element_children($element) as $id) {
+
+    // Before we add our 'weight' column to the row, we need to give the
+    // element a custom class so that it can be identified in the
+    // drupal_add_tabledrag call.
+    //
+    // This could also have been done during the form declaration by adding
+    // '#attributes' => array('class' => 'example-item-weight'),
+    // directy to the 'weight' element in tabledrag_example_simple_form().
+    $element[$id]['weight']['#attributes']['class'] = array('panel-item-weight');
+
+    $element[$id]['name']['#printed'] = FALSE;
+    $element[$id]['label']['#printed'] = FALSE;
+    $element[$id]['weight']['#printed'] = FALSE;
+    // We are now ready to add each element of our $form data to the $rows
+    // array, so that they end up as individual table cells when rendered
+    // in the final table.  We run each element through the drupal_render()
+    // function to generate the final html markup for that element.
+    $rows[] = array(
+      'data' => array(
+        // Add our 'name' column.
+        drupal_render($element[$id]['name']),
+        // Add our 'description' column.
+        drupal_render($element[$id]['label']),
+        // Add our 'weight' column.
+        drupal_render($element[$id]['weight']),
+      ),
+      // To support the tabledrag behaviour, we need to assign each row of the
+      // table a class attribute of 'draggable'. This will add the 'draggable'
+      // class to the <tr> element for that row when the final table is
+      // rendered.
+      'class' => array('draggable'),
+    );
+  }
+
+  // We now define the table header values.  Ensure that the 'header' count
+  // matches the final column count for your table.
+  $header = array(t('Name'), t('Label'), t('Weight'));
+
+  // We also need to pass the drupal_add_tabledrag() function an id which will
+  // be used to identify the <table> element containing our tabledrag form.
+  // Because an element's 'id' should be unique on a page, make sure the value
+  // you select is NOT the same as the form ID used in your form declaration.
+  $table_id = 'panel-items-table';
+
+  // We can render our tabledrag table for output.
+  $output = theme('table', array(
+    'header' => $header,
+    'rows' => $rows,
+    'attributes' => array('id' => $table_id),
+  ));
+
+  // And then render any remaining form elements (such as our submit button).
+  //$output .= drupal_render_children($element);
+
+  // We now call the drupal_add_tabledrag() function in order to add the
+  // tabledrag.js goodness onto our page.
+  //
+  // For a basic sortable table, we need to pass it:
+  // - the $table_id of our <table> element,
+  // - the $action to be performed on our form items ('order'),
+  // - a string describing where $action should be applied ('siblings'),
+  // - and the class of the element containing our 'weight' element.
+  drupal_add_tabledrag($table_id, 'order', 'sibling', 'panel-item-weight');
+
+  return $output;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function tripal_fields_layout_theme($existing, $type, $theme, $path) {
+  return array(
+    'tripal_fields_layout_form_draggable_panel_table' => array(
+      'render element' => 'element',
+    ),
+  );
 }
