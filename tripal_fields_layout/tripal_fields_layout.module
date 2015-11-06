@@ -175,15 +175,34 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
   // Change the region callback for each field to place each field in the
   // proper "panel" region. Also, set the default region to be the base region.
   $fields = $form['fields'];
+  $default_panel = 'te_base';
+
   foreach (element_children($fields) as $field_name) {
+    $field_instance = field_info_instance($entity_type, $field_name, $bundle_name);
+    $panel_id = db_select('tripal_panel_fields', 'tpf')
+    ->fields('tpf', array('panel_id'))
+    ->condition('field_id', $field_instance['id'])
+    ->execute()
+    ->fetchField();
+    if ($panel_id) {
+      $default_panel = db_select('tripal_panels', 'tp')
+      ->fields('tp', array('name'))
+      ->condition('panel_id', $panel_id)
+      ->execute()
+      ->fetchField();
+    }
     $form['fields'][$field_name]['#region_callback'] = 'tripal_fields_layout_field_ui_row_region';
     $form['fields'][$field_name]['region'] = array(
       '#type' => 'select',
       '#options' => $panel_options,
-      '#default_value' => 'te_base',
+      '#default_value' => $default_panel,
       '#attributes' => array(
         'class' => array('te-field-region'),
       )
+    );
+    $form['fields'][$field_name]['#field_instance_id'] = array(
+      '#type' => 'value',
+      '#value' => $field_instance['id']
     );
   }
 
@@ -252,21 +271,12 @@ function tripal_fields_layout_field_ui_row_region($row) {
   $default_panel =  'te_base';
   $panel = '';
 
-  // Get field
-  $field_name = $row['#parents'][1];
-  $field = field_info_field($field_name);
-
-  // Get field instance
-  $field_id = $field['id'];
-  $bundle_keys = array_keys($field['bundles']);
-  $entity_type = $bundle_keys[0];
-  $bundle = $field['bundles'][$entity_type][0];
-  $field_instance = field_info_instance($entity_type, $field_name, $bundle);
+  $field_instance_id = $row['#field_instance_id']['#value'];
 
   // Get panel_id
   $panel_id = db_select('tripal_panel_fields', 'tpf')
   ->fields('tpf', array('panel_id'))
-  ->condition('field_id', $field_instance['id'])
+  ->condition('field_id', $field_instance_id)
   ->execute()
   ->fetchField();
   
@@ -368,15 +378,9 @@ function tripal_fields_layout_field_ui_submit($form, &$form_state) {
   else if ($form_state ['clicked_button'] ['#name'] == 'op') {
     $fields = $form_state['values']['fields'];
     foreach($fields AS $field_name => $field_data){
-      
+     
       // Get field instance id
-      $field = field_info_field($field_name);
-      $field_id = $field['id'];
-      $bundle_keys = array_keys($field['bundles']);
-      $entity_type = $bundle_keys[0];
-      $bundle = $field['bundles'][$entity_type][0];
-      $field_instance = field_info_instance($entity_type, $field_name, $bundle);
-      $field_instance_id = $field_instance['id'];
+      $field_instance_id = $form['fields'][$field_name]['#field_instance_id']['#value'];
       
       // Get region panel_id
       $region = $field_data['region'];
@@ -390,17 +394,14 @@ function tripal_fields_layout_field_ui_submit($form, &$form_state) {
       $penal_field_id = db_select('tripal_panel_fields', 'tpf')
       ->fields('tpf', array('panel_field_id'))
       ->condition('field_id', $field_instance_id)
-      ->condition('panel_id', $panel_id)
       ->execute()
       ->fetchField();
       if ($penal_field_id) {
-        db_query(
-          'UPDATE tripal_panel_fields SET panel_id = :panel_id WHERE panel_field_id = :panel_field_id',
-          array(
-            ':panel_id' => $panel_id,
-            ':panel_field_id' => $penal_field_id
-          )
-        )
+        db_update('tripal_panel_fields')
+        ->fields(array(
+          'panel_id' => $panel_id,
+        ))
+        ->condition('panel_field_id', $penal_field_id)
         ->execute();
       }
       else {
