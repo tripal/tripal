@@ -105,17 +105,22 @@ function tripal_entities_shortcut_default_set($account) {
       array(
         'link_path' => 'BioData/add',
         'link_title' => 'Add Biological Data',
-        'weight' => -20,
+        'weight' => -23,
+      ),
+      array(
+        'link_path' => 'admin/content/BioData',
+        'link_title' => 'Find Biological Data',
+        'weight' => -22,
       ),
       array(
         'link_path' => 'node/add',
         'link_title' => $t('Add content'),
-        'weight' => -21,
+        'weight' => -20,
       ),
       array(
         'link_path' => 'admin/content',
         'link_title' => $t('Find content'),
-        'weight' => -22,
+        'weight' => -21,
       ),
     );
     shortcut_set_save($shortcut_set);
