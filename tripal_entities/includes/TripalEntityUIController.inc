@@ -26,6 +26,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
       'type' => MENU_LOCAL_TASK,
     );
 
+
     $items['BioData/add'] = array(
       'title' => 'Add Biological Data',
       'page callback' => 'tripal_entities_add_page',
@@ -46,7 +47,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
 
       // Set a custom page for adding new tripal data entities.
       $items['BioData/add/' . $dbxref_id] = array(
-        'title' => 'Add ' . ucfirst($cvterm->name),
+        'title' => ucfirst($cvterm->name),
         'description' => 'A ' . $cvterm->name . ' record.',
         'page callback'  => 'drupal_get_form',
         'page arguments' => array('tripal_entities_entity_form', 2),
