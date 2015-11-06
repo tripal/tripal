@@ -10,6 +10,7 @@ function tripal_entities_install() {
   // chado schema
   tripal_entities_add_custom_tables();
 
+
 }
 
 /**

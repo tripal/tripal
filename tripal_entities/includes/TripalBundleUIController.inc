@@ -10,19 +10,7 @@
 class TripalBundleUIController extends EntityDefaultUIController {
 
   public function __construct($entity_type, $entity_info) {
-    // The 'bundle of' property is usually set in the hook_entity_info()
-    // function for the "entity type" entity.  This allows the Entity API
-    // to provide the user interface for managing fields attached to the
-    // bundle.  But, we are using the same controller classes for
-    // all entity types and we do not want new links for every
-    // entity type (vocabulary) on the Administration >> Structure menu.
-    // We just want one menu item.  So to support one menu item that
-    // can handle all of the Tripal entity types, we have to set the
-    // 'bundle of' property here rather than in the hook_entity_info() function.
-//     $bundle_of = $entity_type;
-//     $bundle_of = preg_replace('/_bundle/', '', $bundle_of);
-//     $entity_info['bundle of'] = $bundle_of;
-//     parent::__construct($entity_type, $entity_info);
+     parent::__construct($entity_type, $entity_info);
   }
 
   /**
@@ -33,16 +21,14 @@ class TripalBundleUIController extends EntityDefaultUIController {
     $items[$this->path]['description'] = 'Manage Tripal data types, including adding
       and removing fields and the display of fields.';
 
-    // We don't want to let the user add new Tripal data types. They
-    // are added automatically.
-    unset($items[$this->path . '/add']);
+    // We don't want to let the user import new Tripal data types.
     unset($items[$this->path . '/import']);
 
-    $items[$this->path . '/publish'] = array(
-      'title' => 'Add new biological data',
-      'description' => 'Publish Data',
+    $items[$this->path . '/add'] = array(
+      'title' => 'Add new biological data type',
+      'description' => 'Add new biological data type',
       'page callback' => 'drupal_get_form',
-      'page arguments' => array('tripal_entities_admin_publish_form'),
+      'page arguments' => array('tripal_entities_admin_add_type_form'),
       'access arguments' => array('administer tripal data types'),
       'file' =>  'includes/tripal_entities.admin.inc',
       'file path' => drupal_get_path('module', 'tripal_entities'),

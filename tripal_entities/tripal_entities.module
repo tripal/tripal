@@ -28,7 +28,7 @@ function tripal_entities_menu() {
   $items = array();
 
   // The administative settings menu.
-  $items['admin/tripal/bio_data'] = array(
+  $items['admin/tripal/BioData'] = array(
     'title' => 'Biological Data',
     'description' => 'Tools for publishing, configurating and managing biological data.',
     'page callback' => 'tripal_entities_admin_view',
@@ -44,25 +44,6 @@ function tripal_entities_menu() {
     'weight' =>  1,
   );
 
-  $items['admin/tripal/BioData/publish'] = array(
-    'title' => 'Publish',
-    'description' => 'Publish Data',
-    'page callback' => 'tripal_entities_publish',
-    'access arguments' => array('administer tripal data types'),
-    'file' =>  'includes/tripal_entities.admin.inc',
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 2
-  );
-  $items['admin/tripal/BioData/publish/%'] = array(
-    'title' => 'Publish',
-    'description' => 'Publish Data',
-    'page callback' => 'tripal_entities_publish',
-    'page arguments' => array(4),
-    'access arguments' => array('administer tripal data types'),
-    'file' =>  'includes/tripal_entities.admin.inc',
-    'type' => MENU_CALLBACK,
-  );
-
   $items['admin/tripal/BioData/access'] = array(
     'title' => 'Access',
     'description' => 'Set default access permissions for collections of data.',
@@ -76,6 +57,22 @@ function tripal_entities_menu() {
 
   return $items;
 }
+
+/**
+ * Implements hook_admin_paths().
+ */
+function tripal_entities_admin_paths() {
+  if (variable_get('node_admin_theme')) {
+    $paths = array(
+      'BioData/*/edit' => TRUE,
+      'BioData/*/delete' => TRUE,
+      'BioData/add' => TRUE,
+      'BioData/add/*' => TRUE,
+    );
+    return $paths;
+  }
+}
+
 
 /**
  * Implements hook_permission().
@@ -110,6 +107,11 @@ function tripal_entities_theme($existing, $type, $theme, $path) {
       'render element' => 'element',
       'file' => 'includes/tripal_entities.chado_entity.inc',
     ),
+    'tripal_entities_add_list' => array(
+      'variables' => array('content' => NULL),
+      'file' => 'includes/tripal_entities.entity_form.inc',
+    ),
+
   );
 }
 
@@ -151,133 +153,117 @@ function tripal_entities_rdf_mapping() {
  */
 function tripal_entities_entity_info() {
   $entities = array();
+  $entities['BioData'] = array (
+    // A human readable label to identify our entity.
+    'label' => 'Biological Data',
+    'plural label' => 'Biological Data',
 
-  // Get a list of published vocabularies from 'tripal_vocabulary
-//   $published_vocs = chado_generate_var('tripal_vocabulary', array('publish' => 1), array('return_array' => 1));
+    // The entity class and controller class extend the classes provided by the
+    // Entity API.
+    'entity class' => 'TripalEntity',
+    'controller class' => 'TripalEntityController',
 
-//   foreach ($published_vocs as $voc) {
-    $entities['BioData'] = array (
-      // A human readable label to identify our entity.
-      'label' => 'Biological Data',
-      'plural label' => 'Biological Data',
+    // The table for this entity defined in hook_schema()
+    'base table' => 'tripal_entity',
 
-      // The entity class and controller class extend the classes provided by the
-      // Entity API.
-      'entity class' => 'TripalEntity',
-      'controller class' => 'TripalEntityController',
+    // Returns the uri elements of an entity.
+    'uri callback' => 'tripal_entities_vocbulary_term_uri',
 
-      // The table for this entity defined in hook_schema()
-      'base table' => 'tripal_entity',
+    // IF fieldable == FALSE, we can't attach fields.
+    'fieldable' => TRUE,
 
-      // Returns the uri elements of an entity.
-      'uri callback' => 'tripal_entities_vocbulary_term_uri',
+    // entity_keys tells the controller what database fields are used for key
+    // functions. It is not required if we don't have bundles or revisions.
+    // Here we do not support a revision, so that entity key is omitted.
+    'entity keys' => array (
+      'id' => 'id',
+      'bundle' => 'bundle'
+    ),
+    'bundle keys' => array (
+      'bundle' => 'bundle'
+    ),
 
-      // IF fieldable == FALSE, we can't attach fields.
-      'fieldable' => TRUE,
+    // Callback function for access to this entity.
+    'access callback' => 'tripal_entity_access',
 
-      // entity_keys tells the controller what database fields are used for key
-      // functions. It is not required if we don't have bundles or revisions.
-      // Here we do not support a revision, so that entity key is omitted.
-      'entity keys' => array (
-        'id' => 'id',
-        'bundle' => 'bundle'
+    // FALSE disables caching. Caching functionality is handled by Drupal core.
+    'static cache' => FALSE,
+
+    // Bundles are added dynamically below.
+    'bundles' => array (),
+
+    'label callback' => 'tripal_entity_label',
+
+    // The information below is used by the TripalEntityUIController
+    // (which extends the EntityDefaultUIController). The admin_ui
+    // key here is mean to appear on the 'Find Content' page of the
+    // administrative menu.
+    'admin ui' => array (
+      'path' => 'admin/content/BioData',
+      'controller class' => 'TripalEntityUIController',
+      'menu wildcard' => '%tripal_entity',
+      'file' => 'includes/TripalEntityUIController.inc'
+    ),
+    'view modes' => array (
+      'full' => array (
+        'label' => t ('Full content'),
+        'custom settings' => FALSE
       ),
-      'bundle keys' => array (
-        'bundle' => 'bundle'
-      ),
-
-      // Callback function for access to this entity.
-      'access callback' => 'tripal_entity_access',
-
-      // FALSE disables caching. Caching functionality is handled by Drupal core.
-      'static cache' => FALSE,
-
-      // Bundles are added in the hook_entities_info_alter() function.
-      'bundles' => array (),
-
-      'label callback' => 'tripal_entity_label',
-
-      // The information below is used by the TripalEntityUIController
-      // (which extends the EntityDefaultUIController). The admin_ui
-      // key here is mean to appear on the 'Find Content' page of the
-      // administrative menu.
-      'admin ui' => array (
-        'path' => 'admin/content/BioData',
-        'controller class' => 'TripalEntityUIController',
-        'menu wildcard' => '%tripal_entity',
-        'file' => 'includes/TripalEntityUIController.inc'
-      ),
-      'view modes' => array (
-        'full' => array (
-          'label' => t ( 'Full content' ),
-          'custom settings' => FALSE
-        ),
-        'teaser' => array (
-          'label' => t ( 'Teaser' ),
-          'custom settings' => TRUE
-        )
+      'teaser' => array (
+        'label' => t ('Teaser'),
+        'custom settings' => TRUE
       )
-    );
-    // The entity that holds information about the entity types.
-    $entities ['BioData_bundles'] = array (
-      'label' => 'Biological Data Type', //$voc->db_id->name . ' (' . $voc->cv_id->name . ') Data Type',
-      'entity class' => 'TripalBundle',
-      'controller class' => 'TripalBundleController',
-      'base table' => 'tripal_bundle',
-      'fieldable' => FALSE,
-      'exportable' => FALSE,
-      'entity keys' => array (
-        'id' => 'id',
-        'name' => 'bundle',
-        'label' => 'label'
-      ),
-      'access callback' => 'tripal_bundle_access',
-      'module' => 'tripal_entities',
-      // Enable the entity API's admin UI.
-      'admin ui' => array (
-        'path' => 'admin/structure/BioData', // . $voc->db_id->name,
-        'controller class' => 'TripalBundleUIController',
-        'file' => 'includes/TripalBundleUIController.inc',
-        'menu wildcard' => '%tripal_bundle',
-      )
-    );
-//   }
-  return $entities;
-}
-/**
- * Implements hook_entity_info_alter().
- *
- * We are adding the info about the tripal data types via a hook to avoid a
- * recursion issue as loading the model types requires the entity info as well.
- *
- */
-function tripal_entities_entity_info_alter(&$entity_info) {
+    )
+  );
 
-  // Get a list of published terms from 'tripal_term
+  // The entity that holds information about the entity types.
+  $entities['BioData_bundles'] = array (
+    'label' => 'Biological Data Type', //$voc->db_id->name . ' (' . $voc->cv_id->name . ') Data Type',
+    'entity class' => 'TripalBundle',
+    'controller class' => 'TripalBundleController',
+    'base table' => 'tripal_bundle',
+    'fieldable' => FALSE,
+    'bundle of' => 'BioData',
+    'exportable' => FALSE,
+    'entity keys' => array (
+      'id' => 'id',
+      'name' => 'bundle',
+      'label' => 'label'
+    ),
+    'access callback' => 'tripal_bundle_access',
+    'module' => 'tripal_entities',
+    // Enable the entity API's admin UI.
+    'admin ui' => array (
+      'path' => 'admin/structure/BioData',
+      'controller class' => 'TripalBundleUIController',
+      'file' => 'includes/TripalBundleUIController.inc',
+      'menu wildcard' => '%tripal_bundle',
+    )
+  );
+
+  // Dynamically add in the bundles. Bundles are alternative groups of fields
+  // or configuration associated with an entity type .We want to dynamically
+  // add the bundles to the entity.
   $published_terms = chado_generate_var('tripal_term', array('publish' => 1), array('return_array' => 1));
   foreach ($published_terms as $term) {
 
-    // Bundles are alternative groups of fields or configuration
-    // associated with a base entity type.
-    // We want to dynamically add the bundles (or term types) to the entity.
     $cvterm = $term->cvterm_id;
-    $entity_type = 'BioData'; // $cvterm->dbxref_id->db_id->name;
-    $accession = $cvterm->dbxref_id->accession;
-    $bundle_id = $cvterm->dbxref_id->db_id->name . '_' . $accession;
-
+    $bundle_id = 'dbxref_' . $cvterm->dbxref_id->dbxref_id;
     $label = preg_replace('/_/', ' ', ucwords($cvterm->name));
-    $entity_info[$entity_type]['bundles'][$bundle_id] = array (
+
+    $entities['BioData']['bundles'][$bundle_id] = array (
       'label' => $label,
       'admin' => array (
         'path' => 'admin/structure/BioData/manage/%tripal_bundle',
         'real path' => 'admin/structure/BioData/manage/' . $bundle_id,
-        'bundle argument' => 5,
+        'bundle argument' => 4,
         'access arguments' => array (
           'administer tripal data types'
         )
       )
     );
   }
+  return $entities;
 }
 
 /**
@@ -344,11 +330,11 @@ function tripal_bundle_load($bundle_type, $reset = FALSE) {
     ->execute()
     ->fetchObject();
 
-  // Load the tripal_bundle entity. These entities are always the same
-  // as an Tripal entity type but with a '_bundle' extension.
-  $entity = entity_load('BioData_bundles', array($bundle_types->id), array(), $reset);
-
-  return reset($entity);
+  if ($bundle_types) {
+    $entity = entity_load('BioData_bundles', array($bundle_types->id), array(), $reset);
+    return reset($entity);
+  }
+  return FALSE;
 }
 
 /**

@@ -22,7 +22,9 @@ function tripal_fields_field_info() {
     ),
     'dbxref_id' => array(
       'label' => t('Cross-reference'),
-      'description' => t('This record can be cross-referenced with a record in another online database. This field is intended for the most prominent reference.  At a minimum, the database and accession must be provided.'),
+      'description' => t('This record can be cross-referenced with a record in
+          another online database. This field is intended for the most prominent
+          reference.  At a minimum, the database and accession must be provided.'),
       'default_widget' => 'tripal_fields_dbxref_id_widget',
       'default_formatter' => 'tripal_fields_dbxref_id_formatter',
       'settings' => array(),
@@ -73,7 +75,8 @@ function tripal_fields_field_info() {
     // in Chado.
     'kvproperty_adder' => array(
       'label' => t('Add a Property Type'),
-      'description' => t('This record may have any number of properties. Use this field to first add the type.'),
+      'description' => t('This record may have any number of properties. Use
+          this field to first add the type.'),
       'default_widget' => 'tripal_fields_kvproperty_adder_widget',
       'default_formatter' => 'tripal_fields_kvproperty_adder_formatter',
       'settings' => array(),

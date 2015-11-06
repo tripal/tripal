@@ -35,20 +35,12 @@ class TripalEntityController extends EntityAPIController {
     // The incoming values should have at a minimum the bundle_id;
     $bundle = $values['bundle'];
     $matches = array();
-    if (preg_match('/(.*)_(.*)/', $bundle, $matches)) {
-      $type = $matches[1];
-      $accession = $matches[2];
-      $values['type'] = $type;
+    if (preg_match('/dbxref_(.*)/', $bundle, $matches)) {
+      $dbxref_id = $matches[1];
+      $values['type'] = 'BioData';
 
       // Get the CVterm.
-      $match = array(
-        'dbxref_id' => array(
-          'accession' => $accession,
-          'db_id' => array(
-            'name' => $type,
-          ),
-        ),
-      );
+      $match = array('dbxref_id' => $dbxref_id);
       $cvterm = chado_generate_var('cvterm', $match);
       if ($cvterm) {
         $values['cvterm_id'] = $cvterm->cvterm_id;
@@ -160,6 +152,7 @@ class TripalEntityController extends EntityAPIController {
       $transaction->rollback();
       watchdog_exception('tripal_core', $e);
       drupal_set_message("Could not save the entity:" . $e->getMessage(), "error");
+      return FALSE;
     }
   }
 }

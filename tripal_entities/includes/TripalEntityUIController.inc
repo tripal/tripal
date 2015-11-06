@@ -26,33 +26,36 @@ class TripalEntityUIController extends EntityDefaultUIController {
       'type' => MENU_LOCAL_TASK,
     );
 
-    // Change the add page menu to multiple types of entities
-    $items[$this->path . '/add'] = array(
-      'title' => 'Add new biological data',
-      'description' => 'Add new biological data',
-      'page callback'  => 'drupal_get_form',
-      'page arguments' => array('tripal_entities_entity_form'),
-      'access callback'  => 'tripal_entities_entity_access',
-      'access arguments' => array('administer tripal data'),
+    $items['BioData/add'] = array(
+      'title' => 'Add Biological Data',
+      'page callback' => 'tripal_entities_add_page',
       'file' =>  'includes/tripal_entities.entity_form.inc',
       'file path' => drupal_get_path('module', 'tripal_entities'),
-      'type' => MENU_LOCAL_ACTION,
-      'weight' => 20,
-    );
-
-     // Set a custom page for adding new tripal data entities.
-    $items['BioData/add'] = array(
-      'title' => 'Add Tripal data',
-      'description' => 'Add a new tripal data record',
-      'page callback'  => 'drupal_get_form',
-      'page arguments' => array('tripal_entities_entity_form'),
       'access callback'  => 'tripal_entities_entity_access',
       'access arguments' => array('edit'),
-      'file' =>  'includes/tripal_entities.entity_form.inc',
-      'file path' => drupal_get_path('module', 'tripal_entities'),
-      'type' => MENU_NORMAL_ITEM,
-      'weight' => 20,
     );
+
+
+    // Add a menu item for creating each bundle
+    $bundles = array_keys($this->entityInfo['bundles']);
+    foreach ($bundles as $bundle) {
+      $matches = array();
+      preg_match('/^dbxref_(.*?)$/', $bundle, $matches);
+      $dbxref_id = $matches[1];
+      $cvterm = chado_generate_var('cvterm', array('dbxref_id' => $dbxref_id));
+
+      // Set a custom page for adding new tripal data entities.
+      $items['BioData/add/' . $dbxref_id] = array(
+        'title' => 'Add ' . ucfirst($cvterm->name),
+        'description' => 'A ' . $cvterm->name . ' record.',
+        'page callback'  => 'drupal_get_form',
+        'page arguments' => array('tripal_entities_entity_form', 2),
+        'access callback'  => 'tripal_entities_entity_access',
+        'access arguments' => array('edit'),
+        'file' =>  'includes/tripal_entities.entity_form.inc',
+        'file path' => drupal_get_path('module', 'tripal_entities'),
+      );
+    }
 
     // Link for viewing a tripal data type.
     $items['BioData/' . $wildcard] = array(
@@ -74,7 +77,6 @@ class TripalEntityUIController extends EntityDefaultUIController {
       'access arguments' => array('view', 1),
       'type' => MENU_DEFAULT_LOCAL_TASK,
       'weight' => -10,
-
     );
 
     // 'Edit' tab for an individual entity page.
@@ -88,18 +90,6 @@ class TripalEntityUIController extends EntityDefaultUIController {
       'file path' => drupal_get_path('module', 'tripal_entities'),
       'type' => MENU_LOCAL_TASK,
       'weight' => -8,
-    );
-
-    $items['BioData/' . $wildcard . '/manage'] = array(
-      'title' => 'Manage',
-      'page callback' => 'tripal_entity_manage_fields',
-      'page arguments' => array(1),
-      'access callback' => 'tripal_entities_entity_access',
-      'access arguments' => array('manage', 1),
-      'file' =>  'includes/TripalEntityUIController.inc',
-      'file path' => drupal_get_path('module', 'tripal_entities'),
-      'type' => MENU_LOCAL_TASK,
-      'weight' => -6,
     );
 
     // Menu item for deleting tripal data entities.

@@ -3,171 +3,53 @@
 /**
  *
  */
-function tripal_entities_entity_form($form, &$form_state, $term_name = '', $entity = NULL) {
-  // Set the defaults.
-  $cv_id = NULL;
-  $cvterm = NULL;
-  $do_sync = 0;
-  $terms = array();
-  $num_terms = 0;
+function tripal_entities_add_page() {
+  $item = menu_get_item();
 
-  // Set defaults if an entity was provided.
-  if ($entity) {
-    drupal_set_title('Edit ' . $entity->title);
-    $id = $entity->id;
-    $values = array('cvterm_id' => $entity->cvterm_id);
-    $cvterm = chado_generate_var('cvterm', $values);
-    $cv_id = $cvterm->cv_id->cv_id;
-    $term_name = $cvterm->name;
-    $terms[]  = $cvterm;
-    $num_terms = 1;
+  $content = system_admin_menu_block($item);
+
+  // Bypass the node/add listing if only one content type is available.
+  if (count($content) == 1) {
+    $item = array_shift($content);
+    drupal_goto($item['href']);
   }
+  return theme('tripal_entities_add_list', array('content' => $content));
 
-  // Set defaults using the form state.
-  if (array_key_exists('storage', $form_state) and
-      array_key_exists('terms', $form_state['storage'])) {
-    $terms = $form_state['storage']['terms'];
-    $num_terms = count($terms);
-  }
-  // If we have a term name but the $form_state['storage']['terms'] isn't set
-  // then the term_name is being passed in, and we should try to get the
-  // terms.
-  else if ($term_name) {
-    $match = array(
-      'name' => $term_name,
-    );
-    $terms = chado_generate_var('cvterm', $match, array('return_array' => TRUE));
-    $form_state['storage']['terms'] = $terms;
-    $num_terms = count($terms);
-
-    // Make sure the term is set as published.
-    if ($num_terms == 1) {
-      tripal_entities_add_term_usage($terms[0], $form_state);
-    }
-    $einfo = entity_get_info($terms[0]->dbxref_id->db_id->name);
-    tripal_entities_add_bundle($terms[0]);
-  }
-  if (array_key_exists('values', $form_state) and
-      array_key_exists('term_name', $form_state['values'])) {
-    $term_name = $form_state['values']['term_name'];
-  }
-  if (array_key_exists('values', $form_state) and
-      array_key_exists('do_sync', $form_state['values'])) {
-    $do_sync = $form_state['values']['do_sync'];
-  }
-
-  // If no term has been selected yet then provide the auto complete field.
-  if ($num_terms != 1) {
-    $cvterms = tripal_entities_get_published_terms_as_select_options($cv_id);
-    $form['term_name'] = array(
-      '#title'       => t('Data Type'),
-      '#type'        => 'textfield',
-      '#description' => t("Please enter the type of data that you want to publish.  As you type, suggestions will be provided."),
-      '#required'    => TRUE,
-      '#default_value' => $term_name,
-      '#autocomplete_path' => "admin/tripal/chado/tripal_cv/cvterm/auto_name/$cv_id",
-    );
-    // If we are not editing an existing entity then provide a radio button
-    // to allow the user to add a new record or to sync existing records.
-    if (!$entity) {
-      $action = array(0 => t('Publish a new record'), 1 => t('Publish one or more existing records'));
-      $form['do_sync'] = array(
-        '#type' => 'radios',
-        '#title' => t('Publish Action'),
-        '#default_value' => $do_sync,
-        '#options' => $action,
-      );
-    }
-  }
-
-
-  // If the term belongs to more than one vocabulary then add additional fields
-  // to let the user select the vocabulary.
-  if ($num_terms > 1) {
-    $cvs = array();
-    foreach ($terms as $term) {
-      $cvs[$term->cv_id->cv_id] = $term->cv_id->name;
-    }
-    $form['cv)id'] = array(
-      '#type' => 'radios',
-      '#title' => t('Select the appropriate vocabulary'),
-      '#options' => $cvs,
-      '#description' => t('The term belongs to more than one vocabulary. Please
-          indicate the proper vocabulary for the term.')
-    );
-  }
-
-  // Add in the button for the cases of no terms or too many.
-  if ($num_terms != 1) {
-    $form['select_button'] = array(
-      '#type' => 'submit',
-      '#value' => t('Use this term'),
-      '#name' => 'select_cvterm'
-    );
-  }
-
-  // If we only have one cvterm then the user has provided a unique
-  // term and we can either allow them to add a new entry or sync existing
-  // records.
-  if ($num_terms == 1){
-    $cvterm = $terms[0];
-    //$bundle_id = $cvterm->dbxref_id->db_id->name .'_' .$cvterm->dbxref_id->accession;
-    $bundle_id = 'dbxref_' . $cvterm->dbxref_id->dbxref_id;
-
-    $form['cv_id'] = array(
-      '#type' => 'hidden',
-      '#value' => $cvterm->cv_id->cv_id
-    );
-    $form['type'] = array(
-      '#type' => 'hidden',
-      '#value' => $cvterm->dbxref_id->db_id->name
-    );
-    $form['term_name'] = array(
-      '#type' => 'hidden',
-      '#value' => $cvterm->name
-    );
-    $form['cvterm_id'] = array(
-      '#type' => 'hidden',
-      '#value' => $cvterm->cvterm_id
-    );
-    $form['bundle'] = array(
-      '#type' => 'hidden',
-      '#value' => $bundle_id
-    );
-    $form['details'] = array(
-      '#type' => 'item',
-      '#title' => 'Record Type',
-      '#markup' => '(' . $cvterm->cv_id->name . ') ' . $cvterm->name,
-      '#weight' => -1000,
-    );
-
-    if(!$do_sync) {
-      tripal_entities_entity_form_add_new($bundle_id, $cvterm, $form, $form_state, $entity);
-    }
-    else {
-      tripal_entities_entity_form_add_sync($bundle_id, $cvterm, $form, $form_state, $entity);
-    }
-
-    // Add a prefix and a suffix around this form so that fields may
-    // replace the entire form on an ajax call if they want.
-    $form['#prefix'] = "<div id='$bundle_id-entity-form'>";
-    $form['#suffix'] = "</div>";
-  }
-  return $form;
 }
+
 /**
- * Adds fields to the tripal_entities_entity_form for syncing an entity.
+ * Returns HTML for a list of available node types for node creation.
+ *
+ * @param $variables
+ *   An associative array containing:
+ *   - content: An array of content types.
+ *
+ * @ingroup themeable
  */
-function tripal_entities_entity_form_add_sync($bundle_id, $cvterm, &$form, &$form_state, $entity) {
-  $form['todo'] = array(
-    '#type' => 'item',
-    '#markup' => t('TODO: Add a form for allowing the user to filter by fields'),
-  );
+function theme_tripal_entities_add_list($variables) {
+  $content = $variables['content'];
+  $output = '';
+
+  if ($content) {
+    $output = '<dl class="node-type-list">';
+    foreach ($content as $item) {
+      $output .= '<dt>' . l($item['title'], $item['href'], $item['localized_options']) . '</dt>';
+      $output .= '<dd>' . filter_xss_admin($item['description']) . '</dd>';
+    }
+    $output .= '</dl>';
+  }
+  else {
+    $output = '<p>' . t('You have not created any biological types yet. Go to the <a href="@create-content">content type creation page</a> to add a new content type.', array('@create-content' => url('admin/structure/BioData/add'))) . '</p>';
+  }
+  return $output;
 }
+
 /**
- * Adds fields to the tripal_entities_entity_form for editing/adding an entity.
+ *
  */
-function tripal_entities_entity_form_add_new($bundle_id, $cvterm, &$form, &$form_state, $entity) {
+function tripal_entities_entity_form($form, &$form_state, $dbxref_id = '', $entity = NULL) {
+
+  $bundle_id = 'dbxref_' . $dbxref_id;
 
   // Add a vertical tabs element
   $form['ev_tabs'] = array(
@@ -189,10 +71,6 @@ function tripal_entities_entity_form_add_new($bundle_id, $cvterm, &$form, &$form
   }
   else {
     field_attach_form('BioData', $entity, $form, $form_state);
-    $form['entity_id'] = array(
-      '#type' => 'hidden',
-      '#value' => $entity->id
-    );
     $form['update_button'] = array(
       '#type' => 'submit',
       '#value' => t('Update'),
@@ -209,7 +87,12 @@ function tripal_entities_entity_form_add_new($bundle_id, $cvterm, &$form, &$form
 
   // The entity object must be added to the $form_state in order for
   // the Entity API to work. It must have a key of the entity name.
-  $form_state[$cvterm->dbxref_id->db_id->name] = $entity;
+  $form_state['BioData'] = $entity;
+
+  $form['#prefix'] = "<div id='$bundle_id-entity-form'>";
+  $form['#suffix'] = "</div>";
+
+  return $form;
 
 }
 /**
@@ -225,230 +108,37 @@ function tripal_entities_entity_form_ajax_callback($form, $form_state) {
  */
 function tripal_entities_entity_form_validate($form, &$form_state) {
 
-  // Check if this term and vocabulary is in the tripal_vocabulary usage tables.
-  // If not then add it.
-  if (array_key_exists('clicked_button', $form_state) and
-      $form_state['clicked_button']['#name'] =='select_cvterm') {
-
-    // First, make sure the term is unique. If not then we can't check it.
-    $term_name = $form_state['values']['term_name'];
-    $cv_id = array_key_exists('cv_id', $form_state['values']) ? $form_state['values']['cv_id'] : '';
-    $cvterm = NULL;
-
-    // If a term and cv_id are provided then we can look for the term using
-    // both and we should find a unique term. If only ther term is provided
-    // we can still look for a unique term but there must only be one.
-    if ($term_name and !$cv_id) {
-      $match = array(
-        'name' => $term_name,
-      );
-    }
-    else {
-      $match = array(
-        'name' => $term_name,
-        'cv_id' => $cv_id,
-      );
-    }
-    $terms = chado_generate_var('cvterm', $match, array('return_array' => TRUE));
-
-    // Add the cvterm to the storage element so we don't have to keep
-    // looking it up in the submit function or on a rebuild of the form.
-    $form_state['storage']['terms'] = $terms;
-
-    // If we only have one term then we found a unique match and we can do
-    // some further checking.
-    if (count($terms) == 1) {
-      $cvterm = $terms[0];
-      // Make sure the term is set as published.
-      tripal_entities_add_term_usage($cvterm, $form_state);
-    }
-    // If we do not have any terms then the term provided by the user does not
-    // exists and we need to provide an error message.
-    if (count($terms) == 0) {
-      form_set_error('term_name', t('The term does not exist in this database.'));
-    }
-    // If we have more than one term then we need to set an error so that the
-    // form can provide a list of vocabularies to select from.
-    if (count($terms) > 1) {
-      form_set_error('', t('The term is not unique. A list of vocabularies has been provided where this term is present. Please select the appropriate one.'));
-    }
-  }
-
-
   if (array_key_exists('clicked_button', $form_state) and
       $form_state['clicked_button']['#name'] =='add_data') {
-    $tripal_entity = (object) $form_state['values'];
-    $entity_type = $form_state['values']['type'];
-    field_attach_form_validate('BioData', $tripal_entity, $form, $form_state);
+    $entity = $form_state['BioData'];
+    field_attach_form_validate('BioData', $entity, $form, $form_state);
   }
 }
 
-/**
- * Adds a vocabulary and term to the Tripal term usage tables.
- *
- * This function is meant to be called only by the
- * tripal_entities_entity_form_validate() function. This code is
- * separated to simplify that function.  Therefore, if errors occur with adding
- * of terms then the form_set_error() is called.
- *
- * @param $cvterm
- */
-function tripal_entities_add_term_usage($cvterm, &$form_state) {
 
-  // Before creating the entity we mut add records to the tripal_vocabulary
-  // tripal_vocabulary_usage, tripal_term, and tripal_term_usage tables.
-  $match = array('cv_id' => $cvterm->cv_id->cv_id);
-  $vocab = chado_select_record('tripal_vocabulary', array('*'), $match);
-  if (count($vocab) == 0) {
-    $values = array(
-      'cv_id' => $cvterm->cv_id->cv_id,
-      'db_id' => $cvterm->dbxref_id->db_id->db_id,
-      'publish' => 1,
-    );
-    $values = chado_insert_record('tripal_vocabulary', $values);
-    if (!$values) {
-      form_set_error('', 'Could not add vocabulary to tripal_vocabluary table.');
-      return FALSE;
-    }
-    // Convert the values array into an object.
-    $vocab = new stdClass();
-    $vocab->vocabulary_id = $values['vocabulary_id'];
-    $vocab->cv_id = $values['cv_id'];
-  }
-  else {
-    // Make sure the vocabulary is set to publish
-    $values = array('publish' => 1);
-    chado_update_record('tripal_vocabulary', $match, $values);
-    $vocab = $vocab[0];
-  }
-
-  // Does this vocabulary have a record in the tripal_vocabulary_usage
-  // table? If not then add one.
-  $match = array('vocabulary_id' => $vocab->vocabulary_id);
-  $vocab_usage = chado_select_record('tripal_vocabulary_usage', array('*'), $match);
-  if (count($vocab_usage) == 0) {
-    // Look to see if this vocabulary is used as a default for any table. If
-    // so then we can use that to populate the tripal_vocabulary_usage table.
-    $default = db_select('tripal_cv_defaults', 't')
-      ->fields('t')
-      ->condition('cv_id', $vocab->cv_id)
-      ->execute()
-      ->fetchObject();
-    if ($default) {
-       $values = array(
-        'vocabulary_id' => $vocab->vocabulary_id,
-        'data_table' => $default->table_name,
-        'type_table' => $default->table_name,
-        'field' =>  $default->field_name,
-      );
-      $values = chado_insert_record('tripal_vocabulary_usage', $values);
-      if (!$values) {
-        form_set_error('', 'Could not add vocabulary to tripal_vocabulary_usage table.');
-        return FALSE;
-      }
-    }
-    // If there is no default table then we have an error, and we should
-    // set a variable so that the form can help the user deal with the problem.
-    else {
-      $form_state['storage']['cvterm_has_default'] = FALSE;
-      form_set_error('', t('There is no default mapping of this term\'s
-          vocabulary to a table in Chado.  Therefore, it is not possible to
-          determine how to store data of this type.'));
-      return FALSE;
-    }
-    $vocab_usage = new stdClass();
-    $vocab_usage->vocabulary_id = $values['vocabulary_id'];
-    $vocab_usage->data_table = $values['data_table'];
-    $vocab_usage->type_table = $values['type_table'];
-    $vocab_usage->field = $values['field'];
-  }
-  else {
-    $vocab_usage = $vocab_usage[0];
-  }
-
-  // Now add the tripal_term record if it doesn't already exist.
-  $match = array(
-    'vocabulary_id' => $vocab->vocabulary_id,
-    'cvterm_id' => $cvterm->cvterm_id,
-  );
-  $term = chado_select_record('tripal_term', array('*'), $match);
-  if (count($term) == 0) {
-    $values = array(
-      'vocabulary_id' => $vocab->vocabulary_id,
-      'cvterm_id' => $cvterm->cvterm_id,
-    );
-    $values = chado_insert_record('tripal_term', $values);
-    if (!$values) {
-      form_set_error('', 'Could not add term to tripal_term table..');
-      return FALSE;
-    }
-    $term = new stdClass();
-    $term->term_id = $values['term_id'];
-  }
-  else {
-    $values = array('publish' => 1);
-    chado_update_record('tripal_term', $match, $values);
-    $term = $term[0];
-  }
-
-  // Finally, add the tripal_term_usage record if it doesn't already exist.
-  $match = array('term_id' => $term->term_id);
-  $options = array('has_record' => TRUE);
-  if (!chado_select_record('tripal_term_usage', array('*'), $match, $options)) {
-    $values = array(
-      'term_id' => $term->term_id,
-      'data_table' => $vocab_usage->data_table,
-      'type_table' => $vocab_usage->type_table,
-      'field' =>  $vocab_usage->field,
-    );
-    $values = chado_insert_record('tripal_term_usage', $values);
-    if (!$values) {
-      form_set_error('', 'Could not add term to tripal_term table..');
-      return FALSE;
-    }
-  }
-
-  // Clear the entity cache so that Drupal will read our
-  // hook_entity_info() implementation which now will have the entities
-  // described because we set the publish column to 1 in the tripal_term
-  // table.
-  global $language;
-  $langcode = $language->language;
-  cache_clear_all("entity_info:$langcode", 'cache');
-
-  return TRUE;
-}
 /**
  * Implements hook_submit() for the tripal_entities_entity_form.
  */
 function tripal_entities_entity_form_submit($form, &$form_state) {
-  if ($form_state['clicked_button']['#name'] =='cancel') {
-    if (array_key_exists('id', $form_state['values'])) {
-      $entity_id = $form_state['values']['entity_id'];
-      $form_state['redirect'] = "BioData/$entity_id";
-    }
-    else {
-      $form_state['redirect'] = "admin/structure/tripal_entity";
-    }
-    return;
-  }
-  if ($form_state['clicked_button']['#name'] =='select_cvterm') {
-    // Check to see if the entity already exists. If not then create it.
-    $cvterm = $form_state['storage']['terms'][0];
-    $einfo = entity_get_info($cvterm->dbxref_id->db_id->name);
-    tripal_entities_add_bundle($cvterm);
+  $entity = $form_state['BioData'];
 
-    $form_state['rebuild'] = TRUE;
+  if ($form_state['clicked_button']['#name'] =='cancel') {
+    $form_state['redirect'] = "BioData/" . $entity->id;
   }
+
   if ($form_state['clicked_button']['#name'] =='update_data' or
       $form_state['clicked_button']['#name'] =='add_data') {
-    $entity = entity_ui_controller('BioData')->entityFormSubmitBuildEntity($form, $form_state);
-    $entity->save();
-    $form_state['redirect'] = "BioData/$entity->id";
+
+    $entityform = entity_ui_controller('BioData')->entityFormSubmitBuildEntity($form, $form_state);
+    if ($entityform->save()) {
+      $form_state['redirect'] = "BioData/" . $entity->id;
+    }
+    else {
+      drupal_set_message('Cannot save entity', 'error');
+    }
   }
   if ($form_state['clicked_button']['#name'] =='delete_data') {
-    $entity_id = $form_state['values']['entity_id'];
-    $form_state['redirect'] = 'BioData/' .$entity_id .'/delete';
+    $form_state['redirect'] = 'BioData/' . $entity->id .'/delete';
   }
 }
 
