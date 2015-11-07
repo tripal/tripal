@@ -115,12 +115,12 @@ function tripal_entities_shortcut_default_set($account) {
       array(
         'link_path' => 'node/add',
         'link_title' => $t('Add content'),
-        'weight' => -20,
+        'weight' => -21,
       ),
       array(
         'link_path' => 'admin/content',
         'link_title' => $t('Find content'),
-        'weight' => -21,
+        'weight' => -20,
       ),
     );
     shortcut_set_save($shortcut_set);
