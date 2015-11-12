@@ -302,7 +302,7 @@ function tripal_fields_layout_field_ui_row_region($row) {
   if (!$panel) {
     $panel = $default_panel;
   }
-  dpm(array($row['human_name']['#markup'] => $row,$panel => 'panel'));
+
   return $panel;
 
 }
@@ -446,50 +446,31 @@ function theme_tripal_fields_layout_form_draggable_panel_table ($variables) {
 
   foreach (element_children($element) as $id) {
 
-    // Before we add our 'weight' column to the row, we need to give the
-    // element a custom class so that it can be identified in the
-    // drupal_add_tabledrag call.
-    //
-    // This could also have been done during the form declaration by adding
-    // '#attributes' => array('class' => 'example-item-weight'),
-    // directy to the 'weight' element in tabledrag_example_simple_form().
+    // Add a custom class that can be identified by 'drupal_add_tabledrag'
     $element[$id]['weight']['#attributes']['class'] = array('tripal_panel-item-weight');
 
     $element[$id]['label']['#printed'] = FALSE;
     $element[$id]['weight']['#printed'] = FALSE;
     $element[$id]['remove']['#printed'] = FALSE;
-    // We are now ready to add each element of our $form data to the $rows
-    // array, so that they end up as individual table cells when rendered
-    // in the final table.  We run each element through the drupal_render()
-    // function to generate the final html markup for that element.
+
     $rows[] = array(
       'data' => array(
-        // Add our 'description' column.
         drupal_render($element[$id]['label']),
-        // Add our 'weight' column.
         drupal_render($element[$id]['weight']),
-        // Add remove column
         drupal_render($element[$id]['remove'])
       ),
-      // To support the tabledrag behaviour, we need to assign each row of the
-      // table a class attribute of 'draggable'. This will add the 'draggable'
-      // class to the <tr> element for that row when the final table is
-      // rendered.
+      // Add draggable to each row to support the tabledrag behaviour
       'class' => array('draggable'),
     );
   }
-
-  // We now define the table header values.  Ensure that the 'header' count
-  // matches the final column count for your table.
+  
+  // Create table header
   $header = array(t('Label'), t('Weight'), t('Action'));
 
-  // We also need to pass the drupal_add_tabledrag() function an id which will
-  // be used to identify the <table> element containing our tabledrag form.
-  // Because an element's 'id' should be unique on a page, make sure the value
-  // you select is NOT the same as the form ID used in your form declaration.
+  // Create a unique id for drupal_add_tabledrag() to find the table object
   $table_id = 'tripal_panel-arrange_panel_table';
 
-  // We can render our tabledrag table for output.
+  // Create output
   $output = '';
   if (count($rows) > 0) {
     $output = theme('table', array(
@@ -499,17 +480,7 @@ function theme_tripal_fields_layout_form_draggable_panel_table ($variables) {
     ));
   }
 
-  // And then render any remaining form elements (such as our submit button).
-  //$output .= drupal_render_children($element);
-
-  // We now call the drupal_add_tabledrag() function in order to add the
-  // tabledrag.js goodness onto our page.
-  //
-  // For a basic sortable table, we need to pass it:
-  // - the $table_id of our <table> element,
-  // - the $action to be performed on our form items ('order'),
-  // - a string describing where $action should be applied ('siblings'),
-  // - and the class of the element containing our 'weight' element.
+  // Call to the drupal_add_tabledrag
   drupal_add_tabledrag($table_id, 'order', 'sibling', 'tripal_panel-item-weight');
 
   return $output;
@@ -523,5 +494,84 @@ function tripal_fields_layout_theme($existing, $type, $theme, $path) {
     'tripal_fields_layout_form_draggable_panel_table' => array(
       'render element' => 'element',
     ),
+    'tripal_fields_layout_generic' => array(
+      'render element' => 'element',
+      'template' => 'tripal_fields_layout_generic',
+      'path' => "$path/theme/templates",
+    ),
   );
+}
+
+/**
+ * Implements hook_node_view
+ * 
+ * @param unknown $node
+ * @param unknown $view_mode
+ * @param unknown $langcode
+ */
+function tripal_fields_layout_entity_view($entity, $type, $view_mode, $langcode) {
+  //dpm(array($entity, $type, $view_mode, $langcode));
+  switch ($type) {
+    case 'BioData':
+      // Use the generic template to render the fields
+      if ($view_mode == 'full') {
+
+        $bundle = db_select('tripal_bundle', 'tb')
+          ->fields('tb', array('id', 'bundle', 'label'))
+          ->condition('bundle', $entity->bundle)
+          ->execute()
+          ->fetchObject();
+        
+        $results = db_select ('tripal_panels', 'tp')
+          ->fields('tp', array('panel_id','name', 'label'))
+          ->condition('bundle_id', $bundle->id)
+          ->execute();
+        
+        $panels = array();
+        $fields = array();
+        $disabled_panel_id = 0;
+        foreach ($results AS $row) {
+          if ($row->name == 'te_disabled') {
+            $disabled_panel_id = $row->panel_id;
+          } else {
+            $panels[$row->panel_id] = $row->label;
+            $fields[$row->panel_id] = array();
+          }
+        }
+
+        // Organize fields into panels
+        $fields = array();
+        foreach (element_children($entity->content) as $field_name) {
+          $field_instance = field_info_instance ($type, $field_name, $entity->bundle);
+          // Get default panel_id
+          $default_panel_id = db_select('tripal_panels', 'tp')
+            ->fields('tp', array('panel_id'))
+            ->condition('bundle_id', $bundle->id)
+            ->condition('name', 'te_base')
+            ->execute()
+            ->fetchField();
+          // Get panel_id for the field
+          $panel_id = db_select('tripal_panel_fields', 'tpf')
+            ->fields('tpf', array('panel_id'))
+            ->condition('field_id', $field_instance['id'])
+            ->execute()
+            ->fetchField();
+          $panel_id = $panel_id ? $panel_id : $default_panel_id;
+          // Do not show disabled fields
+          if ($panel_id != $disabled_panel_id) {
+            $fields[$panel_id][$field_name] = $entity->content[$field_name];
+          }
+          // Unset the field
+          unset ($entity->content[$field_name]);
+        }
+        $entity->content['tripal_fields_layout_generic'] = array(
+          '#theme' => 'tripal_fields_layout_generic',
+          '#panels' => $panels,
+          '#fields' => $fields,
+          '#weight' => -100,
+        );
+      }
+      
+      break;
+  }
 }
