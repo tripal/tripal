@@ -522,6 +522,8 @@ function tripal_fields_layout_entity_view($entity, $type, $view_mode, $langcode)
           ->execute()
           ->fetchObject();
         
+        _tripal_fields_layout_check_default_field_panels ($bundle);
+        
         $results = db_select ('tripal_panels', 'tp')
           ->fields('tp', array('panel_id','name', 'label'))
           ->condition('bundle_id', $bundle->id)
