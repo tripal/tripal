@@ -81,7 +81,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
     '#value' => 'Add Panel',
     '#name' => 'add-panel-submit'
   );
-  
+
   // Layout Panels
   $form['te_layout_panels'] = array(
     '#type' => 'fieldset',
@@ -119,7 +119,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
         '#type' => 'button',
         '#value' => 'Remove',
         '#name' => "arrange-panel-remove-$item->panel_id",
-      ) 
+      )
     );
     $has_panel = TRUE;
   }
@@ -138,7 +138,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
   else {
     $form['te_layout_panels']['instructions']['#markup'] = t('You need to add some panel first.');
   }
-  
+
   // Configure Panels
   $form['te_configure_panels'] = array(
     '#type' => 'fieldset',
@@ -288,7 +288,7 @@ function tripal_fields_layout_field_ui_row_region($row) {
   ->condition('field_id', $field_instance_id)
   ->execute()
   ->fetchField();
-  
+
   // Get panel name
   if ($panel_id) {
     $panel = db_select('tripal_panels', 'tp')
@@ -313,7 +313,7 @@ function tripal_fields_layout_field_ui_row_region($row) {
  * @param $form_state
  */
 function tripal_fields_layout_field_ui_validate($form, &$form_state) {
-  
+
   if ($form_state ['clicked_button'] ['#name'] == 'add-panel-submit') {
     // Check if a valide panel name is provided
     $name = $form_state ['values'] ['panel_name'];
@@ -326,7 +326,7 @@ function tripal_fields_layout_field_ui_validate($form, &$form_state) {
     else if (preg_match ( '/\s+/', $name )) {
       form_set_error ( 'panel_name', t ( "Panel name should only contain alphanumeric values and underscores." ) );
     }
-    
+
     // Check if a panel label is provided
     $label = $form_state ['values'] ['panel_label'];
     if (! $label) {
@@ -334,10 +334,10 @@ function tripal_fields_layout_field_ui_validate($form, &$form_state) {
     }
   }
   else if ($form_state ['clicked_button'] ['#name'] == 'order-panel-submit') {
-    
+
   }
   else if ($form_state ['clicked_button'] ['#name'] == 'op') {
-    
+
   }
   else if (preg_match('/^arrange-panel-remove-/', $form_state ['clicked_button'] ['#name'])) {
     $table = $form['te_layout_panels']['panel_items'];
@@ -350,7 +350,7 @@ function tripal_fields_layout_field_ui_validate($form, &$form_state) {
     ->condition ('panel_id', $panel_id)
     ->execute();
   }
-  
+
 }
 /**
  * Responds to a submit from the field UI form for saving panel assignments.
@@ -395,10 +395,10 @@ function tripal_fields_layout_field_ui_submit($form, &$form_state) {
   else if ($form_state ['clicked_button'] ['#name'] == 'op') {
     $fields = $form_state['values']['fields'];
     foreach($fields AS $field_name => $field_data){
-     
+
       // Get field instance id
       $field_instance_id = $form['fields'][$field_name]['#field_instance_id']['#value'];
-      
+
       // Get region panel_id
       $region = $field_data['region'];
       $panel_id = db_select('tripal_panels', 'tp')
@@ -406,7 +406,7 @@ function tripal_fields_layout_field_ui_submit($form, &$form_state) {
       ->condition('name', $region)
       ->execute()
       ->fetchField();
-      
+
       // Save
       $penal_field_id = db_select('tripal_panel_fields', 'tpf')
       ->fields('tpf', array('panel_field_id'))
@@ -435,7 +435,7 @@ function tripal_fields_layout_field_ui_submit($form, &$form_state) {
 
 /**
  *  Theme the Panel Order Table as a draggable table
- *  
+ *
  * @param unknown $variables
  * @return unknown
  */
@@ -463,7 +463,7 @@ function theme_tripal_fields_layout_form_draggable_panel_table ($variables) {
       'class' => array('draggable'),
     );
   }
-  
+
   // Create table header
   $header = array(t('Label'), t('Weight'), t('Action'));
 
@@ -503,11 +503,7 @@ function tripal_fields_layout_theme($existing, $type, $theme, $path) {
 }
 
 /**
- * Implements hook_node_view
- * 
- * @param unknown $node
- * @param unknown $view_mode
- * @param unknown $langcode
+ * Implements hook_entity_view.
  */
 function tripal_fields_layout_entity_view($entity, $type, $view_mode, $langcode) {
   //dpm(array($entity, $type, $view_mode, $langcode));
@@ -521,21 +517,22 @@ function tripal_fields_layout_entity_view($entity, $type, $view_mode, $langcode)
           ->condition('bundle', $entity->bundle)
           ->execute()
           ->fetchObject();
-        
-        _tripal_fields_layout_check_default_field_panels ($bundle);
-        
-        $results = db_select ('tripal_panels', 'tp')
+
+        _tripal_fields_layout_check_default_field_panels($bundle);
+
+        $results = db_select('tripal_panels', 'tp')
           ->fields('tp', array('panel_id','name', 'label'))
           ->condition('bundle_id', $bundle->id)
           ->execute();
-        
+
         $panels = array();
         $fields = array();
         $disabled_panel_id = 0;
         foreach ($results AS $row) {
           if ($row->name == 'te_disabled') {
             $disabled_panel_id = $row->panel_id;
-          } else {
+          }
+          else {
             $panels[$row->panel_id] = $row->label;
             $fields[$row->panel_id] = array();
           }
@@ -566,14 +563,14 @@ function tripal_fields_layout_entity_view($entity, $type, $view_mode, $langcode)
           // Unset the field
           unset ($entity->content[$field_name]);
         }
+        drupal_add_css(drupal_get_path('module','tripal_fields_layout') . '/theme/css/tripal_fields_layout.css');
         $entity->content['tripal_fields_layout_generic'] = array(
           '#theme' => 'tripal_fields_layout_generic',
           '#panels' => $panels,
           '#fields' => $fields,
-          '#weight' => -100,
         );
       }
-      
+
       break;
   }
 }

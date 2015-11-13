@@ -1,0 +1,11 @@
+@CHARSET "UTF-8";
+
+.tripal-biodata-panel {
+  border: solid 1px #CCC;
+  margin: 15px 0px;
+  padding: 15px;
+}
+
+.tripal-biodata-panel h2 {
+  margin-top: 0px;
+}
