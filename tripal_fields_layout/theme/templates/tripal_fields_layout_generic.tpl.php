@@ -4,6 +4,7 @@ drupal_add_js('misc/collapse.js');
 $panels = $variables['element']['#panels'];
 $fields = $variables['element']['#fields'];
 
+// TODO, the horz_table variable needs to be set in a variable and checked here.
 $horz_table = TRUE;
 
 // Group fields into panels
