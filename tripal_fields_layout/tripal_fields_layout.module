@@ -541,7 +541,6 @@ function tripal_fields_layout_entity_view($entity, $type, $view_mode, $langcode)
         }
 
         // Organize fields into panels
-        $fields = array();
         foreach (element_children($entity->content) as $field_name) {
           $field_instance = field_info_instance ($type, $field_name, $entity->bundle);
           // Get default panel_id
