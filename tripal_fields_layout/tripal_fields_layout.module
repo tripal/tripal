@@ -523,6 +523,7 @@ function tripal_fields_layout_entity_view($entity, $type, $view_mode, $langcode)
         $results = db_select('tripal_panels', 'tp')
           ->fields('tp', array('panel_id','name', 'label'))
           ->condition('bundle_id', $bundle->id)
+          ->orderBy('tp.weight', 'ASC')
           ->execute();
 
         $panels = array();
@@ -533,7 +534,7 @@ function tripal_fields_layout_entity_view($entity, $type, $view_mode, $langcode)
             $disabled_panel_id = $row->panel_id;
           }
           else {
-            $panels[$row->panel_id] = $row->label;
+            $panels[$row->panel_id] = $row;
             $fields[$row->panel_id] = array();
           }
         }
