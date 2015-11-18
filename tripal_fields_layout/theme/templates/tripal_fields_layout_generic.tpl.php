@@ -1,5 +1,6 @@
 <?php
 
+drupal_add_js('misc/form.js');
 drupal_add_js('misc/collapse.js');
 $panels = $variables['element']['#panels'];
 $fields = $variables['element']['#fields'];
@@ -16,8 +17,14 @@ foreach ($panels AS $panel_id => $panel) {
 
   // If the format is horizontal table then format the fields in tabular format.
   if ($horz_table) {
+    // reorder the fields by its weight
+    $ordered_fields = array();
+    foreach ($panel_fields AS $field) {
+      $ordered_fields[$field['#weight']] = $field;
+    }
+    ksort($ordered_fields);
     $rows = array();
-    foreach ($panel_fields as $field) {
+    foreach ($ordered_fields as $field) {
       $rows[] = array(
         array(
           'data' => $field['#title'],

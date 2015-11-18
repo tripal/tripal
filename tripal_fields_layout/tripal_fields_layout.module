@@ -82,19 +82,19 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
     '#name' => 'add-panel-submit'
   );
 
-  // Layout Panels
-  $form['te_layout_panels'] = array(
+  // Arrange Panels
+  $form['te_arrange_panels'] = array(
     '#type' => 'fieldset',
     '#title' => 'Arrange Panels',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#group' => 'overview_vert_tabs'
   );
-  $form['te_layout_panels']['instructions'] = array(
+  $form['te_arrange_panels']['instructions'] = array(
     '#type' => 'item',
     '#markup' => t('Drag and drop the panel to change its order.')
   );
-  $form['te_layout_panels']['panel_items']['#tree'] = TRUE;
+  $form['te_arrange_panels']['panel_items']['#tree'] = TRUE;
   // Get available panels
   $result = db_select('tripal_panels', 'tp')
             ->fields('tp', array('panel_id', 'name', 'label', 'weight'))
@@ -105,7 +105,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
             ->execute();
   $has_panel = FALSE;
   foreach ($result as $item) {
-    $form['te_layout_panels']['panel_items'][$item->panel_id] = array(
+    $form['te_arrange_panels']['panel_items'][$item->panel_id] = array(
       'label' => array(
         '#markup' => check_plain($item->label),
       ),
@@ -116,6 +116,16 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
         '#delta' => 50,
         '#title_display' => 'invisible',
       ),
+      'newlabel' => array(
+        '#type' => 'textfield',
+        '#default_value' => '',
+        '#size' => 10
+      ),
+      'rename' => array(
+        '#type' => 'button',
+        '#value' => 'Rename',
+        '#name' => "arrange-panel-rename-$item->panel_id",
+      ),
       'remove' => array(
         '#type' => 'button',
         '#value' => 'Remove',
@@ -125,19 +135,19 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
     $has_panel = TRUE;
   }
   if ($has_panel) {
-    $form['te_layout_panels']['panel_items']['#theme_wrappers'] = array('tripal_fields_layout_form_draggable_panel_table');
+    $form['te_arrange_panels']['panel_items']['#theme_wrappers'] = array('tripal_fields_layout_form_draggable_panel_table');
     // Now we add our submit button, for submitting the form results.
     //
     // The 'actions' wrapper used here isn't strictly necessary for tabledrag,
     // but is included as a Form API recommended practice.
-    $form['te_layout_panels']['add_button'] = array(
+    $form['te_arrange_panels']['add_button'] = array(
       '#type' => 'submit',
       '#value' => 'Save Panel Order',
       '#name' => 'order-panel-submit'
     );
   }
   else {
-    $form['te_layout_panels']['instructions']['#markup'] = t('You need to add some panel first.');
+    $form['te_arrange_panels']['instructions']['#markup'] = t('You need to add some panel first.');
   }
 
   // Configure Panels
@@ -319,29 +329,48 @@ function tripal_fields_layout_field_ui_validate($form, &$form_state) {
     // Check if a valide panel name is provided
     $name = $form_state ['values'] ['panel_name'];
     if (! $name) {
-      form_set_error ( 'panel_name', t ( "Please provide a name for the new panel." ) );
+      form_set_error('panel_name', t ("Please provide a name for the new panel."));
     }
-    else if (preg_match ( '/^\d+/', $name )) {
-      form_set_error ( 'panel_name', t ( "Panel name must not begin with a number." ) );
+    else if (preg_match('/^\d+/', $name )) {
+      form_set_error('panel_name', t ("Panel name must not begin with a number."));
     }
-    else if (preg_match ( '/\s+/', $name )) {
-      form_set_error ( 'panel_name', t ( "Panel name should only contain alphanumeric values and underscores." ) );
+    else if (preg_match ('/\s+/', $name)) {
+      form_set_error('panel_name', t ("Panel name should only contain alphanumeric values and underscores."));
     }
 
     // Check if a panel label is provided
     $label = $form_state ['values'] ['panel_label'];
     if (! $label) {
-      form_set_error ( 'panel_label', t ( "Please provide a label for the new panel." ) );
+      form_set_error('panel_label', t ("Please provide a label for the new panel."));
     }
   }
-  else if ($form_state ['clicked_button'] ['#name'] == 'order-panel-submit') {
+  else if ($form_state['clicked_button'] ['#name'] == 'order-panel-submit') {
 
   }
-  else if ($form_state ['clicked_button'] ['#name'] == 'op') {
+  else if ($form_state['clicked_button'] ['#name'] == 'op') {
 
   }
+  // Rename a Panel
+  else if (preg_match('/^arrange-panel-rename-/', $form_state ['clicked_button'] ['#name'])) {
+    $table = $form['te_arrange_panels']['panel_items'];
+    $button = $form_state ['triggering_element'] ['#name'];
+    $panel_id = str_replace ('arrange-panel-rename-', '', $button);
+    $newlabel = $form_state['values']['panel_items'][$panel_id]['newlabel'];
+    if (!trim($newlabel)) {
+      form_set_error ('panel_label', t ( "Please provide a label to rename a panel." ) );
+    }
+    else {
+      db_update('tripal_panels')
+        ->fields(array(
+          'label' => $newlabel
+        ))
+        ->condition ('panel_id', $panel_id)
+        ->execute();
+    }
+  }
+  // Remove a Panel
   else if (preg_match('/^arrange-panel-remove-/', $form_state ['clicked_button'] ['#name'])) {
-    $table = $form['te_layout_panels']['panel_items'];
+    $table = $form['te_arrange_panels']['panel_items'];
     $button = $form_state ['triggering_element'] ['#name'];
     $panel_id = str_replace ('arrange-panel-remove-', '', $button);
     db_delete('tripal_panels')
@@ -452,12 +481,16 @@ function theme_tripal_fields_layout_form_draggable_panel_table ($variables) {
 
     $element[$id]['label']['#printed'] = FALSE;
     $element[$id]['weight']['#printed'] = FALSE;
+    $element[$id]['newlabel']['#printed'] = FALSE;
+    $element[$id]['rename']['#printed'] = FALSE;
     $element[$id]['remove']['#printed'] = FALSE;
 
     $rows[] = array(
       'data' => array(
         drupal_render($element[$id]['label']),
         drupal_render($element[$id]['weight']),
+        drupal_render($element[$id]['newlabel']),
+        drupal_render($element[$id]['rename']),
         drupal_render($element[$id]['remove'])
       ),
       // Add draggable to each row to support the tabledrag behaviour
@@ -466,7 +499,7 @@ function theme_tripal_fields_layout_form_draggable_panel_table ($variables) {
   }
 
   // Create table header
-  $header = array(t('Label'), t('Weight'), t('Action'));
+  $header = array(t('Panel'), t('Weight'), t('New Lable'), t('Update'), t('Action'));
 
   // Create a unique id for drupal_add_tabledrag() to find the table object
   $table_id = 'tripal_panel-arrange_panel_table';
