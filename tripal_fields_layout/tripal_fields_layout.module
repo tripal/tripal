@@ -104,7 +104,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
             ->orderby('weight', 'asc')
             ->execute();
   $has_panel = FALSE;
-  foreach ($result as $item) {dpm($item);
+  foreach ($result as $item) {
     $form['te_layout_panels']['panel_items'][$item->panel_id] = array(
       'label' => array(
         '#markup' => check_plain($item->label),
