@@ -160,16 +160,16 @@ function tripal_db_theme($existing, $type, $theme, $path) {
  * for searching for accession that begin with the provided string
  *
  * @param $db_id
- * The DB ID in which to search for the term
+ *   The DB ID in which to search for the term
  * @param $string
- * The string to search for
+ *   The string to search for
  *
  * @return
- * A json array of terms that begin with the provided string
+ *   A json array of terms that begin with the provided string
  *
  * @ingroup tripal_db_api
  */
-function tripal_db_dbxref_accession_autocomplete ($db_id, $string = '') {
+function tripal_db_dbxref_accession_autocomplete($db_id, $string = '') {
   if (!$db_id) {
     return drupal_json_output(array());
   }
@@ -185,6 +185,6 @@ function tripal_db_dbxref_accession_autocomplete ($db_id, $string = '') {
   foreach ($results as $ref) {
     $items[$ref->accession] = $ref->accession;
   }
-  
+
   drupal_json_output($items);
 }

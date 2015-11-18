@@ -507,7 +507,6 @@ function tripal_fields_layout_theme($existing, $type, $theme, $path) {
  * Implements hook_entity_view.
  */
 function tripal_fields_layout_entity_view($entity, $type, $view_mode, $langcode) {
-  //dpm(array($entity, $type, $view_mode, $langcode));
   switch ($type) {
     case 'BioData':
       // Use the generic template to render the fields

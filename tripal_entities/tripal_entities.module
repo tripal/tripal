@@ -88,6 +88,10 @@ function tripal_entities_menu_local_tasks_alter(&$data, $router_item, $root_path
   }
 }
 
+/**
+ *
+ * @param unknown $account
+ */
 function tripal_entities_shortcut_default_set($account) {
   $sets = shortcut_sets();
   $found = FALSE;

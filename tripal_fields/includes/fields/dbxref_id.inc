@@ -50,12 +50,24 @@ function tripal_fields_dbxref_id_widget(&$widget, $form, $form_state, $field, $i
   $accession = '';
   $version = '';
   $description = '';
+
+  // If the field already has a value then it will come through the $items
+  // array.  This happens when editing an existing record.
   if (array_key_exists($delta, $items)) {
     $dbxref_id = $items[$delta]['value'];
     $db_id = $items[$delta]['dbxref__db_id'];
     $accession = $items[$delta]['dbxref__accession'];
     $version = $items[$delta]['dbxref__version'];
     $description = $items[$delta]['dbxref__description'];
+  }
+
+  // Check $form_state['values'] to see if an AJAX call set the values.
+  if (array_key_exists('values', $form_state)) {
+    $dbxref_id = tripal_fields_get_field_form_values($field_name, $form_state, 0, $field_name);
+    $db_id = tripal_fields_get_field_form_values($field_name, $form_state, 0, "dbxref__db_id");
+    $accession = tripal_fields_get_field_form_values($field_name, $form_state, 0, "dbxref__accession");
+    $version = tripal_fields_get_field_form_values($field_name, $form_state, 0, "dbxref__version");
+    $description = tripal_fields_get_field_form_values($field_name, $form_state, 0, "dbxref__description");
   }
 
   // If we are here because our parent was triggered in a form submit

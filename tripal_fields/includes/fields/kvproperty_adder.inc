@@ -19,21 +19,16 @@ function tripal_fields_kvproperty_adder_formatter(&$element, $entity_type, $enti
 }
 /**
  *
- * @param unknown $field_name
- * @param unknown $widget
- * @param unknown $form
- * @param unknown $form_state
- * @param unknown $field
- * @param unknown $instance
- * @param unknown $langcode
- * @param unknown $itemsG
- * @param unknown $delta
- * @param unknown $element
  */
-function tripal_fields_kvproperty_adder_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function tripal_fields_kvproperty_adder_widget(&$widget, $form, $form_state,
+    $field, $instance, $langcode, $items, $delta, $element) {
   // This field has no value field.  Just a fieldset for adding new properties.
-  $widget['#theme'] = 'tripal_fields_kvproperty_addr_widget';
   $widget['#element_validate'] = array('tripal_fields_kvproperty_adder_widget_validate');
+
+  $widget['#type'] = 'fieldset';
+  $widget['#title'] = $element['#title'];
+  $widget['#description'] = $element['#description'];
+  $widget['#group'] = 'entity_form_vtabs';
 
   $widget['kvproperty_instructions'] = array(
     '#type' => 'item',
@@ -47,7 +42,8 @@ function tripal_fields_kvproperty_adder_widget(&$widget, $form, $form_state, $fi
   $widget['value'] = array(
     '#title' => t('Property Type'),
     '#type' => 'textfield',
-    '#description' => t("Please enter the type of property that you want to add.  As you type, suggestions will be provided."),
+    '#description' => t("Please enter the type of property that you want to
+        add.  As you type, suggestions will be provided."),
     '#autocomplete_path' => "admin/tripal/chado/tripal_cv/cvterm/auto_name/",
   );
   $widget['kvproperty_adder_link'] = array(
@@ -68,24 +64,6 @@ function tripal_fields_kvproperty_adder_widget(&$widget, $form, $form_state, $fi
     '#submit' => array('tripal_fields_kvproperty_adder_widget_submit'),
     '#limit_validation_errors' => array(array($field['field_name'])),
   );
-}
-/**
- * Theme function for the kvproperty_addr_widget.
- *
- * @param $variables
- */
-function theme_tripal_fields_kvproperty_addr_widget($variables) {
-  $element = $variables['element'];
-  $fieldset = array(
-    '#title' => $element['#title'],
-    '#value' => '',
-    '#description' => $element['#description'],
-    '#children' => drupal_render_children($element),
-    '#group' => 'ev_tabs',
-    '#attributes' => array(),
-  );
-
-  return theme('fieldset', array('element' => $fieldset));
 }
 /**
  * Callback function for validating the tripal_fields_kvproperty_adder_widget.

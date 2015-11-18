@@ -66,7 +66,6 @@ function tripal_entities_entity_delete($entity, $type) {
 }
 
 /**
- *
  * @param unknown $display
  * @param unknown $context
  */

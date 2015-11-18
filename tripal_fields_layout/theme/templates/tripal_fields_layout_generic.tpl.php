@@ -23,6 +23,7 @@ foreach ($panels AS $panel_id => $panel) {
           'data' => $field['#title'],
           'header' => TRUE,
           'width' => '20%',
+          'nowrap' => 'nowrap'
         ),
         $field[0]['#markup']
       );

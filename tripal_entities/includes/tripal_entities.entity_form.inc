@@ -52,7 +52,7 @@ function tripal_entities_entity_form($form, &$form_state, $dbxref_id = '', $enti
   $bundle_id = 'dbxref_' . $dbxref_id;
 
   // Add a vertical tabs element
-  $form['ev_tabs'] = array(
+  $form['entity_form_vtabs'] = array(
     '#type' => 'vertical_tabs',
     '#weight' => 999,
   );
@@ -91,7 +91,6 @@ function tripal_entities_entity_form($form, &$form_state, $dbxref_id = '', $enti
 
   $form['#prefix'] = "<div id='$bundle_id-entity-form'>";
   $form['#suffix'] = "</div>";
-
   return $form;
 
 }

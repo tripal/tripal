@@ -278,11 +278,43 @@ function tripal_fields_field_widget_form(&$form, &$form_state, $field,
       tripal_fields_kvproperty_widget($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
       break;
   }
-
   return $widget;
 }
 
-
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * The field_ui_display_overview_form is used for formatting the display
+ * or layout of fields attached to an entity and shown on the entity view page.
+ */
+function tripal_fields_form_field_ui_display_overview_form_alter(&$form, &$form_state, $form_id) {
+  // Remove the kvproperty_addr field as it isn't ever displayed. It's just used
+  // on the add/edit form of an entity for adding new property fields.
+  $fields_names = element_children($form['fields']);
+  foreach ($fields_names as $field_name) {
+    $field_info = field_info_field($field_name);
+    if ($field_info['type'] == 'kvproperty_adder') {
+      unset($form['fields'][$field_name]);
+    }
+  }
+}
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * The field_ui_field_overview_form is used for ordering and configuring the
+ * fields attached to an entity.
+ */
+function tripal_fields_form_field_ui_field_overview_form_alter(&$form, &$form_state, $form_id) {
+  // Remove the kvproperty_addr field as it isn't ever displayed. It's just used
+  // on the add/edit form of an entity for adding new property fields.
+  $fields_names = element_children($form['fields']);
+  foreach ($fields_names as $field_name) {
+    $field_info = field_info_field($field_name);
+    if ($field_info['type'] == 'kvproperty_adder') {
+      unset($form['fields'][$field_name]);
+    }
+  }
+}
 /**
  * Implements hook_field_is_empty().
  */
