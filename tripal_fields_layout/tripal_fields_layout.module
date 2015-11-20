@@ -373,32 +373,34 @@ function _tripal_fields_layout_check_default_field_panels($bundle) {
   ->condition('bundle_id', $bundle->id)
   ->execute()
   ->fetchField();
-  $fields = db_select('field_config_instance', 'fci')
-    ->fields('fci', array('id'))
-    ->condition('entity_type', $bundle->type)
-    ->condition('bundle', $bundle->bundle)
-    ->execute();
-  foreach($fields AS $field) {
-    $penal_field_id = db_select('tripal_panel_fields', 'tpf')
-    ->fields('tpf', array('panel_field_id'))
-    ->condition('field_id', $field->id)
-    ->execute()
-    ->fetchField();
-    if ($penal_field_id) {
-      db_update('tripal_panel_fields')
-      ->fields(array(
-        'panel_id' => $panel_id,
-      ))
-      ->condition('panel_field_id', $penal_field_id)
+  if(property_exists($bundle, 'type')) {
+    $fields = db_select('field_config_instance', 'fci')
+      ->fields('fci', array('id'))
+      ->condition('entity_type', $bundle->type)
+      ->condition('bundle', $bundle->bundle)
       ->execute();
-    }
-    else {
-      db_insert('tripal_panel_fields')
-      ->fields(array(
-        'panel_id' => $panel_id,
-        'field_id' => $field->id
-      ))
-      ->execute();
+    foreach($fields AS $field) {
+      $penal_field_id = db_select('tripal_panel_fields', 'tpf')
+      ->fields('tpf', array('panel_field_id'))
+      ->condition('field_id', $field->id)
+      ->execute()
+      ->fetchField();
+      if ($penal_field_id) {
+        db_update('tripal_panel_fields')
+        ->fields(array(
+          'panel_id' => $panel_id,
+        ))
+        ->condition('panel_field_id', $penal_field_id)
+        ->execute();
+      }
+      else {
+        db_insert('tripal_panel_fields')
+        ->fields(array(
+          'panel_id' => $panel_id,
+          'field_id' => $field->id
+        ))
+        ->execute();
+      }
     }
   }
   // Next check if the hidden region is in the database. If not, add it.
