@@ -27,6 +27,8 @@ function tripal_fields_layout_form_field_ui_field_edit_form_alter(&$form, &$form
  */
 function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, &$form_state, $form_id) {
 
+  drupal_add_css(drupal_get_path('module','tripal_fields_layout') . '/theme/css/tripal_fields_layout_panels.css');
+  
   $entity_type = $form['#entity_type'];
   $bundle_name = $form['#bundle'];
 
@@ -60,10 +62,10 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
   );
   
   // Add a Panel
-  tripal_fields_layout_form_field_ui_display_overview_form_panel_add($form);
+  tripal_fields_layout_form_field_ui_display_overview_form_panel_add($form, $form_state);
   
   // Arrange Panels
-  tripal_fields_layout_form_field_ui_display_overview_form_panel_arrange($form, $bundle);
+  tripal_fields_layout_form_field_ui_display_overview_form_panel_arrange($form, $form_state, $bundle);
   
   // Configure Panels
   tripal_fields_layout_form_field_ui_display_overview_form_panel_configure($form, $bundle);
@@ -144,7 +146,8 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
 /**
  * Add a Panel Form
  */
-function tripal_fields_layout_form_field_ui_display_overview_form_panel_add (&$form) {
+function tripal_fields_layout_form_field_ui_display_overview_form_panel_add (&$form, &$form_state) {
+  $form_state['input']['panel_label'] = key_exists('panel_label', $form_state['input']) ? $form_state['values']['panel_label'] : NULL;
   $form['te_add_panels']['instructions'] = array(
     '#type' => 'item',
     '#markup' => t('You may add as many panels to your page layout as
@@ -160,11 +163,12 @@ function tripal_fields_layout_form_field_ui_display_overview_form_panel_add (&$f
   $form['te_add_panels']['panel_label'] = array(
     '#type' => 'textfield',
     '#title' => 'Panel Label',
+    '#default_value' => '',
     '#description' => t('Please provide a human readable label for this
         panel. This is the name that will appear to site visitors.')
   );
   $form['te_add_panels']['add_button'] = array(
-    '#type' => 'submit',
+    '#type' => 'button',
     '#value' => 'Add Panel',
     '#name' => 'add-panel-submit'
   );
@@ -173,7 +177,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_panel_add (&$f
 /**
  * Arrange Panels Form
  */
-function tripal_fields_layout_form_field_ui_display_overview_form_panel_arrange (&$form, $bundle) {
+function tripal_fields_layout_form_field_ui_display_overview_form_panel_arrange (&$form, &$form_state, $bundle) {
   $form['te_arrange_panels'] = array(
     '#type' => 'fieldset',
     '#title' => 'Arrange Panels',
@@ -196,6 +200,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_panel_arrange 
   ->execute();
   $has_panel = FALSE;
   foreach ($result as $item) {
+    $form_state['input']['panel_items'][$item->panel_id]['newlabel'] = key_exists($item->panel_id, $form_state['input']) && $form_state['input'][$item->panel_id]['newlabel'] ? $form_state['values']['panel_items'][$item->panel_id]['newlabel'] : NULL;
     $form['te_arrange_panels']['panel_items'][$item->panel_id] = array(
       'label' => array(
         '#markup' => check_plain($item->label),
@@ -228,7 +233,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_panel_arrange 
   if ($has_panel) {
     $form['te_arrange_panels']['panel_items']['#theme_wrappers'] = array('tripal_fields_layout_form_arrange_panels');
     $form['te_arrange_panels']['save_button'] = array(
-      '#type' => 'submit',
+      '#type' => 'button',
       '#value' => 'Save Panel Order',
       '#name' => 'order-panel-submit'
     );
@@ -256,29 +261,76 @@ function tripal_fields_layout_form_field_ui_display_overview_form_panel_configur
   $form['te_configure_panels']['panel_items']['#tree'] = TRUE;
   // Get available panels
   $panels = db_select('tripal_panels', 'tp')
-  ->fields('tp', array('panel_id', 'name', 'label', 'weight'))
-  ->condition('name', 'te_base', '<>')
+  ->fields('tp', array('panel_id', 'name', 'label', 'weight', 'settings'))
   ->condition('name', 'te_disabled', '<>')
   ->condition('bundle_id', $bundle->id)
   ->orderby('weight', 'asc')
   ->execute();
   $has_panel = FALSE;
   foreach ($panels as $panel) {
+    $panel_settings = unserialize($panel->settings);
+    $hz_table = key_exists('hz_table', $panel_settings) ? $panel_settings['hz_table'] : array();
+    $vt_table = key_exists('vt_table', $panel_settings) ? $panel_settings['vt_table'] : array();
     $form['te_configure_panels']['panel_items'][$panel->panel_id] = array(
-      'label' => array(
-        '#markup' => check_plain($panel->label),
-      ),
+      '#type' => 'fieldset',
+      '#title' => check_plain($panel->label),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
     );
     //Add fields to each panel for changing configuration
     $fields = db_select('tripal_panel_fields', 'tpf')
     ->fields('tpf', array('field_id'))
     ->condition('panel_id', $panel->panel_id)
     ->execute();
+    
+    $has_field = FALSE;
+    foreach ($fields AS $field) {
+      $field_obj = db_select('field_config_instance', 'tci')
+        ->fields('tci', array('field_name','data'))
+        ->condition('id', $field->field_id)
+        ->execute()
+        ->fetchObject();
+      $field_arr = unserialize($field_obj->data);
+      $fname = $field_obj->field_name;
+      if($fname == 'featureprop') {
+        continue;
+      }
+      $flable = $field_arr['label'];
+      $form['te_configure_panels']['panel_items'][$panel->panel_id][$fname] = array(
+        '#type' => 'item',
+        '#title' => $flable,
+      );
+      $default_value = 0;
+      if (in_array($fname, $hz_table)) {
+        $default_value = 1;
+      }
+      else if (in_array($fname, $vt_table)) {
+        $default_value = 2;
+      }
+      $form['te_configure_panels']['panel_items'][$panel->panel_id][$fname]['table_group'] = array(
+        '#type' => 'radios',
+        '#options' => array(
+          0 => 'No Group', 
+          1 => 'Horizontal Table', 
+          2 => 'Vertical Table'
+        ),
+        '#default_value' => $default_value,
+      );
+      $has_field = TRUE;
+    }
+    
+    if (!$has_field) {
+      $form['te_configure_panels']['panel_items'][$panel->panel_id]['no_field'] = array(
+        '#markup' => 'No field in this panel.',
+      );
+    } else {
+      $form['te_configure_panels']['panel_items'][$panel->panel_id]['#theme_wrappers'] = array('tripal_fields_layout_form_configure_panels');
+    }
     $has_panel = TRUE;
   }
   if ($has_panel) {
     $form['te_configure_panels']['save_button'] = array(
-      '#type' => 'submit',
+      '#type' => 'button',
       '#value' => 'Save Configuration',
       '#name' => 'configure-panel-submit'
     );
@@ -380,66 +432,29 @@ function tripal_fields_layout_field_ui_row_region($row) {
  * @param $form_state
  */
 function tripal_fields_layout_field_ui_validate($form, &$form_state) {
-
-  // Add a Panel
+  // Add a panel
   if ($form_state ['clicked_button'] ['#name'] == 'add-panel-submit') {
-    // Check if a panel label is provided
-    $label = $form_state ['values'] ['panel_label'];
-    if (! $label) {
-      form_set_error('panel_label', t ("Please provide a label for the new panel."));
-    }
-    // Generate a valide panel name using the label. 
-    // i.e. removing leading numbers and spaces
-    $name = strtolower(preg_replace ('/^\d|\s+/', '_', $label));
-    $name_exists = db_select('tripal_panels', 'tp')
-      ->fields('tp', array('panel_id'))
-      ->condition('name', $name)
-      ->execute()
-      ->fetchField();
-    if ($name_exists) {
-      form_set_error('panel_label', t('The name is used by another panel. Please use a different label.'));
-    }
-    else {
-      $form_state ['values'] ['panel_name'] = $name;
-    }
+    tripal_fields_layout_action_add_panel($form, $form_state);
   }
+  // Order panels
   else if ($form_state['clicked_button'] ['#name'] == 'order-panel-submit') {
-
+    tripal_fields_layout_action_order_panels($form, $form_state);
+  }
+  // Rename a panel
+  else if (preg_match('/^arrange-panel-rename-/', $form_state ['clicked_button'] ['#name'])) {
+    tripal_fields_layout_action_rename_panel ($form, $form_state);
+  }
+  // Remove a panel
+  else if (preg_match('/^arrange-panel-remove-/', $form_state ['clicked_button'] ['#name'])) {
+    tripal_fields_layout_action_remove_panel ($form_state);
+  }
+  // Configure panels
+  else if ($form_state['clicked_button'] ['#name'] == 'configure-panel-submit') {
+    tripal_fields_layout_action_configure_panels($form, $form_state);
   }
   else if ($form_state['clicked_button'] ['#name'] == 'op') {
-
+  
   }
-  // Rename a Panel
-  else if (preg_match('/^arrange-panel-rename-/', $form_state ['clicked_button'] ['#name'])) {
-    $table = $form['te_arrange_panels']['panel_items'];
-    $button = $form_state ['triggering_element'] ['#name'];
-    $panel_id = str_replace ('arrange-panel-rename-', '', $button);
-    $newlabel = $form_state['values']['panel_items'][$panel_id]['newlabel'];
-    if (!trim($newlabel)) {
-      form_set_error ('panel_label', t ("Please provide a label to rename a panel.") );
-    }
-    else {
-      db_update('tripal_panels')
-        ->fields(array(
-          'label' => $newlabel
-        ))
-        ->condition ('panel_id', $panel_id)
-        ->execute();
-    }
-  }
-  // Remove a Panel
-  else if (preg_match('/^arrange-panel-remove-/', $form_state ['clicked_button'] ['#name'])) {
-    $table = $form['te_arrange_panels']['panel_items'];
-    $button = $form_state ['triggering_element'] ['#name'];
-    $panel_id = str_replace ('arrange-panel-remove-', '', $button);
-    db_delete('tripal_panels')
-    ->condition ('panel_id', $panel_id)
-    ->execute();
-    db_delete('tripal_panel_fields')
-    ->condition ('panel_id', $panel_id)
-    ->execute();
-  }
-
 }
 /**
  * Responds to a submit from the field UI form for saving panel assignments.
@@ -448,39 +463,8 @@ function tripal_fields_layout_field_ui_validate($form, &$form_state) {
  * @param $form_state
  */
 function tripal_fields_layout_field_ui_submit($form, &$form_state) {
-  // Add a new panel
-  if ($form_state ['clicked_button'] ['#name'] == 'add-panel-submit') {
-    $bundle_id = $form_state['build_info']['args'][1]->id;
-    $name      = $form_state['values']['panel_name'];
-    $label     = $form_state['values']['panel_label'];
-    $settings = array(
-      'message' => 'Place field in this panel.',
-    );
-    db_insert('tripal_panels')
-    ->fields(array(
-      'bundle_id' => $bundle_id,
-      'name' => $name,
-      'label' => $label,
-      'settings' => serialize($settings),
-      'weight' => 0
-    ))
-    ->execute();
-  }
-  // Order panel
-  else if ($form_state ['clicked_button'] ['#name'] == 'order-panel-submit') {
-    $panels = $form_state['values']['panel_items'];
-    foreach ($panels AS $id => $panel) {
-      db_query(
-        'UPDATE {tripal_panels} SET weight = :weight WHERE panel_id = :id',
-        array(
-          ':weight' => $panel['weight'],
-          ':id' => $id
-        )
-      );
-    }
-  }
-  // Save field regions
-  else if ($form_state ['clicked_button'] ['#name'] == 'op') {
+  // Save fields for each panel
+  if ($form_state ['clicked_button'] ['#name'] == 'op') {
     $fields = $form_state['values']['fields'];
     foreach($fields AS $field_name => $field_data){
 
@@ -522,7 +506,100 @@ function tripal_fields_layout_field_ui_submit($form, &$form_state) {
 }
 
 /**
- *  Theme the Panel Order Table as a draggable table
+ * Add a new panel
+ */
+function tripal_fields_layout_action_add_panel (&$form, &$form_state) {
+  // Check if a panel label is provided
+  $label = $form_state ['values'] ['panel_label'];
+  if (! $label) {
+    form_set_error('panel_label', t ("Please provide a label for the new panel."));
+  }
+  // Generate a valide panel name using the label.
+  // i.e. removing leading numbers and spaces
+  $name = strtolower(preg_replace ('/^\d|\s+/', '_', $label));
+  $name_exists = db_select('tripal_panels', 'tp')
+  ->fields('tp', array('panel_id'))
+  ->condition('name', $name)
+  ->execute()
+  ->fetchField();
+  if ($name_exists) {
+    form_set_error('panel_label', t('The name is used by another panel. Please use a different label.'));
+  }
+  else {
+    $form_state ['values'] ['panel_name'] = $name;
+    $bundle_id = $form_state['build_info']['args'][1]->id;
+    $name      = $form_state['values']['panel_name'];
+    $label     = $form_state['values']['panel_label'];
+    $settings = array(
+      'message' => 'Place field in this panel.',
+    );
+    db_insert('tripal_panels')
+    ->fields(array(
+      'bundle_id' => $bundle_id,
+      'name' => $name,
+      'label' => $label,
+      'settings' => serialize($settings),
+      'weight' => 0
+    ))
+    ->execute();
+    form_set_value($form['te_add_panels']['panel_label'], '', $form_state);
+  }
+}
+
+/**
+ * Rename panel
+ */
+function tripal_fields_layout_action_rename_panel (&$form, &$form_state) {
+  $button = $form_state ['triggering_element'] ['#name'];
+  $panel_id = str_replace ('arrange-panel-rename-', '', $button);
+  $newlabel = $form_state['values']['panel_items'][$panel_id]['newlabel'];
+  if (!trim($newlabel)) {
+    form_set_error ('panel_label', t ("Please provide a label to rename a panel.") );
+  }
+  else {
+    db_update('tripal_panels')
+    ->fields(array(
+      'label' => $newlabel,
+      'name' => strtolower(preg_replace ('/^\d|\s+/', '_', $newlabel))
+    ))
+    ->condition('panel_id', $panel_id)
+    ->execute();
+    form_set_value($form['te_arrange_panels']['panel_items'][$panel_id]['newlabel'], '', $form_state);    
+  }
+}
+
+
+/**
+ * Remove panel
+ */
+function tripal_fields_layout_action_remove_panel (&$form_state) {
+  $button = $form_state ['triggering_element'] ['#name'];
+  $panel_id = str_replace ('arrange-panel-remove-', '', $button);
+  db_delete('tripal_panels')
+  ->condition ('panel_id', $panel_id)
+  ->execute();
+  db_delete('tripal_panel_fields')
+  ->condition ('panel_id', $panel_id)
+  ->execute();
+}
+
+/**
+ * Order panel
+ */
+function tripal_fields_layout_action_order_panels (&$form, &$form_state) {
+  $panels = $form_state['values']['panel_items'];
+  foreach ($panels AS $id => $panel) {
+    db_query('UPDATE {tripal_panels} SET weight = :weight WHERE panel_id = :id',
+      array(
+        ':weight' => $panel['weight'],
+        ':id' => $id
+      )
+    );
+  }
+}
+
+/**
+ *  Theme the Arrange Panels as a draggable table
  *
  * @param unknown $variables
  * @return unknown
@@ -579,11 +656,101 @@ function theme_tripal_fields_layout_form_arrange_panels ($variables) {
 }
 
 /**
+ * Configure panels
+ */
+function tripal_fields_layout_action_configure_panels (&$form, &$form_state) {
+  $panels = $form_state['values']['panel_items'];
+
+  foreach ($panels AS $id => $panel) {
+    $hz_table = array();
+    $vt_table = array();
+    foreach($panel AS $key => $value) {
+      if (is_array($value) && key_exists('table_group', $value)) {
+        if ($value['table_group'] == 1) {
+          $hz_table[] = $key;
+        }
+        else if ($value['table_group'] == 2) {
+          $vt_table[] = $key;
+        }
+      }
+    }
+    $panel_settings = db_select('tripal_panels', 'tp')
+      ->fields('tp', array('settings'))
+      ->condition('panel_id', $id)
+      ->execute()
+      ->fetchField();
+    $new_settings = unserialize($panel_settings);
+    $new_settings['hz_table'] = $hz_table;
+    $new_settings['vt_table'] = $vt_table;
+    db_update('tripal_panels')
+      ->fields(array(
+        'settings' => serialize($new_settings)
+      ))
+      ->condition('panel_id', $id)
+      ->execute();
+  }
+}
+
+/**
+ *  Theme the Configure Panels as a table
+ *
+ * @param unknown $variables
+ * @return unknown
+ */
+function theme_tripal_fields_layout_form_configure_panels ($variables) {
+  $element = $variables['element'];
+
+  $rows = array();
+
+  foreach (element_children($element) as $id) {
+
+    $element[$id]['table_group']['#printed'] = FALSE;
+    $rows[] = array(
+      'data' => array(
+        $element[$id]['#title'],
+        drupal_render($element[$id]['table_group']),
+      ),
+    );
+  }
+
+  // Create table header
+  $header = array(t('Field'), t('Table Group'));
+
+  // Create a unique id for drupal_add_tabledrag() to find the table object
+  $table_id = 'tripal_panel-configure_panel_table-' . strtolower($element['#title']);
+
+  // Create output
+  $table = '';
+  if (count($rows) > 0) {
+    $table = theme('table', array(
+      'header' => $header,
+      'rows' => $rows,
+      'attributes' => array('id' => $table_id),
+    ));
+  }
+  
+  $collapsible_item = array('element' => array());
+  $collapsible_item['element']['#children'] = '';
+  $collapsible_item['element']['#description'] = 
+    '<div id="tripal_fields_layout-panel_configure-fieldset-instruction">
+        Select a group to organize fields into table(s) in this panel.
+     <div>'
+    . $table;
+  $collapsible_item['element']['#title'] = $element['#title'];
+  $collapsible_item['element']['#attributes']['class'] = array('tripal_fields_layout-panel_configure-fieldset', 'collapsible');
+  $output = theme('fieldset', $collapsible_item);
+  return $output;
+}
+  
+/**
  * Implements hook_theme().
  */
 function tripal_fields_layout_theme($existing, $type, $theme, $path) {
   return array(
     'tripal_fields_layout_form_arrange_panels' => array(
+      'render element' => 'element',
+    ),
+    'tripal_fields_layout_form_configure_panels' => array(
       'render element' => 'element',
     ),
     'tripal_fields_layout_generic' => array(

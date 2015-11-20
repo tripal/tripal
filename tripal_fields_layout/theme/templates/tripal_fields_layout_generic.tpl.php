@@ -12,6 +12,10 @@ $horz_table = TRUE;
 $content = '';
 $toc = '';
 foreach ($panels AS $panel_id => $panel) {
+  $panel_settings = unserialize($panel->settings);
+  $in_hz_table = key_exists('hz_table', $panel_settings) ? $panel_settings['hz_table'] : array();
+  $in_vt_table = key_exists('vt_table', $panel_settings) ? $panel_settings['vt_table'] : array();
+  
   $panel_fields = $fields[$panel_id];
   $collapsible_item = array('element' => array());
 
