@@ -465,6 +465,7 @@ function tripal_fields_layout_field_ui_validate($form, &$form_state) {
 function tripal_fields_layout_field_ui_submit($form, &$form_state) {
   // Save fields for each panel
   if ($form_state ['clicked_button'] ['#name'] == 'op') {
+    $bundle = $form_state['build_info']['args'][1];
     $fields = $form_state['values']['fields'];
     foreach($fields AS $field_name => $field_data){
 
@@ -476,6 +477,7 @@ function tripal_fields_layout_field_ui_submit($form, &$form_state) {
       $panel_id = db_select('tripal_panels', 'tp')
       ->fields('tp', array('panel_id'))
       ->condition('name', $region)
+      ->condition('bundle_id', $bundle->id)
       ->execute()
       ->fetchField();
 
@@ -485,6 +487,7 @@ function tripal_fields_layout_field_ui_submit($form, &$form_state) {
       ->condition('field_id', $field_instance_id)
       ->execute()
       ->fetchField();
+      //dpm(array('instance' => $field_instance_id, 'panel_id' => $panel_id, 'panel_field_id' => $penal_field_id, ));
       if ($penal_field_id) {
         db_update('tripal_panel_fields')
         ->fields(array(
