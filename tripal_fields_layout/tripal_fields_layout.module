@@ -717,7 +717,8 @@ function theme_tripal_fields_layout_form_configure_panels ($variables) {
   $header = array(t('Field'), t('Table Group'));
 
   // Create a unique id for drupal_add_tabledrag() to find the table object
-  $table_id = 'tripal_panel-configure_panel_table-' . strtolower($element['#title']);
+  $table_id = 'tripal_panel-configure_panel_table-' . strtolower(preg_replace('/\s+/', '_', $element['#title']));
+  $table_class = 'tripal_panel-configure_panel_table';
 
   // Create output
   $table = '';
@@ -725,7 +726,7 @@ function theme_tripal_fields_layout_form_configure_panels ($variables) {
     $table = theme('table', array(
       'header' => $header,
       'rows' => $rows,
-      'attributes' => array('id' => $table_id),
+      'attributes' => array('id' => $table_id, 'class' => array($table_class)),
     ));
   }
   
