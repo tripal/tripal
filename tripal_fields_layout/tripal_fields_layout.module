@@ -520,9 +520,11 @@ function tripal_fields_layout_action_add_panel (&$form, &$form_state) {
   // Generate a valide panel name using the label.
   // i.e. removing leading numbers and spaces
   $name = strtolower(preg_replace ('/^\d|\s+/', '_', $label));
+  $bundle = $form_state['build_info']['args'][1];
   $name_exists = db_select('tripal_panels', 'tp')
   ->fields('tp', array('panel_id'))
   ->condition('name', $name)
+  ->condition('bundle_id', $bundle->id)
   ->execute()
   ->fetchField();
   if ($name_exists) {
