@@ -99,7 +99,7 @@ foreach ($panels AS $panel_id => $panel) {
   
   $output = $horz_table . $vert_table . $ungrouped ;
 
-  // If this is a base content, do not organized the content in a fieldset
+  // If this is a base content, do not organize the content in a fieldset
   if ($panel->name == 'te_base') {
     $content .= $output;
   } else {

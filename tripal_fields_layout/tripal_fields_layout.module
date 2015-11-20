@@ -589,12 +589,14 @@ function tripal_fields_layout_action_remove_panel (&$form_state) {
 function tripal_fields_layout_action_order_panels (&$form, &$form_state) {
   $panels = $form_state['values']['panel_items'];
   foreach ($panels AS $id => $panel) {
-    db_query('UPDATE {tripal_panels} SET weight = :weight WHERE panel_id = :id',
-      array(
-        ':weight' => $panel['weight'],
-        ':id' => $id
-      )
-    );
+    if (key_exists('weight', $panel)) {
+      db_query('UPDATE {tripal_panels} SET weight = :weight WHERE panel_id = :id',
+        array(
+          ':weight' => $panel['weight'],
+          ':id' => $id
+        )
+      );
+    }
   }
 }
 
