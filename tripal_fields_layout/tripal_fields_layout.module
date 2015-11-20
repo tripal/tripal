@@ -385,15 +385,7 @@ function _tripal_fields_layout_check_default_field_panels($bundle) {
       ->condition('field_id', $field->id)
       ->execute()
       ->fetchField();
-      if ($penal_field_id) {
-        db_update('tripal_panel_fields')
-        ->fields(array(
-          'panel_id' => $panel_id,
-        ))
-        ->condition('panel_field_id', $penal_field_id)
-        ->execute();
-      }
-      else {
+      if (!$penal_field_id) {
         db_insert('tripal_panel_fields')
         ->fields(array(
           'panel_id' => $panel_id,
