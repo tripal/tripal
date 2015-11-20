@@ -13,22 +13,33 @@ $content = '';
 $toc = '';
 foreach ($panels AS $panel_id => $panel) {
   $panel_settings = unserialize($panel->settings);
-  $in_hz_table = key_exists('hz_table', $panel_settings) ? $panel_settings['hz_table'] : array();
-  $in_vt_table = key_exists('vt_table', $panel_settings) ? $panel_settings['vt_table'] : array();
+  $hz_table_group = key_exists('hz_table', $panel_settings) ? $panel_settings['hz_table'] : array();
+  $vt_table_group = key_exists('vt_table', $panel_settings) ? $panel_settings['vt_table'] : array();
   
   $panel_fields = $fields[$panel_id];
-  $collapsible_item = array('element' => array());
-
-  // If the format is horizontal table then format the fields in tabular format.
-  if ($horz_table) {
-    // reorder the fields by its weight
-    $ordered_fields = array();
-    foreach ($panel_fields AS $field) {
-      $ordered_fields[$field['#weight']] = $field;
+  // Rearrange fields into groups for each panel
+  $hz_table = array();
+  $vt_table = array();
+  $no_group = array();
+  // Order by field's '#weight' which is never the same
+  foreach ($panel_fields AS $field) {
+    if (in_array($field['#field_name'], $hz_table_group)) {
+      $hz_table [$field['#weight']] = $field;
     }
-    ksort($ordered_fields);
+    else if (in_array($field['#field_name'], $vt_table_group)) {
+      $vt_table [$field['#weight']] = $field;
+    }
+    else {
+      $no_group [$field['#weight']] = $field;
+    }
+  }
+  
+  // Render horizontal table
+  $horz_table = '';
+  if (count($hz_table) != 0) {
+    ksort($hz_table);
     $rows = array();
-    foreach ($ordered_fields as $field) {
+    foreach ($hz_table as $field) {
       $rows[] = array(
         array(
           'data' => $field['#title'],
@@ -39,12 +50,36 @@ foreach ($panels AS $panel_id => $panel) {
         $field[0]['#markup']
       );
     }
-    $collapsible_item['element']['#description'] = theme_table(array(
-      'header' => array(),
-      'rows' => $rows,
+    $horz_table = theme_table(array(
+        'header' => array(),
+        'rows' => $rows,
+        'attributes' => array(
+          'id' => '',  // TODO: need to add an ID
+          'class' => 'tripal-data-horz-table'
+        ),
+        'sticky' => FALSE,
+        'caption' => '',
+        'colgroups' => array(),
+        'empty' => '',
+      ));
+  }
+  
+  // Render horizontal table
+  $vert_table = '';  
+  if (count($vt_table) != 0) {
+    ksort($vt_table);
+    $value = array();
+    $headers = array();
+    foreach ($vt_table as $field) {
+      $headers [] = $field['#title'];
+      array_push($value, $field[0]['#markup']);
+    }
+    $vert_table = theme_table(array(
+      'header' => $headers,
+      'rows' => array($value),
       'attributes' => array(
         'id' => '',  // TODO: need to add an ID
-        'class' => 'tripal-data-table'
+        'class' => 'tripal-data-vert-table'
       ),
       'sticky' => FALSE,
       'caption' => '',
@@ -52,13 +87,24 @@ foreach ($panels AS $panel_id => $panel) {
       'empty' => '',
     ));
   }
-  // If no format is provided then use the default Drupal render.
-  else {
-    $collapsible_item['element']['#description'] = render($panel_fields);
+  
+  // Render field not in a group
+  $ungrouped = '';
+  if (count($no_group) != 0) {
+    ksort($no_group);
+    foreach ($no_group as $field) {
+      $ungrouped .= render($field);
+    }    
   }
+  
+  $output = $horz_table . $vert_table . $ungrouped ;
 
-  // If this is not the base content then the field should be collapsible.
-  if ($panel->name != 'te_base') {
+  // If this is a base content, do not organized the content in a fieldset
+  if ($panel->name == 'te_base') {
+    $content .= $output;
+  } else {
+    $collapsible_item = array('element' => array());
+    $collapsible_item['element']['#description'] = $output;
     $collapsible_item['element']['#title'] = $panel->label;
     $collapsible_item['element']['#children'] = '';
     $collapsible_item['element']['#attributes']['class'][] = 'collapsible';
@@ -66,10 +112,6 @@ foreach ($panels AS $panel_id => $panel) {
     $toc_item_id = $panel_id;
     $toc .= "<div class=\"tripal_toc_list_item\"><a id=\"" . $panel->name . "\" class=\"tripal_toc_list_item_link\" href=\"?pane=" . $panel->name . "\">" . $panel->label . "</a></div>";
     $content .= theme('fieldset', $collapsible_item);
-  }
-  // The base field should just be the fields
-  else {
-    $content .= render($panel_fields);
   }
 }
 
