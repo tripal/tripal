@@ -1213,6 +1213,10 @@ function tripal_feature_load_gff3_parents($feature, $cvterm, $parents,
     // try to find the parent
     $parentcvterm = chado_query($cvterm_sql, array(':cvname' => 'sequence', ':name' => $parent_type, ':synonym' => $parent_type))->fetchObject();
     $relcvterm = chado_query($cvterm_sql, array(':cvname' => 'sequence', ':name' => $rel_type, ':synonym' => $rel_type))->fetchObject();
+    if (!$relcvterm) {
+      tripal_report_error("tripal_feature", TRIPAL_WARNING, "Cannot find the term, 'part_of', from the sequence ontology. This term is used for associating parent and children features. Please check that the ontology is fully imported.");
+      return '';
+    }
     $values = array(
         'organism_id' => $organism_id,
         'uniquename' => $parent,
