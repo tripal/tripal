@@ -106,14 +106,14 @@ foreach ($panels AS $panel_id => $panel) {
 
   // If this is a base content, do not organize the content in a fieldset
   if ($panel->name == 'te_base') {
-    $content .= '<div class="tripal_base_panel">' . $output . '</div>';
+    $content .= '<div class="tripal_panel-base_panel">' . $output . '</div>';
   } else {
     $collapsible_item = array('element' => array());
     $collapsible_item['element']['#description'] = $output;
     $collapsible_item['element']['#title'] = $panel->label;
     $collapsible_item['element']['#children'] = '';
-    $collapsible_item['element']['#attributes']['id'] = 'tripal_panel_fieldset-' . $panel->name;
-    $collapsible_item['element']['#attributes']['class'][] = 'tripal_panel_fieldset';
+    $collapsible_item['element']['#attributes']['id'] = 'tripal_panel-fieldset-' . $panel->name;
+    $collapsible_item['element']['#attributes']['class'][] = 'tripal_panel-fieldset';
     $collapsible_item['element']['#attributes']['class'][] = 'collapsible';
     $collapsible_item['element']['#attributes']['class'][] = 'collapsed';
     $toc_item_id = $panel_id;
