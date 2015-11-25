@@ -11,6 +11,7 @@
       $('.tripal_panel_fieldset-close_button').each(function (i) {
     	$(this).css('float', 'right');
     	$(this).css('cursor', 'pointer');
+    	$(this).css('margin', '0px 5px');
     	$(this).click(function () {
     		var fs = $(this).parent().parent().parent();
     		var fsid = fs.attr('id');
