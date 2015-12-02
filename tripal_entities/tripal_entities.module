@@ -60,6 +60,7 @@ function tripal_entities_menu() {
 
 /**
  * Implements hook_admin_paths().
+ * Define administrative paths.
  */
 function tripal_entities_admin_paths() {
   if (variable_get('node_admin_theme')) {
@@ -72,11 +73,14 @@ function tripal_entities_admin_paths() {
     return $paths;
   }
 }
+
 /**
  * Implements hook_menu_local_tasks_alter().
+ * Used to add action links to pages.
  */
 function tripal_entities_menu_local_tasks_alter(&$data, $router_item, $root_path) {
-  // Add action link to 'BioData/add' on 'admin/content/BioData' page.
+
+  // Add an "Add Biological Data" action link to the Admin > Content > Biological Data page.
   if ($root_path == 'admin/content/BioData') {
     $item = menu_get_item('BioData/add');
     if ($item['access']) {
@@ -89,8 +93,15 @@ function tripal_entities_menu_local_tasks_alter(&$data, $router_item, $root_path
 }
 
 /**
+ * Implements hook_shortcut_default_set().
+ * Modify the shortcut menu to include Biological data links.
  *
- * @param unknown $account
+ * @param object $account
+ *   The user account whose default shortcut set will be returned. If not provided, the 
+ *   function will return the currently logged-in user's default shortcut set.
+ *
+ * @return
+ *   An object representing the default shortcut set.
  */
 function tripal_entities_shortcut_default_set($account) {
   $sets = shortcut_sets();
@@ -142,6 +153,7 @@ function tripal_entities_shortcut_default_set($account) {
  * Implements hook_permission().
  */
 function tripal_entities_permission() {
+
   // We set up permisssions to manage entity types, manage all entities and the
   // permissions for each individual entity
   $permissions = array(
@@ -154,6 +166,7 @@ function tripal_entities_permission() {
       'description' => t('Edit and delete all tripal data'),
     ),
   );
+  
   return $permissions;
 }
 
