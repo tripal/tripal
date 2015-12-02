@@ -1,6 +1,10 @@
 <?php
 
 /**
+ * Implements hook_schema().
+ */
+function 
+/**
  *
  */
 function tripal_entities_add_tripal_bundle_panes_table(){
