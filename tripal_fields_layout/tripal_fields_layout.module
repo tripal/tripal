@@ -670,7 +670,7 @@ function theme_tripal_fields_layout_form_arrange_panels ($variables) {
   }
 
   // Create table header
-  $header = array(t('Panel'), t('Weight'), t('New Lable'), t('Rename'), t('Remove'));
+  $header = array(t('Panel'), t('Weight'), array('data' => t('Rename'), 'colspan' => 2), t('Action'));
 
   // Create a unique id for drupal_add_tabledrag() to find the table object
   $table_id = 'tripal_panel-arrange_panel_table';
