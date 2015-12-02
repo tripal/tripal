@@ -1,59 +1,35 @@
 <?php
 
 /**
- * Launchpad for feature administration.
- *
- * @ingroup tripal_feature
+ * Launchpad for biological data administration.
  */
 function tripal_entities_admin_view() {
 
+  // Render the tripal entites bundle form.
   $form = drupal_get_form('tripal_entities_admin_bundles_form');
   $output = drupal_render($form) . "<br>[ Image Place Holder for Data Type Summary ]<br>";
 
-  // set the breadcrumb
+  // Set the breadcrumb.
   $breadcrumb = array();
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Biological Data', 'admin/tripal/bundles');
   drupal_set_breadcrumb($breadcrumb);
-
-/*   // Add the view
-  $view = views_embed_view('tripal_feature_admin_features','default');
-  if (isset($view)) {
-    $output .= $view;
-  }
-  else {
-    $output .= '<p>The Feature module uses primarily views to provide an '
-      . 'administrative interface. Currently one or more views needed for this '
-        . 'administrative interface are disabled. <strong>Click each of the following links to '
-          . 'enable the pertinent views</strong>:</p>';
-    $output .= '<ul>';
-    $output .= '<li>'.l('Features View', 'admin/tripal/chado/tripal_feature/views/features/enable').'</li>';
-    $output .= '</ul>';
-  }
-
-  // Add a summary chart.
-  //-----------------------------------
-  $output .= theme('tripal_feature_bar_chart_type_organism_summary');
-  drupal_add_js('
-    Drupal.behaviors.tripalFeature_moveAdminSummaryChart = {
-      attach: function (context, settings) {
-        jQuery("#tripal-feature-admin-summary").insertBefore( jQuery(".view-filters") );
-    }};
-  ', 'inline'); */
 
   return $output;
 }
 
 /**
- *
+ * Provide a data listing for tripal entites (ie: biological data).
+ * Note: This hook returns a rendered page but we want a form.
  */
 function tripal_entities_content_view() {
+
+  // Retrieve our data listing form and render it.
   $form = drupal_get_form('tripal_entities_content_overview_form');
   $output = drupal_render($form);
 
-  // set the breadcrumb
+  // Set the breadcrumb.
   $breadcrumb = array();
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
@@ -64,14 +40,22 @@ function tripal_entities_content_view() {
 }
 
 /**
+ * Display a listing of Biological Data to the administrator.
  *
- * @param unknown $form
- * @param unknown $form_state
- * @return multitype:
+ * @TODO Filters and bulk operations needed to be added to this form.
+ *
+ * @param array $form
+ * @param array $form_state
+ * @return 
+ *   A form array describing this listing to the Form API.
  */
 function tripal_entities_content_overview_form($form, &$form_state) {
-  $form = array();
 
+  // Set the title to be informative (defaults to content for some reason).
+  drupal_set_title('Biological Data');
+  
+  // Retrieve a pages list of all tripal entitles (ie: biological data).
+  // This will return the 25 most recently created entities.
   $entities = db_select('tripal_entity', 'td')
     ->fields('td')
     ->orderBy('created', 'DESC')//ORDER BY created
@@ -80,9 +64,17 @@ function tripal_entities_content_overview_form($form, &$form_state) {
 
   $headers = array('Title', 'Vocabulary', 'Term', 'Author', 'Status', 'Updated', 'Operations');
   $rows = array();
+  
+  // For each entity retrieved add a row to the data listing.
   while ($entity = $entities->fetchObject()) {
+  
+    // Retrieve details about the term this entity is based on.
     $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $entity->cvterm_id));
+    
+    // Retrieve details about the user who created this data.
     $author = user_load($entity->uid);
+    
+    // Add information to the table.
     $rows[] = array(
       l($entity->title, 'BioData/' . $entity->id),
       $cvterm->cv_id->name . ' (' . $cvterm->dbxref_id->db_id->name . ')',
@@ -94,7 +86,19 @@ function tripal_entities_content_overview_form($form, &$form_state) {
       l('delete', 'BioData/' . $entity->id . '/delete')
     );
   }
+  
+  // If there are no entites created yet then add a message to the table to
+  // provide guidance to administrators.
+  if (empty($rows)) {
+    $rows[] = array(
+      array(
+        'data' => t('No biological data available.'),
+        'colspan' => 7
+      )
+    );
+  }
 
+  // Render the data listing.
   $table_vars = array(
     'header'     => $headers,
     'rows'       => $rows,
@@ -104,15 +108,18 @@ function tripal_entities_content_overview_form($form, &$form_state) {
     'colgroups'  => array(),
     'empty'      => '',
   );
-  $results_table = theme('table', $table_vars);
-
   $form['results'] = array(
-    '#markup' => $results_table
+    '#type' => 'markup',
+    '#markup' => theme('table', $table_vars),
   );
+  
   return $form;
 }
 
 /**
+ * Tripal administration form for Biological data (Admin > Tripal > Biological Data).
+ *
+ * @TODO Add graph showing available data types.
  *
  * @param unknown $form
  * @param unknown $form_state
@@ -189,10 +196,12 @@ function tripal_entities_admin_bundles_form_submit($form, $form_state) {
 }
 
 /**
+ * Form for creating biological data types (ie: tripal entity types).
  *
- * @param unknown $form
- * @param unknown $form_state
- * @return multitype:
+ * @param array $form
+ * @param array $form_state
+ * @return 
+ *    An array describing this form to the Form API.
  */
 function tripal_entities_admin_add_type_form($form, &$form_state) {
 

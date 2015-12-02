@@ -25,7 +25,7 @@ class TripalBundleUIController extends EntityDefaultUIController {
     unset($items[$this->path . '/import']);
 
     $items[$this->path . '/add'] = array(
-      'title' => 'Add new biological data type',
+      'title' => 'Add Biological Data Type',
       'description' => 'Add new biological data type',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_entities_admin_add_type_form'),

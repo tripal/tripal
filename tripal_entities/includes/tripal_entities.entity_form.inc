@@ -39,7 +39,12 @@ function theme_tripal_entities_add_list($variables) {
     $output .= '</dl>';
   }
   else {
-    $output = '<p>' . t('You have not created any biological types yet. Go to the <a href="@create-content">content type creation page</a> to add a new content type.', array('@create-content' => url('admin/structure/BioData/add'))) . '</p>';
+    $output = tripal_set_message(
+      t('This page is for adding biological data to your site. However, before you can add data you have to specify what types of data your site will support. For example, if you want to add genes to be displayed to users, you must first create a data type "gene".'),
+      TRIPAL_INFO,
+      array('return_html' => TRUE)
+    );
+    $output .= '<p>' . t('You have not created any biological data types yet. Go to the <a href="@create-content">data type creation page</a> to add a new biological data type.', array('@create-content' => url('admin/structure/BioData/add'))) . '</p>';
   }
   return $output;
 }
