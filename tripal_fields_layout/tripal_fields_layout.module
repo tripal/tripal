@@ -168,7 +168,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_panel_add (&$f
         panel. This is the name that will appear to site visitors.')
   );
   $form['te_add_panels']['add_button'] = array(
-    '#type' => 'button',
+    '#type' => 'submit',
     '#value' => 'Add Panel',
     '#name' => 'add-panel-submit'
   );
@@ -218,12 +218,12 @@ function tripal_fields_layout_form_field_ui_display_overview_form_panel_arrange 
         '#size' => 10
       ),
       'rename' => array(
-        '#type' => 'button',
+        '#type' => 'submit',
         '#value' => 'Rename',
         '#name' => "arrange-panel-rename-$item->panel_id",
       ),
       'remove' => array(
-        '#type' => 'button',
+        '#type' => 'submit',
         '#value' => 'Remove',
         '#name' => "arrange-panel-remove-$item->panel_id",
       )
@@ -233,7 +233,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_panel_arrange 
   if ($has_panel) {
     $form['te_arrange_panels']['panel_items']['#theme_wrappers'] = array('tripal_fields_layout_form_arrange_panels');
     $form['te_arrange_panels']['save_button'] = array(
-      '#type' => 'button',
+      '#type' => 'submit',
       '#value' => 'Save Panel Order',
       '#name' => 'order-panel-submit'
     );
@@ -330,8 +330,8 @@ function tripal_fields_layout_form_field_ui_display_overview_form_panel_configur
   }
   if ($has_panel) {
     $form['te_configure_panels']['save_button'] = array(
-      '#type' => 'button',
-      '#value' => 'Save Configuration',
+      '#type' => 'submit',
+      '#value' => 'Save Panel Configuration',
       '#name' => 'configure-panel-submit'
     );
   }
@@ -461,7 +461,16 @@ function tripal_fields_layout_field_ui_row_region($row) {
  * @param $form_state
  */
 function tripal_fields_layout_field_ui_validate($form, &$form_state) {
-  // Add a panel
+  
+}
+/**
+ * Responds to a submit from the field UI form for saving panel assignments.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function tripal_fields_layout_field_ui_submit($form, &$form_state) {
+// Add a panel
   if ($form_state ['clicked_button'] ['#name'] == 'add-panel-submit') {
     tripal_fields_layout_action_add_panel($form, $form_state);
   }
@@ -481,19 +490,8 @@ function tripal_fields_layout_field_ui_validate($form, &$form_state) {
   else if ($form_state['clicked_button'] ['#name'] == 'configure-panel-submit') {
     tripal_fields_layout_action_configure_panels($form, $form_state);
   }
-  else if ($form_state['clicked_button'] ['#name'] == 'op') {
-  
-  }
-}
-/**
- * Responds to a submit from the field UI form for saving panel assignments.
- *
- * @param $form
- * @param $form_state
- */
-function tripal_fields_layout_field_ui_submit($form, &$form_state) {
   // Save fields for each panel
-  if ($form_state ['clicked_button'] ['#name'] == 'op') {
+  else if ($form_state['clicked_button'] ['#name'] == 'op') {
     $bundle = $form_state['build_info']['args'][1];
     $fields = $form_state['values']['fields'];
     foreach($fields AS $field_name => $field_data){
@@ -670,7 +668,7 @@ function theme_tripal_fields_layout_form_arrange_panels ($variables) {
   }
 
   // Create table header
-  $header = array(t('Panel'), t('Weight'), t('New Lable'), t('Rename'), t('Remove'));
+  $header = array(t('Panel'), t('Weight'), array('data' => t('Rename'), 'colspan' => 2), t('Action'));
 
   // Create a unique id for drupal_add_tabledrag() to find the table object
   $table_id = 'tripal_panel-arrange_panel_table';
