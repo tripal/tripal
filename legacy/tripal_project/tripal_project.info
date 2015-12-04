@@ -2,7 +2,7 @@ name = Tripal Project
 description = Supports the project tables of Chado by providing pages for viewing and editing of projects. Table list at: http://gmod.org/wiki/Chado_General_Module
 core = 7.x
 project = tripal
-package = Tripal
+package = Tripal v2 Legacy
 version = 7.x-2.0
 configure = admin/tripal/chado/tripal_project
 

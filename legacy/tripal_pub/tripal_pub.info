@@ -2,7 +2,7 @@ name = Tripal Publication
 description = Supports the pub (publication) tables of Chado by providing pages for importing, viewing, and editing of publications. Table list at: http://gmod.org/wiki/Chado_Publication_Module
 core = 7.x
 project = tripal
-package = Tripal
+package = Tripal v2 Legacy
 version = 7.x-2.0
 
 stylesheets[all][] = theme/css/tripal_pub.css

@@ -2,7 +2,7 @@ name = Tripal Feature
 description = Supports the sequence (feature) tables of Chado by providing pages for importing, viewing and editing of sequences (features). Table list at: http://gmod.org/wiki/Chado_Sequence_Module.
 core = 7.x
 project = tripal
-package = Tripal
+package = Tripal v2 Legacy
 version = 7.x-2.0
 
 stylesheets[all][] = theme/css/tripal_feature.css

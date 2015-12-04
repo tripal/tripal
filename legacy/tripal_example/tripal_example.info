@@ -20,7 +20,7 @@ project = tripal_example
 ; viewing the module administrative page, the package must be set to
 ; 'Tripal Extensions'
 ;
-package = Tripal Extensions
+package = Tripal v2 Legacy Extensions
 
 ;
 ; Follow these instructions when specifying the version:

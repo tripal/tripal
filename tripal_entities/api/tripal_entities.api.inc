@@ -100,40 +100,9 @@ function tripal_create_entity_type($cvterm, &$error = '') {
     $vocab = $vocab[0];
   }
 
-  // Look to see if this vocabulary is used as a default for any table. If
-  // so then we can use that to populate the tripal_vocabulary_usage table.
-  $default = db_select('tripal_cv_defaults', 't')
-    ->fields('t')
-    ->condition('cv_id', $vocab->cv_id)
-    ->execute()
-    ->fetchObject();
-  if ($default) {
-    $values = array(
-      'vocabulary_id' => $vocab->vocabulary_id,
-      'data_table' => $default->table_name,
-      'type_table' => $default->table_name,
-      'field' =>  $default->field_name,
-    );
-    $vocab_usage = chado_select_record('tripal_vocabulary_usage', array('*'), $values);
-    if (count($vocab_usage) == 0) {
-      $values = chado_insert_record('tripal_vocabulary_usage', $values);
-      if (!$values) {
-        $error = 'Could not add vocabulary to tripal_vocabulary_usage table.';
-        return FALSE;
-      }
-      $vocab_usage = new stdClass();
-      $vocab_usage->vocabulary_id = $values['vocabulary_id'];
-      $vocab_usage->data_table = $values['data_table'];
-      $vocab_usage->type_table = $values['type_table'];
-      $vocab_usage->field = $values['field'];
-    }
-    else {
-      $vocab_usage = (object) $values;
-    }
-  }
   // The organism table does not have a type_id so we won't ever find
   // a record for it in the tripal_cv_defaults table.
-  elseif ($cvterm->name == 'organism') {
+  if ($cvterm->name == 'organism') {
     $values = array(
       'vocabulary_id' => $vocab->vocabulary_id,
       'data_table' => 'organism',
@@ -159,7 +128,7 @@ function tripal_create_entity_type($cvterm, &$error = '') {
   }
   // The analysis table does not have a type_id so we won't ever find
   // a record for it in the tripalcv_defaults table.
-  elseif ($cvterm->name == 'analysis') {
+  else if ($cvterm->name == 'analysis') {
     $values = array(
       'vocabulary_id' => $vocab->vocabulary_id,
       'data_table' => 'analysis',
@@ -183,13 +152,48 @@ function tripal_create_entity_type($cvterm, &$error = '') {
       $vocab_usage = (object) $values;
     }
   }
-  // If there is no default table then we have an error, and we should
-  // set a variable so that the form can help the user deal with the problem.
   else {
-    $error = t('There is no default mapping of this term\'s ' .
-        'vocabulary to a table in Chado.  Therefore, it is not possible to ' .
-        'determine how to store data of this type.');
-    return FALSE;
+    // TODO: WHAT TO DO IF A VOCABULARY IS USED AS A DEFAULT FOR MULTIPLE
+    // TABLES.
+    // Look to see if this vocabulary is used as a default for any table. If
+    // so then we can use that to populate the tripal_vocabulary_usage table.
+    $default = db_select('tripal_cv_defaults', 't')
+      ->fields('t')
+      ->condition('cv_id', $vocab->cv_id)
+      ->execute()
+      ->fetchObject();
+    if ($default) {
+      $values = array(
+        'vocabulary_id' => $vocab->vocabulary_id,
+        'data_table' => $default->table_name,
+        'type_table' => $default->table_name,
+        'field' =>  $default->field_name,
+      );
+      $vocab_usage = chado_select_record('tripal_vocabulary_usage', array('*'), $values);
+      if (count($vocab_usage) == 0) {
+        $values = chado_insert_record('tripal_vocabulary_usage', $values);
+        if (!$values) {
+          $error = 'Could not add vocabulary to tripal_vocabulary_usage table.';
+          return FALSE;
+        }
+        $vocab_usage = new stdClass();
+        $vocab_usage->vocabulary_id = $values['vocabulary_id'];
+        $vocab_usage->data_table = $values['data_table'];
+        $vocab_usage->type_table = $values['type_table'];
+        $vocab_usage->field = $values['field'];
+      }
+      else {
+        $vocab_usage = (object) $values;
+      }
+    }
+    // If there is no default table then we have an error, and we should
+    // set a variable so that the form can help the user deal with the problem.
+    else {
+      $error = t('There is no default mapping of this term\'s ' .
+          'vocabulary to a table in Chado.  Therefore, it is not possible to ' .
+          'determine how to store data of this type.');
+      return FALSE;
+    }
   }
 
   // Now add the tripal_term record if it doesn't already exist.

@@ -900,7 +900,7 @@ function tripal_autocomplete_cvterm($cv_id, $string = '') {
     $results = chado_query($sql, array(':name' => $string . '%'));
     $items = array();
     foreach ($results as $term) {
-      $items[$term->name] = '(' . $term->cvname .') ' . $term->name;
+      $items[$term->name] = $term->name;
     }
   }
 
