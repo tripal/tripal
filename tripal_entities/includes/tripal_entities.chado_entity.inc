@@ -66,39 +66,6 @@ function tripal_entities_entity_delete($entity, $type) {
 }
 
 /**
- * @param unknown $display
- * @param unknown $context
- */
-function tripal_entities_field_widget_form_alter(&$element, &$form_state, $context) {
-
-  if (array_key_exists('#field_name', $element)) {
-    $field_name = $element['#field_name'];
-    $matches = array();
-
-    if (preg_match('/(.+?)__(.+?)$/', $field_name, $matches)) {
-      $tablename = $matches[1];
-      $colname = $matches[2];
-      $schema = chado_get_schema($tablename);
-
-      // The timelastmodified field exists in many Chado tables.  We want
-      // the form element to update to the most recent time rather than the time
-      // in the database.
-      if ($colname == 'timelastmodified' and $schema['fields'][$colname]['type'] == 'datetime') {
-        // We want the default value for the field to be the current time.
-        $element['#default_value']['value'] = format_date(time(), 'custom', "Y-m-d H:i:s", 'UTC');
-        $element['#date_items']['value'] = $element['#default_value']['value'];
-      }
-      // We want the date combo fieldset to be collaspible so we will
-      // add our own theme_wrapper to replace the one added by the date
-      // module.
-      if (array_key_exists($colname, $schema['fields']) and $schema['fields'][$colname]['type'] == 'datetime') {
-        $element['#theme_wrappers'] = array('tripal_entities_date_combo');
-      }
-    }
-  }
-}
-
-/**
  * This theme function is meant to override the data_combo theme.
  *
  * @param $variables
@@ -119,66 +86,7 @@ function theme_tripal_entities_date_combo($variables) {
   );
   return theme('fieldset', array('element' => $fieldset));
 }
-/**
- * Implements hook_chado_field_alter().
- *
- */
-function tripal_entities_chado_field_alter(&$field) {
 
-  if (!array_key_exists('field_settings', $field)) {
-    return;
-  }
-  // If the field doesn't list the Chado table or column then just return.
-  if (!array_key_exists('chado_table', $field['field_settings']) or
-      !array_key_exists('chado_column', $field['field_settings'])) {
-    return;
-  }
-  // Here we provide new field types and widgets for FK fields
-  // and fields that need special attention.
-  if ($field['field_settings']['chado_column'] =='organism_id') {
-    $field['field_type'] = 'organism_id';
-    $field['widget_type'] = 'tripal_fields_organism_select_widget';
-    $field['label'] = 'Organism';
-    $field['description'] = 'Select an organism.';
-  }
-  else if ($field['field_settings']['chado_column'] =='dbxref_id') {
-    $field['field_type'] = 'dbxref_id';
-    $field['widget_type'] = 'tripal_fields_primary_dbxref_widget';
-    $field['label'] = 'Primary Cross Reference';;
-    $field['description'] = 'This record can be cross-referenced with a
-        record in another online database. The primary reference is for the
-        most prominent reference.  At a minimum, the database and accession
-        must be provided.  To remove a set reference, change the database
-        field to "Select a Database".';
-  }
-  else if ($field['field_settings']['chado_table'] == 'feature' and
-    $field['field_settings']['chado_column'] == 'md5checksum') {
-    $field['field_type'] = 'md5checksum';
-    $field['widget_type'] = 'tripal_fields_md5checksum_checkbox_widget';
-    $field['label'] = 'MD5 Checksum';
-    $field['description'] = 'Generating MD5 checksum for the sequence.';
-  }
-  else if ($field['field_settings']['chado_table'] == 'feature' and $field['field_settings']['chado_column'] == 'seqlen') {
-    $field['field_type'] = 'seqlen';
-    $field['widget_type'] = 'tripal_fields_seqlen_hidden_widget';
-    $field['label'] = 'Seqlen';
-    $field['description'] = 'The length of the residues.';
-  }
-  else if ($field['field_settings']['chado_table'] == 'feature' and $field['field_settings']['chado_column'] == 'residues') {
-    $field['field_type'] = 'residues';
-    $field['widget_type'] = 'tripal_fields_residues_textarea_widget';
-    $field['label'] = 'Residues';
-    $field['description'] = 'Please provide an IUPAC compatible residues for this feature. Spaces and new lines are allowed.';
-  }
-  else if ($field['label'] == 'Timeaccessioned') {
-    $field['label'] = 'Time Accessioned';
-    $field['description'] = 'Please enter the time that this record was first added to the database.';
-  }
-  else if ($field['label'] == 'Timelastmodified') {
-    $field['label'] = 'Time Last Modified';
-    $field['description'] = 'Please enter the time that this record was last modified. The default is the current time.';
-  }
-}
 
 /**
  * Determines whether the given user has access to a tripal data entity.

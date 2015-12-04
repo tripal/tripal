@@ -46,14 +46,14 @@ function tripal_entities_content_view() {
  *
  * @param array $form
  * @param array $form_state
- * @return 
+ * @return
  *   A form array describing this listing to the Form API.
  */
 function tripal_entities_content_overview_form($form, &$form_state) {
 
   // Set the title to be informative (defaults to content for some reason).
   drupal_set_title('Biological Data');
-  
+
   // Retrieve a pages list of all tripal entitles (ie: biological data).
   // This will return the 25 most recently created entities.
   $entities = db_select('tripal_entity', 'td')
@@ -64,16 +64,16 @@ function tripal_entities_content_overview_form($form, &$form_state) {
 
   $headers = array('Title', 'Vocabulary', 'Term', 'Author', 'Status', 'Updated', 'Operations');
   $rows = array();
-  
+
   // For each entity retrieved add a row to the data listing.
   while ($entity = $entities->fetchObject()) {
-  
+
     // Retrieve details about the term this entity is based on.
     $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $entity->cvterm_id));
-    
+
     // Retrieve details about the user who created this data.
     $author = user_load($entity->uid);
-    
+
     // Add information to the table.
     $rows[] = array(
       l($entity->title, 'BioData/' . $entity->id),
@@ -86,7 +86,7 @@ function tripal_entities_content_overview_form($form, &$form_state) {
       l('delete', 'BioData/' . $entity->id . '/delete')
     );
   }
-  
+
   // If there are no entites created yet then add a message to the table to
   // provide guidance to administrators.
   if (empty($rows)) {
@@ -112,7 +112,7 @@ function tripal_entities_content_overview_form($form, &$form_state) {
     '#type' => 'markup',
     '#markup' => theme('table', $table_vars),
   );
-  
+
   return $form;
 }
 
@@ -200,7 +200,7 @@ function tripal_entities_admin_bundles_form_submit($form, $form_state) {
  *
  * @param array $form
  * @param array $form_state
- * @return 
+ * @return
  *    An array describing this form to the Form API.
  */
 function tripal_entities_admin_add_type_form($form, &$form_state) {
@@ -711,18 +711,7 @@ function tripal_entities_add_term_usage($cvterm, &$form_state) {
 
   return TRUE;
 }
-/**
- * Implements hook_chado_field_alter.
- *
- * This function is used when new Chado fields are addd to an Entity.  It
- * allows modules to customize the field, widget types and settings for
- * a field before it is created.
- *
- * @param $field
- */
-function hook_chado_field_alter(&$field) {
-  // TODO: add example code for how to use this hook.
-}
+
 /**
  *
  * @param unknown $form
