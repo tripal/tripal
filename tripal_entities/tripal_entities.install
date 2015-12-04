@@ -13,30 +13,82 @@ function tripal_entities_install() {
   // that are available for use with entities.
   // @TODO: Ask Stephen why these are chado instead of drupal tables...
   chado_create_custom_table(
-    'tripal_vocabulary', 
-    tripal_entities_tripal_vocabulary_schema(), 
+    'tripal_vocabulary',
+    tripal_entities_tripal_vocabulary_schema(),
     TRUE
   );
   chado_create_custom_table(
-    'tripal_vocabulary_usage', 
-    tripal_entities_tripal_vocabulary_usage_schema(), 
+    'tripal_vocabulary_usage',
+    tripal_entities_tripal_vocabulary_usage_schema(),
     TRUE
   );
   chado_create_custom_table(
-    'tripal_term', 
-    tripal_entities_tripal_term_schema(), 
+    'tripal_term',
+    tripal_entities_tripal_term_schema(),
     TRUE
   );
   chado_create_custom_table(
-    'tripal_term_usage', 
-    tripal_entities_tripal_term_usage_schema(), 
+    'tripal_term_usage',
+    tripal_entities_tripal_term_usage_schema(),
     TRUE
   );
   chado_create_custom_table(
-    'tripal_term_relationship', 
-    tripal_entities_tripal_term_relationship_schema(), 
+    'tripal_term_relationship',
+    tripal_entities_tripal_term_relationship_schema(),
     TRUE
   );
+
+  // Unfortunately, some Chado base tables do not have a type_id, so we must
+  // take special action for those tables.  These include: organism and
+  // analysis. Until we can find an appropriate controlled vocabulary
+  // that is well supported by the community with types for these tables we
+  // will have to use in-house terms.
+
+  // Add a term to be used for an inherent 'type_id' for the organism table.
+  tripal_insert_cvterm(array(
+    'id' => 'local:organism',
+    'name' => 'organism',
+    'definition' => 'An individual form of life, such as a bacterium, protist, ' .
+      'fungus, plant, or animal, composed of a single cell or a complex of cells  ' .
+      'in which organelles or organs work together to carry out the various  ' .
+      'processes of life. (American Heritage® Dictionary of the English ' .
+      'Language, Fifth Edition. Copyright © 2011 by Houghton Mifflin ' .
+      'Harcourt Publishing Company).',
+    'cv_name' => 'local',
+  ));
+
+  // Add a term to be used for an inherent 'type_id' for the organism table.
+  tripal_insert_cvterm(array(
+    'id' => 'local:analysis',
+    'name' => 'analysis',
+    'definition' => 'A process as a method of studying the nature of something ' .
+      'or of determining its essential features and their relations. ' .
+      '(Random House Kernerman Webster\'s College Dictionary, © 2010 K ' .
+      'Dictionaries Ltd).',
+    'cv_name' => 'local',
+  ));
+
+  // We want to provide a set of commonly used entity types by default. This
+  // way when a user first installs Tripal there are some commonly used
+  // formats.
+  module_load_include('inc', 'tripal_entities', 'api/tripal_entities.api');
+  module_load_include('inc', 'tripal_entities', 'includes/tripal_entities.admin');
+
+  // Create the 'Organism' entity type. This uses the local:organism term.
+  $error = '';
+  $term = array('name' => 'organism', 'cv_id' => array('name' => 'local'));
+  $cvterm = chado_generate_var('cvterm', $term);
+  if (!tripal_create_entity_type($cvterm, $error)) {
+    throw new Exception($error);
+  }
+
+  // Create the 'Organism' entity type. This uses the local:organism term.
+  $error = '';
+  $term = array('name' => 'analysis', 'cv_id' => array('name' => 'local'));
+  $cvterm = chado_generate_var('cvterm', $term);
+  if (!tripal_create_entity_type($cvterm, $error)) {
+    throw new Exception($error);
+  }
 }
 
 /**
@@ -158,8 +210,8 @@ function tripal_entities_tripal_entity_schema() {
 
 /**
  * The base table for Biological Data Type Entites.
- * This table contains a list of Biological Data Types. 
- * For the example above (5 genes and 10 mRNAs), there would only be two records in 
+ * This table contains a list of Biological Data Types.
+ * For the example above (5 genes and 10 mRNAs), there would only be two records in
  * this table one for "gene" and another for "mRNA".
  */
 function tripal_entities_tripal_bundle_schema() {
@@ -281,10 +333,10 @@ function tripal_entities_chado_entity_schema() {
 /**
  * A list of published vocabularies.
  *
- * Usage: This table will be used by the Entity type admin page that lets the site admin 
- *   specify which vocabularies should be used as entity types.  This table will only be 
- *   populated with vocabularies that are actually used within the Chado database.  This 
- *   table will also be used by web services to provide a list of all of the entity types 
+ * Usage: This table will be used by the Entity type admin page that lets the site admin
+ *   specify which vocabularies should be used as entity types.  This table will only be
+ *   populated with vocabularies that are actually used within the Chado database.  This
+ *   table will also be used by web services to provide a list of all of the entity types
  *   that are available for access.
  */
 function tripal_entities_tripal_vocabulary_schema() {
@@ -343,9 +395,9 @@ function tripal_entities_tripal_vocabulary_schema() {
 /**
  * A list of published terms.
  *
- * Usage: This table is used by web services to provide a list of all of the bundles 
- *   (i.e. vocabulary terms) that have data in the site.   It is also used by the Entity 
- *   administrative pages to allow the site admin to specify which terms should be 
+ * Usage: This table is used by web services to provide a list of all of the bundles
+ *   (i.e. vocabulary terms) that have data in the site.   It is also used by the Entity
+ *   administrative pages to allow the site admin to specify which terms should be
  *   publishable (i.e. used as bundles).
  */
 function tripal_entities_tripal_term_schema() {
@@ -402,13 +454,13 @@ function tripal_entities_tripal_term_schema() {
 }
 
 /**
- * 
  *
- * Specifies the source table in Chado where this entity will pull data.  Because 
- * vocabularies can be used in multiple tables there could be many entries here for each 
+ *
+ * Specifies the source table in Chado where this entity will pull data.  Because
+ * vocabularies can be used in multiple tables there could be many entries here for each
  * vocabulary.
  *
- * Usage: This table is used by web services when querying for all of the records of a 
+ * Usage: This table is used by web services when querying for all of the records of a
  * given type.  Web services must know where to look for records of a given term.
  */
 function tripal_entities_tripal_vocabulary_usage_schema(){
@@ -468,11 +520,11 @@ function tripal_entities_tripal_vocabulary_usage_schema(){
 /**
  *
  *
- * Specifies the source table in Chado where this bundle will pull data.  Because terms 
- * can be used in multiple tables there could be many entries here for each term. 
- * 
- * Note: this table contains the list of tables where a particular cvterm is used, 
- * whereas, the tripal_entity_type_source just provides a list of where cvterms from a 
+ * Specifies the source table in Chado where this bundle will pull data.  Because terms
+ * can be used in multiple tables there could be many entries here for each term.
+ *
+ * Note: this table contains the list of tables where a particular cvterm is used,
+ * whereas, the tripal_entity_type_source just provides a list of where cvterms from a
  * particular vocabulary might be found.
  */
 function tripal_entities_tripal_term_usage_schema() {
@@ -532,14 +584,14 @@ function tripal_entities_tripal_term_usage_schema() {
  *
  * Specifies the predicates used for the semantic web for all properties of a bundle.
  *
- * Usage: When fields are added to an entity then there must be some “relationship” term 
- * (i.e. predicate) that indicates the meaning of the relationship.  This predicate must 
- * itself be a cvterm from a vocabulary.  For all fields that are automatically added to 
- * bundles by tripal there should be a record here.  The site admin should be able to 
- * change these if desired, but there should be some sort of default set by Tripal 
- * itself.  This will require that all fields for all tables in Chado have some default 
- * predicate value.  Also, relationship between two different bundles (whether published 
- * or not) should also have a relationship predicate.  See the section in the 
+ * Usage: When fields are added to an entity then there must be some “relationship” term
+ * (i.e. predicate) that indicates the meaning of the relationship.  This predicate must
+ * itself be a cvterm from a vocabulary.  For all fields that are automatically added to
+ * bundles by tripal there should be a record here.  The site admin should be able to
+ * change these if desired, but there should be some sort of default set by Tripal
+ * itself.  This will require that all fields for all tables in Chado have some default
+ * predicate value.  Also, relationship between two different bundles (whether published
+ * or not) should also have a relationship predicate.  See the section in the
  * specification for how default predicates are set.
  */
 function tripal_entities_tripal_term_relationship_schema() {

@@ -49,10 +49,13 @@ function tripal_feature_requirements($phase) {
  */
 function tripal_feature_install() {
 
-  // Add the feature properties vocabulary provided by Chado.
-  $obo_path = '{tripal_feature}/files/feature_property.obo';
-  $obo_id = tripal_insert_obo('Chado Feature Properties', $obo_path);
-  tripal_submit_obo_job(array('obo_id' => $obo_id));
+  // Note: the feature_property OBO that came with Chado v1.2 should not
+  // be automatically installed.  Some of the terms are duplicates of
+  // others in better maintained vocabularies.  New Tripal sites should
+  // use those.
+  // $obo_path = '{tripal_feature}/files/feature_property.obo';
+  // $obo_id = tripal_insert_obo('Chado Feature Properties', $obo_path);
+  // tripal_submit_obo_job(array('obo_id' => $obo_id));
 
   // Add the materialized view.
   tripal_feature_add_organism_count_mview();
@@ -315,8 +318,10 @@ function tripal_feature_add_cvs() {
     'Contains types of relationships between features.'
   );
 
-  // the feature_property CV already exists... it comes with chado, but we need to
-  // add it just in case it doesn't get added before the feature module is installed
+  // The feature_property CV may already exists. It comes with Chado, but
+  // we need to  add it just in case it doesn't get added before the feature
+  // module is installed. But as of Tripal v3.0 the Chado version of this
+  // vocabulary is no longer loaded by default.
   tripal_insert_cv(
     'feature_property',
     'Stores properties about features'
