@@ -127,10 +127,13 @@ function tripal_create_entity_type($cvterm, &$error = '') {
       $vocab_usage->type_table = $values['type_table'];
       $vocab_usage->field = $values['field'];
     }
+    else {
+      $vocab_usage = (object) $values;
+    }
   }
   // The organism table does not have a type_id so we won't ever find
   // a record for it in the tripal_cv_defaults table.
-  else if ($cvterm->name == 'organism') {
+  elseif ($cvterm->name == 'organism') {
     $values = array(
       'vocabulary_id' => $vocab->vocabulary_id,
       'data_table' => 'organism',
@@ -150,10 +153,13 @@ function tripal_create_entity_type($cvterm, &$error = '') {
       $vocab_usage->type_table = $values['type_table'];
       $vocab_usage->field = $values['field'];
     }
+    else {
+      $vocab_usage = (object) $values;
+    }
   }
   // The analysis table does not have a type_id so we won't ever find
   // a record for it in the tripalcv_defaults table.
-  else if ($cvterm->name == 'analysis') {
+  elseif ($cvterm->name == 'analysis') {
     $values = array(
       'vocabulary_id' => $vocab->vocabulary_id,
       'data_table' => 'analysis',
@@ -172,6 +178,9 @@ function tripal_create_entity_type($cvterm, &$error = '') {
       $vocab_usage->data_table = $values['data_table'];
       $vocab_usage->type_table = $values['type_table'];
       $vocab_usage->field = $values['field'];
+    }
+    else {
+      $vocab_usage = (object) $values;
     }
   }
   // If there is no default table then we have an error, and we should
