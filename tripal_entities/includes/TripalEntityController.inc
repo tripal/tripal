@@ -35,12 +35,12 @@ class TripalEntityController extends EntityAPIController {
     // The incoming values should have at a minimum the bundle_id;
     $bundle = $values['bundle'];
     $matches = array();
-    if (preg_match('/dbxref_(.*)/', $bundle, $matches)) {
-      $dbxref_id = $matches[1];
-      $values['type'] = 'BioData';
+    if (preg_match('/bio-data_(.*)/', $bundle, $matches)) {
+      $cvterm_id = $matches[1];
+      $values['type'] = 'TripalEntity';
 
       // Get the CVterm.
-      $match = array('dbxref_id' => $dbxref_id);
+      $match = array('cvterm_id' => $cvterm_id);
       $cvterm = chado_generate_var('cvterm', $match);
       if ($cvterm) {
         $values['cvterm_id'] = $cvterm->cvterm_id;
@@ -60,7 +60,7 @@ class TripalEntityController extends EntityAPIController {
     try {
       // Invoke hook_entity_delete().
       module_invoke_all('entity_delete', $entity, $entity->type);
-      field_attach_delete('BioData', $entity);
+      field_attach_delete('TripalEntity', $entity);
 
       db_delete('tripal_entity')
         ->condition('id', $entity->id)
@@ -136,10 +136,10 @@ class TripalEntityController extends EntityAPIController {
       // to determine whether to update or insert, and which hook we
       // need to invoke.
       if ($invocation == 'entity_insert') {
-        field_attach_insert('BioData', $entity);
+        field_attach_insert('TripalEntity', $entity);
       }
       else {
-        field_attach_update('BioData', $entity);
+        field_attach_update('TripalEntity', $entity);
       }
 
       // Invoke either hook_entity_update() or hook_entity_insert().

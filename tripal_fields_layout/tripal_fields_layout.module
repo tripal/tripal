@@ -28,14 +28,14 @@ function tripal_fields_layout_form_field_ui_field_edit_form_alter(&$form, &$form
 function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, &$form_state, $form_id) {
 
   drupal_add_css(drupal_get_path('module','tripal_fields_layout') . '/theme/css/tripal_fields_layout_panels.css');
-  
+
   $entity_type = $form['#entity_type'];
-  $bundle_name = $form['#bundle'];
+  $bundle_id = $form['#bundle'];
 
   // Get the bundle record.
   $bundle = db_select('tripal_bundle', 'tb')
     ->fields('tb')
-    ->condition('bundle', $bundle_name)
+    ->condition('bundle', $bundle_id)
     ->execute()
     ->fetchObject();
 
@@ -63,13 +63,13 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
 
   // Make sure our default panels are in the database.
   _tripal_fields_layout_check_default_field_panels($bundle);
-  
+
   // Add a Panel
   tripal_fields_layout_form_field_ui_display_overview_form_panel_add($form, $form_state);
-  
+
   // Arrange Panels
   tripal_fields_layout_form_field_ui_display_overview_form_panel_arrange($form, $form_state, $bundle);
-  
+
   // Configure Panels
   tripal_fields_layout_form_field_ui_display_overview_form_panel_configure($form, $bundle);
 
@@ -107,7 +107,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
   $default_panel = 'te_base';
 
   foreach (element_children($fields) as $field_name) {
-    $field_instance = field_info_instance($entity_type, $field_name, $bundle_name);
+    $field_instance = field_info_instance($entity_type, $field_name, $bundle_id);
     $panel_id = db_select('tripal_panel_fields', 'tpf')
     ->fields('tpf', array('panel_id'))
     ->condition('field_id', $field_instance['id'])
@@ -157,7 +157,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_panel_add (&$f
     '#type' => 'hidden',
     '#title' => 'Panel Name',
     '#description' => t('The name is automatically generated for a label. it
-        contains alphanumeric values and underscores and does not begin with 
+        contains alphanumeric values and underscores and does not begin with
         a number.')
   );
   $form['te_add_panels']['panel_label'] = array(
@@ -282,7 +282,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_panel_configur
     ->fields('tpf', array('field_id'))
     ->condition('panel_id', $panel->panel_id)
     ->execute();
-    
+
     $has_field = FALSE;
     foreach ($fields AS $field) {
       $field_obj = db_select('field_config_instance', 'tci')
@@ -310,15 +310,15 @@ function tripal_fields_layout_form_field_ui_display_overview_form_panel_configur
       $form['te_configure_panels']['panel_items'][$panel->panel_id][$fname]['table_group'] = array(
         '#type' => 'radios',
         '#options' => array(
-          0 => 'No Group', 
-          1 => 'Horizontal Table', 
+          0 => 'No Group',
+          1 => 'Horizontal Table',
           2 => 'Vertical Table'
         ),
         '#default_value' => $default_value,
       );
       $has_field = TRUE;
     }
-    
+
     if (!$has_field) {
       $form['te_configure_panels']['panel_items'][$panel->panel_id]['no_field'] = array(
         '#markup' => 'No field in this panel.',
@@ -461,7 +461,7 @@ function tripal_fields_layout_field_ui_row_region($row) {
  * @param $form_state
  */
 function tripal_fields_layout_field_ui_validate($form, &$form_state) {
-  
+
 }
 /**
  * Responds to a submit from the field UI form for saving panel assignments.
@@ -502,34 +502,33 @@ function tripal_fields_layout_field_ui_submit($form, &$form_state) {
       // Get region panel_id
       $region = $field_data['region'];
       $panel_id = db_select('tripal_panels', 'tp')
-      ->fields('tp', array('panel_id'))
-      ->condition('name', $region)
-      ->condition('bundle_id', $bundle->id)
-      ->execute()
-      ->fetchField();
+        ->fields('tp', array('panel_id'))
+        ->condition('name', $region)
+        ->condition('bundle_id', $bundle->id)
+        ->execute()
+        ->fetchField();
 
       // Save
       $penal_field_id = db_select('tripal_panel_fields', 'tpf')
-      ->fields('tpf', array('panel_field_id'))
-      ->condition('field_id', $field_instance_id)
-      ->execute()
-      ->fetchField();
-      //dpm(array('instance' => $field_instance_id, 'panel_id' => $panel_id, 'panel_field_id' => $penal_field_id, ));
+        ->fields('tpf', array('panel_field_id'))
+        ->condition('field_id', $field_instance_id)
+        ->execute()
+        ->fetchField();
       if ($penal_field_id) {
         db_update('tripal_panel_fields')
-        ->fields(array(
-          'panel_id' => $panel_id,
-        ))
-        ->condition('panel_field_id', $penal_field_id)
-        ->execute();
+          ->fields(array(
+            'panel_id' => $panel_id,
+          ))
+          ->condition('panel_field_id', $penal_field_id)
+          ->execute();
       }
       else {
         db_insert('tripal_panel_fields')
-        ->fields(array(
-          'panel_id' => $panel_id,
-          'field_id' => $field_instance_id
-        ))
-        ->execute();
+          ->fields(array(
+            'panel_id' => $panel_id,
+            'field_id' => $field_instance_id
+          ))
+          ->execute();
       }
     }
   }
@@ -596,7 +595,7 @@ function tripal_fields_layout_action_rename_panel (&$form, &$form_state) {
     ))
     ->condition('panel_id', $panel_id)
     ->execute();
-    form_set_value($form['te_arrange_panels']['panel_items'][$panel_id]['newlabel'], '', $form_state);    
+    form_set_value($form['te_arrange_panels']['panel_items'][$panel_id]['newlabel'], '', $form_state);
   }
 }
 
@@ -763,10 +762,10 @@ function theme_tripal_fields_layout_form_configure_panels ($variables) {
       'attributes' => array('id' => $table_id, 'class' => array($table_class)),
     ));
   }
-  
+
   $collapsible_item = array('element' => array());
   $collapsible_item['element']['#children'] = '';
-  $collapsible_item['element']['#description'] = 
+  $collapsible_item['element']['#description'] =
     '<div id="tripal_fields_layout-panel_configure-fieldset-instruction">
         Select a group to organize fields into table(s) in this panel.
      <div>'
@@ -776,7 +775,7 @@ function theme_tripal_fields_layout_form_configure_panels ($variables) {
   $output = theme('fieldset', $collapsible_item);
   return $output;
 }
-  
+
 /**
  * Implements hook_theme().
  */
@@ -801,7 +800,7 @@ function tripal_fields_layout_theme($existing, $type, $theme, $path) {
  */
 function tripal_fields_layout_entity_view($entity, $type, $view_mode, $langcode) {
   switch ($type) {
-    case 'BioData':
+    case 'TripalEntity':
       // Use the generic template to render the fields
       if ($view_mode == 'full') {
 

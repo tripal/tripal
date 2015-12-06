@@ -14,11 +14,11 @@ function tripal_fields_kvproperty_formatter(&$element, $entity_type, $entity, $f
   $instance, $langcode, $items, $display) {
 
   $field_name = $field['field_name'];
-  $chado_tabe = $field['settings']['chado_table'];
+  $chado_table = $field['settings']['chado_table'];
 
   $properties = array();
   foreach ($items as $delta => $item) {
-    $properties[] = $item[$chado_tabe . '__value'];
+    $properties[] = $item[$chado_table . '__value'];
   }
   $content = implode(', ', $properties);
   $element[$delta] = array(

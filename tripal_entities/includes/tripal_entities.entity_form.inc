@@ -1,7 +1,10 @@
 <?php
 
 /**
+ * Provides a list of TripalEntity types (bundles) for the user to add.
  *
+ * This function is a callback in a menu item which is set in the
+ * TripalEntityUIController class.
  */
 function tripal_entities_add_page() {
   $item = menu_get_item();
@@ -44,7 +47,10 @@ function theme_tripal_entities_add_list($variables) {
       TRIPAL_INFO,
       array('return_html' => TRUE)
     );
-    $output .= '<p>' . t('You have not created any biological data types yet. Go to the <a href="@create-content">data type creation page</a> to add a new biological data type.', array('@create-content' => url('admin/structure/BioData/add'))) . '</p>';
+    $output .= '<p>' . t('You have not created any biological data types yet. ' .
+      'Go to the <a href="@create-content">data type creation page</a> to ' .
+      'add a new biological data type.',
+       array('@create-content' => url('admin/structure/bio-data/add'))) . '</p>';
   }
   return $output;
 }
@@ -52,9 +58,9 @@ function theme_tripal_entities_add_list($variables) {
 /**
  *
  */
-function tripal_entities_entity_form($form, &$form_state, $dbxref_id = '', $entity = NULL) {
+function tripal_entities_entity_form($form, &$form_state, $cvterm_id = '', $entity = NULL) {
 
-  $bundle_id = 'dbxref_' . $dbxref_id;
+  $bundle_id = 'bio-data_' . $cvterm_id;
 
   // Add a vertical tabs element
   $form['entity_form_vtabs'] = array(
@@ -64,8 +70,8 @@ function tripal_entities_entity_form($form, &$form_state, $dbxref_id = '', $enti
 
   // If the entity doesn't exist then create one.
   if (!$entity) {
-    $entity = entity_get_controller('BioData')->create(array('bundle' => $bundle_id));
-    field_attach_form('BioData', $entity, $form, $form_state);
+    $entity = entity_get_controller('TripalEntity')->create(array('bundle' => $bundle_id));
+    field_attach_form('TripalEntity', $entity, $form, $form_state);
 
     $form['add_button'] = array(
       '#type' => 'submit',
@@ -75,7 +81,7 @@ function tripal_entities_entity_form($form, &$form_state, $dbxref_id = '', $enti
     );
   }
   else {
-    field_attach_form('BioData', $entity, $form, $form_state);
+    field_attach_form('TripalEntity', $entity, $form, $form_state);
     $form['update_button'] = array(
       '#type' => 'submit',
       '#value' => t('Update'),
@@ -92,7 +98,7 @@ function tripal_entities_entity_form($form, &$form_state, $dbxref_id = '', $enti
 
   // The entity object must be added to the $form_state in order for
   // the Entity API to work. It must have a key of the entity name.
-  $form_state['BioData'] = $entity;
+  $form_state['TripalEntity'] = $entity;
 
   $form['#prefix'] = "<div id='$bundle_id-entity-form'>";
   $form['#suffix'] = "</div>";
@@ -114,8 +120,8 @@ function tripal_entities_entity_form_validate($form, &$form_state) {
 
   if (array_key_exists('clicked_button', $form_state) and
       $form_state['clicked_button']['#name'] =='add_data') {
-    $entity = $form_state['BioData'];
-    field_attach_form_validate('BioData', $entity, $form, $form_state);
+    $entity = $form_state['TripalEntity'];
+    field_attach_form_validate('TripalEntity', $entity, $form, $form_state);
   }
 }
 
@@ -124,25 +130,25 @@ function tripal_entities_entity_form_validate($form, &$form_state) {
  * Implements hook_submit() for the tripal_entities_entity_form.
  */
 function tripal_entities_entity_form_submit($form, &$form_state) {
-  $entity = $form_state['BioData'];
+  $entity = $form_state['TripalEntity'];
 
   if ($form_state['clicked_button']['#name'] =='cancel') {
-    $form_state['redirect'] = "BioData/" . $entity->id;
+    $form_state['redirect'] = "bio-data/" . $entity->id;
   }
 
   if ($form_state['clicked_button']['#name'] =='update_data' or
       $form_state['clicked_button']['#name'] =='add_data') {
 
-    $entityform = entity_ui_controller('BioData')->entityFormSubmitBuildEntity($form, $form_state);
+    $entityform = entity_ui_controller('TripalEntity')->entityFormSubmitBuildEntity($form, $form_state);
     if ($entityform->save()) {
-      $form_state['redirect'] = "BioData/" . $entity->id;
+      $form_state['redirect'] = "bio-data/" . $entity->id;
     }
     else {
       drupal_set_message('Cannot save entity', 'error');
     }
   }
   if ($form_state['clicked_button']['#name'] =='delete_data') {
-    $form_state['redirect'] = 'BioData/' . $entity->id .'/delete';
+    $form_state['redirect'] = 'bio-data/' . $entity->id .'/delete';
   }
 }
 

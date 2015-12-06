@@ -9,35 +9,6 @@
  */
 function tripal_entities_install() {
 
-  // Create a number of Chado custom tables to keep track of vocabularies and terms
-  // that are available for use with entities.
-  // @TODO: Ask Stephen why these are chado instead of drupal tables...
-  chado_create_custom_table(
-    'tripal_vocabulary',
-    tripal_entities_tripal_vocabulary_schema(),
-    TRUE
-  );
-  chado_create_custom_table(
-    'tripal_vocabulary_usage',
-    tripal_entities_tripal_vocabulary_usage_schema(),
-    TRUE
-  );
-  chado_create_custom_table(
-    'tripal_term',
-    tripal_entities_tripal_term_schema(),
-    TRUE
-  );
-  chado_create_custom_table(
-    'tripal_term_usage',
-    tripal_entities_tripal_term_usage_schema(),
-    TRUE
-  );
-  chado_create_custom_table(
-    'tripal_term_relationship',
-    tripal_entities_tripal_term_relationship_schema(),
-    TRUE
-  );
-
   // Unfortunately, some Chado base tables do not have a type_id, so we must
   // take special action for those tables.  These include: organism and
   // analysis. Until we can find an appropriate controlled vocabulary
@@ -68,6 +39,15 @@ function tripal_entities_install() {
     'cv_name' => 'local',
   ));
 
+  tripal_insert_cvterm(array(
+    'id' => 'local:project',
+    'name' => 'project',
+    'definition' => 'A plan or proposal for accomplishing something. ' .
+      '(American Heritage® Dictionary of the English Language, Fifth Edition. ' .
+      'Copyright © 2011 by Houghton Mifflin Harcourt Publishing Company).',
+    'cv_name' => 'local',
+  ));
+
   // We want to provide a set of commonly used entity types by default. This
   // way when a user first installs Tripal there are some commonly used
   // formats.
@@ -82,9 +62,17 @@ function tripal_entities_install() {
     throw new Exception($error);
   }
 
-  // Create the 'Organism' entity type. This uses the local:organism term.
+  // Create the 'Analysis' entity type. This uses the local:analysis term.
   $error = '';
   $term = array('name' => 'analysis', 'cv_id' => array('name' => 'local'));
+  $cvterm = chado_generate_var('cvterm', $term);
+  if (!tripal_create_entity_type($cvterm, $error)) {
+    throw new Exception($error);
+  }
+
+  // Create the 'Project' entity type. This uses the local:project term.
+  $error = '';
+  $term = array('name' => 'project', 'cv_id' => array('name' => 'local'));
   $cvterm = chado_generate_var('cvterm', $term);
   if (!tripal_create_entity_type($cvterm, $error)) {
     throw new Exception($error);
@@ -96,13 +84,13 @@ function tripal_entities_install() {
  */
 function tripal_entities_schema() {
 
-  // Biological Data
+  // Adds a table for managing TripalEntity entities.
   $schema['tripal_entity'] = tripal_entities_tripal_entity_schema();
 
-  // Biological Data Types
+  // Adds a table for managing the TripalEntity entity types (bundles).
   $schema['tripal_bundle'] = tripal_entities_tripal_bundle_schema();
 
-  // Links Biological Data Entities to the chado "base" table the data is stored in.
+  // Links TripalEntity entities to the chado record.
   $schema['chado_entity'] = tripal_entities_chado_entity_schema();
 
   return $schema;
@@ -115,11 +103,11 @@ function tripal_entities_schema() {
  * so that attached fields can be cleaned up.
  */
 function tripal_entities_uninstall() {
-  $terms = chado_generate_var('tripal_term', array('publish' => 1), array('return_array' => 1));
-  foreach ($terms as $term) {
-    $bundle_id = $term->cvterm_id->dbxref_id->db_id->name . '_' . $term->cvterm_id->dbxref_id->accession;
-    field_attach_delete_bundle('BioData', $bundle_id);
-  }
+//   $terms = chado_generate_var('tripal_term', array('publish' => 1), array('return_array' => 1));
+//   foreach ($terms as $term) {
+//     $bundle_id = 'bio-data_' . $term->cvterm_id;
+//     field_attach_delete_bundle('TripalEntity', $bundle_id);
+//   }
 }
 
 /**
@@ -326,323 +314,6 @@ function tripal_entities_chado_entity_schema() {
       'entity_id' => array('entity_id'),
     ),
     'primary key' => array('chado_entity_id'),
-  );
-  return $schema;
-}
-
-/**
- * A list of published vocabularies.
- *
- * Usage: This table will be used by the Entity type admin page that lets the site admin
- *   specify which vocabularies should be used as entity types.  This table will only be
- *   populated with vocabularies that are actually used within the Chado database.  This
- *   table will also be used by web services to provide a list of all of the entity types
- *   that are available for access.
- */
-function tripal_entities_tripal_vocabulary_schema() {
-
-  $schema = array (
-    'table' => 'tripal_vocabulary',
-    'fields' => array (
-      'vocabulary_id' => array(
-        'type' => 'serial',
-        'not null' => TRUE
-      ),
-      'cv_id' => array (
-        'type' => 'int',
-        'not null' => TRUE
-      ),
-      'db_id' => array (
-        'type' => 'int',
-        'not null' => TRUE
-      ),
-      'publish' => array (
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0
-      ),
-    ),
-    'primary key' => array (
-      0 => 'vocabulary_id'
-    ),
-    'foreign keys' => array (
-      'cv' => array (
-        'table' => 'cv',
-        'columns' => array (
-          'cv_id' => 'cv_id'
-        )
-      ),
-      'db' => array (
-        'table' => 'db',
-        'columns' => array (
-          'db_id' => 'db_id'
-        )
-      ),
-    ),
-    'unique keys' => array (
-      'tripal_vocabulary_cvdb' => array (
-        'cv_id', 'db_id'
-      ),
-    ),
-    'indexes' => array(
-      'tripal_vocabulary_cv_id' => array('cv_id'),
-      'tripal_vocabulary_db_id' => array('db_id'),
-    )
-  );
-  return $schema;
-}
-
-/**
- * A list of published terms.
- *
- * Usage: This table is used by web services to provide a list of all of the bundles
- *   (i.e. vocabulary terms) that have data in the site.   It is also used by the Entity
- *   administrative pages to allow the site admin to specify which terms should be
- *   publishable (i.e. used as bundles).
- */
-function tripal_entities_tripal_term_schema() {
-
-  $schema = array (
-    'table' => 'tripal_term',
-    'fields' => array (
-      'term_id' => array(
-        'type' => 'serial',
-        'not null' => TRUE
-      ),
-      'vocabulary_id' => array (
-        'type' => 'int',
-        'not null' => TRUE
-      ),
-      'cvterm_id' => array (
-        'type' => 'int',
-        'not null' => TRUE
-      ),
-      'publish' => array (
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0
-      ),
-    ),
-    'primary key' => array (
-      0 => 'term_id'
-    ),
-    'foreign keys' => array (
-      'cvterm' => array (
-        'table' => 'cvterm',
-        'columns' => array (
-          'cvterm_id' => 'cvterm_id'
-        )
-      ),
-      'tripal_vocabulary' => array (
-        'table' => 'tripal_vocabulary',
-        'columns' => array (
-          'vocabulary_id' => 'vocabulary_id'
-        )
-      ),
-    ),
-    'unique keys' => array (
-      'tripal_term_unq' => array (
-        'vocabulary_id', 'cvterm_id'
-      ),
-    ),
-    'indexes' => array(
-      'tripal_term_vocabulary_id' => array('vocabulary_id'),
-      'tripal_term_cvterm_id' => array('cvterm_id'),
-    ),
-  );
-  return $schema;
-}
-
-/**
- *
- *
- * Specifies the source table in Chado where this entity will pull data.  Because
- * vocabularies can be used in multiple tables there could be many entries here for each
- * vocabulary.
- *
- * Usage: This table is used by web services when querying for all of the records of a
- * given type.  Web services must know where to look for records of a given term.
- */
-function tripal_entities_tripal_vocabulary_usage_schema(){
-
-  $schema = array (
-    'table' => 'tripal_vocabulary_usage',
-    'fields' => array (
-      'vocabulary_usage_id' => array(
-        'type' => 'serial',
-        'not null' => TRUE
-      ),
-      'vocabulary_id' => array (
-        'type' => 'int',
-        'not null' => TRUE
-      ),
-      'data_table' => array (
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE
-      ),
-      'type_table' => array (
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE
-      ),
-      'field' => array (
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE
-      ),
-    ),
-    'primary key' => array (
-      0 => 'vocabulary_usage_id'
-    ),
-    'foreign keys' => array (
-      'tripal_vocabulary' => array (
-        'table' => 'tripal_vocabulary',
-        'columns' => array (
-          'vocabulary_id' => 'vocabulary_id'
-        ),
-      ),
-    ),
-    'unique keys' => array (
-      'tripal_vocabulary_ridbase' => array (
-        'vocabulary_id', 'data_table'
-      ),
-    ),
-    'indexes' => array(
-      'tripal_vocabulary_vocabulary_id' => array('vocabulary_id'),
-      'tripal_vocabulary_data_table' => array('data_table'),
-      'tripal_vocabulary_type_table' => array('type_table'),
-    ),
-  );
-  return $schema;
-}
-
-/**
- *
- *
- * Specifies the source table in Chado where this bundle will pull data.  Because terms
- * can be used in multiple tables there could be many entries here for each term.
- *
- * Note: this table contains the list of tables where a particular cvterm is used,
- * whereas, the tripal_entity_type_source just provides a list of where cvterms from a
- * particular vocabulary might be found.
- */
-function tripal_entities_tripal_term_usage_schema() {
-
-  $schema = array (
-    'table' => 'tripal_term_usage',
-    'fields' => array (
-      'term_usage_id' => array(
-        'type' => 'serial',
-        'not null' => TRUE
-      ),
-      'term_id' => array (
-        'type' => 'int',
-        'not null' => TRUE
-      ),
-      'data_table' => array (
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE
-      ),
-      'type_table' => array (
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE
-      ),
-      'field' => array (
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE
-      ),
-    ),
-    'primary key' => array (
-      0 => 'term_usage_id'
-    ),
-    'foreign keys' => array (
-      'tripal_term' => array (
-        'table' => 'tripal_term',
-        'columns' => array (
-          'term_id' => 'term_id'
-        ),
-      ),
-    ),
-    'unique keys' => array (
-      'tripal_term_usage_ridbase' => array (
-        'term_id', 'type_table', 'field'
-      ),
-    ),
-    'indexes' => array(
-      'tripal_term_usage_term_id' => array('term_id'),
-    ),
-  );
-  return $schema;
-}
-
-/**
- *
- *
- * Specifies the predicates used for the semantic web for all properties of a bundle.
- *
- * Usage: When fields are added to an entity then there must be some “relationship” term
- * (i.e. predicate) that indicates the meaning of the relationship.  This predicate must
- * itself be a cvterm from a vocabulary.  For all fields that are automatically added to
- * bundles by tripal there should be a record here.  The site admin should be able to
- * change these if desired, but there should be some sort of default set by Tripal
- * itself.  This will require that all fields for all tables in Chado have some default
- * predicate value.  Also, relationship between two different bundles (whether published
- * or not) should also have a relationship predicate.  See the section in the
- * specification for how default predicates are set.
- */
-function tripal_entities_tripal_term_relationship_schema() {
-
-  $schema = array (
-    'table' => 'tripal_term_relationship',
-    'fields' => array (
-      'relationship_id' => array(
-        'type' => 'serial',
-        'not null' => TRUE
-      ),
-      'subject_id' => array (
-        'type' => 'int',
-        'not null' => TRUE
-      ),
-      'type_id' => array (
-        'type' => 'int',
-        'not null' => TRUE
-      ),
-      'object_id' => array (
-        'type' => 'int',
-        'not null' => FALSE
-      ),
-      'fieldname' => array(
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => FALSE,
-      )
-    ),
-    'primary key' => array (
-      0 => 'relationship_id'
-    ),
-    'foreign keys' => array (
-      'tripal_term' => array (
-        'table' => 'tripal_term',
-        'columns' => array (
-          'subject_id' => 'term_id',
-          'object_id'  => 'term_id',
-        ),
-      ),
-    ),
-    'unique keys' => array (
-      'tripal_term_relationship_unq' => array (
-        'subject_id', 'type_id', 'object_id'
-      ),
-    ),
-    'indexes' => array(
-      'tripal_term_relationship_subject_id' => array('subject_id'),
-      'tripal_term_relationship_object_id' => array('object_id'),
-      'tripal_term_relationship_type_id' => array('type_id'),
-    ),
   );
   return $schema;
 }

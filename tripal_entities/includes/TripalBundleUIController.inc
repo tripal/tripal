@@ -18,15 +18,15 @@ class TripalBundleUIController extends EntityDefaultUIController {
    */
   public function hook_menu() {
     $items = parent::hook_menu();
-    $items[$this->path]['description'] = 'Manage Tripal data types, including adding
-      and removing fields and the display of fields.';
+    $items[$this->path]['description'] = 'Manage biological content types that are
+      added using Tripal.';
 
     // We don't want to let the user import new Tripal data types.
     unset($items[$this->path . '/import']);
 
     $items[$this->path . '/add'] = array(
-      'title' => 'Add Biological Data Type',
-      'description' => 'Add new biological data type',
+      'title' => 'Add new tripal content type',
+      'description' => 'Add new biological content',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_entities_admin_add_type_form'),
       'access arguments' => array('administer tripal data types'),
@@ -65,7 +65,8 @@ function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType
   $form = array();
   $form['message'] = array(
     '#type' => 'item',
-    '#markup' => 'Edit the function "tripal_entities_tripal_bundle_form()" to add a form each type. Put access controls here?',
+    '#markup' => 'Edit the function "tripal_entities_tripal_bundle_form()" ' .
+      'to add a form each type. Put access controls here?',
   );
   return $form;
 }

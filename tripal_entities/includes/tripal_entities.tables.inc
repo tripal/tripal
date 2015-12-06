@@ -41,8 +41,7 @@ function tripal_entities_populate_entity_tables() {
         $results = chado_query($sql);
         while ($cvterm_id = $results->fetchField()) {
 
-          // Get the CV term details and add it to the tripal_vocabulary table if
-          // it doesn't already exist.
+          // Get the CV term details.
           $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
 
           // First add a record to the tripal_vocabulary table.
