@@ -18,7 +18,7 @@ function tripal_cv_admin_cv_listing() {
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
   $breadcrumb[] = l('Chado Modules', 'admin/tripal/chado');
-  $breadcrumb[] = l('Vocabularies', 'admin/tripal/chado/tripal_cv');
+  $breadcrumb[] = l('Vocabularies', 'admin/tripal/vocab');
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
@@ -34,10 +34,10 @@ function tripal_cv_admin_cv_listing() {
       . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
     if (!isset($cvs_view)) {
-      $output .= '<li>'.l('Tripal Vocabularies', 'admin/tripal/chado/tripal_cv/views/cvs/enable').'</li>';
+      $output .= '<li>'.l('Tripal Vocabularies', 'admin/tripal/vocab/views/cvs/enable').'</li>';
     }
     if (!isset($cvterm_view)) {
-      $output .= '<li>'.l('Tripal Vocabulary Terms', 'admin/tripal/chado/tripal_cv/views/cvterms/enable').'</li>';
+      $output .= '<li>'.l('Tripal Vocabulary Terms', 'admin/tripal/vocab/views/cvterms/enable').'</li>';
     }
     $output .= '</ul>';
   }
@@ -123,18 +123,18 @@ function tripal_cv_admin_set_defaults_form($form, &$form_state) {
     );
 
     // Actions
-    $view_terms = l('New Vocabulary', 'admin/tripal/chado/tripal_cv/cv/add');
+    $view_terms = l('New Vocabulary', 'admin/tripal/vocab/cv/add');
     $add_term = '';
     if (!empty($cv)) {
       $view_terms = l(
         'View Terms',
-        'admin/tripal/chado/tripal_cv/cvterms',
+        'admin/tripal/vocab/cvterms',
         array('query' => array('cv' => $cv->name))
       );
 
       $add_term = l(
         'Add Term',
-        'admin/tripal/chado/tripal_cv/cv/' . $cv->cv_id . '/cvterm/add'
+        'admin/tripal/vocab/cv/' . $cv->cv_id . '/cvterm/add'
       );
     }
     $form['settings']['existing'][$cv_default_id]["view-terms"] = array(

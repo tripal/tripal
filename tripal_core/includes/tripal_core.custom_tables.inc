@@ -29,8 +29,8 @@ function tripal_custom_table_admin_view() {
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Chado Schema', 'admin/tripal/schema');
-  $breadcrumb[] = l('Custom Tables', 'admin/tripal/schema/custom_tables');
+  $breadcrumb[] = l('Chado Schema', 'admin/tripal/storage/chado');
+  $breadcrumb[] = l('Custom Tables', 'admin/tripal/storage/chado/custom_tables');
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
@@ -44,7 +44,7 @@ function tripal_custom_table_admin_view() {
       . 'administrative interface are disabled. <strong>Click each of the following links to '
       . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
-      $output .= '<li>'.l('Custom Tables View', 'admin/tripal/schema/custom_tables/views/tables/enable').'</li>';
+      $output .= '<li>'.l('Custom Tables View', 'admin/tripal/storage/chado/custom_tables/views/tables/enable').'</li>';
     $output .= '</ul>';
   }
 
@@ -79,7 +79,7 @@ function tripal_custom_table_view($table_id) {
 
   // create a table with each row containig stats for
   // an individual job in the results set.
-  $return_url = url("admin/tripal/schema/custom_tables");
+  $return_url = url("admin/tripal/storage/chado/custom_tables");
   $output = "<p><a href=\"$return_url\">" . t("Return to list of custom tables") . "</a></p>";
   $output .= "<br />";
   $output .= "<p>Details for <b>$custom_table->table_name</b>:</p>";
@@ -100,8 +100,8 @@ function tripal_custom_table_view($table_id) {
 
   // build the URLs using the url function so we can handle installations where
   // clean URLs are or are not used
-  $delete_url = url("admin/tripal/schema/custom_tables/delete/$custom_table->table_id");
-  $edit_url = url("admin/tripal/schema/custom_tables/edit/$custom_table->table_id");
+  $delete_url = url("admin/tripal/storage/chado/custom_tables/delete/$custom_table->table_id");
+  $edit_url = url("admin/tripal/storage/chado/custom_tables/edit/$custom_table->table_id");
   $output .= "<tr><th>Actions</th>" .
             "<td>" .
             "     <a href='$edit_url'>Edit</a>, " .
@@ -143,8 +143,8 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
 
     // if this is a materialized view then don't allow editing with this function
     if (property_exists($custom_table, 'mview_id') and $custom_table->mview_id) {
-      drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/schema/mviews') . " interface to edit it.", 'error');
-      drupal_goto("admin/tripal/schema/custom_tables");
+      drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/storage/chado/mviews') . " interface to edit it.", 'error');
+      drupal_goto("admin/tripal/storage/chado/custom_tables");
       return array();
     }
 
@@ -164,7 +164,7 @@ function tripal_custom_tables_form($form, &$form_state = NULL, $table_id = NULL)
 
   $form['return'] = array(
     '#type' => 'markup',
-    '#markup' => "<p>" . l("Return to list of custom tables", "admin/tripal/schema/custom_tables") . "</p>",
+    '#markup' => "<p>" . l("Return to list of custom tables", "admin/tripal/storage/chado/custom_tables") . "</p>",
   );
 
   // Build the form
@@ -373,7 +373,7 @@ function tripal_custom_tables_form_submit($form, &$form_state) {
     drupal_set_message(t("No action performed."));
   }
 
-  drupal_goto("admin/tripal/schema/custom_tables");
+  drupal_goto("admin/tripal/storage/chado/custom_tables");
 }
 
 /**
@@ -390,8 +390,8 @@ function tripal_custom_tables_delete_form($form, &$form_state, $table_id) {
 
   // if this is a materialized view then don't allow editing with this function
   if ($entry->mview_id) {
-    drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/schema/mviews') . " interface to delete it.", 'error');
-    drupal_goto("admin/tripal/schema/custom_tables");
+    drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/storage/chado/mviews') . " interface to delete it.", 'error');
+    drupal_goto("admin/tripal/storage/chado/custom_tables");
     return array();
   }
 
@@ -433,7 +433,7 @@ function tripal_custom_tables_delete_form_submit($form, &$form_state) {
   else {
     drupal_set_message(t("No action performed."));
   }
-  drupal_goto("admin/tripal/schema/custom_tables");
+  drupal_goto("admin/tripal/storage/chado/custom_tables");
 }
 
 

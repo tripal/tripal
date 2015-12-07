@@ -205,7 +205,7 @@ function chado_example_form($node, &$form_state) {
     '#description' => t("Choose the example type (e.g. Test Type)."),
     '#required'    => TRUE,
     '#default_value' => $example_type,
-    '#autocomplete_path' => "admin/tripal/chado/tripal_cv/cvterm/auto_name/$cv_id",
+    '#autocomplete_path' => "admin/tripal/vocab/cvterm/auto_name/$cv_id",
   );
 
   // add a select box of organisms

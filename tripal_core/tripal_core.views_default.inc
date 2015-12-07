@@ -338,7 +338,7 @@ function tripal_core_admin_defaultview_custom_tables() {
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
   $handler->display->display_options['header']['action_links_area']['link-1'] = array(
     'label-1' => 'Add Custom Table',
-    'path-1' => 'admin/tripal/schema/custom_tables/new',
+    'path-1' => 'admin/tripal/storage/chado/custom_tables/new',
   );
   $handler->display->display_options['header']['action_links_area']['link-2'] = array(
     'label-2' => '',
@@ -367,7 +367,7 @@ function tripal_core_admin_defaultview_custom_tables() {
   $handler->display->display_options['fields']['table_name']['field'] = 'table_name';
   $handler->display->display_options['fields']['table_name']['label'] = 'Name';
   $handler->display->display_options['fields']['table_name']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['table_name']['alter']['path'] = 'admin/tripal/schema/custom_tables/view/[table_id]';
+  $handler->display->display_options['fields']['table_name']['alter']['path'] = 'admin/tripal/storage/chado/custom_tables/view/[table_id]';
   /* Field: Tripal Custom Tables: Materialized View ID */
   $handler->display->display_options['fields']['mview_id']['id'] = 'mview_id';
   $handler->display->display_options['fields']['mview_id']['table'] = 'tripal_custom_tables';
@@ -385,7 +385,7 @@ function tripal_core_admin_defaultview_custom_tables() {
   $handler->display->display_options['fields']['nothing']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing']['alter']['text'] = 'Edit';
   $handler->display->display_options['fields']['nothing']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/tripal/schema/custom_tables/edit/[table_id]';
+  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/tripal/storage/chado/custom_tables/edit/[table_id]';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_1']['id'] = 'nothing_1';
   $handler->display->display_options['fields']['nothing_1']['table'] = 'views';
@@ -394,7 +394,7 @@ function tripal_core_admin_defaultview_custom_tables() {
   $handler->display->display_options['fields']['nothing_1']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing_1']['alter']['text'] = 'Delete';
   $handler->display->display_options['fields']['nothing_1']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/tripal/schema/custom_tables/delete/[table_id]';
+  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/tripal/storage/chado/custom_tables/delete/[table_id]';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_2']['id'] = 'nothing_2';
   $handler->display->display_options['fields']['nothing_2']['table'] = 'views';
@@ -419,7 +419,7 @@ function tripal_core_admin_defaultview_custom_tables() {
   
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
-  $handler->display->display_options['path'] = 'admin/tripal/schema/custom_tables/tables';
+  $handler->display->display_options['path'] = 'admin/tripal/storage/chado/custom_tables/tables';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Custom Tables';
   $handler->display->display_options['menu']['description'] = 'A list of existing custom tables';
@@ -537,7 +537,7 @@ function tripal_core_admin_defaultview_mviews() {
   $handler->display->display_options['header']['action_links_area']['label'] = 'Action Links';
   $handler->display->display_options['header']['action_links_area']['link-1'] = array(
     'label-1' => 'Add Materialized View',
-    'path-1' => 'admin/tripal/schema/mviews/new',
+    'path-1' => 'admin/tripal/storage/chado/mviews/new',
   );
   $handler->display->display_options['header']['action_links_area']['link-2'] = array(
     'label-2' => '',
@@ -565,7 +565,7 @@ function tripal_core_admin_defaultview_mviews() {
   $handler->display->display_options['fields']['name']['table'] = 'tripal_mviews';
   $handler->display->display_options['fields']['name']['field'] = 'name';
   $handler->display->display_options['fields']['name']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['name']['alter']['path'] = 'admin/tripal/schema/mviews/report/[mview_id]';
+  $handler->display->display_options['fields']['name']['alter']['path'] = 'admin/tripal/storage/chado/mviews/report/[mview_id]';
   /* Field: Tripal Materialized Views: Table */
   $handler->display->display_options['fields']['mv_table']['id'] = 'mv_table';
   $handler->display->display_options['fields']['mv_table']['table'] = 'tripal_mviews';
@@ -594,7 +594,7 @@ function tripal_core_admin_defaultview_mviews() {
   $handler->display->display_options['fields']['nothing']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing']['alter']['text'] = 'Edit';
   $handler->display->display_options['fields']['nothing']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/tripal/schema/mviews/edit/[mview_id]';
+  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/tripal/storage/chado/mviews/edit/[mview_id]';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_1']['id'] = 'nothing_1';
   $handler->display->display_options['fields']['nothing_1']['table'] = 'views';
@@ -603,7 +603,7 @@ function tripal_core_admin_defaultview_mviews() {
   $handler->display->display_options['fields']['nothing_1']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing_1']['alter']['text'] = 'Delete';
   $handler->display->display_options['fields']['nothing_1']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/tripal/schema/mviews/delete/[mview_id]';
+  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/tripal/storage/chado/mviews/delete/[mview_id]';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_2']['id'] = 'nothing_2';
   $handler->display->display_options['fields']['nothing_2']['table'] = 'views';
@@ -612,7 +612,7 @@ function tripal_core_admin_defaultview_mviews() {
   $handler->display->display_options['fields']['nothing_2']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing_2']['alter']['text'] = 'Populate';
   $handler->display->display_options['fields']['nothing_2']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing_2']['alter']['path'] = 'admin/tripal/schema/mviews/update/[mview_id]';
+  $handler->display->display_options['fields']['nothing_2']['alter']['path'] = 'admin/tripal/storage/chado/mviews/update/[mview_id]';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_3']['id'] = 'nothing_3';
   $handler->display->display_options['fields']['nothing_3']['table'] = 'views';
@@ -686,7 +686,7 @@ function tripal_core_admin_defaultview_mviews() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
-  $handler->display->display_options['path'] = 'admin/tripal/schema/mviews/mviews';
+  $handler->display->display_options['path'] = 'admin/tripal/storage/chado/mviews/mviews';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Materialized Views';
   $handler->display->display_options['menu']['description'] = 'a list of mviews';

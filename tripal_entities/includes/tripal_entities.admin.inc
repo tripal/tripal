@@ -157,7 +157,7 @@ function tripal_entities_admin_add_type_form($form, &$form_state) {
           Sequence Ontology (SO)."),
       '#required'    => TRUE,
       '#default_value' => $term_name,
-      '#autocomplete_path' => "admin/tripal/chado/tripal_cv/cvterm/auto_name/$cv_id",
+      '#autocomplete_path' => "admin/tripal/vocab/cvterm/auto_name/$cv_id",
     );
   }
   else {

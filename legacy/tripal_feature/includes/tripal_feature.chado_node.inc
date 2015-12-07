@@ -151,7 +151,7 @@ function chado_feature_form($node, &$form_state) {
    '#description' => t("Choose the feature type."),
    '#required'    => TRUE,
    '#default_value' => $feature_type,
-   '#autocomplete_path' => "admin/tripal/chado/tripal_cv/cvterm/auto_name/$cv_id",
+   '#autocomplete_path' => "admin/tripal/vocab/cvterm/auto_name/$cv_id",
   );
 
   // get the list of organisms

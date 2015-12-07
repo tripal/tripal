@@ -220,7 +220,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
     else {
 
       $default_form_link = l('vocabulary defaults configuration page',
-          'admin/tripal/chado/tripal_cv/defaults',
+          'admin/tripal/vocab/defaults',
           array('attributes' => array('target' => '_blank')));
       $message = "There is not a default vocabulary set for Property Types. Please set one using the $default_form_link.";
 
@@ -293,7 +293,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
         to the %cv_name controlled vocabulary.',
         array(
           '%cv_name' => $details['cv_name'],
-          '@cvtermlink' => url('admin/tripal/chado/tripal_cv/cv/' . $details['cv_id'] . '/cvterm/add')
+          '@cvtermlink' => url('admin/tripal/vocab/cv/' . $details['cv_id'] . '/cvterm/add')
         )
       ),
       TRIPAL_NOTICE,
@@ -306,7 +306,7 @@ function chado_add_node_form_properties(&$form, &$form_state, $details) {
         a controlled vocabulary term</a> to the %cv_name controlled vocabulary.',
         array(
           '%cv_name' => $details['cv_name'],
-          '@cvtermlink' => url('admin/tripal/chado/tripal_cv/cv/' . $details['cv_id'] . '/cvterm/add')
+          '@cvtermlink' => url('admin/tripal/vocab/cv/' . $details['cv_id'] . '/cvterm/add')
         )
       ),
       TRIPAL_INFO,

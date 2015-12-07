@@ -27,8 +27,8 @@ function tripal_mview_admin_view() {
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Chado Schema', 'admin/tripal/schema');
-  $breadcrumb[] = l('Materialized Views', 'admin/tripal/schema/mviews');
+  $breadcrumb[] = l('Chado Schema', 'admin/tripal/storage/chado');
+  $breadcrumb[] = l('Materialized Views', 'admin/tripal/storage/chado/mviews');
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
@@ -42,7 +42,7 @@ function tripal_mview_admin_view() {
       . 'administrative interface are disabled. <strong>Click each of the following links to '
       . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
-      $output .= '<li>'.l('MViews View', 'admin/tripal/schema/mviews/views/mviews/enable').'</li>';
+      $output .= '<li>'.l('MViews View', 'admin/tripal/storage/chado/mviews/views/mviews/enable').'</li>';
     $output .= '</ul>';
   }
 
@@ -68,15 +68,15 @@ function tripal_mview_report($mview_id) {
 
   // create a table with each row containig stats for
   // an individual job in the results set.
-  $output  = "<p>" . l("Return to table of materialized views", "admin/tripal/schema/mviews/") . "</p>";
+  $output  = "<p>" . l("Return to table of materialized views", "admin/tripal/storage/chado/mviews/") . "</p>";
   $output .= "<p>Details for <b>$mview->name</b>:</p>";
 
   // build the URLs using the url function so we can handle installations where
   // clean URLs are or are not used
-  $update_url = url("admin/tripal/schema/mviews/action/update/$mview->mview_id");
-  $delete_url = url("admin/tripal/schema/mviews/action/delete/$mview->mview_id");
-  $edit_url = url("admin/tripal/schema/mviews/edit/$mview->mview_id");
-  $export_url = url("admin/tripal/schema/mviews/export/$mview->mview_id");
+  $update_url = url("admin/tripal/storage/chado/mviews/action/update/$mview->mview_id");
+  $delete_url = url("admin/tripal/storage/chado/mviews/action/delete/$mview->mview_id");
+  $edit_url = url("admin/tripal/storage/chado/mviews/edit/$mview->mview_id");
+  $export_url = url("admin/tripal/storage/chado/mviews/export/$mview->mview_id");
   $rows[] = array('Actions', "<a href='$update_url'>Populate</a>, <a href='$edit_url'>Edit</a>,  <a href='$delete_url'>Delete</a>");
 
   if ($mview->last_update > 0) {
@@ -256,7 +256,7 @@ function tripal_mviews_form($form, &$form_state = NULL, $mview_id = NULL) {
 
   $form['return_link'] = array(
     '#type' => 'item',
-    '#description' => l("Return to table of materialized views", "admin/tripal/schema/mviews/"),
+    '#description' => l("Return to table of materialized views", "admin/tripal/storage/chado/mviews/"),
   );
 
   $form['instructions'] = array(
@@ -583,7 +583,7 @@ function tripal_mviews_form_submit($form, &$form_state) {
     $schema_arr = array();
     eval("\$schema_arr = $schema;");
     tripal_add_mview($name, $modulename, $schema_arr, $query, $comment);
-    drupal_goto("admin/tripal/schema/mviews");
+    drupal_goto("admin/tripal/storage/chado/mviews");
   }
   else {
     drupal_set_message(t("No action performed."));
@@ -642,7 +642,7 @@ function tripal_mviews_delete_form_submit($form, &$form_state) {
   else {
     drupal_set_message(t("No action performed."));
   }
-  drupal_goto("admin/tripal/schema/mviews");
+  drupal_goto("admin/tripal/storage/chado/mviews");
 }
 
 /**
@@ -654,5 +654,5 @@ function tripal_mviews_delete_form_submit($form, &$form_state) {
 function tripal_mviews_add_populate_job($mview_id) {
 
   tripal_refresh_mview($mview_id);
-  drupal_goto("admin/tripal/schema/mviews");
+  drupal_goto("admin/tripal/storage/chado/mviews");
 }

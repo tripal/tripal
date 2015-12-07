@@ -47,7 +47,7 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
     // if this is a materialized view then don't allow editing with this function
     if ($custom_table->mview_id) {
       tripal_report_error('tripal_core', TRIPAL_ERROR, "Please use the tripal_edit_mview() function to edit this custom table as it is a materialized view.", array());
-      drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/schema/mviews') . " interface to edit it.", 'error');
+      drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/storage/chado/mviews') . " interface to edit it.", 'error');
       return FALSE;
     }
 
@@ -330,7 +330,7 @@ function chado_delete_custom_table($table_id) {
   // if this is a materialized view then don't allow deletion with this function
   if ($custom_table->mview_id) {
     tripal_report_error('tripal_core', TRIPAL_ERROR, "Please use the tripal_delete_mview() function to delete this custom table as it is a materialized view. Table not deleted.", array());
-    drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/schema/mviews') . " interface to delete it.", 'error');
+    drupal_set_message("This custom table is a materialized view. Please use the "  . l('Materialized View', 'admin/tripal/storage/chado/mviews') . " interface to delete it.", 'error');
     return FALSE;
   }
 

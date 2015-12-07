@@ -123,7 +123,7 @@ function chado_featuremap_form($node, &$form_state) {
   // ----------------------------------
   $prop_cv = tripal_get_default_cv('featuremap_property', 'type_id');
   $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
-  $instructions = t('To add additional properties to the drop down. ' . l("Add terms to the featuremap_property vocabulary", "admin/tripal/chado/tripal_cv/cvterm/add") . ".");
+  $instructions = t('To add additional properties to the drop down. ' . l("Add terms to the featuremap_property vocabulary", "admin/tripal/vocab/cvterm/add") . ".");
   $details = array(
     'property_table' => 'featuremapprop',
     'chado_id' => $featuremap_id,

@@ -1130,7 +1130,7 @@ function tripal_get_cvterm_default_select_options($table, $field, $field_desc) {
     if (count($options) == 0) {
       tripal_set_message('There are no ' . $field_desc . '. Please ' .
         l('add terms',
-          'admin/tripal/chado/tripal_cv/cv/' .$default_cv->cv_id. '/cvterm/add',
+          'admin/tripal/vocab/cv/' .$default_cv->cv_id. '/cvterm/add',
            array('attributes' => array('target' => '_blank'))) . ' to the ' .
         $default_cv->name .' vocabulary.',
         TRIPAL_WARNING);
@@ -1141,7 +1141,7 @@ function tripal_get_cvterm_default_select_options($table, $field, $field_desc) {
     tripal_set_message('There is not a default vocabulary set for ' . $field_desc . '. '.
       'Please set one using the ' .
       l('vocabulary defaults configuration page',
-        'admin/tripal/chado/tripal_cv/defaults',
+        'admin/tripal/vocab/defaults',
         array('attributes' => array('target' => '_blank'))) . '.',
       TRIPAL_WARNING);
   }

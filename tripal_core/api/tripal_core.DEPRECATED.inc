@@ -815,7 +815,7 @@ function tripal_mviews_action($op, $mview_id, $redirect = FALSE) {
     //New API Function
     $ret = tripal_refresh_mview($mview_id, $redirect);
     if ($redirect) {
-      drupal_goto("admin/tripal/schema/mviews");
+      drupal_goto("admin/tripal/storage/chado/mviews");
     }
     return $ret;
   }
@@ -833,7 +833,7 @@ function tripal_mviews_action($op, $mview_id, $redirect = FALSE) {
     //New API Function
     $ret = tripal_delete_mview($mview_id, $redirect);
     if ($redirect) {
-      drupal_goto("admin/tripal/schema/mviews");
+      drupal_goto("admin/tripal/storage/chado/mviews");
     }
     return $ret;
   }

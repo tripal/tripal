@@ -88,11 +88,11 @@ function tripal_cv_defaultview_admin_cvs_listing() {
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
   $handler->display->display_options['header']['action_links_area']['link-1'] = array(
     'label-1' => 'Add Vocabulary',
-    'path-1' => 'admin/tripal/chado/tripal_cv/cv/add',
+    'path-1' => 'admin/tripal/vocab/cv/add',
   );
   $handler->display->display_options['header']['action_links_area']['link-2'] = array(
     'label-2' => 'Load Ontology',
-    'path-2' => 'admin/tripal/chado/tripal_cv/obo_loader',
+    'path-2' => 'admin/tripal/vocab/obo_loader',
   );
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
@@ -122,7 +122,7 @@ function tripal_cv_defaultview_admin_cvs_listing() {
   $handler->display->display_options['fields']['nothing_1']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing_1']['alter']['text'] = 'edit';
   $handler->display->display_options['fields']['nothing_1']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/tripal/chado/tripal_cv/cv/edit/[cv_id]';
+  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/tripal/vocab/cv/edit/[cv_id]';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing']['id'] = 'nothing';
   $handler->display->display_options['fields']['nothing']['table'] = 'views';
@@ -131,7 +131,7 @@ function tripal_cv_defaultview_admin_cvs_listing() {
   $handler->display->display_options['fields']['nothing']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing']['alter']['text'] = 'View Terms';
   $handler->display->display_options['fields']['nothing']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/tripal/chado/tripal_cv/cvterms?cv=[name]';
+  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/tripal/vocab/cvterms?cv=[name]';
   $handler->display->display_options['fields']['nothing']['hide_alter_empty'] = TRUE;
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_3']['id'] = 'nothing_3';
@@ -141,7 +141,7 @@ function tripal_cv_defaultview_admin_cvs_listing() {
   $handler->display->display_options['fields']['nothing_3']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing_3']['alter']['text'] = 'Add Term';
   $handler->display->display_options['fields']['nothing_3']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing_3']['alter']['path'] = 'admin/tripal/chado/tripal_cv/cv/[cv_id]/cvterm/add';
+  $handler->display->display_options['fields']['nothing_3']['alter']['path'] = 'admin/tripal/vocab/cv/[cv_id]/cvterm/add';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_2']['id'] = 'nothing_2';
   $handler->display->display_options['fields']['nothing_2']['table'] = 'views';
@@ -197,7 +197,7 @@ function tripal_cv_defaultview_admin_cvs_listing() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_cv/cvs';
+  $handler->display->display_options['path'] = 'admin/tripal/vocab/cvs';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Vocabularies';
   $handler->display->display_options['menu']['description'] = 'A listing of all controlled vocabularies';
@@ -292,7 +292,7 @@ function tripal_cv_defaultview_admin_cvterms_listing() {
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
   $handler->display->display_options['header']['action_links_area']['link-1'] = array(
     'label-1' => 'Add Term',
-    'path-1' => 'admin/tripal/chado/tripal_cv/cvterm/add',
+    'path-1' => 'admin/tripal/vocab/cvterm/add',
   );
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
@@ -312,7 +312,7 @@ function tripal_cv_defaultview_admin_cvterms_listing() {
   $handler->display->display_options['fields']['name_1']['field'] = 'name';
   $handler->display->display_options['fields']['name_1']['label'] = 'Vocabulary';
   $handler->display->display_options['fields']['name_1']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['name_1']['alter']['path'] = 'admin/tripal/chado/tripal_cv/cvs?name=[name_1]';
+  $handler->display->display_options['fields']['name_1']['alter']['path'] = 'admin/tripal/vocab/cvs?name=[name_1]';
   /* Field: Chado Cvterm: Cvterm Id */
   $handler->display->display_options['fields']['cvterm_id']['id'] = 'cvterm_id';
   $handler->display->display_options['fields']['cvterm_id']['table'] = 'cvterm';
@@ -361,7 +361,7 @@ function tripal_cv_defaultview_admin_cvterms_listing() {
   $handler->display->display_options['fields']['nothing']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing']['alter']['text'] = 'edit';
   $handler->display->display_options['fields']['nothing']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/tripal/chado/tripal_cv/cv/[cv_id]/cvterm/edit/[cvterm_id]';
+  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/tripal/vocab/cv/[cv_id]/cvterm/edit/[cvterm_id]';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_1']['id'] = 'nothing_1';
   $handler->display->display_options['fields']['nothing_1']['table'] = 'views';
@@ -440,7 +440,7 @@ function tripal_cv_defaultview_admin_cvterms_listing() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_cv/cvterms';
+  $handler->display->display_options['path'] = 'admin/tripal/vocab/cvterms';
   $handler->display->display_options['menu']['type'] = 'tab';
   $handler->display->display_options['menu']['title'] = 'Terms';
   $handler->display->display_options['menu']['description'] = 'A listing of a controlled vocabulary terms for a given vocabulary';

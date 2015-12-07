@@ -132,7 +132,7 @@ function tripal_core_init() {
 function tripal_core_menu() {
   $items = array();
 
-  // Triapl setting groups
+  // Tripal setting groups
   $items['admin/tripal'] = array(
     'title' => 'Tripal',
     'description' => t("Manage the behavior or Tripal and its various modules."),
@@ -142,32 +142,40 @@ function tripal_core_menu() {
     'file' => 'system.admin.inc',
     'file path' => drupal_get_path('module', 'system'),
   );
-  $items['admin/tripal/schema'] = array(
-    'title' => 'Chado Schema',
-    'description' => t("Tools to extend the chado schema through custom tables & materialized views."),
-    'weight' => -2,
+  $items['admin/tripal/tripal_jobs'] = array(
+    'title' => 'Jobs',
+    'description' => t('Jobs managed by Tripal'),
+    'page callback' => 'tripal_jobs_admin_view',
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 0
+  );
+  $items['admin/tripal/loaders'] = array(
+    'title' => 'Data Loaders',
+    'description' => t('Tools facilitating loading data. Includes a generic tab-delimited loader (Bulk Loader).'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 6
+  );
+  $items['admin/tripal/storage'] = array(
+    'title' => 'Storage Backend',
+    'description' => t("Functionality related to data storage and tools to interact with the storage backend."),
+    'weight' => 8,
     'access arguments' => array('administer tripal'),
   );
   $items['admin/tripal/chado'] = array(
-    'title' => 'Chado Modules',
-    'description' => t('Configuration for specific chado data types such as Vocabularies, Features, etc.'),
+    'title' => 'Legacy Tripal',
+    'description' => t('Tools related to Tripal2 Legacy chado-based node types.'),
     'access arguments' => array('administer tripal'),
     'type' => MENU_NORMAL_ITEM,
-    'weight' => -6
-  );
-  $items['admin/tripal/loaders'] = array(
-    'title' => 'Chado Data Loaders',
-    'description' => t('Tools facilitating loading data into the chado database. Includes a generic tab-delimited loader (Bulk Loader).'),
-    'access arguments' => array('administer tripal'),
-    'type' => MENU_NORMAL_ITEM,
-    'weight' => -4
+    'weight' => 20
   );
   $items['admin/tripal/extension'] = array(
     'title' => 'Extensions',
     'description' => t('Configuration for Tripal extensions.'),
     'access arguments' => array('administer tripal'),
     'type' => MENU_NORMAL_ITEM,
-    'weight' => 0
+    'weight' => 100
   );
   $items['admin/tripal/extension/import'] = array(
     'title' => 'Import Extensions',
@@ -181,22 +189,23 @@ function tripal_core_menu() {
     'weight' => -100,
   );
 
-  // Tripal Setup
-  $items['admin/tripal/setup'] = array(
-    'title' => 'Setup Tripal',
-    'description' => t('Tools for setup of Tripal'),
+  // Chado Storage Backend
+  $items['admin/tripal/storage/chado'] = array(
+    'title' => 'Chado Schema',
+    'description' => t("Tools to extend the chado schema through custom tables & materialized views."),
+    'weight' => -100,
     'access arguments' => array('administer tripal'),
-    'weight' => -8
   );
-  $items['admin/tripal/setup/chado_install'] = array(
+  $items['admin/tripal/storage/chado/chado_install'] = array(
     'title' => 'Install Chado Schema',
     'description' => t('Installs the Chado database tables, views, etc., inside the current Drupal database'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_core_chado_load_form'),
     'access arguments' => array('install chado'),
     'type' => MENU_NORMAL_ITEM,
-    'weight' => -10
+    'weight' => -100
   );
+/*
   $items['admin/tripal/setup/customize'] = array(
     'title' => 'Customize Tripal',
     'description' => t('Information on how to customize tripal'),
@@ -205,16 +214,9 @@ function tripal_core_menu() {
     'access arguments' => array('administer tripal'),
     'weight' => 10
   );
+*/
 
   // Jobs Management
-  $items['admin/tripal/tripal_jobs'] = array(
-    'title' => 'Jobs',
-    'description' => t('Jobs managed by Tripal'),
-    'page callback' => 'tripal_jobs_admin_view',
-    'access arguments' => array('administer tripal'),
-    'type' => MENU_NORMAL_ITEM,
-    'weight' => -10
-  );
   $items['admin/tripal/tripal_jobs/help'] = array(
     'title' => 'Help',
     'description' => t('Help for the tripal job management system'),
@@ -257,7 +259,7 @@ function tripal_core_menu() {
   );
 
   // Materialized Views
-  $items['admin/tripal/schema/mviews'] = array(
+  $items['admin/tripal/storage/chado/mviews'] = array(
     'title' => 'Materialized Views',
     'description' => t('Materialized views are used to improve speed of large or complex queries.'),
     'page callback' => 'tripal_mview_admin_view',
@@ -265,7 +267,7 @@ function tripal_core_menu() {
     'type' => MENU_NORMAL_ITEM,
     'weight' => -10
   );
-  $items['admin/tripal/schema/mviews/help'] = array(
+  $items['admin/tripal/storage/chado/mviews/help'] = array(
     'title' => 'Help',
     'description' => t('Help for the materialized views management system'),
     'page callback' => 'theme',
@@ -274,7 +276,7 @@ function tripal_core_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
   );
-  $items['admin/tripal/schema/mviews/report/%'] = array(
+  $items['admin/tripal/storage/chado/mviews/report/%'] = array(
     'title' => 'Materialized View',
     'description' => t('Materialized views are used to improve speed of large or complex queries. These are database views as compared to Drupal views.'),
     'page callback' => 'tripal_mview_report',
@@ -282,7 +284,7 @@ function tripal_core_menu() {
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/schema/mviews/new'] = array(
+  $items['admin/tripal/storage/chado/mviews/new'] = array(
     'title' => 'Create Materialized View',
     'description' => t('Create a new materialized view.'),
     'page callback' => 'drupal_get_form',
@@ -290,14 +292,14 @@ function tripal_core_menu() {
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/schema/mviews/edit/%'] = array(
+  $items['admin/tripal/storage/chado/mviews/edit/%'] = array(
     'title' => 'Edit Materialized View',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_mviews_form', 5),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/schema/mviews/update/%'] = array(
+  $items['admin/tripal/storage/chado/mviews/update/%'] = array(
     'title' => 'Create Materialized View',
     'description' => t('Materialized views are used to improve speed of large or complex queries.'),
     'page callback' => 'tripal_mviews_add_populate_job',
@@ -305,7 +307,7 @@ function tripal_core_menu() {
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/schema/mviews/delete/%'] = array(
+  $items['admin/tripal/storage/chado/mviews/delete/%'] = array(
     'title' => 'Create Materialized View',
     'description' => t('Materialized views are used to improve speed of large or complex queries.'),
     'page callback' => 'drupal_get_form',
@@ -315,7 +317,7 @@ function tripal_core_menu() {
   );
   // TODO: complete the code for exporting and importing of MViews.
   // Need to address security issues of sharing SQL.
-  $items['admin/tripal/schema/mviews/import'] = array(
+  $items['admin/tripal/storage/chado/mviews/import'] = array(
     'title' => 'Import MView',
     'description' => 'Import a materialized view from another Tripal instance.',
     'page callback' => 'drupal_get_form',
@@ -323,7 +325,7 @@ function tripal_core_menu() {
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/schema/mviews/%tblid/export'] = array(
+  $items['admin/tripal/storage/chado/mviews/%tblid/export'] = array(
     'title' => 'Export MView',
     'description' => 'Export a materialized view for use by another Tripal instance.',
     'page callback' => 'drupal_get_form',
@@ -333,7 +335,7 @@ function tripal_core_menu() {
   );
 
   // Custom Tables
-  $items['admin/tripal/schema/custom_tables'] = array(
+  $items['admin/tripal/storage/chado/custom_tables'] = array(
     'title' => 'Custom Tables',
     'description' => t('Creation of custom tables that are added to Chado database.'),
     'page callback' => 'tripal_custom_table_admin_view',
@@ -341,7 +343,7 @@ function tripal_core_menu() {
     'type' => MENU_NORMAL_ITEM,
     'weight' => -10
   );
-  $items['admin/tripal/schema/custom_tables/help'] = array(
+  $items['admin/tripal/storage/chado/custom_tables/help'] = array(
     'title' => 'Help',
     'description' => t('Help for the tripal job management system'),
     'page callback' => 'theme',
@@ -350,7 +352,7 @@ function tripal_core_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
   );
-  $items['admin/tripal/schema/custom_tables/view/%'] = array(
+  $items['admin/tripal/storage/chado/custom_tables/view/%'] = array(
     'title' => 'Custom Tables',
     'description' => t('Custom tables are added to Chado.'),
     'page callback' => 'tripal_custom_table_view',
@@ -358,21 +360,21 @@ function tripal_core_menu() {
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/schema/custom_tables/new'] = array(
+  $items['admin/tripal/storage/chado/custom_tables/new'] = array(
     'title' => 'Create Custom Table',
     'description' => t('An interface for creating your own custom tables.'),
     'page callback' => 'tripal_custom_table_new_page',
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/schema/custom_tables/edit/%'] = array(
+  $items['admin/tripal/storage/chado/custom_tables/edit/%'] = array(
     'title' => 'Edit Custom Table',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_custom_tables_form', 5),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/schema/custom_tables/delete/%'] = array(
+  $items['admin/tripal/storage/chado/custom_tables/delete/%'] = array(
     'title' => 'Create Custom Table',
     'description' => t('Custom tables are added to Chado.'),
     'page callback' => 'drupal_get_form',
@@ -380,10 +382,10 @@ function tripal_core_menu() {
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/schema/custom_tables/views/tables/enable'] = array(
+  $items['admin/tripal/storage/chado/custom_tables/views/tables/enable'] = array(
     'title' => 'Enable Custom Tables Administrative View',
     'page callback' => 'tripal_enable_view',
-    'page arguments' => array('tripal_core_admin_custom_table', 'admin/tripal/schema/custom_tables'),
+    'page arguments' => array('tripal_core_admin_custom_table', 'admin/tripal/storage/chado/custom_tables'),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
   );

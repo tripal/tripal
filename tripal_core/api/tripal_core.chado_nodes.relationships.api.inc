@@ -174,7 +174,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
     else {
 
       $default_form_link = l('vocabulary defaults configuration page',
-          'admin/tripal/chado/tripal_cv/defaults',
+          'admin/tripal/vocab/defaults',
           array('attributes' => array('target' => '_blank')));
 
       $table = ucwords(str_replace('_',' ',$details['base_table']));
@@ -254,7 +254,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
         to the %cv_name controlled vocabulary.',
         array(
           '%cv_name' => $details['cv_name'],
-          '@cvtermlink' => url('admin/tripal/chado/tripal_cv/cv/'.$details['cv_id'].'/cvterm/add')
+          '@cvtermlink' => url('admin/tripal/vocab/cv/'.$details['cv_id'].'/cvterm/add')
         )
       ),
       TRIPAL_WARNING,
@@ -267,7 +267,7 @@ function chado_add_node_form_relationships(&$form, &$form_state, $details) {
         a controlled vocabulary term</a> to the %cv_name controlled vocabulary.',
         array(
           '%cv_name' => $details['cv_name'],
-          '@cvtermlink' => url('admin/tripal/chado/tripal_cv/cv/' . $details['cv_id'] . '/cvterm/add')
+          '@cvtermlink' => url('admin/tripal/vocab/cv/' . $details['cv_id'] . '/cvterm/add')
         )
       ),
       TRIPAL_INFO,
