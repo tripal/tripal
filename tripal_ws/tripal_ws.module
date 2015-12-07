@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ * Defines all menu items needed by Tripal Core
+ *
+ * @ingroup tripal_ws
+ */
+function tripal_ws_menu() {
+
+  // Web Services API callbacks.
+  $items['ws/bio-data/v0.1'] = array(
+    'title' => 'Tripal Entities Web Services API v0.1',
+    'page callback' => 'tripal_ws_rest',
+    'access arguments' => array('access content'),
+    'file' => '/includes/tripal_ws.rest.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
