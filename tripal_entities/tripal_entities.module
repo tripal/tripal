@@ -94,23 +94,23 @@ function tripal_entities_shortcut_default_set($account) {
     $shortcut_set->title = $t('TripalDefault');
     $shortcut_set->links = array(
       array(
-        'link_path' => 'bio-data/add',
-        'link_title' => 'Add Tripal Content',
-        'weight' => -23,
-      ),
-      array(
-        'link_path' => 'admin/content/bio-data',
-        'link_title' => 'Find Tripal Content',
-        'weight' => -22,
-      ),
-      array(
         'link_path' => 'node/add',
         'link_title' => $t('Add content'),
-        'weight' => -21,
+        'weight' => -35,
+      ),
+      array(
+        'link_path' => 'bio-data/add',
+        'link_title' => 'Add Tripal Content',
+        'weight' => -30,
       ),
       array(
         'link_path' => 'admin/content',
         'link_title' => $t('Find content'),
+        'weight' => -25,
+      ),
+      array(
+        'link_path' => 'admin/content/bio-data',
+        'link_title' => 'Find Tripal Content',
         'weight' => -20,
       ),
     );

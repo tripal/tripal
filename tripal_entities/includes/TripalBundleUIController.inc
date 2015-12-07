@@ -18,14 +18,17 @@ class TripalBundleUIController extends EntityDefaultUIController {
    */
   public function hook_menu() {
     $items = parent::hook_menu();
+    
+    // Alter the Admin > Structure > Tripal Content Types menu item.
     $items[$this->path]['description'] = 'Manage biological content types that are
       added using Tripal.';
 
     // We don't want to let the user import new Tripal data types.
     unset($items[$this->path . '/import']);
 
+    // Add an action link to Admin > Structure > Tripal Content Types for adding types.
     $items[$this->path . '/add'] = array(
-      'title' => 'Add new tripal content type',
+      'title' => 'Add Tripal Content Type',
       'description' => 'Add new biological content',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_entities_admin_add_type_form'),
@@ -35,6 +38,7 @@ class TripalBundleUIController extends EntityDefaultUIController {
       'type' => MENU_LOCAL_ACTION,
       'weight' => 2
     );
+    
     return $items;
   }
 
