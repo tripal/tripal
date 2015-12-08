@@ -243,6 +243,13 @@ function tripal_entities_tripal_bundle_schema() {
         'size' => 'tiny',
         'description' => 'The weight of this tripal data type in relation to others.',
       ),
+      'data' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'A serialized array of additional data related to this tripal data type.',
+      ),
     ) + entity_exportable_schema_fields(),
     'primary key' => array('id'),
     'unique keys' => array(
