@@ -4,80 +4,6 @@
  * Install for a tripal data entity - creates the base table for our entity.
  */
 
-/**
- * Implements hook_install().
- */
-function tripal_entities_install() {
-
-  // Unfortunately, some Chado base tables do not have a type_id, so we must
-  // take special action for those tables.  These include: organism and
-  // analysis. Until we can find an appropriate controlled vocabulary
-  // that is well supported by the community with types for these tables we
-  // will have to use in-house terms.
-
-  // Add a term to be used for an inherent 'type_id' for the organism table.
-  tripal_insert_cvterm(array(
-    'id' => 'local:organism',
-    'name' => 'organism',
-    'definition' => 'An individual form of life, such as a bacterium, protist, ' .
-      'fungus, plant, or animal, composed of a single cell or a complex of cells  ' .
-      'in which organelles or organs work together to carry out the various  ' .
-      'processes of life. (American Heritage® Dictionary of the English ' .
-      'Language, Fifth Edition. Copyright © 2011 by Houghton Mifflin ' .
-      'Harcourt Publishing Company).',
-    'cv_name' => 'local',
-  ));
-
-  // Add a term to be used for an inherent 'type_id' for the organism table.
-  tripal_insert_cvterm(array(
-    'id' => 'local:analysis',
-    'name' => 'analysis',
-    'definition' => 'A process as a method of studying the nature of something ' .
-      'or of determining its essential features and their relations. ' .
-      '(Random House Kernerman Webster\'s College Dictionary, © 2010 K ' .
-      'Dictionaries Ltd).',
-    'cv_name' => 'local',
-  ));
-
-  tripal_insert_cvterm(array(
-    'id' => 'local:project',
-    'name' => 'project',
-    'definition' => 'A plan or proposal for accomplishing something. ' .
-      '(American Heritage® Dictionary of the English Language, Fifth Edition. ' .
-      'Copyright © 2011 by Houghton Mifflin Harcourt Publishing Company).',
-    'cv_name' => 'local',
-  ));
-
-  // We want to provide a set of commonly used entity types by default. This
-  // way when a user first installs Tripal there are some commonly used
-  // formats.
-  module_load_include('inc', 'tripal_entities', 'api/tripal_entities.api');
-  module_load_include('inc', 'tripal_entities', 'includes/tripal_entities.admin');
-
-  // Create the 'Organism' entity type. This uses the local:organism term.
-  $error = '';
-  $term = array('name' => 'organism', 'cv_id' => array('name' => 'local'));
-  $cvterm = chado_generate_var('cvterm', $term);
-  if (!tripal_create_entity_type($cvterm, $error)) {
-    throw new Exception($error);
-  }
-
-  // Create the 'Analysis' entity type. This uses the local:analysis term.
-  $error = '';
-  $term = array('name' => 'analysis', 'cv_id' => array('name' => 'local'));
-  $cvterm = chado_generate_var('cvterm', $term);
-  if (!tripal_create_entity_type($cvterm, $error)) {
-    throw new Exception($error);
-  }
-
-  // Create the 'Project' entity type. This uses the local:project term.
-  $error = '';
-  $term = array('name' => 'project', 'cv_id' => array('name' => 'local'));
-  $cvterm = chado_generate_var('cvterm', $term);
-  if (!tripal_create_entity_type($cvterm, $error)) {
-    throw new Exception($error);
-  }
-}
 
 /**
  * Implements hook_schema().
@@ -85,29 +11,12 @@ function tripal_entities_install() {
 function tripal_entities_schema() {
 
   // Adds a table for managing TripalEntity entities.
+  $schema['tripal_vocab'] = tripal_entities_tripal_vocab_schema();
+  $schema['tripal_term'] = tripal_entities_tripal_term_schema();
   $schema['tripal_entity'] = tripal_entities_tripal_entity_schema();
-
-  // Adds a table for managing the TripalEntity entity types (bundles).
   $schema['tripal_bundle'] = tripal_entities_tripal_bundle_schema();
 
-  // Links TripalEntity entities to the chado record.
-  $schema['chado_entity'] = tripal_entities_chado_entity_schema();
-
   return $schema;
-}
-
-/**
- * Implements hook_uninstall().
- *
- * At uninstall time we'll notify field.module that the entity was deleted
- * so that attached fields can be cleaned up.
- */
-function tripal_entities_uninstall() {
-//   $terms = chado_generate_var('tripal_term', array('publish' => 1), array('return_array' => 1));
-//   foreach ($terms as $term) {
-//     $bundle_id = 'bio-data_' . $term->cvterm_id;
-//     field_attach_delete_bundle('TripalEntity', $bundle_id);
-//   }
 }
 
 /**
@@ -146,8 +55,8 @@ function tripal_entities_tripal_entity_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
-      'cvterm_id' => array(
-        'description' => 'The cvterm_id for the type of entity. This cvterm_id should match a record in the Chado cvterm table.',
+      'term_id' => array(
+        'description' => 'The term_id for the type of entity. This term_id corresponds to a TripalTerm record.',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -183,21 +92,137 @@ function tripal_entities_tripal_entity_schema() {
       ),
     ),
     'indexes' => array(
-      'cvterm_id' => array('cvterm_id'),
+      'term_id' => array('term_id'),
       'entity_changed' => array('changed'),
       'entity_created' => array('created'),
       'type' => array('type'),
       'uid' => array('uid'),
     ),
-    'unique keys' => array(
-    ),
+    'unique keys' => array(),
     'primary key' => array('id'),
   );
   return $schema;
 }
 
 /**
- * The base table for Biological Data Type Entites.
+ * The base table for TripalVocab schema.
+ *
+ * This contains the actual data. For example, if you have a 5 genes and 10 mRNA then
+ * this table will have 15 records and include both genes and mRNA's.
+ */
+function tripal_entities_tripal_vocab_schema() {
+
+  // This schema only provides enough information to assign a unique ID
+  // to the vocabulary. Any additonal information is added to the Entity object
+  // by the selected database back-end.
+  $schema = array(
+    'description' => 'The base table for TripalVocab entities.',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The primary identifier for a vocab entity.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'namespace' => array(
+        'description' => 'The namespace for the vocabulary (e.g. SO, PATO, etc.).',
+        'type' => 'varchar',
+        'length' => 10,
+        'not null' => TRUE,
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp when the entity was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'changed' => array(
+        'description' => 'The Unix timestamp when the entity was most recently saved.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'namespace' => array('namespace'),
+      'entity_changed' => array('changed'),
+      'entity_created' => array('created'),
+    ),
+    'unique keys' => array('namespace' => array('namespace')),
+    'primary key' => array('id'),
+  );
+  return $schema;
+}
+
+/**
+ * The base table for TripalTerm entities.
+ *
+ * This contains the actual data. For example, if you have a 5 genes and 10 mRNA then
+ * this table will have 15 records and include both genes and mRNA's.
+ */
+function tripal_entities_tripal_term_schema() {
+
+  // This schema only provides enough information to assign a unique ID
+  // to the term and associate it to it's vocabulary. Any additonal information
+  // is added to the Entity object by the selected database back-end.
+  $schema = array(
+    'description' => 'The base table for TripalTerm entities.',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The primary identifier for a term entity.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'vocab_id' => array(
+        'description' => 'The vocabulary_id of the TripalVocab entity to which this term belongs.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'term_id' => array(
+        'description' => 'The id (or accession) of this term in the vocabulary.',
+        'type' => 'varchar',
+        'length' => 1024,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp when the entity was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'changed' => array(
+        'description' => 'The Unix timestamp when the entity was most recently saved.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'vocab_id' => array('vocab_id'),
+      'term_id' => array('term_id'),
+      'entity_changed' => array('changed'),
+      'entity_created' => array('created'),
+
+    ),
+    'foreign keys' => array(
+      'tripal_vocab' => array(
+        'table' => 'tripal_vocab',
+        'columns' => array(
+          'vocab_id' => 'vocab_id',
+        ),
+      ),
+    ),
+    'unique keys' => array('vocab_term' => array('vocab_id', 'term_id')),
+    'primary key' => array('id'),
+  );
+  return $schema;
+}
+
+/**
+ * The base table for TripalEntity entities.
+ *
  * This table contains a list of Biological Data Types.
  * For the example above (5 genes and 10 mRNAs), there would only be two records in
  * this table one for "gene" and another for "mRNA".
@@ -210,7 +235,7 @@ function tripal_entities_tripal_bundle_schema() {
       'id' => array(
         'type' => 'serial',
         'not null' => TRUE,
-        'description' => 'Primary Key: Unique Chado data type identifier.',
+        'description' => 'Primary Key: Unique numeric ID.',
       ),
       'type' => array(
         'description' => 'The type of entity. This should be an official vocabulary ID (e.g. SO, RO, GO).',
@@ -233,87 +258,11 @@ function tripal_entities_tripal_bundle_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
-      'weight' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0,
-        'size' => 'tiny',
-        'description' => 'The weight of this tripal data type in relation to others.',
-      ),
-      'data' => array(
-        'type' => 'text',
-        'not null' => FALSE,
-        'size' => 'big',
-        'serialize' => TRUE,
-        'description' => 'A serialized array of additional data related to this tripal data type.',
-      ),
-    ) + entity_exportable_schema_fields(),
+    ),
     'primary key' => array('id'),
     'unique keys' => array(
       'bundle' => array('bundle'),
     ),
-  );
-  return $schema;
-}
-
-/**
- * Links Biological Data Entities to the chado "base" table the data is stored in.
- * This is where we would specify that a particular gene maps to the record in the
- * chado.feature table with a feature_id=2432;
- */
-function tripal_entities_chado_entity_schema() {
-
-  $schema = array(
-    'description' => 'The linker table that associates an enitity from the public.tripal_entity table with a "base" record in Chado',
-    'fields' => array(
-      'chado_entity_id' => array(
-        'description' => 'The primary identifier for this table.',
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ),
-      'entity_id' => array(
-        'description' => 'The unique entity id.',
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'record_id' => array(
-        'description' => 'The unique numerical identifier for the record that this entity is associated with (e.g. feature_id, stock_id, library_id, etc.).',
-        'type' => 'int',
-        'not null' => TRUE,
-      ),
-      'data_table' => array(
-        'description' => 'Indicates the table in Chado that this term services (e.g. feature, stock, library, etc.)',
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'type_table' => array(
-        'description' => 'Sometimes the record in the data table doesn’t have a field that specifies  the record type.  For example, an analysis type is stored in the analysisprop table.  If the data_table does have a type field then this value will be the same as the data_table.',
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'field' => array(
-        'description' => 'The name of the field in the typetable that contains the cvterm record.',
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => FALSE,
-        'default' => ''
-      ),
-    ),
-    'indexes' => array(
-      'record_id' => array('record_id'),
-      'entity_id' => array('entity_id'),
-      'data_table' => array('data_table'),
-    ),
-    'unique keys' => array(
-      'record' => array('data_table', 'record_id'),
-      'entity_id' => array('entity_id'),
-    ),
-    'primary key' => array('chado_entity_id'),
   );
   return $schema;
 }

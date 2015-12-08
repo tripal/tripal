@@ -8,7 +8,7 @@
  *   print a subset such as render($content['field_example']). Use
  *   hide($content['field_example']) to temporarily suppress the printing of a
  *   given element.
- * - $title: The name of the chado data object
+ * - $title: The title of the entity
  * - $url: The standard URL for viewing the object
  * - $page: TRUE if this is the main view page $url points too.
  * - $classes: String of classes that can be used to style contextually through

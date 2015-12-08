@@ -1,0 +1,714 @@
+<?php
+
+require_once "api/tripal_chado.api.inc";
+require_once "includes/tripal_chado.field_storage.inc";
+
+/**
+ * Implements hook_field_info().
+ */
+function tripal_chado_field_info() {
+  $fields = array(
+    'organism_id' => array(
+      'label' => t('Organism'),
+      'description' => t('A field for specifying an organism.'),
+      'default_widget' => 'tripal_chado_organism_select_widget',
+      'default_formatter' => 'tripal_chado_organism_formatter',
+      'settings' => array(),
+      'storage' => array(
+        'type' => 'field_chado_storage',
+        'module' => 'tripal_chado',
+        'active' => TRUE
+      ),
+    ),
+    'dbxref_id' => array(
+      'label' => t('Cross-reference'),
+      'description' => t('This record can be cross-referenced with a record in
+          another online database. This field is intended for the most prominent
+          reference.  At a minimum, the database and accession must be provided.'),
+      'default_widget' => 'tripal_chado_dbxref_id_widget',
+      'default_formatter' => 'tripal_chado_dbxref_id_formatter',
+      'settings' => array(),
+      'storage' => array(
+        'type' => 'field_chado_storage',
+        'module' => 'tripal_chado',
+        'active' => TRUE
+      ),
+    ),
+    'residues' => array(
+      'label' => t('Residues'),
+      'description' => t('A field for managing nucleotide and protein residues.'),
+      'default_widget' => 'tripal_chado_residue_textarea_widget',
+      'default_formatter' => 'tripal_chado_residues_formatter',
+      'settings' => array(),
+      'storage' => array(
+        'type' => 'field_chado_storage',
+        'module' => 'tripal_chado',
+        'active' => TRUE
+      ),
+    ),
+    'md5checksum' => array(
+      'label' => t('MD5 checksum'),
+      'description' => t('A field for generating MD5 checksum for a sequence.'),
+      'default_widget' => 'tripal_chado_md5checksum_checkbox_widget',
+      'default_formatter' => 'tripal_chado_md5checksum_formatter',
+      'settings' => array(),
+      'storage' => array(
+        'type' => 'field_chado_storage',
+        'module' => 'tripal_chado',
+        'active' => TRUE
+      ),
+    ),
+    'seqlen' => array(
+      'label' => t('Sequence length'),
+      'description' => t('A field for calculating the length of a sequence.'),
+      'default_widget' => 'tripal_chado_seqlen_hidden_widget',
+      'default_formatter' => 'tripal_chado_seqlen_formatter',
+      'settings' => array(),
+      'storage' => array(
+        'type' => 'field_chado_storage',
+        'module' => 'tripal_chado',
+        'active' => TRUE
+      ),
+    ),
+    // The field provides a widget for adding new properties
+    // to an entity that is connected to a base table that has a prop table
+    // in Chado.
+    'kvproperty_adder' => array(
+      'label' => t('Add a Property Type'),
+      'description' => t('This record may have any number of properties. Use
+          this field to first add the type.'),
+      'default_widget' => 'tripal_chado_kvproperty_adder_widget',
+      'default_formatter' => 'tripal_chado_kvproperty_adder_formatter',
+      'settings' => array(),
+      'storage' => array(
+        'type' => 'field_chado_storage',
+        'module' => 'tripal_chado',
+        'active' => TRUE
+      ),
+    ),
+    // The field provides form elements for adding a property to an entity
+    // that in turn gets stored in a prop table of Chado (e.g. featureprop,
+    // stockprop, etc).
+    'kvproperty' => array(
+      'label' => t('Add a Property'),
+      'description' => t('Add details about this property.'),
+      'default_widget' => 'tripal_chado_kvproperty_widget',
+      'default_formatter' => 'tripal_chado_kvproperty_formatter',
+      'settings' => array(),
+      'storage' => array(
+        'type' => 'field_chado_storage',
+        'module' => 'tripal_chado',
+        'active' => TRUE
+      ),
+    ),
+  );
+  return $fields;
+}
+
+/**
+ * Implements hook_field_widget_info().
+ */
+function tripal_chado_field_widget_info() {
+  return array(
+    'tripal_chado_organism_select_widget' => array(
+      'label' => t('Organism Select'),
+      'field types' => array('organism_id')
+    ),
+    'tripal_chado_dbxref_id_widget' => array(
+      'label' => t('Cross-reference'),
+      'field types' => array('dbxref_id'),
+      'description' => t('This record can be cross-referenced with a record in another online database. This field is intended for the most prominent reference.  At a minimum, the database and accession must be provided.'),
+    ),
+    'tripal_chado_md5checksum_checkbox_widget' => array(
+      'label' => t('MD5 Checksum Checkbox'),
+      'field types' => array('md5checksum'),
+    ),
+    'tripal_chado_residues_textarea_widget' => array(
+      'label' => t('Residues'),
+      'field types' => array('residues'),
+    ),
+    'tripal_chado_seqlen_hidden_widget' => array(
+      'label' => t('Sequence Length'),
+      'field types' => array('seqlen'),
+    ),
+    'tripal_chado_kvproperty_adder_widget' => array(
+      'label' => t('Add a Property'),
+      'field types' => array('kvproperty_adder'),
+    ),
+    'tripal_chado_kvproperty_widget' => array(
+      'label' => t('Property'),
+      'field types' => array('kvproperty'),
+    ),
+  );
+}
+/**
+ * Implements hook_field_formatter_info().
+ */
+function tripal_chado_field_formatter_info() {
+  return array(
+    'tripal_chado_organism_formatter' => array(
+      'label' => t('Organism'),
+      'field types' => array('organism_id')
+    ),
+    'tripal_chado_dbxref_id_formatter' => array(
+      'label' => t('Cross-reference'),
+      'field types' => array('dbxref_id')
+    ),
+    'tripal_chado_md5checksum_formatter' => array(
+      'label' => t('MD5 checksum'),
+      'field types' => array('md5checksum')
+    ),
+    'tripal_chado_residues_formatter' => array(
+      'label' => t('Residues'),
+      'field types' => array('residues')
+    ),
+    'tripal_chado_seqlen_formatter' => array(
+      'label' => t('Sequence length'),
+      'field types' => array('seqlen')
+    ),
+    'tripal_chado_kvproperty_adder_formatter' => array(
+      'label' => t('Add a Property'),
+      'field types' => array('kvproperty_adder')
+    ),
+    'tripal_chado_kvproperty_formatter' => array(
+      'label' => t('Property'),
+      'field types' => array('kvproperty')
+    ),
+  );
+}
+
+/**
+ * Implements hook_chado_field_alter().
+ *
+ * This function is used to change the default field formatter and widget
+ * that are assigned to fields of an Entity. This hook is only used for
+ * those fields that correspond to a column in a Chado table.  An implementation
+ * of this hook can be used to change the default formatters and widgets to
+ * custom formatters and widgets that are created by the module creating
+ * this hook.
+ *
+ * By default, Tripal will provide custom formatters and widgets for many
+ * columns in Chado tables, therefore, this hook will most likely be of use
+ * to extension modules that create custom table inside of Chado.
+ *
+ * @param $field
+ */
+function hook_chado_field_alter(&$field) {
+  // TODO: add example code for how to use this hook.
+}
+
+/**
+ * Implements hook_chado_field_alter().
+ *
+ * This function adds the custom formatters and widgets to many of the Chado
+ * tables.  This way Tripal users get a nice set of already usable fields.
+ */
+function tripal_chado_chado_field_alter(&$field) {
+
+  if (!array_key_exists('field_settings', $field)) {
+    return;
+  }
+  // If the field doesn't list the Chado table or column then just return.
+  if (!array_key_exists('chado_table', $field['field_settings']) or
+      !array_key_exists('chado_column', $field['field_settings'])) {
+    return;
+  }
+  // Here we provide new field types and widgets for FK fields
+  // and fields that need special attention.
+  if ($field['field_settings']['chado_column'] =='organism_id') {
+    $field['field_type'] = 'organism_id';
+    $field['widget_type'] = 'tripal_chado_organism_select_widget';
+    $field['label'] = 'Organism';
+    $field['description'] = 'Select an organism.';
+  }
+  else if ($field['field_settings']['chado_column'] =='dbxref_id') {
+    $field['field_type'] = 'dbxref_id';
+    $field['widget_type'] = 'tripal_chado_primary_dbxref_widget';
+    $field['label'] = 'Primary Cross Reference';;
+    $field['description'] = 'This record can be cross-referenced with a
+    record in another online database. The primary reference is for the
+    most prominent reference.  At a minimum, the database and accession
+    must be provided.  To remove a set reference, change the database
+    field to "Select a Database".';
+  }
+  else if ($field['field_settings']['chado_table'] == 'feature' and
+    $field['field_settings']['chado_column'] == 'md5checksum') {
+    $field['field_type'] = 'md5checksum';
+    $field['widget_type'] = 'tripal_chado_md5checksum_checkbox_widget';
+    $field['label'] = 'MD5 Checksum';
+    $field['description'] = 'Generating MD5 checksum for the sequence.';
+  }
+  else if ($field['field_settings']['chado_table'] == 'feature' and $field['field_settings']['chado_column'] == 'seqlen') {
+    $field['field_type'] = 'seqlen';
+    $field['widget_type'] = 'tripal_chado_seqlen_hidden_widget';
+    $field['label'] = 'Seqlen';
+    $field['description'] = 'The length of the residues.';
+  }
+  else if ($field['field_settings']['chado_table'] == 'feature' and $field['field_settings']['chado_column'] == 'residues') {
+    $field['field_type'] = 'residues';
+    $field['widget_type'] = 'tripal_chado_residues_textarea_widget';
+    $field['label'] = 'Residues';
+    $field['description'] = 'Please provide an IUPAC compatible residues for this feature. Spaces and new lines are allowed.';
+  }
+  else if ($field['label'] == 'Timeaccessioned') {
+    $field['label'] = 'Time Accessioned';
+    $field['description'] = 'Please enter the time that this record was first added to the database.';
+  }
+  else if ($field['label'] == 'Timelastmodified') {
+    $field['label'] = 'Time Last Modified';
+    $field['description'] = 'Please enter the time that this record was last modified. The default is the current time.';
+  }
+}
+
+/**
+ * Implements hook_field_widget_form_alter().
+ */
+function tripal_chado_field_widget_form_alter(&$element, &$form_state, $context) {
+
+  if (array_key_exists('#field_name', $element)) {
+    $field_name = $element['#field_name'];
+    $matches = array();
+
+    if (preg_match('/(.+?)__(.+?)$/', $field_name, $matches)) {
+      $tablename = $matches[1];
+      $colname = $matches[2];
+      $schema = chado_get_schema($tablename);
+
+      // The timelastmodified field exists in many Chado tables.  We want
+      // the form element to update to the most recent time rather than the time
+      // in the database.
+      if ($colname == 'timelastmodified' and $schema['fields'][$colname]['type'] == 'datetime') {
+        // We want the default value for the field to be the current time.
+        $element['#default_value']['value'] = format_date(time(), 'custom', "Y-m-d H:i:s", 'UTC');
+        $element['#date_items']['value'] = $element['#default_value']['value'];
+      }
+      // We want the date combo fieldset to be collaspible so we will
+      // add our own theme_wrapper to replace the one added by the date
+      // module.
+      if (array_key_exists($colname, $schema['fields']) and $schema['fields'][$colname]['type'] == 'datetime') {
+        $element['#theme_wrappers'] = array('tripal_chado_date_combo');
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function tripal_chado_field_formatter_view($entity_type, $entity, $field,
+    $instance, $langcode, $items, $display) {
+
+      $element = array();
+      switch ($display['type']) {
+        case 'tripal_chado_organism_formatter':
+          module_load_include('inc', 'tripal_chado', 'includes/fields/organism_id');
+          tripal_chado_organism_select_formatter($element, $entity_type, $entity, $field,
+              $instance, $langcode, $items, $display);
+          break;
+        case 'tripal_chado_dbxref_id_formatter':
+          module_load_include('inc', 'tripal_chado', 'includes/fields/dbxref_id');
+          tripal_chado_dbxref_id_formatter($element, $entity_type, $entity, $field,
+              $instance, $langcode, $items, $display);
+          break;
+        case 'tripal_chado_md5checksum_formatter':
+          module_load_include('inc', 'tripal_chado', 'includes/fields/md5checksum');
+          tripal_chado_md5checksum_checkbox_formatter($element, $entity_type, $entity, $field,
+              $instance, $langcode, $items, $display);
+          break;
+        case 'tripal_chado_residues_formatter':
+          module_load_include('inc', 'tripal_chado', 'includes/fields/residues');
+          tripal_chado_residues_textarea_formatter($element, $entity_type, $entity, $field,
+              $instance, $langcode, $items, $display);
+          break;
+        case 'tripal_chado_seqlen_formatter':
+          module_load_include('inc', 'tripal_chado', 'includes/fields/seqlen');
+          tripal_chado_seqlen_hidden_formatter($element, $entity_type, $entity, $field,
+              $instance, $langcode, $items, $display);
+          break;
+        case 'tripal_chado_kvproperty_adder_formatter':
+          module_load_include('inc', 'tripal_chado', 'includes/fields/kvproperty_adder');
+          tripal_chado_kvproperty_adder_formatter($element, $entity_type, $entity, $field,
+              $instance, $langcode, $items, $display);
+          break;
+        case 'tripal_chado_kvproperty_formatter':
+          module_load_include('inc', 'tripal_chado', 'includes/fields/kvproperty');
+          tripal_chado_kvproperty_formatter($element, $entity_type, $entity, $field,
+              $instance, $langcode, $items, $display);
+          break;
+      }
+      return $element;
+}
+
+/**
+ * Implements hook_field_widget_form().
+ */
+function tripal_chado_field_widget_form(&$form, &$form_state, $field,
+    $instance, $langcode, $items, $delta, $element) {
+
+  $widget = $element;
+  switch ($instance['widget']['type']) {
+    case 'tripal_chado_organism_select_widget':
+      // Make sure the include files get parsed now and for the form submits.
+      form_load_include($form_state, 'inc', 'tripal_chado', 'includes/fields/organism_id');
+      module_load_include('inc', 'tripal_chado', 'includes/fields/organism_id');
+      // Update the widget with the new field.
+      tripal_chado_organism_select_widget($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
+      break;
+    case 'tripal_chado_dbxref_id_widget':
+      form_load_include($form_state, 'inc', 'tripal_chado', 'includes/fields/dbxref_id');
+      module_load_include('inc', 'tripal_chado', 'includes/fields/dbxref_id');
+      tripal_chado_dbxref_id_widget($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
+      break;
+    case 'tripal_chado_md5checksum_checkbox_widget':
+      form_load_include($form_state, 'inc', 'tripal_chado', 'includes/fields/md5checksum');
+      module_load_include('inc', 'tripal_chado', 'includes/fields/md5checksum');
+      tripal_chado_md5checksum_checkbox_widget($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
+      break;
+    case 'tripal_chado_residues_textarea_widget':
+      form_load_include($form_state, 'inc', 'tripal_chado', 'includes/fields/residues');
+      module_load_include('inc', 'tripal_chado', 'includes/fields/residues');
+      tripal_chado_residues_textarea_widget($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
+      break;
+    case 'tripal_chado_seqlen_hidden_widget':
+      form_load_include($form_state, 'inc', 'tripal_chado', 'includes/fields/seqlen');
+      module_load_include('inc', 'tripal_chado', 'includes/fields/seqlen');
+      tripal_chado_seqlen_hidden_widget($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
+      break;
+    case 'tripal_chado_kvproperty_adder_widget':
+      form_load_include($form_state, 'inc', 'tripal_chado', 'includes/fields/kvproperty_adder');
+      module_load_include('inc', 'tripal_chado', 'includes/fields/kvproperty_adder');
+      tripal_chado_kvproperty_adder_widget($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
+      break;
+    case 'tripal_chado_kvproperty_widget':
+      form_load_include($form_state, 'inc', 'tripal_chado', 'includes/fields/kvproperty');
+      module_load_include('inc', 'tripal_chado', 'includes/fields/kvproperty');
+      tripal_chado_kvproperty_widget($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
+      break;
+  }
+  return $widget;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * The field_ui_display_overview_form is used for formatting the display
+ * or layout of fields attached to an entity and shown on the entity view page.
+ */
+function tripal_chado_form_field_ui_display_overview_form_alter(&$form, &$form_state, $form_id) {
+  // Remove the kvproperty_addr field as it isn't ever displayed. It's just used
+  // on the add/edit form of an entity for adding new property fields.
+  $fields_names = element_children($form['fields']);
+  foreach ($fields_names as $field_name) {
+    $field_info = field_info_field($field_name);
+    if ($field_info['type'] == 'kvproperty_adder') {
+      unset($form['fields'][$field_name]);
+    }
+  }
+}
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * The field_ui_field_overview_form is used for ordering and configuring the
+ * fields attached to an entity.
+ */
+function tripal_chado_form_field_ui_field_overview_form_alter(&$form, &$form_state, $form_id) {
+  // Remove the kvproperty_addr field as it isn't ever displayed. It's just used
+  // on the add/edit form of an entity for adding new property fields.
+  $fields_names = element_children($form['fields']);
+  foreach ($fields_names as $field_name) {
+    $field_info = field_info_field($field_name);
+    if ($field_info['type'] == 'kvproperty_adder') {
+      unset($form['fields'][$field_name]);
+    }
+  }
+}
+/**
+ * Implements hook_field_is_empty().
+ */
+function tripal_chado_field_is_empty($item, $field) {
+
+  // If there is no value field then the field is empty.
+  if (!array_key_exists('value', $item)) {
+    return TRUE;
+  }
+
+  // Iterate through all of the fields and if at least one has a value
+  // the field is not empty.
+  foreach ($item as $form_field_name => $value) {
+    if (isset($value) and $value != NULL and $value != '') {
+      return FALSE;
+    }
+  }
+
+  // Otherwise, the field is empty.
+  return TRUE;
+}
+
+/**
+ * Returns the values of the field from the $form_state.
+ */
+function tripal_chado_get_field_form_values($field_name, $form_state, $delta = 0, $child = NULL) {
+  $value = NULL;
+  // The form_state must have the 'values' key. If not then just return.
+  if (!array_key_exists('values', $form_state)) {
+    return $value;
+  }
+
+  // If the field name is not in the form_state['values'] then return.
+  if (!array_key_exists($field_name, $form_state['values'])) {
+    return $value;
+  }
+
+  // Iterate through the values looking for the field_name provided.
+  foreach ($form_state['values'][$field_name] as $langcode => $items) {
+    $item = $items[$delta];
+    if ($child){
+      if(array_key_exists($child, $item) and $item[$child] != '') {
+        $value = $item[$child];
+      }
+    }
+    else {
+      $value = $item['value'];
+    }
+  }
+  return $value;
+}
+
+/**
+ * Sets the values of the field from the $form_state.
+ */
+function tripal_chado_set_field_form_values($field_name, &$form_state, $newvalue, $delta = 0, $child = NULL) {
+  // The form_state must have the 'values' key. If not then just return.
+  if (!array_key_exists('values', $form_state)) {
+    return FALSE;
+  }
+
+  // If the field name is not in the form_state['values'] then reutrn.
+  if (!array_key_exists($field_name, $form_state['values'])) {
+    return FALSE;
+  }
+
+  foreach ($form_state['values'][$field_name] as $langcode => $items) {
+    if ($child) {
+      $form_state['values'][$field_name][$langcode][$delta][$child] = $newvalue;
+    }
+    else {
+      $form_state['values'][$field_name][$langcode][$delta]['value'] = $newvalue;
+    }
+  }
+  return TRUE;
+}
+
+
+/**
+ * Implements hook_theme().
+ */
+function tripal_chado_theme($existing, $type, $theme, $path) {
+  return array(
+    'tripal_chado_dbxref_id_widget' => array(
+      'render element' => 'element',
+      'file' => 'includes/fields/dbxref_id.inc',
+    ),
+    'tripal_chado_kvproperty_addr_widget' => array(
+      'render element' => 'element',
+      'file' => 'includes/fields/dbxref_id.inc',
+    ),
+    'tripal_chado_date_combo' => array(
+      'render element' => 'element',
+      'file' => 'includes/tripal_chado.entity.inc',
+    ),
+  );
+}
+
+
+/**
+ * Implements hook_add_bundle_fields().
+ *
+ * @param $entity_type_name
+ * @param $bundle_id
+ * @param $cvterm
+ */
+function tripal_chado_add_bundle_fields($entity_type_name, $bundle_id, $cvterm) {
+  // Adds the fields for the base table to the entity.
+  tripal_chado_add_bundle_base_fields($entity_type_name, $bundle_id, $cvterm);
+
+  // Check to see if there are any kv-property tables associated to this
+  // base table. If so, add the fields for that type of table.
+  tripal_chado_add_bundle_kvproperty_adder_field($entity_type_name, $bundle_id, 'featureprop');
+}
+
+/**
+ * Adds the fields for a kv-property table fields
+ *
+ * @param $entity_type_name
+ * @param $bundle_id
+ * @param $kv_table
+ */
+function tripal_chado_add_bundle_kvproperty_adder_field($entity_type_name, $bundle_id, $kv_table) {
+  // First add a generic property field so that users can add new proeprty types.
+  $field_name = $kv_table;
+
+  // Initialize the field array.
+  $field_info = array(
+    'field_type' => 'kvproperty_adder',
+    'widget_type' => 'tripal_fields_kvproperty_adder_widget',
+    'field_settings' => array(),
+    'widget_settings' => array('display_label' => 1),
+    'description' => '',
+    'label' => 'Additional Properties',
+    'is_required' => 0,
+  );
+  tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_id);
+}
+
+/**
+ * Adds the fields for the base table to the entity.
+ */
+function tripal_chado_add_bundle_base_fields($entity_type_name, $bundle_id, $cvterm) {
+
+  // Get the details for this bundle
+  $bundle = db_select('tripal_bundle', 't')
+    ->fields('t')
+    ->condition('type', 'TripalEntity')
+    ->condition('bundle', $bundle_id)
+    ->execute()
+    ->fetchObject();
+  $bundle_data = unserialize($bundle->data);
+
+  $table_name = $bundle_data['data_table'];
+  $type_table = $bundle_data['type_table'];
+  $type_field = $bundle_data['field'];
+
+  // Iterate through the columns of the table and see if fields have been
+  // created for each one. If not, then create them.
+  $schema = chado_get_schema($table_name);
+  $columns = $schema['fields'];
+  foreach ($columns as $column_name => $details) {
+    $field_name = $table_name . '__' . $column_name;
+
+    // Skip the primary key field.
+    if ($column_name == $schema['primary key'][0]) {
+      continue;
+    }
+
+    // Skip the type field.
+    if ($table_name == $type_table and $column_name == $type_field) {
+      continue;
+    }
+
+    // Get the field defaults for this column.
+    $field_info = tripal_chado_get_table_column_field_default($table_name, $schema, $column_name);
+
+
+    // Determine if the field is required.
+    if (array_key_exists('not null', $details) and $details['not null'] === TRUE) {
+      $field_info['is_required'] = array_key_exists('default', $details) ? 0 : 1;
+    }
+
+    // If we don't have a field type then we don't need to create a field.
+    if (!$field_info['field_type']) {
+      // If we don't have a field type but it is required and doesn't have
+      // a default value then we are in trouble.
+      if ($field_info['is_required'] and !array_key_exists('default', $details)) {
+        throw new Exception(t('The %table.%field type, %type, is not yet supported for Entity fields, but it is required,',
+            array('%table' => $table_name, '%field' => $column_name, '%type' => $details['type'])));
+      }
+      continue;
+    }
+
+    // If this field is a foreign key field then we will have a special custom
+    // field provided by Tripal.
+    $is_fk = FALSE;
+    if (array_key_exists('foreign keys', $schema)) {
+      foreach ($schema['foreign keys'] as $remote_table => $fk_details) {
+        if (array_key_exists($column_name, $fk_details['columns'])) {
+          $is_fk = TRUE;
+        }
+      }
+    }
+
+    // Add the field to the bundle.
+    tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_id);
+  }
+}
+
+/**
+ * Returns a $field_info array for a field based on a database column.
+ *
+ */
+function tripal_chado_get_table_column_field_default($table_name, $schema, $column_name) {
+  $details = $schema['fields'][$column_name];
+
+  // Create an array with information about this field.
+  $field_info = array(
+    'field_type' => '',
+    'widget_type' => '',
+    'field_settings' => array(
+      'chado_table' => $table_name,
+      'chado_column' => $column_name,
+    ),
+    'widget_settings' => array('display_label' => 1),
+    'description' => '',
+    'label' => ucwords(preg_replace('/_/', ' ', $column_name)),
+    'is_required' => 0,
+  );
+
+  // Alter the field info array depending on the column details.
+  switch($details['type']) {
+    case 'char':
+      $field_info['field_type'] = 'text';
+      $field_info['widget_type'] = 'text_textfield';
+      $field_info['field_settings']['max_length'] = $details['length'];
+      break;
+    case 'varchar':
+      $field_info['field_type'] = 'text';
+      $field_info['widget_type'] = 'text_textfield';
+      $field_info['field_settings']['max_length'] = $details['length'];
+      break;
+    case 'text':
+      $field_info['field_type'] = 'text';
+      $field_info['widget_type'] = 'text_textarea';
+      $field_info['field_settings']['max_length'] = 17179869184;
+      break;
+    case 'blob':
+      // not sure how to support a blob field.
+      continue;
+      break;
+    case 'int':
+      $field_info['field_type'] = 'number_integer';
+      $field_info['widget_type'] = 'number';
+      break;
+    case 'float':
+      $field_info['field_type'] = 'number_float';
+      $field_info['widget_type'] = 'number';
+      $field_info['field_settings']['precision'] = 10;
+      $field_info['field_settings']['scale'] = 2;
+      $field_info['field_settings']['decimal_separator'] = '.';
+      break;
+    case 'numeric':
+      $field_info['field_type'] = 'number_decimal';
+      $field_info['widget_type'] = 'number';
+      break;
+    case 'serial':
+      // Serial fields are most likely not needed as a field.
+      break;
+    case 'boolean':
+      $field_info['field_type'] = 'list_boolean';
+      $field_info['widget_type'] = 'options_onoff';
+      $field_info['field_settings']['allowed_values'] = array(0 => "No", 1 => "Yes");
+      break;
+    case 'datetime':
+      // Use the Drupal Date and Date API to create the field/widget
+      $field_info['field_type'] = 'datetime';
+      $field_info['widget_type'] = 'date_select';
+      $field_info['widget_settings']['increment'] = 1;
+      $field_info['widget_settings']['tz_handling'] = 'none';
+      $field_info['widget_settings']['collapsible'] = TRUE;
+
+      // TODO: Add settings so that the minutes increment by 1.
+      // And turn off the timezone, as the Chado field doesn't support it.
+      break;
+  }
+
+  return $field_info;
+}

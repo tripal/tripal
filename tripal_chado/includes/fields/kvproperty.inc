@@ -10,7 +10,7 @@
  * @param unknown $items
  * @param unknown $display
  */
-function tripal_fields_kvproperty_formatter(&$element, $entity_type, $entity, $field,
+function tripal_chado_kvproperty_formatter(&$element, $entity_type, $entity, $field,
   $instance, $langcode, $items, $display) {
 
   $field_name = $field['field_name'];
@@ -39,7 +39,7 @@ function tripal_fields_kvproperty_formatter(&$element, $entity_type, $entity, $f
  * @param unknown $delta
  * @param unknown $element
  */
-function tripal_fields_kvproperty_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function tripal_chado_kvproperty_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
   $entity = $form['#entity'];
   $field_name = $field['field_name'];
 
@@ -79,7 +79,7 @@ function tripal_fields_kvproperty_widget(&$widget, $form, $form_state, $field, $
   $widget['#field_name'] = $element['#field_name'];
   $widget['#language'] = $element['#language'];
   $widget['#weight'] = isset($element['#weight']) ? $element['#weight'] : 0;
-  $widget['#element_validate'] = array('tripal_fields_kvproperty_widget_validate');
+  $widget['#element_validate'] = array('tripal_chado_kvproperty_widget_validate');
   $widget['#cardinality'] = 1;
 
   $widget['value'] = array(
@@ -110,14 +110,14 @@ function tripal_fields_kvproperty_widget(&$widget, $form, $form_state, $field, $
  * @param unknown $form
  * @param unknown $form_state
  */
-function tripal_fields_kvproperty_widget_form_ajax_callback($form, $form_state) {
+function tripal_chado_kvproperty_widget_form_ajax_callback($form, $form_state) {
   $field_name = $form_state['triggering_element']['#parents'][0];
   return $form[$field_name];
 }
 /**
- * Callback function for validating the tripal_fields_kvproperty_widget.
+ * Callback function for validating the tripal_chado_kvproperty_widget.
  */
-function tripal_fields_kvproperty_widget_validate($element, &$form_state) {
+function tripal_chado_kvproperty_widget_validate($element, &$form_state) {
   $field_name = $element['#field_name'];
   $delta = $element['#delta'];
   $entity = $element['#entity'];
@@ -137,21 +137,21 @@ function tripal_fields_kvproperty_widget_validate($element, &$form_state) {
   // If we don't have a property value then we need to set all other fields
   // to be empty so that when the module tries to save the field on the
   // entity it won't try to save a partial record.
-  $pkey_val = tripal_fields_get_field_form_values($field_name, $form_state, $delta);
-  $prop_value = tripal_fields_get_field_form_values($field_name, $form_state, $delta, $table_name . "__value");
-  $fk_val = tripal_fields_get_field_form_values($field_name, $form_state, $delta, $table_name . '__' . $lfkey_field);
-  $type_id = tripal_fields_get_field_form_values($field_name, $form_state, $delta, $table_name . '__type_id');
+  $pkey_val = tripal_chado_get_field_form_values($field_name, $form_state, $delta);
+  $prop_value = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . "__value");
+  $fk_val = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__' . $lfkey_field);
+  $type_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__type_id');
 
   if (!$prop_value) {
-    tripal_fields_set_field_form_values($field_name, $form_state, '', $delta);
-    tripal_fields_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__' . $lfkey_field);
-    tripal_fields_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__value');
-    tripal_fields_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__type_id');
-    tripal_fields_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__rank');
+    tripal_chado_set_field_form_values($field_name, $form_state, '', $delta);
+    tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__' . $lfkey_field);
+    tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__value');
+    tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__type_id');
+    tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__rank');
   }
   else {
-    $rank = tripal_fields_get_field_form_values($field_name, $form_state, $delta, '_weight');
-    tripal_fields_set_field_form_values($field_name, $form_state, $rank, $delta, $table_name . '__rank');
+    $rank = tripal_chado_get_field_form_values($field_name, $form_state, $delta, '_weight');
+    tripal_chado_set_field_form_values($field_name, $form_state, $rank, $delta, $table_name . '__rank');
   }
   // Remove the properties for this record. We will re-add it. Otherwise,
   // if we change ranks, we wind up with multiple records in the property table.
@@ -163,15 +163,15 @@ function tripal_fields_kvproperty_widget_validate($element, &$form_state) {
   }
 }
 /**
- * Callback function for submitting the tripal_fields_kvproperty_widget.
+ * Callback function for submitting the tripal_chado_kvproperty_widget.
  */
-function tripal_fields_kvproperty_widget_submit($element, &$form_state) {
+function tripal_chado_kvproperty_widget_submit($element, &$form_state) {
 }
 
 /**
  * Loads the field values with appropriate data.
  *
- * This function is called by the tripal_fields_field_storage_load() for
+ * This function is called by the tripal_chado_field_storage_load() for
  * each property managed by the field_chado_storage storage type.  This is
  * an optional hook function that is only needed if the field has
  * multiple form elements.
@@ -181,7 +181,7 @@ function tripal_fields_kvproperty_widget_submit($element, &$form_state) {
  * @param $base_table
  * @param $record
  */
-function tripal_fields_kvproperty_field_load($field, $entity, $base_table, $record) {
+function tripal_chado_kvproperty_field_load($field, $entity, $base_table, $record) {
 
   $field_name = $field['field_name'];
   $field_type = $field['type'];

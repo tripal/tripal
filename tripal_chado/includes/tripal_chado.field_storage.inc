@@ -2,7 +2,7 @@
 /**
  * Implements hook_field_storage_info().
  */
-function tripal_fields_field_storage_info() {
+function tripal_chado_field_storage_info() {
   return array(
     'field_chado_storage' => array(
       'label' => t('Chado storage'),
@@ -17,13 +17,13 @@ function tripal_fields_field_storage_info() {
  *
  * @param $query
  */
-function tripal_fields_field_storage_query($query) {
+function tripal_chado_field_storage_query($query) {
   // TODO: figure out what this function does.
 }
 /**
  * Implements hook_field_storage_write().
  */
-function tripal_fields_field_storage_write($entity_type, $entity, $op, $fields) {
+function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
 
   // Get the base table, type field and record_id from the entity.
   $base_table = $entity->chado_table;
@@ -31,10 +31,10 @@ function tripal_fields_field_storage_write($entity_type, $entity, $op, $fields) 
   $record_id  = property_exists($entity, 'chado_record_id') ? $entity->chado_record_id : NULL;
 
   // Convert the fields into a key/value list of fields and their values.
-  $field_vals = tripal_fields_field_storage_unnest_fields($fields, $entity_type, $entity);
+  $field_vals = tripal_chado_field_storage_unnest_fields($fields, $entity_type, $entity);
 
   // Recursively write fields for the base table.
-  $record_id = tripal_fields_field_storage_write_recursive($entity_type, $entity,
+  $record_id = tripal_chado_field_storage_write_recursive($entity_type, $entity,
       $op, $field_vals, $base_table, $base_table, $type_field, $record_id);
 
   // If this is an insert then add the chado_entity record.
@@ -70,7 +70,7 @@ function tripal_fields_field_storage_write($entity_type, $entity, $op, $fields) 
 
         // Iterate through each record.
         foreach ($field_vals[$field_name] as $delta => $fvals) {
-          tripal_fields_field_storage_write_recursive($entity_type, $entity,
+          tripal_chado_field_storage_write_recursive($entity_type, $entity,
               $op, $fvals, $base_table, $field_table);
         }
       }
@@ -92,7 +92,7 @@ function tripal_fields_field_storage_write($entity_type, $entity, $op, $fields) 
  * @return
  *   The record_id of the table if a matching record exists.
  */
-function tripal_fields_field_storage_write_recursive($entity_type, $entity,
+function tripal_chado_field_storage_write_recursive($entity_type, $entity,
    $op, $field_vals, $base_table, $tablename, $type_field = NULL,
    $record_id = NULL, $depth = 0) {
 
@@ -153,7 +153,7 @@ function tripal_fields_field_storage_write_recursive($entity_type, $entity,
 
       // Recurse on the FK field.  Pass in the ID for the FK field if one
       // exists in the $field_vals;
-      $fk_val = tripal_fields_field_storage_write_recursive($entity_type,
+      $fk_val = tripal_chado_field_storage_write_recursive($entity_type,
         $entity, $op, $fk_vals, $base_table, $fk_table, NULL, $fk_val, $depth + 1);
       if (isset($fk_val) and $fk_val != '' and $fk_val != 0) {
         $values[$local_id] = $fk_val;
@@ -232,7 +232,7 @@ function tripal_fields_field_storage_write_recursive($entity_type, $entity,
  * Responsible for loading the fields from the Chado database and adding
  * their values to the entity.
  */
-function tripal_fields_field_storage_load($entity_type, $entities, $age,
+function tripal_chado_field_storage_load($entity_type, $entities, $age,
     $fields, $options) {
 
   $load_current = $age == FIELD_LOAD_CURRENT;
@@ -332,7 +332,7 @@ function tripal_fields_field_storage_load($entity_type, $entities, $age,
  *
  * @param $fields
  */
-function tripal_fields_field_storage_unnest_fields($fields, $entity_type, $entity) {
+function tripal_chado_field_storage_unnest_fields($fields, $entity_type, $entity) {
   $new_fields = array();
 
   // Iterate through all of the fields.

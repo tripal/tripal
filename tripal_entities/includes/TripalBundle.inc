@@ -8,4 +8,5 @@ class TripalBundle extends Entity {
     parent::__construct($values, $entity_type);
 
   }
+
 }

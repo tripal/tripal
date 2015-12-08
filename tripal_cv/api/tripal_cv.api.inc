@@ -174,7 +174,7 @@ function tripal_get_cvterm($identifiers, $options = array()) {
   // Set Defaults
   if (!isset($options['include_fk'])) {
     // Tells chado_generate_var to only get the cv
-    $options['include_fk'] = array('cv_id' => TRUE);
+    //$options['include_fk'] = array('cv_id' => TRUE);
   }
 
   // Error Checking of parameters
@@ -236,6 +236,7 @@ function tripal_get_cvterm($identifiers, $options = array()) {
   else {
     // Try to get the cvterm
     $cvterm = chado_generate_var('cvterm', $identifiers, $options);
+    $cvterm = chado_expand_var($cvterm, 'field', 'cvterm.definition');
   }
 
   // Ensure the cvterm is singular. If it's an array then it is not singular

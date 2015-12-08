@@ -10,7 +10,7 @@
  * @param unknown $items
  * @param unknown $display
  */
-function tripal_fields_dbxref_id_formatter(&$element, $entity_type, $entity, $field,
+function tripal_chado_dbxref_id_formatter(&$element, $entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
 
   foreach ($items as $delta => $item) {
@@ -41,7 +41,7 @@ function tripal_fields_dbxref_id_formatter(&$element, $entity_type, $entity, $fi
  * @param unknown $delta
  * @param unknown $element
  */
-function tripal_fields_dbxref_id_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function tripal_chado_dbxref_id_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
   $field_name = $field['field_name'];
 
   // Get the field defaults.
@@ -63,11 +63,11 @@ function tripal_fields_dbxref_id_widget(&$widget, $form, $form_state, $field, $i
 
   // Check $form_state['values'] to see if an AJAX call set the values.
   if (array_key_exists('values', $form_state)) {
-    $dbxref_id = tripal_fields_get_field_form_values($field_name, $form_state, 0, $field_name);
-    $db_id = tripal_fields_get_field_form_values($field_name, $form_state, 0, "dbxref__db_id");
-    $accession = tripal_fields_get_field_form_values($field_name, $form_state, 0, "dbxref__accession");
-    $version = tripal_fields_get_field_form_values($field_name, $form_state, 0, "dbxref__version");
-    $description = tripal_fields_get_field_form_values($field_name, $form_state, 0, "dbxref__description");
+    $dbxref_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_name);
+    $db_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, "dbxref__db_id");
+    $accession = tripal_chado_get_field_form_values($field_name, $form_state, 0, "dbxref__accession");
+    $version = tripal_chado_get_field_form_values($field_name, $form_state, 0, "dbxref__version");
+    $description = tripal_chado_get_field_form_values($field_name, $form_state, 0, "dbxref__description");
   }
 
   // If we are here because our parent was triggered in a form submit
@@ -85,8 +85,8 @@ function tripal_fields_dbxref_id_widget(&$widget, $form, $form_state, $field, $i
   $schema = chado_get_schema('dbxref');
   $options = tripal_get_db_select_options();
 
-  $widget['#element_validate'] = array('tripal_fields_dbxref_id_widget_validate');
-  $widget['#theme'] = 'tripal_fields_dbxref_id_widget';
+  $widget['#element_validate'] = array('tripal_chado_dbxref_id_widget_validate');
+  $widget['#theme'] = 'tripal_chado_dbxref_id_widget';
   $widget['#prefix'] =  "<span id='$field_name-dbxref--db-id'>";
   $widget['#suffix'] =  "</span>";
 
@@ -95,7 +95,7 @@ function tripal_fields_dbxref_id_widget(&$widget, $form, $form_state, $field, $i
     '#title' => $element['#title'],
     '#description' =>  $element['#description'],
     '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-    '#theme' => 'tripal_fields_dbxref_id_widget',
+    '#theme' => 'tripal_chado_dbxref_id_widget',
     '#collapsible' => TRUE,
     '#collapsed' => $collapsed,
   );
@@ -112,7 +112,7 @@ function tripal_fields_dbxref_id_widget(&$widget, $form, $form_state, $field, $i
     '#required' => $element['#required'],
     '#default_value' => $db_id,
     '#ajax' => array(
-      'callback' => "tripal_fields_dbxref_id_widget_form_ajax_callback",
+      'callback' => "tripal_chado_dbxref_id_widget_form_ajax_callback",
       'wrapper' => "$field_name-dbxref--db-id",
       'effect' => 'fade',
       'method' => 'replace'
@@ -127,7 +127,7 @@ function tripal_fields_dbxref_id_widget(&$widget, $form, $form_state, $field, $i
     '#size' => 15,
     '#autocomplete_path' => "admin/tripal/chado/tripal_db/dbxref/auto_name/$db_id",
     '#ajax' => array(
-      'callback' => "tripal_fields_dbxref_id_widget_form_ajax_callback",
+      'callback' => "tripal_chado_dbxref_id_widget_form_ajax_callback",
       'wrapper' => "$field_name-dbxref--db-id",
       'effect' => 'fade',
       'method' => 'replace'
@@ -152,12 +152,12 @@ function tripal_fields_dbxref_id_widget(&$widget, $form, $form_state, $field, $i
   );
 }
 /**
- * An Ajax callback for the tripal_fields_admin_publish_form..
+ * An Ajax callback for the tripal_chado_admin_publish_form..
  */
-function tripal_fields_dbxref_id_widget_form_ajax_callback($form, $form_state) {
+function tripal_chado_dbxref_id_widget_form_ajax_callback($form, $form_state) {
   $field_name = $form_state['triggering_element']['#parents'][0];
-  $db_id = tripal_fields_get_field_form_values($field_name, $form_state, 0, 'dbxref__db_id');
-  $accession = tripal_fields_get_field_form_values($field_name, $form_state, 0, 'dbxref__accession');
+  $db_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, 'dbxref__db_id');
+  $accession = tripal_chado_get_field_form_values($field_name, $form_state, 0, 'dbxref__accession');
   if ($db_id and $accession) {
     $values = array(
       'db_id' => $db_id,
@@ -174,9 +174,9 @@ function tripal_fields_dbxref_id_widget_form_ajax_callback($form, $form_state) {
 }
 
 /**
- * Callback function for validating the tripal_fields_organism_select_widget.
+ * Callback function for validating the tripal_chado_organism_select_widget.
  */
-function tripal_fields_dbxref_id_widget_validate($element, &$form_state) {
+function tripal_chado_dbxref_id_widget_validate($element, &$form_state) {
   $field_name = $element['#parents'][0];
 
   // If the form ID is field_ui_field_edit_form, then the user is editing the
@@ -187,11 +187,11 @@ function tripal_fields_dbxref_id_widget_validate($element, &$form_state) {
   }
 
   // Get the field values.
-  $dbxref_id = tripal_fields_get_field_form_values($field_name, $form_state, 0, $field_name);
-  $db_id = tripal_fields_get_field_form_values($field_name, $form_state, 0, "dbxref__db_id");
-  $accession = tripal_fields_get_field_form_values($field_name, $form_state, 0, "dbxref__accession");
-  $version = tripal_fields_get_field_form_values($field_name, $form_state, 0, "dbxref__version");
-  $description = tripal_fields_get_field_form_values($field_name, $form_state, 0, "dbxref__description");
+  $dbxref_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_name);
+  $db_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, "dbxref__db_id");
+  $accession = tripal_chado_get_field_form_values($field_name, $form_state, 0, "dbxref__accession");
+  $version = tripal_chado_get_field_form_values($field_name, $form_state, 0, "dbxref__version");
+  $description = tripal_chado_get_field_form_values($field_name, $form_state, 0, "dbxref__description");
 
   // Make sure that if a database ID is provided that an accession is also
   // provided.  Here we use the form_set_error function rather than the
@@ -213,7 +213,7 @@ function tripal_fields_dbxref_id_widget_validate($element, &$form_state) {
   // If user did not select a database, we want to remove dbxref_id from the
   // field.
   if (!$db_id) {
-    tripal_fields_set_field_form_values($field_name, $form_state, '__NULL__');
+    tripal_chado_set_field_form_values($field_name, $form_state, '__NULL__');
   }
   // If the dbxref_id does not match the db_id + accession then the user
   // has selected a new dbxref record and we need to update the hidden
@@ -221,7 +221,7 @@ function tripal_fields_dbxref_id_widget_validate($element, &$form_state) {
   if ($db_id and $accession) {
     $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id, 'accession' => $accession));
     if ($dbxref and $dbxref->dbxref_id != $dbxref_id) {
-      tripal_fields_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id);
+      tripal_chado_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id);
     }
   }
 }
@@ -230,7 +230,7 @@ function tripal_fields_dbxref_id_widget_validate($element, &$form_state) {
  *
  * @param $variables
  */
-function theme_tripal_fields_dbxref_id_widget($variables) {
+function theme_tripal_chado_dbxref_id_widget($variables) {
   $element = $variables['element'];
 
   $layout = "
@@ -271,7 +271,7 @@ function theme_tripal_fields_dbxref_id_widget($variables) {
 /**
  * Loads the field values with appropriate data.
  *
- * This function is called by the tripal_fields_field_storage_load() for
+ * This function is called by the tripal_chado_field_storage_load() for
  * each property managed by the field_chado_storage storage type.  This is
  * an optional hook function that is only needed if the field has
  * multiple form elements.
@@ -281,7 +281,7 @@ function theme_tripal_fields_dbxref_id_widget($variables) {
  * @param $base_table
  * @param $record
  */
-function tripal_fields_dbxref_id_field_load($field, $entity, $base_table, $record) {
+function tripal_chado_dbxref_id_field_load($field, $entity, $base_table, $record) {
 
   $field_name = $field['field_name'];
   $field_type = $field['type'];

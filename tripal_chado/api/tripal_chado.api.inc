@@ -9,9 +9,9 @@
  *   An associative array containing the field information.  The following
  *   key/value pairs are supported:
  *     'field_type' : a valid field type.  May be any of the Drupal default
- *       fields, one created by the tripal_fields module or another custom module.
+ *       fields, one created by the tripal_chado module or another custom module.
  *     'widget_type' : a valid widget type. May be any of the Drupal default
- *       fields, one created by the tripal_fields module or another custom module.
+ *       fields, one created by the tripal_chado module or another custom module.
  *     'field_settings' : an array of settings that are appropriate for the
  *       selected field type.
  *     'widget_settings' : an array of settings that are appropriate for the

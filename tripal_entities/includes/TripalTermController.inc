@@ -1,52 +1,17 @@
 <?php
 /**
- * TripalEntityController extends DrupalDefaultEntityController.
+ * TripalTermController extends DrupalDefaultEntityController.
  *
  * Our subclass of DrupalDefaultEntityController lets us add a few
  * important create, update, and delete methods.
  */
-class TripalEntityController extends EntityAPIController {
+class TripalTermController extends EntityAPIController {
 
   public function __construct($entityType) {
     parent::__construct($entityType);
   }
 
-  /**
-   * Create a Tripal data entity
-   *
-   * We first set up the values that are specific
-   * to our data schema but then also go through the EntityAPIController
-   * function.
-   *
-   * @param $type
-   *   The machine-readable type of the entity.
-   *
-   * @return
-   *   An object with all default fields initialized.
-   */
   public function create(array $values = array()) {
-    // Add some items to the values array passed to the constructor
-    global $user;
-    $values['uid'] = $user->uid;
-    $values['created'] = time();
-    $values['changed'] = time();
-    $values['title'] = '';
-
-    // The incoming values should have at a minimum the bundle_id;
-    $bundle = $values['bundle'];
-    $matches = array();
-    if (preg_match('/bio-data_(.*)/', $bundle, $matches)) {
-      $cvterm_id = $matches[1];
-      $values['type'] = 'TripalEntity';
-
-      // Get the CVterm.
-      $match = array('cvterm_id' => $cvterm_id);
-      $cvterm = tripal_get_cvterm($match);
-      if ($cvterm) {
-        $values['cvterm_id'] = $cvterm->cvterm_id;
-      }
-    }
-
     return parent::create($values);
   }
 
@@ -60,10 +25,10 @@ class TripalEntityController extends EntityAPIController {
     try {
       // Invoke hook_entity_delete().
       module_invoke_all('entity_delete', $entity, $entity->type);
-      field_attach_delete('TripalEntity', $entity);
+      field_attach_delete('TripalTerm', $entity);
 
-      db_delete('tripal_entity')
-        ->condition('id', $entity->id)
+      db_delete('tripal_term')
+        ->condition('term_id', $entity->term_id)
         ->execute();
     }
     catch (Exception $e) {
@@ -73,21 +38,6 @@ class TripalEntityController extends EntityAPIController {
       return FALSE;
     }
     return TRUE;
-  }
-
-  /**
-   * Sets the title for an entity.
-   *
-   * @param $entity
-   * @param $title
-   */
-  public function setTitle($entity, $title) {
-    db_update('tripal_entity')
-      ->fields(array(
-        'title' => $title
-      ))
-      ->condition('id', $entity->id)
-      ->execute();
   }
 
   /**
@@ -115,18 +65,15 @@ class TripalEntityController extends EntityAPIController {
 
       // Write out the entity record.
       $record = array(
-        'cvterm_id' => $entity->cvterm_id,
-        'type'      => $entity->type,
-        'bundle'    => $entity->bundle,
-        'title'     => $entity->title,
-        'uid'       => $user->uid,
-        'created'   => $entity->created,
-        'changed'   => time(),
+        'vocab_id' => $entity->vocab_id,
+        'term_id' => $entity->term_id,
+        'created' => $entity->created,
+        'changed' => time(),
       );
       if ($invocation == 'entity_update') {
         $record['id'] = $entity->id;
       }
-      $success = drupal_write_record('tripal_entity', $record, $pkeys);
+      $success = drupal_write_record('tripal_term', $record, $pkeys);
       if ($success == SAVED_NEW) {
         $entity->id = $record['id'];
       }
@@ -136,10 +83,10 @@ class TripalEntityController extends EntityAPIController {
       // to determine whether to update or insert, and which hook we
       // need to invoke.
       if ($invocation == 'entity_insert') {
-        field_attach_insert('TripalEntity', $entity);
+        field_attach_insert('TripalTerm', $entity);
       }
       else {
-        field_attach_update('TripalEntity', $entity);
+        field_attach_update('TripalTerm', $entity);
       }
 
       // Invoke either hook_entity_update() or hook_entity_insert().
@@ -150,7 +97,7 @@ class TripalEntityController extends EntityAPIController {
     }
     catch (Exception $e) {
       $transaction->rollback();
-      watchdog_exception('tripal_core', $e);
+      watchdog_exception('tripal_entity', $e);
       drupal_set_message("Could not save the entity:" . $e->getMessage(), "error");
       return FALSE;
     }

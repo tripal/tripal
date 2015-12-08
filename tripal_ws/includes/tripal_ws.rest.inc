@@ -17,6 +17,7 @@ function tripal_ws_rest() {
   // Lump everything ito a try block so that if there is a problem we can
   // throw an error and have that returned in the response.
   try {
+
     // Get the list of published terms (these are the bundle IDs)
     $bundles = db_select('tripal_bundle', 'tb')
       ->fields('tb')
@@ -29,7 +30,7 @@ function tripal_ws_rest() {
         $terms[$cvterm->name] = $cvterm;
       }
     }
-    ksort($terms);
+    ksort($terms, SORT_STRING|SORT_FLAG_CASE);
     $result['content_types'] = array();
     foreach ($terms as $name => $cvterm) {
       $result['content_types'][$name] = array(

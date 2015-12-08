@@ -10,7 +10,7 @@
  * @param unknown $items
  * @param unknown $display
  */
-function tripal_fields_md5checksum_checkbox_formatter(&$element, $entity_type, $entity, $field,
+function tripal_chado_md5checksum_checkbox_formatter(&$element, $entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
   foreach ($items as $delta => $item) {
     $content = key_exists('value', $item) ? $item['value'] : '';
@@ -34,7 +34,7 @@ function tripal_fields_md5checksum_checkbox_formatter(&$element, $entity_type, $
  * @param unknown $delta
  * @param unknown $element
  */
-function tripal_fields_md5checksum_checkbox_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function tripal_chado_md5checksum_checkbox_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
   $widget['value'] = array(
     '#type' => 'checkbox',
@@ -44,39 +44,39 @@ function tripal_fields_md5checksum_checkbox_widget(&$widget, $form, $form_state,
     '#default_value' => 1,
     '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
     '#delta' => $delta,
-    '#element_validate' => array('tripal_fields_md5checksum_checkbox_widget_validate'),
+    '#element_validate' => array('tripal_chado_md5checksum_checkbox_widget_validate'),
   );
 }
 /**
- * Callback function for validating the tripal_fields_md5checksum_checkbox_widget.
+ * Callback function for validating the tripal_chado_md5checksum_checkbox_widget.
  */
-function tripal_fields_md5checksum_checkbox_widget_validate($element, &$form_state) {
+function tripal_chado_md5checksum_checkbox_widget_validate($element, &$form_state) {
   $field_name = $element['#parents'][0];
 
   // Calculate the md5 checksum for the sequence only if md5 box is checked and
   // the residues exist.
-  $residues = tripal_fields_get_field_form_values('feature__residues', $form_state);
+  $residues = tripal_chado_get_field_form_values('feature__residues', $form_state);
   if ($residues) {
     $residues = preg_replace('/\s/', '', $residues);
-    tripal_fields_set_field_form_values($field_name, $form_state, md5($residues));
+    tripal_chado_set_field_form_values($field_name, $form_state, md5($residues));
   }
   else {
     // Otherwise, remove the md5 value
-    tripal_fields_set_field_form_values($field_name, $form_state, '__NULL__');
+    tripal_chado_set_field_form_values($field_name, $form_state, '__NULL__');
   }
 }
 
 /**
  * Loads the field values with appropriate data.
  *
- * This function is called by the tripal_fields_field_storage_load() for
+ * This function is called by the tripal_chado_field_storage_load() for
  * each property managed by the field_chado_storage storage type.
  *
  * @param $field
  * @param $entity
  * @param $record
  */
-function tripal_fields_md5checksum_field_load($field, $entity, $record) {
+function tripal_chado_md5checksum_field_load($field, $entity, $record) {
   $field_name = $field['field_name'];
   if ($record and property_exists($record, 'md5checksum')) {
     $entity->{$field_name}['und'][] = array('value' => $record->md5checksum);

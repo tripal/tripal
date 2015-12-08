@@ -10,12 +10,11 @@
  * @param unknown $items
  * @param unknown $display
  */
-function tripal_fields_residues_textarea_formatter(&$element, $entity_type, $entity, $field,
-  $instance, $langcode, $items, $display) {
+function tripal_chado_seqlen_hidden_formatter(&$element, $entity_type, $entity, $field,
+    $instance, $langcode, $items, $display) {
 
   foreach ($items as $delta => $item) {
-    $residues = key_exists('value', $item) ? $item['value'] : '';
-    $content = '<pre class="residues-formatter">' . $residues . '</pre>';
+    $content = key_exists('value', $item) ? $item['value'] : '';
     $element[$delta] = array(
       // We create a render array to produce the desired markup,
       '#type' => 'markup',
@@ -37,28 +36,33 @@ function tripal_fields_residues_textarea_formatter(&$element, $entity_type, $ent
  * @param unknown $delta
  * @param unknown $element
  */
-function tripal_fields_residues_textarea_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function tripal_chado_seqlen_hidden_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
-  $widget['value'] = array(
-    '#type' => 'textarea',
+  $widget['value'] =  array(
+    '#type' => 'hidden',
     '#title' => $element['#title'],
     '#description' => $element['#description'],
     '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-    '#default_value' => count($items) > 0 ? $items[0]['value'] : '',
     '#delta' => $delta,
-    '#element_validate' => array('tripal_fields_residues_textarea_widget_validate'),
+    '#element_validate' => array('tripal_chado_seqlen_hidden_widget_validate'),
   );
 }
 /**
- * Callback function for validating the tripal_fields_residues_textarea_widget.
+ * Callback function for validating the tripal_chado_seqlen_hidden_widget.
  */
-function tripal_fields_residues_textarea_widget_validate($element, &$form_state) {
+function tripal_chado_seqlen_hidden_widget_validate($element, &$form_state) {
   $field_name = $element['#parents'][0];
 
+  // Get the residues so we can calculate teh length.
+  $residues = tripal_chado_get_field_form_values('feature__residues', $form_state);
+
   // Remove any white spaces.
-  $residues = tripal_fields_get_field_form_values($field_name, $form_state);
   if ($residues) {
     $residues = preg_replace('/\s/', '', $residues);
-    tripal_fields_set_field_form_values($field_name, $form_state, $residues);
+    tripal_chado_set_field_form_values($field_name, $form_state, strlen($residues));
+  }
+  else {
+    // Otherwise, remove the md5 value
+    tripal_chado_set_field_form_values($field_name, $form_state, '__NULL__');
   }
 }

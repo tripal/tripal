@@ -52,7 +52,7 @@ function tripal_entities_content_overview_form($form, &$form_state) {
   while ($entity = $entities->fetchObject()) {
 
     // Retrieve details about the term this entity is based on.
-    $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $entity->cvterm_id));
+    $cvterm = tripal_get_cvterm(array('cvterm_id' => $entity->cvterm_id));
 
     // Retrieve details about the user who created this data.
     $author = user_load($entity->uid);
@@ -140,8 +140,7 @@ function tripal_entities_admin_add_type_form($form, &$form_state) {
       );
     }
 
-    $terms = chado_generate_var('cvterm', $match, array('return_array' => TRUE));
-    $terms = chado_expand_var($terms, 'field', 'cvterm.definition');
+    $terms = tripal_get_cvterm($match, array('return_array' => TRUE));
     $num_terms = count($terms);
   }
 
@@ -225,7 +224,7 @@ function tripal_entities_admin_add_type_form_validate($form, &$form_state) {
         'cv_id' => $cv_id,
       );
     }
-    $terms = chado_generate_var('cvterm', $match, array('return_array' => TRUE));
+    $terms = tripal_get_cvterm($match, array('return_array' => TRUE));
     $form_state['storage']['terms'] = $terms;
 
     // If we do not have any terms then the term provided by the user does not
@@ -273,194 +272,4 @@ function tripal_entities_admin_add_type_form_submit($form, &$form_state) {
   }
 }
 
-/**
- * Implements hook_add_bundle_fields().
- *
- * @param $entity_type_name
- * @param $bundle_id
- * @param $cvterm
- */
-function tripal_entities_add_bundle_fields($entity_type_name, $bundle_id, $cvterm) {
-  // Adds the fields for the base table to the entity.
-  tripal_entities_add_bundle_base_fields($entity_type_name, $bundle_id, $cvterm);
 
-  // Check to see if there are any kv-property tables associated to this
-  // base table. If so, add the fields for that type of table.
-  tripal_entities_add_bundle_kvproperty_adder_field($entity_type_name, $bundle_id, 'featureprop');
-}
-
-/**
- * Adds the fields for a kv-property table fields
- *
- * @param $entity_type_name
- * @param $bundle_id
- * @param $kv_table
- */
-function tripal_entities_add_bundle_kvproperty_adder_field($entity_type_name, $bundle_id, $kv_table) {
-  // First add a generic property field so that users can add new proeprty types.
-  $field_name = $kv_table;
-
-  // Initialize the field array.
-  $field_info = array(
-    'field_type' => 'kvproperty_adder',
-    'widget_type' => 'tripal_fields_kvproperty_adder_widget',
-    'field_settings' => array(),
-    'widget_settings' => array('display_label' => 1),
-    'description' => '',
-    'label' => 'Additional Properties',
-    'is_required' => 0,
-  );
-  tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_id);
-}
-
-/**
- * Adds the fields for the base table to the entity.
- */
-function tripal_entities_add_bundle_base_fields($entity_type_name, $bundle_id, $cvterm) {
-
-  // Get the details for this bundle
-  $bundle = db_select('tripal_bundle', 't')
-    ->fields('t')
-    ->condition('type', 'TripalEntity')
-    ->condition('bundle', $bundle_id)
-    ->execute()
-    ->fetchObject();
-  $bundle_data = unserialize($bundle->data);
-
-  $table_name = $bundle_data['data_table'];
-  $type_table = $bundle_data['type_table'];
-  $type_field = $bundle_data['field'];
-
-  // Iterate through the columns of the table and see if fields have been
-  // created for each one. If not, then create them.
-  $schema = chado_get_schema($table_name);
-  $columns = $schema['fields'];
-  foreach ($columns as $column_name => $details) {
-    $field_name = $table_name . '__' . $column_name;
-
-    // Skip the primary key field.
-    if ($column_name == $schema['primary key'][0]) {
-      continue;
-    }
-
-    // Skip the type field.
-    if ($table_name == $type_table and $column_name == $type_field) {
-      continue;
-    }
-
-    // Get the field defaults for this column.
-    $field_info = tripal_entities_get_table_column_field_default($table_name, $schema, $column_name);
-
-
-    // Determine if the field is required.
-    if (array_key_exists('not null', $details) and $details['not null'] === TRUE) {
-      $field_info['is_required'] = array_key_exists('default', $details) ? 0 : 1;
-    }
-
-    // If we don't have a field type then we don't need to create a field.
-    if (!$field_info['field_type']) {
-      // If we don't have a field type but it is required and doesn't have
-      // a default value then we are in trouble.
-      if ($field_info['is_required'] and !array_key_exists('default', $details)) {
-        throw new Exception(t('The %table.%field type, %type, is not yet supported for Entity fields, but it is required,',
-            array('%table' => $table_name, '%field' => $column_name, '%type' => $details['type'])));
-      }
-      continue;
-    }
-
-    // If this field is a foreign key field then we will have a special custom
-    // field provided by Tripal.
-    $is_fk = FALSE;
-    if (array_key_exists('foreign keys', $schema)) {
-      foreach ($schema['foreign keys'] as $remote_table => $fk_details) {
-        if (array_key_exists($column_name, $fk_details['columns'])) {
-          $is_fk = TRUE;
-        }
-      }
-    }
-
-    // Add the field to the bundle.
-    tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_id);
-  }
-}
-
-/**
- * Returns a $field_info array for a field based on a database column.
- *
- */
-function tripal_entities_get_table_column_field_default($table_name, $schema, $column_name) {
-  $details = $schema['fields'][$column_name];
-
-  // Create an array with information about this field.
-  $field_info = array(
-    'field_type' => '',
-    'widget_type' => '',
-    'field_settings' => array(
-      'chado_table' => $table_name,
-      'chado_column' => $column_name,
-    ),
-    'widget_settings' => array('display_label' => 1),
-    'description' => '',
-    'label' => ucwords(preg_replace('/_/', ' ', $column_name)),
-    'is_required' => 0,
-  );
-
-  // Alter the field info array depending on the column details.
-  switch($details['type']) {
-    case 'char':
-      $field_info['field_type'] = 'text';
-      $field_info['widget_type'] = 'text_textfield';
-      $field_info['field_settings']['max_length'] = $details['length'];
-      break;
-    case 'varchar':
-      $field_info['field_type'] = 'text';
-      $field_info['widget_type'] = 'text_textfield';
-      $field_info['field_settings']['max_length'] = $details['length'];
-      break;
-    case 'text':
-      $field_info['field_type'] = 'text';
-      $field_info['widget_type'] = 'text_textarea';
-      $field_info['field_settings']['max_length'] = 17179869184;
-      break;
-    case 'blob':
-      // not sure how to support a blob field.
-      continue;
-      break;
-    case 'int':
-      $field_info['field_type'] = 'number_integer';
-      $field_info['widget_type'] = 'number';
-      break;
-    case 'float':
-      $field_info['field_type'] = 'number_float';
-      $field_info['widget_type'] = 'number';
-      $field_info['field_settings']['precision'] = 10;
-      $field_info['field_settings']['scale'] = 2;
-      $field_info['field_settings']['decimal_separator'] = '.';
-      break;
-    case 'numeric':
-      $field_info['field_type'] = 'number_decimal';
-      $field_info['widget_type'] = 'number';
-      break;
-    case 'serial':
-      // Serial fields are most likely not needed as a field.
-      break;
-    case 'boolean':
-      $field_info['field_type'] = 'list_boolean';
-      $field_info['widget_type'] = 'options_onoff';
-      $field_info['field_settings']['allowed_values'] = array(0 => "No", 1 => "Yes");
-      break;
-    case 'datetime':
-      // Use the Drupal Date and Date API to create the field/widget
-      $field_info['field_type'] = 'datetime';
-      $field_info['widget_type'] = 'date_select';
-      $field_info['widget_settings']['increment'] = 1;
-      $field_info['widget_settings']['tz_handling'] = 'none';
-      $field_info['widget_settings']['collapsible'] = TRUE;
-
-      // TODO: Add settings so that the minutes increment by 1.
-      // And turn off the timezone, as the Chado field doesn't support it.
-      break;
-  }
-
-  return $field_info;
-}

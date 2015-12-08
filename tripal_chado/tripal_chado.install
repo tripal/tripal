@@ -1,0 +1,152 @@
+<?php
+
+function tripal_chado_install() {
+  // Unfortunately, some Chado base tables do not have a type_id, so we must
+  // take special action for those tables.  These include: organism and
+  // analysis. Until we can find an appropriate controlled vocabulary
+  // that is well supported by the community with types for these tables we
+  // will have to use in-house terms.
+
+  // Add a term to be used for an inherent 'type_id' for the organism table.
+  tripal_insert_cvterm(array(
+    'id' => 'local:organism',
+    'name' => 'organism',
+    'definition' => 'An individual form of life, such as a bacterium, protist, ' .
+    'fungus, plant, or animal, composed of a single cell or a complex of cells  ' .
+    'in which organelles or organs work together to carry out the various  ' .
+    'processes of life. (American Heritage® Dictionary of the English ' .
+    'Language, Fifth Edition. Copyright © 2011 by Houghton Mifflin ' .
+    'Harcourt Publishing Company).',
+    'cv_name' => 'local',
+  ));
+
+  // Add a term to be used for an inherent 'type_id' for the organism table.
+  tripal_insert_cvterm(array(
+    'id' => 'local:analysis',
+    'name' => 'analysis',
+    'definition' => 'A process as a method of studying the nature of something ' .
+    'or of determining its essential features and their relations. ' .
+    '(Random House Kernerman Webster\'s College Dictionary, © 2010 K ' .
+    'Dictionaries Ltd).',
+    'cv_name' => 'local',
+  ));
+
+  tripal_insert_cvterm(array(
+    'id' => 'local:project',
+    'name' => 'project',
+    'definition' => 'A plan or proposal for accomplishing something. ' .
+    '(American Heritage® Dictionary of the English Language, Fifth Edition. ' .
+    'Copyright © 2011 by Houghton Mifflin Harcourt Publishing Company).',
+    'cv_name' => 'local',
+  ));
+
+  // We want to provide a set of commonly used entity types by default. This
+  // way when a user first installs Tripal there are some commonly used
+  // formats.
+  module_load_include('inc', 'tripal_entities', 'api/tripal_entities.api');
+  module_load_include('inc', 'tripal_entities', 'includes/tripal_entities.admin');
+
+  // Create the 'Organism' entity type. This uses the local:organism term.
+  $error = '';
+  $term = array('name' => 'organism', 'cv_id' => array('name' => 'local'));
+  $cvterm = chado_generate_var('cvterm', $term);
+  if (!tripal_create_entity_type($cvterm, $error)) {
+    throw new Exception($error);
+  }
+
+  // Create the 'Analysis' entity type. This uses the local:analysis term.
+  $error = '';
+  $term = array('name' => 'analysis', 'cv_id' => array('name' => 'local'));
+  $cvterm = chado_generate_var('cvterm', $term);
+  if (!tripal_create_entity_type($cvterm, $error)) {
+    throw new Exception($error);
+  }
+
+  // Create the 'Project' entity type. This uses the local:project term.
+  $error = '';
+  $term = array('name' => 'project', 'cv_id' => array('name' => 'local'));
+  $cvterm = chado_generate_var('cvterm', $term);
+  if (!tripal_create_entity_type($cvterm, $error)) {
+    throw new Exception($error);
+  }
+}
+
+
+/**
+ * Implements hook_schema().
+ */
+function tripal_chado_schema() {
+
+  // Links TripalEntity entities to the chado record.
+  $schema['chado_entity'] = tripal_chado_chado_entity_schema();
+
+  return $schema;
+}
+
+/**
+ * @section
+ * Schema Definitions.
+ */
+
+
+/**
+ * Links Biological Data Entities to the chado "base" table the data is stored in.
+ * This is where we would specify that a particular gene maps to the record in the
+ * chado.feature table with a feature_id=2432;
+ */
+function tripal_chado_chado_entity_schema() {
+
+  $schema = array(
+    'description' => 'The linker table that associates an enitity from the public.tripal_entity table with a "base" record in Chado',
+    'fields' => array(
+      'chado_entity_id' => array(
+        'description' => 'The primary identifier for this table.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'entity_id' => array(
+        'description' => 'The unique entity id.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'record_id' => array(
+        'description' => 'The unique numerical identifier for the record that this entity is associated with (e.g. feature_id, stock_id, library_id, etc.).',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'data_table' => array(
+        'description' => 'Indicates the table in Chado that this term services (e.g. feature, stock, library, etc.)',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'type_table' => array(
+        'description' => 'Sometimes the record in the data table doesn’t have a field that specifies  the record type.  For example, an analysis type is stored in the analysisprop table.  If the data_table does have a type field then this value will be the same as the data_table.',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'field' => array(
+        'description' => 'The name of the field in the typetable that contains the cvterm record.',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => FALSE,
+        'default' => ''
+      ),
+    ),
+    'indexes' => array(
+      'record_id' => array('record_id'),
+      'entity_id' => array('entity_id'),
+      'data_table' => array('data_table'),
+    ),
+    'unique keys' => array(
+      'record' => array('data_table', 'record_id'),
+      'entity_id' => array('entity_id'),
+    ),
+    'primary key' => array('chado_entity_id'),
+  );
+  return $schema;
+}

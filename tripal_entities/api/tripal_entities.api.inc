@@ -1,62 +1,11 @@
 <?php
 
-/**
- * TODO: The code for creating the title needs to be updated to not
- * use nodes but rather entities.
- *
- * @param unknown $node
- * @return mixed
- */
-function chado_get_entity_title($entity) {
-
-  // Get the base table for the entity
-  $details = db_select('chado_entity', 'ce')
-    ->fields('ce')
-    ->condition('entity_id', $entity->id)
-    ->execute()
-    ->fetchObject();
-
-  $tablename = $details->data_table;
-  $type_field = $details->field;
-  $schema = chado_get_schema($tablename);
-  $pkey_field = $schema['primary key'][0];
-  $record_id = $details->record_id;
-
-  $record = chado_generate_var($tablename, array($pkey_field => $record_id));
-
-  // TODO: fix this so it's native for entities and doesn't expect nodes.
-  // Fake a node
-  $node = new stdClass();
-  $node->$tablename = $record;
-
-  // Get the tokens and format
-  $tokens = array(); // this will be set by chado_node_get_title_format
-  $title = chado_node_get_title_format('chado_' . $tablename, $tokens);
-
-  // Determine which tokens were used in the format string
-  if (preg_match_all('/\[[^]]+\]/', $title, $used_tokens)) {
-
-    // Get the value for each token used
-    foreach ($used_tokens[0] as $token) {
-      $token_info = $tokens[$token];
-      if (!empty($token_info)) {
-        $value = chado_get_token_value($token_info, $node);
-        $title = str_replace($token, $value, $title);
-      }
-    }
-  }
-  else {
-    return $title;
-  }
-
-  return $title;
-}
 
 /**
  * Creates a new Tripal Entity type (i.e. bundle).
  *
  * @param $cvterm
- *  A cvterm object created using the chado_generate_var() function.
+ *  A cvterm object created using the tripal_get_cvterm() function.
  * @param $error
  *  A string, passed by reference, that is filled with the error message
  *  if the function fails.
@@ -66,70 +15,7 @@ function chado_get_entity_title($entity) {
  */
 function tripal_create_entity_type($cvterm, &$error = '') {
 
-  // Create the bundle name and entity type name.  The bundle name is the
-  // cvterm ID.  This isn't very human readable, but the alternative is to
-  // use the accession which may not always be alpha-numeric.
   $bundle_id = 'bio-data_' . $cvterm->cvterm_id;
-
-  // The organism table does not have a type_id so we won't ever find
-  // a record for it in the tripal_cv_defaults table.
-  $bundle_data = array();
-  if ($cvterm->name == 'organism') {
-    $bundle_data = array(
-      'cv_id' => $cvterm->cv_id->cv_id,
-      'cvterm_id' => $cvterm->cvterm_id,
-      'data_table' => 'organism',
-      'type_table' => 'organism',
-      'field' =>  '',
-    );
-  }
-  // The analysis table does not have a type_id so we won't ever find
-  // a record for it in the tripalcv_defaults table.
-  else if ($cvterm->name == 'analysis') {
-    $bundle_data = array(
-      'cv_id' => $cvterm->cv_id->cv_id,
-      'cvterm_id' => $cvterm->cvterm_id,
-      'data_table' => 'analysis',
-      'type_table' => 'analysis',
-      'field' =>  '',
-    );
-  }
-  else if ($cvterm->name == 'project') {
-    $bundle_data = array(
-      'cv_id' => $cvterm->cv_id->cv_id,
-      'cvterm_id' => $cvterm->cvterm_id,
-      'data_table' => 'project',
-      'type_table' => 'project',
-      'field' =>  '',
-    );
-  }
-  else {
-    // TODO: WHAT TO DO IF A VOCABULARY IS USED AS A DEFAULT FOR MULTIPLE
-    // TABLES.
-    // Look to see if this vocabulary is used as a default for any table.
-    $default = db_select('tripal_cv_defaults', 't')
-      ->fields('t')
-      ->condition('cv_id', $cvterm->cv_id->cv_id)
-      ->execute()
-      ->fetchObject();
-    if ($default) {
-      $bundle_data = array(
-        'cv_id' => $cvterm->cv_id->cv_id,
-        'cvterm_id' => $cvterm->cvterm_id,
-        'data_table' => $default->table_name,
-        'type_table' => $default->table_name,
-        'field' =>  $default->field_name,
-      );
-    }
-    // If there is no default table then we have an error, and we should
-    // set a variable so that the form can help the user deal with the problem.
-    else {
-      $error = t('There is no default mapping of this term\'s ' .
-          'vocabulary to a table in Chado.  Therefore, it is not possible to ' .
-          'determine how to store data of this type.');
-      return FALSE;
-    }
-  }
 
   // Check to see if this bundle exists. If not then create it
   $bundle = db_select('tripal_bundle', 't')
@@ -140,6 +26,7 @@ function tripal_create_entity_type($cvterm, &$error = '') {
     ->fetchObject();
 
   if (!$bundle) {
+    // Inser the bundle.
     db_insert('tripal_bundle')
       ->fields(array(
         'label' => $cvterm->name,
@@ -158,8 +45,33 @@ function tripal_create_entity_type($cvterm, &$error = '') {
   cache_clear_all("entity_info:$langcode", 'cache');
   variable_set('menu_rebuild_needed', TRUE);
 
+
   // Allow modules to now add fields to the bundle
   module_invoke_all('add_bundle_fields', 'TripalEntity', $bundle_id, $cvterm);
 
   return TRUE;
+}
+
+
+/**
+ * Allows a module to add key/value pairs about a bundle.
+ *
+ * If a module needs to associate variables with a particular TripalEntity
+ * type (bundle), it can do so by setting the $bundle_data array passed into
+ * this function.  This hook is called prior to creation of a new entity type.
+ *
+ * @param $bundle_data
+ *   An array for key/value pairs to be associated with a bundle.
+ * @param $bundle_id
+ *   The ID for the bundle.
+ * @param $cvterm
+ *   The CV term object that the bundle represents.
+ */
+function hook_tripal_bundle_data_alter(&$bundle_data, $bundle_id, $cvterm) {
+  // Get the cvterm for this entity type.
+  $bundle_id = $entity->bundle;
+  $cvterm_id = preg_replace('/bio-data_/', $bundle_id);
+  $cvterm = tripal_get_cv(array('cvterm_id' => $cvterm_id));
+
+  // Add any key/value pairs to the $bundle_data array as desired.
 }

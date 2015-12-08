@@ -11,7 +11,7 @@
  * @param $display
  * @return string
  */
-function tripal_fields_organism_select_formatter(&$element, $entity_type, $entity, $field,
+function tripal_chado_organism_select_formatter(&$element, $entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
   foreach ($items as $delta => $item) {
     $organism = chado_select_record('organism', array('genus', 'species'), array('organism_id' => $item['value']));
@@ -35,7 +35,7 @@ function tripal_fields_organism_select_formatter(&$element, $entity_type, $entit
  * @param $delta
  * @param $element
  */
-function tripal_fields_organism_select_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function tripal_chado_organism_select_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
   $options = tripal_get_organism_select_options(FALSE);
   $widget['value'] = array(
     '#type' => 'select',
@@ -46,7 +46,7 @@ function tripal_fields_organism_select_widget(&$widget, $form, $form_state, $fie
     '#required' => $element['#required'],
     '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
     '#delta' => $delta,
-    '#element_validate' => array('tripal_fields_organism_select_widget_validate'),
+    '#element_validate' => array('tripal_chado_organism_select_widget_validate'),
   );
   $widget['add_organism'] = array(
     '#type' => 'item',
@@ -54,9 +54,9 @@ function tripal_fields_organism_select_widget(&$widget, $form, $form_state, $fie
   );
 }
 /**
- * Callback function for validating the tripal_fields_organism_select_widget.
+ * Callback function for validating the tripal_chado_organism_select_widget.
  */
-function tripal_fields_organism_select_widget_validate($element, &$form_state) {
+function tripal_chado_organism_select_widget_validate($element, &$form_state) {
   $field_name = $element['#parents'][0];
 
   // If the form ID is field_ui_field_edit_form, then the user is editing the
@@ -65,7 +65,7 @@ function tripal_fields_organism_select_widget_validate($element, &$form_state) {
   if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
     return;
   }
-  $organism_id = tripal_fields_get_field_form_values($field_name, $form_state);
+  $organism_id = tripal_chado_get_field_form_values($field_name, $form_state);
 
   if (!$organism_id) {
     form_error($element, t("Please specify an organism."));

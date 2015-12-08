@@ -1,9 +1,11 @@
 <?php
 
 require_once "api/tripal_entities.api.inc";
-require_once "includes/tripal_entities.chado_entity.inc";
 require_once "includes/tripal_entities.entity_form.inc";
-require_once "includes/tripal_entities.tables.inc";
+require_once "includes/TripalVocab.inc";
+require_once "includes/TripalVocabController.inc";
+require_once "includes/TripalTerm.inc";
+require_once "includes/TripalTermController.inc";
 require_once "includes/TripalEntity.inc";
 require_once "includes/TripalEntityController.inc";
 require_once "includes/TripalEntityUIController.inc";
@@ -156,10 +158,6 @@ function tripal_entities_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_entity',
       'path' => "$path/theme/templates"
     ),
-    'tripal_entities_date_combo' => array(
-      'render element' => 'element',
-      'file' => 'includes/tripal_entities.chado_entity.inc',
-    ),
     'tripal_entities_add_list' => array(
       'variables' => array('content' => NULL),
       'file' => 'includes/tripal_entities.entity_form.inc',
@@ -206,10 +204,112 @@ function tripal_entities_rdf_mapping() {
  */
 function tripal_entities_entity_info() {
   $entities = array();
+  //
+  // The TripalVocab entity is meant to house vocabularies.  It is these
+  // vocabs that are used by the TripalTerm entities.  The storage backend
+  // is responsible for setting the values of this entity.
+  //
+  $entities['TripalVocab'] = array(
+    // A human readable label to identify our entity.
+    'label' => 'Controlled Vocabulary',
+    'plural label' => 'Controlled Vocabularies',
+
+    // The entity class and controller class extend the classes provided by the
+    // Entity API.
+    'entity class' => 'TripalVocab',
+    'controller class' => 'TripalVocabController',
+
+    // The table for this entity defined in hook_schema()
+    'base table' => 'tripal_vocabulary',
+
+    // If fieldable == FALSE, we can't attach fields.
+    'fieldable' => TRUE,
+
+    // entity_keys tells the controller what database fields are used for key
+    // functions. It is not required if we don't have bundles or revisions.
+    // Here we do not support a revision, so that entity key is omitted.
+    'entity keys' => array (
+      'id' => 'id',
+    ),
+
+    // Callback function for access to this entity.
+    'access callback' => 'tripal_entity_access',
+
+    // FALSE disables caching. Caching functionality is handled by Drupal core.
+    'static cache' => FALSE,
+
+    // This entity doesn't support bundles.
+    'bundles' => array (),
+
+    'view modes' => array (
+      'full' => array (
+        'label' => t ('Full content'),
+        'custom settings' => FALSE
+       ),
+       'teaser' => array (
+         'label' => t ('Teaser'),
+         'custom settings' => TRUE
+       ),
+     ),
+  );
+
+  //
+  // The TripalTerm entity is meant to house vocabulary terms.  It is these
+  // terms that are used by the TripalEntity entities.  The storage backend
+  // is responsible for setting the values of this entity.
+  //
+  $entities['TripalTerm'] = array(
+    // A human readable label to identify our entity.
+    'label' => 'Controlled Vocabulary Term',
+    'plural label' => 'Controlled Vocabulary Terms',
+
+    // The entity class and controller class extend the classes provided by the
+    // Entity API.
+    'entity class' => 'TripalTerm',
+    'controller class' => 'TripalTermController',
+
+    // The table for this entity defined in hook_schema()
+    'base table' => 'tripal_term',
+
+    // If fieldable == FALSE, we can't attach fields.
+    'fieldable' => TRUE,
+
+    // entity_keys tells the controller what database fields are used for key
+    // functions. It is not required if we don't have bundles or revisions.
+    // Here we do not support a revision, so that entity key is omitted.
+    'entity keys' => array (
+      'id' => 'id',
+    ),
+
+    // Callback function for access to this entity.
+    'access callback' => 'tripal_entity_access',
+
+    // FALSE disables caching. Caching functionality is handled by Drupal core.
+    'static cache' => FALSE,
+
+    // This entity doesn't support bundles.
+    'bundles' => array (),
+
+    'view modes' => array (
+      'full' => array (
+        'label' => t ('Full content'),
+        'custom settings' => FALSE
+      ),
+      'teaser' => array (
+        'label' => t ('Teaser'),
+        'custom settings' => TRUE
+      ),
+    ),
+  );
+
+  //
+  // The TripalEntity is used for all data. It links data from a storage
+  // back-end to a TripalTerm entity.
+  //
   $entities['TripalEntity'] = array (
     // A human readable label to identify our entity.
-    'label' => 'Biological Content',
-    'plural label' => 'Biological Content',
+    'label' => 'Tripal Content',
+    'plural label' => 'Tripal Content',
 
     // The entity class and controller class extend the classes provided by the
     // Entity API.
@@ -269,7 +369,11 @@ function tripal_entities_entity_info() {
     )
   );
 
-  // The entity that holds information about the entity types.
+  //
+  // The TripalBundle entity is used manage the bundle types.  The 'bundle of'
+  // attribute links this to the TripalEntity and allows the UI provided
+  // by the entity module to work for each TripalEntity bundle.
+  //
   $entities['TripalBundle'] = array (
     'label' => 'Tripal Content Type',
     'entity class' => 'TripalBundle',
@@ -303,30 +407,33 @@ function tripal_entities_entity_info() {
  * Add in the bundles (entity types) to the TripalEntity entity.
  */
 function tripal_entities_entity_info_alter(&$entity_info){
-  // Dynamically add in the bundles. Bundles are alternative groups of fields
-  // or configuration associated with an entity type .We want to dynamically
-  // add the bundles to the entity.
-  $bundles = db_select('tripal_bundle', 'tb')
-    ->fields('tb')
-    ->execute();
 
-  while ($bundle = $bundles->fetchObject()) {
-    $bundle_id = $bundle->bundle;
-    $cvterm_id = preg_replace('/bio-data_/', '', $bundle_id);
-    $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
-    $label = preg_replace('/_/', ' ', ucwords($cvterm->name));
+  if (array_key_exists('TripalEntity', $entity_info)) {
+    // Dynamically add in the bundles. Bundles are alternative groups of fields
+    // or configuration associated with an entity type .We want to dynamically
+    // add the bundles to the entity.
+    $bundles = db_select('tripal_bundle', 'tb')
+      ->fields('tb')
+      ->execute();
 
-    $entity_info['TripalEntity']['bundles'][$bundle_id] = array (
-      'label' => $label,
-      'admin' => array (
-        'path' => 'admin/structure/bio-data/manage/%tripal_bundle',
-        'real path' => 'admin/structure/bio-data/manage/' . $bundle_id,
-        'bundle argument' => 4,
-        'access arguments' => array (
-          'administer tripal data types'
+    while ($bundle = $bundles->fetchObject()) {
+      $bundle_id = $bundle->bundle;
+      $cvterm_id = preg_replace('/bio-data_/', '', $bundle_id);
+      $cvterm = tripal_get_cvterm(array('cvterm_id' => $cvterm_id));
+      $label = preg_replace('/_/', ' ', ucwords($cvterm->name));
+
+      $entity_info['TripalEntity']['bundles'][$bundle_id] = array (
+        'label' => $label,
+        'admin' => array (
+          'path' => 'admin/structure/bio-data/manage/%tripal_bundle',
+          'real path' => 'admin/structure/bio-data/manage/' . $bundle_id,
+          'bundle argument' => 4,
+          'access arguments' => array (
+            'administer tripal data types'
+          )
         )
-      )
-    );
+      );
+    }
   }
 }
 

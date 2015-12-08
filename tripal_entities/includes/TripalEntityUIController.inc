@@ -41,7 +41,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
       $matches = array();
       preg_match('/^bio-data_(.*?)$/', $bundle, $matches);
       $cvterm_id = $matches[1];
-      $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
+      $cvterm = tripal_get_cvterm(array('cvterm_id' => $cvterm_id));
 
       // Set a custom page for adding new tripal data entities.
       $items['bio-data/add/' . $cvterm_id] = array(
