@@ -1,23 +1,22 @@
 <?php
 
 /**
- *
- * Implements hook_entity_load().
+ * Implements hook_entity_presave().
  */
-function tripal_entities_entity_presave($entity, $type) {
+function tripal_entities_entity_presave($entity, $type) { }
 
-}
 /**
- *
- * @param $entity
- * @param $type
+ * Implements hook_entity_postsave().
  */
 function tripal_entities_entity_postsave($entity, $type) {
-  // Set the title for this entity using the chado data.
-  $title = chado_get_entity_title($entity);
+  
+  // Set the title for this entity.
+  // This needs to be done post save because it uses the saved data and a format.
   $ec = new TripalEntityController($entity->type);
-  $ec->setTitle($entity, $title);
+  $ec->setTitle($entity);
+  
 }
+
 /**
  *
  * Implements hook_entity_load().
