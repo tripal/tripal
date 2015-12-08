@@ -9,6 +9,21 @@
  */
 function tripal_entities_install() {
 
+  // Tripal Entity Bundles/Types use Tripal Variables to store additional information.
+  // We need to add pertinent variables on install.
+  $vars = array(
+    'title_format' => 'A pattern including tokens that can be used to generate tripal entity titles.',
+    'url_format' => 'A pattern including tokens that can be used to generate tripal entity url aliases.',
+    'description' => 'The description of a Tripal Entity type/bundle.'
+  );
+  foreach ($vars as $name => $description) {
+    $record = array(
+      'name' => $name,
+      'description' => $description
+    );
+    drupal_write_record('tripal_variables', $record);
+  }
+  
   // Unfortunately, some Chado base tables do not have a type_id, so we must
   // take special action for those tables.  These include: organism and
   // analysis. Until we can find an appropriate controlled vocabulary

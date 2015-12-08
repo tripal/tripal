@@ -163,3 +163,77 @@ function tripal_create_entity_type($cvterm, &$error = '') {
 
   return TRUE;
 }
+
+/**
+ * Get Page Title Format for a given Tripal Entity Type.
+ *
+ * @param TripalBundle $entity
+ *   The Entity object for the Tripal Bundle the title format is for.
+ */
+function tripal_get_title_format($entity) {
+
+  // Title formats are saved as Tripal Bundle Variables.
+  // Therefore, first we need the variable_id for title_formats.
+  $variable_id = db_select('tripal_variables', 'v')
+    ->fields('v', array('variable_id'))
+    ->condition('name', 'title_format')
+    ->execute()
+    ->fetchField();
+  
+  // Then we can check if there is already a title format for this bundle/type.
+  $title_format = db_select('tripal_bundle_variables', 'var')
+    ->fields('var', array('value'))
+    ->condition('var.bundle_id', $entity->id)
+    ->condition('var.variable_id', $variable_id)
+    ->execute()
+    ->fetchField();
+    
+  // If there isn't yet a title format for this bundle/type then we should
+  // determine the default based on the table unique constraint and save it.
+  // @TODO: Replace the label with the base table name.
+  // @TODO: make this chado independant.
+  if (!$title_format) {
+    $title_format = chado_node_get_unique_constraint_format($entity->label);
+    tripal_save_title_format($entity, $title_format);
+  }
+  
+  return $title_format;
+}
+
+/**
+ * Save Page Title Format for a given Tripal Entity Type.
+ *
+ * @param TripalBundle $entity
+ *   The Entity object for the Tripal Bundle the title format is for.
+ * @param string $format
+ *   The pattern to be used when generating entity titles for the above type.
+ */
+function tripal_save_title_format($entity, $format) {
+
+  // Title formats are saved as Tripal Bundle Variables.
+  // Thus first we need to grab the variable_id for title_format.
+  $variable_id = db_select('tripal_variables', 'v')->fields('v', array('variable_id'))->condition('name', 'title_format')->execute()->fetchField();
+
+  // And then we need to write the new format to the tripal_bundle_variables table.
+  $record = array(
+    'bundle_id' => $entity->id,
+    'variable_id' => $variable_id,
+    'value' => $format,
+  );
+  
+  // Check whether there is already a format saved.
+  $bundle_variable_id = db_select('tripal_bundle_variables', 'var')
+    ->fields('var', array('bundle_variable_id'))
+    ->condition('var.bundle_id', $record['bundle_id'])
+    ->condition('var.variable_id', $record['variable_id'])
+    ->execute()
+    ->fetchField();
+  if ($bundle_variable_id) {
+    $record['bundle_variable_id'] = $bundle_variable_id;
+    drupal_write_record('tripal_bundle_variables', $record, 'bundle_variable_id');
+  }
+  else {
+    drupal_write_record('tripal_bundle_variables', $record);
+  }
+
+}
