@@ -57,8 +57,8 @@ function tripal_feature_seq_extract_page() {
   $output .= '';
   if (user_access('administer tripal')) {
     $output .= tripal_set_message("Administrators, the " . 
-        l('organism_feature_count', 'admin/tripal/schema/mviews') . " and " .
-        l('analysis_organism', 'admin/tripal/schema/mviews') . " materialized
+        l('organism_feature_count', 'admin/tripal/storage/chado/mviews') . " and " .
+        l('analysis_organism', 'admin/tripal/storage/chado/mviews') . " materialized
         views must be populated before using this form.  Those views should be re-populated
         when new data is added.");
   }

@@ -202,7 +202,7 @@ function chado_stock_form($node, $form_state) {
   $st_message = tripal_set_message("To add additional items to the stock type drop down list,
      add a term to the " .
     l($st_cv->name . " controlled vocabulary",
-      "admin/tripal/chado/tripal_cv/cv/" . $st_cv->cv_id . "/cvterm/add",
+      "admin/tripal/vocab/cv/" . $st_cv->cv_id . "/cvterm/add",
       array('attributes' => array('target' => '_blank'))
     ),
     TRIPAL_INFO, array('return_html' => TRUE)

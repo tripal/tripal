@@ -44,11 +44,11 @@ function tripal_chado_kvproperty_adder_widget(&$widget, $form, $form_state,
     '#type' => 'textfield',
     '#description' => t("Please enter the type of property that you want to
         add.  As you type, suggestions will be provided."),
-    '#autocomplete_path' => "admin/tripal/chado/tripal_cv/cvterm/auto_name/",
+    '#autocomplete_path' => "admin/tripal/vocab/cvterm/auto_name/",
   );
   $widget['kvproperty_adder_link'] = array(
     '#type' => 'item',
-    '#markup' => '<span class="kvproperty-adder-link">' . l('Add a term', 'admin/tripal/chado/tripal_cv/cvterm/add', array('attributes' => array('target' => '_blank'))) . '</span>',
+    '#markup' => '<span class="kvproperty-adder-link">' . l('Add a term', 'admin/tripal/vocab/cvterm/add', array('attributes' => array('target' => '_blank'))) . '</span>',
   );
   // When this button is clicked, the form will be validated and submitted.
   // Therefore, we set custom submit and validate functions to override the

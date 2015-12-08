@@ -16,7 +16,7 @@ print tripal_set_message("
   l('Tripal feature configuration page', 'admin/tripal/chado/tripal_feature/configuration', array('attributes' => array('target' => '_blank'))) . "
   opening the section \"Feature Summary Report\" and adding the list of
   terms you want to appear in the list. You can rename terms as well. To refresh the data,re-populate the " .
-  l('organism_feature_count', 'admin/tripal/schema/mviews', array('attributes' => array('target' => '_blank'))) . " 
+  l('organism_feature_count', 'admin/tripal/storage/chado/mviews', array('attributes' => array('target' => '_blank'))) . " 
   materialized view.",
   TRIPAL_INFO,
   array('return_html' => 1)

@@ -24,6 +24,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
       'file path' => drupal_get_path('module', 'tripal_entities'),
       'access arguments' => array('administer tripal data'),
       'type' => MENU_LOCAL_TASK,
+      'weight' => -9
     );
 
     $items['bio-data/add'] = array(

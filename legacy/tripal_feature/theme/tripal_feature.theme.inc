@@ -1016,7 +1016,7 @@ function tripal_feature_preprocess_tripal_feature_bar_chart_type_organism_summar
     'organisms' => $organism_names,
     'legendPosition' => 'top',
     'maxBarHeight' => $max_bar_height,
-    'mviewUrl' => url('admin/tripal/schema/mviews/update/' . $mview->mview_id),
+    'mviewUrl' => url('admin/tripal/storage/chado/mviews/update/' . $mview->mview_id),
     'mviewTable' => $mview->name,
     'mviewLastUpdate' => $mview->last_update ? format_date($mview->last_update) : '',
   );
