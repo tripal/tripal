@@ -58,22 +58,134 @@ class TripalBundleUIController extends EntityDefaultUIController {
 
     return $forms;
   }
+  
 }
+
 /**
+ * Tripal content type edit form.
  *
  * @param $form
+ *    The default form array. Usually empty.
  * @param $form_state
- * @param $entity
+ *    Build information for the form including the entity type and submitted values.
+ * @param $entityDataType
+ *    A string indicating the entity type. This will always be TripalBundle.
  */
 function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType) {
-  $form = array();
-  $form['message'] = array(
-    '#type' => 'item',
-    '#markup' => 'Edit the function "tripal_entities_tripal_bundle_form()" ' .
-      'to add a form each type. Put access controls here?',
+
+  $entity_type = $form_state['build_info']['args'][0];
+  $chado_basetable = $entity_type->data['data_table'];
+  $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $entity_type->data['cvterm_id']));
+  
+  // @TODO: Move this into a css file.
+  $form['#attached']['css'] = array(
+    array(
+      'data' => '.form-item select, .form-item input { width:40%; }',
+      'type' => 'inline',
+    ),
   );
+
+  //dpm($form_state, 'form state');
+  //dpm($entity_type, 'entity type');
+  //dpm($cvterm, 'cvterm');
+  
+  $form['vocab'] = array(
+    '#type' => 'select',
+    '#title' => t('Vocabulary'),
+    '#options' => array($cvterm->cv_id->name),
+    '#description' => t('The vocabulary the following term is part of.'),
+    '#default_value' => $cvterm->cv_id->name,
+    '#disabled' => TRUE  
+  );
+  
+  $form['term'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Term'),
+    '#description' => t('The term the content type is based on.'),
+    '#default_value' => $cvterm->name,
+    '#disabled' => TRUE  
+  );
+  
+  $form['additional_settings'] = array(
+    '#type' => 'vertical_tabs',
+    '#weight' => 99,
+  );
+  
+  // Set Title Format.
+  //-------------------------
+  $title_format = chado_node_get_unique_constraint_format($chado_basetable);
+  
+  $form['set_titles'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Page Title options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#tree' => TRUE,
+    '#group' => 'additional_settings',
+  );
+  
+  $form['set_titles']['explanation'] = array(
+    '#type' => 'item',
+    '#markup' => t('<p>The format below is used to determine the title displayed on content 
+      pages. This ensures all content of this type is consistent while still allowing you 
+      to indicate which data you want represented in the title (ie: which data would most 
+      identify your content).</p>
+      <p>Keep in mind that it might be confusing to users if more than
+      one page has the same title. We recommend you <strong>choose a combination of tokens that
+      will uniquely identify your content</strong>.</p>'),
+  );
+
+  $form['set_titles']['title_format'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Page Title Format'),
+    '#description' => t('You may rearrange elements in this text box to customize the page
+      titles. The available tokens are listed below. You can separate or include any text
+      between the tokens.'),
+    '#default_value' => $title_format,
+    '#rows' => 1
+  );
+
+  $form['set_titles']['token_display'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Available Tokens'),
+    '#description' => t('Copy the token and paste it into the "Custom Page Title" text field above.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE
+  );
+
+  $tokens = array();
+  if (empty($tokens)) {
+    $tokens = chado_node_generate_tokens($chado_basetable);
+  }
+  $form['set_titles']['tokens'] = array(
+    '#type' => 'hidden',
+    '#value' => serialize($tokens)
+  );
+  
+  $token_list = chado_node_format_tokens($tokens);
+  $form['set_titles']['token_display']['content'] = array(
+    '#type' => 'item',
+    '#markup' => $token_list
+  );
+
+  // Submit Buttons
+  //-------------------------
+  
+  $form['save'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save Content Type'),
+    '#weight' => 100
+  );
+  
+  $form['delete'] = array(
+    '#type' => 'submit',
+    '#value' => t('Delete Content Type'),
+    '#weight' => 101
+  );
+
   return $form;
 }
+
 /**
  * Access callback for the entity API.
  */
