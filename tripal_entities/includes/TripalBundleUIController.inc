@@ -74,8 +74,12 @@ class TripalBundleUIController extends EntityDefaultUIController {
 function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType) {
 
   $entity_type = $form_state['build_info']['args'][0];
-  $chado_basetable = $entity_type->data['data_table'];
-  $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $entity_type->data['cvterm_id']));
+  $chado_basetable = $entity_type->label;
+  $cvterm = chado_generate_var('cvterm', array('name' => $entity_type->label));
+  
+  // Add a validate and submit handler to save the data in this form.
+  $form['#validate'] = array('tripal_entities_tripal_bundle_form_validate');
+  $form['#submit'] = array('tripal_entities_tripal_bundle_form_submit');
   
   // @TODO: Move this into a css file.
   $form['#attached']['css'] = array(
@@ -184,6 +188,41 @@ function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType
   );
 
   return $form;
+}
+
+/**
+ * Validate: Tripal content type edit form.
+ */
+function tripal_entities_tripal_bundle_form_validate($form, $form_state) {
+
+  $tokens_available = unserialize($form_state['values']['set_titles']['tokens']);
+  if (preg_match_all('/(\[\w+\.\w+\])/', $form_state['values']['set_titles']['title_format'], $matches)) {
+    
+    // The matches of the first and only pattern will be our tokens.
+    $tokens_used = $matches[1];
+    // Determine if any of the tokens used were not in the original list of available tokens.
+    $tokens_missing = array_diff($tokens_used, array_keys($tokens_available));
+    
+    if ($tokens_missing) {
+      $msg = t('You must only use tokens listed under available tokens. You used the following incorrect tokens: %tokens',
+        array('%tokens' => implode(', ', $tokens_missing)));
+      form_set_error('set_titles][title_format', $msg);
+    }
+    
+  }
+  else {
+    $msg = t('You should use at least one token in your title format or the title for all %type pages will be the same.',
+      array('%type' => $form_state['build_info']['args'][0]->label));
+    form_set_error('set_titles][title_format', $msg);
+  }
+}
+
+/**
+ * Submit: Tripal content type edit form.
+ */
+function tripal_entities_tripal_bundle_form_submit($form, $form_state) {
+
+  //dpm($form_state, 'form state in submit');
 }
 
 /**
