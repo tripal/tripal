@@ -1,55 +1,6 @@
 <?php
 
 /**
- * Retrieves a TripalTerm entity that matches the given arguments.
- *
- * @param $namespace
- *   The namespace for the vocabulary
- * @param $term_id
- *   The ID (accession) of the term in the vocabulary.
- *
- * @return
- *   A TripalTerm entity object or NULL if not found.
- */
-function tripal_load_term_entity($namespace, $term_id) {
-  $query = db_select('tripal_term', 'tt');
-  $query->join('tripal_vocab' ,'tv', 'tv.id = tt.vocab_id');
-  $query->fields('tt', array('id', 'term_id'))
-    ->fields('tv', array('namespace'))
-    ->condition('tv.namespace', $namespace)
-    ->condition('tt.term_id', $term_id);
-  $term = $query->execute()->fetchObject();
-
-  if ($term) {
-    $entity = entity_load('TripalTerm', array($term->id));
-    return reset($entity);
-  }
-  return NULL;
-}
-
-/**
- * Retrieves a TripalVocab entity that maches the given arguments.
- *
- * @param $namespace
- *
- * @return
- * A TripalVocab entity object or NULL if not found.
- */
-function tripal_load_vocab_entity($namespace) {
-  $vocab = db_select('tripal_vocab', 'tv')
-    ->fields('tv')
-    ->condition('tv.namespace', $namespace)
-    ->execute()
-    ->fetchObject();
-
-  if ($vocab) {
-    $entity = entity_load('TripalVocab', array($vocab->id));
-    return reset($entity);
-  }
-  return NULL;
-}
-
-/**
  * Creates a new Tripal Entity type (i.e. bundle).
  *
  * @param $namespace
@@ -106,35 +57,84 @@ function tripal_create_bundle($namespace, $term_id, $term_name, &$error = '') {
   cache_clear_all("entity_info:$langcode", 'cache');
   variable_set('menu_rebuild_needed', TRUE);
 
-
   // Allow modules to now add fields to the bundle
   module_invoke_all('add_bundle_fields', 'TripalEntity', $bundle_id, $term);
 
   return TRUE;
 }
 
+/**
+ * Get Page Title Format for a given Tripal Entity Type.
+ *
+ * @param TripalBundle $entity
+ *   The Entity object for the Tripal Bundle the title format is for.
+ */
+function tripal_get_title_format($entity) {
+
+  // Title formats are saved as Tripal Bundle Variables.
+  // Therefore, first we need the variable_id for title_formats.
+  $variable_id = db_select('tripal_variables', 'v')
+    ->fields('v', array('variable_id'))
+    ->condition('name', 'title_format')
+    ->execute()
+    ->fetchField();
+  
+  // Then we can check if there is already a title format for this bundle/type.
+  $title_format = db_select('tripal_bundle_variables', 'var')
+    ->fields('var', array('value'))
+    ->condition('var.bundle_id', $entity->id)
+    ->condition('var.variable_id', $variable_id)
+    ->execute()
+    ->fetchField();
+    
+  // If there isn't yet a title format for this bundle/type then we should
+  // determine the default based on the table unique constraint and save it.
+  // @TODO: Replace the label with the base table name.
+  // @TODO: make this chado independant.
+  if (!$title_format) {
+    $title_format = chado_node_get_unique_constraint_format($entity->label);
+    tripal_save_title_format($entity, $title_format);
+  }
+  
+  return $title_format;
+}
 
 /**
- * Allows a module to add key/value pairs about a bundle.
+ * Save Page Title Format for a given Tripal Entity Type.
  *
- * If a module needs to associate variables with a particular TripalEntity
- * type (bundle), it can do so by setting the $bundle_data array passed into
- * this function.  This hook is called prior to creation of a new entity type.
- *
- * @param $bundle_data
- *   An array for key/value pairs to be associated with a bundle.
- * @param $bundle_id
- *   The ID for the bundle.
- * @param $cvterm
- *   The CV term object that the bundle represents.
+ * @param TripalBundle $entity
+ *   The Entity object for the Tripal Bundle the title format is for.
+ * @param string $format
+ *   The pattern to be used when generating entity titles for the above type.
  */
-function hook_tripal_bundle_data_alter(&$bundle_data, $bundle_id, $cvterm) {
-  // Get the cvterm for this entity type.
-  $bundle_id = $entity->bundle;
-  $cvterm_id = preg_replace('/bio-data_/', $bundle_id);
-  $cvterm = tripal_get_cv(array('cvterm_id' => $cvterm_id));
+function tripal_save_title_format($entity, $format) {
 
-  // Add any key/value pairs to the $bundle_data array as desired.
+  // Title formats are saved as Tripal Bundle Variables.
+  // Thus first we need to grab the variable_id for title_format.
+  $variable_id = db_select('tripal_variables', 'v')->fields('v', array('variable_id'))->condition('name', 'title_format')->execute()->fetchField();
+
+  // And then we need to write the new format to the tripal_bundle_variables table.
+  $record = array(
+    'bundle_id' => $entity->id,
+    'variable_id' => $variable_id,
+    'value' => $format,
+  );
+  
+  // Check whether there is already a format saved.
+  $bundle_variable_id = db_select('tripal_bundle_variables', 'var')
+    ->fields('var', array('bundle_variable_id'))
+    ->condition('var.bundle_id', $record['bundle_id'])
+    ->condition('var.variable_id', $record['variable_id'])
+    ->execute()
+    ->fetchField();
+  if ($bundle_variable_id) {
+    $record['bundle_variable_id'] = $bundle_variable_id;
+    drupal_write_record('tripal_bundle_variables', $record, 'bundle_variable_id');
+  }
+  else {
+    drupal_write_record('tripal_bundle_variables', $record);
+  }
+
 }
 
 /**
@@ -198,5 +198,3 @@ function hook_vocab_select_term_form(&$form, &$form_state) {
 function hook_vocab_select_term_form_validate($form, &$form_state) {
 
 }
-
-

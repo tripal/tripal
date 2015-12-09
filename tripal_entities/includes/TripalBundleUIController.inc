@@ -88,10 +88,6 @@ function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType
       'type' => 'inline',
     ),
   );
-
-  //dpm($form_state, 'form state');
-  //dpm($entity_type, 'entity type');
-  //dpm($cvterm, 'cvterm');
   
   $form['vocab'] = array(
     '#type' => 'select',
@@ -117,8 +113,8 @@ function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType
   
   // Set Title Format.
   //-------------------------
-  $title_format = chado_node_get_unique_constraint_format($chado_basetable);
-  
+  $title_format = tripal_get_title_format($entity_type);
+
   $form['set_titles'] = array(
     '#type' => 'fieldset',
     '#title' => t('Page Title options'),
@@ -220,9 +216,21 @@ function tripal_entities_tripal_bundle_form_validate($form, $form_state) {
 /**
  * Submit: Tripal content type edit form.
  */
-function tripal_entities_tripal_bundle_form_submit($form, $form_state) {
-
-  //dpm($form_state, 'form state in submit');
+function tripal_entities_tripal_bundle_form_submit($form, &$form_state) {
+  
+  if ($form_state['triggering_element']['#value'] == 'Save Content Type') {
+    // Save the page title format.
+    tripal_save_title_format(
+      $form_state['build_info']['args'][0], 
+      $form_state['values']['set_titles']['title_format']
+    );
+    
+    $form_state['redirect'] = 'admin/structure/bio-data';
+    drupal_set_message(t('Successfully saved %type content type.', array('%type' => $form_state['build_info']['args'][0]->label)));
+  }
+  else {
+    drupal_set_message(t('%button is not supported at this time.', array('%button' => $form_state['triggering_element']['#value'])), 'warning');
+  }
 }
 
 /**

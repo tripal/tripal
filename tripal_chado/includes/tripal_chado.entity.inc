@@ -1,62 +1,36 @@
 <?php
 
 /**
- *
- * Implements hook_entity_load().
+ * Implements hook_entity_presave().
  */
-function tripal_chado_entity_presave($entity, $type) {
-  // Add the Chado table and column to an entity to which
-  // data of this cvterm will map.
-  if ($type == 'TripalEntity') {
-    $bundle_id = $entity->bundle;
-    $bundle = db_select('tripal_bundle', 'tb')
-      ->fields('tb')
-      ->condition('bundle', $bundle_id)
-      ->execute()
-      ->fetchObject();
+function tripal_chado_entity_presave($entity, $type) { }
 
-    $data = unserialize($bundle->data);
-    $entity->chado_table = $data['data_table'];
-    $entity->chado_field = $data['field'];
-
-    // If we have an ID then this entity has been saved and it will
-    // also therefore have a chado_entity record.  We want to
-    // load this record so it is always part of the entity object.
-    if (property_exists($entity, 'id') and $entity->id) {
-      $details = db_select('chado_entity', 'ce')
-        ->fields('ce')
-        ->condition('entity_id', $entity->id)
-        ->execute()
-        ->fetchObject();
-
-      // Add the chado entity details to the entity in case it's needed
-      // downstream (e.g. in field widget construction).
-      $entity->chado_entity_id = $details->chado_entity_id;
-
-      // Add in the record.
-      $schema = chado_get_schema($entity->chado_table);
-      $pkey = $schema['primary key'][0];
-      $entity->chado_record_id = $details->record_id;
-      $entity->chado_record = chado_generate_var($entity->chado_table, array($pkey =>+ $details->record_id));
-    }
-  }
 }
 /**
- *
- * @param $entity
- * @param $type
+ * Implements hook_entity_postsave().
  */
 function tripal_chado_entity_postsave($entity, $type) {
-  // Set the title for this entity using the chado data.
-  $title = chado_get_entity_title($entity);
+  
+  // Set the title for this entity.
+  // This needs to be done post save because it uses the saved data and a format.
   $ec = new TripalEntityController($entity->type);
-  $ec->setTitle($entity, $title);
+  $ec->setTitle($entity);
+  
 }
+
 /**
  *
  * Implements hook_entity_load().
  */
 function tripal_chado_entity_load($entities, $type) {
+
+}
+
+/**
+ *
+ * Implements hook_entity_insert().
+ */
+function tripal_entities_entity_insert($entity, $type) {
 
 }
 
@@ -72,12 +46,12 @@ function tripal_chado_entity_update($entity, $type) {
  *
  * Implements hook_entity_delete().
  */
-function tripal_chado_entity_delete($entity, $type) {
+function tripal_chaddo_entity_delete($entity, $type) {
   $record = db_select('chado_entity', 'ce')
-    ->fields('ce', array('chado_entity_id', 'data_table', 'record_id'))
-    ->condition('entity_id', $entity->id)
-    ->execute()
-    ->fetchObject();
+   ->fields('ce', array('chado_entity_id', 'data_table', 'record_id'))
+   ->condition('entity_id', $entity->id)
+   ->execute()
+   ->fetchObject();
 
   if ($record && property_exists($record, 'chado_entity_id')) {
     // Delete the corresponding record in Chado
