@@ -86,21 +86,21 @@ class TripalEntityController extends EntityAPIController {
     // If no title was supplied then we should try to generate one using the
     // default format set by admins.
     if (!$title) {
-      
+
       // First get the format for the title based on the bundle of the entity.
       $bundle_entity = tripal_bundle_load($entity->bundle);
       $title = tripal_get_title_format($bundle_entity);
-    
+
       // Determine which tokens were used in the format string
       if (preg_match_all('/\[\w+\.\w+\]/', $title, $matches)) {
         $used_tokens = $matches[0];
-        
+
         foreach($used_tokens as $token) {
           $field = str_replace(array('.','[',']'),array('__','',''),$token);
-          
+
           $value = '';
           if (isset($entity->{$field})) {
-            
+
             // Render the value from the field.
             $field_value = field_get_items('TripalEntity', $entity, $field);
             $field_render_arr = field_view_value('TripalEntity', $entity, $field, $field_value[0]);
@@ -110,7 +110,7 @@ class TripalEntityController extends EntityAPIController {
         }
       }
     }
-    
+
     // As long as we were able to determine a title, we should update it ;-).
     if ($title) {
       db_update('tripal_entity')

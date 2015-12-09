@@ -1,5 +1,52 @@
 <?php
+/**
+ * Retrieves a TripalTerm entity that matches the given arguments.
+ *
+ * @param $namespace
+ *   The namespace for the vocabulary
+ * @param $term_id
+ *   The ID (accession) of the term in the vocabulary.
+ *
+ * @return
+ *   A TripalTerm entity object or NULL if not found.
+ */
+function tripal_load_term_entity($namespace, $term_id) {
+  $query = db_select('tripal_term', 'tt');
+  $query->join('tripal_vocab' ,'tv', 'tv.id = tt.vocab_id');
+  $query->fields('tt', array('id', 'term_id'))
+    ->fields('tv', array('namespace'))
+    ->condition('tv.namespace', $namespace)
+    ->condition('tt.term_id', $term_id);
+  $term = $query->execute()->fetchObject();
 
+  if ($term) {
+    $entity = entity_load('TripalTerm', array($term->id));
+    return reset($entity);
+  }
+  return NULL;
+}
+
+/**
+ * Retrieves a TripalVocab entity that maches the given arguments.
+ *
+ * @param $namespace
+ *
+ * @return
+ * A TripalVocab entity object or NULL if not found.
+ */
+function tripal_load_vocab_entity($namespace) {
+  $vocab = db_select('tripal_vocab', 'tv')
+    ->fields('tv')
+    ->condition('tv.namespace', $namespace)
+    ->execute()
+    ->fetchObject();
+
+  if ($vocab) {
+    $entity = entity_load('TripalVocab', array($vocab->id));
+    return reset($entity);
+  }
+  return NULL;
+}
 /**
  * Creates a new Tripal Entity type (i.e. bundle).
  *
@@ -78,7 +125,7 @@ function tripal_get_title_format($entity) {
     ->condition('name', 'title_format')
     ->execute()
     ->fetchField();
-  
+
   // Then we can check if there is already a title format for this bundle/type.
   $title_format = db_select('tripal_bundle_variables', 'var')
     ->fields('var', array('value'))
@@ -86,7 +133,7 @@ function tripal_get_title_format($entity) {
     ->condition('var.variable_id', $variable_id)
     ->execute()
     ->fetchField();
-    
+
   // If there isn't yet a title format for this bundle/type then we should
   // determine the default based on the table unique constraint and save it.
   // @TODO: Replace the label with the base table name.
@@ -95,7 +142,7 @@ function tripal_get_title_format($entity) {
     $title_format = chado_node_get_unique_constraint_format($entity->label);
     tripal_save_title_format($entity, $title_format);
   }
-  
+
   return $title_format;
 }
 
@@ -119,7 +166,7 @@ function tripal_save_title_format($entity, $format) {
     'variable_id' => $variable_id,
     'value' => $format,
   );
-  
+
   // Check whether there is already a format saved.
   $bundle_variable_id = db_select('tripal_bundle_variables', 'var')
     ->fields('var', array('bundle_variable_id'))
