@@ -7,11 +7,12 @@
  */
 class TripalVocabController extends EntityAPIController {
 
-  public function __construct($entityType) {
-    parent::__construct($entityType);
+  public function __construct($entity_type) {
+    parent::__construct($entity_type);
   }
 
   public function create(array $values = array()) {
+    $this->namespace = array_key_exists('namespace', $values) ? $values['namespace'] : '';
     return parent::create($values);
   }
 
@@ -24,11 +25,11 @@ class TripalVocabController extends EntityAPIController {
     $transaction = db_transaction();
     try {
       // Invoke hook_entity_delete().
-      module_invoke_all('entity_delete', $entity, $entity->type);
+      module_invoke_all('entity_delete', $entity, 'TripalTerm');
       field_attach_delete('TripalVocab', $entity);
 
       db_delete('tripal_term')
-        ->condition('term_id', $entity->term_id)
+        ->condition('id', $entity->id)
         ->execute();
     }
     catch (Exception $e) {
@@ -61,7 +62,7 @@ class TripalVocabController extends EntityAPIController {
       }
 
       // Invoke hook_entity_presave().
-      module_invoke_all('entity_presave', $entity, $entity->type);
+      module_invoke_all('entity_presave', $entity, 'TripalTerm');
 
       // Write out the entity record.
       $record = array(
@@ -89,10 +90,10 @@ class TripalVocabController extends EntityAPIController {
       }
 
       // Invoke either hook_entity_update() or hook_entity_insert().
-      module_invoke_all('entity_postsave', $entity, $entity->type);
-      module_invoke_all($invocation, $entity, $entity->type);
+      module_invoke_all('entity_postsave', $entity, 'TripalTerm');
+      module_invoke_all($invocation, $entity, 'TripalTerm');
 
-      return $entity;
+      return $record;
     }
     catch (Exception $e) {
       $transaction->rollback();

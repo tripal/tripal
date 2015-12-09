@@ -24,7 +24,7 @@ class TripalTermController extends EntityAPIController {
     $transaction = db_transaction();
     try {
       // Invoke hook_entity_delete().
-      module_invoke_all('entity_delete', $entity, $entity->type);
+      module_invoke_all('entity_delete', $entity, 'TripalTerm');
       field_attach_delete('TripalTerm', $entity);
 
       db_delete('tripal_term')
@@ -61,12 +61,13 @@ class TripalTermController extends EntityAPIController {
       }
 
       // Invoke hook_entity_presave().
-      module_invoke_all('entity_presave', $entity, $entity->type);
+      module_invoke_all('entity_presave', $entity, 'TripalTerm');
 
       // Write out the entity record.
       $record = array(
         'vocab_id' => $entity->vocab_id,
         'term_id' => $entity->term_id,
+        'name' => $entity->name,
         'created' => $entity->created,
         'changed' => time(),
       );
@@ -90,8 +91,8 @@ class TripalTermController extends EntityAPIController {
       }
 
       // Invoke either hook_entity_update() or hook_entity_insert().
-      module_invoke_all('entity_postsave', $entity, $entity->type);
-      module_invoke_all($invocation, $entity, $entity->type);
+      module_invoke_all('entity_postsave', $entity, 'TripalTerm');
+      module_invoke_all($invocation, $entity, 'TripalTerm');
 
       return $entity;
     }

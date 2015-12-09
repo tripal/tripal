@@ -4,7 +4,7 @@
  */
 class TripalTerm extends Entity {
   public function __construct($values = array()) {
-    parent::__construct($values, $entity_type);
+    parent::__construct($values, 'TripalTerm');
 
   }
 

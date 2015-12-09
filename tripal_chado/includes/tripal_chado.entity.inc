@@ -62,69 +62,6 @@ function tripal_chado_entity_load($entities, $type) {
 
 /**
  *
- * Implements hook_tripal_bundle_data_alter().
- */
-function tripal_chado_tripal_bundle_data_alter(&$bundle_data, $bundle_id, $cvterm) {
-
-  // Get the cvterm for this entity type.
-  $bundle_id = $entity->bundle;
-  $cvterm_id = preg_replace('/bio-data_/', $bundle_id);
-  $cvterm = tripal_get_cv(array('cvterm_id' => $cvterm_id));
-
-  // The organism table does not have a type_id so we won't ever find
-  // a record for it in the tripal_cv_defaults table.
-  if ($cvterm->name == 'organism') {
-    $bundle_data = array(
-      'cv_id' => $cvterm->cv_id->cv_id,
-      'cvterm_id' => $cvterm->cvterm_id,
-      'data_table' => 'organism',
-      'type_table' => 'organism',
-      'field' =>  '',
-    );
-  }
-  // The analysis table does not have a type_id so we won't ever find
-  // a record for it in the tripalcv_defaults table.
-  else if ($cvterm->name == 'analysis') {
-    $bundle_data = array(
-      'cv_id' => $cvterm->cv_id->cv_id,
-      'cvterm_id' => $cvterm->cvterm_id,
-      'data_table' => 'analysis',
-      'type_table' => 'analysis',
-      'field' =>  '',
-    );
-  }
-  else if ($cvterm->name == 'project') {
-    $bundle_data = array(
-      'cv_id' => $cvterm->cv_id->cv_id,
-      'cvterm_id' => $cvterm->cvterm_id,
-      'data_table' => 'project',
-      'type_table' => 'project',
-      'field' =>  '',
-    );
-  }
-  else {
-    // TODO: WHAT TO DO IF A VOCABULARY IS USED AS A DEFAULT FOR MULTIPLE
-    // TABLES.
-    // Look to see if this vocabulary is used as a default for any table.
-    $default = db_select('tripal_cv_defaults', 't')
-      ->fields('t')
-      ->condition('cv_id', $cvterm->cv_id->cv_id)
-      ->execute()
-      ->fetchObject();
-    if ($default) {
-      $bundle_data = array(
-        'cv_id' => $cvterm->cv_id->cv_id,
-        'cvterm_id' => $cvterm->cvterm_id,
-        'data_table' => $default->table_name,
-        'type_table' => $default->table_name,
-        'field' =>  $default->field_name,
-      );
-    }
-  }
-}
-
-/**
- *
  * Implements hook_entity_update().
  */
 function tripal_chado_entity_update($entity, $type) {

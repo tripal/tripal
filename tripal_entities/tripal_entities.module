@@ -31,8 +31,17 @@ function tripal_entities_menu() {
   // Entity's UI Controller class.
 
   $items = array();
+
+  $items['admin/structure/bio-data/term/%'] = array(
+    'page callback' => 'tripal_autocomplete_term',
+    'page arguments' => array(6, 7),
+    'access arguments' => array('administer content'),
+    'type' => MENU_CALLBACK,
+  );
+
   return $items;
 }
+
 
 /**
  * Implements hook_admin_paths().
@@ -220,7 +229,7 @@ function tripal_entities_entity_info() {
     'controller class' => 'TripalVocabController',
 
     // The table for this entity defined in hook_schema()
-    'base table' => 'tripal_vocabulary',
+    'base table' => 'tripal_vocab',
 
     // If fieldable == FALSE, we can't attach fields.
     'fieldable' => TRUE,

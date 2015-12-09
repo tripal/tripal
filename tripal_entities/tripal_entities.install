@@ -186,6 +186,13 @@ function tripal_entities_tripal_term_schema() {
         'not null' => TRUE,
         'default' => '',
       ),
+      'name' => array(
+        'description' => 'The human readable name for this term.',
+        'type' => 'varchar',
+        'length' => 1024,
+        'not null' => TRUE,
+        'default' => '',
+      ),
       'created' => array(
         'description' => 'The Unix timestamp when the entity was created.',
         'type' => 'int',
