@@ -74,8 +74,10 @@ class TripalBundleUIController extends EntityDefaultUIController {
 function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType) {
 
   $entity_type = $form_state['build_info']['args'][0];
-  if (preg_match('/bio-data_(\d+)/', $entity_type->term_id, $matches)) {
-    $term = entity_load('TripalTerm', array('id' => $entity_type->term_id));
+  $term = NULL;
+  $vocab = NULL;
+  if (preg_match('/bio-data_(\d+)/', $entity_type->bundle, $matches)) {
+    $term = entity_load('TripalTerm', array('id' => $matches[1]));
     $term = reset($term);
     $vocab = entity_load('TripalVocab', array('id' => $term->vocab_id));
     $vocab = reset($vocab);
@@ -95,7 +97,7 @@ function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType
     ),
   );
 
-    if ($term) {
+  if ($term) {
     $form['term'] = array(
       '#type' => 'markup',
       '#markup' => theme('table', array(
@@ -124,10 +126,12 @@ function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType
     '#title' => t('Description'),
     '#required' => TRUE,
     '#description' => t('Describe this content type. The text will be displayed on the <em>Add new content page</em>.'),
-    '#default_value' => tripal_get_bundle_variable('description', $entity_type->id, $term->definition),
   );
-  if (!$form['description']['#default_value']) {
-    //$form['description']['#default_value'] = $cvterm->definition;
+  if ($term) {
+    $form['description']['#default_value'] = tripal_get_bundle_variable('description', $entity_type->id, $term->definition);
+  }
+  else {
+    $form['description']['#default_value'] = tripal_get_bundle_variable('description', $entity_type->id, '');
   }
 
   $form['additional_settings'] = array(
@@ -247,7 +251,7 @@ function tripal_entities_tripal_bundle_form_submit($form, &$form_state) {
     $bundle_entity->save();
 
     // Save the description.
-    tripal_bundle_save_variable('description', $bundle_entity->id, $form_state['values']['description']);
+    tripal_set_bundle_variable('description', $bundle_entity->id, $form_state['values']['description']);
 
     // Save the page title format.
     tripal_save_title_format(

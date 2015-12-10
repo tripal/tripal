@@ -88,7 +88,7 @@ class TripalEntityController extends EntityAPIController {
       $title = tripal_get_title_format($bundle_entity);
 
       // Determine which tokens were used in the format string
-      if (preg_match_all('/\[\w+\.\w+\]/', $title, $matches)) {
+      if (preg_match_all('/\[\w+\]/', $title, $matches)) {
         $used_tokens = $matches[0];
 
         foreach($used_tokens as $token) {
@@ -170,6 +170,10 @@ class TripalEntityController extends EntityAPIController {
       else {
         field_attach_update('TripalEntity', $entity);
       }
+      
+      // Set the title for this entity.
+      $ec = new TripalEntityController($entity->type);
+      $ec->setTitle($entity);
 
       // Invoke either hook_entity_update() or hook_entity_insert().
       module_invoke_all('entity_postsave', $entity, $entity->type);
