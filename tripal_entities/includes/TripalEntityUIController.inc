@@ -135,3 +135,105 @@ function tripal_entities_view_entity($entity, $view_mode = 'full') {
    drupal_set_title($entity->title);
    return $content;
  }
+
+ /**
+  * Provide a data listing for tripal entites (ie: biological data).
+  *
+  * This function is a callback in a menu item which is set in the
+  * TripalEntityUIController class.
+  */
+ function tripal_entities_content_view() {
+
+   // Retrieve our data listing form and render it.
+   $form = drupal_get_form('tripal_entities_content_overview_form');
+   $output = drupal_render($form);
+
+   // Set the breadcrumb.
+   $breadcrumb = array();
+   $breadcrumb[] = l('Home', '<front>');
+   $breadcrumb[] = l('Administration', 'admin');
+   drupal_set_breadcrumb($breadcrumb);
+
+   return $output;
+
+ }
+
+ /**
+  * Display a listing of Tripal entities.
+  *
+  * @TODO Filters and bulk operations needed to be added to this form.
+  *
+  * @param array $form
+  * @param array $form_state
+  * @return
+  *   A form array describing this listing to the Form API.
+  */
+ function tripal_entities_content_overview_form($form, &$form_state) {
+
+   // Set the title to be informative (defaults to content for some reason).
+   drupal_set_title('Tripal Content');
+
+   // Retrieve a pages list of all tripal entitles (ie: biological data).
+   // This will return the 25 most recently created entities.
+   $entities = db_select('tripal_entity', 'td')
+   ->fields('td')
+   ->orderBy('created', 'DESC')
+   ->range(0,25)
+   ->execute();
+
+   $headers = array('Title', 'Vocabulary', 'Term', 'Author', 'Status', 'Updated', 'Operations');
+   $rows = array();
+
+   // For each entity retrieved add a row to the data listing.
+   while ($entity = $entities->fetchObject()) {
+
+     // Get the term
+     $term = entity_load('TripalTerm', array('id' => $entity->term_id));
+     $term = reset($term);
+     $vocab = entity_load('TripalVocab', array('id' => $term->vocab_id));
+     $vocab = reset($vocab);
+
+     // Retrieve details about the user who created this data.
+     $author = user_load($entity->uid);
+
+     // Add information to the table.
+     $rows[] = array(
+       l($entity->title, 'bio-data/' . $entity->id),
+       $vocab->namespace,
+       $term->name,
+       l($author->name, 'user/' . $entity->uid),
+       $entity->status == 1 ? 'published' : 'unpublished',
+       format_date($entity->changed, 'short'),
+       l('edit', 'bio-data/' . $entity->id . '/edit') . '&nbsp;&nbsp;' .
+       l('delete', 'bio-data/' . $entity->id . '/delete')
+     );
+   }
+
+   // If there are no entites created yet then add a message to the table to
+   // provide guidance to administrators.
+   if (empty($rows)) {
+     $rows[] = array(
+       array(
+         'data' => t('No Tripal content available.'),
+         'colspan' => 7
+       )
+     );
+   }
+
+   // Render the data listing.
+   $table_vars = array(
+     'header'     => $headers,
+     'rows'       => $rows,
+     'attributes' => array(),
+     'sticky'     => TRUE,
+     'caption'    => '',
+     'colgroups'  => array(),
+     'empty'      => '',
+   );
+   $form['results'] = array(
+     '#type' => 'markup',
+     '#markup' => theme('table', $table_vars),
+   );
+
+   return $form;
+ }

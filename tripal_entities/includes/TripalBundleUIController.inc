@@ -271,40 +271,86 @@ function tripal_bundle_access($op, $type = NULL, $account = NULL) {
 }
 
 /**
- * Generates the tripal data type editing form.
+ * Form for creating tripal data types.
+ *
+ * This form is available on the menu at Admin >> Structure >> Biological Data
+ * Types. It requires that a module implmennt the vocabulary storage.  Tripal
+ * knows which vocabulary storage methods are available when a module
+ * implements the hook_vocab_storage_info() hook.
+ *
  */
-function tripal_bundle_form($form, &$form_state, $tripal_bundle, $op = 'edit') {
+function tripal_entities_admin_add_type_form($form, &$form_state) {
 
-  if ($op == 'clone') {
-    $tripal_bundle->label .= ' (cloned)';
-    $tripal_bundle->type = '';
+  // TODO: we need some sort of administrative interface that lets the user
+  // switch to the desired vocabulary type. For now, we'll just use the
+  // first one in the list.
+  $stores = module_invoke_all('vocab_storage_info');
+  if (is_array($stores) and count($stores) > 0) {
+    $keys = array_keys($stores);
+    $module = $stores[$keys[0]]['module'];
+    $function = $module . '_vocab_select_term_form';
+    if (function_exists($function)) {
+      $form = $function($form, $form_state);
+    }
   }
-
-  $form['label'] = array(
-    '#title' => t('Label'),
-    '#type' => 'textfield',
-    '#default_value' => $tripal_bundle->label,
-    '#description' => t('The human-readable name of this tripal data type.'),
-    '#required' => TRUE,
-    '#size' => 30,
-  );
-
+  else {
+    tripal_set_message('A storage backend is not enabled for managing
+          the vocabulary terms used to create content.  Please enable
+          a module that supports storage of vocabualary terms (e.g. tripal_chado)
+          and return to create new Tripal content types.', TRIPAL_NOTICE);
+  }
   return $form;
 }
-
 /**
- * Form API submit callback for the type form.
+ * Implements hook_validate() for the tripal_entities_admin_add_type_form.
+ *
  */
-function tripal_bundle_form_submit(&$form, &$form_state) {
-  $tripal_bundle = entity_ui_form_submit_build_entity($form, $form_state);
-  $tripal_bundle->save();
-  $form_state['redirect'] = $this->path;
+function tripal_entities_admin_add_type_form_validate($form, &$form_state) {
+  // TODO: we need some sort of administrative interface that lets the user
+  // switch to the desired vocabulary type. For now, we'll just use the
+  // first one in the list.
+  $stores = module_invoke_all('vocab_storage_info');
+  if (is_array($stores) and count($stores) > 0) {
+    $keys = array_keys($stores);
+    $module = $stores[$keys[0]]['module'];
+    $function = $module . '_vocab_select_term_form_validate';
+    if (function_exists($function)) {
+      $function($form, $form_state);
+    }
+  }
 }
-
 /**
- * Form API submit callback for the delete button.
+ * Implements hook_submit() for the tripal_entities_admin_add_type_form.
+ *
+ * The storage backend must set the
+ *
  */
-function tripal_bundle_form_submit_delete(&$form, &$form_state) {
-  $form_state['redirect'] = $this->path;
-}
+function tripal_entities_admin_add_type_form_submit($form, &$form_state) {
+  $namespace = '';
+  $term_id = '';
+  if (array_key_exists('storage', $form_state)) {
+    $storage = $form_state['storage'];
+    $namespace = array_key_exists('namespace', $storage) ? $storage['namespace'] : '';
+    $term_id = array_key_exists('term_id', $storage) ? $storage['term_id'] : '';
+    $term_name = array_key_exists('term_name', $storage) ? $storage['term_name'] : '';
 
+    // Before we try to add this type, check to see if it already exists
+    // as a bundle.
+    $term = tripal_load_term_entity($namespace, $term_id);
+    if (!$term) {
+      $error = '';
+      $success = tripal_create_bundle($namespace, $term_id, $term_name, $error);
+      if (!$success) {
+        drupal_set_message($error, 'error');
+        $form_state['redirect'] = "admin/structure/bio-data";
+      }
+      else {
+        drupal_set_message('New biological data type created.  Fields are added automatically to this type.');
+        $form_state['redirect'] = "admin/structure/bio-data";
+      }
+    }
+    else {
+      drupal_set_message('This type already exists.', 'warning');
+    }
+  }
+}
