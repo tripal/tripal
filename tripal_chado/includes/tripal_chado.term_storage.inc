@@ -50,7 +50,7 @@ function tripal_chado_vocab_get_term($namespace, $term_id) {
   return array(
     'id' => $cvterm->dbxref_id->accession,
     'name' => $cvterm->name,
-    'definition' => $cvterm->definition,
+    'definition' => (isset($cvterm->definition)) ? $cvterm->definition : '',
     'cvterm' => $cvterm,
   );
 }
