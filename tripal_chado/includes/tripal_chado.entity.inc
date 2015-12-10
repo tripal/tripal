@@ -24,7 +24,15 @@ function tripal_chado_entity_postsave($entity, $type) {
  * Implements hook_entity_load().
  */
 function tripal_chado_entity_load($entities, $type) {
+  dpm($entities);
 
+  // Set some information about the entity about it's Chado record.
+  foreach ($entities as $entity) {
+    dpm($entity->type);
+    if ($entity->type == 'TripalEntity') {
+
+    }
+  }
 }
 
 /**
@@ -91,6 +99,10 @@ function theme_tripal_chado_date_combo($variables) {
 
 /**
  * Determines whether the given user has access to a tripal data entity.
+ *
+ * TODO: I'm not sure this function should be at this level. I think all
+ * access controls should be handled by the tripal_entity module and that
+ * storage backends should just attach data as requested.
  *
  * @param $op
  *   The operation being performed. One of 'view', 'update', 'create', 'delete'

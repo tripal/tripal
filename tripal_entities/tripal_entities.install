@@ -4,6 +4,17 @@
  * Install for a tripal data entity - creates the base table for our entity.
  */
 
+/**
+ * Implements hook_install().
+ */
+function tripal_entities_install() {
+
+  // Add tripal bundle variables needed for storing additional settings for Tripal Bundles.
+  tripal_insert_variable('title_format', 'A pattern including tokens that can be used to generate tripal entity titles.');
+  tripal_insert_variable('url_format', 'A pattern including tokens that can be used to generate tripal entity url aliases.');
+  tripal_insert_variable('description', 'The description of a Tripal Entity type/bundle.');
+  
+}
 
 /**
  * Implements hook_schema().

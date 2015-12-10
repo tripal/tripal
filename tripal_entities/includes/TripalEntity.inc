@@ -5,7 +5,6 @@
 class TripalEntity extends Entity {
   public function __construct($values = array(), $entity_type) {
     parent::__construct($values, $entity_type);
-
   }
 
   protected function defaultLabel() {

@@ -523,17 +523,10 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
 
 /**
  * Implements hook_add_bundle_fields().
- *
- * @param $entity_type
- *   The entity type (e.g. TripalEntity).
- * @param $bundle_id
- *   The bundle ID.
- * @param $term
- *   An instance of a TripalTerm object.
- * @return
- *   TRUE on success, FALSE on failure.
  */
-function tripal_chado_add_bundle_fields($entity_type, $bundle_id, $term) {
+function tripal_chado_add_bundle_fields($entity_type, $bundle, $term) {
+
+  $bundle_name = $bundle->bundle;
 
   // This array will hold details that map the bundle to tables in Chado.
   $bundle_data = array();
@@ -603,21 +596,27 @@ function tripal_chado_add_bundle_fields($entity_type, $bundle_id, $term) {
   }
 
   // Adds the fields for the base table to the entity.
-  tripal_chado_add_bundle_base_fields($entity_type, $bundle_id, $bundle_data);
+  tripal_chado_add_bundle_base_fields($entity_type, $bundle_name, $bundle_data);
+
+  // Save the mapping information so that we can reuse it when we need to
+  // look things up for later for an entity
+  tripal_set_bundle_variable('chado_cvterm_id', $bundle->id, $bundle_data['cvterm_id']);
+  tripal_set_bundle_variable('chado_table', $bundle->id, $bundle_data['data_table']);
+  tripal_set_bundle_variable('chado_column', $bundle->id, $bundle_data['field']);
 
   // Check to see if there are any kv-property tables associated to this
   // base table. If so, add the fields for that type of table.
-  tripal_chado_add_bundle_kvproperty_adder_field($entity_type, $bundle_id, 'featureprop');
+  tripal_chado_add_bundle_kvproperty_adder_field($entity_type, $bundle_name, 'featureprop');
 }
 
 /**
  * Adds the fields for a kv-property table fields
  *
  * @param $entity_type_name
- * @param $bundle_id
+ * @param $bundle_name
  * @param $kv_table
  */
-function tripal_chado_add_bundle_kvproperty_adder_field($entity_type_name, $bundle_id, $kv_table) {
+function tripal_chado_add_bundle_kvproperty_adder_field($entity_type_name, $bundle_name, $kv_table) {
   // First add a generic property field so that users can add new proeprty types.
   $field_name = $kv_table;
 
@@ -631,13 +630,13 @@ function tripal_chado_add_bundle_kvproperty_adder_field($entity_type_name, $bund
     'label' => 'Additional Properties',
     'is_required' => 0,
   );
-  tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_id);
+  tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
 }
 
 /**
  * Adds the fields for the base table to the entity.
  */
-function tripal_chado_add_bundle_base_fields($entity_type_name, $bundle_id, $bundle_data) {
+function tripal_chado_add_bundle_base_fields($entity_type_name, $bundle_name, $bundle_data) {
 
   $table_name = $bundle_data['data_table'];
   $type_table = $bundle_data['type_table'];
@@ -692,7 +691,7 @@ function tripal_chado_add_bundle_base_fields($entity_type_name, $bundle_id, $bun
     }
 
     // Add the field to the bundle.
-    tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_id);
+    tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
   }
 }
 

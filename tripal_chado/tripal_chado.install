@@ -40,6 +40,13 @@ function tripal_chado_install() {
     'cv_name' => 'local',
   ));
 
+  // For the TripalBundle entities we will want to associate the cvterm_id,
+  // and the chado table and field that it maps to.  We will use a few
+  // variables to do this:
+  tripal_insert_variable('chado_cvterm_id', 'The cvterm_id that a TripalBundle maps to.');
+  tripal_insert_variable('chado_table', 'The name of the table to which a TripalBundle maps.');
+  tripal_insert_variable('chado_column', 'The name of the column within the table that a TripalBundle maps to.');
+
   // We want to provide a set of commonly used entity types by default. This
   // way when a user first installs Tripal there are some commonly used
   // formats.

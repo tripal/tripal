@@ -14,28 +14,36 @@ function tripal_chado_field_storage_info() {
 }
 
 /**
- * Implements hook_field_storage_query().
- *
- * @param $query
- */
-function tripal_chado_field_storage_query($query) {
-  // TODO: figure out what this function does.
-}
-/**
  * Implements hook_field_storage_write().
  */
 function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
 
+  // Get the bundle and the term for this entity.
+  $bundle = tripal_load_bundle_entity($entity->bundle);
+  $term = entity_load('TripalTerm', array('id' => $entity->term_id));
+  $term = reset($term);
+
   // Get the base table, type field and record_id from the entity.
-  $base_table = $entity->chado_table;
-  $type_field = $entity->chado_field;
-  $record_id  = property_exists($entity, 'chado_record_id') ? $entity->chado_record_id : NULL;
+  $base_table = tripal_get_bundle_variable('chado_table', $bundle->id);
+  $type_field = tripal_get_bundle_variable('chado_column', $bundle->id);
+
+  // Look for an record in the chado_entity table for this entity.
+  $chado_entity = db_select('chado_entity', 'ct')
+    ->fields('ct')
+    ->condition('ct.entity_id', $entity->id)
+    ->execute()
+    ->fetchObject();
+
+  $record_id = NULL;
+  if ($chado_entity) {
+    $record_id  = $chado_entity->record_id;
+  }
 
   // Convert the fields into a key/value list of fields and their values.
   $field_vals = tripal_chado_field_storage_unnest_fields($fields, $entity_type, $entity);
 
   // Recursively write fields for the base table.
-  $record_id = tripal_chado_field_storage_write_recursive($entity_type, $entity,
+  $record_id = tripal_chado_field_storage_write_recursive($entity_type, $entity, $term,
       $op, $field_vals, $base_table, $base_table, $type_field, $record_id);
 
   // If this is an insert then add the chado_entity record.
@@ -45,9 +53,9 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
     $record = array(
       'entity_id' => $entity->id,
       'record_id' => $record_id,
-      'data_table' => $entity->chado_table,
-      'type_table' => $entity->chado_table,
-      'field' => $entity->chado_field,
+      'data_table' => $base_table,
+      'type_table' => $base_table,
+      'field' => $type_field,
     );
     $success = drupal_write_record('chado_entity', $record);
     if (!$success) {
@@ -71,7 +79,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
 
         // Iterate through each record.
         foreach ($field_vals[$field_name] as $delta => $fvals) {
-          tripal_chado_field_storage_write_recursive($entity_type, $entity,
+          tripal_chado_field_storage_write_recursive($entity_type, $entity, $term,
               $op, $fvals, $base_table, $field_table);
         }
       }
@@ -93,7 +101,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
  * @return
  *   The record_id of the table if a matching record exists.
  */
-function tripal_chado_field_storage_write_recursive($entity_type, $entity,
+function tripal_chado_field_storage_write_recursive($entity_type, $entity, $term,
    $op, $field_vals, $base_table, $tablename, $type_field = NULL,
    $record_id = NULL, $depth = 0) {
 
@@ -115,7 +123,7 @@ function tripal_chado_field_storage_write_recursive($entity_type, $entity,
 
       // If this is the base table then do not recurse on the type_id.
       if ($tablename == $base_table && $local_id == $type_field) {
-        $values[$local_id] = $entity->cvterm_id;
+        $values[$local_id] = $term->details['cvterm']->cvterm_id;
         continue;
       }
 
@@ -155,7 +163,7 @@ function tripal_chado_field_storage_write_recursive($entity_type, $entity,
       // Recurse on the FK field.  Pass in the ID for the FK field if one
       // exists in the $field_vals;
       $fk_val = tripal_chado_field_storage_write_recursive($entity_type,
-        $entity, $op, $fk_vals, $base_table, $fk_table, NULL, $fk_val, $depth + 1);
+        $entity, $term, $op, $fk_vals, $base_table, $fk_table, NULL, $fk_val, $depth + 1);
       if (isset($fk_val) and $fk_val != '' and $fk_val != 0) {
         $values[$local_id] = $fk_val;
       }

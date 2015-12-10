@@ -156,7 +156,13 @@ function tripal_entities_permission() {
 
   return $permissions;
 }
-
+/**
+ * Checks access permissions for a given entity.
+ */
+function tripal_entities_entity_access($entity) {
+  // TODO: need to implement this function.
+  return TRUE;
+}
 /**
  * Implements hook_theme().
  */
@@ -426,16 +432,17 @@ function tripal_entities_entity_info_alter(&$entity_info){
       ->execute();
 
     while ($bundle = $bundles->fetchObject()) {
-      $bundle_id = $bundle->bundle;
-      $cvterm_id = preg_replace('/bio-data_/', '', $bundle_id);
-      $cvterm = tripal_get_cvterm(array('cvterm_id' => $cvterm_id));
-      $label = preg_replace('/_/', ' ', ucwords($cvterm->name));
+      $bundle_name = $bundle->bundle;
+      $term_id = preg_replace('/bio-data_/', '', $bundle_name);
+      $term = entity_load('TripalTerm', array('id' => $term_id));
+      $term = reset($term);
+      $label = preg_replace('/_/', ' ', ucwords($term->name));
 
-      $entity_info['TripalEntity']['bundles'][$bundle_id] = array (
+      $entity_info['TripalEntity']['bundles'][$bundle_name] = array (
         'label' => $label,
         'admin' => array (
           'path' => 'admin/structure/bio-data/manage/%tripal_bundle',
-          'real path' => 'admin/structure/bio-data/manage/' . $bundle_id,
+          'real path' => 'admin/structure/bio-data/manage/' . $bundle_name,
           'bundle argument' => 4,
           'access arguments' => array (
             'administer tripal data types'

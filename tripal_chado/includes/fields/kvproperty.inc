@@ -43,6 +43,19 @@ function tripal_chado_kvproperty_widget(&$widget, $form, $form_state, $field, $i
   $entity = $form['#entity'];
   $field_name = $field['field_name'];
 
+  // Get the bundle and the table it maps to.
+  $bundle = tripal_load_bundle_entity($entity->bundle);
+  $chado_table = tripal_get_bundle_variable('chado_table', $bundle->id);
+  $chado_column = tripal_get_bundle_variable('chado_column', $bundle->id);
+
+  // Get the chado record.
+  $chado_entity = db_select('chado_entity' ,'ce')
+    ->fields('ce')
+    ->condition('ce.entity_id', $entity->id)
+    ->execute()
+    ->fetchObject();
+  $schema = chado_get_schema($chado_table);
+  $record = chado_select_record($chado_table, array('*'), array($schema['primary key'][0] => $chado_entity->record_id));
   $matches = array();
   preg_match('/(.*?)__(\d+)/', $field_name, $matches);
   // If the field name is not properly formatted then we can't tell what
@@ -57,8 +70,8 @@ function tripal_chado_kvproperty_widget(&$widget, $form, $form_state, $field, $i
   // of the FK field that links to the base table.
   $schema = chado_get_schema($table_name);
   $pkey = $schema['primary key'][0];
-  $lfkey_field = key($schema['foreign keys'][$entity->chado_table]['columns']);
-  $rfkey_field = $schema['foreign keys'][$entity->chado_table]['columns'][$lfkey_field];
+  $lfkey_field = key($schema['foreign keys'][$chado_table]['columns']);
+  $rfkey_field = $schema['foreign keys'][$chado_table]['columns'][$lfkey_field];
 
   // Get the field defaults.
   $fk_value = '';
@@ -66,8 +79,8 @@ function tripal_chado_kvproperty_widget(&$widget, $form, $form_state, $field, $i
   if (array_key_exists($delta, $items)) {
     $propval = $items[$delta][$table_name . '__value'];
   }
-  if (property_exists($entity, 'chado_record')) {
-    $fk_value = $entity->chado_record->$rfkey_field;
+  if (count($record) > 0) {
+    $fk_value = $record[0]->$rfkey_field;
   }
 
 
@@ -123,6 +136,10 @@ function tripal_chado_kvproperty_widget_validate($element, &$form_state) {
   $entity = $element['#entity'];
   $matches = array();
 
+  $bundle = tripal_load_bundle_entity($entity->bundle);
+  $chado_table = tripal_get_bundle_variable('chado_table', $bundle->id);
+  $chado_column = tripal_get_bundle_variable('chado_column', $bundle->id);
+
   // Get the table name and cvterm_id for this field.
   preg_match('/(.*?)__(\d+)/', $field_name, $matches);
   $table_name = $matches[1];
@@ -132,7 +149,7 @@ function tripal_chado_kvproperty_widget_validate($element, &$form_state) {
   // of the FK field that links to the base table.
   $schema = chado_get_schema($table_name);
   $pkey = $schema['primary key'][0];
-  $lfkey_field = key($schema['foreign keys'][$entity->chado_table]['columns']);
+  $lfkey_field = key($schema['foreign keys'][$chado_table]['columns']);
 
   // If we don't have a property value then we need to set all other fields
   // to be empty so that when the module tries to save the field on the

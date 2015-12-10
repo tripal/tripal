@@ -9,6 +9,7 @@ class TripalEntityController extends EntityAPIController {
 
   public function __construct($entityType) {
     parent::__construct($entityType);
+
   }
 
   /**
@@ -25,6 +26,7 @@ class TripalEntityController extends EntityAPIController {
    *   An object with all default fields initialized.
    */
   public function create(array $values = array()) {
+
     // Add some items to the values array passed to the constructor
     global $user;
     $values['uid'] = $user->uid;
@@ -36,15 +38,9 @@ class TripalEntityController extends EntityAPIController {
     $bundle = $values['bundle'];
     $matches = array();
     if (preg_match('/bio-data_(.*)/', $bundle, $matches)) {
-      $cvterm_id = $matches[1];
+      $term_id = $matches[1];
       $values['type'] = 'TripalEntity';
-
-      // Get the CVterm.
-      $match = array('cvterm_id' => $cvterm_id);
-      $cvterm = tripal_get_cvterm($match);
-      if ($cvterm) {
-        $values['cvterm_id'] = $cvterm->cvterm_id;
-      }
+      $values['term_id'] = $term_id;
     }
 
     return parent::create($values);
@@ -102,6 +98,7 @@ class TripalEntityController extends EntityAPIController {
           if (isset($entity->{$field})) {
 
             // Render the value from the field.
+            // @TODO: Handle the case where thefield is empty... currently returns error.
             $field_value = field_get_items('TripalEntity', $entity, $field);
             $field_render_arr = field_view_value('TripalEntity', $entity, $field, $field_value[0]);
             $value = render($field_render_arr);
@@ -147,7 +144,7 @@ class TripalEntityController extends EntityAPIController {
 
       // Write out the entity record.
       $record = array(
-        'cvterm_id' => $entity->cvterm_id,
+        'term_id'   => $entity->term_id,
         'type'      => $entity->type,
         'bundle'    => $entity->bundle,
         'title'     => $entity->title,

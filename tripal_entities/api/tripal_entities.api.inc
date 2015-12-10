@@ -47,6 +47,29 @@ function tripal_load_vocab_entity($namespace) {
   }
   return NULL;
 }
+
+/**
+ * Retrieves a TripalBundle entity that matches the given arguments.
+ *
+ * @param $name
+ *   The name the bundle (e.g. bio-data_234).
+ *
+ * @return
+ *   A TripalBundle entity object or NULL if not found.
+ */
+function tripal_load_bundle_entity($name) {
+  $bundle = db_select('tripal_bundle', 'tb')
+    ->fields('tb')
+    ->condition('tb.bundle', $name)
+    ->execute()
+    ->fetchObject();
+
+  if ($bundle) {
+    $entity = entity_load('TripalBundle', array($bundle->id));
+    return reset($entity);
+  }
+  return NULL;
+}
 /**
  * Creates a new Tripal Entity type (i.e. bundle).
  *
@@ -82,12 +105,11 @@ function tripal_create_bundle($namespace, $term_id, $term_name, &$error = '') {
     $term = $term->save();
   }
 
-
   // If the bundle doesn't already exist, then add it.
   $bundle_id = 'bio-data_' . $term->id;
   $einfo = entity_get_info('TripalEntity');
   if (!in_array($bundle_id, array_keys($einfo['bundles']))) {
-    // Inser the bundle.
+    // Insert the bundle.
     db_insert('tripal_bundle')
       ->fields(array(
         'label' => $term_name,
@@ -104,11 +126,130 @@ function tripal_create_bundle($namespace, $term_id, $term_name, &$error = '') {
   cache_clear_all("entity_info:$langcode", 'cache');
   variable_set('menu_rebuild_needed', TRUE);
 
+  // Get the bundle object.
+  $bundle = tripal_load_bundle_entity($bundle_id);
+
   // Allow modules to now add fields to the bundle
-  module_invoke_all('add_bundle_fields', 'TripalEntity', $bundle_id, $term);
+  module_invoke_all('add_bundle_fields', 'TripalEntity', $bundle, $term);
 
   return TRUE;
 }
+
+/**
+ * Allows a module to add fields to a bundle.
+ *
+ * This function is called after the bundle is created and allows any module
+ * to add fields to it.
+ *
+ * @param $entity_type
+ *   The entity type (e.g. TripalEntity).
+ * @param $bundle
+ *   A TripalBundle object.
+ * @param $term
+ *   An instance of a TripalTerm object.
+ *
+ * @return
+ *   TRUE on success, FALSE on failure.
+ */
+function hook_add_bundle_fields($entity_type, $bundle, $term) {
+
+}
+
+/**
+ * @section
+ * Bundle Variables.
+ */
+
+/**
+ * Fetch the value for a given tripal variable.
+ *
+ * @param string $variable_name
+ *   The name of the variable as in tripal_variables.name.
+ * @param int $bundle_id
+ *   The unique identfier for the bundle you want the value for.
+ * @return text
+ *   The value of the specified variable for the specified bundle.
+ */
+function tripal_get_bundle_variable($variable_name, $bundle_id, $default = FALSE) {
+
+  $variable = tripal_get_variable($variable_name);
+
+  // Warn if we can't find the tripal_variable.
+  if (!$variable) {
+//     tripal_report_error(
+//       'trpbundle_var',
+//       TRIPAL_WARNING,
+//       'Unable to fetch tripal bundle variable value due to missing tripal variable (%var).',
+//       array('%var' => $variable_name)
+//     );
+//     return FALSE;
+    return $default;
+  }
+
+  // Select the value for this variable.
+  $value = db_select('tripal_bundle_variables', 'var')
+    ->fields('var', array('value'))
+    ->condition('var.bundle_id', $bundle_id)
+    ->condition('var.variable_id', $variable->variable_id)
+    ->execute()
+    ->fetchField();
+
+  // Warn if the value appears to be empty.
+  if (!$value) {
+//     tripal_report_error(
+//       'trpbundle_var',
+//       TRIPAL_WARNING,
+//       'Unable to fetch tripal bundle variable (%var) value.',
+//       array('%var' => $variable_name)
+//     );
+    return $default;
+  }
+
+  return $value;
+}
+
+/**
+ * Save the value of a tripal variable for a given bundle.
+ *
+ * @param string $variable_name
+ *   The name of the variable as in tripal_variables.name.
+ * @param int $bundle_id
+ *   The unique identfier for the bundle you want the value for.
+ * @param $text $value
+ *   The value of the variable for the given bundle.
+ */
+function tripal_set_bundle_variable($variable_name, $bundle_id, $value) {
+
+  $variable = tripal_get_variable($variable_name);
+
+  // And then we need to write the new format to the tripal_bundle_variables table.
+  $record = array(
+    'bundle_id' => $bundle_id,
+    'variable_id' => $variable->variable_id,
+    'value' => $value,
+  );
+
+  // Check whether there is already a format saved.
+  $bundle_variable_id = db_select('tripal_bundle_variables', 'var')
+    ->fields('var', array('bundle_variable_id'))
+    ->condition('var.bundle_id', $record['bundle_id'])
+    ->condition('var.variable_id', $record['variable_id'])
+    ->execute()
+    ->fetchField();
+  if ($bundle_variable_id) {
+    $record['bundle_variable_id'] = $bundle_variable_id;
+    return drupal_write_record('tripal_bundle_variables', $record, 'bundle_variable_id');
+  }
+  else {
+    return drupal_write_record('tripal_bundle_variables', $record);
+  }
+
+}
+
+/**
+ * @section
+ * Title & URL Formats.
+ */
 
 /**
  * Get Page Title Format for a given Tripal Entity Type.
@@ -118,28 +259,13 @@ function tripal_create_bundle($namespace, $term_id, $term_name, &$error = '') {
  */
 function tripal_get_title_format($entity) {
 
-  // Title formats are saved as Tripal Bundle Variables.
-  // Therefore, first we need the variable_id for title_formats.
-  $variable_id = db_select('tripal_variables', 'v')
-    ->fields('v', array('variable_id'))
-    ->condition('name', 'title_format')
-    ->execute()
-    ->fetchField();
-
-  // Then we can check if there is already a title format for this bundle/type.
-  $title_format = db_select('tripal_bundle_variables', 'var')
-    ->fields('var', array('value'))
-    ->condition('var.bundle_id', $entity->id)
-    ->condition('var.variable_id', $variable_id)
-    ->execute()
-    ->fetchField();
+  // Get the existing title format if it exists.
+  $title_format = tripal_get_bundle_variable('title_format', $entity->id);
 
   // If there isn't yet a title format for this bundle/type then we should
-  // determine the default based on the table unique constraint and save it.
-  // @TODO: Replace the label with the base table name.
-  // @TODO: make this chado independant.
+  // determine the default.
   if (!$title_format) {
-    $title_format = chado_node_get_unique_constraint_format($entity->label);
+    $title_format = tripal_get_default_title_format($entity);
     tripal_save_title_format($entity, $title_format);
   }
 
@@ -156,33 +282,87 @@ function tripal_get_title_format($entity) {
  */
 function tripal_save_title_format($entity, $format) {
 
-  // Title formats are saved as Tripal Bundle Variables.
-  // Thus first we need to grab the variable_id for title_format.
-  $variable_id = db_select('tripal_variables', 'v')->fields('v', array('variable_id'))->condition('name', 'title_format')->execute()->fetchField();
-
-  // And then we need to write the new format to the tripal_bundle_variables table.
-  $record = array(
-    'bundle_id' => $entity->id,
-    'variable_id' => $variable_id,
-    'value' => $format,
-  );
-
-  // Check whether there is already a format saved.
-  $bundle_variable_id = db_select('tripal_bundle_variables', 'var')
-    ->fields('var', array('bundle_variable_id'))
-    ->condition('var.bundle_id', $record['bundle_id'])
-    ->condition('var.variable_id', $record['variable_id'])
-    ->execute()
-    ->fetchField();
-  if ($bundle_variable_id) {
-    $record['bundle_variable_id'] = $bundle_variable_id;
-    drupal_write_record('tripal_bundle_variables', $record, 'bundle_variable_id');
-  }
-  else {
-    drupal_write_record('tripal_bundle_variables', $record);
-  }
-
+  return tripal_bundle_save_variable('title_format', $entity->id, $format);
 }
+
+/**
+ * Determine the default pattern/format to use for an entity type.
+ *
+ * @param TripalBundle $entity
+ *   The Entity object for the Tripal Bundle the title format is for.
+ * @return string
+ *   A default title format.
+ */
+function tripal_get_default_title_format($entity) {
+  $format = array();
+
+  // Retrieve all available tokens.
+  $tokens = tripal_get_tokens($entity);
+
+  foreach($tokens as $token) {
+    if ($token['required']) {
+      $format[] = $token['token'];
+    }
+  }
+
+  return implode(', ', $format);
+}
+
+/**
+ * Returns an array of tokens based on Tripal Entity Fields.
+ *
+ * @param TripalBundle $entity
+ *    The bundle entity for which you want tokens.
+ * @return
+ *    An array of tokens where the key is the machine_name of the token.
+ */
+function tripal_get_tokens($entity) {
+  $tokens = array();
+
+  $fields = field_info_instances('TripalEntity', $entity->bundle);
+  foreach ($fields as $f) {
+
+    // Build the token from the field information.
+    $token = '[' . $f['field_name'] . ']';
+    $tokens[$token] = array(
+      'label' => $f['label'],
+      'description' => $f['description'],
+      'token' => $token,
+      'field_name' => $f['field_name'],
+      'required' => $f['required']
+    );
+  }
+
+  return $tokens;
+}
+
+/**
+ * Formats the tokens for display.
+ *
+ * @param array $tokens
+ *   A list of tokens generated via tripal_get_tokens().
+ * @return
+ *   Rendered output describing the available tokens.
+ */
+function theme_token_list($tokens) {
+
+  $header = array('Token', 'Name', 'Description');
+  $rows = array();
+  foreach ($tokens as $details) {
+    $rows[] = array(
+      '[' . $details['field_name'] . ']',
+      $details['label'],
+      $details['description'],
+    );
+  }
+
+  return theme('table', array('header' => $header, 'rows' => $rows));
+}
+
+/**
+ * @section
+ * Vocabulary Hooks.
+ */
 
 /**
  * A hook for specifying information about the data store for vocabularies.

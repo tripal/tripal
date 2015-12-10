@@ -43,7 +43,7 @@ function theme_tripal_entities_add_list($variables) {
   }
   else {
     $output = tripal_set_message(
-      t('This page is for adding biological data to your site. However, before you can add data you have to specify what types of data your site will support. For example, if you want to add genes to be displayed to users, you must first create a data type "gene".'),
+      t('This page is for adding Tripal content to your site. However, before you can add data you have to specify what types of data your site will support. For example, if you want to add genes to be displayed to users, you must first create a data type "gene".'),
       TRIPAL_INFO,
       array('return_html' => TRUE)
     );
@@ -58,9 +58,9 @@ function theme_tripal_entities_add_list($variables) {
 /**
  *
  */
-function tripal_entities_entity_form($form, &$form_state, $cvterm_id = '', $entity = NULL) {
+function tripal_entities_entity_form($form, &$form_state, $term_id = '', $entity = NULL) {
 
-  $bundle_id = 'bio-data_' . $cvterm_id;
+  $bundle_name = 'bio-data_' . $term_id;
 
   // Add a vertical tabs element
   $form['entity_form_vtabs'] = array(
@@ -70,7 +70,7 @@ function tripal_entities_entity_form($form, &$form_state, $cvterm_id = '', $enti
 
   // If the entity doesn't exist then create one.
   if (!$entity) {
-    $entity = entity_get_controller('TripalEntity')->create(array('bundle' => $bundle_id));
+    $entity = entity_get_controller('TripalEntity')->create(array('bundle' => $bundle_name));
     field_attach_form('TripalEntity', $entity, $form, $form_state);
 
     $form['add_button'] = array(
@@ -100,7 +100,7 @@ function tripal_entities_entity_form($form, &$form_state, $cvterm_id = '', $enti
   // the Entity API to work. It must have a key of the entity name.
   $form_state['TripalEntity'] = $entity;
 
-  $form['#prefix'] = "<div id='$bundle_id-entity-form'>";
+  $form['#prefix'] = "<div id='$bundle_name-entity-form'>";
   $form['#suffix'] = "</div>";
   return $form;
 

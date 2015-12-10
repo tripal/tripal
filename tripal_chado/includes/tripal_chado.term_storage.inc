@@ -14,6 +14,47 @@ function tripal_chado_vocab_storage_info() {
 }
 
 /**
+ * Implements hook_vocab_get_term().
+ *
+ * This hooks is called by the tripal_entity module to retrieve information
+ * about the term from the storage backend.  It must return an array with
+ * a set of keys.
+ *
+ * @param $namespace
+ *   The namespace of the vocabulary in which the term is found.
+ * @param $term_id
+ *   The unique identifier (accession) for this term.
+ *
+ * @return
+ *   An array with at least the following keys:
+ *     id : The name unique ID of the term.
+ *     name : The name of the term.
+ *     definition : The term's description.
+ *   any other keys may be added as desired. Returns NULL if the term
+ *   cannot be found.
+ */
+function tripal_chado_vocab_get_term($namespace, $term_id) {
+  $match = array(
+    'dbxref_id' => array(
+      'db_id' => array(
+        'name' => $namespace,
+      ),
+      'accession' => $term_id
+    ),
+  );
+  $cvterm = chado_generate_var('cvterm', $match);
+  if (!$cvterm) {
+    return NULL;
+  }
+  $cvterm = chado_expand_var($cvterm, 'field', 'cveterm.definition');
+  return array(
+    'id' => $cvterm->dbxref_id->accession,
+    'name' => $cvterm->name,
+    'definition' => $cvterm->definition,
+    'cvterm' => $cvterm,
+  );
+}
+/**
  * Implements hook_vocab_select_term_form().
  */
 function tripal_chado_vocab_select_term_form($form, &$form_state) {

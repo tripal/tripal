@@ -35,7 +35,7 @@ function tripal_entities_content_view() {
 function tripal_entities_content_overview_form($form, &$form_state) {
 
   // Set the title to be informative (defaults to content for some reason).
-  drupal_set_title('Biological Data');
+  drupal_set_title('Tripal Content');
 
   // Retrieve a pages list of all tripal entitles (ie: biological data).
   // This will return the 25 most recently created entities.
@@ -51,8 +51,11 @@ function tripal_entities_content_overview_form($form, &$form_state) {
   // For each entity retrieved add a row to the data listing.
   while ($entity = $entities->fetchObject()) {
 
-    // Retrieve details about the term this entity is based on.
-    $cvterm = tripal_get_cvterm(array('cvterm_id' => $entity->cvterm_id));
+    // Get the term
+    $term = entity_load('TripalTerm', array('id' => $entity->term_id));
+    $term = reset($term);
+    $vocab = entity_load('TripalVocab', array('id' => $term->vocab_id));
+    $vocab = reset($vocab);
 
     // Retrieve details about the user who created this data.
     $author = user_load($entity->uid);
@@ -60,8 +63,8 @@ function tripal_entities_content_overview_form($form, &$form_state) {
     // Add information to the table.
     $rows[] = array(
       l($entity->title, 'bio-data/' . $entity->id),
-      $cvterm->cv_id->name . ' (' . $cvterm->dbxref_id->db_id->name . ')',
-      $cvterm->name,
+      $vocab->namespace,
+      $term->name,
       l($author->name, 'user/' . $entity->uid),
       $entity->status == 1 ? 'published' : 'unpublished',
       format_date($entity->changed, 'short'),
@@ -75,7 +78,7 @@ function tripal_entities_content_overview_form($form, &$form_state) {
   if (empty($rows)) {
     $rows[] = array(
       array(
-        'data' => t('No biological data available.'),
+        'data' => t('No Tripal content available.'),
         'colspan' => 7
       )
     );

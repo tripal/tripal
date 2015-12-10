@@ -32,29 +32,30 @@ class TripalEntityUIController extends EntityDefaultUIController {
       'page callback' => 'tripal_entities_add_page',
       'file' =>  'includes/tripal_entities.entity_form.inc',
       'file path' => drupal_get_path('module', 'tripal_entities'),
-      'access callback'  => 'tripal_entities_entity_access',
-      'access arguments' => array('edit'),
+      'access arguments' => array('administer tripal data'),
     );
 
     // Add a menu item for creating each bundle
     $bundles = array_keys($this->entityInfo['bundles']);
-    foreach ($bundles as $bundle) {
+    foreach ($bundles as $bundle_name) {
       $matches = array();
-      preg_match('/^bio-data_(.*?)$/', $bundle, $matches);
-      $cvterm_id = $matches[1];
-      $cvterm = tripal_get_cvterm(array('cvterm_id' => $cvterm_id));
-
-      // Set a custom page for adding new tripal data entities.
-      $items['bio-data/add/' . $cvterm_id] = array(
-        'title' => ucfirst($cvterm->name),
-        'description' => 'A ' . $cvterm->name . ' record.',
-        'page callback'  => 'drupal_get_form',
-        'page arguments' => array('tripal_entities_entity_form', 2),
-        'access callback'  => 'tripal_entities_entity_access',
-        'access arguments' => array('edit'),
-        'file' =>  'includes/tripal_entities.entity_form.inc',
-        'file path' => drupal_get_path('module', 'tripal_entities'),
-      );
+      if (preg_match('/^bio-data_(.*?)$/', $bundle_name, $matches)) {
+        $bundle = tripal_load_bundle_entity($bundle_name);
+        // Get the term for this bundle
+        $term = entity_load('TripalTerm', array('id' => $matches[1]));
+        $term = reset($term);
+        // Set a custom page for adding new tripal data entities.
+        $items['bio-data/add/' . $term->id] = array(
+          'title' => ucfirst($bundle->label),
+          'description' => tripal_get_bundle_variable('description', $bundle->id, $term->definition),
+          'page callback'  => 'drupal_get_form',
+          'page arguments' => array('tripal_entities_entity_form', 2),
+          'access callback'  => 'tripal_entities_entity_access',
+          'access arguments' => array('edit'),
+          'file' =>  'includes/tripal_entities.entity_form.inc',
+          'file path' => drupal_get_path('module', 'tripal_entities'),
+        );
+      }
     }
 
     // Link for viewing a tripal data type.
@@ -116,3 +117,21 @@ function tripal_entity_manage_fields($entity) {
   drupal_goto('admin/structure/bio-data/manage/' . $entity->bundle . '/fields');
   return '';
 }
+
+/**
+ * Menu callback to display an entity.
+ *
+ * As we load the entity for display, we're responsible for invoking a number
+ * of hooks in their proper order.
+ *
+ * @see hook_entity_prepare_view()
+ * @see hook_entity_view()
+ * @see hook_entity_view_alter()
+ */
+function tripal_entities_view_entity($entity, $view_mode = 'full') {
+   $content = '';
+   $controller = entity_get_controller($entity->type);
+   $content = $controller->view(array($entity->id => $entity));
+   drupal_set_title($entity->title);
+   return $content;
+ }
