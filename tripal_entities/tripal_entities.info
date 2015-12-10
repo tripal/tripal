@@ -7,6 +7,3 @@ version = 7.x-2.0
 
 dependencies[] = date
 dependencies[] = entity
-dependencies[] = tripal_core
-dependencies[] = tripal_db
-dependencies[] = tripal_cv

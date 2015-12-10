@@ -46,7 +46,7 @@ function tripal_chado_vocab_get_term($namespace, $term_id) {
   if (!$cvterm) {
     return NULL;
   }
-  $cvterm = chado_expand_var($cvterm, 'field', 'cveterm.definition');
+  $cvterm = chado_expand_var($cvterm, 'field', 'cvterm.definition');
   return array(
     'id' => $cvterm->dbxref_id->accession,
     'name' => $cvterm->name,

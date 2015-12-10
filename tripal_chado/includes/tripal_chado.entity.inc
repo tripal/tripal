@@ -24,15 +24,10 @@ function tripal_chado_entity_postsave($entity, $type) {
  * Implements hook_entity_load().
  */
 function tripal_chado_entity_load($entities, $type) {
-  dpm($entities);
-
-  // Set some information about the entity about it's Chado record.
-  foreach ($entities as $entity) {
-    dpm($entity->type);
-    if ($entity->type == 'TripalEntity') {
-
-    }
-  }
+ // TODO: we should add the cvterm record and the Chado record to the
+ // entity.  This way the kvproperty field (or any other's we add in the
+ // future do not need to load all of that information.  This can create
+ // multiple loading of the same records all over the place.
 }
 
 /**
