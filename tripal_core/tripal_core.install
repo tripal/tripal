@@ -19,6 +19,12 @@ function tripal_core_install() {
       FOREIGN KEY (mview_id) REFERENCES {tripal_mviews} (mview_id)
       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
   ');
+  
+  // Warn users that they need to install chado before installing anything else.
+  drupal_set_message(t(
+    'Tripal requires the <a href="!link">installation fo the Chado Schema</a> before any other modules can be installed.', 
+    array('!link' => url('admin/tripal/storage/chado/chado_install'))), 
+    'warning');
 }
 /**
  * Implementation of hook_schema().

@@ -282,7 +282,7 @@ function tripal_get_title_format($entity) {
  */
 function tripal_save_title_format($entity, $format) {
 
-  return tripal_bundle_save_variable('title_format', $entity->id, $format);
+  return tripal_set_bundle_variable('title_format', $entity->id, $format);
 }
 
 /**
