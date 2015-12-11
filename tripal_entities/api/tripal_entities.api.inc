@@ -4,19 +4,19 @@
  *
  * @param $namespace
  *   The namespace for the vocabulary
- * @param $term_id
+ * @param $accession
  *   The ID (accession) of the term in the vocabulary.
  *
  * @return
  *   A TripalTerm entity object or NULL if not found.
  */
-function tripal_load_term_entity($namespace, $term_id) {
+function tripal_load_term_entity($namespace, $accession) {
   $query = db_select('tripal_term', 'tt');
   $query->join('tripal_vocab' ,'tv', 'tv.id = tt.vocab_id');
-  $query->fields('tt', array('id', 'term_id'))
+  $query->fields('tt', array('id', 'accession'))
     ->fields('tv', array('namespace'))
     ->condition('tv.namespace', $namespace)
-    ->condition('tt.term_id', $term_id);
+    ->condition('tt.accession', $accession);
   $term = $query->execute()->fetchObject();
 
   if ($term) {
@@ -60,7 +60,7 @@ function tripal_load_vocab_entity($namespace) {
 function tripal_load_bundle_entity($name) {
   $bundle = db_select('tripal_bundle', 'tb')
     ->fields('tb')
-    ->condition('tb.bundle', $name)
+    ->condition('tb.name', $name)
     ->execute()
     ->fetchObject();
 
@@ -75,7 +75,7 @@ function tripal_load_bundle_entity($name) {
  *
  * @param $namespace
  *   The abbreviated namespace for the vocabulary (e.g. RO, SO, PATO).
- * @param $term_id
+ * @param $accession
  *   The unique term ID in the vocabulary $namespace (i.e. an accession).
  * @param $term_name
  *   A human-readable name for this term.  This will became the name that
@@ -88,7 +88,7 @@ function tripal_load_bundle_entity($name) {
  * @return
  *  TRUE if the entity type (bundle) was succesfully created.  FALSE otherwise.
  */
-function tripal_create_bundle($namespace, $term_id, $term_name, &$error = '') {
+function tripal_create_bundle($namespace, $accession, $term_name, &$error = '') {
 
   // First create the TripalVocab if it doesn't already exist.
   $vocab = tripal_load_vocab_entity($namespace);
@@ -98,23 +98,24 @@ function tripal_create_bundle($namespace, $term_id, $term_name, &$error = '') {
   }
 
   // Next create the TripalTerm if it doesn't already exist.
-  $term = tripal_load_term_entity($namespace, $term_id);
+  $term = tripal_load_term_entity($namespace, $accession);
   if (!$term) {
-    $args = array('vocab_id' => $vocab->id, 'term_id' => $term_id, 'name' => $term_name);
+    $args = array('vocab_id' => $vocab->id, 'accession' => $accession, 'name' => $term_name);
     $term = entity_get_controller('TripalTerm')->create($args);
     $term = $term->save();
   }
 
   // If the bundle doesn't already exist, then add it.
-  $bundle_id = 'bio-data_' . $term->id;
+  $bundle_name = 'bio-data_' . $term->id;
   $einfo = entity_get_info('TripalEntity');
-  if (!in_array($bundle_id, array_keys($einfo['bundles']))) {
+  if (!in_array($bundle_name, array_keys($einfo['bundles']))) {
     // Insert the bundle.
     db_insert('tripal_bundle')
       ->fields(array(
         'label' => $term_name,
         'type' => 'TripalEntity',
-        'bundle' => $bundle_id,
+        'name' => $bundle_name,
+        'term_id' => $term->id,
       ))
       ->execute();
   }
@@ -127,7 +128,7 @@ function tripal_create_bundle($namespace, $term_id, $term_name, &$error = '') {
   variable_set('menu_rebuild_needed', TRUE);
 
   // Get the bundle object.
-  $bundle = tripal_load_bundle_entity($bundle_id);
+  $bundle = tripal_load_bundle_entity($bundle_name);
 
   // Allow modules to now add fields to the bundle
   module_invoke_all('add_bundle_fields', 'TripalEntity', $bundle, $term);
@@ -135,6 +136,18 @@ function tripal_create_bundle($namespace, $term_id, $term_name, &$error = '') {
   return TRUE;
 }
 
+/**
+ * Allows a module to make changes to an entity object after creation.
+ *
+ * This function is added by Tripal to allow datastore backends to add
+ * addition properties to the entity that they themselves will use later.
+ *
+ * @param $entity
+ * @param $entity_type
+ */
+function hook_entity_create(&$entity, $entity_type) {
+
+}
 /**
  * Allows a module to add fields to a bundle.
  *
@@ -319,7 +332,7 @@ function tripal_get_default_title_format($entity) {
 function tripal_get_tokens($entity) {
   $tokens = array();
 
-  $fields = field_info_instances('TripalEntity', $entity->bundle);
+  $fields = field_info_instances('TripalEntity', $entity->name);
   foreach ($fields as $f) {
 
     // Build the token from the field information.
@@ -402,9 +415,9 @@ function hook_vocab_storage_info() {
  * This hook allows the module that implements a vocabulary storage backend
  * to provide the form necessary to select a term that will then be used for
  * creating a new TripalEntity type.  Tripal will expect that a 'namespace' and
- * 'term_id' are in the $form_state['storage'] array. The 'namespace' and
+ * 'accession' are in the $form_state['storage'] array. The 'namespace' and
  * must be the abbreviated uppercase namespace for the vocabulary (e.g. 'RO',
- * 'SO', 'PATO', etc.).  The 'term_id' must be the unique term ID (or
+ * 'SO', 'PATO', etc.).  The 'accession' must be the unique term ID (or
  * accession) for the term in the vocabulary.
  *
  * @param $form
@@ -423,5 +436,30 @@ function hook_vocab_select_term_form(&$form, &$form_state) {
  * @param $name
  */
 function hook_vocab_select_term_form_validate($form, &$form_state) {
+
+}
+
+/**
+ * Retreives information about a term from the default term storage backend.
+ *
+ * This hook is called by the tripal_entity module to retrieve information
+ * about the term from the storage backend.  It must return an array with
+ * a set of keys.
+ *
+ * @param $namespace
+ *   The namespace of the vocabulary in which the term is found.
+ * @param $accession
+ *   The unique identifier (accession) for this term.
+ *
+ * @return
+ *   An array with at least the following keys:
+ *     namespace : The namespace of the vocabulary.
+ *     accession : The name unique ID of the term.
+ *     name : The name of the term.
+ *     definition : The term's description.
+ *   any other keys may be added as desired. Returns NULL if the term
+ *   cannot be found.
+ */
+function hook_vocab_get_term($namespace, $accession) {
 
 }

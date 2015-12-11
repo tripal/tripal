@@ -76,7 +76,7 @@ function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType
   $entity_type = $form_state['build_info']['args'][0];
   $term = NULL;
   $vocab = NULL;
-  if (preg_match('/bio-data_(\d+)/', $entity_type->bundle, $matches)) {
+  if (preg_match('/bio-data_(\d+)/', $entity_type->name, $matches)) {
     $term = entity_load('TripalTerm', array('id' => $matches[1]));
     $term = reset($term);
     $vocab = entity_load('TripalVocab', array('id' => $term->vocab_id));
@@ -384,19 +384,19 @@ function tripal_entities_admin_add_type_form_validate($form, &$form_state) {
  */
 function tripal_entities_admin_add_type_form_submit($form, &$form_state) {
   $namespace = '';
-  $term_id = '';
+  $accession = '';
   if (array_key_exists('storage', $form_state)) {
     $storage = $form_state['storage'];
     $namespace = array_key_exists('namespace', $storage) ? $storage['namespace'] : '';
-    $term_id = array_key_exists('term_id', $storage) ? $storage['term_id'] : '';
+    $accession = array_key_exists('accession', $storage) ? $storage['accession'] : '';
     $term_name = array_key_exists('term_name', $storage) ? $storage['term_name'] : '';
 
     // Before we try to add this type, check to see if it already exists
     // as a bundle.
-    $term = tripal_load_term_entity($namespace, $term_id);
+    $term = tripal_load_term_entity($namespace, $accession);
     if (!$term) {
       $error = '';
-      $success = tripal_create_bundle($namespace, $term_id, $term_name, $error);
+      $success = tripal_create_bundle($namespace, $accession, $term_name, $error);
       if (!$success) {
         drupal_set_message($error, 'error');
         $form_state['redirect'] = "admin/structure/bio-data";

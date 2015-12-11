@@ -33,17 +33,20 @@ class TripalEntityController extends EntityAPIController {
     $values['created'] = time();
     $values['changed'] = time();
     $values['title'] = '';
+    $values['type'] = 'TripalEntity';
 
-    // The incoming values should have at a minimum the bundle_id;
-    $bundle = $values['bundle'];
-    $matches = array();
-    if (preg_match('/bio-data_(.*)/', $bundle, $matches)) {
-      $term_id = $matches[1];
-      $values['type'] = 'TripalEntity';
-      $values['term_id'] = $term_id;
+    // Call the parent constructor.
+    $entity = parent::create($values);
+
+    // Allow modules to make additions to the entity when it's created.
+    $modules = module_implements('entity_create');
+    foreach ($modules as $module) {
+      $function = $module . '_entity_create';
+      $function($entity, $values['type']);
     }
 
-    return parent::create($values);
+    return $entity;
+
   }
 
   /**
@@ -84,7 +87,7 @@ class TripalEntityController extends EntityAPIController {
     if (!$title) {
 
       // First get the format for the title based on the bundle of the entity.
-      $bundle_entity = tripal_bundle_load($entity->bundle);
+      $bundle_entity = tripal_load_bundle_entity($entity->bundle);
       $title = tripal_get_title_format($bundle_entity);
 
       // Determine which tokens were used in the format string
@@ -304,8 +307,9 @@ class TripalEntityController extends EntityAPIController {
     catch (Exception $e) {
       $transaction->rollback();
       watchdog_exception('tripal_core', $e);
-      drupal_set_message("Could not save the entity:" . $e->getMessage(), "error");
+      drupal_set_message("Could not save the entity: " . $e->getMessage(), "error");
       return FALSE;
     }
   }
 }
+

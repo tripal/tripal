@@ -24,20 +24,10 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   $term = reset($term);
 
   // Get the base table, type field and record_id from the entity.
-  $base_table = tripal_get_bundle_variable('chado_table', $bundle->id);
-  $type_field = tripal_get_bundle_variable('chado_column', $bundle->id);
-
-  // Look for an record in the chado_entity table for this entity.
-  $chado_entity = db_select('chado_entity', 'ct')
-    ->fields('ct')
-    ->condition('ct.entity_id', $entity->id)
-    ->execute()
-    ->fetchObject();
-
-  $record_id = NULL;
-  if ($chado_entity) {
-    $record_id  = $chado_entity->record_id;
-  }
+  $base_table = $entity->chado_table;
+  $type_field = $entity->chado_column;
+  $record     = $entity->chado_record;
+  $record_id  = $entity->chado_record_id;
 
   // Convert the fields into a key/value list of fields and their values.
   $field_vals = tripal_chado_field_storage_unnest_fields($fields, $entity_type, $entity);

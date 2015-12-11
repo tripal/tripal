@@ -1,6 +1,7 @@
 <?php
 
 require_once "api/tripal_chado.api.inc";
+require_once "includes/tripal_chado.entity.inc";
 require_once "includes/tripal_chado.term_storage.inc";
 require_once "includes/tripal_chado.field_storage.inc";
 
@@ -516,7 +517,7 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
     ),
     'tripal_chado_date_combo' => array(
       'render element' => 'element',
-      'file' => 'includes/tripal_chado.entity.inc',
+      'file' => 'theme/tripal_chado.theme.inc',
     ),
   );
 }
@@ -526,7 +527,7 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
  */
 function tripal_chado_add_bundle_fields($entity_type, $bundle, $term) {
 
-  $bundle_name = $bundle->bundle;
+  $bundle_name = $bundle->name;
 
   // This array will hold details that map the bundle to tables in Chado.
   $bundle_data = array();
@@ -539,7 +540,7 @@ function tripal_chado_add_bundle_fields($entity_type, $bundle, $term) {
       'db_id' => array(
         'name' => $vocab->namespace,
       ),
-      'accession' => $term->term_id
+      'accession' => $term->accession
     ),
   );
   $cvterm = chado_generate_var('cvterm', $match);
@@ -606,6 +607,7 @@ function tripal_chado_add_bundle_fields($entity_type, $bundle, $term) {
 
   // Check to see if there are any kv-property tables associated to this
   // base table. If so, add the fields for that type of table.
+  // TODO: the 'featurprop' table should not be hardcoded.
   tripal_chado_add_bundle_kvproperty_adder_field($entity_type, $bundle_name, 'featureprop');
 }
 

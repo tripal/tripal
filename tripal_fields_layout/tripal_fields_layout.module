@@ -30,12 +30,12 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
   drupal_add_css(drupal_get_path('module','tripal_fields_layout') . '/theme/css/tripal_fields_layout_panels.css');
 
   $entity_type = $form['#entity_type'];
-  $bundle_id = $form['#bundle'];
+  $bundle_name = $form['#bundle'];
 
   // Get the bundle record.
   $bundle = db_select('tripal_bundle', 'tb')
     ->fields('tb')
-    ->condition('bundle', $bundle_id)
+    ->condition('name', $bundle_name)
     ->execute()
     ->fetchObject();
 
@@ -99,6 +99,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
     t('Label'),
     array('data' => t('Format'), 'colspan' => 3),
     t('Region'),
+    t('Panel Layout')
   );
 
   // Change the region callback for each field to place each field in the
@@ -107,12 +108,12 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
   $default_panel = 'te_base';
 
   foreach (element_children($fields) as $field_name) {
-    $field_instance = field_info_instance($entity_type, $field_name, $bundle_id);
+    $field_instance = field_info_instance($entity_type, $field_name, $bundle_name);
     $panel_id = db_select('tripal_panel_fields', 'tpf')
-    ->fields('tpf', array('panel_id'))
-    ->condition('field_id', $field_instance['id'])
-    ->execute()
-    ->fetchField();
+      ->fields('tpf', array('panel_id'))
+      ->condition('field_id', $field_instance['id'])
+      ->execute()
+      ->fetchField();
     if ($panel_id) {
       $default_panel = db_select('tripal_panels', 'tp')
       ->fields('tp', array('name'))
@@ -129,6 +130,15 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
         'class' => array('te-field-region'),
       )
     );
+    $layout_options = array ('Default', 'Vertical Table', 'Horizontal Table', '[Add a Horizontal Table]', '[Add a Vertical Table]');
+    $form['fields'][$field_name]['layout'] = array(
+      '#type' => 'select',
+      '#options' => $layout_options,
+      '#default_value' => 'Default',
+      '#attributes' => array(
+        'class' => array('te-field-layout'),
+      )
+    );
     $form['fields'][$field_name]['#field_instance_id'] = array(
       '#type' => 'value',
       '#value' => $field_instance['id']
@@ -141,6 +151,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
   $submit = $form['#submit'];
   $form['#submit'] = array('tripal_fields_layout_field_ui_submit');
   $form['#submit'] = array_merge($form['#submit'], $submit);
+  //dpm($form);
 }
 
 /**
@@ -368,16 +379,16 @@ function _tripal_fields_layout_check_default_field_panels($bundle) {
   }
   // Now add all fields to the default region if they are not assigned
   $panel_id = db_select('tripal_panels', 'tp')
-  ->fields('tp', array('panel_id'))
-  ->condition('name', 'te_base')
-  ->condition('bundle_id', $bundle->id)
-  ->execute()
-  ->fetchField();
+    ->fields('tp', array('panel_id'))
+    ->condition('name', 'te_base')
+    ->condition('bundle_id', $bundle->id)
+    ->execute()
+    ->fetchField();
   if(property_exists($bundle, 'type')) {
     $fields = db_select('field_config_instance', 'fci')
       ->fields('fci', array('id'))
       ->condition('entity_type', $bundle->type)
-      ->condition('bundle', $bundle->bundle)
+      ->condition('bundle', $bundle->name)
       ->execute();
     foreach($fields AS $field) {
       $penal_field_id = db_select('tripal_panel_fields', 'tpf')
@@ -510,25 +521,26 @@ function tripal_fields_layout_field_ui_submit($form, &$form_state) {
 
       // Save
       $penal_field_id = db_select('tripal_panel_fields', 'tpf')
-        ->fields('tpf', array('panel_field_id'))
-        ->condition('field_id', $field_instance_id)
-        ->execute()
-        ->fetchField();
+      ->fields('tpf', array('panel_field_id'))
+      ->condition('field_id', $field_instance_id)
+      ->execute()
+      ->fetchField();
+
       if ($penal_field_id) {
         db_update('tripal_panel_fields')
-          ->fields(array(
-            'panel_id' => $panel_id,
-          ))
-          ->condition('panel_field_id', $penal_field_id)
-          ->execute();
+        ->fields(array(
+          'panel_id' => $panel_id,
+        ))
+        ->condition('panel_field_id', $penal_field_id)
+        ->execute();
       }
       else {
         db_insert('tripal_panel_fields')
-          ->fields(array(
-            'panel_id' => $panel_id,
-            'field_id' => $field_instance_id
-          ))
-          ->execute();
+        ->fields(array(
+          'panel_id' => $panel_id,
+          'field_id' => $field_instance_id
+        ))
+        ->execute();
       }
     }
   }
@@ -805,8 +817,8 @@ function tripal_fields_layout_entity_view($entity, $type, $view_mode, $langcode)
       if ($view_mode == 'full') {
 
         $bundle = db_select('tripal_bundle', 'tb')
-          ->fields('tb', array('id', 'bundle', 'label'))
-          ->condition('bundle', $entity->bundle)
+          ->fields('tb', array('id', 'name', 'label'))
+          ->condition('name', $entity->bundle)
           ->execute()
           ->fetchObject();
 

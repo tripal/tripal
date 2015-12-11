@@ -22,24 +22,25 @@ function tripal_chado_vocab_storage_info() {
  *
  * @param $namespace
  *   The namespace of the vocabulary in which the term is found.
- * @param $term_id
+ * @param $accession
  *   The unique identifier (accession) for this term.
  *
  * @return
  *   An array with at least the following keys:
- *     id : The name unique ID of the term.
+ *     namespace : The namespace of the vocabulary.
+ *     accession : The name unique ID of the term.
  *     name : The name of the term.
  *     definition : The term's description.
  *   any other keys may be added as desired. Returns NULL if the term
  *   cannot be found.
  */
-function tripal_chado_vocab_get_term($namespace, $term_id) {
+function tripal_chado_vocab_get_term($namespace, $accession) {
   $match = array(
     'dbxref_id' => array(
       'db_id' => array(
         'name' => $namespace,
       ),
-      'accession' => $term_id
+      'accession' => $accession,
     ),
   );
   $cvterm = chado_generate_var('cvterm', $match);
@@ -48,7 +49,8 @@ function tripal_chado_vocab_get_term($namespace, $term_id) {
   }
   $cvterm = chado_expand_var($cvterm, 'field', 'cvterm.definition');
   return array(
-    'id' => $cvterm->dbxref_id->accession,
+    'namespace' => $cvterm->dbxref_id->db_id->name,
+    'accession' => $cvterm->dbxref_id->accession,
     'name' => $cvterm->name,
     'definition' => (isset($cvterm->definition)) ? $cvterm->definition : '',
     'cvterm' => $cvterm,
@@ -126,7 +128,6 @@ function tripal_chado_vocab_select_term_form_validate($form, &$form_state) {
     $term_name = NULL;
     $cv_id = NULL;
     $cvterm = NULL;
-    $term_id = NULL;
     if (array_key_exists('term_name', $form_state['values'])) {
       $term_name = $form_state['input']['term_name'];
     }
@@ -162,10 +163,10 @@ function tripal_chado_vocab_select_term_form_validate($form, &$form_state) {
       form_set_error('term_name', t('The term is not unique. A list of vocabularies
         that contain this term. Please select the most appropriate vocabulary.'));
     }
-    // If we have a unique term then set the namespace, term_id and name.
+    // If we have a unique term then set the namespace, accession and name.
     if (count($terms) == 1) {
       $form_state['storage']['namespace'] = $terms[0]->dbxref_id->db_id->name;
-      $form_state['storage']['term_id']   = $terms[0]->dbxref_id->accession;
+      $form_state['storage']['accession'] = $terms[0]->dbxref_id->accession;
       $form_state['storage']['term_name'] = $terms[0]->name;
     }
   }

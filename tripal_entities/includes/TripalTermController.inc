@@ -28,7 +28,7 @@ class TripalTermController extends EntityAPIController {
       field_attach_delete('TripalTerm', $entity);
 
       db_delete('tripal_term')
-        ->condition('term_id', $entity->term_id)
+        ->condition('accession', $entity->accession)
         ->execute();
     }
     catch (Exception $e) {
@@ -66,7 +66,7 @@ class TripalTermController extends EntityAPIController {
       // Write out the entity record.
       $record = array(
         'vocab_id' => $entity->vocab_id,
-        'term_id' => $entity->term_id,
+        'accession' => $entity->accession,
         'name' => $entity->name,
         'created' => $entity->created,
         'changed' => time(),

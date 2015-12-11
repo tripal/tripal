@@ -1,5 +1,31 @@
 <?php
 
+
+/**
+ * Implements hook_entity_create().
+ *
+ * This hook is called when brand new entities are created, but
+ * they are not loaded so the hook_entity_load() is not yet called.
+ */
+function tripal_chado_entity_create(&$entity, $type) {
+  if ($type == 'TripalEntity') {
+
+    // Set some defaults on vars needed by this module.
+    $entity->chado_table = NULL;
+    $entity->chado_column = NULL;
+    $entity->chado_record = NULL;
+    $entity->chado_record_id = NULL;
+
+    // Add in the Chado table information for this entity type.
+    $bundle = tripal_load_bundle_entity($entity->bundle);
+    $chado_table = tripal_get_bundle_variable('chado_table', $bundle->id);
+    $chado_column = tripal_get_bundle_variable('chado_column', $bundle->id);
+    if ($chado_table) {
+      $entity->chado_table = $chado_table;
+      $entity->chado_column = $chado_column;
+    }
+  }
+}
 /**
  * Implements hook_entity_presave().
  */
@@ -11,15 +37,48 @@ function tripal_chado_entity_presave($entity, $type) { }
 function tripal_chado_entity_postsave($entity, $type) { }
 
 /**
- *
  * Implements hook_entity_load().
  */
 function tripal_chado_entity_load($entities, $type) {
- // TODO: we should add the cvterm record and the Chado record to the
- // entity.  This way the kvproperty field (or any other's we add in the
- // future do not need to load all of that information.  This can create
- // multiple loading of the same records all over the place.
+  if ($type == 'TripalEntity') {
+    foreach ($entities as $entity) {
+
+      // We want to add in the record ID to the entity.
+      if (property_exists($entity, 'id')) {
+
+        // Set some defaults on vars needed by this module.
+        $entity->chado_table = NULL;
+        $entity->chado_column = NULL;
+        $entity->chado_record = NULL;
+        $entity->chado_record_id = NULL;
+
+        // Add in the Chado table information for this entity type.
+        $bundle = tripal_load_bundle_entity($entity->bundle);
+        $chado_table = tripal_get_bundle_variable('chado_table', $bundle->id);
+        $chado_column = tripal_get_bundle_variable('chado_column', $bundle->id);
+        if ($chado_table) {
+          $entity->chado_table = $chado_table;
+          $entity->chado_column = $chado_column;
+        }
+
+        $chado_entity = db_select('chado_entity' ,'ce')
+          ->fields('ce')
+          ->condition('ce.entity_id', $entity->id)
+          ->execute()
+          ->fetchObject();
+        $schema = chado_get_schema($chado_table);
+        $record = chado_generate_var($chado_table, array($schema['primary key'][0] => $chado_entity->record_id));
+        $entity->chado_record = $record;
+        $entity->chado_record_id = $chado_entity->record_id;
+      }
+    }
+  }
 }
+
+/**
+ * Implements hook_field_attach_form().
+ */
+function tripal_chado_field_attach_form($entity_type, $entity, &$form, &$form_state, $langcode) { }
 
 /**
  *
@@ -39,10 +98,10 @@ function tripal_chado_entity_update($entity, $type) { }
  */
 function tripal_chaddo_entity_delete($entity, $type) {
   $record = db_select('chado_entity', 'ce')
-   ->fields('ce', array('chado_entity_id', 'data_table', 'record_id'))
-   ->condition('entity_id', $entity->id)
-   ->execute()
-   ->fetchObject();
+    ->fields('ce', array('chado_entity_id', 'data_table', 'record_id'))
+    ->condition('entity_id', $entity->id)
+    ->execute()
+    ->fetchObject();
 
   if ($record && property_exists($record, 'chado_entity_id')) {
     // Delete the corresponding record in Chado
@@ -55,29 +114,6 @@ function tripal_chaddo_entity_delete($entity, $type) {
     db_query($sql, array(':id' => $record->chado_entity_id));
   }
 }
-
-/**
- * This theme function is meant to override the data_combo theme.
- *
- * @param $variables
- */
-function theme_tripal_chado_date_combo($variables) {
-  $element = $variables['element'];
-  $field = field_info_field($element['#field_name']);
-  $instance = field_info_instance($element['#entity_type'], $element['#field_name'], $element['#bundle']);
-
-  // Group start/end items together in fieldset.
-  $fieldset = array(
-    '#title' => t($element['#title']) . ' ' . ($element['#delta'] > 0 ? intval($element['#delta'] + 1) : ''),
-    '#value' => '',
-    '#description' => !empty($element['#fieldset_description']) ? $element['#fieldset_description'] : '',
-    '#attributes' => array(),
-    '#children' => $element['#children'],
-    '#attributes' => array('class' => array('collapsible', 'collapsed')),
-  );
-  return theme('fieldset', array('element' => $fieldset));
-}
-
 
 /**
  * Determines whether the given user has access to a tripal data entity.
@@ -108,31 +144,4 @@ function tripal_chado_entity_access($op, $entity = NULL, $account = NULL) {
     }
   }
   return FALSE;
-}
-
-/**
- * Menu callback to display an entity.
- *
- * As we load the entity for display, we're responsible for invoking a number
- * of hooks in their proper order.
- *
- * @see hook_entity_prepare_view()
- * @see hook_entity_view()
- * @see hook_entity_view_alter()
- */
-function tripal_chado_view_entity($entity, $view_mode = 'full') {
-  $content = '';
-  $controller = entity_get_controller($entity->type);
-  $content = $controller->view(array($entity->id => $entity));
-  drupal_set_title($entity->title);
-  return $content;
-}
-
-/**
- * Menu title callback for showing individual entities
- */
-function tripal_chado_entity_title($entity){
-  if ($entity) {
-    return $entity->title;
-  }
 }
