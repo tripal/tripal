@@ -189,10 +189,9 @@ function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType
     '#value' => serialize($tokens)
   );
 
-  $token_markup = theme_token_list($tokens);
   $form['set_titles']['token_display']['content'] = array(
     '#type' => 'item',
-    '#markup' => $token_markup
+    '#markup' => theme_token_list($tokens),
   );
 
   // Set URL Alias Pattern.
@@ -227,6 +226,12 @@ function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType
     '#default_value' => $url_pattern,
     '#rows' => 1
   );
+  
+  $tokens = tripal_get_tokens($entity_type, array('required only' => TRUE));
+  $form['url']['tokens'] = array(
+    '#type' => 'hidden',
+    '#value' => serialize($tokens)
+  );
 
   $form['url']['token_display'] = array(
     '#type' => 'fieldset',
@@ -238,7 +243,7 @@ function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType
 
   $form['url']['token_display']['content'] = array(
     '#type' => 'item',
-    '#markup' => $token_markup
+    '#markup' => theme_token_list($tokens),
   );
 
   // Submit Buttons
@@ -264,6 +269,8 @@ function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType
  */
 function tripal_entities_tripal_bundle_form_validate($form, $form_state) {
 
+  // VALIDATE: The only tokens used should be those we mentioned under "Available Tokens".
+  // PART 1: Set Titles.
   $tokens_available = unserialize($form_state['values']['set_titles']['tokens']);
   if (preg_match_all('/(\[\w+\])/', $form_state['values']['set_titles']['title_format'], $matches)) {
 
@@ -284,6 +291,29 @@ function tripal_entities_tripal_bundle_form_validate($form, $form_state) {
       array('%type' => $form_state['build_info']['args'][0]->label));
     form_set_error('set_titles][title_format', $msg);
   }
+  
+  // PART 2: URL Alias'
+  $tokens_available = unserialize($form_state['values']['url']['tokens']);
+  if (preg_match_all('/(\[\w+\])/', $form_state['values']['url']['url_pattern'], $matches)) {
+
+    // The matches of the first and only pattern will be our tokens.
+    $tokens_used = $matches[1];
+    // Determine if any of the tokens used were not in the original list of available tokens.
+    $tokens_missing = array_diff($tokens_used, array_keys($tokens_available));
+
+    if ($tokens_missing) {
+      $msg = t('You must only use tokens listed under available tokens. You used the following incorrect tokens: %tokens',
+        array('%tokens' => implode(', ', $tokens_missing)));
+      form_set_error('url][url_pattern', $msg);
+    }
+
+  }
+  else {
+    $msg = t('You should use at least one token in your URL pattern or the URL for all %type pages will be the same.',
+      array('%type' => $form_state['build_info']['args'][0]->label));
+    form_set_error('url][url_pattern', $msg);
+  }
+
 }
 
 /**

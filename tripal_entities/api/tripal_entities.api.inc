@@ -329,21 +329,34 @@ function tripal_get_default_title_format($entity) {
  * @return
  *    An array of tokens where the key is the machine_name of the token.
  */
-function tripal_get_tokens($entity) {
+function tripal_get_tokens($entity, $options = array()) {
   $tokens = array();
 
+  // Set default options.
+  $options['required only'] = (isset($options['required only'])) ? $options['required only'] : FALSE;
+  
   $fields = field_info_instances('TripalEntity', $entity->name);
   foreach ($fields as $f) {
 
     // Build the token from the field information.
     $token = '[' . $f['field_name'] . ']';
-    $tokens[$token] = array(
+    $current_token = array(
       'label' => $f['label'],
       'description' => $f['description'],
       'token' => $token,
       'field_name' => $f['field_name'],
       'required' => $f['required']
     );
+    
+    // If the required only option is set then we only want to add
+    // required fields to the token list.
+    if ($options['required only'] AND $current_token['required']) {
+      $tokens[$token] = $current_token;
+    }
+    // If the required only option is not set then add everything.
+    elseif (!$options['required only']) {
+      $tokens[$token] = $current_token;
+    }
   }
 
   return $tokens;
