@@ -1,7 +1,6 @@
 <?php
 
 require_once "api/tripal_entities.api.inc";
-require_once "includes/tripal_entities.entity_form.inc";
 require_once "includes/TripalVocab.inc";
 require_once "includes/TripalVocabController.inc";
 require_once "includes/TripalTerm.inc";
@@ -175,7 +174,6 @@ function tripal_entities_theme($existing, $type, $theme, $path) {
     ),
     'tripal_entities_add_list' => array(
       'variables' => array('content' => NULL),
-      'file' => 'includes/tripal_entities.entity_form.inc',
     ),
 
   );
@@ -219,6 +217,7 @@ function tripal_entities_rdf_mapping() {
  */
 function tripal_entities_entity_info() {
   $entities = array();
+  //return $entities;
   //
   // The TripalVocab entity is meant to house vocabularies.  It is these
   // vocabs that are used by the TripalTerm entities.  The storage backend
@@ -430,10 +429,9 @@ function tripal_entities_entity_info_alter(&$entity_info){
     $bundles = db_select('tripal_bundle', 'tb')
       ->fields('tb')
       ->execute();
-
     while ($bundle = $bundles->fetchObject()) {
-      $bundle_name = $bundle->bundle;
-      $term_id = preg_replace('/bio-data_/', '', $bundle_name);
+      $bundle_name = $bundle->name;
+      $term_id = $bundle->term_id;
       $term = entity_load('TripalTerm', array('id' => $term_id));
       $term = reset($term);
       $label = preg_replace('/_/', ' ', ucwords($term->name));
@@ -464,14 +462,13 @@ function tripal_entities_entity_info_alter(&$entity_info){
 
 function tripal_bundle_load($bundle_type, $reset = FALSE) {
   // Get the type of entity by the ID.
-  $bundle_types = db_select('tripal_bundle', 'tdt')
+  $bundle = db_select('tripal_bundle', 'tdt')
     ->fields('tdt', array('id', 'type'))
-    ->condition('bundle', $bundle_type)
+    ->condition('name', $bundle_type)
     ->execute()
     ->fetchObject();
-
-  if ($bundle_types) {
-    $entity = entity_load('TripalBundle', array($bundle_types->id), array(), $reset);
+  if ($bundle) {
+    $entity = entity_load('TripalBundle', array($bundle->id), array(), $reset);
     return reset($entity);
   }
   return FALSE;

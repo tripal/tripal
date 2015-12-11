@@ -13,7 +13,7 @@ function tripal_entities_install() {
   tripal_insert_variable('title_format', 'A pattern including tokens that can be used to generate tripal entity titles.');
   tripal_insert_variable('url_format', 'A pattern including tokens that can be used to generate tripal entity url aliases.');
   tripal_insert_variable('description', 'The description of a Tripal Entity type/bundle.');
-  
+
 }
 
 /**
@@ -26,7 +26,7 @@ function tripal_entities_schema() {
   $schema['tripal_term'] = tripal_entities_tripal_term_schema();
   $schema['tripal_entity'] = tripal_entities_tripal_entity_schema();
   $schema['tripal_bundle'] = tripal_entities_tripal_bundle_schema();
-  
+
   // Adds a table for additional information related to bundles.
   $schema['tripal_bundle_variables'] = tripal_entities_tripal_bundle_variables_schema();
 
@@ -194,7 +194,7 @@ function tripal_entities_tripal_term_schema() {
         'type' => 'int',
         'not null' => TRUE,
       ),
-      'term_id' => array(
+      'accession' => array(
         'description' => 'The id (or accession) of this term in the vocabulary.',
         'type' => 'varchar',
         'length' => 1024,
@@ -223,10 +223,9 @@ function tripal_entities_tripal_term_schema() {
     ),
     'indexes' => array(
       'vocab_id' => array('vocab_id'),
-      'term_id' => array('term_id'),
+      'accession' => array('accession'),
       'entity_changed' => array('changed'),
       'entity_created' => array('created'),
-
     ),
     'foreign keys' => array(
       'tripal_vocab' => array(
@@ -236,7 +235,7 @@ function tripal_entities_tripal_term_schema() {
         ),
       ),
     ),
-    'unique keys' => array('vocab_term' => array('vocab_id', 'term_id')),
+    'unique keys' => array('vocab_term' => array('vocab_id', 'accession')),
     'primary key' => array('id'),
   );
   return $schema;
@@ -260,14 +259,19 @@ function tripal_entities_tripal_bundle_schema() {
         'description' => 'Primary Key: Unique numeric ID.',
       ),
       'type' => array(
-        'description' => 'The type of entity. This should be an official vocabulary ID (e.g. SO, RO, GO).',
+        'description' => 'The type of entity (e.g. TripalEntity).',
         'type' => 'varchar',
         'length' => 64,
         'not null' => TRUE,
         'default' => '',
       ),
-      'bundle' => array(
-        'description' => 'The type of bundle. This should be an official vocabulary ID (e.g. SO, RO, GO) followed by an underscore and the term accession.',
+      'term_id' => array(
+        'description' => 'The term_id for the type of entity. This term_id corresponds to a TripalTerm record.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'The name of the bundle. This should be an official vocabulary ID (e.g. SO, RO, GO) followed by an underscore and the term accession.',
         'type' => 'varchar',
         'length' => 1024,
         'not null' => TRUE,
@@ -281,9 +285,13 @@ function tripal_entities_tripal_bundle_schema() {
         'default' => '',
       ),
     ),
+    'indexes' => array(
+      'name' => array('name'),
+      'term_id' => array('term_id'),
+    ),
     'primary key' => array('id'),
     'unique keys' => array(
-      'bundle' => array('bundle'),
+      'name' => array('name'),
     ),
   );
   return $schema;
@@ -347,7 +355,7 @@ function tripal_entities_tripal_bundle_variables_schema() {
       ),
     ),
   );
-  
+
   return $schema;
 }
 

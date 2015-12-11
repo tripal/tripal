@@ -377,7 +377,7 @@ function _tripal_fields_layout_check_default_field_panels($bundle) {
     $fields = db_select('field_config_instance', 'fci')
       ->fields('fci', array('id'))
       ->condition('entity_type', $bundle->type)
-      ->condition('bundle', $bundle->bundle)
+      ->condition('bundle', $bundle->name)
       ->execute();
     foreach($fields AS $field) {
       $penal_field_id = db_select('tripal_panel_fields', 'tpf')
@@ -806,7 +806,7 @@ function tripal_fields_layout_entity_view($entity, $type, $view_mode, $langcode)
 
         $bundle = db_select('tripal_bundle', 'tb')
           ->fields('tb', array('id', 'bundle', 'label'))
-          ->condition('bundle', $entity->bundle)
+          ->condition('name', $entity->name)
           ->execute()
           ->fetchObject();
 
@@ -833,7 +833,7 @@ function tripal_fields_layout_entity_view($entity, $type, $view_mode, $langcode)
 
         // Organize fields into panels
         foreach (element_children($entity->content) as $field_name) {
-          $field_instance = field_info_instance ($type, $field_name, $entity->bundle);
+          $field_instance = field_info_instance ($type, $field_name, $entity->name);
           // Get default panel_id
           $default_panel_id = db_select('tripal_panels', 'tp')
             ->fields('tp', array('panel_id'))

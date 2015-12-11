@@ -24,11 +24,11 @@
  *       FIELD_CARDINALITY_UNLIMITED for unlimited number of values.
  * @param $entity_type_name
  *   The entity type name.
- * @param $bundle_id
+ * @param $bundle_name
  *   The bundle name.
  *
  */
-function tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_id) {
+function tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name) {
 
   $field = field_info_field($field_name);
 
@@ -36,7 +36,7 @@ function tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $b
   // there is nothing left to do.
   if ($field and array_key_exists('bundles', $field) and
       array_key_exists($entity_type_name, $field['bundles']) and
-      in_array($bundle_id, $field['bundles'][$entity_type_name])) {
+      in_array($bundle_name, $field['bundles'][$entity_type_name])) {
     return;
   }
 
@@ -75,7 +75,7 @@ function tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $b
     'entity_type' => $entity_type_name,
     'required' => $field_info['is_required'],
     'settings' => $field_info['field_settings'],
-    'bundle' => $bundle_id,
+    'bundle' => $bundle_name,
   );
   field_create_instance($field_instance);
 }

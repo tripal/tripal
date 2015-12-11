@@ -44,7 +44,7 @@ function tripal_chado_kvproperty_adder_widget(&$widget, $form, $form_state,
     '#type' => 'textfield',
     '#description' => t("Please enter the type of property that you want to
         add.  As you type, suggestions will be provided."),
-    '#autocomplete_path' => "admin/tripal/vocab/cvterm/auto_name/",
+    '#autocomplete_path' => "admin/tripal/vocab/cvterm/auto_name//",
   );
   $widget['kvproperty_adder_link'] = array(
     '#type' => 'item',

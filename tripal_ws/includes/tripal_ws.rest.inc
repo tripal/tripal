@@ -24,7 +24,7 @@ function tripal_ws_rest() {
       ->execute();
     $terms = array();
     while ($bundle = $bundles->fetchObject()) {
-      $cvterm_id = preg_replace('/^bio-data_/', '', $bundle->bundle);
+      $cvterm_id = preg_replace('/^bio-data_/', '', $bundle->name);
       if ($cvterm_id) {
         $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
         $terms[$cvterm->name] = $cvterm;

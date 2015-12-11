@@ -43,19 +43,11 @@ function tripal_chado_kvproperty_widget(&$widget, $form, $form_state, $field, $i
   $entity = $form['#entity'];
   $field_name = $field['field_name'];
 
-  // Get the bundle and the table it maps to.
-  $bundle = tripal_load_bundle_entity($entity->bundle);
-  $chado_table = tripal_get_bundle_variable('chado_table', $bundle->id);
-  $chado_column = tripal_get_bundle_variable('chado_column', $bundle->id);
+  // Get the record and table mapping info.
+  $chado_table = $entity->chado_table;
+  $chado_column = $entity->chado_column;
+  $chado_record = $entity->chado_record;
 
-  // Get the chado record.
-  $chado_entity = db_select('chado_entity' ,'ce')
-    ->fields('ce')
-    ->condition('ce.entity_id', $entity->id)
-    ->execute()
-    ->fetchObject();
-  $schema = chado_get_schema($chado_table);
-  $record = chado_select_record($chado_table, array('*'), array($schema['primary key'][0] => $chado_entity->record_id));
   $matches = array();
   preg_match('/(.*?)__(\d+)/', $field_name, $matches);
   // If the field name is not properly formatted then we can't tell what
@@ -79,8 +71,8 @@ function tripal_chado_kvproperty_widget(&$widget, $form, $form_state, $field, $i
   if (array_key_exists($delta, $items)) {
     $propval = $items[$delta][$table_name . '__value'];
   }
-  if (count($record) > 0) {
-    $fk_value = $record[0]->$rfkey_field;
+  if ($chado_record) {
+    $fk_value = $chado_record->$rfkey_field;
   }
 
 
@@ -136,9 +128,9 @@ function tripal_chado_kvproperty_widget_validate($element, &$form_state) {
   $entity = $element['#entity'];
   $matches = array();
 
-  $bundle = tripal_load_bundle_entity($entity->bundle);
-  $chado_table = tripal_get_bundle_variable('chado_table', $bundle->id);
-  $chado_column = tripal_get_bundle_variable('chado_column', $bundle->id);
+  // Get the record and table mapping info.
+  $chado_table = $entity->chado_table;
+  $chado_column = $entity->chado_column;
 
   // Get the table name and cvterm_id for this field.
   preg_match('/(.*?)__(\d+)/', $field_name, $matches);
