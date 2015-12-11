@@ -334,6 +334,18 @@ function tripal_get_tokens($entity, $options = array()) {
 
   // Set default options.
   $options['required only'] = (isset($options['required only'])) ? $options['required only'] : FALSE;
+  $options['include id'] = (isset($options['include id'])) ? $options['include id'] : TRUE;
+  
+  if ($options['include id']) {
+    $token = '[TripalBundle__bundle_id]';
+    $tokens[$token] = array(
+      'label' => 'Bundle ID',
+      'description' => 'The unique identifier for this Tripal Content Type.',
+      'token' => $token,
+      'field_name' => NULL,
+      'required' => TRUE
+    );
+  }
   
   $fields = field_info_instances('TripalEntity', $entity->name);
   foreach ($fields as $f) {
@@ -363,6 +375,56 @@ function tripal_get_tokens($entity, $options = array()) {
 }
 
 /**
+ * Replace all Tripal Tokens in a given string.
+ *
+ * NOTE: If there is no value for a token then the token is removed.
+ *
+ * @param string $string
+ *   The string containing tokens.
+ * @param TripalEntity $entity
+ *   The entity with field values used to find values of tokens.
+ * @param TripalBundle $bundle_entity
+ *   The bundle enitity containing special values sometimes needed for token replacement.
+ *
+ * @return
+ *   The string will all tokens replaced with values.
+ */
+function tripal_replace_tokens($string, $entity, $bundle_entity = NULL) {
+
+  // Determine which tokens were used in the format string
+  if (preg_match_all('/\[\w+\]/', $string, $matches)) {
+    $used_tokens = $matches[0];
+
+    foreach($used_tokens as $token) {
+      $field = str_replace(array('.','[',']'),array('__','',''),$token);
+
+      $value = '';
+      if (isset($entity->{$field})) {
+
+        // Render the value from the field.
+        // @TODO: Handle the case where thefield is empty... currently returns error.
+        $field_value = field_get_items('TripalEntity', $entity, $field);
+        $field_render_arr = field_view_value('TripalEntity', $entity, $field, $field_value[0]);
+        $value = render($field_render_arr);
+      }
+      elseif ($field === 'TripalBundle__bundle_id') {
+        
+        // Load the bundle entity if we weren't given it.
+        if (!$bundle_entity) {
+          $bundle_entity = tripal_load_bundle_entity($entity->bundle);
+        }
+
+        // This token should be the id of the TripalBundle.
+        $value = $bundle_entity->id;
+      }
+      $string = str_replace($token, $value, $string);
+    }
+  }
+
+  return $string;
+}
+
+/**
  * Formats the tokens for display.
  *
  * @param array $tokens
@@ -376,7 +438,7 @@ function theme_token_list($tokens) {
   $rows = array();
   foreach ($tokens as $details) {
     $rows[] = array(
-      '[' . $details['field_name'] . ']',
+      $details['token'],
       $details['label'],
       $details['description'],
     );

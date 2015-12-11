@@ -86,29 +86,15 @@ class TripalEntityController extends EntityAPIController {
     // default format set by admins.
     if (!$title) {
 
-      // First get the format for the title based on the bundle of the entity.
+      // Load the TripalBundle entity for this TripalEntity.
       $bundle_entity = tripal_load_bundle_entity($entity->bundle);
+      
+      // First get the format for the title based on the bundle of the entity.
       $title = tripal_get_title_format($bundle_entity);
+      
+      // And then replace all the tokens with values from the entity fields.
+      $title = tripal_replace_tokens($title, $entity, $bundle_entity);
 
-      // Determine which tokens were used in the format string
-      if (preg_match_all('/\[\w+\]/', $title, $matches)) {
-        $used_tokens = $matches[0];
-
-        foreach($used_tokens as $token) {
-          $field = str_replace(array('.','[',']'),array('__','',''),$token);
-
-          $value = '';
-          if (isset($entity->{$field})) {
-
-            // Render the value from the field.
-            // @TODO: Handle the case where thefield is empty... currently returns error.
-            $field_value = field_get_items('TripalEntity', $entity, $field);
-            $field_render_arr = field_view_value('TripalEntity', $entity, $field, $field_value[0]);
-            $value = render($field_render_arr);
-          }
-          $title = str_replace($token, $value, $title);
-        }
-      }
     }
 
     // As long as we were able to determine a title, we should update it ;-).
@@ -132,29 +118,14 @@ class TripalEntityController extends EntityAPIController {
     // default format set by admins.
     if (!$alias) {
     
-      // First get the format for the url alias based on the bundle of the entity.
+      // Load the TripalBundle entity for this TripalEntity.
       $bundle_entity = tripal_bundle_load($entity->bundle);
+      
+      // First get the format for the url alias based on the bundle of the entity.
       $alias = tripal_get_bundle_variable('url_format', $bundle_entity->id);
 
-      // Determine which tokens were used in the format string
-      if (preg_match_all('/\[\w+\]/', $alias, $matches)) {
-        $used_tokens = $matches[0];
-
-        foreach($used_tokens as $token) {
-          $field = str_replace(array('.','[',']'),array('__','',''),$token);
-
-          $value = '';
-          if (isset($entity->{$field})) {
-
-            // Render the value from the field.
-            // @TODO: Handle the case where thefield is empty... currently returns error.
-            $field_value = field_get_items('TripalEntity', $entity, $field);
-            $field_render_arr = field_view_value('TripalEntity', $entity, $field, $field_value[0]);
-            $value = render($field_render_arr);
-          }
-          $alias = str_replace($token, trim($value), $alias);
-        }
-      }
+      // And then replace all the tokens with values from the entity fields.
+      $alias = tripal_replace_tokens($alias, $entity, $bundle_entity);
     }
 
     // Make sure the alias doesn't contain spaces.
