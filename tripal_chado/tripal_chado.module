@@ -607,6 +607,7 @@ function tripal_chado_add_bundle_fields($entity_type, $bundle, $term) {
 
   // Check to see if there are any kv-property tables associated to this
   // base table. If so, add the fields for that type of table.
+  // TODO: the 'featurprop' table should not be hardcoded.
   tripal_chado_add_bundle_kvproperty_adder_field($entity_type, $bundle_name, 'featureprop');
 }
 

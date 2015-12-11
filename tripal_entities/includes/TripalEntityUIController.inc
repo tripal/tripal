@@ -168,10 +168,10 @@ function tripal_entities_view_entity($entity, $view_mode = 'full') {
    // Retrieve a pages list of all tripal entitles (ie: biological data).
    // This will return the 25 most recently created entities.
    $entities = db_select('tripal_entity', 'td')
-   ->fields('td')
-   ->orderBy('created', 'DESC')
-   ->range(0,25)
-   ->execute();
+     ->fields('td')
+     ->orderBy('created', 'DESC')
+     ->range(0,25)
+     ->execute();
 
    $headers = array('Title', 'Vocabulary', 'Term', 'Author', 'Status', 'Updated', 'Operations');
    $rows = array();

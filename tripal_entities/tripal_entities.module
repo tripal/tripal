@@ -347,7 +347,7 @@ function tripal_entities_entity_info() {
       'bundle' => 'bundle'
     ),
     'bundle keys' => array (
-      'bundle' => 'bundle'
+      'bundle' => 'name'
     ),
 
     // Callback function for access to this entity.
@@ -398,7 +398,7 @@ function tripal_entities_entity_info() {
     'exportable' => FALSE,
     'entity keys' => array (
       'id' => 'id',
-      'name' => 'bundle',
+      'name' => 'name',
       'label' => 'label'
     ),
     'access callback' => 'tripal_bundle_access',
@@ -454,6 +454,10 @@ function tripal_entities_entity_info_alter(&$entity_info){
 /**
  * Menu argument loader; Load a tripal data type by string.
  *
+ *
+ * This function is not meant to be used as an API function. It is only mean
+ * for use in the menu to resolve the %tripal_entity wildcard.
+ *
  * @param $type
  *   The machine-readable name of a tripal data type to load.
  * @return
@@ -463,7 +467,7 @@ function tripal_entities_entity_info_alter(&$entity_info){
 function tripal_bundle_load($bundle_type, $reset = FALSE) {
   // Get the type of entity by the ID.
   $bundle = db_select('tripal_bundle', 'tdt')
-    ->fields('tdt', array('id', 'type'))
+    ->fields('tdt')
     ->condition('name', $bundle_type)
     ->execute()
     ->fetchObject();
@@ -480,6 +484,9 @@ function tripal_bundle_load($bundle_type, $reset = FALSE) {
  * Make sure that the wildcard you choose in the tripal_entity entity
  * definition fits the function name here.
  *
+ * This function is not meant to be used as an API function. It is only mean
+ * for use in the menu to resolve the %tripal_entity wildcard.
+ *
  * @param $id
  *   Integer specifying the tripal_entity id.
  * @param $reset
@@ -490,7 +497,7 @@ function tripal_bundle_load($bundle_type, $reset = FALSE) {
  * @see tripal_entity_load_multiple()
  */
 function tripal_entity_load($id, $reset = FALSE) {
-    $entity = entity_load('TripalEntity', array($id), array(), $reset);
-    return reset($entity);
+  $entity = entity_load('TripalEntity', array($id), array(), $reset);
+  return reset($entity);
 }
 

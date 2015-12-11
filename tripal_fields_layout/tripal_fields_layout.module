@@ -35,7 +35,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
   // Get the bundle record.
   $bundle = db_select('tripal_bundle', 'tb')
     ->fields('tb')
-    ->condition('bundle', $bundle_name)
+    ->condition('name', $bundle_name)
     ->execute()
     ->fetchObject();
 
@@ -108,12 +108,12 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
   $default_panel = 'te_base';
 
   foreach (element_children($fields) as $field_name) {
-    $field_instance = field_info_instance($entity_type, $field_name, $bundle_id);
+    $field_instance = field_info_instance($entity_type, $field_name, $bundle_name);
     $panel_id = db_select('tripal_panel_fields', 'tpf')
-    ->fields('tpf', array('panel_id'))
-    ->condition('field_id', $field_instance['id'])
-    ->execute()
-    ->fetchField();
+      ->fields('tpf', array('panel_id'))
+      ->condition('field_id', $field_instance['id'])
+      ->execute()
+      ->fetchField();
     if ($panel_id) {
       $default_panel = db_select('tripal_panels', 'tp')
       ->fields('tp', array('name'))
@@ -817,8 +817,8 @@ function tripal_fields_layout_entity_view($entity, $type, $view_mode, $langcode)
       if ($view_mode == 'full') {
 
         $bundle = db_select('tripal_bundle', 'tb')
-          ->fields('tb', array('id', 'bundle', 'label'))
-          ->condition('name', $entity->name)
+          ->fields('tb', array('id', 'name', 'label'))
+          ->condition('name', $entity->bundle)
           ->execute()
           ->fetchObject();
 
@@ -845,7 +845,7 @@ function tripal_fields_layout_entity_view($entity, $type, $view_mode, $langcode)
 
         // Organize fields into panels
         foreach (element_children($entity->content) as $field_name) {
-          $field_instance = field_info_instance ($type, $field_name, $entity->name);
+          $field_instance = field_info_instance ($type, $field_name, $entity->bundle);
           // Get default panel_id
           $default_panel_id = db_select('tripal_panels', 'tp')
             ->fields('tp', array('panel_id'))
