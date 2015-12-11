@@ -164,7 +164,7 @@ class TripalEntityController extends EntityAPIController {
     $alias = preg_replace('/_/','-',$alias);
     
     if ($alias) {
-        
+           
       // Determine if this alias has already been used.
       $num_aliases = db_query('SELECT count(*) as num_alias FROM {url_alias} WHERE alias=:alias',
         array(':alias' => $alias))->fetchField();
@@ -184,6 +184,8 @@ class TripalEntityController extends EntityAPIController {
       // assigned this alias to this entity in a previous save.
       elseif ($num_aliases == 1) {
       
+        $bundle_entity = tripal_bundle_load($entity->bundle);
+        
         // Checking to see if the single alias is for the same entity and if not
         // warning the admin that the alias is already used (ie: not unique?)
         $same_alias = db_query('SELECT count(*) as num_alias FROM {url_alias} WHERE alias=:alias AND source=:source',
@@ -195,7 +197,7 @@ class TripalEntityController extends EntityAPIController {
           $msg_var = array(
               '%alias' => $alias, 
               '!link' => url("admin/structure/bio-data/manage/$entity->bundle"),
-              '%type' => $entity->bundle
+              '%type' => $bundle_entity->label
             );
           tripal_report_error(
             'trpentity',
@@ -210,6 +212,8 @@ class TripalEntityController extends EntityAPIController {
       // If there are more then one alias' matching what we generated then there's 
       // a real problem and we need to warn the administrator.
       else {
+        $bundle_entity = tripal_bundle_load($entity->bundle);
+        
         $aliases = db_query('SELECT source FROM {url_alias} WHERE alias=:alias',
           array(':alias' => $alias))->fetchAll();
         $pages = array();
@@ -222,7 +226,7 @@ class TripalEntityController extends EntityAPIController {
         $msg_var = array(
             '%alias' => $alias, 
             '!link' => url("admin/structure/bio-data/manage/$entity->bundle"),
-            '%type' => $entity->bundle
+            '%type' => $bundle_entity->label
           );
         drupal_set_message(t($msg, $msg_var), 'error');
         
