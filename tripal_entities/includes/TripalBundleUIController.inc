@@ -154,13 +154,14 @@ function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType
 
   $form['set_titles']['explanation'] = array(
     '#type' => 'item',
-    '#markup' => t('<p>The format below is used to determine the title displayed on content
+    '#markup' => t('<p>The format below is used to determine the title displayed on %type content
       pages. This ensures all content of this type is consistent while still allowing you
       to indicate which data you want represented in the title (ie: which data would most
       identify your content).</p>
       <p>Keep in mind that it might be confusing to users if more than
       one page has the same title. We recommend you <strong>choose a combination of tokens that
-      will uniquely identify your content</strong>.</p>'),
+      will uniquely identify your content</strong>.</p>',
+      array('%type' => $entity_type->label)),
   );
 
   $form['set_titles']['title_format'] = array(
@@ -188,9 +189,56 @@ function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType
     '#value' => serialize($tokens)
   );
 
+  $token_markup = theme_token_list($tokens);
   $form['set_titles']['token_display']['content'] = array(
     '#type' => 'item',
-    '#markup' => theme_token_list($tokens)
+    '#markup' => $token_markup
+  );
+
+  // Set URL Alias Pattern.
+  //-------------------------
+  // @TODO: Find a way to use the Entity ID in the url.
+  $url_pattern = tripal_get_bundle_variable('url_format', $entity_type->id, '');
+  
+  $form['url'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('URL Path options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#tree' => TRUE,
+    '#group' => 'additional_settings',
+  );
+  
+  $form['url']['explanation'] = array(
+    '#type' => 'item',
+    '#markup' => t('<p>The pattern below is used to specify the URL of %type content pages. 
+    This allows you to present more friendly, informative URLs to your user.</p>
+    <p><strong>You must choose a combination of tokens that results in a unique path for 
+    each page!</strong></p>',
+    array('%type' => $entity_type->label)),
+  );
+
+  $form['url']['url_pattern'] = array(
+    '#type' => 'textarea',
+    '#title' => t('URL Alias Pattern'),
+    '#description' => t('You may rearrange elements in this text box to customize the url 
+      alias. The available tokens are listed below. <strong>Make sure the pattern forms a 
+      valid, unique URL</strong>. Leave this field blank to use the original path.'),
+    '#default_value' => $url_pattern,
+    '#rows' => 1
+  );
+
+  $form['url']['token_display'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Available Tokens'),
+    '#description' => t('Copy the token and paste it into the "URL Alias Pattern" text field above.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE
+  );
+
+  $form['url']['token_display']['content'] = array(
+    '#type' => 'item',
+    '#markup' => $token_markup
   );
 
   // Submit Buttons
@@ -258,6 +306,11 @@ function tripal_entities_tripal_bundle_form_submit($form, &$form_state) {
       $bundle_entity,
       $form_state['values']['set_titles']['title_format']
     );
+    
+    // Save the URL alias pattern if it's set.
+    if ($form_state['values']['url']['url_pattern']) {
+      tripal_set_bundle_variable('url_format', $bundle_entity->id, $form_state['values']['url']['url_pattern']);
+    }
 
     $form_state['redirect'] = 'admin/structure/bio-data';
     drupal_set_message(t('Successfully saved %type content type.', array('%type' => $form_state['build_info']['args'][0]->label)));
