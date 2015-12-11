@@ -99,6 +99,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
     t('Label'),
     array('data' => t('Format'), 'colspan' => 3),
     t('Region'),
+    t('Panel Layout')
   );
 
   // Change the region callback for each field to place each field in the
@@ -129,6 +130,15 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
         'class' => array('te-field-region'),
       )
     );
+    $layout_options = array ('Default', 'Vertical Table', 'Horizontal Table', '[Add a Horizontal Table]', '[Add a Vertical Table]');
+    $form['fields'][$field_name]['layout'] = array(
+      '#type' => 'select',
+      '#options' => $layout_options,
+      '#default_value' => 'Default',
+      '#attributes' => array(
+        'class' => array('te-field-layout'),
+      )
+    );
     $form['fields'][$field_name]['#field_instance_id'] = array(
       '#type' => 'value',
       '#value' => $field_instance['id']
@@ -141,6 +151,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
   $submit = $form['#submit'];
   $form['#submit'] = array('tripal_fields_layout_field_ui_submit');
   $form['#submit'] = array_merge($form['#submit'], $submit);
+  //dpm($form);
 }
 
 /**
@@ -514,7 +525,7 @@ function tripal_fields_layout_field_ui_submit($form, &$form_state) {
       ->condition('field_id', $field_instance_id)
       ->execute()
       ->fetchField();
-      //dpm(array('instance' => $field_instance_id, 'panel_id' => $panel_id, 'panel_field_id' => $penal_field_id, ));
+
       if ($penal_field_id) {
         db_update('tripal_panel_fields')
         ->fields(array(
