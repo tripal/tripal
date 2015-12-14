@@ -345,6 +345,15 @@ function tripal_get_tokens($entity, $options = array()) {
       'field_name' => NULL,
       'required' => TRUE
     );
+
+    $token = '[TripalEntity__entity_id]';
+    $tokens[$token] = array(
+      'label' => 'Content/Entity ID',
+      'description' => 'The unique identifier for an individual piece of Tripal Content.',
+      'token' => $token,
+      'field_name' => NULL,
+      'required' => TRUE
+    );
   }
   
   $fields = field_info_instances('TripalEntity', $entity->name);
@@ -390,7 +399,7 @@ function tripal_get_tokens($entity, $options = array()) {
  *   The string will all tokens replaced with values.
  */
 function tripal_replace_tokens($string, $entity, $bundle_entity = NULL) {
-
+  
   // Determine which tokens were used in the format string
   if (preg_match_all('/\[\w+\]/', $string, $matches)) {
     $used_tokens = $matches[0];
@@ -416,6 +425,11 @@ function tripal_replace_tokens($string, $entity, $bundle_entity = NULL) {
 
         // This token should be the id of the TripalBundle.
         $value = $bundle_entity->id;
+      }
+      elseif ($field === 'TripalEntity__entity_id') {
+
+        // This token should be the id of the TripalEntity.
+        $value = $entity->id;
       }
       $string = str_replace($token, $value, $string);
     }

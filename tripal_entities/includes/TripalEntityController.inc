@@ -127,6 +127,21 @@ class TripalEntityController extends EntityAPIController {
       // And then replace all the tokens with values from the entity fields.
       $alias = tripal_replace_tokens($alias, $entity, $bundle_entity);
     }
+    
+    // If there was no defaults supplied by the admins
+    // then we should gneerate our own using the term name and entity id.
+    if (!$alias) {
+      
+      // Load the term for this TripalEntity.
+      $term = entity_load('TripalTerm', array('id' => $entity->term_id));
+      $term = reset($term);
+
+      // Set a default based on the term name and entity id.
+      $alias = str_replace(' ', '', $term->name) . '/[TripalEntity__entity_id]';
+
+      // And then replace all the tokens with values from the entity fields.
+      $alias = tripal_replace_tokens($alias, $entity, $bundle_entity);
+    }
 
     // Make sure the alias doesn't contain spaces.
     $alias = preg_replace('/\s+/','-',$alias);
