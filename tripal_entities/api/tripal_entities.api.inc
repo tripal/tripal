@@ -307,18 +307,101 @@ function tripal_save_title_format($entity, $format) {
  *   A default title format.
  */
 function tripal_get_default_title_format($entity) {
-  $format = array();
+  $format = NULL;
 
   // Retrieve all available tokens.
   $tokens = tripal_get_tokens($entity);
-
-  foreach($tokens as $token) {
-    if ($token['required']) {
-      $format[] = $token['token'];
+    
+  // A) Check to see if more informed modules have suggested a title for this type.
+  // Invoke hook_tripal_default_title_format() to get all suggestions from other modules.
+  $suggestions = module_invoke_all('tripal_default_title_format', $entity, $tokens);
+  if ($suggestions) {
+    // Use the suggestion with the lightest weight.
+    $lightest_key = NULL;
+    foreach ($suggestions as $k => $s) {
+      if ($lightest_key === NULL) $lightest_key = $k;
+      if ($s['weight'] < $lightest_key) $lightest_key = $k;
     }
+    $format = $suggestions[$lightest_key]['format'];
+  }
+  
+  // B) Check to see if any fields contain "name" in the machine name and if so, use them.
+  $name_fields = preg_grep('/name/', array_keys($tokens));
+  if ($name_fields AND !$format) {
+    $format = implode(', ', $name_fields);
+  }
+  
+  // C) Generate our own ugly title by simply comma-separating all the required fields.
+  if (!$format) {
+    $tmp = array();
+    
+    // Check which tokens are required fields and join them into a default format.
+    foreach($tokens as $token) {
+      if ($token['required']) {
+        $tmp[] = $token['token'];
+      }
+    }
+    $format = implode(', ', $tmp);
+  }
+  
+  return $format;
+}
+
+/**
+ * Implement this hook to define default formats for Tripal Content Types.
+ *
+ * @param TripalBundle $entity
+ *   A tripal content type entity with information to be used for determining the default title format.
+ * @param array $available_tokens
+ *   An array of available tokens for this particular tripal content type.
+ *
+ * @return array
+ *   An array of potential formats. The lightest weighted format suggested by all modules will be chosen.
+ *   Each array item should consist of a 'weight' and 'format'. See the hook implementation below
+ *   for examples.
+ *    - weight: an integer used to determine priority of suggestions. 
+ *        The smaller/lighter the number the higher the priority.
+ *        Best practice is to use a weight less than 0 for extension modules.
+ *        specifically, -2 is a good weight for calculated formats and -5 is a
+ *        good weight for hard-coded formats specific to a given type.
+ *    - format: a string including approved tokens used to determine the title 
+ *        on Tripal content pages.
+ */
+function hook_tripal_default_title_format($entity, $available_tokens) {
+  $format = array();
+  
+  // If you want to suggest a default format for a particular vocabulary term:
+  //---------------------------------------------------------------------------
+  // Load the term associated with this Tripal Content type.
+  $term = entity_load('TripalTerm', array('id' => $entity->term_id));
+  $term = reset($term);
+
+  // If it's the term you are interested in then suggest a format.
+  if ($term->name == 'organism') {
+
+    // To suggest a format, add an element to the array with a format & weight key.
+    $format[] = array(
+      // This is the format/pattern you suggest be used to determine the title of organism pages.
+      'format' => '[organism__genus] [organism__species]',
+      // The weight/priority of your suggestion.
+      'weight' => -5
+    );
+
   }
 
-  return implode(', ', $format);
+  // Say you know that in your particular site, all 'names' are required
+  // and you want to only use the human-readable name:
+  //---------------------------------------------------------------------------
+  $name_field = preg_grep('/__name]$/', array_keys($available_tokens));
+  $name_field = reset($name_field);
+  if (is_string($name_field)) {
+    $format[] = array(
+      'format' => $name_field,
+      'weight' => -2,
+    );
+  }
+
+  return $format;
 }
 
 /**
