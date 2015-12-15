@@ -360,3 +360,14 @@ function tripal_chado_field_storage_unnest_fields($fields, $entity_type, $entity
   }
   return $new_fields;
 }
+
+/**
+ * Implements hook_field_storage_query().
+ *
+ * Used by EntityFieldQuery to find the entities having certain entity 
+ * and field conditions and sort them in the given field order.
+ *
+ * NOTE: This function needs to exist or errors are triggered but so far it doesn't
+ * appear to actually need to do anything...
+ */
+function tripal_chado_field_storage_query($query) { }
