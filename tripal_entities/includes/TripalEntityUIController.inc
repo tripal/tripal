@@ -410,11 +410,13 @@ function tripal_entities_view_entity($entity, $view_mode = 'full') {
    $entity = $form_state['entity'];
 
    $entity_controller = new TripalEntityController($entity->type);
-   if ($entity_controller->delete($entity)) {
+
+   if ($entity_controller->delete(array($entity->id))) {
      drupal_set_message(t('The record title "%name" has been deleted.', array('%name' => $entity->title)));
-     $form_state['redirect'] = 'admin/content/tripal_entitys';
+     $form_state['redirect'] = 'admin/content/bio-data';
    }
    else {
      drupal_set_message(t('The tripal_entity %name was not deleted.', array('%name' => $entity->title)), "error");
    }
  }
+ 

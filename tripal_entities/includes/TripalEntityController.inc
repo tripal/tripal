@@ -50,20 +50,39 @@ class TripalEntityController extends EntityAPIController {
   }
 
   /**
-   * Delete a single entity.
+   * Overrides EntityAPIController::delete().
    *
-   * Really a convenience function for deleteMultiple().
+   * @param array $ids
+   *    An array of the ids denoting which entities to delete.
+   * @param DatabaseTransaction $transaction
+   *    Optionally a DatabaseTransaction object to use. Allows overrides to pass in 
+   *    their transaction object.
    */
-  public function delete($entity) {
-    $transaction = db_transaction();
-    try {
-      // Invoke hook_entity_delete().
-      module_invoke_all('entity_delete', $entity, $entity->type);
-      field_attach_delete('TripalEntity', $entity);
+  public function delete($ids, $transaction = NULL) {
 
-      db_delete('tripal_entity')
-        ->condition('id', $entity->id)
-        ->execute();
+    if (!$transaction) {
+      $transaction = db_transaction();
+    }
+    
+    try {
+      
+      // First load the entity.
+      $entities = entity_load('TripalEntity', $ids);
+      
+      // Then properly delete each one.
+      foreach ($entities as $entity) {
+      
+        // Invoke hook_entity_delete().
+        module_invoke_all('entity_delete', $entity, $entity->type);
+        
+        // Delete any field data for this entity.
+        field_attach_delete('TripalEntity', $entity);
+
+        // Finally delete the entity record from our base table.
+        db_delete('tripal_entity')
+          ->condition('id', $entity->id)
+          ->execute();
+      }
     }
     catch (Exception $e) {
       $transaction->rollback();
@@ -71,6 +90,7 @@ class TripalEntityController extends EntityAPIController {
       throw $e;
       return FALSE;
     }
+
     return TRUE;
   }
 

@@ -17,6 +17,43 @@ function tripal_entities_install() {
 }
 
 /**
+ * Implements hook_uninstall().
+ */
+function tripal_entities_uninstall() {
+
+/*
+  // So somehow I was able to uninstall this module without deleting the bundles. This
+  // caused aweful errors because fields weren't deleted so when I re-installed, the code
+  // tried to create fields that were inactive (despite checking if the field exists 
+  // before creating). The following code was meant to ensure that all content was deleted
+  // before uninstall so these errors would not occur. Unfortunatly I am now unable to 
+  // test this because the Field API module is disabling uninstall of Tripal Chado until 
+  // all the content is deleted. Thus ensuring the errors described above don't occur.
+  // But I'm Sure I was able to uninstall with content before... 
+  // **I am slowly going crazy; Crazy going slowly am I**
+  // Anyway, I'll leaving the solution code here in case I am able to repeat it in
+  // the future.
+  // @see https://www.drupal.org/node/1262092
+  // @see https://www.drupal.org/node/1861710
+  
+  // First delete all TripalEntities.
+  $entity_ids = (new EntityFieldQuery)->entityCondition("entity_type", "TripalEntity")->execute(); 
+  $entity_ids = reset($entity_ids);
+  entity_delete_multiple("TripalEntity", array_keys($entity_ids));
+
+  // Then delete all TripalBundles.
+  $bundle_ids = (new EntityFieldQuery)->entityCondition("entity_type", "TripalBundle")->execute(); 
+  $bundle_ids = reset($bundle_ids);
+  entity_delete_multiple("TripalBundle", array_keys($bundle_ids));
+  
+  // @TODO: Should we delete all TripalVocabularies and TripalTerms?
+  
+  // Finally purge all fields that are no longer used.
+  field_purge_batch(100);
+  */
+}
+
+/**
  * Implements hook_schema().
  */
 function tripal_entities_schema() {
@@ -29,7 +66,6 @@ function tripal_entities_schema() {
 
   // Adds a table for additional information related to bundles.
   $schema['tripal_bundle_variables'] = tripal_entities_tripal_bundle_variables_schema();
-
 
   return $schema;
 }
