@@ -494,10 +494,14 @@ function tripal_replace_tokens($string, $entity, $bundle_entity = NULL) {
       if (isset($entity->{$field})) {
 
         // Render the value from the field.
-        // @TODO: Handle the case where thefield is empty... currently returns error.
+        // First get the items to be rendered.
         $field_value = field_get_items('TripalEntity', $entity, $field);
-        $field_render_arr = field_view_value('TripalEntity', $entity, $field, $field_value[0]);
-        $value = render($field_render_arr);
+        if (isset($field_value[0])) {
+          // Then get a render array for just the value of the first item (no markup).
+          $field_render_arr = field_view_value('TripalEntity', $entity, $field, $field_value[0]);
+          // Finally render the value from the render array.
+          $value = render($field_render_arr);
+        }
       }
       elseif ($field === 'TripalBundle__bundle_id') {
         
