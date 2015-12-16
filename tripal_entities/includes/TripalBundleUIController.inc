@@ -322,10 +322,11 @@ function tripal_entities_tripal_bundle_form_validate($form, $form_state) {
  * Submit: Tripal content type edit form.
  */
 function tripal_entities_tripal_bundle_form_submit($form, &$form_state) {
-
+  
+  $bundle_entity = $form_state['build_info']['args'][0];
+  
   if ($form_state['triggering_element']['#value'] == 'Save Content Type') {
-    $bundle_entity = $form_state['build_info']['args'][0];
-
+    
     // Save the label.
     $bundle_entity->label = $form_state['values']['label'];
     $bundle_entity->save();
@@ -348,7 +349,10 @@ function tripal_entities_tripal_bundle_form_submit($form, &$form_state) {
     drupal_set_message(t('Successfully saved %type content type.', array('%type' => $form_state['build_info']['args'][0]->label)));
   }
   else {
-    drupal_set_message(t('%button is not supported at this time.', array('%button' => $form_state['triggering_element']['#value'])), 'warning');
+    $form_state['redirect'] = array(
+      'admin/structure/bio-data/manage/' . $bundle_entity->name . '/delete',
+      array('query' => array('destination' => 'admin/structure/bio-data'))
+    );
   }
 }
 
