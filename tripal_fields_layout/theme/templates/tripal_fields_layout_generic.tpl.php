@@ -7,7 +7,7 @@ $panels = $variables['element']['#panels'];
 $fields = $variables['element']['#fields'];
 
 // TODO, the horz_table variable needs to be set in a variable and checked here.
-$horz_table = TRUE;
+$table = TRUE;
 
 // Group fields into panels
 $content = '';
@@ -18,21 +18,16 @@ foreach ($panels AS $panel_id => $panel) {
     $has_base_panel_only = FALSE;
   }
   $panel_settings = unserialize($panel->settings);
-  $hz_table_group = key_exists('hz_table', $panel_settings) ? $panel_settings['hz_table'] : array();
-  $vt_table_group = key_exists('vt_table', $panel_settings) ? $panel_settings['vt_table'] : array();
+  $table_layout_group = key_exists('table_layout', $panel_settings) ? $panel_settings['table_layout'] : array();
   
   $panel_fields = $fields[$panel_id];
   // Rearrange fields into groups for each panel
-  $hz_table = array();
-  $vt_table = array();
+  $table_layout = array();
   $no_group = array();
   // Keyed by field's '#weight' and '#field_name so we can ksort() by weight
   foreach ($panel_fields AS $field) {
-    if (in_array($field['#field_name'], $hz_table_group)) {
-      $hz_table [$field['#weight'] . $field['#field_name']] = $field;
-    }
-    else if (in_array($field['#field_name'], $vt_table_group)) {
-      $vt_table [$field['#weight'] . $field['#field_name']] = $field;
+    if (in_array($field['#field_name'], $table_layout_group)) {
+      $table_layout [$field['#weight'] . $field['#field_name']] = $field;
     }
     else {
       $no_group [$field['#weight'] . $field['#field_name']] = $field;
@@ -40,11 +35,11 @@ foreach ($panels AS $panel_id => $panel) {
   }
 
   // Render horizontal table
-  $horz_table = '';
-  if (count($hz_table) != 0) {
-    ksort($hz_table, SORT_NUMERIC);
+  $table = '';
+  if (count($table_layout) != 0) {
+    ksort($table_layout, SORT_NUMERIC);
     $rows = array();
-    foreach ($hz_table as $field) {
+    foreach ($table_layout as $field) {
       $rows[] = array(
         array(
           'data' => $field['#title'],
@@ -55,7 +50,7 @@ foreach ($panels AS $panel_id => $panel) {
         $field[0]['#markup']
       );
     }
-    $horz_table = theme_table(array(
+    $table = theme_table(array(
         'header' => array(),
         'rows' => $rows,
         'attributes' => array(
@@ -69,30 +64,6 @@ foreach ($panels AS $panel_id => $panel) {
       ));
   }
   
-  // Render horizontal table
-  $vert_table = '';  
-  if (count($vt_table) != 0) {
-    ksort($vt_table, SORT_NUMERIC);
-    $value = array();
-    $headers = array();
-    foreach ($vt_table as $field) {
-      $headers [] = $field['#title'];
-      array_push($value, $field[0]['#markup']);
-    }
-    $vert_table = theme_table(array(
-      'header' => $headers,
-      'rows' => array($value),
-      'attributes' => array(
-        'id' => '',  // TODO: need to add an ID
-        'class' => 'tripal-data-vert-table'
-      ),
-      'sticky' => FALSE,
-      'caption' => '',
-      'colgroups' => array(),
-      'empty' => '',
-    ));
-  }
-  
   // Render field not in a group
   $ungrouped = '';
   if (count($no_group) != 0) {
@@ -102,7 +73,7 @@ foreach ($panels AS $panel_id => $panel) {
     }    
   }
   
-  $output = $horz_table . $vert_table . $ungrouped ;
+  $output = $table . $ungrouped ;
 
   // If this is a base content, do not organize the content in a fieldset
   if ($panel->name == 'te_base') {
