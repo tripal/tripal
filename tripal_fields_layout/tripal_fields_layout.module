@@ -71,7 +71,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_alter(&$form, 
   tripal_fields_layout_form_field_ui_display_overview_form_panel_arrange($form, $form_state, $bundle);
 
   // Configure Panels
-  tripal_fields_layout_form_field_ui_display_overview_form_panel_configure($form, $bundle);
+  tripal_fields_layout_form_field_ui_display_overview_form_panel_configure($form, $form_state, $bundle);
 
   // Now add each panel as a region.
   $form['fields']['#regions'] = array();
@@ -247,7 +247,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_panel_arrange 
 /**
  * Configure Panels Form
  */
-function tripal_fields_layout_form_field_ui_display_overview_form_panel_configure (&$form, $bundle) {
+function tripal_fields_layout_form_field_ui_display_overview_form_panel_configure (&$form, &$form_state, $bundle) {
   $form['te_configure_panels'] = array(
     '#type' => 'fieldset',
     '#title' => 'Configure Panels',
@@ -255,11 +255,25 @@ function tripal_fields_layout_form_field_ui_display_overview_form_panel_configur
     '#collapsed' => TRUE,
     '#group' => 'overview_vert_tabs'
   );
-  $form['te_configure_panels']['instructions'] = array(
-    '#type' => 'item',
-    '#markup' => t('Group fields into a horizontal or vertical table.')
+
+  // Add a dropdown for selecting panel to configure
+  $form['te_configure_panels']['panel_select'] = array(
+    '#type' => 'select',
+    '#title' => t('Panel'),
+    '#description' => t('Select a panel to change its layout. Fields can be grouped into a table if Table layout is selected.'),
+    '#ajax' => array(
+      'callback' => 'tripal_fields_layout_ajax_get_panel_setting_fieldset',
+      'wrapper' => 'tripal-fields-layout-panel-setting',
+      'effect' => 'fade'
+    )
   );
-  $form['te_configure_panels']['panel_items']['#tree'] = TRUE;
+  
+  $form['te_configure_panels']['panel_items'] = array (
+    '#tree' => TRUE,
+    '#prefix' => '<div id="tripal-fields-layout-panel-setting">',
+    '#suffix' => '</div>'
+  );
+
   // Get available panels
   $panels = db_select('tripal_panels', 'tp')
   ->fields('tp', array('panel_id', 'name', 'label', 'weight', 'settings'))
@@ -267,12 +281,16 @@ function tripal_fields_layout_form_field_ui_display_overview_form_panel_configur
   ->condition('bundle_id', $bundle->id)
   ->orderby('weight', 'asc')
   ->execute();
-  // Add a dropdown for selecting panel to configure
-  foreach ($panels as $panel) {
-    
-  }
+
   $has_panel = FALSE;
+  $options = array(0 => 'Select a panel');
+  $selected_panel = key_exists('values', $form_state) ? $form_state['values']['panel_select'] : 0;
   foreach ($panels as $panel) {
+    $options[$panel->panel_id] = $panel->label;
+    $has_panel = TRUE;
+    if ($panel->panel_id != $selected_panel) {
+      continue; // Display only the selected panel setting
+    }
     $panel_settings = unserialize($panel->settings);
     $table_layout = key_exists('table_layout', $panel_settings) ? $panel_settings['table_layout'] : array();
     $form['te_configure_panels']['panel_items'][$panel->panel_id] = array(
@@ -326,8 +344,9 @@ function tripal_fields_layout_form_field_ui_display_overview_form_panel_configur
     } else {
       $form['te_configure_panels']['panel_items'][$panel->panel_id]['#theme_wrappers'] = array('tripal_fields_layout_form_configure_panels');
     }
-    $has_panel = TRUE;
+
   }
+  $form['te_configure_panels']['panel_select']['#options'] = $options;
   if ($has_panel) {
     $form['te_configure_panels']['save_button'] = array(
       '#type' => 'submit',
@@ -862,4 +881,12 @@ function tripal_fields_layout_entity_view($entity, $type, $view_mode, $langcode)
 
       break;
   }
+}
+
+/**
+ * Implements hook_entity_view.
+ */
+function tripal_fields_layout_ajax_get_panel_setting_fieldset($form, &$form_state) {
+  $panel_id = $form_state['values']['panel_select'];
+  return  $form['te_configure_panels']['panel_items'];
 }
