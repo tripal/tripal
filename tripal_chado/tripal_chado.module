@@ -734,6 +734,7 @@ function tripal_chado_get_table_column_field_default($table_name, $schema, $colu
       $field_info['field_type'] = 'text';
       $field_info['widget_type'] = 'text_textarea';
       $field_info['field_settings']['max_length'] = 17179869184;
+      $field_info['field_settings']['text_processing'] = 1;
       break;
     case 'blob':
       // not sure how to support a blob field.
