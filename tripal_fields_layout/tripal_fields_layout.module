@@ -321,6 +321,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_panel_configur
       $form['te_configure_panels']['panel_items'][$panel->panel_id][$fname] = array(
         '#type' => 'item',
         '#title' => $flable,
+        '#weight' => $field_arr['display']['default']['weight']
       );
       $default_value = 0;
       if (in_array($fname, $table_layout)) {

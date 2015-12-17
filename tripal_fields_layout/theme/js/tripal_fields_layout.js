@@ -16,7 +16,7 @@
     		var fs = $(this).parent().parent().parent();
     		var fsid = fs.attr('id');
     		if (fsid.indexOf('tripal_panel-fieldset-') == 0) {
-    		  $(fs).hide(300);
+    		  $(fs).fadeOut(300);
     		}
     	});
       });
