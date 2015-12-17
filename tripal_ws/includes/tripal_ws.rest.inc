@@ -9,7 +9,7 @@ function tripal_ws_rest() {
   $status = 'success';
   $version = 'v0.1';
   $message = '';
-  $api_url = $base_url . '/ws/bio-data/' . $version;
+  $api_url = $base_url . '/ws/' . $version;
   $page_limit = 25;
   $pager_id = 0;
 
@@ -59,9 +59,25 @@ function tripal_ws_rest() {
  * @param unknown $response
  */
 function tripal_ws_get_content_types($api_url, &$response) {
+
+
+  // Add in the term's will use for keys to the context.
+  $response['@context']['itemListElement'] = 'schema:itemListElement';
+  $response['@context']['position'] = 'schema:position';
+  $response['@context']['item'] = 'schema:item';
+  $response['@context']['name'] = 'foaf:name';
+  $response['@context']['description'] = 'dc:description';
+  $response['@context']['numberOfItems'] = 'schema:numberOfItems';
+  $response['@context']['itemListOrder'] = 'schema:itemListOrder';
+  $response['@context']['numberOfItems'] = 'schema:numberOfItems';
+  $response['@context']['ListItem'] = 'schema:ListItem';
+
+  // Start the list.
   $response['@type'] = 'ItemList';
-  $response['schema:itemListOrder'] = 'ItemListOrderAscending';
-  $response['schema:numberOfItems'] = 0;
+  $response['itemListOrder'] = 'ItemListOrderAscending';
+  $response['numberOfItems'] = 0;
+  $response['name'] = 'Content Types';
+
   // Get the list of published terms (these are the bundle IDs)
   $bundles = db_select('tripal_bundle', 'tb')
     ->fields('tb')
@@ -82,22 +98,22 @@ function tripal_ws_get_content_types($api_url, &$response) {
         $response['@context'][$vocab->namespace] = $term->urlprefix;
       }
       else {
-        $response['@context'][$vocab->namespace] = $api_url . '/TODO/';
+        $response['@context'][$vocab->namespace] = $api_url . '/vocab/' . $vocab->namespace . '/';
       }
     }
-    $response['schema:itemListElement'][] = array(
-      '@type' => 'schema:ListItem',
-      'schema:position' => $i + 1,
-      'schema:item' => array(
-        '@id' => $api_url . '/' . $term->vocab->namespace .'/' . $term->name,
+    $response['itemListElement'][] = array(
+      '@type' => 'ListItem',
+      'position' => $i + 1,
+      'item' => array(
+        '@id' => $api_url . '/bio-data/' . $term->name,
         '@type' => $vocab->namespace . ':' . $term->accession,
-        'foaf:name' => $term->name,
-        'dc:description' => $term->definition,
+        'name' => $term->name,
+        'description' => $term->definition,
       ),
     );
     $i++;
   }
-  $response['schema:numberOfItems'] = $i;
+  $response['numberOfItems'] = $i;
 }
 
 /**
