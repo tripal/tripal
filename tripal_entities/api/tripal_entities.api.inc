@@ -311,7 +311,7 @@ function tripal_get_default_title_format($entity) {
 
   // Retrieve all available tokens.
   $tokens = tripal_get_tokens($entity);
-    
+
   // A) Check to see if more informed modules have suggested a title for this type.
   // Invoke hook_tripal_default_title_format() to get all suggestions from other modules.
   $suggestions = module_invoke_all('tripal_default_title_format', $entity, $tokens);
@@ -324,17 +324,17 @@ function tripal_get_default_title_format($entity) {
     }
     $format = $suggestions[$lightest_key]['format'];
   }
-  
+
   // B) Check to see if any fields contain "name" in the machine name and if so, use them.
   $name_fields = preg_grep('/name/', array_keys($tokens));
   if ($name_fields AND !$format) {
     $format = implode(', ', $name_fields);
   }
-  
+
   // C) Generate our own ugly title by simply comma-separating all the required fields.
   if (!$format) {
     $tmp = array();
-    
+
     // Check which tokens are required fields and join them into a default format.
     foreach($tokens as $token) {
       if ($token['required']) {
@@ -343,7 +343,7 @@ function tripal_get_default_title_format($entity) {
     }
     $format = implode(', ', $tmp);
   }
-  
+
   return $format;
 }
 
@@ -359,17 +359,17 @@ function tripal_get_default_title_format($entity) {
  *   An array of potential formats. The lightest weighted format suggested by all modules will be chosen.
  *   Each array item should consist of a 'weight' and 'format'. See the hook implementation below
  *   for examples.
- *    - weight: an integer used to determine priority of suggestions. 
+ *    - weight: an integer used to determine priority of suggestions.
  *        The smaller/lighter the number the higher the priority.
  *        Best practice is to use a weight less than 0 for extension modules.
  *        specifically, -2 is a good weight for calculated formats and -5 is a
  *        good weight for hard-coded formats specific to a given type.
- *    - format: a string including approved tokens used to determine the title 
+ *    - format: a string including approved tokens used to determine the title
  *        on Tripal content pages.
  */
 function hook_tripal_default_title_format($entity, $available_tokens) {
   $format = array();
-  
+
   // If you want to suggest a default format for a particular vocabulary term:
   //---------------------------------------------------------------------------
   // Load the term associated with this Tripal Content type.
@@ -418,7 +418,7 @@ function tripal_get_tokens($entity, $options = array()) {
   // Set default options.
   $options['required only'] = (isset($options['required only'])) ? $options['required only'] : FALSE;
   $options['include id'] = (isset($options['include id'])) ? $options['include id'] : TRUE;
-  
+
   if ($options['include id']) {
     $token = '[TripalBundle__bundle_id]';
     $tokens[$token] = array(
@@ -438,7 +438,7 @@ function tripal_get_tokens($entity, $options = array()) {
       'required' => TRUE
     );
   }
-  
+
   $fields = field_info_instances('TripalEntity', $entity->name);
   foreach ($fields as $f) {
 
@@ -451,7 +451,7 @@ function tripal_get_tokens($entity, $options = array()) {
       'field_name' => $f['field_name'],
       'required' => $f['required']
     );
-    
+
     // If the required only option is set then we only want to add
     // required fields to the token list.
     if ($options['required only'] AND $current_token['required']) {
@@ -482,7 +482,7 @@ function tripal_get_tokens($entity, $options = array()) {
  *   The string will all tokens replaced with values.
  */
 function tripal_replace_tokens($string, $entity, $bundle_entity = NULL) {
-  
+
   // Determine which tokens were used in the format string
   if (preg_match_all('/\[\w+\]/', $string, $matches)) {
     $used_tokens = $matches[0];
@@ -504,7 +504,7 @@ function tripal_replace_tokens($string, $entity, $bundle_entity = NULL) {
         }
       }
       elseif ($field === 'TripalBundle__bundle_id') {
-        
+
         // Load the bundle entity if we weren't given it.
         if (!$bundle_entity) {
           $bundle_entity = tripal_load_bundle_entity($entity->bundle);
@@ -615,8 +615,9 @@ function hook_vocab_select_term_form_validate($form, &$form_state) {
 
 }
 
+
 /**
- * Retreives information about a term from the default term storage backend.
+ * Hook used by the default term storage backend to provide details for a term.
  *
  * This hook is called by the tripal_entity module to retrieve information
  * about the term from the storage backend.  It must return an array with
@@ -631,6 +632,7 @@ function hook_vocab_select_term_form_validate($form, &$form_state) {
  *   An array with at least the following keys:
  *     namespace : The namespace of the vocabulary.
  *     accession : The name unique ID of the term.
+ *     url_prefix : The URL by which terms (accessions) can be appended.
  *     name : The name of the term.
  *     definition : The term's description.
  *   any other keys may be added as desired. Returns NULL if the term

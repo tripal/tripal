@@ -9,9 +9,11 @@ class TripalTerm extends Entity {
     // Get the vocabulary for this term
     $vocab = entity_load('TripalVocab', array('id' => $this->vocab_id));
     $vocab = reset($vocab);
+    $this->vocab = $vocab;
 
     // Get the term description from the storage backend
-    $this->definition = '';
+    $this->definition = NULL;
+    $this->urlprefix = NULL;
 
     // TODO: we need some sort of administrative interface that lets the user
     // switch to the desired vocabulary type. For now, we'll just use the
@@ -26,6 +28,7 @@ class TripalTerm extends Entity {
         $this->details = $term_details;
         if ($term_details and $term_details['definition']) {
           $this->definition = $term_details['definition'];
+          $this->urlprefix = $term_details['urlprefix'];
         }
       }
     }

@@ -15,24 +15,6 @@ function tripal_chado_vocab_storage_info() {
 
 /**
  * Implements hook_vocab_get_term().
- *
- * This hooks is called by the tripal_entity module to retrieve information
- * about the term from the storage backend.  It must return an array with
- * a set of keys.
- *
- * @param $namespace
- *   The namespace of the vocabulary in which the term is found.
- * @param $accession
- *   The unique identifier (accession) for this term.
- *
- * @return
- *   An array with at least the following keys:
- *     namespace : The namespace of the vocabulary.
- *     accession : The name unique ID of the term.
- *     name : The name of the term.
- *     definition : The term's description.
- *   any other keys may be added as desired. Returns NULL if the term
- *   cannot be found.
  */
 function tripal_chado_vocab_get_term($namespace, $accession) {
   $match = array(
@@ -49,11 +31,15 @@ function tripal_chado_vocab_get_term($namespace, $accession) {
   }
   $cvterm = chado_expand_var($cvterm, 'field', 'cvterm.definition');
   return array(
-    'namespace' => $cvterm->dbxref_id->db_id->name,
-    'accession' => $cvterm->dbxref_id->accession,
-    'name' => $cvterm->name,
+    'namespace'  => $cvterm->dbxref_id->db_id->name,
+    'accession'  => $cvterm->dbxref_id->accession,
+    'name'       => $cvterm->name,
     'definition' => (isset($cvterm->definition)) ? $cvterm->definition : '',
-    'cvterm' => $cvterm,
+    'urlprefix'  => $cvterm->dbxref_id->db_id->urlprefix,
+    // The following are not required for the returned array but we'll
+    // add these for convenience later when we look at the TripalTerm
+    // objects and these will be there.
+    'cvterm'     => $cvterm,
   );
 }
 /**
