@@ -6,38 +6,10 @@ drupal_add_js(drupal_get_path('module','tripal_fields_layout') . '/theme/js/trip
 $panels = $variables['element']['#panels'];
 $fields = $variables['element']['#fields'];
 
-// TODO, the horz_table variable needs to be set in a variable and checked here.
-$table = TRUE;
-
-// Group fields into panels
-$content = '';
-$toc = '';
-$has_base_panel_only = TRUE;
-foreach ($panels AS $panel_id => $panel) {
-  if ($panel->name != 'te_base') {
-    $has_base_panel_only = FALSE;
-  }
-  $panel_settings = unserialize($panel->settings);
-  $table_layout_group = key_exists('table_layout', $panel_settings) ? $panel_settings['table_layout'] : array();
-  
-  $panel_fields = $fields[$panel_id];
-  // Rearrange fields into groups for each panel
-  $table_layout = array();
-  $no_group = array();
-  // Keyed by field's '#weight' and '#field_name so we can ksort() by weight
-  foreach ($panel_fields AS $field) {
-    if (in_array($field['#field_name'], $table_layout_group)) {
-      $table_layout [$field['#weight'] . $field['#field_name']] = $field;
-    }
-    else {
-      $no_group [$field['#weight'] . $field['#field_name']] = $field;
-    }
-  }
-
-  // Render horizontal table
+// Render fields in a table
+function render_table ($table_layout) {
   $table = '';
   if (count($table_layout) != 0) {
-    ksort($table_layout, SORT_NUMERIC);
     $rows = array();
     foreach ($table_layout as $field) {
       $rows[] = array(
@@ -51,29 +23,87 @@ foreach ($panels AS $panel_id => $panel) {
       );
     }
     $table = theme_table(array(
-        'header' => array(),
-        'rows' => $rows,
-        'attributes' => array(
-          'id' => '',  // TODO: need to add an ID
-          'class' => 'tripal-data-horz-table'
-        ),
-        'sticky' => FALSE,
-        'caption' => '',
-        'colgroups' => array(),
-        'empty' => '',
-      ));
+      'header' => array(),
+      'rows' => $rows,
+      'attributes' => array(
+        'id' => '',  // TODO: need to add an ID
+        'class' => 'tripal-data-horz-table'
+      ),
+      'sticky' => FALSE,
+      'caption' => '',
+      'colgroups' => array(),
+      'empty' => '',
+    ));
   }
-  
-  // Render field not in a group
+  return $table;
+}
+
+// Render fields not in a group
+function render_fields($no_group) {
   $ungrouped = '';
   if (count($no_group) != 0) {
-    ksort($no_group, SORT_NUMERIC);
     foreach ($no_group as $field) {
       $ungrouped .= render($field);
-    }    
+    }
   }
+  return $ungrouped;
+}
+
+// Process fields in panels
+$content = '';
+$toc = '';
+$has_base_panel_only = TRUE;
+foreach ($panels AS $panel_id => $panel) {
+  if ($panel->name != 'te_base') {
+    $has_base_panel_only = FALSE;
+  }
+  $panel_settings = unserialize($panel->settings);
+  $table_layout_group = key_exists('table_layout', $panel_settings) ? $panel_settings['table_layout'] : array();
+
+  // Rearrange fields into groups for each panel
+  $panel_fields = $fields[$panel_id];
+
+  // Keyed by field's '#weight' and '#field_name so we can ksort() by weight
+  $weighed_fields = array();
+  foreach ($panel_fields AS $field) {
+      $weighed_fields [$field['#weight'] . $field['#field_name']] = $field;
+  }
+  ksort($weighed_fields, SORT_NUMERIC);
   
-  $output = $table . $ungrouped ;
+  // Render weighed fields
+  $table_layout = array();
+  $no_group = array();
+  $output = '';
+  $current_layout = '';
+  $counter = 0;
+  foreach ($weighed_fields AS $field) {
+    // The field is in a table
+    if (in_array($field['#field_name'], $table_layout_group)) {
+  
+      if ($counter != 0 && $current_layout != 'Table') {
+        $output .= render_fields($no_group);
+        $no_group = array();
+      }
+      $table_layout [$field['#weight'] . $field['#field_name']] = $field;
+      $current_layout = 'Table';
+    }
+    // The field is not in a table
+    else {
+      if ($counter != 0 && $current_layout != 'Default') {
+        $output .= render_table($table_layout);
+        $table_layout = array();
+      }
+      $no_group [$field['#weight'] . $field['#field_name']] = $field;
+      $current_layout = 'Default';
+    }
+    $counter ++;
+  }
+  if ($current_layout == 'Table') {
+    $output .= render_table($table_layout);
+  }
+  else if ($current_layout == 'Default') {
+    $output .= render_fields($no_group);
+  }
 
   // If this is a base content, do not organize the content in a fieldset
   if ($panel->name == 'te_base') {
