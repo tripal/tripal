@@ -19,7 +19,7 @@ function tripal_chado_field_storage_info() {
 function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
 
   // Get the bundle and the term for this entity.
-  $bundle = tripal_load_bundle_entity($entity->bundle);
+  $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
   $term = entity_load('TripalTerm', array('id' => $entity->term_id));
   $term = reset($term);
 
@@ -364,7 +364,7 @@ function tripal_chado_field_storage_unnest_fields($fields, $entity_type, $entity
 /**
  * Implements hook_field_storage_query().
  *
- * Used by EntityFieldQuery to find the entities having certain entity 
+ * Used by EntityFieldQuery to find the entities having certain entity
  * and field conditions and sort them in the given field order.
  *
  * NOTE: This function needs to exist or errors are triggered but so far it doesn't

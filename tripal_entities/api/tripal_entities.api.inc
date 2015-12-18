@@ -51,18 +51,24 @@ function tripal_load_vocab_entity($namespace) {
 /**
  * Retrieves a TripalBundle entity that matches the given arguments.
  *
- * @param $name
- *   The name the bundle (e.g. bio-data_234).
+ * @param $values
+ *   An associative array used to match a bundle.  Valid keys may be 'name' or
+ *   'label' (e.g. array('name' => 'bio-data_234').
  *
  * @return
  *   A TripalBundle entity object or NULL if not found.
  */
-function tripal_load_bundle_entity($name) {
-  $bundle = db_select('tripal_bundle', 'tb')
-    ->fields('tb')
-    ->condition('tb.name', $name)
-    ->execute()
-    ->fetchObject();
+function tripal_load_bundle_entity($values) {
+
+  $query = db_select('tripal_bundle', 'tb');
+  $query->fields('tb');
+  if (array_key_exists('name', $values)) {
+    $query->condition('tb.name', $values['name']);
+  }
+  if (array_key_exists('label', $values)) {
+    $query->condition('tb.label', $values['label']);
+  }
+  $bundle = $query->execute()->fetchObject();
 
   if ($bundle) {
     $entity = entity_load('TripalBundle', array($bundle->id));
@@ -128,7 +134,7 @@ function tripal_create_bundle($namespace, $accession, $term_name, &$error = '') 
   variable_set('menu_rebuild_needed', TRUE);
 
   // Get the bundle object.
-  $bundle = tripal_load_bundle_entity($bundle_name);
+  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
 
   // Allow modules to now add fields to the bundle
   module_invoke_all('add_bundle_fields', 'TripalEntity', $bundle, $term);
@@ -507,7 +513,7 @@ function tripal_replace_tokens($string, $entity, $bundle_entity = NULL) {
 
         // Load the bundle entity if we weren't given it.
         if (!$bundle_entity) {
-          $bundle_entity = tripal_load_bundle_entity($entity->bundle);
+          $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
         }
 
         // This token should be the id of the TripalBundle.
