@@ -55,7 +55,7 @@ class TripalEntityController extends EntityAPIController {
    * @param array $ids
    *    An array of the ids denoting which entities to delete.
    * @param DatabaseTransaction $transaction
-   *    Optionally a DatabaseTransaction object to use. Allows overrides to pass in 
+   *    Optionally a DatabaseTransaction object to use. Allows overrides to pass in
    *    their transaction object.
    */
   public function delete($ids, $transaction = NULL) {
@@ -63,18 +63,18 @@ class TripalEntityController extends EntityAPIController {
     if (!$transaction) {
       $transaction = db_transaction();
     }
-    
+
     try {
-      
+
       // First load the entity.
       $entities = entity_load('TripalEntity', $ids);
-      
+
       // Then properly delete each one.
       foreach ($entities as $entity) {
-      
+
         // Invoke hook_entity_delete().
         module_invoke_all('entity_delete', $entity, $entity->type);
-        
+
         // Delete any field data for this entity.
         field_attach_delete('TripalEntity', $entity);
 
@@ -107,11 +107,11 @@ class TripalEntityController extends EntityAPIController {
     if (!$title) {
 
       // Load the TripalBundle entity for this TripalEntity.
-      $bundle_entity = tripal_load_bundle_entity($entity->bundle);
-      
+      $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
+
       // First get the format for the title based on the bundle of the entity.
       $title = tripal_get_title_format($bundle_entity);
-      
+
       // And then replace all the tokens with values from the entity fields.
       $title = tripal_replace_tokens($title, $entity, $bundle_entity);
 
@@ -133,25 +133,25 @@ class TripalEntityController extends EntityAPIController {
    */
   public function setAlias($entity, $alias = NULL) {
     $source_url = "bio-data/$entity->id";
-    
+
     // If no alias was supplied then we should try to generate one using the
     // default format set by admins.
     if (!$alias) {
-    
+
       // Load the TripalBundle entity for this TripalEntity.
       $bundle_entity = tripal_bundle_load($entity->bundle);
-      
+
       // First get the format for the url alias based on the bundle of the entity.
       $alias = tripal_get_bundle_variable('url_format', $bundle_entity->id);
 
       // And then replace all the tokens with values from the entity fields.
       $alias = tripal_replace_tokens($alias, $entity, $bundle_entity);
     }
-    
+
     // If there was no defaults supplied by the admins
     // then we should gneerate our own using the term name and entity id.
     if (!$alias) {
-      
+
       // Load the term for this TripalEntity.
       $term = entity_load('TripalTerm', array('id' => $entity->term_id));
       $term = reset($term);
@@ -168,20 +168,20 @@ class TripalEntityController extends EntityAPIController {
     // Or any non alpha numeric characters.
     $alias = preg_replace('/[^a-zA-Z0-9\-\/]/','',$alias);
     $alias = preg_replace('/_/','-',$alias);
-    
+
     if ($alias) {
-           
+
       // Determine if this alias has already been used.
       $num_aliases = db_query('SELECT count(*) as num_alias FROM {url_alias} WHERE alias=:alias',
         array(':alias' => $alias))->fetchField();
-      
+
       // Either there isn't an alias yet so we just create one.
       // OR an Alias already exists but we would like to add a new one.
       if ($num_aliases == 0) {
-      
+
         // First delete any previous alias' for this entity.
         path_delete(array('source' => $source_url));
-        
+
         // Then save the new one.
         $path = array('source' => $source_url, 'alias' => $alias);
         path_save($path);
@@ -189,19 +189,19 @@ class TripalEntityController extends EntityAPIController {
       // If there is only one alias matching then it might just be that we already
       // assigned this alias to this entity in a previous save.
       elseif ($num_aliases == 1) {
-      
+
         $bundle_entity = tripal_bundle_load($entity->bundle);
-        
+
         // Checking to see if the single alias is for the same entity and if not
         // warning the admin that the alias is already used (ie: not unique?)
         $same_alias = db_query('SELECT count(*) as num_alias FROM {url_alias} WHERE alias=:alias AND source=:source',
           array(':alias' => $alias, ':source' => $source_url))->fetchField();
         if (!$same_alias) {
 
-          $msg = 'The URL alias, %alias, already exists for another page. Please ensure the pattern 
+          $msg = 'The URL alias, %alias, already exists for another page. Please ensure the pattern
             supplied on the <a href="!link" target="_blank">%type Edit Page</a> under URL Path options is unique.';
           $msg_var = array(
-              '%alias' => $alias, 
+              '%alias' => $alias,
               '!link' => url("admin/structure/bio-data/manage/$entity->bundle"),
               '%type' => $bundle_entity->label
             );
@@ -212,14 +212,14 @@ class TripalEntityController extends EntityAPIController {
             $msg_var
           );
           drupal_set_message(t($msg, $msg_var), 'warning');
-          
+
         }
       }
-      // If there are more then one alias' matching what we generated then there's 
+      // If there are more then one alias' matching what we generated then there's
       // a real problem and we need to warn the administrator.
       else {
         $bundle_entity = tripal_bundle_load($entity->bundle);
-        
+
         $aliases = db_query('SELECT source FROM {url_alias} WHERE alias=:alias',
           array(':alias' => $alias))->fetchAll();
         $pages = array();
@@ -227,16 +227,16 @@ class TripalEntityController extends EntityAPIController {
           $pages[] = $a->source;
         }
 
-        $msg = 'The URL alias, %alias, already exists for multiple pages! Please ensure the pattern 
+        $msg = 'The URL alias, %alias, already exists for multiple pages! Please ensure the pattern
           supplied on the <a href="!link" target="_blank">%type Edit Page</a> under URL Path options is unique.';
         $msg_var = array(
-            '%alias' => $alias, 
+            '%alias' => $alias,
             '!link' => url("admin/structure/bio-data/manage/$entity->bundle"),
             '%type' => $bundle_entity->label
           );
         drupal_set_message(t($msg, $msg_var), 'error');
-        
-        $msg .= ' This url alias has already been used for the following pages: %pages. 
+
+        $msg .= ' This url alias has already been used for the following pages: %pages.
           You can manually delete alias\' using a combination of path_load() and path_delete().';
         $msg_var['%pages'] = implode(', ', $pages);
         tripal_report_error(
@@ -245,11 +245,11 @@ class TripalEntityController extends EntityAPIController {
           $msg,
           $msg_var
         );
-          
+
       }
     }
   }
-  
+
   /**
    * Saves the custom fields using drupal_write_record().
    */
@@ -301,10 +301,10 @@ class TripalEntityController extends EntityAPIController {
       else {
         field_attach_update('TripalEntity', $entity);
       }
-      
+
       // Set the title for this entity.
       $this->setTitle($entity);
-      
+
       // Set the path/url alias for this entity.
       $this->setAlias($entity);
 

@@ -38,7 +38,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
     foreach ($bundles as $bundle_name) {
       $matches = array();
       if (preg_match('/^bio-data_(.*?)$/', $bundle_name, $matches)) {
-        $bundle = tripal_load_bundle_entity($bundle_name);
+        $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
         // Get the term for this bundle
         $term = entity_load('TripalTerm', array('id' => $matches[1]));
         $term = reset($term);
@@ -419,4 +419,3 @@ function tripal_entities_view_entity($entity, $view_mode = 'full') {
      drupal_set_message(t('The tripal_entity %name was not deleted.', array('%name' => $entity->title)), "error");
    }
  }
- 

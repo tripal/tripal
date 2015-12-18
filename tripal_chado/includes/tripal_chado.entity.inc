@@ -17,7 +17,7 @@ function tripal_chado_entity_create(&$entity, $type) {
     $entity->chado_record_id = NULL;
 
     // Add in the Chado table information for this entity type.
-    $bundle = tripal_load_bundle_entity($entity->bundle);
+    $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
     $chado_table = tripal_get_bundle_variable('chado_table', $bundle->id);
     $chado_column = tripal_get_bundle_variable('chado_column', $bundle->id);
     if ($chado_table) {
@@ -53,7 +53,7 @@ function tripal_chado_entity_load($entities, $type) {
         $entity->chado_record_id = NULL;
 
         // Add in the Chado table information for this entity type.
-        $bundle = tripal_load_bundle_entity($entity->bundle);
+        $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
         $chado_table = tripal_get_bundle_variable('chado_table', $bundle->id);
         $chado_column = tripal_get_bundle_variable('chado_column', $bundle->id);
         if ($chado_table) {

@@ -1,5 +1,25 @@
 <?php
 
+
+/**
+ * Implements hook_init()
+ */
+function tripal_ws_init() {
+  global $base_url;
+
+  $version = 'v0.1';
+  $api_url = $base_url . '/ws/' . $version;
+
+  // Following the WC3 Hydra documentation, we want to add  LINK to the header
+  // of the site that indicates where the API documentation can be found.
+  // This allows a hydra-enabled client to discover the API and use it.
+  $attributes = array(
+    'rel' => 'http://www.w3.org/ns/hydra/core#apiDocumentation',
+    'href' => $api_url . '/ws-doc/',
+  );
+  drupal_add_html_head_link($attributes, $header = FALSE);
+}
+
 /**
  * Implements hook_menu().
  * Defines all menu items needed by Tripal Core
@@ -9,7 +29,7 @@
 function tripal_ws_menu() {
 
   // Web Services API callbacks.
-  $items['ws/bio-data/v0.1'] = array(
+  $items['ws/v0.1'] = array(
     'title' => 'Tripal Entities Web Services API v0.1',
     'page callback' => 'tripal_ws_rest',
     'access arguments' => array('access content'),
