@@ -195,13 +195,6 @@ function tripal_get_bundle_variable($variable_name, $bundle_id, $default = FALSE
 
   // Warn if we can't find the tripal_variable.
   if (!$variable) {
-//     tripal_report_error(
-//       'trpbundle_var',
-//       TRIPAL_WARNING,
-//       'Unable to fetch tripal bundle variable value due to missing tripal variable (%var).',
-//       array('%var' => $variable_name)
-//     );
-//     return FALSE;
     return $default;
   }
 
@@ -215,12 +208,6 @@ function tripal_get_bundle_variable($variable_name, $bundle_id, $default = FALSE
 
   // Warn if the value appears to be empty.
   if (!$value) {
-//     tripal_report_error(
-//       'trpbundle_var',
-//       TRIPAL_WARNING,
-//       'Unable to fetch tripal bundle variable (%var) value.',
-//       array('%var' => $variable_name)
-//     );
     return $default;
   }
 
@@ -645,5 +632,6 @@ function hook_vocab_select_term_form_validate($form, &$form_state) {
  *   cannot be found.
  */
 function hook_vocab_get_term($namespace, $accession) {
-
+  // See the tripal_chado_vocab_get_term() function for an example.
 }
+

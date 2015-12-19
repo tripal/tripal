@@ -178,38 +178,6 @@ function tripal_entities_theme($existing, $type, $theme, $path) {
 
   );
 }
-
-/**
- * https://api.drupal.org/api/drupal/modules!rdf!rdf.module/group/rdf/7
- */
-function tripal_entities_rdf_mapping() {
-  return array();
-/*   return array(
-    'type' => 'tripal_entity',
-    'bundle' => 'gene',
-    'mapping' => array(
-      'rdftype' => array('sioc:Item', 'foaf:Document'),
-      'title' => array(
-        'predicates' => array('dc:title'),
-      ),
-      'uid' => array(
-        'predicates' => array('sioc:has_creator'),
-        'type' => 'rel',
-      ),
-      'name' => array(
-        'predicates' => array('foaf:name'),
-      ),
-      'uniquename' => array(
-        'predicates' => array('foaf:name'),
-      ),
-      'organism_id' => array(
-        'predicates' => array('sioc:has_parent'),
-        'type' => 'rel'
-      )
-    ),
-  ); */
-}
-
 // http://www.bluespark.com/blog/drupal-entities-part-3-programming-hello-drupal-entity
 // http://dikini.net/31.08.2010/entities_bundles_fields_and_field_instances
 /**
@@ -454,9 +422,8 @@ function tripal_entities_entity_info_alter(&$entity_info){
 /**
  * Menu argument loader; Load a tripal data type by string.
  *
- *
- * This function is not meant to be used as an API function. It is only mean
- * for use in the menu to resolve the %tripal_entity wildcard.
+ * This function is not meant to be used as an API function. It is only meant
+ * for use in the menu to resolve the %tripal_bundle wildcard.
  *
  * @param $type
  *   The machine-readable name of a tripal data type to load.

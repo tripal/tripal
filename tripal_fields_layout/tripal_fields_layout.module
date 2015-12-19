@@ -11,7 +11,6 @@ function tripal_fields_layout_form_field_ui_field_edit_form_alter(&$form, &$form
   // For entity fields added by Tripal Entities we don't want the
   // the end-user to change the cardinality and the required fields
   // such that record can't be saved in Chado.
-  $dbs = tripal_fields_layout_get_db_names_for_published_vocabularies();
   if (in_array($form['#instance']['entity_type'], $dbs)) {
     $form['field']['cardinality']['#access'] = FALSE;
     $form['instance']['required']['#access'] = FALSE;
@@ -267,7 +266,7 @@ function tripal_fields_layout_form_field_ui_display_overview_form_panel_configur
       'effect' => 'fade'
     )
   );
-  
+
   $form['te_configure_panels']['panel_items'] = array (
     '#tree' => TRUE,
     '#prefix' => '<div id="tripal-fields-layout-panel-setting">',

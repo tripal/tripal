@@ -17,8 +17,6 @@ class TripalTermController extends EntityAPIController {
 
   /**
    * Delete a single entity.
-   *
-   * Really a convenience function for deleteMultiple().
    */
   public function delete($entity) {
     $transaction = db_transaction();

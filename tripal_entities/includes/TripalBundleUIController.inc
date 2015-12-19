@@ -198,7 +198,7 @@ function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType
   //-------------------------
   $url_pattern = tripal_get_bundle_variable('url_format', $entity_type->id, '');
   if (!$url_pattern) $url_pattern = str_replace(' ', '', $term->name) . '/[TripalEntity__entity_id]';
-  
+
   $form['url'] = array(
     '#type' => 'fieldset',
     '#title' => t('URL Path options'),
@@ -207,12 +207,12 @@ function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType
     '#tree' => TRUE,
     '#group' => 'additional_settings',
   );
-  
+
   $form['url']['explanation'] = array(
     '#type' => 'item',
-    '#markup' => t('<p>The pattern below is used to specify the URL of %type content pages. 
+    '#markup' => t('<p>The pattern below is used to specify the URL of %type content pages.
     This allows you to present more friendly, informative URLs to your user.</p>
-    <p><strong>You must choose a combination of tokens that results in a unique path for 
+    <p><strong>You must choose a combination of tokens that results in a unique path for
     each page!</strong></p>',
     array('%type' => $entity_type->label)),
   );
@@ -220,14 +220,14 @@ function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType
   $form['url']['url_pattern'] = array(
     '#type' => 'textarea',
     '#title' => t('URL Alias Pattern'),
-    '#description' => t('You may rearrange elements in this text box to customize the url 
-      alias. The available tokens are listed below. <strong>Make sure the pattern forms a 
+    '#description' => t('You may rearrange elements in this text box to customize the url
+      alias. The available tokens are listed below. <strong>Make sure the pattern forms a
       valid, unique URL</strong>. Leave this field blank to use the original path.'),
     '#default_value' => $url_pattern,
     '#required' => TRUE,
     '#rows' => 1
   );
-  
+
   $tokens = tripal_get_tokens($entity_type, array('required only' => TRUE));
   $form['url']['tokens'] = array(
     '#type' => 'hidden',
@@ -292,7 +292,7 @@ function tripal_entities_tripal_bundle_form_validate($form, $form_state) {
       array('%type' => $form_state['build_info']['args'][0]->label));
     form_set_error('set_titles][title_format', $msg);
   }
-  
+
   // PART 2: URL Alias'
   if ($form_state['values']['url']['url_pattern']) {
     $tokens_available = unserialize($form_state['values']['url']['tokens']);
@@ -322,11 +322,11 @@ function tripal_entities_tripal_bundle_form_validate($form, $form_state) {
  * Submit: Tripal content type edit form.
  */
 function tripal_entities_tripal_bundle_form_submit($form, &$form_state) {
-  
+
   $bundle_entity = $form_state['build_info']['args'][0];
-  
+
   if ($form_state['triggering_element']['#value'] == 'Save Content Type') {
-    
+
     // Save the label.
     $bundle_entity->label = $form_state['values']['label'];
     $bundle_entity->save();
@@ -339,7 +339,7 @@ function tripal_entities_tripal_bundle_form_submit($form, &$form_state) {
       $bundle_entity,
       $form_state['values']['set_titles']['title_format']
     );
-    
+
     // Save the URL alias pattern if it's set.
     if ($form_state['values']['url']['url_pattern']) {
       tripal_set_bundle_variable('url_format', $bundle_entity->id, $form_state['values']['url']['url_pattern']);

@@ -96,7 +96,7 @@ function tripal_chado_entity_update($entity, $type) { }
  *
  * Implements hook_entity_delete().
  */
-function tripal_chaddo_entity_delete($entity, $type) {
+function tripal_chado_entity_delete($entity, $type) {
   $record = db_select('chado_entity', 'ce')
     ->fields('ce', array('chado_entity_id', 'data_table', 'record_id'))
     ->condition('entity_id', $entity->id)
@@ -144,4 +144,24 @@ function tripal_chado_entity_access($op, $entity = NULL, $account = NULL) {
     }
   }
   return FALSE;
+}
+
+/**
+ * Implements hook_tripal_default_title_format().
+ */
+function tripal_chado_tripal_default_title_format($entity, $available_tokens) {
+  $format = array();
+
+  // Load the term associated with this Tripal Content type.
+  $term = entity_load('TripalTerm', array('id' => $entity->term_id));
+  $term = reset($term);
+
+  // For organism titles  we want the genus and species with no comma separation.
+  if ($term->name == 'organism') {
+    $format[] = array(
+      'format' => '[organism__genus]-[organism__species]',
+      'weight' => -5
+    );
+  }
+  return $format;
 }

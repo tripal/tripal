@@ -80,7 +80,8 @@ function tripal_chado_field_info() {
       'description' => t('This record may have any number of properties. Use
           this field to first add the type.'),
       'default_widget' => 'tripal_chado_kvproperty_adder_widget',
-      'default_formatter' => 'tripal_chado_kvproperty_adder_formatter',
+      //'default_formatter' => 'tripal_chado_kvproperty_adder_formatter',
+      'default_formatter' => 'hidden',
       'settings' => array(),
       'storage' => array(
         'type' => 'field_chado_storage',
@@ -196,16 +197,6 @@ function tripal_chado_field_formatter_info() {
  * @param $field
  */
 function hook_chado_field_alter(&$field) {
-  // TODO: add example code for how to use this hook.
-}
-
-/**
- * Implements hook_chado_field_alter().
- *
- * This function adds the custom formatters and widgets to many of the Chado
- * tables.  This way Tripal users get a nice set of already usable fields.
- */
-function tripal_chado_chado_field_alter(&$field) {
 
   if (!array_key_exists('field_settings', $field)) {
     return;
@@ -217,49 +208,6 @@ function tripal_chado_chado_field_alter(&$field) {
   }
   // Here we provide new field types and widgets for FK fields
   // and fields that need special attention.
-  if ($field['field_settings']['chado_column'] =='organism_id') {
-    $field['field_type'] = 'organism_id';
-    $field['widget_type'] = 'tripal_chado_organism_select_widget';
-    $field['label'] = 'Organism';
-    $field['description'] = 'Select an organism.';
-  }
-  else if ($field['field_settings']['chado_column'] =='dbxref_id') {
-    $field['field_type'] = 'dbxref_id';
-    $field['widget_type'] = 'tripal_chado_primary_dbxref_widget';
-    $field['label'] = 'Primary Cross Reference';;
-    $field['description'] = 'This record can be cross-referenced with a
-    record in another online database. The primary reference is for the
-    most prominent reference.  At a minimum, the database and accession
-    must be provided.  To remove a set reference, change the database
-    field to "Select a Database".';
-  }
-  else if ($field['field_settings']['chado_table'] == 'feature' and
-    $field['field_settings']['chado_column'] == 'md5checksum') {
-    $field['field_type'] = 'md5checksum';
-    $field['widget_type'] = 'tripal_chado_md5checksum_checkbox_widget';
-    $field['label'] = 'MD5 Checksum';
-    $field['description'] = 'Generating MD5 checksum for the sequence.';
-  }
-  else if ($field['field_settings']['chado_table'] == 'feature' and $field['field_settings']['chado_column'] == 'seqlen') {
-    $field['field_type'] = 'seqlen';
-    $field['widget_type'] = 'tripal_chado_seqlen_hidden_widget';
-    $field['label'] = 'Seqlen';
-    $field['description'] = 'The length of the residues.';
-  }
-  else if ($field['field_settings']['chado_table'] == 'feature' and $field['field_settings']['chado_column'] == 'residues') {
-    $field['field_type'] = 'residues';
-    $field['widget_type'] = 'tripal_chado_residues_textarea_widget';
-    $field['label'] = 'Residues';
-    $field['description'] = 'Please provide an IUPAC compatible residues for this feature. Spaces and new lines are allowed.';
-  }
-  else if ($field['label'] == 'Timeaccessioned') {
-    $field['label'] = 'Time Accessioned';
-    $field['description'] = 'Please enter the time that this record was first added to the database.';
-  }
-  else if ($field['label'] == 'Timelastmodified') {
-    $field['label'] = 'Time Last Modified';
-    $field['description'] = 'Please enter the time that this record was last modified. The default is the current time.';
-  }
 }
 
 /**
@@ -705,14 +653,25 @@ function tripal_chado_get_table_column_field_default($table_name, $schema, $colu
   $details = $schema['fields'][$column_name];
 
   // Create an array with information about this field.
-  $field_info = array(
+  $field = array(
     'field_type' => '',
     'widget_type' => '',
     'field_settings' => array(
       'chado_table' => $table_name,
       'chado_column' => $column_name,
+      'semantic_web' => array(
+        // The type is the term from a vocabulary that desribes this field..
+        'type' => '',
+        // The namepsace for the vocabulary (e.g. 'foaf').
+        'ns' => '',
+        // The URL for the namespace.  It must be that the type can be
+        // appended to the URL.
+        'nsurl' => '',
+      ),
     ),
-    'widget_settings' => array('display_label' => 1),
+    'widget_settings' => array(
+      'display_label' => 1
+    ),
     'description' => '',
     'label' => ucwords(preg_replace('/_/', ' ', $column_name)),
     'is_required' => 0,
@@ -721,60 +680,136 @@ function tripal_chado_get_table_column_field_default($table_name, $schema, $colu
   // Alter the field info array depending on the column details.
   switch($details['type']) {
     case 'char':
-      $field_info['field_type'] = 'text';
-      $field_info['widget_type'] = 'text_textfield';
-      $field_info['field_settings']['max_length'] = $details['length'];
+      $field['field_type'] = 'text';
+      $field['widget_type'] = 'text_textfield';
+      $field['field_settings']['max_length'] = $details['length'];
       break;
     case 'varchar':
-      $field_info['field_type'] = 'text';
-      $field_info['widget_type'] = 'text_textfield';
-      $field_info['field_settings']['max_length'] = $details['length'];
+      $field['field_type'] = 'text';
+      $field['widget_type'] = 'text_textfield';
+      $field['field_settings']['max_length'] = $details['length'];
       break;
     case 'text':
-      $field_info['field_type'] = 'text';
-      $field_info['widget_type'] = 'text_textarea';
-      $field_info['field_settings']['max_length'] = 17179869184;
-      $field_info['field_settings']['text_processing'] = 1;
+      $field['field_type'] = 'text';
+      $field['widget_type'] = 'text_textarea';
+      $field['field_settings']['max_length'] = 17179869184;
+      $field['field_settings']['text_processing'] = 1;
       break;
     case 'blob':
       // not sure how to support a blob field.
       continue;
       break;
     case 'int':
-      $field_info['field_type'] = 'number_integer';
-      $field_info['widget_type'] = 'number';
+      $field['field_type'] = 'number_integer';
+      $field['widget_type'] = 'number';
       break;
     case 'float':
-      $field_info['field_type'] = 'number_float';
-      $field_info['widget_type'] = 'number';
-      $field_info['field_settings']['precision'] = 10;
-      $field_info['field_settings']['scale'] = 2;
-      $field_info['field_settings']['decimal_separator'] = '.';
+      $field['field_type'] = 'number_float';
+      $field['widget_type'] = 'number';
+      $field['field_settings']['precision'] = 10;
+      $field['field_settings']['scale'] = 2;
+      $field['field_settings']['decimal_separator'] = '.';
       break;
     case 'numeric':
-      $field_info['field_type'] = 'number_decimal';
-      $field_info['widget_type'] = 'number';
+      $field['field_type'] = 'number_decimal';
+      $field['widget_type'] = 'number';
       break;
     case 'serial':
       // Serial fields are most likely not needed as a field.
       break;
     case 'boolean':
-      $field_info['field_type'] = 'list_boolean';
-      $field_info['widget_type'] = 'options_onoff';
-      $field_info['field_settings']['allowed_values'] = array(0 => "No", 1 => "Yes");
+      $field['field_type'] = 'list_boolean';
+      $field['widget_type'] = 'options_onoff';
+      $field['field_settings']['allowed_values'] = array(0 => "No", 1 => "Yes");
       break;
     case 'datetime':
       // Use the Drupal Date and Date API to create the field/widget
-      $field_info['field_type'] = 'datetime';
-      $field_info['widget_type'] = 'date_select';
-      $field_info['widget_settings']['increment'] = 1;
-      $field_info['widget_settings']['tz_handling'] = 'none';
-      $field_info['widget_settings']['collapsible'] = TRUE;
+      $field['field_type'] = 'datetime';
+      $field['widget_type'] = 'date_select';
+      $field['widget_settings']['increment'] = 1;
+      $field['widget_settings']['tz_handling'] = 'none';
+      $field['widget_settings']['collapsible'] = TRUE;
 
       // TODO: Add settings so that the minutes increment by 1.
       // And turn off the timezone, as the Chado field doesn't support it.
       break;
   }
 
-  return $field_info;
+  // Set some default semantic web information
+  if ($column_name == 'name') {
+    $field['field_settings']['semantic_web']['type'] = 'name';
+    $field['field_settings']['semantic_web']['ns'] = 'foaf';
+    $field['field_settings']['semantic_web']['nsurl'] = 'http://xmlns.com/foaf/0.1/';
+  }
+  if ($column_name == 'description' or $column_name == 'definition' or
+      $column_name == 'comment') {
+    $field['field_settings']['semantic_web']['type'] = 'description';
+    $field['field_settings']['semantic_web']['ns'] = 'hydra';
+    $field['field_settings']['semantic_web']['nsurl'] = 'http://www.w3.org/ns/hydra/core#';
+  }
+
+  //
+  // GENERIC COLUMNS
+  //
+  if ($field['field_settings']['chado_column'] =='organism_id') {
+    $field['field_type'] = 'organism_id';
+    $field['widget_type'] = 'tripal_chado_organism_select_widget';
+    $field['label'] = 'Organism';
+    $field['description'] = 'Select an organism.';
+  }
+  elseif ($field['field_settings']['chado_column'] =='dbxref_id') {
+    $field['field_type'] = 'dbxref_id';
+    $field['widget_type'] = 'tripal_chado_primary_dbxref_widget';
+    $field['label'] = 'Primary Cross Reference';;
+    $field['description'] = 'This record can be cross-referenced with a ' .
+      'record in another online database. The primary reference is for the ' .
+      'most prominent reference.  At a minimum, the database and accession ' .
+      'must be provided.  To remove a set reference, change the database ' .
+      'field to "Select a Database".';
+  }
+  elseif ($field['label'] == 'Timeaccessioned') {
+    $field['label'] = 'Time Accessioned';
+    $field['description'] = 'Please enter the time that this record was first added to the database.';
+  }
+  elseif ($field['label'] == 'Timelastmodified') {
+    $field['label'] = 'Time Last Modified';
+    $field['description'] = 'Please enter the time that this record was last modified. The default is the current time.';
+  }
+  //
+  // ORGANISM TABLE
+  //
+  elseif ($field['field_settings']['chado_table'] == 'organism' and $field['field_settings']['chado_column'] == 'comment') {
+    $field['label'] = 'Description';
+  }
+  //
+  // FEATURE TABLE
+  //
+  elseif ($field['field_settings']['chado_table'] == 'feature' and $field['field_settings']['chado_column'] == 'uniquename') {
+    $field['field_type'] = 'text';
+    $field['widget_type'] = 'text_textfield';
+    $field['field_settings']['text_processing'] = 0;
+    $field['field_settings']['semantic_web']['type'] = 'name';
+    $field['field_settings']['semantic_web']['ns'] = 'foaf';
+    $field['field_settings']['semantic_web']['nsurl'] = 'http://xmlns.com/foaf/0.1/';
+  }
+  elseif ($field['field_settings']['chado_table'] == 'feature' and $field['field_settings']['chado_column'] == 'md5checksum') {
+    $field['field_type'] = 'md5checksum';
+    $field['widget_type'] = 'tripal_chado_md5checksum_checkbox_widget';
+    $field['label'] = 'MD5 Checksum';
+    $field['description'] = 'Generating MD5 checksum for the sequence.';
+  }
+  elseif ($field['field_settings']['chado_table'] == 'feature' and $field['field_settings']['chado_column'] == 'seqlen') {
+    $field['field_type'] = 'seqlen';
+    $field['widget_type'] = 'tripal_chado_seqlen_hidden_widget';
+    $field['label'] = 'Seqlen';
+    $field['description'] = 'The length of the residues.';
+  }
+  elseif ($field['field_settings']['chado_table'] == 'feature' and $field['field_settings']['chado_column'] == 'residues') {
+    $field['field_type'] = 'residues';
+    $field['widget_type'] = 'tripal_chado_residues_textarea_widget';
+    $field['label'] = 'Residues';
+    $field['description'] = 'Please provide an IUPAC compatible residues for this feature. Spaces and new lines are allowed.';
+  }
+
+  return $field;
 }
