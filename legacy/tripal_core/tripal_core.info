@@ -1,0 +1,16 @@
+name = Tripal Core
+description = Provides support for all Tripal modules and includes the Tripal API, jobs management, materialized views, Chado installation and custom tables.
+core = 7.x
+project = tripal
+package = Tripal v2 Legacy
+version = 7.x-2.0
+configure = admin/tripal
+
+stylesheets[all][] = theme/css/tripal.css
+scripts[]          = theme/js/tripal.js
+
+dependencies[] = views
+dependencies[] = path
+dependencies[] = search
+dependencies[] = php
+dependencies[] = tripal

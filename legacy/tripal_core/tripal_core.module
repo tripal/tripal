@@ -1,0 +1,656 @@
+<?php
+/**
+ * @file
+ * The Tripal Core module
+ */
+
+
+require_once 'api/tripal_core.chado_nodes.api.inc';
+require_once 'api/tripal_core.chado_nodes.title_and_path.inc';
+require_once 'api/tripal_core.chado_nodes.properties.api.inc';
+require_once 'api/tripal_core.chado_nodes.dbxrefs.api.inc';
+require_once 'api/tripal_core.chado_nodes.relationships.api.inc';
+require_once 'api/tripal_core.tripal_variables.api.inc';
+require_once 'includes/tripal_core.form_elements.inc';
+
+/**
+ * @defgroup tripal_core Tripal Core Module
+ * @ingroup tripal_modules
+ * @{
+ * Functionality useful for all other Tripal modules including the Tripal jobs, files,
+ * materialized views and custom table functions.
+ * @}
+ */
+
+tripal_core_set_globals();
+
+/**
+ * This function is used to set the global Chado variables
+ *
+ * @ingroup tripal_core
+ */
+function tripal_core_set_globals() {
+  // these global variables are meant to be accessed by all Tripal
+  // modules to find the chado version installed and if Chado is local.
+  // these variables are stored as globals rather than using the drupal_set_variable
+  // functions because the Drupal functions make databaes queries and for long
+  // running loaders we don't want those queries repeatedly.
+  $GLOBALS["chado_is_installed"]  = chado_is_installed();
+  if ($GLOBALS["chado_is_installed"]) {
+    $GLOBALS["chado_is_local"]      = chado_is_local();
+    $GLOBALS["chado_version"]       = chado_get_version();
+    $GLOBALS["exact_chado_version"] = chado_get_version(TRUE);
+  }
+}
+
+/**
+ * Implements hook_init().
+ * Used to set the search_path, create default content and set default variables.
+ *
+ * @ingroup tripal_core
+ */
+function tripal_core_init() {
+  global $base_url;
+
+  // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist, and
+  // only if the chado database is present.
+  if ($GLOBALS["chado_is_installed"]) {
+
+    // if the Tripal cv is missing then add
+    $results = chado_query("SELECT * FROM {cv} WHERE name = 'tripal'");
+    $tripal_cv = $results->fetchObject();
+    if (!$tripal_cv) {
+      $results = chado_query(
+        "INSERT INTO {cv} (name,definition) " .
+        "VALUES ('tripal', 'Terms used by Tripal for modules to manage data such as that stored in property tables like featureprop, analysisprop, etc')"
+      );
+    }
+
+    // if the Tripal db is missing then add it
+    $results = chado_query("SELECT * FROM {db} WHERE name = 'tripal'");
+    $tripal_db = $results->fetchObject();
+    if (!$tripal_db) {
+      $results = chado_query(
+        "INSERT INTO {db} (name,description) " .
+        "VALUES ('tripal', 'Used as a database placeholder for tripal defined objects such as tripal cvterms')"
+      );
+    }
+  }
+
+  // add some variables for all javasript to use for building URLs
+  $theme_dir = drupal_get_path('theme', 'tripal');
+  $clean_urls = variable_get('clean_url', 0);
+  drupal_add_js(
+    " var baseurl  = '$base_url';
+      var themedir = '$theme_dir';
+      var isClean  =  $clean_urls;",
+    'inline', 'header');
+
+  // make sure the date time settings are the way Tripal will insert them
+  // otherwise PostgreSQL version that may have a different datestyle setting
+  // will fail when inserting or updating a date column in a table.
+  db_query("SET DATESTYLE TO :style", array(':style' => 'MDY'));
+
+  // If we want AHAH elements on the node forms (e.g. chado_pub form) then we need to include
+  // the node.pages file. Otherwise this error message is given:
+  //
+  // warning: call_user_func_array() expects parameter 1 to be a valid callback,
+  // function 'node_form' not found or invalid function name
+  // in /var/www/includes/form.inc on line 382.
+  module_load_include('inc', 'node', 'node.pages');
+
+}
+
+/**
+ * Implements hook_menu().
+ * Defines all menu items needed by Tripal Core
+ *
+ * @ingroup tripal_core
+ */
+function tripal_core_menu() {
+  $items = array();
+
+  // Tripal setting groups
+  $items['admin/tripal'] = array(
+    'title' => 'Tripal',
+    'description' => t("Manage the behavior or Tripal and its various modules."),
+    'weight' => -8,
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('administer tripal'),
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
+  );
+  $items['admin/tripal/tripal_jobs'] = array(
+    'title' => 'Jobs',
+    'description' => t('Jobs managed by Tripal'),
+    'page callback' => 'tripal_jobs_admin_view',
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 0
+  );
+  $items['admin/tripal/loaders'] = array(
+    'title' => 'Data Loaders',
+    'description' => t('Tools facilitating loading data. Includes a generic tab-delimited loader (Bulk Loader).'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 6
+  );
+  $items['admin/tripal/storage'] = array(
+    'title' => 'Storage Backend',
+    'description' => t("Functionality related to data storage and tools to interact with the storage backend."),
+    'weight' => 8,
+    'access arguments' => array('administer tripal'),
+  );
+  $items['admin/tripal/chado'] = array(
+    'title' => 'Legacy Tripal',
+    'description' => t('Tools related to Tripal2 Legacy chado-based node types.'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 20
+  );
+  $items['admin/tripal/extension'] = array(
+    'title' => 'Extensions',
+    'description' => t('Configuration for Tripal extensions.'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 100
+  );
+  $items['admin/tripal/extension/import'] = array(
+    'title' => 'Import Extensions',
+    'description' => 'Provides a list of the available extensions that are registered at the tripal.info site. From this page you can easily import or install extensions to your site.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_core_extensions_form'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' =>  'includes/tripal_core.extensions.inc',
+    'file path' => drupal_get_path('module', 'tripal_core'),
+    'weight' => -100,
+  );
+
+  // Chado Storage Backend
+  $items['admin/tripal/storage/chado'] = array(
+    'title' => 'Chado Schema',
+    'description' => t("Tools to extend the chado schema through custom tables & materialized views."),
+    'weight' => -100,
+    'access arguments' => array('administer tripal'),
+  );
+  $items['admin/tripal/storage/chado/chado_install'] = array(
+    'title' => 'Install Chado Schema',
+    'description' => t('Installs the Chado database tables, views, etc., inside the current Drupal database'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_core_chado_load_form'),
+    'access arguments' => array('install chado'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => -100
+  );
+/*
+  $items['admin/tripal/setup/customize'] = array(
+    'title' => 'Customize Tripal',
+    'description' => t('Information on how to customize tripal'),
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_core_customize'),
+    'access arguments' => array('administer tripal'),
+    'weight' => 10
+  );
+*/
+
+  // Jobs Management
+  $items['admin/tripal/tripal_jobs/help'] = array(
+    'title' => 'Help',
+    'description' => t('Help for the tripal job management system'),
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_core_job_help'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10
+  );
+  $items['admin/tripal/tripal_jobs/cancel/%'] = array(
+    'title' => 'Jobs',
+    'description' => t('Cancel a pending job'),
+    'page callback' => 'tripal_cancel_job',
+    'page arguments' => array(4),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/tripal_jobs/rerun/%'] = array(
+    'title' => 'Jobs',
+    'description' => t('Re-run an existing job.'),
+    'page callback' => 'tripal_rerun_job',
+    'page arguments' => array(4),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/tripal_jobs/view/%'] = array(
+    'title' => 'Jobs Details',
+    'description' => t('View job details.'),
+    'page callback' => 'tripal_jobs_view',
+    'page arguments' => array(4),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/tripal_jobs/views/jobs/enable'] = array(
+    'title' => 'Enable Jobs Administrative View',
+    'page callback' => 'tripal_enable_view',
+    'page arguments' => array('tripal_core_admin_jobs', 'admin/tripal/tripal_jobs'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+
+  // Materialized Views
+  $items['admin/tripal/storage/chado/mviews'] = array(
+    'title' => 'Materialized Views',
+    'description' => t('Materialized views are used to improve speed of large or complex queries.'),
+    'page callback' => 'tripal_mview_admin_view',
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => -10
+  );
+  $items['admin/tripal/storage/chado/mviews/help'] = array(
+    'title' => 'Help',
+    'description' => t('Help for the materialized views management system'),
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_core_mviews_help'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10
+  );
+  $items['admin/tripal/storage/chado/mviews/report/%'] = array(
+    'title' => 'Materialized View',
+    'description' => t('Materialized views are used to improve speed of large or complex queries. These are database views as compared to Drupal views.'),
+    'page callback' => 'tripal_mview_report',
+    'page arguments' => array(5),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/mviews/new'] = array(
+    'title' => 'Create Materialized View',
+    'description' => t('Create a new materialized view.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_mviews_form'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/mviews/edit/%'] = array(
+    'title' => 'Edit Materialized View',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_mviews_form', 5),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/mviews/update/%'] = array(
+    'title' => 'Create Materialized View',
+    'description' => t('Materialized views are used to improve speed of large or complex queries.'),
+    'page callback' => 'tripal_mviews_add_populate_job',
+    'page arguments' => array(5),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/mviews/delete/%'] = array(
+    'title' => 'Create Materialized View',
+    'description' => t('Materialized views are used to improve speed of large or complex queries.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_mviews_delete_form', 5),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  // TODO: complete the code for exporting and importing of MViews.
+  // Need to address security issues of sharing SQL.
+  $items['admin/tripal/storage/chado/mviews/import'] = array(
+    'title' => 'Import MView',
+    'description' => 'Import a materialized view from another Tripal instance.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_mviews_import_form'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/mviews/%tblid/export'] = array(
+    'title' => 'Export MView',
+    'description' => 'Export a materialized view for use by another Tripal instance.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_mviews_export_form', 5),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+
+  // Custom Tables
+  $items['admin/tripal/storage/chado/custom_tables'] = array(
+    'title' => 'Custom Tables',
+    'description' => t('Creation of custom tables that are added to Chado database.'),
+    'page callback' => 'tripal_custom_table_admin_view',
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => -10
+  );
+  $items['admin/tripal/storage/chado/custom_tables/help'] = array(
+    'title' => 'Help',
+    'description' => t('Help for the tripal job management system'),
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_core_job_help'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10
+  );
+  $items['admin/tripal/storage/chado/custom_tables/view/%'] = array(
+    'title' => 'Custom Tables',
+    'description' => t('Custom tables are added to Chado.'),
+    'page callback' => 'tripal_custom_table_view',
+    'page arguments' => array(5),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/custom_tables/new'] = array(
+    'title' => 'Create Custom Table',
+    'description' => t('An interface for creating your own custom tables.'),
+    'page callback' => 'tripal_custom_table_new_page',
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/custom_tables/edit/%'] = array(
+    'title' => 'Edit Custom Table',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_custom_tables_form', 5),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/custom_tables/delete/%'] = array(
+    'title' => 'Create Custom Table',
+    'description' => t('Custom tables are added to Chado.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_custom_tables_delete_form', 5),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/custom_tables/views/tables/enable'] = array(
+    'title' => 'Enable Custom Tables Administrative View',
+    'page callback' => 'tripal_enable_view',
+    'page arguments' => array('tripal_core_admin_custom_table', 'admin/tripal/storage/chado/custom_tables'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+
+  // Relationshi API autocomplete callback
+  $items['tripal_ajax/relationship_nodeform/%/%/name_to_id'] = array(
+    'page callback' => 'chado_add_node_form_relationships_name_to_id_callback',
+    'page arguments' => array(2,3),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+
+  // The node's TOC tab
+  $items['node/%node/tripal_toc'] = array(
+    'title' => 'TOC',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_core_node_toc_form', 1),
+    'access callback' => 'tripal_core_access_node_toc_form',
+    'access arguments' => array(1),
+    'type' => MENU_LOCAL_TASK,
+    'file' => '/includes/tripal_core.toc.inc',
+  );
+
+  // Web Services API callbacks.
+//   $items['ws/chado/v0.1'] = array(
+//     'title' => 'Tripal Web Services API v0.1',
+//     'page callback' => 'tripal_core_chado_hal_api',
+//     'access arguments' => array('access content'),
+//     'type' => MENU_CALLBACK,
+//     'file' => '/includes/tripal_core.ws_hal.inc',
+//   );
+
+  return $items;
+}
+
+/**
+ * An access wrapper function for editing the TOC
+ *
+ * @param $node
+ *   A node object
+ * @return
+ *   Returns TRUE if the node is a Tripal-based node and the user hass
+ *   the 'administer tripal' role.
+ */
+function tripal_core_access_node_toc_form($node) {
+  $types = module_invoke_all('node_info');
+  if (array_key_exists($node->type, $types) and
+      array_key_exists('chado_node_api', $types[$node->type])) {
+    return user_access('administer tripal');
+  }
+  return FALSE;
+}
+
+/**
+ * Implements hook_permission().
+ *
+ * Set the permission types that the chado module uses.  Essentially we
+ *  want permissionis that protect creation, editing and deleting of chado
+ *  data objects
+ *
+ * @ingroup tripal_core
+ */
+function tripal_core_permission() {
+  return array(
+    'install chado' => array(
+      'title' => t('Install Chado'),
+      'description' => t('Allow the user to install or upgrade a Chado database in the existing Drupal database.')
+    ),
+    'administer tripal' => array(
+      'title' => t('Administer Tripal'),
+      'description' => t('Allow the user to access administrative pages of Tripal.')
+    ),
+    'view dev helps' => array(
+      'title' => t('View Developer Hints'),
+      'description' => t('Tripal will provide blue shaded boxes that provide
+          instructions for how to customize or setup specific pages on a
+          site.  This permission should be enabled for developers. But can
+          be disabled once developers are accustomed to these hints.'),
+      'restrict access' => TRUE,
+    ),
+    'view ids' => array(
+      'title' => t('View Internal IDs'),
+      'description' => t('On content pages Tripal will typically provide
+          a table of information pulled from the Chado database but the
+          primary key IDs for that data is typically not shown.  The
+          default Tripal templates can show the primary key ID inside of a
+          blue shaded table row if this permission is enabled. This can
+          be useful for site developers who might want these IDs when working
+          with the underlying database.'),
+      'restrict access' => TRUE,
+    )
+  );
+}
+
+/**
+ * Implements hook_theme().
+ * Registers template files/functions used by this module.
+ *
+ * @ingroup tripal_core
+ */
+function tripal_core_theme($existing, $type, $theme, $path) {
+  return array(
+    'tripal_core_customize' => array(
+      'arguments' => array('job_id' => NULL),
+      'template' => 'tripal_core_customize',
+      'path' => "$path/theme/templates"
+    ),
+    'theme_file_upload_combo' => array(
+      'render element' => 'element',
+    ),
+    'theme_sequence_combo' => array(
+      'render element' => 'element',
+    ),
+    'tripal_core_jobs_help' => array(
+      'template' => 'tripal_core_jobs_help',
+      'variables' =>  array(NULL),
+      'path' => "$path/theme/templates"
+    ),
+    'tripal_core_customtables_help' => array(
+      'template' => 'tripal_core_customtables_help',
+      'variables' =>  array(NULL),
+      'path' => "$path/theme/templates"
+    ),
+
+    // Chado Node API Themes
+    // --------------------------------
+    // Properties Node Form
+    'chado_node_properties_form_table' => array(
+      'function' => 'theme_chado_add_node_form_properties',
+      'render element' => 'element',
+    ),
+    // Additional Dbxrefs Nore Form
+    'chado_node_additional_dbxrefs_form_table' => array(
+      'function' => 'theme_chado_add_node_form_dbxrefs_table',
+      'render element' => 'element',
+    ),
+    // Relationships Nore Form
+    'chado_node_relationships_form_table' => array(
+      'function' => 'theme_chado_add_node_form_relationships_table',
+      'render element' => 'element',
+    ),
+
+    // Admin messages theme
+    // --------------------------------
+    'tripal_admin_message' => array(
+      'function' => 'theme_tripal_admin_message',
+      'variables' => array('message' => NULL),
+    ),
+
+    // Form and form element themes.
+    // --------------------------------
+    'tripal_node_toc_items_table' => array(
+      'render element' => 'element',
+    ),
+    // Theme function for the extension admin page.
+    'tripal_core_extensions_form_tables' => array(
+      'render element' => 'element',
+    )
+  );
+}
+
+
+/**
+ * Implements hook_job_describe_args().
+ * Describes the arguements for the tripal_populate_mview job to allow for greater
+ * readability in the jobs details pages.
+ *
+ * @param $callback
+ *   The callback of the current tripal job (this is the function that will be executed
+ *   when tripal_launch_jobs.php is run.
+ * @param $args
+ *   An array of arguments passed in when the job was registered.
+ *
+ * @return
+ *   A more readable $args array
+ *
+ * @ingroup tripal_core
+ */
+function tripal_core_job_describe_args($callback, $args) {
+  $new_args = array();
+  if ($callback == 'tripal_populate_mview') {
+    // get this mview details
+    $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id ";
+    $results = db_query($sql, array(':mview_id' => $args[0]));
+    $mview = $results->fetchObject();
+    $new_args['View Name'] = $mview->name;
+  }
+
+  elseif ($callback == 'tripal_core_install_chado') {
+     $new_args['Action'] = $args[0];
+  }
+  return $new_args;
+}
+
+/**
+ * this is just a wrapper for backwards compatibility with a naming mistake.
+ * it can go away in the future as it only is useful for jobs created by v0.3b
+ *
+ * @todo remove this function
+ */
+function tripal_core_load_gff3($gff_file, $organism_id, $analysis_id, $add_only = 0,
+  $update = 0, $refresh = 0, $remove = 0, $job = NULL) {
+
+  tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id, $add_only,
+    $update, $refresh, $remove, $job);
+}
+
+/**
+ * Implements hook_coder_ignore().
+ * Defines the path to the file (tripal_core.coder_ignores.txt) where ignore rules for coder are stored
+ */
+function tripal_core_coder_ignore() {
+  return array(
+    'path' => drupal_get_path('module', 'tripal_core'),
+    'line prefix' => drupal_get_path('module', 'tripal_core'),
+  );
+}
+
+/**
+ * Implements hook_views_api()
+ * Purpose: Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_db.views.inc where all the
+ *  views integration code is
+ *
+ * @ingroup tripal_organism
+ */
+function tripal_core_views_api() {
+  return array(
+    'api' => 3.0,
+  );
+}
+
+/**
+ * Implements hook_node_view_alter()
+ *
+ * @param unknown $build
+ */
+function tripal_core_node_view_alter(&$build) {
+  module_load_include('inc', 'tripal_core', 'includes/tripal_core.toc');
+  tripal_core_node_view_build_toc($build);
+}
+
+/**
+ * Implements hook_node_view()
+ *
+ * @ingroup tripal_core
+ */
+function tripal_core_node_view($node, $view_mode, $langcode) {
+
+  // if this node type is a chado-based node (i.e. Tripal node)
+  // the we want to add a table of contents to it's content list
+  // this table of contents will be an empty
+  if (preg_match('/^chado_/', $node->type)) {
+    // Show feature browser and counts
+    if ($view_mode == 'full') {
+      if (!isset($node->content['#tripal_generic_node_template'])) {
+        $node->content['#tripal_generic_node_template'] = TRUE;
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_exclude_type_by_default()
+ *
+ * This hooks allows fields of a specified type that match a specified criteria to be excluded by
+ * default from any table when chado_generate_var() is called. Keep in mind that if
+ * fields are excluded by default they can always be expanded at a later date using
+ * chado_expand_var().
+ *
+ * Criteria are php strings that evaluate to either TRUE or FALSE. These strings are evaluated using
+ * drupal_eval() which suppresses syntax errors and throws watchdog entries of type php. There are
+ * also watchdog entries of type tripal_core stating the exact criteria evaluated. Criteria can
+ * contain the following tokens:
+ *   - <field_name>
+ *       Replaced by the name of the field to be excluded
+ *   - <field_value>
+ *       Replaced by the value of the field in the current record
+ * Also keep in mind that if your criteria doesn't contain the &gt;field_value&lt;  token then it will be
+ * evaluated before the query is executed and if the field is excluded it won't be included in the
+ * query.
+ *
+ * @return
+ *   An array of type => criteria where the type is excluded if the criteria evaluates to TRUE
+ *
+ * @ingroup tripal_core
+ */
+function tripal_core_exclude_type_by_default() {
+  return array('text' => 'strlen("<field_value> ") > 250');
+}

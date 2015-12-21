@@ -1,6 +1,15 @@
 <?php
 
 function tripal_chado_install() {
+  // The foreign key specification doesn't really add one to the
+  // Drupal schema, it is just used internally, but we want one.
+  db_query('
+      ALTER TABLE {tripal_custom_tables}
+      ADD CONSTRAINT tripal_custom_tables_fk1
+      FOREIGN KEY (mview_id) REFERENCES {tripal_mviews} (mview_id)
+      ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+  ');
+
   // Unfortunately, some Chado base tables do not have a type_id, so we must
   // take special action for those tables.  These include: organism and
   // analysis. Until we can find an appropriate controlled vocabulary
@@ -78,6 +87,20 @@ function tripal_chado_install() {
   }
 }
 
+/**
+ * Implementation of hook_uninstall().
+ *
+ * @ingroup tripal
+ */
+function tripal_chado_uninstall() {
+
+  // Drop the foreign key between tripal_custom_tables and tripal_mviews
+  // so that Drupal can then drop the tables
+  db_query('
+    ALTER TABLE {tripal_custom_tables}
+    DROP CONSTRAINT tripal_custom_tables_fk1 CASCADE
+  ');
+}
 
 /**
  * Implements hook_schema().
@@ -86,6 +109,22 @@ function tripal_chado_schema() {
 
   // Links TripalEntity entities to the chado record.
   $schema['chado_entity'] = tripal_chado_chado_entity_schema();
+  $schema['tripal_mviews'] = tripal_chado_tripal_mviews_schema();
+  $schema['tripal_custom_tables'] = tripal_chado_tripal_custom_tables_schema();
+
+  // if this module is already installed and enabled, then we want to provide
+  // the schemas for all of the custom tables.  This will allow Views to
+  // see the schemas.  We check if the module is installed because during
+  // installation we don't want to make these custom tables available as we don't
+  // want them created in the Drupal database.  The custom tables go in the
+  // Chado database.
+  if (db_table_exists('tripal_custom_tables')) {
+    $sql = 'SELECT * FROM {tripal_custom_tables}';
+    $results = db_query($sql);
+    foreach ($results as $custom) {
+      $schema[$custom->table_name] = unserialize($custom->schema);
+    }
+  }
 
   return $schema;
 }
@@ -94,7 +133,130 @@ function tripal_chado_schema() {
  * @section
  * Schema Definitions.
  */
-
+/**
+ * Describes the Tripal Custom Tables (tripal_custom_tables) table
+ * This keeps track of tables created by Tripal and stored in chado that may or may not
+ * also be materialized views.
+ *
+ * @ingroup tripal
+ */
+function tripal_chado_tripal_custom_tables_schema() {
+  return array(
+    'fields' => array(
+      'table_id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not NULL' => TRUE
+      ),
+      'table_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not NULL' => TRUE
+      ),
+      'schema' => array(
+        'type' => 'text',
+        'not NULL' => TRUE
+      ),
+      'mview_id' => array(
+        'type' => 'int',
+        'not NULL' => FALSE
+      )
+    ),
+    'indexes' => array(
+      'table_id' => array('table_id'),
+    ),
+    'primary key' => array('table_id'),
+    'foreign keys' => array(
+      'tripal_mviews' => array(
+        'table' => 'tripal_mviews',
+        'columns' => array(
+          'mview_id' => 'mview_id'
+        ),
+      ),
+    ),
+  );
+}
+/**
+ * Describes the Tripal Materialized View (tripal_mviews) table
+ * This table keeps track of all materialized views created by Tripal and stored in chado
+ *
+ * @ingroup tripal
+ */
+function tripal_chado_tripal_mviews_schema() {
+  return array(
+    'fields' => array(
+      'mview_id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not NULL' => TRUE
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not NULL' => TRUE
+      ),
+      'modulename' => array(
+        'type' => 'varchar',
+        'length' => 50,
+        'not NULL' => TRUE,
+        'description' => 'The module name that provides the callback for this job'
+      ),
+      'mv_table' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not NULL' => FALSE
+      ),
+      'mv_specs' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not NULL' => FALSE
+      ),
+      'mv_schema' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not NULL' => FALSE
+      ),
+      'indexed' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not NULL' => FALSE
+      ),
+      'query' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not NULL' => TRUE
+      ),
+      'special_index' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not NULL' => FALSE
+      ),
+      'last_update' => array(
+        'type' => 'int',
+        'not NULL' => FALSE,
+        'description' => 'UNIX integer time'
+      ),
+      'status'        => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not NULL' => FALSE
+      ),
+      'comment' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not NULL' => FALSE
+      ),
+    ),
+    'indexes' => array(
+      'mview_id' => array('mview_id')
+    ),
+    'unique keys' => array(
+      'mv_table' => array('mv_table'),
+      'mv_name' => array('name'),
+    ),
+    'primary key' => array('mview_id'),
+  );
+}
 
 /**
  * Links Biological Data Entities to the chado "base" table the data is stored in.

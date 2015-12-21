@@ -1,0 +1,268 @@
+<?php
+/**
+ * @file
+ * The Tripal Core module
+ */
+
+require_once "api/tripal.notice.api.inc";
+
+/**
+ * @defgroup tripal Tripal Core Module
+ * @ingroup tripal_modules
+ * @{
+ * Functionality useful for all other Tripal modules including the Tripal jobs, files,
+ * materialized views and custom table functions.
+ * @}
+ */
+
+
+/**
+ * Implements hook_init().
+ * Used to set the search_path, create default content and set default variables.
+ *
+ * @ingroup tripal
+ */
+function tripal_init() {
+  global $base_url;
+
+  // add some variables for all javasript to use for building URLs
+  $theme_dir = drupal_get_path('theme', 'tripal');
+  $clean_urls = variable_get('clean_url', 0);
+  drupal_add_js(
+    " var baseurl  = '$base_url';
+      var themedir = '$theme_dir';
+      var isClean  =  $clean_urls;",
+    'inline', 'header');
+
+  // make sure the date time settings are the way Tripal will insert them
+  // otherwise PostgreSQL version that may have a different datestyle setting
+  // will fail when inserting or updating a date column in a table.
+  db_query("SET DATESTYLE TO :style", array(':style' => 'MDY'));
+
+}
+
+/**
+ * Implements hook_menu().
+ * Defines all menu items needed by Tripal Core
+ *
+ * @ingroup tripal
+ */
+function tripal_menu() {
+  $items = array();
+
+  // Tripal setting groups
+  $items['admin/tripal'] = array(
+    'title' => 'Tripal',
+    'description' => t("Manage the behavior or Tripal and its various modules."),
+    'weight' => -8,
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('administer tripal'),
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
+  );
+  $items['admin/tripal/tripal_jobs'] = array(
+    'title' => 'Jobs',
+    'description' => t('Jobs managed by Tripal'),
+    'page callback' => 'tripal_jobs_admin_view',
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 0,
+    'file' => 'includes/tripal.jobs.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+  );
+
+  $items['admin/tripal/storage'] = array(
+    'title' => 'Storage Backend',
+    'description' => t("Functionality related to data storage and tools to interact with the storage backend."),
+    'weight' => 8,
+    'access arguments' => array('administer tripal'),
+  );
+
+  // Menu items for facilitating import of extension modules.
+  $items['admin/tripal/extension'] = array(
+    'title' => 'Extensions',
+    'description' => t('Configuration for Tripal extensions.'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'includes/tripal.extensions.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+    'weight' => 100
+  );
+  $items['admin/tripal/extension/import'] = array(
+    'title' => 'Import Extensions',
+    'description' => 'Provides a list of the available extensions that are registered at the tripal.info site. From this page you can easily import or install extensions to your site.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_extensions_form'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' =>  'includes/tripal.extensions.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+    'weight' => -100,
+  );
+
+
+/*
+  $items['admin/tripal/setup/customize'] = array(
+    'title' => 'Customize Tripal',
+    'description' => t('Information on how to customize tripal'),
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_customize'),
+    'access arguments' => array('administer tripal'),
+    'weight' => 10
+  );
+*/
+
+  // Jobs Management
+  $items['admin/tripal/tripal_jobs/help'] = array(
+    'title' => 'Help',
+    'description' => t('Help for the tripal job management system'),
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_job_help'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10
+  );
+  $items['admin/tripal/tripal_jobs/cancel/%'] = array(
+    'title' => 'Jobs',
+    'description' => t('Cancel a pending job'),
+    'page callback' => 'tripal_cancel_job',
+    'page arguments' => array(4),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/tripal_jobs/rerun/%'] = array(
+    'title' => 'Jobs',
+    'description' => t('Re-run an existing job.'),
+    'page callback' => 'tripal_rerun_job',
+    'page arguments' => array(4),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/tripal_jobs/view/%'] = array(
+    'title' => 'Jobs Details',
+    'description' => t('View job details.'),
+    'page callback' => 'tripal_jobs_view',
+    'page arguments' => array(4),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/tripal_jobs/views/jobs/enable'] = array(
+    'title' => 'Enable Jobs Administrative View',
+    'page callback' => 'tripal_enable_view',
+    'page arguments' => array('tripal_admin_jobs', 'admin/tripal/tripal_jobs'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function tripal_permission() {
+  return array(
+    'administer tripal' => array(
+      'title' => t('Administer Tripal'),
+      'description' => t('Allow the user to access administrative pages of Tripal.')
+    ),
+    'view dev helps' => array(
+      'title' => t('View Developer Hints'),
+      'description' => t('Tripal will provide blue shaded boxes that provide
+          instructions for how to customize or setup specific pages on a
+          site.  This permission should be enabled for developers. But can
+          be disabled once developers are accustomed to these hints.'),
+      'restrict access' => TRUE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_theme().
+ * Registers template files/functions used by this module.
+ *
+ * @ingroup tripal
+ */
+function tripal_theme($existing, $type, $theme, $path) {
+  return array(
+    'tripal_customize' => array(
+      'arguments' => array('job_id' => NULL),
+      'template' => 'tripal_customize',
+      'path' => "$path/theme/templates"
+    ),
+    'theme_file_upload_combo' => array(
+      'render element' => 'element',
+    ),
+    'theme_sequence_combo' => array(
+      'render element' => 'element',
+    ),
+    'tripal_jobs_help' => array(
+      'template' => 'tripal_jobs_help',
+      'variables' =>  array(NULL),
+      'path' => "$path/theme/templates"
+    ),
+    'tripal_customtables_help' => array(
+      'template' => 'tripal_customtables_help',
+      'variables' =>  array(NULL),
+      'path' => "$path/theme/templates"
+    ),
+    // Admin messages theme
+    'tripal_admin_message' => array(
+      'function' => 'theme_tripal_admin_message',
+      'variables' => array('message' => NULL),
+    ),
+    // Theme function for the extension admin page.
+    'tripal_extensions_form_tables' => array(
+      'render element' => 'element',
+    )
+  );
+}
+
+
+/**
+ * Implements hook_coder_ignore().
+ * Defines the path to the file (tripal.coder_ignores.txt) where ignore rules for coder are stored
+ */
+function tripal_coder_ignore() {
+  return array(
+    'path' => drupal_get_path('module', 'tripal'),
+    'line prefix' => drupal_get_path('module', 'tripal'),
+  );
+}
+
+/**
+ * Implements hook_views_api()
+ * Purpose: Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_db.views.inc where all the
+ *  views integration code is
+ *
+ * @ingroup tripal_organism
+ */
+function tripal_views_api() {
+  return array(
+    'api' => 3.0,
+  );
+}
+
+/**
+ * Implements hook_libraries_info().
+ */
+function tripal_libraries_info() {
+  $libraries = array();
+  $libraries['d3'] = array(
+    'name' => 'D3.js',
+    'vendor url' => 'http://d3js.org/',
+    'download url' => 'https://github.com/mbostock/d3',
+    'version arguments' => array(
+      'file' => 'd3.js',
+      'pattern' => '/\s*version: "(\d+\.\d+\.\d+)"/',
+    ),
+    'files' => array(
+      'js' => array(
+        'd3.min.js',
+      ),
+    ),
+  );
+
+  return $libraries;
+}

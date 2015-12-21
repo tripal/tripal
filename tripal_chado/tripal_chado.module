@@ -1,9 +1,281 @@
 <?php
 
+// APPLICATION PROGRAMMER INTERFACE -------------
+// Chado API
 require_once "api/tripal_chado.api.inc";
+require_once 'api/tripal_chado.general.api.inc';
+require_once 'api/tripal_chado.query.api.inc';
+require_once 'api/tripal_chado.variables.api.inc';
+require_once 'api/tripal_chado.schema.api.inc';
+require_once 'api/tripal_chado.custom_tables.api.inc';
+require_once 'api/tripal_chado.mviews.api.inc';
+require_once 'api/tripal_chado.schema_v1.2.api.inc';
+require_once 'api/tripal_chado.schema_v1.11.api.inc';
+
+require_once 'api/modules/tripal_chado.analysis.api.inc';
+require_once 'api/modules/tripal_chado.contact.api.inc';
+require_once 'api/modules/tripal_chado.cv.api.inc';
+require_once 'api/modules/tripal_chado.db.api.inc';
+require_once 'api/modules/tripal_chado.feature.api.inc';
+require_once 'api/modules/tripal_chado.organism.api.inc';
+require_once 'api/modules/tripal_chado.pub.api.inc';
+require_once 'api/modules/tripal_chado.stock.api.inc';
+
 require_once "includes/tripal_chado.entity.inc";
+require_once "includes/tripal_chado.schema.inc";
 require_once "includes/tripal_chado.term_storage.inc";
 require_once "includes/tripal_chado.field_storage.inc";
+
+tripal_chado_set_globals();
+
+/**
+ * This function is used to set the global Chado variables
+ *
+ * @ingroup tripal_chado
+*/
+function tripal_chado_set_globals() {
+  // these global variables are meant to be accessed by all Tripal
+  // modules to find the chado version installed and if Chado is local.
+  // these variables are stored as globals rather than using the drupal_set_variable
+  // functions because the Drupal functions make databaes queries and for long
+  // running loaders we don't want those queries repeatedly.
+  $GLOBALS["chado_is_installed"]  = chado_is_installed();
+  if ($GLOBALS["chado_is_installed"]) {
+    $GLOBALS["chado_is_local"]      = chado_is_local();
+    $GLOBALS["chado_version"]       = chado_get_version();
+    $GLOBALS["exact_chado_version"] = chado_get_version(TRUE);
+  }
+}
+
+/**
+ * Implements hook_init().
+ * Used to set the search_path, create default content and set default variables.
+ *
+ * @ingroup tripal_chado
+ */
+function tripal_chado_init() {
+
+  // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist, and
+  // only if the chado database is present.
+  if ($GLOBALS["chado_is_installed"]) {
+
+    // if the Tripal cv is missing then add
+    $results = chado_query("SELECT * FROM {cv} WHERE name = 'tripal'");
+    $cv = $results->fetchObject();
+    if (!$cv) {
+      $results = chado_query(
+          "INSERT INTO {cv} (name,definition) " .
+          "VALUES ('tripal', 'Terms used by Tripal for modules to manage data such as that stored in property tables like featureprop, analysisprop, etc')"
+      );
+    }
+
+    // if the Tripal db is missing then add it
+    $results = chado_query("SELECT * FROM {db} WHERE name = 'tripal'");
+    $db = $results->fetchObject();
+    if (!$db) {
+      $results = chado_query(
+          "INSERT INTO {db} (name,description) " .
+          "VALUES ('tripal', 'Used as a database placeholder for tripal defined objects such as tripal cvterms')"
+      );
+    }
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function tripal_chado_menu() {
+  $items = array();
+
+  $items['admin/tripal/loaders'] = array(
+    'title' => 'Data Loaders',
+    'description' => t('Tools facilitating data import.'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 6
+  );
+
+  // Chado Storage Backend
+  $items['admin/tripal/storage/chado'] = array(
+    'title' => 'Chado Schema',
+    'description' => t("Tools to extend the chado schema through custom tables & materialized views."),
+    'weight' => -100,
+    'access arguments' => array('administer tripal'),
+  );
+  $items['admin/tripal/storage/chado/chado_install'] = array(
+    'title' => 'Install Chado Schema',
+    'description' => t('Installs the Chado database tables, views, etc., inside the current Drupal database'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_chado_load_form'),
+    'access arguments' => array('install chado'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => -100
+  );
+
+  // Materialized Views
+  $items['admin/tripal/storage/chado/mviews'] = array(
+    'title' => 'Materialized Views',
+    'description' => t('Materialized views are used to improve speed of large or complex queries.'),
+    'page callback' => 'tripal_mview_admin_view',
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => -10
+  );
+  $items['admin/tripal/storage/chado/mviews/help'] = array(
+    'title' => 'Help',
+    'description' => t('Help for the materialized views management system'),
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_mviews_help'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10
+  );
+  $items['admin/tripal/storage/chado/mviews/report/%'] = array(
+    'title' => 'Materialized View',
+    'description' => t('Materialized views are used to improve speed of large or complex queries. These are database views as compared to Drupal views.'),
+    'page callback' => 'tripal_mview_report',
+    'page arguments' => array(5),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/mviews/new'] = array(
+    'title' => 'Create Materialized View',
+    'description' => t('Create a new materialized view.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_mviews_form'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/mviews/edit/%'] = array(
+    'title' => 'Edit Materialized View',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_mviews_form', 5),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/mviews/update/%'] = array(
+    'title' => 'Create Materialized View',
+    'description' => t('Materialized views are used to improve speed of large or complex queries.'),
+    'page callback' => 'tripal_mviews_add_populate_job',
+    'page arguments' => array(5),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/mviews/delete/%'] = array(
+    'title' => 'Create Materialized View',
+    'description' => t('Materialized views are used to improve speed of large or complex queries.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_mviews_delete_form', 5),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  // TODO: complete the code for exporting and importing of MViews.
+  // Need to address security issues of sharing SQL.
+  $items['admin/tripal/storage/chado/mviews/import'] = array(
+    'title' => 'Import MView',
+    'description' => 'Import a materialized view from another Tripal instance.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_mviews_import_form'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/mviews/%tblid/export'] = array(
+    'title' => 'Export MView',
+    'description' => 'Export a materialized view for use by another Tripal instance.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_mviews_export_form', 5),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+
+  // Custom Tables
+  $items['admin/tripal/storage/chado/custom_tables'] = array(
+    'title' => 'Custom Tables',
+    'description' => t('Creation of custom tables that are added to Chado database.'),
+    'page callback' => 'tripal_custom_table_admin_view',
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => -10
+  );
+  $items['admin/tripal/storage/chado/custom_tables/help'] = array(
+    'title' => 'Help',
+    'description' => t('Help for the tripal job management system'),
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_job_help'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10
+  );
+  $items['admin/tripal/storage/chado/custom_tables/view/%'] = array(
+    'title' => 'Custom Tables',
+    'description' => t('Custom tables are added to Chado.'),
+    'page callback' => 'tripal_custom_table_view',
+    'page arguments' => array(5),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/custom_tables/new'] = array(
+    'title' => 'Create Custom Table',
+    'description' => t('An interface for creating your own custom tables.'),
+    'page callback' => 'tripal_custom_table_new_page',
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/custom_tables/edit/%'] = array(
+    'title' => 'Edit Custom Table',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_custom_tables_form', 5),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/custom_tables/delete/%'] = array(
+    'title' => 'Create Custom Table',
+    'description' => t('Custom tables are added to Chado.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_custom_tables_delete_form', 5),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/tripal/storage/chado/custom_tables/views/tables/enable'] = array(
+    'title' => 'Enable Custom Tables Administrative View',
+    'page callback' => 'tripal_enable_view',
+    'page arguments' => array('tripal_admin_custom_table', 'admin/tripal/storage/chado/custom_tables'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+
+}
+
+/**
+ * Implements hook_permission().
+ *
+ * Set the permission types that the chado module uses.  Essentially we
+ *  want permissionis that protect creation, editing and deleting of chado
+ *  data objects
+ *
+ * @ingroup tripal
+ */
+function tripal_chado_permission() {
+  return array(
+    'install chado' => array(
+      'title' => t('Install Chado'),
+      'description' => t('Allow the user to install or upgrade a Chado database in the existing Drupal database.')
+    ),
+    'view chado_ids' => array(
+      'title' => t('View Internal IDs'),
+      'description' => t('On content pages Tripal will typically provide
+          a table of information pulled from the Chado database but the
+          primary key IDs for that data is typically not shown.  The
+          default Tripal templates can show the primary key ID inside of a
+          blue shaded table row if this permission is enabled. This can
+          be useful for site developers who might want these IDs when working
+          with the underlying database.'),
+      'restrict access' => TRUE,
+    )
+  );
+}
 
 /**
  * Implements hook_field_info().
@@ -813,3 +1085,69 @@ function tripal_chado_get_table_column_field_default($table_name, $schema, $colu
 
   return $field;
 }
+
+/**
+ * Implements hook_exclude_type_by_default()
+ *
+ * This hooks allows fields of a specified type that match a specified criteria
+ * to be excluded by default from any table when chado_generate_var() is called.
+ * Keep in mind that if fields are excluded by default they can always be
+ * expanded at a later date using chado_expand_var().
+ *
+ * Criteria are php strings that evaluate to either TRUE or FALSE. These
+ * strings are evaluated using drupal_eval() which suppresses syntax errors and
+ * throws watchdog entries of type php. There are also watchdog entries of type
+ * tripal stating the exact criteria evaluated. Criteria can
+ * contain the following tokens:
+ *   - <field_name>
+ *       Replaced by the name of the field to be excluded
+ *   - <field_value>
+ *       Replaced by the value of the field in the current record
+ * Also keep in mind that if your criteria doesn't contain the
+ * &gt;field_value&lt;  token then it will be evaluated before the query is
+ * executed and if the field is excluded it won't be included in the
+ * query.
+ *
+ * @return
+ *   An array of type => criteria where the type is excluded if the criteria
+ *   evaluates to TRUE
+ *
+ * @ingroup tripal
+ */
+function tripal_chado_exclude_type_by_default() {
+  return array('text' => 'strlen("<field_value> ") > 250');
+}
+
+/**
+ * Implements hook_job_describe_args().
+ *
+ * Describes the arguements for the tripal_populate_mview job to allow for
+ * greater readability in the jobs details pages.
+ *
+ * @param $callback
+ *   The callback of the current tripal job (this is the function that will be
+ *   executed when tripal_launch_jobs.php is run.
+ * @param $args
+ *   An array of arguments passed in when the job was registered.
+ *
+ * @return
+ *   A more readable $args array
+ *
+ * @ingroup tripal
+ */
+function tripal_chado_describe_args($callback, $args) {
+  $new_args = array();
+  if ($callback == 'tripal_populate_mview') {
+    // get this mview details
+    $sql = "SELECT * FROM {tripal_mviews} WHERE mview_id = :mview_id ";
+    $results = db_query($sql, array(':mview_id' => $args[0]));
+    $mview = $results->fetchObject();
+    $new_args['View Name'] = $mview->name;
+  }
+
+  elseif ($callback == 'tripal_install_chado') {
+    $new_args['Action'] = $args[0];
+  }
+  return $new_args;
+}
+

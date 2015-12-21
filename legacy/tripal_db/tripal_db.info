@@ -1,0 +1,10 @@
+name = Tripal DB
+description = Supports the database cross-reference tables of Chado by providing pages for viewing and editing of databases and their cross-references. Table list at: http://gmod.org/wiki/Chado_General_Module.
+core = 7.x
+project = tripal
+package = Tripal v2 Legacy
+version = 7.x-2.0
+configure = admin/tripal/chado/tripal_db
+
+dependencies[] = tripal_core
+dependencies[] = tripal_views

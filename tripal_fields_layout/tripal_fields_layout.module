@@ -11,6 +11,8 @@ function tripal_fields_layout_form_field_ui_field_edit_form_alter(&$form, &$form
   // For entity fields added by Tripal Entities we don't want the
   // the end-user to change the cardinality and the required fields
   // such that record can't be saved in Chado.
+  // TODO: this shouldn't be hardcoded here.  These settings
+  // should be part of the field and handled by the tripal_entity module.
   if (in_array($form['#instance']['entity_type'], $dbs)) {
     $form['field']['cardinality']['#access'] = FALSE;
     $form['instance']['required']['#access'] = FALSE;
