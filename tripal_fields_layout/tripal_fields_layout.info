@@ -6,4 +6,4 @@ package = Tripal
 version = 7.x-2.0
 
 dependencies[] = tripal
-dependencies[] = tripal_entities
+dependencies[] = tripal

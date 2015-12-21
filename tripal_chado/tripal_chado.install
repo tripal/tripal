@@ -10,6 +10,21 @@ function tripal_chado_install() {
       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
   ');
 
+  // Add the cv_root_mview.
+  tripal_cv_add_cv_root_mview();
+
+  // Add defaults to the tables that correlate OBO files/references with
+  // a chado CV.
+  tripal_cv_add_obo_defaults();
+
+  // Add the Chado ontology CV.
+  $obo_path = '{tripal_chado}/files/cv_property.obo';
+  $obo_id = tripal_insert_obo('Chado CV Properties', $obo_path);
+  tripal_submit_obo_job(array('obo_id' => $obo_id));
+
+  // Create the temp table we will use for loading OBO files.
+  tripal_cv_create_tripal_obo_temp();
+
   // Unfortunately, some Chado base tables do not have a type_id, so we must
   // take special action for those tables.  These include: organism and
   // analysis. Until we can find an appropriate controlled vocabulary
@@ -59,8 +74,8 @@ function tripal_chado_install() {
   // We want to provide a set of commonly used entity types by default. This
   // way when a user first installs Tripal there are some commonly used
   // formats.
-  module_load_include('inc', 'tripal_entities', 'api/tripal_entities.api');
-  module_load_include('inc', 'tripal_entities', 'includes/tripal_entities.admin');
+  module_load_include('inc', 'tripal', 'api/tripal.api');
+  module_load_include('inc', 'tripal', 'includes/tripal.admin');
 
   // Create the 'Organism' entity type. This uses the local:organism term.
   $error = '';
@@ -103,6 +118,143 @@ function tripal_chado_uninstall() {
 }
 
 /**
+ * Table definition for the tripal_cv_obo table
+ * @param $schema
+ */
+function tripal_chado_tripal_cv_obo_schema(&$schema) {
+  return array(
+    'fields' => array(
+      'obo_id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255
+      ),
+      'path'  => array(
+        'type' => 'varchar',
+        'length' => 1024
+      ),
+    ),
+    'indexes' => array(
+      'tripal_cv_obo_idx1' => array('obo_id'),
+    ),
+    'primary key' => array('obo_id'),
+  );
+}
+
+/**
+ * * Table definition for the tripal_cv_defaults table
+ * @param unknown $schema
+ */
+function tripal_chado_tripal_cv_defaults_schema(&$schema) {
+  return array(
+    'fields' => array(
+      'cv_default_id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'table_name' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+      ),
+      'field_name' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+      ),
+      'cv_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      )
+    ),
+    'indexes' => array(
+      'tripal_cv_defaults_idx1' => array('table_name', 'field_name'),
+    ),
+    'unique keys' => array(
+      'tripal_cv_defaults_unq1' => array('table_name', 'field_name', 'cv_id'),
+    ),
+    'primary key' => array('cv_default_id')
+  );
+}
+
+/**
+ * Add a materialized view of root terms for all chado cvs. This is needed for viewing cv trees
+ *
+ * @ingroup tripal_cv
+ */
+function tripal_cv_add_cv_root_mview() {
+  $mv_name = 'cv_root_mview';
+  $comment = 'A list of the root terms for all controlled vocabularies. This is needed for viewing CV trees';
+  $schema = array(
+    'table' => $mv_name,
+    'description' => $comment,
+    'fields' => array(
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'cvterm_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'cv_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'cv_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'cv_root_mview_indx1' => array('cvterm_id'),
+      'cv_root_mview_indx2' => array('cv_id'),
+    ),
+  );
+
+  $sql = "
+    SELECT DISTINCT CVT.name,CVT.cvterm_id, CV.cv_id, CV.name
+    FROM cvterm_relationship CVTR
+      INNER JOIN cvterm CVT on CVTR.object_id = CVT.cvterm_id
+      INNER JOIN cv CV on CV.cv_id = CVT.cv_id
+    WHERE CVTR.object_id not in
+      (SELECT subject_id FROM cvterm_relationship)
+  ";
+
+  // Create the MView
+  tripal_add_mview($mv_name, 'tripal_cv', $schema, $sql, $comment);
+}
+
+/**
+ * Add's defaults to the tripal_cv_obo table
+ *
+ * @ingroup tripal_cv
+ */
+function tripal_cv_add_obo_defaults() {
+
+  // Insert commonly used ontologies into the tables.
+  $ontologies = array(
+    array('Relationship Ontology', 'http://purl.obolibrary.org/obo/ro.obo'),
+    //    array('Relationship Ontology (older deprecated version)', 'http://www.obofoundry.org/ro/ro.obo'),
+    array('Sequence Ontology', 'https://github.com/The-Sequence-Ontology/SO-Ontologies/blob/master/so-xp-simple.obo'),
+    array('Gene Ontology', 'http://www.geneontology.org/ontology/gene_ontology.obo'),
+    //    array('Cell Ontology', 'https://raw.githubusercontent.com/obophenotype/cell-ontology/master/cl.obo'),
+  //    array('Plant Structure Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_anatomy.obo?view=co'),
+  //    array('Plant Growth and Development Stages Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_temporal.obo?view=co')
+  );
+  foreach ($ontologies as $o) {
+    db_query("INSERT INTO {tripal_cv_obo} (name,path) VALUES (:name, :path)", array(':name' => $o[0], ':path' => $o[1]));
+  }
+}
+
+/**
  * Implements hook_schema().
  */
 function tripal_chado_schema() {
@@ -111,6 +263,9 @@ function tripal_chado_schema() {
   $schema['chado_entity'] = tripal_chado_chado_entity_schema();
   $schema['tripal_mviews'] = tripal_chado_tripal_mviews_schema();
   $schema['tripal_custom_tables'] = tripal_chado_tripal_custom_tables_schema();
+
+  $schema['tripal_cv_obo'] = tripal_chado_tripal_cv_obo_schema($schema);
+  $schema['tripal_cv_defaults'] = tripal_chado_tripal_cv_defaults_schema($schema);
 
   // if this module is already installed and enabled, then we want to provide
   // the schemas for all of the custom tables.  This will allow Views to

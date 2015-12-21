@@ -34,7 +34,7 @@ class TripalVocabController extends EntityAPIController {
     }
     catch (Exception $e) {
       $transaction->rollback();
-      watchdog_exception('tripal_entities', $e);
+      watchdog_exception('tripal', $e);
       throw $e;
       return FALSE;
     }

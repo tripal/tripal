@@ -19,9 +19,9 @@ class TripalEntityUIController extends EntityDefaultUIController {
     // The content menu.
     $items[$this->path] = array(
       'title' => 'Tripal Content',
-      'page callback' => 'tripal_entities_content_view',
-      'file' =>  'includes/tripal_entities.admin.inc',
-      'file path' => drupal_get_path('module', 'tripal_entities'),
+      'page callback' => 'tripal_content_view',
+      'file' =>  'includes/tripal.admin.inc',
+      'file path' => drupal_get_path('module', 'tripal'),
       'access arguments' => array('administer tripal data'),
       'type' => MENU_LOCAL_TASK,
       'weight' => -9
@@ -29,7 +29,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
 
     $items['bio-data/add'] = array(
       'title' => 'Add Tripal Content',
-      'page callback' => 'tripal_entities_add_page',
+      'page callback' => 'tripal_add_page',
       'access arguments' => array('administer tripal data'),
     );
 
@@ -47,8 +47,8 @@ class TripalEntityUIController extends EntityDefaultUIController {
           'title' => ucfirst($bundle->label),
           'description' => tripal_get_bundle_variable('description', $bundle->id, $term->definition),
           'page callback'  => 'drupal_get_form',
-          'page arguments' => array('tripal_entities_entity_form', 2),
-          'access callback'  => 'tripal_entities_entity_access',
+          'page arguments' => array('tripal_entity_form', 2),
+          'access callback'  => 'tripal_entity_access',
           'access arguments' => array('edit'),
         );
       }
@@ -56,11 +56,11 @@ class TripalEntityUIController extends EntityDefaultUIController {
 
     // Link for viewing a tripal data type.
     $items['bio-data/' . $wildcard] = array(
-      'title callback' => 'tripal_entities_entity_title',
+      'title callback' => 'tripal_entity_title',
       'title arguments' => array(1),
-      'page callback' => 'tripal_entities_view_entity',
+      'page callback' => 'tripal_view_entity',
       'page arguments' => array(1),
-      'access callback' => 'tripal_entities_entity_access',
+      'access callback' => 'tripal_entity_access',
       'access arguments' => array('view', 1),
       'type' => MENU_CALLBACK,
     );
@@ -68,9 +68,9 @@ class TripalEntityUIController extends EntityDefaultUIController {
     // 'View' tab for an individual entity page.
     $items['bio-data/' . $wildcard . '/view'] = array(
       'title' => 'View',
-      'page callback' => 'tripal_entities_view_entity',
+      'page callback' => 'tripal_view_entity',
       'page arguments' => array(1),
-      'access callback' => 'tripal_entities_entity_access',
+      'access callback' => 'tripal_entity_access',
       'access arguments' => array('view', 1),
       'type' => MENU_DEFAULT_LOCAL_TASK,
       'weight' => -10,
@@ -80,8 +80,8 @@ class TripalEntityUIController extends EntityDefaultUIController {
     $items['bio-data/' . $wildcard . '/edit'] = array(
       'title' => 'Edit',
       'page callback' => 'drupal_get_form',
-      'page arguments' => array('tripal_entities_entity_form', NULL, 1),
-      'access callback' => 'tripal_entities_entity_access',
+      'page arguments' => array('tripal_entity_form', NULL, 1),
+      'access callback' => 'tripal_entity_access',
       'access arguments' => array('edit', 1),
       'type' => MENU_LOCAL_TASK,
       'weight' => -8,
@@ -91,8 +91,8 @@ class TripalEntityUIController extends EntityDefaultUIController {
     $items['bio-data/' . $wildcard . '/delete'] = array(
       'title'  => 'Delete',
       'page callback' => 'drupal_get_form',
-      'page arguments' => array('tripal_entities_entity_delete_form', 1),
-      'access callback' => 'tripal_entities_entity_access',
+      'page arguments' => array('tripal_entity_delete_form', 1),
+      'access callback' => 'tripal_entity_access',
       'access arguments' => array('edit', 1),
       'type' => MENU_CALLBACK,
       'weight' => 10,
@@ -120,7 +120,7 @@ function tripal_entity_manage_fields($entity) {
  * @see hook_entity_view()
  * @see hook_entity_view_alter()
  */
-function tripal_entities_view_entity($entity, $view_mode = 'full') {
+function tripal_view_entity($entity, $view_mode = 'full') {
    $content = '';
    $controller = entity_get_controller($entity->type);
    $content = $controller->view(array($entity->id => $entity));
@@ -134,10 +134,10 @@ function tripal_entities_view_entity($entity, $view_mode = 'full') {
   * This function is a callback in a menu item which is set in the
   * TripalEntityUIController class.
   */
- function tripal_entities_content_view() {
+ function tripal_content_view() {
 
    // Retrieve our data listing form and render it.
-   $form = drupal_get_form('tripal_entities_content_overview_form');
+   $form = drupal_get_form('tripal_content_overview_form');
    $output = drupal_render($form);
 
    // Set the breadcrumb.
@@ -160,7 +160,7 @@ function tripal_entities_view_entity($entity, $view_mode = 'full') {
   * @return
   *   A form array describing this listing to the Form API.
   */
- function tripal_entities_content_overview_form($form, &$form_state) {
+ function tripal_content_overview_form($form, &$form_state) {
 
    // Set the title to be informative (defaults to content for some reason).
    drupal_set_title('Tripal Content');
@@ -233,7 +233,7 @@ function tripal_entities_view_entity($entity, $view_mode = 'full') {
  /**
   *
   */
- function tripal_entities_entity_form($form, &$form_state, $term_id = '', $entity = NULL) {
+ function tripal_entity_form($form, &$form_state, $term_id = '', $entity = NULL) {
 
    $bundle_name = 'bio-data_' . $term_id;
 
@@ -281,17 +281,17 @@ function tripal_entities_view_entity($entity, $view_mode = 'full') {
 
  }
  /**
-  * An Ajax callback for the tripal_entities_entity_form.
+  * An Ajax callback for the tripal_entity_form.
   */
- function tripal_entities_entity_form_ajax_callback($form, $form_state) {
+ function tripal_entity_form_ajax_callback($form, $form_state) {
    // return the form so Drupal can update the content on the page
    return $form;
  }
 
  /**
-  * Implements hook_validate() for the tripal_entities_entity_form.
+  * Implements hook_validate() for the tripal_entity_form.
   */
- function tripal_entities_entity_form_validate($form, &$form_state) {
+ function tripal_entity_form_validate($form, &$form_state) {
 
    if (array_key_exists('clicked_button', $form_state) and
        $form_state['clicked_button']['#name'] =='add_data') {
@@ -302,9 +302,9 @@ function tripal_entities_view_entity($entity, $view_mode = 'full') {
 
 
  /**
-  * Implements hook_submit() for the tripal_entities_entity_form.
+  * Implements hook_submit() for the tripal_entity_form.
   */
- function tripal_entities_entity_form_submit($form, &$form_state) {
+ function tripal_entity_form_submit($form, &$form_state) {
    $entity = $form_state['TripalEntity'];
 
    if ($form_state['clicked_button']['#name'] =='cancel') {
@@ -334,7 +334,7 @@ function tripal_entities_view_entity($entity, $view_mode = 'full') {
   * This function is a callback in a menu item which is set in the
   * TripalEntityUIController class.
   */
- function tripal_entities_add_page() {
+ function tripal_add_page() {
    $item = menu_get_item();
 
    $content = system_admin_menu_block($item);
@@ -344,7 +344,7 @@ function tripal_entities_view_entity($entity, $view_mode = 'full') {
      $item = array_shift($content);
      drupal_goto($item['href']);
    }
-   return theme('tripal_entities_add_list', array('content' => $content));
+   return theme('tripal_add_list', array('content' => $content));
 
  }
 
@@ -357,7 +357,7 @@ function tripal_entities_view_entity($entity, $view_mode = 'full') {
   *
   * @ingroup themeable
   */
- function theme_tripal_entities_add_list($variables) {
+ function theme_tripal_add_list($variables) {
    $content = $variables['content'];
    $output = '';
 
@@ -391,9 +391,9 @@ function tripal_entities_view_entity($entity, $view_mode = 'full') {
   *
   * @see confirm_form()
   */
- function tripal_entities_entity_delete_form($form, &$form_state, $entity) {
+ function tripal_entity_delete_form($form, &$form_state, $entity) {
    $form_state['entity'] = $entity;
-   $form['#submit'][] = 'tripal_entities_entity_delete_form_submit';
+   $form['#submit'][] = 'tripal_entity_delete_form_submit';
 
    $form = confirm_form($form,
        t('Click the delete button below to confirm deletion of the record titled: %title',
@@ -406,7 +406,7 @@ function tripal_entities_view_entity($entity, $view_mode = 'full') {
  /**
   * Submit callback for tripal_entity_delete_form
   */
- function tripal_entities_entity_delete_form_submit($form, &$form_state) {
+ function tripal_entity_delete_form_submit($form, &$form_state) {
    $entity = $form_state['entity'];
 
    $entity_controller = new TripalEntityController($entity->type);

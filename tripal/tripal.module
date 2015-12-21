@@ -5,6 +5,23 @@
  */
 
 require_once "api/tripal.notice.api.inc";
+require_once "api/tripal.entities.api.inc";
+require_once "api/tripal.files.api.inc";
+require_once "api/tripal.jobs.api.inc";
+require_once "api/tripal.notice.api.inc";
+require_once "api/tripal.variables.api.inc";
+
+require_once "includes/TripalVocab.inc";
+require_once "includes/TripalVocabController.inc";
+require_once "includes/TripalTerm.inc";
+require_once "includes/TripalTermController.inc";
+require_once "includes/TripalEntity.inc";
+require_once "includes/TripalEntityController.inc";
+require_once "includes/TripalEntityUIController.inc";
+require_once "includes/TripalBundle.inc";
+require_once "includes/TripalBundleController.inc";
+require_once "includes/TripalBundleUIController.inc";
+
 
 /**
  * @defgroup tripal Tripal Core Module
@@ -15,6 +32,14 @@ require_once "api/tripal.notice.api.inc";
  * @}
  */
 
+/**
+ * Implements hook_views_api().
+ */
+function tripal_views_api() {
+  return array(
+    'api' => 3,
+  );
+}
 
 /**
  * Implements hook_init().
@@ -154,6 +179,13 @@ function tripal_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  $items['admin/structure/bio-data/term/%'] = array(
+    'page callback' => 'tripal_autocomplete_term',
+    'page arguments' => array(6, 7),
+    'access arguments' => array('administer content'),
+    'type' => MENU_CALLBACK,
+  );
+
   return $items;
 }
 
@@ -174,7 +206,23 @@ function tripal_permission() {
           be disabled once developers are accustomed to these hints.'),
       'restrict access' => TRUE,
     ),
+    'administer tripal data types' => array(
+      'title' => t('Administer Tripal data types'),
+      'description' => t('Create and delete fields for Tripal data types, and set their permissions.'),
+    ),
+    'administer tripal data' => array(
+      'title' => t('Administer Tripal data'),
+      'description' => t('Edit and delete all tripal data'),
+    ),
   );
+}
+
+/**
+ * Checks access permissions for a given entity.
+ */
+function tripal_entity_access($entity) {
+  // TODO: need to implement this function.
+  return TRUE;
 }
 
 /**
@@ -214,7 +262,15 @@ function tripal_theme($existing, $type, $theme, $path) {
     // Theme function for the extension admin page.
     'tripal_extensions_form_tables' => array(
       'render element' => 'element',
-    )
+    ),
+    'tripal_entity' => array(
+      'render element' => 'elements',
+      'template' => 'tripal_entity',
+      'path' => "$path/theme/templates"
+    ),
+    'tripal_add_list' => array(
+      'variables' => array('content' => NULL),
+    ),
   );
 }
 
@@ -230,19 +286,6 @@ function tripal_coder_ignore() {
   );
 }
 
-/**
- * Implements hook_views_api()
- * Purpose: Essentially this hook tells drupal that there is views support for
- *  for this module which then includes tripal_db.views.inc where all the
- *  views integration code is
- *
- * @ingroup tripal_organism
- */
-function tripal_views_api() {
-  return array(
-    'api' => 3.0,
-  );
-}
 
 /**
  * Implements hook_libraries_info().
@@ -265,4 +308,385 @@ function tripal_libraries_info() {
   );
 
   return $libraries;
+}
+
+/**
+ * Implements hook_admin_paths().
+ * Define administrative paths.
+ */
+function tripal_admin_paths() {
+  if (variable_get('node_admin_theme')) {
+    $paths = array(
+      'bio-data/*/edit' => TRUE,
+      'bio-data/*/delete' => TRUE,
+      'bio-data/add' => TRUE,
+      'bio-data/add/*' => TRUE,
+    );
+    return $paths;
+  }
+}
+
+/**
+ * Implements hook_menu_local_tasks_alter().
+ *
+ * Used to add action links to pages.
+ */
+function tripal_menu_local_tasks_alter(&$data, $router_item, $root_path) {
+
+  // Add an "Add Tripal Content" action link to the Admin >> Content >>
+  // Biological Content page.
+  if ($root_path == 'admin/content/bio-data') {
+    $item = menu_get_item('bio-data/add');
+    if ($item['access']) {
+      $data['actions']['output'][] = array(
+        '#theme' => 'menu_local_action',
+        '#link' => $item,
+      );
+    }
+  }
+}
+/**
+ * Implements hook_shortcut_default_set().
+ * Modify the shortcut menu to include Biological content links.
+ *
+ * @param object $account
+ *   The user account whose default shortcut set will be returned. If not provided, the
+ *   function will return the currently logged-in user's default shortcut set.
+ *
+ * @return
+ *   An object representing the default shortcut set.
+ */
+function tripal_shortcut_default_set($account) {
+  $sets = shortcut_sets();
+  $found = FALSE;
+  foreach ($sets as $set) {
+    if ($set->title == 'TripalDefault') {
+      $found = TRUE;
+    }
+  }
+  if (!$found) {
+    $t = get_t();
+    // Create an initial default shortcut set.
+    $shortcut_set = new stdClass();
+    $shortcut_set->title = $t('TripalDefault');
+    $shortcut_set->links = array(
+      array(
+        'link_path' => 'node/add',
+        'link_title' => $t('Add content'),
+        'weight' => -35,
+      ),
+      array(
+        'link_path' => 'bio-data/add',
+        'link_title' => 'Add Tripal Content',
+        'weight' => -30,
+      ),
+      array(
+        'link_path' => 'admin/content',
+        'link_title' => $t('Find content'),
+        'weight' => -25,
+      ),
+      array(
+        'link_path' => 'admin/content/bio-data',
+        'link_title' => 'Find Tripal Content',
+        'weight' => -20,
+      ),
+    );
+    shortcut_set_save($shortcut_set);
+  }
+
+  $sets = shortcut_sets();
+  foreach ($sets as $set) {
+    if ($set->title == 'TripalDefault') {
+      return $set->set_name;
+    }
+  }
+}
+// http://www.bluespark.com/blog/drupal-entities-part-3-programming-hello-drupal-entity
+// http://dikini.net/31.08.2010/entities_bundles_fields_and_field_instances
+/**
+ * Implement hook_entity_info().
+ */
+function tripal_entity_info() {
+  $entities = array();
+  //return $entities;
+  //
+  // The TripalVocab entity is meant to house vocabularies.  It is these
+  // vocabs that are used by the TripalTerm entities.  The storage backend
+  // is responsible for setting the values of this entity.
+  //
+  $entities['TripalVocab'] = array(
+    // A human readable label to identify our entity.
+    'label' => 'Controlled Vocabulary',
+    'plural label' => 'Controlled Vocabularies',
+
+    // The entity class and controller class extend the classes provided by the
+    // Entity API.
+    'entity class' => 'TripalVocab',
+    'controller class' => 'TripalVocabController',
+
+    // The table for this entity defined in hook_schema()
+    'base table' => 'tripal_vocab',
+
+    // If fieldable == FALSE, we can't attach fields.
+    'fieldable' => TRUE,
+
+    // entity_keys tells the controller what database fields are used for key
+    // functions. It is not required if we don't have bundles or revisions.
+    // Here we do not support a revision, so that entity key is omitted.
+    'entity keys' => array (
+      'id' => 'id',
+    ),
+
+    // Callback function for access to this entity.
+    'access callback' => 'tripal_entity_access',
+
+    // FALSE disables caching. Caching functionality is handled by Drupal core.
+    'static cache' => FALSE,
+
+    // This entity doesn't support bundles.
+    'bundles' => array (),
+
+    'view modes' => array (
+      'full' => array (
+        'label' => t ('Full content'),
+        'custom settings' => FALSE
+      ),
+      'teaser' => array (
+        'label' => t ('Teaser'),
+        'custom settings' => TRUE
+      ),
+    ),
+  );
+
+  //
+  // The TripalTerm entity is meant to house vocabulary terms.  It is these
+  // terms that are used by the TripalEntity entities.  The storage backend
+  // is responsible for setting the values of this entity.
+  //
+  $entities['TripalTerm'] = array(
+    // A human readable label to identify our entity.
+    'label' => 'Controlled Vocabulary Term',
+    'plural label' => 'Controlled Vocabulary Terms',
+
+    // The entity class and controller class extend the classes provided by the
+    // Entity API.
+    'entity class' => 'TripalTerm',
+    'controller class' => 'TripalTermController',
+
+    // The table for this entity defined in hook_schema()
+    'base table' => 'tripal_term',
+
+    // If fieldable == FALSE, we can't attach fields.
+    'fieldable' => TRUE,
+
+    // entity_keys tells the controller what database fields are used for key
+    // functions. It is not required if we don't have bundles or revisions.
+    // Here we do not support a revision, so that entity key is omitted.
+    'entity keys' => array (
+      'id' => 'id',
+    ),
+
+    // Callback function for access to this entity.
+    'access callback' => 'tripal_entity_access',
+
+    // FALSE disables caching. Caching functionality is handled by Drupal core.
+    'static cache' => FALSE,
+
+    // This entity doesn't support bundles.
+    'bundles' => array (),
+
+    'view modes' => array (
+      'full' => array (
+        'label' => t ('Full content'),
+        'custom settings' => FALSE
+      ),
+      'teaser' => array (
+        'label' => t ('Teaser'),
+        'custom settings' => TRUE
+      ),
+    ),
+  );
+
+  //
+  // The TripalEntity is used for all data. It links data from a storage
+  // back-end to a TripalTerm entity.
+  //
+  $entities['TripalEntity'] = array (
+    // A human readable label to identify our entity.
+    'label' => 'Tripal Content',
+    'plural label' => 'Tripal Content',
+
+    // The entity class and controller class extend the classes provided by the
+    // Entity API.
+    'entity class' => 'TripalEntity',
+    'controller class' => 'TripalEntityController',
+
+    // The table for this entity defined in hook_schema()
+    'base table' => 'tripal_entity',
+
+    // Returns the uri elements of an entity.
+    'uri callback' => 'tripal_vocbulary_term_uri',
+
+    // IF fieldable == FALSE, we can't attach fields.
+    'fieldable' => TRUE,
+
+    // entity_keys tells the controller what database fields are used for key
+    // functions. It is not required if we don't have bundles or revisions.
+    // Here we do not support a revision, so that entity key is omitted.
+    'entity keys' => array (
+      'id' => 'id',
+      'bundle' => 'bundle'
+    ),
+    'bundle keys' => array (
+      'bundle' => 'name'
+    ),
+
+    // Callback function for access to this entity.
+    'access callback' => 'tripal_entity_access',
+
+    // FALSE disables caching. Caching functionality is handled by Drupal core.
+    'static cache' => FALSE,
+
+    // Bundles are added dynamically below.
+    'bundles' => array (),
+
+    'label callback' => 'tripal_entity_label',
+
+    // The information below is used by the TripalEntityUIController
+    // (which extends the EntityDefaultUIController). The admin_ui
+    // key here is mean to appear on the 'Find Content' page of the
+    // administrative menu.
+    'admin ui' => array (
+      'path' => 'admin/content/bio-data',
+      'controller class' => 'TripalEntityUIController',
+      'menu wildcard' => '%TripalEntity',
+      'file' => 'includes/TripalEntityUIController.inc'
+    ),
+    'view modes' => array (
+      'full' => array (
+        'label' => t ('Full content'),
+        'custom settings' => FALSE
+      ),
+      'teaser' => array (
+        'label' => t ('Teaser'),
+        'custom settings' => TRUE
+      )
+    )
+  );
+
+  //
+  // The TripalBundle entity is used manage the bundle types.  The 'bundle of'
+  // attribute links this to the TripalEntity and allows the UI provided
+  // by the entity module to work for each TripalEntity bundle.
+  //
+  $entities['TripalBundle'] = array (
+    'label' => 'Tripal Content Type',
+    'entity class' => 'TripalBundle',
+    'controller class' => 'TripalBundleController',
+    'base table' => 'tripal_bundle',
+    'fieldable' => FALSE,
+    'bundle of' => 'TripalEntity',
+    'exportable' => FALSE,
+    'entity keys' => array (
+      'id' => 'id',
+      'name' => 'name',
+      'label' => 'label'
+    ),
+    'access callback' => 'tripal_bundle_access',
+    'module' => 'tripal',
+    // Enable the entity API's admin UI.
+    'admin ui' => array (
+      'path' => 'admin/structure/bio-data',
+      'controller class' => 'TripalBundleUIController',
+      'file' => 'includes/TripalBundleUIController.inc',
+      'menu wildcard' => '%TripalBundle',
+    )
+  );
+
+  return $entities;
+}
+
+/**
+ * Implements hook_entities_info_alter().
+ *
+ * Add in the bundles (entity types) to the TripalEntity entity.
+ */
+function tripal_entity_info_alter(&$entity_info){
+
+  if (array_key_exists('TripalEntity', $entity_info)) {
+    // Dynamically add in the bundles. Bundles are alternative groups of fields
+    // or configuration associated with an entity type .We want to dynamically
+    // add the bundles to the entity.
+    $bundles = db_select('tripal_bundle', 'tb')
+      ->fields('tb')
+      ->execute();
+    while ($bundle = $bundles->fetchObject()) {
+      $bundle_name = $bundle->name;
+      $term_id = $bundle->term_id;
+      $term = entity_load('TripalTerm', array('id' => $term_id));
+      $term = reset($term);
+      $label = preg_replace('/_/', ' ', ucwords($term->name));
+
+      $entity_info['TripalEntity']['bundles'][$bundle_name] = array (
+        'label' => $label,
+        'admin' => array (
+          'path' => 'admin/structure/bio-data/manage/%TripalBundle',
+          'real path' => 'admin/structure/bio-data/manage/' . $bundle_name,
+          'bundle argument' => 4,
+          'access arguments' => array (
+            'administer tripal data types'
+          )
+        )
+      );
+    }
+  }
+}
+
+/**
+ * Menu argument loader; Load a tripal data type by string.
+ *
+ * This function is not meant to be used as an API function. It is only meant
+ * for use in the menu to resolve the %tripal_bundle wildcard.
+ *
+ * @param $type
+ *   The machine-readable name of a tripal data type to load.
+ * @return
+ *   A tripal data type array or FALSE if $type does not exist.
+ */
+
+function TripalBundleload($bundle_type, $reset = FALSE) {
+  // Get the type of entity by the ID.
+  $bundle = db_select('tripal_bundle', 'tdt')
+  ->fields('tdt')
+  ->condition('name', $bundle_type)
+  ->execute()
+  ->fetchObject();
+  if ($bundle) {
+    $entity = entity_load('TripalBundle', array($bundle->id), array(), $reset);
+    return reset($entity);
+  }
+  return FALSE;
+}
+
+/**
+ * Allows the menu system to use a wildcard to fetch the entity.
+ *
+ * Make sure that the wildcard you choose in the tripal_entity entity
+ * definition fits the function name here.
+ *
+ * This function is not meant to be used as an API function. It is only mean
+ * for use in the menu to resolve the %tripal_entity wildcard.
+ *
+ * @param $id
+ *   Integer specifying the tripal_entity id.
+ * @param $reset
+ *   A boolean indicating that the internal cache should be reset.
+ * @return
+ *   A fully-loaded $tripal_entity object or FALSE if it cannot be loaded.
+ *
+ * @see tripal_entity_load_multiple()
+ */
+function TripalEntity_load($id, $reset = FALSE) {
+  $entity = entity_load('TripalEntity', array($id), array(), $reset);
+  return reset($entity);
 }

@@ -3,7 +3,7 @@
 // APPLICATION PROGRAMMER INTERFACE -------------
 // Chado API
 require_once "api/tripal_chado.api.inc";
-require_once 'api/tripal_chado.general.api.inc';
+require_once 'api/tripal_chado.property.api.inc';
 require_once 'api/tripal_chado.query.api.inc';
 require_once 'api/tripal_chado.variables.api.inc';
 require_once 'api/tripal_chado.schema.api.inc';

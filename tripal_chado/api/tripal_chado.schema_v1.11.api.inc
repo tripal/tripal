@@ -6037,6 +6037,14 @@ function tripal_chado_chado_schema_v1_11_genotype() {
     ),
     'foreign keys' => array(
     ),
+    'referring_tables' => array(
+      'analysisfeature',
+      'feature_genotype',
+      'phendesc',
+      'phenotype_comparison',
+      'phenstatement',
+      'stock_genotype',
+    )
   );
   return $description;
 }

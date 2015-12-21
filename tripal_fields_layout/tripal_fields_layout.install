@@ -111,7 +111,7 @@ function tripal_fields_layout_schema() {
 /**
  *
  */
-function tripal_entities_add_tripal_bundle_panes_table(){
+function tripal_add_tripal_bundle_panes_table(){
   $schema = array (
     'table' => 'tripal_bundle_panes',
     'fields' => array (

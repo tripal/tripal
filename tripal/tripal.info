@@ -13,3 +13,4 @@ dependencies[] = views
 dependencies[] = path
 dependencies[] = search
 dependencies[] = php
+dependencies[] = entity

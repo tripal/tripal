@@ -7,4 +7,4 @@ version = 7.x-3.0
 configure = admin/tripal/chado/tripal_ws
 
 dependencies[] = tripal
-dependencies[] = tripal_entities
+dependencies[] = tripal

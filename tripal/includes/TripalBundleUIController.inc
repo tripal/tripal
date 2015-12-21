@@ -31,10 +31,10 @@ class TripalBundleUIController extends EntityDefaultUIController {
       'title' => 'Add Tripal Content Type',
       'description' => 'Add new biological content',
       'page callback' => 'drupal_get_form',
-      'page arguments' => array('tripal_entities_admin_add_type_form'),
+      'page arguments' => array('tripal_admin_add_type_form'),
       'access arguments' => array('administer tripal data types'),
-      'file' =>  'includes/tripal_entities.admin.inc',
-      'file path' => drupal_get_path('module', 'tripal_entities'),
+      'file' =>  'includes/tripal.admin.inc',
+      'file path' => drupal_get_path('module', 'tripal'),
       'type' => MENU_LOCAL_ACTION,
       'weight' => 2
     );
@@ -52,7 +52,7 @@ class TripalBundleUIController extends EntityDefaultUIController {
     // named after the entity type but we can't dynamically create these
     // functions. We'll use a single form for all entity types.
     $forms[$this->entityType . '_form'] = array(
-      'callback' => 'tripal_entities_tripal_bundle_form',
+      'callback' => 'tripal_tripal_bundle_form',
       'callback arguments' => array($this->entityType)
     );
 
@@ -71,7 +71,7 @@ class TripalBundleUIController extends EntityDefaultUIController {
  * @param $entityDataType
  *    A string indicating the entity type. This will always be TripalBundle.
  */
-function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType) {
+function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
 
   $entity_type = $form_state['build_info']['args'][0];
   $term = NULL;
@@ -84,8 +84,8 @@ function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType
   }
 
   // Add a validate and submit handler to save the data in this form.
-  $form['#validate'] = array('tripal_entities_tripal_bundle_form_validate');
-  $form['#submit'] = array('tripal_entities_tripal_bundle_form_submit');
+  $form['#validate'] = array('tripal_tripal_bundle_form_validate');
+  $form['#submit'] = array('tripal_tripal_bundle_form_submit');
 
   // @TODO: Move this into a css file.
   $form['#attached']['css'] = array(
@@ -268,7 +268,7 @@ function tripal_entities_tripal_bundle_form($form, &$form_state, $entityDataType
 /**
  * Validate: Tripal content type edit form.
  */
-function tripal_entities_tripal_bundle_form_validate($form, $form_state) {
+function tripal_tripal_bundle_form_validate($form, $form_state) {
 
   // VALIDATE: The only tokens used should be those we mentioned under "Available Tokens".
   // PART 1: Set Titles.
@@ -321,7 +321,7 @@ function tripal_entities_tripal_bundle_form_validate($form, $form_state) {
 /**
  * Submit: Tripal content type edit form.
  */
-function tripal_entities_tripal_bundle_form_submit($form, &$form_state) {
+function tripal_tripal_bundle_form_submit($form, &$form_state) {
 
   $bundle_entity = $form_state['build_info']['args'][0];
 
@@ -372,7 +372,7 @@ function tripal_bundle_access($op, $type = NULL, $account = NULL) {
  * implements the hook_vocab_storage_info() hook.
  *
  */
-function tripal_entities_admin_add_type_form($form, &$form_state) {
+function tripal_admin_add_type_form($form, &$form_state) {
 
   // TODO: we need some sort of administrative interface that lets the user
   // switch to the desired vocabulary type. For now, we'll just use the
@@ -395,10 +395,10 @@ function tripal_entities_admin_add_type_form($form, &$form_state) {
   return $form;
 }
 /**
- * Implements hook_validate() for the tripal_entities_admin_add_type_form.
+ * Implements hook_validate() for the tripal_admin_add_type_form.
  *
  */
-function tripal_entities_admin_add_type_form_validate($form, &$form_state) {
+function tripal_admin_add_type_form_validate($form, &$form_state) {
   // TODO: we need some sort of administrative interface that lets the user
   // switch to the desired vocabulary type. For now, we'll just use the
   // first one in the list.
@@ -413,12 +413,12 @@ function tripal_entities_admin_add_type_form_validate($form, &$form_state) {
   }
 }
 /**
- * Implements hook_submit() for the tripal_entities_admin_add_type_form.
+ * Implements hook_submit() for the tripal_admin_add_type_form.
  *
  * The storage backend must set the
  *
  */
-function tripal_entities_admin_add_type_form_submit($form, &$form_state) {
+function tripal_admin_add_type_form_submit($form, &$form_state) {
   $namespace = '';
   $accession = '';
   if (array_key_exists('storage', $form_state)) {
