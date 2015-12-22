@@ -105,14 +105,31 @@ function tripal_chado_menu() {
     'weight' => -100,
     'access arguments' => array('administer tripal'),
   );
+
   $items['admin/tripal/storage/chado/chado_install'] = array(
-    'title' => 'Install Chado Schema',
+    'title' => 'Install Chado',
     'description' => t('Installs the Chado database tables, views, etc., inside the current Drupal database'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_chado_load_form'),
-    'access arguments' => array('install chado'),
     'type' => MENU_NORMAL_ITEM,
+    'access arguments' => array('install chado'),
+    'file' => 'includes/tripal_chado.setup.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
     'weight' => -100
+  );
+  $items['admin/tripal/storage/chado/chado_prepare'] = array(
+    'title' => 'Prepare Chado',
+    'description' => t('After installation of Chado some preparation is required for Tripal. This includes adding
+        some Tripal required ontologies, materialized views and custom tables. This step
+        is only required if Chado was installed outside of Tripal. If you installed Tripal
+        using the "Install Chado" step above then Chado is prepared.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_chado_prepare_form'),
+    'type' => MENU_NORMAL_ITEM,
+    'access arguments' => array('install chado'),
+    'file' => 'includes/tripal_chado.setup.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'weight' => -99
   );
 
   //////////////////////////////////////////////////////////////////////////////
