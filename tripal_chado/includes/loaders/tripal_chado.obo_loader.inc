@@ -26,10 +26,10 @@
  *
  * @ingroup tripal_obo_loader
  */
-function tripal_chado_obo_form($form, &$form_state) {
+function tripal_cv_obo_form($form, &$form_state) {
 
   // get a list of db from chado for user to choose
-  $sql = "SELECT * FROM {tripal_chado_obo} ORDER BY name";
+  $sql = "SELECT * FROM {tripal_cv_obo} ORDER BY name";
   $results = db_query($sql);
 
   $obos = array();
@@ -79,7 +79,7 @@ function tripal_chado_obo_form($form, &$form_state) {
     '#type' => 'select',
     '#options' => $obos,
     '#ajax' => array(
-      'callback' => 'tripal_chado_obo_form_ajax_callback',
+      'callback' => 'tripal_cv_obo_form_ajax_callback',
       'wrapper' => 'obo-existing-fieldset',
     ),
   );
@@ -91,7 +91,7 @@ function tripal_chado_obo_form($form, &$form_state) {
     $uobo_url = '';
     $uobo_file = '';
 
-    $vocab = db_select('tripal_chado_obo', 't')
+    $vocab = db_select('tripal_cv_obo', 't')
       ->fields('t', array('name', 'path'))
       ->condition('obo_id', $obo_id)
       ->execute()
@@ -209,7 +209,7 @@ function tripal_chado_obo_form($form, &$form_state) {
  * @param $form
  * @param $form_state
  */
-function tripal_chado_obo_form_validate($form, &$form_state) {
+function tripal_cv_obo_form_validate($form, &$form_state) {
   $obo_id    = $form_state['values']['obo_id'];
   $obo_name  = trim($form_state['values']['obo_name']);
   $obo_url   = trim($form_state['values']['obo_url']);
@@ -222,7 +222,7 @@ function tripal_chado_obo_form_validate($form, &$form_state) {
   if ($form_state['clicked_button']['#name'] == 'update_obo_details' or
       $form_state['clicked_button']['#name'] == 'update_load_obo') {
     // Get the current record
-    $vocab = db_select('tripal_chado_obo', 't')
+    $vocab = db_select('tripal_cv_obo', 't')
       ->fields('t', array('obo_id', 'name', 'path'))
       ->condition('name', $uobo_name)
       ->execute()
@@ -246,7 +246,7 @@ function tripal_chado_obo_form_validate($form, &$form_state) {
   }
   if ($form_state['clicked_button']['#name'] == 'add_new_obo') {
     // Get the current record
-    $vocab = db_select('tripal_chado_obo', 't')
+    $vocab = db_select('tripal_cv_obo', 't')
       ->fields('t', array('obo_id', 'name', 'path'))
       ->condition('name', $obo_name)
       ->execute()
@@ -282,7 +282,7 @@ function tripal_chado_obo_form_validate($form, &$form_state) {
  *
  * @ingroup tripal_obo_loader
  */
-function tripal_chado_obo_form_submit($form, &$form_state) {
+function tripal_cv_obo_form_submit($form, &$form_state) {
 
   $obo_id    = $form_state['values']['obo_id'];
   $obo_name  = trim($form_state['values']['obo_name']);
@@ -295,7 +295,7 @@ function tripal_chado_obo_form_submit($form, &$form_state) {
   // If the user requested to alter the details then do that.
   if ($form_state['clicked_button']['#name'] == 'update_obo_details' or
       $form_state['clicked_button']['#name'] == 'update_load_obo') {
-    $success = db_update('tripal_chado_obo')
+    $success = db_update('tripal_cv_obo')
       ->fields(array(
         'name' => $uobo_name,
         'path' => $uobo_url ? $uobo_url : $uobo_file,
@@ -316,7 +316,7 @@ function tripal_chado_obo_form_submit($form, &$form_state) {
     tripal_submit_obo_job(array('obo_id' => $obo_id));
   }
   if ($form_state['clicked_button']['#name'] == 'add_new_obo') {
-    $success = db_insert('tripal_chado_obo')
+    $success = db_insert('tripal_cv_obo')
     ->fields(array(
       'name' => $obo_name,
       'path' => $obo_url ? $obo_url : $obo_file,
@@ -338,7 +338,7 @@ function tripal_chado_obo_form_submit($form, &$form_state) {
  * management after a user submits a job via the Load Onotloies form.
  *
  * @param $obo_id
- *   An obo_id from the tripal_chado_obo file that specifies which OBO file to import
+ *   An obo_id from the tripal_cv_obo file that specifies which OBO file to import
  * @param $job_id
  *   The job_id of the job from the Tripal jobs management system.
  *
@@ -347,7 +347,7 @@ function tripal_chado_obo_form_submit($form, &$form_state) {
 function tripal_chado_load_obo_v1_2_id($obo_id, $jobid = NULL) {
 
   // Get the OBO reference.
-  $sql = "SELECT * FROM {tripal_chado_obo} WHERE obo_id = :obo_id";
+  $sql = "SELECT * FROM {tripal_cv_obo} WHERE obo_id = :obo_id";
   $obo = db_query($sql, array(':obo_id' => $obo_id))->fetchObject();
 
   // Convert the module name to the real path if present
@@ -395,7 +395,7 @@ function tripal_chado_load_obo_v1_2_id($obo_id, $jobid = NULL) {
  *   The job_id of the job from the Tripal jobs management system.
  * @param $is_new
  *   Set to TRUE if this is a new ontology that does not yet exist in the
- *   tripal_chado_obo table.  If TRUE the OBO will be added to the table.
+ *   tripal_cv_obo table.  If TRUE the OBO will be added to the table.
  *
  * @ingroup tripal_obo_loader
  */
@@ -428,7 +428,7 @@ function tripal_chado_load_obo_v1_2_file($obo_name, $file, $jobid = NULL, $is_ne
  *   The job_id of the job from the Tripal jobs management system.
  * @param $is_new
  *   Set to TRUE if this is a new ontology that does not yet exist in the
- *   tripal_chado_obo table.  If TRUE the OBO will be added to the table.
+ *   tripal_cv_obo table.  If TRUE the OBO will be added to the table.
  *
  * @ingroup tripal_obo_loader
  */
@@ -442,7 +442,7 @@ function tripal_chado_load_obo_v1_2_url($obo_name, $url, $jobid = NULL, $is_new 
   $url_fh = fopen($url, "r");
   $obo_fh = fopen($temp, "w");
   if (!$url_fh) {
-    tripal_chado_obo_quiterror("Unable to download the remote OBO file at $url. Could a firewall be blocking outgoing connections? " .
+    tripal_cv_obo_quiterror("Unable to download the remote OBO file at $url. Could a firewall be blocking outgoing connections? " .
       " if you are unable to download the file you may manually downlod the OBO file and use the web interface to " .
       " specify the location of the file on your server.");
 
@@ -529,14 +529,14 @@ function tripal_chado_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
 
     // make sure we have an 'internal' and a '_global' database
     if (!tripal_insert_db(array('name' => 'internal'))) {
-      tripal_chado_obo_quiterror("Cannot add 'internal' database");
+      tripal_cv_obo_quiterror("Cannot add 'internal' database");
     }
     if (!tripal_insert_db(array('name' => '_global'))) {
-      tripal_chado_obo_quiterror("Cannot add '_global' database");
+      tripal_cv_obo_quiterror("Cannot add '_global' database");
     }
 
     // parse the obo file
-    $default_db = tripal_chado_obo_parse($file, $header, $jobid);
+    $default_db = tripal_cv_obo_parse($file, $header, $jobid);
 
     // add the CV for this ontology to the database.  The v1.2 definition
     // specifies a 'default-namespace' to be used if a 'namespace' is not
@@ -545,7 +545,7 @@ function tripal_chado_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
     if (array_key_exists('default-namespace', $header)) {
       $defaultcv = tripal_insert_cv($header['default-namespace'][0], '');
       if (!$defaultcv) {
-        tripal_chado_obo_quiterror('Cannot add namespace ' . $header['default-namespace'][0]);
+        tripal_cv_obo_quiterror('Cannot add namespace ' . $header['default-namespace'][0]);
       }
       $newcvs[$header['default-namespace'][0]] = $defaultcv->cv_id;
     }
@@ -557,7 +557,7 @@ function tripal_chado_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
       if (array_key_exists('ontology', $header)) {
         $defaultcv = tripal_insert_cv(strtoupper($header['ontology'][0]), '');
         if (!$defaultcv) {
-          tripal_chado_obo_quiterror('Cannot add namespace ' . strtoupper($header['ontology'][0]));
+          tripal_cv_obo_quiterror('Cannot add namespace ' . strtoupper($header['ontology'][0]));
         }
         $newcvs[strtoupper(strtoupper($header['ontology'][0]))] = $defaultcv->cv_id;
       }
@@ -571,12 +571,12 @@ function tripal_chado_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
 
     // add any typedefs to the vocabulary first
     print "\nStep 2: Loading type defs...\n";
-    tripal_chado_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid);
+    tripal_cv_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid);
 
     // next add terms to the vocabulary
     print "\nStep 3: Loading terms...\n";
-    if (!tripal_chado_obo_process_terms($defaultcv, $jobid, $newcvs, $default_db)) {
-      tripal_chado_obo_quiterror('Cannot add terms from this ontology');
+    if (!tripal_cv_obo_process_terms($defaultcv, $jobid, $newcvs, $default_db)) {
+      tripal_cv_obo_quiterror('Cannot add terms from this ontology');
     }
   }
   catch (Exception $e) {
@@ -598,7 +598,7 @@ function tripal_chado_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
  *
  * @ingroup tripal_obo_loader
  */
-function tripal_chado_obo_quiterror($message) {
+function tripal_cv_obo_quiterror($message) {
 
   tripal_report_error("T_obo_loader", TRIPAL_ERROR, $message, array());
   exit;
@@ -622,7 +622,7 @@ function tripal_chado_obo_quiterror($message) {
  *
  * @ingroup tripal_obo_loader
  */
-function tripal_chado_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid) {
+function tripal_cv_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid) {
   $sql = "SELECT * FROM {tripal_obo_temp} WHERE type = 'Typedef' ";
   $typedefs = chado_query($sql);
 
@@ -650,7 +650,7 @@ function tripal_chado_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid
       printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));
     }
 
-    tripal_chado_obo_process_term($term, $defaultcv->name, 1, $newcvs, $default_db);
+    tripal_cv_obo_process_term($term, $defaultcv->name, 1, $newcvs, $default_db);
 
     $i++;
   }
@@ -684,7 +684,7 @@ function tripal_chado_obo_load_typedefs($defaultcv, $newcvs, $default_db, $jobid
  *   The name of the default database.
  * @ingroup tripal_obo_loader
  */
-function tripal_chado_obo_process_terms($defaultcv, $jobid = NULL, &$newcvs, $default_db) {
+function tripal_cv_obo_process_terms($defaultcv, $jobid = NULL, &$newcvs, $default_db) {
 
   $i = 0;
 
@@ -720,8 +720,8 @@ function tripal_chado_obo_process_terms($defaultcv, $jobid = NULL, &$newcvs, $de
     }
 
     // add/update this term
-    if (!tripal_chado_obo_process_term($term, $defaultcv->name, 0, $newcvs, $default_db)) {
-      tripal_chado_obo_quiterror("Failed to process terms from the ontology");
+    if (!tripal_cv_obo_process_term($term, $defaultcv->name, 0, $newcvs, $default_db)) {
+      tripal_cv_obo_quiterror("Failed to process terms from the ontology");
     }
 
     $i++;
@@ -757,11 +757,11 @@ function tripal_chado_obo_process_terms($defaultcv, $jobid = NULL, &$newcvs, $de
  *
  * @ingroup tripal_obo_loader
  */
-function tripal_chado_obo_process_term($term, $defaultcv, $is_relationship = 0, &$newcvs, $default_db) {
+function tripal_cv_obo_process_term($term, $defaultcv, $is_relationship = 0, &$newcvs, $default_db) {
 
   // make sure we have a namespace for this term
   if (!array_key_exists('namespace', $term) and !($defaultcv or $defaultcv == '')) {
-    tripal_chado_obo_quiterror("Cannot add the term: no namespace defined. " . $term['id'][0]);
+    tripal_cv_obo_quiterror("Cannot add the term: no namespace defined. " . $term['id'][0]);
   }
 
   // construct the term array for sending to the tripal_chado_add_cvterm function
@@ -789,7 +789,7 @@ function tripal_chado_obo_process_term($term, $defaultcv, $is_relationship = 0, 
   // add the cvterm
   $cvterm = tripal_insert_cvterm($t, array('update_existing' => TRUE));
   if (!$cvterm) {
-    tripal_chado_obo_quiterror("Cannot add the term " . $term['id'][0]);
+    tripal_cv_obo_quiterror("Cannot add the term " . $term['id'][0]);
   }
 
   if (array_key_exists('namespace', $term)) {
@@ -802,8 +802,8 @@ function tripal_chado_obo_process_term($term, $defaultcv, $is_relationship = 0, 
   }
   if (array_key_exists('alt_id', $term)) {
     foreach ($term['alt_id'] as $alt_id) {
-      if (!tripal_chado_obo_add_cvterm_dbxref($cvterm, $alt_id)) {
-        tripal_chado_obo_quiterror("Cannot add alternate id $alt_id");
+      if (!tripal_cv_obo_add_cvterm_dbxref($cvterm, $alt_id)) {
+        tripal_cv_obo_quiterror("Cannot add alternate id $alt_id");
       }
     }
   }
@@ -813,8 +813,8 @@ function tripal_chado_obo_process_term($term, $defaultcv, $is_relationship = 0, 
   }
   // add synonyms for this cvterm
   if (array_key_exists('synonym', $term)) {
-    if (!tripal_chado_obo_add_synonyms($term, $cvterm)) {
-      tripal_chado_obo_quiterror("Cannot add synonyms");
+    if (!tripal_cv_obo_add_synonyms($term, $cvterm)) {
+      tripal_cv_obo_quiterror("Cannot add synonyms");
     }
   }
 
@@ -840,8 +840,8 @@ function tripal_chado_obo_process_term($term, $defaultcv, $is_relationship = 0, 
       }
     }
 
-    if (!tripal_chado_obo_add_synonyms($term, $cvterm)) {
-      tripal_chado_obo_quiterror("Cannot add/update synonyms");
+    if (!tripal_cv_obo_add_synonyms($term, $cvterm)) {
+      tripal_cv_obo_quiterror("Cannot add/update synonyms");
     }
   }
 
@@ -850,8 +850,8 @@ function tripal_chado_obo_process_term($term, $defaultcv, $is_relationship = 0, 
     $comments = $term['comment'];
     $j = 0;
     foreach ($comments as $comment) {
-      if (!tripal_chado_obo_add_cvterm_prop($cvterm, 'comment', $comment, $j)) {
-        tripal_chado_obo_quiterror("Cannot add/update cvterm property");
+      if (!tripal_cv_obo_add_cvterm_prop($cvterm, 'comment', $comment, $j)) {
+        tripal_cv_obo_quiterror("Cannot add/update cvterm property");
       }
       $j++;
     }
@@ -860,23 +860,23 @@ function tripal_chado_obo_process_term($term, $defaultcv, $is_relationship = 0, 
   // add any other external dbxrefs
   if (array_key_exists('xref', $term)) {
     foreach ($term['xref'] as $xref) {
-      if (!tripal_chado_obo_add_cvterm_dbxref($cvterm, $xref)) {
-        tripal_chado_obo_quiterror("Cannot add/update cvterm database reference (dbxref).");
+      if (!tripal_cv_obo_add_cvterm_dbxref($cvterm, $xref)) {
+        tripal_cv_obo_quiterror("Cannot add/update cvterm database reference (dbxref).");
       }
     }
   }
 
   if (array_key_exists('xref_analog', $term)) {
     foreach ($term['xref_analog'] as $xref) {
-      if (!tripal_chado_obo_add_cvterm_dbxref($cvterm, $xref)) {
-        tripal_chado_obo_quiterror("Cannot add/update cvterm database reference (dbxref).");
+      if (!tripal_cv_obo_add_cvterm_dbxref($cvterm, $xref)) {
+        tripal_cv_obo_quiterror("Cannot add/update cvterm database reference (dbxref).");
       }
     }
   }
   if (array_key_exists('xref_unk', $term)) {
     foreach ($term['xref_unk'] as $xref) {
-      if (!tripal_chado_obo_add_cvterm_dbxref($cvterm, $xref)) {
-        tripal_chado_obo_quiterror("Cannot add/update cvterm database reference (dbxref).");
+      if (!tripal_cv_obo_add_cvterm_dbxref($cvterm, $xref)) {
+        tripal_cv_obo_quiterror("Cannot add/update cvterm database reference (dbxref).");
       }
     }
   }
@@ -884,8 +884,8 @@ function tripal_chado_obo_process_term($term, $defaultcv, $is_relationship = 0, 
   // add is_a relationships for this cvterm
   if (array_key_exists('is_a', $term)) {
     foreach ($term['is_a'] as $is_a) {
-      if (!tripal_chado_obo_add_relationship($cvterm, $defaultcv, 'is_a', $is_a, $is_relationship, $default_db)) {
-        tripal_chado_obo_quiterror("Cannot add relationship is_a: $is_a");
+      if (!tripal_cv_obo_add_relationship($cvterm, $defaultcv, 'is_a', $is_a, $is_relationship, $default_db)) {
+        tripal_cv_obo_quiterror("Cannot add relationship is_a: $is_a");
       }
     }
   }
@@ -903,8 +903,8 @@ function tripal_chado_obo_process_term($term, $defaultcv, $is_relationship = 0, 
     foreach ($term['relationship'] as $value) {
       $rel = preg_replace('/^(.+?)\s.+?$/', '\1', $value);
       $object = preg_replace('/^.+?\s(.+?)$/', '\1', $value);
-      if (!tripal_chado_obo_add_relationship($cvterm, $defaultcv, $rel, $object, $is_relationship, $default_db)) {
-        tripal_chado_obo_quiterror("Cannot add relationship $rel: $object");
+      if (!tripal_cv_obo_add_relationship($cvterm, $defaultcv, $rel, $object, $is_relationship, $default_db)) {
+        tripal_cv_obo_quiterror("Cannot add relationship $rel: $object");
       }
     }
   }
@@ -942,7 +942,7 @@ function tripal_chado_obo_process_term($term, $defaultcv, $is_relationship = 0, 
  *
  * @ingroup tripal_obo_loader
  */
-function tripal_chado_obo_add_relationship($cvterm, $defaultcv, $rel,
+function tripal_cv_obo_add_relationship($cvterm, $defaultcv, $rel,
   $objname, $object_is_relationship = 0, $default_db = 'OBO_REL') {
 
   // make sure the relationship cvterm exists
@@ -971,14 +971,14 @@ function tripal_chado_obo_add_relationship($cvterm, $defaultcv, $rel,
     );
     $relcvterm = tripal_insert_cvterm($term, array('update_existing' => FALSE));
     if (!$relcvterm) {
-      tripal_chado_obo_quiterror("Cannot find the relationship term in the current ontology or in the relationship ontology: $rel\n");
+      tripal_cv_obo_quiterror("Cannot find the relationship term in the current ontology or in the relationship ontology: $rel\n");
     }
   }
 
   // get the object term
-  $oterm = tripal_chado_obo_get_term($objname);
+  $oterm = tripal_cv_obo_get_term($objname);
   if (!$oterm) {
-    tripal_chado_obo_quiterror("Could not find object term $objname\n");
+    tripal_cv_obo_quiterror("Could not find object term $objname\n");
   }
 
   $objterm = array();
@@ -1003,7 +1003,7 @@ function tripal_chado_obo_add_relationship($cvterm, $defaultcv, $rel,
 
   $objcvterm = tripal_insert_cvterm($objterm, array('update_existing' => TRUE));
   if (!$objcvterm) {
-    tripal_chado_obo_quiterror("Cannot add cvterm " . $oterm['name'][0]);
+    tripal_cv_obo_quiterror("Cannot add cvterm " . $oterm['name'][0]);
   }
 
   // check to see if the cvterm_relationship already exists, if not add it
@@ -1017,7 +1017,7 @@ function tripal_chado_obo_add_relationship($cvterm, $defaultcv, $rel,
     $options = array('return_record' => FALSE);
     $success = chado_insert_record('cvterm_relationship', $values, $options);
     if (!$success) {
-      tripal_chado_obo_quiterror("Cannot add term relationship: '$cvterm->name' $rel '$objcvterm->name'");
+      tripal_cv_obo_quiterror("Cannot add term relationship: '$cvterm->name' $rel '$objcvterm->name'");
     }
   }
 
@@ -1032,7 +1032,7 @@ function tripal_chado_obo_add_relationship($cvterm, $defaultcv, $rel,
  *
  * @ingroup tripal_obo_loader
  */
-function tripal_chado_obo_get_term($id) {
+function tripal_cv_obo_get_term($id) {
   $values = array('id' => $id);
   $result = chado_select_record('tripal_obo_temp', array('stanza'), $values);
   if (count($result) == 0) {
@@ -1051,7 +1051,7 @@ function tripal_chado_obo_get_term($id) {
  *
  * @ingroup tripal_obo_loader
  */
-function tripal_chado_obo_add_synonyms($term, $cvterm) {
+function tripal_cv_obo_add_synonyms($term, $cvterm) {
 
   // make sure we have a 'synonym_type' vocabulary
   $syncv = tripal_insert_cv('synonym_type', 'A vocabulary added by the Tripal CV module OBO loader for storing synonym types.');
@@ -1090,7 +1090,7 @@ function tripal_chado_obo_add_synonyms($term, $cvterm) {
         );
         $syntype = tripal_insert_cvterm($term, array('update_existing' => TRUE));
         if (!$syntype) {
-          tripal_chado_obo_quiterror("Cannot add synonym type: internal:$scope");
+          tripal_cv_obo_quiterror("Cannot add synonym type: internal:$scope");
         }
       }
 
@@ -1109,7 +1109,7 @@ function tripal_chado_obo_add_synonyms($term, $cvterm) {
         $options = array('return_record' => FALSE);
         $success = chado_insert_record('cvtermsynonym', $values, $options);
         if (!$success) {
-          tripal_chado_obo_quiterror("Failed to insert the synonym for term: $name ($def)");
+          tripal_cv_obo_quiterror("Failed to insert the synonym for term: $name ($def)");
         }
       }
 
@@ -1123,7 +1123,7 @@ function tripal_chado_obo_add_synonyms($term, $cvterm) {
       foreach ($dbxrefs as $dbxref) {
        $dbxref = preg_replace('/,_/',", ",$dbxref);
         if ($dbxref) {
-          tripal_chado_obo_add_cvterm_dbxref($syn,$dbxref);
+          tripal_cv_obo_add_cvterm_dbxref($syn,$dbxref);
         }
       }
       */
@@ -1146,7 +1146,7 @@ function tripal_chado_obo_add_synonyms($term, $cvterm) {
  *
  * @ingroup tripal_obo_loader
  */
-function tripal_chado_obo_parse($obo_file, &$header, $jobid) {
+function tripal_cv_obo_parse($obo_file, &$header, $jobid) {
   $in_header = 1;
   $stanza = array();
   $default_db = '_global';
@@ -1274,7 +1274,7 @@ function tripal_chado_obo_parse($obo_file, &$header, $jobid) {
  *
  * @ingroup tripal_obo_loader
  */
-function tripal_chado_obo_add_cvterm_dbxref($cvterm, $xref) {
+function tripal_cv_obo_add_cvterm_dbxref($cvterm, $xref) {
 
   $dbname = preg_replace('/^(.+?):.*$/', '$1', $xref);
   $accession = preg_replace('/^.+?:\s*(.*?)(\{.+$|\[.+$|\s.+$|\".+$|$)/', '$1', $xref);
@@ -1282,7 +1282,7 @@ function tripal_chado_obo_add_cvterm_dbxref($cvterm, $xref) {
   $dbxrefs = preg_replace('/^.+?\[(.+?)\].*?$/', '$1', $xref);
 
   if (!$accession) {
-    tripal_chado_obo_quiterror();
+    tripal_cv_obo_quiterror();
     tripal_report_error("T_obo_loader", TRIPAL_WARNING, "Cannot add a dbxref without an accession: '$xref'", NULL);
     return FALSE;
   }
@@ -1296,13 +1296,13 @@ function tripal_chado_obo_add_cvterm_dbxref($cvterm, $xref) {
   // add the database
   $db = tripal_insert_db(array('name' => $dbname));
   if (!$db) {
-    tripal_chado_obo_quiterror("Cannot find database '$dbname' in Chado.");
+    tripal_cv_obo_quiterror("Cannot find database '$dbname' in Chado.");
   }
 
   // now add the dbxref
-  $dbxref = tripal_chado_obo_add_dbxref($db->db_id, $accession, '', $description);
+  $dbxref = tripal_cv_obo_add_dbxref($db->db_id, $accession, '', $description);
   if (!$dbxref) {
-    tripal_chado_obo_quiterror("Cannot find or add the database reference (dbxref)");
+    tripal_cv_obo_quiterror("Cannot find or add the database reference (dbxref)");
   }
 
   // finally add the cvterm_dbxref but first check to make sure it exists
@@ -1315,7 +1315,7 @@ function tripal_chado_obo_add_cvterm_dbxref($cvterm, $xref) {
     $ins_options = array('return_record' => FALSE);
     $result = chado_insert_record('cvterm_dbxref', $values, $ins_options);
     if (!$result) {
-      tripal_chado_obo_quiterror("Cannot add cvterm_dbxref: $xref");
+      tripal_cv_obo_quiterror("Cannot add cvterm_dbxref: $xref");
       return FALSE;
     }
   }
@@ -1337,12 +1337,12 @@ function tripal_chado_obo_add_cvterm_dbxref($cvterm, $xref) {
  *
  * @ingroup tripal_obo_loader
  */
-function tripal_chado_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
+function tripal_cv_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
 
   // make sure the 'cvterm_property_type' CV exists
   $cv = tripal_insert_cv('cvterm_property_type', '');
   if (!$cv) {
-    tripal_chado_obo_quiterror("Cannot add/find cvterm_property_type cvterm");
+    tripal_cv_obo_quiterror("Cannot add/find cvterm_property_type cvterm");
   }
 
   // get the property type cvterm.  If it doesn't exist then we want to add it
@@ -1362,7 +1362,7 @@ function tripal_chado_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
     );
     $cvproptype = tripal_insert_cvterm($term, array('update_existing' => FALSE));
     if (!$cvproptype) {
-      tripal_chado_obo_quiterror("Cannot add cvterm property: internal:$property");
+      tripal_cv_obo_quiterror("Cannot add cvterm property: internal:$property");
       return FALSE;
     }
   }
@@ -1375,7 +1375,7 @@ function tripal_chado_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
     $values = array('cvterm_id' => $cvterm->cvterm_id);
     $success = chado_delete_record('cvtermprop', $values);
     if (!$success) {
-       tripal_chado_obo_quiterror("Could not remove existing properties to update property $property for term\n");
+       tripal_cv_obo_quiterror("Could not remove existing properties to update property $property for term\n");
        return FALSE;
     }
   }
@@ -1390,7 +1390,7 @@ function tripal_chado_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
   $options = array('return_record' => FALSE);
   $result = chado_insert_record('cvtermprop', $values, $options);
   if (!$result) {
-    tripal_chado_obo_quiterror("Could not add property $property for term\n");
+    tripal_cv_obo_quiterror("Could not add property $property for term\n");
     return FALSE;
   }
   return TRUE;
@@ -1410,7 +1410,7 @@ function tripal_chado_obo_add_cvterm_prop($cvterm, $property, $value, $rank) {
  *
  * @ingroup tripal_obo_loader
  */
-function tripal_chado_obo_add_dbxref($db_id, $accession, $version='', $description='') {
+function tripal_cv_obo_add_dbxref($db_id, $accession, $version='', $description='') {
 
   // check to see if the dbxref exists if not, add it
   $values = array(
@@ -1428,7 +1428,7 @@ function tripal_chado_obo_add_dbxref($db_id, $accession, $version='', $descripti
     $ins_options = array('return_record' => FALSE);
     $result = chado_insert_record('dbxref', $ins_values, $ins_options);
     if (!$result) {
-      tripal_chado_obo_quiterror("Failed to insert the dbxref record $accession");
+      tripal_cv_obo_quiterror("Failed to insert the dbxref record $accession");
       return FALSE;
     }
     $result = chado_select_record('dbxref', array('dbxref_id'), $values, $options);
@@ -1437,6 +1437,6 @@ function tripal_chado_obo_add_dbxref($db_id, $accession, $version='', $descripti
 }
 
 
-function tripal_chado_obo_form_ajax_callback($form, $form_state) {
+function tripal_cv_obo_form_ajax_callback($form, $form_state) {
   return $form['obo_existing'];
 }

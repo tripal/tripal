@@ -377,7 +377,7 @@ function tripal_view_entity($entity, $view_mode = 'full') {
      );
      $output .= '<p>' . t('You have not created any biological data types yet. ' .
          'Go to the <a href="@create-content">data type creation page</a> to ' .
-         'add a new biological data type.',
+         'add a new data type.',
          array('@create-content' => url('admin/structure/bio-data/add'))) . '</p>';
    }
    return $output;

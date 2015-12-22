@@ -795,7 +795,7 @@ function tripal_submit_obo_job($obo) {
   $obo['file']   = (isset($obo['file']))   ? $obo['file']   : NULL;
 
   if ($obo['obo_id']) {
-    $sql = "SELECT * FROM {tripal_chado_obo} WHERE obo_id = :obo_id";
+    $sql = "SELECT * FROM {tripal_cv_obo} WHERE obo_id = :obo_id";
     $result = db_query($sql, array(':obo_id' => $obo['obo_id']))->fetchObject();
 
     $args = array($result->obo_id);
@@ -818,7 +818,7 @@ function tripal_submit_obo_job($obo) {
 }
 
 /**
- * Add the OBO to the tripal_chado_obo table in the Drupal database.
+ * Add the OBO to the tripal_cv_obo table in the Drupal database.
  *
  * If the OBO name already exists in the table then the path is updated.
  *
@@ -834,14 +834,14 @@ function tripal_submit_obo_job($obo) {
  */
 function tripal_insert_obo($name, $path) {
   // make sure an OBO with the same name doesn't already exist
-  $obo_id = db_select('tripal_chado_obo', 'tco')
+  $obo_id = db_select('tripal_cv_obo', 'tco')
     ->fields('tco', array('obo_id'))
     ->condition('name', $name)
     ->execute()
     ->fetchField();
 
   if ($obo_id) {
-    db_update('tripal_chado_obo')
+    db_update('tripal_cv_obo')
       ->fields(array(
         'path' => $path,
       ))
@@ -853,7 +853,7 @@ function tripal_insert_obo($name, $path) {
     $record = new stdClass;
     $record->name = $name;
     $record->path = $path;
-    drupal_write_record('tripal_chado_obo', $record);
+    drupal_write_record('tripal_cv_obo', $record);
     return $record->obo_id;
   }
 }

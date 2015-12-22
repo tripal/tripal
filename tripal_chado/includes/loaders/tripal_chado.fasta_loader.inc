@@ -20,7 +20,7 @@
  *
  * @ingroup fasta_loader
  */
-function tripal_chado_fasta_load_form() {
+function tripal_feature_fasta_load_form() {
   $form['fasta_file'] = array('#type' => 'textfield','#title' => t('FASTA File'),
     '#description' => t('Please enter the full system path for the FASTA file, or a path within the Drupal
                            installation (e.g. /sites/default/files/xyz.obo).  The path must be accessible to the
@@ -201,7 +201,7 @@ function tripal_chado_fasta_load_form() {
  *
  * @ingroup fasta_loader
  */
-function tripal_chado_fasta_load_form_validate($form, &$form_state) {
+function tripal_feature_fasta_load_form_validate($form, &$form_state) {
   $fasta_file = trim($form_state['values']['fasta_file']);
   $organism_id = $form_state['values']['organism_id'];
   $type = trim($form_state['values']['seqtype']);
@@ -302,7 +302,7 @@ function tripal_chado_fasta_load_form_validate($form, &$form_state) {
  *
  * @ingroup fasta_loader
  */
-function tripal_chado_fasta_load_form_submit($form, &$form_state) {
+function tripal_feature_fasta_load_form_submit($form, &$form_state) {
   global $user;
 
   $dfile = $form_state['storage']['dfile'];
@@ -385,7 +385,7 @@ function tripal_chado_fasta_load_form_submit($form, &$form_state) {
  *
  *          @ingroup fasta_loader
  */
-function tripal_chado_load_fasta($dfile, $organism_id, $type, $re_name, $re_uname, $re_accession,
+function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_uname, $re_accession,
   $db_id, $rel_type, $re_subject, $parent_type, $method, $uid, $analysis_id, $match_type,
   $job = NULL) {
   $transaction = db_transaction();
@@ -617,7 +617,7 @@ function tripal_chado_load_fasta($dfile, $organism_id, $type, $re_name, $re_unam
  *
  * @ingroup fasta_loader
  */
-function tripal_chado_load_fasta_feature($fh, $name, $uname, $db_id, $accession, $parent,
+function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accession, $parent,
   $rel_type, $parent_type, $analysis_id, $organism_id, $cvterm, $source, $method, $re_name,
   $match_type, $parentcvterm, $relcvterm, $seq_start, $seq_end) {
 
@@ -906,7 +906,7 @@ function tripal_chado_load_fasta_feature($fh, $name, $uname, $db_id, $accession,
  * @param unknown $seq_start
  * @param unknown $seq_end
  */
-function tripal_chado_load_fasta_residues($fh, $feature_id, $seq_start, $seq_end) {
+function tripal_feature_load_fasta_residues($fh, $feature_id, $seq_start, $seq_end) {
 
   // First position the file at the beginning of the sequence
   fseek($fh, $seq_start, SEEK_SET);

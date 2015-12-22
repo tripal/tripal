@@ -75,6 +75,7 @@ function tripal_init() {
 function tripal_menu() {
   $items = array();
 
+
   // Tripal setting groups
   $items['admin/tripal'] = array(
     'title' => 'Tripal',
@@ -179,12 +180,7 @@ function tripal_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  $items['admin/structure/bio-data/term/%'] = array(
-    'page callback' => 'tripal_autocomplete_term',
-    'page arguments' => array(6, 7),
-    'access arguments' => array('administer content'),
-    'type' => MENU_CALLBACK,
-  );
+
 
   return $items;
 }
@@ -654,13 +650,13 @@ function tripal_entity_info_alter(&$entity_info){
  *   A tripal data type array or FALSE if $type does not exist.
  */
 
-function TripalBundleload($bundle_type, $reset = FALSE) {
+function TripalBundle_load($bundle_type, $reset = FALSE) {
   // Get the type of entity by the ID.
   $bundle = db_select('tripal_bundle', 'tdt')
-  ->fields('tdt')
-  ->condition('name', $bundle_type)
-  ->execute()
-  ->fetchObject();
+    ->fields('tdt')
+    ->condition('name', $bundle_type)
+    ->execute()
+    ->fetchObject();
   if ($bundle) {
     $entity = entity_load('TripalBundle', array($bundle->id), array(), $reset);
     return reset($entity);

@@ -71,7 +71,7 @@ function tripal_chado_vocab_select_term_form($form, &$form_state) {
           Sequence Ontology (SO)."),
       '#required'    => TRUE,
       '#default_value' => $term_name,
-      '#autocomplete_path' => "admin/tripal/vocab/cvterm/auto_name/$cv_id/",
+      '#autocomplete_path' => "admin/tripal/storage/term/$cv_id",
     );
   }
 

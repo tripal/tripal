@@ -139,7 +139,7 @@ class TripalEntityController extends EntityAPIController {
     if (!$alias) {
 
       // Load the TripalBundle entity for this TripalEntity.
-      $bundle_entity = tripal_bundle_load($entity->bundle);
+      $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
 
       // First get the format for the url alias based on the bundle of the entity.
       $alias = tripal_get_bundle_variable('url_format', $bundle_entity->id);
@@ -190,7 +190,7 @@ class TripalEntityController extends EntityAPIController {
       // assigned this alias to this entity in a previous save.
       elseif ($num_aliases == 1) {
 
-        $bundle_entity = tripal_bundle_load($entity->bundle);
+        $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
 
         // Checking to see if the single alias is for the same entity and if not
         // warning the admin that the alias is already used (ie: not unique?)
@@ -218,7 +218,7 @@ class TripalEntityController extends EntityAPIController {
       // If there are more then one alias' matching what we generated then there's
       // a real problem and we need to warn the administrator.
       else {
-        $bundle_entity = tripal_bundle_load($entity->bundle);
+        $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
 
         $aliases = db_query('SELECT source FROM {url_alias} WHERE alias=:alias',
           array(':alias' => $alias))->fetchAll();

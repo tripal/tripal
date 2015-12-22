@@ -87,18 +87,21 @@ function tripal_chado_init() {
 function tripal_chado_menu() {
   $items = array();
 
-  $items['admin/tripal/loaders'] = array(
-    'title' => 'Data Loaders',
-    'description' => t('Tools facilitating data import.'),
-    'access arguments' => array('administer tripal'),
-    'type' => MENU_NORMAL_ITEM,
-    'weight' => 6
+  $items['admin/tripal/storage/term/%/%'] = array(
+    'page callback' => 'tripal_autocomplete_cvterm',
+    'page arguments' => array(4, 5),
+    'access arguments' => array('administer content'),
+    'type' => MENU_CALLBACK,
   );
 
-  // Chado Storage Backend
+  //////////////////////////////////////////////////////////////////////////////
+  //                            Chado Storage Backend
+  //////////////////////////////////////////////////////////////////////////////
   $items['admin/tripal/storage/chado'] = array(
-    'title' => 'Chado Schema',
-    'description' => t("Tools to extend the chado schema through custom tables & materialized views."),
+    'title' => 'Chado Relational Database',
+    'description' => t("Integrates Chado with Tripal and includes tools to
+        load data, and extend the chado schema through custom tables &
+        materialized views."),
     'weight' => -100,
     'access arguments' => array('administer tripal'),
   );
@@ -112,7 +115,9 @@ function tripal_chado_menu() {
     'weight' => -100
   );
 
-  // Materialized Views
+  //////////////////////////////////////////////////////////////////////////////
+  //                       Materialized Views
+  //////////////////////////////////////////////////////////////////////////////
   $items['admin/tripal/storage/chado/mviews'] = array(
     'title' => 'Materialized Views',
     'description' => t('Materialized views are used to improve speed of large or complex queries.'),
@@ -188,7 +193,9 @@ function tripal_chado_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  // Custom Tables
+  //////////////////////////////////////////////////////////////////////////////
+  //                           Custom Tables
+  //////////////////////////////////////////////////////////////////////////////
   $items['admin/tripal/storage/chado/custom_tables'] = array(
     'title' => 'Custom Tables',
     'description' => t('Creation of custom tables that are added to Chado database.'),
@@ -244,6 +251,47 @@ function tripal_chado_menu() {
     'type' => MENU_CALLBACK,
   );
 
+
+  //////////////////////////////////////////////////////////////////////////////
+  //                           Data Loaders
+  //////////////////////////////////////////////////////////////////////////////
+  $items['admin/tripal/storage/chado/loaders'] = array(
+    'title' => 'Data Loaders',
+    'description' => t('Tools facilitating data import.'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 6
+  );
+  $items['admin/tripal/storage/chado/loaders/obo_loader'] = array(
+    'title' => 'OBO File Loader',
+    'description' => 'Load an ontology in OBO format into chado as a controlled vocabulary.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_cv_obo_form'),
+    'access arguments' => array('administer controlled vocabularies'),
+    'file' => 'includes/loaders/tripal_chado.obo_loader.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['admin/tripal/storage/chado/loaders/fasta_loader'] = array(
+    'title' => 'FASTA file Loader',
+    'description' => 'Load sequences from a multi-FASTA file into Chado',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_feature_fasta_load_form'),
+    'access arguments' => array('administer tripal feature'),
+    'file' => 'includes/loaders/tripal_chado.fasta_loader.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['admin/tripal/storage/chado/loaders/gff3_load'] = array(
+    'title' => 'GFF3 file Loader',
+    'description' => 'Import a GFF3 file into Chado',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_feature_gff3_load_form'),
+    'access arguments' => array('administer tripal feature'),
+    'file' => 'includes/loaders/tripal_chado.gff_loader.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_NORMAL_ITEM,
+  );
   return $items;
 
 }
@@ -827,8 +875,10 @@ function tripal_chado_add_bundle_fields($entity_type, $bundle, $term) {
 
   // Check to see if there are any kv-property tables associated to this
   // base table. If so, add the fields for that type of table.
-  // TODO: the 'featurprop' table should not be hardcoded.
-  tripal_chado_add_bundle_kvproperty_adder_field($entity_type, $bundle_name, 'featureprop');
+  $proptable = $bundle_data['data_table'] . 'prop';
+  if (chado_table_exists($proptable)) {
+    tripal_chado_add_bundle_kvproperty_adder_field($entity_type, $bundle_name, $proptable);
+  }
 }
 
 /**
@@ -1081,6 +1131,19 @@ function tripal_chado_get_table_column_field_default($table_name, $schema, $colu
     $field['widget_type'] = 'tripal_chado_residues_textarea_widget';
     $field['label'] = 'Residues';
     $field['description'] = 'Please provide an IUPAC compatible residues for this feature. Spaces and new lines are allowed.';
+  }
+  //
+  // ANALYSIS TABLE
+  //
+  elseif ($field['field_settings']['chado_table'] == 'analysis' and $field['field_settings']['chado_column'] == 'program') {
+    $field['field_settings']['semantic_web']['type'] = 'SoftwareApplication';
+    $field['field_settings']['semantic_web']['ns'] = 'schema';
+    $field['field_settings']['semantic_web']['nsurl'] = 'https://schema.org/';
+  }
+  elseif ($field['field_settings']['chado_table'] == 'analysis' and $field['field_settings']['chado_column'] == 'sourceuri') {
+    $field['field_type'] = 'text';
+    $field['widget_type'] = 'text_textfield';
+    $field['field_settings']['text_processing'] = 0;
   }
 
   return $field;

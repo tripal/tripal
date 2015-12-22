@@ -18,7 +18,7 @@
  *
  * @ingroup gff3_loader
  */
-function tripal_chado_gff3_load_form() {
+function tripal_feature_gff3_load_form() {
 
   $form['gff_file']= array(
     '#type'          => 'textfield',
@@ -214,7 +214,7 @@ function tripal_chado_gff3_load_form() {
  *
  * @ingroup gff3_loader
  */
-function tripal_chado_gff3_load_form_validate($form, &$form_state) {
+function tripal_feature_gff3_load_form_validate($form, &$form_state) {
 
   $gff_file = trim($form_state['values']['gff_file']);
   $organism_id = $form_state['values']['organism_id'];
@@ -263,7 +263,7 @@ function tripal_chado_gff3_load_form_validate($form, &$form_state) {
  *
  * @ingroup gff3_loader
  */
-function tripal_chado_gff3_load_form_submit($form, &$form_state) {
+function tripal_feature_gff3_load_form_submit($form, &$form_state) {
   global $user;
 
   $gff_file = trim($form_state['values']['gff_file']);
@@ -380,7 +380,7 @@ function tripal_chado_gff3_load_form_submit($form, &$form_state) {
  *
  * @ingroup gff3_loader
  */
-function tripal_chado_load_gff3($gff_file, $organism_id, $analysis_id,
+function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   $add_only = 0, $update = 1, $refresh = 0, $remove = 0, $use_transaction = 1,
   $target_organism_id = NULL, $target_type = NULL,  $create_target = 0,
   $start_line = 1, $landmark_type = '', $alt_id_attr = '', $create_organism = FALSE,
@@ -1071,7 +1071,7 @@ function tripal_chado_load_gff3($gff_file, $organism_id, $analysis_id,
  *
  * @ingroup gff3_loader
  */
-function tripal_chado_load_gff3_derives_from($feature, $cvterm, $object,
+function tripal_feature_load_gff3_derives_from($feature, $cvterm, $object,
   $organism, $fmin, $fmax) {
 
   $type = $cvterm->name;
@@ -1180,7 +1180,7 @@ function tripal_chado_load_gff3_derives_from($feature, $cvterm, $object,
  *
  * @ingroup gff3_loader
  */
-function tripal_chado_load_gff3_parents($feature, $cvterm, $parents,
+function tripal_feature_load_gff3_parents($feature, $cvterm, $parents,
   $organism_id, $strand, $phase, $fmin, $fmax) {
 
   $uname = $feature->uniquename;
@@ -1281,7 +1281,7 @@ function tripal_chado_load_gff3_parents($feature, $cvterm, $parents,
  *
  * @ingroup gff3_loader
  */
-function tripal_chado_load_gff3_dbxref($feature, $dbxrefs) {
+function tripal_feature_load_gff3_dbxref($feature, $dbxrefs) {
 
   // iterate through each of the dbxrefs
   foreach ($dbxrefs as $dbxref) {
@@ -1373,7 +1373,7 @@ function tripal_chado_load_gff3_dbxref($feature, $dbxrefs) {
  *
  * @ingroup gff3_loader
  */
-function tripal_chado_load_gff3_ontology($feature, $dbxrefs) {
+function tripal_feature_load_gff3_ontology($feature, $dbxrefs) {
 
    // iterate through each of the dbxrefs
   foreach ($dbxrefs as $dbxref) {
@@ -1451,7 +1451,7 @@ function tripal_chado_load_gff3_ontology($feature, $dbxrefs) {
  *
  * @ingroup gff3_loader
  */
-function tripal_chado_load_gff3_alias($feature, $aliases) {
+function tripal_feature_load_gff3_alias($feature, $aliases) {
 
   // make sure we have a 'synonym_type' vocabulary
   $select = array('name' => 'synonym_type');
@@ -1608,7 +1608,7 @@ function tripal_chado_load_gff3_alias($feature, $aliases) {
  *
  * @ingroup gff3_loader
  */
-function tripal_chado_load_gff3_feature($organism, $analysis_id, $cvterm, $uniquename,
+function tripal_feature_load_gff3_feature($organism, $analysis_id, $cvterm, $uniquename,
   $name, $residues, $is_analysis = 'f', $is_obsolete = 'f', $add_only, $score) {
 
   // Check to see if the feature already exists.
@@ -1735,7 +1735,7 @@ function tripal_chado_load_gff3_feature($organism, $analysis_id, $cvterm, $uniqu
  *
  * @ingroup gff3_loader
  */
-function tripal_chado_load_gff3_featureloc($feature, $organism, $landmark, $fmin,
+function tripal_feature_load_gff3_featureloc($feature, $organism, $landmark, $fmin,
   $fmax, $strand, $phase, $is_fmin_partial, $is_fmax_partial, $residue_info, $locgroup,
   $landmark_type_id = '', $landmark_organism_id = '', $create_landmark = 0,
   $landmark_is_target = 0) {
@@ -1916,7 +1916,7 @@ function tripal_chado_load_gff3_featureloc($feature, $organism, $landmark, $fmin
  *
  * @ingroup gff3_loader
  */
-function tripal_chado_load_gff3_property($feature, $property, $value) {
+function tripal_feature_load_gff3_property($feature, $property, $value) {
 
   // first make sure the cvterm exists.  if not, then add it
   $select = array(
@@ -1998,7 +1998,7 @@ function tripal_chado_load_gff3_property($feature, $property, $value) {
  *
  * @ingroup gff3_loader
  */
-function tripal_chado_load_gff3_fasta($fh, $interval, &$num_read, &$intv_read, &$line_num, $filesize, $job) {
+function tripal_feature_load_gff3_fasta($fh, $interval, &$num_read, &$intv_read, &$line_num, $filesize, $job) {
   print "\nLoading FASTA sequences\n";
   $residues = '';
   $id = NULL;
@@ -2089,7 +2089,7 @@ function tripal_chado_load_gff3_fasta($fh, $interval, &$num_read, &$intv_read, &
  *
  * @ingroup gff3_loader
  */
-function tripal_chado_load_gff3_target($feature, $tags, $target_organism_id, $target_type, $create_target, $attr_locgroup) {
+function tripal_feature_load_gff3_target($feature, $tags, $target_organism_id, $target_type, $create_target, $attr_locgroup) {
   // format is: "target_id start end [strand]", where strand is optional and may be "+" or "-"
   $matched = preg_match('/^(.*?)\s+(\d+)\s+(\d+)(\s+[\+|\-])*$/', trim($tags['Target'][0]), $matches);
 

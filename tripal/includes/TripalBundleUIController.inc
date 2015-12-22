@@ -29,7 +29,7 @@ class TripalBundleUIController extends EntityDefaultUIController {
     // Add an action link to Admin > Structure > Tripal Content Types for adding types.
     $items[$this->path . '/add'] = array(
       'title' => 'Add Tripal Content Type',
-      'description' => 'Add new biological content',
+      'description' => 'Add data type content',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_admin_add_type_form'),
       'access arguments' => array('administer tripal data types'),
@@ -438,7 +438,7 @@ function tripal_admin_add_type_form_submit($form, &$form_state) {
         $form_state['redirect'] = "admin/structure/bio-data";
       }
       else {
-        drupal_set_message('New biological data type created.  Fields are added automatically to this type.');
+        drupal_set_message('New data type created.');
         $form_state['redirect'] = "admin/structure/bio-data";
       }
     }
