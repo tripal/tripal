@@ -17,6 +17,26 @@ function tripal_chado_vocab_storage_info() {
  * Implements hook_vocab_get_term().
  */
 function tripal_chado_vocab_get_term($namespace, $accession) {
+  // Create an empty term array for returning if there is a problem.
+  $empty_term = array(
+    'namespace'  => $namespace,
+    'accession'  => $accession,
+    'name'       => '',
+    'definition' => 'Term is undefined.',
+    'urlprefix'  => '',
+    // The following are not required for the returned array but we'll
+    // add these for convenience later when we look at the TripalTerm
+    // objects and these will be there.
+    'cvterm'     => NULL,
+  );
+
+  // It's possible that Chado is not available (i.e. it gets renamed
+  // for copying) but Tripal has already been prepared and the
+  // entities exist.  If this is the case we don't want to run the
+  // commands below.
+  if (!chado_table_exists('cvterm')) {
+    return $empty_term;
+  }
   $match = array(
     'dbxref_id' => array(
       'db_id' => array(
@@ -27,7 +47,7 @@ function tripal_chado_vocab_get_term($namespace, $accession) {
   );
   $cvterm = chado_generate_var('cvterm', $match);
   if (!$cvterm) {
-    return NULL;
+    return $empty_term;
   }
   $cvterm = chado_expand_var($cvterm, 'field', 'cvterm.definition');
   return array(

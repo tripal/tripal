@@ -8,5 +8,4 @@ version = 7.x-2.0
 stylesheets[all][] = theme/css/tripal_chado.css
 
 dependencies[] = tripal
-dependencies[] = tripal
 dependencies[] = date

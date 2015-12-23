@@ -169,10 +169,7 @@ function tripal_add_mview($name, $modulename, $mv_schema, $query, $comment = NUL
     return TRUE;
   }
   else {
-    tripal_report_error('tripal_chado', TRIPAL_WARNING,
-      "Materialized view, %vname, already exists. Cannot create.",
-      array('%vname' => $name));
-    drupal_set_message(t("Materialized view, $name, already exists. Cannot create.", array('%name' => $name)));
+    drupal_set_message(t("Materialized view, $name, already exists. Skipping creation.", array('%name' => $name)));
     return FALSE;
   }
 }

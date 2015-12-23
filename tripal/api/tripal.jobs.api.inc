@@ -48,18 +48,21 @@
  * @param $priority
  *    The priority at which to run the job where the highest priority is 10 and the lowest priority
  *    is 1. The default priority is 10.
- *
+ * @param $includes
+ *    An array of paths to files that should be included in order to execute
+ *    the job. Use the module_load_include function to get a path for a given
+ *    file.
  * @return
  *    The job_id of the registered job
  *
  * Example usage:
  * @code
- *  $args = array($dfile, $organism_id, $type, $library_id, $re_name, $re_uname,
- *        $re_accession, $db_id, $rel_type, $re_subject, $parent_type, $method,
+ * $args = array($dfile, $organism_id, $type, $library_id, $re_name, $re_uname,
+ *         $re_accession, $db_id, $rel_type, $re_subject, $parent_type, $method,
  *         $user->uid, $analysis_id, $match_type);
- *
+ * $includes = module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.fasta_loader');
  * tripal_add_job("Import FASTA file: $dfile", 'tripal_feature',
- *   'tripal_feature_load_fasta', $args, $user->uid);
+ *   'tripal_feature_load_fasta', $args, $user->uid, 10, $includes);
  * @endcode
  * The code above is copied from the tripal_feature/fasta_loader.php file. The
  * snipped first builds an array of arguments that will then be passed to the
@@ -69,7 +72,9 @@
  *
  * @ingroup tripal_jobs_api
  */
-function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $priority = 10) {
+function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
+    $priority = 10, $includes = array()) {
+
   global $user;
 
   // convert the arguments into a string for storage in the database
@@ -87,6 +92,7 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $pr
   $record->uid = $uid;
   $record->priority = $priority;  # the lower the number the higher the priority
   $record->arguments = $args;
+  $record->includes = serialize($includes);
 
   if (drupal_write_record('tripal_jobs', $record)) {
     drupal_set_message(t("Job '%job_name' submitted.", array('%job_name' => $job_name)));
@@ -318,6 +324,10 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL) {
     $job_res = db_query($sql);
   }
   foreach ($job_res as $job) {
+    // Include the necessary files
+    foreach (unserialize($job->includes) as $path) {
+      require_once $path;
+    }
     // set the start time for this job
     $record = new stdClass();
     $record->job_id = $job->job_id;

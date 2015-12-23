@@ -29,7 +29,7 @@ function tripal_views_defaultview_admin_integrations() {
   $view->description = 'DO NOT DISABLE';
   $view->tag = 'tripal admin';
   $view->base_table = 'tripal_views';
-  $view->human_name = 'Tripal Views Admin';
+  $view->human_name = 'Tripal Views (Admin)';
   $view->core = 7;
   $view->api_version = '3.0';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */

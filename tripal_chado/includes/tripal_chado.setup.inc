@@ -10,27 +10,32 @@
 function tripal_chado_prepare_form($form, $form_state) {
   $form = array();
 
-  // we want to force the version of Chado to be set properly
-  $real_version = chado_get_version(TRUE);
-
-  $form['current_version'] = array(
-    '#type' => 'item',
-    '#title' => t("Current installed version of Chado:"),
-    '#description' => $real_version,
-  );
+  if (variable_get('tripal_chado_is_prepared') == TRUE) {
+    drupal_set_message('Your site is prepared.');
+  }
   $form['instructions'] = array(
     '#type' => 'item',
-    '#description' => t("Click the button below to prepare a Chado installation for
-        use by Tripal.  If you used Tripal to install Chado then this step
-        is not necessary.  If Chado was installed outside of Tripal then
-        it should be prepared. Preparing Chado involves adding of
-        specific controlled vocabularies, custom tables and materialized views."),
+    '#title' => 'Prepare Drupal for Chado.',
+    '#description' => t("Before a Drupal site can use Chado (via Tripal), both
+        Chado and Drupal must be prepared a bit more.  Tripal will add some new
+        materialized views, custom tables and controlled vocabularies to Chado.
+        It will also add some management tables to Drupal. You only are
+        required to prepare your Drupal site if this is a brand-new Drupal
+        installation or if Chado was installed outside of Tripal.  If you
+        installed Chado using Tripal then you do not need to run this step.
+        If you are upgrading from a previous version of Tripal, you do not
+        need to prepare your site, and you can click the 'Skip' button."),
   );
 
-  $form['button'] = array(
+  $form['prepare-button'] = array(
     '#type' => 'submit',
-    '#value' => t('Prepare Chado'),
+    '#value' => t('Prepare this site'),
     '#name' => 'prepare-chado',
+  );
+  $form['skip-button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Skip'),
+    '#name' => 'prepare-skip',
   );
   return $form;
 }
@@ -45,7 +50,16 @@ function tripal_chado_prepare_form_submit($form, $form_state) {
    if ($form_state['clicked_button']['#name'] == "prepare-chado") {
      global $user;
      $args = array();
-     tripal_add_job('Prepare Chado', 'tripal_chado', 'tripal_chado_prepare_chado', $args, $user->uid);
+     $includes = array(
+        module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.setup'),
+        module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.obo_loader'),
+     );
+     tripal_add_job('Prepare Chado', 'tripal_chado',
+       'tripal_chado_prepare_chado', $args,
+       $user->uid, 10, $includes);
+   }
+   if ($form_state['clicked_button']['#name'] == "prepare-skip") {
+     variable_set('tripal_chado_is_prepared', TRUE);
    }
 }
 /**
@@ -53,7 +67,7 @@ function tripal_chado_prepare_form_submit($form, $form_state) {
  *
  * @ingroup tripal_chado
  */
-function tripal_chado_load_form($form, $form_state) {
+function tripal_chado_install_form($form, $form_state) {
 
   // we want to force the version of Chado to be set properly
   $real_version = chado_get_version(TRUE);
@@ -93,7 +107,7 @@ function tripal_chado_load_form($form, $form_state) {
   return $form;
 }
 
-function tripal_chado_chado_load_form_validate($form, &$form_state) {
+function tripal_chado_install_form_validate($form, &$form_state) {
   // We do not want to allow re-installation of Chado if other
   // Tripal modules are installed.  This is because the install files
   // of those modules may add content to Chado and reinstalling Chado
@@ -129,11 +143,16 @@ function tripal_chado_chado_load_form_validate($form, &$form_state) {
  *
  * @ingroup tripal_chado
  */
-function tripal_chado_chado_load_form_submit($form, &$form_state) {
+function tripal_chado_install_form_submit($form, &$form_state) {
   global $user;
   $action_to_do = trim($form_state['values']['action_to_do']);
   $args = array($action_to_do);
-  tripal_add_job($action_to_do, 'tripal_chado', 'tripal_chado_install_chado', $args, $user->uid);
+  $includes = array(
+    module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.setup'),
+    module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.obo_loader'),
+  );
+  tripal_add_job($action_to_do, 'tripal_chado', 'tripal_chado_install_chado',
+      $args, $user->uid, 10, $includes);
 }
 
 /**
@@ -227,268 +246,284 @@ function tripal_chado_install_chado($action) {
       exit;
     }
   }
+
+  tripal_chado_prepare_chado();
 }
 
 /**
  * Prepares Chado for use by Tripal.
  */
 function tripal_chado_prepare_chado() {
-  // we want to force the version of Chado to be set properly
-  $real_version = chado_get_version(TRUE);
 
-  // get the effective version.  Pass true as second argument
-  // to warn the user if the current version is not compatible
-  $version = chado_get_version(FALSE, FALSE);
+  try {
+    // we want to force the version of Chado to be set properly
+    $real_version = chado_get_version(TRUE);
 
-  /////////////////////////////////////////////////////////////////////////////
-  //                          Chado CV Module
-  /////////////////////////////////////////////////////////////////////////////
-  // Add the cv_root_mview.
-  tripal_cv_add_cv_root_mview();
+    // get the effective version.  Pass true as second argument
+    // to warn the user if the current version is not compatible
+    $version = chado_get_version(FALSE, FALSE);
 
-  // Add defaults to the tables that correlate OBO files/references with
-  // a chado CV.
-  tripal_cv_add_obo_defaults();
-
-  // Add the Chado ontology CV.
-  $obo_path = '{tripal_chado}/files/cv_property.obo';
-  $obo_id = tripal_insert_obo('Chado CV Properties', $obo_path);
-  tripal_submit_obo_job(array('obo_id' => $obo_id));
-
-  // Create the temp table we will use for loading OBO files.
-  tripal_cv_create_tripal_obo_temp();
-
-
-  /////////////////////////////////////////////////////////////////////////////
-  //                          Chado Organism Module
-  /////////////////////////////////////////////////////////////////////////////
-  tripal_insert_cv(
-  'organism_property',
-  'Contains properties for organisms'
-      );
-
-  // set the default vocabularies
-  tripal_set_default_cv('organismprop', 'type_id', 'organism_property');
-
-
-  /////////////////////////////////////////////////////////////////////////////
-  //                        Chado CompAnalysis Module
-  /////////////////////////////////////////////////////////////////////////////
-  // we may need the analysisfeatureprop table if it doesn't already exist
-  tripal_analysis_create_analysisfeatureprop();
-
-  // add cvterms
-  tripal_analysis_add_cvterms();
-
-  // add materialized views
-  tripal_analysis_add_mview_analysis_organism();
-
-  // set the default vocabularies
-  tripal_set_default_cv('analysisprop', 'type_id', 'analysis_property');
-
-  /////////////////////////////////////////////////////////////////////////////
-  //                        Chado Contact Module
-  /////////////////////////////////////////////////////////////////////////////
-  // Add the contactprop table to Chado.
-  tripal_contact_add_custom_tables();
-
-  // Add loading of the the tripal contact ontology to the job queue.
-  $obo_path = '{tripal_chado}/files/tcontact.obo';
-  $obo_id = tripal_insert_obo('Tripal Contacts', $obo_path);
-  tripal_submit_obo_job(array('obo_id' => $obo_id));
-
-    // Add cvterms for relationship types.
-  tripal_contact_add_cvs();
-
-  // Set the default vocabularies.
-  tripal_set_default_cv('contact', 'type_id', 'tripal_contact');
-  tripal_set_default_cv('contactprop', 'type_id', 'tripal_contact');
-      tripal_set_default_cv('contact_relationship', 'type_id', 'contact_relationship');
-
-  /////////////////////////////////////////////////////////////////////////////
-  //                        Chado Feature Module
-  /////////////////////////////////////////////////////////////////////////////
-  // Note: the feature_property OBO that came with Chado v1.2 should not
-  // be automatically installed.  Some of the terms are duplicates of
-  // others in better maintained vocabularies.  New Tripal sites should
-  // use those.
-  // $obo_path = '{tripal_feature}/files/feature_property.obo';
-  // $obo_id = tripal_insert_obo('Chado Feature Properties', $obo_path);
-  // tripal_submit_obo_job(array('obo_id' => $obo_id));
-
-  // Add the materialized view.
-  tripal_feature_add_organism_count_mview();
-
-  // Add the custom tables.
-  tripal_feature_add_tripal_gff_temp_table();
-  tripal_feature_add_tripal_gffcds_temp_table();
-  tripal_feature_add_tripal_gffprotein_temp_table();
-
-  // Add the vocabularies used by the feature module.
-  tripal_feature_add_cvs();
-
-  // Set the default vocabularies.
-  tripal_set_default_cv('feature', 'type_id', 'sequence');
-  tripal_set_default_cv('featureprop', 'type_id', 'feature_property');
-  tripal_set_default_cv('feature_relationship', 'type_id', 'feature_relationship');
-
-  /////////////////////////////////////////////////////////////////////////////
-  //                            Chado Map Module
-  /////////////////////////////////////////////////////////////////////////////
-  // add the featuremapprop table to Chado
-  tripal_featuremap_add_custom_tables();
-
-  // Add cvterms
-  tripal_featuremap_add_cvs();
-  tripal_featuremap_add_cvterms();
-
-  // set the default vocabularies
-  tripal_set_default_cv('featuremapprop', 'type_id', 'featuremap_property');
-  tripal_set_default_cv('featureposprop', 'type_id', 'featurepos_property');
-  tripal_set_default_cv('featuremap', 'unittype_id', 'featuremap_units');
-
-  /////////////////////////////////////////////////////////////////////////////
-  //                          Chado Library Module
-  /////////////////////////////////////////////////////////////////////////////
-  // add the materialized view
-  tripal_library_add_mview_library_feature_count();
-
-  // add cvterms
-  tripal_library_add_cvs();
-  tripal_library_add_cvterms();
-
-  // set the default vocabularies
-  tripal_set_default_cv('libraryprop', 'type_id', 'library_property');
-  tripal_set_default_cv('library', 'type_id', 'library_type');
-
-  /////////////////////////////////////////////////////////////////////////////
-  //                          Chado NatDiv Module
-  /////////////////////////////////////////////////////////////////////////////
-  // add cvterms
-  tripal_natural_diversity_add_cvterms();
-
-  /////////////////////////////////////////////////////////////////////////////
-  //                          Chado Project Module
-  /////////////////////////////////////////////////////////////////////////////
-  tripal_project_add_cvs();
-  tripal_project_add_cvterms();
-
-  // set the default vocabularies
-  tripal_set_default_cv('projectprop', 'type_id', 'project_property');
-  tripal_set_default_cv('project_relationship', 'type_id', 'project_relationship');
-
-  /////////////////////////////////////////////////////////////////////////////
-  //                          Chado Pub Module
-  /////////////////////////////////////////////////////////////////////////////
-  global $base_path;
-
-  // add loading of the the tripal pub ontology to the job queue
-  $obo_path = '{tripal}/files/tpub.obo';
-  $obo_id = tripal_insert_obo('Tripal Publication', $obo_path);
-  tripal_submit_obo_job(array('obo_id' => $obo_id));
-
-  tripal_pub_add_cvs();
-
-  // add the custom tables
-  tripal_pub_add_custom_tables();
-
-  // set the default vocabularies
-  tripal_set_default_cv('pub', 'type_id', 'tripal_pub');
-  tripal_set_default_cv('pubprop', 'type_id', 'tripal_pub');
-  tripal_set_default_cv('pub_relationship', 'type_id', 'pub_relationship');
-
-  /////////////////////////////////////////////////////////////////////////////
-    //                          Chado Stock Module
     /////////////////////////////////////////////////////////////////////////////
-  // add some controlled vocabularies
-  tripal_stock_add_cvs();
+    //                          Chado CV Module
+    /////////////////////////////////////////////////////////////////////////////
+    // Add the cv_root_mview.
+    tripal_cv_add_cv_root_mview();
 
-  // set the default vocabularies
-  tripal_set_default_cv('stock', 'type_id', 'stock_type');
-  tripal_set_default_cv('stockprop', 'type_id', 'stock_property');
-  tripal_set_default_cv('stock_relationship', 'type_id', 'stock_relationship');
+    // Add defaults to the tables that correlate OBO files/references with
+    // a chado CV.
+    tripal_cv_add_obo_defaults();
 
-  // add the materialized view
-  tripal_stock_add_organism_count_mview();
+    // Create the temp table we will use for loading OBO files.
+    tripal_cv_create_tripal_obo_temp();
 
-  /////////////////////////////////////////////////////////////////////////////
-  //                              Entity Bundles
-  /////////////////////////////////////////////////////////////////////////////
+    // Add the Chado ontology CV.
+    $obo_path = '{tripal_chado}/files/cv_property.obo';
+    $obo_id = tripal_insert_obo('Chado CV Properties', $obo_path);
+    tripal_chado_load_obo_v1_2_id($obo_id);
+    //tripal_submit_obo_job(array('obo_id' => $obo_id));
 
-  // Unfortunately, some Chado base tables do not have a type_id, so we must
-  // take special action for those tables.  These include: organism and
-  // analysis. Until we can find an appropriate controlled vocabulary
-  // that is well supported by the community with types for these tables we
-  // will have to use in-house terms.
 
-  // Add a term to be used for an inherent 'type_id' for the organism table.
-  tripal_insert_cvterm(array(
-  'id' => 'local:organism',
-  'name' => 'organism',
-  'definition' => 'An individual form of life, such as a bacterium, protist, ' .
-  'fungus, plant, or animal, composed of a single cell or a complex of cells  ' .
-  'in which organelles or organs work together to carry out the various  ' .
-  'processes of life. (American Heritage® Dictionary of the English ' .
-  'Language, Fifth Edition. Copyright © 2011 by Houghton Mifflin ' .
-  'Harcourt Publishing Company).',
-  'cv_name' => 'local',
-  ));
 
-  // Add a term to be used for an inherent 'type_id' for the organism table.
-  tripal_insert_cvterm(array(
-    'id' => 'local:analysis',
-    'name' => 'analysis',
-    'definition' => 'A process as a method of studying the nature of something ' .
-    'or of determining its essential features and their relations. ' .
-    '(Random House Kernerman Webster\'s College Dictionary, © 2010 K ' .
-    'Dictionaries Ltd).',
-    'cv_name' => 'local',
-  ));
+    /////////////////////////////////////////////////////////////////////////////
+    //                          Chado Organism Module
+    /////////////////////////////////////////////////////////////////////////////
+    tripal_insert_cv(
+      'organism_property',
+      'Contains properties for organisms'
+    );
 
-  tripal_insert_cvterm(array(
-    'id' => 'local:project',
-    'name' => 'project',
-    'definition' => 'A plan or proposal for accomplishing something. ' .
-    '(American Heritage® Dictionary of the English Language, Fifth Edition. ' .
-    'Copyright © 2011 by Houghton Mifflin Harcourt Publishing Company).',
-    'cv_name' => 'local',
-  ));
+    // set the default vocabularies
+    tripal_set_default_cv('organismprop', 'type_id', 'organism_property');
 
-  // For the TripalBundle entities we will want to associate the cvterm_id,
-  // and the chado table and field that it maps to.  We will use a few
-  // variables to do this:
-  tripal_insert_variable('chado_cvterm_id', 'The cvterm_id that a TripalBundle maps to.');
-  tripal_insert_variable('chado_table', 'The name of the table to which a TripalBundle maps.');
-  tripal_insert_variable('chado_column', 'The name of the column within the table that a TripalBundle maps to.');
 
-  // We want to provide a set of commonly used entity types by default. This
-  // way when a user first installs Tripal there are some commonly used
-  // formats.
-  module_load_include('inc', 'tripal', 'api/tripal.api');
-  module_load_include('inc', 'tripal', 'includes/tripal.admin');
+    /////////////////////////////////////////////////////////////////////////////
+    //                        Chado CompAnalysis Module
+    /////////////////////////////////////////////////////////////////////////////
+    // we may need the analysisfeatureprop table if it doesn't already exist
+    tripal_analysis_create_analysisfeatureprop();
 
-  // Create the 'Organism' entity type. This uses the local:organism term.
-  $error = '';
-  $term = array('name' => 'organism', 'cv_id' => array('name' => 'local'));
-  $cvterm = chado_generate_var('cvterm', $term);
-  if (!tripal_create_bundle('local', 'organism', 'organism', $error)) {
-    throw new Exception($error);
+    // add cvterms
+    tripal_analysis_add_cvterms();
+
+    // add materialized views
+    tripal_analysis_add_mview_analysis_organism();
+
+    // set the default vocabularies
+    tripal_set_default_cv('analysisprop', 'type_id', 'analysis_property');
+
+    /////////////////////////////////////////////////////////////////////////////
+    //                        Chado Contact Module
+    /////////////////////////////////////////////////////////////////////////////
+    // Add the contactprop table to Chado.
+    tripal_contact_add_custom_tables();
+
+    // Add loading of the the tripal contact ontology to the job queue.
+    $obo_path = '{tripal_chado}/files/tcontact.obo';
+    $obo_id = tripal_insert_obo('Tripal Contacts', $obo_path);
+    tripal_chado_load_obo_v1_2_id($obo_id);
+    //tripal_submit_obo_job(array('obo_id' => $obo_id));
+
+      // Add cvterms for relationship types.
+    tripal_contact_add_cvs();
+
+    // Set the default vocabularies.
+    tripal_set_default_cv('contact', 'type_id', 'tripal_contact');
+    tripal_set_default_cv('contactprop', 'type_id', 'tripal_contact');
+        tripal_set_default_cv('contact_relationship', 'type_id', 'contact_relationship');
+
+    /////////////////////////////////////////////////////////////////////////////
+    //                        Chado Feature Module
+    /////////////////////////////////////////////////////////////////////////////
+    // Note: the feature_property OBO that came with Chado v1.2 should not
+    // be automatically installed.  Some of the terms are duplicates of
+    // others in better maintained vocabularies.  New Tripal sites should
+    // use those.
+    // $obo_path = '{tripal_feature}/files/feature_property.obo';
+    // $obo_id = tripal_insert_obo('Chado Feature Properties', $obo_path);
+    // tripal_chado_load_obo_v1_2_id($obo_id);
+    //// tripal_submit_obo_job(array('obo_id' => $obo_id));
+
+    // Add the materialized view.
+    tripal_feature_add_organism_count_mview();
+
+    // Add the custom tables.
+    tripal_feature_add_tripal_gff_temp_table();
+    tripal_feature_add_tripal_gffcds_temp_table();
+    tripal_feature_add_tripal_gffprotein_temp_table();
+
+    // Add the vocabularies used by the feature module.
+    tripal_feature_add_cvs();
+
+    // Set the default vocabularies.
+    tripal_set_default_cv('feature', 'type_id', 'sequence');
+    tripal_set_default_cv('featureprop', 'type_id', 'feature_property');
+    tripal_set_default_cv('feature_relationship', 'type_id', 'feature_relationship');
+
+    /////////////////////////////////////////////////////////////////////////////
+    //                            Chado Map Module
+    /////////////////////////////////////////////////////////////////////////////
+    // add the featuremapprop table to Chado
+    tripal_featuremap_add_custom_tables();
+
+    // Add cvterms
+    tripal_featuremap_add_cvs();
+    tripal_featuremap_add_cvterms();
+
+    // set the default vocabularies
+    tripal_set_default_cv('featuremapprop', 'type_id', 'featuremap_property');
+    tripal_set_default_cv('featureposprop', 'type_id', 'featurepos_property');
+    tripal_set_default_cv('featuremap', 'unittype_id', 'featuremap_units');
+
+    /////////////////////////////////////////////////////////////////////////////
+    //                          Chado Library Module
+    /////////////////////////////////////////////////////////////////////////////
+    // add the materialized view
+    tripal_library_add_mview_library_feature_count();
+
+    // add cvterms
+    tripal_library_add_cvs();
+    tripal_library_add_cvterms();
+
+    // set the default vocabularies
+    tripal_set_default_cv('libraryprop', 'type_id', 'library_property');
+    tripal_set_default_cv('library', 'type_id', 'library_type');
+
+    /////////////////////////////////////////////////////////////////////////////
+    //                          Chado NatDiv Module
+    /////////////////////////////////////////////////////////////////////////////
+    // add cvterms
+    tripal_natural_diversity_add_cvterms();
+
+    /////////////////////////////////////////////////////////////////////////////
+    //                          Chado Project Module
+    /////////////////////////////////////////////////////////////////////////////
+    tripal_project_add_cvs();
+    tripal_project_add_cvterms();
+
+    // set the default vocabularies
+    tripal_set_default_cv('projectprop', 'type_id', 'project_property');
+    tripal_set_default_cv('project_relationship', 'type_id', 'project_relationship');
+
+    /////////////////////////////////////////////////////////////////////////////
+    //                          Chado Pub Module
+    /////////////////////////////////////////////////////////////////////////////
+    global $base_path;
+
+    // add loading of the the tripal pub ontology to the job queue
+    $obo_path = '{tripal_chado}/files/tpub.obo';
+    $obo_id = tripal_insert_obo('Tripal Publication', $obo_path);
+    tripal_chado_load_obo_v1_2_id($obo_id);
+    //tripal_submit_obo_job(array('obo_id' => $obo_id));
+
+    tripal_pub_add_cvs();
+
+    // add the custom tables
+    tripal_pub_add_custom_tables();
+
+    // set the default vocabularies
+    tripal_set_default_cv('pub', 'type_id', 'tripal_pub');
+    tripal_set_default_cv('pubprop', 'type_id', 'tripal_pub');
+    tripal_set_default_cv('pub_relationship', 'type_id', 'pub_relationship');
+
+    /////////////////////////////////////////////////////////////////////////////
+      //                          Chado Stock Module
+      /////////////////////////////////////////////////////////////////////////////
+    // add some controlled vocabularies
+    tripal_stock_add_cvs();
+
+    // set the default vocabularies
+    tripal_set_default_cv('stock', 'type_id', 'stock_type');
+    tripal_set_default_cv('stockprop', 'type_id', 'stock_property');
+    tripal_set_default_cv('stock_relationship', 'type_id', 'stock_relationship');
+
+    // add the materialized view
+    tripal_stock_add_organism_count_mview();
+
+    /////////////////////////////////////////////////////////////////////////////
+    //                              Entity Bundles
+    /////////////////////////////////////////////////////////////////////////////
+
+    // Unfortunately, some Chado base tables do not have a type_id, so we must
+    // take special action for those tables.  These include: organism and
+    // analysis. Until we can find an appropriate controlled vocabulary
+    // that is well supported by the community with types for these tables we
+    // will have to use in-house terms.
+
+    // Add a term to be used for an inherent 'type_id' for the organism table.
+    tripal_insert_cvterm(array(
+      'id' => 'local:organism',
+      'name' => 'organism',
+      'definition' => 'An individual form of life, such as a bacterium, protist, ' .
+      'fungus, plant, or animal, composed of a single cell or a complex of cells  ' .
+      'in which organelles or organs work together to carry out the various  ' .
+      'processes of life. (American Heritage® Dictionary of the English ' .
+      'Language, Fifth Edition. Copyright © 2011 by Houghton Mifflin ' .
+      'Harcourt Publishing Company).',
+      'cv_name' => 'local',
+    ));
+
+    // Add a term to be used for an inherent 'type_id' for the organism table.
+    tripal_insert_cvterm(array(
+      'id' => 'local:analysis',
+      'name' => 'analysis',
+      'definition' => 'A process as a method of studying the nature of something ' .
+      'or of determining its essential features and their relations. ' .
+      '(Random House Kernerman Webster\'s College Dictionary, © 2010 K ' .
+      'Dictionaries Ltd).',
+      'cv_name' => 'local',
+    ));
+
+    tripal_insert_cvterm(array(
+      'id' => 'local:project',
+      'name' => 'project',
+      'definition' => 'A plan or proposal for accomplishing something. ' .
+      '(American Heritage® Dictionary of the English Language, Fifth Edition. ' .
+      'Copyright © 2011 by Houghton Mifflin Harcourt Publishing Company).',
+      'cv_name' => 'local',
+    ));
+
+    // For the TripalBundle entities we will want to associate the cvterm_id,
+    // and the chado table and field that it maps to.  We will use a few
+    // variables to do this:
+    tripal_insert_variable('chado_cvterm_id', 'The cvterm_id that a TripalBundle maps to.');
+    tripal_insert_variable('chado_table', 'The name of the table to which a TripalBundle maps.');
+    tripal_insert_variable('chado_column', 'The name of the column within the table that a TripalBundle maps to.');
+
+    // We want to provide a set of commonly used entity types by default. This
+    // way when a user first installs Tripal there are some commonly used
+    // formats.
+    module_load_include('inc', 'tripal', 'api/tripal.api');
+    module_load_include('inc', 'tripal', 'includes/tripal.admin');
+
+    // Create the 'Organism' entity type. This uses the local:organism term.
+    $error = '';
+    $term = array('name' => 'organism', 'cv_id' => array('name' => 'local'));
+    $cvterm = chado_generate_var('cvterm', $term);
+    if (!tripal_create_bundle('local', 'organism', 'organism', $error)) {
+      throw new Exception($error);
+    }
+
+    // Create the 'Analysis' entity type. This uses the local:analysis term.
+    $error = '';
+    $term = array('name' => 'analysis', 'cv_id' => array('name' => 'local'));
+    $cvterm = chado_generate_var('cvterm', $term);
+    if (!tripal_create_bundle('local', 'analysis', 'analysis', $error)) {
+      throw new Exception($error);
+    }
+
+    // Create the 'Project' entity type. This uses the local:project term.
+    $error = '';
+    $term = array('name' => 'project', 'cv_id' => array('name' => 'local'));
+    $cvterm = chado_generate_var('cvterm', $term);
+    if (!tripal_create_bundle('local', 'project', 'project', $error)) {
+      throw new Exception($error);
+    }
+
+    // Set a variable to indicate the site is prepared.
+    variable_set('tripal_chado_is_prepared', TRUE);
   }
-
-  // Create the 'Analysis' entity type. This uses the local:analysis term.
-  $error = '';
-  $term = array('name' => 'analysis', 'cv_id' => array('name' => 'local'));
-  $cvterm = chado_generate_var('cvterm', $term);
-  if (!tripal_create_bundle('local', 'analysis', 'analysis', $error)) {
-    throw new Exception($error);
-  }
-
-  // Create the 'Project' entity type. This uses the local:project term.
-  $error = '';
-  $term = array('name' => 'project', 'cv_id' => array('name' => 'local'));
-  $cvterm = chado_generate_var('cvterm', $term);
-  if (!tripal_create_bundle('local', 'project', 'project', $error)) {
-    throw new Exception($error);
+  catch (Exception $e) {
+    throw new Exception($e);
   }
 }
 
@@ -807,49 +842,7 @@ function tripal_stock_add_cvs() {
       'Contains a list of types for stocks.'
   );
 }
-/**
- * Implementation of hook_schema().
- *
- * @ingroup tripal_pub
- */
-function tripal_chado_tripal_pub_import_schema() {
 
-  return array(
-    'fields' => array(
-      'pub_import_id' => array(
-        'type' => 'serial',
-        'not null' => TRUE
-      ),
-      'name' => array(
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE
-      ),
-      'criteria' => array(
-        'type' => 'text',
-        'size' => 'normal',
-        'not null' => TRUE,
-        'description' => 'Contains a serialized PHP array containing the search criteria'
-      ),
-      'disabled'  => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not NULL' => TRUE,
-        'default' => 0
-      ),
-      'do_contact'  => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not NULL' => TRUE,
-        'default' => 0
-      ),
-    ),
-    'primary key' => array('pub_import_id'),
-    'indexes' => array(
-      'name' => array('name')
-    ),
-  );
-}
 /**
  * Add custom table related to publications
  *  - pubauthor_contact
@@ -1977,6 +1970,27 @@ function tripal_analysis_add_cvterms() {
       ),
       array('update_existing' => TRUE)
   );
+}
+/**
+ * Add's defaults to the tripal_cv_obo table
+ *
+ * @ingroup tripal_cv
+ */
+function tripal_cv_add_obo_defaults() {
+
+  // Insert commonly used ontologies into the tables.
+  $ontologies = array(
+    array('Relationship Ontology', 'http://purl.obolibrary.org/obo/ro.obo'),
+    //    array('Relationship Ontology (older deprecated version)', 'http://www.obofoundry.org/ro/ro.obo'),
+    array('Sequence Ontology', 'https://github.com/The-Sequence-Ontology/SO-Ontologies/blob/master/so-xp-simple.obo'),
+    array('Gene Ontology', 'http://www.geneontology.org/ontology/gene_ontology.obo'),
+    //    array('Cell Ontology', 'https://raw.githubusercontent.com/obophenotype/cell-ontology/master/cl.obo'),
+    //    array('Plant Structure Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_anatomy.obo?view=co'),
+    //    array('Plant Growth and Development Stages Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_temporal.obo?view=co')
+  );
+  foreach ($ontologies as $o) {
+    db_query("INSERT INTO {tripal_cv_obo} (name,path) VALUES (:name, :path)", array(':name' => $o[0], ':path' => $o[1]));
+  }
 }
 /**
  * Add a materialized view of root terms for all chado cvs. This is needed for viewing cv trees

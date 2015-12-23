@@ -34,7 +34,7 @@ function tripal_custom_table_admin_view() {
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
-  $view = views_embed_view('tripal_chado_admin_custom_table','default');
+  $view = views_embed_view('tripal_admin_custom_table','default');
   if (isset($view)) {
     $output .= $view;
   }

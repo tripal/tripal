@@ -17,4 +17,4 @@ files[] = views/handlers/tripal_views_handler_filter_select_string.inc
 files[] = views/handlers/tripal_views_handler_field_aggregate.inc
 
 dependencies[] = views
-dependencies[] = tripal_core
+dependencies[] = tripal

@@ -32,12 +32,12 @@ function tripal_mview_admin_view() {
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
-  $view = views_embed_view('tripal_chado_admin_mviews','default');
+  $view = views_embed_view('tripal_admin_mviews', 'default');
   if (isset($view)) {
     $output .= $view;
   }
   else {
-    $output .= '<p>The Tripal Materalized View management system uses primarily views to provide an '
+    $output .= '<p>The Tripal Materalized View management system uses Drupal Views to provide an '
       . 'administrative interface. Currently one or more views needed for this '
       . 'administrative interface are disabled. <strong>Click each of the following links to '
       . 'enable the pertinent views</strong>:</p>';

@@ -93,30 +93,6 @@ function tripal_chado_tripal_cv_defaults_schema() {
 }
 
 
-
-/**
- * Add's defaults to the tripal_cv_obo table
- *
- * @ingroup tripal_cv
- */
-function tripal_cv_add_obo_defaults() {
-
-  // Insert commonly used ontologies into the tables.
-  $ontologies = array(
-    array('Relationship Ontology', 'http://purl.obolibrary.org/obo/ro.obo'),
-    //    array('Relationship Ontology (older deprecated version)', 'http://www.obofoundry.org/ro/ro.obo'),
-    array('Sequence Ontology', 'https://github.com/The-Sequence-Ontology/SO-Ontologies/blob/master/so-xp-simple.obo'),
-    array('Gene Ontology', 'http://www.geneontology.org/ontology/gene_ontology.obo'),
-    //    array('Cell Ontology', 'https://raw.githubusercontent.com/obophenotype/cell-ontology/master/cl.obo'),
-  //    array('Plant Structure Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_anatomy.obo?view=co'),
-  //    array('Plant Growth and Development Stages Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_temporal.obo?view=co')
-  );
-  foreach ($ontologies as $o) {
-    db_query("INSERT INTO {tripal_cv_obo} (name,path) VALUES (:name, :path)", array(':name' => $o[0], ':path' => $o[1]));
-  }
-}
-
-
 /**
  * Implements hook_schema().
  */
@@ -152,6 +128,49 @@ function tripal_chado_schema() {
  * @section
  * Schema Definitions.
  */
+/**
+ * Implementation of hook_schema().
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_chado_tripal_pub_import_schema() {
+
+  return array(
+    'fields' => array(
+      'pub_import_id' => array(
+        'type' => 'serial',
+        'not null' => TRUE
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE
+      ),
+      'criteria' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => TRUE,
+        'description' => 'Contains a serialized PHP array containing the search criteria'
+      ),
+      'disabled'  => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not NULL' => TRUE,
+        'default' => 0
+      ),
+      'do_contact'  => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not NULL' => TRUE,
+        'default' => 0
+      ),
+    ),
+    'primary key' => array('pub_import_id'),
+    'indexes' => array(
+      'name' => array('name')
+    ),
+  );
+}
 /**
  * Describes the Tripal Custom Tables (tripal_custom_tables) table
  * This keeps track of tables created by Tripal and stored in chado that may or may not

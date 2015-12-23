@@ -166,6 +166,11 @@ function tripal_tripal_jobs_schema() {
         'not NULL' => FALSE,
         'description' => 'If set to 1 then all jobs are held until this one finishes'
       ),
+      'includes' => array(
+        'type' => 'text',
+        'description' => 'A serialized array of file paths that should be included prior to executing the job.',
+        'not NULL' => FALSE,
+      )
     ),
     'indexes' => array(
       'job_id' => array('job_id'),
@@ -567,4 +572,24 @@ function tripal_tripal_bundle_variables_schema() {
   );
 
   return $schema;
+}
+
+/**
+ * This is the required update for tripal_feature when upgrading from Drupal core API 6.x.
+ * This update may take some time to complete.
+ */
+function tripal_update_7300() {
+  try {
+    if (!db_field_exists('tripal_jobs', 'includes')) {
+      db_add_field('tripal_jobs', 'includes', array(
+        'type' => 'text',
+        'description' => 'A serialized array of file paths that should be included prior to executing the job.',
+        'not NULL' => FALSE,
+      ));
+    }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to complete update' . $error);
+  }
 }

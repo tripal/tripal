@@ -78,9 +78,35 @@ function tripal_chado_init() {
           "VALUES ('tripal', 'Used as a database placeholder for tripal defined objects such as tripal cvterms')"
       );
     }
+
+    // Check to see if the Chado and Drupal have been prepared
+    if (!variable_get('tripal_chado_is_prepared', FALSE)) {
+      drupal_set_message('Chado is installed but Tripal has not yet prepared Drupal and Chado. Please ' .
+          l('prepare both Drupal and Chado', 'admin/tripal/storage/chado/chado_prepare') .
+          ' before continuing.', 'warning');
+    }
+  }
+  else {
+    drupal_set_message('Tripal cannot find a Chado installation. Please ' .
+        l('install Chado', 'admin/tripal/storage/chado/chado_install') .
+        ' before continuing.', 'warning');
   }
 }
 
+/**
+ * Implements hook_views_api().
+ *
+ * Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_db.views.inc where all the
+ *  views integration code is
+ *
+ * @ingroup tripal_feature
+ */
+function tripal_chado_views_api() {
+  return array(
+    'api' => 3.0,
+  );
+}
 /**
  * Implements hook_menu().
  */
@@ -110,7 +136,7 @@ function tripal_chado_menu() {
     'title' => 'Install Chado',
     'description' => t('Installs the Chado database tables, views, etc., inside the current Drupal database'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_chado_load_form'),
+    'page arguments' => array('tripal_chado_install_form'),
     'type' => MENU_NORMAL_ITEM,
     'access arguments' => array('install chado'),
     'file' => 'includes/tripal_chado.setup.inc',
@@ -119,10 +145,7 @@ function tripal_chado_menu() {
   );
   $items['admin/tripal/storage/chado/chado_prepare'] = array(
     'title' => 'Prepare Chado',
-    'description' => t('After installation of Chado some preparation is required for Tripal. This includes adding
-        some Tripal required ontologies, materialized views and custom tables. This step
-        is only required if Chado was installed outside of Tripal. If you installed Tripal
-        using the "Install Chado" step above then Chado is prepared.'),
+    'description' => t('Prepares Drupal to use Chado.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_chado_prepare_form'),
     'type' => MENU_NORMAL_ITEM,
@@ -141,6 +164,8 @@ function tripal_chado_menu() {
     'page callback' => 'tripal_mview_admin_view',
     'access arguments' => array('administer tripal'),
     'type' => MENU_NORMAL_ITEM,
+    'file' => 'includes/tripal_chado.mviews.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
     'weight' => -10
   );
   $items['admin/tripal/storage/chado/mviews/help'] = array(
@@ -150,6 +175,8 @@ function tripal_chado_menu() {
     'page arguments' => array('tripal_mviews_help'),
     'access arguments' => array('administer tripal'),
     'type' => MENU_LOCAL_TASK,
+    'file' => 'includes/tripal_chado.mviews.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
     'weight' => 10
   );
   $items['admin/tripal/storage/chado/mviews/report/%'] = array(
@@ -159,6 +186,8 @@ function tripal_chado_menu() {
     'page arguments' => array(5),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal_chado.mviews.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
   );
   $items['admin/tripal/storage/chado/mviews/new'] = array(
     'title' => 'Create Materialized View',
@@ -167,6 +196,8 @@ function tripal_chado_menu() {
     'page arguments' => array('tripal_mviews_form'),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal_chado.mviews.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
   );
   $items['admin/tripal/storage/chado/mviews/edit/%'] = array(
     'title' => 'Edit Materialized View',
@@ -174,6 +205,8 @@ function tripal_chado_menu() {
     'page arguments' => array('tripal_mviews_form', 5),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal_chado.mviews.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
   );
   $items['admin/tripal/storage/chado/mviews/update/%'] = array(
     'title' => 'Create Materialized View',
@@ -182,6 +215,8 @@ function tripal_chado_menu() {
     'page arguments' => array(5),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal_chado.mviews.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
   );
   $items['admin/tripal/storage/chado/mviews/delete/%'] = array(
     'title' => 'Create Materialized View',
@@ -190,6 +225,8 @@ function tripal_chado_menu() {
     'page arguments' => array('tripal_mviews_delete_form', 5),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal_chado.mviews.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
   );
   // TODO: complete the code for exporting and importing of MViews.
   // Need to address security issues of sharing SQL.
@@ -200,6 +237,8 @@ function tripal_chado_menu() {
     'page arguments' => array('tripal_mviews_import_form'),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal_chado.mviews.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
   );
   $items['admin/tripal/storage/chado/mviews/%tblid/export'] = array(
     'title' => 'Export MView',
@@ -208,6 +247,8 @@ function tripal_chado_menu() {
     'page arguments' => array('tripal_mviews_export_form', 5),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal_chado.mviews.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
   );
 
   //////////////////////////////////////////////////////////////////////////////
@@ -219,6 +260,8 @@ function tripal_chado_menu() {
     'page callback' => 'tripal_custom_table_admin_view',
     'access arguments' => array('administer tripal'),
     'type' => MENU_NORMAL_ITEM,
+    'file' => 'includes/tripal_chado.custom_tables.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
     'weight' => -10
   );
   $items['admin/tripal/storage/chado/custom_tables/help'] = array(
@@ -228,6 +271,8 @@ function tripal_chado_menu() {
     'page arguments' => array('tripal_job_help'),
     'access arguments' => array('administer tripal'),
     'type' => MENU_LOCAL_TASK,
+    'file' => 'includes/tripal_chado.custom_tables.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
     'weight' => 10
   );
   $items['admin/tripal/storage/chado/custom_tables/view/%'] = array(
@@ -236,6 +281,8 @@ function tripal_chado_menu() {
     'page callback' => 'tripal_custom_table_view',
     'page arguments' => array(5),
     'access arguments' => array('administer tripal'),
+    'file' => 'includes/tripal_chado.custom_tables.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/storage/chado/custom_tables/new'] = array(
@@ -243,6 +290,8 @@ function tripal_chado_menu() {
     'description' => t('An interface for creating your own custom tables.'),
     'page callback' => 'tripal_custom_table_new_page',
     'access arguments' => array('administer tripal'),
+    'file' => 'includes/tripal_chado.custom_tables.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/storage/chado/custom_tables/edit/%'] = array(
@@ -250,6 +299,8 @@ function tripal_chado_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_custom_tables_form', 5),
     'access arguments' => array('administer tripal'),
+    'file' => 'includes/tripal_chado.custom_tables.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/storage/chado/custom_tables/delete/%'] = array(
@@ -258,6 +309,8 @@ function tripal_chado_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_custom_tables_delete_form', 5),
     'access arguments' => array('administer tripal'),
+    'file' => 'includes/tripal_chado.custom_tables.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
   $items['admin/tripal/storage/chado/custom_tables/views/tables/enable'] = array(
@@ -265,6 +318,8 @@ function tripal_chado_menu() {
     'page callback' => 'tripal_enable_view',
     'page arguments' => array('tripal_admin_custom_table', 'admin/tripal/storage/chado/custom_tables'),
     'access arguments' => array('administer tripal'),
+    'file' => 'includes/tripal_chado.custom_tables.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
 
