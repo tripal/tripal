@@ -287,9 +287,6 @@ function tripal_fields_layout_form_field_ui_display_overview_form_panel_configur
   foreach ($panels as $panel) {
     $options[$panel->panel_id] = $panel->label;
     $has_panel = TRUE;
-    if ($panel->panel_id != $selected_panel) {
-      continue; // Display only the selected panel setting
-    }
     $panel_settings = unserialize($panel->settings);
     $table_layout = key_exists('table_layout', $panel_settings) ? $panel_settings['table_layout'] : array();
     $form['te_configure_panels']['panel_items'][$panel->panel_id] = array(
@@ -345,6 +342,12 @@ function tripal_fields_layout_form_field_ui_display_overview_form_panel_configur
       $form['te_configure_panels']['panel_items'][$panel->panel_id]['#theme_wrappers'] = array('tripal_fields_layout_form_configure_panels');
     }
 
+    if ($panel->panel_id != $selected_panel) {
+      $form['te_configure_panels']['panel_items'][$panel->panel_id]['#prefix'] = "<div style=\"display:none;\">";
+      $form['te_configure_panels']['panel_items'][$panel->panel_id]['#suffix'] = "</div>";
+      //continue; // Display only the selected panel setting
+    }
+    
   }
   $form['te_configure_panels']['panel_select']['#options'] = $options;
   if ($has_panel) {
