@@ -30,7 +30,12 @@
     		  var prevObj = $(id).prev().attr('class');
     		  // Highlight the panel if it's already at the top
     		  if (prevObj.indexOf('tripal_panel-base_panel') == 0 && $(id).css('display') == 'block') {
-    			$(id).effect('highlight', {color: '#DDDEEE'});
+    		    var color = $(id).css('background-color') ? $(id).css('background-color') : '#FFFFFF';
+                    if (jQuery.ui) {
+                      $(id).fadeTo(10, 0.5, function() {});
+                      $(id).fadeTo(100, 1, function() {});
+                      //$(id).effect('highlight', {color: '#DDDEEE'});
+                    }
     		  }
     		  // Move the panel
     		  else {
