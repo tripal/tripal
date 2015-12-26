@@ -55,29 +55,7 @@ function tripal_chado_set_globals() {
  */
 function tripal_chado_init() {
 
-  // create the 'tripal' controlled volcabulary in chado but only if it doesn't already exist, and
-  // only if the chado database is present.
   if ($GLOBALS["chado_is_installed"]) {
-
-    // if the Tripal cv is missing then add
-    $results = chado_query("SELECT * FROM {cv} WHERE name = 'tripal'");
-    $cv = $results->fetchObject();
-    if (!$cv) {
-      $results = chado_query(
-          "INSERT INTO {cv} (name,definition) " .
-          "VALUES ('tripal', 'Terms used by Tripal for modules to manage data such as that stored in property tables like featureprop, analysisprop, etc')"
-      );
-    }
-
-    // if the Tripal db is missing then add it
-    $results = chado_query("SELECT * FROM {db} WHERE name = 'tripal'");
-    $db = $results->fetchObject();
-    if (!$db) {
-      $results = chado_query(
-          "INSERT INTO {db} (name,description) " .
-          "VALUES ('tripal', 'Used as a database placeholder for tripal defined objects such as tripal cvterms')"
-      );
-    }
 
     // Check to see if the Chado and Drupal have been prepared
     if (!variable_get('tripal_chado_is_prepared', FALSE)) {

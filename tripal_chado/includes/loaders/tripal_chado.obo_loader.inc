@@ -341,6 +341,7 @@ function tripal_cv_obo_form_submit($form, &$form_state) {
  *   An obo_id from the tripal_cv_obo file that specifies which OBO file to import
  * @param $job_id
  *   The job_id of the job from the Tripal jobs management system.
+
  *
  * @ingroup tripal_obo_loader
  */
@@ -358,7 +359,9 @@ function tripal_chado_load_obo_v1_2_id($obo_id, $jobid = NULL) {
   }
 
   // if the reference is for a remote URL then run the URL processing function
-  if (preg_match("/^http:\/\//", $obo->path) or preg_match("/^ftp:\/\//", $obo->path)) {
+  if (preg_match("/^https:\/\//", $obo->path) or
+      preg_match("/^http:\/\//", $obo->path) or
+      preg_match("/^ftp:\/\//", $obo->path)) {
     tripal_chado_load_obo_v1_2_url($obo->name, $obo->path, $jobid, 0);
   }
   // if the reference is for a local file then run the file processing function
@@ -375,7 +378,7 @@ function tripal_chado_load_obo_v1_2_id($obo_id, $jobid = NULL) {
         tripal_chado_load_obo_v1_2_file($obo->name, $obo->path, $jobid, 0);
       }
       else {
-        print "ERROR: counld not find OBO file: '$obo->path'\n";
+        print "ERROR: could not find OBO file: '$obo->path'\n";
       }
     }
   }
@@ -527,14 +530,6 @@ function tripal_chado_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
 
     print "Step 1: Preloading File $file\n";
 
-    // make sure we have an 'internal' and a '_global' database
-    if (!tripal_insert_db(array('name' => 'internal'))) {
-      tripal_cv_obo_quiterror("Cannot add 'internal' database");
-    }
-    if (!tripal_insert_db(array('name' => '_global'))) {
-      tripal_cv_obo_quiterror("Cannot add '_global' database");
-    }
-
     // parse the obo file
     $default_db = tripal_cv_obo_parse($file, $header, $jobid);
 
@@ -562,8 +557,7 @@ function tripal_chado_load_obo_v1_2($file, $jobid = NULL, &$newcvs) {
         $newcvs[strtoupper(strtoupper($header['ontology'][0]))] = $defaultcv->cv_id;
       }
       else {
-        $defaultcv = tripal_insert_cv('_global', '');
-        $newcvs['_global'] = $defaultcv->cv_id;
+        tripal_cv_obo_quiterror("Could not find a namespace for this OBO file.");
       }
       watchdog('t_obo_loader', "This OBO is missing the 'default-namespace' header. It is not possible to determine which vocabulary terms without a 'namespace' key should go.  Instead, those terms will be placed in the '%vocab' vocabulary.",
         array('%vocab' => $defaultcv->name), WATCHDOG_WARNING);
@@ -1054,7 +1048,10 @@ function tripal_cv_obo_get_term($id) {
 function tripal_cv_obo_add_synonyms($term, $cvterm) {
 
   // make sure we have a 'synonym_type' vocabulary
-  $syncv = tripal_insert_cv('synonym_type', 'A vocabulary added by the Tripal CV module OBO loader for storing synonym types.');
+  $syncv = tripal_insert_cv(
+    'synonym_type',
+    'A local vocabulary added for synonym types.'
+  );
 
   // now add the synonyms
   if (array_key_exists('synonym', $term)) {
@@ -1082,7 +1079,7 @@ function tripal_cv_obo_add_synonyms($term, $cvterm) {
         // build a 'term' object so we can add the missing term
         $term = array(
            'name' => $scope,
-           'id' => "internal:$scope",
+           'id' => "synonym_type:$scope",
            'definition' => '',
            'is_obsolete' => 0,
            'cv_name' => $syncv->name,
@@ -1149,7 +1146,7 @@ function tripal_cv_obo_add_synonyms($term, $cvterm) {
 function tripal_cv_obo_parse($obo_file, &$header, $jobid) {
   $in_header = 1;
   $stanza = array();
-  $default_db = '_global';
+  $default_db = '';
   $line_num = 0;
   $num_read = 0;
   $intv_read = 0;

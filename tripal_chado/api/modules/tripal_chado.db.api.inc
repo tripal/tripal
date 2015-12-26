@@ -321,8 +321,7 @@ function tripal_insert_db($values, $options = array()) {
 
   // get the database record if it already exists
   $sel_values = array('name' => $dbname);
-  $sel_options = array('statement_name' => 'sel_db_na');
-  $result = chado_select_record('db', array('*'), $sel_values, $sel_options);
+  $result = chado_select_record('db', array('*'), $sel_values);
 
   // if it does not exists then add it
   if (count($result) == 0) {

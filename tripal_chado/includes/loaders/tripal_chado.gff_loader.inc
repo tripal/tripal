@@ -1461,7 +1461,7 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
     // insert the 'synonym_type' vocabulary
     $values = array(
       'name' => 'synonym_type',
-      'definition' => 'vocabulary for synonym types',
+      'definition' => 'A local vocabulary added for synonym types.',
     );
     $success = chado_insert_record('cv', $values);
     if (!$success) {
@@ -1489,7 +1489,7 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
   if (count($result) == 0) {
     $term = array(
       'name' => 'exact',
-      'id' => "internal:exact",
+      'id' => "synonym_type:exact",
       'definition' => '',
       'is_obsolete' => 0,
       'cv_name' => $syncv->name,

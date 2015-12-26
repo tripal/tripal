@@ -222,6 +222,7 @@ function tripal_get_cvterm($identifiers, $options = array()) {
   }
 
   // If one of the identifiers is property then use chado_get_record_with_property()
+  $cvterm = NULL;
   if (isset($identifiers['property'])) {
     $property = $identifiers['property'];
     unset($identifiers['property']);
@@ -231,12 +232,13 @@ function tripal_get_cvterm($identifiers, $options = array()) {
       $options
     );
   }
-
   // Else we have a simple case and we can just use chado_generate_var to get the cvterm
   else {
     // Try to get the cvterm
     $cvterm = chado_generate_var('cvterm', $identifiers, $options);
-    $cvterm = chado_expand_var($cvterm, 'field', 'cvterm.definition');
+    if ($cvterm) {
+      $cvterm = chado_expand_var($cvterm, 'field', 'cvterm.definition');
+    }
   }
 
   // Ensure the cvterm is singular. If it's an array then it is not singular
@@ -400,7 +402,7 @@ function tripal_insert_cv($name, $definition) {
  *  that too is added to the CV table.  If the cvterm is a relationship term
  *  then the $is_relationship argument should be set.  The function will try
  *  to first find the relationship in the relationship ontology for updating and
- *  if it can't be found will add the relationship to the __global CV.  All terms
+ *  if it can't be found will add the relationship to the "local" CV.  All terms
  *  must also have a corresponding database.  This is specified in the term's
  *  ID just before the colon (e.g. GO:003824).  If the database does not exist
  *  in the DB table then it will be added automatically.  The accession (the
@@ -418,10 +420,11 @@ function tripal_insert_cv($name, $definition) {
  *    - namespace: the CV name for the term. DEPRECATED. Please use cv_name instead.
  *    - is_obsolete: is present and set to 1 if the term is defunct
  *    - definition: the definition of the term
- *    - cv_name: The CV name to which the term belongs.  If this arugment is null or not
- *        provided then the function tries to find a record in the CV table with the same
- *        name provided in the $term[namespace].  If this field is provided then it
- *        overrides what the value in $term[namespace]
+ *    - cv_name: The CV name to which the term belongs.  If this arugment is
+ *        null or not provided then the function tries to find a record in the
+ *        CV table with the same name provided in the $term[namespace].  If
+ *        this field is provided then it overrides what the value in
+ *        $term[namespace]
  *    - is_relationship: If this term is a relationship term then this value should be 1.
  *    - db_name: In some cases the database name will not be part of the $term['id'] and it
  *        needs to be explicitly set.  Use this argument only if the database name
@@ -442,7 +445,7 @@ function tripal_insert_cvterm($term, $options = array()) {
     $defaultcv = $term['cv_name'];
   }
   else {
-    $defaultcv = '_global';
+    $defaultcv = 'local';
   }
 
   if (isset($term['is_relationship'])) {
@@ -456,7 +459,7 @@ function tripal_insert_cvterm($term, $options = array()) {
     $dbname = $term['db_name'];
   }
   else {
-    $dbname = 'internal';
+    $dbname = 'local';
   }
 
   if (isset($options['update_existing'])) {
@@ -794,24 +797,28 @@ function tripal_submit_obo_job($obo) {
   $obo['url']    = (isset($obo['url']))    ? $obo['url']    : NULL;
   $obo['file']   = (isset($obo['file']))   ? $obo['file']   : NULL;
 
+  $includes = array(
+    module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.obo_loader'),
+  );
+
   if ($obo['obo_id']) {
     $sql = "SELECT * FROM {tripal_cv_obo} WHERE obo_id = :obo_id";
     $result = db_query($sql, array(':obo_id' => $obo['obo_id']))->fetchObject();
 
     $args = array($result->obo_id);
     return tripal_add_job("Load OBO " . $result->name, 'tripal_chado',
-       "tripal_chado_load_obo_v1_2_id", $args, $user->uid);
+       "tripal_chado_load_obo_v1_2_id", $args, $user->uid, 10, $includes);
   }
   else {
     if ($obo['url']) {
       $args = array($obo['name'], $obo['url']);
       return tripal_add_job("Load OBO " . $obo['name'], 'tripal_chado',
-        "tripal_chado_load_obo_v1_2_url", $args, $user->uid);
+        "tripal_chado_load_obo_v1_2_url", $args, $user->uid, 10, $includes);
     }
     elseif ($obo['file']) {
       $args = array($obo['name'], $obo['file']);
       return tripal_add_job("Load OBO " . $obo['name'], 'tripal_chado',
-        "tripal_chado_load_obo_v1_2_file", $args, $user->uid);
+        "tripal_chado_load_obo_v1_2_file", $args, $user->uid, 10, $includes);
     }
   }
   return FALSE;

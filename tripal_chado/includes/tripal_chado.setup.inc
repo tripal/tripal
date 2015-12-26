@@ -247,6 +247,8 @@ function tripal_chado_install_chado($action) {
     }
   }
 
+  tripal_chado_set_globals();
+  tripal_chado_init();
   tripal_chado_prepare_chado();
 }
 
@@ -263,9 +265,21 @@ function tripal_chado_prepare_chado() {
     // to warn the user if the current version is not compatible
     $version = chado_get_version(FALSE, FALSE);
 
-    /////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    //                          Chado DB Module
+    ///////////////////////////////////////////////////////////////////////////
+    tripal_insert_db(array(
+      'name' => 'null',
+      'description' => 'No online database.'
+    ));
+    tripal_insert_db(array(
+      'name' => 'local',
+      'description' => variable_get('site_name', 'This site.'),
+    ));
+
+    ///////////////////////////////////////////////////////////////////////////
     //                          Chado CV Module
-    /////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
     // Add the cv_root_mview.
     tripal_cv_add_cv_root_mview();
 
@@ -276,10 +290,16 @@ function tripal_chado_prepare_chado() {
     // Create the temp table we will use for loading OBO files.
     tripal_cv_create_tripal_obo_temp();
 
+    // Add the synonym_type vocabulary.
+    tripal_insert_cv(
+      'synonym_type',
+      'A local vocabulary added for synonym types.'
+    );
+
     // Add the Chado ontology CV.
-    $obo_path = '{tripal_chado}/files/cv_property.obo';
-    $obo_id = tripal_insert_obo('Chado CV Properties', $obo_path);
-    tripal_chado_load_obo_v1_2_id($obo_id);
+    //$obo_path = '{tripal_chado}/files/cv_property.obo';
+    //$obo_id = tripal_insert_obo('Chado CV Properties', $obo_path);
+    //tripal_chado_load_obo_v1_2_id($obo_id);
     //tripal_submit_obo_job(array('obo_id' => $obo_id));
 
 
@@ -317,6 +337,15 @@ function tripal_chado_prepare_chado() {
     // Add the contactprop table to Chado.
     tripal_contact_add_custom_tables();
 
+    tripal_insert_db(array(
+      'name' => 'TContact',
+      'description' => 'The Tripal Contact controlled vocabulary.',
+    ));
+    tripal_insert_db(array(
+      'name' => 'TPUB',
+      'description' => 'The Tripal Publication controlled vocabulary.',
+    ));
+
     // Add loading of the the tripal contact ontology to the job queue.
     $obo_path = '{tripal_chado}/files/tcontact.obo';
     $obo_id = tripal_insert_obo('Tripal Contacts', $obo_path);
@@ -329,7 +358,7 @@ function tripal_chado_prepare_chado() {
     // Set the default vocabularies.
     tripal_set_default_cv('contact', 'type_id', 'tripal_contact');
     tripal_set_default_cv('contactprop', 'type_id', 'tripal_contact');
-        tripal_set_default_cv('contact_relationship', 'type_id', 'contact_relationship');
+    tripal_set_default_cv('contact_relationship', 'type_id', 'contact_relationship');
 
     /////////////////////////////////////////////////////////////////////////////
     //                        Chado Feature Module
@@ -960,7 +989,7 @@ function tripal_project_add_cvterms() {
         'definition'  => 'Description of a project',
         'cv_name' => 'project_property',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -979,7 +1008,7 @@ function tripal_natural_diversity_add_cvterms(){
         'definition' => 'An experiment where genotypes of individuals are identified.',
         'cv_name' => 'nd_experiment_types',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -990,7 +1019,7 @@ function tripal_natural_diversity_add_cvterms(){
         'definition' => 'An experiment where phenotypes of individuals are identified.',
         'cv_name' => 'nd_experiment_types',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1001,7 +1030,7 @@ function tripal_natural_diversity_add_cvterms(){
         'definition' => 'The name of the location.',
         'cv_name' => 'nd_geolocation_property',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1073,7 +1102,7 @@ function tripal_library_add_cvterms() {
         'definition' => 'Description of a library',
         'cv_name' => 'library_property',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1085,7 +1114,7 @@ function tripal_library_add_cvterms() {
         'definition' => 'cDNA library',
         'cv_name' => 'library_type',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1095,7 +1124,7 @@ function tripal_library_add_cvterms() {
         'definition' => 'Bacterial Artifical Chromsome (BAC) library',
         'cv_name' => 'library_type',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1105,7 +1134,7 @@ function tripal_library_add_cvterms() {
         'definition' => 'Fosmid library',
         'cv_name' => 'library_type',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1115,7 +1144,7 @@ function tripal_library_add_cvterms() {
         'definition' => 'Cosmid library',
         'cv_name' => 'library_type',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1125,7 +1154,7 @@ function tripal_library_add_cvterms() {
         'definition' => 'Yeast Artificial Chromosome (YAC) library',
         'cv_name' => 'library_type',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1135,7 +1164,7 @@ function tripal_library_add_cvterms() {
         'definition' => 'Genomic Library',
         'cv_name' => 'library_type',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1351,7 +1380,7 @@ function tripal_featuremap_add_cvterms() {
         'definition' => 'Centimorgan units',
         'cv_name' => 'featuremap_units',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1361,7 +1390,7 @@ function tripal_featuremap_add_cvterms() {
         'definition' => 'Base pairs units',
         'cv_name' => 'featuremap_units',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1371,7 +1400,7 @@ function tripal_featuremap_add_cvterms() {
         'definition' => 'The bin unit',
         'cv_name' => 'featuremap_units',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1381,7 +1410,7 @@ function tripal_featuremap_add_cvterms() {
         'definition' => 'Units simply to define marker order.',
         'cv_name' => 'featuremap_units',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1391,7 +1420,7 @@ function tripal_featuremap_add_cvterms() {
         'definition' => 'A catch-all for an undefined unit type',
         'cv_name' => 'featuremap_units',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1403,7 +1432,7 @@ function tripal_featuremap_add_cvterms() {
         'definition' => 'The start coordinate for a map feature.',
         'cv_name' => 'featurepos_property',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1413,7 +1442,7 @@ function tripal_featuremap_add_cvterms() {
         'definition' => 'The end coordinate for a map feature',
         'cv_name' => 'featurepos_property',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1427,7 +1456,7 @@ function tripal_featuremap_add_cvterms() {
         . 'by a colon.  (e.g. Gramene:tsh1996a)',
         'cv_name' => 'featuremap_property',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1437,7 +1466,7 @@ function tripal_featuremap_add_cvterms() {
         'definition' => 'The type of Map (e.g. QTL, Physical, etc.)',
         'cv_name' => 'featuremap_property',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1447,7 +1476,7 @@ function tripal_featuremap_add_cvterms() {
         'definition' => '',
         'cv_name' => 'featuremap_property',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1459,7 +1488,7 @@ function tripal_featuremap_add_cvterms() {
         . 'the web address for the map.',
         'cv_name' => 'featuremap_property',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1470,7 +1499,7 @@ function tripal_featuremap_add_cvterms() {
         . 'the map (e.g. RIL, F2, BC1, etc).',
         'cv_name' => 'featuremap_property',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1480,7 +1509,7 @@ function tripal_featuremap_add_cvterms() {
         'definition' => 'The size of the population used to construct the map.',
         'cv_name' => 'featuremap_property',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1490,7 +1519,7 @@ function tripal_featuremap_add_cvterms() {
         'definition' => 'A brief description of the methods used to construct the map.',
         'cv_name' => 'featuremap_property',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1500,7 +1529,7 @@ function tripal_featuremap_add_cvterms() {
         'definition' => 'The software used to construct the map.',
         'cv_name' => 'featuremap_property',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1936,9 +1965,9 @@ function tripal_analysis_add_cvterms() {
       array(
         'name' => 'analysis_date',
         'definition' => 'The date that an analysis was performed.',
-        'cv_name' => 'tripal',
+        'cv_name' => 'tripal_analysis',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1950,9 +1979,9 @@ function tripal_analysis_add_cvterms() {
         'name' => 'analysis_short_name',
         'definition' => 'A computer legible (no spaces or special characters) '
         . 'abbreviation for the analysis.',
-        'cv_name' => 'tripal',
+        'cv_name' => 'tripal_analysis',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1966,7 +1995,7 @@ function tripal_analysis_add_cvterms() {
         'definition' => 'The type of analysis that was performed.',
         'cv_name' => 'analysis_property',
         'is_relationship' => 0,
-        'db_name' => 'tripal'
+        'db_name' => 'local'
       ),
       array('update_existing' => TRUE)
   );
@@ -1980,10 +2009,10 @@ function tripal_cv_add_obo_defaults() {
 
   // Insert commonly used ontologies into the tables.
   $ontologies = array(
-    array('Relationship Ontology', 'http://purl.obolibrary.org/obo/ro.obo'),
-    //    array('Relationship Ontology (older deprecated version)', 'http://www.obofoundry.org/ro/ro.obo'),
-    array('Sequence Ontology', 'https://github.com/The-Sequence-Ontology/SO-Ontologies/blob/master/so-xp-simple.obo'),
-    array('Gene Ontology', 'http://www.geneontology.org/ontology/gene_ontology.obo'),
+    // array('Relationship Ontology', 'http://purl.obolibrary.org/obo/ro.obo'),
+    // array('Relationship Ontology (older deprecated version)', 'http://www.obofoundry.org/ro/ro.obo'),
+    array('Sequence Ontology', 'https://raw.githubusercontent.com/The-Sequence-Ontology/SO-Ontologies/master/so-xp-simple.obo'),
+    array('Gene Ontology', 'http://geneontology.org/ontology/go.obo'),
     //    array('Cell Ontology', 'https://raw.githubusercontent.com/obophenotype/cell-ontology/master/cl.obo'),
     //    array('Plant Structure Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_anatomy.obo?view=co'),
     //    array('Plant Growth and Development Stages Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_temporal.obo?view=co')
