@@ -102,7 +102,7 @@ function tripal_chado_menu() {
   //                            Chado Storage Backend
   //////////////////////////////////////////////////////////////////////////////
   $items['admin/tripal/storage/chado'] = array(
-    'title' => 'Chado Relational Database',
+    'title' => 'Chado',
     'description' => t("Integrates Chado with Tripal and includes tools to
         load data, and extend the chado schema through custom tables &
         materialized views."),
