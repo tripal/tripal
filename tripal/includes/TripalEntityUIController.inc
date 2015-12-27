@@ -245,7 +245,10 @@ function tripal_view_entity($entity, $view_mode = 'full') {
 
    // If the entity doesn't exist then create one.
    if (!$entity) {
-     $entity = entity_get_controller('TripalEntity')->create(array('bundle' => $bundle_name, 'term_id' => $term_id));
+     $entity = entity_get_controller('TripalEntity')->create(array(
+       'bundle' => $bundle_name,
+       'term_id' => $term_id
+     ));
      field_attach_form('TripalEntity', $entity, $form, $form_state);
 
      $form['add_button'] = array(
@@ -278,15 +281,14 @@ function tripal_view_entity($entity, $view_mode = 'full') {
    $form['#prefix'] = "<div id='$bundle_name-entity-form'>";
    $form['#suffix'] = "</div>";
    return $form;
-
  }
  /**
   * An Ajax callback for the tripal_entity_form.
   */
- function tripal_entity_form_ajax_callback($form, $form_state) {
-   // return the form so Drupal can update the content on the page
-   return $form;
- }
+function tripal_entity_form_ajax_callback($form, $form_state) {
+  // return the form so Drupal can update the content on the page
+  return $form;
+}
 
  /**
   * Implements hook_validate() for the tripal_entity_form.
@@ -295,9 +297,9 @@ function tripal_view_entity($entity, $view_mode = 'full') {
 
    if (array_key_exists('clicked_button', $form_state) and
        $form_state['clicked_button']['#name'] =='add_data') {
-         $entity = $form_state['TripalEntity'];
-         field_attach_form_validate('TripalEntity', $entity, $form, $form_state);
-       }
+     $entity = $form_state['TripalEntity'];
+     field_attach_form_validate('TripalEntity', $entity, $form, $form_state);
+   }
  }
 
 

@@ -43,17 +43,12 @@ function tripal_cv_obo_form($form, &$form_state) {
     $obo_id = array_key_exists('obo_id', $form_state['values']) ? $form_state['values']['obo_id'] : '';
   }
 
-  $form['instructions'] = array(
-    '#type' => 'fieldset',
-    '#title' => 'instructions',
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
-  );
+
   $form['instructions']['info'] = array(
     '#type' => 'item',
     '#markup' => t('This page allows you to load vocabularies and ontologies
       that are in OBO format. Once loaded, the terms from these
-      vocabularies can be used to categorize data in the database.
+      vocabularies can be used to create content.
       You may use the form below to either reload a vocabulary that is already
       loaded (as when new updates to that vocabulary are available) or load a new
       vocabulary.'),
@@ -82,6 +77,7 @@ function tripal_cv_obo_form($form, &$form_state) {
       'callback' => 'tripal_cv_obo_form_ajax_callback',
       'wrapper' => 'obo-existing-fieldset',
     ),
+    '#description' => t('Select a vocabulary to import.')
   );
 
   // If the user has selected an OBO ID then get the form elements for
@@ -142,12 +138,12 @@ function tripal_cv_obo_form($form, &$form_state) {
         must be accessible to the web server on which this Drupal instance is running.'),
       '#default_value' => $uobo_file,
     );
-    $form['obo_existing']['update_obo_details']= array(
+    $form['obo_existing']['update_obo_details'] = array(
       '#type' => 'submit',
       '#value' => 'Update Ontology Details',
       '#name' => 'update_obo_details'
     );
-    $form['obo_existing']['update_load_obo']= array(
+    $form['obo_existing']['update_load_obo'] = array(
       '#type' => 'submit',
       '#value' => 'Load Vocabulary',
       '#name' => 'update_load_obo'

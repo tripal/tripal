@@ -302,8 +302,11 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
     $type = 'delete features';
   }
   $fname = preg_replace("/.*\/(.*)/", "$1", $gff_file);
+  $includes = array(
+    module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.gff_loader'),
+  );
   tripal_add_job("$type GFF3 file: $fname", 'tripal_chado',
-    'tripal_chado_load_gff3', $args, $user->uid);
+    'tripal_feature_load_gff3', $args, $user->uid, 10, $includes);
 
   return '';
 }
@@ -513,7 +516,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           // we're done because this is a delete operation so break out of the loop.
           break;
         }
-        tripal_chado_load_gff3_fasta($fh, $interval, $num_read, $intv_read, $line_num, $filesize, $job);
+        tripal_feature_load_gff3_fasta($fh, $interval, $num_read, $intv_read, $line_num, $filesize, $job);
         continue;
       }
       // if the ##sequence-region line is present then we want to add a new feature
@@ -522,7 +525,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
         $rstart = $region_matches[2];
         $rend = $region_matches[3];
         if ($landmark_type) {
-          tripal_chado_load_gff3_feature($organism, $analysis_id, $landmark_cvterm, $rid,
+          tripal_feature_load_gff3_feature($organism, $analysis_id, $landmark_cvterm, $rid,
             $rid, '', 'f', 'f', 1, 0);
         }
         continue;
@@ -805,7 +808,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
       if ($update or $refresh or $add_only) {
 
         // Add/update the feature.
-        $feature = tripal_chado_load_gff3_feature($feature_organism, $analysis_id, $cvterm,
+        $feature = tripal_feature_load_gff3_feature($feature_organism, $analysis_id, $cvterm,
           $attr_uniquename, $attr_name, $residues, $attr_is_analysis,
           $attr_is_obsolete, $add_only, $score);
 
@@ -832,58 +835,58 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           // add/update the featureloc if the landmark and the ID are not the same
           // if they are the same then this entry in the GFF is probably a landmark identifier
           if (strcmp($landmark, $attr_uniquename) !=0 ) {
-            tripal_chado_load_gff3_featureloc($feature, $organism,
+            tripal_feature_load_gff3_featureloc($feature, $organism,
               $landmark, $fmin, $fmax, $strand, $phase, $attr_fmin_partial,
               $attr_fmax_partial, $attr_residue_info, $attr_locgroup);
           }
 
           // add any aliases for this feature
           if (array_key_exists('Alias', $tags)) {
-            tripal_chado_load_gff3_alias($feature, $tags['Alias']);
+            tripal_feature_load_gff3_alias($feature, $tags['Alias']);
           }
           // add any dbxrefs for this feature
           if (array_key_exists('Dbxref', $tags)) {
-            tripal_chado_load_gff3_dbxref($feature, $tags['Dbxref']);
+            tripal_feature_load_gff3_dbxref($feature, $tags['Dbxref']);
           }
           // add any ontology terms for this feature
           if (array_key_exists('Ontology_term', $tags)) {
-            tripal_chado_load_gff3_ontology($feature, $tags['Ontology_term']);
+            tripal_feature_load_gff3_ontology($feature, $tags['Ontology_term']);
           }
           // add parent relationships
           if (array_key_exists('Parent', $tags)) {
-            tripal_chado_load_gff3_parents($feature, $cvterm, $tags['Parent'],
+            tripal_feature_load_gff3_parents($feature, $cvterm, $tags['Parent'],
               $feature_organism->organism_id, $strand, $phase, $fmin, $fmax);
           }
 
           // add target relationships
           if (array_key_exists('Target', $tags)) {
-            tripal_chado_load_gff3_target($feature, $tags, $target_organism_id, $target_type, $create_target, $attr_locgroup);
+            tripal_feature_load_gff3_target($feature, $tags, $target_organism_id, $target_type, $create_target, $attr_locgroup);
           }
           // add gap information.  This goes in simply as a property
           if (array_key_exists('Gap', $tags)) {
             foreach ($tags['Gap'] as $value) {
-              tripal_chado_load_gff3_property($feature, 'Gap', $value);
+              tripal_feature_load_gff3_property($feature, 'Gap', $value);
             }
           }
           // add notes. This goes in simply as a property
           if (array_key_exists('Note', $tags)) {
             foreach ($tags['Note'] as $value) {
-                tripal_chado_load_gff3_property($feature, 'Note', $value);
+                tripal_feature_load_gff3_property($feature, 'Note', $value);
             }
           }
           // add the Derives_from relationship (e.g. polycistronic genes).
           if (array_key_exists('Derives_from', $tags)) {
-            tripal_chado_load_gff3_derives_from($feature, $cvterm, $tags['Derives_from'][0],
+            tripal_feature_load_gff3_derives_from($feature, $cvterm, $tags['Derives_from'][0],
               $feature_organism, $fmin, $fmax);
           }
           // add in the GFF3_source dbxref so that GBrowse can find the feature using the source column
           $source_ref = array('GFF_source:' . $source);
-          tripal_chado_load_gff3_dbxref($feature, $source_ref);
+          tripal_feature_load_gff3_dbxref($feature, $source_ref);
           // add any additional attributes
           if ($attr_others) {
             foreach ($attr_others as $tag_name => $values) {
               foreach ($values as $value) {
-                tripal_chado_load_gff3_property($feature, $tag_name, $value);
+                tripal_feature_load_gff3_property($feature, $tag_name, $value);
               }
             }
           }
@@ -948,15 +951,15 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
             }
 
             // Add the new protein record.
-            $feature = tripal_chado_load_gff3_feature($organism, $analysis_id,
+            $feature = tripal_feature_load_gff3_feature($organism, $analysis_id,
               $protein_cvterm, $uname, $name, '', 'f', 'f', 1, 0);
             // Add the derives_from relationship.
             $cvterm = tripal_get_cvterm(array('cvterm_id' => $result->cvterm_id));
-            tripal_chado_load_gff3_derives_from($feature, $cvterm,
+            tripal_feature_load_gff3_derives_from($feature, $cvterm,
               $result->uniquename, $organism, $pfmin, $pfmax);
             // Add the featureloc record. Set the start of the protein to
             // be the start of the coding sequence minus the phase.
-            tripal_chado_load_gff3_featureloc($feature, $organism, $landmark,
+            tripal_feature_load_gff3_featureloc($feature, $organism, $landmark,
               $pfmin, $pfmax, $strand, '', 'f', 'f', '', 0);
           }
         }
@@ -2211,7 +2214,7 @@ function tripal_feature_load_gff3_target($feature, $tags, $target_organism_id, $
 
     // we want to add a featureloc record that uses the target feature as the srcfeature (landmark)
     // and the landmark as the feature.
-    tripal_chado_load_gff3_featureloc($feature, $organism, $target_feature, $target_fmin,
+    tripal_feature_load_gff3_featureloc($feature, $organism, $target_feature, $target_fmin,
       $target_fmax, $target_strand, $phase, $attr_fmin_partial, $attr_fmax_partial, $attr_residue_info,
       $attr_locgroup, $t_type_id, $t_organism_id, $create_target, TRUE);
   }

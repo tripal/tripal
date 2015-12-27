@@ -342,7 +342,10 @@ function tripal_feature_fasta_load_form_submit($form, &$form_state) {
   );
 
   $fname = preg_replace("/.*\/(.*)/", "$1", $dfile);
-  tripal_add_job("Import FASTA file: $fname", 'tripal_chado', 'tripal_chado_load_fasta', $args, $user->uid);
+  $includes = array(
+    module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.fasta_loader'),
+  );
+  tripal_add_job("Import FASTA file: $fname", 'tripal_chado', 'tripal_feature_load_fasta', $args, $user->uid, 10, $includes);
 }
 
 /**
@@ -596,7 +599,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
         print "Current feature: " . $seq['uname'] . ".\n";
       }
 
-      tripal_chado_load_fasta_feature($fh, $seq['name'], $seq['uname'], $db_id, $seq['accession'], $seq['subject'], $rel_type, $parent_type, $analysis_id, $organism_id, $cvterm, $source, $method, $re_name, $match_type, $parentcvterm, $relcvterm, $seq['seq_start'], $seq['seq_end']);
+      tripal_feature_load_fasta_feature($fh, $seq['name'], $seq['uname'], $db_id, $seq['accession'], $seq['subject'], $rel_type, $parent_type, $analysis_id, $organism_id, $cvterm, $source, $method, $re_name, $match_type, $parentcvterm, $relcvterm, $seq['seq_start'], $seq['seq_end']);
     }
     tripal_set_job_progress($job, 100);
     fclose($fh);
@@ -613,7 +616,7 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
 }
 
 /**
- * A helper function for tripal_chado_load_fasta() to load a single feature
+ * A helper function for tripal_feature_load_fasta() to load a single feature
  *
  * @ingroup fasta_loader
  */
@@ -707,7 +710,7 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
     }
 
     // Add the residues for this feature
-    tripal_chado_load_fasta_residues($fh, $feature->feature_id, $seq_start, $seq_end);
+    tripal_feature_load_fasta_residues($fh, $feature->feature_id, $seq_start, $seq_end);
   }
 
   // if we don't have a feature and the user wants to do an update then fail
@@ -791,7 +794,7 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
   }
 
   // Update the residues for this feature
-  tripal_chado_load_fasta_residues($fh, $feature->feature_id, $seq_start, $seq_end);
+  tripal_feature_load_fasta_residues($fh, $feature->feature_id, $seq_start, $seq_end);
 
   // add in the analysis link
   if ($analysis_id) {

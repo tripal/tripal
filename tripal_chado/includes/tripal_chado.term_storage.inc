@@ -62,6 +62,28 @@ function tripal_chado_vocab_get_term($namespace, $accession) {
     'cvterm'     => $cvterm,
   );
 }
+
+/**
+ * Implements hook_vocab_import_form();
+ */
+function tripal_chado_vocab_import_form($form, &$form_state) {
+  module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.obo_loader');
+  return tripal_cv_obo_form($form, $form_state);
+}
+/**
+ * Implements hook_vocab_import_form_validate();
+ */
+function tripal_chado_vocab_import_form_validate($form, &$form_state) {
+  module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.obo_loader');
+  return tripal_cv_obo_form_validate($form, $form_state);
+}
+/**
+ * Implements hook_vocab_import_form_submit();
+ */
+function tripal_chado_vocab_import_form_submit($form, &$form_state) {
+  module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.obo_loader');
+  return tripal_cv_obo_form_submit($form, $form_state);
+}
 /**
  * Implements hook_vocab_select_term_form().
  */

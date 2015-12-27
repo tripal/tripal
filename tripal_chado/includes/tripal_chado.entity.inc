@@ -29,12 +29,16 @@ function tripal_chado_entity_create(&$entity, $type) {
 /**
  * Implements hook_entity_presave().
  */
-function tripal_chado_entity_presave($entity, $type) { }
+function tripal_chado_entity_presave($entity, $type) {
+
+}
 
 /**
  * Implements hook_entity_postsave().
  */
-function tripal_chado_entity_postsave($entity, $type) { }
+function tripal_chado_entity_postsave($entity, $type) {
+
+}
 
 /**
  * Implements hook_entity_load().
@@ -156,10 +160,35 @@ function tripal_chado_tripal_default_title_format($entity, $available_tokens) {
   $term = entity_load('TripalTerm', array('id' => $entity->term_id));
   $term = reset($term);
 
+  // Load the bundle
+  $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
+  $bundle_id = $bundle->id;
+  $table = tripal_get_bundle_variable('chado_table', $bundle_id);
+  $column = tripal_get_bundle_variable('chado_column', $bundle_id);
+  $cvterm_id = tripal_get_bundle_variable('chado_cvterm_id', $bundle_id);
+
   // For organism titles  we want the genus and species with no comma separation.
-  if ($term->name == 'organism') {
+  if ($table == 'organism') {
     $format[] = array(
-      'format' => '[organism__genus]-[organism__species]',
+      'format' => '[organism__genus] [organism__species]',
+      'weight' => -5
+    );
+  }
+  if ($table == 'analysis') {
+    $format[] = array(
+      'format' => '[analysis__name]',
+      'weight' => -5
+    );
+  }
+  if ($table == 'feature') {
+    $format[] = array(
+      'format' => '[feature__name]',
+      'weight' => -5
+    );
+  }
+  if ($table == 'stock') {
+    $format[] = array(
+      'format' => '[stock__name]',
       'weight' => -5
     );
   }

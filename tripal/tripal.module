@@ -105,9 +105,33 @@ function tripal_menu() {
 
   $items['admin/tripal/storage'] = array(
     'title' => 'Storage Backend',
-    'description' => t("Functionality related to data storage and tools to interact with the storage backend."),
+    'description' => t("Tripal is designed so that it can store biological
+        data in any data storage back-end.  Tripal provides by default a
+        module for storing data in Chado.  All available storage backends
+        and their administrative tools are found here."),
     'weight' => 8,
     'access arguments' => array('administer tripal'),
+  );
+
+  $items['admin/tripal/terms'] = array(
+    'title' => 'Vocabularies',
+    'description' => t("Vocabulary terms are essential to creating content
+        in Tripal. This allows data to be shared more easily with others
+        using technologies such as the semantic web and web services.
+        Before creating content you must have loaded vocabularies and their
+        terms."),
+    'weight' => 8,
+    'access arguments' => array('administer tripal'),
+  );
+  $items['admin/tripal/terms/import'] = array(
+    'title' => 'Import Vocabulary',
+    'description' => t("Import vocabularies and terms in OBO format."),
+    'access arguments' => array('administer tripal'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_vocabulary_import_form'),
+    'file' => 'includes/tripal.admin.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+    'type' => MENU_NORMAL_ITEM,
   );
 
   // Menu items for facilitating import of extension modules.

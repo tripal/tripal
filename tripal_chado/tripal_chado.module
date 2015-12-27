@@ -132,6 +132,19 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'weight' => -99
   );
+  $items['admin/tripal/storage/chado/publish'] = array(
+    'title' => 'Publish',
+    'description' => t('Publish data that is present in Chado but which does
+        not yet have a page on this site for viewing. In Tripal v2.0 or
+        earlier this was refered to as "syncing".'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_chado_publish_form'),
+    'type' => MENU_NORMAL_ITEM,
+    'access arguments' => array('administer tripal'),
+    'file' => 'includes/tripal_chado.publish.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'weight' => -99
+  );
 
   //////////////////////////////////////////////////////////////////////////////
   //                       Materialized Views
@@ -311,16 +324,6 @@ function tripal_chado_menu() {
     'access arguments' => array('administer tripal'),
     'type' => MENU_NORMAL_ITEM,
     'weight' => 6
-  );
-  $items['admin/tripal/storage/chado/loaders/obo_loader'] = array(
-    'title' => 'OBO File Loader',
-    'description' => 'Load an ontology in OBO format into chado as a controlled vocabulary.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_cv_obo_form'),
-    'access arguments' => array('administer controlled vocabularies'),
-    'file' => 'includes/loaders/tripal_chado.obo_loader.inc',
-    'file path' => drupal_get_path('module', 'tripal_chado'),
-    'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/tripal/storage/chado/loaders/fasta_loader'] = array(
     'title' => 'FASTA file Loader',
@@ -991,7 +994,7 @@ function tripal_chado_add_bundle_base_fields($entity_type_name, $bundle_name, $b
     }
 
     // If we don't have a field type then we don't need to create a field.
-    if (!$field_info['field_type']) {
+    if (!$field_info['field_type']) { http://www.phytozome.net/citrus.php
       // If we don't have a field type but it is required and doesn't have
       // a default value then we are in trouble.
       if ($field_info['is_required'] and !array_key_exists('default', $details)) {
@@ -1066,6 +1069,7 @@ function tripal_chado_get_table_column_field_default($table_name, $schema, $colu
       $field['widget_type'] = 'text_textarea';
       $field['field_settings']['max_length'] = 17179869184;
       $field['field_settings']['text_processing'] = 1;
+      $field['format'] = filter_default_format();
       break;
     case 'blob':
       // not sure how to support a blob field.
@@ -1189,13 +1193,32 @@ function tripal_chado_get_table_column_field_default($table_name, $schema, $colu
     $field['field_settings']['semantic_web']['type'] = 'SoftwareApplication';
     $field['field_settings']['semantic_web']['ns'] = 'schema';
     $field['field_settings']['semantic_web']['nsurl'] = 'https://schema.org/';
+    $field['description'] = 'The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.';
+    $field['label'] = 'Program, Pipeline, Workflow or Method Name.';
   }
   elseif ($field['field_settings']['chado_table'] == 'analysis' and $field['field_settings']['chado_column'] == 'sourceuri') {
     $field['field_type'] = 'text';
     $field['widget_type'] = 'text_textfield';
     $field['field_settings']['text_processing'] = 0;
+    $field['label'] = 'Source URL';
+    $field['description'] = 'The URL where the original source data was derived.  Ideally, this should link to the page where more information about the source data can be found.';
   }
-
+  elseif ($field['field_settings']['chado_table'] == 'analysis' and $field['field_settings']['chado_column'] == 'sourcename') {
+    $field['label'] = 'Source Name';
+    $field['description'] = 'The name of the source data. This could be a file name, data set or a small description for how the data was collected. For long descriptions use the larger description field.';
+  }
+  elseif ($field['field_settings']['chado_table'] == 'analysis' and $field['field_settings']['chado_column'] == 'sourceversion') {
+    $field['label'] = 'Source Version';
+    $field['description'] = 'If hte source data set has a version include it here.';
+  }
+  elseif ($field['field_settings']['chado_table'] == 'analysis' and $field['field_settings']['chado_column'] == 'algorithm') {
+    $field['label'] = 'Source Version';
+    $field['description'] = 'The name of the algorithm used to produce the dataset if different from the program.';
+  }
+  elseif ($field['field_settings']['chado_table'] == 'analysis' and $field['field_settings']['chado_column'] == 'programversion') {
+    $field['label'] = 'Program Version';
+    $field['description'] = 'The version of the program used to perform this analysis. (e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter "n/a" if no version is available or applicable.';
+  }
   return $field;
 }
 
