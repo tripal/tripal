@@ -67,9 +67,16 @@ function tripal_chado_add_field_views_data(&$data) {
       $data['tripal_entity'][ $field['field_name'] ]['title'] = ucfirst(str_replace('_',' ',$field['settings']['chado_table']))
         . ' ' .ucfirst(str_replace('_',' ',$field['settings']['chado_column']));
 
-      // The help should be 'Appears in: TripalEntity: bio-data_1, bio-data_2'
-      // so that users know where they can use it.
-      $data['tripal_entity'][ $field['field_name'] ]['help'] = 'Appears in: TripalEntity:' . implode(',', $field['bundles']['TripalEntity']);
+      // The help should be 'Appears in: TripalEntity: gene, organism'
+      // so that users know where they can use it. This requires a little extra work since all
+      // we have access to at this point is bio-data_2, bio-data_4 but since that's not very
+      // informative, extra work is worth it ;-).
+      $entity_info = entity_get_info('TripalEntity');
+      $bundle_labels = array();
+      foreach ($field['bundles']['TripalEntity'] as $bundle_id) {
+        $bundle_labels[] = $entity_info['bundles'][$bundle_id]['label'];
+      }
+      $data['tripal_entity'][ $field['field_name'] ]['help'] = 'Appears in: TripalEntity:' . implode(', ', $bundle_labels);
 
       // Finally we define the field.
       $data['tripal_entity'][ $field['field_name'] ]['field']['chado_field'] = $field['settings']['chado_column'];
