@@ -23,6 +23,68 @@ function tripal_chado_views_data() {
 }
 
 /**
+ * Implements hook_views_data_alter().
+ */
+function tripal_chado_views_data_alter(&$data) {
+
+  // Adds integration for chado-based fields.
+  tripal_chado_add_field_views_data($data);
+
+  return $data;
+}
+
+/** 
+ * Adds integration for chado-based fields.
+ *
+ * We can't use hook_field_view_data since this only works when the
+ * storage engine is of type 'field_sql_storage' and of course,
+ * ours is not. Thus we create our own implementation of field_views_data()
+ * for our storage engine.
+ */
+function tripal_chado_add_field_views_data(&$data) {
+
+  foreach (field_info_fields() as $field) {
+    if ($field['storage']['type'] != 'field_chado_storage') {
+      continue;
+    }
+
+    // Currently, we only handle integration of chado fields with TripalEntity.
+    // @todo: extend this to work with other entities in the future.
+    if (isset($field['bundles']['TripalEntity']) AND isset($field['settings']['chado_column'])) {
+
+      // We currently don't support prop tables for views integration due
+      // in part to the multiple values but also b/c we can't indicate which
+      // type of property to show. Thus, instead of warning the user,
+      // we just won't integrate it at this time.
+      // @todo: Handle property fields.
+      if (preg_match('/prop$/', $field['settings']['chado_table'])) {
+        continue;
+      }
+
+      // Unfortunatly we can't use the field label since that is set at the 
+      // instance level and fields are integrated at the field level (independant of bundle).
+      // Thus we will simply make the most readable and informative field name we can.
+      $data['tripal_entity'][ $field['field_name'] ]['title'] = ucfirst(str_replace('_',' ',$field['settings']['chado_table']))
+        . ' ' .ucfirst(str_replace('_',' ',$field['settings']['chado_column']));
+
+      // The help should be 'Appears in: TripalEntity: bio-data_1, bio-data_2'
+      // so that users know where they can use it.
+      $data['tripal_entity'][ $field['field_name'] ]['help'] = 'Appears in: TripalEntity:' . implode(',', $field['bundles']['TripalEntity']);
+
+      // Finally we define the field.
+      $data['tripal_entity'][ $field['field_name'] ]['field']['chado_field'] = $field['settings']['chado_column'];
+      $data['tripal_entity'][ $field['field_name'] ]['field']['chado_table'] = $field['settings']['chado_table'];
+      $data['tripal_entity'][ $field['field_name'] ]['field']['field_name'] = $field['field_name'];
+      $data['tripal_entity'][ $field['field_name'] ]['field']['entity_table'] = 'tripal_entity';
+      $data['tripal_entity'][ $field['field_name'] ]['field']['entity_type'] = 'TripalEntity';
+      $data['tripal_entity'][ $field['field_name'] ]['field']['bundles'] = $field['bundles']['TripalEntity'];
+      $data['tripal_entity'][ $field['field_name'] ]['field']['handler'] = 'chado_views_handler_field';
+      $data['tripal_entity'][ $field['field_name'] ]['field']['click sortable'] = FALSE;
+    }    
+  }
+}
+
+/**
  * Provides the data array for the tripal custom tables management
  *
  * @param $data
