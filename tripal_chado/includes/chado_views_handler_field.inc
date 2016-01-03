@@ -1,6 +1,12 @@
 <?php
+
+// We need to include the views_handler_field_field file since it 
+// includes _field_view_formatter_options() which we need.
+require_once drupal_get_path('module','views') . '/modules/field/views_handler_field_field.inc';
+
 /**
- *
+ * Views Field Handler for chado fields.
+ * Uses the same approach as the field api views_handler_field_field.
  */
 class chado_views_handler_field extends views_handler_field {
 
