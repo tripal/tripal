@@ -171,7 +171,12 @@ class chado_views_handler_filter_fk extends views_handler_filter {
   
   function get_select_options() {
 
-    $name_field = 'common_name';
+    if (isset($this->options['display_column'])) {
+      $name_field = $this->options['display_column'];
+    } 
+    else {
+      $name_field = 'name';
+    }
         
     // Using a "Loose Index Scan" to get a list of all the unique values for
     // the name in the table referenced by the foreign key constraint.
@@ -236,7 +241,7 @@ class chado_views_handler_filter_fk extends views_handler_filter {
       ),
       '#default_value' => $this->options['values_form_type'],
     );
-
+    
     // @todo: implement.
     //$form['show_all'] = array(
       //'#type' => 'checkbox',
@@ -260,16 +265,28 @@ class chado_views_handler_filter_fk extends views_handler_filter {
       '#default_value' => $this->options['select_optional'],
     );
 
+    // Allow the user to select which column to display to the user.
+    // For example, if the foreign key points to the organism table you might want to
+    // display the abbreviation or common name to the user.
+    $table_defn = chado_get_schema($this->definition['foreign_key']['right_table']);
+    $options = array();
+    foreach ($table_defn['fields'] as $name => $details) {
+      $options[$name] = $name;
+    }
+    $form['display_column'] = array(
+      '#type' => 'select',
+      '#title' => 'Display Column',
+      '#description' => t('Specify which column from the parent table you would like to
+        display to the user.'),
+      '#options' => $options,
+      '#default_value' => $this->options['display_column'],
+    );
+    
     $form['max_length'] = array(
       '#type' => 'textfield',
       '#title' => t('Max Width'),
       '#description' => t('Specify the maximum width of the select box'),
       '#default_value' => $this->options['max_length'],
-    );
-
-    $form['note'] = array(
-      '#type' => 'markup',
-      '#value' => t('<strong><font color="red">Note:</font></strong> If another filter exists for the same table then ' . 'the values shown in the drop box will only include those from rows that are not filtered.'),
     );
 
     return $form;
@@ -283,19 +300,9 @@ class chado_views_handler_filter_fk extends views_handler_filter {
     $this->options['values_form_type'] = $form_state['values']['options']['values_form_type'];
     $this->options['select_multiple'] = $form_state['values']['options']['select_multiple'];
     $this->options['select_optional'] = $form_state['values']['options']['select_optional'];
+    $this->options['display_column'] = $form_state['values']['options']['display_column'];
     $this->options['max_length'] = $form_state['values']['options']['max_length'];
     $this->options['show_all'] = $form_state['values']['options']['show_all'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  function extra_options_options() {
-    $this->options['values_form_type'] = 'textfield';
-    $this->options['select_multiple'] = FALSE;
-    $this->options['select_optional'] = FALSE;
-    $this->options['max_length'] = 40;
-    $this->options['show_all'] = FALSE;
   }
 
   /**
@@ -322,6 +329,21 @@ class chado_views_handler_filter_fk extends views_handler_filter {
       'default' => FALSE,
       'bool' => TRUE,
       'export' => TRUE,
+    );
+    
+    // display column.
+    $table_defn = chado_get_schema($this->definition['foreign_key']['right_table']);
+    $fields = array_keys($table_defn['fields']);
+    $name_fields = preg_grep('/name/', $fields);
+    if ($name_fields) {
+      $default = array_pop($name_fields);
+    }
+    else {
+      $default = array_pop($fields);
+    }
+    $options['display_column'] = array(
+      'export' => TRUE,
+      'default' => $default,
     );
     $options['max_length'] = array(
       'default' => 40,
