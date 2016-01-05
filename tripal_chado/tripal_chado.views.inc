@@ -117,6 +117,15 @@ function tripal_chado_add_field_views_data(&$data) {
       $data['tripal_entity'][ $field['field_name'] ]['filter']['entity_type'] = 'TripalEntity';
       $data['tripal_entity'][ $field['field_name'] ]['filter']['bundles'] = $field['bundles']['TripalEntity'];
       $data['tripal_entity'][ $field['field_name'] ]['filter']['handler'] = 'chado_views_handler_filter_string';
+
+      // Define sorting.
+      $data['tripal_entity'][ $field['field_name'] ]['sort']['chado_field'] = $field['settings']['chado_column'];
+      $data['tripal_entity'][ $field['field_name'] ]['sort']['chado_table'] = $field['settings']['chado_table'];
+      $data['tripal_entity'][ $field['field_name'] ]['sort']['field_name'] = $field['field_name'];
+      $data['tripal_entity'][ $field['field_name'] ]['sort']['entity_table'] = 'tripal_entity';
+      $data['tripal_entity'][ $field['field_name'] ]['sort']['entity_type'] = 'TripalEntity';
+      $data['tripal_entity'][ $field['field_name'] ]['sort']['bundles'] = $field['bundles']['TripalEntity'];
+      $data['tripal_entity'][ $field['field_name'] ]['sort']['handler'] = 'chado_views_handler_sort';
       
       // Specify special handlers.
       if ($fk_defn) {

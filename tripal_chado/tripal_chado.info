@@ -7,6 +7,8 @@ version = 7.x-2.0
 
 files[] = includes/chado_views_handler_field.inc
 files[] = includes/chado_views_handler_filter.inc
+files[] = includes/chado_views_handler_sort.inc
+
 stylesheets[all][] = theme/css/tripal_chado.css
 
 dependencies[] = tripal
