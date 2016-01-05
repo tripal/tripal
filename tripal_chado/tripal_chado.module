@@ -25,7 +25,6 @@ require_once "includes/tripal_chado.entity.inc";
 require_once "includes/tripal_chado.schema.inc";
 require_once "includes/tripal_chado.term_storage.inc";
 require_once "includes/tripal_chado.field_storage.inc";
-require_once "includes/chado_views_handler_field.inc";
 
 tripal_chado_set_globals();
 
