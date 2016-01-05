@@ -5,6 +5,40 @@
  */
 
 /**
+ * Adds support for chado boolean filters.
+ */
+class chado_views_handler_filter_boolean extends views_handler_filter_boolean_operator {
+
+  /**
+   * {@inheritdoc}
+   */
+  function value_form(&$form, &$form_state) {
+    parent::value_form($form, $form_state);
+
+    // change the keys of the options so that this filter can be optional.
+    $form['value']['#options']['f'] = $form['value']['#options'][0];
+    $form['value']['#options']['t'] = $form['value']['#options'][1];
+    unset($form['value']['#options'][0], $form['value']['#options'][1]);
+ 
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  function query() {
+
+    // Adds joins to chado_entity and the chado table this field is from.
+    $alias = _chado_views_add_table_joins($this);
+
+    // Booleans in chado are stored t/f.
+    $field = $alias .'.'. $this->definition['chado_field'];
+    if ($this->value) {
+      $this->query->add_where($this->options['group'], $field, $this->value, '=');
+    }
+  }
+}
+
+/**
  * Adds support for chado foreign key filters.
  */
 class chado_views_handler_filter_fk extends views_handler_filter {

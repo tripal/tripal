@@ -124,7 +124,11 @@ function tripal_chado_add_field_views_data(&$data) {
         $data['tripal_entity'][ $field['field_name'] ]['filter']['handler'] = 'chado_views_handler_filter_fk';
         $data['tripal_entity'][ $field['field_name'] ]['filter']['foreign_key'] = $fk_defn;
       }
-
+      if ($field_defn['type'] == 'boolean') {
+        $data['tripal_entity'][ $field['field_name'] ]['filter']['handler'] = 'chado_views_handler_filter_boolean';
+        $data['tripal_entity'][ $field['field_name'] ]['filter']['label'] = $field['settings']['chado_column'];
+        $data['tripal_entity'][ $field['field_name'] ]['filter']['type'] = 'yes-no'; 
+      }
     }    
   }
 }
