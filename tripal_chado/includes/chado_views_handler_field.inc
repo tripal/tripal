@@ -112,7 +112,22 @@ class chado_views_handler_field extends views_handler_field {
       drupal_set_message('Tripal Chado currently only supports views integration for single value fields. The first value has been shown.', 'warning');
     }
 
-    return drupal_render($render_array);
+    return $render_array;
+  }
+  
+  /**
+   * @{inheritdoc}
+   */
+  function render($values) {
+  
+    $value = $this->get_value($values);
+    
+    if (is_array($value)) {
+      return drupal_render($value);
+    }
+    else {
+      return $this->sanitize_value($value);
+    }
   }
 
   /**
