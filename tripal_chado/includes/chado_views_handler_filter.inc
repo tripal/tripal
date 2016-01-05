@@ -39,6 +39,57 @@ class chado_views_handler_filter_boolean extends views_handler_filter_boolean_op
 }
 
 /**
+ * Adds support for chado datetime filters.
+ */
+class chado_views_handler_filter_date extends views_handler_filter_date {
+
+  /**
+   * {@inheritdoc}
+   */
+  function query() {
+
+    // Adds joins to chado_entity and the chado table this field is from.
+    $alias = _chado_views_add_table_joins($this);
+   
+    // Then allow the parent handler to add the where.
+    $field = $alias .'.'. $this->definition['chado_field'];
+    $info = $this->operators();
+    if (!empty($info[$this->operator]['method'])) {
+      $this->{$info[$this->operator]['method']}($field);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  function op_between($field) {
+    // Use the substitutions to ensure a consistent timestamp.
+    $query_substitutions = views_views_query_substitutions($this->view);
+    $a = intval(strtotime($this->value['min'], $query_substitutions['***CURRENT_TIME***']));
+    $b = intval(strtotime($this->value['max'], $query_substitutions['***CURRENT_TIME***']));
+
+    // This is safe because we are manually scrubbing the values.
+    // It is necessary to do it this way because $a and $b are formulas when using an offset.
+    $operator = strtoupper($this->operator);
+    $this->query->add_where_expression($this->options['group'], "$field $operator to_timestamp($a) AND to_timestamp($b)");
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  function op_simple($field) {
+    // Use the substitutions to ensure a consistent timestamp.
+    $query_substitutions = views_views_query_substitutions($this->view);
+    $value = intval(strtotime($this->value['value'], $query_substitutions['***CURRENT_TIME***']));
+
+    // This is safe because we are manually scrubbing the value.
+    // It is necessary to do it this way because $value is a formula when using an offset.
+    $this->query->add_where_expression($this->options['group'], "$field $this->operator to_timestamp($value)");
+  }
+
+}
+
+/**
  * Adds support for chado foreign key filters.
  */
 class chado_views_handler_filter_fk extends views_handler_filter {

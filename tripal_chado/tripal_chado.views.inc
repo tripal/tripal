@@ -118,8 +118,7 @@ function tripal_chado_add_field_views_data(&$data) {
       $data['tripal_entity'][ $field['field_name'] ]['filter']['bundles'] = $field['bundles']['TripalEntity'];
       $data['tripal_entity'][ $field['field_name'] ]['filter']['handler'] = 'chado_views_handler_filter_string';
       
-      // If this is a foreign key field like organism then we want a drop-down.
-      // This requires a special handler.
+      // Specify special handlers.
       if ($fk_defn) {
         $data['tripal_entity'][ $field['field_name'] ]['filter']['handler'] = 'chado_views_handler_filter_fk';
         $data['tripal_entity'][ $field['field_name'] ]['filter']['foreign_key'] = $fk_defn;
@@ -129,6 +128,10 @@ function tripal_chado_add_field_views_data(&$data) {
         $data['tripal_entity'][ $field['field_name'] ]['filter']['label'] = $field['settings']['chado_column'];
         $data['tripal_entity'][ $field['field_name'] ]['filter']['type'] = 'yes-no'; 
       }
+      elseif ($field_defn['type'] == 'datetime') {
+        $data['tripal_entity'][ $field['field_name'] ]['filter']['handler'] = 'chado_views_handler_filter_date';
+      }
+
     }    
   }
 }
