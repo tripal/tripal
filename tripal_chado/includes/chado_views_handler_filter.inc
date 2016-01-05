@@ -93,7 +93,7 @@ class chado_views_handler_filter_date extends views_handler_filter_date {
  * Adds support for chado foreign key filters.
  */
 class chado_views_handler_filter_fk extends views_handler_filter {
-
+  
   /**
    * {@inheritdoc}
    */
@@ -102,9 +102,14 @@ class chado_views_handler_filter_fk extends views_handler_filter {
     // Adds joins to chado_entity and the chado table this field is from.
     $alias = _chado_views_add_table_joins($this);
 
+    // We need to do a quick fix for multiple values selected.
+    if (is_array($this->value[0]) AND sizeof($this->value) == 1) {
+      $this->value = $this->value[0];
+    }
+    
     // Now add the restriction to the chado table as specified by user input.
     if (sizeof($this->value) == 1) {
-      $value = array_pop($this->value);
+      $value = current($this->value);
       $field = $alias .'.'. $this->definition['chado_field'];
       $this->query->add_where($this->options['group'], $field, $value, '=');
     }
@@ -112,8 +117,8 @@ class chado_views_handler_filter_fk extends views_handler_filter {
       $field = $alias .'.'. $this->definition['chado_field'];
       $this->query->add_where($this->options['group'], $field, $this->value, 'IN');
     }
-    // @todo handle multiple values.
-     
+
+
   }
 
   /**
@@ -134,9 +139,9 @@ class chado_views_handler_filter_fk extends views_handler_filter {
         '#default_value' => $this->value,
       );
 
-      //if ($this->options['select_multiple']) {
-        //$form['value']['#multiple'] = TRUE;
-      //}
+      if ($this->options['select_multiple']) {
+        $form['value']['#multiple'] = TRUE;
+      }
     }
     else {
 
@@ -177,34 +182,49 @@ class chado_views_handler_filter_fk extends views_handler_filter {
     else {
       $name_field = 'name';
     }
-        
-    // Using a "Loose Index Scan" to get a list of all the unique values for
-    // the name in the table referenced by the foreign key constraint.
-    // See https://wiki.postgresql.org/wiki/Loose_indexscan
-    $sql = "WITH RECURSIVE t AS (
-          SELECT MIN(filter_table.!id_field) AS col
-            FROM {!filter_table} filter_table
-            LEFT JOIN {!foreign_table} foreign_table ON filter_table.!id_field=foreign_table.!id_field
-          UNION ALL
-          SELECT (
-              SELECT MIN(filter_table.!id_field)
+    
+    // If the admin has selected to show all the values then just select all
+    // records from the table referenced by the foreign key.
+    if ($this->options['show_all']) {
+      $sql = 'SELECT !id_field as id, !name_field as name
+                FROM {!foreign_table}';
+      $sql = format_string($sql, array(
+        '!foreign_table' => $this->definition['foreign_key']['right_table'],
+        '!id_field' => $this->definition['chado_field'],
+        '!name_field' => $name_field
+      ));
+    }
+    // Otherwise, only return the values from the foreign table that were referenced
+    // in the foreign key column.
+    else {
+      // Using a "Loose Index Scan" to get a list of all the unique values for
+      // the name in the table referenced by the foreign key constraint.
+      // See https://wiki.postgresql.org/wiki/Loose_indexscan
+      $sql = "WITH RECURSIVE t AS (
+            SELECT MIN(filter_table.!id_field) AS col
               FROM {!filter_table} filter_table
               LEFT JOIN {!foreign_table} foreign_table ON filter_table.!id_field=foreign_table.!id_field
-              WHERE filter_table.!id_field > col
-            )
-            FROM t WHERE col IS NOT NULL
-        )
-        SELECT !id_field as id, !name_field as name
-          FROM {!foreign_table}
-          WHERE !id_field IN (SELECT col FROM t where col IS NOT NULL)
-          ORDER BY !name_field ASC";
-    $sql = format_string($sql, array(
-      '!filter_table' => $this->definition['chado_table'],
-      '!foreign_table' => $this->definition['foreign_key']['right_table'],
-      '!id_field' => $this->definition['chado_field'],
-      '!name_field' => $name_field
-    ));
-
+            UNION ALL
+            SELECT (
+                SELECT MIN(filter_table.!id_field)
+                FROM {!filter_table} filter_table
+                LEFT JOIN {!foreign_table} foreign_table ON filter_table.!id_field=foreign_table.!id_field
+                WHERE filter_table.!id_field > col
+              )
+              FROM t WHERE col IS NOT NULL
+          )
+          SELECT !id_field as id, !name_field as name
+            FROM {!foreign_table}
+            WHERE !id_field IN (SELECT col FROM t where col IS NOT NULL)
+            ORDER BY !name_field ASC";
+      $sql = format_string($sql, array(
+        '!filter_table' => $this->definition['chado_table'],
+        '!foreign_table' => $this->definition['foreign_key']['right_table'],
+        '!id_field' => $this->definition['chado_field'],
+        '!name_field' => $name_field
+      ));
+    }
+    
     $resource = chado_query($sql);
     $options = array();
 
@@ -242,21 +262,19 @@ class chado_views_handler_filter_fk extends views_handler_filter {
       '#default_value' => $this->options['values_form_type'],
     );
     
-    // @todo: implement.
-    //$form['show_all'] = array(
-      //'#type' => 'checkbox',
-      //'#title' => t('Show All'),
-      //'#description' => t('When selected all terms from the controlled vocaulbary used by the table will be shown where the default is to only show those that are used.'),
-      //'#default_value' => $this->options['show_all'],
-    //);
+    $form['show_all'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Show All'),
+      '#description' => t('When selected all records from the parent table will be shown in the drop-down rather than just those used in the current table.'),
+      '#default_value' => $this->options['show_all'],
+    );
  
-    // @todo: implement.
-    //$form['select_multiple'] = array(
-      //'#type' => 'checkbox',
-      //'#title' => t('Select Multiple'),
-      //'#description' => t('Allows more then one option to be selected.'),
-      //'#default_value' => $this->options['select_multiple'],
-    //);
+    $form['select_multiple'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Select Multiple'),
+      '#description' => t('Allows more then one option to be selected.'),
+      '#default_value' => $this->options['select_multiple'],
+    );
 
     $form['select_optional'] = array(
       '#type' => 'checkbox',
@@ -305,6 +323,18 @@ class chado_views_handler_filter_fk extends views_handler_filter {
     $this->options['show_all'] = $form_state['values']['options']['show_all'];
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  function admin_summary() {
+    if (is_array($this->value)) {
+      return check_plain((string) $this->operator) . ' ' . check_plain((string) implode(',',$this->value));
+    }
+    else {
+      return check_plain((string) $this->operator) . ' ' . check_plain((string) $this->value);
+    }
+  }
+  
   /**
    * {@inheritdoc}
    */
