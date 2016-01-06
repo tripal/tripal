@@ -822,7 +822,6 @@ function tripal_chado_set_field_form_values($field_name, &$form_state, $newvalue
   return TRUE;
 }
 
-
 /**
  * Implements hook_theme().
  */

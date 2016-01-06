@@ -13,11 +13,14 @@ require_once "api/tripal.variables.api.inc";
 
 require_once "includes/TripalVocab.inc";
 require_once "includes/TripalVocabController.inc";
+require_once "includes/TripalVocabViewsController.inc";
 require_once "includes/TripalTerm.inc";
 require_once "includes/TripalTermController.inc";
+require_once "includes/TripalTermViewsController.inc";
 require_once "includes/TripalEntity.inc";
 require_once "includes/TripalEntityController.inc";
 require_once "includes/TripalEntityUIController.inc";
+require_once "includes/TripalEntityViewsController.inc";
 require_once "includes/TripalBundle.inc";
 require_once "includes/TripalBundleController.inc";
 require_once "includes/TripalBundleUIController.inc";
@@ -44,6 +47,7 @@ require_once "includes/TripalBundleUIController.inc";
 function tripal_views_api() {
   return array(
     'api' => 3.0,
+    'path' => drupal_get_path('module', 'tripal') . '/includes',
   );
 }
 
@@ -450,6 +454,9 @@ function tripal_entity_info() {
     'entity class' => 'TripalVocab',
     'controller class' => 'TripalVocabController',
 
+    // Adds Views integration for this entity.
+    'views controller class' => 'TripalVocabViewsController',
+
     // The table for this entity defined in hook_schema()
     'base table' => 'tripal_vocab',
 
@@ -499,6 +506,9 @@ function tripal_entity_info() {
     'entity class' => 'TripalTerm',
     'controller class' => 'TripalTermController',
 
+    // Adds Views integration for this entity.
+    'views controller class' => 'TripalTermViewsController',
+
     // The table for this entity defined in hook_schema()
     'base table' => 'tripal_term',
 
@@ -546,6 +556,9 @@ function tripal_entity_info() {
     // Entity API.
     'entity class' => 'TripalEntity',
     'controller class' => 'TripalEntityController',
+
+    // Adds Views integration for this entity.
+    'views controller class' => 'TripalEntityViewsController',
 
     // The table for this entity defined in hook_schema()
     'base table' => 'tripal_entity',
