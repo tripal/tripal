@@ -32,12 +32,9 @@
           
           // Highlight the pane if it's already at the top
           if (prevObj.indexOf('tripal_pane-base_pane') == 0 && $(id).css('display') == 'block') {
-            var color = $(id).css('background-color') ? $(id).css('background-color') : '#FFFFFF';
-            if (jQuery.ui) {
-              $(id).fadeTo(10, 0.5, function() {});
-              $(id).fadeTo(100, 1, function() {});
-              //$(id).effect('highlight', {color: '#DDDEEE'});
-            }
+            $(id).fadeTo(10, 0.5, function() {});
+            $(id).fadeTo(100, 1, function() {});
+            
           }
           // Move the pane
           else {
