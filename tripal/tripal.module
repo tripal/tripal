@@ -37,17 +37,10 @@ require_once "includes/TripalBundleUIController.inc";
 
 /**
  * Implements hook_views_api().
- *
- * Essentially this hook tells drupal that there is views support for
- *  for this module which then includes tripal_db.views.inc where all the
- *  views integration code is
- *
- * @ingroup tripal_feature
  */
 function tripal_views_api() {
   return array(
-    'api' => 3.0,
-    'path' => drupal_get_path('module', 'tripal') . '/includes',
+    'api' => 3,
   );
 }
 

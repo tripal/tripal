@@ -36,11 +36,9 @@ function tripal_jobs_admin_view() {
   else {
     $output .= '<p>The Tripal Jobs management system uses primarily views to provide an '
       . 'administrative interface. Currently one or more views needed for this '
-      . 'administrative interface are disabled. <strong>Click each of the following links to '
-      . 'enable the pertinent views</strong>:</p>';
-    $output .= '<ul>';
-      $output .= '<li>'.l('Jobs View', 'admin/tripal/tripal_jobs/views/jobs/enable').'</li>';
-    $output .= '</ul>';
+      . 'administrative interface are disabled. <strong>Go to '
+      . l('Administration > Structure > Views', 'admin/structure/views')
+      . ' and enable the view titled "Tripal Jobs (Admin)"';
   }
 
   return $output;

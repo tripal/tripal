@@ -14,9 +14,10 @@ function tripal_views_default_views() {
 
   $view = tripal_admin_defaultview_jobs();
   $views[$view->name] = $view;
-
+    
   return $views;
-}
+}  
+
 
 /**
  * Describes the jobs administration view.
