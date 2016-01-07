@@ -1,0 +1,109 @@
+@CHARSET "UTF-8";
+
+.tripal-entity-pane {
+  border: solid 1px #CCC;
+  margin: 15px 0px;
+  padding: 15px;
+}
+
+.tripal-entity-pane h2 {
+  margin-top: 0px;
+}
+
+.tripal_panes-pane_configure-fieldset .form-type-radio {
+  display: inline;
+  margin-right: 15px !important;
+}
+
+.tripal_pane-configure_pane_table td {
+  width:50%;
+}
+
+/**
+ * The Tripal generic pane template (tripal_panes_generic.tpl.php)
+ * has an outer div box with class 'tripal-panes' and with an inner
+ * table with an id of 'tripal-panes-table'.  The table has a single
+ * row with two columns.  The smaller left column houses the table of
+ * contents (TOC) for the node data.  The larger right column houses the data:
+ *
+ * |-----------------------------------------------|
+ * |  .tripal-panes                                |
+ * | |-------------------------------------------| |
+ * | | .tripal-panes-table                       | |
+ * | |        |                                  | |
+ * | |        |                                  | |
+ * | | TOC    |          Data                    | |
+ * | | column |          Column                  | |
+ * | |        |                                  | |
+ * | |        |                                  | |
+ * | |        |                                  | |
+ * | |-------------------------------------------| |
+ * |-----------------------------------------------|
+ *
+ * The tripal-panes box and the inner table are designed to fill the width
+ * of the contents section of any theme.  Customize the CSS below to change
+ * the look-and-feel.
+ *
+ */
+
+.tripal-panes {
+  width: 100%;
+}
+
+.tripal-panes-links {
+}
+
+.tripal-panes_table {
+  padding: 0px !important;
+  margin:  0px !important;
+}
+
+/**
+ * The table formatting must override the default theme.  This is because
+ * the table is meant for organizing the sidebar and contents so they don't
+ * slip and slide around as would happen with div boxes that were floated.
+ * Therefore, we use !important to keep the default theme from overrideing
+ * the table settings.
+ */
+
+.tripal-panes-table tbody {
+  padding: 0px !important;
+  margin:  0px !important;
+  border:  none !important;
+  background-color: transparent !important;
+}
+.tripal-panes-table-tr {
+  padding: 0px !important;
+  margin:  0px !important;
+  border:  none !important;
+  background-color: transparent !important;
+}
+.tripal-panes-table-td-toc {
+  border-right: 1px solid #CCCCCC !important;
+  margin:  0px !important;
+  padding: 0px !important;
+  background-color: transparent !important;
+  text-align: left !important;
+  vertical-align: top !important;
+}
+.tripal-panes-table-td-data {
+  border: none !important;
+  margin:  0px !important;
+  padding: 0px 0px 0px 20px !important;
+  background-color: transparent !important;
+  text-align: left !important;
+  vertical-align: top !important;
+}
+
+/**
+ * The table of contents is an unordered list. The following can are used
+ * to style the list
+ */
+.tripal-panes-toc-list {
+
+}
+.tripal-panes-toc-list-item  {
+  padding: 3px 20px 3px 0px !important;
+  margin: 2px 0 2px 0 !important;
+}
+

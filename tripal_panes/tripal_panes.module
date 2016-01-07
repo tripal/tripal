@@ -1,0 +1,897 @@
+<?php
+
+/**
+ *
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * The field_ui_field_edit_form is used for customizing the settings of
+ * a field attached to an entity.
+ */
+function tripal_panes_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
+  // For entity fields added by Tripal Entities we don't want the
+  // the end-user to change the cardinality and the required fields
+  // such that record can't be saved in Chado.
+  // TODO: this shouldn't be hardcoded here.  These settings
+  // should be part of the field and handled by the tripal_entity module.
+  if (in_array($form['#instance']['entity_type'], $dbs)) {
+    $form['field']['cardinality']['#access'] = FALSE;
+    $form['instance']['required']['#access'] = FALSE;
+  }
+
+  // TODO: don't the the maximum length be larger than the field size.
+}
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * The field_ui_display_overview_form is used for formatting the display
+ * or layout of fields attached to an entity.
+ */
+function tripal_panes_form_field_ui_display_overview_form_alter(&$form, &$form_state, $form_id) {
+
+  drupal_add_css(drupal_get_path('module','tripal_panes') . '/theme/css/tripal_panes.css');
+
+  $entity_type = $form['#entity_type'];
+  $bundle_name = $form['#bundle'];
+
+  // Get the bundle record.
+  $bundle = db_select('tripal_bundle', 'tb')
+    ->fields('tb')
+    ->condition('name', $bundle_name)
+    ->execute()
+    ->fetchObject();
+
+  if (module_exists('ds')) {
+    drupal_set_message('Tripal is not compatible with the Display Suite (ds)
+        module. If you would like to use Tripal-style panes for the layout
+        of your pages please disable the Display Suite module. If you
+        prefer to use the Display Suite module then disable the Tripal
+        Fields Layout (tripal_panes) module.', 'warning');
+  }
+
+  // Add a vertical tab fieldset at the bottom of the
+  $form['overview_vert_tabs'] = array(
+    '#type' => 'vertical_tabs'
+  );
+  $form['modes']['#group'] = 'overview_vert_tabs';
+  $form['modes']['#weight'] = 1000;
+  $form['te_add_panes'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Add a Pane',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'overview_vert_tabs'
+  );
+
+  // Make sure our default pane are in the database.
+  _tripal_panes_check_default_field_panes($bundle);
+
+  // Add a pane
+  tripal_panes_form_field_ui_display_overview_form_pane_add($form, $form_state);
+
+  // Arrange panes
+  tripal_panes_form_field_ui_display_overview_form_pane_arrange($form, $form_state, $bundle);
+
+  // Configure panes
+  tripal_panes_form_field_ui_display_overview_form_pane_configure($form, $form_state, $bundle);
+
+  // Now add each pane as a region.
+  $form['fields']['#regions'] = array();
+  $panes = db_select('tripal_panes', 'tp')
+    ->fields('tp')
+    ->condition('bundle_id', $bundle->id)
+    ->orderBy('weight', 'ASC')
+    ->orderBy('label', 'ASC')
+    ->execute();
+  $pane_options = array();
+  while ($pane = $panes->fetchObject()) {
+    $settings = unserialize($pane->settings);
+    $form['fields']['#regions'][$pane->name] = array(
+      'title' => t($pane->label),
+      'message' => t($settings['message']),
+    );
+    $pane_options[$pane->name] = $pane->label;
+  }
+
+  // Set the table headers to add a new 'region' column.
+  $form['fields']['#header'] = array(
+    t('Field'),
+    t('Weight'),
+    t('Parent'),
+    t('Label'),
+    array('data' => t('Format'), 'colspan' => 3),
+    t('Region')
+  );
+
+  // Change the region callback for each field to place each field in the
+  // proper "pane" region. Also, set the default region to be the base region.
+  $fields = $form['fields'];
+  $default_pane = 'te_base';
+
+  foreach (element_children($fields) as $field_name) {
+    $field_instance = field_info_instance($entity_type, $field_name, $bundle_name);
+    $pane_id = db_select('tripal_pane_fields', 'tpf')
+      ->fields('tpf', array('pane_id'))
+      ->condition('field_id', $field_instance['id'])
+      ->execute()
+      ->fetchField();
+    if ($pane_id) {
+      $default_pane = db_select('tripal_panes', 'tp')
+      ->fields('tp', array('name'))
+      ->condition('pane_id', $pane_id)
+      ->execute()
+      ->fetchField();
+    }
+    $form['fields'][$field_name]['#region_callback'] = 'tripal_panes_field_ui_row_region';
+    $form['fields'][$field_name]['region'] = array(
+      '#type' => 'select',
+      '#options' => $pane_options,
+      '#default_value' => $default_pane,
+      '#attributes' => array(
+        'class' => array('te-field-region'),
+      )
+    );
+    $form['fields'][$field_name]['#field_instance_id'] = array(
+      '#type' => 'value',
+      '#value' => $field_instance['id']
+    );
+  }
+
+  // Add validate and submit handlers. Rearrange the submit callbacks
+  // so ours is first.
+  $form['#validate'][] = 'tripal_panes_field_ui_validate';
+  $submit = $form['#submit'];
+  $form['#submit'] = array('tripal_panes_field_ui_submit');
+  $form['#submit'] = array_merge($form['#submit'], $submit);
+  //dpm($form);
+}
+
+/**
+ * Add a pane Form
+ */
+function tripal_panes_form_field_ui_display_overview_form_pane_add (&$form, &$form_state) {
+  $form_state['input']['pane_label'] = key_exists('pane_label', $form_state['input']) ? $form_state['values']['pane_label'] : NULL;
+  $form['te_add_panes']['instructions'] = array(
+    '#type' => 'item',
+    '#markup' => t('You may add as many panes to your page layout as
+        desired. panes can be used to organize fields into categories.')
+  );
+  $form['te_add_panes']['pane_name'] = array(
+    '#type' => 'hidden',
+    '#title' => 'pane Name',
+    '#description' => t('The name is automatically generated for a label. it
+        contains alphanumeric values and underscores and does not begin with
+        a number.')
+  );
+  $form['te_add_panes']['pane_label'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Pane Label',
+    '#default_value' => '',
+    '#description' => t('Please provide a human readable label for this
+        pane. This is the name that will appear to site visitors.')
+  );
+  $form['te_add_panes']['add_button'] = array(
+    '#type' => 'submit',
+    '#value' => 'Add pane',
+    '#name' => 'add-pane-submit'
+  );
+}
+
+/**
+ * Arrange panes Form
+ */
+function tripal_panes_form_field_ui_display_overview_form_pane_arrange (&$form, &$form_state, $bundle) {
+  $form['te_arrange_panes'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Arrange Panes',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'overview_vert_tabs'
+  );
+  $form['te_arrange_panes']['instructions'] = array(
+    '#type' => 'item',
+    '#markup' => t('Drag and drop the pane to change its order.')
+  );
+  $form['te_arrange_panes']['pane_items']['#tree'] = TRUE;
+  // Get available panes
+  $result = db_select('tripal_panes', 'tp')
+  ->fields('tp', array('pane_id', 'name', 'label', 'weight'))
+  ->condition('name', 'te_base', '<>')
+  ->condition('name', 'te_disabled', '<>')
+  ->condition('bundle_id', $bundle->id)
+  ->orderby('weight', 'asc')
+  ->execute();
+  $has_pane = FALSE;
+  foreach ($result as $item) {
+    $form_state['input']['pane_items'][$item->pane_id]['newlabel'] = key_exists($item->pane_id, $form_state['input']) && $form_state['input'][$item->pane_id]['newlabel'] ? $form_state['values']['pane_items'][$item->pane_id]['newlabel'] : NULL;
+    $form['te_arrange_panes']['pane_items'][$item->pane_id] = array(
+      'label' => array(
+        '#markup' => check_plain($item->label),
+      ),
+      'weight' => array(
+        '#type' => 'weight',
+        '#title' => t('Weight'),
+        '#default_value' => $item->weight,
+        '#delta' => 50,
+        '#title_display' => 'invisible',
+      ),
+      'newlabel' => array(
+        '#type' => 'textfield',
+        '#default_value' => '',
+        '#size' => 10
+      ),
+      'rename' => array(
+        '#type' => 'submit',
+        '#value' => 'Rename',
+        '#name' => "arrange-pane-rename-$item->pane_id",
+      ),
+      'remove' => array(
+        '#type' => 'submit',
+        '#value' => 'Remove',
+        '#name' => "arrange-pane-remove-$item->pane_id",
+      )
+    );
+    $has_pane = TRUE;
+  }
+  if ($has_pane) {
+    $form['te_arrange_panes']['pane_items']['#theme_wrappers'] = array('tripal_panes_form_arrange_panes');
+    $form['te_arrange_panes']['save_button'] = array(
+      '#type' => 'submit',
+      '#value' => 'Save pane Order',
+      '#name' => 'order-pane-submit'
+    );
+  }
+  else {
+    $form['te_arrange_panes']['instructions']['#markup'] = t('A pane must be added before any arrangements can be made.');
+  }
+}
+
+/**
+ * Configure panes Form
+ */
+function tripal_panes_form_field_ui_display_overview_form_pane_configure (&$form, &$form_state, $bundle) {
+  $form['te_configure_panes'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Configure Panes',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'overview_vert_tabs'
+  );
+
+  // Add a dropdown for selecting pane to configure
+  $form['te_configure_panes']['pane_select'] = array(
+    '#type' => 'select',
+    '#title' => t('Pane Name'),
+    '#description' => t('Select a pane to change its layout. Fields can be grouped into a table if Table layout is selected.'),
+    '#ajax' => array(
+      'callback' => 'tripal_panes_ajax_get_pane_setting_fieldset',
+      'wrapper' => 'tripal-fields-layout-pane-setting',
+      'effect' => 'fade'
+    )
+  );
+
+  $form['te_configure_panes']['pane_items'] = array (
+    '#tree' => TRUE,
+    '#prefix' => '<div id="tripal-fields-layout-pane-setting">',
+    '#suffix' => '</div>'
+  );
+
+  // Get available panes
+  $panes = db_select('tripal_panes', 'tp')
+  ->fields('tp', array('pane_id', 'name', 'label', 'weight', 'settings'))
+  ->condition('name', 'te_disabled', '<>')
+  ->condition('bundle_id', $bundle->id)
+  ->orderby('weight', 'asc')
+  ->execute();
+
+  $has_pane = FALSE;
+  $options = array(0 => 'Select a Pane');
+  $selected_pane = key_exists('values', $form_state) ? $form_state['values']['pane_select'] : 0;
+  foreach ($panes as $pane) {
+    $options[$pane->pane_id] = $pane->label;
+    $has_pane = TRUE;
+    $pane_settings = unserialize($pane->settings);
+    $table_layout = key_exists('table_layout', $pane_settings) ? $pane_settings['table_layout'] : array();
+    $form['te_configure_panes']['pane_items'][$pane->pane_id] = array(
+      '#type' => 'fieldset',
+      '#title' => check_plain($pane->label),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE,
+    );
+    //Add fields to each pane for changing configuration
+    $fields = db_select('tripal_pane_fields', 'tpf')
+    ->fields('tpf', array('field_id'))
+    ->condition('pane_id', $pane->pane_id)
+    ->execute();
+
+    $has_field = FALSE;
+    foreach ($fields AS $field) {
+      $field_obj = db_select('field_config_instance', 'tci')
+        ->fields('tci', array('field_name','data'))
+        ->condition('id', $field->field_id)
+        ->execute()
+        ->fetchObject();
+      $field_arr = unserialize($field_obj->data);
+      $fname = $field_obj->field_name;
+      if($fname == 'featureprop') {
+        continue;
+      }
+      $flable = $field_arr['label'];
+      $form['te_configure_panes']['pane_items'][$pane->pane_id][$fname] = array(
+        '#type' => 'item',
+        '#title' => $flable,
+        '#weight' => $field_arr['display']['default']['weight']
+      );
+      $default_value = 0;
+      if (in_array($fname, $table_layout)) {
+        $default_value = 1;
+      }
+      $form['te_configure_panes']['pane_items'][$pane->pane_id][$fname]['table_group'] = array(
+        '#type' => 'radios',
+        '#options' => array(
+          0 => 'Default',
+          1 => 'Table',
+        ),
+        '#default_value' => $default_value,
+      );
+      $has_field = TRUE;
+    }
+
+    if (!$has_field) {
+      $form['te_configure_panes']['pane_items'][$pane->pane_id]['no_field'] = array(
+        '#markup' => 'No field in this pane.',
+      );
+    } else {
+      $form['te_configure_panes']['pane_items'][$pane->pane_id]['#theme_wrappers'] = array('tripal_panes_form_configure_panes');
+    }
+
+    if ($pane->pane_id != $selected_pane) {
+      $form['te_configure_panes']['pane_items'][$pane->pane_id]['#prefix'] = "<div style=\"display:none;\">";
+      $form['te_configure_panes']['pane_items'][$pane->pane_id]['#suffix'] = "</div>";
+      //continue; // Display only the selected pane setting
+    }
+
+  }
+  $form['te_configure_panes']['pane_select']['#options'] = $options;
+  if ($has_pane) {
+    $form['te_configure_panes']['save_button'] = array(
+      '#type' => 'submit',
+      '#value' => 'Save pane Configuration',
+      '#name' => 'configure-pane-submit'
+    );
+  }
+  else {
+    $form['te_configure_panes']['instructions']['#markup'] = t('A pane must be added before any configuration changes can be made.');
+  }
+}
+
+/**
+ * A helper function for checking if the default panes are in the database.
+ */
+function _tripal_panes_check_default_field_panes($bundle) {
+  // Make sure we have records for our default regions: te_base and te_hidden.
+  // First check if the base region is in the database. If not, add it.
+  $te_base = db_select('tripal_panes', 'tp')
+    ->fields('tp')
+    ->condition('name', 'te_base')
+    ->condition('bundle_id', $bundle->id)
+    ->execute()
+    ->fetchObject();
+  if (!$te_base) {
+    $settings = array(
+      'message' => 'Fields that should appear at the top of each page should be placed in the base pane. These fields are always present and help orient the user by at least indicating the necessary information to uniquely identiy the content.',
+    );
+    db_insert('tripal_panes')
+      ->fields(array(
+        'bundle_id' => $bundle->id,
+        'name' => 'te_base',
+        'label' => 'Base Content',
+        'settings' => serialize($settings),
+        'weight' => -9999999
+      ))
+      ->execute();
+  }
+  // Now add all fields to the default region if they are not assigned
+  $pane_id = db_select('tripal_panes', 'tp')
+    ->fields('tp', array('pane_id'))
+    ->condition('name', 'te_base')
+    ->condition('bundle_id', $bundle->id)
+    ->execute()
+    ->fetchField();
+  if(property_exists($bundle, 'type')) {
+    $fields = db_select('field_config_instance', 'fci')
+      ->fields('fci', array('id'))
+      ->condition('entity_type', $bundle->type)
+      ->condition('bundle', $bundle->name)
+      ->execute();
+    foreach($fields AS $field) {
+      $penal_field_id = db_select('tripal_pane_fields', 'tpf')
+      ->fields('tpf', array('pane_field_id'))
+      ->condition('field_id', $field->id)
+      ->execute()
+      ->fetchField();
+      if (!$penal_field_id) {
+        db_insert('tripal_pane_fields')
+        ->fields(array(
+          'pane_id' => $pane_id,
+          'field_id' => $field->id
+        ))
+        ->execute();
+      }
+    }
+  }
+  // Next check if the hidden region is in the database. If not, add it.
+  $te_base = db_select('tripal_panes', 'tp')
+    ->fields('tp')
+    ->condition('name', 'te_disabled')
+    ->condition('bundle_id', $bundle->id)
+    ->execute()
+    ->fetchObject();
+  if (!$te_base) {
+    $settings = array(
+      'message' => 'Place field here to hide them from display.',
+    );
+    db_insert('tripal_panes')
+      ->fields(array(
+        'bundle_id' => $bundle->id,
+        'name' => 'te_disabled',
+        'label' => 'Disabled',
+        'settings' => serialize($settings),
+        'weight' => 9999999
+      ))
+      ->execute();
+  }
+}
+
+/**
+ * Returns the region to which a row on the Field UI page belongs.
+ *
+ * @param $row
+ *   The current row that is being rendered in the Field UI page.
+ */
+function tripal_panes_field_ui_row_region($row) {
+  $default_pane =  'te_base';
+  $pane = '';
+
+  $field_instance_id = $row['#field_instance_id']['#value'];
+
+  // Get pane_id
+  $pane_id = db_select('tripal_pane_fields', 'tpf')
+  ->fields('tpf', array('pane_id'))
+  ->condition('field_id', $field_instance_id)
+  ->execute()
+  ->fetchField();
+
+  // Get pane name
+  if ($pane_id) {
+    $pane = db_select('tripal_panes', 'tp')
+    ->fields('tp', array('name'))
+    ->condition('pane_id', $pane_id)
+    ->execute()
+    ->fetchField();
+  }
+
+  // First get the pane
+  if (!$pane) {
+    $pane = $default_pane;
+  }
+
+  return $pane;
+
+}
+/**
+ * Validates the field UI form to ensure proper pane assignments.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function tripal_panes_field_ui_validate(&$form, &$form_state) {
+
+}
+/**
+ * Responds to a submit from the field UI form for saving pane assignments.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function tripal_panes_field_ui_submit($form, &$form_state) {
+// Add a pane
+  if ($form_state ['clicked_button'] ['#name'] == 'add-pane-submit') {
+    tripal_panes_action_add_pane($form, $form_state);
+  }
+  // Order panes
+  else if ($form_state['clicked_button'] ['#name'] == 'order-pane-submit') {
+    tripal_panes_action_order_panes($form, $form_state);
+  }
+  // Rename a pane
+  else if (preg_match('/^arrange-pane-rename-/', $form_state ['clicked_button'] ['#name'])) {
+    tripal_panes_action_rename_pane ($form, $form_state);
+  }
+  // Remove a pane
+  else if (preg_match('/^arrange-pane-remove-/', $form_state ['clicked_button'] ['#name'])) {
+    tripal_panes_action_remove_pane ($form_state);
+  }
+  // Configure panes
+  else if ($form_state['clicked_button'] ['#name'] == 'configure-pane-submit') {
+    tripal_panes_action_configure_panes($form, $form_state);
+  }
+  // Save fields for each pane
+  else if ($form_state['clicked_button'] ['#name'] == 'op') {
+    $bundle = $form_state['build_info']['args'][1];
+    $fields = $form_state['values']['fields'];
+    foreach($fields AS $field_name => $field_data){
+
+      // Get field instance id
+      $field_instance_id = $form['fields'][$field_name]['#field_instance_id']['#value'];
+
+      // Get region pane_id
+      $region = $field_data['region'];
+      $pane_id = db_select('tripal_panes', 'tp')
+        ->fields('tp', array('pane_id'))
+        ->condition('name', $region)
+        ->condition('bundle_id', $bundle->id)
+        ->execute()
+        ->fetchField();
+
+      // Save
+      $penal_field_id = db_select('tripal_pane_fields', 'tpf')
+      ->fields('tpf', array('pane_field_id'))
+      ->condition('field_id', $field_instance_id)
+      ->execute()
+      ->fetchField();
+
+      if ($penal_field_id) {
+        db_update('tripal_pane_fields')
+        ->fields(array(
+          'pane_id' => $pane_id,
+        ))
+        ->condition('pane_field_id', $penal_field_id)
+        ->execute();
+      }
+      else {
+        db_insert('tripal_pane_fields')
+        ->fields(array(
+          'pane_id' => $pane_id,
+          'field_id' => $field_instance_id
+        ))
+        ->execute();
+      }
+    }
+  }
+}
+
+/**
+ * Add a new pane
+ */
+function tripal_panes_action_add_pane (&$form, &$form_state) {
+  // Check if a pane label is provided
+  $label = $form_state ['values'] ['pane_label'];
+  if (! $label) {
+    form_set_error('pane_label', t ("Please provide a label for the new pane."));
+  }
+  // Generate a valide pane name using the label.
+  // i.e. removing leading numbers and spaces
+  $name = strtolower(preg_replace ('/^\d|\s+/', '_', $label));
+  $bundle = $form_state['build_info']['args'][1];
+  $name_exists = db_select('tripal_panes', 'tp')
+  ->fields('tp', array('pane_id'))
+  ->condition('name', $name)
+  ->condition('bundle_id', $bundle->id)
+  ->execute()
+  ->fetchField();
+  if ($name_exists) {
+    form_set_error('pane_label', t('The name is used by another pane. Please use a different label.'));
+  }
+  else {
+    $form_state ['values'] ['pane_name'] = $name;
+    $bundle_id = $form_state['build_info']['args'][1]->id;
+    $name      = $form_state['values']['pane_name'];
+    $label     = $form_state['values']['pane_label'];
+    $settings = array(
+      'message' => 'Place field in this pane.',
+    );
+    db_insert('tripal_panes')
+    ->fields(array(
+      'bundle_id' => $bundle_id,
+      'name' => $name,
+      'label' => $label,
+      'settings' => serialize($settings),
+      'weight' => 0
+    ))
+    ->execute();
+    form_set_value($form['te_add_panes']['pane_label'], '', $form_state);
+  }
+}
+
+/**
+ * Rename pane
+ */
+function tripal_panes_action_rename_pane (&$form, &$form_state) {
+  $button = $form_state ['triggering_element'] ['#name'];
+  $pane_id = str_replace ('arrange-pane-rename-', '', $button);
+  $newlabel = $form_state['values']['pane_items'][$pane_id]['newlabel'];
+  if (!trim($newlabel)) {
+    form_set_error ('pane_label', t ("Please provide a label to rename a pane.") );
+  }
+  else {
+    db_update('tripal_panes')
+    ->fields(array(
+      'label' => $newlabel,
+      'name' => strtolower(preg_replace ('/^\d|\s+/', '_', $newlabel))
+    ))
+    ->condition('pane_id', $pane_id)
+    ->execute();
+    form_set_value($form['te_arrange_panes']['pane_items'][$pane_id]['newlabel'], '', $form_state);
+  }
+}
+
+
+/**
+ * Remove pane
+ */
+function tripal_panes_action_remove_pane (&$form_state) {
+  $button = $form_state ['triggering_element'] ['#name'];
+  $pane_id = str_replace ('arrange-pane-remove-', '', $button);
+  db_delete('tripal_panes')
+  ->condition ('pane_id', $pane_id)
+  ->execute();
+  db_delete('tripal_pane_fields')
+  ->condition ('pane_id', $pane_id)
+  ->execute();
+}
+
+/**
+ * Order pane
+ */
+function tripal_panes_action_order_panes (&$form, &$form_state) {
+  $panes = $form_state['values']['pane_items'];
+  foreach ($panes AS $id => $pane) {
+    if (key_exists('weight', $pane)) {
+      db_query('UPDATE {tripal_panes} SET weight = :weight WHERE pane_id = :id',
+        array(
+          ':weight' => $pane['weight'],
+          ':id' => $id
+        )
+      );
+    }
+  }
+}
+
+/**
+ *  Theme the Arrange panes as a draggable table
+ *
+ * @param unknown $variables
+ * @return unknown
+ */
+function theme_tripal_panes_form_arrange_panes ($variables) {
+  $element = $variables['element'];
+
+  $rows = array();
+
+  foreach (element_children($element) as $id) {
+
+    // Add a custom class that can be identified by 'drupal_add_tabledrag'
+    $element[$id]['weight']['#attributes']['class'] = array('tripal_pane-item-weight');
+
+    $element[$id]['label']['#printed'] = FALSE;
+    $element[$id]['weight']['#printed'] = FALSE;
+    $element[$id]['newlabel']['#printed'] = FALSE;
+    $element[$id]['rename']['#printed'] = FALSE;
+    $element[$id]['remove']['#printed'] = FALSE;
+
+    $rows[] = array(
+      'data' => array(
+        drupal_render($element[$id]['label']),
+        drupal_render($element[$id]['weight']),
+        drupal_render($element[$id]['newlabel']),
+        drupal_render($element[$id]['rename']),
+        drupal_render($element[$id]['remove'])
+      ),
+      // Add draggable to each row to support the tabledrag behaviour
+      'class' => array('draggable'),
+    );
+  }
+
+  // Create table header
+  $header = array(t('pane'), t('Weight'), array('data' => t('Rename'), 'colspan' => 2), t('Action'));
+
+  // Create a unique id for drupal_add_tabledrag() to find the table object
+  $table_id = 'tripal_pane-arrange_pane_table';
+
+  // Create output
+  $output = '';
+  if (count($rows) > 0) {
+    $output = theme('table', array(
+      'header' => $header,
+      'rows' => $rows,
+      'attributes' => array('id' => $table_id),
+    ));
+  }
+
+  // Call to the drupal_add_tabledrag
+  drupal_add_tabledrag($table_id, 'order', 'sibling', 'tripal_pane-item-weight');
+
+  return $output;
+}
+
+/**
+ * Configure panes
+ */
+function tripal_panes_action_configure_panes (&$form, &$form_state) {
+  $panes = $form_state['values']['pane_items'];
+
+  foreach ($panes AS $id => $pane) {
+    $table_layout = array();
+    foreach($pane AS $key => $value) {
+      if (is_array($value) && key_exists('table_group', $value)) {
+        if ($value['table_group'] == 1) {
+          $table_layout[] = $key;
+        }
+      }
+    }
+    $pane_settings = db_select('tripal_panes', 'tp')
+      ->fields('tp', array('settings'))
+      ->condition('pane_id', $id)
+      ->execute()
+      ->fetchField();
+    $new_settings = unserialize($pane_settings);
+    $new_settings['table_layout'] = $table_layout;
+    db_update('tripal_panes')
+      ->fields(array(
+        'settings' => serialize($new_settings)
+      ))
+      ->condition('pane_id', $id)
+      ->execute();
+  }
+}
+
+/**
+ *  Theme the Configure panes as a table
+ *
+ * @param unknown $variables
+ * @return unknown
+ */
+function theme_tripal_panes_form_configure_panes ($variables) {
+  $element = $variables['element'];
+
+  $rows = array();
+
+  foreach (element_children($element) as $id) {
+
+    $element[$id]['table_group']['#printed'] = FALSE;
+    $rows[] = array(
+      'data' => array(
+        $element[$id]['#title'],
+        drupal_render($element[$id]['table_group']),
+      ),
+    );
+  }
+
+  // Create table header
+  $header = array(t('Field'), t('Layout'));
+
+  // Create a unique id for drupal_add_tabledrag() to find the table object
+  $table_id = 'tripal_pane-configure_pane_table-' . strtolower(preg_replace('/\s+/', '_', $element['#title']));
+  $table_class = 'tripal_pane-configure_pane_table';
+
+  // Create output
+  $table = '';
+  if (count($rows) > 0) {
+    $table = theme('table', array(
+      'header' => $header,
+      'rows' => $rows,
+      'attributes' => array('id' => $table_id, 'class' => array($table_class)),
+    ));
+  }
+
+  $collapsible_item = array('element' => array());
+  $collapsible_item['element']['#children'] = '';
+  $collapsible_item['element']['#description'] =
+    '<div id="tripal_panes-pane_configure-fieldset-instruction">
+        Select a group to organize fields into table(s) in this pane.
+     <div>'
+    . $table;
+  $collapsible_item['element']['#title'] = $element['#title'];
+  // add 'collapsible' to the class setting to enable collapsible fieldset
+  $collapsible_item['element']['#attributes']['class'] = array('tripal_panes-pane_configure-fieldset');
+  $output = theme('fieldset', $collapsible_item);
+  return $output;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function tripal_panes_theme($existing, $type, $theme, $path) {
+  return array(
+    'tripal_panes_form_arrange_panes' => array(
+      'render element' => 'element',
+    ),
+    'tripal_panes_form_configure_panes' => array(
+      'render element' => 'element',
+    ),
+    'tripal_panes_generic' => array(
+      'render element' => 'element',
+      'template' => 'tripal_panes_generic',
+      'path' => "$path/theme/templates",
+    ),
+  );
+}
+
+/**
+ * Implements hook_entity_view.
+ */
+function tripal_panes_entity_view($entity, $type, $view_mode, $langcode) {
+  switch ($type) {
+    case 'TripalEntity':
+      // Use the generic template to render the fields
+      if ($view_mode == 'full') {
+
+        $bundle = db_select('tripal_bundle', 'tb')
+          ->fields('tb', array('id', 'name', 'label'))
+          ->condition('name', $entity->bundle)
+          ->execute()
+          ->fetchObject();
+
+        _tripal_panes_check_default_field_panes($bundle);
+
+        $results = db_select('tripal_panes', 'tp')
+          ->fields('tp', array('pane_id','name', 'label', 'settings'))
+          ->condition('bundle_id', $bundle->id)
+          ->orderBy('tp.weight', 'ASC')
+          ->execute();
+
+        $panes = array();
+        $fields = array();
+        $disabled_pane_id = 0;
+        foreach ($results AS $row) {
+          if ($row->name == 'te_disabled') {
+            $disabled_pane_id = $row->pane_id;
+          }
+          else {
+            $panes[$row->pane_id] = $row;
+            $fields[$row->pane_id] = array();
+          }
+        }
+
+        // Organize fields into panes
+        foreach (element_children($entity->content) as $field_name) {
+          $field_instance = field_info_instance ($type, $field_name, $entity->bundle);
+          // Get default pane_id
+          $default_pane_id = db_select('tripal_panes', 'tp')
+            ->fields('tp', array('pane_id'))
+            ->condition('bundle_id', $bundle->id)
+            ->condition('name', 'te_base')
+            ->execute()
+            ->fetchField();
+          // Get pane_id for the field
+          $pane_id = db_select('tripal_pane_fields', 'tpf')
+            ->fields('tpf', array('pane_id'))
+            ->condition('field_id', $field_instance['id'])
+            ->execute()
+            ->fetchField();
+          $pane_id = $pane_id ? $pane_id : $default_pane_id;
+          // Do not show disabled fields
+          if ($pane_id != $disabled_pane_id) {
+            $fields[$pane_id][$field_name] = $entity->content[$field_name];
+          }
+          // Unset the field
+          unset ($entity->content[$field_name]);
+        }
+        drupal_add_css(drupal_get_path('module','tripal_panes') . '/theme/css/tripal_panes.css');
+        $entity->content['tripal_panes_generic'] = array(
+          '#theme' => 'tripal_panes_generic',
+          '#panes' => $panes,
+          '#fields' => $fields,
+        );
+      }
+
+      break;
+  }
+}
+
+/**
+ * Implements hook_entity_view.
+ */
+function tripal_panes_ajax_get_pane_setting_fieldset($form, &$form_state) {
+  $pane_id = $form_state['values']['pane_select'];
+  return  $form['te_configure_panes']['pane_items'];
+}

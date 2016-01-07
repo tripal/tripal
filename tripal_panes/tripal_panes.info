@@ -1,0 +1,8 @@
+name = Tripal Pane
+description = Provides a layout for Tripal.
+core = 7.x
+project = tripal
+package = Tripal
+version = 7.x-3.0
+
+dependencies[] = tripal
