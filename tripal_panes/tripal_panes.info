@@ -1,9 +1,8 @@
-name = Tripal Fields Layout
-description = Provides a layout for Tripal Entity fields.
+name = Tripal Pane
+description = Provides a layout for Tripal.
 core = 7.x
 project = tripal
 package = Tripal
-version = 7.x-2.0
+version = 7.x-3.0
 
-dependencies[] = tripal
 dependencies[] = tripal
