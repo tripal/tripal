@@ -85,7 +85,7 @@ foreach ($panes AS $pane_id => $pane) {
     $collapsible_item['element']['#attributes']['class'][] = 'collapsible';
     $collapsible_item['element']['#attributes']['class'][] = 'collapsed';
     $toc_item_id = $pane_id;
-    $toc .= "<div class=\"tripal-panes-toc-list-item\"><a id=\"" . $pane->name . "\" class=\"tripal-panes-toc-list-item-link\" href=\"?pane=" . $pane->name . "\">" . $pane->label . "</a></div>";
+    $toc .= "<div class=\"tripal-panes-toc-list-item\"><a id=\"" . $pane->name . "\" class=\"tripal_panes-toc-list-item-link\" href=\"?pane=" . $pane->name . "\">" . $pane->label . "</a></div>";
     $content .= theme('fieldset', $collapsible_item);
   }
 }

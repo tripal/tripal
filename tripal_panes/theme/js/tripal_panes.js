@@ -23,7 +23,7 @@
       });
       
       // Move the pane to the first when its TOC item is clicked.
-      $('.tripal_toc_list_item_link').each(function (i) {
+      $('.tripal_panes-toc-list-item-link').each(function (i) {
         $(this).click(function() {
           var id = '#tripal_pane-fieldset-' + $(this).attr('id');
           $(id).removeClass('collapsed');
