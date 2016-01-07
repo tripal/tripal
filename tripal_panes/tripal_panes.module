@@ -1,24 +1,12 @@
 <?php
 
-/**
- *
- * Implements hook_form_FORM_ID_alter().
- *
- * The field_ui_field_edit_form is used for customizing the settings of
- * a field attached to an entity.
- */
-function tripal_panes_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
-  // For entity fields added by Tripal Entities we don't want the
-  // the end-user to change the cardinality and the required fields
-  // such that record can't be saved in Chado.
-  // TODO: this shouldn't be hardcoded here.  These settings
-  // should be part of the field and handled by the tripal_entity module.
-  if (in_array($form['#instance']['entity_type'], $dbs)) {
-    $form['field']['cardinality']['#access'] = FALSE;
-    $form['instance']['required']['#access'] = FALSE;
-  }
 
-  // TODO: don't the the maximum length be larger than the field size.
+/**
+ * Implements hook_form_init();
+ */
+function tripal_panes_init() {
+  $theme_dir = url(drupal_get_path('module', 'tripal_panes') . '/theme');
+  drupal_add_js("var panes_theme_dir  = '$theme_dir';", 'inline', 'header');
 }
 /**
  * Implements hook_form_FORM_ID_alter().
@@ -28,6 +16,7 @@ function tripal_panes_form_field_ui_field_edit_form_alter(&$form, &$form_state, 
  */
 function tripal_panes_form_field_ui_display_overview_form_alter(&$form, &$form_state, $form_id) {
 
+  drupal_set_message('For the Tripal v3.0a release there are two bugs to keep in mind. Dragging fields outside of a their assigned pane does not yet work. Use the "Region" select box instead. Also, dragging a field may set it\'s format to "hidden" in which case you will want to set it back', 'warning');
   drupal_add_css(drupal_get_path('module','tripal_panes') . '/theme/css/tripal_panes.css');
 
   $entity_type = $form['#entity_type'];
@@ -45,7 +34,7 @@ function tripal_panes_form_field_ui_display_overview_form_alter(&$form, &$form_s
         module. If you would like to use Tripal-style panes for the layout
         of your pages please disable the Display Suite module. If you
         prefer to use the Display Suite module then disable the Tripal
-        Fields Layout (tripal_panes) module.', 'warning');
+        Panes (tripal_panes) module.', 'warning');
   }
 
   // Add a vertical tab fieldset at the bottom of the
@@ -63,15 +52,15 @@ function tripal_panes_form_field_ui_display_overview_form_alter(&$form, &$form_s
   );
 
   // Make sure our default pane are in the database.
-  _tripal_panes_check_default_field_panes($bundle);
+  tripal_panes_check_default_field_panes($bundle);
 
-  // Add a pane
+  // Adds form elments as a vertical tab for adding a pane.
   tripal_panes_form_field_ui_display_overview_form_pane_add($form, $form_state);
 
-  // Arrange panes
+  // Adds form elments as a vertical tab for arranging panes.
   tripal_panes_form_field_ui_display_overview_form_pane_arrange($form, $form_state, $bundle);
 
-  // Configure panes
+  // Adds form elments as a vertical tab for configuring panes.
   tripal_panes_form_field_ui_display_overview_form_pane_configure($form, $form_state, $bundle);
 
   // Now add each pane as a region.
@@ -83,6 +72,7 @@ function tripal_panes_form_field_ui_display_overview_form_alter(&$form, &$form_s
     ->orderBy('label', 'ASC')
     ->execute();
   $pane_options = array();
+
   while ($pane = $panes->fetchObject()) {
     $settings = unserialize($pane->settings);
     $form['fields']['#regions'][$pane->name] = array(
@@ -367,7 +357,7 @@ function tripal_panes_form_field_ui_display_overview_form_pane_configure (&$form
 /**
  * A helper function for checking if the default panes are in the database.
  */
-function _tripal_panes_check_default_field_panes($bundle) {
+function tripal_panes_check_default_field_panes($bundle) {
   // Make sure we have records for our default regions: te_base and te_hidden.
   // First check if the base region is in the database. If not, add it.
   $te_base = db_select('tripal_panes', 'tp')
@@ -659,8 +649,8 @@ function tripal_panes_action_order_panes (&$form, &$form_state) {
 /**
  *  Theme the Arrange panes as a draggable table
  *
- * @param unknown $variables
- * @return unknown
+ * @param $variables
+ * @return
  */
 function theme_tripal_panes_form_arrange_panes ($variables) {
   $element = $variables['element'];
@@ -831,7 +821,7 @@ function tripal_panes_entity_view($entity, $type, $view_mode, $langcode) {
           ->execute()
           ->fetchObject();
 
-        _tripal_panes_check_default_field_panes($bundle);
+        tripal_panes_check_default_field_panes($bundle);
 
         $results = db_select('tripal_panes', 'tp')
           ->fields('tp', array('pane_id','name', 'label', 'settings'))

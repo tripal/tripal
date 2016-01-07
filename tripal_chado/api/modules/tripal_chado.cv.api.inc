@@ -396,28 +396,28 @@ function tripal_insert_cv($name, $definition) {
 }
 
 /**
- *  Add's a controlled vocabulary term to the cvterm table.
+ *  Add's a controlled vocabulary term to Chado.
  *
- *  If the parent CV does not exist then
- *  that too is added to the CV table.  If the cvterm is a relationship term
- *  then the $is_relationship argument should be set.  The function will try
+ *  This function will add a cvterm record (and a dbxref record if appropriate
+ *  values are provided). If the parent vocabulary does not exist then
+ *  that also is added to the cv table.  If the cvterm is a relationship term
+ *  then the 'is_relationship' value should be set.  The function will try
  *  to first find the relationship in the relationship ontology for updating and
- *  if it can't be found will add the relationship to the "local" CV.  All terms
- *  must also have a corresponding database.  This is specified in the term's
- *  ID just before the colon (e.g. GO:003824).  If the database does not exist
- *  in the DB table then it will be added automatically.  The accession (the
- *  value just after the colon in the term's ID) will be added to the dbxref
- *  table.  If the CVterm already exists and $update is set (default) then the
- *  cvterm is updated.  If the CVTerm already exists and $update is not set, then
- *  no changes are made and the CVTerm object is returned.
+ *  if it can not be found it will add the relationship to the "local" CV.  All
+ *  terms must also have a corresponding database.  This is specified in the
+ *  term's ID just before the colon (e.g. GO:003824).  If the database does not
+ *  exist in the DB table then it will be added automatically.  The accession
+ *  (the value just after the colon in the term's ID) will be added to the
+ *  dbxref table.  If the CVterm already exists and $update is set (default)
+ *  then the cvterm is updated.  If the CVTerm already exists and $update is
+ *  not set, then no changes are made and the CVTerm object is returned.
  *
  * @param $term
  *   An associative array with the following keys:
- *    - id: the term accession. must be of the form <DB>:<ACCESSION>, where <DB> is the
- *        name of the database to which the cvterm belongs and the <ACCESSION> is the
- *        term's accession number in the database.
+ *    - id: the term accession. must be of the form <DB>:<ACCESSION>, where
+ *      <DB> is the name of the database to which the cvterm belongs and the
+ *      <ACCESSION> is the term's accession number in the database.
  *    - name: the name of the term. usually meant to be human-readable.
- *    - namespace: the CV name for the term. DEPRECATED. Please use cv_name instead.
  *    - is_obsolete: is present and set to 1 if the term is defunct
  *    - definition: the definition of the term
  *    - cv_name: The CV name to which the term belongs.  If this arugment is
@@ -425,27 +425,45 @@ function tripal_insert_cv($name, $definition) {
  *        CV table with the same name provided in the $term[namespace].  If
  *        this field is provided then it overrides what the value in
  *        $term[namespace]
- *    - is_relationship: If this term is a relationship term then this value should be 1.
- *    - db_name: In some cases the database name will not be part of the $term['id'] and it
- *        needs to be explicitly set.  Use this argument only if the database name
- *        cannot be specififed in the term ID (e.g. <DB>:<ACCESSION>).
+ *    - is_relationship: If this term is a relationship term then this value
+ *        should be 1.
+ *    - db_name: In some cases the database name will not be part of the
+ *        $term['id'] and it needs to be explicitly set.  Use this argument
+ *        only if the database name cannot be specififed in the term ID
+ *        (e.g. <DB>:<ACCESSION>).
+ *    - namespace: the CV name for the term. DEPRECATED. Please use cv_name
+ *       instead.
  * @param $options
  *   An associative array with the following keys:
- *    - update_existing: By default this is TRUE.  If the term exists it is automatically updated.
+ *    - update_existing: By default this is TRUE.  If the term exists it is
+ *      automatically updated.
  *
  * @return
- *   A CVTerm object
+ *   A cvterm object
  *
  * @ingroup tripal_chado_api
  */
 function tripal_insert_cvterm($term, $options = array()) {
 
+  // get the term properties
+  $id = (isset($term['id'])) ? $term['id'] : '';
+  $name = '';
+  $cvname = '';
+  $definition = '';
+  $is_obsolete = 0;
+  $accession = '';
+
   // Set Defaults
   if (isset($term['cv_name'])) {
-    $defaultcv = $term['cv_name'];
+    $cvname = $term['cv_name'];
   }
   else {
-    $defaultcv = 'local';
+    $cvname = 'local';
+  }
+  // Namespace is deprecated but must be supported for backwards
+  // compatability
+  if (array_key_exists('namespace', $term)) {
+    $cvname = $term['namespace'];
   }
 
   if (isset($term['is_relationship'])) {
@@ -469,14 +487,6 @@ function tripal_insert_cvterm($term, $options = array()) {
     $update = 1;
   }
 
-  // get the term properties
-  $id = (isset($term['id'])) ? $term['id'] : '';
-  $name = '';
-  $cvname = '';
-  $definition = '';
-  $is_obsolete = 0;
-  $accession = '';
-
   if (array_key_exists('name', $term)) {
     $name = $term['name'];
   }
@@ -484,12 +494,7 @@ function tripal_insert_cvterm($term, $options = array()) {
     $name = $id;
   }
 
-  if (array_key_exists('namespace', $term)) {
-    $cvname = $term['namespace'];
-  }
-  else {
-    $cvname = $defaultcv;
-  }
+
   if (array_key_exists('definition', $term)) {
     $definition = preg_replace('/^\"(.*)\"/', '\1', $term['definition']);
   }
@@ -540,10 +545,10 @@ function tripal_insert_cvterm($term, $options = array()) {
     return 0;
   }
 
-  // this SQL statement will be used a lot to find a cvterm so just set it
+  // This SQL statement will be used a lot to find a cvterm so just set it
   // here for easy reference below.  Because CV terms can change their names
   // but accessions don't change, the following SQL finds cvterms based on
-  // their accession rather than the name
+  // their accession rather than the name.
   $cvtermsql = "
     SELECT CVT.name, CVT.cvterm_id, CV.cv_id, CV.name as cvname,
       DB.name as dbname, DB.db_id, DBX.accession

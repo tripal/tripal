@@ -54,12 +54,10 @@ function tripal_init() {
   global $base_url;
 
   // add some variables for all javasript to use for building URLs
-  $theme_dir = drupal_get_path('theme', 'tripal');
   $clean_urls = variable_get('clean_url', 0);
   drupal_add_js(
-    " var baseurl  = '$base_url';
-      var themedir = '$theme_dir';
-      var isClean  =  $clean_urls;",
+    "var baseurl  = '$base_url';" .
+    "var isClean  =  $clean_urls;",
     'inline', 'header');
 
   // make sure the date time settings are the way Tripal will insert them
@@ -91,7 +89,13 @@ function tripal_menu() {
   );
   $items['admin/tripal/tripal_jobs'] = array(
     'title' => 'Jobs',
-    'description' => t('Jobs managed by Tripal'),
+    'description' => t('Provides tools for managing jobs submitted to Tripal.  In some
+        cases, long-running tasks are too slow to complete within a single
+        browser session.  The Tripal jobs system allows long-running tasks
+        to be submitted to a queue that can be executed manually by the
+        site admin or automatically using a module such as the ') .
+        l('Tripal Daemon', 'https://www.drupal.org/project/tripal_daemon', array('attributes' => array('target' => '_blank'))) .
+        ' extension module.',
     'page callback' => 'tripal_jobs_admin_view',
     'access arguments' => array('administer tripal'),
     'type' => MENU_NORMAL_ITEM,
@@ -102,9 +106,11 @@ function tripal_menu() {
 
   $items['admin/tripal/storage'] = array(
     'title' => 'Storage Backend',
-    'description' => t("Tripal is designed so that it can store biological
-        data in any data storage back-end.  Tripal provides by default a
-        module for storing data in Chado.  All available storage backends
+    'description' => t("Tripal is designed to access biological
+        data in any data storage back-end.  A storage back-end must have a
+        module that can be installed that interfaces with Tripal.  By default
+        the base Tripal package provides The Tripal Chado module for storing
+        data in the GMOD Chado database schema.  All available storage backends
         and their administrative tools are found here."),
     'weight' => 8,
     'access arguments' => array('administer tripal'),
@@ -134,8 +140,15 @@ function tripal_menu() {
   // Menu items for facilitating import of extension modules.
   $items['admin/tripal/extension'] = array(
     'title' => 'Extensions',
-    'description' => t('Configuration for Tripal extensions.'),
+    'description' => t('Look for extensions to add new functionality to this
+        site. Tripal can be extended with new functionality developed
+        by other Tripal site developers. These include modules with new or
+        different functionality, bulk loading templates, or materialized
+        views.  Anyone can create new extensions and share those for
+        others to use.  Once shared they will appear in this list.'),
     'access arguments' => array('administer tripal'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_extensions_form'),
     'type' => MENU_NORMAL_ITEM,
     'file' => 'includes/tripal.extensions.inc',
     'file path' => drupal_get_path('module', 'tripal'),
@@ -721,4 +734,46 @@ function TripalBundle_load($bundle_type, $reset = FALSE) {
 function TripalEntity_load($id, $reset = FALSE) {
   $entity = entity_load('TripalEntity', array($id), array(), $reset);
   return reset($entity);
+}
+
+/**
+ *
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * The field_ui_field_edit_form is used for customizing the settings of
+ * a field attached to an entity.
+ */
+function tripal_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
+
+  // For entity fields added by Tripal Entities we don't want the
+  // the end-user to change the cardinality and the required fields
+  // such that record can't be saved in Chado.
+
+  // TODO: this shouldn't be hardcoded here.  These settings
+  // should be part of the field and handled by the tripal_entity module.
+  if ($form['#instance']['entity_type'] == 'TripalEntity') {
+    $form['field']['cardinality']['#access'] = FALSE;
+    $form['instance']['required']['#access'] = FALSE;
+  }
+
+  // TODO: don't the the maximum length be larger than the field size.
+}
+
+/**
+ * Implements hook_menu_alter().
+ */
+function tripal_menu_alter(&$items) {
+  // We don't want to allow deletion of fields added by the storage backend.
+  // TODO: this shouldn't be hardcoded here.  These settings
+  // should be part of the field and handled by the tripal_entity module.
+  $items['admin/structure/bio-data/manage/%TripalBundle/fields/%field_ui_menu/delete']['page callback'] = 'tripal_field_no_delete';
+  $items['admin/structure/bio-data/manage/%TripalBundle/fields/%field_ui_menu/delete']['page arguments'] = array();
+}
+
+/**
+ * Simple provides a message indicating that the field cannot be deleted.
+ */
+function tripal_field_no_delete() {
+  drupal_set_message('This field is currently managed by the biological data store and cannot be removed.', 'warning');
+  return '';
 }

@@ -1,10 +1,11 @@
 <?php
 
 function tripal_extensions_form($form, &$form_state = NULL) {
-  // Get the RSS feed XML from the tripa.info website and save it to
+
+  // Get the RSS feed XML from the tripal.info website and save it to
   // a temp file so that we don't have to keep pulling the XML
   // everythime the page is loaded. If the temp file is older than 1 hours
-  // then we'll pull it again. The number of seconds in an hour is 3600
+  // then we'll pull it again. The number of seconds in an hour is 3600.
   $tmp_file = sys_get_temp_dir() . '/tripal_rss_extensions.xml';
   if (!file_exists($tmp_file) or time() - filemtime($tmp_file) > 3600) {
     $content = file_get_contents("http://tripal.info/rss/extensions.xml");
@@ -229,8 +230,13 @@ function tripal_extensions_form($form, &$form_state = NULL) {
   }
 
   // Iterate through all of the extensions and add them to the form.
+  $compatible_extensions = array();
+  if (array_key_exists($tripal_version, $extensions) and
+      array_key_exists($chado_version, $extensions[$tripal_version])) {
+    $compatible_extensions = $extensions[$tripal_version][$chado_version];
+  }
   tripal_extension_form_add_extensions($form, $form_state,
-    $extensions[$tripal_version][$chado_version], $categories, $tripal_version,
+    $compatible_extensions, $categories, $tripal_version,
     $chado_version, $my_tripal_version, $my_chado_version, $type_ids,
     $namespace, $filters);
 
@@ -343,13 +349,15 @@ function tripal_extension_form_add_extensions(&$form, $form_state, $extensions,
       $is_installed = '';
       switch ($type) {
         case 'Bulk Loader Template':
-          $blk_id = db_select('tripal_bulk_loader_template' ,'tblt')
-            ->fields('tblt', array('template_id'))
-            ->condition('name', $extension['title'])
-            ->execute()
-            ->fetchField();
-          if ($blk_id) {
-            $is_installed = '<li>A bulk loader template with this name is already installed.</li>';
+          if (module_exists('tripal_bulk_loader')) {
+            $blk_id = db_select('tripal_bulk_loader_template' ,'tblt')
+              ->fields('tblt', array('template_id'))
+              ->condition('name', $extension['title'])
+              ->execute()
+              ->fetchField();
+            if ($blk_id) {
+              $is_installed = '<li>A bulk loader template with this name is already installed.</li>';
+            }
           }
           break;
         case 'Materialized View':

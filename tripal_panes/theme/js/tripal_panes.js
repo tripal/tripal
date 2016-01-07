@@ -5,7 +5,7 @@
     
       // Add a close button for each pane
       $('.tripal_pane-fieldset .fieldset-legend').each(function (i) {
-        $(this).append('<div class="tripal_pane-fieldset-close_button">[X]</div>');
+        $(this).append('<div class="tripal_pane-fieldset-close_button"><img src="' + panes_theme_dir + '/images/close_btn.png" id="tripal-panes-close-button" class="tripal-panes-button"></div>');
       });
       
       // Hide the pane when the close button is clicked

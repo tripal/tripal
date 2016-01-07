@@ -107,3 +107,8 @@
   margin: 2px 0 2px 0 !important;
 }
 
+.tripal-panes-button {
+  height: 15px;
+  width: 15px;
+  vertical-align: text-top;
+}

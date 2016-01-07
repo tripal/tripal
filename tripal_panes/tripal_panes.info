@@ -1,5 +1,5 @@
-name = Tripal Pane
-description = Provides a layout for Tripal.
+name = Tripal Panes
+description = Provides display options for Tripal Entities.  It includes a template that includes a sidebar with links to removable panes.
 core = 7.x
 project = tripal
 package = Tripal
