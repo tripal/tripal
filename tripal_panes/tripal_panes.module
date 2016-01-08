@@ -8,6 +8,7 @@ function tripal_panes_init() {
   $theme_dir = url(drupal_get_path('module', 'tripal_panes') . '/theme');
   drupal_add_js("var panes_theme_dir  = '$theme_dir';", 'inline', 'header');
 }
+
 /**
  * Implements hook_form_FORM_ID_alter().
  *
@@ -15,7 +16,7 @@ function tripal_panes_init() {
  * or layout of fields attached to an entity.
  */
 function tripal_panes_form_field_ui_display_overview_form_alter(&$form, &$form_state, $form_id) {
-
+  drupal_add_js(drupal_get_path('module','tripal_panes') . '/theme/js/tripal_panes.admin.js');
   drupal_set_message('For the Tripal v3.0a release there are two bugs to keep in mind. Dragging fields outside of a their assigned pane does not yet work. Use the "Region" select box instead. Also, dragging a field may set it\'s format to "hidden" in which case you will want to set it back', 'warning');
   drupal_add_css(drupal_get_path('module','tripal_panes') . '/theme/css/tripal_panes.css');
 
@@ -879,7 +880,7 @@ function tripal_panes_entity_view($entity, $type, $view_mode, $langcode) {
 }
 
 /**
- * Implements hook_entity_view.
+ * Ajax callback to return pane's form elements when configuring pane
  */
 function tripal_panes_ajax_get_pane_setting_fieldset($form, &$form_state) {
   $pane_id = $form_state['values']['pane_select'];
