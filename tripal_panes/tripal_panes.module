@@ -16,8 +16,11 @@ function tripal_panes_init() {
  * or layout of fields attached to an entity.
  */
 function tripal_panes_form_field_ui_display_overview_form_alter(&$form, &$form_state, $form_id) {
+  // Only modify the form for Tripal Content Type
+  if ($form['#entity_type'] != 'TripalEntity') {
+    return;
+  }
   drupal_add_js(drupal_get_path('module','tripal_panes') . '/theme/js/tripal_panes.admin.js');
-  drupal_set_message('For the Tripal v3.0a release there are two bugs to keep in mind. Dragging fields outside of a their assigned pane does not yet work. Use the "Region" select box instead. Also, dragging a field may set it\'s format to "hidden" in which case you will want to set it back', 'warning');
   drupal_add_css(drupal_get_path('module','tripal_panes') . '/theme/css/tripal_panes.css');
 
   $entity_type = $form['#entity_type'];
