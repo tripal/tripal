@@ -615,6 +615,7 @@ function tripal_chado_field_widget_form_alter(&$element, &$form_state, $context)
   }
 }
 
+
 /**
  * Implements hook_field_formatter_view().
  */

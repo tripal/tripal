@@ -72,4 +72,47 @@ function tripal_chado_organism_select_widget_validate($element, &$form_state) {
   }
 }
 
+function organism_id_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  dpm('yo');
+
+  $summary = '';
+
+  if ($display['type'] == 'text_trimmed' || $display['type'] == 'text_summary_or_trimmed') {
+    $summary = t('Length: @chars chars', array('@chars' => $settings['trim_length']));
+  }
+
+  return $summary;
+}
+/**
+ * Implements hook_field_formatter_settings_form()
+ *
+ * @param $field
+ * @param $instance
+ * @param $view_mode
+ * @param $form
+ * @param $form_state
+ */
+function organism_id_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  dpm('hi');
+  $element = array();
+
+  if ($display['type'] == 'text_trimmed' || $display['type'] == 'text_summary_or_trimmed') {
+    $element['trim_length'] = array(
+      '#title' => t('Length'),
+      '#type' => 'textfield',
+      '#size' => 20,
+      '#default_value' => $settings['trim_length'],
+      '#element_validate' => array('element_validate_integer_positive'),
+      '#required' => TRUE,
+    );
+  }
+
+  return $element;
+
+}
+
 

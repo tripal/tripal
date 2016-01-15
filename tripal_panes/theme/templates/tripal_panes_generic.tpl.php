@@ -138,7 +138,7 @@ function tripal_panes_generic_render_table($fields) {
         'width' => '20%',
         'nowrap' => 'nowrap'
       ),
-      $field[0]['#markup']
+      '<span class="field field-name-' . preg_replace('/_/', '-', $field['#field_name']) . '">' . $field[0]['#markup'] . '</span>'
     );
   }
   // Theme the table.
