@@ -174,7 +174,7 @@ function tripal_chado_menu() {
     'title' => 'Materialized View',
     'description' => t('Materialized views are used to improve speed of large or complex queries. These are database views as compared to Drupal views.'),
     'page callback' => 'tripal_mview_report',
-    'page arguments' => array(5),
+    'page arguments' => array(6),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal_chado.mviews.inc',
@@ -193,7 +193,7 @@ function tripal_chado_menu() {
   $items['admin/tripal/storage/chado/mviews/edit/%'] = array(
     'title' => 'Edit Materialized View',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_mviews_form', 5),
+    'page arguments' => array('tripal_mviews_form', 6),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal_chado.mviews.inc',
@@ -203,7 +203,7 @@ function tripal_chado_menu() {
     'title' => 'Create Materialized View',
     'description' => t('Materialized views are used to improve speed of large or complex queries.'),
     'page callback' => 'tripal_mviews_add_populate_job',
-    'page arguments' => array(5),
+    'page arguments' => array(6),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/tripal_chado.mviews.inc',
@@ -270,7 +270,7 @@ function tripal_chado_menu() {
     'title' => 'Custom Tables',
     'description' => t('Custom tables are added to Chado.'),
     'page callback' => 'tripal_custom_table_view',
-    'page arguments' => array(5),
+    'page arguments' => array(6),
     'access arguments' => array('administer tripal'),
     'file' => 'includes/tripal_chado.custom_tables.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -288,7 +288,7 @@ function tripal_chado_menu() {
   $items['admin/tripal/storage/chado/custom_tables/edit/%'] = array(
     'title' => 'Edit Custom Table',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_custom_tables_form', 5),
+    'page arguments' => array('tripal_custom_tables_form', 6),
     'access arguments' => array('administer tripal'),
     'file' => 'includes/tripal_chado.custom_tables.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -298,7 +298,7 @@ function tripal_chado_menu() {
     'title' => 'Create Custom Table',
     'description' => t('Custom tables are added to Chado.'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_custom_tables_delete_form', 5),
+    'page arguments' => array('tripal_custom_tables_delete_form', 6),
     'access arguments' => array('administer tripal'),
     'file' => 'includes/tripal_chado.custom_tables.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
@@ -614,6 +614,7 @@ function tripal_chado_field_widget_form_alter(&$element, &$form_state, $context)
     }
   }
 }
+
 
 /**
  * Implements hook_field_formatter_view().

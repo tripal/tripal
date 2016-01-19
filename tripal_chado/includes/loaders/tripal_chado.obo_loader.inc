@@ -145,7 +145,7 @@ function tripal_cv_obo_form($form, &$form_state) {
     );
     $form['obo_existing']['update_load_obo'] = array(
       '#type' => 'submit',
-      '#value' => 'Load Vocabulary',
+      '#value' => 'Import Vocabulary',
       '#name' => 'update_load_obo'
     );
   }
