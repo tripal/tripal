@@ -307,6 +307,8 @@ function tripal_panes_form_field_ui_display_overview_form_pane_configure (&$form
       $field_arr = unserialize($field_obj->data);
       $fname = $field_obj->field_name;
       if($fname == 'featureprop') {
+        $propkey = array_search('featureprop', $form['#fields']);
+        unset($form['#fields'][$propkey]);
         continue;
       }
       $flable = $field_arr['label'];
