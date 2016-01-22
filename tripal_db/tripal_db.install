@@ -59,3 +59,17 @@ function tripal_db_uninstall() {
 
 }
 
+
+/**
+ * Implementation of hook_update_dependencies().
+ *
+ * It specifies a list of other modules whose updates must be run prior to
+ * this one.  It also ensures the the Tripal API is in scope for site
+ * upgrades when tripal_core is disabled.
+ */
+function tripal_db_update_dependencies() {
+
+  $dependencies = array();
+
+  return $dependencies;
+}

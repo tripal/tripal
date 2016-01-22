@@ -130,6 +130,11 @@ function tripal_organism_add_cvterms() {
  */
 function tripal_organism_update_7200() {
 
+  // Make sure we have the full API loaded this will help during a
+  // site upgrade when the tripal_core module is disabled.
+  module_load_include('module', 'tripal_core', 'tripal_core');
+  tripal_core_import_api();
+
   // Add the new organism_property vocabulary
   // We cannot use the Tripal API calls in the 7000 update
   // because during upgrade the tripal_core should also be disabled
@@ -207,10 +212,14 @@ function tripal_organism_update_7200() {
 }
 
 /**
- * Implementation of hook_update_dependencies().  It specifies a list of
- * other modules whose updates must be run prior to this one.
+ * Implementation of hook_update_dependencies().
+ *
+ * It specifies a list of other modules whose updates must be run prior to
+ * this one.  It also ensures the the Tripal API is in scope for site
+ * upgrades when tripal_core is disabled.
  */
 function tripal_organism_update_dependencies() {
+
   $dependencies = array();
 
   // the tripal_cv update 7200 must run prior to update 7200 of this module

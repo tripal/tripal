@@ -336,6 +336,11 @@ function tripal_feature_add_cvs() {
  * This update may take some time to complete.
  */
 function tripal_feature_update_7200() {
+  // Make sure we have the full API loaded this will help during a
+  // site upgrade when the tripal_core module is disabled.
+  module_load_include('module', 'tripal_core', 'tripal_core');
+  tripal_core_import_api();
+
   // During the upgrade from D6 to D7 the vocabulary terms assigned to features were
   // copied to the field_data_taxonomyextra table rather than to the correct
   // field_data_taxonomy_vocabulary_[vid] table. We'll move them.
@@ -469,10 +474,14 @@ function tripal_feature_update_7200() {
 }
 
 /**
- * Implementation of hook_update_dependencies().  It specifies a list of
- * other modules whose updates must be run prior to this one.
+ * Implementation of hook_update_dependencies().
+ *
+ * It specifies a list of other modules whose updates must be run prior to
+ * this one.  It also ensures the the Tripal API is in scope for site
+ * upgrades when tripal_core is disabled.
  */
 function tripal_feature_update_dependencies() {
+
   $dependencies = array();
 
   // the tripal_cv update 7200 must run prior to update 7200 of this module
@@ -488,6 +497,10 @@ function tripal_feature_update_dependencies() {
  *
  */
 function tripal_feature_update_7201() {
+  // Make sure we have the full API loaded this will help during a
+  // site upgrade when the tripal_core module is disabled.
+  module_load_include('module', 'tripal_core', 'tripal_core');
+  tripal_core_import_api();
 
   try {
     // there is a bug in the Tripal v2.0-alpha release that didn't add the
@@ -527,6 +540,11 @@ function tripal_feature_update_7201() {
  * Adds the temporary tables used for loading GFF files.
  */
 function tripal_feature_update_7202() {
+  // Make sure we have the full API loaded this will help during a
+  // site upgrade when the tripal_core module is disabled.
+  module_load_include('module', 'tripal_core', 'tripal_core');
+  tripal_core_import_api();
+
   try {
     tripal_feature_add_tripal_gff_temp_table();
     tripal_feature_add_tripal_gffcds_temp_table();
@@ -542,6 +560,11 @@ function tripal_feature_update_7202() {
  * Removes the unique constraint on the tripal_gffcds_temp table.
  */
 function tripal_feature_update_7203() {
+  // Make sure we have the full API loaded this will help during a
+  // site upgrade when the tripal_core module is disabled.
+  module_load_include('module', 'tripal_core', 'tripal_core');
+  tripal_core_import_api();
+
   try {
     tripal_feature_add_tripal_gffcds_temp_table(FALSE);
   }

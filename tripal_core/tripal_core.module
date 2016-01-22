@@ -13,29 +13,8 @@
  * @}
  */
 
-// APPLICATION PROGRAMMER INTERFACE -------------
-// Chado API
-require_once 'api/tripal_core.chado_general.api.inc';
-require_once 'api/tripal_core.chado_query.api.inc';
-require_once 'api/tripal_core.chado_variables.api.inc';
-require_once 'api/tripal_core.chado_schema.api.inc';
-require_once 'api/tripal_core.chado_nodes.api.inc';
-require_once 'api/tripal_core.chado_nodes.title_and_path.inc';
-require_once 'api/tripal_core.chado_nodes.properties.api.inc';
-require_once 'api/tripal_core.chado_nodes.dbxrefs.api.inc';
-require_once 'api/tripal_core.chado_nodes.relationships.api.inc';
-
-// Table API
-require_once 'api/tripal_core.custom_tables.api.inc';
-require_once 'api/tripal_core.mviews.api.inc';
-
-// Miscellaneous API
-require_once 'api/tripal_core.files.api.inc';
-require_once 'api/tripal_core.jobs.api.inc';
-require_once 'api/tripal_core.tripal.api.inc';
-require_once 'api/tripal_core.tripal_variables.api.inc';
-require_once 'api/tripal_core.d3js.api.inc';
-require_once 'api/tripal_core.DEPRECATED.inc';
+// Import the full Tripal API into Scope.
+tripal_core_import_api();
 
 // INCLUDES
 require_once 'includes/tripal_core.jobs.inc';
@@ -44,6 +23,7 @@ require_once 'includes/tripal_core.custom_tables.inc';
 require_once 'includes/tripal_core.chado_install.inc';
 require_once 'includes/tripal_core.form_elements.inc';
 
+// Set some global variables.
 tripal_core_set_globals();
 
 /**
@@ -673,4 +653,41 @@ function tripal_core_node_view($node, $view_mode, $langcode) {
  */
 function tripal_core_exclude_type_by_default() {
   return array('text' => 'strlen("<field_value> ") > 250');
+}
+
+
+/**
+ * Imports all of the Tripal API into scope.
+ *
+ * Typically this function call is not necessary as all of the API is
+ * automaticaly included by the tripal_core module.  However this function can
+ * be useful in the .install files during a site upgrade when the tripal_core
+ * module is not enabld.
+ *
+ * Example usage:
+ * @code
+ *   module_load_include('module', 'tripal_core', 'tripal_core');
+ *   tripal_core_import_api();
+ * @endcode
+ *
+ */
+function tripal_core_import_api() {
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.chado_general.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.chado_nodes.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.chado_nodes.dbxrefs.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.chado_nodes.properties.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.chado_nodes.relationships.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.chado_nodes.title_and_path.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.chado_query.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.chado_schema.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.chado_variables.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.custom_tables.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.d3js.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.DEPRECATED.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.files.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.jobs.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.mviews.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.schema_V1.11.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.schema_v1.2.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.tripal_variables.api');
 }

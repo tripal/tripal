@@ -12,6 +12,7 @@
  */
 function tripal_featuremap_disable() {
 
+
   // Disable all default views provided by this module
   require_once("tripal_featuremap.views_default.inc");
   $views = tripal_featuremap_views_default_views();
@@ -490,8 +491,10 @@ function tripal_featuremap_add_custom_tables(){
  * This update may take some time to complete.
  */
 function tripal_featuremap_update_7200() {
-  // We can't use the Tripal API during an upgrade from D6 to D7 Tripal  because the tripal_core
-  // module is disabled. So, we have to manually make database additions/changes to chado.
+  // Make sure we have the full API loaded this will help during a
+  // site upgrade when the tripal_core module is disabled.
+  module_load_include('module', 'tripal_core', 'tripal_core');
+  tripal_core_import_api();
 
   // set the default vocabularies
   // featuremap_units
@@ -569,10 +572,14 @@ function tripal_featuremap_update_7200() {
 }
 
 /**
- * Implementation of hook_update_dependencies().  It specifies a list of
- * other modules whose updates must be run prior to this one.
+ * Implementation of hook_update_dependencies().
+ *
+ * It specifies a list of other modules whose updates must be run prior to
+ * this one.  It also ensures the the Tripal API is in scope for site
+ * upgrades when tripal_core is disabled.
  */
 function tripal_featuremap_update_dependencies() {
+
   $dependencies = array();
 
   // the tripal_cv update 7200 must run prior to update 7200 of this module
@@ -588,6 +595,11 @@ function tripal_featuremap_update_dependencies() {
  *
  */
 function tripal_featuremap_update_7201() {
+  // Make sure we have the full API loaded this will help during a
+  // site upgrade when the tripal_core module is disabled.
+  module_load_include('module', 'tripal_core', 'tripal_core');
+  tripal_core_import_api();
+
   // there was a bug in the function for creating a custom table that
   // kept foreign key constraints from being added.  So, we need to add those
   // to keep from error messages appear, we will drop the FK if it already
@@ -675,6 +687,11 @@ function tripal_featuremap_update_7201() {
  * Fixes a typo when setting the default CV for the unittype_id field of the featuremap table.
  */
 function tripal_featuremap_update_7202() {
+  // Make sure we have the full API loaded this will help during a
+  // site upgrade when the tripal_core module is disabled.
+  module_load_include('module', 'tripal_core', 'tripal_core');
+  tripal_core_import_api();
+
   try {
     tripal_set_default_cv('featuremap', 'unittype_id', 'featuremap_units');
   }

@@ -42,6 +42,20 @@ function tripal_natural_diversity_requirements($phase) {
 }
 
 /**
+ * Implementation of hook_update_dependencies().
+ *
+ * It specifies a list of other modules whose updates must be run prior to
+ * this one.  It also ensures the the Tripal API is in scope for site
+ * upgrades when tripal_core is disabled.
+ */
+function tripal_natural_diversity_dependencies() {
+
+  $dependencies = array();
+
+  return $dependencies;
+}
+
+/**
  * Implementation of hook_install().
  *
  * @ingroup tripal_natural_diversity
