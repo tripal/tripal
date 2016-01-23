@@ -104,7 +104,7 @@ function tripal_panes_schema() {
     ),
     'primary key' => array('pane_field_id'),
   );
-  
+
   return $schema;
 }
 
@@ -155,4 +155,31 @@ function tripal_add_tripal_bundle_panes_table(){
     ),
   );
   chado_create_custom_table('tripal_bundle_panes', $schema, TRUE);
+}
+
+function tripal_panes_update_7203() {
+  module_load_include('module', 'tripal_ws', 'tripal_ws');
+
+  tripal_ws_test();
+}
+
+
+/**
+ * Implementation of hook_update_dependencies().
+ *
+ * It specifies a list of other modules whose updates must be run prior to
+ * this one.  It also ensures the the Tripal API is in scope for site
+ * upgrades when tripal is disabled.
+ */
+function tripal_panes_update_dependencies() {
+  // Make sure we have the full API loaded this will help during a
+  // site upgrade when the tripal_core module is disabled.
+  //module_load_include('module', 'tripal', 'tripal');
+  //tripal_import_api();
+print "HI!!!\n";
+  module_load_include('module', 'tripal_ws', 'tripal_ws');
+
+  $dependencies = array();
+
+  return $dependencies;
 }

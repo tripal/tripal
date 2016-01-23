@@ -367,7 +367,19 @@ function chado_get_schema($table) {
 
   // get the table array from the proper chado schema
   $v = preg_replace("/\./", "_", $v); // reformat version for hook name
-  $table_arr = module_invoke_all("chado_schema_v" . $v . "_" . $table);
+
+  // Call the module_invoke_all.
+  $hook_name = "chado_schema_v" . $v . "_" . $table;
+  $table_arr = module_invoke_all($hook_name);
+
+  // If the module_invoke_all returned nothing then let's make sure there isn't
+  // An API call we can call directly.  The only time this occurs is
+  // during an upgrade of a major Drupal version and tripal_core is disabled.
+  if ((!$table_arr or !is_array($table_arr)) and
+        function_exists('tripal_core_' . $hook_name)) {
+    $api_hook = "tripal_core_" . $hook_name;
+    $table_arr = $api_hook();
+  }
 
   // if the table_arr is empty then maybe this is a custom table
   if (!is_array($table_arr) or count($table_arr) == 0) {

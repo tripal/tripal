@@ -4,12 +4,8 @@
  * The Tripal Core module
  */
 
-require_once "api/tripal.notice.api.inc";
-require_once "api/tripal.entities.api.inc";
-require_once "api/tripal.files.api.inc";
-require_once "api/tripal.jobs.api.inc";
-require_once "api/tripal.notice.api.inc";
-require_once "api/tripal.variables.api.inc";
+// Import the full Tripal API into scope.
+tripal_import_api();
 
 require_once "includes/TripalVocab.inc";
 require_once "includes/TripalVocabController.inc";
@@ -776,4 +772,28 @@ function tripal_menu_alter(&$items) {
 function tripal_field_no_delete() {
   drupal_set_message('This field is currently managed by the biological data store and cannot be removed.', 'warning');
   return '';
+}
+
+/**
+ * Imports all of the Tripal API into scope.
+ *
+ * Typically this function call is not necessary as all of the API is
+ * automaticaly included by the tripal module.  However this function can
+ * be useful in the .install files during a site upgrade when the tripal
+ * module is not enabld.
+ *
+ * Example usage:
+ * @code
+ *   module_load_include('module', 'tripal', 'tripal');
+ *   tripal_import_api();
+ * @endcode
+ *
+ */
+function tripal_import_api() {
+  module_load_include('inc', 'tripal', 'api/tripal.d3js.api');
+  module_load_include('inc', 'tripal', 'api/tripal.entities.api');
+  module_load_include('inc', 'tripal', 'api/tripal.files.api');
+  module_load_include('inc', 'tripal', 'api/tripal.jobs.api');
+  module_load_include('inc', 'tripal', 'api/tripal.notice.api');
+  module_load_include('inc', 'tripal', 'api/tripal.variables.api');
 }

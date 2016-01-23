@@ -39,3 +39,7 @@ function tripal_ws_menu() {
 
   return $items;
 }
+
+function tripal_ws_test() {
+  print "Blah!!!!\n";
+}
