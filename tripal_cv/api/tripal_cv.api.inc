@@ -96,20 +96,6 @@ function tripal_get_cv($identifiers, $options = array()) {
     );
   }
 
-  // Report an error if $cv is FALSE since then chado_generate_var has failed
-  elseif ($cv === FALSE) {
-    tripal_report_error(
-      'tripal_cv_api',
-      TRIPAL_ERROR,
-      "tripal_get_cv: chado_generate_var() failed to return a cv based on the identifiers
-        you passed in. You should check that your identifiers are correct, as well as, look
-        for a chado_generate_var error for additional clues. You passed in %identifier.",
-      array(
-        '%identifier'=> print_r($identifiers, TRUE)
-      )
-    );
-  }
-
   // Else, as far we know, everything is fine so give them their cv :)
   else {
     return $cv;

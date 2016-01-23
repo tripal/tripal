@@ -3,13 +3,15 @@
  * @file
  * Provides an application programming interface (API) for Tripal
  *
- * The Tripal API currently provides generic insert/update/select functions for all chado content as
- * well as some module specific functions that insert/update/delete/select specific chado content.
+ * The Tripal API currently provides generic insert/update/select functions for
+ * all chado content as well as some module specific functions that
+ * insert/update/delete/select specific chado content.
  *
- * This API is currently in its infancy and some necessary functions might be missing. If you find
- * a missing function that you think should be included go to the sourceforge feature request
- * page and request it's inclusion in the API. Such feature requests with a working function
- * definition will be given priority.
+ * This API is currently in its infancy and some necessary functions might be
+ * missing. If you find a missing function that you think should be included
+ * go to the sourceforge feature request page and request it's inclusion in
+ * the API. Such feature requests with a working function definition will be
+ * given priority.
  */
 
 /**
@@ -17,13 +19,15 @@
  * @{
  * Provides an application programming interface (API) for Tripal
  *
- * The Tripal API currently provides generic insert/update/select functions for all chado content as
- * well as some module specific functions that insert/update/delete/select specific chado content.
+ * The Tripal API currently provides generic insert/update/select functions for
+ * all chado content as well as some module specific functions that
+ * insert/update/delete/select specific chado content.
  *
- * This API is currently in its infancy and some necessary functions might be missing. If you find
- * a missing function that you think should be included go to the sourceforge feature request
- * page and request it's inclusion in the API. Such feature requests with a working function
- * definition will be given priority.
+ * This API is currently in its infancy and some necessary functions might be
+ * missing. If you find a missing function that you think should be included
+ * go to the sourceforge feature request page and request it's inclusion in
+ * the API. Such feature requests with a working function definition will be
+ * given priority.
  * @}
  */
 
@@ -42,8 +46,8 @@ define('TRIPAL_DEBUG',7);
  * information to the message.
  *
  * @param $type
- *   The catagory to which this message belongs. Can be any string, but the general
- *   practice is to use the name of the module.
+ *   The catagory to which this message belongs. Can be any string, but the
+ *   general practice is to use the name of the module.
  * @param $severity
  *   The severity of the message; one of the following values:
  *     - TRIPAL_CRITICAL: Critical conditions.
@@ -53,16 +57,18 @@ define('TRIPAL_DEBUG',7);
  *     - TRIPAL_INFO: Informational messages.
  *     - TRIPAL_DEBUG: Debug-level messages.
  * @param $message
- *   The message to store in the log. Keep $message translatable by not concatenating
- *   dynamic values into it! Variables in the message should be added by using placeholder
- *   strings alongside the variables argument to declare the value of the placeholders.
- *   See t() for documentation on how $message and $variables interact.
+ *   The message to store in the log. Keep $message translatable by not
+ *   concatenating dynamic values into it! Variables in the message should be
+ *   added by using placeholder strings alongside the variables argument to
+ *   declare the value of the placeholders. See t() for documentation on how
+ *   $message and $variables interact.
  * @param $variables
- *   Array of variables to replace in the message on display or NULL if message is
- *   already translated or not possible to translate.
+ *   Array of variables to replace in the message on display or NULL if message
+ *   is already translated or not possible to translate.
  * @param $options
  *   An array of options. Some available options include:
- *     - print: prints the error message to the terminal screen. Useful when display is the command-line
+ *     - print: prints the error message to the terminal screen. Useful when
+ *         display is the command-line
  *
  * @ingroup tripal_api
  */
@@ -137,8 +143,9 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
  * @param $message
  *   The message to be displayed to the tripal administrators
  * @param $importance
- *   The level of importance for this message. In the future this will be used to allow
- *   administrators to filter some of these messages. It can be one of the following:
+ *   The level of importance for this message. In the future this will be used
+ *   to allow  administrators to filter some of these messages. It can be one
+ *   of the following:
  *     - TRIPAL_CRITICAL: Critical conditions.
  *     - TRIPAL_ERROR: Error conditions.
  *     - TRIPAL_WARNING: Warning conditions.

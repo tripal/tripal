@@ -495,74 +495,14 @@ function tripal_featuremap_update_7200() {
   // site upgrade when the tripal_core module is disabled.
   module_load_include('module', 'tripal_core', 'tripal_core');
   tripal_core_import_api();
+  module_load_include('inc', 'tripal_cv', 'api/tripal_cv.api');
 
   // set the default vocabularies
   // featuremap_units
   try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'featuremap_units'")->fetchField();
-    $cdi = db_select('tripal_cv_defaults', 't')
-      ->fields('t', array('cv_default_id'))
-      ->condition('table_name', 'featuremap')
-      ->condition('field_name', 'type_id')
-      ->execute()
-      ->fetchField();
-    if (!$cdi) {
-      db_insert('tripal_cv_defaults')
-        ->fields(array(
-          'table_name' => 'featuremap',
-          'field_name' => 'unittype_id',
-          'cv_id' => $cv_id
-        ))
-        ->execute();
-    }
-  }
-  catch (\PDOException $e) {
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to set featuremap_units vocabulary as default: '. $error);
-  }
-
-  // featurepos_property
-  try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'featurepos_property'")->fetchField();
-    $cdi = db_select('tripal_cv_defaults', 't')
-      ->fields('t', array('cv_default_id'))
-      ->condition('table_name', 'featureposprop')
-      ->condition('field_name', 'type_id')
-      ->execute()
-      ->fetchField();
-    if (!$cdi) {
-      db_insert('tripal_cv_defaults')
-        ->fields(array(
-          'table_name' => 'featureposprop',
-          'field_name' => 'type_id',
-          'cv_id' => $cv_id
-        ))
-        ->execute();
-    }
-  }
-  catch (\PDOException $e) {
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to set featurepos_property vocabulary as default: '. $error);
-  }
-
-  // featuremap_property
-  try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'featuremap_property'")->fetchField();
-    $cdi = db_select('tripal_cv_defaults', 't')
-      ->fields('t', array('cv_default_id'))
-      ->condition('table_name', 'featuremapprop')
-      ->condition('field_name', 'type_id')
-      ->execute()
-      ->fetchField();
-    if (!$cdi) {
-      db_insert('tripal_cv_defaults')
-       ->fields(array(
-         'table_name' => 'featuremapprop',
-         'field_name' => 'type_id',
-         'cv_id' => $cv_id
-        ))
-        ->execute();
-    }
+    tripal_set_default_cv('featuremap', 'unittype_id', 'featuremap_units');
+    tripal_set_default_cv('featureposprop', 'type_id', 'featurepos_property');
+    tripal_set_default_cv('featuremapprop', 'type_id', 'featuremap_property');
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
@@ -691,6 +631,7 @@ function tripal_featuremap_update_7202() {
   // site upgrade when the tripal_core module is disabled.
   module_load_include('module', 'tripal_core', 'tripal_core');
   tripal_core_import_api();
+  module_load_include('inc', 'tripal_cv', 'api/tripal_cv.api');
 
   try {
     tripal_set_default_cv('featuremap', 'unittype_id', 'featuremap_units');

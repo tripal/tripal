@@ -479,6 +479,7 @@ function tripal_pub_update_7202() {
   // site upgrade when the tripal_core module is disabled.
   module_load_include('module', 'tripal_core', 'tripal_core');
   tripal_core_import_api();
+  module_load_include('inc', 'tripal_cv', 'api/tripal_cv.api');
 
   try {
     // Remove duplicates.
