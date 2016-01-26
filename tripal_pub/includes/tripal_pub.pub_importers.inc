@@ -1012,11 +1012,11 @@ function tripal_pub_add_publication($pub_details, &$action, $do_contact = FALSE,
   // build the values array for inserting or updating
   $values = array(
     'title'       => $pub_details['Title'],
-    'volume'      => $pub_details['Volume'],
+    'volume'      => (isset($pub_details['Volume'])) ? $pub_details['Volume'] : '',
     'series_name' => $series_name,
-    'issue'       => $pub_details['Issue'],
-    'pyear'       => $pub_details['Year'],
-    'pages'       => $pub_details['Pages'],
+    'issue'       => (isset($pub_details['Issue'])) ? $pub_details['Issue'] : '',
+    'pyear'       => (isset($pub_details['Year'])) ? $pub_details['Year'] : '',
+    'pages'       => (isset($pub_details['Pages'])) ? $pub_details['Pages'] : '',
     'uniquename'  => $pub_details['Citation'],
     'type_id'     => $pub_type->cvterm_id,
   );
@@ -1169,7 +1169,7 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
   // tables of chado, then link them through the custom pubauthors_contact table
   foreach ($authors as $author) {
     // skip invalid author entires
-    if ($author['valid'] == 'N') {
+    if (isset($author['valid']) AND $author['valid'] == 'N') {
       continue;
     }
     // remove the 'valid' property as we don't have a CV term for it
@@ -1178,16 +1178,16 @@ function tripal_pub_add_authors($pub_id, $authors, $do_contact) {
     // construct the contact.name field using the author information
     $name = '';
     $type = 'Person';
-    if ($author['Given Name']) {
+    if (isset($author['Given Name'])) {
       $name .= $author['Given Name'];
     }
-    if ($author['Surname']) {
+    if (isset($author['Surname'])) {
       $name .= ' ' . $author['Surname'];
     }
-    if ($author['Suffix']) {
+    if (isset($author['Suffix'])) {
       $name .= ' ' . $author['Suffix'];
     }
-    if ($author['Collective']) {
+    if (isset($author['Collective'])) {
       $name = $author['Collective'];
       $type = 'Collective';
     }
