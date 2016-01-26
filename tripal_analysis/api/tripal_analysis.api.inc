@@ -172,9 +172,10 @@ function tripal_get_analysis_select_options($syncd_only = TRUE) {
   $analysis_list[] = 'Select an analysis';
 
   if ($syncd_only) {
+    // @todo: Re-write to support external chado databases.
     $sql = "
       SELECT *
-      FROM public.chado_analysis CA
+      FROM [chado_analysis] CA
         INNER JOIN {analysis} A ON A.analysis_id = CO.analysis_id
       ORDER BY A.name
     ";

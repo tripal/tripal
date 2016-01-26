@@ -143,9 +143,10 @@ function tripal_get_organism_select_options($syncd_only = TRUE) {
   $org_list[] = 'Select an organism';
 
   if ($syncd_only) {
+    // @todo: Re-write to support external chado databases.
     $sql = "
       SELECT *
-      FROM public.chado_organism CO
+      FROM [chado_organism] CO
         INNER JOIN {organism} O ON O.organism_id = CO.organism_id
       ORDER BY O.genus, O.species
     ";

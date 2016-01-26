@@ -550,9 +550,10 @@ function chado_node_sync_form($form, &$form_state) {
       // Build Query, we do a left join on the chado_xxxx table in the Drupal schema
       // so that if no criteria are specified we only get those items that have not
       // yet been synced.
+      // @todo: re-write the query to support external chado databases.
       $query = "SELECT " . implode(', ', $select) . ' ' .
                'FROM {' . $base_table . '} ' . $base_table . ' ' . implode(' ', $joins) . ' '.
-               "  LEFT JOIN public.$linking_table CT ON CT.$base_table_id = $base_table.$base_table_id " .
+               "  LEFT JOIN [$linking_table] CT ON CT.$base_table_id = $base_table.$base_table_id " .
                "WHERE CT.$base_table_id IS NULL";
 
       // extend the where clause if needed
@@ -859,10 +860,11 @@ function chado_node_sync_records($base_table, $max_sync = FALSE,
   // Build Query, we do a left join on the chado_xxxx table in the Drupal schema
   // so that if no criteria are specified we only get those items that have not
   // yet been synced.
+  // @todo: re-write to support external chado databases.
   $query = "
     SELECT " . implode(', ', $select) . ' ' .
     'FROM {' . $base_table . '} ' . $base_table . ' ' . implode(' ', $joins) . ' '.
-    "  LEFT JOIN public.$linking_table CT ON CT.$base_table_id = $base_table.$base_table_id " .
+    "  LEFT JOIN [$linking_table] CT ON CT.$base_table_id = $base_table.$base_table_id " .
     "WHERE CT.$base_table_id IS NULL ";
 
   // extend the where clause if needed

@@ -573,9 +573,10 @@ function theme_tripal_pub_search_setup_form_elements($variables) {
 function tripal_search_publications($search_array, $offset, $limit, &$total_records) {
 
   // build the SQL based on the criteria provided by the user
+  // @todo: re-write to support external chado databases.
   $select = "SELECT DISTINCT P.*, CP.nid ";
   $from   = "FROM {pub} P
-               LEFT JOIN public.chado_pub CP on P.pub_id = CP.pub_id
+               LEFT JOIN [chado_pub] CP on P.pub_id = CP.pub_id
                INNER JOIN {cvterm} CVT on CVT.cvterm_id = P.type_id
             ";
   $where  = "WHERE (NOT P.title = 'null') "; // always exclude the dummy pub
