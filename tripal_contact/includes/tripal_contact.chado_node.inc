@@ -611,12 +611,14 @@ function tripal_contact_node_view($node, $view_mode, $langcode) {
           '#tripal_toc_id'    => 'properties',
           '#tripal_toc_title' => 'Properties',
         );
-        $node->content['tripal_contact_publications'] = array(
-          '#theme' => 'tripal_contact_publications',
-          '#node' => $node,
-          '#tripal_toc_id'    => 'publications',
-          '#tripal_toc_title' => 'Publications',
-        );
+        if (module_exists('tripal_pub')) {
+          $node->content['tripal_contact_publications'] = array(
+            '#theme' => 'tripal_contact_publications',
+            '#node' => $node,
+            '#tripal_toc_id'    => 'publications',
+            '#tripal_toc_title' => 'Publications',
+          );
+        }
         $node->content['tripal_contact_relationships'] = array(
           '#theme' => 'tripal_contact_relationships',
           '#node' => $node,
