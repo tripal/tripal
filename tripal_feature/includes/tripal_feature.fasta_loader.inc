@@ -474,14 +474,14 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
         // Get the feature name if a regular expression is provided.
         if ($re_name) {
           if (!preg_match("/$re_name/", $defline, $matches)) {
-            tripal_report_error('trp-fasta', "ERROR: Regular expression for the feature name finds nothing. Line %line.", array(
+            tripal_report_error('trp-fasta', TRIPAL_ERROR, "ERROR: Regular expression for the feature name finds nothing. Line %line.", array(
               '%line' => $i
-            ), 'error');
+            ));
           }
           elseif (strlen($matches[1]) > $feature_tbl['fields']['name']['length']) {
-            tripal_report_error('trp-fasta', "WARNING: Regular expression retrieves a value too long for the feature name. Line %line.", array(
+            tripal_report_error('trp-fasta', TRIPAL_WARNING, "WARNING: Regular expression retrieves a value too long for the feature name. Line %line.", array(
               '%line' => $i
-            ), 'error');
+            ));
           }
           else {
             $name = trim($matches[1]);
@@ -492,24 +492,24 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
         elseif (strcmp($match_type, 'Name') == 0) {
           if (preg_match("/^\s*(.*?)[\s\|].*$/", $defline, $matches)) {
             if (strlen($matches[1]) > $feature_tbl['fields']['name']['length']) {
-              tripal_report_error('trp-fasta', "WARNING: Regular expression retrieves a feature name too long for the feature name. Line %line.", array(
-                '%line' => $i), 'error');
+              tripal_report_error('trp-fasta', TRIPAL_WARNING, "WARNING: Regular expression retrieves a feature name too long for the feature name. Line %line.", array(
+                '%line' => $i));
             }
             else {
               $name = trim($matches[1]);
             }
           }
           else {
-            tripal_report_error('trp-fasta', "ERROR: Cannot find a feature name. Line %line.", array(
-              '%line' => $i), 'error');
+            tripal_report_error('trp-fasta', TRIPAL_ERROR, "ERROR: Cannot find a feature name. Line %line.", array(
+              '%line' => $i));
           }
         }
 
         // Get the feature uniquename if a regular expression is provided.
         if ($re_uname) {
           if (!preg_match("/$re_uname/", $defline, $matches)) {
-            tripal_report_error('trp-fasta', "ERROR: Regular expression for the feature unique name finds nothing. Line %line.", array(
-              '%line' => $i), 'error');
+            tripal_report_error('trp-fasta', TRIPAL_ERROR, "ERROR: Regular expression for the feature unique name finds nothing. Line %line.", array(
+              '%line' => $i));
           }
           $uname = trim($matches[1]);
         }
@@ -521,17 +521,17 @@ function tripal_feature_load_fasta($dfile, $organism_id, $type, $re_name, $re_un
             $uname = trim($matches[1]);
           }
           else {
-            tripal_report_error('trp-fasta', "ERROR: Cannot find a feature unique name. Line %line.", array(
-              '%line' => $i), 'error');
+            tripal_report_error('trp-fasta', TRIPAL_ERROR, "ERROR: Cannot find a feature unique name. Line %line.", array(
+              '%line' => $i));
           }
         }
 
         // Get the accession if a regular expression is provided.
         preg_match("/$re_accession/", $defline, $matches);
         if (strlen($matches[1]) > $dbxref_tbl['fields']['accession']['length']) {
-          tripal_report_error('trp-fasta', "WARNING: Regular expression retrieves an accession too long for the feature name. " .
+          tripal_report_error('trp-fasta', TRIPAL_WARNING, "WARNING: Regular expression retrieves an accession too long for the feature name. " .
              "Cannot add cross reference. Line %line.", array('%line' => $i
-            ), 'warning');
+            ));
         }
         else {
           $accession = trim($matches[1]);
@@ -628,7 +628,7 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
     $results = chado_select_record('feature', array('feature_id'
     ), $values);
     if (count($results) > 1) {
-      tripal_report_error('T_fasta_loader', "Multiple features exist with the name '%name' of type
+      tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Multiple features exist with the name '%name' of type
                '%type' for the organism.  skipping", array('%name' => $name,'%type' => $type));
       return 0;
     }
@@ -741,7 +741,7 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
         $results = chado_select_record('feature', array('feature_id'
         ), $values);
         if (count($results) > 0) {
-          tripal_report_error('T_fasta_loader', "Cannot update the feature '%name' with a uniquename of '%uname' and type of '%type' as it
+          tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Cannot update the feature '%name' with a uniquename of '%uname' and type of '%type' as it
             conflicts with an existing feature with the same uniquename and type.", array(
             '%name' => $name,'%uname' => $uname,'%type' => $type
           ));
@@ -867,7 +867,7 @@ function tripal_feature_load_fasta_feature($fh, $name, $uname, $db_id, $accessio
     $results = chado_select_record('feature', array('feature_id'
     ), $values);
     if (count($results) != 1) {
-      tripal_report_error('T_fasta_loader', "Cannot find a unique fature for the parent '%parent' of type
+      tripal_report_error('T_fasta_loader', TRIPAL_ERROR, "Cannot find a unique feature for the parent '%parent' of type
                '%type' for the feature.", array(
         '%parent' => $parent,'%type' => $parent_type
       ));
