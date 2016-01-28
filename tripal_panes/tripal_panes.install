@@ -80,6 +80,10 @@ function tripal_panes_schema() {
         'type' => 'int',
         'not null' => TRUE,
       ),
+      'css_class' => array(
+        'description' => 'CSS classes assigned to this field. Class names are separated by a semi-colon',
+        'type' => 'text'
+      )
     ),
     'indexes' => array(
       'pane_id' => array('pane_id'),

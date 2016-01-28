@@ -329,6 +329,22 @@ function tripal_panes_form_field_ui_display_overview_form_pane_configure (&$form
         ),
         '#default_value' => $default_value,
       );
+      $form['te_configure_panes']['pane_items'][$pane->pane_id][$fname]['field_id'] = array(
+        '#type' => 'hidden',
+        '#value' => $field->field_id,
+      );
+      $default_classes = 
+        db_select('tripal_pane_fields', 'tpf')
+          ->fields('tpf', array('css_class'))
+          ->condition('pane_id', $pane->pane_id)
+          ->condition('field_id', $field->field_id)
+          ->execute()
+          ->fetchField();
+      $form['te_configure_panes']['pane_items'][$pane->pane_id][$fname]['css_class'] = array(
+        '#type' => 'textfield',
+        '#default_value' => $default_classes,
+        '#size' => 40
+      );
       $has_field = TRUE;
     }
 
@@ -341,9 +357,9 @@ function tripal_panes_form_field_ui_display_overview_form_pane_configure (&$form
     }
 
     if ($pane->pane_id != $selected_pane) {
+      // Display only the selected pane setting. Hide the others
       $form['te_configure_panes']['pane_items'][$pane->pane_id]['#prefix'] = "<div style=\"display:none;\">";
       $form['te_configure_panes']['pane_items'][$pane->pane_id]['#suffix'] = "</div>";
-      //continue; // Display only the selected pane setting
     }
 
   }
@@ -718,10 +734,21 @@ function tripal_panes_action_configure_panes (&$form, &$form_state) {
   foreach ($panes AS $id => $pane) {
     $table_layout = array();
     foreach($pane AS $key => $value) {
+      // Save layout information
       if (is_array($value) && key_exists('table_group', $value)) {
         if ($value['table_group'] == 1) {
           $table_layout[] = $key;
         }
+      } 
+      // Save CSS class for each field if provided
+      if (is_array($value) && key_exists('css_class', $value) && $value['css_class']) {
+        db_update('tripal_pane_fields')
+          ->fields(array(
+            'css_class' => $value['css_class']
+          ))
+          ->condition('pane_id',$id)
+          ->condition('field_id', $value['field_id'])
+          ->execute();
       }
     }
     $pane_settings = db_select('tripal_panes', 'tp')
@@ -754,16 +781,18 @@ function theme_tripal_panes_form_configure_panes ($variables) {
   foreach (element_children($element) as $id) {
 
     $element[$id]['table_group']['#printed'] = FALSE;
+    $element[$id]['css_class']['#printed'] = FALSE;
     $rows[] = array(
       'data' => array(
         $element[$id]['#title'],
         drupal_render($element[$id]['table_group']),
+        drupal_render($element[$id]['css_class']),
       ),
     );
   }
 
   // Create table header
-  $header = array(t('Field'), t('Layout'));
+  $header = array(t('Field'), t('Layout'), t('CSS Classes'));
 
   // Create a unique id for drupal_add_tabledrag() to find the table object
   $table_id = 'tripal_pane-configure_pane_table-' . strtolower(preg_replace('/\s+/', '_', $element['#title']));
@@ -783,7 +812,7 @@ function theme_tripal_panes_form_configure_panes ($variables) {
   $collapsible_item['element']['#children'] = '';
   $collapsible_item['element']['#description'] =
     '<div id="tripal_panes-pane_configure-fieldset-instruction">
-        Select a group to organize fields into table(s) in this pane.
+        Select a layout to organize fields into table(s) in this pane. Optionally, You can assign CSS classes to each field which allows styling multiple fields at a time. Please separate classes with a space.
      <div>'
     . $table;
   $collapsible_item['element']['#title'] = $element['#title'];
@@ -867,7 +896,17 @@ function tripal_panes_entity_view($entity, $type, $view_mode, $langcode) {
           $pane_id = $pane_id ? $pane_id : $default_pane_id;
           // Do not show disabled fields
           if ($pane_id != $disabled_pane_id) {
+            // Construct field elements
             $fields[$pane_id][$field_name] = $entity->content[$field_name];
+            
+            // Add extra css classes
+            $css_class = db_select('tripal_pane_fields', 'tpf')
+              ->fields('tpf', array('css_class'))
+              ->condition('pane_id', $pane_id)
+              ->condition('field_id', $field_instance['id'])
+              ->execute()
+              ->fetchField();
+              $fields[$pane_id][$field_name]['#css_class'] = $css_class;
           }
           // Unset the field
           unset ($entity->content[$field_name]);

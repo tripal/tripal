@@ -45,6 +45,11 @@ foreach ($panes AS $pane_id => $pane) {
   $current_layout = '';
   $counter = 0;
   foreach ($weighed_fields AS $field) {
+    //Add CSS Class
+    $css_class = $field['#css_class'] ? ' ' . $field['#css_class'] : '';
+    $field['#prefix'] = '<div class="tripal_panes-field-wrapper' . $css_class . '">';
+    $field['#suffix'] = '</div>';
+    
     // The field is in a table
     if (in_array($field['#field_name'], $table_layout_group)) {
 
@@ -130,14 +135,23 @@ function tripal_panes_generic_render_table($fields, $bundle_type) {
   $header = array();
   $rows = array();
   foreach ($fields as $field) {
+    $fname =  preg_replace('/_/', '-', $field['#field_name']);
     $rows[] = array(
-      array(
-        'data' => $field['#title'],
-        'header' => TRUE,
-        'width' => '20%',
-        'nowrap' => 'nowrap'
+      'data' => array(
+        array(
+          'data' => $field['#title'],
+          'header' => TRUE,
+          'width' => '20%',
+          'nowrap' => 'nowrap',
+          'class' => array('table-field-label', 'table-field-label-' . $fname)
+        ),
+        array(
+         'data' => $field[0]['#markup'],
+          'nowrap' => 'nowrap',
+          'class' => array('table-field-items', 'table-field-items-' . $fname)
+        )
       ),
-      '<span class="field field-name-' . preg_replace('/_/', '-', $field['#field_name']) . '">' . $field[0]['#markup'] . '</span>'
+      'class' => array('table-field-row', $field['#css_class'])
     );
   }
   // Theme the table.
