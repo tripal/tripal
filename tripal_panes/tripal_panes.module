@@ -875,6 +875,7 @@ function tripal_panes_entity_view($entity, $type, $view_mode, $langcode) {
         drupal_add_css(drupal_get_path('module','tripal_panes') . '/theme/css/tripal_panes.css');
         $entity->content['tripal_panes_generic'] = array(
           '#theme' => 'tripal_panes_generic',
+          '#bundle' => $bundle,
           '#panes' => $panes,
           '#fields' => $fields,
         );
