@@ -1898,6 +1898,20 @@ function tripal_bulk_loader_template_field_form($form, &$form_state = NULL) {
     '#disabled' => ($values['no_record_id']) ? FALSE : TRUE,
     '#default_value' => $values['record_name'],
   );
+
+  $form['fields']['record']['record_mode'] = array(
+    '#type' => 'radios',
+    '#title' => 'Record Type/Action',
+    '#options' => array(
+      'select' => 'SELECT: Don\'t insert this record: it\'s used to define a foreign key in another record',
+      'select_once' => 'SELECT ONCE: Select the record only once for each constant set.',
+      'insert' => 'INSERT: Insert the record',
+      'insert_once' => 'INSERT ONCE: Record will be inserted once for each constant set.',
+    ),
+    '#description' => 'This indicates the action to take when loading a record. There are many additional options available when editing a record such as "Select if Duplicate" which is very important on insert if the record might already exist.',
+    '#default_value' => 'insert',
+    '#disabled' => ($values['no_record_id']) ? FALSE : TRUE,
+  );
   
   $form['fields']['field'] = array(
     '#type' => 'fieldset',
@@ -2238,7 +2252,7 @@ function tripal_bulk_loader_template_field_form_submit($form, &$form_state) {
       $record2priority[$record_name] = $priority;
       $template[$priority]['table'] = $form_state['values']['chado_table'];
       $template[$priority]['record_id'] = $record_name;
-
+      $template[$priority]['mode'] = $form_state['values']['record_mode'];
     }
     else {
       $priority = $form_state['storage']['record_id'];
