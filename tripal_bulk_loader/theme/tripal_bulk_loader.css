@@ -17,3 +17,31 @@
   background-color: #DDDAC0;
   color: #840;
 }
+
+/**
+ * Tripal Bulk Loader Edit Template Form.
+ */
+#tripal-bulk-loader-modify-template-base-form tr.odd .form-item, tr.even .form-item {
+  white-space: normal;
+  word-wrap: break-word;
+}
+#tripal-bulk-loader-modify-template-base-form .fieldset-description {
+  padding-top: 20px;
+}
+#tripal-bulk-loader-modify-template-base-form td.tbl-drag{
+  width: 20px;
+}
+#tripal-bulk-loader-modify-template-base-form td.tbl-action-record-links {
+  width: 150px;
+}
+#tripal-bulk-loader-modify-template-base-form td.tbl-action-field-links {
+  width: 100px;
+}
+#tripal-bulk-loader-modify-template-base-form td.data-column {
+  text-align: center;
+  width: 50px;
+}
+#tripal-bulk-loader-modify-template-base-form td.field-type {
+  text-align: center;
+  width: 50px;
+}

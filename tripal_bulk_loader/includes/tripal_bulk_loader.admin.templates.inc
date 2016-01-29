@@ -31,6 +31,11 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
   $breadcrumb[] = l('Templates', 'admin/tripal/loaders/bulk/templates');
   drupal_set_breadcrumb($breadcrumb);
 
+  // Add CSS
+  $form['#attached']['css'] = array(
+    drupal_get_path('module', 'tripal_bulk_loader') . '/theme/tripal_bulk_loader.css',
+  );
+
    // get template id from path and rebuild form
   if (isset($form_state['build_info']['args'][1])) {
     $mode = 'edit';
@@ -198,7 +203,10 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
   );
 
   $form['fields']['fields-data'] = array(
+    '#prefix' => '<div id="tripal-bulk-loader-template-fields">',
+    '#suffix' => '</div>',
     '#tree' => TRUE,
+    '#theme' => 'tripal_bulk_loader_modify_template_base_form_fields'
   );
 
   if (array_key_exists('template', $form_state['storage'])) {
