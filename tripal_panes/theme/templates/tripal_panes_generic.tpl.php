@@ -13,7 +13,9 @@ drupal_add_js(drupal_get_path('module','tripal_panes') . '/theme/js/tripal_panes
 // Get the variables passed into this template.
 $panes = $variables['element']['#panes'];
 $fields = $variables['element']['#fields'];
+$bundle = $variables['element']['#bundle'];
 
+$bundle_type = $bundle->name . '-' . $bundle->label;
 
 // Process fields in panes
 $content = '';
@@ -43,6 +45,11 @@ foreach ($panes AS $pane_id => $pane) {
   $current_layout = '';
   $counter = 0;
   foreach ($weighed_fields AS $field) {
+    //Add CSS Class
+    $css_class = $field['#css_class'] ? ' ' . $field['#css_class'] : '';
+    $field['#prefix'] = '<div class="tripal_panes-field-wrapper' . $css_class . '">';
+    $field['#suffix'] = '</div>';
+    
     // The field is in a table
     if (in_array($field['#field_name'], $table_layout_group)) {
 
@@ -56,7 +63,7 @@ foreach ($panes AS $pane_id => $pane) {
     // The field is not in a table
     else {
       if ($counter != 0 && $current_layout != 'Default') {
-        $output .= tripal_panes_generic_render_table($table_layout);
+        $output .= tripal_panes_generic_render_table($table_layout, $bundle_type);
         $table_layout = array();
       }
       $no_group [$field['#weight'] . $field['#field_name']] = $field;
@@ -65,7 +72,7 @@ foreach ($panes AS $pane_id => $pane) {
     $counter ++;
   }
   if ($current_layout == 'Table') {
-    $output .= tripal_panes_generic_render_table($table_layout);
+    $output .= tripal_panes_generic_render_table($table_layout, $bundle_type);
   }
   else if ($current_layout == 'Default') {
     $output .= tripal_panes_generic_render_fields($no_group);
@@ -89,9 +96,6 @@ foreach ($panes AS $pane_id => $pane) {
     $content .= theme('fieldset', $collapsible_item);
   }
 }
-
-// TODO: need to add the bundle type
-$bundle_type = '';
 
 if ($has_base_pane_only) { ?>
   <div id ="tripal-<?php print $bundle_type?>-contents-box"> <?php
@@ -122,7 +126,7 @@ else { ?>
  * @return
  *   A string containing the HTMLified table.
  */
-function tripal_panes_generic_render_table($fields) {
+function tripal_panes_generic_render_table($fields, $bundle_type) {
   // If we have no fields in table layout
   if (count($fields) == 0) {
     return '';
@@ -132,6 +136,7 @@ function tripal_panes_generic_render_table($fields) {
   $header = array();
   $rows = array();
   foreach ($fields as $field) {
+<<<<<<< HEAD
     // We may have multiple values for the field, so we need to iterate
     // through those values first and add each one.
     $value = '';
@@ -152,6 +157,25 @@ function tripal_panes_generic_render_table($fields) {
         'nowrap' => 'nowrap'
       ),
       $value,
+=======
+    $fname =  preg_replace('/_/', '-', $field['#field_name']);
+    $rows[] = array(
+      'data' => array(
+        array(
+          'data' => $field['#title'],
+          'header' => TRUE,
+          'width' => '20%',
+          'nowrap' => 'nowrap',
+          'class' => array('table-field-label', 'table-field-label-' . $fname)
+        ),
+        array(
+         'data' => $field[0]['#markup'],
+          'nowrap' => 'nowrap',
+          'class' => array('table-field-items', 'table-field-items-' . $fname)
+        )
+      ),
+      'class' => array('table-field-row', $field['#css_class'])
+>>>>>>> 4bdfb94fb7965dcce6b05c34bc253b6e49f20c22
     );
   }
 
@@ -160,7 +184,7 @@ function tripal_panes_generic_render_table($fields) {
     'header' => $header,
     'rows' => $rows,
     'attributes' => array(
-      'id' => '',  // TODO: need to add an ID
+      'id' => 'tripal_panes-' . $bundle_type . '-table',  // TODO: need to add an ID
       'class' => 'tripal-data-horz-table'
     ),
     'sticky' => FALSE,
