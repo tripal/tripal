@@ -515,3 +515,40 @@ function tripal_associate_dbxref($basetable, $record_id, $dbxref, $options = arr
 
   return FALSE;
 }
+
+/**
+ * This function is intended to be used in autocomplete forms
+ * for searching for accession that begin with the provided string
+ *
+ * @param $db_id
+ *   The DB ID in which to search for the term
+ * @param $string
+ *   The string to search for
+ *
+ * @return
+ *   A json array of terms that begin with the provided string
+ *
+ * @ingroup tripal_db_api
+ */
+function tripal_autocomplete_dbxref($db_id, $string = '') {
+  if (!$db_id) {
+    return drupal_json_output(array());
+  }
+  $sql = "
+    SELECT dbxref_id, accession
+    FROM {dbxref}
+    WHERE db_id = :db_id and lower(accession) like lower(:accession)
+    ORDER by accession
+    LIMIT 25 OFFSET 0
+  ";
+  drupal_debug($string);
+  drupal_debug($db_id);
+  $results = chado_query($sql, array(':db_id' => $db_id, ':accession' => $string . '%'));
+  $items = array();
+  foreach ($results as $ref) {
+    $items[$ref->accession] = $ref->accession;
+  }
+  drupal_debug($items);
+
+  drupal_json_output($items);
+}

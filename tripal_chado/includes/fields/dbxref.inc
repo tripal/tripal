@@ -13,10 +13,11 @@
 function tripal_chado_dbxref_formatter(&$element, $entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
 
+  $chado_table = $field['settings']['chado_table'];
   foreach ($items as $delta => $item) {
     $accession = '';
-    if ($item['value']) {
-      $dbxref = chado_generate_var('dbxref', array('dbxref_id' => $item['value']));
+    if ($item[$chado_table . '__dbxref_id']) {
+      $dbxref = chado_generate_var('dbxref', array('dbxref_id' => $item[$chado_table . '__dbxref_id']));
       $accession = $dbxref->db_id->name . ':' . $dbxref->accession;
       if ($dbxref->db_id->urlprefix) {
         $accession = l($accession, $dbxref->db_id->urlprefix . '/' . $dbxref->accession, array('attributes' => array('target' => '_blank')));
@@ -41,10 +42,21 @@ function tripal_chado_dbxref_formatter(&$element, $entity_type, $entity, $field,
  * @param unknown $delta
  * @param unknown $element
  */
-function tripal_chado_dbxref_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function tripal_chado_dbxref_widget(&$widget, $form, $form_state, $field,
+    $instance, $langcode, $items, $delta, $element) {
+
   $field_name = $field['field_name'];
 
+  // Get the FK column that links to the base table.
+  $chado_table = $field['settings']['chado_table'];
+  $base_table = $field['settings']['base_table'];
+  $schema = chado_get_schema($chado_table);
+  $pkey = $schema['primary key'][0];
+  $fkey = array_values($schema['foreign keys'][$base_table]['columns'])[0];
+
   // Get the field defaults.
+  $record_id = '';
+  $fkey_value = '';
   $dbxref_id = '';
   $db_id = '';
   $accession = '';
@@ -54,20 +66,24 @@ function tripal_chado_dbxref_widget(&$widget, $form, $form_state, $field, $insta
   // If the field already has a value then it will come through the $items
   // array.  This happens when editing an existing record.
   if (array_key_exists($delta, $items)) {
-    $dbxref_id = $items[$delta]['value'];
-    $db_id = $items[$delta]['dbxref__db_id'];
-    $accession = $items[$delta]['dbxref__accession'];
-    $version = $items[$delta]['dbxref__version'];
-    $description = $items[$delta]['dbxref__description'];
+    $record_id = $items[$delta]['value'];
+    $fkey_value = $items[$delta][$field_name . '__' . $fkey];
+    $dbxref_id = $items[$delta][$field_name . '__dbxref_id'];
+    $db_id = $items[$delta][$field_name . '--dbxref__db_id'];
+    $accession = $items[$delta][$field_name . '--dbxref__accession'];
+    $version = $items[$delta][$field_name . '--dbxref__version'];
+    $description = $items[$delta][$field_name . '--dbxref__description'];
   }
 
   // Check $form_state['values'] to see if an AJAX call set the values.
   if (array_key_exists('values', $form_state)) {
-    $dbxref_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_name);
-    $db_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, "dbxref__db_id");
-    $accession = tripal_chado_get_field_form_values($field_name, $form_state, 0, "dbxref__accession");
-    $version = tripal_chado_get_field_form_values($field_name, $form_state, 0, "dbxref__version");
-    $description = tripal_chado_get_field_form_values($field_name, $form_state, 0, "dbxref__description");
+    $record_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name);
+    $fkey_value = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '__' . $fkey);
+    $dbxref_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '__dbxref_id');
+    $db_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__db_id');
+    $accession = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__accession');
+    $version = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__version');
+    $description = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__description');
   }
 
   // If we are here because our parent was triggered in a form submit
@@ -85,9 +101,11 @@ function tripal_chado_dbxref_widget(&$widget, $form, $form_state, $field, $insta
   $schema = chado_get_schema('dbxref');
   $options = tripal_get_db_select_options();
 
-  $widget['#element_validate'] = array('tripal_chado_dbxref_id_widget_validate');
-  $widget['#theme'] = 'tripal_chado_dbxref_id_widget';
-  $widget['#prefix'] =  "<span id='$field_name-dbxref--db-id'>";
+  $widget['#table_name'] = $chado_table;
+  $widget['#fkey_field'] = $fkey;
+  $widget['#element_validate'] = array('tripal_chado_dbxref_widget_validate');
+  $widget['#theme'] = 'tripal_chado_dbxref_widget';
+  $widget['#prefix'] =  "<span id='$field_name-dbxref--db-id-$delta'>";
   $widget['#suffix'] =  "</span>";
 
   // A temporary element used for theming the fieldset.
@@ -95,52 +113,63 @@ function tripal_chado_dbxref_widget(&$widget, $form, $form_state, $field, $insta
     '#title' => $element['#title'],
     '#description' =>  $element['#description'],
     '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-    '#theme' => 'tripal_chado_dbxref_id_widget',
+    '#theme' => 'tripal_chado_dbxref_widget',
     '#collapsible' => TRUE,
     '#collapsed' => $collapsed,
   );
 
   $widget['value'] = array(
-    '#type' => 'hidden',
+    '#type' => 'value',
+    '#default_value' => $record_id,
+  );
+  $widget[$field_name . '__dbxref_id'] = array(
+    '#type' => 'value',
     '#default_value' => $dbxref_id,
   );
-
-  $widget['dbxref__db_id'] = array(
+  $widget[$field_name . '__' . $fkey] = array(
+    '#type' => 'value',
+    '#default_value' => $fkey_value,
+  );
+  $widget[$field_name . '--dbxref__dbxref_id'] = array(
+    '#type' => 'value',
+    '#default_value' => $dbxref_id,
+  );
+  $widget[$field_name . '--dbxref__db_id'] = array(
     '#type' => 'select',
     '#title' => t('Database'),
     '#options' => $options,
     '#required' => $element['#required'],
     '#default_value' => $db_id,
     '#ajax' => array(
-      'callback' => "tripal_chado_dbxref_id_widget_form_ajax_callback",
-      'wrapper' => "$field_name-dbxref--db-id",
+      'callback' => "tripal_chado_dbxref_widget_form_ajax_callback",
+      'wrapper' => "$field_name-dbxref--db-id-$delta",
       'effect' => 'fade',
       'method' => 'replace'
     ),
   );
-  $widget['dbxref__accession'] = array(
+  $widget[$field_name . '--dbxref__accession'] = array(
     '#type' => 'textfield',
     '#title' => t('Accession'),
     '#default_value' => $accession,
     '#required' => $element['#required'],
     '#maxlength' => array_key_exists('length', $schema['fields']['accession']) ? $schema['fields']['accession']['length'] : 255,
     '#size' => 15,
-    '#autocomplete_path' => "admin/tripal/chado/tripal_db/dbxref/auto_name/$db_id",
+    '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/dbxref/' . $db_id,
     '#ajax' => array(
-      'callback' => "tripal_chado_dbxref_id_widget_form_ajax_callback",
-      'wrapper' => "$field_name-dbxref--db-id",
+      'callback' => "tripal_chado_dbxref_widget_form_ajax_callback",
+      'wrapper' => "$field_name-dbxref--db-id-$delta",
       'effect' => 'fade',
       'method' => 'replace'
     )
   );
-  $widget['dbxref__version'] = array(
+  $widget[$field_name . '--dbxref__version'] = array(
     '#type' => 'textfield',
     '#title' => t('Version'),
     '#default_value' => $version,
     '#maxlength' => array_key_exists('length', $schema['fields']['version']) ? $schema['fields']['version']['length'] : 255,
     '#size' => 5,
   );
-  $widget['dbxref__description'] = array(
+  $widget[$field_name . '--dbxref__description'] = array(
     '#type' => 'textfield',
     '#title' => t('Description'),
     '#default_value' => $description,
@@ -150,15 +179,16 @@ function tripal_chado_dbxref_widget(&$widget, $form, $form_state, $field, $insta
     '#type' => 'item',
     '#markup' => l('Add a new database', 'admin/tripal/chado/tripal_db/add', array('attributes' => array('target' => '_blank')))
   );
-  dpm($widget);
 }
 /**
- * An Ajax callback for the tripal_chado_admin_publish_form..
+ * An Ajax callback for the dbxref widget.
  */
 function tripal_chado_dbxref_widget_form_ajax_callback($form, $form_state) {
+
   $field_name = $form_state['triggering_element']['#parents'][0];
-  $db_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, 'dbxref__db_id');
-  $accession = tripal_chado_get_field_form_values($field_name, $form_state, 0, 'dbxref__accession');
+  $delta = $form_state['triggering_element']['#parents'][2];
+  $db_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__db_id');
+  $accession = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__accession');
   if ($db_id and $accession) {
     $values = array(
       'db_id' => $db_id,
@@ -171,14 +201,18 @@ function tripal_chado_dbxref_widget_form_ajax_callback($form, $form_state) {
     }
   }
 
-  return $form[$field_name];
+  return $form[$field_name]['und'][$delta];
 }
 
 /**
  * Callback function for validating the tripal_chado_organism_select_widget.
  */
 function tripal_chado_dbxref_widget_validate($element, &$form_state) {
-  $field_name = $element['#parents'][0];
+
+  $field_name = $element['#field_name'];
+  $delta = $element['#delta'];
+  $table_name = $element['#table_name'];
+  $fkey = $element['#fkey_field'];
 
   // If the form ID is field_ui_field_edit_form, then the user is editing the
   // field's values in the manage fields form of Drupal.  We don't want
@@ -188,11 +222,11 @@ function tripal_chado_dbxref_widget_validate($element, &$form_state) {
   }
 
   // Get the field values.
-  $dbxref_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_name);
-  $db_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, "dbxref__db_id");
-  $accession = tripal_chado_get_field_form_values($field_name, $form_state, 0, "dbxref__accession");
-  $version = tripal_chado_get_field_form_values($field_name, $form_state, 0, "dbxref__version");
-  $description = tripal_chado_get_field_form_values($field_name, $form_state, 0, "dbxref__description");
+  $dbxref_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '__dbxref_id');
+  $db_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__db_id');
+  $accession = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__accession');
+  $version = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__version');
+  $description = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__description');
 
   // Make sure that if a database ID is provided that an accession is also
   // provided.  Here we use the form_set_error function rather than the
@@ -202,13 +236,13 @@ function tripal_chado_dbxref_widget_validate($element, &$form_state) {
   // we borrow the code from the 'form_error' function and append the field
   // so that the proper field is highlighted on error.
   if (!$db_id and $accession) {
-    form_set_error(implode('][', $element ['#parents']) . '][dbxref__db_id', t("A database and the accession must both be provided for the primary cross reference."));
+    form_set_error(implode('][', $element ['#parents']) . '][' . $table_name . '--dbxref__db_id', t("A database and the accession must both be provided for the primary cross reference."));
   }
   if ($db_id and !$accession) {
-    form_set_error(implode('][', $element ['#parents']) . '][dbxref__accession', t("A database and the accession must both be provided for the primary cross reference."));
+    form_set_error(implode('][', $element ['#parents']) . '][' . $table_name . '--dbxref__accession', t("A database and the accession must both be provided for the primary cross reference."));
   }
   if (!$db_id and !$accession and ($version or $description)) {
-    form_set_error(implode('][', $element ['#parents']) . '][dbxref__db_id', t("A database and the accession must both be provided for the primary cross reference."));
+    form_set_error(implode('][', $element ['#parents']) . '][' . $table_name . '--dbxref__db_id', t("A database and the accession must both be provided for the primary cross reference."));
   }
 
   // If user did not select a database, we want to remove dbxref_id from the
@@ -222,7 +256,8 @@ function tripal_chado_dbxref_widget_validate($element, &$form_state) {
   if ($db_id and $accession) {
     $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id, 'accession' => $accession));
     if ($dbxref and $dbxref->dbxref_id != $dbxref_id) {
-      tripal_chado_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id);
+      tripal_chado_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id, $delta, $table_name . '__dbxref_id');
+      tripal_chado_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id, $delta, $table_name . '--dbxref__dbxref_id');
     }
   }
 }
@@ -234,39 +269,30 @@ function tripal_chado_dbxref_widget_validate($element, &$form_state) {
 function theme_tripal_chado_dbxref_widget($variables) {
   $element = $variables['element'];
 
+  // These two fields were added to the widget to help identify the fields
+  // for layout.
+  $table_name = $element['#table_name'];
+  $fkey = $element['#fkey_field'];
+
   $layout = "
-    <div class=\"primary-dbxref-widget\">
-      <div class=\"primary-dbxref-widget-item\">" .
-        drupal_render($element['dbxref__db_id']) . "
+    <div class=\"secondary-dbxref-widget\">
+      <div class=\"secondary-dbxref-widget-item\">" .
+        drupal_render($element[$table_name . '--dbxref__db_id']) . "
       </div>
-      <div class=\"primary-dbxref-widget-item\">" .
-        drupal_render($element['dbxref__accession']) . "
+      <div class=\"secondary-dbxref-widget-item\">" .
+        drupal_render($element[$table_name . '--dbxref__accession']) . "
       </div>
-      <div class=\"primary-dbxref-widget-item\">" .
-        drupal_render($element['dbxref__version']) . "
+      <div class=\"secondary-dbxref-widget-item\">" .
+        drupal_render($element[$table_name . '--dbxref__version']) . "
       </div>
-      <div class=\"primary-dbxref-widget-item\">" .
-        drupal_render($element['dbxref__description']) . "
+      <div class=\"secondary-dbxref-widget-item\">" .
+        drupal_render($element[$table_name . '--dbxref__description']) . "
       </div>
-      <div class=\"primary-dbxref-widget-links\">" . drupal_render($element['links']) . "</div>
+      <div class=\"secondary-dbxref-widget-links\">" . drupal_render($element['links']) . "</div>
     </div>
   ";
 
-  $classes = array();
-  $classes[] = 'collapsible';
-  $theme_settings = $element['#theme_settings'];
-  if ($theme_settings['#collapsed'] == TRUE) {
-    $classes[] = 'collapsed';
-  }
-  $fieldset = array(
-    '#title' => $element['#title'],
-    '#value' => '',
-    '#description' => $element['#description'],
-    '#children' => $layout,
-    '#attributes' => array('class' => $classes),
-  );
-
-  return theme('fieldset', array('element' => $fieldset));
+  return $layout;
 }
 
 /**
@@ -286,15 +312,21 @@ function tripal_chado_dbxref_field_load($field, $entity, $base_table, $record) {
 
   $field_name = $field['field_name'];
   $field_type = $field['type'];
-  $field_table = $field['settings']['chado_table'];
+  $chado_table = $field['settings']['chado_table'];
+  $schema = chado_get_schema($chado_table);
+  $pkey = $schema['primary key'][0];
+  $fkey = array_values($schema['foreign keys'][$base_table]['columns'])[0];
 
   // Set some defaults for the empty record.
   $entity->{$field_name}['und'][0] = array(
     'value' => '',
-    'dbxref__db_id' => '',
-    'dbxref__accession' => '',
-    'dbxref__version' => '',
-    'dbxref__description' => '',
+    $chado_table . '__' . $fkey => '',
+    $chado_table . '__' . 'dbxref_id' => '',
+    $chado_table . '--' . 'dbxref__dbxref_id' => '',
+    $chado_table . '--' . 'dbxref__db_id' => '',
+    $chado_table . '--' . 'dbxref__accession' => '',
+    $chado_table . '--' . 'dbxref__version' => '',
+    $chado_table . '--' . 'dbxref__description' => '',
   );
 
   $linker_table = $base_table . '_dbxref';
@@ -304,11 +336,14 @@ function tripal_chado_dbxref_field_load($field, $entity, $base_table, $record) {
   foreach ($record->$linker_table as $index => $linker) {
     $dbxref = $linker->dbxref_id;
     $entity->{$field_name}['und'][$i] = array(
-      'value' => $dbxref->dbxref_id,
-      'dbxref__db_id' => $dbxref->db_id->db_id,
-      'dbxref__accession' => $dbxref->accession,
-      'dbxref__version' => $dbxref->version,
-      'dbxref__description' => $dbxref->description,
+      'value' => $linker->$pkey,
+      $chado_table . '__' . $fkey => $linker->$fkey->$fkey,
+      $chado_table . '__' . 'dbxref_id' => $dbxref->dbxref_id,
+      $chado_table . '--' . 'dbxref__dbxref_id' => $dbxref->dbxref_id,
+      $chado_table . '--' . 'dbxref__db_id' => $dbxref->db_id->db_id,
+      $chado_table . '--' . 'dbxref__accession' => $dbxref->accession,
+      $chado_table . '--' . 'dbxref__version' => $dbxref->version,
+      $chado_table . '--' . 'dbxref__description' => $dbxref->description,
     );
     $i++;
   }

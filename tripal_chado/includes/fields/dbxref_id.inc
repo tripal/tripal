@@ -101,7 +101,7 @@ function tripal_chado_dbxref_id_widget(&$widget, $form, $form_state, $field, $in
   );
 
   $widget['value'] = array(
-    '#type' => 'hidden',
+    '#type' => 'value',
     '#default_value' => $dbxref_id,
   );
 
@@ -125,9 +125,9 @@ function tripal_chado_dbxref_id_widget(&$widget, $form, $form_state, $field, $in
     '#required' => $element['#required'],
     '#maxlength' => array_key_exists('length', $schema['fields']['accession']) ? $schema['fields']['accession']['length'] : 255,
     '#size' => 15,
-    '#autocomplete_path' => "admin/tripal/chado/tripal_db/dbxref/auto_name/$db_id",
+    '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/dbxref/' . $db_id,
     '#ajax' => array(
-      'callback' => "tripal_chado_dbxref_id_widget_form_ajax_callback",
+      'callback' => "tripal_chado_dbxref_widget_form_ajax_callback",
       'wrapper' => "$field_name-dbxref--db-id",
       'effect' => 'fade',
       'method' => 'replace'

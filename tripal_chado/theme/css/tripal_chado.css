@@ -7,7 +7,13 @@
 .primary-dbxref-widget-links {
    clear: both;
 }
-
+.secondary-dbxref-widget-item {
+   float: left;
+   margin-right: 10px;
+}
+.secondary-dbxref-widget-links {
+   clear: both;
+}
 .kvproperty-adder-widget-item {
    float: left;
    margin-right: 10px;

@@ -36,7 +36,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
 
   // Convert the fields into a key/value list of fields and their values.
   $field_vals = tripal_chado_field_storage_unnest_fields($fields, $entity_type, $entity);
-
+dpm($field_vals);
   // Recursively write fields for the base table.
   $record_id = tripal_chado_field_storage_write_recursive($entity_type, $entity, $term,
       $op, $field_vals, $base_table, $base_table, $type_field, $record_id);
