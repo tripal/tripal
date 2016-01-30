@@ -56,7 +56,7 @@ function tripal_chado_dbxref_widget(&$widget, $form, $form_state, $field,
 
   // Get the field defaults.
   $record_id = '';
-  $fkey_value = '';
+  $fkey_value = $element['#entity']->chado_record_id;
   $dbxref_id = '';
   $db_id = '';
   $accession = '';
