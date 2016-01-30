@@ -49,7 +49,7 @@ foreach ($panes AS $pane_id => $pane) {
     $css_class = $field['#css_class'] ? ' ' . $field['#css_class'] : '';
     $field['#prefix'] = '<div class="tripal_panes-field-wrapper' . $css_class . '">';
     $field['#suffix'] = '</div>';
-    
+
     // The field is in a table
     if (in_array($field['#field_name'], $table_layout_group)) {
 
@@ -136,7 +136,6 @@ function tripal_panes_generic_render_table($fields, $bundle_type) {
   $header = array();
   $rows = array();
   foreach ($fields as $field) {
-<<<<<<< HEAD
     // We may have multiple values for the field, so we need to iterate
     // through those values first and add each one.
     $value = '';
@@ -157,25 +156,6 @@ function tripal_panes_generic_render_table($fields, $bundle_type) {
         'nowrap' => 'nowrap'
       ),
       $value,
-=======
-    $fname =  preg_replace('/_/', '-', $field['#field_name']);
-    $rows[] = array(
-      'data' => array(
-        array(
-          'data' => $field['#title'],
-          'header' => TRUE,
-          'width' => '20%',
-          'nowrap' => 'nowrap',
-          'class' => array('table-field-label', 'table-field-label-' . $fname)
-        ),
-        array(
-         'data' => $field[0]['#markup'],
-          'nowrap' => 'nowrap',
-          'class' => array('table-field-items', 'table-field-items-' . $fname)
-        )
-      ),
-      'class' => array('table-field-row', $field['#css_class'])
->>>>>>> 4bdfb94fb7965dcce6b05c34bc253b6e49f20c22
     );
   }
 
