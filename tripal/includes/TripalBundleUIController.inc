@@ -429,7 +429,7 @@ function tripal_admin_add_type_form_submit($form, &$form_state) {
 
     // Before we try to add this type, check to see if it already exists
     // as a bundle.
-    $term = tripal_load_term_entity($namespace, $accession);
+    $term = tripal_load_term_entity(array('namespace' => $namespace, 'accession' => $accession));
     if (!$term) {
       $error = '';
       $success = tripal_create_bundle($namespace, $accession, $term_name, $error);

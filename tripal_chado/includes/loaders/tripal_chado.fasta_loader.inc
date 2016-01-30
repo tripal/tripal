@@ -135,7 +135,7 @@ function tripal_feature_fasta_load_form() {
        this symbol in your regular expression.')
   );
 
-  // Advanced database cross-reference optoins
+  // Advanced database cross reference options.
   $form['advanced']['db'] = array('#type' => 'fieldset',
     '#title' => t('External Database Reference'),'#weight' => 6,'#collapsed' => TRUE
   );

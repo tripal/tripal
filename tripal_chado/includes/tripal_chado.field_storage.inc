@@ -6,9 +6,14 @@
 function tripal_chado_field_storage_info() {
   return array(
     'field_chado_storage' => array(
-      'label' => t('Chado storage'),
+      'label' => t('Chado'),
       'description' => t('Stores fields in the local Chado database.'),
       'settings' => array(),
+      // The logo_url key is supported by Tripal. It's not a Drupal key. It's
+      // used for adding a logo or picture for the data store to help make it
+      // more easily recognized on the  field_ui_field_overview_form. Ideally
+      // the URL should point to a relative path on the local Drupal site.
+      'logo_url' => url(drupal_get_path('module', 'tripal') . '/theme/images/250px-ChadoLogo.png'),
     ),
   );
 }
@@ -263,8 +268,16 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
     // Get the base record if one exists
     $columns = array('*');
     $match = array($pkey_field => $record_id);
-    $record = chado_select_record($base_table, $columns, $match);
-    $record = $record[0];
+    $record = chado_generate_var($base_table, $match);
+
+    // For now, expand all 'text' fields.
+    // TODO: we want to be a bit smarter and allow the user to configure this
+    // for now we'll expand.
+    foreach ($schema['fields'] as $field_name => $details) {
+      if ($schema['fields'][$field_name]['type'] == 'text') {
+        $record = chado_expand_var($record, 'field', $base_table . '.' . $field_name);
+      }
+    }
 
     // Iterate through the entity's fields so we can get the column names
     // that need to be selected from each of the tables represented.

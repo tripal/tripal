@@ -127,20 +127,34 @@ function tripal_panes_generic_render_table($fields) {
   if (count($fields) == 0) {
     return '';
   }
+
   // Create the rows for the table.
   $header = array();
   $rows = array();
   foreach ($fields as $field) {
+    // We may have multiple values for the field, so we need to iterate
+    // through those values first and add each one.
+    $value = '';
+    foreach (element_children($field) as $index) {
+      $eo = 'odd';
+      if ($index % 2 == 0) {
+        $eo = 'even';
+      }
+      $value .= "<div class=\"field-item $eo\">" . $field[$index]['#markup'] . '</div>';
+    }
+
+    // Add the new row.
     $rows[] = array(
       array(
-        'data' => $field['#title'],
+        'data' => '<div class="field-label">' . $field['#title'] . '</div>',
         'header' => TRUE,
         'width' => '20%',
         'nowrap' => 'nowrap'
       ),
-      '<span class="field field-name-' . preg_replace('/_/', '-', $field['#field_name']) . '">' . $field[0]['#markup'] . '</span>'
+      $value,
     );
   }
+
   // Theme the table.
   return theme_table(array(
     'header' => $header,

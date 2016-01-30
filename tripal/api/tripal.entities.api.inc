@@ -2,22 +2,37 @@
 /**
  * Retrieves a TripalTerm entity that matches the given arguments.
  *
- * @param $namespace
- *   The namespace for the vocabulary
- * @param $accession
- *   The ID (accession) of the term in the vocabulary.
+ * @param $values
+ *   An associative array used to match a term.  Valid keys may be 'namespace',
+ *   'accession, or 'term_id'.  The keys 'namespace' and 'accession' must
+ *   always be used together to uniquely identify a term.  The key 'term_id'
+ *   can be used alone to uniquely identify a term.
  *
  * @return
  *   A TripalTerm entity object or NULL if not found.
  */
-function tripal_load_term_entity($namespace, $accession) {
-  $query = db_select('tripal_term', 'tt');
-  $query->join('tripal_vocab' ,'tv', 'tv.id = tt.vocab_id');
-  $query->fields('tt', array('id', 'accession'))
-    ->fields('tv', array('namespace'))
-    ->condition('tv.namespace', $namespace)
-    ->condition('tt.accession', $accession);
-  $term = $query->execute()->fetchObject();
+function tripal_load_term_entity($values) {
+  $namespace = array_key_exists('namespace', $values) ? $values['namespace'] : '';
+  $accession = array_key_exists('accession', $values) ? $values['accession'] : '';
+  $term_id = array_key_exists('term_id', $values) ? $values['term_id'] : '';
+
+  $term = NULL;
+
+  if ($namespace and $accession) {
+    $query = db_select('tripal_term', 'tt');
+    $query->join('tripal_vocab' ,'tv', 'tv.id = tt.vocab_id');
+    $query->fields('tt', array('id'))
+      ->fields('tv', array('namespace'))
+      ->condition('tv.namespace', $namespace)
+      ->condition('tt.accession', $accession);
+    $term = $query->execute()->fetchObject();
+  }
+  else if ($term_id) {
+    $query = db_select('tripal_term', 'tt');
+    $query->fields('tt', array('id'))
+      ->condition('tt.id', $term_id);
+    $term = $query->execute()->fetchObject();
+  }
 
   if ($term) {
     $entity = entity_load('TripalTerm', array($term->id));
@@ -29,17 +44,24 @@ function tripal_load_term_entity($namespace, $accession) {
 /**
  * Retrieves a TripalVocab entity that maches the given arguments.
  *
- * @param $namespace
+ * @param $values
+ *   An associative array used to match a term.  Currently, the only valid keys
+ *   is 'namespace'.
  *
  * @return
  * A TripalVocab entity object or NULL if not found.
  */
-function tripal_load_vocab_entity($namespace) {
-  $vocab = db_select('tripal_vocab', 'tv')
-    ->fields('tv')
-    ->condition('tv.namespace', $namespace)
-    ->execute()
-    ->fetchObject();
+function tripal_load_vocab_entity($values) {
+  $namespace = array_key_exists('namespace', $values) ? $values['namespace'] : '';
+  $vocab = NULL;
+
+  if ($namespace) {
+    $vocab = db_select('tripal_vocab', 'tv')
+      ->fields('tv')
+      ->condition('tv.namespace', $namespace)
+      ->execute()
+      ->fetchObject();
+  }
 
   if ($vocab) {
     $entity = entity_load('TripalVocab', array($vocab->id));
@@ -97,14 +119,14 @@ function tripal_load_bundle_entity($values) {
 function tripal_create_bundle($namespace, $accession, $term_name, &$error = '') {
 
   // First create the TripalVocab if it doesn't already exist.
-  $vocab = tripal_load_vocab_entity($namespace);
+  $vocab = tripal_load_vocab_entity(array('namespace' => $namespace));
   if (!$vocab) {
     $vocab = entity_get_controller('TripalVocab')->create(array('namespace' => $namespace));
     $vocab->save();
   }
 
   // Next create the TripalTerm if it doesn't already exist.
-  $term = tripal_load_term_entity($namespace, $accession);
+  $term = tripal_load_term_entity(array('namespace' => $namespace, 'accession' => $accession));
   if (!$term) {
     $args = array('vocab_id' => $vocab->id, 'accession' => $accession, 'name' => $term_name);
     $term = entity_get_controller('TripalTerm')->create($args);
@@ -136,10 +158,30 @@ function tripal_create_bundle($namespace, $accession, $term_name, &$error = '') 
   // Get the bundle object.
   $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
 
-  // Allow modules to now add fields to the bundle
+  // Allow modules now add fields to the bundle
   module_invoke_all('add_bundle_fields', 'TripalEntity', $bundle, $term);
 
   return TRUE;
+}
+
+/**
+ * Refreshes the bundle such that new fields added by modules will be found.
+ *
+ * @param $bundle_name
+ *   The name of the bundle to refresh (e.g. bio-data_4).
+ */
+function tripal_refresh_bundle_fields($bundle_name) {
+  // Get the bundle object.
+  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+  if (!$bundle) {
+    tripal_report_error('tripal', TRIPAL_ERROR, "Unrecognized bundle name '%bundle'.",
+        array('%bundle' => $bundle_name));
+    return FALSE;
+  }
+  $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+
+  // Allow modules now add fields to the bundle
+  module_invoke_all('add_bundle_fields', 'TripalEntity', $bundle, $term);
 }
 /**
  * Adds a field to an Entity bundle.
@@ -248,7 +290,7 @@ function hook_entity_create(&$entity, $entity_type) {
  * @param $bundle
  *   A TripalBundle object.
  * @param $term
- *   An instance of a TripalTerm object.
+ *   A TripalTerm object.
  *
  * @return
  *   TRUE on success, FALSE on failure.
@@ -701,13 +743,13 @@ function hook_vocab_select_term_form_validate($form, &$form_state) {
  * @param $form_state
  *
  */
-function hook__vocab_import_form($form, &$form_state) {
+function hook_vocab_import_form($form, &$form_state) {
   return $form;
 }
-function hook__vocab_import_form_validate($form, &$form_state) {
+function hook_vocab_import_form_validate($form, &$form_state) {
 
 }
-function hook__vocab_import_form_submit($form, &$form_state) {
+function hook_vocab_import_form_submit($form, &$form_state) {
 
 }
 
