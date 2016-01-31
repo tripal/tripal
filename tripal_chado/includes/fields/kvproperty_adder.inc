@@ -98,6 +98,7 @@ function tripal_chado_kvproperty_adder_widget_validate($element, &$form_state) {
            'chado_column' => $pkey,
            'base_table' => $base_table,
          ),
+         'storage' => 'field_chado_storage',
          'widget_settings' => array(),
          'description' => $term[0]->definition ? $term[0]->definition : '',
          'label' => ucfirst(preg_replace('/_/', ' ', $term[0]->name)),

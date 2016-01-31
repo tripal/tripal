@@ -629,36 +629,6 @@ function tripal_chado_field_formatter_info() {
 }
 
 /**
- * Implements hook_chado_field_alter().
- *
- * This function is used to change the default field formatter and widget
- * that are assigned to fields of an Entity. This hook is only used for
- * those fields that correspond to a column in a Chado table.  An implementation
- * of this hook can be used to change the default formatters and widgets to
- * custom formatters and widgets that are created by the module creating
- * this hook.
- *
- * By default, Tripal will provide custom formatters and widgets for many
- * columns in Chado tables, therefore, this hook will most likely be of use
- * to extension modules that create custom table inside of Chado.
- *
- * @param $field
- */
-function hook_chado_field_alter(&$field) {
-
-  if (!array_key_exists('field_settings', $field)) {
-    return;
-  }
-  // If the field doesn't list the Chado table or column then just return.
-  if (!array_key_exists('chado_table', $field['field_settings']) or
-      !array_key_exists('chado_column', $field['field_settings'])) {
-    return;
-  }
-  // Here we provide new field types and widgets for FK fields
-  // and fields that need special attention.
-}
-
-/**
  * Implements hook_field_widget_form_alter().
  */
 function tripal_chado_field_widget_form_alter(&$element, &$form_state, $context) {
@@ -695,57 +665,57 @@ function tripal_chado_field_widget_form_alter(&$element, &$form_state, $context)
  * Implements hook_field_formatter_view().
  */
 function tripal_chado_field_formatter_view($entity_type, $entity, $field,
-    $instance, $langcode, $items, $display) {
+  $instance, $langcode, $items, $display) {
 
-      $element = array();
-      switch ($display['type']) {
-        case 'tripal_chado_organism_formatter':
-          module_load_include('inc', 'tripal_chado', 'includes/fields/organism_id');
-          tripal_chado_organism_select_formatter($element, $entity_type, $entity, $field,
-              $instance, $langcode, $items, $display);
-          break;
-        case 'tripal_chado_dbxref_id_formatter':
-          module_load_include('inc', 'tripal_chado', 'includes/fields/dbxref_id');
-          tripal_chado_dbxref_id_formatter($element, $entity_type, $entity, $field,
-              $instance, $langcode, $items, $display);
-          break;
-        case 'tripal_chado_dbxref_formatter':
-          module_load_include('inc', 'tripal_chado', 'includes/fields/dbxref');
-          tripal_chado_dbxref_formatter($element, $entity_type, $entity, $field,
-              $instance, $langcode, $items, $display);
-          break;
-        case 'tripal_chado_cvterm_formatter':
-          module_load_include('inc', 'tripal_chado', 'includes/fields/cvterm');
-          tripal_chado_cvterm_formatter($element, $entity_type, $entity, $field,
-              $instance, $langcode, $items, $display);
-          break;
-        case 'tripal_chado_md5checksum_formatter':
-          module_load_include('inc', 'tripal_chado', 'includes/fields/md5checksum');
-          tripal_chado_md5checksum_checkbox_formatter($element, $entity_type, $entity, $field,
-              $instance, $langcode, $items, $display);
-          break;
-        case 'tripal_chado_residues_formatter':
-          module_load_include('inc', 'tripal_chado', 'includes/fields/residues');
-          tripal_chado_residues_textarea_formatter($element, $entity_type, $entity, $field,
-              $instance, $langcode, $items, $display);
-          break;
-        case 'tripal_chado_seqlen_formatter':
-          module_load_include('inc', 'tripal_chado', 'includes/fields/seqlen');
-          tripal_chado_seqlen_hidden_formatter($element, $entity_type, $entity, $field,
-              $instance, $langcode, $items, $display);
-          break;
-        case 'tripal_chado_kvproperty_adder_formatter':
-          module_load_include('inc', 'tripal_chado', 'includes/fields/kvproperty_adder');
-          tripal_chado_kvproperty_adder_formatter($element, $entity_type, $entity, $field,
-              $instance, $langcode, $items, $display);
-          break;
-        case 'tripal_chado_kvproperty_formatter':
-          module_load_include('inc', 'tripal_chado', 'includes/fields/kvproperty');
-          tripal_chado_kvproperty_formatter($element, $entity_type, $entity, $field,
-              $instance, $langcode, $items, $display);
-          break;
-      }
-      return $element;
+  $element = array();
+  switch ($display['type']) {
+    case 'tripal_chado_organism_formatter':
+      module_load_include('inc', 'tripal_chado', 'includes/fields/organism_id');
+      tripal_chado_organism_select_formatter($element, $entity_type, $entity, $field,
+          $instance, $langcode, $items, $display);
+      break;
+    case 'tripal_chado_dbxref_id_formatter':
+      module_load_include('inc', 'tripal_chado', 'includes/fields/dbxref_id');
+      tripal_chado_dbxref_id_formatter($element, $entity_type, $entity, $field,
+          $instance, $langcode, $items, $display);
+      break;
+    case 'tripal_chado_dbxref_formatter':
+      module_load_include('inc', 'tripal_chado', 'includes/fields/dbxref');
+      tripal_chado_dbxref_formatter($element, $entity_type, $entity, $field,
+          $instance, $langcode, $items, $display);
+      break;
+    case 'tripal_chado_cvterm_formatter':
+      module_load_include('inc', 'tripal_chado', 'includes/fields/cvterm');
+      tripal_chado_cvterm_formatter($element, $entity_type, $entity, $field,
+          $instance, $langcode, $items, $display);
+      break;
+    case 'tripal_chado_md5checksum_formatter':
+      module_load_include('inc', 'tripal_chado', 'includes/fields/md5checksum');
+      tripal_chado_md5checksum_checkbox_formatter($element, $entity_type, $entity, $field,
+          $instance, $langcode, $items, $display);
+      break;
+    case 'tripal_chado_residues_formatter':
+      module_load_include('inc', 'tripal_chado', 'includes/fields/residues');
+      tripal_chado_residues_textarea_formatter($element, $entity_type, $entity, $field,
+          $instance, $langcode, $items, $display);
+      break;
+    case 'tripal_chado_seqlen_formatter':
+      module_load_include('inc', 'tripal_chado', 'includes/fields/seqlen');
+      tripal_chado_seqlen_hidden_formatter($element, $entity_type, $entity, $field,
+          $instance, $langcode, $items, $display);
+      break;
+    case 'tripal_chado_kvproperty_adder_formatter':
+      module_load_include('inc', 'tripal_chado', 'includes/fields/kvproperty_adder');
+      tripal_chado_kvproperty_adder_formatter($element, $entity_type, $entity, $field,
+          $instance, $langcode, $items, $display);
+      break;
+    case 'tripal_chado_kvproperty_formatter':
+      module_load_include('inc', 'tripal_chado', 'includes/fields/kvproperty');
+      tripal_chado_kvproperty_formatter($element, $entity_type, $entity, $field,
+          $instance, $langcode, $items, $display);
+      break;
+  }
+  return $element;
 }
 
 /**
@@ -1098,6 +1068,7 @@ function tripal_chado_add_bundle_dbxref_field($entity_type_name, $bundle_name, $
     'label' => 'Cross References',
     'is_required' => 0,
     'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+    'storage' => 'field_chado_storage',
     'field_settings' => array(
       // The Chado table that this field maps to.
       'chado_table' => $dbxref_table,
@@ -1149,6 +1120,7 @@ function tripal_chado_add_bundle_cvterm_field($entity_type_name, $bundle_name, $
     'label' => 'Annotations',
     'is_required' => 0,
     'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+    'storage' => 'field_chado_storage',
     'field_settings' => array(
       // The Chado table that this field maps to.
       'chado_table' => $cvterm_table,
@@ -1188,6 +1160,7 @@ function tripal_chado_add_bundle_kvproperty_adder_field($entity_type_name, $bund
     'field_settings' => array(
       'base_table' => $base_table,
     ),
+    'storage' => 'field_chado_storage',
     'widget_settings' => array('display_label' => 1),
     'description' => '',
     'label' => 'Additional Properties',
@@ -1274,6 +1247,7 @@ function tripal_chado_get_table_column_field_default($table_name, $schema, $colu
     'description' => '',
     'label' => ucwords(preg_replace('/_/', ' ', $column_name)),
     'is_required' => 0,
+    'storage' => 'field_chado_storage',
     'widget_settings' => array(
       'display_label' => 1
     ),

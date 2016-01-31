@@ -65,7 +65,6 @@ function tripal_chado_publish_form($form, &$form_state) {
       }
       // None of the fields should be required.
 
-      dpm($form['filters'][$field_name]);
     } */
 
     $form['publish_btn'] = array(

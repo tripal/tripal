@@ -331,7 +331,6 @@ function tripal_chado_cvterm_field_load($field, $entity, $base_table, $record) {
   );
 
   $linker_table = $base_table . '_cvterm';
-  dpm($linker_table);
   /* $options = array('return_array' => 1);
   $record = chado_expand_var($record, 'table', $linker_table, $options);
   $i = 0;

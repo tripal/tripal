@@ -56,7 +56,7 @@ function tripal_chado_dbxref_widget(&$widget, $form, $form_state, $field,
 
   // Get the field defaults.
   $record_id = '';
-  $fkey_value = $element['#entity']->chado_record_id;
+  $fkey_value = '';
   $dbxref_id = '';
   $db_id = '';
   $accession = '';
@@ -245,20 +245,22 @@ function tripal_chado_dbxref_widget_validate($element, &$form_state) {
     form_set_error(implode('][', $element ['#parents']) . '][' . $table_name . '--dbxref__db_id', t("A database and the accession must both be provided for the primary cross reference."));
   }
 
-  // If user did not select a database, we want to remove dbxref_id from the
-  // field.
-  if (!$db_id) {
-    tripal_chado_set_field_form_values($field_name, $form_state, '__NULL__');
-  }
   // If the dbxref_id does not match the db_id + accession then the user
   // has selected a new dbxref record and we need to update the hidden
   // value accordingly.
   if ($db_id and $accession) {
+    $fkey_value = $element['#entity']->chado_record_id;
+    tripal_chado_set_field_form_values($field_name, $form_state, $fkey_value, $delta, $table_name . '__' . $fkey);
+
     $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id, 'accession' => $accession));
     if ($dbxref and $dbxref->dbxref_id != $dbxref_id) {
       tripal_chado_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id, $delta, $table_name . '__dbxref_id');
       tripal_chado_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id, $delta, $table_name . '--dbxref__dbxref_id');
     }
+  }
+  else {
+    // If the db_id and accession are not set, then remove the linker FK value to the base table.
+    tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__' . $fkey);
   }
 }
 /**
@@ -332,20 +334,22 @@ function tripal_chado_dbxref_field_load($field, $entity, $base_table, $record) {
   $linker_table = $base_table . '_dbxref';
   $options = array('return_array' => 1);
   $record = chado_expand_var($record, 'table', $linker_table, $options);
-  $i = 0;
-  foreach ($record->$linker_table as $index => $linker) {
-    $dbxref = $linker->dbxref_id;
-    $entity->{$field_name}['und'][$i] = array(
-      'value' => $linker->$pkey,
-      $chado_table . '__' . $fkey => $linker->$fkey->$fkey,
-      $chado_table . '__' . 'dbxref_id' => $dbxref->dbxref_id,
-      $chado_table . '--' . 'dbxref__dbxref_id' => $dbxref->dbxref_id,
-      $chado_table . '--' . 'dbxref__db_id' => $dbxref->db_id->db_id,
-      $chado_table . '--' . 'dbxref__accession' => $dbxref->accession,
-      $chado_table . '--' . 'dbxref__version' => $dbxref->version,
-      $chado_table . '--' . 'dbxref__description' => $dbxref->description,
-    );
-    $i++;
+  if (count($record->$linker_table) > 0) {
+    $i = 0;
+    foreach ($record->$linker_table as $index => $linker) {
+      $dbxref = $linker->dbxref_id;
+      $entity->{$field_name}['und'][$i] = array(
+        'value' => $linker->$pkey,
+        $chado_table . '__' . $fkey => $linker->$fkey->$fkey,
+        $chado_table . '__' . 'dbxref_id' => $dbxref->dbxref_id,
+        $chado_table . '--' . 'dbxref__dbxref_id' => $dbxref->dbxref_id,
+        $chado_table . '--' . 'dbxref__db_id' => $dbxref->db_id->db_id,
+        $chado_table . '--' . 'dbxref__accession' => $dbxref->accession,
+        $chado_table . '--' . 'dbxref__version' => $dbxref->version,
+        $chado_table . '--' . 'dbxref__description' => $dbxref->description,
+      );
+      $i++;
+    }
   }
 }
 

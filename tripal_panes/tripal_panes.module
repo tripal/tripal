@@ -136,7 +136,6 @@ function tripal_panes_form_field_ui_display_overview_form_alter(&$form, &$form_s
   $submit = $form['#submit'];
   $form['#submit'] = array('tripal_panes_field_ui_submit');
   $form['#submit'] = array_merge($form['#submit'], $submit);
-  //dpm($form);
 }
 
 /**
@@ -333,7 +332,7 @@ function tripal_panes_form_field_ui_display_overview_form_pane_configure (&$form
         '#type' => 'hidden',
         '#value' => $field->field_id,
       );
-      $default_classes = 
+      $default_classes =
         db_select('tripal_pane_fields', 'tpf')
           ->fields('tpf', array('css_class'))
           ->condition('pane_id', $pane->pane_id)
@@ -739,7 +738,7 @@ function tripal_panes_action_configure_panes (&$form, &$form_state) {
         if ($value['table_group'] == 1) {
           $table_layout[] = $key;
         }
-      } 
+      }
       // Save CSS class for each field if provided
       if (is_array($value) && key_exists('css_class', $value) && $value['css_class']) {
         db_update('tripal_pane_fields')
@@ -898,7 +897,7 @@ function tripal_panes_entity_view($entity, $type, $view_mode, $langcode) {
           if ($pane_id != $disabled_pane_id) {
             // Construct field elements
             $fields[$pane_id][$field_name] = $entity->content[$field_name];
-            
+
             // Add extra css classes
             $css_class = db_select('tripal_pane_fields', 'tpf')
               ->fields('tpf', array('css_class'))

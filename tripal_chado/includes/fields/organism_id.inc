@@ -13,6 +13,7 @@
  */
 function tripal_chado_organism_select_formatter(&$element, $entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
+
   foreach ($items as $delta => $item) {
     $organism = chado_select_record('organism', array('genus', 'species'), array('organism_id' => $item['value']));
     $content = '<i>' . $organism[0]->genus .' ' . $organism[0]->species . '</i>';
@@ -75,7 +76,6 @@ function tripal_chado_organism_select_widget_validate($element, &$form_state) {
 function organism_id_field_formatter_settings_summary($field, $instance, $view_mode) {
   $display = $instance['display'][$view_mode];
   $settings = $display['settings'];
-  dpm('yo');
 
   $summary = '';
 
@@ -97,7 +97,6 @@ function organism_id_field_formatter_settings_summary($field, $instance, $view_m
 function organism_id_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
   $display = $instance['display'][$view_mode];
   $settings = $display['settings'];
-  dpm('hi');
   $element = array();
 
   if ($display['type'] == 'text_trimmed' || $display['type'] == 'text_summary_or_trimmed') {

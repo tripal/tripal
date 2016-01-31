@@ -194,6 +194,7 @@ function tripal_chado_field_storage_write_recursive($entity_type, $entity, $term
       $values[$chado_field] = $items[0]['value'];
     }
   }
+
   // STEP 3: Insert/Update the record.
   // If there are no values then return.
   if (count($values) == 0) {
