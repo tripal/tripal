@@ -311,7 +311,15 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
         // Set an empty value by default, and if there is a record, then update.
         $entity->{$field_name}['und'][0]['value'] = '';
         if ($record and property_exists($record, $field_column)) {
-          $entity->{$field_name}['und'][0]['value'] = $record->$field_column;
+          // If the field column is an object then it's a FK to another table.
+          // and because $record object is created by the chado_generate_var()
+          // function we must go one more level deeper to get the value
+          if (is_object($record->$field_column)) {
+            $entity->{$field_name}['und'][0]['value'] = $record->$field_column->$field_column;
+          }
+          else {
+            $entity->{$field_name}['und'][0]['value'] = $record->$field_column;
+          }
         }
         // Allow the creating module to alter the value if desired.  The
         // module should do this if the field has any other form elements
