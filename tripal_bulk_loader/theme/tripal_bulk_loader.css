@@ -21,6 +21,9 @@
 /**
  * Tripal Bulk Loader Edit Template Form.
  */
+#tripal-bulk-loader-modify-template-base-form table {
+  width: 100%;
+}
 #tripal-bulk-loader-modify-template-base-form tr.odd .form-item, tr.even .form-item {
   white-space: normal;
   word-wrap: break-word;
@@ -44,4 +47,15 @@
 #tripal-bulk-loader-modify-template-base-form td.field-type {
   text-align: center;
   width: 50px;
+}
+#tripal-bulk-loader-modify-template-base-form td.record {
+  width: 100px;
+  background-color: #F2F3ED;
+  border-right: 1px solid #bebfb9;
+}
+#tripal-bulk-loader-modify-template-base-form td.record em {
+  color: #bebfb9;
+}
+#tripal-bulk-loader-modify-template-base-form tr.record-first-row td {
+  border-top: 1px solid #bebfb9;
 }

@@ -381,7 +381,7 @@ function tripal_bulk_loader_modify_template_base_form($form, &$form_state = NULL
           $form['fields']['fields-data'][$i] = array(
             'record_id' => array(
               '#type' => 'item',
-              '#markup' =>  $table_array['record_id'],
+              '#markup' =>  $table_array['record_id'] . '<br /><em>(' . ucwords($mode_value) . ')</em>',
               '#prefix' => "<a name=\"fields_$priority\"></a>",
             ),
             'view-record-link' => array(
