@@ -17,10 +17,11 @@ $bundle = $variables['element']['#bundle'];
 
 $bundle_type = $bundle->name . '-' . $bundle->label;
 
-// Process fields in panes
 $content = '';
 $toc = '';
 $has_base_pane_only = TRUE;
+
+// Iterate through all of the panes.
 foreach ($panes AS $pane_id => $pane) {
   if ($pane->name != 'te_base') {
     $has_base_pane_only = FALSE;

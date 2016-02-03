@@ -179,6 +179,10 @@ function tripal_tripal_jobs_schema() {
     'primary key' => array('job_id'),
   );
 }
+/**
+ *
+ * @return
+ */
 function tripal_tripal_token_formats_schema() {
   return array(
     'fields' => array(

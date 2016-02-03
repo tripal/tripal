@@ -1487,7 +1487,7 @@ function tripal_chado_exclude_type_by_default() {
  *
  * @ingroup tripal
  */
-function tripal_chado_describe_args($callback, $args) {
+function tripal_chado_job_describe_args($callback, $args) {
   $new_args = array();
   if ($callback == 'tripal_populate_mview') {
     // get this mview details

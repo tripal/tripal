@@ -291,10 +291,6 @@ function tripal_theme($existing, $type, $theme, $path) {
       'function' => 'theme_tripal_admin_message',
       'variables' => array('message' => NULL),
     ),
-    // Theme function for the extension admin page.
-    'tripal_extensions_form_tables' => array(
-      'render element' => 'element',
-    ),
     'tripal_entity' => array(
       'render element' => 'elements',
       'template' => 'tripal_entity',
