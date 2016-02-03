@@ -52,7 +52,8 @@ function tripal_chado_dbxref_widget(&$widget, $form, $form_state, $field,
   $base_table = $field['settings']['base_table'];
   $schema = chado_get_schema($chado_table);
   $pkey = $schema['primary key'][0];
-  $fkey = array_values($schema['foreign keys'][$base_table]['columns'])[0];
+  $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
+  $fkey = $fkeys[0];
 
   // Get the field defaults.
   $record_id = '';
@@ -317,7 +318,8 @@ function tripal_chado_dbxref_field_load($field, $entity, $base_table, $record) {
   $chado_table = $field['settings']['chado_table'];
   $schema = chado_get_schema($chado_table);
   $pkey = $schema['primary key'][0];
-  $fkey = array_values($schema['foreign keys'][$base_table]['columns'])[0];
+  $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
+  $fkey = $fkeys[0];
 
   // Set some defaults for the empty record.
   $entity->{$field_name}['und'][0] = array(
