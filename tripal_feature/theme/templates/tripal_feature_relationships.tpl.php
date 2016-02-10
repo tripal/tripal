@@ -1,20 +1,23 @@
 <?php
 /* Typically in a Tripal template, the data needed is retrieved using a call to
  * chado_expand_var function.  For example, to retrieve all
- * of the feature relationships for this node, the following function call would be made:
+ * of the feature relationships for this node, the following function call would
+ * be made:
  *
  *   $feature = chado_expand_var($feature,'table','feature_relationship');
  *
- * However, this function call can be extremely slow when there are numerous relationships.
- * This is because the chado_expand_var function is recursive and expands
- * all data following the foreign key relationships tree.  Therefore, to speed retrieval
- * of data, a special variable is provided to this template:
+ * However, this function call can be extremely slow when there are numerous
+ * relationships. This is because the chado_expand_var function is recursive
+ * and expands all data following the foreign key relationships tree.
+ * Therefore, to speed retrieval of data, a special variable is provided to
+ * this template:
  *
  *   $feature->all_relationships;
  *
- * This variable is an array with two sub arrays with the keys 'object' and 'subject'.  The array with
- * key 'object' contains relationships where the feature is the object, and the array with
- * the key 'subject' contains relationships where the feature is the subject
+ * This variable is an array with two sub arrays with the keys 'object' and
+ * 'subject'.  The array with key 'object' contains relationships where the
+ * feature is the object, and the array with the key 'subject' contains
+ * relationships where the feature is the subject
  */
 $feature = $variables['node']->feature;
 

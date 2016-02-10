@@ -1501,10 +1501,10 @@ function chado_query($sql, $args = array()) {
   // if Chado is local to the database then prefix the Chado table
   // names with 'chado'.
   if ($is_local) {
-  
+
     // Remove carriage returns from the SQL.
     $sql = preg_replace('/\n/', '', $sql);  // remove carriage returns
-    
+
     // Prefix the tables with their correct schema.
     // Chado tables should be enclosed in curly brackets (ie: {feature} )
     // and Drupal tables should be enclosed in square brackets (ie: [tripal_jobs] ).
@@ -1513,9 +1513,10 @@ function chado_query($sql, $args = array()) {
     $sql = preg_replace('/\{(.*?)\}/', 'chado.$1', $sql);
     $sql = preg_replace('/\[(\w+)\]/', 'public.$1', $sql);
 
-    // the featureloc table has some indexes that use function that call other functions
-    // and those calls do not reference a schema, therefore, any tables with featureloc
-    // must automaticaly have the chado schema set as active to find
+    // The featureloc table has some indexes that use function that call other
+    // functions and those calls do not reference a schema, therefore, any
+    // tables with featureloc must automaticaly have the chado schema set as
+    // active to find.
     if (preg_match('/chado.featureloc/i', $sql) or preg_match('/chado.feature/i', $sql)) {
       $previous_db = chado_set_active('chado') ;
       $results = db_query($sql, $args);

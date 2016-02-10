@@ -311,7 +311,7 @@ function tripal_feature_get_aggregate_relationships($feature_id, $substitute=1,
  * @ingroup tripal_feature
  */
 function tripal_feature_load_relationships($feature_id, $side = 'as_subject') {
-  // get the relationships for this feature.  The query below is used for both
+  // Get the relationships for this feature.  The query below is used for both
   // querying the object and subject relationships
   $sql = "
     SELECT
@@ -336,12 +336,11 @@ function tripal_feature_load_relationships($feature_id, $side = 'as_subject') {
   }
   $sql .= " ORDER BY FR.rank";
 
-  // get the relationships
+  // Get the relationships.
   $results = chado_query($sql, array(':feature_id' => $feature_id));
 
-
-  // iterate through the relationships, put these in an array and add
-  // in the Drupal node id if one exists
+  // Iterate through the relationships, put these in an array and add
+  // in the Drupal node id if one exists.
   $i=0;
   $nodesql = "SELECT nid FROM {chado_feature} WHERE feature_id = :feature_id";
   $relationships = array();
