@@ -19,7 +19,8 @@ function tripal_chado_dbxref_id_formatter(&$element, $entity_type, $entity, $fie
       $dbxref = chado_generate_var('dbxref', array('dbxref_id' => $item['value']));
       $accession = $dbxref->db_id->name . ':' . $dbxref->accession;
       if ($dbxref->db_id->urlprefix) {
-        $accession = l($accession, $dbxref->db_id->urlprefix . '/' . $dbxref->accession, array('attributes' => array('target' => '_blank')));
+        $accession = l($accession, $dbxref->db_id->urlprefix . '/' . $dbxref->accession,
+            array('attributes' => array('target' => '_blank')));
       }
     }
     $element[$delta] = array(
@@ -303,7 +304,7 @@ function tripal_chado_dbxref_id_field_load($field, $entity, $base_table, $record
   // Get the primary dbxref record.  Because we have a dbxref_id passed in
   // by the base record, we will only have one record.
   $columns = array('*');
-  $match = array('dbxref_id' => $record->$field_column);
+  $match = array('dbxref_id' => $record->$field_column->$field_column);
   $options = array('return_array' => TRUE);
   $records = chado_select_record('dbxref', $columns, $match, $options);
   if (count($records) > 0) {
