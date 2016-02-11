@@ -74,8 +74,10 @@ function tripal_load_vocab_entity($values) {
  * Retrieves a TripalBundle entity that matches the given arguments.
  *
  * @param $values
- *   An associative array used to match a bundle.  Valid keys may be 'name' or
- *   'label' (e.g. array('name' => 'bio-data_234').
+ *   An associative array used to match a bundle.  Valid keys may:
+ *     - name:  the bundle name (e.g. 'bio-data_234')
+ *     - label: the bundle label (e.g. 'Organism')
+ *     - term_id: the term ID to which the bundle belongs
  *
  * @return
  *   A TripalBundle entity object or NULL if not found.
@@ -89,6 +91,9 @@ function tripal_load_bundle_entity($values) {
   }
   if (array_key_exists('label', $values)) {
     $query->condition('tb.label', $values['label']);
+  }
+  if (array_key_exists('term_id', $values)) {
+    $query->condition('tb.term_id', $values['term_id']);
   }
   $bundle = $query->execute()->fetchObject();
 

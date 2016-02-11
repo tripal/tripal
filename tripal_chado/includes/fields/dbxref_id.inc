@@ -73,14 +73,14 @@ function tripal_chado_dbxref_id_widget(&$widget, $form, $form_state, $field, $in
   // If we are here because our parent was triggered in a form submit
   // then that means an ajax call was made and we don't want the fieldset to
   // be closed when it returns from the ajax call.
-  $collapsed = TRUE;
-  if (array_key_exists('triggering_element', $form_state) and
-      $form_state['triggering_element']['#parents'][0] == $field_name) {
-    $collapsed = FALSE;
-  }
-  if ($dbxref_id) {
-    $collapsed = FALSE;
-  }
+//   $collapsed = TRUE;
+//   if (array_key_exists('triggering_element', $form_state) and
+//       $form_state['triggering_element']['#parents'][0] == $field_name) {
+//     $collapsed = FALSE;
+//   }
+//   if ($dbxref_id) {
+//     $collapsed = FALSE;
+//   }
 
   $schema = chado_get_schema('dbxref');
   $options = tripal_get_db_select_options();
@@ -96,8 +96,8 @@ function tripal_chado_dbxref_id_widget(&$widget, $form, $form_state, $field, $in
     '#description' =>  $element['#description'],
     '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
     '#theme' => 'tripal_chado_dbxref_id_widget',
-    '#collapsible' => FALSE,
-    '#collapsed' => $collapsed,
+    //'#collapsible' => TRUE,
+    //'#collapsed' => $collapsed,
   );
 
   $widget['value'] = array(
@@ -254,18 +254,18 @@ function theme_tripal_chado_dbxref_id_widget($variables) {
     </div>
   ";
 
-  $classes = array();
-  $classes[] = 'collapsible';
-  $theme_settings = $element['#theme_settings'];
-  if ($theme_settings['#collapsed'] == FALSE) {
-    $classes[] = 'collapsed';
-  }
+//   $classes = array();
+//   $classes[] = 'collapsible';
+//   $theme_settings = $element['#theme_settings'];
+//   if ($theme_settings['#collapsed'] == FALSE) {
+//     $classes[] = 'collapsed';
+//   }
   $fieldset = array(
     '#title' => $element['#title'],
     '#value' => '',
     '#description' => $element['#description'],
     '#children' => $layout,
-    '#attributes' => array('class' => $classes),
+//    '#attributes' => array('class' => $classes),
   );
 
   return theme('fieldset', array('element' => $fieldset));

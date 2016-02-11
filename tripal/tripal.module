@@ -862,7 +862,7 @@ function tripal_import_api() {
 function tripal_field_storage_info() {
   return array(
     'tripal_no_storage' => array(
-      'label' => t(''),
+      'label' => t('Tripal'),
       'description' => t('The NULL storage is a placeholder for field values
           that are not stored in any storage backend (e.g. entity types).'),
       'settings' => array(),

@@ -77,7 +77,7 @@ function tripal_chado_dbxref_widget(&$widget, $form, $form_state, $field,
   }
 
   // Check $form_state['values'] to see if an AJAX call set the values.
-  if (array_key_exists('values', $form_state)) {
+  if (array_key_exists('values', $form_state) and array_key_exists($delta, $form_state['values'])) {
     $record_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name);
     $fkey_value = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '__' . $fkey);
     $dbxref_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '__dbxref_id');

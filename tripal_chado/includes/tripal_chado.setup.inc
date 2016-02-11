@@ -265,6 +265,7 @@ function tripal_chado_prepare_chado() {
     // to warn the user if the current version is not compatible
     $version = chado_get_version(FALSE, FALSE);
 
+
     ///////////////////////////////////////////////////////////////////////////
     //                          Chado DB Module
     ///////////////////////////////////////////////////////////////////////////
@@ -293,7 +294,7 @@ function tripal_chado_prepare_chado() {
     // Add the synonym_type vocabulary.
     tripal_insert_cv(
       'synonym_type',
-      'A local vocabulary added for synonym types.'
+      'A vocabulary used for synonym types (e.g. exact, broad, narrow, related).'
     );
 
     // Add the Chado ontology CV.
@@ -302,6 +303,19 @@ function tripal_chado_prepare_chado() {
     //tripal_chado_load_obo_v1_2_id($obo_id);
     //tripal_submit_obo_job(array('obo_id' => $obo_id));
 
+
+    ///////////////////////////////////////////////////////////////////////////
+    //                          Chado Misc
+    ///////////////////////////////////////////////////////////////////////////
+    tripal_insert_cv(
+      'synonym_type',
+      'A vocabulary for storing synonym types.'
+    );
+    // set the default vocabularies
+    tripal_set_default_cv('synonym', 'type_id', 'synonym_type');
+
+    // Add cvterms.
+    tripal_insert_misc_cvterms();
 
 
     /////////////////////////////////////////////////////////////////////////////
@@ -312,7 +326,7 @@ function tripal_chado_prepare_chado() {
       'Contains properties for organisms'
     );
 
-    // set the default vocabularies
+    // Set the default vocabularies.
     tripal_set_default_cv('organismprop', 'type_id', 'organism_property');
 
 
@@ -483,11 +497,11 @@ function tripal_chado_prepare_chado() {
       'id' => 'local:organism',
       'name' => 'organism',
       'definition' => 'An individual form of life, such as a bacterium, protist, ' .
-      'fungus, plant, or animal, composed of a single cell or a complex of cells  ' .
-      'in which organelles or organs work together to carry out the various  ' .
-      'processes of life. (American Heritage® Dictionary of the English ' .
-      'Language, Fifth Edition. Copyright © 2011 by Houghton Mifflin ' .
-      'Harcourt Publishing Company).',
+        'fungus, plant, or animal, composed of a single cell or a complex of cells  ' .
+        'in which organelles or organs work together to carry out the various  ' .
+        'processes of life. (American Heritage® Dictionary of the English ' .
+        'Language, Fifth Edition. Copyright © 2011 by Houghton Mifflin ' .
+        'Harcourt Publishing Company).',
       'cv_name' => 'local',
     ));
 
@@ -496,9 +510,9 @@ function tripal_chado_prepare_chado() {
       'id' => 'local:analysis',
       'name' => 'analysis',
       'definition' => 'A process as a method of studying the nature of something ' .
-      'or of determining its essential features and their relations. ' .
-      '(Random House Kernerman Webster\'s College Dictionary, © 2010 K ' .
-      'Dictionaries Ltd).',
+        'or of determining its essential features and their relations. ' .
+        '(Random House Kernerman Webster\'s College Dictionary, © 2010 K ' .
+        'Dictionaries Ltd).',
       'cv_name' => 'local',
     ));
 
@@ -506,17 +520,26 @@ function tripal_chado_prepare_chado() {
       'id' => 'local:project',
       'name' => 'project',
       'definition' => 'A plan or proposal for accomplishing something. ' .
-      '(American Heritage® Dictionary of the English Language, Fifth Edition. ' .
-      'Copyright © 2011 by Houghton Mifflin Harcourt Publishing Company).',
+        '(American Heritage® Dictionary of the English Language, Fifth Edition. ' .
+        'Copyright © 2011 by Houghton Mifflin Harcourt Publishing Company).',
       'cv_name' => 'local',
     ));
 
     // For the TripalBundle entities we will want to associate the cvterm_id,
     // and the chado table and field that it maps to.  We will use a few
     // variables to do this:
-    tripal_insert_variable('chado_cvterm_id', 'The cvterm_id that a TripalBundle maps to.');
-    tripal_insert_variable('chado_table', 'The name of the table to which a TripalBundle maps.');
-    tripal_insert_variable('chado_column', 'The name of the column within the table that a TripalBundle maps to.');
+    tripal_insert_variable(
+      'chado_cvterm_id',
+      'The cvterm_id that a TripalBundle maps to.'
+    );
+    tripal_insert_variable(
+      'chado_table',
+      'The name of the table to which a TripalBundle maps.'
+    );
+    tripal_insert_variable(
+      'chado_column',
+      'The name of the column within the table that a TripalBundle maps to.'
+    );
 
     // We want to provide a set of commonly used entity types by default. This
     // way when a user first installs Tripal there are some commonly used
@@ -1773,29 +1796,28 @@ function tripal_contact_add_cvs() {
   // Add the cv for contact properties. This is a default vocabulary in the event
   // that a user does not want to use the tripal_contact vocabulary
   tripal_insert_cv(
-      'contact_property',
-      'Contains properties for contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
+    'contact_property',
+    'Contains properties for contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
   );
 
   // add the cv for the contact type. This is a default vocabulary in the event
   // that a user does not want to use the tripal_contact vocabulary
   tripal_insert_cv(
-      'contact_type',
-      'Contains types of contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
+    'contact_type',
+    'Contains types of contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
   );
 
   // Add the cv for the tripal_contact vocabulary which is loaded via the OBO
   tripal_insert_cv(
-      'tripal_contact',
-      'A heirarchical set of terms for describing a contact. It is intended to be used as the default vocabularies in Tripal for contact types and contact properties.'
+    'tripal_contact',
+    'A heirarchical set of terms for describing a contact. It is intended to be used as the default vocabularies in Tripal for contact types and contact properties.'
   );
 
   // add the cv for contact relationships
   tripal_insert_cv(
-      'contact_relationship',
-      'Contains types of relationships between contacts.'
+    'contact_relationship',
+    'Contains types of relationships between contacts.'
   );
-
 }
 /**
  * Add any custom tables needed by this module.
@@ -2096,4 +2118,55 @@ function tripal_cv_create_tripal_obo_temp() {
     $sql = "CREATE INDEX tripal_obo_temp_idx1 ON {tripal_obo_temp} USING btree (type)";
     chado_query($sql);
   }
+}
+
+/**
+ * Adds generic CVterms.
+ */
+function tripal_insert_misc_cvterms() {
+  tripal_insert_cvterm(
+    array(
+      'name' => 'exact',
+      'id' => "local:exact",
+      'definition' => 'An exact equivalent; interchangeable with the term name.',
+      'is_obsolete' => 0,
+      'cv_name' => 'synonym_type',
+      'is_relationship' => FALSE
+    ),
+    array('update_existing' => TRUE)
+  );
+
+  tripal_insert_cvterm(
+    array(
+      'name' => 'broad',
+      'id' => "local:broad",
+      'definition' => 'The synonym is broader than the name.',
+      'is_obsolete' => 0,
+      'cv_name' => 'synonym_type',
+      'is_relationship' => FALSE
+    ),
+    array('update_existing' => TRUE)
+  );
+  tripal_insert_cvterm(
+    array(
+      'name' => 'narrow',
+      'id' => "local:narrow",
+      'definition' => 'The synonym is narrower or more precise than the name.',
+      'is_obsolete' => 0,
+      'cv_name' => 'synonym_type',
+      'is_relationship' => FALSE
+    ),
+    array('update_existing' => TRUE)
+  );
+  tripal_insert_cvterm(
+    array(
+      'name' => 'related',
+      'id' => "local:related",
+      'definition' => 'The synonym is related in some way.',
+      'is_obsolete' => 0,
+      'cv_name' => 'synonym_type',
+      'is_relationship' => FALSE
+    ),
+    array('update_existing' => TRUE)
+  );
 }

@@ -1,22 +1,16 @@
 @CHARSET "UTF-8";
 
-.primary-dbxref-widget-item {
-   float: left;
-   margin-right: 10px;
-}
-.primary-dbxref-widget-links {
-   clear: both;
-}
-.secondary-dbxref-widget-item {
-   float: left;
-   margin-right: 10px;
-}
-.secondary-dbxref-widget-links {
-   clear: both;
-}
+.synonym-widget-item,
+.primary-dbxref-widget-item,
+.secondary-dbxref-widget-item,
 .kvproperty-adder-widget-item {
    float: left;
    margin-right: 10px;
+}
+
+.primary-dbxref-widget-links,
+.secondary-dbxref-widget-links {
+   clear: both;
 }
 
 .residues-formatter {

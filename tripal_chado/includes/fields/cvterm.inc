@@ -121,7 +121,7 @@ function tripal_chado_cvterm_widget(&$widget, $form, $form_state, $field,
   }
 
   // Check $form_state['values'] to see if an AJAX call set the values.
-  if (array_key_exists('values', $form_state)) {
+  if (array_key_exists('values', $form_state) and array_key_exists($delta, $form_state['values'])) {
     $record_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name);
     $fkey_value = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $fkey);
     $is_not = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__is_not');
@@ -263,7 +263,7 @@ function theme_tripal_chado_cvterm_widget($variables) {
 
   $layout = "
     <div class=\"annotation-cvterm-widget\">
-      <div class=\"secondary-dbxref-widget-item\">" .
+      <div class=\"annotation-cvterm-widget-item\">" .
         drupal_render($element[$table_name . '--cvterm__cv_id--cv__cv_id']) . "
       </div>
       <div class=\"annotation-cvterm-widget-item\">" .
