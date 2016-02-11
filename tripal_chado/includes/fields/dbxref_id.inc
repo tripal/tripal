@@ -96,7 +96,7 @@ function tripal_chado_dbxref_id_widget(&$widget, $form, $form_state, $field, $in
     '#description' =>  $element['#description'],
     '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
     '#theme' => 'tripal_chado_dbxref_id_widget',
-    '#collapsible' => TRUE,
+    '#collapsible' => FALSE,
     '#collapsed' => $collapsed,
   );
 
@@ -257,7 +257,7 @@ function theme_tripal_chado_dbxref_id_widget($variables) {
   $classes = array();
   $classes[] = 'collapsible';
   $theme_settings = $element['#theme_settings'];
-  if ($theme_settings['#collapsed'] == TRUE) {
+  if ($theme_settings['#collapsed'] == FALSE) {
     $classes[] = 'collapsed';
   }
   $fieldset = array(
