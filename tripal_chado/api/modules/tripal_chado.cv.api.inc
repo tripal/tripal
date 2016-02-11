@@ -130,6 +130,8 @@ function tripal_get_cv_select_options() {
   $results = chado_select_record('cv', array('cv_id', 'name'), array(), array('order_by' => array('name' => 'ASC')));
 
   $options = array();
+  $options[] = 'Select a Vocabulary';
+
   foreach ($results as $r) {
     $options[$r->cv_id] = $r->name;
   }

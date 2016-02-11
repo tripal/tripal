@@ -13,22 +13,58 @@
 function tripal_chado_cvterm_formatter(&$element, $entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
 
-/*   $chado_table = $field['settings']['chado_table'];
+  $headers = array('Term', 'Definition', 'Is Not', 'Reference');
+  $rows = array();
+
+  $chado_table = $field['settings']['chado_table'];
   foreach ($items as $delta => $item) {
-    $accession = '';
     if ($item[$chado_table . '__cvterm_id']) {
       $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $item[$chado_table . '__cvterm_id']));
       $dbxref = $cvterm->dbxref_id;
+
+      // Build the accession.
       $accession = $dbxref->db_id->name . ':' . $dbxref->accession;
       if ($dbxref->db_id->urlprefix) {
         $accession = l($accession, $dbxref->db_id->urlprefix . '/' . $dbxref->accession, array('attributes' => array('target' => '_blank')));
       }
+
+      // Build the publication reference.
+      $pub_ref = '';
+      $pub_id = $item[$chado_table . '__pub_id'];
+      if ($pub_id) {
+        $pub = chado_generate_var('pub', array('pub_id' => $pub_id));
+        $pub_ref = $pub->title;
+      }
+      $rows[] = array(
+        $accession,
+        $cvterm->definition,
+        $item[$chado_table . '__is_not'] ? 'Yes' : '',
+        '',
+      );
     }
-    $element[$delta] = array(
-      '#type' => 'markup',
-      '#markup' => $accession,
-    );
-  } */
+  }
+
+  // the $table array contains the headers and rows array as well as other
+  // options for controlling the display of the table.  Additional
+  // documentation can be found here:
+  // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+  $table = array(
+    'header' => $headers,
+    'rows' => $rows,
+    'attributes' => array(
+      'id' => "$chado_table-table-terms",
+      'class' => 'tripal-data-table'
+    ),
+    'caption' => '',
+    'sticky' => FALSE,
+    'colgroups' => array(),
+    'empty' => 'There are no annotations of this type',
+  );
+
+  $element[$delta] = array(
+    '#type' => 'markup',
+    '#markup' => theme_table($table),
+  );
 }
 /**
  *
@@ -46,7 +82,18 @@ function tripal_chado_cvterm_formatter(&$element, $entity_type, $entity, $field,
 function tripal_chado_cvterm_widget(&$widget, $form, $form_state, $field,
     $instance, $langcode, $items, $delta, $element) {
 
+  $entity = $form['#entity'];
   $field_name = $field['field_name'];
+
+  $matches = array();
+  preg_match('/(.*?)__(\d+)/', $field_name, $matches);
+  // If the field name is not properly formatted then we can't tell what
+  // table and type this is.  So just return.
+  if (count($matches) != 3) {
+    return $widget;
+  }
+  $table_name = $matches[1];
+  $cv_id = $matches[2];
 
   // Get the FK column that links to the base table.
   $chado_table = $field['settings']['chado_table'];
@@ -58,128 +105,87 @@ function tripal_chado_cvterm_widget(&$widget, $form, $form_state, $field,
   // Get the field defaults.
   $record_id = '';
   $fkey_value = $element['#entity']->chado_record_id;
-  $dbxref_id = '';
-  $db_id = '';
-  $accession = '';
-  $version = '';
-  $description = '';
+  $cvterm_name = '';
+  $cvterm_id = '';
+  $is_not = '';
+  $cvterm = NULL;
 
   // If the field already has a value then it will come through the $items
   // array.  This happens when editing an existing record.
   if (array_key_exists($delta, $items)) {
     $record_id = $items[$delta]['value'];
-    $fkey_value = $items[$delta][$field_name . '__' . $fkey];
-    $dbxref_id = $items[$delta][$field_name . '__dbxref_id'];
-    $db_id = $items[$delta][$field_name . '--dbxref__db_id'];
-    $accession = $items[$delta][$field_name . '--dbxref__accession'];
-    $version = $items[$delta][$field_name . '--dbxref__version'];
-    $description = $items[$delta][$field_name . '--dbxref__description'];
+    $fkey_value = $items[$delta][$table_name . '__' . $fkey];
+    $cvterm_name = $items[$delta][$table_name . '--cvterm__name'];
+    $is_not = $items[$delta][$table_name . '__is_not'];
+    $cvterm_id = $items[$delta][$table_name . '__cvterm_id'];
   }
 
   // Check $form_state['values'] to see if an AJAX call set the values.
   if (array_key_exists('values', $form_state)) {
-    $record_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name);
-    $fkey_value = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '__' . $fkey);
-    $dbxref_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '__dbxref_id');
-    $db_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__db_id');
-    $accession = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__accession');
-    $version = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__version');
-    $description = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__description');
+    $record_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name);
+    $fkey_value = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $fkey);
+    $is_not = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__is_not');
+    $cvterm_name = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '--cvterm__name');
   }
 
-  // If we are here because our parent was triggered in a form submit
-  // then that means an ajax call was made and we don't want the fieldset to
-  // be closed when it returns from the ajax call.
-  $collapsed = TRUE;
-  if (array_key_exists('triggering_element', $form_state) and
-      $form_state['triggering_element']['#parents'][0] == $field_name) {
-    $collapsed = FALSE;
-  }
-  if ($dbxref_id) {
-    $collapsed = FALSE;
+  if ($cvterm_name) {
+    $cvterm = chado_generate_var('cvterm', array('cv_id' => $cv_id, 'name' => $cvterm_name));
   }
 
-  $schema = chado_get_schema('dbxref');
-  $options = tripal_get_db_select_options();
+  $schema = chado_get_schema('cvterm');
+  $options = tripal_get_cv_select_options();
 
   $widget['#table_name'] = $chado_table;
   $widget['#fkey_field'] = $fkey;
   $widget['#element_validate'] = array('tripal_chado_cvterm_widget_validate');
   $widget['#theme'] = 'tripal_chado_cvterm_widget';
-  $widget['#prefix'] =  "<span id='$field_name-dbxref--db-id-$delta'>";
+  $widget['#prefix'] =  "<span id='$table_name-$delta'>";
   $widget['#suffix'] =  "</span>";
-
-  // A temporary element used for theming the fieldset.
-  $widget['#theme_settings'] = array(
-    '#title' => $element['#title'],
-    '#description' =>  $element['#description'],
-    '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-    '#theme' => 'tripal_chado_cvterm_widget',
-    '#collapsible' => TRUE,
-    '#collapsed' => $collapsed,
-  );
 
   $widget['value'] = array(
     '#type' => 'value',
     '#default_value' => $record_id,
   );
-  $widget[$field_name . '__dbxref_id'] = array(
+  $widget[$table_name . '--cvterm__cv_id--cv__cv_id'] = array(
     '#type' => 'value',
-    '#default_value' => $dbxref_id,
+    '#default_value' => $cv_id,
   );
-  $widget[$field_name . '__' . $fkey] = array(
+  $widget[$table_name . '__cvterm_id'] = array(
+    '#type' => 'value',
+    '#default_value' => $cvterm ? $cvterm->cvterm_id : '',
+  );
+  $widget[$table_name . '__' . $fkey] = array(
     '#type' => 'value',
     '#default_value' => $fkey_value,
   );
-  $widget[$field_name . '--dbxref__dbxref_id'] = array(
-    '#type' => 'value',
-    '#default_value' => $dbxref_id,
-  );
-  $widget[$field_name . '--dbxref__db_id'] = array(
-    '#type' => 'select',
-    '#title' => t('Database'),
-    '#options' => $options,
+
+  $widget[$table_name . '--cvterm__name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Term Name'),
+    '#default_value' => $cvterm_name,
     '#required' => $element['#required'],
-    '#default_value' => $db_id,
+    '#maxlength' => array_key_exists('length', $schema['fields']['name']) ? $schema['fields']['name']['length'] : 255,
+    '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/cvterm/' . $cv_id,
     '#ajax' => array(
       'callback' => "tripal_chado_cvterm_widget_form_ajax_callback",
-      'wrapper' => "$field_name-dbxref--db-id-$delta",
+      'wrapper' => "$table_name-$delta",
       'effect' => 'fade',
       'method' => 'replace'
     ),
   );
-  $widget[$field_name . '--dbxref__accession'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Accession'),
-    '#default_value' => $accession,
+
+  $widget[$table_name . '__is_not'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Is Not'),
+    '#default_value' => $is_not,
     '#required' => $element['#required'],
-    '#maxlength' => array_key_exists('length', $schema['fields']['accession']) ? $schema['fields']['accession']['length'] : 255,
-    '#size' => 15,
-    '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/dbxref/' . $db_id,
-    '#ajax' => array(
-      'callback' => "tripal_chado_cvterm_widget_form_ajax_callback",
-      'wrapper' => "$field_name-dbxref--db-id-$delta",
-      'effect' => 'fade',
-      'method' => 'replace'
-    )
   );
-  $widget[$field_name . '--dbxref__version'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Version'),
-    '#default_value' => $version,
-    '#maxlength' => array_key_exists('length', $schema['fields']['version']) ? $schema['fields']['version']['length'] : 255,
-    '#size' => 5,
-  );
-  $widget[$field_name . '--dbxref__description'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Description'),
-    '#default_value' => $description,
-    '#size' => 20,
-  );
-  $widget['links'] = array(
+
+  $widget[$table_name . '--cvterm__definition'] = array(
     '#type' => 'item',
-    '#markup' => l('Add a new database', 'admin/tripal/chado/tripal_db/add', array('attributes' => array('target' => '_blank')))
+    '#markup' => '',
   );
+
 }
 /**
  * An Ajax callback for the dbxref widget.
@@ -188,19 +194,7 @@ function tripal_chado_cvterm_widget_form_ajax_callback($form, $form_state) {
 
   $field_name = $form_state['triggering_element']['#parents'][0];
   $delta = $form_state['triggering_element']['#parents'][2];
-  $db_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__db_id');
-  $accession = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__accession');
-  if ($db_id and $accession) {
-    $values = array(
-      'db_id' => $db_id,
-      'accession' => $accession,
-    );
-    $options = array('is_duplicate' => TRUE);
-    $has_duplicate = chado_select_record('dbxref', array('*'), $values, $options);
-    if (!$has_duplicate) {
-      drupal_set_message('The selected cross reference is new and will be added for future auto completions.');
-    }
-  }
+
 
   return $form[$field_name]['und'][$delta];
 }
@@ -223,44 +217,36 @@ function tripal_chado_cvterm_widget_validate($element, &$form_state) {
   }
 
   // Get the field values.
-  $dbxref_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '__dbxref_id');
-  $db_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__db_id');
-  $accession = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__accession');
-  $version = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__version');
-  $description = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__description');
+  $cvterm_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__cvterm_id');
+  $cv_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '--cvterm__cv_id--cv__cv_id');
+  $cvterm_name = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '--cvterm__name');
+  $cvterm_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__cvterm_id');
+  $pub_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__pub_id');
 
-  // Make sure that if a database ID is provided that an accession is also
-  // provided.  Here we use the form_set_error function rather than the
-  // form_error function because the form_error will add a red_highlight
-  // around all of the fields in the fieldset which is confusing as it's not
-  // clear to the user what field is required and which isn't. Therefore,
-  // we borrow the code from the 'form_error' function and append the field
-  // so that the proper field is highlighted on error.
-  if (!$db_id and $accession) {
-    form_set_error(implode('][', $element ['#parents']) . '][' . $table_name . '--dbxref__db_id', t("A database and the accession must both be provided for the primary cross reference."));
-  }
-  if ($db_id and !$accession) {
-    form_set_error(implode('][', $element ['#parents']) . '][' . $table_name . '--dbxref__accession', t("A database and the accession must both be provided for the primary cross reference."));
-  }
-  if (!$db_id and !$accession and ($version or $description)) {
-    form_set_error(implode('][', $element ['#parents']) . '][' . $table_name . '--dbxref__db_id', t("A database and the accession must both be provided for the primary cross reference."));
-  }
+  // If the user provided a cv_id and a name then we want to set the
+  // foreign key value to be the chado_record_idd
+  if ($cvterm_name) {
 
-  // If user did not select a database, we want to remove dbxref_id from the
-  // field.
-  if (!$db_id) {
-    tripal_chado_set_field_form_values($field_name, $form_state, '__NULL__');
-  }
-  // If the dbxref_id does not match the db_id + accession then the user
-  // has selected a new dbxref record and we need to update the hidden
-  // value accordingly.
-  if ($db_id and $accession) {
-    $dbxref = chado_generate_var('dbxref', array('db_id' => $db_id, 'accession' => $accession));
-    if ($dbxref and $dbxref->dbxref_id != $dbxref_id) {
-      tripal_chado_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id, $delta, $table_name . '__dbxref_id');
-      tripal_chado_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id, $delta, $table_name . '--dbxref__dbxref_id');
+    $fkey_value = $element['#entity']->chado_record_id;
+    tripal_chado_set_field_form_values($field_name, $form_state, $fkey_value, $delta, $table_name . '__' . $fkey);
+
+    // Get the cvterm ID. If one is not available because it's a newly added
+    // record, then we need to retrieve it and set the form element.
+    if (!$cvterm_id) {
+      $cvterm = tripal_get_cvterm(array('cv_id' => $cv_id, 'name' => $cvterm_name));
+      tripal_chado_set_field_form_values($field_name, $form_state, $cvterm->cvterm_id, $delta, $table_name . '__cvterm_id');
+    }
+
+    if (!$pub_id) {
+      $pub = chado_generate_var('pub', array('uniquename' => 'null'));
+      tripal_chado_set_field_form_values($field_name, $form_state, $pub->pub_id, $delta, $table_name . '__pub_id');
     }
   }
+  else {
+    // If the $cv_id and name are not set, then remove the linker FK value to the base table.
+    tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__' . $fkey);
+  }
+
 }
 /**
  * Theme function for the dbxref_id_widget.
@@ -276,20 +262,16 @@ function theme_tripal_chado_cvterm_widget($variables) {
   $fkey = $element['#fkey_field'];
 
   $layout = "
-    <div class=\"secondary-dbxref-widget\">
+    <div class=\"annotation-cvterm-widget\">
       <div class=\"secondary-dbxref-widget-item\">" .
-        drupal_render($element[$table_name . '--dbxref__db_id']) . "
+        drupal_render($element[$table_name . '--cvterm__cv_id--cv__cv_id']) . "
       </div>
-      <div class=\"secondary-dbxref-widget-item\">" .
-        drupal_render($element[$table_name . '--dbxref__accession']) . "
+      <div class=\"annotation-cvterm-widget-item\">" .
+        drupal_render($element[$table_name . '--cvterm__name']) . "
       </div>
-      <div class=\"secondary-dbxref-widget-item\">" .
-        drupal_render($element[$table_name . '--dbxref__version']) . "
+      <div class=\"annotation-cvterm-widget-item\">" .
+        drupal_render($element[$table_name . '__is_not']) . "
       </div>
-      <div class=\"secondary-dbxref-widget-item\">" .
-        drupal_render($element[$table_name . '--dbxref__description']) . "
-      </div>
-      <div class=\"secondary-dbxref-widget-links\">" . drupal_render($element['links']) . "</div>
     </div>
   ";
 
@@ -313,41 +295,69 @@ function tripal_chado_cvterm_field_load($field, $entity, $base_table, $record) {
 
   $field_name = $field['field_name'];
   $field_type = $field['type'];
-  $chado_table = $field['settings']['chado_table'];
-  $schema = chado_get_schema($chado_table);
+  $field_table = $field['settings']['chado_table'];
+  $field_column = $field['settings']['chado_column'];
+
+  $matches = array();
+  preg_match('/(.*?)__(\d+)/', $field_name, $matches);
+  $table_name = $matches[1];
+  $cv_id = $matches[2];
+
+  // Get the FK that links to the base record.
+  $schema = chado_get_schema($field_table);
   $pkey = $schema['primary key'][0];
-  $fkey = array_values($schema['foreign keys'][$base_table]['columns'])[0];
+  $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
+  $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
   // Set some defaults for the empty record.
   $entity->{$field_name}['und'][0] = array(
     'value' => '',
-    $chado_table . '__' . $fkey => '',
-    $chado_table . '__' . 'cvterm_id' => '',
-    $chado_table . '__' . 'pub_id' => '',
-    $chado_table . '__' . 'is_not' => '',
-    $chado_table . '__' . 'rank' => '',
-    $chado_table . '--' . 'cvterm__name' => '',
-    $chado_table . '--' . 'cvterm__cvterm_id' => '',
+    $field_table . '__' . $fkey_lcolumn => '',
+    $field_table . '__' . 'cvterm_id' => '',
+    // The pub column is present in the cell_line_cvterm, feature_cvterm,
+    // library_cvterm, phenotype_comparision_cvterm, phenotype_cvterm,
+    // stock_cvterm, and stock_relationship_cvterm.
+    $field_table . '__' . 'pub_id' => '',
+    // The is_not column is present in feature_cvterm and stock_cvterm tables.
+    $field_table . '__' . 'is_not' => '',
+    // The rank column is present in the cell_line_cvterm, expression_cvterm,
+    // feature_cvterm, phenotype_comparision_cvterm, phenotype_cvterm,
+    // and stock_cvterm tables.
+    $field_table . '__' . 'rank' => '',
+    // The cvterm_type_id is present in the expression_cvterm table.
+    $field_table . '--' . 'cvterm_type_id' => '',
+    // The following field are to help link the cvterm.
+    $field_table . '--' . 'cvterm__cv_id--cv__cv_id' => '',
+    $field_table . '--' . 'cvterm__name' => '',
   );
 
-  $linker_table = $base_table . '_cvterm';
-  /* $options = array('return_array' => 1);
-  $record = chado_expand_var($record, 'table', $linker_table, $options);
-  $i = 0;
-  foreach ($record->$linker_table as $index => $linker) {
-    $cvterm = $linker->cvterm_id;
+  // Get the annotations associated with this base record for this fields type.
+  $columns = array('*');
+  $match = array(
+    $fkey_lcolumn => $record->$fkey_rcolumn,
+    'cvterm_id' => array(
+      'cv_id' => $cv_id,
+    ),
+  );
+  $options = array(
+    'return_array' => TRUE,
+    'order_by' => array('rank' => 'ASC')
+  );
+  $fcvterms = chado_select_record($field_table, $columns, $match, $options);
+  for ($i = 0; $i < count($fcvterms); $i++) {
+    $linker = $fcvterms[$i];
+    $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $linker->cvterm_id));
     $entity->{$field_name}['und'][$i] = array(
       'value' => $linker->$pkey,
-      $chado_table . '__' . $fkey => $linker->$fkey->$fkey,
-      $chado_table . '__' . 'cvterm_id' => $linker->cvterm_id->cvterm_id,
-      $chado_table . '__' . 'pub_id' => property_exists($linker, 'pub_id') ? $linker->pub_id : '',
-      $chado_table . '__' . 'is_not' => property_exists($linker, 'is_not') ? $linker->is_not : '',
-      $chado_table . '__' . 'rank' => property_exists($linker, 'rank') ? $linker->rank : '',
-      $chado_table . '__' . 'cvterm_type_id' => property_exists($linker, 'cvterm_type_id') ? $linker->cvterm_type_id : '',
-      $chado_table . '--' . 'cvterm__name' => $cvterm->name,
-      $chado_table . '--' . 'cvterm__cvterm_id' => $cvterm->cvterm_id,
+      $field_table . '__' . $fkey_lcolumn => $linker->$fkey_lcolumn,
+      $field_table . '__' . 'cvterm_id' => $linker->cvterm_id,
+      $field_table . '__' . 'pub_id' => property_exists($linker, 'pub_id') ? $linker->pub_id : '',
+      $field_table . '__' . 'is_not' => property_exists($linker, 'is_not') ? $linker->is_not : '',
+      $field_table . '__' . 'rank' => property_exists($linker, 'rank') ? $linker->rank : '',
+      $field_table . '__' . 'cvterm_type_id' => property_exists($linker, 'cvterm_type_id') ? $linker->cvterm_type_id : '',
+      $field_table . '--' . 'cvterm__cv_id--cv__cv_id' => $cvterm->cv_id->cv_id,
+      $field_table . '--' . 'cvterm__name' => $cvterm->name,
     );
-    $i++;
-  } */
+  }
 }
 

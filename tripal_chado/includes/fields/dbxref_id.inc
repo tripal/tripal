@@ -131,7 +131,8 @@ function tripal_chado_dbxref_id_widget(&$widget, $form, $form_state, $field, $in
       'wrapper' => "$field_name-dbxref--db-id",
       'effect' => 'fade',
       'method' => 'replace'
-    )
+    ),
+    '#disabled' => $db_id ? FALSE : TRUE,
   );
   $widget['dbxref__version'] = array(
     '#type' => 'textfield',
@@ -139,12 +140,14 @@ function tripal_chado_dbxref_id_widget(&$widget, $form, $form_state, $field, $in
     '#default_value' => $version,
     '#maxlength' => array_key_exists('length', $schema['fields']['version']) ? $schema['fields']['version']['length'] : 255,
     '#size' => 5,
+    '#disabled' => $db_id ? FALSE : TRUE,
   );
   $widget['dbxref__description'] = array(
     '#type' => 'textfield',
     '#title' => t('Description'),
     '#default_value' => $description,
     '#size' => 20,
+    '#disabled' => $db_id ? FALSE : TRUE,
   );
   $widget['links'] = array(
     '#type' => 'item',

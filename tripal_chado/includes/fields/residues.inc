@@ -47,6 +47,7 @@ function tripal_chado_residues_textarea_widget(&$widget, $form, $form_state, $fi
     '#default_value' => count($items) > 0 ? $items[0]['value'] : '',
     '#delta' => $delta,
     '#element_validate' => array('tripal_chado_residues_textarea_widget_validate'),
+    '#cols' => 30,
   );
 }
 /**

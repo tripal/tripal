@@ -75,13 +75,18 @@ function tripal_chado_kvproperty_adder_widget_validate($element, &$form_state) {
        $form_state['triggering_element']['#name'] == 'kvproperty_adder_button') {
 
      $form_state['rebuild'] = TRUE;
-     $field_name = $element['#parents'][0];
+     $field_name = $element['#field_name'];
      $entity_type = $element['#entity']->type;
      $bundle = $element['#entity']->bundle;
+
+     // Get the base table name from the field properties.
+     $field = field_info_field($field_name);
+     $base_table = $field['settings']['base_table'];
 
      // Get the term for the property
      $kvproperty = tripal_chado_get_field_form_values($field_name, $form_state);
      $term = chado_generate_var('cvterm', array('name' => $kvproperty), $options = array('return_array' => TRUE));
+
      if (count($term) == 1) {
        $prop_field_name = $field_name . '__' . $term[0]->cvterm_id;
 

@@ -541,14 +541,11 @@ function tripal_autocomplete_dbxref($db_id, $string = '') {
     ORDER by accession
     LIMIT 25 OFFSET 0
   ";
-  drupal_debug($string);
-  drupal_debug($db_id);
   $results = chado_query($sql, array(':db_id' => $db_id, ':accession' => $string . '%'));
   $items = array();
   foreach ($results as $ref) {
     $items[$ref->accession] = $ref->accession;
   }
-  drupal_debug($items);
 
   drupal_json_output($items);
 }

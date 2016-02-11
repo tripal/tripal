@@ -47,26 +47,6 @@ function tripal_chado_publish_form($form, &$form_state) {
       '#collapsible' => TRUE,
     );
 
-    // Get the form for this bundle (content type).  Then iterate through
-    // the fields and include only those that are Chado fields.
-/*     $bundle_name = 'bio-data_' . $term_id;
-    $entity = entity_get_controller('TripalEntity')->create(array('bundle' => $bundle_name, 'term_id' => $term_id));
-    field_attach_form('TripalEntity', $entity, $form['filters'], $form_state);
-    foreach (element_children($form['filters']) as $field_name) {
-      $field = field_info_field($field_name);
-      if ($field and $field['storage']['type'] != 'field_chado_storage') {
-        unset($form['filters'][$field_name]);
-      }
-      // Ignore the KVPoperty field as this is just a field to
-      // allow the user to add new properties which isn't appropriate
-      // here.
-      if ($field['type'] == 'kvproperty_adder') {
-        unset($form['filters'][$field_name]);
-      }
-      // None of the fields should be required.
-
-    } */
-
     $form['publish_btn'] = array(
       '#type' => 'submit',
       '#name' => 'publish_btn',

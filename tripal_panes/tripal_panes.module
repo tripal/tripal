@@ -303,6 +303,11 @@ function tripal_panes_form_field_ui_display_overview_form_pane_configure (&$form
         ->condition('id', $field->field_id)
         ->execute()
         ->fetchObject();
+      // If the table gets out of sync (e.g. field are deleted manually)
+      // the the object may be empty.
+      if (!$field_obj) {
+        continue;
+      }
       $field_arr = unserialize($field_obj->data);
       $fname = $field_obj->field_name;
       if($fname == 'featureprop' || $fname == 'projectprop' || $fname == 'analysisprop' || $fname == 'organismprop') {

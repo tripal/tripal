@@ -86,18 +86,6 @@ function tripal_chado_dbxref_widget(&$widget, $form, $form_state, $field,
     $description = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__description');
   }
 
-  // If we are here because our parent was triggered in a form submit
-  // then that means an ajax call was made and we don't want the fieldset to
-  // be closed when it returns from the ajax call.
-  $collapsed = TRUE;
-  if (array_key_exists('triggering_element', $form_state) and
-      $form_state['triggering_element']['#parents'][0] == $field_name) {
-    $collapsed = FALSE;
-  }
-  if ($dbxref_id) {
-    $collapsed = FALSE;
-  }
-
   $schema = chado_get_schema('dbxref');
   $options = tripal_get_db_select_options();
 
@@ -107,16 +95,6 @@ function tripal_chado_dbxref_widget(&$widget, $form, $form_state, $field,
   $widget['#theme'] = 'tripal_chado_dbxref_widget';
   $widget['#prefix'] =  "<span id='$field_name-dbxref--db-id-$delta'>";
   $widget['#suffix'] =  "</span>";
-
-  // A temporary element used for theming the fieldset.
-  $widget['#theme_settings'] = array(
-    '#title' => $element['#title'],
-    '#description' =>  $element['#description'],
-    '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-    '#theme' => 'tripal_chado_dbxref_widget',
-    '#collapsible' => TRUE,
-    '#collapsed' => $collapsed,
-  );
 
   $widget['value'] = array(
     '#type' => 'value',
@@ -160,7 +138,8 @@ function tripal_chado_dbxref_widget(&$widget, $form, $form_state, $field,
       'wrapper' => "$field_name-dbxref--db-id-$delta",
       'effect' => 'fade',
       'method' => 'replace'
-    )
+    ),
+    '#disabled' => $db_id ? FALSE : TRUE,
   );
   $widget[$field_name . '--dbxref__version'] = array(
     '#type' => 'textfield',
@@ -168,17 +147,21 @@ function tripal_chado_dbxref_widget(&$widget, $form, $form_state, $field,
     '#default_value' => $version,
     '#maxlength' => array_key_exists('length', $schema['fields']['version']) ? $schema['fields']['version']['length'] : 255,
     '#size' => 5,
+    '#disabled' => $db_id ? FALSE : TRUE,
   );
   $widget[$field_name . '--dbxref__description'] = array(
     '#type' => 'textfield',
     '#title' => t('Description'),
     '#default_value' => $description,
     '#size' => 20,
+    '#disabled' => $db_id ? FALSE : TRUE,
   );
-  $widget['links'] = array(
-    '#type' => 'item',
-    '#markup' => l('Add a new database', 'admin/tripal/chado/tripal_db/add', array('attributes' => array('target' => '_blank')))
-  );
+  if (!$db_id) {
+    $widget['links'] = array(
+      '#type' => 'item',
+      '#markup' => l('Add a database', 'admin/tripal/chado/tripal_db/add', array('attributes' => array('target' => '_blank')))
+    );
+  }
 }
 /**
  * An Ajax callback for the dbxref widget.
@@ -187,6 +170,9 @@ function tripal_chado_dbxref_widget_form_ajax_callback($form, $form_state) {
 
   $field_name = $form_state['triggering_element']['#parents'][0];
   $delta = $form_state['triggering_element']['#parents'][2];
+
+  // Check to see if this dbxref already exists. If not then
+  // give a notice to the user that the dbxref will be added.
   $db_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__db_id');
   $accession = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_name . '--dbxref__accession');
   if ($db_id and $accession) {
@@ -236,13 +222,13 @@ function tripal_chado_dbxref_widget_validate($element, &$form_state) {
   // we borrow the code from the 'form_error' function and append the field
   // so that the proper field is highlighted on error.
   if (!$db_id and $accession) {
-    form_set_error(implode('][', $element ['#parents']) . '][' . $table_name . '--dbxref__db_id', t("A database and the accession must both be provided for the primary cross reference."));
+    form_set_error(implode('][', $element ['#parents']) . '][' . $table_name . '--dbxref__db_id', t("A database and the accession must both be provided."));
   }
   if ($db_id and !$accession) {
-    form_set_error(implode('][', $element ['#parents']) . '][' . $table_name . '--dbxref__accession', t("A database and the accession must both be provided for the primary cross reference."));
+    form_set_error(implode('][', $element ['#parents']) . '][' . $table_name . '--dbxref__accession', t("A database and the accession must both be provided."));
   }
   if (!$db_id and !$accession and ($version or $description)) {
-    form_set_error(implode('][', $element ['#parents']) . '][' . $table_name . '--dbxref__db_id', t("A database and the accession must both be provided for the primary cross reference."));
+    form_set_error(implode('][', $element ['#parents']) . '][' . $table_name . '--dbxref__db_id', t("A database and the accession must both be provided."));
   }
 
   // If the dbxref_id does not match the db_id + accession then the user
@@ -257,6 +243,7 @@ function tripal_chado_dbxref_widget_validate($element, &$form_state) {
       tripal_chado_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id, $delta, $table_name . '__dbxref_id');
       tripal_chado_set_field_form_values($field_name, $form_state, $dbxref->dbxref_id, $delta, $table_name . '--dbxref__dbxref_id');
     }
+
   }
   else {
     // If the db_id and accession are not set, then remove the linker FK value to the base table.

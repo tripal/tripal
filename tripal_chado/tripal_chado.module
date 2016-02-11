@@ -357,6 +357,14 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
+  $items['admin/tripal/storage/chado/auto_name/cvterm/%/%'] = array(
+    'page callback' => 'tripal_autocomplete_cvterm',
+    'page arguments' => array(6, 7),
+    'access arguments' => array('access content'),
+    'file' => 'api/modules/tripal_chado.db.api.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
   return $items;
 
 }
@@ -407,7 +415,6 @@ function tripal_chado_field_info() {
         'active' => TRUE
       ),
     ),
-
     'dbxref_id' => array(
       'label' => t('Cross reference'),
       'description' => t('This record can be cross referenced with a record in
@@ -510,7 +517,23 @@ function tripal_chado_field_info() {
         'active' => TRUE
       ),
     ),
-
+    // The field provides a widget for adding new vocabularies for cvterm
+    // linker tables. This will allow cvterms to be grouped by vocabulary
+    // ('category').
+    'cvterm_class_adder' => array(
+      'label' => t('Add an Annotation Type'),
+      'description' => t('This record may have any number of types of
+          annotations. Use this field to first add the type.'),
+      'default_widget' => 'tripal_chado_cvterm_class_adder_widget',
+      //'default_formatter' => 'tripal_chado_cvterm_class_adder_formatter',
+      'default_formatter' => 'hidden',
+      'settings' => array(),
+      'storage' => array(
+        'type' => 'field_chado_storage',
+        'module' => 'tripal_chado',
+        'active' => TRUE
+      ),
+    ),
     // The field provides form elements for adding multiple cvterms to an
     // entity that in turn get stored in a [base]_cvterm table of Chado
     // (e.g. feature_cvterm).
@@ -556,6 +579,10 @@ function tripal_chado_field_widget_info() {
         prominent reference.  At a minimum, the database and accession
         must be provided.'),
     ),
+    'tripal_chado_cvterm_class_adder_widget' => array(
+      'label' => t('Add an Annotation'),
+      'field types' => array('cvterm_class_adder'),
+    ),
     'tripal_chado_cvterm_widget' => array(
       'label' => t('Annotations'),
       'field types' => array('cvterm'),
@@ -600,6 +627,10 @@ function tripal_chado_field_formatter_info() {
     'tripal_chado_dbxref_formatter' => array(
       'label' => t('Cross references'),
       'field types' => array('dbxref')
+    ),
+    'tripal_chado_cvterm_class_adder_formatter' => array(
+      'label' => t('Add an Annotation'),
+      'field types' => array('cvterm_class_adder')
     ),
     'tripal_chado_cvterm_formatter' => array(
       'label' => t('Annotations'),
@@ -684,6 +715,11 @@ function tripal_chado_field_formatter_view($entity_type, $entity, $field,
       tripal_chado_dbxref_formatter($element, $entity_type, $entity, $field,
           $instance, $langcode, $items, $display);
       break;
+    case 'tripal_chado_cvterm_class_adder_formatter':
+      module_load_include('inc', 'tripal_chado', 'includes/fields/cvterm_class_adder');
+      tripal_chado_cvterm_class_adder_formatter($element, $entity_type, $entity, $field,
+          $instance, $langcode, $items, $display);
+      break;
     case 'tripal_chado_cvterm_formatter':
       module_load_include('inc', 'tripal_chado', 'includes/fields/cvterm');
       tripal_chado_cvterm_formatter($element, $entity_type, $entity, $field,
@@ -743,6 +779,11 @@ function tripal_chado_field_widget_form(&$form, &$form_state, $field,
       module_load_include('inc', 'tripal_chado', 'includes/fields/dbxref');
       tripal_chado_dbxref_widget($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
       break;
+    case 'tripal_chado_cvterm_class_adder_widget':
+      form_load_include($form_state, 'inc', 'tripal_chado', 'includes/fields/cvterm_class_adder');
+      module_load_include('inc', 'tripal_chado', 'includes/fields/cvterm_class_adder');
+      tripal_chado_cvterm_class_adder_widget($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
+      break;
     case 'tripal_chado_cvterm_widget':
       form_load_include($form_state, 'inc', 'tripal_chado', 'includes/fields/cvterm');
       module_load_include('inc', 'tripal_chado', 'includes/fields/cvterm');
@@ -783,8 +824,8 @@ function tripal_chado_field_widget_form(&$form, &$form_state, $field,
  * The field_ui_display_overview_form is used for formatting the display
  * or layout of fields attached to an entity and shown on the entity view page.
  *
- * This function removes the property adder field as that is really not meant
- * for users to show or manage.
+ * This function removes the cvterm class and property adder field as those are
+ * really not meant for users to show or manage.
  */
 function tripal_chado_form_field_ui_display_overview_form_alter(&$form, &$form_state, $form_id) {
   // Remove the kvproperty_addr field as it isn't ever displayed. It's just used
@@ -793,6 +834,9 @@ function tripal_chado_form_field_ui_display_overview_form_alter(&$form, &$form_s
   foreach ($fields_names as $field_name) {
     $field_info = field_info_field($field_name);
     if ($field_info['type'] == 'kvproperty_adder') {
+      unset($form['fields'][$field_name]);
+    }
+    if ($field_info['type'] == 'cvterm_class_adder') {
       unset($form['fields'][$field_name]);
     }
   }
@@ -813,6 +857,9 @@ function tripal_chado_form_field_ui_field_overview_form_alter(&$form, &$form_sta
   foreach ($fields_names as $field_name) {
     $field_info = field_info_field($field_name);
     if ($field_info['type'] == 'kvproperty_adder') {
+      unset($form['fields'][$field_name]);
+    }
+    if ($field_info['type'] == 'cvterm_class_adder') {
       unset($form['fields'][$field_name]);
     }
   }
@@ -856,6 +903,9 @@ function tripal_chado_get_field_form_values($field_name, $form_state, $delta = 0
 
   // Iterate through the values looking for the field_name provided.
   foreach ($form_state['values'][$field_name] as $langcode => $items) {
+    if (!array_key_exists($delta, $items)) {
+      continue;
+    }
     $item = $items[$delta];
     if ($child){
       if(array_key_exists($child, $item) and $item[$child] != '') {
@@ -906,6 +956,10 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
     'tripal_chado_dbxref_widget' => array(
       'render element' => 'element',
       'file' => 'includes/fields/dbxref.inc',
+    ),
+    'tripal_chado_cvterm_widget' => array(
+      'render element' => 'element',
+      'file' => 'includes/fields/cvterm.inc',
     ),
     'tripal_chado_kvproperty_addr_widget' => array(
       'render element' => 'element',
@@ -1041,7 +1095,7 @@ function tripal_chado_add_bundle_fields($entity_type, $bundle, $term) {
   // base table. If so, add the fields for that type of table.
   $cvterm_table = $bundle_data['data_table'] . '_cvterm';
   if (chado_table_exists($cvterm_table)) {
-    tripal_chado_add_bundle_cvterm_field($entity_type, $bundle_name, $cvterm_table, $bundle_data['data_table']);
+    tripal_chado_add_bundle_cvterm_class_adder_field($entity_type, $bundle_name, $cvterm_table, $bundle_data['data_table']);
   }
 }
 
@@ -1096,52 +1150,6 @@ function tripal_chado_add_bundle_dbxref_field($entity_type_name, $bundle_name, $
   }
   tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
 }
-
-/**
- * Adds the fields for managing xrefs that are stored in a [base]_dbxref table.
- *
- * @param $entity_type
- * @param $bundle_name
- * @param $base_table
- * @param $dbxref_table
- */
-function tripal_chado_add_bundle_cvterm_field($entity_type_name, $bundle_name, $cvterm_table, $base_table) {
-  // We already have a dbxref_id field.
-  $field_name = $cvterm_table;
-  $schema = chado_get_schema($cvterm_table);
-  $pkey = $schema['primary key'][0];
-
-  // Initialize the field array.
-  $field_info = array(
-    'field_type' => 'cvterm',
-    'widget_type' => 'tripal_fields_cvterm_widget',
-    'widget_settings' => array('display_label' => 1),
-    'description' => '',
-    'label' => 'Annotations',
-    'is_required' => 0,
-    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-    'storage' => 'field_chado_storage',
-    'field_settings' => array(
-      // The Chado table that this field maps to.
-      'chado_table' => $cvterm_table,
-      // The column in the chado table that this field maps to.
-      'chado_column' => $pkey,
-      // The base table that this field is connected to.
-      'base_table' => $base_table,
-      'semantic_web' => array(
-        // The type is the term from a vocabulary that desribes this field..
-        'type' => '',
-        // The namepsace for the vocabulary (e.g. 'foaf').
-        'ns' => '',
-        // The URL for the namespace.  It must be that the type can be
-        // appended to the URL.
-        'nsurl' => '',
-      ),
-    ),
-  );
-
-  tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
-}
 /**
  * Adds the fields for managing properties that are stored in a prop table.
  *
@@ -1150,7 +1158,6 @@ function tripal_chado_add_bundle_cvterm_field($entity_type_name, $bundle_name, $
  * @param $kv_table
  */
 function tripal_chado_add_bundle_kvproperty_adder_field($entity_type_name, $bundle_name, $kv_table, $base_table) {
-  // First add a generic property field so that users can add new property types.
   $field_name = $kv_table;
 
   // Initialize the field array.
@@ -1168,7 +1175,32 @@ function tripal_chado_add_bundle_kvproperty_adder_field($entity_type_name, $bund
   );
   tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
 }
+/**
+ * Adds the fields for managing properties that are stored in a prop table.
+ *
+ * @param $entity_type_name
+ * @param $bundle_name
+ * @param $kv_table
+ */
+function tripal_chado_add_bundle_cvterm_class_adder_field($entity_type_name, $bundle_name, $cvterm_table, $base_table) {
+  // First add a generic property field so that users can add new property types.
+  $field_name = $cvterm_table;
 
+  // Initialize the field array.
+  $field_info = array(
+    'field_type' => 'cvterm_class_adder',
+    'widget_type' => 'tripal_fields_cvterm_class_adder_widget',
+    'field_settings' => array(
+      'base_table' => $base_table,
+    ),
+    'storage' => 'field_chado_storage',
+    'widget_settings' => array('display_label' => 1),
+    'description' => '',
+    'label' => 'Additional Annotation Types',
+    'is_required' => 0,
+  );
+  tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
+}
 /**
  * Adds the fields for the base table to the entity.
  */
