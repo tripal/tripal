@@ -220,34 +220,3 @@ function tripal_core_node_view($node, $view_mode, $langcode) {
     }
   }
 }
-
-/**
- * Implements hook_exclude_type_by_default()
- *
- * This hooks allows fields of a specified type that match a specified criteria
- * to be excluded by default from any table when chado_generate_var() is called.
- * Keep in mind that if fields are excluded by default they can always be
- * expanded at a later date using chado_expand_var().
- *
- * Criteria are php strings that evaluate to either TRUE or FALSE. These
- * strings are evaluated using drupal_eval() which suppresses syntax errors
- * and throws watchdog entries of type php. There are also watchdog entries of
- * type tripal_core stating the exact criteria evaluated. Criteria can
- * contain the following tokens:
- *   - <field_name>
- *       Replaced by the name of the field to be excluded
- *   - <field_value>
- *       Replaced by the value of the field in the current record
- * Also keep in mind that if your criteria doesn't contain the
- * &gt;field_value&lt;  token then it will be evaluated before the query is
- * executed and if the field is excluded it won't be included in the query.
- *
- * @return
- *   An array of type => criteria where the type is excluded if the criteria
- *   evaluates to TRUE
- *
- * @ingroup tripal_core
- */
-function tripal_core_exclude_type_by_default() {
-  return array('text' => 'strlen("<field_value> ") > 250');
-}
