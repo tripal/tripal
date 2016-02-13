@@ -1493,7 +1493,7 @@ function tripal_feature_load_gff3_alias($feature, $aliases) {
   if (count($result) == 0) {
     $term = array(
       'name' => 'exact',
-      'id' => "internal:exact",
+      'id' => "local:exact",
       'definition' => '',
       'is_obsolete' => 0,
       'cv_name' => $syncv->name,

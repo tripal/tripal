@@ -358,7 +358,9 @@ function tripal_cv_load_obo_v1_2_id($obo_id, $jobid = NULL) {
   }
 
   // if the reference is for a remote URL then run the URL processing function
-  if (preg_match("/^http:\/\//", $obo->path) or preg_match("/^ftp:\/\//", $obo->path)) {
+  if (preg_match("/^http:\/\//", $obo->path) or
+      preg_match("/^https:\/\//", $obo->path) or
+      preg_match("/^ftp:\/\//", $obo->path)) {
     tripal_cv_load_obo_v1_2_url($obo->name, $obo->path, $jobid, 0);
   }
   // if the reference is for a local file then run the file processing function
@@ -375,7 +377,7 @@ function tripal_cv_load_obo_v1_2_id($obo_id, $jobid = NULL) {
         tripal_cv_load_obo_v1_2_file($obo->name, $obo->path, $jobid, 0);
       }
       else {
-        print "ERROR: counld not find OBO file: '$obo->path'\n";
+        print "ERROR: could not find OBO file: '$obo->path'\n";
       }
     }
   }
