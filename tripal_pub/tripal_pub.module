@@ -183,7 +183,7 @@ function tripal_pub_menu() {
 
   $items['admin/tripal/chado/tripal_pub/import/delete/%'] = array(
     'page callback' => 'tripal_pub_importer_delete',
-    'page arguments' => array(5),
+    'page arguments' => array(6),
     'access arguments' => array('administer tripal pub'),
     'type ' => MENU_CALLBACK,
   );
