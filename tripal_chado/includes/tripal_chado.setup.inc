@@ -725,40 +725,40 @@ function tripal_chado_install_sql($sql_file) {
     if (strcmp($stack[sizeof($stack)-1], 'table') == 0 and preg_match('/\);\s*$/', $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'alter table') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'alter table') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'set') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'set') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'schema') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'schema') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'sequence') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'sequence') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'view') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'view') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'comment') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'comment') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'function') == 0 and preg_match("/LANGUAGE.*?;\s+$/i", $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'function') == 0 and preg_match("/LANGUAGE.*?;\s+$/i", $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'index') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'index') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'insert') == 0 and preg_match('/\);\s*$/', $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'insert') == 0 and preg_match('/\);\s*$/', $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'type') == 0 and preg_match('/\);\s*$/', $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'type') == 0 and preg_match('/\);\s*$/', $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'grant') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'grant') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'aggregate') == 0 and preg_match('/\);\s*$/', $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'aggregate') == 0 and preg_match('/\);\s*$/', $line)) {
       $type = array_pop($stack);
     }
     // if we're in a recognized SQL statement then let's keep track of lines

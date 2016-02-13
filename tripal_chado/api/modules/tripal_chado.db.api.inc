@@ -331,7 +331,7 @@ function tripal_insert_db($values, $options = array()) {
       tripal_report_error('tripal_chado', TRIPAL_WARNING, "Cannot create db '$dbname'.", NULL);
       return 0;
     }
-    $result = chado_select_record('db', array('*'), $sel_values, $sel_options);
+    $result = chado_select_record('db', array('*'), $sel_values);
   }
   // if it exists and update is enabled the do the update
   elseif ($update) {
@@ -341,7 +341,7 @@ function tripal_insert_db($values, $options = array()) {
       tripal_report_error('tripal_chado', TRIPAL_WARNING, "Cannot update db '$dbname'.", NULL);
       return 0;
     }
-    $result = chado_select_record('db', array('*'), $sel_values, $sel_options);
+    $result = chado_select_record('db', array('*'), $sel_values);
   }
 
   // return the database object
