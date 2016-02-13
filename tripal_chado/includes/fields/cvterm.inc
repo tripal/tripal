@@ -61,7 +61,7 @@ function tripal_chado_cvterm_formatter(&$element, $entity_type, $entity, $field,
     'empty' => 'There are no annotations of this type',
   );
 
-  $element[$delta] = array(
+  $element[0] = array(
     '#type' => 'markup',
     '#markup' => theme_table($table),
   );

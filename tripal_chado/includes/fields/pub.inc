@@ -13,20 +13,27 @@
 function tripal_chado_pub_formatter(&$element, $entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
 
+  $list_items = array();
   $chado_table = $field['settings']['chado_table'];
   foreach ($items as $delta => $item) {
-    if ($chado_table . '__pub_id') {
+    if ($item[$chado_table . '__pub_id']) {
       $pub = chado_generate_var('pub', array('pub_id' => $item[$chado_table . '__pub_id']));
-      $name = $pub->name;
-      if ($pub->type_id->name != 'exact') {
-        $name .= ' (<i>' . $pub->type_id->name . '</i>)';
-      }
-      $element[$delta] = array(
-        '#type' => 'markup',
-        '#markup' => $name,
-      );
+      $list_items[$pub->pyear] = $pub->uniquename;
     }
   }
+
+  krsort($list_items, SORT_NUMERIC);
+
+  $list = array(
+    'title' => '',
+    'items' => $list_items,
+    'type' => 'ol',
+    'attributes' => array(),
+  );
+  $element[0] = array(
+    '#type' => 'markup',
+    '#markup' => theme_item_list($list),
+  );
 }
 /**
  *
@@ -66,7 +73,7 @@ function tripal_chado_pub_widget(&$widget, $form, $form_state, $field,
     $record_id = $items[$delta]['value'];
     $fkey_value = $items[$delta][$table_name . '__' . $fkey];
     $pub_id = $items[$delta][$table_name . '__pub_id'];
-    $title = $items[$delta][$table_name . '__title'];
+    $title = $items[$delta][$table_name . '--pub__uniquename'];
   }
 
   // Check $form_state['values'] to see if an AJAX call set the values.
@@ -99,17 +106,18 @@ function tripal_chado_pub_widget(&$widget, $form, $form_state, $field,
     '#default_value' => $pub_id,
   );
 
-  $widget[$table_name . '__title'] = array(
+  $widget[$table_name . '--pub__uniquename'] = array(
     '#type' => 'textfield',
-    '#title' => t('Publication Title'),
+    '#title' => t('Publication ID'),
     '#default_value' => $title,
-    '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/pub/title',
+    '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/pub',
     '#ajax' => array(
       'callback' => "tripal_chado_pub_widget_form_ajax_callback",
       'wrapper' => "$table_name-$delta",
       'effect' => 'fade',
       'method' => 'replace'
     ),
+    '#maxlength' => 100000,
   );
 }
 /**
@@ -143,46 +151,27 @@ function tripal_chado_pub_widget_validate($element, &$form_state) {
   // Get the field values.
   $fkey_value = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $fkey);
   $pub_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__pub_id');
+  $uname = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '--pub__uniquename');
 
-  // Make sure that if a pub is provided that a type is also
-  // provided.
-  if (!$title) {
-    form_set_error(implode('][', $element ['#parents']) . '][' . $table_name . '__title', t("Please set a pub type."));
-  }
-  // If the user provided a title then we want to set the
+  // If the user provided a uniquename then we want to set the
   // foreign key value to be the chado_record_idd
-  if ($title) {
+  if ($uname) {
 
     // Get the pub. If one with the same name and type is already present
     // then use that. Otherwise, insert a new one.
     if (!$pub_id) {
-      $pub = chado_generate_var('pub', array('name' => $syn_name, 'type_id' => $syn_type));
-      if (!$pub) {
-        $pub = chado_insert_record('pub', array(
-          'name' => $syn_name,
-          'type_id' => $syn_type,
-          'pub_sgml' => '',
-        ));
-        $pub = (object) $pub;
-      }
-
+      $pub = chado_generate_var('pub', array('uniquename' => $uname));
       // Set the pub_id and FK value
       tripal_chado_set_field_form_values($field_name, $form_state, $pub->pub_id, $delta, $table_name . '__pub_id');
       $fkey_value = $element['#entity']->chado_record_id;
       tripal_chado_set_field_form_values($field_name, $form_state, $fkey_value, $delta, $table_name . '__' . $fkey);
     }
 
-    if (!$pub_id) {
-      $pub = chado_generate_var('pub', array('uniquename' => 'null'));
-      tripal_chado_set_field_form_values($field_name, $form_state, $pub->pub_id, $delta, $table_name . '__pub_id');
-    }
   }
   else {
     // If the $syn_name is not set, then remove the linker FK value to the base table.
     tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__' . $fkey);
     tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__pub_id');
-    tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__is_internal');
-    tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__is_current');
   }
 
 }
@@ -202,7 +191,7 @@ function theme_tripal_chado_pub_widget($variables) {
   $layout = "
     <div class=\"pub-widget\">
       <div class=\"pub-widget-item\">" .
-        drupal_render($element[$table_name . '__title']) . "
+        drupal_render($element[$table_name . '--pub__uniquename']) . "
       </div>
     </div>
   ";
@@ -241,14 +230,15 @@ function tripal_chado_pub_field_load($field, $entity, $base_table, $record) {
     'value' => '',
     $field_table . '__' . $fkey_lcolumn => '',
     $field_table . '__' . 'pub_id' => '',
-    $field_table . '__' . 'title' => '',
+    $field_table . '--' . 'pub__uniquename' => '',
   );
 
-  return;
-
   $linker_table = $base_table . '_pub';
-  $options = array('return_array' => 1);
-  //$record = chado_expand_var($record, 'table', $linker_table, $options);
+  $options = array(
+    'return_array' => 1,
+  );
+  $record = chado_expand_var($record, 'table', $linker_table, $options);
+
   if (count($record->$linker_table) > 0) {
     $i = 0;
     foreach ($record->$linker_table as $index => $linker) {
@@ -257,7 +247,7 @@ function tripal_chado_pub_field_load($field, $entity, $base_table, $record) {
         'value' => $linker->$pkey,
         $field_table . '__' . $fkey_lcolumn => $linker->$fkey_lcolumn->$fkey_lcolumn,
         $field_table . '__' . 'pub_id' => $pub->pub_id,
-        $field_table . '__' . 'title' => $pub->title,
+        $field_table . '--' . 'pub__uniquename' => $pub->uniquename,
       );
       $i++;
     }

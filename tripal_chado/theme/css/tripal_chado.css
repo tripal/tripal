@@ -26,3 +26,10 @@
 .form-field-ui-field-overview-storage-logo {
   height: 10px;
 }
+
+
+#edit-feature-pub #autocomplete li {
+  white-space: normal;
+  margin: 0;
+  border-bottom: 0.5px solid #666666;
+}

@@ -447,9 +447,9 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/storage/chado/auto_name/pub/%/%'] = array(
+  $items['admin/tripal/storage/chado/auto_name/pub/%'] = array(
     'page callback' => 'tripal_autocomplete_pub',
-    'page arguments' => array(6, 7),
+    'page arguments' => array(6),
     'access arguments' => array('access content'),
     'file' => 'api/modules/tripal_chado.pub.api.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
