@@ -31,18 +31,23 @@
           var prevObj = $(id).prev().attr('class');
           
           // Highlight the pane if it's already at the top
-          if (prevObj.indexOf('tripal_pane-base_pane') == 0 && $(id).css('display') == 'block') {
-            $(id).fadeTo(10, 0.5, function() {});
-            $(id).fadeTo(100, 1, function() {});
-            
-          }
+          //if (prevObj.indexOf('tripal_pane-base_pane') == 0 && $(id).css('display') == 'block') {
+          //  $(id).fadeTo(10, 0.5, function() {});
+          //  $(id).fadeTo(100, 1, function() {});
+          //}
           // Move the pane
-          else {
+          //else {
             $(id).hide();
-            var obj = $(id).detach();
-            $('.tripal_pane-base_pane').after(obj);
+            if (id == '#tripal_pane-fieldset-te_base') {
+              $('#tripal_pane-fieldset-te_base').removeClass('collapsed');
+            }
+            else {
+              var obj = $(id).detach();
+              $('.tripal-panes-content-top').after(obj);
+              $('#tripal_pane-fieldset-te_base').addClass('collapsed');
+            }
             $(id).show(300);
-          }
+          //}
           return false;
         });
       });

@@ -32,8 +32,7 @@ else { ?>
       <td nowrap class="tripal-panes-table-td tripal-panes-table-td-toc" align="left"><?php
         print $toc; ?>
       </td>
-      <td class="tripal-panes-table-td-data" align="left" width="100%"> <?php
-
+      <td class="tripal-panes-table-td-data" align="left" width="100%"><?php
         // print the rendered content
         print $content; ?>
       </td>
@@ -114,22 +113,22 @@ function get_content($variables, $bundle_type, &$content, &$toc, &$has_base_pane
       $output .= tripal_panes_generic_render_fields($no_group);
     }
 
-    // If this is a base content, do not organize the content in a fieldset
-    if ($pane->name == 'te_base') {
-      $content .= '<div class="tripal_pane-base_pane">' . $output . '</div>';
-    }
-    else {
-      $collapsible_item = array('element' => array());
-      $collapsible_item['element']['#description'] = $output;
-      $collapsible_item['element']['#title'] = $pane->label;
-      $collapsible_item['element']['#children'] = '';
-      $collapsible_item['element']['#attributes']['id'] = 'tripal_pane-fieldset-' . $pane->name;
-      $collapsible_item['element']['#attributes']['class'][] = 'tripal_pane-fieldset';
-      $collapsible_item['element']['#attributes']['class'][] = 'collapsible';
+    $pane_label = $pane->name == 'te_base' ? 'Summary' : $pane->label;
+    $collapsible_item = array('element' => array());
+    $collapsible_item['element']['#description'] = $output;
+    $collapsible_item['element']['#title'] = $pane_label;
+    $collapsible_item['element']['#children'] = '';
+    $collapsible_item['element']['#attributes']['id'] = 'tripal_pane-fieldset-' . $pane->name;
+    $collapsible_item['element']['#attributes']['class'][] = 'tripal_pane-fieldset';
+    $collapsible_item['element']['#attributes']['class'][] = 'collapsible';
+    if ($pane->name != 'te_base') {
       $collapsible_item['element']['#attributes']['class'][] = 'collapsed';
-      $toc_item_id = $pane_id;
-      $toc .= "<div class=\"tripal-panes-toc-list-item\"><a id=\"" . $pane->name . "\" class=\"tripal_panes-toc-list-item-link\" href=\"?pane=" . $pane->name . "\">" . $pane->label . "</a></div>";
-      $content .= theme('fieldset', $collapsible_item);
+    }
+    $toc_item_id = $pane_id;
+    $toc .= "<div class=\"tripal-panes-toc-list-item\"><a id=\"" . $pane->name . "\" class=\"tripal_panes-toc-list-item-link\" href=\"?pane=" . $pane->name . "\">" . $pane_label . "</a></div>";
+    $content .= theme('fieldset', $collapsible_item);
+    if ($pane->name == 'te_base') {
+      $content .= '<div class="tripal-panes-content-top"></div>';
     }
   }
 }
