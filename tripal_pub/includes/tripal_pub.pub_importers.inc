@@ -819,7 +819,24 @@ function tripal_pub_importer_submit_job($import_id) {
 
   drupal_goto('admin/tripal/chado/tripal_pub/import_list');
 }
+/**
+ * Deletes a publication importer.
+ *
+ */
+function tripal_pub_importer_delete($import_id) {
 
+  $args = array(':import_id' => $import_id);
+  $sql = "DELETE FROM {tripal_pub_import} WHERE pub_import_id = :import_id";
+  $success = db_query($sql, $args);
+
+  if ($success) {
+    drupal_set_message('Publication importer deleted.');
+    drupal_goto('admin/tripal/chado/tripal_pub/import_list');
+  }
+  else {
+    drupal_set_message('Could not delete publication importer.', 'error');
+  }
+}
 /**
  * Adds publications that have been retrieved from a remote database and
  * consolidated into an array of details.
