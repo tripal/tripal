@@ -56,14 +56,19 @@
  *    The job_id of the registered job
  *
  * Example usage:
+ *
  * @code
- * $args = array($dfile, $organism_id, $type, $library_id, $re_name, $re_uname,
+ *   $args = array($dfile, $organism_id, $type, $library_id, $re_name, $re_uname,
  *         $re_accession, $db_id, $rel_type, $re_subject, $parent_type, $method,
  *         $user->uid, $analysis_id, $match_type);
- * $includes = module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.fasta_loader');
- * tripal_add_job("Import FASTA file: $dfile", 'tripal_feature',
- *   'tripal_feature_load_fasta', $args, $user->uid, 10, $includes);
+ *
+ *   $includes = array()
+ *   $includes[] = module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.fasta_loader');
+ *
+ *   tripal_add_job("Import FASTA file: $dfile", 'tripal_feature',
+ *     'tripal_feature_load_fasta', $args, $user->uid, 10, $includes);
  * @endcode
+ *
  * The code above is copied from the tripal_feature/fasta_loader.php file. The
  * snipped first builds an array of arguments that will then be passed to the
  * tripal_add_job function.  The number of arguments provided in the $arguments
@@ -324,6 +329,7 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL) {
     $job_res = db_query($sql);
   }
   foreach ($job_res as $job) {
+
     // Include the necessary files
     foreach (unserialize($job->includes) as $path) {
       require_once $path;

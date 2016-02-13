@@ -84,8 +84,85 @@ function tripal_chado_drush_command() {
     ),
   );
 
+  // Drush commands for publications
+  $items['trp-import-pubs'] = array(
+    'description' => dt('Imports publications from remote databases using saved configuration settings.'),
+    'options' => array(
+      'create_contacts' => dt('provide this option to create or update contacts for authors. By default contacts are not created or updated.'),
+      'dbxref' => dt('An accession number for a publication from a remote database (e.g. PMID:23582642).'),
+      'report' => dt("Set to the email address of the recipient who should receive an HTML report of the publications that have been added."),
+      'update' => dt("Set to 'Y' to update existing pubs.  By default only new pubs are inserted."),
+      'username' => array(
+        'description' => dt('The Drupal user name for which the job should be run.  The permissions for this user will be used.'),
+      ),
+    ),
+    'examples' => array(
+      'Standard example' => 'drush tripal-pubs-import',
+      'Standard example' => 'drush -l http://[site url] tripal-pubs-import --report=[email]. Where [site url] is the URL of the website and [email] is the email address of the recipient to receive the HTML report',
+      'Import single publication' => 'drush tripal-pub-import --dbxref=PMID:23582642',
+    ),
+  );
+  $items['trp-update-pubs'] = array(
+    'description' => dt('Updates publication information for publications with a supported database cross-reference.'),
+    'options' => array(
+      'create_contacts' => dt('provide this option to create or update contacts for authors. By default contacts are not created or updated.'),
+      'dbxref' => dt('An accession number for a publication from a remote database (e.g. PMID:23582642)'),
+      'db' => dt('The database name (e.g. PMID or AGL)'),
+    ),
+    'examples' => array(
+      'Standard example' => 'drush tripal-pubs-update',
+      'Create contacts during update' => 'drush tripal-pubs-update --create_contacts=1',
+      'Update a single record' => 'drush tripal-pubs-update --dbxref=PMID:23582642',
+      'Update all records for a single database' => 'drush tripal-pubs-update --db=PMID'
+    ),
+  );
+
 
   return $items;
+}
+
+/**
+ * Imports publications into Chado
+ *
+ * @ingroup tripal_drush
+ */
+function drush_tripal_chado_trp_import_pubs() {
+  $create_contacts = drush_get_option('create_contacts');
+  $dbxref = drush_get_option('dbxref');
+  $do_report = drush_get_option('report');
+  $update = drush_get_option('update');
+  $uname = drush_get_option('username');
+
+  drush_tripal_set_user($uname);
+
+  if($update == 'Y') {
+    $update = TRUE;
+  }
+  else {
+    $update = FALSE;
+  }
+
+  module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.pub_importers');
+  if ($dbxref) {
+    tripal_import_pub_by_dbxref($dbxref, $create_contacts, $update);
+  }
+  else {
+    tripal_execute_active_pub_importers($do_report, $update);
+  }
+}
+
+/**
+ * Imports publications into Chado
+ *
+ * @ingroup tripal_drush
+ */
+function drush_tripal_chado_trp_update_pubs() {
+  $create_contacts = drush_get_option('create_contacts');
+  $dbxref = drush_get_option('dbxref');
+  $db = drush_get_option('db');
+
+  module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.pub_importers');
+  tripal_reimport_publications($create_contacts, $dbxref, $db);
 }
 
 /**
@@ -180,14 +257,5 @@ function drush_tripal_chado_trp_get_table() {
   }
 }
 
-/**
- * Clean-up orphaned Drupal nodes and chado records.
- *
- * @ingroup tripal_drush
- */
-function drush_tripal_chado_trp_clean_nodes() {
-  $table = drush_get_option('table');
 
-  chado_cleanup_orphaned_nodes($table, 0);
-}
 

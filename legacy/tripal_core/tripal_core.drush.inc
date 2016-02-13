@@ -72,7 +72,7 @@ function tripal_core_drush_command() {
       'table' => dt('The name of the materialized view table to update.'),
     ),
   );
- 
+
   $items['trp-get-cversion'] = array(
     'description' => dt('Returns the current installed version of Chado.'),
     'arguments' => array(),
@@ -465,4 +465,16 @@ function drush_tripal_core_trp_clean_nodes() {
  */
 function drush_tripal_core_tripal_node_clean($module) {
   chado_cleanup_orphaned_nodes($module, 0);
+}
+
+
+/**
+ * Clean-up orphaned Drupal nodes and chado records.
+ *
+ * @ingroup tripal_drush
+ */
+function drush_tripal_chado_trp_clean_nodes() {
+  $table = drush_get_option('table');
+
+  chado_cleanup_orphaned_nodes($table, 0);
 }

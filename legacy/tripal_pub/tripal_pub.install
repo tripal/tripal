@@ -82,26 +82,7 @@ function tripal_pub_uninstall() {
  * @ingroup tripal_pub
  */
 function tripal_pub_enable() {
-  // make sure we have our supported databases
-  tripal_insert_db(
-    array(
-      'name' => 'PMID',
-      'description' => 'PubMed',
-      'url' => 'http://www.ncbi.nlm.nih.gov/pubmed',
-      'urlprefix' => 'http://www.ncbi.nlm.nih.gov/pubmed/'
-    ),
-    array('update_existing' => TRUE)
-  );
-  tripal_insert_db(
-    array(
-      'name' => 'AGL',
-      'description' => 'USDA National Agricultural Library',
-      'url' => 'http://agricola.nal.usda.gov/'
-    ),
-    array('update_existing' => TRUE)
-  );
 
-  variable_set('tripal_pub_supported_dbs', array('PMID', 'AGL'));
 }
 
 /**

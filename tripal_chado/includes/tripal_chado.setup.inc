@@ -459,6 +459,7 @@ function tripal_chado_prepare_chado() {
     //tripal_submit_obo_job(array('obo_id' => $obo_id));
 
     tripal_pub_add_cvs();
+    tripal_pub_add_dbs();
 
     // add the custom tables
     tripal_pub_add_custom_tables();
@@ -467,6 +468,9 @@ function tripal_chado_prepare_chado() {
     tripal_set_default_cv('pub', 'type_id', 'tripal_pub');
     tripal_set_default_cv('pubprop', 'type_id', 'tripal_pub');
     tripal_set_default_cv('pub_relationship', 'type_id', 'pub_relationship');
+
+    // Add the supported loaders
+    variable_set('tripal_pub_supported_dbs', array('PMID', 'AGL'));
 
     /////////////////////////////////////////////////////////////////////////////
       //                          Chado Stock Module
@@ -945,6 +949,31 @@ function tripal_pub_add_custom_tables() {
   chado_create_custom_table('pubauthor_contact', $schema, TRUE);
 }
 
+/**
+ * Adds dbs related to publications
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_pub_add_dbs() {
+  // make sure we have our supported databases
+  tripal_insert_db(
+      array(
+        'name' => 'PMID',
+        'description' => 'PubMed',
+        'url' => 'http://www.ncbi.nlm.nih.gov/pubmed',
+        'urlprefix' => 'http://www.ncbi.nlm.nih.gov/pubmed/'
+      ),
+      array('update_existing' => TRUE)
+  );
+  tripal_insert_db(
+      array(
+        'name' => 'AGL',
+        'description' => 'USDA National Agricultural Library',
+        'url' => 'http://agricola.nal.usda.gov/'
+      ),
+      array('update_existing' => TRUE)
+  );
+}
 /**
  * Add cvs related to publications
  *

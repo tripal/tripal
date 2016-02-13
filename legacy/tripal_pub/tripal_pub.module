@@ -11,11 +11,8 @@ require_once 'theme/tripal_pub.theme.inc';
 
 require_once 'includes/tripal_pub.admin.inc';
 require_once 'includes/tripal_pub.chado_node.inc';
-require_once 'includes/tripal_pub.pub_importers.inc';
 require_once 'includes/tripal_pub.pub_search.inc';
 require_once 'includes/tripal_pub.pub_citation.inc';
-require_once 'includes/importers/tripal_pub.PMID.inc';
-require_once 'includes/importers/tripal_pub.AGL.inc';
 
 /**
  * @defgroup tripal_pub Publication Module
@@ -133,73 +130,7 @@ function tripal_pub_menu() {
     'weight' => 1
   );
 
-  $items['admin/tripal/chado/tripal_pub/import_list'] = array(
-    'title' => t('Publication Importers'),
-    'description' => t('Create and modify importers that can connect to and retreive publications from remote databases.'),
-    'page callback' => 'tripal_pub_importers_list',
-    'access arguments' => array('administer tripal pub'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 0
-  );
 
-  // add a second link for the importer on the data loaders page
-  $items['admin/tripal/loaders/pub_import'] = array(
-    'title' => t('Publication Importers'),
-    'description' => t('Create and modify importers that can connect to and retreive publications from remote databases.'),
-    'page callback' => 'tripal_pub_importers_list',
-    'access arguments' => array('administer tripal pub'),
-    'type' => MENU_NORMAL_ITEM,
-  );
-
-  $items['admin/tripal/chado/tripal_pub/import/new'] = array(
-    'title' => t('Add an Importer'),
-    'description' => t('Add a new publication importer.'),
-    'page callback' => 'tripal_pub_importer_setup_page',
-    'access arguments' => array('administer tripal pub'),
-    'type ' => MENU_CALLBACK,
-  );
-
-  $items['admin/tripal/chado/tripal_pub/import/raw/%'] = array(
-    'title' => t('Raw Data From Publication Import'),
-    'page callback' => 'tripal_get_remote_pub_raw_page',
-    'page arguments' => array(6),
-    'access arguments' => array('administer tripal pub'),
-    'type ' => MENU_CALLBACK,
-  );
-
-  $items['admin/tripal/chado/tripal_pub/import/edit/%'] = array(
-    'page callback' => 'tripal_pub_importer_setup_page',
-    'page arguments' => array(5, 6),
-    'access arguments' => array('administer tripal pub'),
-    'type ' => MENU_CALLBACK,
-  );
-
-  $items['admin/tripal/chado/tripal_pub/import/submit/%'] = array(
-    'page callback' => 'tripal_pub_importer_submit_job',
-    'page arguments' => array(6),
-    'access arguments' => array('administer tripal pub'),
-    'type ' => MENU_CALLBACK,
-  );
-
-  $items['admin/tripal/chado/tripal_pub/import/delete/%'] = array(
-    'page callback' => 'tripal_pub_importer_delete',
-    'page arguments' => array(5),
-    'access arguments' => array('administer tripal pub'),
-    'type ' => MENU_CALLBACK,
-  );
-  $items['admin/tripal/chado/tripal_pub/import/changedb'] = array(
-    'page callback' => 'tripal_pub_importer_setup_page_update_remotedb',
-    'page arguments' => array(),
-    'access arguments' => array('administer tripal pub'),
-    'type ' => MENU_CALLBACK,
-  );
-
-  $items['admin/tripal/chado/tripal_pub/import/criteria/%/%'] = array(
-    'page callback' => 'tripal_pub_importer_setup_page_update_criteria',
-    'page arguments' => array(5, 6),
-    'access arguments' => array('administer tripal pub'),
-    'type ' => MENU_CALLBACK,
-  );
 
   return $items;
 }
@@ -282,13 +213,7 @@ function tripal_pub_theme($existing, $type, $theme, $path) {
       'path' => "$path/theme/templates",
     ),
 
-    // themed forms
-    'tripal_pub_importer_setup_form_elements' => array(
-      'render element' => 'form',
-    ),
-    'tripal_pub_search_setup_form_elements' => array(
-      'render element' => 'form',
-    ),
+
 
     // teaser
     'tripal_pub_teaser' => array(

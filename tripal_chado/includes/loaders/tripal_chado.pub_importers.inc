@@ -4,6 +4,10 @@
  * Management of importers
  */
 
+require_once('tripal_chado.pub_importer_AGL.inc');
+require_once('tripal_chado.pub_importer_PMID.inc');
+
+
 /**
  * A function to generate a table containing the list of publication importers
  *
@@ -13,7 +17,7 @@ function tripal_pub_importers_list() {
   // clear out the session variable when we view the list.
   unset($_SESSION['tripal_pub_import']);
 
-  $header = array('', 'Importer Name', 'Database', 'Search String', 'Disabled', 'Create Contact', '');
+  $headers = array('', 'Importer Name', 'Database', 'Search String', 'Disabled', 'Create Contact', '');
   $rows = array();
   $importers = db_query("SELECT * FROM {tripal_pub_import} ORDER BY name");
 
@@ -31,8 +35,8 @@ function tripal_pub_importers_list() {
 
     $rows[] = array(
       array(
-        'data' => l(t('Edit/Test'), "admin/tripal/chado/tripal_pub/import/edit/$importer->pub_import_id") . '<br>' .
-                  l(t('Import Pubs'), "admin/tripal/chado/tripal_pub/import/submit/$importer->pub_import_id"),
+        'data' => l(t('Edit/Test'), "admin/tripal/storage/chado/loaders/pub/edit/$importer->pub_import_id") . '<br>' .
+                  l(t('Import Pubs'), "admin/tripal/storage/chado/loaders/pub/submit/$importer->pub_import_id"),
         'nowrap' => 'nowrap'
       ),
       $importer->name,
@@ -40,13 +44,13 @@ function tripal_pub_importers_list() {
       $criteria_str,
       $importer->disabled ? 'Yes' : 'No',
       $importer->do_contact ? 'Yes' : 'No',
-      l(t('Delete'), "admin/tripal/chado/tripal_pub/import/delete/$importer->pub_import_id"),
+      l(t('Delete'), "admin/tripal/storage/chado/loaders/pub/delete/$importer->pub_import_id"),
     );
   }
 
 
   $page  = "<ul class='action-links'>";
-  $page .= '  <li>' . l('New Importer', 'admin/tripal/chado/tripal_pub/import/new') . '</li>';
+  $page .= '  <li>' . l('New Importer', 'admin/tripal/storage/chado/loaders/pub/new') . '</li>';
   $page .= '</ul>';
 
   $page .= '<p>' . t(
@@ -64,7 +68,19 @@ function tripal_pub_importers_list() {
      set the importers to run automatically.") . '</li>
      </ol><br>';
 
-  $page .= theme('table', array('header' => $header, 'rows' => $rows));
+
+  $table = array(
+    'header' => $headers,
+    'rows' => $rows,
+    'attributes' => array(
+    ),
+    'caption' => '',
+    'sticky' => TRUE,
+    'colgroups' => array(),
+    'empty' => 'There are currently importers',
+  );
+
+  $page .= theme_table($table);
 
   return $page;
 }
@@ -105,7 +121,7 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
   // generate the search form
   $form = drupal_get_form('tripal_pub_importer_setup_form',  $pub_import_id, $action);
 
-  $output = l("Return to publication importers list", "admin/tripal/chado/tripal_pub/import_list");
+  $output = l("Return to publication importers list", "admin/tripal/storage/chado/loaders/pub");
   $output .= drupal_render($form);
 
   // retrieve any results
@@ -145,7 +161,7 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
           $citation = htmlspecialchars($pub['Citation']);
           $raw_link = '';
           if($pub['Publication Dbxref']) {
-            $raw_link = l('raw', 'admin/tripal/chado/tripal_pub/import/raw/' . $pub['Publication Dbxref'], array('attributes' => array('target' => '_blank')));
+            $raw_link = l('raw', 'admin/tripal/storage/chado/loaders/pub/raw/' . $pub['Publication Dbxref'], array('attributes' => array('target' => '_blank')));
           }
           $rows[] = array(
             number_format($i),
@@ -308,8 +324,6 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
     $num_criteria--;
   }
 
-
-
   // set the values we need for later but that should not be shown on the form
   $form['num_criteria']= array(
     '#type'  => 'value',
@@ -333,7 +347,7 @@ function tripal_pub_importer_setup_form($form, &$form_state = NULL, $pub_import_
     '#required'      => TRUE,
   );
 
-  $supported_dbs = variable_get('tripal_pub_supported_dbs', array());
+  $supported_dbs = variable_get('tripal_pub_supported_dbs', array('PMID'));
   $remote_dbs = array();
   $values = array(
     'name' => $supported_dbs,
@@ -693,7 +707,7 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
       if(drupal_write_record('tripal_pub_import', $record, 'pub_import_id')){
         unset($_SESSION['tripal_pub_import']);
         drupal_set_message('Publication import settings updated.');
-        drupal_goto('admin/tripal/chado/tripal_pub/import_list');
+        drupal_goto('admin/tripal/storage/chado/loaders/pub');
       }
       else {
         drupal_set_message('Could not update publication import settings.', 'error');
@@ -709,7 +723,7 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
         if ($form_state['values']['op'] == 'Save & Import Now') {
           tripal_execute_pub_importer($record['pub_import_id']);
         }
-        drupal_goto('admin/tripal/chado/tripal_pub/import_list');
+        drupal_goto('admin/tripal/storage/chado/loaders/pub');
       }
       else {
         drupal_set_message('Could not save publication import settings.', 'error');
@@ -721,7 +735,7 @@ function tripal_pub_importer_setup_form_submit($form, &$form_state) {
     $success = db_query($sql, array(':pub_import_id' => $pub_import_id));
     if ($success) {
       drupal_set_message('Publication importer deleted.');
-      drupal_goto('admin/tripal/chado/tripal_pub/import_list');
+      drupal_goto('admin/tripal/storage/chado/loaders/pub');
     }
     else {
       drupal_set_message('Could not delete publication importer.', 'error');
@@ -807,19 +821,37 @@ function theme_tripal_pub_importer_setup_form_elements($variables) {
  */
 function tripal_pub_importer_submit_job($import_id) {
   global $user;
-
   // get all of the loaders
   $args = array(':import_id' => $import_id);
   $sql = "SELECT * FROM {tripal_pub_import} WHERE pub_import_id = :import_id ";
   $import = db_query($sql, $args)->fetchObject();
 
   $args = array($import_id);
-  tripal_add_job("Import publications $import->name", 'tripal_pub',
-    'tripal_execute_pub_importer', $args, $user->uid);
+  $includes = array();
+  $includes[] = module_load_include('inc', 'tripal_chado', 'includes/loaders/tripal_chado.pub_importers');
+  tripal_add_job("Import publications $import->name", 'tripal_chado',
+    'tripal_execute_pub_importer', $args, $user->uid, 10, $includes);
 
-  drupal_goto('admin/tripal/chado/tripal_pub/import_list');
+  drupal_goto('admin/tripal/storage/chado/loaders/pub');
 }
+/**
+ * Deletes a publication importer.
+ *
+ */
+function tripal_pub_importer_delete($import_id) {
 
+  $args = array(':import_id' => $import_id);
+  $sql = "DELETE FROM {tripal_pub_import} WHERE pub_import_id = :import_id";
+  $success = db_query($sql, $args);
+
+  if ($success) {
+    drupal_set_message('Publication importer deleted.');
+    drupal_goto('admin/tripal/storage/chado/loaders/pub');
+  }
+  else {
+    drupal_set_message('Could not delete publication importer.', 'error');
+  }
+}
 /**
  * Adds publications that have been retrieved from a remote database and
  * consolidated into an array of details.
@@ -1424,103 +1456,7 @@ function tripal_pub_get_publication_array($pub_id, $skip_existing = TRUE) {
   return $pub_array;
 }
 
-/**
- * Imports all publications for all active import setups.
- *
- * @param $report_email
- *   A list of email address, separated by commas, that should be notified
- *   once importing has completed
- * @param $do_update
- *   If set to TRUE then publications that already exist in the Chado database
- *   will be updated, whereas if FALSE only new publications will be added
- *
- * @ingroup tripal_pub
- */
-function tripal_execute_active_pub_importers($report_email = FALSE, $do_update = FALSE) {
-  $num_to_retrieve = 100;
-  $page = 0;
 
-  print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
-      "If the load fails or is terminated prematurely then the entire set of \n" .
-      "insertions/updates is rolled back and will not be found in the database\n\n";
-
-  // start the transaction
-  $transaction = db_transaction();
-
-  try {
-    // get all of the loaders
-    $args = array();
-    $sql = "SELECT * FROM {tripal_pub_import} WHERE disabled = 0 ";
-    $results = db_query($sql, $args);
-    $do_contact = FALSE;
-    $reports = array();
-    foreach ($results as $import) {
-      $page = 0;
-      print "Executing importer: '" . $import->name . "'\n";
-      // keep track if any of the importers want to create contacts from authors
-      if ($import->do_contact == 1) {
-        $do_contact = TRUE;
-      }
-      $criteria = unserialize($import->criteria);
-      $remote_db = $criteria['remote_db'];
-      do {
-        // retrieve the pubs for this page. We'll retreive 100 at a time
-        $results = tripal_get_remote_pubs($remote_db, $criteria, $num_to_retrieve, $page);
-        $pubs = $results['pubs'];
-        $reports[$import->name] = tripal_pub_add_publications($pubs, $import->do_contact, $do_update);
-        $page++;
-      }
-      // continue looping until we have a $pubs array that does not have
-      // our requested numer of records.  This means we've hit the end
-      while (count($pubs) == $num_to_retrieve);
-    }
-
-    // sync the newly added publications with Drupal. If the user
-    // requested a report then we don't want to print any syncing information
-    // so pass 'FALSE' to the sync call
-    print "Syncing publications with Drupal...\n";
-    chado_node_sync_records('pub');
-
-    // iterate through each of the reports and generate a final report with HTML links
-    $HTML_report = '';
-    if ($report_email) {
-      $HTML_report .= "<html>";
-      global $base_url;
-      foreach ($reports as $importer => $report) {
-        $total = count($report['inserted']);
-        $HTML_report .= "<b>$total new publications from importer: $importer</b><br><ol>\n";
-        foreach ($report['inserted'] as $pub) {
-          $item = $pub['Title'];
-          if (array_key_exists('pub_id', $pub)) {
-            $item = l($pub['Title'], "$base_url/pub/" . $pub['pub_id']);
-          }
-          $HTML_report .= "<li>$item</li>\n";
-        }
-        $HTML_report .= "</ol>\n";
-      }
-      $HTML_report .= "</html>";
-      $site_email = variable_get('site_mail', '');
-      $params = array(
-        'message' => $HTML_report
-      );
-      drupal_mail('tripal_pub', 'import_report', $report_email, language_default(), $params, $site_email, TRUE);
-    }
-
-    // if any of the importers wanted to create contacts from the authors then sync them
-    if($do_contact) {
-      print "Syncing contacts with Drupal...\n";
-      chado_node_sync_records('contact');
-    }
-  }
-  catch (Exception $e) {
-    $transaction->rollback();
-    print "\n"; // make sure we start errors on new line
-    watchdog_exception('T_pub_import', $e);
-    print "FAILED: Rolling back database changes...\n";
-    return;
-  }
-  print "Done.\n";
-}
 
 /**
  * Imports all publications for a given publication import setup.
@@ -1568,16 +1504,20 @@ function tripal_execute_pub_importer($import_id, $job_id = NULL) {
     // our requested numer of records.  This means we've hit the end
     while (count($pubs) == $num_to_retrieve);
 
-    // sync the newly added publications with Drupal. If the user
-    // requested a report then we don't want to print any syncing information
-    // so pass 'FALSE' to the sync call
-    print "Syncing publications with Drupal...\n";
-    chado_node_sync_records('pub');
+    // For backwards compatibility check to see if the legacy pub module
+    // is enabled. If so, then sync the nodes.
+    if (module_exists('tripal_pub')) {
+      // sync the newly added publications with Drupal. If the user
+      // requested a report then we don't want to print any syncing information
+      // so pass 'FALSE' to the sync call
+      print "Syncing publications with Drupal...\n";
+      chado_node_sync_records('pub');
 
-    // if any of the importers wanted to create contacts from the authors then sync them
-    if($import->do_contact) {
-      print "Syncing contacts with Drupal...\n";
-      chado_node_sync_records('contact');
+      // if any of the importers wanted to create contacts from the authors then sync them
+      if($import->do_contact) {
+        print "Syncing contacts with Drupal...\n";
+        chado_node_sync_records('contact');
+      }
     }
     tripal_set_job_progress($job_id, '100');
   }
@@ -1614,7 +1554,7 @@ function tripal_get_remote_pub($dbxref) {
     $accession = $matches[2];
 
     // check that the database is supported
-    $supported_dbs = variable_get('tripal_pub_supported_dbs', array());
+    $supported_dbs = variable_get('tripal_pub_supported_dbs', array('PMID'));
     if(!in_array($remote_db, $supported_dbs)) {
       return FALSE;
     }
@@ -1694,180 +1634,436 @@ function tripal_get_remote_pubs($remote_db, $search_array, $num_to_retrieve, $pa
 }
 
 /**
- * Imports a singe publication specified by a remote database cross reference.
+ * The admin form for submitting job to create citations
  *
- * @param $pub_dbxref
- *   The unique database ID for the record to update.  This value must
- *   be of the format DB_NAME:ACCESSION where DB_NAME is the name of the
- *   database (e.g. PMID or AGL) and the ACCESSION is the unique identifier
- *   for the record in the database.
- * @param $do_contact
- *   Set to TRUE if authors should automatically have a contact record added
- *   to Chado.
- * @param $do_update
- *   If set to TRUE then the publication will be updated if it already exists
- *   in the database.
+ * @param $form_state
  *
  * @ingroup tripal_pub
  */
-function tripal_import_pub_by_dbxref($pub_dbxref, $do_contact = FALSE, $do_update) {
-  $num_to_retrieve = 1;
-  $pager_id = 0;
-  $page = 0;
-  $num_pubs = 0;
+function tripal_pub_citation_form($form, &$form_state) {
 
-  print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
-      "If the load fails or is terminated prematurely then the entire set of \n" .
-      "insertions/updates is rolled back and will not be found in the database\n\n";
+  $form['instructions'] = array(
+    '#markup' => '<p>Use this form to unify publication citations. Citations are created automtically when
+      importing publications but citations are set by the user when publications are added manually.
+      Or publications added to the Chado database by tools other than the Tripal Publication Importer may
+      not have citations set. If you are certain that all necessary information for all publications is present (e.g.
+      authors, volume, issue, page numbers, etc.) but citations are not consistent, then you can
+      choose to update all citations for all publications using the form below. Alternatively, you
+      can update citations only for publication that do not already have one.</p>'
+  );
 
-  $transaction = db_transaction();
-  try {
-    if(preg_match('/^(.*?):(.*?)$/', $pub_dbxref, $matches)) {
-      $dbname = $matches[1];
-      $accession = $matches[2];
+  $form['options'] = array(
+    '#type' => 'radios',
+    '#options' => array(
+      'all' => 'Create citation for all publications. Replace the existing citation if it exists.',
+      'new' => 'Create citation for publication only if it does not already have one.'),
+    '#default_value' => 'all'
+  );
 
-      $criteria = array(
-        'num_criteria' => 1,
-        'remote_db' => $dbname,
-        'criteria' => array(
-          '1' => array(
-            'search_terms' => "$dbname:$accession",
-            'scope' => 'id',
-            'operation' => '',
-            'is_phrase' => 0,
-          ),
-        ),
-      );
-      $remote_db = $criteria['remote_db'];
-      $results = tripal_get_remote_pubs($remote_db, $criteria, $num_to_retrieve, $page);
-      $pubs          = $results['pubs'];
-      $search_str    = $results['search_str'];
-      $total_records = $results['total_records'];
-      $pub_id = tripal_pub_add_publications($pubs, $do_contact, $do_update);
-    }
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit')
+  );
 
-    // sync the newly added publications with Drupal
-    print "Syncing publications with Drupal...\n";
-    chado_node_sync_records('pub');
-
-    // if any of the importers wanted to create contacts from the authors then sync them
-    if($do_contact) {
-      print "Syncing contacts with Drupal...\n";
-      chado_node_sync_records('contact');
-    }
-  }
-  catch (Exception $e) {
-    $transaction->rollback();
-    print "\n"; // make sure we start errors on new line
-    watchdog_exception('T_pub_import', $e);
-    print "FAILED: Rolling back database changes...\n";
-    return;
-  }
-
-  print "Done.\n";
+  return $form;
 }
 
 /**
- * Updates publication records that currently exist in the Chado pub table
- * with the most recent data in the remote database.
+ * Submit form. Create Tripal job for citations
  *
- * @param $do_contact
- *   Set to TRUE if authors should automatically have a contact record added
- *   to Chado. Contacts are added using the name provided by the remote
- *   database.
- * @param $dbxref
- *   The unique database ID for the record to update.  This value must
- *   be of the format DB_NAME:ACCESSION where DB_NAME is the name of the
- *   database (e.g. PMID or AGL) and the ACCESSION is the unique identifier
- *   for the record in the database.
- * @param $db
- *   The name of the remote database to update.  If this value is provided and
- *   no dbxref then all of the publications currently in the Chado database
- *   for this remote database will be updated.
+ * @param $form_state
  *
  * @ingroup tripal_pub
  */
-function tripal_reimport_publications($do_contact = FALSE, $dbxref = NULL, $db = NULL) {
+function tripal_pub_citation_form_submit(&$form_state) {
+  $options [0] = $form_state['options']['#value'];
+  tripal_add_job("Create citations ($options[0])", 'tripal_pub', 'tripal_pub_create_citations', $options, $user->uid);
+}
 
-  print "\nNOTE: Loading of publications is performed using a database transaction. \n" .
-      "If the load fails or is terminated prematurely then the entire set of \n" .
-      "insertions/updates is rolled back and will not be found in the database\n\n";
-  $transaction = db_transaction();
-  try {
+/**
+ * Launch the Tripal job to generate citations. Called by tripal jobs
+ *
+ * @param $options
+ *  Options pertaining to what publications to generate citations for.
+ *  One of the following must be present:
+ *   - all: Create and replace citation for all pubs
+ *   - new: Create citation for pubs that don't already have one
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_pub_create_citations($options) {
+  $skip_existing = TRUE;
+  $sql = "
+    SELECT cvterm_id
+    FROM {cvterm}
+    WHERE
+      name = 'Citation' AND
+      cv_id = (SELECT cv_id FROM {cv} WHERE name = 'tripal_pub')
+  ";
+  $citation_type_id = chado_query($sql)->fetchField();
 
-    // get a list of all publications by their Dbxrefs that have supported databases
+  // Create and replace citation for all pubs
+  if ($options == 'all') {
+    $sql = "SELECT pub_id FROM {pub} P WHERE pub_id <> 1";
+    $skip_existing = FALSE;
+  }
+  // Create citation for pubs that don't already have one
+  else if ($options == 'new') {
     $sql = "
-      SELECT DB.name as db_name, DBX.accession
-      FROM pub P
-        INNER JOIN pub_dbxref PDBX ON P.pub_id = PDBX.pub_id
-        INNER JOIN dbxref DBX      ON DBX.dbxref_id = PDBX.dbxref_id
-        INNER JOIN db DB           ON DB.db_id = DBX.db_id
+      SELECT pub_id
+      FROM {pub} P
+      WHERE
+        (SELECT value
+         FROM {pubprop} PB
+         WHERE type_id = :type_id AND P.pub_id = PB.pub_id AND rank = 0) IS NULL
+        AND  pub_id <> 1
     ";
-    $args = array();
-    if ($dbxref and preg_match('/^(.*?):(.*?)$/', $dbxref, $matches)) {
-      $dbname = $matches[1];
-      $accession = $matches[2];
-      $sql .= "WHERE DBX.accession = :accession and DB.name = :dbname ";
-      $args[':accession'] = $accession;
-      $args[':dbname'] = $dbname;
-    }
-    elseif ($db) {
-      $sql .= " WHERE DB.name = :dbname ";
-      $args[':dbname'] = $db;
-    }
-    $sql .= "ORDER BY DB.name, P.pub_id";
-    $results = chado_query($sql, $args);
+    $skip_existing = TRUE;
+  }
 
-    $num_to_retrieve = 100;
-    $i = 0;                 // count the number of IDs. When we hit $num_to_retrieve we'll do the query
-    $curr_db = '';          // keeps track of the current current database
-    $ids = array();         // the list of IDs for the database
-    $search = array();      // the search array passed to the search function
-
-    // iterate through the pub IDs
-    while ($pub = $results->fetchObject()) {
-      $accession = $pub->accession;
-      $remote_db = $pub->db_name;
-
-      // here we need to only update publications for databases we support
-      $supported_dbs = variable_get('tripal_pub_supported_dbs', array());
-      if(!in_array($remote_db, $supported_dbs)) {
-        continue;
+  $result = chado_query($sql, array(':type_id' => $citation_type_id));
+  $counter_updated = 0;
+  $counter_generated = 0;
+  while ($pub = $result->fetchObject()) {
+    $pub_arr = tripal_pub_get_publication_array($pub->pub_id, $skip_existing);
+    if ($pub_arr) {
+      $citation = tripal_pub_create_citation($pub_arr);
+      print $citation . "\n\n";
+      // Replace if citation exists. This condition is never TRUE if $skip_existing is TRUE
+      if ($pub_arr['Citation']) {
+        $sql = "
+          UPDATE {pubprop} SET value = :value
+          WHERE pub_id = :pub_id  AND type_id = :type_id AND rank = :rank
+        ";
+        chado_query($sql, array(':value' => $citation, ':pub_id' => $pub->pub_id,
+          ':type_id' => $citation_type_id, ':rank' => 0));
+        $counter_updated ++;
+        // Generate a new citation
+      } else {
+        $sql = "
+          INSERT INTO {pubprop} (pub_id, type_id, value, rank)
+          VALUES (:pub_id, :type_id, :value, :rank)
+        ";
+        chado_query($sql, array(':pub_id' => $pub->pub_id, ':type_id' => $citation_type_id,
+          ':value' => $citation, ':rank' => 0));
+        $counter_generated ++;
       }
-      $search = array(
-        'num_criteria' => 1,
-        'remote_db' => $remote_db,
-        'criteria' => array(
-          '1' => array(
-            'search_terms' => "$remote_db:$accession",
-            'scope' => 'id',
-            'operation' => '',
-            'is_phrase' => 0,
-          ),
-        ),
-      );
-      $pubs = tripal_get_remote_pubs($remote_db, $search, 1, 0);
-      tripal_pub_add_publications($pubs, $do_contact, TRUE);
-
-      $i++;
-    }
-
-    // sync the newly added publications with Drupal
-    print "Syncing publications with Drupal...\n";
-    chado_node_sync_records('pub');
-
-    // if the caller wants to create contacts then we should sync them
-    if ($do_contact) {
-      print "Syncing contacts with Drupal...\n";
-      chado_node_sync_records('contact');
     }
   }
-  catch (Exception $e) {
-    $transaction->rollback();
-    print "\n"; // make sure we start errors on new line
-    watchdog_exception('T_pub_import', $e);
-    print "FAILED: Rolling back database changes...\n";
-    return;
+  print "$counter_generated citations generated. $counter_updated citations updated.\n";
+}
+
+
+/**
+ * This function generates citations for publications.  It requires
+ * an array structure with keys being the terms in the Tripal
+ * publication ontology.  This function is intended to be used
+ * for any function that needs to generate a citation.
+ *
+ * @param $pub
+ *   An array structure containing publication details where the keys
+ *   are the publication ontology term names and values are the
+ *   corresponding details.  The pub array can contain the following
+ *   keys with corresponding values:
+ *     - Publication Type:  an array of publication types. a publication can have more than one type
+ *     - Authors: a  string containing all of the authors of a publication
+ *     - Journal Name:  a string containing the journal name
+ *     - Journal Abbreviation: a string containing the journal name abbreviation
+ *     - Series Name: a string containing the series (e.g. conference proceedings) name
+ *     - Series Abbreviation: a string containing the series name abbreviation
+ *     - Volume: the serives volume number
+ *     - Issue: the series issue number
+ *     - Pages: the page numbers for the publication
+ *     - Publication Date:  A date in the format "Year Month Day"
+ *
+ * @return
+ *   A text string containing the citation
+ *
+ * @ingroup tripal_pub
+ */
+function tripal_pub_create_citation($pub) {
+  $citation = '';
+  $pub_type = '';
+
+  // An article may have more than one publication type. For example,
+  // a publication type can be 'Journal Article' but also a 'Clinical Trial'.
+  // Therefore, we need to select the type that makes most sense for
+  // construction of the citation. Here we'll iterate through them all
+  // and select the one that matches best.
+  if (is_array($pub['Publication Type'])) {
+    foreach ($pub['Publication Type'] as $ptype) {
+      if ($ptype == 'Journal Article' ) {
+        $pub_type = $ptype;
+        break;
+      }
+      else if ($ptype == 'Conference Proceedings'){
+        $pub_type = $ptype;
+        break;
+      }
+      else if ($ptype == 'Review') {
+        $pub_type = $ptype;
+        break;
+      }
+      else if ($ptype == 'Book') {
+        $pub_type = $ptype;
+        break;
+      }
+      else if ($ptype == 'Letter') {
+        $pub_type = $ptype;
+        break;
+      }
+      else if ($ptype == 'Book Chapter') {
+        $pub_type = $ptype;
+        break;
+      }
+      else if ($ptype == "Research Support, Non-U.S. Gov't") {
+        $pub_type = $ptype;
+        // we don't break because if the article is also a Journal Article
+        // we prefer that type
+      }
+    }
+    // If we don't have a recognized publication type, then just use the
+    // first one in the list.
+    if (!$pub_type) {
+      $pub_type = $pub['Publication Type'][0];
+    }
   }
-  print "Done.\n";
+  else {
+    $pub_type = $pub['Publication Type'];
+  }
+  //----------------------
+  // Journal Article
+  //----------------------
+  if ($pub_type == 'Journal Article') {
+    if (array_key_exists('Authors', $pub)) {
+      $citation = $pub['Authors'] . '. ';
+    }
+
+    $citation .= $pub['Title'] .  '. ';
+
+    if (array_key_exists('Journal Name', $pub)) {
+      $citation .= $pub['Journal Name'] . '. ';
+    }
+    elseif (array_key_exists('Journal Abbreviation', $pub)) {
+      $citation .= $pub['Journal Abbreviation'] . '. ';
+    }
+    elseif (array_key_exists('Series Name', $pub)) {
+      $citation .= $pub['Series Name'] . '. ';
+    }
+    elseif (array_key_exists('Series Abbreviation', $pub)) {
+      $citation .= $pub['Series Abbreviation'] . '. ';
+    }
+    if (array_key_exists('Publication Date', $pub)) {
+      $citation .= $pub['Publication Date'];
+    }
+    elseif (array_key_exists('Year', $pub)) {
+      $citation .= $pub['Year'];
+    }
+    if (array_key_exists('Volume', $pub) or array_key_exists('Issue', $pub) or array_key_exists('Pages',$pub)) {
+      $citation .= '; ';
+    }
+    if (array_key_exists('Volume', $pub)) {
+      $citation .= $pub['Volume'];
+    }
+    if (array_key_exists('Issue', $pub)) {
+      $citation .= '(' . $pub['Issue'] . ')';
+    }
+    if (array_key_exists('Pages', $pub)) {
+      if (array_key_exists('Volume', $pub)) {
+        $citation .= ':';
+      }
+      $citation .= $pub['Pages'];
+    }
+    $citation .= '.';
+  }
+  //----------------------
+  // Review
+  //----------------------
+  if ($pub_type == 'Review') {
+    if (array_key_exists('Authors', $pub)) {
+      $citation = $pub['Authors'] . '. ';
+    }
+
+    $citation .= $pub['Title'] .  '. ';
+
+    if (array_key_exists('Journal Name', $pub)) {
+      $citation .= $pub['Journal Name'] . '. ';
+    }
+    elseif (array_key_exists('Journal Abbreviation', $pub)) {
+      $citation .= $pub['Journal Abbreviation'] . '. ';
+    }
+    elseif (array_key_exists('Series Name', $pub)) {
+      $citation .= $pub['Series Name'] . '. ';
+    }
+    elseif (array_key_exists('Series Abbreviation', $pub)) {
+      $citation .= $pub['Series Abbreviation'] . '. ';
+    }
+    if (array_key_exists('Publication Date', $pub)) {
+      $citation .= $pub['Publication Date'];
+    }
+    elseif (array_key_exists('Year', $pub)) {
+      $citation .= $pub['Year'];
+    }
+    if (array_key_exists('Volume', $pub) or array_key_exists('Issue', $pub) or array_key_exists('Pages',$pub)) {
+      $citation .= '; ';
+    }
+    if (array_key_exists('Volume', $pub)) {
+      $citation .= $pub['Volume'];
+    }
+    if (array_key_exists('Issue', $pub)) {
+      $citation .= '(' . $pub['Issue'] . ')';
+    }
+    if (array_key_exists('Pages', $pub)) {
+      if (array_key_exists('Volume', $pub)) {
+        $citation .= ':';
+      }
+      $citation .= $pub['Pages'];
+    }
+    $citation .= '.';
+  }
+  //----------------------
+  // Research Support, Non-U.S. Gov't
+  //----------------------
+  elseif ($pub_type == "Research Support, Non-U.S. Gov't") {
+    if (array_key_exists('Authors', $pub)) {
+      $citation = $pub['Authors'] . '. ';
+    }
+
+    $citation .= $pub['Title'] .  '. ';
+
+    if (array_key_exists('Journal Name', $pub)) {
+      $citation .= $pub['Journal Name'] . '. ';
+    }
+    if (array_key_exists('Publication Date', $pub)) {
+      $citation .= $pub['Publication Date'];
+    }
+    elseif (array_key_exists('Year', $pub)) {
+      $citation .= $pub['Year'];
+    }
+    $citation .= '.';
+  }
+  //----------------------
+  // Letter
+  //----------------------
+  elseif ($pub_type == 'Letter') {
+    if (array_key_exists('Authors', $pub)) {
+      $citation = $pub['Authors'] . '. ';
+    }
+
+    $citation .= $pub['Title'] .  '. ';
+    if (array_key_exists('Journal Name', $pub)) {
+      $citation .= $pub['Journal Name'] . '. ';
+    }
+    elseif (array_key_exists('Journal Abbreviation', $pub)) {
+      $citation .= $pub['Journal Abbreviation'] . '. ';
+    }
+    elseif (array_key_exists('Series Name', $pub)) {
+      $citation .= $pub['Series Name'] . '. ';
+    }
+    elseif (array_key_exists('Series Abbreviation', $pub)) {
+      $citation .= $pub['Series Abbreviation'] . '. ';
+    }
+    if (array_key_exists('Publication Date', $pub)) {
+      $citation .= $pub['Publication Date'];
+    }
+    elseif (array_key_exists('Year', $pub)) {
+      $citation .= $pub['Year'];
+    }
+    if (array_key_exists('Volume', $pub) or array_key_exists('Issue', $pub) or array_key_exists('Pages',$pub)) {
+      $citation .= '; ';
+    }
+    if (array_key_exists('Volume', $pub)) {
+      $citation .= $pub['Volume'];
+    }
+    if (array_key_exists('Issue', $pub)) {
+      $citation .= '(' . $pub['Issue'] . ')';
+    }
+    if (array_key_exists('Pages', $pub)) {
+      if (array_key_exists('Volume', $pub)) {
+        $citation .= ':';
+      }
+      $citation .= $pub['Pages'];
+    }
+    $citation .= '.';
+  }
+  //-----------------------
+  // Conference Proceedings
+  //-----------------------
+  elseif ($pub_type == 'Conference Proceedings') {
+    if (array_key_exists('Authors', $pub)) {
+      $citation = $pub['Authors'] . '. ';
+    }
+
+    $citation .= $pub['Title'] .  '. ';
+    if (array_key_exists('Conference Name', $pub)) {
+      $citation .= $pub['Conference Name'] . '. ';
+    }
+    elseif (array_key_exists('Series Name', $pub)) {
+      $citation .= $pub['Series Name'] . '. ';
+    }
+    elseif (array_key_exists('Series Abbreviation', $pub)) {
+      $citation .= $pub['Series Abbreviation'] . '. ';
+    }
+    if (array_key_exists('Publication Date', $pub)) {
+      $citation .= $pub['Publication Date'];
+    }
+    elseif (array_key_exists('Year', $pub)) {
+      $citation .= $pub['Year'];
+    }
+    if (array_key_exists('Volume', $pub) or array_key_exists('Issue', $pub) or array_key_exists('Pages',$pub)) {
+      $citation .= '; ';
+    }
+    if (array_key_exists('Volume', $pub)) {
+      $citation .= $pub['Volume'];
+    }
+    if (array_key_exists('Issue', $pub)) {
+      $citation .= '(' . $pub['Issue'] . ')';
+    }
+    if (array_key_exists('Pages', $pub)) {
+      if (array_key_exists('Volume', $pub)) {
+        $citation .= ':';
+      }
+      $citation .= $pub['Pages'];
+    }
+    $citation .= '.';
+  }
+  //-----------------------
+  // Default
+  //-----------------------
+  else {
+    if (array_key_exists('Authors', $pub)) {
+      $citation = $pub['Authors'] . '. ';
+    }
+    $citation .= $pub['Title'] .  '. ';
+    if (array_key_exists('Series Name', $pub)) {
+      $citation .= $pub['Series Name'] . '. ';
+    }
+    elseif (array_key_exists('Series Abbreviation', $pub)) {
+      $citation .= $pub['Series Abbreviation'] . '. ';
+    }
+    if (array_key_exists('Publication Date', $pub)) {
+      $citation .= $pub['Publication Date'];
+    }
+    elseif (array_key_exists('Year', $pub)) {
+      $citation .= $pub['Year'];
+    }
+    if (array_key_exists('Volume', $pub) or array_key_exists('Issue', $pub) or array_key_exists('Pages',$pub)) {
+      $citation .= '; ';
+    }
+    if (array_key_exists('Volume', $pub)) {
+      $citation .= $pub['Volume'];
+    }
+    if (array_key_exists('Issue', $pub)) {
+      $citation .= '(' . $pub['Issue'] . ')';
+    }
+    if (array_key_exists('Pages', $pub)) {
+      if (array_key_exists('Volume', $pub)) {
+        $citation .= ':';
+      }
+      $citation .= $pub['Pages'];
+    }
+    $citation .= '.';
+  }
+
+  return $citation;
 }

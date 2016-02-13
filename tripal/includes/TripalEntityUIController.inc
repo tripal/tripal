@@ -42,10 +42,11 @@ class TripalEntityUIController extends EntityDefaultUIController {
         // Get the term for this bundle
         $term = entity_load('TripalTerm', array('id' => $matches[1]));
         $term = reset($term);
+        $default_description = $term->definition ? $term->definition : '';
         // Set a custom page for adding new tripal data entities.
         $items['bio-data/add/' . $term->id] = array(
           'title' => ucfirst($bundle->label),
-          'description' => tripal_get_bundle_variable('description', $bundle->id, $term->definition),
+          'description' => tripal_get_bundle_variable('description', $bundle->id, $default_description),
           'page callback'  => 'drupal_get_form',
           'page arguments' => array('tripal_entity_form', 2),
           'access callback'  => 'tripal_entity_access',
