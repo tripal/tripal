@@ -59,7 +59,8 @@ function tripal_chado_pub_widget(&$widget, $form, $form_state, $field,
   $base_table = $field['settings']['base_table'];
   $schema = chado_get_schema($table_name);
   $pkey = $schema['primary key'][0];
-  $fkey = array_values($schema['foreign keys'][$base_table]['columns'])[0];
+  $fkeys = array_values($schema['foreign keys'][$base_table]['columns']);
+  $fkey = $fkeys[0];
 
   // Get the field defaults.
   $record_id = '';

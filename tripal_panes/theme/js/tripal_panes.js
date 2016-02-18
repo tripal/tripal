@@ -2,12 +2,12 @@
 
   Drupal.behaviors.tripal_panes = {
     attach: function (context, settings){
-    
+
       // Add a close button for each pane
       $('.tripal_pane-fieldset .fieldset-legend').each(function (i) {
         $(this).append('<div class="tripal_pane-fieldset-close_button"><img src="' + panes_theme_dir + '/images/close_btn.png" id="tripal-panes-close-button" class="tripal-panes-button"></div>');
       });
-      
+
       // Hide the pane when the close button is clicked
       $('.tripal_pane-fieldset-close_button').each(function (i) {
         $(this).css('float', 'right');
@@ -21,7 +21,7 @@
           }
         });
       });
-      
+
       // Move the pane to the first when its TOC item is clicked.
       $('.tripal_panes-toc-list-item-link').each(function (i) {
         $(this).click(function() {
@@ -29,7 +29,7 @@
           $(id).removeClass('collapsed');
           $(id + ' .fieldset-wrapper').show();
           var prevObj = $(id).prev().attr('class');
-          
+
           // Highlight the pane if it's already at the top
           //if (prevObj.indexOf('tripal_pane-base_pane') == 0 && $(id).css('display') == 'block') {
           //  $(id).fadeTo(10, 0.5, function() {});
