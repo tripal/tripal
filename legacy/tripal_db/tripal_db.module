@@ -29,6 +29,7 @@ require_once 'includes/tripal_db.admin.inc';
 function tripal_db_menu() {
   $items = array();
 
+  /*
   $items['admin/tripal/chado/tripal_db'] = array(
     'title' => 'Databases',
     'description' => 'References to External Database sites such as NCBI',
@@ -87,7 +88,7 @@ function tripal_db_menu() {
     'access arguments' => array('administer db cross-references'),
     'type' => MENU_CALLBACK,
   );
-
+ */
   return $items;
 }
 

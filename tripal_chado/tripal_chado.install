@@ -1,14 +1,14 @@
 <?php
 
 function tripal_chado_install() {
-  // The foreign key specification doesn't really add one to the
-  // Drupal schema, it is just used internally, but we want one.
-  db_query('
-      ALTER TABLE {tripal_custom_tables}
-      ADD CONSTRAINT tripal_custom_tables_fk1
-      FOREIGN KEY (mview_id) REFERENCES {tripal_mviews} (mview_id)
-      ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
-  ');
+//   // The foreign key specification doesn't really add one to the
+//   // Drupal schema, it is just used internally, but we want one.
+//   db_query('
+//       ALTER TABLE {tripal_custom_tables}
+//       ADD CONSTRAINT tripal_custom_tables_fk1
+//       FOREIGN KEY (mview_id) REFERENCES {tripal_mviews} (mview_id)
+//       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+//   ');
 }
 
 
@@ -19,12 +19,12 @@ function tripal_chado_install() {
  */
 function tripal_chado_uninstall() {
 
-  // Drop the foreign key between tripal_custom_tables and tripal_mviews
-  // so that Drupal can then drop the tables
-  db_query('
-    ALTER TABLE {tripal_custom_tables}
-    DROP CONSTRAINT tripal_custom_tables_fk1 CASCADE
-  ');
+//   // Drop the foreign key between tripal_custom_tables and tripal_mviews
+//   // so that Drupal can then drop the tables
+//   db_query('
+//     ALTER TABLE {tripal_custom_tables}
+//     DROP CONSTRAINT tripal_custom_tables_fk1 CASCADE
+//   ');
 }
 
 /**
