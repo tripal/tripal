@@ -301,21 +301,23 @@ function tripal_chado_dbxref_id_field_load($field, $entity, $base_table, $record
     'dbxref__description' => '',
   );
 
-  // Get the primary dbxref record.  Because we have a dbxref_id passed in
-  // by the base record, we will only have one record.
-  $columns = array('*');
-  $match = array('dbxref_id' => $record->$field_column->$field_column);
-  $options = array('return_array' => TRUE);
-  $records = chado_select_record('dbxref', $columns, $match, $options);
-  if (count($records) > 0) {
-    $dbxref = $records[0];
-    $entity->{$field_name}['und'][0] = array(
-      'value' => $dbxref->dbxref_id,
-      'dbxref__db_id' => $dbxref->db_id,
-      'dbxref__accession' => $dbxref->accession,
-      'dbxref__version' => $dbxref->version,
-      'dbxref__description' => $dbxref->description,
-    );
+  // Get the primary dbxref record (if it's not NULL).  Because we have a
+  // dbxref_id passed in by the base record, we will only have one record.
+  if ($record->$field_column) {
+    $columns = array('*');
+    $match = array('dbxref_id' => $record->$field_column->$field_column);
+    $options = array('return_array' => TRUE);
+    $records = chado_select_record('dbxref', $columns, $match, $options);
+    if (count($records) > 0) {
+      $dbxref = $records[0];
+      $entity->{$field_name}['und'][0] = array(
+        'value' => $dbxref->dbxref_id,
+        'dbxref__db_id' => $dbxref->db_id,
+        'dbxref__accession' => $dbxref->accession,
+        'dbxref__version' => $dbxref->version,
+        'dbxref__description' => $dbxref->description,
+      );
+    }
   }
 }
 
