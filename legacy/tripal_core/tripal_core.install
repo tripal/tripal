@@ -20,15 +20,15 @@ function tripal_core_install() {
  */
 function tripal_core_schema() {
 
-  // get the schemas defined by this install file
+  // Get the schemas defined by this install file.
   $schema = tripal_core_get_schemas();
 
   // if this module is already installed and enabled, then we want to provide
   // the schemas for all of the custom tables.  This will allow Views to
   // see the schemas.  We check if the module is installed because during
-  // installation we don't want to make these custom tables available as we don't
-  // want them created in the Drupal database.  The custom tables go in the
-  // Chado database.
+  // installation we don't want to make these custom tables available as we
+  // don't want them created in the Drupal database.  The custom tables go in
+  // the Chado database.
   if (db_table_exists('tripal_custom_tables')) {
     $sql = 'SELECT * FROM {tripal_custom_tables}';
     $results = db_query($sql);
@@ -66,11 +66,7 @@ function tripal_core_uninstall() {
 function tripal_core_get_schemas() {
   $schema = array();
 
-  // get all the various schema parts and join them together
-  $temp = tripal_core_get_tripal_token_schema();
-  foreach ($temp as $table => $arr) {
-    $schema[$table] = $arr;
-  }
+  // Get all the various schema parts and join them together
   $temp = tripal_core_get_tripal_toc_schema();
   foreach ($temp as $table => $arr) {
     $schema[$table] = $arr;
@@ -84,7 +80,6 @@ function tripal_core_get_schemas() {
 }
 
 /**
- *
  *
  */
 function tripal_core_get_tripal_toc_schema() {
@@ -201,123 +196,4 @@ function tripal_core_get_tripal_vars_schema() {
   );
 
   return $schema;
-}
-
-/**
- * Adds an mview_id column to the tripal_custom_tables table and makes an assocation between the mview and the custom table
- *
- */
-function tripal_core_update_7200() {
-  try {
-    // add an mview column to the tripal_custom_tables table so we
-    // can associate which of the custom tables are also mviews
-    if (!db_field_exists('tripal_custom_tables', 'mview_id')) {
-      $spec = array(
-        'type' => 'int',
-        'not NULL' => FALSE
-      );
-      $keys = array(
-        'foreign keys' => array(
-          'tripal_mviews' => array(
-            'table' => 'tripal_mviews',
-            'columns' => array(
-              'mview_id' => 'mview_id'
-            ),
-          ),
-        ),
-      );
-      db_add_field('tripal_custom_tables', 'mview_id', $spec, $keys);
-
-      // the foreign key specification doesn't really add one to the
-      // Drupal schema, it is just used internally, but we want one
-      db_query('
-        ALTER TABLE {tripal_custom_tables}
-        ADD CONSTRAINT tripal_custom_tables_fk1
-        FOREIGN KEY (mview_id) REFERENCES {tripal_mviews} (mview_id)
-        ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
-      ');
-    }
-
-    // now link the materialized view to it's custom table entry
-    $mviews = db_select('tripal_mviews', 'tmv')
-      ->fields('tmv', array('mview_id', 'mv_table'))
-      ->execute();
-    foreach ($mviews as $mview) {
-      db_update('tripal_custom_tables')
-       ->fields(array(
-         'mview_id' => $mview->mview_id
-       ))
-       ->condition('table_name', $mview->mv_table)
-       ->execute();
-    }
-  }
-  catch (\PDOException $e) {
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not update tripal_mviews table and link to custom tables: '. $error);
-  }
-}
-
-/**
- * Fixes missing language for nodes and URL aliases. This may take awhile...
- *
- */
-function tripal_core_update_7201() {
-
-  try {
-    $sql = "UPDATE {node} SET language = :language WHERE language = ''";
-    db_query($sql, array(':language' => LANGUAGE_NONE));
-    $sql = "UPDATE {url_alias} SET language = :language WHERE language = ''";
-    db_query($sql, array(':language' => LANGUAGE_NONE));
-  }
-  catch (\PDOException $e) {
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not reset language for nodes and url aliases: '. $error);
-  }
-}
-
-
-/**
- * Adds a tripal_token_formats table for custom page titles and URL paths
- */
-function tripal_core_update_7202() {
-  try {
-    $schema = drupal_get_schema_unprocessed('tripal_core', 'tripal_token_formats');
-    db_create_table('tripal_token_formats', $schema);
-  }
-  catch (Exception $e) {
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not add tripal_token_formats table: '. $error);
-  }
-}
-
-/**
- * Adds a tripal_toc table for customizing the table of contents on each Tripal page.
- */
-function tripal_core_update_7203() {
-  try {
-    $schema = drupal_get_schema_unprocessed('tripal_core', 'tripal_toc');
-    db_create_table('tripal_toc', $schema);
-  }
-  catch (Exception $e) {
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not add tripal_toc table: '. $error);
-
-  }
-}
-
-/**
- * Adds the tripal_variable_terms and a tripal_node_variables tables
- */
-function tripal_core_update_7204() {
-  try {
-    $schema = drupal_get_schema_unprocessed('tripal_core', 'tripal_variables');
-    db_create_table('tripal_variables', $schema);
-    $schema = drupal_get_schema_unprocessed('tripal_core', 'tripal_node_variables');
-    db_create_table('tripal_node_variables', $schema);
-  }
-  catch (Exception $e) {
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not add new tables table: '. $error);
-
-  }
 }
