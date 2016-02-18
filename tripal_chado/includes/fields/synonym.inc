@@ -15,15 +15,17 @@ function tripal_chado_synonym_formatter(&$element, $entity_type, $entity, $field
 
   $chado_table = $field['settings']['chado_table'];
   foreach ($items as $delta => $item) {
-    $synonym = chado_generate_var('synonym', array('synonym_id' => $item[$chado_table . '__synonym_id']));
-    $name = $synonym->name;
-    if ($synonym->type_id->name != 'exact') {
-      $name .= ' (<i>' . $synonym->type_id->name . '</i>)';
+    if ($item[$chado_table . '__synonym_id']) {
+      $synonym = chado_generate_var('synonym', array('synonym_id' => $item[$chado_table . '__synonym_id']));
+      $name = $synonym->name;
+      if ($synonym->type_id->name != 'exact') {
+        $name .= ' (<i>' . $synonym->type_id->name . '</i>)';
+      }
+      $element[$delta] = array(
+        '#type' => 'markup',
+        '#markup' => $name,
+      );
     }
-    $element[$delta] = array(
-      '#type' => 'markup',
-      '#markup' => $name,
-    );
   }
 }
 /**
