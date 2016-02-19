@@ -30,6 +30,7 @@ require_once 'includes/tripal_library.chado_node.inc';
  */
 function tripal_library_permission() {
   return array(
+    /*
     'access chado_library content' => array(
       'title' => t('View Libraries'),
       'description' => t('Allow users to view library pages.'),
@@ -50,6 +51,7 @@ function tripal_library_permission() {
       'title' => t('Administer Libraries'),
       'description' => t('Allow users to administer all libraries.'),
     ),
+    */
   );
 }
 
@@ -65,6 +67,7 @@ function tripal_library_permission() {
 function tripal_library_menu() {
   $items = array();
   // The administative settings menu
+  /*
   $items['admin/tripal/chado/tripal_library'] = array(
     'title' => 'Libraries',
     'description' => 'Any biological library. Examples of genomic libraries include BAC, cDNA, FOSMID, etc.',
@@ -121,7 +124,7 @@ function tripal_library_menu() {
     'access arguments' => array('administer tripal library'),
     'type' => MENU_CALLBACK,
   );
-
+  */
   return $items;
 }
 

@@ -4,7 +4,6 @@
  * Integrates the Chado Organism module with Drupal Nodes & Views
  */
 
-require_once 'api/tripal_organism.api.inc';
 require_once 'api/tripal_organism.DEPRECATED.inc';
 
 require_once 'includes/tripal_organism.admin.inc';
@@ -30,7 +29,7 @@ require_once 'includes/tripal_organism.chado_node.inc';
  */
 function tripal_organism_menu() {
   $items = array();
-
+/*
   // the administative settings menu
   $items['admin/tripal/chado/tripal_organism'] = array(
     'title' => 'Organisms',
@@ -102,7 +101,7 @@ function tripal_organism_menu() {
     'access arguments' => array('administer tripal organism'),
     'type' => MENU_CALLBACK,
   );
-
+*/
   return $items;
 }
 
@@ -193,6 +192,7 @@ function tripal_organism_theme($existing, $type, $theme, $path) {
   */
 function tripal_organism_permission() {
   return array(
+    /*
     'access chado_organism content' => array(
       'title' => t('View Organisms'),
       'description' => t('Allow users to view organism pages.'),
@@ -213,6 +213,7 @@ function tripal_organism_permission() {
       'title' => t('Administer Organisms'),
       'description' => t('Allow users to administer all organisms.'),
     ),
+    */
   );
 }
 
