@@ -14,7 +14,6 @@
 
 require_once 'theme/tripal_genetic.theme.inc';
 
-require_once 'includes/tripal_genetic.schema.inc';
 require_once 'includes/tripal_genetic.admin.inc';
 
 /**
@@ -27,10 +26,12 @@ require_once 'includes/tripal_genetic.admin.inc';
  */
 function tripal_genetic_permission() {
   return array(
+    /*
     'administer tripal genetic' => array(
       'title' => t('Administer Genetic Module'),
       'description' => t('Allow users to administer the genetic module.'),
     ),
+    */
   );
 }
 
@@ -47,6 +48,7 @@ function tripal_genetic_menu() {
   $items = array();
 
     // the administative settings menu
+    /*
   $items['admin/tripal/chado/tripal_genetic'] = array(
    'title' => 'Genetics',
    'description' => 'Genetic data including Genotypes.',
@@ -71,6 +73,7 @@ function tripal_genetic_menu() {
     'access arguments' => array('administer tripal genetic'),
     'type' => MENU_CALLBACK,
   );
+  */
 
   return $items;
 }

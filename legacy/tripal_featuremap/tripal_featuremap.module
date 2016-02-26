@@ -55,6 +55,7 @@ function tripal_featuremap_help($path, $arg) {
  */
 function tripal_featuremap_permission() {
   return array(
+    /*
     'access chado_featuremap content' => array(
       'title' => t('View Maps'),
       'description' => t('Allow users to view map pages.'),
@@ -75,6 +76,7 @@ function tripal_featuremap_permission() {
       'title' => t('Administer Maps'),
       'description' => t('Allow users to administer all maps.'),
     ),
+    */
   );
 }
 
@@ -91,6 +93,7 @@ function tripal_featuremap_menu() {
   $items = array();
 
   // The administative settings menu
+  /*
   $items['admin/tripal/chado/tripal_featuremap'] = array(
     'title' => 'Feature Maps',
     'description' => 'A map of features from the chado database (e.g. genetic map)',
@@ -148,7 +151,7 @@ function tripal_featuremap_menu() {
     'access arguments' => array('administer tripal featuremap'),
     'type' => MENU_CALLBACK,
   );
-
+  */
   return $items;
 }
 

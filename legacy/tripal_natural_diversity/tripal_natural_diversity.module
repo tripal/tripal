@@ -6,7 +6,6 @@
 
 require_once 'theme/tripal_natural_diversity.theme.inc';
 
-require_once 'includes/tripal_natural_diversity.schema.inc';
 require_once 'includes/tripal_natural_diversity.admin.inc';
 
 /**
@@ -27,10 +26,12 @@ require_once 'includes/tripal_natural_diversity.admin.inc';
  */
 function tripal_natural_diversity_permission() {
   return array(
+    /*
     'administer tripal nd' => array(
       'title' => t('Administer Natural Diversity Module'),
       'description' => t('Allow users to administer the natural diversity module.'),
     ),
+    */
   );
 }
 
@@ -47,6 +48,7 @@ function tripal_natural_diversity_menu() {
   $items = array();
 
     // the administative settings menu
+    /*
   $items['admin/tripal/chado/tripal_natdiv'] = array(
    'title' => 'Natural Diversity Experiments',
    'description' => 'Experiments relating to natural diversity such as genotype and phenotype experiments.',
@@ -72,7 +74,7 @@ function tripal_natural_diversity_menu() {
     'access arguments' => array('administer tripal nd'),
     'type' => MENU_CALLBACK,
   );
-
+  */
   return $items;
 }
 
