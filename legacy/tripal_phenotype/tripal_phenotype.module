@@ -22,10 +22,12 @@
  */
 function tripal_phenotype_permission() {
   return array(
+    /*
     'administer tripal phenotype' => array(
       'title' => t('Administer Phenotype Module'),
       'description' => t('Allow users to administer the phenotype module.'),
     ),
+    */
   );
 }
 
@@ -42,6 +44,7 @@ function tripal_phenotype_menu() {
   $items = array();
 
     // the administative settings menu
+    /*
   $items['admin/tripal/chado/tripal_phenotype'] = array(
    'title' => 'Phenotypes',
    'description' => 'A controlled sentence describing observable effects of non-wild type function.',
@@ -66,7 +69,7 @@ function tripal_phenotype_menu() {
     'access arguments' => array('administer tripal phenotype'),
     'type' => MENU_CALLBACK,
   );
-
+  */
   return $items;
 }
 

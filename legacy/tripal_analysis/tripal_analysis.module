@@ -7,8 +7,6 @@
  * @ingroup tripal_analysis
  */
 
-require_once 'api/tripal_analysis.api.inc';
-require_once 'api/tripal_analysis.schema.api.inc';
 require_once 'api/tripal_analysis.DEPRECATED.inc';
 
 require_once 'includes/tripal_analysis.delete.inc';
@@ -42,8 +40,9 @@ function tripal_analysis_init() {
  * @ingroup tripal_analysis
  */
 function tripal_analysis_menu() {
-
+  $items = array();
   // Tripal Analysis administrative settings
+  /*
   $items['admin/tripal/chado/tripal_analysis'] = array(
     'title' => 'Analyses',
     'description' => 'A bioinformatics analysis producing features.',
@@ -103,7 +102,7 @@ function tripal_analysis_menu() {
     'file path' => drupal_get_path('module', 'tripal_core'),
     'weight' => 3
   );
-  
+  */
   return $items;
 }
 
@@ -146,6 +145,7 @@ function tripal_analysis_help ($path, $arg) {
  */
 function tripal_analysis_permission() {
   return array(
+    /*
     'access chado_analysis content' => array(
       'title' => t('View Analyses'),
       'description' => t('Allow users to view analysis pages.'),
@@ -166,6 +166,7 @@ function tripal_analysis_permission() {
       'title' => t('Administer Analyses'),
       'description' => t('Allow users to administer all analyses.'),
     ),
+    */
   );
 }
 

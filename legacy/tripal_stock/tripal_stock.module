@@ -4,7 +4,6 @@
  * Basic functionality for stocks
  */
 
-require_once 'api/tripal_stock.api.inc';
 require_once 'api/tripal_stock.DEPRECATED.inc';
 
 require_once 'theme/tripal_stock.theme.inc';
@@ -50,6 +49,7 @@ function tripal_stock_menu() {
   );
 
   //Administrative settings menu-----------------
+  /*
   $items['admin/tripal/chado/tripal_stock'] = array(
     'title' => 'Stocks',
     'description' => 'A stock is the physical entities of an organism, either living or preserved.',
@@ -100,7 +100,7 @@ function tripal_stock_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
   );
-
+  */
 
   return $items;
 }
@@ -159,6 +159,7 @@ function cs_node_load($nid) {
  */
 function tripal_stock_permission() {
   return array(
+    /*
     'access chado_stock content' => array(
       'title' => t('View Stocks'),
       'description' => t('Allow users to view stock pages.'),
@@ -179,6 +180,7 @@ function tripal_stock_permission() {
       'title' => t('Administer Stocks'),
       'description' => t('Allow users to administer all stocks.'),
     ),
+    */
   );
 }
 
@@ -205,6 +207,7 @@ function tripal_stock_permission() {
  *
  * @ingroup tripal_stock
  */
+/*
 function chado_stock_node_access($node, $op, $account) {
   if ($op == 'create') {
     if (!user_access('create chado_stock content', $account)) {
@@ -229,7 +232,7 @@ function chado_stock_node_access($node, $op, $account) {
   }
   return NULL;
 }
-
+*/
 /**
  * Implements hook_views_api().
  *

@@ -14,7 +14,6 @@
  * @}
  */
 
-require_once 'api/tripal_contact.api.inc';
 require_once 'api/tripal_contact.DEPRECATED.inc';
 
 require_once 'theme/tripal_contact.theme.inc';
@@ -50,7 +49,7 @@ function tripal_contact_views_api() {
 function tripal_contact_menu() {
 
   $items = array();
-
+  /*
   $items['admin/tripal/chado/tripal_contact']= array(
     'title' => 'Contacts',
     'description' => ('Model persons, institutes, groups, organizations, etc.'),
@@ -108,6 +107,7 @@ function tripal_contact_menu() {
     'access arguments' => array('administer tripal contact'),
     'type' => MENU_CALLBACK,
   );
+  */
   return $items;
 }
 
@@ -186,6 +186,7 @@ function tripal_contact_theme($existing, $type, $theme, $path) {
  */
 function tripal_contact_permission() {
   return array(
+    /*
     'access chado_contact content' => array(
       'title' => t('View Contacts'),
       'description' => t('Allow users to view contact pages.'),
@@ -206,6 +207,7 @@ function tripal_contact_permission() {
       'title' => t('Administer Contacts'),
       'description' => t('Allow users to administer all contacts.'),
     ),
+    */
   );
 }
 

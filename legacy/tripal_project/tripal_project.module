@@ -40,6 +40,8 @@ function tripal_project_views_api() {
  * @ingroup tripal_project
  */
 function tripal_project_menu() {
+  $items = array();
+  /*
   $items[ 'admin/tripal/chado/tripal_project' ]= array(
     'title' => 'Projects',
     'description' => ('A project. Can be used for grouping data such as with the natural diversity module data.'),
@@ -96,7 +98,7 @@ function tripal_project_menu() {
     'access arguments' => array('administer tripal project'),
     'type' => MENU_CALLBACK,
   );
-
+  */
   return $items;
 }
 
@@ -138,6 +140,7 @@ function tripal_project_help ($path, $arg) {
  */
 function tripal_project_permission() {
   return array(
+    /*
     'access chado_project content' => array(
       'title' => t('View Projects'),
       'description' => t('Allow users to view project pages.'),
@@ -158,6 +161,7 @@ function tripal_project_permission() {
       'title' => t('Administer Projects'),
       'description' => t('Allow users to administer all projects.'),
     ),
+    */
   );
 }
 

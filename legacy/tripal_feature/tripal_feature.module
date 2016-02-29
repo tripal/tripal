@@ -12,15 +12,11 @@
  * @}
  */
 
-require_once 'api/tripal_feature.api.inc';
 require_once 'api/tripal_feature.DEPRECATED.inc';
 
 require_once 'theme/tripal_feature.theme.inc';
 
 require_once 'includes/tripal_feature.admin.inc';
-require_once 'includes/tripal_feature.fasta_loader.inc';
-require_once 'includes/tripal_feature.gff_loader.inc';
-require_once 'includes/tripal_feature.seq_extract.inc';
 require_once 'includes/tripal_feature.delete.inc';
 require_once 'includes/tripal_feature.chado_node.inc';
 
@@ -75,6 +71,7 @@ function tripal_feature_help($path, $arg) {
  */
 function tripal_feature_permission() {
   return array(
+    /*
     'access chado_feature content' => array(
       'title' => t('View Features'),
       'description' => t('Allow users to view feature pages.'),
@@ -95,6 +92,7 @@ function tripal_feature_permission() {
       'title' => t('Administer Features'),
       'description' => t('Allow users to administer all features.'),
     ),
+    */
   );
 }
 
@@ -135,6 +133,7 @@ function tripal_feature_menu() {
   );
 
   // the administative settings menu
+  /*
   $items['admin/tripal/chado/tripal_feature'] = array(
     'title' => 'Features',
     'description' => 'A biological sequence or a section of a biological sequence, or a collection of such sections.',
@@ -191,24 +190,6 @@ function tripal_feature_menu() {
     'weight' =>  10
   );
 
-  /** Loaders */
-  $items['admin/tripal/loaders/fasta_loader'] = array(
-    'title' => 'FASTA file Loader',
-    'description' => 'Load sequences from a multi-FASTA file into Chado',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_feature_fasta_load_form'),
-    'access arguments' => array('administer tripal feature'),
-    'type' => MENU_NORMAL_ITEM,
-  );
-  $items['admin/tripal/loaders/gff3_load'] = array(
-    'title' => 'GFF3 file Loader',
-    'description' => 'Import a GFF3 file into Chado',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_feature_gff3_load_form'),
-    'access arguments' => array('administer tripal feature'),
-    'type' => MENU_NORMAL_ITEM,
-  );
-
   // Enable admin view
   $items['admin/tripal/chado/tripal_feature/views/features/enable'] = array(
     'title' => 'Enable feature Administrative View',
@@ -217,7 +198,7 @@ function tripal_feature_menu() {
     'access arguments' => array('administer tripal feature'),
     'type' => MENU_CALLBACK,
   );
-
+  */
   return $items;
 }
 
