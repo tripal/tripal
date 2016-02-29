@@ -106,11 +106,18 @@ function drush_tripal_feature_tripal_get_sequence() {
     'sub_feature_types' => explode(',', $child),
     'relationship_type' => $relationship,
     'relationship_part' => $rel_part,
-    'print' => TRUE,
     'width' => $width
   );
-  
-  tripal_get_bulk_feature_sequences($options);
+
+  $seqs = tripal_get_bulk_feature_sequences($options);
+  if (count($seqs) == 0) {
+    print "No sequences found that match the criteria.";
+  }
+
+  foreach ($seqs as $seq) {
+    print ">" . $seq['defline'] . "\r\n";
+    print $seq['residues'] . "\r\n";
+  }
 }
 
 /**

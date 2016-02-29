@@ -629,7 +629,6 @@ function tripal_get_bulk_feature_sequences($options) {
 
   $sequences = array();
   while ($feature = $q->fetchObject()) {
-    dpm($feature);
     // get the sequences
     $seqs = tripal_get_feature_sequences(array('feature_id' => $feature->feature_id), $options);
     $sequences = array_merge($sequences, $seqs);
