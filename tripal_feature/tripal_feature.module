@@ -114,14 +114,13 @@ function tripal_feature_menu() {
   $items['find/sequences'] = array(
     'title' => 'Sequence Retrieval',
     'description' => 'Download a file of sequences',
-    'page callback' => 'tripal_feature_seq_extract_page',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_feature_seq_extract_form'),
     'access arguments' => array('access chado_feature content'),
     'type' => MENU_CALLBACK,
   );
-
-  $items['find/sequences/ajax'] = array(
-    'title' => 'Sequence Retrieval',
-    'page callback' => 'tripal_feature_seq_extract_form_ahah_update',
+  $items['find/sequences/download'] = array(
+    'page callback' => 'tripal_feature_seq_extract_download',
     'access arguments' => array('access chado_feature content'),
     'type' => MENU_CALLBACK,
   );
@@ -343,7 +342,7 @@ function tripal_feature_theme($existing, $type, $theme, $path) {
 
   // Themed Forms
   $items['tripal_feature_seq_extract_form'] = array(
-     'arguments' => array('form'),
+    'render element' => 'form',
   );
 
   // D3 Charts.
@@ -551,12 +550,6 @@ function tripal_feature_match_features_page($id) {
  * @ingroup tripal_feature
  */
 function tripal_feature_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == "tripal_feature_seq_extract_form") {
-    // updating the form through the ahah callback sets the action of
-    // the form to the ahah callback URL. We need to set it back
-    // to the normal form URL
-    $form['#action'] = url("find/sequences");
-  }
   // turn off preview button for insert/updates
   if ($form_id == "chado_feature_node_form") {
     $form['actions']['preview']['#access'] = FALSE;

@@ -9,169 +9,149 @@
  *
  * @ingroup tripal_feature
  */
-function tripal_feature_seq_extract_page() {
+function tripal_feature_seq_extract_download() {
 
-  if ($_SESSION['tripal_feature_seq_extract']['download']) {
-    $genus      = $_SESSION['tripal_feature_seq_extract']['genus'];
-    $species    = $_SESSION['tripal_feature_seq_extract']['species'];
-    $analysis   = $_SESSION['tripal_feature_seq_extract']['analysis'];
-    $ftype      = $_SESSION['tripal_feature_seq_extract']['ftype'];
-    $fnames     = $_SESSION['tripal_feature_seq_extract']['fnames'];
-    $upstream   = $_SESSION['tripal_feature_seq_extract']['upstream'];
-    $downstream = $_SESSION['tripal_feature_seq_extract']['downstream'];
-    $format     = $_SESSION['tripal_feature_seq_extract']['format'];
-    $use_parent = $_SESSION['tripal_feature_seq_extract']['use_parent'];
-    $aggregate  = $_SESSION['tripal_feature_seq_extract']['aggregate'];
-    $agg_types  = $_SESSION['tripal_feature_seq_extract']['agg_types'];
+  if (!array_key_exists('tripal_feature_seq_extract', $_SESSION)) {
+    drupal_goto('find/sequences');
+  }
 
-    unset($_SESSION['tripal_feature_seq_extract']['download']);
+  $genus      = $_SESSION['tripal_feature_seq_extract']['genus'];
+  $species    = $_SESSION['tripal_feature_seq_extract']['species'];
+  $analysis   = $_SESSION['tripal_feature_seq_extract']['analysis'];
+  $ftype      = $_SESSION['tripal_feature_seq_extract']['ftype'];
+  $fnames     = $_SESSION['tripal_feature_seq_extract']['fnames'];
+  $upstream   = $_SESSION['tripal_feature_seq_extract']['upstream'];
+  $downstream = $_SESSION['tripal_feature_seq_extract']['downstream'];
+  $format     = $_SESSION['tripal_feature_seq_extract']['format'];
+  $use_parent = $_SESSION['tripal_feature_seq_extract']['use_parent'];
+  $aggregate  = $_SESSION['tripal_feature_seq_extract']['aggregate'];
+  $agg_types  = $_SESSION['tripal_feature_seq_extract']['agg_types'];
 
-    if ($format == 'fasta_html') {
-      drupal_add_http_header('Content-Type: text/html');
-    }
-    else {
-      drupal_add_http_header('Content-Type: text');
-      drupal_add_http_header('Content-Disposition: attachment; filename="sequences.fasta.txt"');
-    }
-
-    tripal_get_bulk_feature_sequences(array(
-      'genus' => $genus, 
-      'species' => $species, 
-      'analysis_name' => $analysis,
-      'type' => $ftype, 
-      'feature_name' => $fnames['items_array'], 
-      'upstream' => $upstream, 
-      'downstream' => $downstream, 
-      'print' => 1,
-      'output_format' => $format, 
-      'derive_from_parent' => $use_parent, 
-      'aggregate' => $aggregate,
-      'sub_feature_types' => $agg_types
-    ));
-
-    return;
+  // Split the sub features and remove any surrounding white space
+  $agg_types = preg_split("/[\n|,]/", $agg_types);
+  for ($i = 0; $i < count($agg_types); $i++) {
+    $agg_types[$i] = trim($agg_types[$i]);
   }
 
 
-  // generate the search form
-  $output .= '';
-  if (user_access('administer tripal')) {
-    $output .= tripal_set_message("Administrators, the " . 
-        l('organism_feature_count', 'admin/tripal/schema/mviews') . " and " .
-        l('analysis_organism', 'admin/tripal/schema/mviews') . " materialized
-        views must be populated before using this form.  Those views should be re-populated
-        when new data is added.");
+
+  header('Content-Type: text; utf-8');
+  if ($ftype == 'polypeptide') {
+    header('Content-Disposition: attachment; filename="sequences.fna"');
   }
-  $output .= "<div id=\"tripal-feature-seq-extract-form-block\">";
-  $output .= drupal_get_form('tripal_feature_seq_extract_form');
-  $output .= "</div>";
-  return $output;
+  else {
+    header('Content-Disposition: attachment; filename="sequences.fnn"');
+  }
+
+  $seqs = tripal_get_bulk_feature_sequences(array(
+    'genus' => $genus,
+    'species' => $species,
+    'analysis_name' => $analysis,
+    'type' => $ftype,
+    'feature_name' => $fnames['items_array'],
+    'upstream' => $upstream,
+    'downstream' => $downstream,
+    'output_format' => $format,
+    'derive_from_parent' => $use_parent,
+    'aggregate' => $aggregate,
+    'sub_feature_types' => $agg_types,
+    'width' => 60
+  ));
+
+  if (count($seqs) == 0) {
+    print ">No sequences found that match the criteria.";
+  }
+
+  foreach ($seqs as $seq) {
+    print ">" . $seq['defline'] . "\r\n";
+    print $seq['residues'] . "\r\n";
+  }
 }
 
-/**
- * Theme the Form to choose which features to extract sequence for
- *
- * @ingroup tripal_feature
- */
-function theme_tripal_feature_seq_extract_form($form, &$form_state) {
-  $rows = array(
-    0 => array(
-      array('data' => drupal_render($form['description']), 'colspan' => 3),
-    ),
-    1 => array(
-      drupal_render($form['genus']),
-      drupal_render($form['species']) ,
-      drupal_render($form['ftype']),
-    ),
-    2 => array(
-      array('data' => drupal_render($form['analysis']), 'colspan' => 3),
-      //drupal_render($form['format']),
-    ),
-    3 => array(
-      array('data' =>  drupal_render($form['fnames']), 'colspan' => 2),
-      drupal_render($form['upstream']) . drupal_render($form['downstream']) ,
-    ),
-    4 => array(
-      array(
-        'data' =>  drupal_render($form['advanced']),
-        'colspan' => 3,
-      ),
-    ),
-    5 => array(
-      array(
-        'data' =>  drupal_render($form['retrieve_btn']) . drupal_render($form['reset_btn']),
-        'colspan' => 3,
-      ),
-    ),
-  );
-  $headers = array();
-  $table = theme('table', $headers, $rows, array('id' => 'tripal-feature-seq-extract-form-table', 'border' => '0'));
 
-  $markup .= $table;
-  $form['criteria'] = array(
-    '#markup' =>  $markup,
-    '#weight' => -10,
-  );
-  return drupal_render($form);
-}
 
 /**
  * Form to choose which features to extract sequence for
  *
  * @ingroup tripal_feature
  */
-function tripal_feature_seq_extract_form(&$form_state = NULL) {
-  tripal_core_ahah_init_form();
+function tripal_feature_seq_extract_form($form, &$form_state) {
+
+  $form['#true'] = TRUE;
+
+  // Intialize the defaults
+  $dgenus      = '';
+  $dspecies    = '';
+  $danalysis   = '';
+  $dftype      = '';
+  $dfnames     = '';
+  $dupstream   = '';
+  $ddownstream = '';
+  $duse_parent = '';
+  $daggregate  = '';
+  $dagg_types  = '';
+
+  if (array_key_exists('tripal_feature_seq_extract', $_SESSION)) {
+    $dgenus      = $_SESSION['tripal_feature_seq_extract']['genus'];
+    $dspecies    = $_SESSION['tripal_feature_seq_extract']['species'];
+    $danalysis   = $_SESSION['tripal_feature_seq_extract']['analysis'];
+    $dftype      = $_SESSION['tripal_feature_seq_extract']['ftype'];
+    $dfnames     = $_SESSION['tripal_feature_seq_extract']['fnames'];
+    $dupstream   = $_SESSION['tripal_feature_seq_extract']['upstream'];
+    $ddownstream = $_SESSION['tripal_feature_seq_extract']['downstream'];
+    $duse_parent = $_SESSION['tripal_feature_seq_extract']['use_parent'];
+    $daggregate  = $_SESSION['tripal_feature_seq_extract']['aggregate'];
+    $dagg_types  = $_SESSION['tripal_feature_seq_extract']['agg_types'];
+  }
 
   // we want to allow the query string to provide values for the form
-  if ($_GET['fnames']) {
-    $form_state['values']['fnames']['items'] = $_GET['fnames'];
+  if (array_key_exists('fnames', $_GET) and $_GET['fnames']) {
+    $dfnames = $_GET['fnames'];
   }
-  if ($_GET['genus']) {
-    $form_state['values']['genus'] = $_GET['genus'];
+  if (array_key_exists('genus', $_GET) and $_GET['genus']) {
+    $dgenus = $_GET['genus'];
   }
-  if ($_GET['species']) {
-    $form_state['values']['species'] = $_GET['species'];
+  if (array_key_exists('species', $_GET) and $_GET['species']) {
+    $dspecies = $_GET['species'];
   }
-  if ($_GET['ftype']) {
-    $form_state['values']['ftype'] = $_GET['ftype'];
+  if (array_key_exists('ftype', $_GET) and $_GET['ftype']) {
+    $dftype = $_GET['ftype'];
   }
-  if ($_GET['analysis']) {
-    $form_state['values']['analysis'] = $_GET['analysis'];
+  if (array_key_exists('analysis', $_GET) and $_GET['analysis']) {
+    $danalysis = $_GET['analysis'];
   }
-  if ($_GET['upstream']) {
-    $form_state['values']['upstream'] = $_GET['upstream'];
+  if (array_key_exists('upstream', $_GET) and $_GET['upstream']) {
+    $dupstream = $_GET['upstream'];
   }
-  if ($_GET['downstream']) {
-    $form_state['values']['downstream'] = $_GET['downstream'];
+  if (array_key_exists('downstream', $_GET) and $_GET['downstream']) {
+    $ddownstream = $_GET['downstream'];
   }
-  if ($_GET['use_parent']) {
-    $form_state['values']['use_parent'] = $_GET['use_parent'];
+  if (array_key_exists('use_parent', $_GET) and $_GET['use_parent']) {
+    $duse_parent = $_GET['use_parent'];
   }
-  if ($_GET['aggregate']) {
-    $form_state['values']['aggregate'] = $_GET['aggregate'];
+  if (array_key_exists('aggregate', $_GET) and $_GET['aggregate']) {
+    $daggregate = $_GET['aggregate'];
   }
-  if ($_GET['agg_types']) {
-    $form_state['values']['agg_types'] = $_GET['agg_types'];
+  if (array_key_exists('agg_types', $_GET) and $_GET['agg_types']) {
+    $dagg_types = $_GET['agg_types'];
   }
 
-  // get defaults
-  $dgenus      = isset($form_state['values']['genus'])      ? $form_state['values']['genus']      : $_SESSION['tripal_feature_seq_extract']['genus'];
-  $dspecies    = isset($form_state['values']['species'])    ? $form_state['values']['species']    : $_SESSION['tripal_feature_seq_extract']['species'];
-  $danalysis   = isset($form_state['values']['analysis'])   ? $form_state['values']['analysis']   : $_SESSION['tripal_feature_seq_extract']['analysis'];
-  $dftype      = isset($form_state['values']['ftype'])      ? $form_state['values']['ftype']      : $_SESSION['tripal_feature_seq_extract']['ftype'];
-  $dfnames     = isset($form_state['values']['fnames'])     ? $form_state['values']['fnames']     : $_SESSION['tripal_feature_seq_extract']['fnames'];
-  $dupstream   = isset($form_state['values']['upstream'])   ? $form_state['values']['upstream']   : $_SESSION['tripal_feature_seq_extract']['upstream'];
-  $ddownstream = isset($form_state['values']['downstream']) ? $form_state['values']['downstream'] : $_SESSION['tripal_feature_seq_extract']['downstream'];
-  $dformat     = isset($form_state['values']['format'])     ? $form_state['values']['format']     : 'fasta_txt';
-  $duse_parent = isset($form_state['values']['use_parent']) ? $form_state['values']['use_parent'] : $_SESSION['tripal_feature_seq_extract']['use_parent'];
-  $daggregate  = isset($form_state['values']['aggregate'])  ? $form_state['values']['aggregate']  : $_SESSION['tripal_feature_seq_extract']['aggregate'];
-  $dagg_types  = isset($form_state['values']['agg_types'])  ? $form_state['values']['agg_types']  : $_SESSION['tripal_feature_seq_extract']['agg_types'];
+  // get defaults from the form state
+  if (array_key_exists('values', $form_state)) {
+    $dgenus      = $form_state['values']['genus'];
+    $dspecies    = $form_state['values']['species'];
+    $danalysis   = $form_state['values']['analysis'];
+    $dftype      = $form_state['values']['ftype'];
+    $dfnames     = $form_state['values']['fnames'];
+    $dupstream   = $form_state['values']['upstream'];
+    $ddownstream = $form_state['values']['downstream'];
+    $dformat     = $form_state['values']['format'];
+    $duse_parent = $form_state['values']['use_parent'];
+    $daggregate  = $form_state['values']['aggregate'];
+    $dagg_types  = $form_state['values']['agg_types'];
+  }
 
-
-  $form = array();
-
-  // because we're using Tripal's file_upload_combo form element we
+  // Because we're using Tripal's file_upload_combo form element we
   // need to allow the form to upload files
   $form['#attributes']['enctype'] = 'multipart/form-data';
   $form['#method'] = 'POST';
@@ -199,9 +179,9 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
     '#default_value' => $dgenus,
     '#multiple'      => FALSE,
     '#description'   => t('The organism\'s genus. If specified, features for all organism with this genus will be retrieved.'),
-    '#ahah' => array(
-      'path'    => 'find/sequences/ajax',
-      'wrapper' => 'tripal-feature-seq-extract-form-block',
+    '#ajax' => array(
+      'callback'    => 'tripal_feature_seq_extract_form_ajax_callback',
+      'wrapper' => 'tripal-feature-seq-extract-form',
       'event'   => 'change',
       'method'  => 'replace',
     ),
@@ -228,9 +208,9 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
     '#default_value' => $dspecies,
     '#multiple'      => FALSE,
     '#description'   => t('The organism\'s species name. If specified, features for all organisms with this species will be retrieved.  Please first select a genus'),
-    '#ahah' => array(
-      'path'    => 'find/sequences/ajax',
-      'wrapper' => 'tripal-feature-seq-extract-form-block',
+    '#ajax' => array(
+      'callback'    => 'tripal_feature_seq_extract_form_ajax_callback',
+      'wrapper' => 'tripal-feature-seq-extract-form',
       'event'   => 'change',
       'method'  => 'replace',
     ),
@@ -294,38 +274,36 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
     '#options'       => $ftype,
     '#multiple'      => FALSE,
     '#default_value' => $dftype,
-    '#description'   => t('The type of feature to retrieve (e.g. mRNA). All features that match this type will be retrieved.'),
+    '#description'   => t('The type of feature to retrieve (e.g. mRNA). All
+        features that match this type will be retrieved.'),
   );
 
   $form['fnames'] = array(
     '#title'         => t('Feature Name'),
     '#type'          => 'file_upload_combo',
     '#default_value' => $dfnames,
-    '#description'   => t('The names of the features to retrieve. Separate each with a new line or comma. Leave blank to retrieve all features matching other criteria.'),
+    '#description'   => t('The names of the features to retrieve. Separate each
+         with a new line or comma. Leave blank to retrieve all features
+        matching other criteria.'),
     '#rows'          => 8
   );
   $form['upstream'] = array(
     '#title'         => t('Upstream Bases'),
     '#type'          => 'textfield',
-    '#description'   => t('A numeric value specifying the number of upstream bases to include. Only works if the feature is aligned to a larger sequence.'),
+    '#description'   => t('A numeric value specifying the number of upstream
+         bases to include. Only works if the feature is aligned to a larger
+         sequence.'),
     '#default_value' => $dupstream,
     '#size'          => 5,
   );
   $form['downstream'] = array(
     '#title'         => t('Downstream Bases'),
     '#type'          => 'textfield',
-    '#description'   => t('A numeric value specifying the number of downstream bases to incldue.  Only works if the feature is aligned to a larger sequence.'),
+    '#description'   => t('A numeric value specifying the number of downstream
+        bases to incldue.  Only works if the feature is aligned to a larger
+        sequence.'),
     '#default_value' => $ddownstream,
     '#size'          => 5,
-  );
-  $form['format'] = array(
-    '#title'         => t('Output Format'),
-    '#type'          => 'hidden',
-    '#default_value' => $dformat,
-    '#options'       => array(
-      'fasta_html'  => 'FASTA (in browser)',
-      'fasta_txt'   => 'FASTA (download)',
-    ),
   );
   $form['advanced'] = array(
     '#type' => 'fieldset',
@@ -338,64 +316,115 @@ function tripal_feature_seq_extract_form(&$form_state = NULL) {
     '#title'         => t('Use Parent'),
     '#type'          => 'checkbox',
     '#default_value' => $duse_parent,
-    '#description'   => t('Check this box to retrieve the sequence from the parent in an alignment rather than the feature itself. This is useful if the same feature is aligned to multiple parents and you would like to retrieve the underlying sequence from each parent.'),
+    '#description'   => t('Check this box to retrieve the sequence from the
+        parent in an alignment rather than the feature itself. This is useful
+        if the same feature is aligned to multiple parents and you would like
+        to retrieve the underlying sequence from each parent.'),
   );
   $form['advanced']['aggregate'] = array(
     '#title'         => t('Aggregate'),
     '#type'          => 'checkbox',
     '#default_value' => $daggregate,
-    '#description'   => t('Check this box to aggregate sub features into a single sequence.  This is useful, for example, for obtaining CDS sequence from an mRNA. Rather than retrieve the mRNA sequence, the sub features of the mRNA will be aggregated and that will be returned.')
+    '#description'   => t('Check this box to aggregate sub features into a
+        single sequence.  This is useful, for example, for obtaining CDS
+        sequence from an mRNA. Rather than retrieve the mRNA sequence, the
+        sub features of the mRNA will be aggregated and that will be returned.')
   );
   $form['advanced']['agg_types'] = array(
     '#title'         => t('Types to aggregate'),
     '#type'          => 'textarea',
     '#default_value' => $dagg_types,
-    '#description'   => t('Set this argument to the type of children to aggregate.  This is useful in the case where a gene has exons, CDSs and UTRs.  In this case, you may only want to aggregate CDSs and exclude exons.  If you want to aggregate both CDSs and UTRs you could specify both.')
+    '#description'   => t('Set this argument to the type of children to
+        aggregate.  This is useful in the case where a gene has exons, CDSs
+        and UTRs.  In this case, you may only want to aggregate CDSs and
+        exclude exons.  If you want to aggregate both CDSs and UTRs you
+        could specify both.  Please place each type on a new line.')
   );
   $form['retrieve_btn'] = array(
     '#type' => 'submit',
-    '#value' => 'Retrieve',
+    '#name' => 'retrieve',
+    '#value' => 'Retrieve Sequences',
   );
-  $form['reset_btn'] = array(
-    '#type' => 'submit',
-    '#value' => 'Reset',
-  );
+
+  if (user_access('administer tripal')) {
+    $notice = tripal_set_message("Administrators, the " .
+        l('organism_feature_count', 'admin/tripal/schema/mviews') . " and " .
+        l('analysis_organism', 'admin/tripal/schema/mviews') . " materialized
+        views must be populated before using this form.  Those views should be re-populated
+        when new data is added.", TRIPAL_NOTICE, array('return_html' => TRUE));
+  }
+
+  $form['#prefix'] = '<div id="tripal-feature-seq-extract-form">';
+  $form['#suffix'] = $notice . '</div>';
+
   return $form;
 }
 
 /**
- * AJAX callback
+ * Theme the Form to choose which features to extract sequence for
  *
  * @ingroup tripal_feature
  */
-function tripal_feature_seq_extract_form_ahah_update() {
-  $status = TRUE;
+function theme_tripal_feature_seq_extract_form(&$variables) {
+  $form = $variables['form'];
 
-  // prepare and render the form. If no form is returned that means
-  // we got here by an AHAH call after the form has been submitted.  This
-  // is possible because results are downloaded and the page is not refreshed
-  // but the form_id goes away.  So, we need to rebuild the form in this case.
-  // otherwise, if the form already exists we just theme it.
-  $form = tripal_core_ahah_prepare_form();
-  if ($form) {
-    $data = theme('tripal_feature_seq_extract_form', $form);
-  }
-  else {
-    $data = drupal_get_form('tripal_feature_seq_extract_form');
-  }
-
-  // bind javascript events to the new objects that will be returned
-  // so that AHAH enabled elements will work.
-  $settings = tripal_core_ahah_bind_events();
-
-  // return the updated JSON
-  drupal_json(
-    array(
-      'status'   => $status,
-      'data'     => $data,
-      'settings' => $settings,
-    )
+  $headers = array();
+  $rows = array(
+    0 => array(
+      array('data' => drupal_render($form['description']), 'colspan' => 3),
+    ),
+    1 => array(
+      drupal_render($form['genus']),
+      drupal_render($form['species']) ,
+      drupal_render($form['ftype']),
+    ),
+    2 => array(
+      array('data' => drupal_render($form['analysis']), 'colspan' => 3),
+      //drupal_render($form['format']),
+    ),
+    3 => array(
+      array('data' =>  drupal_render($form['fnames']), 'colspan' => 2),
+      drupal_render($form['upstream']) .
+      drupal_render($form['downstream']) .
+      drupal_render($form['format']),
+    ),
+    4 => array(
+      array(
+        'data' =>  drupal_render($form['advanced']),
+        'colspan' => 3,
+      ),
+    ),
+    5 => array(
+      array(
+        'data' =>  drupal_render($form['retrieve_btn']) . drupal_render($form['reset_btn']),
+        'colspan' => 3,
+      ),
+    ),
   );
+
+  $table_vars = array(
+    'header' => $headers,
+    'rows' => $rows,
+    'attributes' => array(
+      'id' => 'tripal-feature-seq-extract-form-table',
+      'border' => '0'
+    ),
+    'sticky' => FALSE,
+    'colgroups' => array(),
+    'empty' => '',
+  );
+
+  $form['rendered_form'] = array(
+    '#type' => 'item',
+    '#markup' => theme('table', $table_vars),
+  );
+  return drupal_render_children($form);
+}
+/**
+ * Ajax function which returns the form via ajax
+ */
+function tripal_feature_seq_extract_form_ajax_callback($form, &$form_state) {
+  return $form;
 }
 
 /**
@@ -411,22 +440,27 @@ function tripal_feature_seq_extract_form_validate($form, &$form_state) {
   $fnames     = $form_state['values']['fnames'];
   $upstream   = $form_state['values']['upstream'];
   $downstream = $form_state['values']['downstream'];
-  $format     = $form_state['values']['format'];
   $use_parent = $form_state['values']['use_parent'];
   $aggregate  = $form_state['values']['aggregate'];
   $agg_types  = $form_state['values']['agg_types'];
-  $op         = $form_state['values']['op'];
 
-  if ($op == 'Retrieve') {
-    if ($upstream and !preg_match('/^\d+$/', $upstream)) {
-      form_set_error('upstream', 'Please enter a positive numeric value for the upstream bases');
-    }
-     if ($downstream and !preg_match('/^\d+$/', $downstream)) {
-      form_set_error('downstream', 'Please enter a positive numeric value for the downstream bases');
-    }
-    if (!$genus and !$species and !$ftype and !$fnames) {
-      form_set_error('', 'Please provide a feature name, a feature type or a genus.');
-    }
+  if ($upstream and !preg_match('/^\d+$/', $upstream)) {
+    form_set_error('upstream', 'Please enter a positive numeric value for the upstream bases');
+  }
+   if ($downstream and !preg_match('/^\d+$/', $downstream)) {
+    form_set_error('downstream', 'Please enter a positive numeric value for the downstream bases');
+  }
+  if (!$genus and !$species and !$ftype and !$fnames) {
+    form_set_error('', 'Please provide a feature name, a feature type or a genus.');
+  }
+  if ($ftype == 'polypeptide' and $upstream) {
+    form_set_error('upstream', 'When the sequence type is protein the upstream value must be unset.');
+  }
+  if ($ftype == 'polypeptide' and $downstream) {
+    form_set_error('downstream', 'When the sequence type is protein the downstream value must be unset.');
+  }
+  if ($ftype == 'polypeptide' and $use_parent) {
+    form_set_error('use_parent', 'When the sequence type is protein the "Use Parent" option must not be set.');
   }
 }
 
@@ -443,11 +477,9 @@ function tripal_feature_seq_extract_form_submit($form, &$form_state) {
   $fnames     = $form_state['values']['fnames'];
   $upstream   = $form_state['values']['upstream'];
   $downstream = $form_state['values']['downstream'];
-  $format     = $form_state['values']['format'];
   $use_parent = $form_state['values']['use_parent'];
   $aggregate  = $form_state['values']['aggregate'];
   $agg_types  = $form_state['values']['agg_types'];
-  $op         = $form_state['values']['op'];
 
   // we must use the parent sequence if the user has selected
   // the upstream, downstream or to aggregate
@@ -455,7 +487,7 @@ function tripal_feature_seq_extract_form_submit($form, &$form_state) {
     $use_parent = 1;
   }
 
-  if ($op == 'Retrieve') {
+  if ($form_state['clicked_button']['#name'] == 'retrieve') {
     $_SESSION['tripal_feature_seq_extract']['genus']      = $genus;
     $_SESSION['tripal_feature_seq_extract']['species']    = $species;
     $_SESSION['tripal_feature_seq_extract']['analysis']   = $analysis;
@@ -463,13 +495,12 @@ function tripal_feature_seq_extract_form_submit($form, &$form_state) {
     $_SESSION['tripal_feature_seq_extract']['fnames']     = $fnames;
     $_SESSION['tripal_feature_seq_extract']['upstream']   = $upstream;
     $_SESSION['tripal_feature_seq_extract']['downstream'] = $downstream;
-    $_SESSION['tripal_feature_seq_extract']['format']     = $format;
+    $_SESSION['tripal_feature_seq_extract']['format']     = 'fasta_txt';
     $_SESSION['tripal_feature_seq_extract']['use_parent'] = $use_parent;
     $_SESSION['tripal_feature_seq_extract']['aggregate']  = $aggregate;
     $_SESSION['tripal_feature_seq_extract']['agg_types']  = $agg_types;
     $_SESSION['tripal_feature_seq_extract']['download']   = 1;
-  }
-  if ($op == 'Reset') {
-    unset($_SESSION['tripal_feature_seq_extract']);
+
+    drupal_goto('find/sequences/download');
   }
 }
