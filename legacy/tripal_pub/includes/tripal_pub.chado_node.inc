@@ -641,46 +641,47 @@ function chado_pub_insert($node) {
     $miniref = '';
     $cross_refs = array();
     foreach ($properties as $type_id => $element) {
-      $value = trim($element[0]);
-      $name = $properties_list[$type_id];
+      foreach ($element as $index => $value) {
+        $name = $properties_list[$type_id];
 
-      // populate our $pub_array for building a citation
-      $pub_arr[$name] = $value;
+        // populate our $pub_array for building a citation
+        $pub_arr[$name] = $value;
 
-      // remove properties that are stored in the pub table
-      if ($name == "Volume") {
-        $volume = $value;
-        unset($properties[$type_id]);
-      }
-      elseif ($name == "Volume Title") {
-        $volumetitle = $value;
-        unset($properties[$type_id]);
-      }
-      elseif ($name == "Issue") {
-        $issue = $value;
-        unset($properties[$type_id]);
-      }
-      elseif ($name == "Pages") {
-        $pages = $value;
-        unset($properties[$type_id]);
-      }
-      elseif ($name == "Publisher") {
-        $publisher = $value;
-        unset($properties[$type_id]);
-      }
-      elseif ($name == "Series Name" or $name == "Journal Name" or $name == "Conference Name") {
-        $series_name = $value;
-        unset($properties[$type_id]);
-      }
-      elseif ($name == "Journal Country" or $name == "Published Location") {
-        $pubplace = $value;
-        // allow this property to go into the pubprop table so we don't loose info
-        // so don't unset it. But it will also go into the pub.pubplace field
-      }
-      elseif ($name == "Publication Dbxref") {
-        // we will add the cross-references to the pub_dbxref table
-        // but we also want to keep the property in the pubprop table so don't unset it
-        $cross_refs[] = $value;
+        // remove properties that are stored in the pub table
+        if ($name == "Volume") {
+          $volume = $value;
+          unset($properties[$type_id]);
+        }
+        elseif ($name == "Volume Title") {
+          $volumetitle = $value;
+          unset($properties[$type_id]);
+        }
+        elseif ($name == "Issue") {
+          $issue = $value;
+          unset($properties[$type_id]);
+        }
+        elseif ($name == "Pages") {
+          $pages = $value;
+          unset($properties[$type_id]);
+        }
+        elseif ($name == "Publisher") {
+          $publisher = $value;
+          unset($properties[$type_id]);
+        }
+        elseif ($name == "Series Name" or $name == "Journal Name" or $name == "Conference Name") {
+          $series_name = $value;
+          unset($properties[$type_id]);
+        }
+        elseif ($name == "Journal Country" or $name == "Published Location") {
+          $pubplace = $value;
+          // allow this property to go into the pubprop table so we don't loose info
+          // so don't unset it. But it will also go into the pub.pubplace field
+        }
+        elseif ($name == "Publication Dbxref") {
+          // we will add the cross-references to the pub_dbxref table
+          // but we also want to keep the property in the pubprop table so don't unset it
+          $cross_refs[] = $value;
+        }
       }
     }
     // generate a citation for this pub if one doesn't already exist
