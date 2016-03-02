@@ -174,25 +174,32 @@ function chado_library_form($node, &$form_state) {
 
   // PROPERTIES FORM
   //---------------------------------------------
-  $select_options = array();
   $prop_cv = tripal_get_default_cv('libraryprop', 'type_id');
   $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
-  // if the default is the 'library_property' vocabulary then we want
-  // to exclude the 'Library Description' term since it has it's own form element above
+
+  $details = array(
+    // The name of the prop table.
+    'property_table' => 'libraryprop',
+    // The value of library_id for this record.
+    'chado_id' => $library_id,
+    // The cv.cv_id of the cv governing libraryprop.type_id.
+    'cv_id' => $cv_id,
+  );
+
+  // If the default is the 'library_property' vocabulary then we want
+  // to exclude the 'Library Description' term since it has it's own form
+  // element above
   if ($prop_cv->name == 'library_property') {
     // Generate our own select list so we can exclude the description element
+    $select_options = array();
     $cv_result = chado_select_record('cv', array('cv_id'), array('name' => 'library_property'));
     $cv_id = $cv_result[0]->cv_id;
     $select_options = tripal_get_cvterm_select_options($cv_id);
     $descrip_id = array_search('Library Description', $select_options);
     unset($select_options[$descrip_id]);
+    $details['select_options'] = $select_options;
   }
-  $details = array(
-    'property_table' => 'libraryprop',      // the name of the prop table
-    'chado_id' => $library_id,              // the value of library_id for this record
-    'cv_id' => $cv_id,                      // the cv.cv_id of the cv governing libraryprop.type_id
-    'select_options' => $select_options
-  );
+
   // Adds the form elements to your current form
   chado_add_node_form_properties($form, $form_state, $details);
 
