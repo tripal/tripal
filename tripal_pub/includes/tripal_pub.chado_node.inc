@@ -260,6 +260,7 @@ function chado_pub_form($node, $form_state) {
   $select_options = array();
   $prop_cv = tripal_get_default_cv('pubprop', 'type_id');
   $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
+
   // if the poperty cv is 'tripal_pub' then we need to pass in our own select_options
   // for only a subset of the vocabulary
   if ($prop_cv->name == 'tripal_pub') {
@@ -406,7 +407,8 @@ function chado_pub_validate($node, $form, &$form_state) {
     $pub['Year'] = $pyear;
     $uniquename = tripal_pub_create_citation($pub);
     if (!$uniquename) {
-      form_set_error('uniquename', "Cannot automatically generate a citation for this publication type. Please add one manually.");
+      form_set_error('uniquename', "Cannot automatically generate a citation '.
+          'for this publication type. Please add one manually.");
     }
   }
 
@@ -582,7 +584,7 @@ function chado_pub_insert($node) {
 
   $pub_id = '';
 
-  // if there is an pub_id in the $node object then this must be a sync so
+  // If there is an pub_id in the $node object then this must be a sync so
   // we can skip adding the pub as it is already there, although
   // we do need to proceed with insertion into the chado/drupal linking table.
   if (!property_exists($node, 'pub_id')) {
@@ -593,17 +595,21 @@ function chado_pub_insert($node) {
     $is_obsolete  = $node->is_obsolete;
     $type_id      = $node->type_id;
 
-    // we need an array suitable for the tripal_pub_create_citation() function
-    // to automatically generate a citation if a uniquename doesn't already exist
+    // We need an array suitable for the tripal_pub_create_citation() function
+    // to automatically generate a citation if a uniquename doesn't already
+    // exist
     $pub_arr = array();
 
-    $properties = array(); // stores all of the properties we need to add
-    $cross_refs = array(); // stores any cross references for this publication
+    // Stores all of the properties we need to add.
+    $properties = array();
+    // Stores any cross references for this publication.
+    $cross_refs = array();
 
-    // get the properties from the form
+    // Get the properties from the form.
     $properties = chado_retrieve_node_form_properties($node);
 
-    // get the list of properties for easy lookup (without doing lots of database queries
+    // Get the list of properties for easy lookup (without doing lots of
+    // database queries.
     $properties_list = array();
     $sql = "
       SELECT CVTS.cvterm_id, CVTS.name, CVTS.definition
@@ -618,9 +624,9 @@ function chado_pub_insert($node) {
     $prop_types = chado_query($sql);
     while ($prop = $prop_types->fetchObject()) {
       $properties_list[$prop->cvterm_id] = $prop->name;
-      // The 'Citation' term is special because it serves
-      // both as a property and as the uniquename for the
-      // pub and we want it stored in both the pub table and the pubprop table
+      // The 'Citation' term is special because it serves both as a property
+      // and as the uniquename for the pub and we want it stored in both the
+      // pub table and the pubprop table.
       if ($prop->name == 'Citation') {
         $citation_id = $prop->cvterm_id;
         if (!empty($node->uniquename)) {
@@ -629,7 +635,7 @@ function chado_pub_insert($node) {
       }
     }
 
-    // iterate through all of the properties and remove those that really are
+    // Iterate through all of the properties and remove those that really are
     // part of the pub table fields
     $volume = '';
     $volumetitle = '';
@@ -641,46 +647,49 @@ function chado_pub_insert($node) {
     $miniref = '';
     $cross_refs = array();
     foreach ($properties as $type_id => $element) {
-      $value = trim($element[0]);
-      $name = $properties_list[$type_id];
+      foreach ($element as $index => $value) {
 
-      // populate our $pub_array for building a citation
-      $pub_arr[$name] = $value;
+        $name = $properties_list[$type_id];
 
-      // remove properties that are stored in the pub table
-      if ($name == "Volume") {
-        $volume = $value;
-        unset($properties[$type_id]);
-      }
-      elseif ($name == "Volume Title") {
-        $volumetitle = $value;
-        unset($properties[$type_id]);
-      }
-      elseif ($name == "Issue") {
-        $issue = $value;
-        unset($properties[$type_id]);
-      }
-      elseif ($name == "Pages") {
-        $pages = $value;
-        unset($properties[$type_id]);
-      }
-      elseif ($name == "Publisher") {
-        $publisher = $value;
-        unset($properties[$type_id]);
-      }
-      elseif ($name == "Series Name" or $name == "Journal Name" or $name == "Conference Name") {
-        $series_name = $value;
-        unset($properties[$type_id]);
-      }
-      elseif ($name == "Journal Country" or $name == "Published Location") {
-        $pubplace = $value;
-        // allow this property to go into the pubprop table so we don't loose info
-        // so don't unset it. But it will also go into the pub.pubplace field
-      }
-      elseif ($name == "Publication Dbxref") {
-        // we will add the cross-references to the pub_dbxref table
-        // but we also want to keep the property in the pubprop table so don't unset it
-        $cross_refs[] = $value;
+        // Populate our $pub_array for building a citation.
+        $pub_arr[$name] = $value;
+
+        // Remove properties that are stored in the pub table.
+        if ($name == "Volume") {
+          $volume = $value;
+          unset($properties[$type_id]);
+        }
+        elseif ($name == "Volume Title") {
+          $volumetitle = $value;
+          unset($properties[$type_id]);
+        }
+        elseif ($name == "Issue") {
+          $issue = $value;
+          unset($properties[$type_id]);
+        }
+        elseif ($name == "Pages") {
+          $pages = $value;
+          unset($properties[$type_id]);
+        }
+        elseif ($name == "Publisher") {
+          $publisher = $value;
+          unset($properties[$type_id]);
+        }
+        elseif ($name == "Series Name" or $name == "Journal Name" or
+                $name == "Conference Name") {
+          $series_name = $value;
+          unset($properties[$type_id]);
+        }
+        elseif ($name == "Journal Country" or $name == "Published Location") {
+          $pubplace = $value;
+          // allow this property to go into the pubprop table so we don't loose info
+          // so don't unset it. But it will also go into the pub.pubplace field
+        }
+        elseif ($name == "Publication Dbxref") {
+          // we will add the cross-references to the pub_dbxref table
+          // but we also want to keep the property in the pubprop table so don't unset it
+          $cross_refs[] = $value;
+        }
       }
     }
     // generate a citation for this pub if one doesn't already exist
