@@ -37,7 +37,7 @@ function tripal_library_node_info() {
 }
 
 /**
- *  Implements hook_form().
+ * Implements hook_form().
  *
  * When editing or creating a new node of type 'chado_library' we need
  *  a form.  This function creates the form that will be used for this.
@@ -49,13 +49,14 @@ function chado_library_form($node, &$form_state) {
 
   // Default values can come in the following ways:
   //
-  // 1) as elements of the $node object.  This occurs when editing an existing library
-  // 2) in the $form_state['values'] array which occurs on a failed validation or
-  //    ajax callbacks from non submit form elements
-  // 3) in the $form_state['input'] array which occurs on ajax callbacks from submit
-  //    form elements and the form is being rebuilt
-  //
-  // set form field defaults
+  // 1) As elements of the $node object: this occurs when editing an existing
+  //    library.
+  // 2) In the $form_state['values'] array which occurs on a failed validation
+  //    or ajax callbacks from non submit form elements.
+  // 3) In the $form_state['input'] array which occurs on ajax callbacks from
+  //    submit form elements and the form is being rebuilt.
+
+  // Set form field defaults.
   $library_id = NULL;
   $libraryname = '';
   $uniquename = '';
@@ -63,7 +64,8 @@ function chado_library_form($node, &$form_state) {
   $organism_id = '';
   $description = '';
 
-  // if we are editing an existing node then the library is already part of the node
+  // If we are editing an existing node then the library is already part of
+  // the node
   if (property_exists($node, 'library')) {
     $library = $node->library;
     $library_id = $library->library_id;
@@ -79,15 +81,15 @@ function chado_library_form($node, &$form_state) {
     );
     $description = $libprop->value;
 
-    // keep track of the library id if we have.  If we do have one then
+    // Keep track of the library id if we have.  If we do have one then
     // this is an update as opposed to an insert.
     $form['library_id'] = array(
       '#type' => 'value',
       '#value' => $library_id,
     );
   }
-  // if we are re constructing the form from a failed validation or ajax callback
-  // then use the $form_state['values'] values
+  // If we are re constructing the form from a failed validation or ajax callback
+  // then use the $form_state['values'] values.
   if (array_key_exists('values', $form_state)) {
     $libraryname  = $form_state['values']['libraryname'];
     $uniquename   = $form_state['values']['uniquename'];
@@ -95,8 +97,8 @@ function chado_library_form($node, &$form_state) {
     $organism_id  = $form_state['values']['organism_id'];
     $description  = $form_state['values']['description'];
   }
-  // if we are re building the form from after submission (from ajax call) then
-  // the values are in the $form_state['input'] array
+  // If we are re building the form from after submission (from ajax call) then
+  // the values are in the $form_state['input'] array.
   if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
     $libraryname  = $form_state['input']['libraryname'];
     $uniquename   = $form_state['input']['uniquename'];
@@ -121,7 +123,7 @@ function chado_library_form($node, &$form_state) {
     '#default_value' => $uniquename,
   );
 
-  // get the list of library types
+  // Get the list of library types.
   $lt_cv = tripal_get_default_cv("library", "type_id");
   $types = tripal_get_cvterm_default_select_options('library', 'type_id', 'library types');
   $types[0] = 'Select a Type';
@@ -144,7 +146,7 @@ function chado_library_form($node, &$form_state) {
     '#suffix'        => $lt_message,
   );
 
-  // get the list of organisms
+  // Get the list of organisms.
   $sql = "SELECT * FROM {organism}";
   $org_rset = chado_query($sql);
 
@@ -172,36 +174,46 @@ function chado_library_form($node, &$form_state) {
     '#default_value' => $description,
   );
 
-  // PROPERTIES FORM
+  // PROPERTIES FORM.
   //---------------------------------------------
-  $select_options = array();
   $prop_cv = tripal_get_default_cv('libraryprop', 'type_id');
   $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
-  // if the default is the 'library_property' vocabulary then we want
-  // to exclude the 'Library Description' term since it has it's own form element above
+
+  $details = array(
+    // The name of the prop table.
+    'property_table' => 'libraryprop',
+    // The value of library_id for this record.
+    'chado_id' => $library_id,
+    // The cv.cv_id of the cv governing libraryprop.type_id.
+    'cv_id' => $cv_id,
+  );
+
+  // If the default is the 'library_property' vocabulary then we want
+  // to exclude the 'Library Description' term since it has it's own form
+  // element above
   if ($prop_cv->name == 'library_property') {
     // Generate our own select list so we can exclude the description element
+    $select_options = array();
     $cv_result = chado_select_record('cv', array('cv_id'), array('name' => 'library_property'));
     $cv_id = $cv_result[0]->cv_id;
     $select_options = tripal_get_cvterm_select_options($cv_id);
     $descrip_id = array_search('Library Description', $select_options);
     unset($select_options[$descrip_id]);
+    $details['select_options'] = $select_options;
   }
-  $details = array(
-    'property_table' => 'libraryprop',      // the name of the prop table
-    'chado_id' => $library_id,              // the value of library_id for this record
-    'cv_id' => $cv_id,                      // the cv.cv_id of the cv governing libraryprop.type_id
-    'select_options' => $select_options
-  );
+
   // Adds the form elements to your current form
   chado_add_node_form_properties($form, $form_state, $details);
 
   // ADDITIONAL DBXREFS FORM
   //---------------------------------------------
   $details = array(
-    'linking_table' => 'library_dbxref',  // the name of the _dbxref table
-    'base_foreign_key' => 'library_id',   // the name of the key in your base chado table
-    'base_key_value' => $library_id       // the value of library_id for this record
+    // The name of the _dbxref table.
+    'linking_table' => 'library_dbxref',
+    // The name of the key in your base chado table.
+    'base_foreign_key' => 'library_id',
+    // The value of library_id for this record.
+    'base_key_value' => $library_id
   );
   // Adds the form elements to your current form
   chado_add_node_form_dbxrefs($form, $form_state, $details);
