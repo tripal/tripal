@@ -4,7 +4,6 @@
  * Basic functionality of the pub module
  */
 
-require_once 'api/tripal_pub.api.inc';
 require_once 'api/tripal_pub.DEPRECATED.inc';
 
 require_once 'theme/tripal_pub.theme.inc';
@@ -12,7 +11,6 @@ require_once 'theme/tripal_pub.theme.inc';
 require_once 'includes/tripal_pub.admin.inc';
 require_once 'includes/tripal_pub.chado_node.inc';
 require_once 'includes/tripal_pub.pub_search.inc';
-require_once 'includes/tripal_pub.pub_citation.inc';
 
 /**
  * @defgroup tripal_pub Publication Module

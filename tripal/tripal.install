@@ -11,13 +11,29 @@
  */
 function tripal_install() {
 
-  // Add tripal bundle variables needed for storing additional settings for Tripal Bundles.
-  tripal_insert_variable('title_format', 'A pattern including tokens that can be used to generate tripal entity titles.');
-  tripal_insert_variable('url_format', 'A pattern including tokens that can be used to generate tripal entity url aliases.');
-  tripal_insert_variable('description', 'The description of a Tripal Entity type/bundle.');
+  // Add tripal bundle variables needed for storing additional settings for
+  // Tripal Bundles.
+  tripal_insert_variable(
+    'title_format',
+    'A pattern including tokens that can be used to generate tripal entity titles.'
+  );
+  tripal_insert_variable(
+    'url_format',
+    'A pattern including tokens that can be used to generate tripal entity url aliases.'
+  );
+  tripal_insert_variable(
+    'description',
+    'The description of a Tripal Entity type/bundle.'
+  );
+
 
 }
 
+
+
+/**
+ *
+ */
 function tripal_uninstall() {
   /*
    // So somehow I was able to uninstall this module without deleting the bundles. This
@@ -50,12 +66,92 @@ function tripal_uninstall() {
    field_purge_batch(100);
    */
 }
+
+/**
+ *
+ */
+function tripal_enable() {
+  // If Tripal v2 is already installed, the installation of this module
+  // will try and recreate some of the tables created with tripal_core and the
+  // installation will fail.  Therefore, in the install we renamed it. Now
+  // we want to move it back.
+  if (db_table_exists('tripal_jobs2')) {
+    $sql = "DROP TABLE tripal_jobs";
+    db_query($sql);
+    $sql = "ALTER TABLE tripal_jobs2 RENAME to tripal_jobs";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_jobs_job_id_idx2 RENAME TO tripal_jobs_job_id_idx";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_jobs_job_name_idx2 RENAME TO tripal_jobs_job_name_idx";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_jobs_pkey2 RENAME TO tripal_jobs_pkey";
+    db_query($sql);
+
+    $sql = "DROP TABLE tripal_token_formats";
+    db_query($sql);
+    $sql = "ALTER TABLE tripal_token_formats2 RENAME TO tripal_token_formats";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_token_formats_pkey2 RENAME TO tripal_token_formats_pkey";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_token_formats_type_application_key2 RENAME TO tripal_token_formats_type_application_key";
+    db_query($sql);
+
+    $sql = "DROP TABLE tripal_variables";
+    db_query($sql);
+    $sql = "ALTER TABLE tripal_variables2 RENAME TO tripal_variables";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_variables_pkey2 RENAME TO tripal_variables_pkey";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_variables_tripal_variable_names_idx1_idx2 RENAME TO tripal_variables_tripal_variable_names_idx1_idx";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_variables_tripal_variables_c1_key2 RENAME TO tripal_variables_tripal_variables_c1_key";
+    db_query($sql);
+  }
+}
+
 /**
  * Implementation of hook_schema().
  *
  * @ingroup tripal
  */
 function tripal_schema() {
+
+
+  // If Tripal v2 is already installed, the installation of this module
+  // will try and recreate some of the tables created with tripal_core and the
+  // installation will fail.  Therefore, we need to temporarily move those
+  // tables out of the way, let the module install and then move them back.
+  if (db_table_exists('tripal_jobs')) {
+    // Move the tripal_jobs table out of the way.
+    $sql = "ALTER TABLE tripal_jobs RENAME TO tripal_jobs2";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_jobs_job_id_idx RENAME TO tripal_jobs_job_id_idx2";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_jobs_job_name_idx RENAME TO tripal_jobs_job_name_idx2";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_jobs_pkey RENAME TO tripal_jobs_pkey2";
+    db_query($sql);
+
+    // Move the tripal_token_formats table out of the way.
+    $sql = "ALTER TABLE tripal_token_formats RENAME TO tripal_token_formats2";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_token_formats_pkey RENAME TO tripal_token_formats_pkey2";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_token_formats_type_application_key RENAME TO tripal_token_formats_type_application_key2";
+    db_query($sql);
+
+    // Move the tripal_variables table out of the way.
+    $sql = "ALTER TABLE tripal_variables RENAME TO tripal_variables2";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_variables_pkey RENAME TO tripal_variables_pkey2";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_variables_tripal_variable_names_idx1_idx RENAME TO tripal_variables_tripal_variable_names_idx1_idx2";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_variables_tripal_variables_c1_key RENAME TO tripal_variables_tripal_variables_c1_key2";
+    db_query($sql);
+
+  }
+
   $schema = array();
 
   $schema['tripal_jobs'] = tripal_tripal_jobs_schema();
