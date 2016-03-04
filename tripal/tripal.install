@@ -86,6 +86,9 @@ function tripal_enable() {
     db_query($sql);
     $sql = "ALTER INDEX tripal_jobs_pkey2 RENAME TO tripal_jobs_pkey";
     db_query($sql);
+    // schema change
+    $sql = "ALTER TABLE tripal_jobs ADD COLUMN includes text";
+    db_query($sql);
   }
 
   if (db_table_exists('tripal_token_formats2')) {
@@ -120,45 +123,47 @@ function tripal_enable() {
  */
 function tripal_schema() {
 
-
   // If Tripal v2 is already installed, the installation of this module
   // will try and recreate some of the tables created with tripal_core and the
   // installation will fail.  Therefore, we need to temporarily move those
   // tables out of the way, let the module install and then move them back.
-  if (db_table_exists('tripal_jobs')) {
-    // Move the tripal_jobs table out of the way.
-    $sql = "ALTER TABLE tripal_jobs RENAME TO tripal_jobs2";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_jobs_job_id_idx RENAME TO tripal_jobs_job_id_idx2";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_jobs_job_name_idx RENAME TO tripal_jobs_job_name_idx2";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_jobs_pkey RENAME TO tripal_jobs_pkey2";
-    db_query($sql);
+  $migrated = variable_get ('tripal_v2_schema_migrated', FALSE);
+  if (!$migrated) {
+    if (db_table_exists('tripal_jobs')) {
+      // Move the tripal_jobs table out of the way.
+      $sql = "ALTER TABLE tripal_jobs RENAME TO tripal_jobs2";
+      db_query($sql);
+      $sql = "ALTER INDEX tripal_jobs_job_id_idx RENAME TO tripal_jobs_job_id_idx2";
+      db_query($sql);
+      $sql = "ALTER INDEX tripal_jobs_job_name_idx RENAME TO tripal_jobs_job_name_idx2";
+      db_query($sql);
+      $sql = "ALTER INDEX tripal_jobs_pkey RENAME TO tripal_jobs_pkey2";
+      db_query($sql);
+    }
+  
+    if (db_table_exists('tripal_token_formats')) {
+      // Move the tripal_token_formats table out of the way.
+      $sql = "ALTER TABLE tripal_token_formats RENAME TO tripal_token_formats2";
+      db_query($sql);
+      $sql = "ALTER INDEX tripal_token_formats_pkey RENAME TO tripal_token_formats_pkey2";
+      db_query($sql);
+      $sql = "ALTER INDEX tripal_token_formats_type_application_key RENAME TO tripal_token_formats_type_application_key2";
+      db_query($sql);
+    }
+  
+    if (db_table_exists('tripal_variables')) {
+      // Move the tripal_variables table out of the way.
+      $sql = "ALTER TABLE tripal_variables RENAME TO tripal_variables2";
+      db_query($sql);
+      $sql = "ALTER INDEX tripal_variables_pkey RENAME TO tripal_variables_pkey2";
+      db_query($sql);
+      $sql = "ALTER INDEX tripal_variables_tripal_variable_names_idx1_idx RENAME TO tripal_variables_tripal_variable_names_idx1_idx2";
+      db_query($sql);
+      $sql = "ALTER INDEX tripal_variables_tripal_variables_c1_key RENAME TO tripal_variables_tripal_variables_c1_key2";
+      db_query($sql);
+    }
+    variable_set ('tripal_v2_schema_migrated', TRUE);
   }
-
-  if (db_table_exists('tripal_token_formats')) {
-    // Move the tripal_token_formats table out of the way.
-    $sql = "ALTER TABLE tripal_token_formats RENAME TO tripal_token_formats2";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_token_formats_pkey RENAME TO tripal_token_formats_pkey2";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_token_formats_type_application_key RENAME TO tripal_token_formats_type_application_key2";
-    db_query($sql);
-  }
-
-  if (db_table_exists('tripal_variables')) {
-    // Move the tripal_variables table out of the way.
-    $sql = "ALTER TABLE tripal_variables RENAME TO tripal_variables2";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_variables_pkey RENAME TO tripal_variables_pkey2";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_variables_tripal_variable_names_idx1_idx RENAME TO tripal_variables_tripal_variable_names_idx1_idx2";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_variables_tripal_variables_c1_key RENAME TO tripal_variables_tripal_variables_c1_key2";
-    db_query($sql);
-  }
-
   $schema = array();
 
   $schema['tripal_jobs'] = tripal_tripal_jobs_schema();
