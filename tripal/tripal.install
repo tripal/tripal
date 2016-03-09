@@ -101,7 +101,7 @@ function tripal_enable() {
     $sql = "ALTER INDEX tripal_token_formats_type_application_key2 RENAME TO tripal_token_formats_type_application_key";
     db_query($sql);
   }
-  
+
   if (db_table_exists('tripal_variables2')) {
     $sql = "DROP TABLE tripal_variables";
     db_query($sql);
@@ -127,7 +127,7 @@ function tripal_schema() {
   // will try and recreate some of the tables created with tripal_core and the
   // installation will fail.  Therefore, we need to temporarily move those
   // tables out of the way, let the module install and then move them back.
-  $migrated = variable_get ('tripal_v2_schema_migrated', FALSE);
+  $migrated = variable_get ('tripal_v2_upgrade_v3_check', FALSE);
   if (!$migrated) {
     if (db_table_exists('tripal_jobs')) {
       // Move the tripal_jobs table out of the way.
@@ -140,7 +140,7 @@ function tripal_schema() {
       $sql = "ALTER INDEX tripal_jobs_pkey RENAME TO tripal_jobs_pkey2";
       db_query($sql);
     }
-  
+
     if (db_table_exists('tripal_token_formats')) {
       // Move the tripal_token_formats table out of the way.
       $sql = "ALTER TABLE tripal_token_formats RENAME TO tripal_token_formats2";
@@ -150,7 +150,7 @@ function tripal_schema() {
       $sql = "ALTER INDEX tripal_token_formats_type_application_key RENAME TO tripal_token_formats_type_application_key2";
       db_query($sql);
     }
-  
+
     if (db_table_exists('tripal_variables')) {
       // Move the tripal_variables table out of the way.
       $sql = "ALTER TABLE tripal_variables RENAME TO tripal_variables2";
@@ -162,7 +162,7 @@ function tripal_schema() {
       $sql = "ALTER INDEX tripal_variables_tripal_variables_c1_key RENAME TO tripal_variables_tripal_variables_c1_key2";
       db_query($sql);
     }
-    variable_set ('tripal_v2_schema_migrated', TRUE);
+    variable_set ('tripal_v2_upgrade_v3_check', TRUE);
   }
   $schema = array();
 

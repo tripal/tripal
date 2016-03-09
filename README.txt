@@ -39,6 +39,25 @@ Installation
 Please follow the instructions in the online Tripal User's Guide:
 http://tripal.info/tutorials/v2.0/installation
 
+
+Upgrade from Tripal v2.x to v3.x
+---------------------------------
+Note:  Upgrade can only be performed using 'drush' command.
+
+Step 1: Put the site in maintenance mode.
+Step 2: Remove old Tripal v2 package and replace with Tripal v3 package
+Step 3: Enable the tripal module
+
+  drush pm-enable tripal
+ 
+Step 4:  
+
+  drush pm-enable tripal_chado
+
+Note: Use of deprecated API functions from Tripal v1 will cause a template
+to not work because Tripal v1 deprecated API fucntions have been removed
+in Tripal v3.
+
 Customization
 --------------
 Tripal can be used “as is” but also allows for complete customization.

@@ -369,28 +369,25 @@ function tripal_insert_cv($name, $definition) {
 
   // see if the CV (default-namespace) exists already in the database
   $sel_values = array('name' => $name);
-  $sel_options = array('statement_name' => 'sel_cv_na');
-  $results = chado_select_record('cv', array('*'), $sel_values, $sel_options);
+  $results = chado_select_record('cv', array('*'), $sel_values);
 
   // if it does not exists then add it
   if (count($results) == 0) {
-    $ins_options = array('statement_name' => 'ins_cv_nade');
-    $success = chado_insert_record('cv', $ins_values, $ins_options);
+    $success = chado_insert_record('cv', $ins_values);
     if (!$success) {
       tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to create the CV record", NULL);
       return FALSE;
     }
-    $results = chado_select_record('cv', array('*'), $sel_values, $sel_options);
+    $results = chado_select_record('cv', array('*'), $sel_values);
   }
   // if it already exists then do an update
   else {
-    $upd_options = array('statement_name' => 'upd_cv_nade');
-    $success = chado_update_record('cv', $sel_values, $ins_values, $upd_options);
+    $success = chado_update_record('cv', $sel_values, $ins_values);
     if (!$success) {
       tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to update the CV record", NULL);
       return FALSE;
     }
-    $results = chado_select_record('cv', array('*'), $sel_values, $sel_options);
+    $results = chado_select_record('cv', array('*'), $sel_values);
   }
 
   // return the cv object
@@ -572,8 +569,8 @@ function tripal_insert_cvterm($term, $options = array()) {
     return 0;
   }
 
-  // the cvterm table has two unique dependencies. We need to check both.
-  // first check the (name, cv_id, is_obsolete) constraint
+  // The cvterm table has two unique dependencies. We need to check both.
+  // first check the (name, cv_id, is_obsolete) constraint.
   $values = array(
     'name' => $name,
     'is_obsolete' => $is_obsolete,
@@ -581,60 +578,56 @@ function tripal_insert_cvterm($term, $options = array()) {
       'name' => $cvname,
     ),
   );
-  $options = array('statement_name' => 'sel_cvterm_c1');
-  $result = chado_select_record('cvterm', array('*'), $values, $options);
+  $result = chado_select_record('cvterm', array('*'), $values);
 
-  // if the constraint is met then let's check it to see if
+  // If the constraint is met then let's check it to see if
   // the database name matches the one we have been provided
   if (count($result) == 1) {
     $cvterm = $result[0];
 
     // get the dbxref record
     $values = array('dbxref_id' => $cvterm->dbxref_id);
-    $options = array('statement_name' => 'sel_dbxref_id');
-    $result = chado_select_record('dbxref', array('*'), $values, $options);
+    $result = chado_select_record('dbxref', array('*'), $values);
     $dbxref = $result[0];
 
     // get the db
     $values = array('db_id' => $dbxref->db_id);
-    $options = array('statement_name' => 'sel_db_id');
-    $result = chado_select_record('db', array('*'), $values, $options);
+    $result = chado_select_record('db', array('*'), $values);
     $db_check = $result[0];
 
-    // the database name for this existing term does not match that of the
+    // The database name for this existing term does not match that of the
     // one provided to this function.  The CV name matches otherwise we
     // wouldn't have made it this far. So, let's swap the database for
-    // this term
+    // this term.
     if ($db_check->name != $db->name) {
 
-      // look to see if the correct dbxref record already exists for this database
+      // Look to see if the correct dbxref record already exists for this
+      // database.
       $values = array(
         'db_id' => $db->db_id,
         'accession' => $accession,
       );
-      $options = array('statement_name' => 'sel_dbxref_idac');
-      $result = chado_select_record('dbxref', array('*'), $values, $options);
 
-      // if we already have a good dbxref then we want to update our cvterm
-      // to use this dbxref
+      $result = chado_select_record('dbxref', array('*'), $values);
+
+      // If we already have a good dbxref then we want to update our cvterm
+      // to use this dbxref.
       if (count($result) > 0) {
         $dbxref = $result[0];
         $match = array('cvterm_id' => $cvterm->cvterm_id);
         $values = array('dbxref_id' => $dbxref->dbxref_id);
-        $options = array('statement_name' => 'upd_cvterm_db');
-        $success = chado_update_record('cvterm', $match, $values, $options);
+        $success = chado_update_record('cvterm', $match, $values);
         if (!$success) {
           tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to correct the dbxref id for the cvterm " .
             "'$name' (id: $accession), for database $dbname", NULL);
           return 0;
         }
       }
-      // if we don't have the record then we want to delete our cvterm and let the code
-      // below recreate it with the correct info
+      // If we don't have the dbxref then we want to delete our cvterm and let
+      // the code below recreate it with the correct info.
       else {
         $match = array('cvterm_id' => $cvterm->cvterm_id);
-        $options = array('statement_name' => 'del_cvterm_cv');
-        chado_delete_record('cvterm', $match, $options);
+        chado_delete_record('cvterm', $match);
       }
     }
 
@@ -661,13 +654,11 @@ function tripal_insert_cvterm($term, $options = array()) {
         'dbxref_id' => $dbxref_new->dbxref_id,
         'is_for_definition' => 1,
       );
-      $options = array('statement_name' => 'sel_cvtermdbxref_cvdbis');
-      $result = chado_select_record('cvterm_dbxref', array('*'), $values, $options);
+      $result = chado_select_record('cvterm_dbxref', array('*'), $values);
 
       // if the cvterm_dbxref record does not exists then add it
       if (count($result)==0) {
         $options = array(
-          'statement_name' => 'ins_cvtermdbxref_cvdbis',
           'return_record' => FALSE,
         );
         $success = chado_insert_record('cvterm_dbxref', $values, $options);
@@ -706,8 +697,7 @@ function tripal_insert_cvterm($term, $options = array()) {
     // check to see if the dbxref already has an entry in the cvterm table
     // this is the second constraint in the cvterm table
     $values = array('dbxref_id' => $dbxref->dbxref_id);
-    $options = array('statement_name' => 'sel_cvterm_db');
-    $check = chado_select_record('cvterm', array('cvterm_id'), $values, $options);
+    $check = chado_select_record('cvterm', array('cvterm_id'), $values);
     if (count($check) == 0) {
       // now add the cvterm
       $ins_values = array(
@@ -718,8 +708,7 @@ function tripal_insert_cvterm($term, $options = array()) {
         'is_obsolete'          => $is_obsolete,
         'is_relationshiptype'  => $is_relationship,
       );
-      $ins_options = array('statement_name' => 'ins_cvterm_all');
-      $success = chado_insert_record('cvterm', $ins_values, $ins_options);
+      $success = chado_insert_record('cvterm', $ins_values);
       if (!$success) {
         if (!$is_relationship) {
           tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to insert the term: $name ($dbname)", NULL);
@@ -748,8 +737,7 @@ function tripal_insert_cvterm($term, $options = array()) {
       'is_obsolete'         => $is_obsolete,
       'is_relationshiptype' => $is_relationship,
     );
-    $upd_options = array('statement_name' => 'upd_cvterm_nadeisis');
-    $success = chado_update_record('cvterm', $match, $upd_values, $upd_options);
+    $success = chado_update_record('cvterm', $match, $upd_values);
     if (!$success) {
       tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to update the term: $name", NULL);
       return 0;

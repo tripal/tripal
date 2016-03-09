@@ -114,7 +114,7 @@ function tripal_chado_enable() {
     $sql = "ALTER INDEX tripal_mviews_pkey2 RENAME TO tripal_mviews_pkey";
     db_query($sql);
   }
-    
+
     // tripal_custom_tables
   if (db_table_exists('tripal_custom_tables2')) {
     $sql = "DROP TABLE tripal_custom_tables";
@@ -126,7 +126,7 @@ function tripal_chado_enable() {
     $sql = "ALTER INDEX tripal_custom_tables_table_id_idx2 RENAME TO tripal_custom_tables_table_id_idx";
     db_query($sql);
   }
-    
+
     // tripal_cv_obo
   if (db_table_exists('tripal_cv_obo2')) {
     $sql = "DROP TABLE tripal_cv_obo";
@@ -138,7 +138,7 @@ function tripal_chado_enable() {
     $sql = "ALTER INDEX tripal_cv_obo_pkey2 RENAME TO tripal_cv_obo_pkey";
     db_query($sql);
   }
-    
+
     // tripal_cv_defaults
   if (db_table_exists('tripal_cv_defaults2')) {
     $sql = "DROP TABLE tripal_cv_defaults";
@@ -152,7 +152,7 @@ function tripal_chado_enable() {
     $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_unq1_key2 RENAME TO tripal_cv_defaults_tripal_cv_defaults_unq1_key";
     db_query($sql);
   }
-    
+
     // tripal_pub_import
   if (db_table_exists('tripal_pub_import2')) {
     $sql = "DROP TABLE tripal_pub_import";
@@ -170,12 +170,12 @@ function tripal_chado_enable() {
  * Implements hook_schema().
  */
 function tripal_chado_schema() {
-  
+
   // If Tripal v2 is already installed, the installation of this module
   // will try and recreate some of the tables created with tripal_core and the
   // installation will fail.  Therefore, we need to temporarily move those
   // tables out of the way, let the module install and then move them back.
-  $migrated = variable_get ('tripal_chado_v2_schema_migrated', FALSE);
+  $migrated = variable_get ('tripal_v2_upgrade_v3_check_chado', FALSE);
   if (!$migrated) {
     if (db_table_exists('tripal_mviews')) {
       // Move the tripal_mviews table out of the way.
@@ -190,7 +190,7 @@ function tripal_chado_schema() {
       $sql = "ALTER INDEX tripal_mviews_pkey RENAME TO tripal_mviews_pkey2";
       db_query($sql);
     }
-     
+
     if (db_table_exists('tripal_custom_tables')) {
       // Move the tripal_custom_tables table out of the way.
       $sql = "ALTER TABLE tripal_custom_tables RENAME TO tripal_custom_tables2";
@@ -200,7 +200,7 @@ function tripal_chado_schema() {
       $sql = "ALTER INDEX tripal_custom_tables_table_id_idx RENAME TO tripal_custom_tables_table_id_idx2";
       db_query($sql);
     }
-    
+
     if (db_table_exists('tripal_cv_obo')) {
       // Move the tripal_cv_obo table out of the way.
       $sql = "ALTER TABLE tripal_cv_obo RENAME TO tripal_cv_obo2";
@@ -210,7 +210,7 @@ function tripal_chado_schema() {
       $sql = "ALTER INDEX tripal_cv_obo_pkey RENAME TO tripal_cv_obo_pkey2";
       db_query($sql);
     }
-      
+
     if (db_table_exists('tripal_cv_defaults')) {
       // Move the tripal_cv_defaults table out of the way.
       $sql = "ALTER TABLE tripal_cv_defaults RENAME TO tripal_cv_defaults2";
@@ -222,7 +222,7 @@ function tripal_chado_schema() {
       $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_unq1_key RENAME TO tripal_cv_defaults_tripal_cv_defaults_unq1_key2";
       db_query($sql);
     }
-      
+
     if (db_table_exists('tripal_pub_import')) {
       // Move the tripal_pub_import table out of the way.
       $sql = "ALTER TABLE tripal_pub_import RENAME TO tripal_pub_import2";
@@ -232,8 +232,8 @@ function tripal_chado_schema() {
       $sql = "ALTER INDEX tripal_pub_import_pkey RENAME TO tripal_pub_import_pkey2";
       db_query($sql);
     }
-    
-    variable_set ('tripal_chado_v2_schema_migrated', TRUE);
+
+    variable_set ('tripal_v2_upgrade_v3_check_chado', TRUE);
   }
   // Links TripalEntity entities to the chado record.
   $schema['chado_entity'] = tripal_chado_chado_entity_schema();
@@ -493,4 +493,11 @@ function tripal_chado_chado_entity_schema() {
     'primary key' => array('chado_entity_id'),
   );
   return $schema;
+}
+
+/**
+ * Moves vocabulary terms from the 'tripal' vocabulary to the 'local' vocabulary.
+ */
+function tripal_chado_update_7300() {
+  // Move all terms in the 'tripal' cv' over to 'local'.
 }

@@ -107,6 +107,11 @@ function tripal_chado_install_form($form, $form_state) {
   return $form;
 }
 
+/**
+ *
+ * @param $form
+ * @param $form_state
+ */
 function tripal_chado_install_form_validate($form, &$form_state) {
   // We do not want to allow re-installation of Chado if other
   // Tripal modules are installed.  This is because the install files
@@ -1150,6 +1155,7 @@ function tripal_library_add_cvterms() {
   // description in the libraryprop table.
   tripal_insert_cvterm(
       array(
+        'id' => 'local:library_description',
         'name' => 'Library Description',
         'definition' => 'Description of a library',
         'cv_name' => 'library_property',
@@ -1162,6 +1168,7 @@ function tripal_library_add_cvterms() {
   // add cvterms for the map unit types
   tripal_insert_cvterm(
       array(
+        'id' => 'local:cdna_library',
         'name' => 'cdna_library',
         'definition' => 'cDNA library',
         'cv_name' => 'library_type',
@@ -1172,6 +1179,7 @@ function tripal_library_add_cvterms() {
   );
   tripal_insert_cvterm(
       array(
+        'id' => 'local:bac_library',
         'name' => 'bac_library',
         'definition' => 'Bacterial Artifical Chromsome (BAC) library',
         'cv_name' => 'library_type',
@@ -1182,6 +1190,7 @@ function tripal_library_add_cvterms() {
   );
   tripal_insert_cvterm(
       array(
+        'id' => 'local:fosmid_library',
         'name' => 'fosmid_library',
         'definition' => 'Fosmid library',
         'cv_name' => 'library_type',
@@ -1192,6 +1201,7 @@ function tripal_library_add_cvterms() {
   );
   tripal_insert_cvterm(
       array(
+        'id' => 'local:cosmid_library',
         'name' => 'cosmid_library',
         'definition' => 'Cosmid library',
         'cv_name' => 'library_type',
@@ -1202,6 +1212,7 @@ function tripal_library_add_cvterms() {
   );
   tripal_insert_cvterm(
       array(
+        'id' => 'local:yac_library',
         'name' => 'yac_library',
         'definition' => 'Yeast Artificial Chromosome (YAC) library',
         'cv_name' => 'library_type',
@@ -1212,6 +1223,7 @@ function tripal_library_add_cvterms() {
   );
   tripal_insert_cvterm(
       array(
+        'id' => 'local:genomic_library',
         'name' => 'genomic_library',
         'definition' => 'Genomic Library',
         'cv_name' => 'library_type',
