@@ -50,9 +50,13 @@ Step 3: Enable the tripal module
 
   drush pm-enable tripal
  
-Step 4:  
+Step 4: Enable the tripal_chado module  
 
   drush pm-enable tripal_chado
+  
+Step 5:  Apply updates
+
+  drush updatedb
 
 Note: Use of deprecated API functions from Tripal v1 will cause a template
 to not work because Tripal v1 deprecated API fucntions have been removed
