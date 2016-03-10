@@ -429,10 +429,11 @@ function tripal_save_title_format($entity, $format) {
 }
 
 /**
- * Determine the default pattern/format to use for an entity type.
+ * Determine the default title format to use for an entity.
  *
  * @param TripalBundle $entity
- *   The Entity object for the Tripal Bundle the title format is for.
+ *   The Entity object for the Tripal Bundle that the title format is for.
+ *
  * @return string
  *   A default title format.
  */

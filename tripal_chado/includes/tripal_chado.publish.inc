@@ -71,7 +71,9 @@ function tripal_chado_publish_form_submit($form, &$form_state) {
     $term_id = $form_state['values']['term_id'];
     $bundle_name = 'bio-data_' . $term_id;
     $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-    $args = array($bundle_name);
+    $args = array(
+      array('bundle_name' => $bundle_name),
+    );
     $includes = array(
       module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.publish'),
     );
@@ -87,67 +89,3 @@ function tripal_chado_publish_form_ajax_callback($form, $form_state) {
   return $form;
 }
 
-/**
- *
- */
-function tripal_chado_publish_records($bundle_name, $job_id = NULL) {
-  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-  $bundle_id = $bundle->id;
-  $table = tripal_get_bundle_variable('chado_table', $bundle_id);
-  $column = tripal_get_bundle_variable('chado_column', $bundle_id);
-  $cvterm_id = tripal_get_bundle_variable('chado_cvterm_id', $bundle_id);
-
-  // Get the table information
-  $table_schema = chado_get_schema($table);
-  $pkey_field = $table_schema['primary key'][0];
-
-  $where = '';
-  if ($table != 'analysis' and $table != 'organism') {
-    $where .= "AND $column = $cvterm_id";
-  }
-
-  $sql = "
-    SELECT $pkey_field as record_id
-    FROM {" . $table . "} T
-    LEFT JOIN public.chado_entity CE on CE.record_id = T.$pkey_field
-    AND CE.data_table = '$table'
-    WHERE CE.record_id IS NUll $where
-  ";
-  $records = chado_query($sql);
-  $num_published = 0;
-  try {
-    while($record = $records->fetchObject()) {
-
-      $record_id = $record->record_id;
-      $ec = entity_get_controller('TripalEntity');
-      $entity = $ec->create(array(
-        'bundle' => $bundle_name,
-        'term_id' => $bundle->term_id,
-      ));
-      $entity->save();
-
-      $record = array(
-        'entity_id' => $entity->id,
-        'record_id' => $record_id,
-        'data_table' => $table,
-        'type_table' => $table,
-        'field' => $column,
-      );
-      $success = drupal_write_record('chado_entity', $record);
-
-      $entity = entity_load('TripalEntity', array($entity->id));
-      $entity = reset($entity);
-      $title_format = tripal_get_title_format($bundle);
-      $title = tripal_replace_tokens($title_format, $entity, $bundle);
-      $ec->setTitle($entity, $title);
-      $num_published++;
-    }
-  }
-  catch (Exception $e) {
-    $error = $e->getMessage();
-    tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not publish record: @error", array('@error' => $error));
-    drupal_set_message('Failed publishing record. See recent logs for more details.', 'error');
-    return FALSE;
-  }
-  drupal_set_message("Succesfully published $num_published " . $bundle->label . " record(s).");
-}
