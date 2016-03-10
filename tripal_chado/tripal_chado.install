@@ -499,5 +499,35 @@ function tripal_chado_chado_entity_schema() {
  * Moves vocabulary terms from the 'tripal' vocabulary to the 'local' vocabulary.
  */
 function tripal_chado_update_7300() {
-  // Move all terms in the 'tripal' cv' over to 'local'.
-}
+  try {
+
+    tripal_insert_db(array(
+      'name' => 'local',
+      'description' => variable_get('site_name', 'This site.'),
+    ));
+
+    // Move the library properties out of the tripal database and into the
+    // local database.
+    $sql = "
+      UPDATE {dbxref}
+        SET db_id = (SELECT db_id FROM {db} WHERE name = 'local')
+      WHERE dbxref_id IN (
+        SELECT DISTINCT CVT.dbxref_id
+        FROM {cvterm} CVT
+          INNER JOIN {cv} CV ON CV.cv_id = CVT.cv_id
+        WHERE CV.name IN (
+          'library_property',
+          'library_type',
+          'project_property',
+          'nd_experiment_types',
+          'nd_geolocation_property',
+          'tripal_analysis'
+        )
+      )
+    ";
+    chado_query($sql);
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to complete update' . $error);
+  }}
