@@ -31,6 +31,7 @@ Required Modules
  - Drupal contributed modules: Views
  - Database containing GMOD Chado Schema (can be installed by the 
    Tripal Core module)
+   
 NOTE: A PostgreSQL database is required for installation of the 
 Chado Schema
 
@@ -43,6 +44,13 @@ http://tripal.info/tutorials/v2.0/installation
 Upgrade from Tripal v2.x to v3.x
 ---------------------------------
 Note:  Upgrade can only be performed using 'drush' command.
+
+Note: Deprecated API functions from Tripal v1.x have been removed from Tripal
+v3.  Therefore, use of deprecated API functions in templates or custom 
+modules may cause a white screen of death (WSOD).  Check teh server logs if this
+occurs to find where deprecated functions may be used.
+
+Upgrade Instructions:
 
 Step 1: Put the site in maintenance mode.
 Step 2: Remove old Tripal v2 package and replace with Tripal v3 package
@@ -57,10 +65,10 @@ Step 4: Enable the tripal_chado module
 Step 5:  Apply updates
 
   drush updatedb
+  
+Step 6:  Return to your Tripal site, and click the link that appears for
+preparing Chado and launch the job.
 
-Note: Use of deprecated API functions from Tripal v1 will cause a template
-to not work because Tripal v1 deprecated API fucntions have been removed
-in Tripal v3.
 
 Customization
 --------------
