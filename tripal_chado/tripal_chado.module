@@ -427,6 +427,21 @@ function tripal_chado_menu() {
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
   );
+  
+  //////////////////////////////////////////////////////////////////////////////
+  //                           Migrate Content
+  //////////////////////////////////////////////////////////////////////////////
+  $items['admin/tripal/storage/chado/migrate'] = array(
+    'title' => 'Migrate',
+    'description' => t('Migrate Tripal v2 content to Tripal v3'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_chado_migrate_form'),
+    'type' => MENU_NORMAL_ITEM,
+    'access arguments' => array('administer tripal'),
+    'file' => 'includes/tripal_chado.migrate.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'weight' => 10
+  );
 
   //////////////////////////////////////////////////////////////////////////////
   //                           Auto Completes
