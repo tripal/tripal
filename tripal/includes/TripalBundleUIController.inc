@@ -443,7 +443,7 @@ function tripal_admin_add_type_form_submit($form, &$form_state) {
       }
     }
     else {
-      drupal_set_message('This type already exists.', 'warning');
+      drupal_set_message("The term '$accession' already exists as a content type.", 'warning');
     }
   }
 }

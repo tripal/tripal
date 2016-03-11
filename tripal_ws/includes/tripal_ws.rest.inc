@@ -113,9 +113,11 @@ function tripal_ws_handle_vocab_service($api_url, &$response, $ws_args) {
   }
   // If we don't have a $namespace then show a paged list of terms.
   else if ($namespace and !$accession) {
+    tripal_ws_get_vocab($api_url, $response, $ws_args, $namespace);
   }
   // If we have a content type and an entity ID then show the entity
-  else {
+  else if ($namespace and $accession) {
+    tripal_ws_get_term($api_url, $response, $ws_args, $namespace, $accession);
   }
 }
 
@@ -138,11 +140,22 @@ function tripal_ws_get_vocabs($api_url, &$response) {
   $response['label'] = 'Content Types';
   $response['member'] = array();
 
-  // TODO: determine how to get the list of in-house terms that are used
-  // on the site.  This should really only include terms that are used
-  // as TripalEntity bundle types and that aren't part of another published
-  // vocabulary.
-
+  $vocabs = db_select('tripal_vocab', 'tv')
+    ->fields('tv')
+    ->execute();
+  // Iterate through the vocabularies and add an entry in the collection.
+  $i = 0;
+  while ($vocab = $vocabs->fetchObject()) {
+    $term =
+    // Add the bundle as a content type.
+    $response['member'][] = array(
+      '@id' => $api_url . '/vocab/' . urlencode($vocab->namespace),
+      '@type' => 'vocabulary',
+      'namespace' => $vocab->namespace,
+    );
+    $i++;
+  }
+  $response['totalItems'] = $i;
 
   //$response['totalItems'] = $i;
 
@@ -152,6 +165,100 @@ function tripal_ws_get_vocabs($api_url, &$response) {
   $response['@context']['member'] = 'hydra:member';
   $response['@context']['label'] = 'rdfs:label';
   $response['@context']['description'] = 'hydra:description';
+}
+
+/**
+ *
+ * @param $api_url
+ * @param $response
+ * @param $ws_args
+ */
+function tripal_ws_get_vocab($api_url, &$response, $ws_args, $namespace) {
+
+  // First, add the vocabularies used into the @context section.
+  $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
+  $response['@context']['hydra'] = 'http://www.w3.org/ns/hydra/core#';
+  $response['@context']['schema'] = 'https://schema.org/';
+
+  // Next add in the ID for tihs resource.
+  $response['@id'] = $api_url . '/vocab/' . $namespace;
+
+  // Get the vocabulary
+  $vocab = tripal_load_vocab_entity(array('namespace' => $namespace));
+
+  // Start the list.
+  $response['@type'] = 'Collection';
+  $response['totalItems'] = 0;
+  $response['label'] = $namespace . " vocabulary collection";
+  $response['comment'] = 'The following list of terms may not be the full ' .
+    'list for the vocabulary.  The terms listed here are only those ' .
+    'that have associated content on this site.';
+
+  // Get the list of terms for this vocab.
+  $query = db_select('tripal_term', 'tt')
+    ->fields('tt', array('id'))
+    ->condition('vocab_id', $vocab->id)
+    ->orderBy('accession', 'DESC');
+
+  // Iterate through the entities and add them to the list.
+  $terms = $query->execute();
+  $i = 0;
+  while($term = $terms->fetchObject()) {
+    $term = tripal_load_term_entity(array('term_id' => $term->id));
+    $response['member'][] = array(
+      '@id' => $api_url . '/vocab/' . urlencode($namespace) . '/' .  urlencode($term->accession),
+      '@type' => 'vocabulary_term',
+      'namespace' => $vocab->namespace,
+      'accession' => $term->accession,
+      'name' => $term->name,
+      'definition' => $term->definition,
+    );
+    $i++;
+  }
+  $response['totalItems'] = $i;
+
+  // Lastly, add in the terms used into the @context section.
+  $response['@context']['Collection'] = 'hydra:Collection';
+  $response['@context']['totalItems'] = 'hydra:totalItems';
+  $response['@context']['member'] = 'hydra:member';
+  $response['@context']['label'] = 'rdfs:label';
+  $response['@context']['comment'] = 'rdfs:comment';
+  $response['@context']['itemPage'] = 'schema:itemPage';
+
+}
+
+/**
+ *
+ * @param $api_url
+ * @param $response
+ * @param $ws_args
+ */
+function tripal_ws_get_term($api_url, &$response, $ws_args, $namespace, $accession) {
+
+  // First, add the vocabularies used into the @context section.
+  $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
+  $response['@context']['hydra'] = 'http://www.w3.org/ns/hydra/core#';
+  $response['@context']['schema'] = 'https://schema.org/';
+
+  // Get the term.
+  $term = tripal_load_term_entity(array('namespace' => $namespace, 'accession' => $accession));
+
+  // Next add in the ID and Type for this resources.
+  $response['@id'] = $api_url . '/vocab/' . urlencode($namespace) . '/' . urlencode($accession);
+  $response['@type'] = 'vocabulary_term';
+  $response['label'] = $term->name;
+  $response['namespace'] = $namespace;
+  $response['accession'] = $accession;
+  $response['name'] = $term->name;
+  $response['definition'] = $term->definition;
+
+  if ($term->url) {
+    $response['URL'] = $term->url;
+  }
+
+  // Lastly, add in the terms used into the @context section.
+  $response['@context']['label'] = 'rdfs:label';
+  $response['@context']['itemPage'] = 'schema:itemPage';
 }
 /**
  * Provides a collection (list) of all of the content types.
@@ -205,7 +312,7 @@ function tripal_ws_get_content_types($api_url, &$response) {
     }
     // Add the bundle as a content type.
     $response['member'][] = array(
-      '@id' => $api_url . '/content/' . $bundle->label,
+      '@id' => $api_url . '/content/' . urlencode($bundle->label),
       '@type' => $vocab->namespace . ':' . $term->accession,
       'label' => $bundle->label,
       'description' => $description,
@@ -273,7 +380,7 @@ function tripal_ws_get_content_type($api_url, &$response, $ws_args, $ctype) {
     $entities = entity_load('TripalEntity', array_keys($results['TripalEntity']));
     foreach ($entities as $entity) {
       $response['member'][] = array(
-        '@id' => $api_url . '/content/' . $ctype . '/' .  $entity->id,
+        '@id' => $api_url . '/content/' . urlencode($ctype) . '/' .  $entity->id,
         '@type' => $vocab->namespace . ':' . $term->accession,
         'label' => $entity->title,
         'itemPage' => url('/bio-data/' . $entity->id, array('absolute' => TRUE)),

@@ -20,7 +20,7 @@ function tripal_load_term_entity($values) {
 
   if ($namespace and $accession) {
     $query = db_select('tripal_term', 'tt');
-    $query->join('tripal_vocab' ,'tv', 'tv.id = tt.vocab_id');
+    $query->join('tripal_vocab', 'tv', 'tv.id = tt.vocab_id');
     $query->fields('tt', array('id'))
       ->fields('tv', array('namespace'))
       ->condition('tv.namespace', $namespace)
@@ -279,6 +279,7 @@ function tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $b
   );
   field_create_instance($field_instance);
 }
+
 /**
  * Allows a module to make changes to an entity object after creation.
  *
@@ -291,24 +292,127 @@ function tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $b
 function hook_entity_create(&$entity, $entity_type) {
 
 }
+
+
 /**
- * Allows a module to add fields to a bundle.
+ * Adds fields to a bundle type.
  *
- * This function is called after the bundle is created and allows any module
- * to add fields to it.
+ * When a new bundle (Tripal content type) is created, the tripal module
+ * allows any other module the implements this hook to add fields too it. This
+ * hook is called automatically.
  *
  * @param $entity_type
- *   The entity type (e.g. TripalEntity).
+ *   The type of entity (e.g. 'TripalEntity')
  * @param $bundle
- *   A TripalBundle object.
+ *   An instance of a TripalBundle object.  This is the bundle to which
+ *   the fields will be added.
  * @param $term
- *   A TripalTerm object.
+ *   An instance of a TripalTerm object. Each TripalBundle is associated with
+ *   a controlled vocabulary term. This is the term object for the bundle.
  *
  * @return
- *   TRUE on success, FALSE on failure.
+ *   There is no return value.
  */
 function hook_add_bundle_fields($entity_type, $bundle, $term) {
 
+  //
+  // The example code below is derived from the tripal_chado modules and
+  // adds a 'synonym' field to the bundle.
+  //
+
+  $bundle_name = $bundle->name;
+
+  // This array will hold details that map the bundle to tables in Chado.
+  $bundle_data = array();
+
+  // Get the cvterm that corresponds to this TripalTerm object.
+  $vocab = entity_load('TripalVocab', array($term->vocab_id));
+  $vocab = reset($vocab);
+  $match = array(
+    'dbxref_id' => array(
+      'db_id' => array(
+        'name' => $vocab->namespace,
+      ),
+      'accession' => $term->accession
+    ),
+  );
+  $cvterm = chado_generate_var('cvterm', $match);
+
+
+  // Get the default table that this term maps to.
+  $default = db_select('tripal_cv_defaults', 't')
+  ->fields('t')
+  ->condition('cv_id', $cvterm->cv_id->cv_id)
+  ->execute()
+  ->fetchObject();
+  if ($default) {
+    $bundle_data = array(
+      'cv_id' => $cvterm->cv_id->cv_id,
+      'cvterm_id' => $cvterm->cvterm_id,
+      'data_table' => $default->table_name,
+      'type_table' => $default->table_name,
+      'field' =>  $default->field_name,
+    );
+  }
+  else {
+    return;
+  }
+
+  // Formulate the name of the synonym table.
+  $syn_table = $bundle_data['data_table'] . '_synonym';
+
+  // Don't add a field to this bundle if
+  if (!chado_table_exists($syn_table)) {
+    return;
+  }
+
+  $field_name = $syn_table;
+  $schema = chado_get_schema($syn_table);
+  $pkey = $schema['primary key'][0];
+
+
+  // Tripal wants to map fields to a controlled vocabulary terms
+  // (e.g SO:0000704 for a 'gene').  This is not required, but is highly
+  // recommended to support mashups of data via web services.
+  $semantic_web = array(
+    // The type is the term from a vocabulary that desribes this field..
+    'type' => '',
+    // The namepsace for the vocabulary (e.g. 'foaf').
+    'ns' => '',
+    // The URL for the namespace.  It must be that the type can be
+    // appended to the URL.
+    'nsurl' => '',
+  );
+
+  // The Tripal Chado module needs to know what Chado table and field
+  // this field maps to, as well as the base table that it maps to
+  // if this field will map to a record in a linking table.
+  $field_settings = array(
+    // The Chado table that this field maps to.
+    'chado_table' => $syn_table,
+    // The column in the chado table that this field maps to.
+    'chado_column' => $pkey,
+    // The base table that this field is connected to.
+    'base_table' => $base_table,
+    'semantic_web' => $semantic_web,
+  );
+
+  // Finally set the field values.
+  $field_info = array(
+    'field_type' => 'synonym',
+    'widget_type' => 'tripal_fields_synonym_widget',
+    'widget_settings' => array('display_label' => 1),
+    'description' => '',
+    'label' => 'Synonyms',
+    'is_required' => 0,
+    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+    'storage' => 'field_chado_storage',
+    'field_settings' => $field_settings,
+  );
+
+  // Call the Tripal API function tripal_add_bundle_field to complete the
+  // addition of the field to the bundle.
+  tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
 }
 
 /**
@@ -781,7 +885,7 @@ function hook_vocab_import_form_submit($form, &$form_state) {
  *   An array with at least the following keys:
  *     namespace : The namespace of the vocabulary.
  *     accession : The name unique ID of the term.
- *     url_prefix : The URL by which terms (accessions) can be appended.
+ *     url : The URL for the term.
  *     name : The name of the term.
  *     definition : The term's description.
  *   any other keys may be added as desired. Returns NULL if the term
@@ -789,5 +893,44 @@ function hook_vocab_import_form_submit($form, &$form_state) {
  */
 function hook_vocab_get_term($namespace, $accession) {
   // See the tripal_chado_vocab_get_term() function for an example.
+}
+
+/**
+ * Retrieves full information about a vocabulary term.
+ *
+ * Vocabularies are stored in a database backend.  Tripal has no requirements
+ * for how terms are stored.  By default, the tripal_chado modules provides
+ * storage for vocabularies and terms. This function will call the
+ * hook_vocab_get_term() function for the database backend that is housing the
+ * vocabularies and allow it to return the details about the term.
+ *
+ * @param $namespace
+ *   The namespace of the vocabulary in which the term is found.
+ * @param $accession
+ *   The unique identifier (accession) for this term.
+ *
+ * @return
+ *   An array with at least the following keys:
+ *     namespace : The namespace of the vocabulary.
+ *     accession : The name unique ID of the term.
+ *     url : The URL for the term.
+ *     name : The name of the term.
+ *     definition : The term's description.
+ *   any other keys may be added as desired. Returns NULL if the term
+ *   cannot be found.
+ */
+function tripal_get_term_details($namespace, $accession) {
+  // TODO: we need some sort of administrative interface that lets the user
+  // switch to the desired vocabulary type. For now, we'll just use the
+  // first one in the list.
+  $stores = module_invoke_all('vocab_storage_info');
+  if (is_array($stores) and count($stores) > 0) {
+    $keys = array_keys($stores);
+    $module = $stores[$keys[0]]['module'];
+    $function = $module . '_vocab_get_term';
+    if (function_exists($function)) {
+      return $function($vocab->namespace, $this->accession);
+    }
+  }
 }
 

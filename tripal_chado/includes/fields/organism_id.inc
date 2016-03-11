@@ -73,42 +73,96 @@ function tripal_chado_organism_select_widget_validate($element, &$form_state) {
   }
 }
 
-function organism_id_field_formatter_settings_summary($field, $instance, $view_mode) {
-  $display = $instance['display'][$view_mode];
-  $settings = $display['settings'];
-
-  $summary = '';
-
-  if ($display['type'] == 'text_trimmed' || $display['type'] == 'text_summary_or_trimmed') {
-    $summary = t('Length: @chars chars', array('@chars' => $settings['trim_length']));
-  }
-
-  return $summary;
-}
 /**
- * Implements hook_field_formatter_settings_form()
+ * Provides a settings form for the formatter.
+ *
+ * This function is equiavlent to the hook_field_formatter_settings_form()
+ * hook.
  *
  * @param $field
+ *   The field structure being configured.
  * @param $instance
+ *   The instance structure being configured.
  * @param $view_mode
+ *   The view mode being configured.
  * @param $form
+ *   The (entire) configuration form array, which will usually have no use here.
  * @param $form_state
+ *   The form state of the (entire) configuration form.
  */
-function organism_id_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+function tripal_chado_organism_select_formatter_form($field, $instance,
+    $view_mode, $form, &$form_state) {
+
   $display = $instance['display'][$view_mode];
   $settings = $display['settings'];
   $element = array();
+  $term = NULL;
+  $bundle = NULL;
 
-  if ($display['type'] == 'text_trimmed' || $display['type'] == 'text_summary_or_trimmed') {
-    $element['trim_length'] = array(
-      '#title' => t('Length'),
-      '#type' => 'textfield',
-      '#size' => 20,
-      '#default_value' => $settings['trim_length'],
-      '#element_validate' => array('element_validate_integer_positive'),
-      '#required' => TRUE,
+  // Check to see if the organism bundle exists
+  $term = tripal_load_term_entity(array(
+    'namespace' => $field['settings']['semantic_web']['ns'],
+    'accession' => $field['settings']['semantic_web']['type']
+  ));
+  if ($term) {
+    $bundle = tripal_load_bundle_entity(array('term_id' => $term->id));
+  }
+
+  $element['instructions'] = array(
+    '#type' => 'item',
+    '#markup' => 'Please provide the format for viewing the organism. You
+      can specify the format using tokens that correspond to each field'
+  );
+
+  $element['field_display'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Display Format',
+    '#description' => t('Provide a mixture of text and/or tokens for the format.
+        For example: [organism__genus] [organism__species].  When displayed
+        the tokens will be replaced with the actual value.'),
+    '#default_value' => '[organism__genus] [organism__species]',
+  );
+
+  $element['field_display_entity'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Display teaser if available',
+    '#description' => t('If the organism that this field is associated with is
+        a published page then display the teaser rather use the display
+        format above.'),
+  );
+
+  $element['tokens'] = array(
+    '#type' => 'fieldset',
+    '#collapsed' => TRUE,
+    '#collapsible' => TRUE,
+    '#title' => 'Available Tokens'
+  );
+  $headers = array('Token', 'Description');
+  $rows = array();
+  $tokens = tripal_get_tokens($bundle);
+  foreach ($tokens as $token) {
+    $rows[] = array(
+      $token['token'],
+      $token['description'],
     );
   }
+
+
+  $table_vars = array(
+    'header'     => $headers,
+    'rows'       => $rows,
+    'attributes' => array(),
+    'sticky'     => FALSE,
+    'caption'    => '',
+    'colgroups'  => array(),
+    'empty'      => 'There are no tokens',
+  );
+  $project_details = theme('table', $table_vars);
+
+  $element['tokens']['list'] = array(
+    '#type' => 'item',
+    '#markup' => theme_table($table_vars),
+  );
 
   return $element;
 

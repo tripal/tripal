@@ -23,7 +23,7 @@ function tripal_chado_vocab_get_term($namespace, $accession) {
     'accession'  => $accession,
     'name'       => '',
     'definition' => 'Term is undefined.',
-    'urlprefix'  => '',
+    'url'  => '',
     // The following are not required for the returned array but we'll
     // add these for convenience later when we look at the TripalTerm
     // objects and these will be there.
@@ -50,17 +50,22 @@ function tripal_chado_vocab_get_term($namespace, $accession) {
     return $empty_term;
   }
   $cvterm = chado_expand_var($cvterm, 'field', 'cvterm.definition');
-  return array(
+  $term = array(
     'namespace'  => $cvterm->dbxref_id->db_id->name,
     'accession'  => $cvterm->dbxref_id->accession,
     'name'       => $cvterm->name,
+    'url'        => '',
     'definition' => (isset($cvterm->definition)) ? $cvterm->definition : '',
-    'urlprefix'  => $cvterm->dbxref_id->db_id->urlprefix,
     // The following are not required for the returned array but we'll
     // add these for convenience later when we look at the TripalTerm
     // objects and these will be there.
     'cvterm'     => $cvterm,
   );
+  if ($cvterm->dbxref_id->db_id->urlprefix) {
+    $term['url'] = $cvterm->dbxref_id->db_id->urlprefix .
+      $cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession;
+  }
+  return $term;
 }
 
 /**
