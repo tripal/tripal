@@ -2,19 +2,11 @@
 
 function tripal_chado_migrate_form($form, &$form_state) {
 
-  $form['field'] = array(
-    '#type' => 'fieldset',
-    '#title' => 'Migrate to Tripal v3',
-    '#description' => t('The following Tripal v2 content types are available. Select the content type to migrate.'),
-  );
-  
-  // Migrate all checkbox
-  $form['field']['all'] = array(
-    '#type' => 'checkbox',
-    '#title' => 'All',
-    '#description' => 'All of the following content types'
-  );
-  
+  $content_type = 'all';
+  if (array_key_exists('values', $form_state)) {
+    $content_type = $form_state['values']['content_type'];
+  }
+    
   // Get all available Tripal v2 chado tables
   $sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE 'chado_%'";
   $result = db_query($sql);
@@ -28,19 +20,31 @@ function tripal_chado_migrate_form($form, &$form_state) {
     ->fields('nt', array('type', 'name', 'description'))
     ->condition('type', 'chado_%', 'LIKE')
     ->execute();
+  $options = array ('all' => 'All');
   while ($obj = $result->fetchObject()) {
     if (in_array($obj->type, $tables)) {
-      $form['field'][$obj->type] = array(
-        '#type' => 'checkbox',
-        '#title' => $obj->name,
-        '#description' => $obj->description,
-      );
+      $options[$obj->type] = $obj->name;
     }
   }
+  
+  $form['content_type'] = array(
+    '#type' => 'select',
+    '#title' => 'Content Type',
+    '#description' => t('Select the content type to migrate.'),
+    '#options' => $options,
+    '#default_value' => $content_type,
+    '#ajax' => array(
+      'callback' => "tripal_chado_migrate_form_ajax_callback",
+      'wrapper' => "tripal-chado-migrate-form",
+      'effect' => 'fade',
+      'method' => 'replace'
+    ),
+  );
+  
   $form['migrate_btn'] = array(
     '#type' => 'submit',
     '#name' => 'migrate_btn',
-    '#value' => 'migrate',
+    '#value' => "Migrate $options[$content_type] Content Type",
   );
 
   $form['#prefix'] = '<div id="tripal-chado-migrate-form">';
