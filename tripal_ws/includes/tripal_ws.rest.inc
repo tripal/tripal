@@ -460,6 +460,18 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
   foreach ($fields as $field_name => $field) {
     $field_value = $entity->$field_name;
 
+    // By default, the label for the key in the output should be the
+    // term from the vocabulary that the field is assigned. But in the
+    // case that the field is not assigned a term, we must use the label
+    // assigned by the Drupal admin UI for the content.
+    $key = $field['field_name'];
+    if (array_key_exists('semantic_web', $field['settings'])) {
+      if (array_key_exists('type', $field['settings']['semantic_web']) and
+          $field['settings']['semantic_web']['type']) {
+        $key = $field['settings']['semantic_web']['type'];
+      }
+    }
+
     // Get the semantic web settings for this field
     $field_type = '';
     if (array_key_exists('semantic_web', $field['settings'])) {
@@ -468,7 +480,7 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
         $ns = $field['settings']['semantic_web']['ns'];
         $nsurl = $field['settings']['semantic_web']['nsurl'];
         $response['@context'][$ns] = $nsurl;
-        $response['@context'][$field['label']] = $ns . ':' .$field_type;
+        $response['@context'][$key] = $ns . ':' .$field_type;
       }
     }
 
@@ -487,7 +499,7 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
         $values[] = $field_value['und'][$i]['value'];
       }
     }
-    $response[$field['label']] = $values;
+    $response[$key] = $values;
   }
 
  //$response['fields'] = $fields;

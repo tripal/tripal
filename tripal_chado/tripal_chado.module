@@ -504,27 +504,27 @@ function tripal_chado_permission() {
 function tripal_chado_theme($existing, $type, $theme, $path) {
   return array(
     // Theme fields.
-    'tripal_chado_dbxref_id_widget' => array(
+    'chado_base__dbxref_id_widget' => array(
       'render element' => 'element',
-      'file' => 'includes/fields/dbxref_id.inc',
+      'file' => 'includes/fields/base__dbxref_id.inc',
     ),
-    'tripal_chado_dbxref_widget' => array(
+    'chado_linker_dbxref_widget' => array(
       'render element' => 'element',
-      'file' => 'includes/fields/dbxref.inc',
+      'file' => 'includes/fields/linker_dbxref.inc',
     ),
-    'tripal_chado_cvterm_widget' => array(
+    'chado_linker_cvterm_widget' => array(
       'render element' => 'element',
       'file' => 'includes/fields/cvterm.inc',
     ),
-    'tripal_chado_synonym_widget' => array(
+    'chado_linker_synonym_widget' => array(
       'render element' => 'element',
       'file' => 'includes/fields/synonym.inc',
     ),
-    'tripal_chado_pub_widget' => array(
+    'chado_base__pub_id_widget' => array(
       'render element' => 'element',
       'file' => 'includes/fields/pub.inc',
     ),
-    'tripal_chado_kvproperty_addr_widget' => array(
+    'chado_linker_prop_adder_widget' => array(
       'render element' => 'element',
       'file' => 'includes/fields/dbxref_id.inc',
     ),
