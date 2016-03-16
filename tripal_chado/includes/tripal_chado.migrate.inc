@@ -43,54 +43,57 @@ function tripal_chado_migrate_form($form, &$form_state) {
   
   // Add a review button that allows reviewing migratable content types
   if ($chado_content != 'all') {
-    $form['review'] = array(
-      '#type' => 'fieldset',
-      '#title' => 'Review Content Type',
-      '#description' => 'By clicking on the Review button, Tripal will gather information from
-      existing database and list content types which can be mapped to a Tripal v3 content 
-      type. (may take a while depending on the size of your database.). This allows you 
-      to migrate only the types of your selection.'
-    );
-    $form['review']['review_btn'] = array(
-      '#type' => 'button',
-      '#name' => 'review_btn',
-      '#value' => "Review",
-      '#ajax' => array(
-        'callback' => "tripal_chado_migrate_form_ajax_callback",
-        'wrapper' => "tripal-chado-migrate-form",
-        'effect' => 'fade',
-        'method' => 'replace'
-      ),
-    );
-    if ($form_state['clicked_button']['#name'] == 'review_btn') {
-      // Get all Tripal v2 node types from the chad_* linking table
-        $table = str_replace('chado_', '', $chado_content);
-        $schema = chado_get_schema($table);
-        $pkey = $schema['primary key'][0];
-        $fkeys = $schema['foreign keys'];
-        $counter = 0;
-        if (key_exists('cvterm', $fkeys) && key_exists('type_id', $fkeys['cvterm']['columns'])) {
-          $sql = 
-            "SELECT DISTINCT V.name AS type, X.accession, db.name AS namespace 
-                FROM chado.$table T
-                INNER JOIN $chado_content CT ON T.$pkey = CT.$pkey
-                INNER JOIN chado.cvterm V ON V.cvterm_id = T.type_id
-                INNER JOIN chado.dbxref X ON X.dbxref_id = V.dbxref_id
-                INNER JOIN chado.db ON db.db_id = X.db_id";
+    
+    $table = str_replace('chado_', '', $chado_content);
+    $schema = chado_get_schema($table);
+    $pkey = $schema['primary key'][0];
+    $fkeys = $schema['foreign keys'];
+    
+    if (key_exists('cvterm', $fkeys) && key_exists('type_id', $fkeys['cvterm']['columns'])) {
+      $form['review'] = array(
+        '#type' => 'fieldset',
+        '#title' => 'Review Content Type',
+        '#description' => 'By clicking on the Review button, Tripal will gather information from
+        existing database and list content types which can be mapped to a Tripal v3 content 
+        type. (may take a while depending on the size of your database.). This allows you 
+        to migrate only the types of your selection.'
+      );
+      $form['review']['review_btn'] = array(
+        '#type' => 'button',
+        '#name' => 'review_btn',
+        '#value' => "Review",
+        '#ajax' => array(
+          'callback' => "tripal_chado_migrate_form_ajax_callback",
+          'wrapper' => "tripal-chado-migrate-form",
+          'effect' => 'fade',
+          'method' => 'replace'
+        ),
+      );
+      $counter = 0;
+      if ($form_state['clicked_button']['#name'] == 'review_btn') {
+        // Get all Tripal v2 node types from the chad_* linking table
+        $sql = 
+          "SELECT DISTINCT V.name AS type, X.accession, db.name AS namespace 
+              FROM chado.$table T
+              INNER JOIN $chado_content CT ON T.$pkey = CT.$pkey
+              INNER JOIN chado.cvterm V ON V.cvterm_id = T.type_id
+              INNER JOIN chado.dbxref X ON X.dbxref_id = V.dbxref_id
+              INNER JOIN chado.db ON db.db_id = X.db_id";
         $subtypes = db_query($sql);
-         while($subtype = $subtypes->fetchObject()) {
+        while($subtype = $subtypes->fetchObject()) {
           $form['review']['chado_content_type--' . $subtype->namespace . '--' . $subtype->type] = array(
             '#type' => 'checkbox',
             '#title' => $subtype->type,
           );
-          $counter ++;
+            $counter ++;
         }
-      }
-      // No subtype exists, migrate all
-      if ($counter == 0) {
-        $form['review']['nosubtype'] = array(
-          '#markup' => t("<br>Type not found. Migrate all $options[$chado_content]."),
-        );
+      
+        // No subtype exists, migrate all
+        if ($counter == 0) {
+          $form['review']['nosubtype'] = array(
+            '#markup' => t("<br>Type not found. Migrate all $options[$chado_content]."),
+          );
+        }
       }
     }
   }
