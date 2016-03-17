@@ -506,27 +506,27 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
     // Theme fields.
     'chado_base__dbxref_id_widget' => array(
       'render element' => 'element',
-      'file' => 'includes/fields/base__dbxref_id.inc',
+      'file' => 'includes/fields/chado_base__dbxref_id.inc',
     ),
-    'chado_linker_dbxref_widget' => array(
+    'chado_linker__dbxref_widget' => array(
       'render element' => 'element',
-      'file' => 'includes/fields/linker_dbxref.inc',
+      'file' => 'includes/fields/chado_linker__dbxref.inc',
     ),
-    'chado_linker_cvterm_widget' => array(
+    'chado_linker__cvterm_widget' => array(
       'render element' => 'element',
-      'file' => 'includes/fields/cvterm.inc',
+      'file' => 'includes/fields/chado_linker__cvterm.inc',
     ),
-    'chado_linker_synonym_widget' => array(
+    'chado_linker__synonym_widget' => array(
       'render element' => 'element',
-      'file' => 'includes/fields/synonym.inc',
+      'file' => 'includes/fields/chado_linker__synonym.inc',
     ),
-    'chado_base__pub_id_widget' => array(
+    'chado_linker__pub_widget' => array(
       'render element' => 'element',
-      'file' => 'includes/fields/pub.inc',
+      'file' => 'includes/fields/chado_linker__pub.inc',
     ),
-    'chado_linker_prop_adder_widget' => array(
+    'chado_linker__prop_adder_widget' => array(
       'render element' => 'element',
-      'file' => 'includes/fields/dbxref_id.inc',
+      'file' => 'includes/fields/chado_linker__prop_adder.inc',
     ),
     'tripal_chado_date_combo' => array(
       'render element' => 'element',

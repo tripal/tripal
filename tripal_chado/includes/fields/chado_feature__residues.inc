@@ -10,7 +10,7 @@
  * @param unknown $items
  * @param unknown $display
  */
-function tripal_chado_residues_textarea_formatter(&$element, $entity_type, $entity, $field,
+function chado_feature__residues_formatter(&$element, $entity_type, $entity, $field,
   $instance, $langcode, $items, $display) {
 
   foreach ($items as $delta => $item) {
@@ -37,7 +37,7 @@ function tripal_chado_residues_textarea_formatter(&$element, $entity_type, $enti
  * @param unknown $delta
  * @param unknown $element
  */
-function tripal_chado_residues_textarea_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function chado_feature__residues_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
   $widget['value'] = array(
     '#type' => 'textarea',
@@ -46,14 +46,14 @@ function tripal_chado_residues_textarea_widget(&$widget, $form, $form_state, $fi
     '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
     '#default_value' => count($items) > 0 ? $items[0]['value'] : '',
     '#delta' => $delta,
-    '#element_validate' => array('tripal_chado_residues_textarea_widget_validate'),
+    '#element_validate' => array('chado_feature__residues_widget_validate'),
     '#cols' => 30,
   );
 }
 /**
- * Callback function for validating the tripal_chado_residues_textarea_widget.
+ * Callback function for validating the chado_feature__residues_widget.
  */
-function tripal_chado_residues_textarea_widget_validate($element, &$form_state) {
+function chado_feature__residues_widget_validate($element, &$form_state) {
   $field_name = $element['#parents'][0];
 
   // Remove any white spaces.

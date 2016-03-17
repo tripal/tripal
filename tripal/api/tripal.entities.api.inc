@@ -469,6 +469,10 @@ function tripal_set_bundle_variable($variable_name, $bundle_id, $value) {
 
   $variable = tripal_get_variable($variable_name);
 
+  if (!$variable) {
+    return FALSE;
+  }
+
   // And then we need to write the new format to the tripal_bundle_variables table.
   $record = array(
     'bundle_id' => $bundle_id,

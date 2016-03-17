@@ -93,60 +93,72 @@ function tripal_chado_vocab_import_form_submit($form, &$form_state) {
  * Implements hook_vocab_select_term_form().
  */
 function tripal_chado_vocab_select_term_form($form, &$form_state) {
-  $term_name = '';
-  $num_terms = 0;
-  $cv_id = '';
-  $terms = array();
-
-  // Set defaults using the form state.
-  if (array_key_exists('storage', $form_state)) {
-    if (array_key_exists('terms', $form_state['storage'])) {
-      $terms = $form_state['storage']['terms'];
-    }
-  }
-  $num_terms = count($terms);
+  $term_name = array_key_exists('values', $form_state) ? $form_state['values']['term_name'] : '';
 
   // If no term has been selected yet then provide the auto complete field.
-  if ($num_terms == 0) {
-    $form['term_name'] = array(
-      '#title'       => t('Content Type'),
-      '#type'        => 'textfield',
-      '#description' => t("The content type must be the name of a term in
-          a controlled vocabulary and the controlled vocabulary should
-          already be loaded into Tripal.  For example, to create a content
-          type for storing 'genes', use the 'gene' term from the
-          Sequence Ontology (SO)."),
-      '#required'    => TRUE,
-      '#default_value' => $term_name,
-      '#autocomplete_path' => "admin/tripal/storage/term/$cv_id",
-    );
-  }
-
-  // If the term belongs to more than one vocabulary then add additional fields
-  // to let the user select the vocabulary.
-  if ($num_terms > 1) {
-    $form['term_name'] = array(
-      '#type' => 'hidden',
-      '#value' => $term_name,
-    );
-
-    $cvs = array();
-    foreach ($terms as $term) {
-      $cvs[$term->cv_id->cv_id] = 'Vocabulary: <b>' . $term->cv_id->name . '</b> (' . $term->cv_id->definition . ')<br>' . $term->name . ': ' . $term->definition;
-    }
-    $form['cv_id'] = array(
-      '#type' => 'radios',
-      '#title' => t('Select the appropriate vocabulary'),
-      '#options' => $cvs,
-    );
-  }
-
-  // Add in the button for the cases of no terms or too many.
+  $form['term_name'] = array(
+    '#title'       => t('Content Type'),
+    '#type'        => 'textfield',
+    '#description' => t("The content type must be the name of a term in
+        a controlled vocabulary and the controlled vocabulary should
+        already be loaded into Tripal.  For example, to create a content
+        type for storing 'genes', use the 'gene' term from the
+        Sequence Ontology (SO)."),
+    '#required'    => TRUE,
+    '#default_value' => $term_name,
+    '#autocomplete_path' => "admin/tripal/storage/term/",
+  );
   $form['select_button'] = array(
     '#type' => 'submit',
-    '#value' => t('Use this term'),
-    '#name' => 'select_cvterm'
+    '#value' => t('Lookup Term'),
+    '#name' => 'select_cvterm',
+    '#ajax' => array(
+      'callback' => "tripal_chado_vocab_select_term_form_ajax_callback",
+      'wrapper' => "tripal-chado-vocab-select-form",
+      'effect' => 'fade',
+      'method' => 'replace'
+    ),
   );
+
+  if ($term_name) {
+    $form['terms_list'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Matching Terms'),
+      '#description' => t('Please select the term the best matches the
+          content type you want to create. If the same term exists in
+          multiple vocabularies you will see more than one option below.')
+    );
+    $match = array(
+      'name' => $term_name,
+    );
+    $terms = chado_generate_var('cvterm', $match, array('return_array' => TRUE));
+    $terms = chado_expand_var($terms, 'field', 'cvterm.definition');
+    foreach ($terms as $term) {
+       $form['terms_list']['term-' . $term->cvterm_id] = array(
+         '#type' => 'checkbox',
+         '#title' =>  $term->name,
+         '#description' => '<b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
+             '<br><b>Definition:</b>  ' . $term->definition,
+       );
+    }
+    // Add in the button for the cases of no terms or too many.
+    $form['submit_button'] = array(
+      '#type' => 'submit',
+      '#value' => t('Use this term'),
+      '#name' => 'use_cvterm'
+    );
+  }
+
+  $form['#prefix'] = '<div id = "tripal-chado-vocab-select-form">';
+  $form['#suffix'] = '</div>';
+
+  return $form;
+}
+
+/**
+ * Implements an AJAX callback for the tripal_chado_vocab_select_term_form.
+ */
+function tripal_chado_vocab_select_term_form_ajax_callback($form, $form_state) {
   return $form;
 }
 
@@ -154,53 +166,38 @@ function tripal_chado_vocab_select_term_form($form, &$form_state) {
  * Implements hook_vocab_select_term_form_validate().
  */
 function tripal_chado_vocab_select_term_form_validate($form, &$form_state) {
+
   if (array_key_exists('clicked_button', $form_state) and
-      $form_state['clicked_button']['#name'] =='select_cvterm') {
+      $form_state['clicked_button']['#name'] =='use_cvterm') {
 
-    // First, make sure the term is unique. If not then we can't check it.
-    $term_name = NULL;
-    $cv_id = NULL;
-    $cvterm = NULL;
-    if (array_key_exists('term_name', $form_state['values'])) {
-      $term_name = $form_state['input']['term_name'];
-    }
-    if (array_key_exists('cv_id', $form_state['input'])) {
-      $cv_id = $form_state['input']['cv_id'];
-    }
+    $cvterm_id = NULL;
 
-    // If a term and $cv_id are provided then we can look for the term using
-    // both and we should find a unique term. If only ther term is provided
-    // we can still look for a unique term but there must only be one.
-    if ($term_name and !$cv_id) {
-      $match = array(
-        'name' => $term_name,
-      );
+    // Make sure we have a cvterm selected
+    $num_selected = 0;
+    foreach ($form_state['values'] as $key => $value) {
+      $matches = array();
+      if (preg_match("/^term-(\d+)$/", $key, $matches) and
+          $form_state['values']['term-' . $matches[1]]) {
+        $cvterm_id = $matches[1];
+        $term = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
+        $num_selected++;
+      }
+    }
+    if ($num_selected == 0) {
+      form_set_error('', 'Please select at least one term.');
+    }
+    else if ($num_selected > 1) {
+      form_set_error('term-' . $cvterm_id, 'Please select only one term from the list below.');
     }
     else {
-      $match = array(
-        'name' => $term_name,
-        'cv_id' => $cv_id,
-      );
+      $form_state['storage']['namespace'] = $term->dbxref_id->db_id->name;
+      $form_state['storage']['accession'] = $term->dbxref_id->accession;
+      $form_state['storage']['term_name'] = $term->name;
     }
-    $terms = chado_generate_var('cvterm', $match, array('return_array' => TRUE));
-    $form_state['storage']['terms'] = $terms;
-
-    // If we do not have any terms then the term provided by the user does not
-    // exists and we need to provide an error message.
-    if (count($terms) == 0) {
-      form_set_error('term_name', t('The term does not exist in this database.'));
-    }
-    // If we have more than one term then we need to set an error so that the
-    // form can provide a list of vocabularies to select from.
-    if (count($terms) > 1) {
-      form_set_error('term_name', t('The term is not unique. A list of vocabularies
-        that contain this term. Please select the most appropriate vocabulary.'));
-    }
-    // If we have a unique term then set the namespace, accession and name.
-    if (count($terms) == 1) {
-      $form_state['storage']['namespace'] = $terms[0]->dbxref_id->db_id->name;
-      $form_state['storage']['accession'] = $terms[0]->dbxref_id->accession;
-      $form_state['storage']['term_name'] = $terms[0]->name;
-    }
+  }
+  // For any other button click it's an AJAX call and we just want to reubild
+  // the form.
+  else {
+    $form_state['rebuild'] = TRUE;
   }
 }

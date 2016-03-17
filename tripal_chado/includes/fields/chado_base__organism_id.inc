@@ -11,7 +11,7 @@
  * @param $display
  * @return string
  */
-function tripal_chado_organism_select_formatter(&$element, $entity_type, $entity, $field,
+function chado_base__organism_id_formatter(&$element, $entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
 
   foreach ($items as $delta => $item) {
@@ -36,7 +36,7 @@ function tripal_chado_organism_select_formatter(&$element, $entity_type, $entity
  * @param $delta
  * @param $element
  */
-function tripal_chado_organism_select_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function chado_base__organism_id_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
   $options = tripal_get_organism_select_options(FALSE);
   $widget['value'] = array(
     '#type' => 'select',
@@ -47,7 +47,7 @@ function tripal_chado_organism_select_widget(&$widget, $form, $form_state, $fiel
     '#required' => $element['#required'],
     '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
     '#delta' => $delta,
-    '#element_validate' => array('tripal_chado_organism_select_widget_validate'),
+    '#element_validate' => array('chado_base__organism_id_widget_validate'),
   );
   $widget['add_organism'] = array(
     '#type' => 'item',
@@ -55,9 +55,9 @@ function tripal_chado_organism_select_widget(&$widget, $form, $form_state, $fiel
   );
 }
 /**
- * Callback function for validating the tripal_chado_organism_select_widget.
+ * Callback function for validating the chado_base__organism_id_widget.
  */
-function tripal_chado_organism_select_widget_validate($element, &$form_state) {
+function chado_base__organism_id_widget_validate($element, &$form_state) {
   $field_name = $element['#parents'][0];
 
   // If the form ID is field_ui_field_edit_form, then the user is editing the
@@ -90,7 +90,7 @@ function tripal_chado_organism_select_widget_validate($element, &$form_state) {
  * @param $form_state
  *   The form state of the (entire) configuration form.
  */
-function tripal_chado_organism_select_formatter_form($field, $instance,
+function chado_base__organism_id_formatter_form($field, $instance,
     $view_mode, $form, &$form_state) {
 
   $display = $instance['display'][$view_mode];
