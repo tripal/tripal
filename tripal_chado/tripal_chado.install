@@ -480,11 +480,16 @@ function tripal_chado_chado_entity_schema() {
         'not null' => FALSE,
         'default' => ''
       ),
+      'nid' => array(
+        'description' => 'Optional. For linking nid to the entity when migrating Tripal v2 content',
+        'type' => 'int',
+      )
     ),
     'indexes' => array(
       'record_id' => array('record_id'),
       'entity_id' => array('entity_id'),
       'data_table' => array('data_table'),
+      'nid' => array('nid'),
     ),
     'unique keys' => array(
       'record' => array('data_table', 'record_id'),

@@ -34,6 +34,7 @@ class TripalEntityController extends EntityAPIController {
     $values['changed'] = time();
     $values['title'] = '';
     $values['type'] = 'TripalEntity';
+    $values['nid'] = '';
 
     // Call the parent constructor.
     $entity = parent::create($values);
@@ -282,6 +283,7 @@ class TripalEntityController extends EntityAPIController {
         'uid'       => $user->uid,
         'created'   => $entity->created,
         'changed'   => time(),
+        'nid' => $entity->nid,
       );
       if ($invocation == 'entity_update') {
         $record['id'] = $entity->id;
