@@ -2,14 +2,6 @@
 
 /**
  *
- * @param $entity_type
- * @param $entity
- * @param $field
- * @param $instance
- * @param $langcode
- * @param $items
- * @param $display
- * @return string
  */
 function chado_base__organism_id_formatter(&$element, $entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
@@ -23,18 +15,53 @@ function chado_base__organism_id_formatter(&$element, $entity_type, $entity, $fi
     );
   }
 }
+
 /**
+ * Loads the field values with appropriate data.
  *
- * @param $field_name
- * @param $widget
- * @param $form
- * @param $form_state
+ * This function is called by the tripal_chado_field_storage_load() for
+ * each property managed by the field_chado_storage storage type.  This is
+ * an optional hook function that is only needed if the field has
+ * multiple form elements.
+ *
  * @param $field
- * @param $instance
- * @param $langcode
- * @param $items
- * @param $delta
- * @param $element
+ * @param $entity
+ * @param $base_table
+ * @param $record
+ */
+function chado_base__organism_id_load($field, $entity, $base_table, $record) {
+  $field_name = $field['field_name'];
+
+  // The organism_id is already set as the value. We need to get it and
+  // see if there is a published entity for this organism. If there is
+  // then we want to add the organism object generated using chado_generate_var
+  // as well as the entity to the record.
+  $organism_id = $entity->{$field_name}['und'][0]['value'];
+  $organism = chado_generate_var('organism', array('organism_id' => $organism_id));
+  $entity->{$field_name}['und'][0]['organism'] = $organism;
+  $org_entity = tripal_load_chado_entity('organism', $organism_id);
+  $entity->{$field_name}['und'][0]['entity'] = $org_entity;
+}
+/**
+ * Implements hook_ws_formatter().
+ */
+function chado_base__organism_id_ws_formatter(&$element, $entity_type, $entity,
+    $field, $instance, $items) {
+
+  foreach ($items as $delta => $item) {
+    $organism = $item['organism'];
+    $entity = $item['entity'];
+    if ($entity) {
+      $element[$delta]['#entity'] = $entity;
+    }
+    $element[$delta]['genus'] = $organism->genus;
+    $element[$delta]['species'] = $organism->species;
+    $element[$delta]['common_name'] = $organism->common_name;
+  }
+}
+
+/**
+ *  Implements hook_widget().
  */
 function chado_base__organism_id_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
   $options = tripal_get_organism_select_options(FALSE);
@@ -118,7 +145,7 @@ function chado_base__organism_id_formatter_form($field, $instance,
     '#type' => 'textfield',
     '#title' => 'Display Format',
     '#description' => t('Provide a mixture of text and/or tokens for the format.
-        For example: [organism__genus] [organism__species].  When displayed
+        For example: [organism__genus] [organism__species].  When displayed,
         the tokens will be replaced with the actual value.'),
     '#default_value' => '[organism__genus] [organism__species]',
   );
@@ -167,5 +194,6 @@ function chado_base__organism_id_formatter_form($field, $instance,
   return $element;
 
 }
+
 
 

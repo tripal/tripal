@@ -295,17 +295,14 @@ function tripal_chado_field_formatter_info() {
       'label' => t('Synonyms'),
       'field types' => array('chado_linker__synonym')
     ),
-
     'chado_linker__cvterm_adder_formatter' => array(
       'label' => t('Add an Annotation'),
       'field types' => array('chado_linker__cvterm_adder')
     ),
-
     'chado_linker__prop_adder_formatter' => array(
       'label' => t('Add a Property'),
       'field types' => array('chado_linker__prop_adder')
     ),
-
     'chado_feature__md5checksum_formatter' => array(
       'label' => t('MD5 checksum'),
       'field types' => array('chado_feature__md5checksum')
@@ -327,7 +324,7 @@ function tripal_chado_field_formatter_settings_summary($field, $instance, $view_
 
   $summary = '';
   switch ($field['type']) {
-    case 'organism_id':
+    case 'chado_base__organism_id':
       $summary = 'Organisms can be displayed in vaious ways.';
       break;
     default:

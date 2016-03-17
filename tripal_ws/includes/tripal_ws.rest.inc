@@ -458,12 +458,12 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
   // Iterate throught the fields and add each value to the response.
   //$response['fields'] = $fields;
   foreach ($fields as $field_name => $field) {
-    $field_value = $entity->$field_name;
+    $field_info = field_info_field($field_name);
+    $items = field_get_items('TripalEntity', $entity, $field_name);
 
     // By default, the label for the key in the output should be the
     // term from the vocabulary that the field is assigned. But in the
-    // case that the field is not assigned a term, we must use the label
-    // assigned by the Drupal admin UI for the content.
+    // case that the field is not assigned a term, we must use the field name.
     $key = $field['field_name'];
     if (array_key_exists('semantic_web', $field['settings'])) {
       if (array_key_exists('type', $field['settings']['semantic_web']) and
@@ -472,7 +472,7 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
       }
     }
 
-    // Get the semantic web settings for this field
+    // Get the semantic web settings for this field.
     $field_type = '';
     if (array_key_exists('semantic_web', $field['settings'])) {
       $field_type = $field['settings']['semantic_web']['type'];
@@ -484,22 +484,65 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
       }
     }
 
-    // TODO: need a way to hide fields.
-
-    // Get the values based on cardinality
-    $items = field_get_items('TripalEntity', $entity, $field_name);
-    $values = '';
-    if (array_key_exists('und', $field_value) and count($field_value['und']) == 1) {
-      $values = $field_value['und'][0]['value'];
+    // Skip hidden fields.
+    if ($field['display']['default']['type'] == 'hidden') {
+      continue;
     }
-    // If cardinality is greater than 1 then the value should be an array
-    else {
+
+    // We want to allow the field to format itself for web services if it
+    // wants to.  The file can do so if it implements a '_ws_formatter'
+    // function.
+    $function = $field_info['type'] . '_ws_formatter';
+    module_load_include('inc', $field['display']['default']['module'], 'includes/fields/' . $field_info['type']);
+    if (function_exists($function)) {
       $values = array();
-      for ($i = 0; $i < count($field_value); $i++) {
-        $values[] = $field_value['und'][$i]['value'];
+      $function($values, $entity->type, $entity, $field_info, $field, $items);
+
+      // Iterate through the key/values returned and handle hashed keys
+      $add_vals = array();
+      for ($i = 0; $i < count($values); $i++) {
+        foreach ($values[$i] as $skey => $svalue) {
+          // If the key is '#entity' then this should like to another
+          // services.
+          if ($skey == '#entity') {
+            $sentity = $svalue;
+            $sbundle = tripal_load_bundle_entity(array('name' => $sentity->bundle));
+            $sterm = tripal_load_term_entity(array('term_id' => $sbundle->term_id));
+            $vocab = $sterm->vocab;
+            $add_vals['@id'] = $api_url . '/content/' . urlencode($sterm->name) . '/' . $sentity->id;
+            $add_vals['@type'] = $vocab->namespace . ':' . $sterm->name;
+            unset($values[$i][$skey]);
+          }
+        }
+        $values[$i] = array_merge($add_vals, $values[$i]);
+      }
+
+
+      if (count($values) == 0) {
+        $response[$key] = '';
+      }
+      if (count($values) == 1) {
+        $response[$key] = $values[0];
+      }
+      else {
+        $response[$key] = $values;
       }
     }
-    $response[$key] = $values;
+    // If a function doesn't exist then just show the default value is is.
+    else {
+      // Get the values based on cardinality
+      if (count($items) == 1) {
+        $values = $items[0]['value'];
+      }
+      // If cardinality is greater than 1 then the value should be an array
+      else {
+        $values = array();
+        for ($i = 0; $i < count($items); $i++) {
+          $values[] = $items[$i]['value'];
+        }
+      }
+      $response[$key] = $values;
+    }
   }
 
  //$response['fields'] = $fields;

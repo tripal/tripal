@@ -133,13 +133,22 @@ function tripal_chado_vocab_select_term_form($form, &$form_state) {
     );
     $terms = chado_generate_var('cvterm', $match, array('return_array' => TRUE));
     $terms = chado_expand_var($terms, 'field', 'cvterm.definition');
+    $num_terms = 0;
     foreach ($terms as $term) {
        $form['terms_list']['term-' . $term->cvterm_id] = array(
          '#type' => 'checkbox',
          '#title' =>  $term->name,
-         '#description' => '<b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
+         '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name .
+             '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
              '<br><b>Definition:</b>  ' . $term->definition,
        );
+       $num_terms++;
+    }
+    if ($num_terms == 0) {
+      $form['terms_list']['none'] = array(
+        '#type' => 'item',
+        '#markup' => '<i>' . t('There is no term that matches the entered text.') . '</i>'
+      );
     }
     // Add in the button for the cases of no terms or too many.
     $form['submit_button'] = array(
