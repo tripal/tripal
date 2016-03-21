@@ -125,26 +125,28 @@ function tripal_pub_importer_setup_page($action = 'new', $pub_import_id = NULL) 
       $search_array['criteria'][$i]['operation']    = $_SESSION['tripal_pub_import']['criteria'][$i]['operation'];
     }
 
-    // if the form has been submitted with the 'test' button then get the results
+    // If the form has been submitted with the 'test' button then get results.
     if ($_SESSION['tripal_pub_import']['perform_search']) {
 
       $limit = 25;
 
-      // get the list of publications from the remote database using the search criteria.
+      // Get the list of publications from the remote database using the search
+      // criteria.
       $page = isset($_GET['page']) ? $_GET['page'] : '0';
       $results = tripal_get_remote_pubs($remote_db, $search_array, $limit, $page);
       $total_records = $results['total_records'];
       $search_str    = $results['search_str'];
       $pubs          = $results['pubs'];
 
-      // iterate through the results and construct the table displaying the publications
+      // Iterate through the results and construct the table displaying the
+      // publications
       $rows = array();
       $i = $page * $limit + 1;
       if (count($pubs) > 0) {
         foreach ($pubs as $pub) {
-          $citation = htmlspecialchars($pub['Citation']);
+          $citation = array_key_exists('Citation', $pub) ? htmlspecialchars($pub['Citation']) : 'Unable to generate citation';
           $raw_link = '';
-          if($pub['Publication Dbxref']) {
+          if(array_key_exists('Publication Dbxref', $pub) and $pub['Publication Dbxref']) {
             $raw_link = l('raw', 'admin/tripal/chado/tripal_pub/import/raw/' . $pub['Publication Dbxref'], array('attributes' => array('target' => '_blank')));
           }
           $rows[] = array(

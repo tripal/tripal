@@ -1,17 +1,22 @@
 <?php
 /**
  * @file
- * This file provides support for importing and parsing of results from the 
- * USDA National Agricultural Library (AGL) database.  The functions here are used by
- * both the publication importer setup form and the publication importer.
- * 
- * The USDA AGL database uses a YAZ protocol for querying and retrieving records.
- * 
+ *
+ * Importer for the USDA Agricultural Library (Agricola).
+ *
+ * This file provides support for importing and parsing of results from the
+ * USDA National Agricultural Library (AGL) database.  The functions here are
+ * used by both the publication importer setup form and the publication
+ * importer. The USDA AGL database uses a YAZ protocol for querying and
+ * retrieving records.
+ *
  */
 
 /**
- * A hook for altering the publication importer form.  It Changes the 
- * 'Days' element to 'Year' and removes the 'Journal Name' filter.
+ * A hook for altering the publication importer form.
+ *
+ * It Changes the 'Days' element to 'Year' and removes the 'Journal Name'
+ * filter.
  *
  * @param $form
  *   The Drupal form array
@@ -47,7 +52,7 @@ function tripal_pub_remote_alter_form_AGL($form, $form_state, $num_criteria = 1)
  *   The Drupal form array
  * @param $form_state
  *   The form state array
- *  
+ *
  * @return
  *  The form (drupal form api)
  *
@@ -103,14 +108,17 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
   // set some defaults
   $search_array['limit'] = $num_to_retrieve;
 
-  // To build the CCL search string we want to have a single entry for 'author', 'title', 'abstract'
-  // or 'id', and also the corresponding 'not for each of those.
-  // But the search form allows the user to have multiple rows of the same type. So, we will build the
-  // search string separately for each category and it's negative category (if NOT is selected as the op)
-  // and at the end we will put them together into a single search string.  We need to keep
-  // track of the first entry of any category because it will not have an op (e.g. 'or' or 'and') but the
-  // operation will be pushed out to separate the categories.  The op for any second or third instance of
-  // the same category will be included within the search string for the catgory.
+  // To build the CCL search string we want to have a single entry for
+  // 'author', 'title', 'abstract' or 'id', and also the corresponding 'not
+  // for each of those. But the search form allows the user to have multiple
+  // rows of the same type. So, we will build the search string separately for
+  // each category and it's negative category (if NOT is selected as the op)
+  // and at the end we will put them together into a single search string.  We
+  // need to keep track of the first entry of any category because it will not
+  // have an op (e.g. 'or' or 'and') but the operation will be pushed out to
+  // separate the categories.  The op for any second or third instance of
+  // the same category will be included within the search string for the
+  // category.
   $ccl = '';
   $title = '';
   $author = '';
@@ -143,18 +151,17 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
       $op = strtolower($op);
     }
     $search_terms = trim($search_terms);
-    // if this is not a phrase then make sure the AND and OR are lower-case
+    // If this is not a phrase then make sure the AND and OR are lower-case.
     if (!$is_phrase) {
       $search_terms = preg_replace('/ OR /', ' or ', $search_terms);
       $search_terms = preg_replace('/ AND /', ' and ', $search_terms);
     }
-    // else make sure the search terms are surrounded by quotes
+    // Else make sure the search terms are surrounded by quotes.
     else {
       $search_terms = "\"$search_terms\"";
     }
 
-    // if this is a 'not' operation then we want to change it to an
-    // and
+    // If this is a 'not' operation then we want to change it to an "and".
     $negate = '';
     if ($op == 'not') {
       $scope = "negate_$scope";
@@ -162,7 +169,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
     }
     $order[] = array('scope' => $scope, 'op' => $op);
 
-    // build each category
+    // Build each category.
     if ($scope == 'title') {
       if ($first_title) {
         $title .= "($search_terms) ";
@@ -272,7 +279,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
       }
     }
   }
-  // now build the CCL string in order
+  // Now build the CCL string in order.
   $abstract_done = 0;
   $author_done = 0;
   $journal_done = 0;
@@ -342,24 +349,28 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
     }
   }
 
-  // for AGL the 'days' form element was converted to represent the year
+  // For AGL the 'days' form element was converted to represent the year.
   if ($days) {
     $ccl .= "and year=($days)";
   }
 
-  // remove any preceeding 'and' or 'or'
+  // Remove any preceeding 'and' or 'or'.
   $ccl = preg_replace('/^\s*(and|or)/', '', $ccl);
 
-  // yaz_connect() prepares for a connection to a Z39.50 server. This function is non-blocking
-  // and does not attempt to establish a connection - it merely prepares a connect to be
-  // performed later when yaz_wait() is called.
-  //$yazc = yaz_connect('agricola.nal.usda.gov:7090/voyager'); // NAL Catalog
-  $yazc = yaz_connect('agricola.nal.usda.gov:7190/voyager');  // NAL Article Citation Database
+  // yaz_connect() prepares for a connection to a Z39.50 server. This function
+  // is non-blocking and does not attempt to establish a connection - it merely
+  // prepares a connect to be performed later when yaz_wait() is called.
 
-  // use the USMARC record type.  But OPAC is also supported by Agricola
+  // NAL Catalog
+  // $yazc = yaz_connect('agricola.nal.usda.gov:7090/voyager');
+
+  // NAL Article Citation Database
+  $yazc = yaz_connect('agricola.nal.usda.gov:7190/voyager');
+
+  // Use the USMARC record type.  But OPAC is also supported by Agricola.
   yaz_syntax($yazc, "usmarc");
 
-  // the search query is built using CCL, we need to first
+  // The search query is built using CCL, we need to first
   // configure it so it can map the attributes to defined identifiers
   // The attribute set used by AGL can be found at the bottom of this page:
   // http://agricola.nal.usda.gov/help/z3950.html
@@ -403,7 +414,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
 }
 
 /**
- * Retreives a range of publications from AGL
+ * Retreives a range of publications from AGL.
  *
  * @param $yazc
  *   The YAZC connection object.
@@ -414,9 +425,9 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
  * @param $num_to_retrieve
  *   The number of publications to retrieve
  * @param $total_records
- *   The total number of records in the dataset.  This value should have 
+ *   The total number of records in the dataset.  This value should have
  *   been retrieved by tripal_pub_AGL_count() function.
- *   
+ *
  * @return
  *  An array containing the total_records in the dataaset, the search string
  *  and an array of the publications that were retreived.
@@ -424,6 +435,7 @@ function tripal_pub_remote_search_AGL($search_array, $num_to_retrieve, $page) {
  * @ingroup tripal_pub
  */
 function tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $total_records) {
+
   yaz_range($yazc, 1, $total_records);
   if (!yaz_present($yazc)) {
     $error_no = yaz_errno($yazc);
@@ -468,7 +480,7 @@ function tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $tot
  *   The YAZC connection object.
  * @param $search_str
  *   The search string to use for searching.
- *   
+ *
  * @return
  *   a count of the total number of publications that match the search string
  *
@@ -476,7 +488,8 @@ function tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $tot
  */
 function tripal_pub_AGL_count($yazc, $search_str) {
 
-  //yaz_sort($yazc, "1=31 id"); // sort by publication date descending
+  // Sort by publication date descending.
+  // yaz_sort($yazc, "1=31 id");
   if (!yaz_search($yazc, "rpn", $search_str)){
     $error_no = yaz_errno($yazc);
     $error_msg = yaz_error($yazc);
@@ -918,12 +931,12 @@ function tripal_pub_AGL_parse_pubxml($pub_xml) {
   $pub['Citation'] = tripal_pub_create_citation($pub);
 
   $pub['raw'] = $pub_xml;
-  
+
   return $pub;
 }
 
 /**
- * Used for parsing of the XML results to get a set of subfields 
+ * Used for parsing of the XML results to get a set of subfields
  *
  * @param $xml
  *   The XMl object to read
@@ -952,14 +965,14 @@ function tripal_pub_remote_search_AGL_get_subfield($xml) {
 }
 
 /**
- * Used for parsing of the XML results to get details about an author 
+ * Used for parsing of the XML results to get details about an author
  *
  * @param $xml
  *   The XML object to read
  * @param $ind1
  *   Indicates how an author record is stored; 0 means given name is first
  *   1 means surname is first, 3 means a family name is given
- *   
+ *
  * @return
  *
  *
