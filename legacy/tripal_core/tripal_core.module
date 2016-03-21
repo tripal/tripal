@@ -220,3 +220,44 @@ function tripal_core_node_view($node, $view_mode, $langcode) {
     }
   }
 }
+
+/**
+ * Adds support for tokens in the field_resource_links field.
+ *
+ * The field_resource_links field is a special field that can be manually
+ * added by the site admin for providing links on the Tripal TOC sidebar.
+ * Using tokens will allow for creation of custom links. This function
+ * will add a fieldset contiaining the list of appropriate tokens for the
+ * content type.
+ *
+ * @param unknown $element
+ * @param unknown $form_state
+ * @param unknown $context
+ */
+function tripal_core_field_widget_form_alter(&$element, &$form_state, $context) {
+
+  // If the name of the field is 'field_resource_links' then we want to
+  // add a fieldset of tokens.
+  if ($element['#field_name'] == 'field_resource_links') {
+
+    // Add the tokens fieldset to the last element.
+    $num_elements = count($context['items']);
+    if ($num_elements == $element['#delta']) {
+      $bundle = $element['#bundle'];
+      $base_table = preg_replace('/^chado_(.*)$/', '\1', $bundle);
+      $tokens = chado_node_generate_tokens($base_table);
+      $token_list = chado_node_format_tokens($tokens);
+      $element['tokens'] = array(
+        '#type' => 'fieldset',
+        '#title' => 'Available tokens',
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        '#weight' => 100
+      );
+      $element['tokens']['tokens_table'] = array(
+        '#type' => 'item',
+        '#markup' => $token_list
+      );
+    }
+  }
+}
