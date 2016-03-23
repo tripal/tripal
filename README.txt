@@ -53,20 +53,25 @@ occurs to find where deprecated functions may be used.
 Upgrade Instructions:
 
 Step 1: Put the site in maintenance mode.
-Step 2: Remove old Tripal v2 package and replace with Tripal v3 package
-Step 3: Enable the tripal module
+
+Step 3: Disable tripal modules
+
+  drush pm-disable tripal_core
+  
+Step 3: Remove old Tripal v2 package and replace with Tripal v3 package
+Step 4: Enable the tripal module
 
   drush pm-enable tripal
  
-Step 4: Enable the tripal_chado module  
+Step 5: Enable the tripal_chado module  
 
   drush pm-enable tripal_chado
   
-Step 5:  Apply updates
+Step 6:  Apply updates
 
   drush updatedb
   
-Step 6:  Return to your Tripal site, and click the link that appears for
+Step 7:  Return to your Tripal site, and click the link that appears for
 preparing Chado and launch the job.
 
 

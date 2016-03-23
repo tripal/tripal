@@ -131,7 +131,10 @@ function tripal_create_bundle($namespace, $accession, $term_name, &$error = '') 
   }
 
   // Next create the TripalTerm if it doesn't already exist.
-  $term = tripal_load_term_entity(array('namespace' => $namespace, 'accession' => $accession));
+  $term = tripal_load_term_entity(array(
+    'namespace' => $namespace,
+    'accession' => $accession
+  ));
   if (!$term) {
     $args = array('vocab_id' => $vocab->id, 'accession' => $accession, 'name' => $term_name);
     $term = entity_get_controller('TripalTerm')->create($args);

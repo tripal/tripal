@@ -6,8 +6,6 @@
  * @param $values
  *   A key/value associative array that supports the following keys:
  *   - bundle_name:  The name of the the TripalBundle (e.g. bio_data-12345).
- *   - nid: (optional) The node ID from Tripal v2. This argument is used
- *   for miration of Tripal v2 nodes to Tripal v3 entities.
  * @param $job_id
  *   (Optional) The numeric job ID as provided by the Tripal jobs system. There
  *   is no need to specify this argument if this function is being called
@@ -41,12 +39,15 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
     $where .= "AND $column = $cvterm_id";
   }
 
-  $sql = "
-  SELECT $pkey_field as record_id
-  FROM {" . $table . "} T
-    LEFT JOIN public.chado_entity CE on CE.record_id = T.$pkey_field
-  AND CE.data_table = '$table'
-  WHERE CE.record_id IS NUll $where
+  $select = "SELECT $pkey_field as record_id ";
+  $from = "FROM {" . $table . "} T
+      LEFT JOIN public.chado_entity CE on CE.record_id = T.$pkey_field
+    AND CE.data_table = '$table'
+  "
+  $where = "WHERE CE.record_id IS NUll $where ";
+  if (table_exists('chado_' . $table)) {
+    $from .= "LEFT JOIN public.chado_$table
+  }
   ";
   $records = chado_query($sql);
   $num_published = 0;
@@ -63,7 +64,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
       $entity->save();
 
       // Next save the chado_entity record.
-      $record = array(
+      $entity_record = array(
         'entity_id' => $entity->id,
         'record_id' => $record_id,
         'data_table' => $table,
@@ -76,7 +77,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
       if ($nid) {
         // $record['nid'] = $nid;
       }
-      $success = drupal_write_record('chado_entity', $record);
+      $success = drupal_write_record('chado_entity', $entity_record);
 
       $entity = entity_load('TripalEntity', array($entity->id));
       $entity = reset($entity);
