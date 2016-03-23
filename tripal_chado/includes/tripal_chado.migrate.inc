@@ -326,7 +326,7 @@ function tripal_chado_migrate_selected_types ($tv3_content_types) {
     
     // If term doesn't exist, create a new bundle for this term
     if (!$term) {
-      print("Creating bundle for accession '" . $tv3_content_type['accession'] . "'...\n");
+      print("Creating bundle for term '" . $tv3_content_type['term_name'] . "'...\n");
       $success = tripal_create_bundle($tv3_content_type['namespace'], $tv3_content_type['accession'], $tv3_content_type['term_name']);
       $term = tripal_load_term_entity($tv3_content_type);
     }
