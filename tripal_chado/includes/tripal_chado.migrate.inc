@@ -79,7 +79,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
         $tv3_content_types = db_query($sql);
         while($tv3_content_type = $tv3_content_types->fetchObject()) {
           $form['tv3_content_type']['tv3_content_type--' . $tv3_content_type->namespace . 
-              '--' . $tv3_content_type->accession] = array(
+              '--' . $tv3_content_type->accession . '--' . $tv3_content_type->type] = array(
             '#type' => 'checkbox',
             '#title' => $tv3_content_type->type . ' (' . $tv3_content_type->num . ')',
           );
@@ -91,7 +91,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
               FROM chado.organism O
               INNER JOIN chado_organism CO ON O.organism_id = CO.organism_id";
         $org_count = db_query($sql)->fetchField();
-        $form['tv3_content_type']['tv3_content_type--local--organism'] = array(
+        $form['tv3_content_type']['tv3_content_type--local--organism--organism'] = array(
           '#type' => 'checkbox',
           '#title' => 'Organism (' . $org_count . ')',
         );
@@ -102,7 +102,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
               FROM chado.analysis A
               INNER JOIN chado_analysis CA ON A.analysis_id = CA.analysis_id";
         $ana_count = db_query($sql)->fetchField();
-        $form['tv3_content_type']['tv3_content_type--local--analysis'] = array(
+        $form['tv3_content_type']['tv3_content_type--local--analysis--analysis'] = array(
           '#type' => 'checkbox',
           '#title' => 'Analysis (' . $ana_count . ')',
         );
@@ -150,13 +150,15 @@ function tripal_chado_migrate_form_submit($form, &$form_state) {
     $tv3_content_type = array();
     foreach ($values AS $key => $value) {
       if ($tv2_content_type != 'all') {
-        if (preg_match('/^tv3_content_type--(.+)--(.+)/', $key, $matches) &&
+        if (preg_match('/^tv3_content_type--(.+)--(.+)--(.+)/', $key, $matches) &&
             ($value == 1 || $values['tv3_migrate_all'] == 1)) {
           $namespace = $matches[1];
           $accession = $matches[2];          
+          $type = $matches[3];
           $tv3_content_type [] = array(
             'namespace' => $namespace,
-            'accession' => $accession
+            'accession' => $accession,
+            'term_name' => $type
           );
         }
       }
@@ -276,7 +278,7 @@ function tripal_chado_migrate_all_types () {
     if (key_exists('cvterm', $fkeys) && key_exists('type_id', $fkeys['cvterm']['columns'])) {
       // Get all Tripal v2 node types from the chad_* linking table
       $sql =
-      "SELECT X.accession, db.name AS namespace
+      "SELECT V.name AS type, X.accession, db.name AS namespace
       FROM chado.$table T
       INNER JOIN $tv2_content_type CT ON T.$pkey = CT.$pkey
       INNER JOIN chado.cvterm V ON V.cvterm_id = T.type_id
@@ -287,20 +289,23 @@ function tripal_chado_migrate_all_types () {
       while($tv3_content_type = $tv3_content_types->fetchObject()) {
         array_push($types, array(
           'namespace' => $tv3_content_type->namespace,
-          'accession' => $tv3_content_type->accession
+          'accession' => $tv3_content_type->accession,
+          'term_name' => $tv3_content_type->type
         ));
       }
     }
     else if ($table == 'organism') {
       array_push($types, array(
         'namespace' => 'local',
-        'accession' => 'organism'
+        'accession' => 'organism',
+        'term_name' => 'organism'
       ));
     }
     else if ($table == 'analysis') {
       array_push($types, array(
         'namespace' => 'local',
-        'accession' => 'analysis'
+        'accession' => 'analysis',
+        'term_name' => 'analysis'
       ));
     }
   }
@@ -314,5 +319,21 @@ function tripal_chado_migrate_all_types () {
  * @param unknown $tv3_content_type
  */
 function tripal_chado_migrate_selected_types ($tv3_content_types) {
-  print_r($tv3_content_types);
+  
+  foreach($tv3_content_types AS $tv3_content_type) {
+    // Check if the term already exists
+    $term = tripal_load_term_entity($tv3_content_type);
+    
+    // If term doesn't exist, create a new bundle for this term
+    if (!$term) {
+      print("Creating bundle for accession '" . $tv3_content_type['accession'] . "'...\n");
+      $success = tripal_create_bundle($tv3_content_type['namespace'], $tv3_content_type['accession'], $tv3_content_type['term_name']);
+      $term = tripal_load_term_entity($tv3_content_type);
+    }
+    // Create bundle name
+    $bundle_name = 'bio-data_' . $term->id;
+    
+    // Publish records for the bundle
+    tripal_chado_publish_records (array('bundle_name' => $bundle_name));
+  }
 }
