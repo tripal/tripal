@@ -58,9 +58,10 @@ function tripal_chado_migrate_form($form, &$form_state) {
       ),
     );
 
+    $no_data = TRUE;
     if ($form_state['clicked_button']['#name'] == 'get_v3_type_btn') {
 
-      // Migrate all
+      // Migrate all      
       $form['tv3_content_type']['tv3_migrate_all'] = array(
         '#type' => 'checkbox',
         '#title' => 'Migrate All'
@@ -75,37 +76,65 @@ function tripal_chado_migrate_form($form, &$form_state) {
               INNER JOIN chado.cvterm V ON V.cvterm_id = T.type_id
               INNER JOIN chado.dbxref X ON X.dbxref_id = V.dbxref_id
               INNER JOIN chado.db ON db.db_id = X.db_id
+              LEFT JOIN chado_entity CE ON CE.record_id = T.$pkey
+              AND CE.data_table = '$table'
+              WHERE CE.record_id IS NULL
               GROUP BY V.name, X.accession, db.name";
         $tv3_content_types = db_query($sql);
         while($tv3_content_type = $tv3_content_types->fetchObject()) {
-          $form['tv3_content_type']['tv3_content_type--' . $tv3_content_type->namespace .
-              '--' . $tv3_content_type->accession . '--' . $tv3_content_type->type] = array(
+          // We need to store namespace/accession/type for each checkbox in the key becuase
+          // the value only allows 1 or 0
+          $key = urlencode(
+            'tv3_content_type--' . 
+            $tv3_content_type->namespace . '--' . 
+            $tv3_content_type->accession . '--' . 
+            $tv3_content_type->type);
+          $form['tv3_content_type'][$key] = array(
             '#type' => 'checkbox',
             '#title' => $tv3_content_type->type . ' (' . $tv3_content_type->num . ')',
           );
+          $no_data = FALSE;
         }
       }
       else if ($table == 'organism') {
         $sql =
           "SELECT count(*)
               FROM chado.organism O
-              INNER JOIN chado_organism CO ON O.organism_id = CO.organism_id";
+              INNER JOIN chado_organism CO ON O.organism_id = CO.organism_id
+              LEFT JOIN chado_entity CE ON CE.record_id = O.organism_id 
+                AND CE.data_table = 'organism'
+              WHERE CE.record_id IS NULL";
         $org_count = db_query($sql)->fetchField();
-        $form['tv3_content_type']['tv3_content_type--local--organism--organism'] = array(
-          '#type' => 'checkbox',
-          '#title' => 'Organism (' . $org_count . ')',
-        );
+        if ($org_count > 0) {
+          $key = urldecode('tv3_content_type--local--organism--organism');
+          $form['tv3_content_type'][$key] = array(
+            '#type' => 'checkbox',
+            '#title' => 'Organism (' . $org_count . ')',
+          );
+          $no_data = FALSE;
+        }
       }
       else if ($table == 'analysis') {
         $sql =
         "SELECT count(*)
               FROM chado.analysis A
-              INNER JOIN chado_analysis CA ON A.analysis_id = CA.analysis_id";
+              INNER JOIN chado_analysis CA ON A.analysis_id = CA.analysis_id
+              LEFT JOIN chado_entity CE ON CE.record_id = A.analysis_id 
+                AND CE.data_table = 'analysis'
+              WHERE CE.record_id IS NULL";
         $ana_count = db_query($sql)->fetchField();
-        $form['tv3_content_type']['tv3_content_type--local--analysis--analysis'] = array(
-          '#type' => 'checkbox',
-          '#title' => 'Analysis (' . $ana_count . ')',
-        );
+        if ($ana_count > 0) {
+          $key = urlencode('tv3_content_type--local--analysis--analysis');
+          $form['tv3_content_type'][$key] = array(
+            '#type' => 'checkbox',
+            '#title' => 'Analysis (' . $ana_count . ')',
+          );
+          $no_data = FALSE;
+        }
+      }
+      if ($no_data) {
+        unset($form['tv3_content_type']['tv3_migrate_all']);
+        drupal_set_message('No data for migration or all have been migrated.', 'warning');
       }
     }
   }
@@ -150,6 +179,7 @@ function tripal_chado_migrate_form_submit($form, &$form_state) {
     $tv3_content_type = array();
     foreach ($values AS $key => $value) {
       if ($tv2_content_type != 'all') {
+        $key = urldecode($key);
         if (preg_match('/^tv3_content_type--(.+)--(.+)--(.+)/', $key, $matches) &&
             ($value == 1 || $values['tv3_migrate_all'] == 1)) {
           $namespace = $matches[1];
@@ -180,7 +210,7 @@ function tripal_chado_migrate_form_submit($form, &$form_state) {
         'tripal_chado', 'tripal_chado_migrate_records', $args, $user->uid, 10, $includes);
     }
     else {
-      return drupal_set_message('Nothing to do. No data for migration.');
+      return drupal_set_message('Nothing to do. All data have been migrated or no data for migration.');
     }
   }
 }

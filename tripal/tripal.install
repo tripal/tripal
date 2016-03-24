@@ -10,7 +10,6 @@
  * @ingroup tripal
  */
 function tripal_install() {
-  tripal_add_variables();
 }
 
 /**
@@ -116,8 +115,8 @@ function tripal_enable() {
     $sql = "ALTER INDEX tripal_variables_tripal_variables_c1_key2 RENAME TO tripal_variables_tripal_variables_c1_key";
     db_query($sql);
 
-    tripal_add_variables();
   }
+  tripal_add_variables();
 }
 
 /**
