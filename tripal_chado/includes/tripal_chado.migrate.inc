@@ -71,16 +71,16 @@ function tripal_chado_migrate_form($form, &$form_state) {
         // Get all Tripal v2 node types from the chad_* linking table
         $sql =
           "SELECT V.name AS type, X.accession, db.name AS namespace , count(*) AS num
-              FROM chado.$table T
-              INNER JOIN $tv2_content_type CT ON T.$pkey = CT.$pkey
-              INNER JOIN chado.cvterm V ON V.cvterm_id = T.type_id
-              INNER JOIN chado.dbxref X ON X.dbxref_id = V.dbxref_id
-              INNER JOIN chado.db ON db.db_id = X.db_id
-              LEFT JOIN chado_entity CE ON CE.record_id = T.$pkey
+              FROM {" . $table . "} T
+              INNER JOIN public.$tv2_content_type CT ON T.$pkey = CT.$pkey
+              INNER JOIN {cvterm} V ON V.cvterm_id = T.type_id
+              INNER JOIN {dbxref} X ON X.dbxref_id = V.dbxref_id
+              INNER JOIN {db} ON db.db_id = X.db_id
+              LEFT JOIN public.chado_entity CE ON CE.record_id = T.$pkey
               AND CE.data_table = '$table'
               WHERE CE.record_id IS NULL
               GROUP BY V.name, X.accession, db.name";
-        $tv3_content_types = db_query($sql);
+        $tv3_content_types = chado_query($sql);
         while($tv3_content_type = $tv3_content_types->fetchObject()) {
           // We need to store namespace/accession/type for each checkbox in the key becuase
           // the value only allows 1 or 0
@@ -99,12 +99,12 @@ function tripal_chado_migrate_form($form, &$form_state) {
       else if ($table == 'organism') {
         $sql =
           "SELECT count(*)
-              FROM chado.organism O
-              INNER JOIN chado_organism CO ON O.organism_id = CO.organism_id
-              LEFT JOIN chado_entity CE ON CE.record_id = O.organism_id 
+              FROM {organism} O
+              INNER JOIN public.chado_organism CO ON O.organism_id = CO.organism_id
+              LEFT JOIN public.chado_entity CE ON CE.record_id = O.organism_id 
                 AND CE.data_table = 'organism'
               WHERE CE.record_id IS NULL";
-        $org_count = db_query($sql)->fetchField();
+        $org_count = chado_query($sql)->fetchField();
         if ($org_count > 0) {
           $key = urldecode('tv3_content_type--local--organism--organism');
           $form['tv3_content_type'][$key] = array(
@@ -117,12 +117,12 @@ function tripal_chado_migrate_form($form, &$form_state) {
       else if ($table == 'analysis') {
         $sql =
         "SELECT count(*)
-              FROM chado.analysis A
-              INNER JOIN chado_analysis CA ON A.analysis_id = CA.analysis_id
-              LEFT JOIN chado_entity CE ON CE.record_id = A.analysis_id 
+              FROM {analysis} A
+              INNER JOIN public.chado_analysis CA ON A.analysis_id = CA.analysis_id
+              LEFT JOIN public.chado_entity CE ON CE.record_id = A.analysis_id 
                 AND CE.data_table = 'analysis'
               WHERE CE.record_id IS NULL";
-        $ana_count = db_query($sql)->fetchField();
+        $ana_count = chado_query($sql)->fetchField();
         if ($ana_count > 0) {
           $key = urlencode('tv3_content_type--local--analysis--analysis');
           $form['tv3_content_type'][$key] = array(
@@ -309,14 +309,14 @@ function tripal_chado_migrate_all_types() {
       // Get all Tripal v2 node types from the chad_* linking table
       $sql = "
         SELECT V.name AS type, X.accession, db.name AS namespace
-        FROM chado.$table T
-          INNER JOIN $tv2_content_type CT ON T.$pkey = CT.$pkey
-          INNER JOIN chado.cvterm V ON V.cvterm_id = T.type_id
-          INNER JOIN chado.dbxref X ON X.dbxref_id = V.dbxref_id
-          INNER JOIN chado.db ON db.db_id = X.db_id
+        FROM {" . $table . "} T
+          INNER JOIN public.$tv2_content_type CT ON T.$pkey = CT.$pkey
+          INNER JOIN {cvterm} V ON V.cvterm_id = T.type_id
+          INNER JOIN {dbxref} X ON X.dbxref_id = V.dbxref_id
+          INNER JOIN {db} ON db.db_id = X.db_id
         GROUP BY V.name, X.accession, db.name
       ";
-      $tv3_content_types = db_query($sql);
+      $tv3_content_types = chado_query($sql);
       while($tv3_content_type = $tv3_content_types->fetchObject()) {
         array_push($types, array(
           'namespace' => $tv3_content_type->namespace,
