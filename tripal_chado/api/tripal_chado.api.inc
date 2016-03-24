@@ -17,7 +17,7 @@
  */
 function tripal_chado_publish_records($values, $job_id = NULL) {
   $bundle_name = $values['bundle_name'];
-  $nid = array_key_exists('nid', $values) ? $values['nid'] : '';
+  $sync_node = array_key_exists('sync_node', $values) ? $values['sync_node'] : '';
 
   if (!array_key_exists('bundle_name', $values) or !$values['bundle_name']) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not publish record: @error", array('@error' => 'The bundle name was not provided'));
@@ -34,21 +34,22 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   $table_schema = chado_get_schema($table);
   $pkey_field = $table_schema['primary key'][0];
 
-  $where = '';
-  if ($table != 'analysis' and $table != 'organism') {
-    $where .= "AND $column = $cvterm_id";
-  }
-
   $select = "SELECT $pkey_field as record_id ";
   $from = "FROM {" . $table . "} T
       LEFT JOIN public.chado_entity CE on CE.record_id = T.$pkey_field
     AND CE.data_table = '$table'
-  "
-  $where = "WHERE CE.record_id IS NUll $where ";
-  if (table_exists('chado_' . $table)) {
-    $from .= "LEFT JOIN public.chado_$table
-  }
   ";
+
+  if ($sync_node && db_table_exists('chado_' . $table)) {
+    $select = "SELECT T.$pkey_field as record_id, CT.nid ";
+    $from .= "INNER JOIN public.chado_$table CT ON CT.$pkey_field = T.$pkey_field";
+  }
+  $where = " WHERE CE.record_id IS NULL ";
+  if ($table != 'analysis' and $table != 'organism') {
+    $where .= "AND $column = $cvterm_id";
+  }
+
+  $sql = $select . $from . $where;
   $records = chado_query($sql);
   $num_published = 0;
   try {
@@ -74,8 +75,8 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
 
       // For the Tv2 to Tv3 migration we want to add the nid to the
       // entity so we can associate the node with the entity.
-      if ($nid) {
-        // $record['nid'] = $nid;
+      if (property_exists($record, 'nid')) {
+        $entity_record['nid'] = $record->nid;
       }
       $success = drupal_write_record('chado_entity', $entity_record);
 

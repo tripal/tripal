@@ -335,6 +335,10 @@ function tripal_chado_migrate_selected_types($tv3_content_types) {
     $bundle_name = 'bio-data_' . $term->id;
 
     // Publish records for the bundle
-    tripal_chado_publish_records (array('bundle_name' => $bundle_name));
+    $value = array(
+      'sync_node' => 1,
+      'bundle_name' => $bundle_name
+    );
+    tripal_chado_publish_records ($value);
   }
 }
