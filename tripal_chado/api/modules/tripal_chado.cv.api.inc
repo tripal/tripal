@@ -579,9 +579,6 @@ function tripal_insert_cvterm($term, $options = array()) {
     ),
   );
   $result = chado_select_record('cvterm', array('*'), $values);
-
-  // If the constraint is met then let's check it to see if
-  // the database name matches the one we have been provided
   if (count($result) == 1) {
     $cvterm = $result[0];
 
@@ -595,41 +592,41 @@ function tripal_insert_cvterm($term, $options = array()) {
     $result = chado_select_record('db', array('*'), $values);
     $db_check = $result[0];
 
-    // The database name for this existing term does not match that of the
-    // one provided to this function.  The CV name matches otherwise we
-    // wouldn't have made it this far. So, let's swap the database for
-    // this term.
-    if ($db_check->name != $db->name) {
+//     // The database name for this existing term does not match that of the
+//     // one provided to this function.  The CV name matches otherwise we
+//     // wouldn't have made it this far. So, let's swap the database for
+//     // this term.
+//     if ($db_check->name != $db->name) {
 
-      // Look to see if the correct dbxref record already exists for this
-      // database.
-      $values = array(
-        'db_id' => $db->db_id,
-        'accession' => $accession,
-      );
+//       // Look to see if the correct dbxref record already exists for this
+//       // database.
+//       $values = array(
+//         'db_id' => $db->db_id,
+//         'accession' => $accession,
+//       );
 
-      $result = chado_select_record('dbxref', array('*'), $values);
+//       $result = chado_select_record('dbxref', array('*'), $values);
 
-      // If we already have a good dbxref then we want to update our cvterm
-      // to use this dbxref.
-      if (count($result) > 0) {
-        $dbxref = $result[0];
-        $match = array('cvterm_id' => $cvterm->cvterm_id);
-        $values = array('dbxref_id' => $dbxref->dbxref_id);
-        $success = chado_update_record('cvterm', $match, $values);
-        if (!$success) {
-          tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to correct the dbxref id for the cvterm " .
-            "'$name' (id: $accession), for database $dbname", NULL);
-          return 0;
-        }
-      }
-      // If we don't have the dbxref then we want to delete our cvterm and let
-      // the code below recreate it with the correct info.
-      else {
-        $match = array('cvterm_id' => $cvterm->cvterm_id);
-        chado_delete_record('cvterm', $match);
-      }
-    }
+//       // If we already have a good dbxref then we want to update our cvterm
+//       // to use this dbxref.
+//       if (count($result) > 0) {
+//         $dbxref = $result[0];
+//         $match = array('cvterm_id' => $cvterm->cvterm_id);
+//         $values = array('dbxref_id' => $dbxref->dbxref_id);
+//         $success = chado_update_record('cvterm', $match, $values);
+//         if (!$success) {
+//           tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to correct the dbxref id for the cvterm " .
+//             "'$name' (id: $accession), for database $dbname", NULL);
+//           return 0;
+//         }
+//       }
+//       // If we don't have the dbxref then we want to delete our cvterm and let
+//       // the code below recreate it with the correct info.
+//       else {
+//         $match = array('cvterm_id' => $cvterm->cvterm_id);
+//         chado_delete_record('cvterm', $match);
+//       }
+//     }
 
     // check that the accession matches.  Sometimes an OBO can define the same term
     // multiple times but with different accessions.  If this is the case we
