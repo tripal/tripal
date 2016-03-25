@@ -853,9 +853,14 @@ function tripal_insert_obo($name, $path) {
  */
 function tripal_autocomplete_cvterm($cv_id, $string = '') {
   $sql = "
-    SELECT cvterm_id, name
-    FROM {cvterm}
-    WHERE cv_id = :cv_id and lower(name) like lower(:name)
+    SELECT CVT.cvterm_id, CVT.name
+    FROM {cvterm} CVT
+    WHERE CVT.cv_id = :cv_id and lower(CVT.name) like lower(:name)
+    UNION
+    SELECT CVT2.cvterm_id, CVTS.synonym as name
+    FROM {cvterm} CVT2
+      INNER JOIN {cvtermsynonym} CVTS ON CVTS.cvterm_id = CVT2.cvterm_id
+    WHERE CVT2.cv_id = :cv_id and lower(CVTS.synonym) like lower(:name)
     ORDER by name
     LIMIT 25 OFFSET 0
   ";
