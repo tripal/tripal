@@ -16,9 +16,11 @@ $bundle_type = $bundle->name . '-' . $bundle->label;
 
 $content = '';
 $toc = '';
-$has_base_pane_only = TRUE;
+$panes = $variables['element']['#panes'];
+$fields = $variables['element']['#fields'];
+$has_base_pane_only = count($panes) == 1 ? TRUE : FALSE;
 
-get_content($variables, $bundle_type, $content, $toc, $has_base_pane_only);
+get_content($panes, $fields, $bundle_type, $content, $toc, $has_base_pane_only);
 
 if ($has_base_pane_only) { ?>
   <div id ="tripal-<?php print $bundle_type?>-contents-box"> <?php
@@ -41,7 +43,7 @@ else { ?>
 }
 
 /**
- * Iterates through the panes and generates a conent string in HTML format.
+ * Iterates through the panes and generates the HTML conent
  *
  * @param $variables
  * @param $bundle_type
@@ -49,17 +51,14 @@ else { ?>
  * @param $toc
  * @param $has_base_pane_only
  */
-function get_content($variables, $bundle_type, &$content, &$toc, &$has_base_pane_only) {
-  $panes = $variables['element']['#panes'];
-  $fields = $variables['element']['#fields'];
+function get_content($panes, $fields, $bundle_type, &$content, &$toc, $has_base_pane_only) {
+
 
   // Iterate through all of the panes.
   foreach ($panes AS $pane_id => $pane) {
     // If we have a pane other than the base pane then we have more than
     // just the base.
-    if ($pane->name != 'te_base') {
-      $has_base_pane_only = FALSE;
-    }
+
     $pane_settings = unserialize($pane->settings);
     $table_layout_group = key_exists('table_layout', $pane_settings) ? $pane_settings['table_layout'] : array();
 
@@ -113,20 +112,25 @@ function get_content($variables, $bundle_type, &$content, &$toc, &$has_base_pane
       $output .= tripal_panes_generic_render_fields($no_group);
     }
 
-    $pane_label = $pane->name == 'te_base' ? 'Summary' : $pane->label;
-    $collapsible_item = array('element' => array());
-    $collapsible_item['element']['#description'] = $output;
-    $collapsible_item['element']['#title'] = $pane_label;
-    $collapsible_item['element']['#children'] = '';
-    $collapsible_item['element']['#attributes']['id'] = 'tripal_pane-fieldset-' . $pane->name;
-    $collapsible_item['element']['#attributes']['class'][] = 'tripal_pane-fieldset';
-    $collapsible_item['element']['#attributes']['class'][] = 'collapsible';
-    if ($pane->name != 'te_base') {
-      $collapsible_item['element']['#attributes']['class'][] = 'collapsed';
+    if ($has_base_pane_only) {
+      $content .= $output;
     }
-    $toc_item_id = $pane_id;
-    $toc .= "<div class=\"tripal-panes-toc-list-item\"><a id=\"" . $pane->name . "\" class=\"tripal_panes-toc-list-item-link\" href=\"?pane=" . $pane->name . "\">" . $pane_label . "</a></div>";
-    $content .= theme('fieldset', $collapsible_item);
+    else {
+      $pane_label = $pane->name == 'te_base' ? 'Summary' : $pane->label;
+      $collapsible_item = array('element' => array());
+      $collapsible_item['element']['#description'] = $output;
+      $collapsible_item['element']['#title'] = $pane_label;
+      $collapsible_item['element']['#children'] = '';
+      $collapsible_item['element']['#attributes']['id'] = 'tripal_pane-fieldset-' . $pane->name;
+      $collapsible_item['element']['#attributes']['class'][] = 'tripal_pane-fieldset';
+      $collapsible_item['element']['#attributes']['class'][] = 'collapsible';
+      if ($pane->name != 'te_base') {
+        $collapsible_item['element']['#attributes']['class'][] = 'collapsed';
+      }
+      $toc_item_id = $pane_id;
+      $toc .= "<div class=\"tripal-panes-toc-list-item\"><a id=\"" . $pane->name . "\" class=\"tripal_panes-toc-list-item-link\" href=\"?pane=" . $pane->name . "\">" . $pane_label . "</a></div>";
+      $content .= theme('fieldset', $collapsible_item);
+    }
     if ($pane->name == 'te_base') {
       $content .= '<div class="tripal-panes-content-top"></div>';
     }
