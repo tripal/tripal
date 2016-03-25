@@ -874,9 +874,14 @@ function tripal_insert_obo($name, $path) {
 function tripal_autocomplete_cvterm($cv_id, $string = '') {
   if ($cv_id) {
     $sql = "
-      SELECT cvterm_id, name
-      FROM {cvterm}
-      WHERE cv_id = :cv_id and lower(name) like lower(:name)
+      SELECT CVT.cvterm_id, CVT.name
+      FROM {cvterm} CVT
+      WHERE CVT.cv_id = :cv_id and lower(CVT.name) like lower(:name)
+      UNION
+      SELECT CVT2.cvterm_id, CVTS.synonym as name
+      FROM {cvterm} CVT2
+        INNER JOIN {cvtermsynonym} CVTS ON CVTS.cvterm_id = CVT2.cvterm_id
+      WHERE CVT2.cv_id = :cv_id and lower(CVTS.synonym) like lower(:name)
       ORDER by name
       LIMIT 25 OFFSET 0
     ";
@@ -890,11 +895,17 @@ function tripal_autocomplete_cvterm($cv_id, $string = '') {
   // in the results.
   else {
     $sql = "
-      SELECT cvterm_id, CVT.name, CV.name as cvname, CVT.cv_id
+      SELECT CVT.cvterm_id, CVT.name
       FROM {cvterm} CVT
-          INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+        INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
       WHERE lower(CVT.name) like lower(:name)
-      ORDER by CVT.name
+      UNION
+      SELECT CVT2.cvterm_id, CVTS.synonym as name, CV2.name as cvname, CVT2.cv_id
+      FROM {cvterm} CVT2
+        INNER JOIN {cv} CV2 on CVT2.cv_id = CV2.cv_id
+        INNER JOIN {cvtermsynonym} CVTS ON CVTS.cvterm_id = CVT2.cvterm_id
+      WHERE lower(CVTS.synonym) like lower(:name)
+      ORDER by name
       LIMIT 25 OFFSET 0
     ";
     $results = chado_query($sql, array(':name' => $string . '%'));
@@ -903,7 +914,6 @@ function tripal_autocomplete_cvterm($cv_id, $string = '') {
       $items[$term->name] = $term->name;
     }
   }
-
 
   drupal_json_output($items);
 }
