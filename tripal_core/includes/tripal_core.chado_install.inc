@@ -56,11 +56,14 @@ function tripal_core_chado_load_form_validate($form, &$form_state) {
   // Tripal modules are installed.  This is because the install files
   // of those modules may add content to Chado and reinstalling Chado
   // removes that content which may break the modules.
-
-  if ($form_state['values']['action_to_do'] == "Install Chado v1.2" or
+  if ($form_state['values']['action_to_do'] == "Install Chado v1.3" or
+      $form_state['values']['action_to_do'] == "Install Chado v1.2" or
       $form_state['values']['action_to_do'] == "Install Chado v1.11") {
 
     $modules = system_get_info('module');
+    // The tripal_views module should not be included as it's a rquired
+    // dependency of tripal_core
+    unset($modules['tripal_views']);
     $list = array();
     foreach ($modules as $mname => $module) {
       if (array_key_exists('dependencies', $module) and in_array('tripal_core', $module['dependencies'])) {
@@ -79,6 +82,13 @@ function tripal_core_chado_load_form_validate($form, &$form_state) {
     $real_version = chado_get_version(TRUE);
     if ($real_version == "1.2") {
       form_set_error("action_to_do", "You are already at v1.2.  There is no need to upgrade.");
+    }
+  }
+  if ($form_state['values']['action_to_do'] == "Upgrade Chado v1.2 to v1.3") {
+    // Make sure we are already not at v1.3
+    $real_version = chado_get_version(TRUE);
+    if ($real_version == "1.3") {
+      form_set_error("action_to_do", "You are already at v1.3.  There is no need to upgrade.");
     }
   }
 }
@@ -134,8 +144,13 @@ function tripal_core_install_chado($action) {
     }
   }
   catch (Exception $e) {
-
+    tripal_chado_install_done();
+    tripal_log($e->getMessage(), 'error');
+    return FALSE;
   }
+  return TRUE;
+
+
 }
 
 /**
