@@ -858,6 +858,28 @@ function tripal_insert_obo($name, $path) {
 }
 
 /**
+ * Retrieves an OBO record.
+ *
+ * @param $values
+ *   An associate array with the following allowed keys: obo_id, name
+ *
+ * @return
+ *   An instance of an OBO record object.
+ */
+function tripal_get_obo($values) {
+  $query = db_select('tripal_cv_obo', 'tco')
+    ->fields('tco');
+
+  if (array_key_exists('name', $values)) {
+    $query->condition('tco.name', $values['name']);
+  }
+  if (array_key_exists('obo_id', $values)) {
+    $query->condition('tco.obo_id', $values['obo_id']);
+  }
+  return $query->execute()->fetchObject();
+}
+
+/**
  * This function is intended to be used in autocomplete forms
  * for searching for CV terms that begin with the provided string
  *

@@ -148,7 +148,7 @@ function tripal_analysis_add_cvterms() {
         . 'abbreviation for the analysis.',
       'cv_name' => 'tripal',
       'is_relationship' => 0,
-      'db_name' => 'tripal'
+      'db_name' => 'local'
     ),
     array('update_existing' => TRUE)
   );
@@ -162,7 +162,7 @@ function tripal_analysis_add_cvterms() {
       'definition' => 'The type of analysis that was performed.',
       'cv_name' => 'analysis_property',
       'is_relationship' => 0,
-      'db_name' => 'tripal'
+      'db_name' => 'local'
     ),
     array('update_existing' => TRUE)
   );

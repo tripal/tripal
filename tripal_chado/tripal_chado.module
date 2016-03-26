@@ -118,7 +118,7 @@ function tripal_chado_menu() {
     'page arguments' => array('tripal_chado_install_form'),
     'type' => MENU_NORMAL_ITEM,
     'access arguments' => array('install chado'),
-    'file' => 'includes/tripal_chado.setup.inc',
+    'file' => 'includes/tripal_chado.install.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'weight' => -100
   );
