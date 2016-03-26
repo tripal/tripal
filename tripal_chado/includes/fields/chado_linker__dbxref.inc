@@ -10,7 +10,7 @@
  * @param unknown $items
  * @param unknown $display
  */
-function tripal_chado_dbxref_formatter(&$element, $entity_type, $entity, $field,
+function chado_linker__dbxref_formatter(&$element, $entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
 
   $chado_table = $field['settings']['chado_table'];
@@ -42,7 +42,7 @@ function tripal_chado_dbxref_formatter(&$element, $entity_type, $entity, $field,
  * @param unknown $delta
  * @param unknown $element
  */
-function tripal_chado_dbxref_widget(&$widget, $form, $form_state, $field,
+function chado_linker__dbxref_widget(&$widget, $form, $form_state, $field,
     $instance, $langcode, $items, $delta, $element) {
 
   $field_name = $field['field_name'];
@@ -92,8 +92,8 @@ function tripal_chado_dbxref_widget(&$widget, $form, $form_state, $field,
 
   $widget['#table_name'] = $chado_table;
   $widget['#fkey_field'] = $fkey;
-  $widget['#element_validate'] = array('tripal_chado_dbxref_widget_validate');
-  $widget['#theme'] = 'tripal_chado_dbxref_widget';
+  $widget['#element_validate'] = array('chado_linker__dbxref_widget_validate');
+  $widget['#theme'] = 'chado_linker__dbxref_widget';
   $widget['#prefix'] =  "<span id='$field_name-dbxref--db-id-$delta'>";
   $widget['#suffix'] =  "</span>";
 
@@ -120,7 +120,7 @@ function tripal_chado_dbxref_widget(&$widget, $form, $form_state, $field,
     '#required' => $element['#required'],
     '#default_value' => $db_id,
     '#ajax' => array(
-      'callback' => "tripal_chado_dbxref_widget_form_ajax_callback",
+      'callback' => "chado_linker__dbxref_widget_form_ajax_callback",
       'wrapper' => "$field_name-dbxref--db-id-$delta",
       'effect' => 'fade',
       'method' => 'replace'
@@ -135,7 +135,7 @@ function tripal_chado_dbxref_widget(&$widget, $form, $form_state, $field,
     '#size' => 15,
     '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/dbxref/' . $db_id,
     '#ajax' => array(
-      'callback' => "tripal_chado_dbxref_widget_form_ajax_callback",
+      'callback' => "chado_linker__dbxref_widget_form_ajax_callback",
       'wrapper' => "$field_name-dbxref--db-id-$delta",
       'effect' => 'fade',
       'method' => 'replace'
@@ -167,7 +167,7 @@ function tripal_chado_dbxref_widget(&$widget, $form, $form_state, $field,
 /**
  * An Ajax callback for the dbxref widget.
  */
-function tripal_chado_dbxref_widget_form_ajax_callback($form, $form_state) {
+function chado_linker__dbxref_widget_form_ajax_callback($form, $form_state) {
 
   $field_name = $form_state['triggering_element']['#parents'][0];
   $delta = $form_state['triggering_element']['#parents'][2];
@@ -194,7 +194,7 @@ function tripal_chado_dbxref_widget_form_ajax_callback($form, $form_state) {
 /**
  * Callback function for validating the tripal_chado_organism_select_widget.
  */
-function tripal_chado_dbxref_widget_validate($element, &$form_state) {
+function chado_linker__dbxref_widget_validate($element, &$form_state) {
 
   $field_name = $element['#field_name'];
   $delta = $element['#delta'];
@@ -256,7 +256,7 @@ function tripal_chado_dbxref_widget_validate($element, &$form_state) {
  *
  * @param $variables
  */
-function theme_tripal_chado_dbxref_widget($variables) {
+function theme_chado_linker__dbxref_widget($variables) {
   $element = $variables['element'];
 
   // These two fields were added to the widget to help identify the fields
@@ -298,7 +298,7 @@ function theme_tripal_chado_dbxref_widget($variables) {
  * @param $base_table
  * @param $record
  */
-function tripal_chado_dbxref_field_load($field, $entity, $base_table, $record) {
+function chado_linker__dbxref_load($field, $entity, $base_table, $record) {
 
   $field_name = $field['field_name'];
   $field_type = $field['type'];

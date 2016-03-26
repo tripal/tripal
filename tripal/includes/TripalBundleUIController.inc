@@ -98,15 +98,46 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
   );
 
   if ($term) {
+
+    $rows = array(
+      array(
+        array(
+          'header' => TRUE,
+          'data' => 'Vocabulary',
+          'class' => array('side-header')
+        ),
+        $vocab->namespace
+      ),
+      array(
+        array(
+          'header' => TRUE,
+          'data' => 'Term',
+          'class' => array('side-header')
+        ),
+        $term->name
+      ),
+      array(
+        array(
+          'header' => TRUE,
+          'data' => 'Definition',
+          'class' => array('side-header')
+        ),
+        $term->definition
+      )
+    );
+    $table_vars = array(
+      'header' => array(),
+      'rows' => $rows,
+      'attributes' => array(),
+      'caption' => '',
+      'sticky' => FALSE,
+      'colgroups' => array(),
+      'empty' => '',
+    );
     $form['term'] = array(
-      '#type' => 'markup',
-      '#markup' => theme('table', array(
-        'header' => array(),
-        'rows' => array(
-          array(array('header' => TRUE, 'data' => 'Vocabulary', 'class' => array('side-header')), $vocab->namespace),
-          array(array('header' => TRUE, 'data' => 'Term', 'class' => array('side-header')), $term->name),
-        )
-      ))
+      '#type' => 'item',
+      '#title' => t('Vocabulary Term'),
+      '#markup' => theme_table($table_vars)
     );
   }
 
@@ -443,7 +474,7 @@ function tripal_admin_add_type_form_submit($form, &$form_state) {
       }
     }
     else {
-      drupal_set_message('This type already exists.', 'warning');
+      drupal_set_message("The term '$accession' already exists as a content type.", 'warning');
     }
   }
 }

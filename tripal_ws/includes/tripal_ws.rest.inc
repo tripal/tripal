@@ -113,9 +113,11 @@ function tripal_ws_handle_vocab_service($api_url, &$response, $ws_args) {
   }
   // If we don't have a $namespace then show a paged list of terms.
   else if ($namespace and !$accession) {
+    tripal_ws_get_vocab($api_url, $response, $ws_args, $namespace);
   }
   // If we have a content type and an entity ID then show the entity
-  else {
+  else if ($namespace and $accession) {
+    tripal_ws_get_term($api_url, $response, $ws_args, $namespace, $accession);
   }
 }
 
@@ -138,11 +140,22 @@ function tripal_ws_get_vocabs($api_url, &$response) {
   $response['label'] = 'Content Types';
   $response['member'] = array();
 
-  // TODO: determine how to get the list of in-house terms that are used
-  // on the site.  This should really only include terms that are used
-  // as TripalEntity bundle types and that aren't part of another published
-  // vocabulary.
-
+  $vocabs = db_select('tripal_vocab', 'tv')
+    ->fields('tv')
+    ->execute();
+  // Iterate through the vocabularies and add an entry in the collection.
+  $i = 0;
+  while ($vocab = $vocabs->fetchObject()) {
+    $term =
+    // Add the bundle as a content type.
+    $response['member'][] = array(
+      '@id' => $api_url . '/vocab/' . urlencode($vocab->namespace),
+      '@type' => 'vocabulary',
+      'namespace' => $vocab->namespace,
+    );
+    $i++;
+  }
+  $response['totalItems'] = $i;
 
   //$response['totalItems'] = $i;
 
@@ -152,6 +165,100 @@ function tripal_ws_get_vocabs($api_url, &$response) {
   $response['@context']['member'] = 'hydra:member';
   $response['@context']['label'] = 'rdfs:label';
   $response['@context']['description'] = 'hydra:description';
+}
+
+/**
+ *
+ * @param $api_url
+ * @param $response
+ * @param $ws_args
+ */
+function tripal_ws_get_vocab($api_url, &$response, $ws_args, $namespace) {
+
+  // First, add the vocabularies used into the @context section.
+  $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
+  $response['@context']['hydra'] = 'http://www.w3.org/ns/hydra/core#';
+  $response['@context']['schema'] = 'https://schema.org/';
+
+  // Next add in the ID for tihs resource.
+  $response['@id'] = $api_url . '/vocab/' . $namespace;
+
+  // Get the vocabulary
+  $vocab = tripal_load_vocab_entity(array('namespace' => $namespace));
+
+  // Start the list.
+  $response['@type'] = 'Collection';
+  $response['totalItems'] = 0;
+  $response['label'] = $namespace . " vocabulary collection";
+  $response['comment'] = 'The following list of terms may not be the full ' .
+    'list for the vocabulary.  The terms listed here are only those ' .
+    'that have associated content on this site.';
+
+  // Get the list of terms for this vocab.
+  $query = db_select('tripal_term', 'tt')
+    ->fields('tt', array('id'))
+    ->condition('vocab_id', $vocab->id)
+    ->orderBy('accession', 'DESC');
+
+  // Iterate through the entities and add them to the list.
+  $terms = $query->execute();
+  $i = 0;
+  while($term = $terms->fetchObject()) {
+    $term = tripal_load_term_entity(array('term_id' => $term->id));
+    $response['member'][] = array(
+      '@id' => $api_url . '/vocab/' . urlencode($namespace) . '/' .  urlencode($term->accession),
+      '@type' => 'vocabulary_term',
+      'namespace' => $vocab->namespace,
+      'accession' => $term->accession,
+      'name' => $term->name,
+      'definition' => $term->definition,
+    );
+    $i++;
+  }
+  $response['totalItems'] = $i;
+
+  // Lastly, add in the terms used into the @context section.
+  $response['@context']['Collection'] = 'hydra:Collection';
+  $response['@context']['totalItems'] = 'hydra:totalItems';
+  $response['@context']['member'] = 'hydra:member';
+  $response['@context']['label'] = 'rdfs:label';
+  $response['@context']['comment'] = 'rdfs:comment';
+  $response['@context']['itemPage'] = 'schema:itemPage';
+
+}
+
+/**
+ *
+ * @param $api_url
+ * @param $response
+ * @param $ws_args
+ */
+function tripal_ws_get_term($api_url, &$response, $ws_args, $namespace, $accession) {
+
+  // First, add the vocabularies used into the @context section.
+  $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
+  $response['@context']['hydra'] = 'http://www.w3.org/ns/hydra/core#';
+  $response['@context']['schema'] = 'https://schema.org/';
+
+  // Get the term.
+  $term = tripal_load_term_entity(array('namespace' => $namespace, 'accession' => $accession));
+
+  // Next add in the ID and Type for this resources.
+  $response['@id'] = $api_url . '/vocab/' . urlencode($namespace) . '/' . urlencode($accession);
+  $response['@type'] = 'vocabulary_term';
+  $response['label'] = $term->name;
+  $response['namespace'] = $namespace;
+  $response['accession'] = $accession;
+  $response['name'] = $term->name;
+  $response['definition'] = $term->definition;
+
+  if ($term->url) {
+    $response['URL'] = $term->url;
+  }
+
+  // Lastly, add in the terms used into the @context section.
+  $response['@context']['label'] = 'rdfs:label';
+  $response['@context']['itemPage'] = 'schema:itemPage';
 }
 /**
  * Provides a collection (list) of all of the content types.
@@ -205,7 +312,7 @@ function tripal_ws_get_content_types($api_url, &$response) {
     }
     // Add the bundle as a content type.
     $response['member'][] = array(
-      '@id' => $api_url . '/content/' . $bundle->label,
+      '@id' => $api_url . '/content/' . urlencode($bundle->label),
       '@type' => $vocab->namespace . ':' . $term->accession,
       'label' => $bundle->label,
       'description' => $description,
@@ -273,7 +380,7 @@ function tripal_ws_get_content_type($api_url, &$response, $ws_args, $ctype) {
     $entities = entity_load('TripalEntity', array_keys($results['TripalEntity']));
     foreach ($entities as $entity) {
       $response['member'][] = array(
-        '@id' => $api_url . '/content/' . $ctype . '/' .  $entity->id,
+        '@id' => $api_url . '/content/' . urlencode($ctype) . '/' .  $entity->id,
         '@type' => $vocab->namespace . ':' . $term->accession,
         'label' => $entity->title,
         'itemPage' => url('/bio-data/' . $entity->id, array('absolute' => TRUE)),
@@ -351,9 +458,21 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
   // Iterate throught the fields and add each value to the response.
   //$response['fields'] = $fields;
   foreach ($fields as $field_name => $field) {
-    $field_value = $entity->$field_name;
+    $field_info = field_info_field($field_name);
+    $items = field_get_items('TripalEntity', $entity, $field_name);
 
-    // Get the semantic web settings for this field
+    // By default, the label for the key in the output should be the
+    // term from the vocabulary that the field is assigned. But in the
+    // case that the field is not assigned a term, we must use the field name.
+    $key = $field['field_name'];
+    if (array_key_exists('semantic_web', $field['settings'])) {
+      if (array_key_exists('type', $field['settings']['semantic_web']) and
+          $field['settings']['semantic_web']['type']) {
+        $key = $field['settings']['semantic_web']['type'];
+      }
+    }
+
+    // Get the semantic web settings for this field.
     $field_type = '';
     if (array_key_exists('semantic_web', $field['settings'])) {
       $field_type = $field['settings']['semantic_web']['type'];
@@ -361,26 +480,69 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
         $ns = $field['settings']['semantic_web']['ns'];
         $nsurl = $field['settings']['semantic_web']['nsurl'];
         $response['@context'][$ns] = $nsurl;
-        $response['@context'][$field['label']] = $ns . ':' .$field_type;
+        $response['@context'][$key] = $ns . ':' .$field_type;
       }
     }
 
-    // TODO: need a way to hide fields.
-
-    // Get the values based on cardinality
-    $items = field_get_items('TripalEntity', $entity, $field_name);
-    $values = '';
-    if (array_key_exists('und', $field_value) and count($field_value['und']) == 1) {
-      $values = $field_value['und'][0]['value'];
+    // Skip hidden fields.
+    if ($field['display']['default']['type'] == 'hidden') {
+      continue;
     }
-    // If cardinality is greater than 1 then the value should be an array
-    else {
+
+    // We want to allow the field to format itself for web services if it
+    // wants to.  The file can do so if it implements a '_ws_formatter'
+    // function.
+    $function = $field_info['type'] . '_ws_formatter';
+    module_load_include('inc', $field['display']['default']['module'], 'includes/fields/' . $field_info['type']);
+    if (function_exists($function)) {
       $values = array();
-      for ($i = 0; $i < count($field_value); $i++) {
-        $values[] = $field_value['und'][$i]['value'];
+      $function($values, $entity->type, $entity, $field_info, $field, $items);
+
+      // Iterate through the key/values returned and handle hashed keys
+      $add_vals = array();
+      for ($i = 0; $i < count($values); $i++) {
+        foreach ($values[$i] as $skey => $svalue) {
+          // If the key is '#entity' then this should like to another
+          // services.
+          if ($skey == '#entity') {
+            $sentity = $svalue;
+            $sbundle = tripal_load_bundle_entity(array('name' => $sentity->bundle));
+            $sterm = tripal_load_term_entity(array('term_id' => $sbundle->term_id));
+            $vocab = $sterm->vocab;
+            $add_vals['@id'] = $api_url . '/content/' . urlencode($sterm->name) . '/' . $sentity->id;
+            $add_vals['@type'] = $vocab->namespace . ':' . $sterm->name;
+            unset($values[$i][$skey]);
+          }
+        }
+        $values[$i] = array_merge($add_vals, $values[$i]);
+      }
+
+
+      if (count($values) == 0) {
+        $response[$key] = '';
+      }
+      if (count($values) == 1) {
+        $response[$key] = $values[0];
+      }
+      else {
+        $response[$key] = $values;
       }
     }
-    $response[$field['label']] = $values;
+    // If a function doesn't exist then just show the default value is is.
+    else {
+      // Get the values based on cardinality
+      if (count($items) == 1) {
+        $values = $items[0]['value'];
+      }
+      // If cardinality is greater than 1 then the value should be an array
+      else {
+        $values = array();
+        for ($i = 0; $i < count($items); $i++) {
+          $values[] = $items[$i]['value'];
+        }
+      }
+      $response[$key] = $values;
+    }
   }
 
  //$response['fields'] = $fields;

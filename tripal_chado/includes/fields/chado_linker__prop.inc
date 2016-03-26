@@ -10,7 +10,7 @@
  * @param unknown $items
  * @param unknown $display
  */
-function tripal_chado_kvproperty_formatter(&$element, $entity_type, $entity, $field,
+function chado_linker__prop_formatter(&$element, $entity_type, $entity, $field,
   $instance, $langcode, $items, $display) {
 
   $field_name = $field['field_name'];
@@ -39,7 +39,7 @@ function tripal_chado_kvproperty_formatter(&$element, $entity_type, $entity, $fi
  * @param unknown $delta
  * @param unknown $element
  */
-function tripal_chado_kvproperty_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function chado_linker__prop_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
   $entity = $form['#entity'];
   $field_name = $field['field_name'];
 
@@ -84,7 +84,7 @@ function tripal_chado_kvproperty_widget(&$widget, $form, $form_state, $field, $i
   $widget['#field_name'] = $element['#field_name'];
   $widget['#language'] = $element['#language'];
   $widget['#weight'] = isset($element['#weight']) ? $element['#weight'] : 0;
-  $widget['#element_validate'] = array('tripal_chado_kvproperty_widget_validate');
+  $widget['#element_validate'] = array('chado_linker__prop_widget_validate');
   $widget['#cardinality'] = 1;
 
   $widget['value'] = array(
@@ -115,14 +115,14 @@ function tripal_chado_kvproperty_widget(&$widget, $form, $form_state, $field, $i
  * @param unknown $form
  * @param unknown $form_state
  */
-function tripal_chado_kvproperty_widget_form_ajax_callback($form, $form_state) {
+function chado_linker__prop_widget_form_ajax_callback($form, $form_state) {
   $field_name = $form_state['triggering_element']['#parents'][0];
   return $form[$field_name];
 }
 /**
- * Callback function for validating the tripal_chado_kvproperty_widget.
+ * Callback function for validating the chado_linker__prop_widget.
  */
-function tripal_chado_kvproperty_widget_validate($element, &$form_state) {
+function chado_linker__prop_widget_validate($element, &$form_state) {
   $field_name = $element['#field_name'];
   $delta = $element['#delta'];
   $entity = $element['#entity'];
@@ -172,9 +172,9 @@ function tripal_chado_kvproperty_widget_validate($element, &$form_state) {
   }
 }
 /**
- * Callback function for submitting the tripal_chado_kvproperty_widget.
+ * Callback function for submitting the chado_linker__prop_widget.
  */
-function tripal_chado_kvproperty_widget_submit($element, &$form_state) {
+function chado_linker__prop_widget_submit($element, &$form_state) {
 }
 
 /**
@@ -190,7 +190,7 @@ function tripal_chado_kvproperty_widget_submit($element, &$form_state) {
  * @param $base_table
  * @param $record
  */
-function tripal_chado_kvproperty_field_load($field, $entity, $base_table, $record) {
+function chado_linker__prop_load($field, $entity, $base_table, $record) {
 
   $field_name = $field['field_name'];
   $field_type = $field['type'];

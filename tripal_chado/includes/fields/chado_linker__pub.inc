@@ -10,7 +10,7 @@
  * @param unknown $items
  * @param unknown $display
  */
-function tripal_chado_pub_formatter(&$element, $entity_type, $entity, $field,
+function chado_linker__pub_formatter(&$element, $entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
 
   $list_items = array();
@@ -48,7 +48,7 @@ function tripal_chado_pub_formatter(&$element, $entity_type, $entity, $field,
  * @param unknown $delta
  * @param unknown $element
  */
-function tripal_chado_pub_widget(&$widget, $form, $form_state, $field,
+function chado_linker__pub_widget(&$widget, $form, $form_state, $field,
     $instance, $langcode, $items, $delta, $element) {
 
   $entity = $form['#entity'];
@@ -89,8 +89,8 @@ function tripal_chado_pub_widget(&$widget, $form, $form_state, $field,
 
   $widget['#table_name'] = $table_name;
   $widget['#fkey_field'] = $fkey;
-  $widget['#element_validate'] = array('tripal_chado_pub_widget_validate');
-  $widget['#theme'] = 'tripal_chado_pub_widget';
+  $widget['#element_validate'] = array('chado_linker__pub_widget_validate');
+  $widget['#theme'] = 'chado_linker__pub_widget';
   $widget['#prefix'] =  "<span id='$table_name-$delta'>";
   $widget['#suffix'] =  "</span>";
 
@@ -113,7 +113,7 @@ function tripal_chado_pub_widget(&$widget, $form, $form_state, $field,
     '#default_value' => $title,
     '#autocomplete_path' => 'admin/tripal/storage/chado/auto_name/pub',
     '#ajax' => array(
-      'callback' => "tripal_chado_pub_widget_form_ajax_callback",
+      'callback' => "chado_linker__pub_widget_form_ajax_callback",
       'wrapper' => "$table_name-$delta",
       'effect' => 'fade',
       'method' => 'replace'
@@ -124,7 +124,7 @@ function tripal_chado_pub_widget(&$widget, $form, $form_state, $field,
 /**
  * An Ajax callback for the pub widget.
  */
-function tripal_chado_pub_widget_form_ajax_callback($form, $form_state) {
+function chado_linker__pub_widget_form_ajax_callback($form, $form_state) {
 
   $field_name = $form_state['triggering_element']['#parents'][0];
   $delta = $form_state['triggering_element']['#parents'][2];
@@ -135,7 +135,7 @@ function tripal_chado_pub_widget_form_ajax_callback($form, $form_state) {
 /**
  * Callback function for validating the tripal_chado_organism_select_widget.
  */
-function tripal_chado_pub_widget_validate($element, &$form_state) {
+function chado_linker__pub_widget_validate($element, &$form_state) {
 
   $field_name = $element['#field_name'];
   $delta = $element['#delta'];
@@ -181,7 +181,7 @@ function tripal_chado_pub_widget_validate($element, &$form_state) {
  *
  * @param $variables
  */
-function theme_tripal_chado_pub_widget($variables) {
+function theme_chado_linker__pub_widget($variables) {
   $element = $variables['element'];
 
   // These two fields were added to the widget to help identify the fields
@@ -213,7 +213,7 @@ function theme_tripal_chado_pub_widget($variables) {
  * @param $base_table
  * @param $record
  */
-function tripal_chado_pub_field_load($field, $entity, $base_table, $record) {
+function chado_linker__pub_load($field, $entity, $base_table, $record) {
 
   $field_name = $field['field_name'];
   $field_type = $field['type'];

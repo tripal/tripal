@@ -10,7 +10,7 @@
  * @param unknown $items
  * @param unknown $display
  */
-function tripal_chado_kvproperty_adder_formatter(&$element, $entity_type, $entity, $field,
+function chado_linker__prop_adder_formatter(&$element, $entity_type, $entity, $field,
   $instance, $langcode, $items, $display) {
 
   foreach ($items as $delta => $item) {
@@ -20,10 +20,10 @@ function tripal_chado_kvproperty_adder_formatter(&$element, $entity_type, $entit
 /**
  *
  */
-function tripal_chado_kvproperty_adder_widget(&$widget, $form, $form_state,
+function chado_linker__prop_adder_widget(&$widget, $form, $form_state,
     $field, $instance, $langcode, $items, $delta, $element) {
   // This field has no value field.  Just a fieldset for adding new properties.
-  $widget['#element_validate'] = array('tripal_chado_kvproperty_adder_widget_validate');
+  $widget['#element_validate'] = array('chado_linker__prop_adder_widget_validate');
 
   $widget['#type'] = 'fieldset';
   $widget['#title'] = $element['#title'];
@@ -61,14 +61,14 @@ function tripal_chado_kvproperty_adder_widget(&$widget, $form, $form_state,
     '#value' => t('Add Property'),
     '#type' => 'submit',
     '#name' => 'kvproperty_adder_button',
-    '#submit' => array('tripal_chado_kvproperty_adder_widget_submit'),
+    '#submit' => array('chado_linker__prop_adder_widget_submit'),
     '#limit_validation_errors' => array(array($field['field_name'])),
   );
 }
 /**
- * Callback function for validating the tripal_chado_kvproperty_adder_widget.
+ * Callback function for validating the chado_linker__prop_adder_widget.
  */
-function tripal_chado_kvproperty_adder_widget_validate($element, &$form_state) {
+function chado_linker__prop_adder_widget_validate($element, &$form_state) {
 
    // Add the new field to the entity
    if (array_key_exists('triggering_element', $form_state) and
@@ -122,7 +122,7 @@ function tripal_chado_kvproperty_adder_widget_validate($element, &$form_state) {
    }
 }
 /**
- * Callback function for submitting the tripal_chado_kvproperty_adder_widget.
+ * Callback function for submitting the chado_linker__prop_adder_widget.
  */
-function tripal_chado_kvproperty_adder_widget_submit($element, &$form_state) {
+function chado_linker__prop_adder_widget_submit($element, &$form_state) {
 }
