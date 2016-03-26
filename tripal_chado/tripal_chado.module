@@ -9,6 +9,7 @@ require_once 'api/tripal_chado.variables.api.inc';
 require_once 'api/tripal_chado.schema.api.inc';
 require_once 'api/tripal_chado.custom_tables.api.inc';
 require_once 'api/tripal_chado.mviews.api.inc';
+require_once 'api/tripal_chado.schema_v1.3.api.inc';
 require_once 'api/tripal_chado.schema_v1.2.api.inc';
 require_once 'api/tripal_chado.schema_v1.11.api.inc';
 
@@ -427,7 +428,7 @@ function tripal_chado_menu() {
     'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
   );
-  
+
   //////////////////////////////////////////////////////////////////////////////
   //                           Migrate Content
   //////////////////////////////////////////////////////////////////////////////

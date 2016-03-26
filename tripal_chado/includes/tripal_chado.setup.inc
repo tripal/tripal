@@ -334,6 +334,10 @@ function tripal_chado_prepare_chado() {
     // Set the default vocabularies.
     tripal_set_default_cv('organismprop', 'type_id', 'organism_property');
 
+    // Add taxonomic terms.
+    $obo_id = tripal_insert_obo('Taxonomic Rank', '{tripal_chado}/files/taxrank.obo');
+    tripal_submit_obo_job(array('obo_id' => $obo_id));
+
 
     /////////////////////////////////////////////////////////////////////////////
     //                        Chado CompAnalysis Module
