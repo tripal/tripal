@@ -105,69 +105,102 @@ function chado_organism_form($node, $form_state) {
   $form = array();
   $chado_version = chado_get_version(TRUE);
 
-  // we have a file upload element on the form soe we need the multipart encoding type
+  // Default values can come in the following ways:
+  //
+  // 1) As elements of the $node object.  This occurs when editing an existing
+  //    organism.
+  // 2) In the $form_state['values'] array which occurs on a failed validation
+  //    or ajax callbacks from non submit form elements
+  // 3) In the $form_state['input'[ array which occurs on ajax callbacks from
+  //    submit form elements and the form is being rebuilt
+  //
+  // Set form field defaults.
+  $organism = NULL;
+  $organism_id = NULL;
+  $abbreviation   = '';
+  $genus          = '';
+  $species        = '';
+  $common_name    = '';
+  $description    = '';
+  $infraspecific_name = '';
+  $type_id = '';
+
+  // We have a file upload element on the form soe we need the multipart
+  // encoding type
   $form['#attributes']['enctype'] = 'multipart/form-data';
 
-  // if the organism is part of the node object then we are editing. If not we are inserting
+  // If the organism is part of the node object then we are editing. If not
+  // we are inserting
   if (property_exists($node, 'organism')) {
     $organism = $node->organism;
 
-    // add in the comment since it is a text field and may not be included if too big
+    // Add in the comment since it is a text field and may not be included if
+    // too big
     $organism = chado_expand_var($organism, 'field', 'organism.comment');
 
-    // get form defaults
-    $abbreviation   = property_exists($node, 'abbreviation')   ? property_exists($node, 'abbreviation')   : $organism->abbreviation;
-    $genus          = property_exists($node, 'genus')          ? property_exists($node, 'genus')          : $organism->genus;
-    $species        = property_exists($node, 'species')        ? property_exists($node, 'species')        : $organism->species;
-    $common_name    = property_exists($node, 'common_name')    ? property_exists($node, 'common_name')    : $organism->common_name;
-    $description    = property_exists($node, 'description')    ? property_exists($node, 'description')    : $organism->comment;
-    $organism_image = property_exists($node, 'organism_image') ? property_exists($node, 'organism_image') : '';
+    // Get form defaults.
+    $abbreviation   = $organism->abbreviation;
+    $genus          = $organism->genus;
+    $species        = $organism->species;
+    $common_name    = $organism->common_name;
+    $description    = $organism->comment;
     // The infraspecific and type_id fields are new to Chado v1.3
     if ($chado_version > 1.2) {
-      $infraspecific_name = property_exists($node, 'infraspecific_name') ? property_exists($node, 'infraspecific_name') : $organism->infraspecific_name;
-      $type_id  = property_exists($node, 'type_id')  ? property_exists($node, 'type_id')  : $organism->infraspecific_name;
+      $infraspecific_name = $organism->infraspecific_name;
+      $type_id  = $organism->type_id->cvterm_id;
     }
 
-
-    // set the organism_id in the form
+    // Set the organism_id in the form.
     $form['organism_id'] = array(
       '#type' => 'value',
       '#value' => $organism->organism_id,
     );
     $organism_id = $organism->organism_id;
   }
-  else {
-    // get form defaults
-    $abbreviation   = property_exists($node, 'abbreviation')   ? property_exists($node, 'abbreviation')   : '';
-    $genus          = property_exists($node, 'genus')          ? property_exists($node, 'genus')          : '';
-    $species        = property_exists($node, 'species')        ? property_exists($node, 'species')        : '';
-    $common_name    = property_exists($node, 'common_name')    ? property_exists($node, 'common_name')    : '';
-    $description    = property_exists($node, 'description')    ? property_exists($node, 'description')    : '';
-    $organism_image = property_exists($node, 'organism_image') ? property_exists($node, 'organism_image') : '';
-    // The infraspecific and type_id fields are new to Chado v1.3
+
+  // If we are re constructing the form from a failed validation or ajax
+  // callback then use the $form_state['values'] values.
+  if (array_key_exists('values', $form_state) and isset($form_state['values']['genus'])) {
+    $abbreviation   = $form_state['values']['abbreviation'];
+    $genus        = $form_state['values']['genus'];
+    $species = $form_state['values']['species'];
+    $common_name  = $form_state['values']['common_name'];
+    $description     = $form_state['values']['comment'];
     if ($chado_version > 1.2) {
-      $infraspecific_name = property_exists($node, 'infraspecific_name') ? property_exists($node, 'infraspecific_name') : '';
-      $type_id        = property_exists($node, 'type_id')        ? property_exists($node, 'type_id')        : '';
+      $infraspecific_name = $form_state['values']['infraspecific_name'];
+      $type_id  = $form_state['values']['type_id'];
     }
-    $organism_id = NULL;
+  }
+  // If we are re building the form from after submission (from ajax call) then
+  // the values are in the $form_state['input'] array.
+  if (array_key_exists('input', $form_state) and !empty($form_state['input'])) {
+    $abbreviation   = $form_state['input']['abbreviation'];
+    $genus        = $form_state['input']['genus'];
+    $species = $form_state['input']['species'];
+    $common_name  = $form_state['input']['common_name'];
+    $description     = $form_state['input']['comment'];
+    if ($chado_version > 1.2) {
+      $infraspecific_name = $form_state['input']['infraspecific_name'];
+      $type_id  = $form_state['input']['type_id'];
+    }
   }
 
-  $form['genus']= array(
+  $form['genus'] = array(
     '#type' => 'textfield',
     '#title' => t('Genus'),
     '#required' => TRUE,
     '#default_value' => $genus,
   );
-  $form['species']= array(
+  $form['species'] = array(
     '#type' => 'textfield',
     '#title' => t('Species'),
     '#required' => TRUE,
     '#default_value' => $species,
   );
-  // The infraspecific and type_id fields are new to Chado v1.3
+  // The infraspecific and type_id fields are new to Chado v1.3.
   if ($chado_version > 1.2) {
 
-    $options = array();
+    $options = array('0' => 'Select a rank');
     $cv = tripal_get_cv(array('name' => 'taxonomic_rank'));
     if (!$cv) {
       drupal_set_message('The taxonomic_rank vocabulary cannot be found, thus selects for "rank" are not available.', 'warning');
@@ -188,8 +221,7 @@ function chado_organism_form($node, $form_state) {
 
     $form['type_id']= array(
       '#type' => 'select',
-      '#title' => t('Rank'),
-      '#required' => TRUE,
+      '#title' => t('Infraspecific Rank'),
       '#options' => $options,
       '#default_value' => $type_id,
       '#description' => t('The scientific name for any taxon
@@ -200,7 +232,6 @@ function chado_organism_form($node, $form_state) {
     $form['infraspecific_name']= array(
       '#type' => 'textfield',
       '#title' => t('Infraspecific Name'),
-      '#required' => TRUE,
       '#default_value' => $infraspecific_name,
       '#description'   => t("The infraspecific name for this organism. When
           diplaying the full taxonomic name, this field is appended to the
@@ -210,14 +241,12 @@ function chado_organism_form($node, $form_state) {
   $form['abbreviation']= array(
     '#type' => 'textfield',
     '#title' => t('Abbreviation'),
-    '#required' => TRUE,
     '#default_value' => $abbreviation,
     '#descriptoin' => t('A short abbreviation for this species (e.g. O.sativa)'),
   );
   $form['common_name']= array(
     '#type' => 'textfield',
     '#title' => t('Common Name'),
-    '#required' => TRUE,
     '#default_value' => $common_name,
   );
   $form['description']= array(
@@ -240,9 +269,9 @@ function chado_organism_form($node, $form_state) {
   $prop_cv = tripal_get_default_cv('organismprop', 'type_id');
   $cv_id = $prop_cv ? $prop_cv->cv_id : NULL;
   $details = array(
-    'property_table' => 'organismprop',      // the name of the prop table
-    'chado_id' => $organism_id,              // the value of organism_id for this record
-    'cv_id' => $cv_id                        // the cv.cv_id of the cv governing organismprop.type_id
+    'property_table' => 'organismprop',
+    'chado_id' => $organism_id,
+    'cv_id' => $cv_id
   );
   // Adds the form elements to your current form
   chado_add_node_form_properties($form, $form_state, $details);
@@ -250,11 +279,11 @@ function chado_organism_form($node, $form_state) {
   // ADDITIONAL DBXREFS FORM
   //---------------------------------------------
   $details = array(
-    'linking_table' => 'organism_dbxref',  // the name of the _dbxref table
-    'base_foreign_key' => 'organism_id',   // the name of the key in your base chado table
-    'base_key_value' => $organism_id       // the value of organism_id for this record
+    'linking_table' => 'organism_dbxref',
+    'base_foreign_key' => 'organism_id',
+    'base_key_value' => $organism_id
   );
-  // Adds the form elements to your current form
+  // Adds the form elements to your current form.
   chado_add_node_form_dbxrefs($form, $form_state, $details);
 
   return $form;
@@ -290,6 +319,15 @@ function chado_organism_validate($node, $form, &$form_state) {
   $node->species      = property_exists($node, 'species') ? trim($node->species) : '';
   $node->abbreviation = property_exists($node, 'abbreviation') ? trim($node->abbreviation) : '';
   $node->common_name  = property_exists($node, 'common_name') ? trim($node->common_name) : '';
+  $node->type_id  = property_exists($node, 'type_id') ? trim($node->type_id) : '';
+  $node->infraspecific_name  = property_exists($node, 'infraspecific_name') ? trim($node->infraspecific_name) : '';
+
+  if ($node->type_id and !$node->infraspecific_name) {
+    form_set_error('infraspecific_name', "If a rank is provided an infraspecific name must also be provided.");
+  }
+  if (!$node->type_id and $node->infraspecific_name) {
+    form_set_error('type_id', "Please provide a rank for the infraspecific name.");
+  }
 
   // Validating for an update
   if (property_exists($node, 'organism_id')) {
@@ -339,6 +377,7 @@ function chado_organism_validate($node, $form, &$form_state) {
  */
 function chado_organism_insert($node) {
 
+  $chado_version = chado_get_version(TRUE);
   $organism_id = '';
 
   // if there is an organism_id in the $node object then this must be a sync so
@@ -351,14 +390,27 @@ function chado_organism_insert($node) {
     $node->abbreviation = trim($node->abbreviation);
     $node->common_name  = trim($node->common_name);
     $node->description  = trim($node->description['value']);
+    if ($chado_version > 1.2) {
+      $node->type_id  = trim($node->type_id);
+      $node->infraspecific_name  = trim($node->infraspecific_name);
+    }
 
     $values = array(
       'genus'        => $node->genus,
       'species'      => $node->species,
       'abbreviation' => $node->abbreviation,
       'common_name'  => $node->common_name,
-      'comment'      => $node->description
+      'comment'      => $node->description,
     );
+    if ($chado_version > 1.2) {
+      if ($node->type_id) {
+        $values['type_id'] = $node->type_id;
+      }
+      if ($node->infraspecific_name) {
+        $values['infraspecific_name'] = $node->infraspecific_name;
+      }
+    }
+
     $organism = chado_insert_record('organism', $values);
     if (!$organism) {
       drupal_set_message(t('Unable to add organism.', 'warning'));
@@ -416,12 +468,18 @@ function chado_organism_insert($node) {
  */
 function chado_organism_update($node) {
 
+  $chado_version = chado_get_version(TRUE);
+
   // remove any white space around values
   $node->genus        = trim($node->genus);
   $node->species      = trim($node->species);
   $node->abbreviation = trim($node->abbreviation);
   $node->common_name  = trim($node->common_name);
   $node->description  = trim($node->description['value']);
+  if ($chado_version > 1.2) {
+    $node->type_id = trim($node->type_id);
+    $node->infraspecific_name = trim($node->infraspecific_name);
+  }
 
   $organism_id = chado_get_id_from_nid('organism', $node->nid);
 
@@ -439,6 +497,21 @@ function chado_organism_update($node) {
     'common_name' => $node->common_name,
     'comment' => $node->description
   );
+    if ($chado_version > 1.2) {
+      if ($node->type_id) {
+        $values['type_id'] = $node->type_id;
+      }
+      else {
+        $values['type_id'] = '__NULL__';
+      }
+      if ($node->infraspecific_name) {
+        $values['infraspecific_name'] = $node->infraspecific_name;
+      }
+      else {
+        $values['infraspecific_name'] = '__NULL__';
+      }
+    }
+
   $org_status = chado_update_record('organism', $match, $values);
   if ( $node->organism_image != '' ) {
     chado_organism_add_image($node);
@@ -593,9 +666,18 @@ function tripal_organism_node_presave($node) {
       // is being called for syncing, so we must set the title accordingly
       if (property_exists($node, 'genus')) {
         $node->title = $node->genus  . " " . $node->species;
+        if (property_exists($node, 'type_id')) {
+          $cvterm = tripal_get_cvterm(array('cvterm_id' => $node->type_id));
+          if ($cvterm) {
+            $node->title .= $cvterm->name . " " . $node->infraspecific_name;
+          }
+        }
       }
-      else if (property_exists($node, 'organism')) {
+      elseif (property_exists($node, 'organism')) {
         $node->title = $node->organism->genus . " " . $node->organism->species;
+        if (property_exists($node, 'type_id')) {
+          $node->title .= $node->organism->type_id->name . " " . $node->organism->infraspecific_name;
+        }
       }
       break;
   }
