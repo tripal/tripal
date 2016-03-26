@@ -917,7 +917,7 @@ function tripal_autocomplete_cvterm($cv_id, $string = '') {
   // in the results.
   else {
     $sql = "
-      SELECT CVT.cvterm_id, CVT.name
+      SELECT CVT.cvterm_id, CVT.name, CV.name as cvname, CVT.cv_id
       FROM {cvterm} CVT
         INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
       WHERE lower(CVT.name) like lower(:name)

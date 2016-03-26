@@ -1910,7 +1910,6 @@ function tripal_chado_entity_property_get_value($entity, $options, $field_name, 
  * Remove the nid from chado_entity if it exists when the node is deleted
  */
 function tripal_chado_node_delete($node) {
-  dpm($node);
   $nid = $node->nid;
   $sql = "UPDATE chado_entity SET nid = NULL WHERE nid = :nid";
   db_query($sql, array('nid' => $nid));
