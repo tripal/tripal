@@ -27,12 +27,16 @@ function tripal_organism_disable() {
  * @ingroup tripal_organism
  */
 function tripal_organism_install() {
-  // cvs & cvterms
+  // cvs & cvterms.
   tripal_organism_add_cvs();
   tripal_organism_add_cvterms();
 
-  // set the default vocabularies
+  // set the default vocabularies.
   tripal_set_default_cv('organismprop', 'type_id', 'organism_property');
+
+  // Add taxonomic terms.
+  $obo_id = tripal_insert_obo('Taxonomic Rank', '{tripal_organism}/files/taxrank.obo');
+  tripal_submit_obo_job(array('obo_id' => $obo_id));
 
 }
 
@@ -188,6 +192,21 @@ function tripal_organism_update_7200() {
       $error = $e->getMessage();
       throw new DrupalUpdateException('Could not move organism taxonomy terms: '. $error);
     }
+  }
+}
+
+/**
+ * Adds the taxonomic rank vocabulary.
+ */
+function tripal_organism_update_7201() {
+  try {
+    // Add taxonomic terms.
+    $obo_id = tripal_insert_obo('Taxonomic Rank', '{tripal_organism}/files/taxrank.obo');
+    tripal_submit_obo_job(array('obo_id' => $obo_id));
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Could not move organism taxonomy terms: '. $error);
   }
 }
 

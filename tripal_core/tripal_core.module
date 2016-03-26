@@ -729,6 +729,7 @@ function tripal_core_import_api() {
   module_load_include('inc', 'tripal_core', 'api/tripal_core.mviews.api');
   module_load_include('inc', 'tripal_core', 'api/tripal_core.schema_v1.11.api');
   module_load_include('inc', 'tripal_core', 'api/tripal_core.schema_v1.2.api');
+  module_load_include('inc', 'tripal_core', 'api/tripal_core.schema_v1.3.api');
   module_load_include('inc', 'tripal_core', 'api/tripal_core.tripal_variables.api');
   module_load_include('inc', 'tripal_core', 'api/tripal_core.tripal.api');
 }

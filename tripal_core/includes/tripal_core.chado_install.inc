@@ -28,9 +28,11 @@ function tripal_core_chado_load_form() {
      '#type' => 'radios',
      '#title' => 'Installation/Upgrade Action',
      '#options' => array(
+        'Install Chado v1.3' => t('New Install of Chado v1.3 (erases all existing Chado data if Chado already exists)'),
+        'Upgrade Chado v1.2 to v1.3' => t('Upgrade existing Chado v1.2 to v1.3 (no data is lost)'),
         'Install Chado v1.2' => t('New Install of Chado v1.2 (erases all existing Chado data if Chado already exists)'),
         'Upgrade Chado v1.11 to v1.2' => t('Upgrade existing Chado v1.11 to v1.2 (no data is lost)'),
-        'Install Chado v1.11' => t('New Install of Chado v1.11 (erases all existing Chado data if Chado already exists)')
+        'Install Chado v1.11' => t('New Install of Chado v1.11 (erases all existing Chado data if Chado already exists)'),
      ),
      '#description' => t('Select an action to perform. If you want to install Chado all other Tripal modules must not be installed.'),
      '#required' => TRUE,
@@ -89,7 +91,8 @@ function tripal_core_chado_load_form_submit($form, &$form_state) {
   global $user;
   $action_to_do = trim($form_state['values']['action_to_do']);
   $args = array($action_to_do);
-  tripal_add_job($action_to_do, 'tripal_core', 'tripal_core_install_chado', $args, $user->uid);
+  tripal_add_job($action_to_do, 'tripal_core',
+      'tripal_core_install_chado', $args, $user->uid);
 }
 
 /**
@@ -109,79 +112,167 @@ function tripal_core_install_chado($action) {
        :version)
   ";
 
-  if ($action == 'Install Chado v1.2') {
-    $schema_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/default_schema-1.2.sql';
-    $init_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/initialize-1.2.sql';
-    if (tripal_core_reset_chado_schema()) {
-      $success = tripal_core_install_sql($schema_file);
-      if ($success) {
-        print "Install of Chado v1.2 (Step 1 of 2) Successful!\n";
-      }
-      else {
-        print "Installation (Step 1 of 2) Problems!  Please check output above for errors.\n";
-        exit;
-      }
-      $success = tripal_core_install_sql($init_file);
-      if ($success) {
-        print "Install of Chado v1.2 (Step 2 of 2) Successful.\nInstallation Complete\n";
-      }
-      else {
-        print "Installation (Step 2 of 2) Problems!  Please check output above for errors.\n";
-        exit;
-      }
-      chado_query($vsql, array(':version' => '1.2')); # set the version
+  try {
+    if ($action == 'Install Chado v1.3') {
+      tripal_core_install_chado_1_3();
+      chado_query($vsql, array(':version' => '1.3'));
     }
-    else {
-      print "ERROR: cannot install chado.  Please check database permissions\n";
-      exit;
+    elseif ($action == 'Upgrade Chado v1.2 to v1.3') {
+      tripal_core_upgrade_chado_1_2_to_1_3();
+      chado_query($vsql, array(':version' => '1.3'));
+    }
+    elseif ($action == 'Install Chado v1.2') {
+      tripal_core_install_chado_1_2();
+      chado_query($vsql, array(':version' => '1.2'));
+    }
+    elseif ($action == 'Upgrade Chado v1.11 to v1.2') {
+      tripal_core_upgrade_chado_1_11_to_1_2();
+      chado_query($vsql, array(':version' => '1.2'));
+    }
+    elseif ($action == 'Install Chado v1.11') {
+      tripal_core_install_chado_1_11();
     }
   }
-  elseif ($action == 'Upgrade Chado v1.11 to v1.2') {
-    $schema_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/default_schema-1.11-1.2-diff.sql';
-    $init_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/upgrade-1.11-1.2.sql';
+  catch (Exception $e) {
+
+  }
+}
+
+/**
+ * Installs Chado v1.3.
+ */
+function tripal_core_install_chado_1_3() {
+  // Get the path to the schema and init SQL files.
+  $schema_file = drupal_get_path('module', 'tripal_core') .
+    '/chado_schema/default_schema-1.3.sql';
+  $init_file = drupal_get_path('module', 'tripal_core') .
+    '/chado_schema/initialize-1.3.sql';
+
+  // Erase the Chado schema if it exists and perform the install.
+  if (tripal_core_reset_chado_schema()) {
     $success = tripal_core_install_sql($schema_file);
     if ($success) {
-      print "Upgrade from v1.11 to v1.2 (Step 1 of 2) Successful!\n";
+      print "Install of Chado v1.3 (Step 1 of 2) Successful!\n";
     }
     else {
-      print "Upgrade (Step 1 of 2) problems!  Please check output above for errors.\n";
-      exit;
+      throw new Exception("Installation (Step 1 of 2) Problems!  Please check output above for errors.");
     }
     $success = tripal_core_install_sql($init_file);
     if ($success) {
-      print "Upgrade from v1.11 to v1.2 (Step 2 of 2) Successful.\nUpgrade Complete!\n";
+      print "Install of Chado v1.3 (Step 2 of 2) Successful.\nInstallation Complete\n";
     }
     else {
-      print "Upgrade (Step 2 of 2) problems!  Please check output above for errors.\n";
-      exit;
+      throw new Exception("Installation (Step 2 of 2) Problems!  Please check output above for errors.");
     }
-    chado_query($vsql, array(':version' => '1.2')); # set the version
   }
-  elseif ($action == 'Install Chado v1.11') {
-    $schema_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/default_schema-1.11.sql';
-    $init_file = drupal_get_path('module', 'tripal_core') . '/chado_schema/initialize-1.11.sql';
-    if (tripal_core_reset_chado_schema()) {
-      $success = tripal_core_install_sql($schema_file);
-      if ($success) {
-        print "Install of Chado v1.11 (Step 1 of 2) Successful!\n";
-      }
-      else {
-        print "Installation (Step 1 of 2) Problems!  Please check output above for errors.\n";
-        exit;
-      }
-      $success = tripal_core_install_sql($init_file);
-      if ($success) {
-        print "Install of Chado v1.11 (Step 2 of 2) Successful.\nInstallation Complete!\n";
-      }
-      else {
-        print "Installation (Step 2 of 2) Problems!  Please check output above for errors.\n";
-        exit;
-      }
+  else {
+    throw new Exception("ERROR: cannot install chado.  Please check database permissions");
+  }
+}
+/**
+ * Installs Chado v1.2.
+ */
+function tripal_core_install_chado_1_2() {
+  // Get the path to the schema and init SQL files.
+  $schema_file = drupal_get_path('module', 'tripal_core') .
+    '/chado_schema/default_schema-1.2.sql';
+  $init_file = drupal_get_path('module', 'tripal_core') .
+    '/chado_schema/initialize-1.2.sql';
+
+  // Erase the Chado schema if it exists and perform the install.
+  if (tripal_core_reset_chado_schema()) {
+    $success = tripal_core_install_sql($schema_file);
+    if ($success) {
+      print "Install of Chado v1.2 (Step 1 of 2) Successful!\n";
     }
     else {
-      print "ERROR: cannot install chado.  Please check database permissions\n";
-      exit;
+      throw new Exception("Installation (Step 1 of 2) Problems!  Please check output above for errors.");
     }
+    $success = tripal_core_install_sql($init_file);
+    if ($success) {
+      print "Install of Chado v1.2 (Step 2 of 2) Successful.\nInstallation Complete\n";
+    }
+    else {
+      throw new Exception("Installation (Step 2 of 2) Problems!  Please check output above for errors.");
+    }
+  }
+  else {
+    throw new Exception("ERROR: cannot install chado.  Please check database permissions");
+  }
+}
+/**
+ *
+ */
+function tripal_core_install_chado_1_11() {
+
+  // Get the path to the schema and init SQL files.
+  $schema_file = drupal_get_path('module', 'tripal_core') .
+    '/chado_schema/default_schema-1.11.sql';
+  $init_file = drupal_get_path('module', 'tripal_core') .
+    '/chado_schema/initialize-1.11.sql';
+
+  // Erase the Chado schema if it exists and perform the install.
+  if (tripal_core_reset_chado_schema()) {
+    $success = tripal_core_install_sql($schema_file);
+    if ($success) {
+      print "Install of Chado v1.11 (Step 1 of 2) Successful!\n";
+    }
+    else {
+      throw new Exception("Installation (Step 1 of 2) Problems!  Please check output above for errors.");
+    }
+    $success = tripal_core_install_sql($init_file);
+    if ($success) {
+      print "Install of Chado v1.11 (Step 2 of 2) Successful.\nInstallation Complete!\n";
+    }
+    else {
+      throw new Exception("Installation (Step 2 of 2) Problems!  Please check output above for errors.");
+    }
+  }
+  else {
+    throw new Exception("ERROR: cannot install chado.  Please check database permissions");
+  }
+}
+/**
+ * Upgrades Chado from v1.2 to v1.3
+ */
+function tripal_core_upgrade_chado_1_2_to_1_3() {
+
+  // Get the path to the diff schema and upgrade SQL files.
+  $diff_file = drupal_get_path('module', 'tripal_core') .
+    '/chado_schema/default_schema-1.2-1.3-diff.sql';
+
+  $success = tripal_core_install_sql($diff_file);
+  if ($success) {
+    print "Upgrade from v1.2 to v1.3 Successful!\n";
+  }
+  else {
+    throw new Exception("Upgrade problems!  Please check output above for errors.");
+  }
+}
+/**
+ * Upgrades Chado from v1.11 to v1.2
+ */
+function tripal_core_upgrade_chado_1_11_to_1_2() {
+
+  // Get the path to the schema diff and upgarde SQL files.
+  $schema_file = drupal_get_path('module', 'tripal_core') .
+    '/chado_schema/default_schema-1.11-1.2-diff.sql';
+  $init_file = drupal_get_path('module', 'tripal_core') .
+    '/chado_schema/upgrade-1.11-1.2.sql';
+
+  $success = tripal_core_install_sql($schema_file);
+  if ($success) {
+    print "Upgrade from v1.11 to v1.2 (Step 1 of 2) Successful!\n";
+  }
+  else {
+    throw new Exception("Upgrade (Step 1 of 2) problems!  Please check output above for errors.");
+  }
+  $success = tripal_core_install_sql($init_file);
+  if ($success) {
+    print "Upgrade from v1.11 to v1.2 (Step 2 of 2) Successful.\nUpgrade Complete!\n";
+  }
+  else {
+    throw new Exception("Upgrade (Step 2 of 2) problems!  Please check output above for errors.");
   }
 }
 

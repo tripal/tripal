@@ -103,6 +103,7 @@ function chado_organism_node_access($node, $op, $account) {
  */
 function chado_organism_form($node, $form_state) {
   $form = array();
+  $chado_version = chado_get_version(TRUE);
 
   // we have a file upload element on the form soe we need the multipart encoding type
   $form['#attributes']['enctype'] = 'multipart/form-data';
@@ -121,6 +122,12 @@ function chado_organism_form($node, $form_state) {
     $common_name    = property_exists($node, 'common_name')    ? property_exists($node, 'common_name')    : $organism->common_name;
     $description    = property_exists($node, 'description')    ? property_exists($node, 'description')    : $organism->comment;
     $organism_image = property_exists($node, 'organism_image') ? property_exists($node, 'organism_image') : '';
+    // The infraspecific and type_id fields are new to Chado v1.3
+    if ($chado_version > 1.2) {
+      $infraspecific_name = property_exists($node, 'infraspecific_name') ? property_exists($node, 'infraspecific_name') : $organism->infraspecific_name;
+      $type_id  = property_exists($node, 'type_id')  ? property_exists($node, 'type_id')  : $organism->infraspecific_name;
+    }
+
 
     // set the organism_id in the form
     $form['organism_id'] = array(
@@ -137,7 +144,11 @@ function chado_organism_form($node, $form_state) {
     $common_name    = property_exists($node, 'common_name')    ? property_exists($node, 'common_name')    : '';
     $description    = property_exists($node, 'description')    ? property_exists($node, 'description')    : '';
     $organism_image = property_exists($node, 'organism_image') ? property_exists($node, 'organism_image') : '';
-
+    // The infraspecific and type_id fields are new to Chado v1.3
+    if ($chado_version > 1.2) {
+      $infraspecific_name = property_exists($node, 'infraspecific_name') ? property_exists($node, 'infraspecific_name') : '';
+      $type_id        = property_exists($node, 'type_id')        ? property_exists($node, 'type_id')        : '';
+    }
     $organism_id = NULL;
   }
 
@@ -153,11 +164,55 @@ function chado_organism_form($node, $form_state) {
     '#required' => TRUE,
     '#default_value' => $species,
   );
+  // The infraspecific and type_id fields are new to Chado v1.3
+  if ($chado_version > 1.2) {
+
+    $options = array();
+    $cv = tripal_get_cv(array('name' => 'taxonomic_rank'));
+    if (!$cv) {
+      drupal_set_message('The taxonomic_rank vocabulary cannot be found, thus selects for "rank" are not available.', 'warning');
+    }
+    else {
+      $terms = tripal_get_cvterm_select_options($cv->cv_id);
+
+      // Unfortunately the taxonomic_rank vocabulary is not properly organized
+      // such that we an only include terms below 'species'. Therefore we will
+      // just list them here and hope we haven't missed one.
+      $valid_terms = array('subspecies', 'varietas', 'subvariety', 'forma', 'subforma');
+      foreach  ($terms as $cvterm_id => $name) {
+        if (in_array($name, $valid_terms)) {
+          $options[$cvterm_id] = $name;
+        }
+      }
+    }
+
+    $form['type_id']= array(
+      '#type' => 'select',
+      '#title' => t('Rank'),
+      '#required' => TRUE,
+      '#options' => $options,
+      '#default_value' => $type_id,
+      '#description' => t('The scientific name for any taxon
+        below the rank of species. This field is used for constructing the
+        full infraspecific name for the organism.')
+    );
+
+    $form['infraspecific_name']= array(
+      '#type' => 'textfield',
+      '#title' => t('Infraspecific Name'),
+      '#required' => TRUE,
+      '#default_value' => $infraspecific_name,
+      '#description'   => t("The infraspecific name for this organism. When
+          diplaying the full taxonomic name, this field is appended to the
+          genus, species and rank."),
+    );
+  }
   $form['abbreviation']= array(
     '#type' => 'textfield',
     '#title' => t('Abbreviation'),
     '#required' => TRUE,
     '#default_value' => $abbreviation,
+    '#descriptoin' => t('A short abbreviation for this species (e.g. O.sativa)'),
   );
   $form['common_name']= array(
     '#type' => 'textfield',

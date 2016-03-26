@@ -2316,13 +2316,13 @@ function tripal_core_chado_schema_v1_2_cell_line_synonym() {
         'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'als',
+        'default' => FALSE,
       ),
       'is_internal' => array(
         'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'als',
+        'default' => FALSE,
       ),
     ),
     'primary key' => array(
@@ -4877,13 +4877,13 @@ function tripal_core_chado_schema_v1_2_feature() {
         'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'als',
+        'default' => FALSE,
       ),
       'is_obsolete' => array(
         'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'als',
+        'default' => FALSE,
       ),
       'timeaccessioned' => array(
         'description' => '',
@@ -5010,7 +5010,7 @@ function tripal_core_chado_schema_v1_2_feature_cvterm() {
         'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'als',
+        'default' => FALSE,
       ),
       'rank' => array(
         'description' => '',
@@ -6206,13 +6206,13 @@ function tripal_core_chado_schema_v1_2_feature_synonym() {
         'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'als',
+        'default' => FALSE,
       ),
       'is_internal' => array(
         'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'als',
+        'default' => FALSE,
       ),
     ),
     'primary key' => array(
@@ -6302,7 +6302,7 @@ function tripal_core_chado_schema_v1_2_featureloc() {
         'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'als',
+        'default' => FALSE,
       ),
       'fmax' => array(
         'description' => '',
@@ -6313,7 +6313,7 @@ function tripal_core_chado_schema_v1_2_featureloc() {
         'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'als',
+        'default' => FALSE,
       ),
       'strand' => array(
         'description' => '',
@@ -7542,7 +7542,7 @@ function tripal_core_chado_schema_v1_2_library_synonym() {
         'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'als',
+        'default' => FALSE,
       ),
     ),
     'primary key' => array(
@@ -11236,7 +11236,7 @@ function tripal_core_chado_schema_v1_2_pub() {
         'description' => '',
         'type' => 'boolean',
         'not null' => FALSE,
-        'default' => 'als',
+        'default' => FALSE,
       ),
       'publisher' => array(
         'description' => '',
@@ -11508,7 +11508,7 @@ function tripal_core_chado_schema_v1_2_pubauthor() {
         'description' => '',
         'type' => 'boolean',
         'not null' => FALSE,
-        'default' => 'als',
+        'default' => FALSE,
       ),
       'surname' => array(
         'description' => '',
@@ -11970,7 +11970,7 @@ function tripal_core_chado_schema_v1_2_stock() {
         'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'als',
+        'default' => FALSE,
       ),
     ),
     'primary key' => array(
@@ -12075,7 +12075,7 @@ function tripal_core_chado_schema_v1_2_stock_cvterm() {
         'description' => '',
         'type' => 'boolean',
         'not null' => TRUE,
-        'default' => 'als',
+        'default' => FALSE,
       ),
       'rank' => array(
         'description' => '',
