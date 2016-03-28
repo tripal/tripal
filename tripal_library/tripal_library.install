@@ -121,6 +121,7 @@ function tripal_library_add_mview_library_feature_count(){
     'description' => $comment,
     'fields' => array(
       'library_id' => array(
+        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ),

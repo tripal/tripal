@@ -203,10 +203,12 @@ function tripal_cv_add_cv_root_mview() {
         'not null' => TRUE,
       ),
       'cvterm_id' => array(
+        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'cv_id' => array(
+        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ),
