@@ -1,5 +1,5 @@
 set search_path=public,so,frange,genetic_code;
-DROP FUNCTION gfffeatureatts(integer);
+DROP FUNCTION IF EXISTS gfffeatureatts(integer);
 DROP VIEW IF EXISTS db_dbxref_count CASCADE;
 DROP VIEW IF EXISTS stats_paths_to_root CASCADE;
 DROP VIEW IF EXISTS cv_root CASCADE;
@@ -6783,14 +6783,14 @@ CREATE INDEX analysis_relationship_idx3 ON analysis_relationship USING btree (ty
 --
 -- Name: analysisfeatureprop_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX analysisfeatureprop_idx1;
 CREATE INDEX analysisfeatureprop_idx1 ON analysisfeatureprop USING btree (analysisfeature_id);
 
 
 --
 -- Name: analysisfeatureprop_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX analysisfeatureprop_idx2;
 CREATE INDEX analysisfeatureprop_idx2 ON analysisfeatureprop USING btree (type_id);
 
 --
