@@ -18,6 +18,18 @@ function tripal_core_chado_load_form() {
   // to warn the user if the current version is not compatible
   $version = chado_get_version(FALSE, TRUE);
 
+  if ($real_version == '1.2') {
+    drupal_set_message('Please note: the upgrade of Chado from v1.2 to v1.3 may
+        require a fix to your materialized views.  All of the primary keys
+        in Chado were changed from integers to big integers to support larger
+        tables.  If your materialized views uses these fields you may need to
+        alter and repopulate those views.  Additionally, if you have made
+        any custom PL/pgSQL functions that expect primary and foreign key fields
+        to be integers, then those functions will need to be correct.
+        The Tripal upgrader is not able to fix these problems automatically',
+        'warning');
+  }
+
   $form['current_version'] = array(
     '#type' => 'item',
     '#title' => t("Current installed version of Chado:"),
@@ -122,6 +134,16 @@ function tripal_core_install_chado($action) {
        :version)
   ";
 
+  $vusql = "
+    UPDATE {chadoprop}
+    SET value = :version
+    WHERE type_id = (SELECT cvterm_id
+        FROM {cvterm} CVT
+          INNER JOIN {cv} CV on CVT.cv_id = CV.cv_id
+         WHERE CV.name = 'chado_properties' AND CVT.name = 'version')
+  ";
+
+  $transaction = db_transaction();
   try {
     if ($action == 'Install Chado v1.3') {
       tripal_core_install_chado_1_3();
@@ -129,7 +151,7 @@ function tripal_core_install_chado($action) {
     }
     elseif ($action == 'Upgrade Chado v1.2 to v1.3') {
       tripal_core_upgrade_chado_1_2_to_1_3();
-      chado_query($vsql, array(':version' => '1.3'));
+      chado_query($vusql, array(':version' => '1.3'));
     }
     elseif ($action == 'Install Chado v1.2') {
       tripal_core_install_chado_1_2();
@@ -144,8 +166,9 @@ function tripal_core_install_chado($action) {
     }
   }
   catch (Exception $e) {
-    tripal_chado_install_done();
-    tripal_log($e->getMessage(), 'error');
+    $transaction->rollback();
+    tripal_core_chado_install_done();
+    tripal_report_error('tripal_core', TRIPAL_ERROR, $e->getMessage(), array('print' => TRUE));
     return FALSE;
   }
   return TRUE;
@@ -359,6 +382,7 @@ function tripal_core_install_sql($sql_file) {
 
   $stack = array();
   $in_string = 0;
+  $in_function = FALSE;
   $query = '';
   $i = 0;
   $success = 1;
@@ -377,51 +401,70 @@ function tripal_core_install_sql($sql_file) {
       continue;
     }
     // Find SQL for new objects
-    if (preg_match('/^\s*CREATE\s+TABLE/i', $line) and !$in_string) {
+    if (preg_match('/^\s*CREATE\s+TABLE/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'table';
       $line = preg_replace("/public\./", "chado.", $line);
     }
-    if (preg_match('/^\s*ALTER\s+TABLE/i', $line) and !$in_string) {
-      $stack[] = 'alter table';
+    if (preg_match('/^\s*ALTER\s+TABLE\s+/i', $line) and !$in_string and !$in_function) {
+      $stack[] = 'alter_table';
       $line = preg_replace("/public\./", "chado.", $line);
     }
-    if (preg_match('/^\s*SET/i', $line) and !$in_string) {
+    if (preg_match('/^\s*SET/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'set';
     }
-    if (preg_match('/^\s*CREATE\s+SCHEMA/i', $line) and !$in_string) {
+    if (preg_match('/^\s*CREATE\s+SCHEMA/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'schema';
     }
-    if (preg_match('/^\s*CREATE\s+SEQUENCE/i', $line) and !$in_string) {
+    if (preg_match('/^\s*CREATE\s+SEQUENCE/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'sequence';
       $line = preg_replace("/public\./", "chado.", $line);
     }
-    if (preg_match('/^\s*CREATE\s+(?:OR\s+REPLACE\s+)*VIEW/i', $line) and !$in_string) {
+    if (preg_match('/^\s*CREATE\s+(?:OR\s+REPLACE\s+)*VIEW/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'view';
       $line = preg_replace("/public\./", "chado.", $line);
     }
-    if (preg_match('/^\s*COMMENT/i', $line) and !$in_string and sizeof($stack)==0) {
+    if (preg_match('/^\s*COMMENT/i', $line) and !$in_string and sizeof($stack)==0 and !$in_function) {
       $stack[] = 'comment';
       $line = preg_replace("/public\./", "chado.", $line);
     }
-    if (preg_match('/^\s*CREATE\s+(?:OR\s+REPLACE\s+)*FUNCTION/i', $line) and !$in_string) {
+    if (preg_match('/^\s*CREATE\s+(?:OR\s+REPLACE\s+)*FUNCTION/i', $line) and !$in_string and !$in_function) {
+      $in_function = TRUE;
       $stack[] = 'function';
       $line = preg_replace("/public\./", "chado.", $line);
     }
-    if (preg_match('/^\s*CREATE\s+INDEX/i', $line) and !$in_string) {
+    if (preg_match('/^\s*CREATE\s+INDEX/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'index';
     }
-    if (preg_match('/^\s*INSERT\s+INTO/i', $line) and !$in_string) {
+    if (preg_match('/^\s*INSERT\s+INTO/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'insert';
       $line = preg_replace("/public\./", "chado.", $line);
     }
-    if (preg_match('/^\s*CREATE\s+TYPE/i', $line) and !$in_string) {
+    if (preg_match('/^\s*CREATE\s+TYPE/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'type';
     }
-    if (preg_match('/^\s*GRANT/i', $line) and !$in_string) {
+    if (preg_match('/^\s*GRANT/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'grant';
     }
-    if (preg_match('/^\s*CREATE\s+AGGREGATE/i', $line) and !$in_string) {
+    if (preg_match('/^\s*CREATE\s+AGGREGATE/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'aggregate';
+    }
+    if (preg_match('/^\s*DROP\s+FUNCTION/i', $line) and !$in_string and !$in_function) {
+      $stack[] = 'drop_function';
+    }
+    if (preg_match('/^\s*DROP\s+VIEW/i', $line) and !$in_string and !$in_function) {
+      $stack[] = 'drop_view';
+    }
+    if (preg_match('/^\s*DROP\s+INDEX/i', $line) and !$in_string and !$in_function) {
+      $stack[] = 'drop_index';
+    }
+    if (preg_match('/^\s*DROP\s+SEQUENCE/i', $line) and !$in_string and !$in_function) {
+      $stack[] = 'drop_seq';
+    }
+    if (preg_match('/^\s*ALTER\s+TYPE\s+/i', $line) and !$in_string and !$in_function) {
+      $stack[] = 'alter_type';
+    }
+    if (preg_match('/^\s*ALTER\s+SEQUENCE\s+/i', $line) and !$in_string and !$in_function) {
+      $stack[] = 'alter_seq';
     }
 
     // determine if we are in a string that spans a line
@@ -429,11 +472,11 @@ function tripal_core_install_sql($sql_file) {
     $in_string = $in_string - ($matches % 2);
     $in_string = abs($in_string);
 
-    // if we've reached the end of an object the pop the stack
+    // if we've reached the end of an object then pop the stack
     if (strcmp($stack[sizeof($stack)-1], 'table') == 0 and preg_match('/\);\s*$/', $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'alter table') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    if (strcmp($stack[sizeof($stack)-1], 'alter_table') == 0 and preg_match('/;\s*$/', $line)) {
       $type = array_pop($stack);
     }
     if (strcmp($stack[sizeof($stack)-1], 'set') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
@@ -451,8 +494,26 @@ function tripal_core_install_sql($sql_file) {
     if (strcmp($stack[sizeof($stack)-1], 'comment') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'function') == 0 and preg_match("/LANGUAGE.*?;\s+$/i", $line)) {
-      $type = array_pop($stack);
+    if (strcmp($stack[sizeof($stack)-1], 'function') == 0) {
+
+      if(preg_match('/LANGUAGE.*?;\s*$/i', $line)) {
+        $type = array_pop($stack);
+        $in_function = FALSE;
+        //print "FUNCTION DONE ($i): $line";
+      }
+      else if(preg_match('/\$_\$;\s*$/i', $line)) {
+        $type = array_pop($stack);
+        $in_function = FALSE;
+        //print "FUNCTION DONE ($i): $line";
+      }
+      else if(preg_match('/\$\$;\s*$/i', $line)) {
+        $type = array_pop($stack);
+        $in_function = FALSE;
+       // print "FUNCTION DONE ($i): $line";
+      }
+      else {
+       // print "FUNCTION ($i): $line";
+      }
     }
     if (strcmp($stack[sizeof($stack)-1], 'index') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
@@ -469,19 +530,33 @@ function tripal_core_install_sql($sql_file) {
     if (strcmp($stack[sizeof($stack)-1], 'aggregate') == 0 and preg_match('/\);\s*$/', $line)) {
       $type = array_pop($stack);
     }
+    if (strcmp($stack[sizeof($stack)-1], 'drop_function') == 0 and preg_match('/;\s*$/i', $line)) {
+      $type = array_pop($stack);
+    }
+    if (strcmp($stack[sizeof($stack)-1], 'drop_view') == 0 and preg_match('/;\s*$/i', $line)) {
+      $type = array_pop($stack);
+    }
+    if (strcmp($stack[sizeof($stack)-1], 'drop_index') == 0 and preg_match("/;\s*$/i", $line)) {
+      $type = array_pop($stack);
+    }
+    if (strcmp($stack[sizeof($stack)-1], 'drop_seq') == 0 and preg_match("/;\s*$/i", $line)) {
+      $type = array_pop($stack);
+    }
+    if (strcmp($stack[sizeof($stack)-1], 'alter_type') == 0 and preg_match('/;\s*$/i', $line)) {
+      $type = array_pop($stack);
+    }
+    if (strcmp($stack[sizeof($stack)-1], 'alter_seq') == 0 and preg_match('/;\s*$/i', $line)) {
+      $type = array_pop($stack);
+    }
     // if we're in a recognized SQL statement then let's keep track of lines
     if ($type or sizeof($stack) > 0) {
       $query .= "$line";
     }
     else {
-      print "UNHANDLED $i, $in_string: $line";
-      tripal_core_chado_install_done();
-      return FALSE;
+      throw new Exception("UNHANDLED $i, $in_string: $line");
     }
-    if (preg_match_all("/\n/", $query, $temp) > 100) {
-      print "SQL query is too long.  Terminating:\n$query\n";
-      tripal_core_chado_install_done();
-      return FALSE;
+    if (preg_match_all("/\n/", $query, $temp) > 1000) {
+      throw new Exception("SQL query is too long.  Terminating:\n$query\n");
     }
     if ($type and sizeof($stack) == 0) {
       //print "Adding $type: line $i\n";
@@ -492,14 +567,17 @@ function tripal_core_install_sql($sql_file) {
       }
 
       // execute the statement
-      $result = db_query($query);
+      try {
+        $result = db_query($query);
+      }
+      catch (Exception $e) {
+        $error  = $e->getMessage();
+        throw new Exception("FAILED. Line  $i, $in_string\n$error:\n$query\n\n");
+      }
 
       if (!$result) {
         $error  = pg_last_error();
-        print "FAILED. Line  $i, $in_string\n$error:\n$query\n\n";
-        tripal_core_chado_install_done();
-        $success = 0;
-        return $success;
+        throw new Exception("FAILED. Line  $i, $in_string\n$error:\n$query\n\n");
       }
       $query = '';
     }
