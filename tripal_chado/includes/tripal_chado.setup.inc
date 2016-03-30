@@ -201,12 +201,8 @@ function tripal_chado_prepare_chado() {
     // tripal_chado_load_obo_v1_2_id($obo_id);
     //// tripal_submit_obo_job(array('obo_id' => $obo_id));
 
-    // Load the sequence ontology.
-    $obo = tripal_get_obo(array('obo_name' => 'Sequence Ontology'));
-    if ($obo) {
-      print "Installing the Sequence Ontology... This may take a while...\n";
-      tripal_chado_load_obo_v1_2_id($obo->obo_id);
-    }
+    // Add the vocabularies used by the feature module.
+    tripal_feature_add_cvs();
 
     // Add the materialized view.
     tripal_feature_add_organism_count_mview();
@@ -216,8 +212,12 @@ function tripal_chado_prepare_chado() {
     tripal_feature_add_tripal_gffcds_temp_table();
     tripal_feature_add_tripal_gffprotein_temp_table();
 
-    // Add the vocabularies used by the feature module.
-    tripal_feature_add_cvs();
+    // Load the sequence ontology.
+    $obo = tripal_get_obo(array('obo_name' => 'Sequence Ontology'));
+    if ($obo) {
+      print "Installing the Sequence Ontology... This may take a while...\n";
+      tripal_chado_load_obo_v1_2_id($obo->obo_id);
+    }
 
     // Set the default vocabularies.
     tripal_set_default_cv('feature', 'type_id', 'sequence');
@@ -419,6 +419,7 @@ function tripal_stock_add_organism_count_mview() {
     'table' => $view_name,
     'fields' => array(
       'organism_id' => array(
+        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -442,6 +443,7 @@ function tripal_stock_add_organism_count_mview() {
         'not null' => TRUE,
       ),
       'cvterm_id' => array(
+        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -696,6 +698,7 @@ function tripal_library_add_mview_library_feature_count(){
     'description' => $comment,
     'fields' => array(
       'library_id' => array(
+        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -1364,6 +1367,7 @@ function tripal_feature_add_organism_count_mview() {
     'table' => $view_name,
     'fields' => array(
       'organism_id' => array(
+        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -1387,6 +1391,7 @@ function tripal_feature_add_organism_count_mview() {
         'not null' => TRUE,
       ),
       'cvterm_id' => array(
+        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -1569,10 +1574,12 @@ function tripal_analysis_add_mview_analysis_organism() {
     'description' => $comment,
     'fields' => array(
       'analysis_id' => array(
+        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'organism_id' => array(
+        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -1692,10 +1699,12 @@ function tripal_cv_add_cv_root_mview() {
         'not null' => TRUE,
       ),
       'cvterm_id' => array(
+        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ),
       'cv_id' => array(
+        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ),

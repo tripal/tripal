@@ -102,13 +102,6 @@ function tripal_chado_views_api() {
 function tripal_chado_menu() {
   $items = array();
 
-  $items['admin/tripal/storage/term/%/%'] = array(
-    'page callback' => 'tripal_autocomplete_cvterm',
-    'page arguments' => array(4, 5),
-    'access arguments' => array('administer content'),
-    'type' => MENU_CALLBACK,
-  );
-
   //////////////////////////////////////////////////////////////////////////////
   //                            Chado Storage Backend
   //////////////////////////////////////////////////////////////////////////////
@@ -156,6 +149,21 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'weight' => -99
   );
+
+  $items['admin/structure/bio-data/publish'] = array(
+    'title' => 'Publish Chado Content',
+    'description' => t('Publish data that is present in Chado but which does
+        not yet have a page on this site for viewing. In Tripal v2.0 or
+        earlier this was refered to as "syncing".'),    'page callback' => 'drupal_get_form',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_chado_publish_form'),
+    'access arguments' => array('administer tripal'),
+    'file' => 'includes/tripal_chado.publish.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_LOCAL_ACTION,
+    'weight' => 2
+  );
+
 
   //////////////////////////////////////////////////////////////////////////////
   //                       Materialized Views
@@ -473,6 +481,7 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
+
   $items['admin/tripal/storage/chado/auto_name/pub/%'] = array(
     'page callback' => 'tripal_autocomplete_pub',
     'page arguments' => array(6),

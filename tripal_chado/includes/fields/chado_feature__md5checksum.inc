@@ -76,7 +76,7 @@ function chado_feature__md5checksum_widget_validate($element, &$form_state) {
  * @param $entity
  * @param $record
  */
-function chado_feature__md5checksum_field_load($field, $entity, $record) {
+function chado_feature__md5checksum_load($field, $entity, $record) {
   $field_name = $field['field_name'];
   if ($record and property_exists($record, 'md5checksum')) {
     $entity->{$field_name}['und'][] = array('value' => $record->md5checksum);

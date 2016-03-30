@@ -252,6 +252,7 @@ function tripal_feature_add_organism_count_mview() {
     'table' => $view_name,
     'fields' => array(
       'organism_id' => array(
+        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ),
@@ -275,6 +276,7 @@ function tripal_feature_add_organism_count_mview() {
         'not null' => TRUE,
       ),
       'cvterm_id' => array(
+        'size' => 'big',
         'type' => 'int',
         'not null' => TRUE,
       ),

@@ -937,6 +937,8 @@ function chado_update_record($table, $match, $values, $options = NULL) {
  */
 function chado_delete_record($table, $match, $options = NULL) {
 
+  $print_errors = (isset($options['print_errors'])) ? $options['print_errors'] : FALSE;
+
   if (!is_array($match)) {
     tripal_report_error('tripal_chado', TRIPAL_ERROR,
       'Cannot pass non array as values for matching.', array());

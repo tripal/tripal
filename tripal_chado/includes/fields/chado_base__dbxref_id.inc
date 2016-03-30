@@ -285,7 +285,7 @@ function theme_chado_base__dbxref_id_widget($variables) {
  * @param $base_table
  * @param $record
  */
-function chado_base__dbxref_id_field_load($field, $entity, $base_table, $record) {
+function chado_base__dbxref_id_load($field, $entity, $base_table, $record) {
 
   $field_name = $field['field_name'];
   $field_type = $field['type'];

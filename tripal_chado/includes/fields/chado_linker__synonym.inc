@@ -30,16 +30,6 @@ function chado_linker__synonym_formatter(&$element, $entity_type, $entity, $fiel
 }
 /**
  *
- * @param unknown $field_name
- * @param unknown $widget
- * @param unknown $form
- * @param unknown $form_state
- * @param unknown $field
- * @param unknown $instance
- * @param unknown $langcode
- * @param unknown $items
- * @param unknown $delta
- * @param unknown $element
  */
 function chado_linker__synonym_widget(&$widget, $form, $form_state, $field,
     $instance, $langcode, $items, $delta, $element) {

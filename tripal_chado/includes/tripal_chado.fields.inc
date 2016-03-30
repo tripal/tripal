@@ -377,10 +377,11 @@ function tripal_chado_field_widget_form(&$form, &$form_state, $field,
 
   $widget = $element;
 
-  $field_type = $instance['widget']['type'];
+  $field_name = $instance['field_name'];
+  $field_type = $field['type'];
   form_load_include($form_state, 'inc', 'tripal_chado', 'includes/fields/' . $field_type);
-  module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-  $function = $field_type;
+  module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_name);
+  $function = $field_type . '_widget';
   if (function_exists($function)) {
     $function($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
   }
@@ -932,8 +933,8 @@ function tripal_chado_add_bundle_fields_linker__dbxref_field($entity_type_name, 
 
   // Initialize the field array.
   $field_info = array(
-    'field_type' => 'chado_base__dbxref_id',
-    'widget_type' => 'chado_base__dbxref_id_widget',
+    'field_type' => 'chado_linker__dbxref',
+    'widget_type' => 'chado_linker__dbxref_widget',
     'widget_settings' => array('display_label' => 1),
     'description' => '',
     'label' => 'Cross References',
@@ -1183,7 +1184,6 @@ function tripal_chado_add_bundle_fields_base__fields($entity_type_name, $bundle_
 function tripal_chado_field_validate($entity_type, $entity, $field, $instance,
     $langcode, $items, &$errors) {
 
-  //dpm($entity_type);
 
 }
 

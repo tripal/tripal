@@ -106,7 +106,7 @@ function tripal_chado_vocab_select_term_form($form, &$form_state) {
         Sequence Ontology (SO)."),
     '#required'    => TRUE,
     '#default_value' => $term_name,
-    '#autocomplete_path' => "admin/tripal/storage/term/",
+    '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
   );
   $form['select_button'] = array(
     '#type' => 'submit',

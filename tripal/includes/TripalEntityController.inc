@@ -283,8 +283,10 @@ class TripalEntityController extends EntityAPIController {
         'uid'       => $user->uid,
         'created'   => $entity->created,
         'changed'   => time(),
-        'nid' => $entity->nid,
       );
+      if (property_exists($entity, 'nid') and $entity->nid) {
+        $record['nid'] = $entity->nid;
+      }
       if ($invocation == 'entity_update') {
         $record['id'] = $entity->id;
       }

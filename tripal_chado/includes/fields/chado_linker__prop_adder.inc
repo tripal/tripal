@@ -44,7 +44,7 @@ function chado_linker__prop_adder_widget(&$widget, $form, $form_state,
     '#type' => 'textfield',
     '#description' => t("Please enter the type of property that you want to
         add.  As you type, suggestions will be provided."),
-    '#autocomplete_path' => "admin/tripal/storage/term/",
+    '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
   );
   $widget['kvproperty_adder_link'] = array(
     '#type' => 'item',
