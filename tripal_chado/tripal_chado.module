@@ -571,22 +571,100 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
 
   // Override the theme for each entity to use the legacy modules
   // templates.
-  $core_path = drupal_get_path('module', 'tripal_core');
-  $bundles = db_select('tripal_bundle', 'tb')
-    ->fields('tb')
-    ->execute();
-  while ($bundle = $bundles->fetchObject()) {
-    $themes['TripalEntity__' . $bundle->name] = array(
-      'template' => 'node--chado-generic',
-      'render element' => 'entity',
-      'base hook' => 'entity',
-      'path' => "$core_path/theme/templates",
-    );
+  if (module_exists('tripal_core')) {
+    $core_path = drupal_get_path('module', 'tripal_core');
+    $bundles = db_select('tripal_bundle', 'tb')
+      ->fields('tb')
+      ->execute();
+    while ($bundle = $bundles->fetchObject()) {
+      $themes['TripalEntity__' . $bundle->name] = array(
+        'template' => 'node--chado-generic',
+        'render element' => 'entity',
+        'base hook' => 'entity',
+        'path' => "$core_path/theme/templates",
+      );
+    }
   }
 
   return $themes;
 }
 
+/**
+ * Implements hook_entity_view().
+ *
+ * This function is used to support legacy Tripal v2 templates
+ * for use with Tripal v3 entities.
+ */
+function tripal_chado_entity_view($entity, $type, $view_mode, $langcode) {
+  // If this entity is a TripalEntity and is a full view, then
+  // we want to support the legacy view, but only if the legacy
+  // module is enabled (the functions exist).
+  if ($type =='TripalEntity') {
+    // Use the generic template to render the fields
+    if ($view_mode == 'full') {
+
+      // Get the Chado table for this data type.
+      $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
+      $chado_table = tripal_get_bundle_variable('chado_table', $bundle->id);
+      $chado_field = tripal_get_bundle_variable('chado_column', $bundle->id);
+
+      // TODO remove the fields added by the chado_field_storage.
+
+      // If the legacy module is enabled then we can make this
+      // entity look like a node and use the legacy node_view hooks to
+      // use the legacy templates.
+      $function_name = 'tripal_core_node_view';
+      if (function_exists($function_name)) {
+        $entity->type = 'chado_' . $chado_table;
+        $entity->$chado_table = $entity->chado_record;
+        $function_name($entity, $view_mode, $langcode);
+      }
+      // Now call the module's hook.
+      $function_name = 'tripal_' . $chado_table . '_node_view';
+      if (function_exists($function_name)) {
+        $function_name($entity, $view_mode, $langcode);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_view_alter().
+ *
+ * This function is used to support legacy Tripal v2 templates
+ * for use with Tripal v3 entities.
+ */
+function tripal_chado_entity_view_alter(&$build) {
+  // For the legacy support, we need to make sure the TOC
+  // is built.
+  module_load_include('inc', 'tripal_core', 'includes/tripal_core.toc');
+  if (function_exists('tripal_core_node_view_build_toc')) {
+
+    // The tripal_core_node_view_build_toc expects a #node
+    // and an nid property as part of the entity. However,
+    // we don't want to support use of node IDs with entities
+    // because that could cause problems, so always set the
+    // nid to NULL.
+    $build['#entity']->nid = NULL;
+    $build['#node'] = $build['#entity'];
+    tripal_core_node_view_build_toc($build);
+  }
+}
+
+/**
+ * Implements hook_preprocess().
+ *
+ * This function is used to support legacy Tripal v2 templates
+ * for use with Tripal v3 entities.
+ */
+function tripal_chado_preprocess(&$variables, $hook) {
+  if ($hook == 'entity' and array_key_exists('TripalEntity', $variables)) {
+    // The node--chado-generic template expets there to be a
+    // teaser and node variables.  So, we'll add them.
+    $variables['teaser'] = FALSE;
+    $variables['node'] = $variables['TripalEntity'];
+  }
+}
 
 /**
  * Implements hook_exclude_type_by_default()
@@ -727,79 +805,3 @@ function tripal_chado_node_delete($node) {
   db_query($sql, array('nid' => $nid));
 }
 
-/**
- * Implements hook_entity_view().
- *
- * This function is used to support legacy Tripal v2 templates
- * for use with Tripal v3 entities.
- */
-function tripal_chado_entity_view($entity, $type, $view_mode, $langcode) {
-  // If this entity is a TripalEntity and is a full view, then
-  // we want to support the legacy view, but only if the legacy
-  // module is enabled (the functions exist).
-  if ($type =='TripalEntity') {
-    // Use the generic template to render the fields
-    if ($view_mode == 'full') {
-
-      // Get the Chado table for this data type.
-      $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
-      $chado_table = tripal_get_bundle_variable('chado_table', $bundle->id);
-      $chado_field = tripal_get_bundle_variable('chado_column', $bundle->id);
-
-      // TODO remove the fields added by the chado_field_storage.
-
-      // If the legacy module is enabled then we can make this
-      // entity look like a node and use the legacy node_view hooks to
-      // use the legacy templates.
-      $function_name = 'tripal_core_node_view';
-      if (function_exists($function_name)) {
-        $entity->type = 'chado_' . $chado_table;
-        $entity->$chado_table = $entity->chado_record;
-        $function_name($entity, $view_mode, $langcode);
-      }
-      // Now call the module's hook.
-      $function_name = 'tripal_' . $chado_table . '_node_view';
-      if (function_exists($function_name)) {
-        $function_name($entity, $view_mode, $langcode);
-      }
-    }
-  }
-}
-
-/**
- * Implements hook_entity_view_alter().
- *
- * This function is used to support legacy Tripal v2 templates
- * for use with Tripal v3 entities.
- */
-function tripal_chado_entity_view_alter(&$build) {
-  // For the legacy support, we need to make sure the TOC
-  // is built.
-  module_load_include('inc', 'tripal_core', 'includes/tripal_core.toc');
-  if (function_exists('tripal_core_node_view_build_toc')) {
-
-    // The tripal_core_node_view_build_toc expects a #node
-    // and an nid property as part of the entity. However,
-    // we don't want to support use of node IDs with entities
-    // because that could cause problems, so always set the
-    // nid to NULL.
-    $build['#entity']->nid = NULL;
-    $build['#node'] = $build['#entity'];
-    tripal_core_node_view_build_toc($build);
-  }
-}
-
-/**
- * Implements hook_preprocess().
- *
- * This function is used to support legacy Tripal v2 templates
- * for use with Tripal v3 entities.
- */
-function tripal_chado_preprocess(&$variables, $hook) {
-  if ($hook == 'entity' and array_key_exists('TripalEntity', $variables)) {
-    // The node--chado-generic template expets there to be a
-    // teaser and node variables.  So, we'll add them.
-    $variables['teaser'] = FALSE;
-    $variables['node'] = $variables['TripalEntity'];
-  }
-}
