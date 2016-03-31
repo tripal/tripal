@@ -69,7 +69,7 @@ function tripal_chado_publish_form_submit($form, &$form_state) {
     global $user;
 
     $term_id = $form_state['values']['term_id'];
-    $bundle_name = 'bio-data_' . $term_id;
+    $bundle_name = 'bio_data_' . $term_id;
     $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
     $args = array(
       array('bundle_name' => $bundle_name),

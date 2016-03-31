@@ -212,7 +212,6 @@ function tripal_core_node_view($node, $view_mode, $langcode) {
   // the we want to add a table of contents to it's content list
   // this table of contents will be an empty
   if (preg_match('/^chado_/', $node->type)) {
-    // Show feature browser and counts
     if ($view_mode == 'full') {
       if (!isset($node->content['#tripal_generic_node_template'])) {
         $node->content['#tripal_generic_node_template'] = TRUE;

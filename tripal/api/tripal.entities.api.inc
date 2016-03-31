@@ -75,7 +75,7 @@ function tripal_load_vocab_entity($values) {
  *
  * @param $values
  *   An associative array used to match a bundle.  Valid keys may:
- *     - name:  the bundle name (e.g. 'bio-data_234')
+ *     - name:  the bundle name (e.g. 'bio_data_234')
  *     - label: the bundle label (e.g. 'Organism')
  *     - term_id: the term ID to which the bundle belongs
  *
@@ -142,7 +142,7 @@ function tripal_create_bundle($namespace, $accession, $term_name, &$error = '') 
   }
 
   // If the bundle doesn't already exist, then add it.
-  $bundle_name = 'bio-data_' . $term->id;
+  $bundle_name = 'bio_data_' . $term->id;
   $einfo = entity_get_info('TripalEntity');
   if (!in_array($bundle_name, array_keys($einfo['bundles']))) {
     // Insert the bundle.
@@ -176,7 +176,7 @@ function tripal_create_bundle($namespace, $accession, $term_name, &$error = '') 
  * Refreshes the bundle such that new fields added by modules will be found.
  *
  * @param $bundle_name
- *   The name of the bundle to refresh (e.g. bio-data_4).
+ *   The name of the bundle to refresh (e.g. bio_data_4).
  */
 function tripal_refresh_bundle_fields($bundle_name) {
   // Get the bundle object.

@@ -362,7 +362,7 @@ function tripal_chado_migrate_selected_types($tv3_content_types) {
       $term = tripal_load_term_entity($tv3_content_type);
     }
     // Create bundle name
-    $bundle_name = 'bio-data_' . $term->id;
+    $bundle_name = 'bio_data_' . $term->id;
 
     // Publish records for the bundle
     $value = array(

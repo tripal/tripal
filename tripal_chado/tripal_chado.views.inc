@@ -90,7 +90,7 @@ function tripal_chado_add_field_views_data(&$data) {
 
       // The help should be 'Appears in: TripalEntity: gene, organism'
       // so that users know where they can use it. This requires a little extra work since all
-      // we have access to at this point is bio-data_2, bio-data_4 but since that's not very
+      // we have access to at this point is bio_data_2, bio_data_4 but since that's not very
       // informative, extra work is worth it ;-).
       $entity_info = entity_get_info('TripalEntity');
       $bundle_labels = array();

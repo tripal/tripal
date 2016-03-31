@@ -76,7 +76,7 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
   $entity_type = $form_state['build_info']['args'][0];
   $term = NULL;
   $vocab = NULL;
-  if (preg_match('/bio-data_(\d+)/', $entity_type->name, $matches)) {
+  if (preg_match('/bio_data_(\d+)/', $entity_type->name, $matches)) {
     $term = entity_load('TripalTerm', array('id' => $matches[1]));
     $term = reset($term);
     $vocab = entity_load('TripalVocab', array('id' => $term->vocab_id));
@@ -376,13 +376,13 @@ function tripal_tripal_bundle_form_submit($form, &$form_state) {
       tripal_set_bundle_variable('url_format', $bundle_entity->id, $form_state['values']['url']['url_pattern']);
     }
 
-    $form_state['redirect'] = 'admin/structure/bio-data';
+    $form_state['redirect'] = 'admin/structure/bio_data';
     drupal_set_message(t('Successfully saved %type content type.', array('%type' => $form_state['build_info']['args'][0]->label)));
   }
   else {
     $form_state['redirect'] = array(
-      'admin/structure/bio-data/manage/' . $bundle_entity->name . '/delete',
-      array('query' => array('destination' => 'admin/structure/bio-data'))
+      'admin/structure/bio_data/manage/' . $bundle_entity->name . '/delete',
+      array('query' => array('destination' => 'admin/structure/bio_data'))
     );
   }
 }
@@ -466,11 +466,11 @@ function tripal_admin_add_type_form_submit($form, &$form_state) {
       $success = tripal_create_bundle($namespace, $accession, $term_name, $error);
       if (!$success) {
         drupal_set_message($error, 'error');
-        $form_state['redirect'] = "admin/structure/bio-data";
+        $form_state['redirect'] = "admin/structure/bio_data";
       }
       else {
         drupal_set_message('New data type created.');
-        $form_state['redirect'] = "admin/structure/bio-data";
+        $form_state['redirect'] = "admin/structure/bio_data";
       }
     }
     else {

@@ -54,7 +54,8 @@ Upgrade Instructions:
 
 Step 1: Put the site in maintenance mode.
 
-Step 3: Disable tripal modules
+Step 2: Disable tripal modules. Disabling the core module will disable all
+other Tripal modules:
 
   drush pm-disable tripal_core
   
@@ -67,10 +68,17 @@ Step 5: Enable the tripal_chado module
 
   drush pm-enable tripal_chado
   
-Step 6:  Apply updates
+Step 6:  Tripal v2 modules are now called 'legacy modules'. these are the
+modules that were disabled in step #2.  For backwards compatibility, you 
+should re-enable these modules:
 
-  drush updatedb
-  
+  drush pm-enable tripal_core, tripal_views, tripal_db, tripal_cv, \
+    tripal_analysis, tripal_organism, tripal_feature, tripal_pub, \
+    tripal_stock
+
+Be sure to enable any additional modules not included in the example
+drush command above.
+
 Step 7:  Return to your Tripal site, and click the link that appears for
 preparing Chado and launch the job.
 

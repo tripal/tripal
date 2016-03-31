@@ -383,7 +383,7 @@ function tripal_ws_get_content_type($api_url, &$response, $ws_args, $ctype) {
         '@id' => $api_url . '/content/' . urlencode($ctype) . '/' .  $entity->id,
         '@type' => $vocab->namespace . ':' . $term->accession,
         'label' => $entity->title,
-        'itemPage' => url('/bio-data/' . $entity->id, array('absolute' => TRUE)),
+        'itemPage' => url('/bio_data/' . $entity->id, array('absolute' => TRUE)),
       );
       $i++;
     }
@@ -438,7 +438,7 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
   $response['@id'] = $api_url . '/content/' . $ctype . '/' . $entity_id;
   $response['@type'] = $vocab->namespace . ':' . $term->accession;
   $response['label'] = $entity->title;
-  $response['itemPage'] = url('/bio-data/' . $bundle->id, array('absolute' => TRUE));
+  $response['itemPage'] = url('/bio_data/' . $bundle->id, array('absolute' => TRUE));
 
   // Get information about the fields attached to this bundle and sort them
   // in the order they were set for the display.

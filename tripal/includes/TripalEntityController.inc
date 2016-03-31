@@ -133,7 +133,7 @@ class TripalEntityController extends EntityAPIController {
    * Sets the URL alias for an entity.
    */
   public function setAlias($entity, $alias = NULL) {
-    $source_url = "bio-data/$entity->id";
+    $source_url = "bio_data/$entity->id";
 
     // If no alias was supplied then we should try to generate one using the
     // default format set by admins.
@@ -203,7 +203,7 @@ class TripalEntityController extends EntityAPIController {
             supplied on the <a href="!link" target="_blank">%type Edit Page</a> under URL Path options is unique.';
           $msg_var = array(
               '%alias' => $alias,
-              '!link' => url("admin/structure/bio-data/manage/$entity->bundle"),
+              '!link' => url("admin/structure/bio_data/manage/$entity->bundle"),
               '%type' => $bundle_entity->label
             );
           tripal_report_error(
@@ -232,7 +232,7 @@ class TripalEntityController extends EntityAPIController {
           supplied on the <a href="!link" target="_blank">%type Edit Page</a> under URL Path options is unique.';
         $msg_var = array(
             '%alias' => $alias,
-            '!link' => url("admin/structure/bio-data/manage/$entity->bundle"),
+            '!link' => url("admin/structure/bio_data/manage/$entity->bundle"),
             '%type' => $bundle_entity->label
           );
         drupal_set_message(t($msg, $msg_var), 'error');

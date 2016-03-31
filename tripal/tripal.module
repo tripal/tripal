@@ -268,7 +268,7 @@ function tripal_entity_access($entity) {
  * @ingroup tripal
  */
 function tripal_theme($existing, $type, $theme, $path) {
-  return array(
+  $themes = array(
     'tripal_customize' => array(
       'arguments' => array('job_id' => NULL),
       'template' => 'tripal_customize',
@@ -304,8 +304,8 @@ function tripal_theme($existing, $type, $theme, $path) {
       'variables' => array('content' => NULL),
     ),
   );
+  return $themes;
 }
-
 
 /**
  * Implements hook_coder_ignore().
@@ -349,10 +349,10 @@ function tripal_libraries_info() {
 function tripal_admin_paths() {
   if (variable_get('node_admin_theme')) {
     $paths = array(
-      'bio-data/*/edit' => TRUE,
-      'bio-data/*/delete' => TRUE,
-      'bio-data/add' => TRUE,
-      'bio-data/add/*' => TRUE,
+      'bio_data/*/edit' => TRUE,
+      'bio_data/*/delete' => TRUE,
+      'bio_data/add' => TRUE,
+      'bio_data/add/*' => TRUE,
     );
     return $paths;
   }
@@ -367,8 +367,8 @@ function tripal_menu_local_tasks_alter(&$data, $router_item, $root_path) {
 
   // Add an "Add Tripal Content" action link to the Admin >> Content >>
   // Biological Content page.
-  if ($root_path == 'admin/content/bio-data') {
-    $item = menu_get_item('bio-data/add');
+  if ($root_path == 'admin/content/bio_data') {
+    $item = menu_get_item('bio_data/add');
     if ($item['access']) {
       $data['actions']['output'][] = array(
         '#theme' => 'menu_local_action',
@@ -408,7 +408,7 @@ function tripal_shortcut_default_set($account) {
         'weight' => -35,
       ),
       array(
-        'link_path' => 'bio-data/add',
+        'link_path' => 'bio_data/add',
         'link_title' => 'Add Tripal Content',
         'weight' => -30,
       ),
@@ -418,7 +418,7 @@ function tripal_shortcut_default_set($account) {
         'weight' => -25,
       ),
       array(
-        'link_path' => 'admin/content/bio-data',
+        'link_path' => 'admin/content/bio_data',
         'link_title' => 'Find Tripal Content',
         'weight' => -20,
       ),
@@ -598,7 +598,7 @@ function tripal_entity_info() {
     // key here is mean to appear on the 'Find Content' page of the
     // administrative menu.
     'admin ui' => array (
-      'path' => 'admin/content/bio-data',
+      'path' => 'admin/content/bio_data',
       'controller class' => 'TripalEntityUIController',
       'menu wildcard' => '%TripalEntity',
       'file' => 'includes/TripalEntityUIController.inc'
@@ -637,7 +637,7 @@ function tripal_entity_info() {
     'module' => 'tripal',
     // Enable the entity API's admin UI.
     'admin ui' => array (
-      'path' => 'admin/structure/bio-data',
+      'path' => 'admin/structure/bio_data',
       'controller class' => 'TripalBundleUIController',
       'file' => 'includes/TripalBundleUIController.inc',
       'menu wildcard' => '%TripalBundle',
@@ -671,8 +671,8 @@ function tripal_entity_info_alter(&$entity_info){
       $entity_info['TripalEntity']['bundles'][$bundle_name] = array (
         'label' => $label,
         'admin' => array (
-          'path' => 'admin/structure/bio-data/manage/%TripalBundle',
-          'real path' => 'admin/structure/bio-data/manage/' . $bundle_name,
+          'path' => 'admin/structure/bio_data/manage/%TripalBundle',
+          'real path' => 'admin/structure/bio_data/manage/' . $bundle_name,
           'bundle argument' => 4,
           'access arguments' => array (
             'administer tripal data types'
@@ -819,8 +819,8 @@ function tripal_menu_alter(&$items) {
   // We don't want to allow deletion of fields added by the storage backend.
   // TODO: this shouldn't be hardcoded here.  These settings
   // should be part of the field and handled by the tripal_entity module.
-  $items['admin/structure/bio-data/manage/%TripalBundle/fields/%field_ui_menu/delete']['page callback'] = 'tripal_field_no_delete';
-  $items['admin/structure/bio-data/manage/%TripalBundle/fields/%field_ui_menu/delete']['page arguments'] = array();
+  $items['admin/structure/bio_data/manage/%TripalBundle/fields/%field_ui_menu/delete']['page callback'] = 'tripal_field_no_delete';
+  $items['admin/structure/bio_data/manage/%TripalBundle/fields/%field_ui_menu/delete']['page arguments'] = array();
 }
 
 /**

@@ -27,7 +27,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
       'weight' => -9
     );
 
-    $items['bio-data/add'] = array(
+    $items['bio_data/add'] = array(
       'title' => 'Add Tripal Content',
       'page callback' => 'tripal_add_page',
       'access arguments' => array('administer tripal data'),
@@ -37,14 +37,14 @@ class TripalEntityUIController extends EntityDefaultUIController {
     $bundles = array_keys($this->entityInfo['bundles']);
     foreach ($bundles as $bundle_name) {
       $matches = array();
-      if (preg_match('/^bio-data_(.*?)$/', $bundle_name, $matches)) {
+      if (preg_match('/^bio_data_(.*?)$/', $bundle_name, $matches)) {
         $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
         // Get the term for this bundle
         $term = entity_load('TripalTerm', array('id' => $matches[1]));
         $term = reset($term);
         $default_description = $term->definition ? $term->definition : '';
         // Set a custom page for adding new tripal data entities.
-        $items['bio-data/add/' . $term->id] = array(
+        $items['bio_data/add/' . $term->id] = array(
           'title' => ucfirst($bundle->label),
           'description' => tripal_get_bundle_variable('description', $bundle->id, $default_description),
           'page callback'  => 'drupal_get_form',
@@ -56,7 +56,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
     }
 
     // Link for viewing a tripal data type.
-    $items['bio-data/' . $wildcard] = array(
+    $items['bio_data/' . $wildcard] = array(
       'title callback' => 'tripal_entity_title',
       'title arguments' => array(1),
       'page callback' => 'tripal_view_entity',
@@ -67,7 +67,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
     );
 
     // 'View' tab for an individual entity page.
-    $items['bio-data/' . $wildcard . '/view'] = array(
+    $items['bio_data/' . $wildcard . '/view'] = array(
       'title' => 'View',
       'page callback' => 'tripal_view_entity',
       'page arguments' => array(1),
@@ -78,7 +78,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
     );
 
     // 'Edit' tab for an individual entity page.
-    $items['bio-data/' . $wildcard . '/edit'] = array(
+    $items['bio_data/' . $wildcard . '/edit'] = array(
       'title' => 'Edit',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_entity_form', NULL, 1),
@@ -89,7 +89,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
     );
 
     // Menu item for deleting tripal data entities.
-    $items['bio-data/' . $wildcard . '/delete'] = array(
+    $items['bio_data/' . $wildcard . '/delete'] = array(
       'title'  => 'Delete',
       'page callback' => 'drupal_get_form',
       'page arguments' => array('tripal_entity_delete_form', 1),
@@ -107,7 +107,7 @@ class TripalEntityUIController extends EntityDefaultUIController {
  * @param unknown $entity
  */
 function tripal_entity_manage_fields($entity) {
-  drupal_goto('admin/structure/bio-data/manage/' . $entity->name . '/fields');
+  drupal_goto('admin/structure/bio_data/manage/' . $entity->name . '/fields');
   return '';
 }
 
@@ -191,14 +191,14 @@ function tripal_view_entity($entity, $view_mode = 'full') {
 
      // Add information to the table.
      $rows[] = array(
-       l($entity->title, 'bio-data/' . $entity->id),
+       l($entity->title, 'bio_data/' . $entity->id),
        $vocab->namespace,
        $term->name,
        l($author->name, 'user/' . $entity->uid),
        $entity->status == 1 ? 'published' : 'unpublished',
        format_date($entity->changed, 'short'),
-       l('edit', 'bio-data/' . $entity->id . '/edit') . '&nbsp;&nbsp;' .
-       l('delete', 'bio-data/' . $entity->id . '/delete')
+       l('edit', 'bio_data/' . $entity->id . '/edit') . '&nbsp;&nbsp;' .
+       l('delete', 'bio_data/' . $entity->id . '/delete')
      );
    }
 
@@ -236,7 +236,7 @@ function tripal_view_entity($entity, $view_mode = 'full') {
   */
  function tripal_entity_form($form, &$form_state, $term_id = '', $entity = NULL) {
 
-   $bundle_name = 'bio-data_' . $term_id;
+   $bundle_name = 'bio_data_' . $term_id;
 
    // Add a vertical tabs element
    $form['entity_form_vtabs'] = array(
@@ -311,7 +311,7 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
    $entity = $form_state['TripalEntity'];
 
    if ($form_state['clicked_button']['#name'] =='cancel') {
-     $form_state['redirect'] = "bio-data/" . $entity->id;
+     $form_state['redirect'] = "bio_data/" . $entity->id;
    }
 
    if ($form_state['clicked_button']['#name'] =='update_data' or
@@ -319,14 +319,14 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
 
      $entityform = entity_ui_controller('TripalEntity')->entityFormSubmitBuildEntity($form, $form_state);
      if ($entityform->save()) {
-       $form_state['redirect'] = "bio-data/" . $entity->id;
+       $form_state['redirect'] = "bio_data/" . $entity->id;
      }
      else {
        drupal_set_message('Cannot save entity', 'error');
      }
    }
    if ($form_state['clicked_button']['#name'] =='delete_data') {
-     $form_state['redirect'] = 'bio-data/' . $entity->id .'/delete';
+     $form_state['redirect'] = 'bio_data/' . $entity->id .'/delete';
    }
  }
 
@@ -381,7 +381,7 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
      $output .= '<p>' . t('You have not created any biological data types yet. ' .
          'Go to the <a href="@create-content">data type creation page</a> to ' .
          'add a new data type.',
-         array('@create-content' => url('admin/structure/bio-data/add'))) . '</p>';
+         array('@create-content' => url('admin/structure/bio_data/add'))) . '</p>';
    }
    return $output;
  }
@@ -416,7 +416,7 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
 
    if ($entity_controller->delete(array($entity->id))) {
      drupal_set_message(t('The record title "%name" has been deleted.', array('%name' => $entity->title)));
-     $form_state['redirect'] = 'admin/content/bio-data';
+     $form_state['redirect'] = 'admin/content/bio_data';
    }
    else {
      drupal_set_message(t('The tripal_entity %name was not deleted.', array('%name' => $entity->title)), "error");
