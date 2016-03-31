@@ -842,6 +842,7 @@ function tripal_feature_node_update($node) {
  * @ingroup tripal_feature
  */
 function tripal_feature_node_view($node, $view_mode, $langcode) {
+
   switch ($node->type) {
     case 'chado_feature':
       // Show feature browser and counts

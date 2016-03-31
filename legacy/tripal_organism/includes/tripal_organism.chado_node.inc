@@ -689,6 +689,7 @@ function tripal_organism_node_presave($node) {
  * @ingroup tripal_organism
  */
 function tripal_organism_node_view($node, $view_mode, $langcode) {
+
   switch ($node->type) {
     case 'chado_organism':
 
