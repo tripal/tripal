@@ -33,6 +33,12 @@ function tripal_chado_migrate_form($form, &$form_state) {
     '#collapsed' => TRUE,
     '#group' => 'overview_vert_tabs'
   );
+  $form['step2']['step2_content'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => FALSE,
+    '#prefix' => '<div id="tripal-chado-migrate-form-step2">',
+    '#suffix' => '</div>'
+  );
   
   $tv2_content_type = 'all';
   if (array_key_exists('values', $form_state)) {
@@ -40,15 +46,15 @@ function tripal_chado_migrate_form($form, &$form_state) {
   }
 
   $options = tripal_chado_get_tripal_v2_content_type_options(TRUE);
-  $form['step2']['tv2_content_type'] = array(
+  $form['step2']['step2_content']['tv2_content_type'] = array(
     '#type' => 'select',
     '#title' => 'Tripal v2 Content Type',
     '#description' => t('Select the Tripal v2 content type to migrate.'),
     '#options' => $options,
     '#default_value' => $tv2_content_type,
     '#ajax' => array(
-      'callback' => "tripal_chado_migrate_form_ajax_callback",
-      'wrapper' => "tripal-chado-migrate-form",
+      'callback' => "tripal_chado_migrate_form_step2_ajax_callback",
+      'wrapper' => "tripal-chado-migrate-form-step2",
       'effect' => 'fade',
       'method' => 'replace'
     ),
@@ -56,13 +62,12 @@ function tripal_chado_migrate_form($form, &$form_state) {
 
   // Add a review button that allows reviewing migratable content types
   if ($tv2_content_type != 'all') {
-
     $table = str_replace('chado_', '', $tv2_content_type);
     $schema = chado_get_schema($table);
     $pkey = $schema['primary key'][0];
     $fkeys = $schema['foreign keys'];
 
-    $form['step2']['tv3_content_type'] = array(
+    $form['step2']['step2_content']['tv3_content_type'] = array(
       '#type' => 'fieldset',
       '#title' => 'Tripal v3 Content Type',
       '#description' => "Click the 'Get Tripal v3 Types' button to retrieve a list of Tripal v3
@@ -70,13 +75,13 @@ function tripal_chado_migrate_form($form, &$form_state) {
         depending on the size of your database.  The number of items to be converted is
         shown beside the type."
     );
-    $form['step2']['tv3_content_type']['get_v3_type_btn'] = array(
+    $form['step2']['step2_content']['tv3_content_type']['get_v3_type_btn'] = array(
       '#type' => 'button',
       '#name' => 'get_v3_type_btn',
       '#value' => "Get Tripal v3 Types",
       '#ajax' => array(
-        'callback' => "tripal_chado_migrate_form_ajax_callback",
-        'wrapper' => "tripal-chado-migrate-form",
+        'callback' => "tripal_chado_migrate_form_step2_ajax_callback",
+        'wrapper' => "tripal-chado-migrate-form-step2",
         'effect' => 'fade',
         'method' => 'replace'
       ),
@@ -86,7 +91,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
     if ($form_state['clicked_button']['#name'] == 'get_v3_type_btn') {
 
       // Migrate all      
-      $form['step2']['tv3_content_type']['tv3_migrate_all'] = array(
+      $form['step2']['step2_content']['tv3_content_type']['tv3_migrate_all'] = array(
         '#type' => 'checkbox',
         '#title' => 'Migrate All'
       );
@@ -113,7 +118,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
             $tv3_content_type->namespace . '--' . 
             $tv3_content_type->accession . '--' . 
             $tv3_content_type->type);
-          $form['step2']['tv3_content_type'][$key] = array(
+          $form['step2']['step2_content']['tv3_content_type'][$key] = array(
             '#type' => 'checkbox',
             '#title' => $tv3_content_type->type . ' (' . $tv3_content_type->num . ')',
           );
@@ -131,7 +136,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
         $org_count = chado_query($sql)->fetchField();
         if ($org_count > 0) {
           $key = urldecode('tv3_content_type--local--organism--organism');
-          $form['step2']['tv3_content_type'][$key] = array(
+          $form['step2']['step2_content']['tv3_content_type'][$key] = array(
             '#type' => 'checkbox',
             '#title' => 'Organism (' . $org_count . ')',
           );
@@ -149,7 +154,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
         $ana_count = chado_query($sql)->fetchField();
         if ($ana_count > 0) {
           $key = urlencode('tv3_content_type--local--analysis--analysis');
-          $form['step2']['tv3_content_type'][$key] = array(
+          $form['step2']['step2_content']['tv3_content_type'][$key] = array(
             '#type' => 'checkbox',
             '#title' => 'Analysis (' . $ana_count . ')',
           );
@@ -157,15 +162,15 @@ function tripal_chado_migrate_form($form, &$form_state) {
         }
       }
       if ($no_data) {
-        unset($form['step2']['tv3_content_type']['tv3_migrate_all']);
+        unset($form['step2']['step2_content']['tv3_content_type']['tv3_migrate_all']);
         drupal_set_message('No data for migration or all have been migrated.', 'warning');
       }
     }
   }
 
   // Submit button
-  if ($tv2_content_type == 'all' || key_exists('tv3_migrate_all', $form['step2']['tv3_content_type'])) {
-    $form['step2']['migrate_btn'] = array(
+  if ($tv2_content_type == 'all' || key_exists('tv3_migrate_all', $form['step2']['step2_content']['tv3_content_type'])) {
+    $form['step2']['step2_content']['migrate_btn'] = array(
       '#type' => 'submit',
       '#name' => 'migrate_btn',
       '#value' => "Migrate $options[$tv2_content_type]",
@@ -249,9 +254,8 @@ function tripal_chado_migrate_form_submit($form, &$form_state) {
  * @param $form_state
  * @return $form
  */
-function tripal_chado_migrate_form_ajax_callback(&$form, &$form_state) {
-  $active_tab = $form_state['values']['overview_vert_tabs__active_tab'];
-  return $form;
+function tripal_chado_migrate_form_step2_ajax_callback(&$form, &$form_state) {
+  return $form['step2']['step2_content'];
 }
 
 /**
