@@ -220,25 +220,32 @@ function tripal_chado_migrate_form($form, &$form_state) {
     '#group' => 'overview_vert_tabs'
   );
   $opt_complete_migration = array (
-    'delete' => 'Delete Tripal v2 Content',
-    'unpublish' => 'Unpublish Tripal v2 Content',
     'cp_title' => 'Copy Title over to Tripal v3 Content',
-    'mv_url' => 'Migrate URL Alias to Tripal v3 Content'
+    'mv_url' => 'Migrate URL Alias to Tripal v3 Content',
+    'unpublish' => 'Unpublish Tripal v2 Content',
+    'delete' => 'Delete Tripal v2 Content',
   );
-  foreach ($tv2_options AS $opt_key => $opt) {
-    $form['step4'][$opt_key . '_title'] = array(
-      '#markup' => "<b>$opt</b>"
-    );
-    $form['step4']['complete_migration--' . $opt_key] = array(
-      '#type' => 'checkboxes',
-      '#options' => $opt_complete_migration,
+  if (count($tv2_options) == 1 && key_exists('all', $tv2_options)) {
+    $form['step4']['compltete'] = array(
+      '#markup' => 'Migration completed. All content have been migrated.'
     );
   }
-  $form['step4']['submit_btn'] = array(
-    '#type' => 'button',
-    '#name' => 'complete_migration_btn',
-    '#value' => "Submit",
-  );
+  else {
+    foreach ($tv2_options AS $opt_key => $opt) {
+      $form['step4'][$opt_key . '_title'] = array(
+        '#markup' => "<b>$opt</b>"
+      );
+      $form['step4']['complete_migration--' . $opt_key] = array(
+        '#type' => 'checkboxes',
+        '#options' => $opt_complete_migration,
+      );
+    }
+    $form['step4']['submit_btn'] = array(
+      '#type' => 'button',
+      '#name' => 'complete_migration_btn',
+      '#value' => "Submit",
+    );
+  }
   return $form;
 }
 
@@ -264,15 +271,65 @@ function tripal_chado_migrate_form_validate($form, &$form_state) {
   // Complete migration
   else if ($form_state['clicked_button']['#name'] == 'complete_migration_btn') {
     $values = $form_state['values'];
-    $delete = array();
-    $unpublish = array();
-    $cp_title = array();
-    $mv_url = array();
+    $config = array (
+      'delete' => array(),
+      'unpublish' => array(),
+      'cp_title' => array(),
+      'mv_url' => array()
+    );
+    $all = array();
+    $all_types = array();
+    // Gather checked checkboxes and store in the $config array
     foreach ($values AS $key => $value) {
       if (preg_match('/^complete_migration--/', $key)) {
-        
+        $type = str_replace('complete_migration--', '', $key);
+        if ($type != 'all') {
+          array_push($all_types, $type);
+        }        
+        foreach ($value AS $key_op => $op) {
+          if ($type == 'all') {
+            if ($op) {
+              array_push($all, $key_op);
+            }
+          }
+          else {
+            if ($op) {
+              array_push($config[$key_op], $type);
+            }
+          }
+        }
       }
     }
+    foreach($all AS $a) {
+      $config[$a] = $all_types;
+    }
+    // Submit jobs to complete the migration
+    global $user;
+    $includes = array(
+      module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.migrate'),
+    );
+    
+    if (count($config['cp_title']) > 0) {
+      $args = array($config['cp_title']);
+      tripal_add_job("Copy Title over to Tripal v3 Content", 'tripal_chado', 
+        'tripal_chado_copy_title_for_selected_types', $args, $user->uid, 10, $includes);
+    }
+    if (count($config['mv_url']) > 0) {
+      $args = array($config['mv_url']);
+      tripal_add_job(" Migrate URL Alias to Tripal v3 Content ", 'tripal_chado',
+        'tripal_chado_migrate_url_alias_for_selected_types', $args, $user->uid, 10, $includes);
+    }
+    if (count($config['unpublish']) > 0) {
+      $args = array($config['unpublish']);
+      tripal_add_job(" Unpublish Tripal v2 Content ", 'tripal_chado',
+        'tripal_chado_unpublish_selected_types', $args, $user->uid, 10, $includes);
+    }
+    if (count($config['delete']) > 0) {
+      $args = array($config['delete']);
+      tripal_add_job("Delete Tripal v2 Content ", 'tripal_chado',
+        'tripal_chado_delete_selected_types', $args, $user->uid, 10, $includes);
+    }
+    return;
   }
 }
 
@@ -526,6 +583,7 @@ function tripal_chado_delete_selected_types($tv2_content_types = array()) {
   foreach ($tv2_content_types AS $type) {
     $sql = "DELETE FROM $type";
     db_query($sql);
+    chado_cleanup_orphaned_nodes(str_replace('chado_', '', $type));
   }
 }
 
@@ -539,6 +597,8 @@ function tripal_chado_delete_selected_types($tv2_content_types = array()) {
 function tripal_chado_unpublish_selected_types($tv2_content_types = array()) {
   foreach ($tv2_content_types AS $type) {
     $sql = "UPDATE node SET status = 0 WHERE nid IN (SELECT nid FROM $type)";
+    db_query($sql);
+    $sql = "UPDATE node_revision SET status = 0 WHERE nid IN (SELECT nid FROM $type)";
     db_query($sql);
   }
 }
@@ -581,8 +641,8 @@ function tripal_chado_migrate_url_alias_for_selected_types($tv2_content_types = 
     while ($entity = $result->fetchObject()) {
       $usql = "
           UPDATE url_alias
-          SET source = 'bio_data/'" . $entity->entity_id .
-          "WHERE source = 'node/" . $entity->nid;
+          SET source = 'bio_data/" . $entity->entity_id .
+          "' WHERE source = 'node/" . $entity->nid . "'";
       db_query($usql);
     }
   }
