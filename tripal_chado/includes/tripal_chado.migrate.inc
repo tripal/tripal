@@ -10,21 +10,60 @@
  */
 function tripal_chado_migrate_form($form, &$form_state) {
 
+  $form['overview_vert_tabs'] = array(
+    '#type' => 'vertical_tabs'
+  );
+  $form['modes']['#group'] = 'overview_vert_tabs';
+  $form['modes']['#weight'] = 1000;
+  
+  // Step 1
+  $form['step1'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Step1',
+    '#description' => '<b>Enable Legacy Support</b>',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'overview_vert_tabs'
+  );
+  global $base_url;
+  $mod_url = $base_url . '/admin/modules';
+  $form['step1']['step1_content'] = array(
+    '#markup' => 'Tripal legacy modules are needed to support the display of Tripal v2 
+                      content types. Review and <a href="'. $mod_url .'">enable modules</a>
+                      in the \'Tripal v2 Legacy\' category for legacy content support'
+  );
+  
+  // Step 2
+  $form['step2'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Step2',
+    '#description' => '<b>Migrate Content</b>',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'overview_vert_tabs'
+  );
+  $form['step2']['step2_container'] = array(
+    '#type' => 'container',
+    '#collapsible' => FALSE,
+    '#prefix' => '<div id="tripal-chado-migrate-form-step2">',
+    '#suffix' => '</div>'
+  );
+  
   $tv2_content_type = 'all';
   if (array_key_exists('values', $form_state)) {
     $tv2_content_type = $form_state['values']['tv2_content_type'];
   }
 
-  $options = tripal_chado_get_tripal_v2_content_type_options(TRUE);
-  $form['tv2_content_type'] = array(
+  $tv2_options = tripal_chado_get_tripal_v2_content_type_options(TRUE);
+  $form['step2']['step2_container']['tv2_content_type'] = array(
     '#type' => 'select',
     '#title' => 'Tripal v2 Content Type',
     '#description' => t('Select the Tripal v2 content type to migrate.'),
-    '#options' => $options,
+    '#options' => $tv2_options,
     '#default_value' => $tv2_content_type,
     '#ajax' => array(
-      'callback' => "tripal_chado_migrate_form_ajax_callback",
-      'wrapper' => "tripal-chado-migrate-form",
+      'callback' => "tripal_chado_migrate_form_step2_ajax_callback",
+      'wrapper' => "tripal-chado-migrate-form-step2",
       'effect' => 'fade',
       'method' => 'replace'
     ),
@@ -32,13 +71,12 @@ function tripal_chado_migrate_form($form, &$form_state) {
 
   // Add a review button that allows reviewing migratable content types
   if ($tv2_content_type != 'all') {
-
     $table = str_replace('chado_', '', $tv2_content_type);
     $schema = chado_get_schema($table);
     $pkey = $schema['primary key'][0];
     $fkeys = $schema['foreign keys'];
 
-    $form['tv3_content_type'] = array(
+    $form['step2']['step2_container']['tv3_content_type'] = array(
       '#type' => 'fieldset',
       '#title' => 'Tripal v3 Content Type',
       '#description' => "Click the 'Get Tripal v3 Types' button to retrieve a list of Tripal v3
@@ -46,13 +84,13 @@ function tripal_chado_migrate_form($form, &$form_state) {
         depending on the size of your database.  The number of items to be converted is
         shown beside the type."
     );
-    $form['tv3_content_type']['get_v3_type_btn'] = array(
+    $form['step2']['step2_container']['tv3_content_type']['get_v3_type_btn'] = array(
       '#type' => 'button',
       '#name' => 'get_v3_type_btn',
       '#value' => "Get Tripal v3 Types",
       '#ajax' => array(
-        'callback' => "tripal_chado_migrate_form_ajax_callback",
-        'wrapper' => "tripal-chado-migrate-form",
+        'callback' => "tripal_chado_migrate_form_step2_ajax_callback",
+        'wrapper' => "tripal-chado-migrate-form-step2",
         'effect' => 'fade',
         'method' => 'replace'
       ),
@@ -62,7 +100,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
     if ($form_state['clicked_button']['#name'] == 'get_v3_type_btn') {
 
       // Migrate all      
-      $form['tv3_content_type']['tv3_migrate_all'] = array(
+      $form['step2']['step2_container']['tv3_content_type']['tv3_migrate_all'] = array(
         '#type' => 'checkbox',
         '#title' => 'Migrate All'
       );
@@ -89,7 +127,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
             $tv3_content_type->namespace . '--' . 
             $tv3_content_type->accession . '--' . 
             $tv3_content_type->type);
-          $form['tv3_content_type'][$key] = array(
+          $form['step2']['step2_container']['tv3_content_type'][$key] = array(
             '#type' => 'checkbox',
             '#title' => $tv3_content_type->type . ' (' . $tv3_content_type->num . ')',
           );
@@ -107,7 +145,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
         $org_count = chado_query($sql)->fetchField();
         if ($org_count > 0) {
           $key = urldecode('tv3_content_type--local--organism--organism');
-          $form['tv3_content_type'][$key] = array(
+          $form['step2']['step2_container']['tv3_content_type'][$key] = array(
             '#type' => 'checkbox',
             '#title' => 'Organism (' . $org_count . ')',
           );
@@ -125,7 +163,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
         $ana_count = chado_query($sql)->fetchField();
         if ($ana_count > 0) {
           $key = urlencode('tv3_content_type--local--analysis--analysis');
-          $form['tv3_content_type'][$key] = array(
+          $form['step2']['step2_container']['tv3_content_type'][$key] = array(
             '#type' => 'checkbox',
             '#title' => 'Analysis (' . $ana_count . ')',
           );
@@ -133,23 +171,74 @@ function tripal_chado_migrate_form($form, &$form_state) {
         }
       }
       if ($no_data) {
-        unset($form['tv3_content_type']['tv3_migrate_all']);
+        unset($form['step2']['step2_container']['tv3_content_type']['tv3_migrate_all']);
         drupal_set_message('No data for migration or all have been migrated.', 'warning');
       }
     }
   }
-
-  // Submit button
-  if ($tv2_content_type == 'all' || key_exists('tv3_migrate_all', $form['tv3_content_type'])) {
-    $form['migrate_btn'] = array(
+  // Migrate button
+  if ($tv2_content_type == 'all' || key_exists('tv3_migrate_all', $form['step2']['step2_container']['tv3_content_type'])) {
+    $form['step2']['step2_container']['migrate_btn'] = array(
       '#type' => 'submit',
       '#name' => 'migrate_btn',
-      '#value' => "Migrate $options[$tv2_content_type]",
+      '#value' => "Migrate $tv2_options[$tv2_content_type]",
     );
   }
-
-  $form['#prefix'] = '<div id="tripal-chado-migrate-form">';
-  $form['#suffix'] = '</div>';
+  
+  // Step 3
+  $form['step3'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Step3',
+    '#description' => '<b>Use Legacy Templates (optional)</b>',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'overview_vert_tabs'
+  );
+  // Get a list of enabled legacy modules with tv2 templates
+  $mod_enabled = tripal_chado_migrate_get_enabled_legacy_modules(TRUE);
+  $enabled_templates = variable_get('tripal_chado_enabled_legacy_templates', array());
+  foreach ($mod_enabled AS $mod_name => $mod_path) {
+    $form ['step3']['legacy_template--' . $mod_name] = array (
+      '#type' => 'checkbox',
+      '#title' => ucwords(str_replace(array('tripal', '_'), array('chado', ' '), $mod_name)),
+      '#default_value' => key_exists('legacy_template--' . $mod_name, $enabled_templates) ? $enabled_templates['legacy_template--' . $mod_name] : 0,
+    );
+  }
+  $form['step3']['save_btn'] = array(
+    '#type' => 'button',
+    '#name' => 'save_enabled_template_btn',
+    '#value' => "Save",
+  );
+  
+  // Step 4
+  $form['step4'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Step4',
+    '#description' => '<b>Complete Migration</b>',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#group' => 'overview_vert_tabs'
+  );
+  $opt_complete_migration = array (
+    'delete' => 'Delete Tripal v2 Content',
+    'unpublish' => 'Unpublish Tripal v2 Content',
+    'cp_title' => 'Copy Title over to Tripal v3 Content',
+    'mv_url' => 'Migrate URL Alias to Tripal v3 Content'
+  );
+  foreach ($tv2_options AS $opt_key => $opt) {
+    $form['step4'][$opt_key . '_title'] = array(
+      '#markup' => "<b>$opt</b>"
+    );
+    $form['step4']['complete_migration--' . $opt_key] = array(
+      '#type' => 'checkboxes',
+      '#options' => $opt_complete_migration,
+    );
+  }
+  $form['step4']['submit_btn'] = array(
+    '#type' => 'button',
+    '#name' => 'complete_migration_btn',
+    '#value' => "Submit",
+  );
   return $form;
 }
 
@@ -160,7 +249,31 @@ function tripal_chado_migrate_form($form, &$form_state) {
  * @param $form_state
  */
 function tripal_chado_migrate_form_validate($form, &$form_state) {
-
+  // Store the legacy template setting in a Drupal variable
+  if ($form_state['clicked_button']['#name'] == 'save_enabled_template_btn') {
+    $values = $form_state['values'];
+    $enabled_templates = array();
+    foreach ($values AS $key => $value) {
+      if (preg_match('/^legacy_template--/', $key)) {
+        $enabled_templates[$key] = $value;
+      }
+    }
+    variable_set('tripal_chado_enabled_legacy_templates', $enabled_templates);
+    drupal_theme_rebuild();
+  }
+  // Complete migration
+  else if ($form_state['clicked_button']['#name'] == 'complete_migration_btn') {
+    $values = $form_state['values'];
+    $delete = array();
+    $unpublish = array();
+    $cp_title = array();
+    $mv_url = array();
+    foreach ($values AS $key => $value) {
+      if (preg_match('/^complete_migration--/', $key)) {
+        
+      }
+    }
+  }
 }
 
 /**
@@ -225,8 +338,8 @@ function tripal_chado_migrate_form_submit($form, &$form_state) {
  * @param $form_state
  * @return $form
  */
-function tripal_chado_migrate_form_ajax_callback($form, $form_state) {
-  return $form;
+function tripal_chado_migrate_form_step2_ajax_callback(&$form, &$form_state) {
+  return $form['step2']['step2_container'];
 }
 
 /**
@@ -293,6 +406,10 @@ function tripal_chado_get_tripal_v2_content_type_options($all_option = FALSE) {
 
 /**
  * Migrate all Tripal v2 content types
+ * 
+ * Gather all available Tripal v2 content types and store the result in an associated array with 
+ * values of namespace, accession, term_name. The array is then pass to the function 
+ * tripal_chado_migrate_selected_types() that handles the migration
  */
 function tripal_chado_migrate_all_types() {
   // Get all available Tripal v2 content types
@@ -370,5 +487,103 @@ function tripal_chado_migrate_selected_types($tv3_content_types) {
       'bundle_name' => $bundle_name
     );
     tripal_chado_publish_records ($value);
+  }
+}
+
+/**
+ * Get a list of enabled legacy modules
+ * 
+ * return an associated array with value of module directory and keyed by the module name
+ */
+function tripal_chado_migrate_get_enabled_legacy_modules ($has_base_template = FALSE) {
+  $mod_enabled = module_list();
+  $legacy_mod = array ();
+  foreach ($mod_enabled AS $mod) {
+    if (preg_match('/^tripal_/', $mod)) {
+      $mod_dir = drupal_get_path('module', $mod);
+      if (preg_match('/\/legacy\//', $mod_dir) ) {
+        if ($has_base_template) {
+          if (file_exists($mod_dir . '/theme/templates/' . $mod . '_base.tpl.php')) {
+            $legacy_mod[$mod] = $mod_dir;
+          }
+        } else {
+          $legacy_mod[$mod] = $mod_dir;
+        }
+      }
+    }
+  }
+  return $legacy_mod;
+}
+
+/**
+ * Delete selected Tripal v2 content
+ *
+ * Delete all records from chado_* table then call the cleanup orphan nodes function
+ * 
+ * @param unknown $tv2_content_types
+ */
+function tripal_chado_delete_selected_types($tv2_content_types = array()) {
+  foreach ($tv2_content_types AS $type) {
+    $sql = "DELETE FROM $type";
+    db_query($sql);
+  }
+}
+
+/**
+ * Unpublish selected Tripal v2 content
+ *
+ * Set status = 0 (unpublished) for all nodes of selected Tripal v2 content types
+ *
+ * @param unknown $tv2_content_types
+ */
+function tripal_chado_unpublish_selected_types($tv2_content_types = array()) {
+  foreach ($tv2_content_types AS $type) {
+    $sql = "UPDATE node SET status = 0 WHERE nid IN (SELECT nid FROM $type)";
+    db_query($sql);
+  }
+}
+
+/**
+ * Copy titles for selected Tripal v2 content
+ *
+ * Copy tiltles for all nodes of selected Tripal v2 content types
+ *
+ * @param unknown $tv2_content_types
+ */
+function tripal_chado_copy_title_for_selected_types($tv2_content_types = array()) {
+  foreach ($tv2_content_types AS $type) {
+    $sql = "SELECT nid, entity_id FROM chado_entity WHERE nid IN (SELECT nid FROM $type)";
+    $result = db_query($sql);
+    while ($entity = $result->fetchObject()) {
+      $usql = "
+          UPDATE tripal_entity 
+          SET title = (SELECT title FROM node WHERE nid = :nid)
+          WHERE id = :entity_id";
+      db_query($usql, array(
+        ':nid' => $entity->nid, 
+        ':entity_id' => $entity->entity_id)
+      );
+    }
+  }
+}
+
+/**
+ * Migrate URL alias for selected Tripal v2 content
+ *
+ * Migrate URL alias for all nodes of selected Tripal v2 content types
+ *
+ * @param unknown $tv2_content_types
+ */
+function tripal_chado_migrate_url_alias_for_selected_types($tv2_content_types = array()) {
+  foreach ($tv2_content_types AS $type) {
+    $sql = "SELECT nid, entity_id FROM chado_entity WHERE nid IN (SELECT nid FROM $type)";
+    $result = db_query($sql);
+    while ($entity = $result->fetchObject()) {
+      $usql = "
+          UPDATE url_alias
+          SET source = 'bio_data/'" . $entity->entity_id .
+          "WHERE source = 'node/" . $entity->nid;
+      db_query($usql);
+    }
   }
 }

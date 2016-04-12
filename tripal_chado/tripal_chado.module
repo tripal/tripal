@@ -608,31 +608,36 @@ function tripal_chado_entity_view($entity, $type, $view_mode, $langcode) {
       $chado_table = tripal_get_bundle_variable('chado_table', $bundle->id);
       $chado_field = tripal_get_bundle_variable('chado_column', $bundle->id);
 
-      // Remove the fields added by the chado_field_storage.
-      $fields = field_info_fields();
-      foreach($fields as $field) {
-        if ($field['storage']['type'] == 'field_chado_storage' or
-            $field['storage']['type'] == 'tripal_no_storage') {
-          $field_name = $field['field_name'];
-          if (property_exists($entity, $field_name)) {
-            $entity->$field_name = NULL;
-            unset($entity->content[$field_name]);
+      $enabled_templates = variable_get('tripal_chado_enabled_legacy_templates', array());
+      $legacy_template = 'legacy_template--tripal_' . $chado_table;
+
+      if (key_exists($legacy_template, $enabled_templates) && $enabled_templates[$legacy_template]) {
+        // Remove the fields added by the chado_field_storage.
+        $fields = field_info_fields();
+        foreach($fields as $field) {
+          if ($field['storage']['type'] == 'field_chado_storage' or
+              $field['storage']['type'] == 'tripal_no_storage') {
+            $field_name = $field['field_name'];
+            if (property_exists($entity, $field_name)) {
+              $entity->$field_name = NULL;
+              unset($entity->content[$field_name]);
+            }
           }
         }
-      }
-
-      // Now call the module's node_view hook to add additional
-      // content to our 'fake' entity node.
-      $entity->type = 'chado_' . $chado_table;
-      $entity->$chado_table = $entity->chado_record;
-      // The comment module is expecting a 'comment' property
-      // is attached to the node, so just set it to NULL.
-      $entity->comment = NULL;
-      $modules = module_list();
-      foreach ($modules as $mname => $details) {
-        $function_name = $mname . '_node_view';
-        if (function_exists($function_name)) {
-          $function_name($entity, $view_mode, $langcode);
+  
+        // Now call the module's node_view hook to add additional
+        // content to our 'fake' entity node.
+        $entity->type = 'chado_' . $chado_table;
+        $entity->$chado_table = $entity->chado_record;
+        // The comment module is expecting a 'comment' property
+        // is attached to the node, so just set it to NULL.
+        $entity->comment = NULL;
+        $modules = module_list();
+        foreach ($modules as $mname => $details) {
+          $function_name = $mname . '_node_view';
+          if (function_exists($function_name)) {
+            $function_name($entity, $view_mode, $langcode);
+          }
         }
       }
     }
@@ -648,13 +653,20 @@ function tripal_chado_entity_view($entity, $type, $view_mode, $langcode) {
 function tripal_chado_entity_view_alter(&$build) {
   // For the legacy support, we need to make sure the TOC
   // is built.
-  $build['#entity']->nid = NULL;
-  $build['#node'] = $build['#entity'];
-  $modules = module_list();
-  foreach ($modules as $mname => $details) {
-    $function_name = $mname . '_node_view_alter';
-    if (function_exists($function_name)) {
-      $function_name($build);
+  if ($build['#entity_type'] == 'TripalEntity') {
+    $enabled_templates = variable_get('tripal_chado_enabled_legacy_templates', array());
+    $entity = $build['#entity'];
+    $legacy_template = 'legacy_template--' . str_replace('chado', 'tripal', $entity->type);
+    if (key_exists($legacy_template, $enabled_templates) && $enabled_templates[$legacy_template]) {
+      $build['#entity']->nid = NULL;
+      $build['#node'] = $build['#entity'];
+      $modules = module_list();
+      foreach ($modules as $mname => $details) {
+        $function_name = $mname . '_node_view_alter';
+        if (function_exists($function_name)) {
+          $function_name($build);
+        }
+      }
     }
   }
 }
