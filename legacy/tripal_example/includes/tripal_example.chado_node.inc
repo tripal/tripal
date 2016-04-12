@@ -70,7 +70,7 @@ function tripal_example_node_info() {
  * value is TRUE then access is granted regardless of any other rules that might
  * be implemented by other modules.
  */
-function chado_example_node_access($node, $op, $account) {
+function tripal_example_node_access($node, $op, $account) {
   $node_type = $node;
   if (is_object($node)) {
     $node_type = $node->type;

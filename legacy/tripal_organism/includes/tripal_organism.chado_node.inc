@@ -61,7 +61,7 @@ function tripal_organism_node_info() {
  *
  * @ingroup tripal_organism
  */
-function chado_organism_node_access($node, $op, $account) {
+function tripal_organism_node_access($node, $op, $account) {
   $node_type = $node;
   if (is_object($node)) {
     $node_type = $node->type;
