@@ -202,7 +202,7 @@ function tripal_get_feature_sequences($feature, $options) {
   $parent_sql ='
     SELECT featureloc_id, srcname, srcfeature_id, strand, srctypename, typename,
       fmin, fmax, upstream, downstream, adjfmin, adjfmax,
-      substring(residues from (adjfmin + 1) for (upstream + (fmax - fmin) + downstream))  as residues,
+      substring(residues from cast((adjfmin + 1) as int) for cast((upstream + (fmax - fmin) + downstream) as int))  as residues,
       genus, species
     FROM (
       SELECT

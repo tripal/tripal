@@ -543,7 +543,7 @@ function chado_pub_validate_check_duplicate($title, $pyear, $series_name, $cvter
  *
  * @ingroup tripal_pub
  */
-function chado_pub_node_access($node, $op, $account) {
+function tripal_pub_node_access($node, $op, $account) {
   $node_type = $node;
   if (is_object($node)) {
     $node_type = $node->type;
@@ -551,23 +551,23 @@ function chado_pub_node_access($node, $op, $account) {
 
   if($node_type == 'chado_pub') {
     if ($op == 'create') {
-      if (!user_access('create chado_pub', $account)) {
+      if (!user_access('create chado_pub content', $account)) {
         return NODE_ACCESS_DENY;
       }
       return NODE_ACCESS_ALLOW;
     }
     if ($op == 'update') {
-      if (!user_access('edit chado_pub', $account)) {
+      if (!user_access('edit chado_pub content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
     if ($op == 'delete') {
-      if (!user_access('delete chado_pub', $account)) {
+      if (!user_access('delete chado_pub content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
     if ($op == 'view') {
-      if (!user_access('access chado_pub', $account)) {
+      if (!user_access('access chado_pub content', $account)) {
         return NODE_ACCESS_DENY;
       }
     }
