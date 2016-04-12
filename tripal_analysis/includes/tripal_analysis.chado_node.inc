@@ -618,7 +618,7 @@ function chado_analysis_load($nodes) {
  *
  * @ingroup tripal_analysis
  */
-function chado_analysis_node_access($node, $op, $account) {
+function tripal_analysis_node_access($node, $op, $account) {
 
   $node_type = $node;
   if (is_object($node)) {

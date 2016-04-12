@@ -490,7 +490,7 @@ function chado_library_delete(&$node) {
  *
  * @ingroup tripal_library
  */
-function chado_library_node_access($node, $op, $account) {
+function tripal_library_node_access($node, $op, $account) {
   $node_type = $node;
   if (is_object($node)) {
     $node_type = $node->type;
