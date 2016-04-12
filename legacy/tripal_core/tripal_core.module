@@ -237,7 +237,7 @@ function tripal_core_field_widget_form_alter(&$element, &$form_state, $context) 
 
   // If the name of the field is 'field_resource_links' then we want to
   // add a fieldset of tokens.
-  if ($element['#field_name'] == 'field_resource_links') {
+  if (isset($element['#field_name']) AND $element['#field_name'] == 'field_resource_links') {
 
     // Add the tokens fieldset to the last element.
     $num_elements = count($context['items']);

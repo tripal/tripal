@@ -445,7 +445,7 @@ function chado_project_load($nodes) {
  *
  * @ingroup tripal_project
  */
-function chado_project_node_access($node, $op, $account) {
+function tripal_project_node_access($node, $op, $account) {
 
   $node_type = $node;
   if (is_object($node)) {

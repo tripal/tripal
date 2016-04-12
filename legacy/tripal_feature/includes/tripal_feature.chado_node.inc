@@ -370,7 +370,7 @@ function chado_feature_validate($node, $form, &$form_state) {
  *
  * @ingroup tripal_feature
  */
-function chado_feature_node_access($node, $op, $account) {
+function tripal_feature_node_access($node, $op, $account) {
   $node_type = $node;
   if (is_object($node)) {
     $node_type = $node->type;

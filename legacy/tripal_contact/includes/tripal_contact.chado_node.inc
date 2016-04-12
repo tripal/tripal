@@ -317,7 +317,7 @@ function chado_contact_validate($node, $form, &$form_state) {
  *
  * @ingroup tripal_contact
  */
-function chado_contact_node_access($node, $op, $account ) {
+function tripal_contact_node_access($node, $op, $account ) {
 
   $node_type = $node;
   if (is_object($node)) {
