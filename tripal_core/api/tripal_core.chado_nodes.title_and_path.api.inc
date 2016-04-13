@@ -1139,6 +1139,60 @@ function chado_node_get_token_format($application, $content_type, $options = arr
 }
 
 /**
+ * Generate a Readable but not necessarily unique format based on a given primary
+ * key token.
+ *
+ * For example, given the token [feature.type_id>cvterm.cvterm_id] you don't
+ * want the actual id indexed but instead would want the term name, [feature.type_id>cvterm.name]
+ */
+function chado_node_get_readable_format($token) {
+
+  // First, lets break down the token into it's parts.
+  // 1. Remove containing brackets.
+  $parts = str_replace(array('[',']'),'',$token);
+  // 2. Break into table clauses.
+  $parts = explode('>',$parts);
+  // 3. Break each table clause into table & field.
+  foreach ($parts as $k => $v) {
+    $parts[$k] = explode('.', $v);
+    if (sizeof($parts[$k]) == 1) {
+      $parts[$k] = explode(':', $v);
+    }
+  }
+  $last_k = $k;
+
+  // Now, we want to find readable fields for the last table specified in the token.
+  // (ie: for cvterm in [feature.type_id>cvterm.cvterm_id])
+  $table = $parts[$last_k][0];
+  $format = array();
+  if ($table == 'organism') {
+    $format[] = preg_replace('/(\w+)\]$/', 'genus]', $token);
+    $format[] = preg_replace('/(\w+)\]$/', 'species]', $token);
+    $format[] = preg_replace('/(\w+)\]$/', 'common_name]', $token);
+    $format = $format[0] . ' ' . $format[1] . ' (' . $format[2] . ')';
+  }
+  elseif ($table == 'dbxref') {
+    $format[] = preg_replace('/(\w+)\]$/', 'accession]', $token);
+    $format[] = preg_replace('/(\w+)\]$/', 'db_id>db.name]', $token);
+    $format = $format[0] . ' (' . $format[1] . ')';
+  }
+  else {
+    $schema = chado_get_schema($table);
+    foreach ($schema['fields'] as $field_name => $details) {
+      if (preg_match('/name/',$field_name)) {
+        $format[] = preg_replace('/(\w+)\]$/', $field_name.']', $token);
+      }
+    }
+    $format = implode(', ',$format);
+  }
+  if (empty($format)) {
+    return FALSE;
+  }
+
+  return $format;
+}
+
+/**
  * Generate the unique constraint for a given base table using the
  * Chado Schema API definition
  *
@@ -1386,6 +1440,56 @@ function chado_node_format_tokens($tokens) {
     'empty' => '',
   );
   return theme_table($table);
+}
+
+/**
+ * Returns the "location" as specified in the token information based on the token.
+ */
+function chado_node_get_location_from_token($token) {
+
+  if (is_array($token) and isset($token['location'])) {
+    return $token['location'];
+  }
+  // If we have been given the token as a string, we can still determine the location
+  // but it takes more work...
+  // First, lets clarify what the location is: the location shows which keys in which
+  // order need to be travelled in order to access the value. For example, the token
+  // [feature.organism_id>organism.genus] would have a location of
+  // feature > organism_id > genus to show that the value is at
+  // $node->feature->organism->genus.
+  elseif (is_string($token)) {
+
+    // First, lets break down the token into it's parts.
+    // 1. Remove containing brackets.
+    $parts = str_replace(array('[',']'),'',$token);
+    // 2. Break into table clauses.
+    $parts = explode('>',$parts);
+    // 3. Break each table clause into table & field.
+    foreach ($parts as $k => $v) {
+      $parts[$k] = explode('.', $v);
+      if (sizeof($parts[$k]) == 1) {
+        $parts[$k] = explode(':', $v);
+      }
+    }
+
+    // This is a base level field that is not a foreign key.
+    if (sizeof($parts) == 1 AND sizeof($parts[0]) == 2) {
+      return $parts[0][0] . ' > ' . $parts[0][1];
+    }
+    // Darn, we have at least one foreign key...
+    elseif (sizeof($parts) > 1 AND sizeof($parts[0]) == 2) {
+      $location = $parts[0][0] . ' > ' . $parts[0][1];
+      foreach ($parts as $k => $p) {
+        if ($k != 0 AND isset($p[1])) {
+          $location .= ' > ' . $p[1];
+        }
+      }
+      return $location;
+    }
+    else {
+      return FALSE;
+    }
+  }
 }
 
 /**

@@ -22,6 +22,7 @@ require_once 'includes/tripal_core.mviews.inc';
 require_once 'includes/tripal_core.custom_tables.inc';
 require_once 'includes/tripal_core.chado_install.inc';
 require_once 'includes/tripal_core.form_elements.inc';
+require_once 'includes/tripal_core.search.inc';
 
 // Set some global variables.
 tripal_core_set_globals();
