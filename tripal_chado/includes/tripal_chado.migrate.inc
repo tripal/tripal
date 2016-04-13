@@ -15,7 +15,18 @@ function tripal_chado_migrate_form($form, &$form_state) {
   );
   $form['modes']['#group'] = 'overview_vert_tabs';
   $form['modes']['#weight'] = 1000;
-  
+  $form['modes']['#default_tab'] = $_SESSION['tripal_migrate_current_tab'];
+
+  $form['instructions'] = array(
+    '#type' => 'item',
+    '#markup' => t('Here you may migrate Tripal v2 content types to Tripal v3
+        content types. The migration process is divided into four steps that
+        allow you to migrate your site as your own pace. Please click each
+        step below for details as to the purpose of the step. When all steps
+        are completed your site will be fully Tripal v3 compatible.'),
+    '#weight' => -100
+  );
+
   // Step 1
   $form['step1'] = array(
     '#type' => 'fieldset',
@@ -26,13 +37,14 @@ function tripal_chado_migrate_form($form, &$form_state) {
     '#group' => 'overview_vert_tabs'
   );
   global $base_url;
-  $mod_url = $base_url . '/admin/modules';
+  $mod_url = '/admin/modules';
   $form['step1']['step1_content'] = array(
-    '#markup' => 'Tripal legacy modules are needed to support the display of Tripal v2 
-                      content types. Review and <a href="'. $mod_url .'">enable modules</a>
-                      in the \'Tripal v2 Legacy\' category for legacy content support'
+    '#markup' => 'Tripal legacy modules are needed to support the display of Tripal v2
+      content types. Review and ' . l('enable modules', $mod_url) . ' in the \'Tripal v2 Legacy\' category
+      for legacy content support. Only content types for enabled legacy
+      moodules can be migrated'
   );
-  
+
   // Step 2
   $form['step2'] = array(
     '#type' => 'fieldset',
@@ -48,7 +60,20 @@ function tripal_chado_migrate_form($form, &$form_state) {
     '#prefix' => '<div id="tripal-chado-migrate-form-step2">',
     '#suffix' => '</div>'
   );
-  
+  $form['step2']['step2_container']['instructions'] = array(
+    '#type' => 'item',
+    '#markup' => t('Here you can migrate Tripal v2 content types to Tripal v3
+        content types.  This will not destroy or remove existing Tripal v2 pages
+        but will creatte new Tripal v3 pages.  This allows you to keep existing
+        pages while reviewing and customizing the Tripal v3 content types. Site
+        visitors can continue to visit the Tripal v2 pages. Tripal
+        v3 content types may remain private while customization is underway.
+        Once customization is completed a subsequent step will allow you to
+        swap out Tripal v2 pages for the newer Tripal v3 pages.') .
+      t('If you would like to use Trial v3 web services you must migrate
+         content types.'),
+  );
+
   $tv2_content_type = 'all';
   if (array_key_exists('values', $form_state)) {
     $tv2_content_type = $form_state['values']['tv2_content_type'];
@@ -99,7 +124,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
     $no_data = TRUE;
     if ($form_state['clicked_button']['#name'] == 'get_v3_type_btn') {
 
-      // Migrate all      
+      // Migrate all
       $form['step2']['step2_container']['tv3_content_type']['tv3_migrate_all'] = array(
         '#type' => 'checkbox',
         '#title' => 'Migrate All'
@@ -123,9 +148,9 @@ function tripal_chado_migrate_form($form, &$form_state) {
           // We need to store namespace/accession/type for each checkbox in the key becuase
           // the value only allows 1 or 0
           $key = urlencode(
-            'tv3_content_type--' . 
-            $tv3_content_type->namespace . '--' . 
-            $tv3_content_type->accession . '--' . 
+            'tv3_content_type--' .
+            $tv3_content_type->namespace . '--' .
+            $tv3_content_type->accession . '--' .
             $tv3_content_type->type);
           $form['step2']['step2_container']['tv3_content_type'][$key] = array(
             '#type' => 'checkbox',
@@ -139,7 +164,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
           "SELECT count(*)
               FROM {organism} O
               INNER JOIN public.chado_organism CO ON O.organism_id = CO.organism_id
-              LEFT JOIN public.chado_entity CE ON CE.record_id = O.organism_id 
+              LEFT JOIN public.chado_entity CE ON CE.record_id = O.organism_id
                 AND CE.data_table = 'organism'
               WHERE CE.record_id IS NULL";
         $org_count = chado_query($sql)->fetchField();
@@ -157,7 +182,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
         "SELECT count(*)
               FROM {analysis} A
               INNER JOIN public.chado_analysis CA ON A.analysis_id = CA.analysis_id
-              LEFT JOIN public.chado_entity CE ON CE.record_id = A.analysis_id 
+              LEFT JOIN public.chado_entity CE ON CE.record_id = A.analysis_id
                 AND CE.data_table = 'analysis'
               WHERE CE.record_id IS NULL";
         $ana_count = chado_query($sql)->fetchField();
@@ -184,7 +209,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
       '#value' => "Migrate $tv2_options[$tv2_content_type]",
     );
   }
-  
+
   // Step 3
   $form['step3'] = array(
     '#type' => 'fieldset',
@@ -194,14 +219,30 @@ function tripal_chado_migrate_form($form, &$form_state) {
     '#collapsed' => TRUE,
     '#group' => 'overview_vert_tabs'
   );
+  $form['step3']['instructions'] = array(
+    '#type' => 'item',
+    '#markup' => t('Once content types have been migrated you have the option
+        to use the Tripal v2 display templates.  Tripal v3 allows you to
+        customize the page layout using a web interface whereas Tripal v2
+        required programatic changes to template files. If your site has
+        considerable Tripal v2 customizations that you do not
+        want to lose you can use the legacy templates by checking the box
+        for the desired content types below.'),
+  );
   // Get a list of enabled legacy modules with tv2 templates
   $mod_enabled = tripal_chado_migrate_get_enabled_legacy_modules(TRUE);
   $enabled_templates = variable_get('tripal_chado_enabled_legacy_templates', array());
-  foreach ($mod_enabled AS $mod_name => $mod_path) {
-    $form ['step3']['legacy_template--' . $mod_name] = array (
+  $info = module_invoke_all('node_info');
+  foreach ($tv2_options AS $type_name => $type_label) {
+    $title = $type_label;
+
+    if ($type_name != 'all' and !key_exists($type_name, $info)) {
+      $title .= " <strong>(please enable the $type_name legacy module).</strong>";
+    }
+    $form ['step3']['legacy_template--' . $type_name] = array (
       '#type' => 'checkbox',
-      '#title' => ucwords(str_replace(array('tripal', '_'), array('chado', ' '), $mod_name)),
-      '#default_value' => key_exists('legacy_template--' . $mod_name, $enabled_templates) ? $enabled_templates['legacy_template--' . $mod_name] : 0,
+      '#title' => $title,
+      '#default_value' => key_exists('legacy_template--' . $type_name, $enabled_templates) ? $enabled_templates['legacy_template--' . $type_name] : 0,
     );
   }
   $form['step3']['save_btn'] = array(
@@ -209,7 +250,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
     '#name' => 'save_enabled_template_btn',
     '#value' => "Save",
   );
-  
+
   // Step 4
   $form['step4'] = array(
     '#type' => 'fieldset',
@@ -219,6 +260,26 @@ function tripal_chado_migrate_form($form, &$form_state) {
     '#collapsed' => TRUE,
     '#group' => 'overview_vert_tabs'
   );
+  $form['step4']['instructions'] = array(
+    '#type' => 'item',
+    '#markup' => t('This step allows you to fully switch to Tripal v3 pages.
+        You can move URLs and titles from Tripal v2 pages to their
+        corresponding Tripal v3 pages. This ensures user bookmarks and external
+        links to your site are not broken.  Here you can also unpublish Tripal
+        v2 content types or completely remove them if desired.  You can
+        perform these action in stages such as first moving titles and URLs,
+        then unpublishing Tripal v2 pages and once the migration has been
+        verified you can finally delete the Tripal v2 pages to free space.
+        Deleting the Tripal v2 content will not delete the data in Chado.
+        The page is simply removed from the site.'),
+  );
+  $form['step4']['warning'] = array(
+    '#type' => 'item',
+    '#markup' => tripal_set_message('Any of the following options cannot be
+        undone. Also, please be sure you have migrated all
+        desired content types in Step 2 prior to deleting the Tripal v2
+        contents.', TRIPAL_WARNING, array('return_html' => TRUE)),
+  );
   $opt_complete_migration = array (
     'cp_title' => 'Copy Title over to Tripal v3 Content',
     'mv_url' => 'Migrate URL Alias to Tripal v3 Content',
@@ -226,7 +287,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
     'delete' => 'Delete Tripal v2 Content',
   );
   if (count($tv2_options) == 1 && key_exists('all', $tv2_options)) {
-    $form['step4']['compltete'] = array(
+    $form['step4']['complete'] = array(
       '#markup' => 'Migration completed. All content have been migrated.'
     );
   }
@@ -285,7 +346,7 @@ function tripal_chado_migrate_form_validate($form, &$form_state) {
         $type = str_replace('complete_migration--', '', $key);
         if ($type != 'all') {
           array_push($all_types, $type);
-        }        
+        }
         foreach ($value AS $key_op => $op) {
           if ($type == 'all') {
             if ($op) {
@@ -308,10 +369,10 @@ function tripal_chado_migrate_form_validate($form, &$form_state) {
     $includes = array(
       module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.migrate'),
     );
-    
+
     if (count($config['cp_title']) > 0) {
       $args = array($config['cp_title']);
-      tripal_add_job("Copy Title over to Tripal v3 Content", 'tripal_chado', 
+      tripal_add_job("Copy Title over to Tripal v3 Content", 'tripal_chado',
         'tripal_chado_copy_title_for_selected_types', $args, $user->uid, 10, $includes);
     }
     if (count($config['mv_url']) > 0) {
@@ -463,9 +524,9 @@ function tripal_chado_get_tripal_v2_content_type_options($all_option = FALSE) {
 
 /**
  * Migrate all Tripal v2 content types
- * 
- * Gather all available Tripal v2 content types and store the result in an associated array with 
- * values of namespace, accession, term_name. The array is then pass to the function 
+ *
+ * Gather all available Tripal v2 content types and store the result in an associated array with
+ * values of namespace, accession, term_name. The array is then pass to the function
  * tripal_chado_migrate_selected_types() that handles the migration
  */
 function tripal_chado_migrate_all_types() {
@@ -549,7 +610,7 @@ function tripal_chado_migrate_selected_types($tv3_content_types) {
 
 /**
  * Get a list of enabled legacy modules
- * 
+ *
  * return an associated array with value of module directory and keyed by the module name
  */
 function tripal_chado_migrate_get_enabled_legacy_modules ($has_base_template = FALSE) {
@@ -576,7 +637,7 @@ function tripal_chado_migrate_get_enabled_legacy_modules ($has_base_template = F
  * Delete selected Tripal v2 content
  *
  * Delete all records from chado_* table then call the cleanup orphan nodes function
- * 
+ *
  * @param unknown $tv2_content_types
  */
 function tripal_chado_delete_selected_types($tv2_content_types = array()) {
@@ -616,11 +677,11 @@ function tripal_chado_copy_title_for_selected_types($tv2_content_types = array()
     $result = db_query($sql);
     while ($entity = $result->fetchObject()) {
       $usql = "
-          UPDATE tripal_entity 
+          UPDATE tripal_entity
           SET title = (SELECT title FROM node WHERE nid = :nid)
           WHERE id = :entity_id";
       db_query($usql, array(
-        ':nid' => $entity->nid, 
+        ':nid' => $entity->nid,
         ':entity_id' => $entity->entity_id)
       );
     }
