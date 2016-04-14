@@ -620,10 +620,17 @@ function tripal_chado_entity_view($entity, $type, $view_mode, $langcode) {
       $chado_table = tripal_get_bundle_variable('chado_table', $bundle->id);
       $chado_field = tripal_get_bundle_variable('chado_column', $bundle->id);
 
+      // Get the list of templates that should be used for entities and generatte
+      // the key in the array for this entity type (using the chado table the
+      // entity maps to).
       $enabled_templates = variable_get('tripal_chado_enabled_legacy_templates', array());
       $legacy_template = 'legacy_template--chado_' . $chado_table;
 
+      // If the site admin has indicated that thhis entity type should use
+      // a legacy tmplate then prepare the entity and content to fake a
+      // node.
       if (key_exists($legacy_template, $enabled_templates) && $enabled_templates[$legacy_template]) {
+
         // Remove the fields added by the chado_field_storage.
         $fields = field_info_fields();
         foreach($fields as $field) {
@@ -637,13 +644,23 @@ function tripal_chado_entity_view($entity, $type, $view_mode, $langcode) {
           }
         }
 
-        // Now call the module's node_view hook to add additional
-        // content to our 'fake' entity node.
+        // Make the entity look like a node.
         $entity->type = 'chado_' . $chado_table;
         $entity->$chado_table = $entity->chado_record;
-        // The comment module is expecting a 'comment' property
-        // is attached to the node, so just set it to NULL.
-        $entity->comment = NULL;
+
+        // Add any node specific fields to the entity to fake the node.
+        $node_schema = drupal_get_schema('node');
+        foreach ($node_schema['fields'] as $field_name => $details) {
+          if (!property_exists($entity, $field_name)) {
+            $entity->$field_name = '';
+            if (array_key_exists('default', $details)) {
+              $entity->$field_name = $details['default'];
+            }
+          }
+        }
+
+        // Now call the module's node_view hook to add additional
+        // content to our 'fake' entity node.
         $modules = module_list();
         foreach ($modules as $mname => $details) {
           $function_name = $mname . '_node_view';
