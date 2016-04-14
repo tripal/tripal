@@ -77,6 +77,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   $sql = $select . $from . $where;
   $records = chado_query($sql);
   $num_published = 0;
+  $transaction  = db_transaction();
   try {
     while($record = $records->fetchObject()) {
 
@@ -87,7 +88,9 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
         'bundle' => $bundle_name,
         'term_id' => $bundle->term_id,
       ));
-      $entity->save();
+      if (!$entity->save()) {
+        throw new Exception('Could not create entity.');
+      }
 
       // Next save the chado_entity record.
       $entity_record = array(
@@ -114,6 +117,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
     }
   }
   catch (Exception $e) {
+    $transaction->rollback();
     $error = $e->getMessage();
     tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not publish record: @error", array('@error' => $error));
     drupal_set_message('Failed publishing record. See recent logs for more details.', 'error');
