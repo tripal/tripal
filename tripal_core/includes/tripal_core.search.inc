@@ -100,26 +100,31 @@ function tripal_core_entity_property_info_alter(&$info) {
             $label = ucwords($label);
           }
 
-          $pretoken = '[' . $n['chado_node_api']['base_table'] . '.' . $left_field . '>' . $table . '.' . $right_field . ']';
+          /**
+           * Currently I can't get facets to work so there is no use indexing this 2X
+           *
           $keytoken = '[BASE.' . $left_field . '>' . $table . '.' . $right_field . ']';
-          $format = chado_node_get_readable_format($pretoken);
-          if (!$format) $format = chado_node_get_unique_constraint_format($table);
+          $format = chado_node_get_readable_format($keytoken);
 
           // First, create the key version. This is best used for facets since it
           // won't/can't be tokenized along with the other fields. This will be shared
           // among node types to facillitate use as a facet.
           $info['node']['properties'][$table . '.' . $right_field .' key'] = array(
-            'label' => $key_label . ' (Key Only)',
+            'label' => $key_label . ' (All Content Types)',
             'description' => $field_details['description'],
             'type' => 'text',
             // We include both the token for the current node type and the token for
             // the parent table. That way the organism node will appear in the results
             // for the organism key.
-            'schema field' => $keytoken . '['.$table . '.' . $right_field.']',
+            'schema field' => $format,
             // The following getter callback is a generic function that can retrieve
             // values for any chado foreign key.
             'getter callback' => 'tripal_search_chado_token_across_nodetypes_getter_callback'
           );
+          */
+
+          $pretoken = '[' . $n['chado_node_api']['base_table'] . '.' . $left_field . '>' . $table . '.' . $right_field . ']';
+          $format = chado_node_get_readable_format($pretoken);
 
           // Add a more readable version that will be tokenized so users can
           // search for fruitfly and get all features with that as an organism.
