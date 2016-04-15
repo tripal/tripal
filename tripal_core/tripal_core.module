@@ -788,7 +788,7 @@ function tripal_core_search_block($form, $form_state) {
     '#type' => 'textfield',
     '#size' => 15,
     '#maxlength' => 128,
-    '#attributes' =>array('placeholder' => t('Keywords'))
+    '#attributes' =>array('placeholder' => t(variable_get('tripal_search_placeholder', 'Keywords')))
   );
 
   $form['wrapper']['submit'] = array(
@@ -833,6 +833,13 @@ function tripal_core_block_configure ($delta = '') {
     '#default_value' => variable_get('tripal_search_block_url', 'search/data'),
   );
 
+  $form['search_placeholder'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Placeholder Text',
+    '#description' => 'Change the text that shows up within the search box until the user enters any of their own text.',
+    '#default_value' => variable_get('tripal_search_placeholder', 'Keywords'),
+  );
+
   return $form;
 }
 
@@ -844,5 +851,9 @@ function tripal_core_block_save($delta = '', $edit = array()) {
   // We simply want to save this information in a Drupal variable for use in the form submit.
   if (!empty($edit['search_url'])) {
     variable_set('tripal_search_block_url', $edit['search_url']);
+  }
+
+  if (!empty($edit['search_placeholder'])) {
+    variable_set('tripal_search_placeholder', $edit['search_placeholder']);
   }
 }
