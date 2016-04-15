@@ -80,7 +80,8 @@ function tripal_core_entity_property_info_alter(&$info) {
       }
 
       // We want to add any base foreign keys. This allows you to search for all features
-      // from a given organism.
+      // from a given organism. Furthermore, we want to add a single field for each foreign
+      // key that will span content types in order to be exposed as facets.
       foreach ($schema['foreign keys'] as $table => $fk_details) {
         foreach ($fk_details['columns'] as $left_field => $right_field) {
 
@@ -90,17 +91,40 @@ function tripal_core_entity_property_info_alter(&$info) {
           // Try to create a readable label.
           $label = $table . ' (' . $machine_name . ')';
           if (preg_match('/(\w+)_id/',$left_field,$matches)) {
+            // Key only field.
+            $key_label = ucwords(str_replace('_', ' ', $matches[1]));
+
+            // Expanded field.
             $label = str_replace('_', ' ', $n['chado_node_api']['base_table']);
             $label .= ' ' . str_replace('_', ' ', $matches[1]);
             $label = ucwords($label);
           }
 
           $pretoken = '[' . $n['chado_node_api']['base_table'] . '.' . $left_field . '>' . $table . '.' . $right_field . ']';
+          $keytoken = '[BASE.' . $left_field . '>' . $table . '.' . $right_field . ']';
           $format = chado_node_get_readable_format($pretoken);
           if (!$format) $format = chado_node_get_unique_constraint_format($table);
 
-          $info['node']['bundles'][ $n['base'] ]['properties'][$machine_name] = array(
-            'label' => $label,
+          // First, create the key version. This is best used for facets since it
+          // won't/can't be tokenized along with the other fields. This will be shared
+          // among node types to facillitate use as a facet.
+          $info['node']['properties'][$table . '.' . $right_field .' key'] = array(
+            'label' => $key_label . ' (Key Only)',
+            'description' => $field_details['description'],
+            'type' => 'text',
+            // We include both the token for the current node type and the token for
+            // the parent table. That way the organism node will appear in the results
+            // for the organism key.
+            'schema field' => $keytoken . '['.$table . '.' . $right_field.']',
+            // The following getter callback is a generic function that can retrieve
+            // values for any chado foreign key.
+            'getter callback' => 'tripal_search_chado_token_across_nodetypes_getter_callback'
+          );
+
+          // Add a more readable version that will be tokenized so users can
+          // search for fruitfly and get all features with that as an organism.
+          $info['node']['bundles'][ $n['base'] ]['properties'][$machine_name .' expanded'] = array(
+            'label' => $label . ' (Expanded)',
             'description' => $field_details['description'],
             'type' => 'text',
             'schema field' => $format,
@@ -143,30 +167,24 @@ function hook_tripal_search_properties_alter(&$info) { }
  *  hook_entity_property_info() in order for this getter to work.
  *
  * @param $data
- *   Must be a chado node object.
+ *   The entity object (in our case the node we need to retrieve feature properties for).
+ * @param $options
+ * @param $field_name
+ *   The machine name for the entity property.
+ * @param $info
+ *   The full property definition from entity property info.
+ *
+ * @return
+ *   A string representing the "value" of the field.
  */
 function tripal_search_chado_token_getter_callback($data, $options, $field_name, $type, $info) {
 
-  if (isset($info['schema field'])) {
-    $format = $info['schema field'];
-
-    // Determine which tokens were used in the format string
-    if (preg_match_all('/\[[^]]+\]/', $format, $used_tokens)) {
-      $used_tokens = $used_tokens[0];
-
-      // If there are no tokens then return the format as is...
-      if (empty($used_tokens)) {
-        tripal_report_error(
-          'tripal_search',
-          TRIPAL_NOTICE,
-          'Returned static text for :field since there were no tokens in the supplied format: :format',
-          array(':field' => $field_name, ':format' => $format)
-        );
-        return $format;
-      }
+  if (isset($data->nid)) {
+    if (isset($info['schema field'])) {
+      $format = $info['schema field'];
 
       // Determine our base table so we know if this is even the right node type.
-      if (preg_match('/^\[(\w+)\.(\w+)/',$used_tokens[0], $matches)) {
+      if (preg_match('/\[(\w+)\.(\w+)/',$format, $matches)) {
         $base_table = $matches[1];
         $field_name = $matches[2];
 
@@ -175,31 +193,7 @@ function tripal_search_chado_token_getter_callback($data, $options, $field_name,
         // this check here to ensure this field is actually for this node type.
         if (!isset($data->{$base_table})) return NULL;
 
-        // Get the value of each token.
-        $null_tokens = array();
-        foreach ($used_tokens as $token) {
-          $token_info = array(
-              'name' => $info['label'],
-              'table' => $base_table,
-              'field' => $field_name,
-              'token' => $token,
-              'description' => $info['description'],
-              'location' => chado_node_get_location_from_token($token),
-          );
-
-          $value = chado_get_token_value($token_info, $data);
-          if (empty($value)) $null_tokens[] = $token;
-
-          // And sub it in to the format.
-          $format = str_replace($token, $value, $format);
-        }
-
-        // If none of the tokens had values then this node doesn't have this field.
-        // As such we return null so the search api doesn't bother indexing an empty format.
-        if (sizeof($used_tokens) == sizeof($null_tokens)) return NULL;
-
-        // At this poin the format should have all tokens replaced for values and is
-        // thus the value we want to index for this field!
+        $format = tripal_core_get_token_value_for_property($base_table, $field_name, $format, $data, $info);
         return $format;
       }
       else {
@@ -207,32 +201,132 @@ function tripal_search_chado_token_getter_callback($data, $options, $field_name,
         tripal_report_error(
           'tripal_search',
           TRIPAL_ERROR,
-          'Unable to extract the base table from the first token (:token) for :field because it didn\'t match the expected format: [tablename.field...',
-          array(':field' => $field_name, ':token' => $used_tokens[0])
+          'Unable to extract the base table from the format (:format) for :field because it didn\'t match the expected format: [tablename.field...',
+          array(':field' => $field_name, ':format' => $format)
         );
         return NULL;
       }
     }
-    // There were no tokens?
     else {
       tripal_report_error(
         'tripal_search',
+        TRIPAL_ERROR,
+        'Unable to get value for :field because the schema field was not set.',
+        array(':field' => $field_name)
+      );
+      return NULL;
+    }
+  }
+}
+
+/**
+ * Implements a getter callback for foreign keys collon between content types.
+ *
+ * @param $data
+ *   The entity object (in our case the node we need to retrieve feature properties for).
+ * @param $options
+ * @param $field_name
+ *   The machine name for the entity property.
+ * @param $info
+ *   The full property definition from entity property info.
+ *
+ * @return
+ *   A string representing the "value" of the field.
+ */
+function tripal_search_chado_token_across_nodetypes_getter_callback($data, $options, $field_name, $type, $info) {
+
+  // First, make sure this is a chado node.
+  // Assumption #1: All chado node types are prefixed with chado_
+  if (isset($data->nid)) {
+    if (preg_match('/^chado_(\w+)/',$data->type,$matches)) {
+      if (isset($info['schema field'])) {
+
+        // Assumption #2: The base table is the suffix of the node type.
+        $base_table = $matches[1];
+
+        // Substitute in the  base table for "BASE" in the schema field.
+        $format = str_replace('BASE', $base_table, $info['schema field']);
+
+        // Replace all tokens for values and return the result.
+        $format = tripal_core_get_token_value_for_property($base_table, $field_name, $format, $data, $info);
+        return $format;
+      }
+      else {
+        // Not able to determine table?
+        tripal_report_error(
+          'tripal_search',
+          TRIPAL_ERROR,
+          'Unable to extract the base table from the format (:format) for :field because it didn\'t match the expected format: [tablename.field...',
+          array(':field' => $field_name, ':format' => $format)
+        );
+      }
+    }
+    else {
+      tripal_report_error(
+        'tripal_search',
+        TRIPAL_ERROR,
+        'Unable to get value for :field because the schema field was not set.',
+        array(':field' => $field_name)
+      );
+    }
+  }
+
+  return NULL;
+}
+
+/**
+ * Retrieve values for all tokens for an entity property getter function.
+ */
+function tripal_core_get_token_value_for_property($base_table, $field_name, $format, $data, $info) {
+
+  // Determine which tokens were used in the format string
+  if (preg_match_all('/\[[^]]+\]/', $format, $used_tokens)) {
+    $used_tokens = $used_tokens[0];
+
+    // If there are no tokens then return the format as is...
+    if (empty($used_tokens)) {
+      tripal_report_error(
+        'tripal_search',
         TRIPAL_NOTICE,
-        'Returned static text for :field since there were no tokens of a recognized format in the supplied format: :format',
+        'Returned static text for :field since there were no tokens in the supplied format: :format',
         array(':field' => $field_name, ':format' => $format)
       );
       return $format;
     }
+
+    // Get the value of each token.
+    $null_tokens = array();
+    foreach ($used_tokens as $token) {
+      $token_info = array(
+          'name' => $info['label'],
+          'table' => $base_table,
+          'field' => $field_name,
+          'token' => $token,
+          'description' => $info['description'],
+          'location' => chado_node_get_location_from_token($token),
+      );
+
+      $value = chado_get_token_value($token_info, $data, array('supress_errors' => TRUE));
+      if (empty($value)) $null_tokens[] = $token;
+
+      // And sub it in to the format.
+      $format = str_replace($token, $value, $format);
+    }
+
+    // If none of the tokens had values then this node doesn't have this field.
+    // As such we return null so the search api doesn't bother indexing an empty format.
+    if (sizeof($used_tokens) == sizeof($null_tokens)) return NULL;
   }
   else {
     tripal_report_error(
       'tripal_search',
-      TRIPAL_ERROR,
-      'Unable to get value for :field because the schema field was not set.',
-      array(':field' => $field_name)
+      TRIPAL_NOTICE,
+      'Returned static text for :field since there were no tokens of a recognized format in the supplied format: :format',
+      array(':field' => $field_name, ':format' => $format)
     );
-    return NULL;
   }
+
+  return $format;
 }
 
 /**
