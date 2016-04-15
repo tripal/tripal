@@ -173,17 +173,25 @@ class TripalEntityController extends EntityAPIController {
     if ($alias) {
 
       // Determine if this alias has already been used.
-      $num_aliases = db_query('SELECT count(*) as num_alias FROM {url_alias} WHERE alias=:alias',
-        array(':alias' => $alias))->fetchField();
+      $sql ='
+        SELECT count(*) as num_alias
+        FROM {url_alias}
+        WHERE alias=:alias
+      ';
+      $num_aliases = db_query($sql, array(':alias' => $alias))->fetchField();
 
       // Either there isn't an alias yet so we just create one.
       // OR an Alias already exists but we would like to add a new one.
       if ($num_aliases == 0) {
-
         // First delete any previous alias' for this entity.
-        path_delete(array('source' => $source_url));
-
         // Then save the new one.
+
+        // TODO: publishing an entity can be very slow if there are lots of
+        // entries in the url_alias table, due to this type of
+        // SQL statement that gets called somewhere by Drupal:
+        // SELECT DISTINCT SUBSTRING_INDEX(source, '/', 1) AS path FROM url_alias.
+        // Perhaps we should write our own SQL to avoid this issue.
+        path_delete(array('source' => $source_url));
         $path = array('source' => $source_url, 'alias' => $alias);
         path_save($path);
       }
@@ -193,27 +201,27 @@ class TripalEntityController extends EntityAPIController {
 
         $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
 
-        // Checking to see if the single alias is for the same entity and if not
-        // warning the admin that the alias is already used (ie: not unique?)
-        $same_alias = db_query('SELECT count(*) as num_alias FROM {url_alias} WHERE alias=:alias AND source=:source',
-          array(':alias' => $alias, ':source' => $source_url))->fetchField();
+        // Check to see if the single alias is for the same entity and if not
+        // warn the admin that the alias is already used (ie: not unique?)
+        $sql = "
+          SELECT count(*) as num_alias
+          FROM {url_alias}
+          WHERE alias=:alias AND source=:source
+        ";
+        $replace = array(':alias' => $alias, ':source' => $source_url);
+        $same_alias = db_query($sql, $replace)->fetchField();
         if (!$same_alias) {
-
-          $msg = 'The URL alias, %alias, already exists for another page. Please ensure the pattern
-            supplied on the <a href="!link" target="_blank">%type Edit Page</a> under URL Path options is unique.';
+          $msg = 'The URL alias, %alias, already exists for another page. ' .
+            'Please ensure the pattern supplied on the <a href="!link" ' .
+            'target="_blank">%type Edit Page</a> under URL Path options is ' .
+            'unique.';
           $msg_var = array(
-              '%alias' => $alias,
-              '!link' => url("admin/structure/bio_data/manage/$entity->bundle"),
-              '%type' => $bundle_entity->label
-            );
-          tripal_report_error(
-            'trpentity',
-            TRIPAL_WARNING,
-            $msg,
-            $msg_var
+            '%alias' => $alias,
+            '!link' => url("admin/structure/bio_data/manage/$entity->bundle"),
+            '%type' => $bundle_entity->label
           );
+          tripal_report_error('trpentity', TRIPAL_WARNING, $msg, $msg_var);
           drupal_set_message(t($msg, $msg_var), 'warning');
-
         }
       }
       // If there are more then one alias' matching what we generated then there's
@@ -228,25 +236,21 @@ class TripalEntityController extends EntityAPIController {
           $pages[] = $a->source;
         }
 
-        $msg = 'The URL alias, %alias, already exists for multiple pages! Please ensure the pattern
-          supplied on the <a href="!link" target="_blank">%type Edit Page</a> under URL Path options is unique.';
+        $msg = 'The URL alias, %alias, already exists for multiple pages! '.
+          'Please ensure the pattern supplied on the <a href="!link" ' .
+          'target="_blank">%type Edit Page</a> under URL Path options is ' .
+          'unique.';
         $msg_var = array(
-            '%alias' => $alias,
-            '!link' => url("admin/structure/bio_data/manage/$entity->bundle"),
-            '%type' => $bundle_entity->label
-          );
+          '%alias' => $alias,
+          '!link' => url("admin/structure/bio_data/manage/$entity->bundle"),
+          '%type' => $bundle_entity->label
+        );
         drupal_set_message(t($msg, $msg_var), 'error');
 
         $msg .= ' This url alias has already been used for the following pages: %pages.
           You can manually delete alias\' using a combination of path_load() and path_delete().';
         $msg_var['%pages'] = implode(', ', $pages);
-        tripal_report_error(
-          'trpentity',
-          TRIPAL_ERROR,
-          $msg,
-          $msg_var
-        );
-
+        tripal_report_error('trpentity', TRIPAL_ERROR, $msg, $msg_var);
       }
     }
   }
