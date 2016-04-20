@@ -100,9 +100,6 @@ function tripal_core_entity_property_info_alter(&$info) {
             $label = ucwords($label);
           }
 
-          /**
-           * Currently I can't get facets to work so there is no use indexing this 2X
-           *
           $keytoken = '[BASE.' . $left_field . '>' . $table . '.' . $right_field . ']';
           $format = chado_node_get_readable_format($keytoken);
 
@@ -121,7 +118,6 @@ function tripal_core_entity_property_info_alter(&$info) {
             // values for any chado foreign key.
             'getter callback' => 'tripal_search_chado_token_across_nodetypes_getter_callback'
           );
-          */
 
           $pretoken = '[' . $n['chado_node_api']['base_table'] . '.' . $left_field . '>' . $table . '.' . $right_field . ']';
           $format = chado_node_get_readable_format($pretoken);
