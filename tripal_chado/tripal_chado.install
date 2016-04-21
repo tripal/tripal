@@ -209,13 +209,33 @@ function tripal_chado_schema() {
       // Move the tripal_mviews table out of the way.
       $sql = "ALTER TABLE tripal_mviews RENAME TO tripal_mviews2";
       db_query($sql);
-      $sql = "ALTER INDEX tripal_mviews_mv_name_key RENAME TO tripal_mviews_mv_name_key2";
+      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_mviews_mv_name_key'")->fetchField()) {
+        $sql = "ALTER INDEX tripal_mviews_mv_name_key RENAME TO tripal_mviews_mv_name_key2";
+      }
+      else {
+        $sql = "CREATE UNIQUE INDEX tripal_mviews_mv_name_key2 ON tripal_mviews2 USING btree (name)";
+      }
       db_query($sql);
-      $sql = "ALTER INDEX tripal_mviews_mv_table_key RENAME TO tripal_mviews_mv_table_key2";
+      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_mviews_mv_table_key'")->fetchField()) {
+        $sql = "ALTER INDEX tripal_mviews_mv_table_key RENAME TO tripal_mviews_mv_table_key2";
+      }
+      else {
+        $sql = "CREATE UNIQUE INDEX tripal_mviews_mv_table_key2 ON tripal_mviews2 USING btree (mv_table)";
+      }
       db_query($sql);
-      $sql = "ALTER INDEX tripal_mviews_mview_id_idx RENAME TO tripal_mviews_mview_id_idx2";
+      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_mviews_mview_id_idx'")->fetchField()) {
+        $sql = "ALTER INDEX tripal_mviews_mview_id_idx RENAME TO tripal_mviews_mview_id_idx2";
+      }
+      else {
+        $sql = "CREATE INDEX tripal_mviews_mview_id_idx2 ON tripal_mviews2 USING btree (mview_id)";
+      }
       db_query($sql);
-      $sql = "ALTER INDEX tripal_mviews_pkey RENAME TO tripal_mviews_pkey2";
+      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_mviews_pkey'")->fetchField()) {
+        $sql = "ALTER INDEX tripal_mviews_pkey RENAME TO tripal_mviews_pkey2";
+      }
+      else {
+        $sql = "CREATE UNIQUE INDEX tripal_mviews_pkey2 ON tripal_mviews2 USING btree (mview_id)";
+      }
       db_query($sql);
     }
 
@@ -223,9 +243,19 @@ function tripal_chado_schema() {
       // Move the tripal_custom_tables table out of the way.
       $sql = "ALTER TABLE tripal_custom_tables RENAME TO tripal_custom_tables2";
       db_query($sql);
-      $sql = "ALTER INDEX tripal_custom_tables_pkey RENAME TO tripal_custom_tables_pkey2";
+      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_custom_tables_pkey'")->fetchField()) {
+        $sql = "ALTER INDEX tripal_custom_tables_pkey RENAME TO tripal_custom_tables_pkey2";
+      }
+      else {
+        $sql = "CREATE UNIQUE INDEX tripal_custom_tables_pkey2 ON tripal_custom_tables2 USING btree (table_id)";
+      }
       db_query($sql);
-      $sql = "ALTER INDEX tripal_custom_tables_table_id_idx RENAME TO tripal_custom_tables_table_id_idx2";
+      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_custom_tables_table_id_idx'")->fetchField()) {
+        $sql = "ALTER INDEX tripal_custom_tables_table_id_idx RENAME TO tripal_custom_tables_table_id_idx2";
+      }
+      else {
+        $sql = "CREATE INDEX tripal_custom_tables_table_id_idx2 ON tripal_custom_tables2 USING btree (table_id)";
+      }
       db_query($sql);
     }
 
@@ -233,9 +263,19 @@ function tripal_chado_schema() {
       // Move the tripal_cv_obo table out of the way.
       $sql = "ALTER TABLE tripal_cv_obo RENAME TO tripal_cv_obo2";
       db_query($sql);
-      $sql = "ALTER INDEX tripal_cv_obo_obo_id_idx RENAME TO tripal_cv_obo_obo_id_idx2";
+      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_obo_id_idx'")->fetchField()) {
+        $sql = "ALTER INDEX tripal_cv_obo_obo_id_idx RENAME TO tripal_cv_obo_obo_id_idx2";
+      }
+      else {
+        $sql = "CREATE INDEX tripal_cv_obo_obo_id_idx2 ON tripal_cv_obo2 USING btree (obo_id)";
+      }
       db_query($sql);
-      $sql = "ALTER INDEX tripal_cv_obo_pkey RENAME TO tripal_cv_obo_pkey2";
+      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_pkey'")->fetchField()) {
+        $sql = "ALTER INDEX tripal_cv_obo_pkey RENAME TO tripal_cv_obo_pkey2";
+      }
+      else {
+        $sql = "CREATE UNIQUE INDEX tripal_cv_obo_pkey2 ON tripal_cv_obo2 USING btree (obo_id)";
+      }
       db_query($sql);
     }
 
@@ -243,11 +283,26 @@ function tripal_chado_schema() {
       // Move the tripal_cv_defaults table out of the way.
       $sql = "ALTER TABLE tripal_cv_defaults RENAME TO tripal_cv_defaults2";
       db_query($sql);
-      $sql = "ALTER INDEX tripal_cv_defaults_pkey RENAME TO tripal_cv_defaults_pkey2";
+      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_defaults_pkey'")->fetchField()) {
+        $sql = "ALTER INDEX tripal_cv_defaults_pkey RENAME TO tripal_cv_defaults_pkey2";
+      }
+      else {
+        $sql = "CREATE UNIQUE INDEX tripal_cv_defaults_pkey2 ON tripal_cv_defaults2 USING btree (cv_default_id)";
+      }
       db_query($sql);
-      $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_idx1_idx RENAME TO tripal_cv_defaults_tripal_cv_defaults_idx1_idx2";
+      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_defaults_tripal_cv_defaults_idx1_idx'")->fetchField()) {
+        $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_idx1_idx RENAME TO tripal_cv_defaults_tripal_cv_defaults_idx1_idx2";
+      }
+      else {
+        $sql = "CREATE INDEX tripal_cv_defaults_tripal_cv_defaults_idx1_idx2 ON tripal_cv_defaults2 USING btree (table_name, field_name)";
+      }
       db_query($sql);
-      $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_unq1_key RENAME TO tripal_cv_defaults_tripal_cv_defaults_unq1_key2";
+      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_defaults_tripal_cv_defaults_unq1_key'")->fetchField()) {
+        $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_unq1_key RENAME TO tripal_cv_defaults_tripal_cv_defaults_unq1_key2";
+      }
+      else {
+        $sql = "CREATE UNIQUE INDEX tripal_cv_defaults_tripal_cv_defaults_unq1_key2 ON tripal_cv_defaults2 USING btree (table_name, field_name, cv_id)";
+      }
       db_query($sql);
     }
 
@@ -255,9 +310,19 @@ function tripal_chado_schema() {
       // Move the tripal_pub_import table out of the way.
       $sql = "ALTER TABLE tripal_pub_import RENAME TO tripal_pub_import2";
       db_query($sql);
-      $sql = "ALTER INDEX tripal_pub_import_name_idx RENAME TO tripal_pub_import_name_idx2";
+      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_pub_import_name_idx'")->fetchField()) {
+        $sql = "ALTER INDEX tripal_pub_import_name_idx RENAME TO tripal_pub_import_name_idx2";
+      }
+      else {
+        $sql = "CREATE INDEX tripal_pub_import_name_idx2 ON tripal_pub_import2 USING btree (name)";
+      }
       db_query($sql);
-      $sql = "ALTER INDEX tripal_pub_import_pkey RENAME TO tripal_pub_import_pkey2";
+      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_pub_import_pkey'")->fetchField()) {
+        $sql = "ALTER INDEX tripal_pub_import_pkey RENAME TO tripal_pub_import_pkey2";
+      }
+      else {
+        $sql = "CREATE UNIQUE INDEX tripal_pub_import_pkey2 ON tripal_pub_import2 USING btree (pub_import_id)";
+      }
       db_query($sql);
     }
 

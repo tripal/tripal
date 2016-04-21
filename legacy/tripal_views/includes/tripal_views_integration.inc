@@ -27,7 +27,7 @@ function tripal_views_delete_all_integrations() {
  * @ingroup tripal_views
  */
 function tripal_views_integrate_all_chado_tables() {
-
+return;
   // First integrate all of the Chado tables. Those that are base tables
   // get special treatment.
   $tables = chado_get_table_names(TRUE);
