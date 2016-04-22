@@ -335,7 +335,7 @@ function tripal_library_update_7200() {
   // reset the CV ID for that term and rename the term to 'Library Description'
   try {
     $sql = "
-      UPDATE chado.cvterm
+      UPDATE {cvterm}
       SET
         name = 'Library Description',
         cv_id = (SELECT cv_id FROM {cv} WHERE name = 'library_property')

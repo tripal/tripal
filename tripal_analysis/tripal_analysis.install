@@ -85,7 +85,7 @@ function tripal_analysis_create_analysisfeatureprop() {
 
   // Create analysisfeatureprop table in chado.  This is needed for Chado
   // version 1.11, the table exists in Chado 1.2.
-  if (!db_table_exists('chado.analysisfeatureprop')) {
+  if (!chado_table_exists('analysisfeatureprop')) {
     $sql = "
       CREATE TABLE {analysisfeatureprop} (
         analysisfeatureprop_id SERIAL PRIMARY KEY,

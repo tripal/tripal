@@ -322,6 +322,10 @@ function tripal_core_upgrade_chado_1_11_to_1_2() {
  */
 function tripal_core_reset_chado_schema() {
 
+  // determine the schema name.
+  $chado_schema = tripal_get_schema_name('chado');
+  $chado_dot = $schado_schema . '.';
+
   // drop current chado and chado-related schema
   if (chado_dbschema_exists('genetic_code')) {
     print "Dropping existing 'genetic_code' schema\n";
@@ -337,12 +341,12 @@ function tripal_core_reset_chado_schema() {
   }
   if (chado_dbschema_exists('chado')) {
     print "Dropping existing 'chado' schema\n";
-    db_query("drop schema chado cascade");
+    db_query("drop schema $chado_schema cascade");
   }
 
   // create the new chado schema
   print "Creating 'chado' schema\n";
-  db_query("create schema chado");
+  db_query("create schema $chado_schema");
   if (chado_dbschema_exists('chado')) {
     // before creating the plpgsql language let's check to make sure
     // it doesn't already exists
@@ -370,8 +374,12 @@ function tripal_core_install_sql($sql_file) {
 
   $chado_local = chado_dbschema_exists('chado');
 
+  // determine the schema name.
+  $chado_schema = tripal_get_schema_name('chado');
+  $chado_dot = $schado_schema . '.';
+
   if ($chado_local) {
-    db_query("set search_path to chado");
+    db_query("set search_path to $chado_schema");
   }
   print "Loading $sql_file...\n";
   $lines = file($sql_file, FILE_SKIP_EMPTY_LINES);
@@ -403,11 +411,11 @@ function tripal_core_install_sql($sql_file) {
     // Find SQL for new objects
     if (preg_match('/^\s*CREATE\s+TABLE/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'table';
-      $line = preg_replace("/public\./", "chado.", $line);
+      $line = preg_replace("/public\./", $chado_dot, $line);
     }
     if (preg_match('/^\s*ALTER\s+TABLE\s+/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'alter_table';
-      $line = preg_replace("/public\./", "chado.", $line);
+      $line = preg_replace("/public\./", $chado_dot, $line);
     }
     if (preg_match('/^\s*SET/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'set';
@@ -417,27 +425,27 @@ function tripal_core_install_sql($sql_file) {
     }
     if (preg_match('/^\s*CREATE\s+SEQUENCE/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'sequence';
-      $line = preg_replace("/public\./", "chado.", $line);
+      $line = preg_replace("/public\./", $chado_dot, $line);
     }
     if (preg_match('/^\s*CREATE\s+(?:OR\s+REPLACE\s+)*VIEW/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'view';
-      $line = preg_replace("/public\./", "chado.", $line);
+      $line = preg_replace("/public\./", $chado_dot, $line);
     }
     if (preg_match('/^\s*COMMENT/i', $line) and !$in_string and sizeof($stack)==0 and !$in_function) {
       $stack[] = 'comment';
-      $line = preg_replace("/public\./", "chado.", $line);
+      $line = preg_replace("/public\./", $chado_dot, $line);
     }
     if (preg_match('/^\s*CREATE\s+(?:OR\s+REPLACE\s+)*FUNCTION/i', $line) and !$in_string and !$in_function) {
       $in_function = TRUE;
       $stack[] = 'function';
-      $line = preg_replace("/public\./", "chado.", $line);
+      $line = preg_replace("/public\./", $chado_dot, $line);
     }
     if (preg_match('/^\s*CREATE\s+INDEX/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'index';
     }
     if (preg_match('/^\s*INSERT\s+INTO/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'insert';
-      $line = preg_replace("/public\./", "chado.", $line);
+      $line = preg_replace("/public\./", $chado_dot, $line);
     }
     if (preg_match('/^\s*CREATE\s+TYPE/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'type';
@@ -563,7 +571,7 @@ function tripal_core_install_sql($sql_file) {
       // rewrite the set search_path to make 'public' be 'chado', but only if the
       // chado schema exists
       if (strcmp($type, 'set') == 0 and $chado_local) {
-        $query = preg_replace("/public/m", "chado", $query);
+        $query = preg_replace("/public/m", $chado_schema, $query);
       }
 
       // execute the statement
@@ -593,5 +601,6 @@ function tripal_core_install_sql($sql_file) {
  */
 function tripal_core_chado_install_done() {
 
-  db_query("set search_path to default");
+  $drupal_schema = tripal_get_schema_name('drupal');
+  db_query("set search_path to $drupal_schema");
 }

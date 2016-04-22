@@ -117,6 +117,9 @@ function tripal_views_views_data() {
   // Manually integrate the drupal.tripal_views* tables
   $data = tripal_views_views_data_tripal_views_tables($data);
 
+  // Determine the name of the chado schema
+  $chado_schema = tripal_get_schema_name('chado');
+
   // MAKE SURE ALL CHADO TABLES ARE INTEGRATED
   tripal_views_integrate_all_chado_tables();
 
@@ -239,7 +242,7 @@ function tripal_views_views_data() {
         'group' => "$tvi_row->name",
         'title' => "$tvi_row->name",
         'help'  => $tvi_row->comment,
-        'search_path' => 'chado'
+        'search_path' => $chado_schema
       );
     }
     else {
@@ -247,7 +250,7 @@ function tripal_views_views_data() {
         'group' => "$tvi_row->name",
         'title' => "$tvi_row->name",
         'help'  => $tvi_row->comment,
-        'search_path' => 'chado'
+        'search_path' => $chado_schema
       );
     }
 
