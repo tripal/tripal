@@ -3,277 +3,67 @@
 /**
  * Implements hook_field_info().
  *
- * TODO: move these array elements to a hook function that
- * is implemented in the field file.  This will put all of the
- * field info in a single place for each field.  See the formatter_info()
- * function for an example.
+ * This function would normally provide a large info array for all of the
+ * fields provided by this module.  But instead it will call a hook that
+ * can be implmented within each individual field file.  This will allow
+ * all of the code for a single field to be self contained in a single file.
+ *
+ * New fields can be added automatically by including a new file in the
+ * tripal_chado/includes/fields directory.  The file must be named with a
+ * 'chado_' prefix and end with a '.inc' suffix.  After adding the file,
+ * the cache must be cleared.
+ *
  */
 function tripal_chado_field_info() {
-  $fields = array(
-    /*
-     * Generic fields that support multiple base tables.
-     */
-    'chado_base__organism_id' => array(
-      'label' => t('Organism'),
-      'description' => t('A field for specifying an organism.'),
-      'default_widget' => 'chado_base__organism_id_widget',
-      'default_formatter' => 'chado_base__organism_id_formatter',
-      'settings' => array(),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    ),
+  $info = array();
 
-    'chado_base__dbxref_id' => array(
-      'label' => t('Cross reference'),
-      'description' => t('This record can be cross referenced with a record in
-          another online database. This field is intended for the most prominent
-          reference.  At a minimum, the database and accession must be provided.'),
-      'default_widget' => 'chado_base__dbxref_id_widget',
-      'default_formatter' => 'chado_base__dbxref_id_formatter',
-      'settings' => array(),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    ),
+  // Find all of the files in the tripal_chado/includes/fields directory.
+  $fields_path = drupal_get_path('module', 'tripal_chado') . '/includes/fields';
+  $field_files = file_scan_directory($fields_path, '/^chado_.*\.inc$/');
 
-    /*
-     * Fields that support linker tables.
-     */
-    'chado_linker__cvterm' => array(
-      'label' => t('Annotations'),
-      'description' => t('This record can be annotated with terms
-          from other vocabularies.'),
-      'default_widget' => 'chado_linker__cvterm_widget',
-      'default_formatter' => 'chado_linker__cvterm_formatter',
-      'settings' => array(),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    ),
-    'chado_linker__synonym' => array(
-      'label' => t('Synonyms'),
-      'description' => t('Adds an alternative name (synonym or alias) to this record.'),
-      'default_widget' => 'chado_linker__synonym_widget',
-      'default_formatter' => 'chado_linker__synonym_formatter',
-      'settings' => array(),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    ),
-    'chado_linker__prop' => array(
-      'label' => t('Add a Property'),
-      'description' => t('Add details about this property.'),
-      'default_widget' => 'chado_linker__prop_widget',
-      'default_formatter' => 'chado_linker__prop_formatter',
-      'settings' => array(),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    ),
-    'chado_linker__dbxref' => array(
-      'label' => t('Cross references'),
-      'description' => t('This record can be cross referenced with a record in
-        another online database. This field is intended for one or more
-        references.  At a minimum, the database and accession must be provided.'),
-      'default_widget' => 'chado_linker__dbxref_widget',
-      'default_formatter' => 'chado_linker__dbxref_formatter',
-      'settings' => array(),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    ),
-    'chado_linker__pub' => array(
-      'label' => t('Publications'),
-      'description' => t('Associates a publication (e.g. journal article,
-          conference proceedings, book chapter, etc.) with this record.'),
-      'default_widget' => 'chado_linker__pub_widget',
-      'default_formatter' => 'chado_linker__pub_formatter',
-      'settings' => array(),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    ),
-    /*
-     * Fields that add new fields. These fields are not shown on
-     * pages.  They are avaiable to site curators when adding/updating
-     * a record and allow the user to add new linker table fields.
-     */
-    'chado_linker__prop_adder' => array(
-      'label' => t('Add a Property Type'),
-      'description' => t('This record may have any number of properties. Use
-          this field to first add the type.'),
-      'default_widget' => 'chado_linker__prop_adder_widget',
-      'default_formatter' => 'hidden',
-      'settings' => array(),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    ),
+  // Iterate through the fields, include the file and run the info function.
+  foreach ($field_files as $file) {
+    $field_name = $file->name;
+    module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_name);
+    $function = $field_name . '_info';
+    if (function_exists($function)) {
+      $info[$field_name] = $function();
+    }
+  }
+  return $info;
 
-    // The field provides a widget for adding new vocabularies for cvterm
-    // linker tables. This will allow cvterms to be grouped by vocabulary
-    // ('category').
-    'chado_linker__cvterm_adder' => array(
-      'label' => t('Add an Annotation Type'),
-      'description' => t('This record may have any number of types of
-          annotations. Use this field to first add the type.'),
-      'default_widget' => 'chado_linker__cvterm_adder_widget',
-      'default_formatter' => 'hidden',
-      'settings' => array(),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    ),
-    /*
-     * Field specific to the feature table of Chado.
-     */
-    'chado_feature__residues' => array(
-      'label' => t('Residues'),
-      'description' => t('A field for managing nucleotide and protein residues.'),
-      'default_widget' => 'chado_feature__residues_widget',
-      'default_formatter' => 'chado_feature__residues_formatter',
-      'settings' => array(),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    ),
-    'chado_feature__md5checksum' => array(
-      'label' => t('MD5 checksum'),
-      'description' => t('A field for generating MD5 checksum for a sequence.'),
-      'default_widget' => 'chado_feature__md5checksum_widget',
-      'default_formatter' => 'chado_feature__md5checksum_formatter',
-      'settings' => array(),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    ),
-    'chado_feature__seqlen' => array(
-      'label' => t('Sequence length'),
-      'description' => t('A field for calculating the length of a sequence.'),
-      'default_widget' => 'chado_feature__seqlen_widget',
-      'default_formatter' => 'chado_feature__seqlen_formatter',
-      'settings' => array(),
-      'storage' => array(
-        'type' => 'field_chado_storage',
-        'module' => 'tripal_chado',
-        'active' => TRUE
-      ),
-    ),
-
-  );
-  return $fields;
 }
 /**
  * Implements hook_field_widget_info().
  *
- * TODO: move these array elements to a hook function that
- * is implemented in the field file.  This will put all of the
- * field info in a single place for each field.  See the formatter_info()
- * function for an example.
+ * This function would normally provide a large info array for all of the
+ * widgets provided by this module.  But instead it will call a hook that
+ * can be implmented within each individual field file.  This will allow
+ * all of the code for a single field to be self contained in a single file.
  */
 function tripal_chado_field_widget_info() {
-  return array(
-    /*
-     * Generic fields that support multiple base tables.
-  */
-    'chado_base__organism_id_widget' => array(
-      'label' => t('Organism Select'),
-      'field types' => array('chado_base__organism_id')
-    ),
-    'chado_base__dbxref_id_widget' => array(
-      'label' => t('Cross reference'),
-      'field types' => array('chado_base__dbxref_id'),
-      'description' => t('This record can be cross referenced with a record in
-        another online database. This field is intended for the most
-        prominent reference.  At a minimum, the database and accession
-        must be provided.'),
-    ),
+  $widgets = array();
 
-    /*
-     * Fields that support linker tables.
-     */
-    'chado_linker__pub_widget' => array(
-      'label' => t('Publications'),
-      'field types' => array('chado_linker__pub'),
-    ),
-    'chado_linker__dbxref_widget' => array(
-      'label' => t('Cross references'),
-      'field types' => array('chado_linker__dbxref'),
-      'description' => t('This record can be cross referenced with a record
-        in another online database. This field is intended for the most
-        prominent reference.  At a minimum, the database and accession
-        must be provided.'),
-    ),
-
-    'chado_linker__cvterm_widget' => array(
-      'label' => t('Annotations'),
-      'field types' => array('chado_linker__cvterm'),
-      'description' => t('This record can be annotated with terms
-          from other vocabularies.'),
-    ),
-    'chado_linker__prop_widget' => array(
-      'label' => t('Property'),
-      'field types' => array('chado_linker__prop'),
-    ),
-    'chado_linker__synonym_widget' => array(
-      'label' => t('Synonyms'),
-      'field types' => array('chado_linker__synonym'),
-    ),
-    /*
-     * Fields that add new fields. These fields are not shown on
-     * pages.  They are avaiable to site curators when adding/updating
-     * a record and allow the user to add new linker table fields.
-     */
-    'chado_linker__prop_adder_widget' => array(
-      'label' => t('Add a Property'),
-      'field types' => array('chado_linker__prop_adder'),
-    ),
-    'chado_linker__cvterm_adder_widget' => array(
-      'label' => t('Add an Annotation'),
-      'field types' => array('chado_linker__cvterm_adder'),
-    ),
-    /*
-     * Field specific to the feature table of Chado.
-     */
-    'chado_feature__md5checksum_widget' => array(
-      'label' => t('MD5 Checksum Checkbox'),
-      'field types' => array('chado_feature__md5checksum'),
-    ),
-    'chado_feature__residues_widget' => array(
-      'label' => t('Residues'),
-      'field types' => array('chado_feature__residues'),
-    ),
-    'chado_feature__seqlen_widget' => array(
-      'label' => t('Sequence Length'),
-      'field types' => array('chado_feature__seqlen'),
-    ),
-  );
+  $fields = field_info_fields();
+  foreach ($fields as $field) {
+    $field_type = $field['type'];
+    if ($field['storage']['type'] == 'field_chado_storage') {
+      module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+      $function = $field_type . '_widget_info';
+      if (function_exists($function)) {
+        $widgets[$field_type . '_widget'] = $function();
+      }
+    }
+  }
+  return $widgets;
 }
 /**
  * Implements hook_field_formatter_info().
+ *
+ * This function would normally provide a large info array for all of the
+ * formatters provided by this module.  But instead it will call a hook that
+ * can be implmented within each individual field file.  This will allow
+ * all of the code for a single field to be self contained in a single file.
  */
 function tripal_chado_field_formatter_info() {
   $formatters = array();
@@ -333,7 +123,6 @@ function tripal_chado_field_formatter_view($entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
 
   $element = array();
-
   $field_type = $field['type'];
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
   $function = $display['type'];
@@ -826,6 +615,12 @@ function tripal_chado_add_bundle_fields($entity_type, $bundle, $term) {
   // ADD FIELDS TO BUNDLE
   ////////////////////////////////////////////////////////////////////////////
 
+  /* TODO: the arrays for adding fields should be specified in the field
+   * files themselves so that field developers have complete control over
+   * how the fields behave and what entities they are attached to without
+   * having to edit this function.
+   */
+
   ////
   //
   // Base table fields.
@@ -889,6 +684,14 @@ function tripal_chado_add_bundle_fields($entity_type, $bundle, $term) {
   $pub_table = $bundle_data['data_table'] . '_pub';
   if (chado_table_exists($pub_table)) {
     tripal_chado_add_bundle_fields_linker__pub_field($entity_type, $bundle_name, $pub_table, $bundle_data['data_table']);
+  }
+
+  ////
+  //
+  // Featureloc fields.
+  //
+  if ($bundle_data['data_table'] == 'feature') {
+    tripal_chado_add_bundle_fields_linker__featureloc_field($entity_type, $bundle_name);
   }
 }
 
@@ -988,6 +791,51 @@ function tripal_chado_add_bundle_fields_linker__synonym_field($entity_type_name,
 
   tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
 }
+/**
+ * Adds the fields for managing xrefs that are stored in a [base]_dbxref table.
+ *
+ * @param $entity_type
+ * @param $bundle_name
+ * @param $base_table
+ * @param $dbxref_table
+ */
+function tripal_chado_add_bundle_fields_linker__featureloc_field($entity_type_name, $bundle_name) {
+  $field_name = 'featureloc';
+  $schema = chado_get_schema('featureloc');
+  $pkey = $schema['primary key'][0];
+
+  // Initialize the field array.
+  $field_info = array(
+    'field_type' => 'chado_linker__featureloc',
+    'widget_type' => 'chado_linker__featureloc_widget',
+    'widget_settings' => array('display_label' => 1),
+    'description' => '',
+    'label' => 'Alignments',
+    'is_required' => 0,
+    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+    'storage' => 'field_chado_storage',
+    'field_settings' => array(
+      // The Chado table that this field maps to.
+      'chado_table' => 'featureloc',
+      // The column in the chado table that this field maps to.
+      'chado_column' => $pkey,
+      // The base table that this field is connected to.
+      'base_table' => 'feature',
+      'semantic_web' => array(
+        // The type is the term from a vocabulary that desribes this field..
+        'type' => '',
+        // The namepsace for the vocabulary (e.g. 'foaf').
+        'ns' => '',
+        // The URL for the namespace.  It must be that the type can be
+        // appended to the URL.
+        'nsurl' => '',
+      ),
+    ),
+  );
+
+  tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
+}
+
 /**
  * Adds the fields for managing xrefs that are stored in a [base]_dbxref table.
  *

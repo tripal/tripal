@@ -1,5 +1,37 @@
 <?php
 /**
+ * Implements hook_info() for fields.
+ *
+ * This is a hook provided by the tripal_chado module for offloading the
+ * hook_field_info() hook for each field to specify.
+ */
+function chado_base__organism_id_info() {
+  return array(
+    'label' => t('Organism'),
+    'description' => t('A field for specifying an organism.'),
+    'default_widget' => 'chado_base__organism_id_widget',
+    'default_formatter' => 'chado_base__organism_id_formatter',
+    'settings' => array(),
+    'storage' => array(
+      'type' => 'field_chado_storage',
+      'module' => 'tripal_chado',
+      'active' => TRUE
+    ),
+  );
+}
+/**
+ * Implements hook_widget_info.
+ *
+ * This is a hook provided by the tripal_chado module for offloading
+ * the hook_field_widget_info() hook for each field to specify.
+ */
+function chado_base__organism_id_widget_info() {
+  return array(
+    'label' => t('Organism Select'),
+    'field types' => array('chado_base__organism_id')
+  );
+}
+/**
  * Implements hook_formatter_info.
  *
  * This is a hook provided by the tripal_chado module for

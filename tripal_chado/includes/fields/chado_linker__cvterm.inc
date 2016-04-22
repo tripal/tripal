@@ -1,5 +1,55 @@
 <?php
-
+/**
+ * Implements hook_info() for fields.
+ *
+ * This is a hook provided by the tripal_chado module for offloading the
+ * hook_field_info() hook for each field to specify.
+ */
+function chado_linker__cvterm_info() {
+  return array(
+    'label' => t('Annotations'),
+    'description' => t('This record can be annotated with terms
+          from other vocabularies.'),
+    'default_widget' => 'chado_linker__cvterm_widget',
+    'default_formatter' => 'chado_linker__cvterm_formatter',
+    'settings' => array(),
+    'storage' => array(
+      'type' => 'field_chado_storage',
+      'module' => 'tripal_chado',
+      'active' => TRUE
+    ),
+  );
+}
+/**
+ * Implements hook_widget_info.
+ *
+ * This is a hook provided by the tripal_chado module for offloading
+ * the hook_field_widget_info() hook for each field to specify.
+ */
+function chado_linker__cvterm_widget_info() {
+  return array(
+    'label' => t('Annotations'),
+    'field types' => array('chado_linker__cvterm'),
+    'description' => t('This record can be annotated with terms
+          from other vocabularies.'),
+  );
+}
+/**
+ * Implements hook_formatter_info.
+ *
+ * This is a hook provided by the tripal_chado module for
+ * offloading the hook_field_formatter_info() for each field
+ * to specify.
+ *
+ */
+function chado_linker__cvterm_formatter_info() {
+  return array(
+    'label' => t('Annotations'),
+    'field types' => array('chado_linker__cvterm'),
+    'settings' => array(
+    ),
+  );
+}
 /**
  *
  * @param unknown $entity_type

@@ -1,21 +1,41 @@
 <?php
-
 /**
+ * Implements hook_info() for fields.
  *
- * @param unknown $entity_type
- * @param unknown $entity
- * @param unknown $field
- * @param unknown $instance
- * @param unknown $langcode
- * @param unknown $items
- * @param unknown $display
+ * This is a hook provided by the tripal_chado module for offloading the
+ * hook_field_info() hook for each field to specify.
+ *
+ * Fields that add new fields. These fields are not shown on
+ * pages.  They are avaiable to site curators when adding/updating
+ * a record and allow the user to add new linker table fields.
+ *
  */
-function chado_linker__prop_adder_formatter(&$element, $entity_type, $entity, $field,
-  $instance, $langcode, $items, $display) {
-
-  foreach ($items as $delta => $item) {
-    // Do nothing, this field is only meant for the form.
-  }
+function chado_linker__prop_adder_info() {
+  return array(
+    'label' => t('Add a Property Type'),
+    'description' => t('This record may have any number of properties. Use
+          this field to first add the type.'),
+    'default_widget' => 'chado_linker__prop_adder_widget',
+    'default_formatter' => 'hidden',
+    'settings' => array(),
+    'storage' => array(
+      'type' => 'field_chado_storage',
+      'module' => 'tripal_chado',
+      'active' => TRUE
+    ),
+  );
+}
+/**
+ * Implements hook_widget_info.
+ *
+ * This is a hook provided by the tripal_chado module for offloading
+ * the hook_field_widget_info() hook for each field to specify.
+ */
+function chado_linker__prop_adder_widget_info() {
+  return array(
+    'label' => t('Add a Property'),
+    'field types' => array('chado_linker__prop_adder'),
+  );
 }
 /**
  *

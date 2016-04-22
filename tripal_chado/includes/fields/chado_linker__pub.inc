@@ -1,5 +1,53 @@
 <?php
-
+/**
+ * Implements hook_info() for fields.
+ *
+ * This is a hook provided by the tripal_chado module for offloading the
+ * hook_field_info() hook for each field to specify.
+ */
+function chado_linker__pub_info() {
+  return array(
+    'label' => t('Publications'),
+    'description' => t('Associates a publication (e.g. journal article,
+          conference proceedings, book chapter, etc.) with this record.'),
+    'default_widget' => 'chado_linker__pub_widget',
+    'default_formatter' => 'chado_linker__pub_formatter',
+    'settings' => array(),
+    'storage' => array(
+      'type' => 'field_chado_storage',
+      'module' => 'tripal_chado',
+      'active' => TRUE
+    ),
+  );
+}
+/**
+ * Implements hook_widget_info.
+ *
+ * This is a hook provided by the tripal_chado module for offloading
+ * the hook_field_widget_info() hook for each field to specify.
+ */
+function chado_linker__pub_widget_info() {
+  return array(
+    'label' => t('Publications'),
+    'field types' => array('chado_linker__pub'),
+  );
+}
+/**
+ * Implements hook_formatter_info.
+ *
+ * This is a hook provided by the tripal_chado module for
+ * offloading the hook_field_formatter_info() for each field
+ * to specify.
+ *
+ */
+function chado_linker__pub_formatter_info() {
+  return array(
+    'label' => t('Publications'),
+    'field types' => array('chado_linker__pub'),
+    'settings' => array(
+    ),
+  );
+}
 /**
  *
  * @param unknown $entity_type

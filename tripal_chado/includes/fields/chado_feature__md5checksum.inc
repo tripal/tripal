@@ -1,4 +1,52 @@
 <?php
+/**
+ * Implements hook_info() for fields.
+ *
+ * This is a hook provided by the tripal_chado module for offloading the
+ * hook_field_info() hook for each field to specify.
+ */
+function chado_feature__md5checksum_info() {
+  return array(
+    'label' => t('MD5 checksum'),
+    'description' => t('A field for generating MD5 checksum for a sequence.'),
+    'default_widget' => 'chado_feature__md5checksum_widget',
+    'default_formatter' => 'chado_feature__md5checksum_formatter',
+    'settings' => array(),
+    'storage' => array(
+      'type' => 'field_chado_storage',
+      'module' => 'tripal_chado',
+      'active' => TRUE
+    ),
+  );
+}
+/**
+ * Implements hook_widget_info.
+ *
+ * This is a hook provided by the tripal_chado module for offloading
+ * the hook_field_widget_info() hook for each field to specify.
+ */
+function chado_feature__md5checksum_widget_info() {
+  return array(
+    'label' => t('MD5 Checksum Checkbox'),
+    'field types' => array('chado_feature__md5checksum'),
+  );
+}
+/**
+ * Implements hook_formatter_info.
+ *
+ * This is a hook provided by the tripal_chado module for
+ * offloading the hook_field_formatter_info() for each field
+ * to specify.
+ *
+ */
+function chado_feature__md5checksum_formatter_info() {
+  return array(
+    'label' => t('MD5 Checksum'),
+    'field types' => array('chado_feature__md5checksum'),
+    'settings' => array(
+    ),
+  );
+}
 
 /**
  *

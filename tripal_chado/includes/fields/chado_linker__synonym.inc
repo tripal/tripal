@@ -1,5 +1,52 @@
 <?php
-
+/**
+ * Implements hook_info() for fields.
+ *
+ * This is a hook provided by the tripal_chado module for offloading the
+ * hook_field_info() hook for each field to specify.
+ */
+function chado_linker__synonym_info() {
+  return array(
+    'label' => t('Synonyms'),
+    'description' => t('Adds an alternative name (synonym or alias) to this record.'),
+    'default_widget' => 'chado_linker__synonym_widget',
+    'default_formatter' => 'chado_linker__synonym_formatter',
+    'settings' => array(),
+    'storage' => array(
+      'type' => 'field_chado_storage',
+      'module' => 'tripal_chado',
+      'active' => TRUE
+    ),
+  );
+}
+/**
+ * Implements hook_widget_info.
+ *
+ * This is a hook provided by the tripal_chado module for offloading
+ * the hook_field_widget_info() hook for each field to specify.
+ */
+function chado_linker__synonym_widget_info() {
+  return array(
+    'label' => t('Synonyms'),
+    'field types' => array('chado_linker__synonym'),
+  );
+}
+/**
+ * Implements hook_formatter_info.
+ *
+ * This is a hook provided by the tripal_chado module for
+ * offloading the hook_field_formatter_info() for each field
+ * to specify.
+ *
+ */
+function chado_linker__synonym_formatter_info() {
+  return array(
+    'label' => t('Synonyms'),
+    'field types' => array('chado_linker__synonym'),
+    'settings' => array(
+    ),
+  );
+}
 /**
  *
  * @param unknown $entity_type
