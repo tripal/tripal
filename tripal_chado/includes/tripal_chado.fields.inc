@@ -2,6 +2,11 @@
 
 /**
  * Implements hook_field_info().
+ *
+ * TODO: move these array elements to a hook function that
+ * is implemented in the field file.  This will put all of the
+ * field info in a single place for each field.  See the formatter_info()
+ * function for an example.
  */
 function tripal_chado_field_info() {
   $fields = array(
@@ -183,6 +188,11 @@ function tripal_chado_field_info() {
 }
 /**
  * Implements hook_field_widget_info().
+ *
+ * TODO: move these array elements to a hook function that
+ * is implemented in the field file.  This will put all of the
+ * field info in a single place for each field.  See the formatter_info()
+ * function for an example.
  */
 function tripal_chado_field_widget_info() {
   return array(
@@ -266,76 +276,39 @@ function tripal_chado_field_widget_info() {
  * Implements hook_field_formatter_info().
  */
 function tripal_chado_field_formatter_info() {
-  return array(
-    'chado_base__organism_id_formatter' => array(
-      'label' => t('Organism'),
-      'field types' => array('chado_base__organism_id')
-    ),
-    'chado_base__dbxref_id_formatter' => array(
-      'label' => t('Cross reference'),
-      'field types' => array('chado_base__dbxref_id')
-    ),
-    'chado_linker__pub_formatter' => array(
-      'label' => t('Publications'),
-      'field types' => array('chado_linker__pub')
-    ),
-    'chado_linker__dbxref_formatter' => array(
-      'label' => t('Cross references'),
-      'field types' => array('chado_linker__dbxref')
-    ),
-    'chado_linker__cvterm_formatter' => array(
-      'label' => t('Annotations'),
-      'field types' => array('chado_linker__cvterm')
-    ),
-    'chado_linker__prop_formatter' => array(
-      'label' => t('Property'),
-      'field types' => array('chado_linker__prop')
-    ),
-    'chado_linker__synonym_formatter' => array(
-      'label' => t('Synonyms'),
-      'field types' => array('chado_linker__synonym')
-    ),
-    'chado_linker__cvterm_adder_formatter' => array(
-      'label' => t('Add an Annotation'),
-      'field types' => array('chado_linker__cvterm_adder')
-    ),
-    'chado_linker__prop_adder_formatter' => array(
-      'label' => t('Add a Property'),
-      'field types' => array('chado_linker__prop_adder')
-    ),
-    'chado_feature__md5checksum_formatter' => array(
-      'label' => t('MD5 checksum'),
-      'field types' => array('chado_feature__md5checksum')
-    ),
-    'chado_feature__residues_formatter' => array(
-      'label' => t('Residues'),
-      'field types' => array('chado_feature__residues')
-    ),
-    'chado_feature__seqlen_formatter' => array(
-      'label' => t('Sequence length'),
-      'field types' => array('chado_feature__seqlen')
-    ),
-  );
+  $formatters = array();
+
+  $fields = field_info_fields();
+  foreach ($fields as $field) {
+    $field_type = $field['type'];
+    if ($field['storage']['type'] == 'field_chado_storage') {
+      module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+      $function = $field_type . '_formatter_info';
+      if (function_exists($function)) {
+        $formatters[$field_type . '_formatter'] = $function();
+      }
+    }
+  }
+  return $formatters;
 }
 /**
- * Implements hook_field_formatter_settings_summary.
+ * Implements hook_field_formatter_settings_summary().
  */
 function tripal_chado_field_formatter_settings_summary($field, $instance, $view_mode) {
 
   $summary = '';
-  switch ($field['type']) {
-    case 'chado_base__organism_id':
-      $summary = 'Organisms can be displayed in vaious ways.';
-      break;
-    default:
-      $summary = '';
+  $field_type = $field['type'];
+  module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+  $function = $field_type . '_formatter_settings_summary';
+  if (function_exists($function)) {
+    $summary = $function($field, $instance, $view_mode);
   }
 
   return $summary;
 }
 
 /**
- * Implements hook_field_formatter_settings_form.
+ * Implements hook_field_formatter_settings_form().
  */
 function tripal_chado_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
   $element = array();
@@ -343,13 +316,15 @@ function tripal_chado_field_formatter_settings_form($field, $instance, $view_mod
   $field_type = $field['type'];
   form_load_include($form_state, 'inc', 'tripal_chado', 'includes/fields/' . $field_type);
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-  $function = $field_type . '_formatter_form';
+  $function = $field_type . '_formatter_settings_form';
   if (function_exists($function)) {
     $element = $function($field, $instance, $view_mode, $form, $form_state);
   }
 
   return $element;
 }
+
+
 
 /**
  * Implements hook_field_formatter_view().

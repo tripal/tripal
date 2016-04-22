@@ -725,6 +725,7 @@ function tripal_get_tokens($entity, $options = array()) {
  */
 function tripal_replace_tokens($string, $entity, $bundle_entity = NULL) {
 
+
   // Determine which tokens were used in the format string
   if (preg_match_all('/\[\w+\]/', $string, $matches)) {
     $used_tokens = $matches[0];
