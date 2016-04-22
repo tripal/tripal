@@ -285,51 +285,30 @@ function tripal_pub_update_7200() {
   // site upgrade when the tripal_core module is disabled.
   module_load_include('module', 'tripal_core', 'tripal_core');
   tripal_core_import_api();
+  module_load_include('inc', 'tripal_cv', 'api/tripal_cv.api');
 
   // add the tripal_pub CV and set it to be the default for pub types and pub properties
   try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'tripal_pub'")->fetchField();
-    if (!$cv_id) {
-      // add the vocabulary
-      $cv_id = db_insert('chado.cv')
-        ->fields(array(
-          'name' => 'tripal_pub',
-          'definition' => 'A heirarchical set of terms for describing a publication. It is intended to be used as the default vocabularies in Tripal for publication types and contact properties.'
-        ))
-        ->execute();
-    }
-    // use the new pub_property CV we just added
-    $cdi = db_select('tripal_cv_defaults', 't')
-      ->fields('t', array('cv_default_id'))
-      ->condition('table_name', 'pub')
-      ->condition('field_name', 'type_id')
-      ->execute()
-      ->fetchField();
-    if (!$cdi) {
-      db_insert('tripal_cv_defaults')
-        ->fields(array(
-          'table_name' => 'pub',
-          'field_name' => 'type_id',
-          'cv_id' => $cv_id
-        ))
-        ->execute();
-    }
+    // First we add the cv.
+    // Notice that tripal_insert_cv() will only add it if it doesn't exist already.
+    $cv = tripal_insert_cv(
+      'tripal_pub',
+      'A heirarchical set of terms for describing a publication. It is intended to be used as the default vocabularies in Tripal for publication types and contact properties.'
+    );
+    if ($cv) {
+      $cv_id = $cv->cv_id;
 
-    // use the new pub_property CV we just added
-    $cdi = db_select('tripal_cv_defaults', 't')
-      ->fields('t', array('cv_default_id'))
-      ->condition('table_name', 'pubprop')
-      ->condition('field_name', 'type_id')
-      ->execute()
-      ->fetchField();
-    if (!$cdi) {
-      db_insert('tripal_cv_defaults')
-        ->fields(array(
-          'table_name' => 'pubprop',
-          'field_name' => 'type_id',
-          'cv_id' => $cv_id
-        ))
-        ->execute();
+      // Set as Default CV for pub types.
+      $is_set = tripal_get_default_cv('pub', 'type_id');
+      if (!$is_set) {
+        tripal_set_default_cv('pub','type_id', 'tripal_pub', $cv_id);
+      }
+
+      // Set as Default CV for pub properties.
+      $is_set = tripal_get_default_cv('pub', 'type_id');
+      if (!$is_set) {
+        tripal_set_default_cv('pubprop','type_id', 'tripal_pub', $cv_id);
+      }
     }
   }
   catch (\PDOException $e) {
@@ -357,16 +336,10 @@ function tripal_pub_update_7200() {
 
   // add the pub_type CV
   try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'pub_type'")->fetchField();
-    if (!$cv_id) {
-      // add the vocabulary
-      $cv_id = db_insert('chado.cv')
-      ->fields(array(
-        'name' => 'pub_type',
-        'definition' => 'Contains types of publications. This can be used if the tripal_pub vocabulary (which is default for publications in Tripal) is not desired.'
-      ))
-      ->execute();
-    }
+    $cv = tripal_insert_cv(
+      'pub_type',
+      'Contains types of publications. This can be used if the tripal_pub vocabulary (which is default for publications in Tripal) is not desired.'
+    );
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
@@ -375,31 +348,18 @@ function tripal_pub_update_7200() {
 
   // add the pub_relationship CV
   try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'pub_relationship'")->fetchField();
-    if (!$cv_id) {
-      // add the vocabulary
-      $cv_id = db_insert('chado.cv')
-      ->fields(array(
-        'name' => 'pub_relationship',
-        'definition' => 'Contains types of relationships between publications.'
-      ))
-      ->execute();
-    }
-    // use the new pub_property CV we just added
-    $cdi = db_select('tripal_cv_defaults', 't')
-      ->fields('t', array('cv_default_id'))
-      ->condition('table_name', 'pub_relationship')
-      ->condition('field_name', 'type_id')
-      ->execute()
-      ->fetchField();
-    if (!$cdi) {
-      db_insert('tripal_cv_defaults')
-        ->fields(array(
-          'table_name' => 'pub_relationship',
-          'field_name' => 'type_id',
-          'cv_id' => $cv_id
-        ))
-        ->execute();
+    $cv = tripal_insert_cv(
+      'pub_relationship',
+      'Contains types of relationships between publications.'
+    );
+    if ($cv) {
+      $cv_id = $cv->cv_id;
+
+      // Set as Default CV for pub relationships.
+      $is_set = tripal_get_default_cv('pub_relationship', 'type_id');
+      if (!$is_set) {
+        tripal_set_default_cv('pub_relationship','type_id', 'pub_relationship', $cv_id);
+      }
     }
   }
   catch (\PDOException $e) {
@@ -444,25 +404,25 @@ function tripal_pub_update_7201() {
   try {
     $fkey_exists = db_query('SELECT TRUE FROM pg_constraint WHERE conname = :constraint', array(':constraint' => 'pubauthor_contact_pubauthor_id_fkey'))->fetchField();
     if ($fkey_exists) {
-      db_query('
-        ALTER TABLE chado.pubauthor_contact
+      chado_query('
+        ALTER TABLE {pubauthor_contact}
         DROP CONSTRAINT pubauthor_contact_pubauthor_id_fkey CASCADE
       ');
-      db_query('
-        ALTER TABLE chado.pubauthor_contact
+      chado_query('
+        ALTER TABLE {pubauthor_contact}
         DROP CONSTRAINT pubauthor_contact_contact_id_fkey CASCADE
       ');
     }
-    db_query('
-      ALTER TABLE chado.pubauthor_contact
+    chado_query('
+      ALTER TABLE {pubauthor_contact}
       ADD CONSTRAINT pubauthor_contact_pubauthor_id_fkey
-      FOREIGN KEY (pubauthor_id) REFERENCES chado.pubauthor (pubauthor_id)
+      FOREIGN KEY (pubauthor_id) REFERENCES {pubauthor} (pubauthor_id)
       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
     ');
-    db_query('
-      ALTER TABLE chado.pubauthor_contact
+    chado_query('
+      ALTER TABLE {pubauthor_contact}
       ADD CONSTRAINT pubauthor_contact_contact_id_fkey
-      FOREIGN KEY (contact_id) REFERENCES chado.contact (contact_id)
+      FOREIGN KEY (contact_id) REFERENCES {contact} (contact_id)
       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
     ');
   }

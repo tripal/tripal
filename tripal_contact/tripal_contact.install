@@ -247,51 +247,31 @@ function tripal_contact_update_7200() {
   module_load_include('inc', 'tripal_cv', 'api/tripal_cv.api');
 
 
-  // add the contact_type CV
+  // Add the contact_type CV
   try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'tripal_contact'")->fetchField();
-    if (!$cv_id) {
-      // add the vocabulary
-      $cv_id = db_insert('chado.cv')
-      ->fields(array(
-        'name' => 'tripal_contact',
-        'definition' => 'A heirarchical set of terms for describing a contact. It is intended to be used as the default vocabularies in Tripal for contact types and contact properties.'
-      ))
-      ->execute();
-    }
+    // First we add the cv.
+    // Notice that tripal_insert_cv() will only add it if it doesn't exist already.
+    $cv = tripal_insert_cv(
+      'tripal_contact',
+      'A heirarchical set of terms for describing a contact. It is intended to be used as the default vocabularies in Tripal for contact types and contact properties.'
+    );
+    if ($cv) {
+      $cv_id = $cv->cv_id;
 
-    // make this CV the defaults for the contact properties and contact types
-    // If a record already exists then don't change it.
-    $cdi = db_select('tripal_cv_defaults', 't')
-      ->fields('t', array('cv_default_id'))
-      ->condition('table_name', 'contact')
-      ->condition('field_name', 'type_id')
-      ->execute()
-      ->fetchField();
-    if (!$cdi) {
-      db_insert('tripal_cv_defaults')
-        ->fields(array(
-           'table_name' => 'contact',
-           'field_name' => 'type_id',
-           'cv_id' => $cv_id
-         ))
-        ->execute();
-    }
-    $cdi = db_select('tripal_cv_defaults', 't')
-      ->fields('t', array('cv_default_id'))
-      ->condition('table_name', 'contactprop')
-      ->condition('field_name', 'type_id')
-      ->execute()
-      ->fetchField();
+      // Set as Default CV for contact types.
+      $is_set = tripal_get_default_cv('contact', 'type_id');
+      if (!$is_set) {
+        tripal_set_default_cv('contact','type_id', 'tripal_contact', $cv_id);
+      }
 
-    if (!$cdi) {
-      db_insert('tripal_cv_defaults')
-        ->fields(array(
-          'table_name' => 'contactprop',
-          'field_name' => 'type_id',
-          'cv_id' => $cv_id
-        ))
-        ->execute();
+      // Set as Default CV for contact properties.
+      $is_set = tripal_get_default_cv('contactprop', 'type_id');
+      if (!$is_set) {
+        tripal_set_default_cv('contactprop','type_id', 'tripal_contact', $cv_id);
+      }
+    }
+    else {
+      throw new DrupalUpdateException('Failed to add tripal_contact vocabulary.');
     }
   }
   catch (\PDOException $e) {
@@ -300,70 +280,50 @@ function tripal_contact_update_7200() {
   }
 
 
-  // add the contact_relationship CV
+  // Add the contact_relationship CV
   try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'contact_relationship'")->fetchField();
-    if (!$cv_id) {
-      // add the vocabulary
-      $cv_id = db_insert('chado.cv')
-      ->fields(array(
-        'name' => 'contact_relationship',
-        'definition' => 'Contains types of relationships between contacts.'
-      ))
-      ->execute();
+    // First we add the cv.
+    // Notice that tripal_insert_cv() will only add it if it doesn't exist already.
+    $cv = tripal_insert_cv(
+      'contact_relationship',
+      'Contains types of relationships between contacts.'
+    );
+    if ($cv) {
+      $cv_id = $cv->cv_id;
+
+      // Set as Default CV for contact relationships.
+      $is_set = tripal_get_default_cv('contact_relationship', 'type_id');
+      if (!$is_set) {
+        tripal_set_default_cv('contact_relationship','type_id', 'contact_relationship', $cv_id);
+      }
     }
-    $cdi = db_select('tripal_cv_defaults', 't')
-      ->fields('t', array('cv_default_id'))
-      ->condition('table_name', 'contact_relationship')
-      ->condition('field_name', 'type_id')
-      ->execute()
-      ->fetchField();
-    if (!$cdi) {
-      // add the default
-      db_insert('tripal_cv_defaults')
-        ->fields(array(
-          'table_name' => 'contact_relationship',
-          'field_name' => 'type_id',
-          'cv_id' => $cv_id
-          ))
-        ->execute();
+    else {
+      throw new DrupalUpdateException('Failed to add contact_relationship vocabulary.');
     }
+  }
+  catch (\PDOException $e) {
+    $error = $e->getMessage();
+    throw new DrupalUpdateException('Failed to add contact_relationship vocabulary: '. $error);
+  }
+
+  // Add the contact_type CV (not default).
+  try {
+    $cv = tripal_insert_cv(
+      'contact_type',
+      'Contains types of contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
+    );
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
     throw new DrupalUpdateException('Failed to add contact_type vocabulary: '. $error);
   }
 
-  // add the contact_type CV
+  // Add the contact_property CV (not default).
   try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'contact_type'")->fetchField();
-    if (!$cv_id) {
-      // add the vocabulary
-      $cv_id = db_insert('chado.cv')
-      ->fields(array(
-        'name' => 'contact_type',
-        'definition' => 'Contains types of contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
-      ))
-      ->execute();
-    }
-  }
-  catch (\PDOException $e) {
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to add contact_type vocabulary: '. $error);
-  }
-
-  // add the contact_property CV
-  try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'contact_property'")->fetchField();
-    if (!$cv_id) {
-      // add the vocabulary
-      $cv_id = db_insert('chado.cv')
-      ->fields(array(
-        'name' => 'contact_property',
-        'definition' => 'Contains properties for contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
-      ))
-      ->execute();
-    }
+    $cv = tripal_insert_cv(
+      'contact_property',
+      'Contains properties for contacts. This can be used if the tripal_contact vocabulary (which is default for contacts in Tripal) is not desired.'
+    );
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
@@ -407,25 +367,25 @@ function tripal_contact_update_7201() {
   try {
     $fkey_exists = db_query('SELECT TRUE FROM pg_constraint WHERE conname = :constraint', array(':constraint' => 'contactprop_type_id_fkey'))->fetchField();
     if ($fkey_exists) {
-      db_query('
-        ALTER TABLE chado.contactprop
+      chado_query('
+        ALTER TABLE {contactprop}
         DROP CONSTRAINT contactprop_type_id_fkey CASCADE
       ');
-      db_query('
-        ALTER TABLE chado.contactprop
+      chado_query('
+        ALTER TABLE {contactprop}
         DROP CONSTRAINT contactprop_contact_id_fkey CASCADE
       ');
     }
-    db_query('
-      ALTER TABLE chado.contactprop
+    chado_query('
+      ALTER TABLE {contactprop}
       ADD CONSTRAINT contactprop_type_id_fkey
-      FOREIGN KEY (type_id) REFERENCES chado.cvterm (cvterm_id)
+      FOREIGN KEY (type_id) REFERENCES {cvterm} (cvterm_id)
       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
     ');
-    db_query('
-      ALTER TABLE chado.contactprop
+    chado_query('
+      ALTER TABLE {contactprop}
       ADD CONSTRAINT contactprop_contact_id_fkey
-      FOREIGN KEY (contact_id) REFERENCES chado.contact (contact_id)
+      FOREIGN KEY (contact_id) REFERENCES {contact} (contact_id)
       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
     ');
   }

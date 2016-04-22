@@ -73,9 +73,10 @@ function tripal_cv_install() {
 function tripal_cv_uninstall() {
 
   // drop the tripal_obo_temp table
+  // @todo: Remove hardcoding of chado schema name.
   if (db_table_exists('chado.tripal_obo_temp')) {
-    $sql = "DROP TABLE chado.tripal_obo_temp";
-    db_query($sql);
+    $sql = "DROP TABLE {tripal_obo_temp}";
+    chado_query($sql);
   }
 }
 
@@ -90,6 +91,7 @@ function tripal_cv_create_tripal_obo_temp() {
   // do not want to use the Tripal Custom Table API because we don't want it to appear in the
   // list of custom tables.  It needs to be available for the Tripal Chado API so we create it
   // here and then define it in the tripal_cv/api/tripal_cv.schema.api.inc
+  // @todo: Remove hardcoding of chado schema name.
   if (!db_table_exists('chado.tripal_obo_temp')) {
     $sql = "
       CREATE TABLE {tripal_obo_temp} (

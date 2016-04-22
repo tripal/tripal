@@ -217,36 +217,28 @@ function tripal_stock_update_7200() {
   // site upgrade when the tripal_core module is disabled.
   module_load_include('module', 'tripal_core', 'tripal_core');
   tripal_core_import_api();
+  module_load_include('inc', 'tripal_cv', 'api/tripal_cv.api');
 
   // add the stock_relationshp CV
   try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'stock_relationship'")->fetchField();
-    if (!$cv_id) {
-      // add the vocabulary
-      $cv_id = db_insert('chado.cv')
-        ->fields(array(
-          'name' => 'stock_relationship',
-          'definition' => 'Contains types of relationships between stocks.'
-        ))
-        ->execute();
-    }
-    // for backwards compatibility, get the previously set stock relationship CV, otherwise
-    // use the new stock_relationship CV we just added
-    $default_stockrel_cv = variable_get('chado_stock_relationship_cv', $cv_id);
-    $cdi = db_select('tripal_cv_defaults', 't')
-      ->fields('t', array('cv_default_id'))
-      ->condition('table_name', 'stock_relationship')
-      ->condition('field_name', 'type_id')
-      ->execute()
-      ->fetchField();
-    if (!$cdi) {
-      db_insert('tripal_cv_defaults')
-        ->fields(array(
-          'table_name' => 'stock_relationship',
-          'field_name' => 'type_id',
-          'cv_id' => $default_stockrel_cv
-        ))
-        ->execute();
+    // First we add the cv.
+    // Notice that tripal_insert_cv() will only add it if it doesn't exist already.
+    $cv = tripal_insert_cv(
+      'stock_relationship',
+      'Contains types of relationships between stocks.'
+    );
+    if ($cv) {
+      $cv_id = $cv->cv_id;
+
+      // for backwards compatibility, get the previously set stock relationship CV, otherwise
+      // use the new stock_relationship CV we just added
+      $default_stockrel_cv = variable_get('chado_stock_relationship_cv', $cv_id);
+
+      // Set as Default CV for stock relationship types.
+      $is_set = tripal_get_default_cv('stock_relationship', 'type_id');
+      if (!$is_set) {
+        tripal_set_default_cv('stock_relationship','type_id', 'stock_relationship', $default_stockrel_cv);
+      }
     }
   }
   catch (\PDOException $e) {
@@ -256,33 +248,24 @@ function tripal_stock_update_7200() {
 
   // add the stock_property CV
   try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'stock_property'")->fetchField();
-    if (!$cv_id) {
-      // add the vocabulary
-      $cv_id = db_insert('chado.cv')
-        ->fields(array(
-          'name' => 'stock_property',
-          'definition' => 'Contains properties for stocks.'
-        ))
-        ->execute();
-    }
-    // for backwards compatibility, get the previously set stock property CV, otherwise
-    // use the new stock_property CV we just added
-    $default_stockprop_cv = variable_get('chado_stock_prop_types_cv', $cv_id);
-    $cdi = db_select('tripal_cv_defaults', 't')
-      ->fields('t', array('cv_default_id'))
-      ->condition('table_name', 'stockprop')
-      ->condition('field_name', 'type_id')
-      ->execute()
-      ->fetchField();
-    if (!$cdi) {
-      db_insert('tripal_cv_defaults')
-        ->fields(array(
-        'table_name' => 'stockprop',
-        'field_name' => 'type_id',
-        'cv_id' => $default_stockprop_cv
-        ))
-        ->execute();
+    // First we add the cv.
+    // Notice that tripal_insert_cv() will only add it if it doesn't exist already.
+    $cv = tripal_insert_cv(
+      'stock_property',
+      'Contains properties for stocks.'
+    );
+    if ($cv) {
+      $cv_id = $cv->cv_id;
+
+      // for backwards compatibility, get the previously set stock property CV, otherwise
+      // use the new stock_property CV we just added
+      $default_stockprop_cv = variable_get('chado_stock_prop_types_cv', $cv_id);
+
+      // Set as Default CV for stock properties.
+      $is_set = tripal_get_default_cv('stockprop', 'type_id');
+      if (!$is_set) {
+        tripal_set_default_cv('stockprop','type_id', 'stock_property', $default_stockprop_cv);
+      }
     }
   }
   catch (\PDOException $e) {
@@ -293,33 +276,24 @@ function tripal_stock_update_7200() {
 
   // add the stock_type CV
   try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'stock_type'")->fetchField();
-    if (!$cv_id) {
-      // add the vocabulary
-      $cv_id = db_insert('chado.cv')
-      ->fields(array(
-        'name' => 'stock_type',
-        'definition' => 'Contains a list of types for stocks.'
-      ))
-      ->execute();
-    }
-    // for backwards compatibility, get the previously set stock types CV, otherwise
-    // use the new stock_type CV we just added
-    $default_stocktype_cv = variable_get('chado_stock_types_cv', $cv_id);
-    $cdi = db_select('tripal_cv_defaults', 't')
-      ->fields('t', array('cv_default_id'))
-      ->condition('table_name', 'stock')
-      ->condition('field_name', 'type_id')
-      ->execute()
-      ->fetchField();
-    if (!$cdi) {
-      db_insert('tripal_cv_defaults')
-        ->fields(array(
-        'table_name' => 'stock',
-        'field_name' => 'type_id',
-        'cv_id' => $default_stocktype_cv
-        ))
-        ->execute();
+    // First we add the cv.
+    // Notice that tripal_insert_cv() will only add it if it doesn't exist already.
+    $cv = tripal_insert_cv(
+      'stock_type',
+      'Contains a list of types for stocks.'
+    );
+    if ($cv) {
+      $cv_id = $cv->cv_id;
+
+      // for backwards compatibility, get the previously set stock types CV, otherwise
+      // use the new stock_type CV we just added
+      $default_stocktype_cv = variable_get('chado_stock_types_cv', $cv_id);
+
+      // Set as Default CV for stock types.
+      $is_set = tripal_get_default_cv('stock', 'type_id');
+      if (!$is_set) {
+        tripal_set_default_cv('stock','type_id', 'stock_type', $default_stocktype_cv);
+      }
     }
   }
   catch (\PDOException $e) {

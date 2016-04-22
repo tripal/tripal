@@ -300,28 +300,13 @@ function tripal_analysis_update_7200() {
   // site upgrade when the tripal_core module is disabled.
   module_load_include('module', 'tripal_core', 'tripal_core');
   tripal_core_import_api();
+  module_load_include('inc', 'tripal_cv', 'api/tripal_cv.api');
 
-  // set the analysis_property as default
+  // Set the analysis_property as default.
   try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'analysis_property'")->fetchField();
-
-    // Add in the default vocabulary.
-    // If a record already exists then don't change it.
-    $cdi = db_select('tripal_cv_defaults', 't')
-      ->fields('t', array('cv_default_id'))
-      ->condition('table_name', 'analysisprop')
-      ->condition('field_name', 'type_id')
-      ->execute()
-      ->fetchField();
-
-    if (!$cdi) {
-      db_insert('tripal_cv_defaults')
-        ->fields(array(
-          'table_name' => 'analysisprop',
-          'field_name' => 'type_id',
-          'cv_id' => $cv_id
-        ))
-        ->execute();
+    $is_set = tripal_get_default_cv('analysisprop', 'type_id');
+    if (!$is_set) {
+      tripal_set_default_cv('analysisprop','type_id', 'analysis_property');
     }
   }
   catch (\PDOException $e) {
