@@ -603,11 +603,9 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
 
 /**
  * Implements hook_entity_view().
- *
- * This function is used to support legacy Tripal v2 templates
- * for use with Tripal v3 entities.
  */
 function tripal_chado_entity_view($entity, $type, $view_mode, $langcode) {
+
   // If this entity is a TripalEntity and is a full view, then
   // we want to support the legacy view, but only if the legacy
   // module is enabled (the functions exist).
@@ -630,7 +628,6 @@ function tripal_chado_entity_view($entity, $type, $view_mode, $langcode) {
       // a legacy tmplate then prepare the entity and content to fake a
       // node.
       if (key_exists($legacy_template, $enabled_templates) && $enabled_templates[$legacy_template]) {
-
         // Remove the fields added by the chado_field_storage.
         $fields = field_info_fields();
         foreach($fields as $field) {

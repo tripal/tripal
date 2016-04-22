@@ -359,9 +359,9 @@ function tripal_chado_field_formatter_view($entity_type, $entity, $field,
 
   $element = array();
 
-  $field_type = $display['type'];
+  $field_type = $field['type'];
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-  $function = $field_type;
+  $function = $display['type'];
   if (function_exists($function)) {
     $function($element, $entity_type, $entity, $field, $instance, $langcode, $items, $display);
   }
