@@ -376,7 +376,7 @@ function tripal_core_install_sql($sql_file) {
 
   // determine the schema name.
   $chado_schema = tripal_get_schema_name('chado');
-  $chado_dot = $schado_schema . '.';
+  $chado_dot = $chado_schema . '.';
 
   if ($chado_local) {
     db_query("set search_path to $chado_schema");

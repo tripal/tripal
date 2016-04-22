@@ -1520,7 +1520,7 @@ function chado_query($sql, $args = array()) {
     // tables with featureloc must automaticaly have the chado schema set as
     // active to find.
     if (preg_match('/'.$chado_schema_name.'.featureloc/i', $sql) or preg_match('/'.$chado_schema_name.'.feature/i', $sql)) {
-      $previous_db = chado_set_active('chado') ;
+      $previous_db = chado_set_active('chado');
       $results = db_query($sql, $args);
       chado_set_active($previous_db);
     }

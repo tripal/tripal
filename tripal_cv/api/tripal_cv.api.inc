@@ -566,6 +566,15 @@ function tripal_insert_cvterm($term, $options = array()) {
     $values = array('dbxref_id' => $cvterm->dbxref_id);
     $result = chado_select_record('dbxref', array('*'), $values);
     $dbxref = $result[0];
+    if (!$dbxref) {
+      tripal_report_error(
+        'tripal_cv',
+        TRIPAL_ERROR,
+        'Unable to access the dbxref record for the :term cvterm. Term Record: !record',
+        array(':term' => $name, '!record' => print_r($cvterm, TRUE))
+      );
+      return FALSE;
+    }
 
     // Get the db.
     $values = array('db_id' => $dbxref->db_id);
@@ -657,10 +666,7 @@ function tripal_insert_cvterm($term, $options = array()) {
     // We can now perform and updated if we need to.
   }
 
-  // Get the CVterm record.  If it doesn't exist then create it.
-  $result = chado_query($cvtermsql, array(':accession' => $dbxref->accession, ':dbname' => $dbname, ':term' => $name, ':cvname' => $cvname));
-  $cvterm = $result->fetchObject();
-  if (!$cvterm) {
+  if (!$result) {
 
     // check to see if the dbxref exists if not, add it.
     $dbxref =  tripal_insert_dbxref(array(

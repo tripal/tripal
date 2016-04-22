@@ -338,7 +338,12 @@ function tripal_core_get_token_value_for_property($base_table, $field_name, $for
  * to catch new node types right after they're created.
  */
 function tripal_core_modules_enabled($modules) {
-  tripal_search_update_default_index();
+  if (module_exists('search_api')) {
+    $index_enabled = db_query('SELECT enabled FROM search_api_index WHERE machine_name=:name', array(':name' => 'default_node_index'))->fetchField();
+    if ($index_enabled) {
+      tripal_search_update_default_index();
+    }
+  }
 }
 
 /**
