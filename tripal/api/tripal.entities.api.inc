@@ -75,6 +75,7 @@ function tripal_load_vocab_entity($values) {
  *
  * @param $values
  *   An associative array used to match a bundle.  Valid keys may:
+ *     - id: the numeric id of the bundle.
  *     - name:  the bundle name (e.g. 'bio_data_234')
  *     - label: the bundle label (e.g. 'Organism')
  *     - term_id: the term ID to which the bundle belongs
@@ -86,6 +87,9 @@ function tripal_load_bundle_entity($values) {
 
   $query = db_select('tripal_bundle', 'tb');
   $query->fields('tb');
+  if (array_key_exists('id', $values)) {
+    $query->condition('tb.id', $values['id']);
+  }
   if (array_key_exists('name', $values)) {
     $query->condition('tb.name', $values['name']);
   }
@@ -552,7 +556,7 @@ function tripal_get_default_title_format($entity) {
   $format = NULL;
 
   // Retrieve all available tokens.
-  $tokens = tripal_get_tokens($entity);
+  $tokens = tripal_get_entity_tokens($entity);
 
   // A) Check to see if more informed modules have suggested a title for this type.
   // Invoke hook_tripal_default_title_format() to get all suggestions from other modules.
@@ -654,7 +658,7 @@ function hook_tripal_default_title_format($entity, $available_tokens) {
  * @return
  *    An array of tokens where the key is the machine_name of the token.
  */
-function tripal_get_tokens($entity, $options = array()) {
+function tripal_get_entity_tokens($entity, $options = array()) {
   $tokens = array();
 
   // Set default options.
@@ -723,7 +727,7 @@ function tripal_get_tokens($entity, $options = array()) {
  * @return
  *   The string will all tokens replaced with values.
  */
-function tripal_replace_tokens($string, $entity, $bundle_entity = NULL) {
+function tripal_replace_entity_tokens($string, $entity, $bundle_entity = NULL) {
 
 
   // Determine which tokens were used in the format string
@@ -772,7 +776,7 @@ function tripal_replace_tokens($string, $entity, $bundle_entity = NULL) {
  * Formats the tokens for display.
  *
  * @param array $tokens
- *   A list of tokens generated via tripal_get_tokens().
+ *   A list of tokens generated via tripal_get_entity_tokens().
  * @return
  *   Rendered output describing the available tokens.
  */

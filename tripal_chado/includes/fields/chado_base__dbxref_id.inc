@@ -126,10 +126,12 @@ function chado_base__dbxref_id_formatter_info() {
 function chado_base__dbxref_id_formatter(&$element, $entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
 
+  $record = $entity->chado_record;
+
   foreach ($items as $delta => $item) {
     $accession = '';
     if ($item['value']) {
-      $dbxref = chado_generate_var('dbxref', array('dbxref_id' => $item['value']));
+      $dbxref = $record->dbxref_id;
       $accession = $dbxref->db_id->name . ':' . $dbxref->accession;
       if ($dbxref->db_id->urlprefix) {
         $accession = l($accession, $dbxref->db_id->urlprefix . '/' . $dbxref->accession,
@@ -413,7 +415,6 @@ function chado_base__dbxref_id_load($field, $entity, $base_table, $record) {
     'dbxref__version' => '',
     'dbxref__description' => '',
   );
-
   // Get the primary dbxref record (if it's not NULL).  Because we have a
   // dbxref_id passed in by the base record, we will only have one record.
   if ($record->$field_column) {

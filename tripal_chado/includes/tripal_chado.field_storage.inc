@@ -270,6 +270,7 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
     $columns = array('*');
     $match = array($pkey_field => $record_id);
     $record = chado_generate_var($base_table, $match);
+    $entity->chado_record = $record;
 
     // For now, expand all 'text' fields.
     // TODO: we want to be a bit smarter and allow the user to configure this
@@ -322,6 +323,7 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
             $entity->{$field_name}['und'][0]['value'] = $record->$field_column;
           }
         }
+
         // Allow the creating module to alter the value if desired.  The
         // module should do this if the field has any other form elements
         // that need populationg besides the default value.
@@ -336,6 +338,9 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
       // of form elements that might need populating so we'll offload the
       // loading of these fields to the field itself.
       if ($field_table != $base_table) {
+
+
+
         // Set an empty value by default, and let the hook function update it.
         $entity->{$field_name}['und'][0]['value'] = '';
         $load_function = $field_type . '_load';

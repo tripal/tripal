@@ -508,6 +508,39 @@ function tripal_chado_form_field_ui_field_overview_form_alter(&$form, &$form_sta
 }
 
 /**
+ * Implements hook_field_ws_formatter().
+ *
+ * The hook function is called by the tripal_ws module which provides
+ * the RESTful web services. If that module is not installed this function
+ * is never use.d
+ */
+function tripal_chado_field_ws_formatter($entity_type, $entity, $field_info,
+    $field, $items){
+
+  $values = array();
+
+  // Only deal with fields that were created by this module.
+  if ($field_info['storage']['type'] != 'field_chado_storage') {
+    return $values;
+  }
+
+  // See if the field file defines a formatter.
+  $field_type = $field_info['type'];
+  $function = $field_type . '_ws_formatter';
+  module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+
+  if (function_exists($function)) {
+    $values = $function($entity_type, $entity, $field_info, $field, $items);
+  }
+
+  // If no customizations exist then perform some default formatting
+  if (count($values) == 0) {
+  }
+
+  return $values;
+}
+
+/**
  * Implements hook_field_is_empty().
  */
 function tripal_chado_field_is_empty($item, $field) {
@@ -612,318 +645,34 @@ function tripal_chado_add_bundle_fields($entity_type, $bundle, $term) {
   tripal_set_bundle_variable('chado_column', $bundle->id, $bundle_data['field']);
 
 
-
   // Call the hook_attach_info() for all Chado fields to see if any of them
   // want to attach themsevles to this bundle.
-  $fields = field_info_fields();
-  foreach ($fields as $field) {
-    $field_type = $field['type'];
-    if ($field['storage']['type'] == 'field_chado_storage') {
-      module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-      $function = $field_type . '_attach_info';
-
-      if (function_exists($function)) {
-        // Get the field info.
-        $field_info = $function($entity_type, $bundle, $bundle_data);
-        if (!is_array($field_info) or count(array_keys($field_info)) == 0) {
-          continue;
-        }
-
-        $field_name = $field_info['field_name'];
-        tripal_add_bundle_field($field_name, $field_info, $entity_type, $bundle_name);
+  // Iterate through the fields, include the file and run the info function.
+  $fields_path = drupal_get_path('module', 'tripal_chado') . '/includes/fields';
+  $field_files = file_scan_directory($fields_path, '/^chado_.*\.inc$/');
+  foreach ($field_files as $file) {
+    $field_type = $file->name;
+    module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+    $function = $field_type . '_attach_info';
+    if (function_exists($function)) {
+      // Get the field info.
+      $field_info = $function($entity_type, $bundle, $bundle_data);
+      if (!is_array($field_info) or count(array_keys($field_info)) == 0) {
+        continue;
       }
+      $field_name = $field_info['field_name'];
+      tripal_add_bundle_field($field_name, $field_info, $entity_type, $bundle_name);
     }
   }
 
   // Adds any remaining base fields that may not have been dealt with
   // by a custom field.
-  //tripal_chado_add_bundle_fields_base__fields($entity_type, $bundle_name, $bundle_data);
+  tripal_chado_add_bundle_fields_base__fields($entity_type, $bundle_name, $bundle_data);
 
 
 }
 
-/**
- * Adds the fields for managing xrefs that are stored in a [base]_dbxref table.
- *
- * @param $entity_type
- * @param $bundle_name
- * @param $base_table
- * @param $dbxref_table
- */
-function tripal_chado_add_bundle_fields_linker__dbxref_field($entity_type_name, $bundle_name, $dbxref_table, $base_table) {
-  // We already have a dbxref_id field.
-  $field_name = $dbxref_table;
-  $schema = chado_get_schema($dbxref_table);
-  $pkey = $schema['primary key'][0];
 
-  // Initialize the field array.
-  $field_info = array(
-    'field_type' => 'chado_linker__dbxref',
-    'widget_type' => 'chado_linker__dbxref_widget',
-    'widget_settings' => array('display_label' => 1),
-    'description' => '',
-    'label' => 'Cross References',
-    'is_required' => 0,
-    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-    'storage' => 'field_chado_storage',
-    'field_settings' => array(
-      // The Chado table that this field maps to.
-      'chado_table' => $dbxref_table,
-      // The column in the chado table that this field maps to.
-      'chado_column' => $pkey,
-      // The base table that this field is connected to.
-      'base_table' => $base_table,
-      'semantic_web' => array(
-        // The type is the term from a vocabulary that desribes this field..
-        'type' => '',
-        // The namepsace for the vocabulary (e.g. 'foaf').
-        'ns' => '',
-        // The URL for the namespace.  It must be that the type can be
-        // appended to the URL.
-        'nsurl' => '',
-      ),
-    ),
-  );
-
-  // If the base table has a 'dbxref_id' then change the label to
-  // indicate these are secondary cross references.
-  $schema = chado_get_schema($base_table);
-  if (array_key_exists('dbxref_id', $schema['fields'])) {
-    $field_info['label'] = 'Secondary Cross References';
-  }
-  tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
-}
-/**
- * Adds the fields for managing xrefs that are stored in a [base]_dbxref table.
- *
- * @param $entity_type
- * @param $bundle_name
- * @param $base_table
- * @param $dbxref_table
- */
-function tripal_chado_add_bundle_fields_linker__synonym_field($entity_type_name, $bundle_name, $syn_table, $base_table) {
-  // We already have a dbxref_id field.
-  $field_name = $syn_table;
-  $schema = chado_get_schema($syn_table);
-  $pkey = $schema['primary key'][0];
-
-  // Initialize the field array.
-  $field_info = array(
-    'field_type' => 'chado_linker__synonym',
-    'widget_type' => 'chado_linker__synonym_widget',
-    'widget_settings' => array('display_label' => 1),
-    'description' => '',
-    'label' => 'Synonyms',
-    'is_required' => 0,
-    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-    'storage' => 'field_chado_storage',
-    'field_settings' => array(
-      // The Chado table that this field maps to.
-      'chado_table' => $syn_table,
-      // The column in the chado table that this field maps to.
-      'chado_column' => $pkey,
-      // The base table that this field is connected to.
-      'base_table' => $base_table,
-      'semantic_web' => array(
-        // The type is the term from a vocabulary that desribes this field..
-        'type' => '',
-        // The namepsace for the vocabulary (e.g. 'foaf').
-        'ns' => '',
-        // The URL for the namespace.  It must be that the type can be
-        // appended to the URL.
-        'nsurl' => '',
-      ),
-    ),
-  );
-
-  tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
-}
-/**
- * Adds the fields for managing xrefs that are stored in a [base]_dbxref table.
- *
- * @param $entity_type
- * @param $bundle_name
- * @param $base_table
- * @param $dbxref_table
- */
-function tripal_chado_add_bundle_fields_linker__featureloc_field($entity_type_name, $bundle_name) {
-  $field_name = 'featureloc';
-  $schema = chado_get_schema('featureloc');
-  $pkey = $schema['primary key'][0];
-
-  // Initialize the field array.
-  $field_info = array(
-    'field_type' => 'chado_linker__featureloc',
-    'widget_type' => 'chado_linker__featureloc_widget',
-    'widget_settings' => array('display_label' => 1),
-    'description' => '',
-    'label' => 'Alignments',
-    'is_required' => 0,
-    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-    'storage' => 'field_chado_storage',
-    'field_settings' => array(
-      // The Chado table that this field maps to.
-      'chado_table' => 'featureloc',
-      // The column in the chado table that this field maps to.
-      'chado_column' => $pkey,
-      // The base table that this field is connected to.
-      'base_table' => 'feature',
-      'semantic_web' => array(
-        // The type is the term from a vocabulary that desribes this field..
-        'type' => '',
-        // The namepsace for the vocabulary (e.g. 'foaf').
-        'ns' => '',
-        // The URL for the namespace.  It must be that the type can be
-        // appended to the URL.
-        'nsurl' => '',
-      ),
-    ),
-  );
-
-  tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
-}
-/**
- * Adds the fields for managing relationships that are stored in a [base]_relationship table.
- *
- * @param $entity_type
- * @param $bundle_name
- * @param $base_table
- * @param $dbxref_table
- */
-function tripal_chado_add_bundle_fields_linker__relationship_field(
-    $entity_type_name, $bundle_name, $rel_table, $base_table) {
-
-  $field_name = $rel_table;
-  $schema = chado_get_schema($rel_table);
-  $pkey = $schema['primary key'][0];
-
-  // Initialize the field array.
-  $field_info = array(
-    'field_type' => 'chado_linker__relationship',
-    'widget_type' => 'chado_linker__relationship_widget',
-    'widget_settings' => array('display_label' => 1),
-    'description' => '',
-    'label' => 'Relationsihps',
-    'is_required' => 0,
-    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-    'storage' => 'field_chado_storage',
-    'field_settings' => array(
-      // The Chado table that this field maps to.
-      'chado_table' => $rel_table,
-      // The column in the chado table that this field maps to.
-      'chado_column' => $pkey,
-      // The base table that this field is connected to.
-      'base_table' => $base_table,
-      'semantic_web' => array(
-        // The type is the term from a vocabulary that desribes this field..
-        'type' => '',
-        // The namepsace for the vocabulary (e.g. 'foaf').
-        'ns' => '',
-        // The URL for the namespace.  It must be that the type can be
-        // appended to the URL.
-        'nsurl' => '',
-      ),
-    ),
-  );
-
-  tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
-}
-/**
- * Adds the fields for managing xrefs that are stored in a [base]_dbxref table.
- *
- * @param $entity_type
- * @param $bundle_name
- * @param $base_table
- * @param $dbxref_table
- */
-function tripal_chado_add_bundle_fields_linker__pub_field($entity_type_name, $bundle_name, $pub_table, $base_table) {
-  // We already have a dbxref_id field.
-  $field_name = $pub_table;
-  $schema = chado_get_schema($pub_table);
-  $pkey = $schema['primary key'][0];
-
-  // Initialize the field array.
-  $field_info = array(
-    'field_type' => 'chado_linker__pub',
-    'widget_type' => 'chado_linker__pub_widget',
-    'widget_settings' => array('display_label' => 1),
-    'description' => '',
-    'label' => 'Publications',
-    'is_required' => 0,
-    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-    'storage' => 'field_chado_storage',
-    'field_settings' => array(
-      // The Chado table that this field maps to.
-      'chado_table' => $pub_table,
-      // The column in the chado table that this field maps to.
-      'chado_column' => $pkey,
-      // The base table that this field is connected to.
-      'base_table' => $base_table,
-      'semantic_web' => array(
-        // The type is the term from a vocabulary that desribes this field..
-        'type' => '',
-        // The namepsace for the vocabulary (e.g. 'foaf').
-        'ns' => '',
-        // The URL for the namespace.  It must be that the type can be
-        // appended to the URL.
-        'nsurl' => '',
-      ),
-    ),
-  );
-
-  tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
-}
-/**
- * Adds the fields for managing properties that are stored in a prop table.
- *
- * @param $entity_type_name
- * @param $bundle_name
- * @param $kv_table
- */
-function tripal_chado_add_bundle_fields_linker__prop_adder_field($entity_type_name, $bundle_name, $kv_table, $base_table) {
-  $field_name = $kv_table;
-
-  // Initialize the field array.
-  $field_info = array(
-    'field_type' => 'chado_linker__prop_adder',
-    'widget_type' => 'chado_linker__prop_adder_widget',
-    'field_settings' => array(
-      'base_table' => $base_table,
-    ),
-    'storage' => 'field_chado_storage',
-    'widget_settings' => array('display_label' => 1),
-    'description' => '',
-    'label' => 'Additional Properties',
-    'is_required' => 0,
-  );
-  tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
-}
-/**
- * Adds the fields for managing properties that are stored in a prop table.
- *
- * @param $entity_type_name
- * @param $bundle_name
- * @param $kv_table
- */
-function tripal_chado_add_bundle_fields_linker__cvterm_adder_field($entity_type_name, $bundle_name, $cvterm_table, $base_table) {
-  // First add a generic property field so that users can add new property types.
-  $field_name = $cvterm_table;
-
-  // Initialize the field array.
-  $field_info = array(
-    'field_type' => 'chado_linker__cvterm_adder',
-    'widget_type' => 'chado_linker__cvterm_adder_widget',
-    'field_settings' => array(
-      'base_table' => $base_table,
-    ),
-    'storage' => 'field_chado_storage',
-    'widget_settings' => array('display_label' => 1),
-    'description' => '',
-    'label' => 'Additional Annotation Types',
-    'is_required' => 0,
-  );
-  tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
-}
 /**
  * Adds the fields for the base table to the entity.
  */

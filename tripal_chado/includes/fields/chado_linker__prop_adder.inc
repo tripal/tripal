@@ -47,7 +47,6 @@ function chado_linker__prop_adder_attach_info($entity_type, $bundle, $target) {
   $cv_id      = $target['cv_id'];
   $cvterm_id  = $target['cvterm_id'];
 
-
   // If the linker table does not exists then we don't want to add attach.
   $prop_table = $table_name . 'prop';
   if (!chado_table_exists($prop_table)) {
@@ -62,6 +61,7 @@ function chado_linker__prop_adder_attach_info($entity_type, $bundle, $target) {
     'field_settings' => array(
       'base_table' => $table_name,
     ),
+    'cardinality' => 1,
     'storage' => 'field_chado_storage',
     'widget_settings' => array('display_label' => 1),
     'description' => '',
@@ -70,7 +70,6 @@ function chado_linker__prop_adder_attach_info($entity_type, $bundle, $target) {
     // This feld is never visible so there are no field settings for
     // Chado nor the semantic web.
   );
-
   return $field_info;
 }
 /**

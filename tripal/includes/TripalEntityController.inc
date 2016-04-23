@@ -79,10 +79,11 @@ class TripalEntityController extends EntityAPIController {
         // Delete any field data for this entity.
         field_attach_delete('TripalEntity', $entity);
 
-        // Finally delete the entity record from our base table.
+        // Delete the entity record from our base table.
         db_delete('tripal_entity')
           ->condition('id', $entity->id)
           ->execute();
+
       }
     }
     catch (Exception $e) {
@@ -114,7 +115,7 @@ class TripalEntityController extends EntityAPIController {
       $title = tripal_get_title_format($bundle_entity);
 
       // And then replace all the tokens with values from the entity fields.
-      $title = tripal_replace_tokens($title, $entity, $bundle_entity);
+      $title = tripal_replace_entity_tokens($title, $entity, $bundle_entity);
 
     }
 
@@ -146,7 +147,7 @@ class TripalEntityController extends EntityAPIController {
       $alias = tripal_get_bundle_variable('url_format', $bundle_entity->id);
 
       // And then replace all the tokens with values from the entity fields.
-      $alias = tripal_replace_tokens($alias, $entity, $bundle_entity);
+      $alias = tripal_replace_entity_tokens($alias, $entity, $bundle_entity);
     }
 
     // If there was no defaults supplied by the admins
@@ -161,7 +162,7 @@ class TripalEntityController extends EntityAPIController {
       $alias = str_replace(' ', '', $term->name) . '/[TripalEntity__entity_id]';
 
       // And then replace all the tokens with values from the entity fields.
-      $alias = tripal_replace_tokens($alias, $entity, $bundle_entity);
+      $alias = tripal_replace_entity_tokens($alias, $entity, $bundle_entity);
     }
 
     // Make sure the alias doesn't contain spaces.

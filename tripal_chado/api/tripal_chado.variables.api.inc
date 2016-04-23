@@ -251,6 +251,7 @@ function chado_generate_var($table, $values, $base_options = array()) {
       // add curent table
       $object->tablename = $table;
 
+      // For Tripal v2 compatibility
       // check if the current table maps to a node type-----------------------------------------------
       // if this table is connected to a node there will be a chado_tablename table in drupal
       if (db_table_exists('chado_' . $table)) {
@@ -266,6 +267,17 @@ function chado_generate_var($table, $values, $base_options = array()) {
           $object->nid = $mapping->nid;
           $object->expandable_nodes[] = $table;
         }
+      }
+
+      // Check to see if the current table maps to an entity
+      $entity_id = db_select('chado_entity', 'ce')
+        ->fields('ce', array('entity_id'))
+        ->condition('data_table', $table)
+        ->condition('record_id', $object->{$table_primary_key})
+        ->execute()
+        ->fetchField();
+      if ($entity_id) {
+        $object->entity_id = $entity_id;
       }
 
       // remove any fields where criteria needs to be evalulated---------------------------------------

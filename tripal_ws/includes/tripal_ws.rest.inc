@@ -490,46 +490,17 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
     }
 
     // We want to allow the field to format itself for web services if it
-    // wants to.  The file can do so if it implements a '_ws_formatter'
-    // function.
-    $function = $field_info['type'] . '_ws_formatter';
-    module_load_include('inc', $field['display']['default']['module'], 'includes/fields/' . $field_info['type']);
+    // wants to.  If the module implements the hook_field_ws_formatter()
+    // then we'll retrieve the values from it.
+    $field_module = $field_info['storage']['module'];
+    $function = $field_module . '_field_ws_formatter';
+    $values = array();
+
     if (function_exists($function)) {
-      $values = array();
-      $function($values, $entity->type, $entity, $field_info, $field, $items);
-
-      // Iterate through the key/values returned and handle hashed keys
-      $add_vals = array();
-      for ($i = 0; $i < count($values); $i++) {
-        foreach ($values[$i] as $skey => $svalue) {
-          // If the key is '#entity' then this should like to another
-          // services.
-          if ($skey == '#entity') {
-            $sentity = $svalue;
-            $sbundle = tripal_load_bundle_entity(array('name' => $sentity->bundle));
-            $sterm = tripal_load_term_entity(array('term_id' => $sbundle->term_id));
-            $vocab = $sterm->vocab;
-            $add_vals['@id'] = $api_url . '/content/' . urlencode($sterm->name) . '/' . $sentity->id;
-            $add_vals['@type'] = $vocab->namespace . ':' . $sterm->name;
-            unset($values[$i][$skey]);
-          }
-        }
-        $values[$i] = array_merge($add_vals, $values[$i]);
-      }
-
-
-      if (count($values) == 0) {
-        $response[$key] = '';
-      }
-      if (count($values) == 1) {
-        $response[$key] = $values[0];
-      }
-      else {
-        $response[$key] = $values;
-      }
+      $values = $function($entity->type, $entity, $field_info, $field, $items);
     }
-    // If a function doesn't exist then just show the default value is is.
-    else {
+
+    if (count($values) == 0) {
       // Get the values based on cardinality
       if (count($items) == 1) {
         $values = $items[0]['value'];
@@ -541,8 +512,8 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
           $values[] = $items[$i]['value'];
         }
       }
-      $response[$key] = $values;
     }
+    $response[$key] = $values;
   }
 
  //$response['fields'] = $fields;

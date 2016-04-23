@@ -73,7 +73,6 @@ function chado_linker__pub_attach_info($entity_type, $bundle, $target) {
       ),
     ),
   );
-
   return $field_info;
 }
 /**

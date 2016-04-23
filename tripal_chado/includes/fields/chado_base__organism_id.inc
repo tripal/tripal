@@ -42,7 +42,6 @@ function chado_base__organism_id_attach_info($entity_type, $bundle, $target) {
   $cv_id      = $target['cv_id'];
   $cvterm_id  = $target['cvterm_id'];
 
-
   // Check the schema for the data table if it does not have
   // an 'organism_id' column then we don't want to attach this field.
   $schema = chado_get_schema($table_name);
@@ -190,7 +189,11 @@ function chado_base__organism_id_formatter_settings_form($field, $instance,
   );
   $headers = array('Token', 'Description');
   $rows = array();
-  $tokens = tripal_get_tokens($entity);
+
+  // Here we use the tripal_get_chado_tokens rather than the
+  // tripal_get_entity_tokens because we can't gurantee that all organisms
+  // have entities.
+  $tokens = tripal_get_chado_tokens('organism');
   foreach ($tokens as $token) {
     $rows[] = array(
       $token['token'],
@@ -236,70 +239,36 @@ function chado_base__organism_id_formatter(&$element, $entity_type, $entity,
 
   // Get the settings
   $settings = $display['settings'];
+  $record = $entity->chado_record;
 
   foreach ($items as $delta => $item) {
-    $organism = chado_select_record('organism', array('genus', 'species'), array('organism_id' => $item['value']));
+    $organism = $record->organism_id;
 
-    if ($settings['field_display_teaser'] == 0) {
+    if ($settings['field_display_teaser']) {
+    }
+    else {
       $field_name = $field['field_name'];
       $string = $settings['field_display_string'];
       $field_data = $entity->$field_name;
-      // TODO: add a way to get tokens from Chado records. this is
-      // needed in the case that a record is not published as an entity.
-      $content = tripal_replace_tokens($string, $field_data['und'][0]['entity']);
+      $content = tripal_replace_chado_tokens($string, $organism);
       $element[$delta] = array(
         '#type' => 'markup',
         '#markup' => $content,
       );
     }
-    else {
-
-    }
   }
-}
-
-/**
- * Loads the field values with appropriate data.
- *
- * This function is called by the tripal_chado_field_storage_load() for
- * each property managed by the field_chado_storage storage type.  This is
- * an optional hook function that is only needed if the field has
- * multiple form elements.
- *
- * @param $field
- * @param $entity
- * @param $base_table
- * @param $record
- */
-function chado_base__organism_id_load($field, $entity, $base_table, $record) {
-  $field_name = $field['field_name'];
-
-  // The organism_id is already set as the value. We need to get it and
-  // see if there is a published entity for this organism. If there is
-  // then we want to add the organism object generated using chado_generate_var
-  // as well as the entity to the record.
-  $organism_id = $entity->{$field_name}['und'][0]['value'];
-  $organism = chado_generate_var('organism', array('organism_id' => $organism_id));
-  $entity->{$field_name}['und'][0]['organism'] = $organism;
-  $org_entity = tripal_load_chado_entity('organism', $organism_id);
-  $entity->{$field_name}['und'][0]['entity'] = $org_entity;
 }
 /**
  * Implements hook_ws_formatter().
  */
-function chado_base__organism_id_ws_formatter(&$element, $entity_type, $entity,
+function chado_base__organism_id_ws_formatter($entity_type, $entity,
     $field, $instance, $items) {
 
+  $values = array();
   foreach ($items as $delta => $item) {
-    $organism = $item['organism'];
-    $entity = $item['entity'];
-    if ($entity) {
-      $element[$delta]['#entity'] = $entity;
-    }
-    $element[$delta]['genus'] = $organism->genus;
-    $element[$delta]['species'] = $organism->species;
-    $element[$delta]['common_name'] = $organism->common_name;
+
   }
+  return $values;
 }
 
 /**

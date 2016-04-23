@@ -62,6 +62,7 @@ function chado_linker__cvterm_adder_attach_info($entity_type, $bundle, $target) 
     'field_settings' => array(
       'base_table' => $table_name,
     ),
+    'cardinality' => 1,
     'storage' => 'field_chado_storage',
     'widget_settings' => array('display_label' => 1),
     'description' => '',

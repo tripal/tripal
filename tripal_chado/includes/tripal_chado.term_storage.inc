@@ -135,9 +135,19 @@ function tripal_chado_vocab_select_term_form($form, &$form_state) {
     $terms = chado_expand_var($terms, 'field', 'cvterm.definition');
     $num_terms = 0;
     foreach ($terms as $term) {
+      // Save the user a click by setting the default value as 1 if there's
+      // only one matching term.
+      $default = FALSE;
+      $attrs = array();
+      if ($num_terms == 0 and count($terms) == 1) {
+        $default = TRUE;
+        $attrs = array('checked' => 'checked');
+      }
        $form['terms_list']['term-' . $term->cvterm_id] = array(
          '#type' => 'checkbox',
          '#title' =>  $term->name,
+         '#default_value' => $default,
+         '#attributes' => $attrs,
          '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name .
              '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
              '<br><b>Definition:</b>  ' . $term->definition,

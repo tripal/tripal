@@ -214,7 +214,7 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
     '#collapsed' => TRUE
   );
 
-  $tokens = tripal_get_tokens($entity_type);
+  $tokens = tripal_get_entity_tokens($entity_type);
   $form['set_titles']['tokens'] = array(
     '#type' => 'hidden',
     '#value' => serialize($tokens)
@@ -259,7 +259,7 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
     '#rows' => 1
   );
 
-  $tokens = tripal_get_tokens($entity_type, array('required only' => TRUE));
+  $tokens = tripal_get_entity_tokens($entity_type, array('required only' => TRUE));
   $form['url']['tokens'] = array(
     '#type' => 'hidden',
     '#value' => serialize($tokens)
