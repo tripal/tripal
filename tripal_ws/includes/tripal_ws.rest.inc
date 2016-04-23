@@ -489,34 +489,49 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
       continue;
     }
 
+    $value = '';
+
+
     // We want to allow the field to format itself for web services if it
     // wants to.  If the module implements the hook_field_ws_formatter()
     // then we'll retrieve the values from it.
     $field_module = $field_info['storage']['module'];
     $function = $field_module . '_field_ws_formatter';
-    $values = array();
 
     if (function_exists($function)) {
-      $values = $function($entity->type, $entity, $field_info, $field, $items);
+      $value = $function($entity->type, $entity, $field_info, $field, $items);
     }
 
-    if (count($values) == 0) {
+    if (!$value) {
       // Get the values based on cardinality
       if (count($items) == 1) {
-        $values = $items[0]['value'];
+        $value = $items[0]['value'];
       }
       // If cardinality is greater than 1 then the value should be an array
       else {
-        $values = array();
+        $value = array();
         for ($i = 0; $i < count($items); $i++) {
-          $values[] = $items[$i]['value'];
+          $value[] = $items[$i]['value'];
         }
       }
     }
-    $response[$key] = $values;
-  }
 
- //$response['fields'] = $fields;
+    // If the value for this key is an array with an 'entity_id' key then
+    // we want to do a substitution.
+    if (is_array($value) and array_key_exists('entity_id', $value)) {
+      $lentity = entity_load($value['entity_type'], array($value['entity_id']));
+      $lentity = reset($lentity);
+      $lterm = tripal_load_term_entity(array('term_id' => $lentity->term_id));
+      $lvocab = tripal_load_vocab_entity(array('vocab_id' => $lterm->vocab_id));
+      $value = array(
+        '@id'   => $api_url . '/content/' . $lterm->name . '/' . $value['entity_id'],
+        '@type' => $lvocab->namespace . ':' . $lterm->accession,
+        'label' => $lentity->title,
+      );
+    }
+
+    $response[$key] = $value;
+  }
 
   // Lastly, add in the terms used into the @context section.
   $response['@context']['label'] = 'rdfs:label';

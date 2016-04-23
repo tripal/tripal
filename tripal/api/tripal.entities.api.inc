@@ -45,23 +45,27 @@ function tripal_load_term_entity($values) {
  * Retrieves a TripalVocab entity that maches the given arguments.
  *
  * @param $values
- *   An associative array used to match a term.  Currently, the only valid keys
- *   is 'namespace'.
+ *   An associative array used to match a vocabulary.  The valid keys are
+ *   'vocab_id' and 'namespace'.
  *
  * @return
  * A TripalVocab entity object or NULL if not found.
  */
 function tripal_load_vocab_entity($values) {
   $namespace = array_key_exists('namespace', $values) ? $values['namespace'] : '';
+  $vocab_id = array_key_exists('vocab_id', $values) ? $values['vocab_id'] : '';
   $vocab = NULL;
 
+  $query= db_select('tripal_vocab', 'tv')
+    ->fields('tv');
+
   if ($namespace) {
-    $vocab = db_select('tripal_vocab', 'tv')
-      ->fields('tv')
-      ->condition('tv.namespace', $namespace)
-      ->execute()
-      ->fetchObject();
+    $query->condition('tv.namespace', $namespace);
   }
+  if ($namespace) {
+    $query->condition('tv.vocab_id', $vocab_id);
+  }
+  $vocab = $query->execute()->fetchObject();
 
   if ($vocab) {
     $entity = entity_load('TripalVocab', array($vocab->id));

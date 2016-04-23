@@ -326,7 +326,7 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
 
         // Allow the creating module to alter the value if desired.  The
         // module should do this if the field has any other form elements
-        // that need populationg besides the default value.
+        // that need populationg besides the value which was set above.
         $load_function = $field_type . '_load';
         module_load_include('inc', $field_module, 'includes/fields/' . $field_type);
         if (function_exists($load_function)) {
@@ -338,8 +338,6 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
       // of form elements that might need populating so we'll offload the
       // loading of these fields to the field itself.
       if ($field_table != $base_table) {
-
-
 
         // Set an empty value by default, and let the hook function update it.
         $entity->{$field_name}['und'][0]['value'] = '';

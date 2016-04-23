@@ -352,29 +352,6 @@ function tripal_chado_add_bundle_fields_base__fields_defaults($table_name, $sche
     $field['field_settings']['semantic_web']['nsurl'] = 'http://www.w3.org/ns/hydra/core#';
   }
 
-  //
-  // GENERIC COLUMNS
-  //
-//   if ($field['field_settings']['chado_column'] == 'organism_id') {
-//     $field['field_type'] = 'chado_base__organism_id';
-//     $field['widget_type'] = 'chado_base__organism_id_widget';
-//     $field['label'] = 'Organism';
-//     $field['description'] = 'Select an organism.';
-//     $field['field_settings']['semantic_web']['type'] = 'organism';
-//     $field['field_settings']['semantic_web']['ns'] = 'local';
-//     $field['field_settings']['semantic_web']['nsurl'] = '';
-
-//   }
-//   elseif ($field['field_settings']['chado_column'] =='dbxref_id') {
-//     $field['field_type'] = 'chado_base__dbxref_id';
-//     $field['widget_type'] = 'chado_base_dbxref_id_widget';
-//     $field['label'] = 'Cross Reference';
-//     $field['description'] = 'This record can be cross referenced with a ' .
-//         'record in another online database. The primary reference is for the ' .
-//         'most prominent reference.  At a minimum, the database and accession ' .
-//         'must be provided.  To remove a set reference, change the database ' .
-//         'field to "Select a Database".';
-//   }
   if ($field['label'] == 'Timeaccessioned') {
     $field['label'] = 'Time Accessioned';
     $field['description'] = 'Please enter the time that this record was first added to the database.';
@@ -400,24 +377,7 @@ function tripal_chado_add_bundle_fields_base__fields_defaults($table_name, $sche
     $field['field_settings']['semantic_web']['ns'] = 'foaf';
     $field['field_settings']['semantic_web']['nsurl'] = 'http://xmlns.com/foaf/0.1/';
   }
-  /* elseif ($field['field_settings']['chado_table'] == 'feature' and $field['field_settings']['chado_column'] == 'md5checksum') {
-    $field['field_type'] = 'chado_feature__md5checksum';
-    $field['widget_type'] = 'chado_feature__md5checksum_widget';
-    $field['label'] = 'MD5 Checksum';
-    $field['description'] = 'Generate an MD5 checksum for the sequence.';
-  }
-  elseif ($field['field_settings']['chado_table'] == 'feature' and $field['field_settings']['chado_column'] == 'seqlen') {
-    $field['field_type'] = 'chado_feature__seqlen';
-    $field['widget_type'] = 'chado_feature__seqlen_widget';
-    $field['label'] = 'Seqlen';
-    $field['description'] = 'The length of the residues.';
-  }
-  elseif ($field['field_settings']['chado_table'] == 'feature' and $field['field_settings']['chado_column'] == 'residues') {
-    $field['field_type'] = 'chado_feature__residues';
-    $field['widget_type'] = 'chado_feature__residues_widget';
-    $field['label'] = 'Residues';
-    $field['description'] = 'Please provide an IUPAC compatible residues for this feature. Spaces and new lines are allowed.';
-  } */
+
   //
   // ANALYSIS TABLE
   //
@@ -517,27 +477,35 @@ function tripal_chado_form_field_ui_field_overview_form_alter(&$form, &$form_sta
 function tripal_chado_field_ws_formatter($entity_type, $entity, $field_info,
     $field, $items){
 
-  $values = array();
+  $field_name = $field_info['field_name'];
+  $field_type = $field_info['type'];
 
-  // Only deal with fields that were created by this module.
-  if ($field_info['storage']['type'] != 'field_chado_storage') {
-    return $values;
+  $chado_table = $field_info['settings']['chado_table'];
+  $chado_column  = $field_info['settings']['chado_column'];
+
+  // Check to see if this field is associated with a different entity. If so
+  // we want to return the entity_id and not let the field customize the
+  // display as we need to allow the tripal_ws module to link to the other
+  // entity.
+  if (property_exists($entity->chado_record, $chado_column) and
+      property_exists($entity->chado_record->$chado_column, 'entity_id')) {
+     $fk_entity_id = $entity->chado_record->$chado_column->entity_id;
+     $value = array(
+       'entity_id' => $fk_entity_id,
+       'entity_type' => 'TripalEntity'
+     );
+     return $value;
   }
 
   // See if the field file defines a formatter.
-  $field_type = $field_info['type'];
   $function = $field_type . '_ws_formatter';
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-
+  $value = '';
   if (function_exists($function)) {
-    $values = $function($entity_type, $entity, $field_info, $field, $items);
+    $value = $function($entity_type, $entity, $field_info, $field, $items);
   }
 
-  // If no customizations exist then perform some default formatting
-  if (count($values) == 0) {
-  }
-
-  return $values;
+  return $value;
 }
 
 /**

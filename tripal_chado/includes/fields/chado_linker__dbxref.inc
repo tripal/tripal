@@ -310,7 +310,7 @@ function chado_linker__dbxref_widget_form_ajax_callback($form, $form_state) {
 }
 
 /**
- * Callback function for validating the tripal_chado_organism_select_widget.
+ * Callback function for validating the chado_linker__dbxref_widget.
  */
 function chado_linker__dbxref_widget_validate($element, &$form_state) {
 
@@ -460,3 +460,27 @@ function chado_linker__dbxref_load($field, $entity, $base_table, $record) {
   }
 }
 
+/**
+ * Implements hook_ws_formatter().
+ */
+function chado_linker__dbxref_ws_formatter($entity_type, $entity,
+    $field, $instance, $items) {
+
+  $field_name = $field['field_name'];
+  $field_type = $field['type'];
+  $chado_table = $field['settings']['chado_table'];
+  $record = $entity->chado_record;
+
+  $values = array();
+  $options = array('return_array' => 1);
+  $record = chado_expand_var($record, 'table', $chado_table, $options);
+  $linker_dbxrefs = $record->$chado_table;
+  foreach ($linker_dbxrefs as $linker_dbxref) {
+    $dbxref = $linker_dbxref->dbxref_id;
+    unset($dbxref->tablename);
+    unset($dbxref->db_id->tablename);
+    $values[] = $dbxref;
+  }
+
+  return $values;
+}

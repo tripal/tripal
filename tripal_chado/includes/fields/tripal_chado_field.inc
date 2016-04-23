@@ -106,7 +106,7 @@ class TripalChadoField {
 
   }
   /**
-   * Callback function for validating the chado_base__organism_id_widget.
+   * Callback function for validating the widget_.
    */
   static function widget_validate($element, &$form_state) {
 

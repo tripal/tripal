@@ -47,7 +47,7 @@ function chado_base__dbxref_id_attach_info($entity_type, $bundle, $target) {
   // Check the schema for the data table if it does not have
   // a 'dbxref_id' column then we don't want to attach this field.
   $schema = chado_get_schema($table_name);
-  if (!array_key_exists('organism_id', $schema['fields'])) {
+  if (!array_key_exists('dbxref_id', $schema['fields'])) {
     return $field_info;
   }
 
@@ -71,8 +71,8 @@ function chado_base__dbxref_id_attach_info($entity_type, $bundle, $target) {
       'chado_table' => $table_name,
       'chado_column' => 'dbxref_id',
       'semantic_web' => array(
-        'type' => 'organism',
-        'ns' => 'local',
+        'type' => '',
+        'ns' => '',
         'nsurl' => '',
       ),
     ),
@@ -293,7 +293,7 @@ function chado_base__dbxref_id_widget_form_ajax_callback($form, $form_state) {
 }
 
 /**
- * Callback function for validating the tripal_chado_organism_select_widget.
+ * Callback function for validating the tripal_chado_dbxref_select_widget.
  */
 function chado_base__dbxref_id_widget_validate($element, &$form_state) {
   $field_name = $element['#parents'][0];
@@ -421,9 +421,9 @@ function chado_base__dbxref_id_load($field, $entity, $base_table, $record) {
     $columns = array('*');
     $match = array('dbxref_id' => $record->$field_column->$field_column);
     $options = array('return_array' => TRUE);
-    $records = chado_select_record('dbxref', $columns, $match, $options);
-    if (count($records) > 0) {
-      $dbxref = $records[0];
+    $dbxrefs = chado_select_record('dbxref', $columns, $match, $options);
+    if (count($dbxrefs) > 0) {
+      $dbxref = $dbxrefs[0];
       $entity->{$field_name}['und'][0] = array(
         'value' => $dbxref->dbxref_id,
         'dbxref__db_id' => $dbxref->db_id,
@@ -433,5 +433,19 @@ function chado_base__dbxref_id_load($field, $entity, $base_table, $record) {
       );
     }
   }
+}
+
+
+/**
+ * Implements hook_ws_formatter().
+ */
+function chado_base__dbxref_id_ws_formatter($entity_type, $entity,
+    $field, $instance, $items) {
+
+  $dbxref = $entity->chado_record->dbxref_id;
+
+  unset($dbxref->tablename);
+  unset($dbxref->db_id->tablename);
+  return $dbxref;
 }
 

@@ -258,18 +258,6 @@ function chado_base__organism_id_formatter(&$element, $entity_type, $entity,
     }
   }
 }
-/**
- * Implements hook_ws_formatter().
- */
-function chado_base__organism_id_ws_formatter($entity_type, $entity,
-    $field, $instance, $items) {
-
-  $values = array();
-  foreach ($items as $delta => $item) {
-
-  }
-  return $values;
-}
 
 /**
  *  Implements hook_widget().
@@ -311,3 +299,15 @@ function chado_base__organism_id_widget_validate($element, &$form_state) {
   }
 }
 
+
+/**
+ * Implements hook_ws_formatter().
+ */
+function chado_base__organism_id_ws_formatter($entity_type, $entity,
+    $field, $instance, $items) {
+
+  $organism = (array) $entity->chado_record->organism_id;
+  unset($organism->tablename);
+
+  return $organism;
+}

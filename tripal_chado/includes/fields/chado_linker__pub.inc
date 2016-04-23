@@ -236,7 +236,7 @@ function chado_linker__pub_widget_form_ajax_callback($form, $form_state) {
 }
 
 /**
- * Callback function for validating the tripal_chado_organism_select_widget.
+ * Callback function for validating the chado_linker__pub_widget.
  */
 function chado_linker__pub_widget_validate($element, &$form_state) {
 
