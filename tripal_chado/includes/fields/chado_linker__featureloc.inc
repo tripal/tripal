@@ -21,6 +21,59 @@ function chado_linker__featureloc_info() {
   );
 }
 /**
+ * Implements hook_attach_info().
+ *
+ * This is a hook provided by the tripal_Chado module. It allows the field
+ * to specify which bundles it will attach to and to specify thee settings.
+ *
+ * @param $entity_type
+ * @param $entity
+ * @param $term
+ *
+ * @return
+ *   A field array
+ */
+function chado_linker__featureloc_attach_info($entity_type, $bundle, $target) {
+  $field_info = array();
+
+  $table_name = $target['data_table'];
+  $type_table = $target['type_table'];
+  $type_field = $target['field'];
+  $cv_id      = $target['cv_id'];
+  $cvterm_id  = $target['cvterm_id'];
+
+  // If  this is not the feature table then we don't want to attach.
+  if ($table_name != 'feature') {
+    return $field_info;
+  }
+
+  $schema = chado_get_schema('featureloc');
+  $pkey = $schema['primary key'][0];
+
+  // Initialize the field array.
+  $field_info = array(
+    'field_name' => 'featureloc',
+    'field_type' => 'chado_linker__featureloc',
+    'widget_type' => 'chado_linker__featureloc_widget',
+    'widget_settings' => array('display_label' => 1),
+    'description' => '',
+    'label' => 'Alignments',
+    'is_required' => 0,
+    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+    'storage' => 'field_chado_storage',
+    'field_settings' => array(
+      'chado_table' => 'featureloc',
+      'chado_column' => $pkey,
+      'base_table' => 'feature',
+      'semantic_web' => array(
+        'type' => '',
+        'ns' => '',
+        'nsurl' => '',
+      ),
+    ),
+  );
+}
+/**
  * Implements hook_widget_info.
  *
  * This is a hook provided by the tripal_chado module for offloading

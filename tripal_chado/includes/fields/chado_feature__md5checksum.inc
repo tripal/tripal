@@ -20,6 +20,58 @@ function chado_feature__md5checksum_info() {
   );
 }
 /**
+ * Implements hook_attach_info().
+ *
+ * This is a hook provided by the tripal_chado module. It allows the field
+ * to specify which bundles it will attach to and to specify the settings.
+ *
+ * @param $entity_type
+ * @param $entity
+ * @param $term
+ *
+ * @return
+ *   A field array
+ */
+function chado_feature__md5checksum_attach_info($entity_type, $bundle, $target) {
+  $field_info = array();
+
+  $table_name = $target['data_table'];
+  $type_table = $target['type_table'];
+  $type_field = $target['field'];
+  $cv_id      = $target['cv_id'];
+  $cvterm_id  = $target['cvterm_id'];
+
+
+  // If  this is not the feature table then we don't want to attach.
+  if ($table_name != 'feature') {
+    return $field_info;
+  }
+
+  // Create an array with information about this field.
+  $field_info = array(
+    'field_name' => 'feature__md5checksum',
+    'field_type' => 'chado_feature__md5checksum',
+    'widget_type' => 'chado_feature__md5checksum_widget',
+    'description' => 'The MD5 checksum for the sequence.',
+    'label' => 'MD5 Checksum',
+    'is_required' => 0,
+    'storage' => 'field_chado_storage',
+    'widget_settings' => array(
+      'display_label' => 1
+    ),
+    'field_settings' => array(
+      'chado_table' => $table_name,
+      'chado_column' => 'md5checksum',
+      'semantic_web' => array(
+        'type' => '',
+        'ns' => '',
+        'nsurl' => '',
+      ),
+    ),
+  );
+  return $field_info;
+}
+/**
  * Implements hook_widget_info.
  *
  * This is a hook provided by the tripal_chado module for offloading

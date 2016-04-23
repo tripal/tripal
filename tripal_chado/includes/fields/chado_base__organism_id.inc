@@ -20,6 +20,62 @@ function chado_base__organism_id_info() {
   );
 }
 /**
+ * Implements hook_attach_info().
+ *
+ * This is a hook provided by the tripal_Chado module. It allows the field
+ * to specify which bundles it will attach to and to specify thee settings.
+ *
+ * @param $entity_type
+ * @param $entity
+ * @param $term
+ *
+ * @return
+ *   A field array
+ */
+function chado_base__organism_id_attach_info($entity_type, $bundle, $target) {
+
+  $field_info = array();
+
+  $table_name = $target['data_table'];
+  $type_table = $target['type_table'];
+  $type_field = $target['field'];
+  $cv_id      = $target['cv_id'];
+  $cvterm_id  = $target['cvterm_id'];
+
+
+  // Check the schema for the data table if it does not have
+  // an 'organism_id' column then we don't want to attach this field.
+  $schema = chado_get_schema($table_name);
+  if (!array_key_exists('organism_id', $schema['fields'])) {
+    return $field_info;
+  }
+
+  // There is an organism_id column so attach the field!
+  $field_info = array(
+    'field_name' => $table_name . '__organism_id',
+    'field_type' => 'chado_base__organism_id',
+    'widget_type' => 'chado_base__organism_id_widget',
+    'description' => 'Select an organism.',
+    'label' => 'Oraganism',
+    'is_required' => 0,
+    'storage' => 'field_chado_storage',
+    'widget_settings' => array(
+      'display_label' => 1
+    ),
+    'field_settings' => array(
+      'chado_table' => $table_name,
+      'chado_column' => 'organism_id',
+      'semantic_web' => array(
+        'type' => 'organism',
+        'ns' => 'local',
+        'nsurl' => '',
+      ),
+    ),
+  );
+
+  return $field_info;
+}
+/**
  * Implements hook_widget_info.
  *
  * This is a hook provided by the tripal_chado module for offloading

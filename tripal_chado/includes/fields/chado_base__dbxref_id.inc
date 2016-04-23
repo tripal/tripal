@@ -22,6 +22,66 @@ function chado_base__dbxref_id_info() {
   );
 }
 /**
+ * Implements hook_attach_info().
+ *
+ * This is a hook provided by the tripal_chado module. It allows the field
+ * to specify which bundles it will attach to and to specify the settings.
+ *
+ * @param $entity_type
+ * @param $entity
+ * @param $term
+ *
+ * @return
+ *   A field array
+ */
+function chado_base__dbxref_id_attach_info($entity_type, $bundle, $target) {
+
+  $field_info = array();
+
+  $table_name = $target['data_table'];
+  $type_table = $target['type_table'];
+  $type_field = $target['field'];
+  $cv_id      = $target['cv_id'];
+  $cvterm_id  = $target['cvterm_id'];
+
+  // Check the schema for the data table if it does not have
+  // a 'dbxref_id' column then we don't want to attach this field.
+  $schema = chado_get_schema($table_name);
+  if (!array_key_exists('organism_id', $schema['fields'])) {
+    return $field_info;
+  }
+
+  // There is an dbxref_id column so attach the field!
+  $field_info = array(
+    'field_name' => $table_name . '__dbxref_id',
+    'field_type' => 'chado_base__dbxref_id',
+    'widget_type' => 'chado_base__dbxref_id_widget',
+    'description' => 'This record can be cross referenced with a ' .
+      'record in another online database. The primary reference is for the ' .
+      'most prominent reference.  At a minimum, the database and accession ' .
+      'must be provided.  To remove a set reference, change the database ' .
+      'field to "Select a Database".',
+    'label' => 'Cross Reference',
+    'is_required' => 0,
+    'storage' => 'field_chado_storage',
+    'widget_settings' => array(
+      'display_label' => 1
+    ),
+    'field_settings' => array(
+      'chado_table' => $table_name,
+      'chado_column' => 'dbxref_id',
+      'semantic_web' => array(
+        'type' => 'organism',
+        'ns' => 'local',
+        'nsurl' => '',
+      ),
+    ),
+  );
+
+  return $field_info;
+
+}
+/**
  * Implements hook_widget_info.
  *
  * This is a hook provided by the tripal_chado module for offloading

@@ -355,27 +355,27 @@ function tripal_chado_add_bundle_fields_base__fields_defaults($table_name, $sche
   //
   // GENERIC COLUMNS
   //
-  if ($field['field_settings']['chado_column'] == 'organism_id') {
-    $field['field_type'] = 'chado_base__organism_id';
-    $field['widget_type'] = 'chado_base__organism_id_widget';
-    $field['label'] = 'Organism';
-    $field['description'] = 'Select an organism.';
-    $field['field_settings']['semantic_web']['type'] = 'organism';
-    $field['field_settings']['semantic_web']['ns'] = 'local';
-    $field['field_settings']['semantic_web']['nsurl'] = '';
+//   if ($field['field_settings']['chado_column'] == 'organism_id') {
+//     $field['field_type'] = 'chado_base__organism_id';
+//     $field['widget_type'] = 'chado_base__organism_id_widget';
+//     $field['label'] = 'Organism';
+//     $field['description'] = 'Select an organism.';
+//     $field['field_settings']['semantic_web']['type'] = 'organism';
+//     $field['field_settings']['semantic_web']['ns'] = 'local';
+//     $field['field_settings']['semantic_web']['nsurl'] = '';
 
-  }
-  elseif ($field['field_settings']['chado_column'] =='dbxref_id') {
-    $field['field_type'] = 'chado_base__dbxref_id';
-    $field['widget_type'] = 'chado_base_dbxref_id_widget';
-    $field['label'] = 'Cross Reference';
-    $field['description'] = 'This record can be cross referenced with a ' .
-        'record in another online database. The primary reference is for the ' .
-        'most prominent reference.  At a minimum, the database and accession ' .
-        'must be provided.  To remove a set reference, change the database ' .
-        'field to "Select a Database".';
-  }
-  elseif ($field['label'] == 'Timeaccessioned') {
+//   }
+//   elseif ($field['field_settings']['chado_column'] =='dbxref_id') {
+//     $field['field_type'] = 'chado_base__dbxref_id';
+//     $field['widget_type'] = 'chado_base_dbxref_id_widget';
+//     $field['label'] = 'Cross Reference';
+//     $field['description'] = 'This record can be cross referenced with a ' .
+//         'record in another online database. The primary reference is for the ' .
+//         'most prominent reference.  At a minimum, the database and accession ' .
+//         'must be provided.  To remove a set reference, change the database ' .
+//         'field to "Select a Database".';
+//   }
+  if ($field['label'] == 'Timeaccessioned') {
     $field['label'] = 'Time Accessioned';
     $field['description'] = 'Please enter the time that this record was first added to the database.';
   }
@@ -400,7 +400,7 @@ function tripal_chado_add_bundle_fields_base__fields_defaults($table_name, $sche
     $field['field_settings']['semantic_web']['ns'] = 'foaf';
     $field['field_settings']['semantic_web']['nsurl'] = 'http://xmlns.com/foaf/0.1/';
   }
-  elseif ($field['field_settings']['chado_table'] == 'feature' and $field['field_settings']['chado_column'] == 'md5checksum') {
+  /* elseif ($field['field_settings']['chado_table'] == 'feature' and $field['field_settings']['chado_column'] == 'md5checksum') {
     $field['field_type'] = 'chado_feature__md5checksum';
     $field['widget_type'] = 'chado_feature__md5checksum_widget';
     $field['label'] = 'MD5 Checksum';
@@ -417,7 +417,7 @@ function tripal_chado_add_bundle_fields_base__fields_defaults($table_name, $sche
     $field['widget_type'] = 'chado_feature__residues_widget';
     $field['label'] = 'Residues';
     $field['description'] = 'Please provide an IUPAC compatible residues for this feature. Spaces and new lines are allowed.';
-  }
+  } */
   //
   // ANALYSIS TABLE
   //
@@ -611,88 +611,35 @@ function tripal_chado_add_bundle_fields($entity_type, $bundle, $term) {
   tripal_set_bundle_variable('chado_table', $bundle->id, $bundle_data['data_table']);
   tripal_set_bundle_variable('chado_column', $bundle->id, $bundle_data['field']);
 
-  //////////////////////////////////////////////////////////////////////////////
-  // ADD FIELDS TO BUNDLE
-  ////////////////////////////////////////////////////////////////////////////
 
-  /* TODO: the arrays for adding fields should be specified in the field
-   * files themselves so that field developers have complete control over
-   * how the fields behave and what entities they are attached to without
-   * having to edit this function.
-   */
 
-  ////
-  //
-  // Base table fields.
-  //
-  // Adds the fields for the base table to the entity.  Adds fields
-  // for all columns including FK fields.  Excludes primary key and the
-  // type_id field (that's inherent in the bundle).
-  tripal_chado_add_bundle_fields_base__fields($entity_type, $bundle_name, $bundle_data);
+  // Call the hook_attach_info() for all Chado fields to see if any of them
+  // want to attach themsevles to this bundle.
+  $fields = field_info_fields();
+  foreach ($fields as $field) {
+    $field_type = $field['type'];
+    if ($field['storage']['type'] == 'field_chado_storage') {
+      module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+      $function = $field_type . '_attach_info';
 
-  ////
-  //
-  // Property table fields.
-  //
-  // Check to see if there are any property tables with FKs to this
-  // base table. If so, add the fields for that type of table.
-  $prop_table = $bundle_data['data_table'] . 'prop';
-  if (chado_table_exists($prop_table)) {
-    tripal_chado_add_bundle_fields_linker__prop_adder_field($entity_type, $bundle_name, $prop_table, $bundle_data['data_table']);
+      if (function_exists($function)) {
+        // Get the field info.
+        $field_info = $function($entity_type, $bundle, $bundle_data);
+        if (!is_array($field_info) or count(array_keys($field_info)) == 0) {
+          continue;
+        }
+
+        $field_name = $field_info['field_name'];
+        tripal_add_bundle_field($field_name, $field_info, $entity_type, $bundle_name);
+      }
+    }
   }
 
-  ////
-  //
-  // Dbxref table fields.
-  //
-  // Check to see if there are any dbxref tables with FKs to this
-  // base table. If so, add the fields for that type of table.
-  $dbxref_table = $bundle_data['data_table'] . '_dbxref';
-  if (chado_table_exists($dbxref_table)) {
-    tripal_chado_add_bundle_fields_linker__dbxref_field($entity_type, $bundle_name, $dbxref_table, $bundle_data['data_table']);
-  }
-
-  ////
-  //
-  // Cvterm table fields.
-  //
-  // Check to see if there are any cvterm tables with FKs to this
-  // base table. If so, add the fields for that type of table.
-  $cvterm_table = $bundle_data['data_table'] . '_cvterm';
-  if (chado_table_exists($cvterm_table)) {
-    tripal_chado_add_bundle_fields_linker__cvterm_adder_field($entity_type, $bundle_name, $cvterm_table, $bundle_data['data_table']);
-  }
+  // Adds any remaining base fields that may not have been dealt with
+  // by a custom field.
+  //tripal_chado_add_bundle_fields_base__fields($entity_type, $bundle_name, $bundle_data);
 
 
-  ////
-  //
-  // Synonym table fields.
-  //
-  // Check to see if there are any synonym tables with FKs to this
-  // base table. If so, add the fields for that type of table.
-  $syn_table = $bundle_data['data_table'] . '_synonym';
-  if (chado_table_exists($syn_table)) {
-    tripal_chado_add_bundle_fields_linker__synonym_field($entity_type, $bundle_name, $syn_table, $bundle_data['data_table']);
-  }
-
-  ////
-  //
-  // Pub table fields.
-  //
-  // Check to see if there are any pub tables with FKs to this
-  // base table. If so, add the fields for that type of table.
-  $pub_table = $bundle_data['data_table'] . '_pub';
-  if (chado_table_exists($pub_table)) {
-    tripal_chado_add_bundle_fields_linker__pub_field($entity_type, $bundle_name, $pub_table, $bundle_data['data_table']);
-  }
-
-  ////
-  //
-  // Featureloc fields.
-  //
-  if ($bundle_data['data_table'] == 'feature') {
-    tripal_chado_add_bundle_fields_linker__featureloc_field($entity_type, $bundle_name);
-  }
 }
 
 /**
@@ -835,7 +782,52 @@ function tripal_chado_add_bundle_fields_linker__featureloc_field($entity_type_na
 
   tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
 }
+/**
+ * Adds the fields for managing relationships that are stored in a [base]_relationship table.
+ *
+ * @param $entity_type
+ * @param $bundle_name
+ * @param $base_table
+ * @param $dbxref_table
+ */
+function tripal_chado_add_bundle_fields_linker__relationship_field(
+    $entity_type_name, $bundle_name, $rel_table, $base_table) {
 
+  $field_name = $rel_table;
+  $schema = chado_get_schema($rel_table);
+  $pkey = $schema['primary key'][0];
+
+  // Initialize the field array.
+  $field_info = array(
+    'field_type' => 'chado_linker__relationship',
+    'widget_type' => 'chado_linker__relationship_widget',
+    'widget_settings' => array('display_label' => 1),
+    'description' => '',
+    'label' => 'Relationsihps',
+    'is_required' => 0,
+    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+    'storage' => 'field_chado_storage',
+    'field_settings' => array(
+      // The Chado table that this field maps to.
+      'chado_table' => $rel_table,
+      // The column in the chado table that this field maps to.
+      'chado_column' => $pkey,
+      // The base table that this field is connected to.
+      'base_table' => $base_table,
+      'semantic_web' => array(
+        // The type is the term from a vocabulary that desribes this field..
+        'type' => '',
+        // The namepsace for the vocabulary (e.g. 'foaf').
+        'ns' => '',
+        // The URL for the namespace.  It must be that the type can be
+        // appended to the URL.
+        'nsurl' => '',
+      ),
+    ),
+  );
+
+  tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
+}
 /**
  * Adds the fields for managing xrefs that are stored in a [base]_dbxref table.
  *

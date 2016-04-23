@@ -21,6 +21,26 @@ function chado_linker__cvterm_info() {
   );
 }
 /**
+ * Implements hook_attach_info().
+ *
+ * This is a hook provided by the tripal_Chado module. It allows the field
+ * to specify which bundles it will attach to and to specify thee settings.
+ *
+ * @param $entity_type
+ * @param $entity
+ * @param $term
+ *
+ * @return
+ *   A field array
+ */
+function chado_linker__cvterm_attach_info($entity_type, $bundle, $target) {
+  $field_info = array();
+
+  // This field is only attached by the chado_linker__cvterm_addr field.
+
+  return $field_info;
+}
+/**
  * Implements hook_widget_info.
  *
  * This is a hook provided by the tripal_chado module for offloading

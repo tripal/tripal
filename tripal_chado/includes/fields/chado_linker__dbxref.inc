@@ -22,6 +22,71 @@ function chado_linker__dbxref_info() {
   );
 }
 /**
+ * Implements hook_attach_info().
+ *
+ * This is a hook provided by the tripal_Chado module. It allows the field
+ * to specify which bundles it will attach to and to specify thee settings.
+ *
+ * @param $entity_type
+ * @param $entity
+ * @param $term
+ *
+ * @return
+ *   A field array
+ */
+function chado_linker__dbxref_attach_info($entity_type, $bundle, $target) {
+  $field_info = array();
+
+  $table_name = $target['data_table'];
+  $type_table = $target['type_table'];
+  $type_field = $target['field'];
+  $cv_id      = $target['cv_id'];
+  $cvterm_id  = $target['cvterm_id'];
+
+
+  // If the linker table does not exists then we don't want to add attach.
+  $dbxref_table = $table_name . '_dbxref';
+  if (!chado_table_exists($dbxref_table)) {
+    return $field_info;
+  }
+
+  // We already have a dbxref_id field.
+  $schema = chado_get_schema($dbxref_table);
+  $pkey = $schema['primary key'][0];
+
+  // Initialize the field array.
+  $field_info = array(
+    'field_name' => $dbxref_table,
+    'field_type' => 'chado_linker__dbxref',
+    'widget_type' => 'chado_linker__dbxref_widget',
+    'widget_settings' => array('display_label' => 1),
+    'description' => '',
+    'label' => 'Cross References',
+    'is_required' => 0,
+    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+    'storage' => 'field_chado_storage',
+    'field_settings' => array(
+      'chado_table' => $dbxref_table,
+      'chado_column' => $pkey,
+      'base_table' => $table_name,
+      'semantic_web' => array(
+        'type' => '',
+        'ns' => '',
+        'nsurl' => '',
+      ),
+    ),
+  );
+
+  // If the base table has a 'dbxref_id' then change the label to
+  // indicate these are secondary cross references.
+  $schema = chado_get_schema($table_name);
+  if (array_key_exists('dbxref_id', $schema['fields'])) {
+    $field_info['label'] = 'Secondary Cross References';
+  }
+
+  return $field_info;
+}
+/**
  * Implements hook_widget_info.
  *
  * This is a hook provided by the tripal_chado module for offloading
