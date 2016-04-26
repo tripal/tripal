@@ -20,6 +20,7 @@ require_once "includes/TripalEntityViewsController.inc";
 require_once "includes/TripalBundle.inc";
 require_once "includes/TripalBundleController.inc";
 require_once "includes/TripalBundleUIController.inc";
+require_once "includes/TripalField.inc";
 
 
 /**
