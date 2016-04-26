@@ -23,11 +23,17 @@ function tripal_chado_field_info() {
 
   // Iterate through the fields, include the file and run the info function.
   foreach ($field_files as $file) {
-    $field_name = $file->name;
-    module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_name);
-    $function = $field_name . '_info';
+    $field_type = $file->name;
+    module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+
+    if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
+      $field_obj = new $field_type();
+      $info[$field_type] = $field_obj->field_info();
+    }
+
+    $function = $field_type . '_info';
     if (function_exists($function)) {
-      $info[$field_name] = $function();
+      $info[$field_type] = $function();
     }
   }
   return $info;
@@ -49,6 +55,12 @@ function tripal_chado_field_widget_info() {
     $field_type = $field['type'];
     if ($field['storage']['type'] == 'field_chado_storage') {
       module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+
+      if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
+        $field_obj = new $field_type();
+        $widgets[$field_type . '_widget'] = $field_obj->widget_info();
+      }
+
       $function = $field_type . '_widget_info';
       if (function_exists($function)) {
         $widgets[$field_type . '_widget'] = $function();
@@ -73,6 +85,12 @@ function tripal_chado_field_formatter_info() {
     $field_type = $field['type'];
     if ($field['storage']['type'] == 'field_chado_storage') {
       module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+
+      if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
+        $field_obj = new $field_type();
+        $formatters[$field_type . '_formatter'] = $field_obj->formatter_info();
+      }
+
       $function = $field_type . '_formatter_info';
       if (function_exists($function)) {
         $formatters[$field_type . '_formatter'] = $function();
@@ -89,6 +107,12 @@ function tripal_chado_field_formatter_settings_summary($field, $instance, $view_
   $summary = '';
   $field_type = $field['type'];
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+
+  if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
+    $field = new $field_type();
+    $summary = $field->formatter_settings_summary($field, $instance, $view_mode);
+  }
+
   $function = $field_type . '_formatter_settings_summary';
   if (function_exists($function)) {
     $summary = $function($field, $instance, $view_mode);
@@ -100,12 +124,19 @@ function tripal_chado_field_formatter_settings_summary($field, $instance, $view_
 /**
  * Implements hook_field_formatter_settings_form().
  */
-function tripal_chado_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+function tripal_chado_field_formatter_settings_form($field, $instance,
+    $view_mode, $form, &$form_state) {
   $element = array();
 
   $field_type = $field['type'];
   form_load_include($form_state, 'inc', 'tripal_chado', 'includes/fields/' . $field_type);
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+
+  if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
+    $field_obj = new $field_type();
+     $element = $field_obj->formatter_settings_form($field, $instance, $view_mode, $form, $form_state);
+  }
+
   $function = $field_type . '_formatter_settings_form';
   if (function_exists($function)) {
     $element = $function($field, $instance, $view_mode, $form, $form_state);
@@ -125,6 +156,12 @@ function tripal_chado_field_formatter_view($entity_type, $entity, $field,
   $element = array();
   $field_type = $field['type'];
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+
+  if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
+    $field_obj = new $field_type();
+    $field_obj->formatter_view($element, $entity_type, $entity, $field, $instance, $langcode, $items, $display);
+  }
+
   $function = $display['type'];
   if (function_exists($function)) {
     $function($element, $entity_type, $entity, $field, $instance, $langcode, $items, $display);
@@ -145,6 +182,12 @@ function tripal_chado_field_widget_form(&$form, &$form_state, $field,
   $field_type = $field['type'];
   form_load_include($form_state, 'inc', 'tripal_chado', 'includes/fields/' . $field_type);
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_name);
+
+  if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
+    $field_obj = new $field_type();
+    $field_obj->widget_form($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
+  }
+
   $function = $field_type . '_widget';
   if (function_exists($function)) {
     $function($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
@@ -500,6 +543,12 @@ function tripal_chado_field_ws_formatter($entity_type, $entity, $field_info,
   // See if the field file defines a formatter.
   $function = $field_type . '_ws_formatter';
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+
+  if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
+    $field_obj = new $field_type();
+    $value = $field_obj->ws_formatter($entity_type, $entity, $field_info, $field, $items);
+  }
+
   $value = '';
   if (function_exists($function)) {
     $value = $function($entity_type, $entity, $field_info, $field, $items);
@@ -703,20 +752,6 @@ function tripal_chado_add_bundle_fields_base__fields($entity_type_name, $bundle_
     // Add the field to the bundle.
     tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
   }
-}
-
-/**
- * Implements hook_field_validate().
- *
- * This function is used to validate any field. Fields with custom
- * widgets will most likely have their own validate function but for all
- * others we need a way to validate them.
- *
- */
-function tripal_chado_field_validate($entity_type, $entity, $field, $instance,
-    $langcode, $items, &$errors) {
-
-
 }
 
 
