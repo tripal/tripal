@@ -123,75 +123,12 @@ function tripal_chado_tripal_cv_defaults_schema() {
  *
  */
 function tripal_chado_enable() {
-  // If Tripal v2 is already installed, the installation of this module
-  // will try and recreate some of the tables created with tripal_core and the
-  // installation will fail.  Therefore, in the install we renamed it. Now
-  // we want to move it back.
-  if (db_table_exists('tripal_mviews2')) {
-    // tripal_mviews
-    $sql = "DROP TABLE tripal_mviews";
-    db_query($sql);
-    $sql = "ALTER TABLE tripal_mviews2 RENAME to tripal_mviews";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_mviews_mv_name_key2 RENAME TO tripal_mviews_mv_name_key";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_mviews_mv_table_key2 RENAME TO tripal_mviews_mv_table_key";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_mviews_mview_id_idx2 RENAME TO tripal_mviews_mview_id_idx";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_mviews_pkey2 RENAME TO tripal_mviews_pkey";
-    db_query($sql);
-  }
-
-    // tripal_custom_tables
-  if (db_table_exists('tripal_custom_tables2')) {
-    $sql = "DROP TABLE tripal_custom_tables";
-    db_query($sql);
-    $sql = "ALTER TABLE tripal_custom_tables2 RENAME to tripal_custom_tables";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_custom_tables_pkey2 RENAME TO tripal_custom_tables_pkey";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_custom_tables_table_id_idx2 RENAME TO tripal_custom_tables_table_id_idx";
-    db_query($sql);
-  }
-
-    // tripal_cv_obo
-  if (db_table_exists('tripal_cv_obo2')) {
-    $sql = "DROP TABLE tripal_cv_obo";
-    db_query($sql);
-    $sql = "ALTER TABLE tripal_cv_obo2 RENAME to tripal_cv_obo";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_cv_obo_obo_id_idx2 RENAME TO tripal_cv_obo_obo_id_idx";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_cv_obo_pkey2 RENAME TO tripal_cv_obo_pkey";
-    db_query($sql);
-  }
-
-    // tripal_cv_defaults
-  if (db_table_exists('tripal_cv_defaults2')) {
-    $sql = "DROP TABLE tripal_cv_defaults";
-    db_query($sql);
-    $sql = "ALTER TABLE tripal_cv_defaults2 RENAME to tripal_cv_defaults";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_cv_defaults_pkey2 RENAME TO tripal_cv_defaults_pkey";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_idx1_idx2 RENAME TO tripal_cv_defaults_tripal_cv_defaults_idx1_idx";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_unq1_key2 RENAME TO tripal_cv_defaults_tripal_cv_defaults_unq1_key";
-    db_query($sql);
-  }
-
-    // tripal_pub_import
-  if (db_table_exists('tripal_pub_import2')) {
-    $sql = "DROP TABLE tripal_pub_import";
-    db_query($sql);
-    $sql = "ALTER TABLE tripal_pub_import2 RENAME to tripal_pub_import";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_pub_import_name_idx2 RENAME TO tripal_pub_import_name_idx";
-    db_query($sql);
-    $sql = "ALTER INDEX tripal_pub_import_pkey2 RENAME TO tripal_pub_import_pkey";
-    db_query($sql);
-  }
+  // If Tripal v2 is already installed, then when the module is first enabled
+  // after an upgade, the installation of this module will try and recreate
+  // some of the tables created with tripal_core and the installation will fail.
+  // Therefore, the tables were temporarily moved out of the way to preserve
+  // the data. Now we'll move them back.
+  tripal_chado_upgrade_v2_v3_enable();
 }
 
 /**
@@ -199,135 +136,22 @@ function tripal_chado_enable() {
  */
 function tripal_chado_schema() {
 
-  // If Tripal v2 is already installed, the installation of this module
-  // will try and recreate some of the tables created with tripal_core and the
-  // installation will fail.  Therefore, we need to temporarily move those
-  // tables out of the way, let the module install and then move them back.
-  $migrated = variable_get ('tripal_v2_upgrade_v3_check_chado', FALSE);
+  // If Tripal v2 is already installed, then when the module is first enabled
+  // after an upgade, the installation of this module will try and recreate
+  // some of the tables created with tripal_core and the installation will fail.
+  // Therefore, we need to temporarily move those tables out of the way, let
+  // the module install and then move them back.
+  $migrated = variable_get('tripal_v2_upgrade_v3_check_chado', FALSE);
   if (!$migrated) {
-    if (db_table_exists('tripal_mviews')) {
-      // Move the tripal_mviews table out of the way.
-      $sql = "ALTER TABLE tripal_mviews RENAME TO tripal_mviews2";
-      db_query($sql);
-      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_mviews_mv_name_key'")->fetchField()) {
-        $sql = "ALTER INDEX tripal_mviews_mv_name_key RENAME TO tripal_mviews_mv_name_key2";
-      }
-      else {
-        $sql = "CREATE UNIQUE INDEX tripal_mviews_mv_name_key2 ON tripal_mviews2 USING btree (name)";
-      }
-      db_query($sql);
-      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_mviews_mv_table_key'")->fetchField()) {
-        $sql = "ALTER INDEX tripal_mviews_mv_table_key RENAME TO tripal_mviews_mv_table_key2";
-      }
-      else {
-        $sql = "CREATE UNIQUE INDEX tripal_mviews_mv_table_key2 ON tripal_mviews2 USING btree (mv_table)";
-      }
-      db_query($sql);
-      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_mviews_mview_id_idx'")->fetchField()) {
-        $sql = "ALTER INDEX tripal_mviews_mview_id_idx RENAME TO tripal_mviews_mview_id_idx2";
-      }
-      else {
-        $sql = "CREATE INDEX tripal_mviews_mview_id_idx2 ON tripal_mviews2 USING btree (mview_id)";
-      }
-      db_query($sql);
-      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_mviews_pkey'")->fetchField()) {
-        $sql = "ALTER INDEX tripal_mviews_pkey RENAME TO tripal_mviews_pkey2";
-      }
-      else {
-        $sql = "CREATE UNIQUE INDEX tripal_mviews_pkey2 ON tripal_mviews2 USING btree (mview_id)";
-      }
-      db_query($sql);
+    try {
+      tripal_chado_upgrade_v2_v3_pre_enable();
+      variable_set('tripal_v2_upgrade_v3_check_chado', TRUE);
     }
-
-    if (db_table_exists('tripal_custom_tables')) {
-      // Move the tripal_custom_tables table out of the way.
-      $sql = "ALTER TABLE tripal_custom_tables RENAME TO tripal_custom_tables2";
-      db_query($sql);
-      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_custom_tables_pkey'")->fetchField()) {
-        $sql = "ALTER INDEX tripal_custom_tables_pkey RENAME TO tripal_custom_tables_pkey2";
-      }
-      else {
-        $sql = "CREATE UNIQUE INDEX tripal_custom_tables_pkey2 ON tripal_custom_tables2 USING btree (table_id)";
-      }
-      db_query($sql);
-      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_custom_tables_table_id_idx'")->fetchField()) {
-        $sql = "ALTER INDEX tripal_custom_tables_table_id_idx RENAME TO tripal_custom_tables_table_id_idx2";
-      }
-      else {
-        $sql = "CREATE INDEX tripal_custom_tables_table_id_idx2 ON tripal_custom_tables2 USING btree (table_id)";
-      }
-      db_query($sql);
+    catch(Exception $e) {
+      watchdog_exception('tripal_chado', $e);
     }
-
-    if (db_table_exists('tripal_cv_obo')) {
-      // Move the tripal_cv_obo table out of the way.
-      $sql = "ALTER TABLE tripal_cv_obo RENAME TO tripal_cv_obo2";
-      db_query($sql);
-      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_obo_id_idx'")->fetchField()) {
-        $sql = "ALTER INDEX tripal_cv_obo_obo_id_idx RENAME TO tripal_cv_obo_obo_id_idx2";
-      }
-      else {
-        $sql = "CREATE INDEX tripal_cv_obo_obo_id_idx2 ON tripal_cv_obo2 USING btree (obo_id)";
-      }
-      db_query($sql);
-      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_pkey'")->fetchField()) {
-        $sql = "ALTER INDEX tripal_cv_obo_pkey RENAME TO tripal_cv_obo_pkey2";
-      }
-      else {
-        $sql = "CREATE UNIQUE INDEX tripal_cv_obo_pkey2 ON tripal_cv_obo2 USING btree (obo_id)";
-      }
-      db_query($sql);
-    }
-
-    if (db_table_exists('tripal_cv_defaults')) {
-      // Move the tripal_cv_defaults table out of the way.
-      $sql = "ALTER TABLE tripal_cv_defaults RENAME TO tripal_cv_defaults2";
-      db_query($sql);
-      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_defaults_pkey'")->fetchField()) {
-        $sql = "ALTER INDEX tripal_cv_defaults_pkey RENAME TO tripal_cv_defaults_pkey2";
-      }
-      else {
-        $sql = "CREATE UNIQUE INDEX tripal_cv_defaults_pkey2 ON tripal_cv_defaults2 USING btree (cv_default_id)";
-      }
-      db_query($sql);
-      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_defaults_tripal_cv_defaults_idx1_idx'")->fetchField()) {
-        $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_idx1_idx RENAME TO tripal_cv_defaults_tripal_cv_defaults_idx1_idx2";
-      }
-      else {
-        $sql = "CREATE INDEX tripal_cv_defaults_tripal_cv_defaults_idx1_idx2 ON tripal_cv_defaults2 USING btree (table_name, field_name)";
-      }
-      db_query($sql);
-      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_defaults_tripal_cv_defaults_unq1_key'")->fetchField()) {
-        $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_unq1_key RENAME TO tripal_cv_defaults_tripal_cv_defaults_unq1_key2";
-      }
-      else {
-        $sql = "CREATE UNIQUE INDEX tripal_cv_defaults_tripal_cv_defaults_unq1_key2 ON tripal_cv_defaults2 USING btree (table_name, field_name, cv_id)";
-      }
-      db_query($sql);
-    }
-
-    if (db_table_exists('tripal_pub_import')) {
-      // Move the tripal_pub_import table out of the way.
-      $sql = "ALTER TABLE tripal_pub_import RENAME TO tripal_pub_import2";
-      db_query($sql);
-      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_pub_import_name_idx'")->fetchField()) {
-        $sql = "ALTER INDEX tripal_pub_import_name_idx RENAME TO tripal_pub_import_name_idx2";
-      }
-      else {
-        $sql = "CREATE INDEX tripal_pub_import_name_idx2 ON tripal_pub_import2 USING btree (name)";
-      }
-      db_query($sql);
-      if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_pub_import_pkey'")->fetchField()) {
-        $sql = "ALTER INDEX tripal_pub_import_pkey RENAME TO tripal_pub_import_pkey2";
-      }
-      else {
-        $sql = "CREATE UNIQUE INDEX tripal_pub_import_pkey2 ON tripal_pub_import2 USING btree (pub_import_id)";
-      }
-      db_query($sql);
-    }
-
-    variable_set ('tripal_v2_upgrade_v3_check_chado', TRUE);
   }
+
   // Links TripalEntity entities to the chado record.
   $schema['chado_entity'] = tripal_chado_chado_entity_schema();
   $schema['tripal_mviews'] = tripal_chado_tripal_mviews_schema();
@@ -354,6 +178,212 @@ function tripal_chado_schema() {
   return $schema;
 }
 
+
+/**
+ * This function should be executed only one time during upgrade of v2 to v3.
+ */
+function tripal_chado_upgrade_v2_v3_pre_enable() {
+  // If Tripal v2 is already installed, then when the module is first enabled
+  // after an upgade, the installation of this module will try and recreate
+  // some of the tables created with tripal_core and the installation will fail.
+  // Therefore, we need to temporarily move those tables out of the way, let
+  // the module install and then move them back.
+
+  if (db_table_exists('tripal_mviews')) {
+    // Move the tripal_mviews table out of the way.
+    $sql = "ALTER TABLE tripal_mviews RENAME TO tripal_mviews2";
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_mviews_mv_name_key'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_mviews_mv_name_key RENAME TO tripal_mviews_mv_name_key2";
+    }
+    else {
+      $sql = "CREATE UNIQUE INDEX tripal_mviews_mv_name_key2 ON tripal_mviews2 USING btree (name)";
+    }
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_mviews_mv_table_key'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_mviews_mv_table_key RENAME TO tripal_mviews_mv_table_key2";
+    }
+    else {
+      $sql = "CREATE UNIQUE INDEX tripal_mviews_mv_table_key2 ON tripal_mviews2 USING btree (mv_table)";
+    }
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_mviews_mview_id_idx'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_mviews_mview_id_idx RENAME TO tripal_mviews_mview_id_idx2";
+    }
+    else {
+      $sql = "CREATE INDEX tripal_mviews_mview_id_idx2 ON tripal_mviews2 USING btree (mview_id)";
+    }
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_mviews_pkey'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_mviews_pkey RENAME TO tripal_mviews_pkey2";
+    }
+    else {
+      $sql = "CREATE UNIQUE INDEX tripal_mviews_pkey2 ON tripal_mviews2 USING btree (mview_id)";
+    }
+    db_query($sql);
+  }
+
+  if (db_table_exists('tripal_custom_tables')) {
+    // Move the tripal_custom_tables table out of the way.
+    $sql = "ALTER TABLE tripal_custom_tables RENAME TO tripal_custom_tables2";
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_custom_tables_pkey'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_custom_tables_pkey RENAME TO tripal_custom_tables_pkey2";
+    }
+    else {
+      $sql = "CREATE UNIQUE INDEX tripal_custom_tables_pkey2 ON tripal_custom_tables2 USING btree (table_id)";
+    }
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_custom_tables_table_id_idx'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_custom_tables_table_id_idx RENAME TO tripal_custom_tables_table_id_idx2";
+    }
+    else {
+      $sql = "CREATE INDEX tripal_custom_tables_table_id_idx2 ON tripal_custom_tables2 USING btree (table_id)";
+    }
+    db_query($sql);
+  }
+
+  if (db_table_exists('tripal_cv_obo')) {
+    // Move the tripal_cv_obo table out of the way.
+    $sql = "ALTER TABLE tripal_cv_obo RENAME TO tripal_cv_obo2";
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_obo_id_idx'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_cv_obo_obo_id_idx RENAME TO tripal_cv_obo_obo_id_idx2";
+    }
+    else {
+      $sql = "CREATE INDEX tripal_cv_obo_obo_id_idx2 ON tripal_cv_obo2 USING btree (obo_id)";
+    }
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_obo_pkey'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_cv_obo_pkey RENAME TO tripal_cv_obo_pkey2";
+    }
+    else {
+      $sql = "CREATE UNIQUE INDEX tripal_cv_obo_pkey2 ON tripal_cv_obo2 USING btree (obo_id)";
+    }
+    db_query($sql);
+  }
+
+  if (db_table_exists('tripal_cv_defaults')) {
+    // Move the tripal_cv_defaults table out of the way.
+    $sql = "ALTER TABLE tripal_cv_defaults RENAME TO tripal_cv_defaults2";
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_defaults_pkey'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_cv_defaults_pkey RENAME TO tripal_cv_defaults_pkey2";
+    }
+    else {
+      $sql = "CREATE UNIQUE INDEX tripal_cv_defaults_pkey2 ON tripal_cv_defaults2 USING btree (cv_default_id)";
+    }
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_defaults_tripal_cv_defaults_idx1_idx'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_idx1_idx RENAME TO tripal_cv_defaults_tripal_cv_defaults_idx1_idx2";
+    }
+    else {
+      $sql = "CREATE INDEX tripal_cv_defaults_tripal_cv_defaults_idx1_idx2 ON tripal_cv_defaults2 USING btree (table_name, field_name)";
+    }
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_cv_defaults_tripal_cv_defaults_unq1_key'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_unq1_key RENAME TO tripal_cv_defaults_tripal_cv_defaults_unq1_key2";
+    }
+    else {
+      $sql = "CREATE UNIQUE INDEX tripal_cv_defaults_tripal_cv_defaults_unq1_key2 ON tripal_cv_defaults2 USING btree (table_name, field_name, cv_id)";
+    }
+    db_query($sql);
+  }
+
+  if (db_table_exists('tripal_pub_import')) {
+    // Move the tripal_pub_import table out of the way.
+    $sql = "ALTER TABLE tripal_pub_import RENAME TO tripal_pub_import2";
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_pub_import_name_idx'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_pub_import_name_idx RENAME TO tripal_pub_import_name_idx2";
+    }
+    else {
+      $sql = "CREATE INDEX tripal_pub_import_name_idx2 ON tripal_pub_import2 USING btree (name)";
+    }
+    db_query($sql);
+    if (db_query("SELECT 1 FROM pg_indexes WHERE indexname = 'tripal_pub_import_pkey'")->fetchField()) {
+      $sql = "ALTER INDEX tripal_pub_import_pkey RENAME TO tripal_pub_import_pkey2";
+    }
+    else {
+      $sql = "CREATE UNIQUE INDEX tripal_pub_import_pkey2 ON tripal_pub_import2 USING btree (pub_import_id)";
+    }
+    db_query($sql);
+  }
+}
+/**
+ * This function should be executed only one time during upgrade of v2 to v3.
+ */
+function tripal_chado_upgrade_v2_v3_enable() {
+  // If Tripal v2 is already installed, the installation of this module
+  // will try and recreate some of the tables created with tripal_core and the
+  // installation will fail.  Therefore, in the install we renamed it. Now
+  // we want to move it back.
+  if (db_table_exists('tripal_mviews2')) {
+    // tripal_mviews
+    $sql = "DROP TABLE tripal_mviews";
+    db_query($sql);
+    $sql = "ALTER TABLE tripal_mviews2 RENAME to tripal_mviews";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_mviews_mv_name_key2 RENAME TO tripal_mviews_mv_name_key";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_mviews_mv_table_key2 RENAME TO tripal_mviews_mv_table_key";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_mviews_mview_id_idx2 RENAME TO tripal_mviews_mview_id_idx";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_mviews_pkey2 RENAME TO tripal_mviews_pkey";
+    db_query($sql);
+  }
+
+  // tripal_custom_tables
+  if (db_table_exists('tripal_custom_tables2')) {
+    $sql = "DROP TABLE tripal_custom_tables";
+    db_query($sql);
+    $sql = "ALTER TABLE tripal_custom_tables2 RENAME to tripal_custom_tables";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_custom_tables_pkey2 RENAME TO tripal_custom_tables_pkey";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_custom_tables_table_id_idx2 RENAME TO tripal_custom_tables_table_id_idx";
+    db_query($sql);
+  }
+
+  // tripal_cv_obo
+  if (db_table_exists('tripal_cv_obo2')) {
+    $sql = "DROP TABLE tripal_cv_obo";
+    db_query($sql);
+    $sql = "ALTER TABLE tripal_cv_obo2 RENAME to tripal_cv_obo";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_cv_obo_obo_id_idx2 RENAME TO tripal_cv_obo_obo_id_idx";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_cv_obo_pkey2 RENAME TO tripal_cv_obo_pkey";
+    db_query($sql);
+  }
+
+  // tripal_cv_defaults
+  if (db_table_exists('tripal_cv_defaults2')) {
+    $sql = "DROP TABLE tripal_cv_defaults";
+    db_query($sql);
+    $sql = "ALTER TABLE tripal_cv_defaults2 RENAME to tripal_cv_defaults";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_cv_defaults_pkey2 RENAME TO tripal_cv_defaults_pkey";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_idx1_idx2 RENAME TO tripal_cv_defaults_tripal_cv_defaults_idx1_idx";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_cv_defaults_tripal_cv_defaults_unq1_key2 RENAME TO tripal_cv_defaults_tripal_cv_defaults_unq1_key";
+    db_query($sql);
+  }
+
+  // tripal_pub_import
+  if (db_table_exists('tripal_pub_import2')) {
+    $sql = "DROP TABLE tripal_pub_import";
+    db_query($sql);
+    $sql = "ALTER TABLE tripal_pub_import2 RENAME to tripal_pub_import";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_pub_import_name_idx2 RENAME TO tripal_pub_import_name_idx";
+    db_query($sql);
+    $sql = "ALTER INDEX tripal_pub_import_pkey2 RENAME TO tripal_pub_import_pkey";
+    db_query($sql);
+  }
+}
 /**
  * @section
  * Schema Definitions.
