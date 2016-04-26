@@ -62,8 +62,8 @@ function tripal_load_vocab_entity($values) {
   if ($namespace) {
     $query->condition('tv.namespace', $namespace);
   }
-  if ($namespace) {
-    $query->condition('tv.vocab_id', $vocab_id);
+  if ($vocab_id) {
+    $query->condition('tv.id', $vocab_id);
   }
   $vocab = $query->execute()->fetchObject();
 
