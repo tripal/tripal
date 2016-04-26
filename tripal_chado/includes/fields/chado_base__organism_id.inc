@@ -249,8 +249,7 @@ class chado_base__organism_id extends TripalField {
   /**
    * @see TripalField::ws_formatter()
    */
-  public function ws_formatter(&$element, $entity_type, $entity,
-      $field, $instance, $items) {
+  public function ws_formatter($entity_type, $entity, $field, $instance, $items) {
 
     $organism = (array) $entity->chado_record->organism_id;
     unset($organism->tablename);

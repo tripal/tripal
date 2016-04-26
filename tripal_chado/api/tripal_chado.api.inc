@@ -219,13 +219,6 @@ function tripal_replace_chado_tokens($string, $record) {
             if (property_exists($var, $index)) {
               $value = $var->$index;
             }
-            else {
-              tripal_report_error('tripal_chado', TRIPAL_WARNING,
-                'Tokens: Unable to determine the value of %token. Things went awry when trying ' .
-                'to access \'%index\' for the following: \'%var\'.',
-                array('%token' => $token, '%index' => $index, '%var' => print_r($var,TRUE))
-              );
-            }
           }
           // if the $var is an array then there are multiple instances of the same
           // table in a FK relationship (e.g. relationship tables)

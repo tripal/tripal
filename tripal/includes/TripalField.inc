@@ -4,6 +4,20 @@
 /**
  * A base class for all Fields supported by the Tripal Chado module.
  *
+ * This class provides all of the necessary functions for a TripalField field.
+ * It helps simplify and unify the process of creating fields for Tripal.  This
+ * class simply defines the function prototypes. It is up to the class that
+ * extends this class to implement the functions.
+ *
+ * Each module that creates new fields should use the normal Field API hooks
+ * (e.g. hook_field_info(), hook_field_widget_form(), etc.) to instantiate the
+ * appropriate TripalField class.
+ *
+ * Because of the way Drupal handles callbacks, form validate functions,
+ * AJAX callbacks and theme functions cannot be part of the implementation of
+ * this class.  Those functions should be added to the bottom of the file
+ * where the child class is housed..
+ *
  */
 class TripalField {
   /**
@@ -180,7 +194,7 @@ class TripalField {
    * @param $record
    *
    */
-  public function load($field, &$entity) {
+  public function load($field, $entity, $details) {
 
   }
 
@@ -194,8 +208,7 @@ class TripalField {
    * @return
    *   A single value or an array of values that should be used for this field.
    */
-  public function ws_formatter(&$element, $entity_type, $entity,
-      $field, $instance, $items) {
+  public function ws_formatter($entity_type, $entity, $field, $instance, $items) {
 
   }
 
