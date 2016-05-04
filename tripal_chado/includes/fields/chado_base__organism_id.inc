@@ -83,7 +83,7 @@ class chado_base__organism_id extends TripalField {
       'field types' => array('chado_base__organism_id'),
       'settings' => array(
         'field_display_teaser' => 0,
-        'field_display_string' => '<i>[organism__genus] [organism__species]</i>',
+        'field_display_string' => '<i>[organism.genus] [organism.species]</i>',
       ),
     );
   }
@@ -95,17 +95,17 @@ class chado_base__organism_id extends TripalField {
     $settings = $display['settings'];
     $summary = 'Settings summary: ';
     if (array_key_exists('field_display_teaser', $settings) and
-        $settings['field_display_teaser'] == 1) {
-          $summary .= 'displays the organism teaser if published.';
-        }
-        else if (array_key_exists('field_display_string', $settings)) {
-          $summary .= 'uses the token string "' . $settings['field_display_string'] . '"';
-        }
-        else {
-          $summary .= "uses display defaults.";
-        }
+      $settings['field_display_teaser'] == 1) {
+      $summary .= 'displays the organism teaser if published.';
+    }
+    else if (array_key_exists('field_display_string', $settings)) {
+      $summary .= 'uses the token string "' . $settings['field_display_string'] . '"';
+    }
+    else {
+      $summary .= "uses display defaults.";
+    }
 
-        return $summary;
+    return $summary;
   }
 
   /**
@@ -228,6 +228,7 @@ class chado_base__organism_id extends TripalField {
    */
   public function widget_form(&$widget, $form, $form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
+
     $options = tripal_get_organism_select_options(FALSE);
     $widget['value'] = array(
       '#type' => 'select',

@@ -23,15 +23,15 @@ class chado_base__dbxref_id extends TripalField {
   /**
    * @see TripalField::attach_info()
    */
-  function attach_info($entity_type, $bundle, $target) {
+  function attach_info($entity_type, $bundle, $settings) {
 
     $field_info = array();
 
-    $table_name = $target['data_table'];
-    $type_table = $target['type_table'];
-    $type_field = $target['field'];
-    $cv_id      = $target['cv_id'];
-    $cvterm_id  = $target['cvterm_id'];
+    $table_name = $settings['data_table'];
+    $type_table = $settings['type_table'];
+    $type_field = $settings['field'];
+    $cv_id      = $settings['cv_id'];
+    $cvterm_id  = $settings['cvterm_id'];
 
     // Check the schema for the data table if it does not have
     // a 'dbxref_id' column then we don't want to attach this field.
