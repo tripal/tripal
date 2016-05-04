@@ -324,7 +324,7 @@ function tripal_core_reset_chado_schema() {
 
   // determine the schema name.
   $chado_schema = tripal_get_schema_name('chado');
-  $chado_dot = $schado_schema . '.';
+  $chado_dot = $chado_schema . '.';
 
   // drop current chado and chado-related schema
   if (chado_dbschema_exists('genetic_code')) {
@@ -484,25 +484,25 @@ function tripal_core_install_sql($sql_file) {
     if (strcmp($stack[sizeof($stack)-1], 'table') == 0 and preg_match('/\);\s*$/', $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'alter_table') == 0 and preg_match('/;\s*$/', $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'alter_table') == 0 and preg_match('/;\s*$/', $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'set') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'set') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'schema') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'schema') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'sequence') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'sequence') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'view') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'view') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'comment') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'comment') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'function') == 0) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'function') == 0) {
 
       if(preg_match('/LANGUAGE.*?;\s*$/i', $line)) {
         $type = array_pop($stack);
@@ -523,37 +523,37 @@ function tripal_core_install_sql($sql_file) {
        // print "FUNCTION ($i): $line";
       }
     }
-    if (strcmp($stack[sizeof($stack)-1], 'index') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'index') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'insert') == 0 and preg_match('/\);\s*$/', $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'insert') == 0 and preg_match('/\);\s*$/', $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'type') == 0 and preg_match('/\);\s*$/', $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'type') == 0 and preg_match('/\);\s*$/', $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'grant') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'grant') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'aggregate') == 0 and preg_match('/\);\s*$/', $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'aggregate') == 0 and preg_match('/\);\s*$/', $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'drop_function') == 0 and preg_match('/;\s*$/i', $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'drop_function') == 0 and preg_match('/;\s*$/i', $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'drop_view') == 0 and preg_match('/;\s*$/i', $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'drop_view') == 0 and preg_match('/;\s*$/i', $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'drop_index') == 0 and preg_match("/;\s*$/i", $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'drop_index') == 0 and preg_match("/;\s*$/i", $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'drop_seq') == 0 and preg_match("/;\s*$/i", $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'drop_seq') == 0 and preg_match("/;\s*$/i", $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'alter_type') == 0 and preg_match('/;\s*$/i', $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'alter_type') == 0 and preg_match('/;\s*$/i', $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'alter_seq') == 0 and preg_match('/;\s*$/i', $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'alter_seq') == 0 and preg_match('/;\s*$/i', $line)) {
       $type = array_pop($stack);
     }
     // if we're in a recognized SQL statement then let's keep track of lines
