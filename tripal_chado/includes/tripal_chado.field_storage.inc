@@ -329,6 +329,12 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
         // that need populationg besides the value which was set above.
         $load_function = $field_type . '_load';
         module_load_include('inc', $field_module, 'includes/fields/' . $field_type);
+
+        if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
+          $field_obj = new $field_type();
+          $field_obj->load($field, $entity, array('record' => $record));
+        }
+
         if (function_exists($load_function)) {
           $load_function($field, $entity, $base_table, $record);
         }
@@ -343,6 +349,12 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
         $entity->{$field_name}['und'][0]['value'] = '';
         $load_function = $field_type . '_load';
         module_load_include('inc', $field_module, 'includes/fields/' . $field_type);
+
+        if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
+          $field_obj = new $field_type();
+          $field_obj->load($field, $entity, array('record' => $record));
+        }
+
         if (function_exists($load_function)) {
           $load_function($field, $entity, $base_table, $record);
         }
