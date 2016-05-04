@@ -387,7 +387,9 @@ function hook_add_bundle_fields($entity_type, $bundle, $term) {
   // recommended to support mashups of data via web services.
   $semantic_web = array(
     // The type is the term from a vocabulary that desribes this field..
-    'type' => '',
+    'name' => '',
+    // The accession in the namespace for this term.
+    'accession' => '',
     // The namepsace for the vocabulary (e.g. 'foaf').
     'ns' => '',
     // The URL for the namespace.  It must be that the type can be
@@ -946,7 +948,7 @@ function tripal_get_term_details($namespace, $accession) {
     $module = $stores[$keys[0]]['module'];
     $function = $module . '_vocab_get_term';
     if (function_exists($function)) {
-      return $function($vocab->namespace, $this->accession);
+      return $function($namespace, $accession);
     }
   }
 }

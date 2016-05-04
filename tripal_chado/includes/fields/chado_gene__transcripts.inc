@@ -57,9 +57,10 @@ class chado_gene__transcripts extends TripalField {
         'chado_column' => $pkey,
         'base_table' => $table_name,
         'semantic_web' => array(
-          'type' => '',
-          'ns' => '',
-          'nsurl' => '',
+          'name' => 'transcript',
+          'accession' => '0000673',
+          'ns' => 'SO',
+          'nsurl' => 'http://www.sequenceontology.org',
         ),
       ),
     );
@@ -118,15 +119,19 @@ class chado_gene__transcripts extends TripalField {
     $headers = array('Feature Name', 'Unique Name', 'Type', 'Location');
     $rows = array();
     foreach ($items as $delta => $item) {
+      $entity_id = $item['entity_id'];
       $transcript = $item['value'];
+
+      // Get the field values
       $feature_name = $transcript['name'];
       $feature_uname = $transcript['unique name'];
-      $entity_id = $transcript['entity_id'];
+      $loc = $transcript['location'];
+      $type = $transcript['type'];
+
+      // Add a link i there is an entity.
       if ($entity_id) {
         $feature_name = l($feature_name, "bio_data/" . $entity_id, array('attributes' => array('target' => "_blank")));
       }
-      $loc = $transcript['location'];
-      $type = $transcript['type'];
       $rows[] = array($feature_name, $feature_uname, $type, $loc);
     }
     $table = array(
@@ -163,6 +168,10 @@ class chado_gene__transcripts extends TripalField {
     // we may need to write a custom function to get the data.
     $rels = tripal_get_feature_relationships($record);
 
+    // TODO: what if other transcripts names from SO are used. In that
+    // case we should support those too (using cvtermpath table to find them).
+    // mRNA should not be hard-coded below.
+
     // Set the value to be a array of "table" rows.
     $transcripts = array();
     if (key_exists('part of', $rels['object']) &&
@@ -187,11 +196,17 @@ class chado_gene__transcripts extends TripalField {
         'type' => $transcript->record->subject_id->type_id->name,
         'unique name' => $transcript->record->subject_id->uniquename,
         'location' => $loc,
-        'entity_id' => $entity_id,
-        'entity_type' => 'TripalEntity',
+
       );
+      $entity->{$field_name}['und'][$i]['entity_id'] = $entity_id;
+      $entity->{$field_name}['und'][$i]['entity_type'] = 'TripalEntity';
       $i++;
     }
+  }
+  /**
+   * @see TripalField::settings_form()
+   */
+  public function settings_form($field, $instance, $view_mode) {
   }
   /**
    * @see TripalField::widget_form()

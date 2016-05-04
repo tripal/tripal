@@ -62,7 +62,8 @@ function chado_feature__seqlen_attach_info($entity_type, $bundle, $target) {
       'chado_table' => $table_name,
       'chado_column' => 'seqlen',
       'semantic_web' => array(
-        'type' => '',
+        'name' => '',
+        'accession' => '',
         'ns' => '',
         'nsurl' => '',
       ),

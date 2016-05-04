@@ -11,7 +11,9 @@ class chado_base__organism_id extends TripalField {
       'description' => t('A field for specifying an organism.'),
       'default_widget' => 'chado_base__organism_id_widget',
       'default_formatter' => 'chado_base__organism_id_formatter',
-      'settings' => array(),
+      'settings' => array(
+        'field_display_string' => '<i>[organism.genus] [organism.species]</i>',
+      ),
       'storage' => array(
         'type' => 'field_chado_storage',
         'module' => 'tripal_chado',
@@ -45,7 +47,7 @@ class chado_base__organism_id extends TripalField {
       'field_type' => 'chado_base__organism_id',
       'widget_type' => 'chado_base__organism_id_widget',
       'description' => 'Select an organism.',
-      'label' => 'Oraganism',
+      'label' => 'Organism',
       'is_required' => 0,
       'storage' => 'field_chado_storage',
       'widget_settings' => array(
@@ -55,7 +57,8 @@ class chado_base__organism_id extends TripalField {
         'chado_table' => $table_name,
         'chado_column' => 'organism_id',
         'semantic_web' => array(
-          'type' => 'organism',
+          'name' => 'organism',
+          'accession' => 'organism',
           'ns' => 'local',
           'nsurl' => '',
         ),
@@ -82,41 +85,93 @@ class chado_base__organism_id extends TripalField {
       'label' => t('Organism'),
       'field types' => array('chado_base__organism_id'),
       'settings' => array(
-        'field_display_teaser' => 0,
-        'field_display_string' => '<i>[organism.genus] [organism.species]</i>',
       ),
     );
   }
-  /**
-   * @see TripalField::formatter_settings_summary()
-   */
-  public function formatter_settings_summary($field, $instance, $view_mode) {
-    $display = $instance['display'][$view_mode];
-    $settings = $display['settings'];
-    $summary = 'Settings summary: ';
-    if (array_key_exists('field_display_teaser', $settings) and
-      $settings['field_display_teaser'] == 1) {
-      $summary .= 'displays the organism teaser if published.';
-    }
-    else if (array_key_exists('field_display_string', $settings)) {
-      $summary .= 'uses the token string "' . $settings['field_display_string'] . '"';
-    }
-    else {
-      $summary .= "uses display defaults.";
-    }
 
-    return $summary;
+  /**
+   * @see TripalField::formatter_view()
+   */
+  public function formatter_view(&$element, $entity_type, $entity,
+      $field, $instance, $langcode, $items, $display) {
+
+    // The cardinality of this field is 1 so we don't have to
+    // iterate through the items array, as there will never be more than 1.
+    $element[0] = array(
+      '#type' => 'markup',
+      '#markup' => $items[0]['value'],
+    );
   }
 
   /**
-   * @see TripalField::formatter_settings_form()
+   * @see TripalField::widget()
    */
-  public function formatter_settings_form($field, $instance,
-      $view_mode, $form, &$form_state) {
+  public function widget_form(&$widget, $form, $form_state, $field, $instance,
+      $langcode, $items, $delta, $element) {
 
-    $display = $instance['display'][$view_mode];
-    $settings = $display['settings'];
+    $options = tripal_get_organism_select_options(FALSE);
+    $widget['value'] = array(
+      '#type' => 'select',
+      '#title' => $element['#title'],
+      '#description' => $element['#description'],
+      '#options' => $options,
+      '#default_value' => count($items) > 0 ? $items[0]['organism_id'] : 0,
+      '#required' => $element['#required'],
+      '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
+      '#delta' => $delta,
+      '#element_validate' => array('chado_base__organism_id_widget_validate'),
+    );
+    $widget['add_organism'] = array(
+      '#type' => 'item',
+      '#markup' => l('Add a new species', 'admin/content/bio_data/add/species', array('attributes' => array('target' => '_blank'))),
+    );
+  }
 
+  /**
+   * @see TripalField::ws_formatter()
+   */
+  public function ws_formatter($entity_type, $entity, $field, $instance, $items) {
+
+    $organism = (array) $entity->chado_record->organism_id;
+    unset($organism->tablename);
+
+    return $organism;
+  }
+
+  /**
+   * @see TripalField::load()
+   */
+  public function load($field, $entity, $details) {
+
+    $record = $details['record'];
+    $settings = $field['settings'];
+
+    $field_name = $field['field_name'];
+    $field_type = $field['type'];
+    $field_table = $field['settings']['chado_table'];
+    $field_column = $field['settings']['chado_column'];
+
+    $organism = $record->organism_id;
+    $string = $settings['field_display_string'];
+    $value = tripal_replace_chado_tokens($string, $organism);
+
+    $entity->{$field_name}['und'][0]['value'] = $value;
+    $entity->{$field_name}['und'][0]['organism_id'] = $organism->organism_id;
+
+    // Is there a published entity for this organism?
+    if (property_exists($entity->chado_record->$field_column, 'entity_id')) {
+      $fk_entity_id = $entity->chado_record->$field_column->entity_id;
+      $entity->{$field_name}['und'][0]['entity_id'] = $fk_entity_id;
+      $entity->{$field_name}['und'][0]['entity_type'] = 'TripalEntity';
+    }
+  }
+
+  /**
+   * @see TripalField::settings_form()
+   */
+  public function settings_form($field, $instance, $view_mode) {
+
+    $settings = $field['settings'];
 
     $element = array();
     $term = NULL;
@@ -125,7 +180,7 @@ class chado_base__organism_id extends TripalField {
     // Check to see if the organism bundle exists
     $term = tripal_load_term_entity(array(
       'namespace' => $field['settings']['semantic_web']['ns'],
-      'accession' => $field['settings']['semantic_web']['type']
+      'accession' => $field['settings']['semantic_web']['accession']
     ));
     if ($term) {
       $entity = tripal_load_bundle_entity(array('term_id' => $term->id));
@@ -133,26 +188,20 @@ class chado_base__organism_id extends TripalField {
 
     $element['instructions'] = array(
       '#type' => 'item',
-      '#markup' => 'Please provide the format for viewing the organism. You
-        can specify the format using tokens that correspond to each field'
+      '#markup' => 'You may rewrite the way this field is presented to the end-user.
+        The Rewrite Value field allows you to use tokens to indicate how the
+        value should be displayed.  Tokens will be substituted with appriorate
+        data from the database.  See the Available tokens list for the
+        tokens you may use.'
     );
 
     $element['field_display_string'] = array(
       '#type' => 'textfield',
-      '#title' => 'Display Format',
+      '#title' => 'Rewrite Value',
       '#description' => t('Provide a mixture of text and/or tokens for the format.
           For example: [organism.genus] [organism.species].  When displayed,
           the tokens will be replaced with the actual value.'),
       '#default_value' => $settings['field_display_string'],
-    );
-
-    $element['field_display_teaser'] = array(
-      '#type' => 'checkbox',
-      '#title' => 'Display teaser if available',
-      '#description' => t('If the organism that this field is associated with is
-          a published page then display the teaser rather use the display
-          format above.'),
-      '#default_value' => $settings['field_display_teaser'],
     );
 
     $element['tokens'] = array(
@@ -192,72 +241,9 @@ class chado_base__organism_id extends TripalField {
     );
 
     return $element;
-
-  }
-
-  /**
-   * @see TripalField::formatter_view()
-   */
-  public function formatter_view(&$element, $entity_type, $entity,
-      $field, $instance, $langcode, $items, $display) {
-
-    // Get the settings
-    $settings = $display['settings'];
-    $record = $entity->chado_record;
-
-    foreach ($items as $delta => $item) {
-      $organism = $record->organism_id;
-
-      if ($settings['field_display_teaser']) {
-      }
-      else {
-        $field_name = $field['field_name'];
-        $string = $settings['field_display_string'];
-        $field_data = $entity->$field_name;
-        $content = tripal_replace_chado_tokens($string, $organism);
-        $element[$delta] = array(
-          '#type' => 'markup',
-          '#markup' => $content,
-        );
-      }
-    }
-  }
-
-  /**
-   * @see TripalField::widget()
-   */
-  public function widget_form(&$widget, $form, $form_state, $field, $instance,
-      $langcode, $items, $delta, $element) {
-
-    $options = tripal_get_organism_select_options(FALSE);
-    $widget['value'] = array(
-      '#type' => 'select',
-      '#title' => $element['#title'],
-      '#description' => $element['#description'],
-      '#options' => $options,
-      '#default_value' => count($items) > 0 ? $items[0]['value'] : 0,
-      '#required' => $element['#required'],
-      '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-      '#delta' => $delta,
-      '#element_validate' => array('chado_base__organism_id_widget_validate'),
-    );
-    $widget['add_organism'] = array(
-      '#type' => 'item',
-      '#markup' => l('Add a new species', 'admin/content/bio_data/add/species', array('attributes' => array('target' => '_blank'))),
-    );
-  }
-
-  /**
-   * @see TripalField::ws_formatter()
-   */
-  public function ws_formatter($entity_type, $entity, $field, $instance, $items) {
-
-    $organism = (array) $entity->chado_record->organism_id;
-    unset($organism->tablename);
-
-    return $organism;
   }
 }
+
 
 /**
  * Callback function for validating the chado_base__organism_id_widget.

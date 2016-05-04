@@ -60,7 +60,8 @@ class chado_base__dbxref_id extends TripalField {
         'chado_table' => $table_name,
         'chado_column' => 'dbxref_id',
         'semantic_web' => array(
-          'type' => '',
+          'name' => '',
+          'accession' => '',
           'ns' => '',
           'nsurl' => '',
         ),

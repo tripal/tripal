@@ -209,10 +209,15 @@ class TripalField {
    *       available.
    *     - 'value' is the key indicating the value of this field. It should
    *       always be set.  The value of the 'value' key will be the contents
-   *       used for web services and for downloadable content.
+   *       used for web services and for downloadable content.  The value
+   *       should be of the follow format types: 1) A single value (text,
+   *       numeric, etc.) 2) An array of key value pair. 3) If multiple entries
+   *       then cardinality should incremented and format types 1 and 2 should
+   *       be used for each item.
    *   The array may contain as many other keys at the same level as 'value'
    *   but those keys are for internal field use and are not considered the
    *   value of the field.
+   *
    *
    */
   public function load($field, $entity, $details) {
@@ -220,16 +225,19 @@ class TripalField {
   }
 
   /**
-   * Formats the field for dipslay via web services.
+   * Provides a form for the 'Field Settings' of the field management page.
    *
-   * The tripal_ws module will look for this funcion to give the field the
-   * opportunity fo customize the value or array that is present in the
-   * JSON output of web services.
+   * This is an optional hook function and is similar to the
+   * hook_field_settings_form function().
    *
-   * @return
-   *   A single value or an array of values that should be used for this field.
+   * @param $field
+   *   The field structure being configured.
+   * @param $instance
+   *   The instance structure being configured.
+   * @param $has_data
+   *   TRUE if the field already has data, FALSE if not.
    */
-  public function ws_formatter($entity_type, $entity, $field, $instance, $items) {
+  public function settings_form($field, $instance, $has_data) {
 
   }
 

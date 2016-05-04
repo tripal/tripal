@@ -66,7 +66,8 @@ function chado_linker__featureloc_attach_info($entity_type, $bundle, $target) {
       'chado_column' => $pkey,
       'base_table' => 'feature',
       'semantic_web' => array(
-        'type' => '',
+        'name' => '',
+        'accession' => '',
         'ns' => '',
         'nsurl' => '',
       ),

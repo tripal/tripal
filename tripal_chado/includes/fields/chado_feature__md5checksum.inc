@@ -63,7 +63,8 @@ function chado_feature__md5checksum_attach_info($entity_type, $bundle, $target) 
       'chado_table' => $table_name,
       'chado_column' => 'md5checksum',
       'semantic_web' => array(
-        'type' => '',
+        'name' => '',
+        'accession' => '',
         'ns' => '',
         'nsurl' => '',
       ),

@@ -99,6 +99,28 @@ function tripal_chado_field_formatter_info() {
   }
   return $formatters;
 }
+
+/**
+ * Implements hook_field_settings_form()
+ */
+function tripal_chado_field_settings_form($field, $instance, $has_data) {
+  dpm($field);
+  $form = '';
+  $field_type = $field['type'];
+  module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+
+  if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
+    $field_obj = new $field_type();
+    $form = $field_obj->settings_form($field, $instance, $has_data);
+  }
+
+  $function = $field_type . '_settings_form';
+  if (function_exists($function)) {
+    $form = $function($field, $instance, $has_data);
+  }
+
+  return $form;
+}
 /**
  * Implements hook_field_formatter_settings_summary().
  */
@@ -313,7 +335,9 @@ function tripal_chado_add_bundle_fields_base__fields_defaults($table_name, $sche
       'chado_column' => $column_name,
       'semantic_web' => array(
         // The type is the term from a vocabulary that desribes this field..
-        'type' => '',
+        'name' => '',
+        // The accession ID for this term in the vocaulary.
+        'accession' => '',
         // The namepsace for the vocabulary (e.g. 'foaf').
         'ns' => '',
         // The URL for the namespace.  It must be that the type can be
@@ -384,13 +408,15 @@ function tripal_chado_add_bundle_fields_base__fields_defaults($table_name, $sche
 
   // Set some default semantic web information
   if ($column_name == 'name') {
-    $field['field_settings']['semantic_web']['type'] = 'name';
+    $field['field_settings']['semantic_web']['name'] = 'name';
+    $field['field_settings']['semantic_web']['accession'] = 'name';
     $field['field_settings']['semantic_web']['ns'] = 'foaf';
     $field['field_settings']['semantic_web']['nsurl'] = 'http://xmlns.com/foaf/0.1/';
   }
   if ($column_name == 'description' or $column_name == 'definition' or
       $column_name == 'comment') {
-    $field['field_settings']['semantic_web']['type'] = 'description';
+    $field['field_settings']['semantic_web']['name'] = 'description';
+    $field['field_settings']['semantic_web']['accession'] = 'description';
     $field['field_settings']['semantic_web']['ns'] = 'hydra';
     $field['field_settings']['semantic_web']['nsurl'] = 'http://www.w3.org/ns/hydra/core#';
   }
@@ -416,7 +442,8 @@ function tripal_chado_add_bundle_fields_base__fields_defaults($table_name, $sche
     $field['field_type'] = 'text';
     $field['widget_type'] = 'text_textfield';
     $field['field_settings']['text_processing'] = 0;
-    $field['field_settings']['semantic_web']['type'] = 'name';
+    $field['field_settings']['semantic_web']['name'] = 'name';
+    $field['field_settings']['semantic_web']['accession'] = 'name';
     $field['field_settings']['semantic_web']['ns'] = 'foaf';
     $field['field_settings']['semantic_web']['nsurl'] = 'http://xmlns.com/foaf/0.1/';
   }
@@ -425,7 +452,8 @@ function tripal_chado_add_bundle_fields_base__fields_defaults($table_name, $sche
   // ANALYSIS TABLE
   //
   elseif ($field['field_settings']['chado_table'] == 'analysis' and $field['field_settings']['chado_column'] == 'program') {
-    $field['field_settings']['semantic_web']['type'] = 'SoftwareApplication';
+    $field['field_settings']['semantic_web']['name'] = 'SoftwareApplication';
+    $field['field_settings']['semantic_web']['accession'] = 'SoftwareApplication';
     $field['field_settings']['semantic_web']['ns'] = 'schema';
     $field['field_settings']['semantic_web']['nsurl'] = 'https://schema.org/';
     $field['description'] = 'The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.';
@@ -510,52 +538,6 @@ function tripal_chado_form_field_ui_field_overview_form_alter(&$form, &$form_sta
   }
 }
 
-/**
- * Implements hook_field_ws_formatter().
- *
- * The hook function is called by the tripal_ws module which provides
- * the RESTful web services. If that module is not installed this function
- * is never use.d
- */
-function tripal_chado_field_ws_formatter($entity_type, $entity, $field_info,
-    $field, $items){
-
-  $field_name = $field_info['field_name'];
-  $field_type = $field_info['type'];
-
-  $chado_table = $field_info['settings']['chado_table'];
-  $chado_column  = $field_info['settings']['chado_column'];
-
-  // Check to see if this field is associated with a different entity. If so
-  // we want to return the entity_id and not let the field customize the
-  // display as we need to allow the tripal_ws module to link to the other
-  // entity.
-  if (property_exists($entity->chado_record, $chado_column) and
-      property_exists($entity->chado_record->$chado_column, 'entity_id')) {
-     $fk_entity_id = $entity->chado_record->$chado_column->entity_id;
-     $value = array(
-       'entity_id' => $fk_entity_id,
-       'entity_type' => 'TripalEntity'
-     );
-     return $value;
-  }
-
-  // See if the field file defines a formatter.
-  $function = $field_type . '_ws_formatter';
-  module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-
-  if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
-    $field_obj = new $field_type();
-    $value = $field_obj->ws_formatter($entity_type, $entity, $field_info, $field, $items);
-  }
-
-  $value = '';
-  if (function_exists($function)) {
-    $value = $function($entity_type, $entity, $field_info, $field, $items);
-  }
-
-  return $value;
-}
 
 /**
  * Implements hook_field_is_empty().

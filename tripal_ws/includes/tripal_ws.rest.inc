@@ -436,9 +436,10 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
 
   // Next add in the ID and Type for this resources.
   $response['@id'] = $api_url . '/content/' . $ctype . '/' . $entity_id;
-  $response['@type'] = $vocab->namespace . ':' . $term->accession;
+  $response['@type'] = $term->name;
   $response['label'] = $entity->title;
-  $response['itemPage'] = url('/bio_data/' . $bundle->id, array('absolute' => TRUE));
+  $response['itemPage'] = url('/bio_data/' . $entity->id, array('absolute' => TRUE));
+  $response['@context'][$term->name] = $vocab->namespace . ':' . $term->accession;
 
   // Get information about the fields attached to this bundle and sort them
   // in the order they were set for the display.
@@ -466,21 +467,22 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
     // case that the field is not assigned a term, we must use the field name.
     $key = $field['field_name'];
     if (array_key_exists('semantic_web', $field['settings'])) {
-      if (array_key_exists('type', $field['settings']['semantic_web']) and
-          $field['settings']['semantic_web']['type']) {
-        $key = $field['settings']['semantic_web']['type'];
+      if (array_key_exists('name', $field['settings']['semantic_web']) and
+          $field['settings']['semantic_web']['name']) {
+        $key = $field['settings']['semantic_web']['name'];
       }
     }
 
     // Get the semantic web settings for this field.
     $field_type = '';
     if (array_key_exists('semantic_web', $field['settings'])) {
-      $field_type = $field['settings']['semantic_web']['type'];
-      if ($field_type) {
+      $field_name = $field['settings']['semantic_web']['name'];
+      if ($field_name) {
+        $accession = $field['settings']['semantic_web']['accession'];
         $ns = $field['settings']['semantic_web']['ns'];
         $nsurl = $field['settings']['semantic_web']['nsurl'];
         $response['@context'][$ns] = $nsurl;
-        $response['@context'][$key] = $ns . ':' .$field_type;
+        $response['@context'][$key] = $ns . ':' . $accession;
       }
     }
 
@@ -489,45 +491,37 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
       continue;
     }
 
-    $value = '';
+    $value = array();
+    for ($i = 0; $i < count($items); $i++) {
 
+      // If the value for this key is an array with an 'entity_id' key then
+      // we want to do a substitution.
+      if (array_key_exists('entity_id', $items[0])) {
+        $lentity = entity_load($items[$i]['entity_type'], array($items[$i]['entity_id']));
+        $lentity = reset($lentity);
+        $lterm = tripal_load_term_entity(array('term_id' => $lentity->term_id));
+        $lvocab = tripal_load_vocab_entity(array('vocab_id' => $lterm->vocab_id));
+        $lterm_details = tripal_get_term_details($lvocab->namespace, $lterm->namespace);
+        $value[] = array(
+          '@id'   => $api_url . '/content/' . $lterm->name . '/' . $items[0]['entity_id'],
+          '@type' => $lterm->name,
+          'label' => $lentity->title,
+        );
 
-    // We want to allow the field to format itself for web services if it
-    // wants to.  If the module implements the hook_field_ws_formatter()
-    // then we'll retrieve the values from it.
-    $field_module = $field_info['storage']['module'];
-    $function = $field_module . '_field_ws_formatter';
-
-    if (function_exists($function)) {
-      $value = $function($entity->type, $entity, $field_info, $field, $items);
-    }
-
-    if (!$value) {
-      // Get the values based on cardinality
-      if (count($items) == 1) {
-        $value = $items[0]['value'];
-      }
-      // If cardinality is greater than 1 then the value should be an array
-      else {
-        $value = array();
-        for ($i = 0; $i < count($items); $i++) {
-          $value[] = $items[$i]['value'];
+        if (!array_key_exists($lvocab->namespace, $response['@context'])) {
+          $response['@context'][$lvocab->namespace] = $lterm_details->url;
         }
+        // TODO: what if the term is used by multiple vocabularies.
+        $response['@context'][$lterm->name] = $lvocab->namespace . ':' . $lterm->accession;
+      }
+      else {
+        $value[] = $items[$i]['value'];
       }
     }
 
-    // If the value for this key is an array with an 'entity_id' key then
-    // we want to do a substitution.
-    if (is_array($value) and array_key_exists('entity_id', $value)) {
-      $lentity = entity_load($value['entity_type'], array($value['entity_id']));
-      $lentity = reset($lentity);
-      $lterm = tripal_load_term_entity(array('term_id' => $lentity->term_id));
-      $lvocab = tripal_load_vocab_entity(array('vocab_id' => $lterm->vocab_id));
-      $value = array(
-        '@id'   => $api_url . '/content/' . $lterm->name . '/' . $value['entity_id'],
-        '@type' => $lvocab->namespace . ':' . $lterm->accession,
-        'label' => $lentity->title,
-      );
+    // Convert a single value to not be an array.
+    if (count($value) == 1) {
+      $value = $value[0];
     }
 
     $response[$key] = $value;

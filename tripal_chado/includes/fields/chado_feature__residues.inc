@@ -62,7 +62,8 @@ function chado_feature__residues_attach_info($entity_type, $bundle, $target) {
       'chado_table' => $table_name,
       'chado_column' => 'residues',
       'semantic_web' => array(
-        'type' => '',
+        'name' => '',
+        'accession' => '',
         'ns' => '',
         'nsurl' => '',
       ),
