@@ -1433,7 +1433,7 @@ function tripal_cv_obo_add_dbxref($db_id, $accession, $version='', $description=
       tripal_cv_obo_quiterror("Failed to insert the dbxref record $accession");
       return FALSE;
     }
-    $result = chado_select_record('dbxref', array('dbxref_id'), $values, $options);
+    $result = chado_select_record('dbxref', array('dbxref_id'), $values);
   }
   return $result[0];
 }
