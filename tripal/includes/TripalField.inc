@@ -14,9 +14,9 @@
  * appropriate TripalField class.
  *
  * Because of the way Drupal handles callbacks, form validate functions,
- * AJAX callbacks and theme functions cannot be part of the implementation of
- * this class.  Those functions should be added to the bottom of the file
- * where the child class is housed..
+ * AJAX callbacks, validate functions and theme functions cannot be part of
+ * the implementation of this class.  Those functions should be added to
+ * the bottom of the file where the child class is housed.
  *
  */
 class TripalField {
@@ -114,7 +114,12 @@ class TripalField {
    *  Provides the display for a field
    *
    *  This function provides the display for a field when it is viewed on
-   *  the web page.
+   *  the web page.  The content returned by the formatter should only include
+   *  what is present in the $items[$delta]['values] array. This way, the
+   *  contents that are displayed on the page, via webservices and downloaded
+   *  into a CSV file will always be identical.  It should also include all of
+   *  the data in the $items[$delta]['values] array so that all the data is
+   *  present everywhere.
    *
    *  @param $element
    *  @param $entity_type
@@ -192,6 +197,22 @@ class TripalField {
    * @param $entity
    * @param $base_table
    * @param $record
+   *
+   * @return
+   *   An array of the following format:
+   *     $entity->{$field_name}['und'][0]['value'] = $value;
+   *   where:
+   *     - $entity is the enity object to which this field is attached.
+   *     - $field_name is the name of this field
+   *     - 'und' is the language code (in this case 'und' == undefined)
+   *     - 0 is the cardinality.  Increment by 1 when more than one item is
+   *       available.
+   *     - 'value' is the key indicating the value of this field. It should
+   *       always be set.  The value of the 'value' key will be the contents
+   *       used for web services and for downloadable content.
+   *   The array may contain as many other keys at the same level as 'value'
+   *   but those keys are for internal field use and are not considered the
+   *   value of the field.
    *
    */
   public function load($field, $entity, $details) {

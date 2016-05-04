@@ -662,7 +662,7 @@ function tripal_chado_add_bundle_fields($entity_type, $bundle, $term) {
   tripal_set_bundle_variable('chado_column', $bundle->id, $bundle_data['field']);
 
 
-  // Call the hook_attach_info() for all Chado fields to see if any of them
+/*   // Call the hook_attach_info() for all Chado fields to see if any of them
   // want to attach themsevles to this bundle.
   // Iterate through the fields, include the file and run the info function.
   $fields_path = drupal_get_path('module', 'tripal_chado') . '/includes/fields';
@@ -680,6 +680,32 @@ function tripal_chado_add_bundle_fields($entity_type, $bundle, $term) {
       $field_name = $field_info['field_name'];
       tripal_add_bundle_field($field_name, $field_info, $entity_type, $bundle_name);
     }
+  } */
+
+  // Find all of the files in the tripal_chado/includes/fields directory.
+  $fields_path = drupal_get_path('module', 'tripal_chado') . '/includes/fields';
+  $field_files = file_scan_directory($fields_path, '/^chado_.*\.inc$/');
+
+  // Iterate through the fields, include the file and run the info function.
+  foreach ($field_files as $file) {
+    $field_type = $file->name;
+    module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+
+    if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
+      $field_obj = new $field_type();
+      $field_info = $field_obj->attach_info($entity_type, $bundle, $bundle_data);
+    }
+
+    $function = $field_type . '_attach_info';
+    if (function_exists($function)) {
+      $field_info = $function($entity_type, $bundle, $bundle_data);
+    }
+
+    if (!is_array($field_info) or count(array_keys($field_info)) == 0) {
+      continue;
+    }
+    $field_name = $field_info['field_name'];
+    tripal_add_bundle_field($field_name, $field_info, $entity_type, $bundle_name);
   }
 
   // Adds any remaining base fields that may not have been dealt with
