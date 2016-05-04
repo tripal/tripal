@@ -324,7 +324,7 @@ function tripal_core_reset_chado_schema() {
 
   // determine the schema name.
   $chado_schema = tripal_get_schema_name('chado');
-  $chado_dot = $schado_schema . '.';
+  $chado_dot = $chado_schema . '.';
 
   // drop current chado and chado-related schema
   if (chado_dbschema_exists('genetic_code')) {
