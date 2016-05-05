@@ -770,6 +770,7 @@ function tripal_get_feature_relationships($feature) {
   // get alignment as child. The $feature->featureloc element
   // is already populated from the alignment preprocess function
   $options = array(
+    'return_array' => 1,
     'include_fk' => array(
       'srcfeature_id' => 1,
       'feature_id' => 1,

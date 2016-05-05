@@ -104,7 +104,6 @@ function tripal_chado_field_formatter_info() {
  * Implements hook_field_settings_form()
  */
 function tripal_chado_field_settings_form($field, $instance, $has_data) {
-  dpm($field);
   $form = '';
   $field_type = $field['type'];
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
