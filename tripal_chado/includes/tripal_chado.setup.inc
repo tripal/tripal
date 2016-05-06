@@ -142,8 +142,10 @@ function tripal_chado_prepare_chado() {
 
     // Add taxonomic terms.
     $obo_id = tripal_insert_obo('Taxonomic Rank', '{tripal_chado}/files/taxrank.obo');
-    tripal_submit_obo_job(array('obo_id' => $obo_id));
-
+    $cv = chado_select_record('cv', array('name'), array('name' => 'taxonomic_rank'));
+    if (count($cv) == 0 and $obo_id) {
+      tripal_chado_load_obo_v1_2_id($obo_id);
+    }
 
     /////////////////////////////////////////////////////////////////////////////
     //                        Chado CompAnalysis Module
@@ -178,7 +180,10 @@ function tripal_chado_prepare_chado() {
     // Add loading of the the tripal contact ontology to the job queue.
     $obo_path = '{tripal_chado}/files/tcontact.obo';
     $obo_id = tripal_insert_obo('Tripal Contacts', $obo_path);
-    tripal_chado_load_obo_v1_2_id($obo_id);
+    $cv = chado_select_record('cv', array('name'), array('name' => 'tripal_contact'));
+    if (count($cv) == 0 and $obo) {
+      tripal_chado_load_obo_v1_2_id($obo_id);
+    }
     //tripal_submit_obo_job(array('obo_id' => $obo_id));
 
       // Add cvterms for relationship types.
@@ -212,9 +217,10 @@ function tripal_chado_prepare_chado() {
     tripal_feature_add_tripal_gffcds_temp_table();
     tripal_feature_add_tripal_gffprotein_temp_table();
 
-    // Load the sequence ontology.
+    // Load the sequence ontology if it isn't already loaded
+    $cv = chado_select_record('cv', array('name'), array('name' => 'sequence'));
     $obo = tripal_get_obo(array('obo_name' => 'Sequence Ontology'));
-    if ($obo) {
+    if (count($cv) == 0 and $obo) {
       print "Installing the Sequence Ontology... This may take a while...\n";
       tripal_chado_load_obo_v1_2_id($obo->obo_id);
     }
@@ -277,8 +283,10 @@ function tripal_chado_prepare_chado() {
     // add loading of the the tripal pub ontology to the job queue
     $obo_path = '{tripal_chado}/files/tpub.obo';
     $obo_id = tripal_insert_obo('Tripal Publication', $obo_path);
-    tripal_chado_load_obo_v1_2_id($obo_id);
-    //tripal_submit_obo_job(array('obo_id' => $obo_id));
+    $cv = chado_select_record('cv', array('name'), array('name' => 'tripal_pub'));
+    if (count($cv) == 0 and $obo) {
+      tripal_chado_load_obo_v1_2_id($obo_id);
+    }
 
     tripal_pub_add_cvs();
     tripal_pub_add_dbs();
