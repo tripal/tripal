@@ -1,14 +1,14 @@
 <?php
 
-class chado_linker__contact extends TripalField {
+class chado_linker__expression extends TripalField {
 
   public function field_info() {
     return array(
-      'label' => t('Contacts'),
-      'description' => t('Associates an indviddual or organization with
+      'label' => t('Expression'),
+      'description' => t('Associates an expression with
           this record.'),
-      'default_widget' => 'chado_linker__contact_widget',
-      'default_formatter' => 'chado_linker__contact_formatter',
+      'default_widget' => 'chado_linker__expression_widget',
+      'default_formatter' => 'chado_linker__expression_formatter',
       'settings' => array(),
       'storage' => array(
         'type' => 'field_chado_storage',
@@ -19,15 +19,15 @@ class chado_linker__contact extends TripalField {
   }
  function widget_info() {
     return array(
-      'label' => t('Contacts'),
-      'field types' => array('chado_linker__contact'),
+      'label' => t('Expressions'),
+      'field types' => array('chado_linker__expression'),
     );
   }
 
   public function formatter_info() {
     return array(
-      'label' => t('Contacts'),
-      'field types' => array('chado_linker__contact'),
+      'label' => t('Expression'),
+      'field types' => array('chado_linker__expression'),
       'settings' => array(
       ),
     );
@@ -42,27 +42,27 @@ class chado_linker__contact extends TripalField {
     $cvterm_id  = $settings['cvterm_id'];
 
     // If the linker table does not exists then we don't want to add attach.
-    $contact_table = $table_name . '_contact';
-    if (!chado_table_exists($contact_table)) {
+    $expression_table = $table_name . '_expression';
+    if (!chado_table_exists($expression_table)) {
       return $field_info;
     }
 
-    $schema = chado_get_schema($contact_table);
+    $schema = chado_get_schema($expression_table);
     $pkey = $schema['primary key'][0];
 
     // Initialize the field array.
     $field_info = array(
-      'field_name' => $table_name . '__contact',
-      'field_type' => 'chado_linker__contact',
-      'widget_type' => 'chado_linker__contact_widget',
+      'field_name' => $table_name . '__expression',
+      'field_type' => 'chado_linker__expression',
+      'widget_type' => 'chado_linker__expression_widget',
       'widget_settings' => array('display_label' => 1),
       'description' => '',
-      'label' => 'Contacts',
+      'label' => 'Expression',
       'is_required' => 0,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
       'storage' => 'field_chado_storage',
       'field_settings' => array(
-        'chado_table' => $contact_table,
+        'chado_table' => $expression_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
         'semantic_web' => array(
@@ -109,16 +109,15 @@ class chado_linker__contact extends TripalField {
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
-
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => '',
       $field_table . '__' . $fkey_lcolumn => '',
-      $field_table . '__' . 'contact_id' => '',
-      $field_table . '--' . 'contact__name' => '',
+      $field_table . '__' . 'expression_id' => '',
+      $field_table . '--' . 'expression__name' => '',
     );
 
-    $linker_table = $base_table . '_contact';
+    $linker_table = $base_table . '_expression';
     $options = array(
       'return_array' => 1,
     );
@@ -127,12 +126,12 @@ class chado_linker__contact extends TripalField {
     if (count($record->$linker_table) > 0) {
       $i = 0;
       foreach ($record->$linker_table as $index => $linker) {
-        $contact = $linker->contact_id;
+        $expression = $linker->expression_id;
         $entity->{$field_name}['und'][$i] = array(
           'value' => $linker->$pkey,
           $field_table . '__' . $fkey_lcolumn => $linker->$fkey_lcolumn->$fkey_lcolumn,
-          $field_table . '__' . 'contact_id' => $contact->contact_id,
-          $field_table . '--' . 'contact__name' => $contact->name,
+          $field_table . '__' . 'expression_id' => $expression->expression_id,
+          $field_table . '--' . 'expression__name' => $expression->uniquename,
         );
         if (property_exists($entity->chado_record->$field_column, 'entity_id')) {
           $fk_entity_id = $entity->chado_record->$field_column->entity_id;
@@ -142,7 +141,7 @@ class chado_linker__contact extends TripalField {
 
         $i++;
       }
-    }
+    }dpm($record);
   }
 
   public function settings_form($field, $instance, $has_data) {
