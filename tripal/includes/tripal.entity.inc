@@ -252,3 +252,11 @@ function tripal_entity_info_alter(&$entity_info){
     }
   }
 }
+
+/**
+ * Checks access permissions for a given entity.
+ */
+function tripal_entity_access($entity) {
+  // TODO: need to implement this function.
+  return TRUE;
+}

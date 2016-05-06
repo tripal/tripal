@@ -101,3 +101,82 @@ function tripal_field_no_delete() {
   drupal_set_message('This field cannot be removed.', 'warning');
   return '';
 }
+
+/**
+ *
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * The field_ui_field_edit_form is used for customizing the settings of
+ * a field attached to an entity.
+ *
+ * This alter function disables some of the form widgets when the storage
+ * backend indicates they are not appropriate.
+ */
+function tripal_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
+
+  // For entity fields added by Tripal Entities we don't want the
+  // the end-user to change the cardinality and the required fields
+  // such that record can't be saved in Chado.
+
+  // TODO: this shouldn't be hardcoded here.  These settings
+  // should be part of the field and handled by the tripal_entity module.
+  if ($form['#instance']['entity_type'] == 'TripalEntity') {
+    $form['field']['cardinality']['#access'] = FALSE;
+    $form['instance']['required']['#access'] = FALSE;
+  }
+
+  // TODO: don't the the maximum length be larger than the field size.
+}
+
+/**
+ *
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * The field_ui_field_overview_form_ is used for adding and reordering the
+ * fields attached to a bundle.  It also includes edit and delete links and
+ * links for editing field types and widgets.
+ *
+ * This alter function is used to add a new 'Supported By' column to
+ * the table to let the user know where fields are storing their data.
+ */
+function tripal_form_field_ui_field_overview_form_alter(&$form, &$form_state, $form_id) {
+  // Add the 'Storage Location' to the table header.
+  $form['fields']['#header'][] = 'Supported By * ';
+
+  // Add the storage location as the final column for each field.
+  $storage_info = module_invoke_all('field_storage_info');
+  foreach (element_children($form['fields']) as $field_name) {
+    $field = field_info_field($field_name);
+    // For rows in the tables that aren't fields, just add an empty value
+    // for the storage column.
+    if (!$field) {
+      $form['fields'][$field_name][] = array(
+        '#markup' => '',
+      );
+      continue;
+    }
+    $storage_type = $field['storage']['type'];
+    $storage_label = array_key_exists('label', $storage_info[$storage_type]) ? $storage_info[$storage_type]['label'] : '';
+    if ($storage_type == 'field_sql_storage') {
+      $storage_label = 'Drupal';
+    }
+    if (array_key_exists('logo_url', $storage_info[$storage_type])) {
+      $logo_url = $storage_info[$storage_type]['logo_url'];
+      $form['fields'][$field_name][] = array(
+        '#markup' => '<img class="form-field-ui-field-overview-storage-logo" src="' . $logo_url . '">',
+      );
+    }
+    else {
+      $form['fields'][$field_name][] = array(
+        '#markup' => $storage_label,
+      );
+    }
+  }
+  $form['note'] = array(
+    '#markup' =>  '* Fields attached to this content type can use various
+      storage backends. Please be sure when you add new fields that the
+      storage backend is appropriate. For example, if you use Chado, and you
+      want all biological content to be stored in Chado, be sure that the
+      respective fields are "supported by" Chado.',
+  );
+}
