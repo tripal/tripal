@@ -30,8 +30,10 @@
  * is necessary because Drupa's db_table_exists will not
  * look in any other schema but the one were Drupal is installed
  *
+ * @param $table
+ *   The name of the chado table whose existence should be checked.
  * @return
- *   TRUE/FALSE depending upon whether it exists
+ *   TRUE if the table exists in the chado schema and FALSE if it does not.
  *
  * @ingroup tripal_chado_schema_api
  */
@@ -45,10 +47,10 @@ function chado_table_exists($table) {
     FROM information_schema.tables
     WHERE
       table_name = :table_name AND
-      table_schema = 'chado' AND
-      table_catalog = '$default_db'
+      table_schema = :chado AND
+      table_catalog = :default_db
   ";
-  $results = db_query($sql, array(':table_name' => $table));
+  $results = db_query($sql, array(':table_name' => $table, ':chado' => tripal_get_schema_name('chado'), ':default_db' => $default_db));
   $exists = $results->fetchObject();
   if (!$exists) {
     return FALSE;
@@ -152,9 +154,9 @@ function chado_is_local() {
     FROM pg_namespace
     WHERE
       has_schema_privilege(nspname, 'USAGE') AND
-      nspname = 'chado'
+      nspname = :chado
   ";
-  $results = db_query($sql);
+  $results = db_query($sql, array(':chado' => tripal_get_schema_name('chado')));
   $name = $results->fetchObject();
   if ($name) {
     variable_set('chado_schema_exists', FALSE);
@@ -178,7 +180,7 @@ function chado_is_installed() {
   global $databases;
 
   // first check if chado is in the $databases variable of the settings.php file
-  if (array_key_exists('chado', $databases)) {
+  if (array_key_exists(tripal_get_schema_name('chado'), $databases)) {
     return TRUE;
   }
 
@@ -220,7 +222,7 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
   if (!$chado_exists) {
     // if it's not in the drupal database check to see if it's specified in the $db_url
     // in the settings.php
-    if (!array_key_exists('chado', $databases)) {
+    if (!array_key_exists(tripal_get_schema_name('chado'), $databases)) {
       // if it's not in the drupal database or specified in the $db_url then
       // return uninstalled as the version
       return 'not installed';
@@ -232,7 +234,8 @@ function chado_get_version($exact = FALSE, $warn_if_unsupported = FALSE) {
   }
   else {
     $is_local = 1;
-    $prop_exists = db_table_exists('chado.chadoprop');
+    // @todo we need a chado aware db_table_exists.
+    $prop_exists = db_table_exists(tripal_get_schema_name('chado').'.chadoprop');
   }
 
   // if the table doesn't exist then we don't know what version but we know

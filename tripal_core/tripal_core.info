@@ -11,5 +11,4 @@ scripts[]          = theme/js/tripal.js
 
 dependencies[]     = views
 dependencies[]     = path
-dependencies[]     = search
 dependencies[]     = php

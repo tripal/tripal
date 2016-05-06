@@ -322,6 +322,10 @@ function tripal_core_upgrade_chado_1_11_to_1_2() {
  */
 function tripal_core_reset_chado_schema() {
 
+  // determine the schema name.
+  $chado_schema = tripal_get_schema_name('chado');
+  $chado_dot = $chado_schema . '.';
+
   // drop current chado and chado-related schema
   if (chado_dbschema_exists('genetic_code')) {
     print "Dropping existing 'genetic_code' schema\n";
@@ -337,12 +341,12 @@ function tripal_core_reset_chado_schema() {
   }
   if (chado_dbschema_exists('chado')) {
     print "Dropping existing 'chado' schema\n";
-    db_query("drop schema chado cascade");
+    db_query("drop schema $chado_schema cascade");
   }
 
   // create the new chado schema
   print "Creating 'chado' schema\n";
-  db_query("create schema chado");
+  db_query("create schema $chado_schema");
   if (chado_dbschema_exists('chado')) {
     // before creating the plpgsql language let's check to make sure
     // it doesn't already exists
@@ -370,8 +374,12 @@ function tripal_core_install_sql($sql_file) {
 
   $chado_local = chado_dbschema_exists('chado');
 
+  // determine the schema name.
+  $chado_schema = tripal_get_schema_name('chado');
+  $chado_dot = $chado_schema . '.';
+
   if ($chado_local) {
-    db_query("set search_path to chado");
+    db_query("set search_path to $chado_schema");
   }
   print "Loading $sql_file...\n";
   $lines = file($sql_file, FILE_SKIP_EMPTY_LINES);
@@ -403,11 +411,11 @@ function tripal_core_install_sql($sql_file) {
     // Find SQL for new objects
     if (preg_match('/^\s*CREATE\s+TABLE/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'table';
-      $line = preg_replace("/public\./", "chado.", $line);
+      $line = preg_replace("/public\./", $chado_dot, $line);
     }
     if (preg_match('/^\s*ALTER\s+TABLE\s+/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'alter_table';
-      $line = preg_replace("/public\./", "chado.", $line);
+      $line = preg_replace("/public\./", $chado_dot, $line);
     }
     if (preg_match('/^\s*SET/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'set';
@@ -417,27 +425,27 @@ function tripal_core_install_sql($sql_file) {
     }
     if (preg_match('/^\s*CREATE\s+SEQUENCE/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'sequence';
-      $line = preg_replace("/public\./", "chado.", $line);
+      $line = preg_replace("/public\./", $chado_dot, $line);
     }
     if (preg_match('/^\s*CREATE\s+(?:OR\s+REPLACE\s+)*VIEW/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'view';
-      $line = preg_replace("/public\./", "chado.", $line);
+      $line = preg_replace("/public\./", $chado_dot, $line);
     }
     if (preg_match('/^\s*COMMENT/i', $line) and !$in_string and sizeof($stack)==0 and !$in_function) {
       $stack[] = 'comment';
-      $line = preg_replace("/public\./", "chado.", $line);
+      $line = preg_replace("/public\./", $chado_dot, $line);
     }
     if (preg_match('/^\s*CREATE\s+(?:OR\s+REPLACE\s+)*FUNCTION/i', $line) and !$in_string and !$in_function) {
       $in_function = TRUE;
       $stack[] = 'function';
-      $line = preg_replace("/public\./", "chado.", $line);
+      $line = preg_replace("/public\./", $chado_dot, $line);
     }
     if (preg_match('/^\s*CREATE\s+INDEX/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'index';
     }
     if (preg_match('/^\s*INSERT\s+INTO/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'insert';
-      $line = preg_replace("/public\./", "chado.", $line);
+      $line = preg_replace("/public\./", $chado_dot, $line);
     }
     if (preg_match('/^\s*CREATE\s+TYPE/i', $line) and !$in_string and !$in_function) {
       $stack[] = 'type';
@@ -476,25 +484,25 @@ function tripal_core_install_sql($sql_file) {
     if (strcmp($stack[sizeof($stack)-1], 'table') == 0 and preg_match('/\);\s*$/', $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'alter_table') == 0 and preg_match('/;\s*$/', $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'alter_table') == 0 and preg_match('/;\s*$/', $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'set') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'set') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'schema') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'schema') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'sequence') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'sequence') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'view') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'view') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'comment') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'comment') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'function') == 0) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'function') == 0) {
 
       if(preg_match('/LANGUAGE.*?;\s*$/i', $line)) {
         $type = array_pop($stack);
@@ -515,37 +523,37 @@ function tripal_core_install_sql($sql_file) {
        // print "FUNCTION ($i): $line";
       }
     }
-    if (strcmp($stack[sizeof($stack)-1], 'index') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'index') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'insert') == 0 and preg_match('/\);\s*$/', $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'insert') == 0 and preg_match('/\);\s*$/', $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'type') == 0 and preg_match('/\);\s*$/', $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'type') == 0 and preg_match('/\);\s*$/', $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'grant') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'grant') == 0 and preg_match('/;\s*$/', $line) and !$in_string) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'aggregate') == 0 and preg_match('/\);\s*$/', $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'aggregate') == 0 and preg_match('/\);\s*$/', $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'drop_function') == 0 and preg_match('/;\s*$/i', $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'drop_function') == 0 and preg_match('/;\s*$/i', $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'drop_view') == 0 and preg_match('/;\s*$/i', $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'drop_view') == 0 and preg_match('/;\s*$/i', $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'drop_index') == 0 and preg_match("/;\s*$/i", $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'drop_index') == 0 and preg_match("/;\s*$/i", $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'drop_seq') == 0 and preg_match("/;\s*$/i", $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'drop_seq') == 0 and preg_match("/;\s*$/i", $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'alter_type') == 0 and preg_match('/;\s*$/i', $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'alter_type') == 0 and preg_match('/;\s*$/i', $line)) {
       $type = array_pop($stack);
     }
-    if (strcmp($stack[sizeof($stack)-1], 'alter_seq') == 0 and preg_match('/;\s*$/i', $line)) {
+    elseif (strcmp($stack[sizeof($stack)-1], 'alter_seq') == 0 and preg_match('/;\s*$/i', $line)) {
       $type = array_pop($stack);
     }
     // if we're in a recognized SQL statement then let's keep track of lines
@@ -563,7 +571,7 @@ function tripal_core_install_sql($sql_file) {
       // rewrite the set search_path to make 'public' be 'chado', but only if the
       // chado schema exists
       if (strcmp($type, 'set') == 0 and $chado_local) {
-        $query = preg_replace("/public/m", "chado", $query);
+        $query = preg_replace("/public/m", $chado_schema, $query);
       }
 
       // execute the statement
@@ -593,5 +601,6 @@ function tripal_core_install_sql($sql_file) {
  */
 function tripal_core_chado_install_done() {
 
-  db_query("set search_path to default");
+  $drupal_schema = tripal_get_schema_name('drupal');
+  db_query("set search_path to $drupal_schema");
 }

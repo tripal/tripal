@@ -66,12 +66,15 @@ function chado_set_active($dbname = 'default') {
   }
 
   $previous_db = $active_db = $GLOBALS['chado_active_db'];
-  $search_path = 'public';
+  $search_path = tripal_get_schema_name('drupal');
 
   // Change only if 'chado' has been specified.
+  // Notice that we leave the active_db set as chado but use the possibly user-altered
+  // schema name for the actual search path. This is to keep outward facing mentions of
+  // chado as "chado" while still allowing the user to alter the schema name used.
   if ($dbname == 'chado') {
     $active_db = 'chado';
-    $search_path = 'chado,public';
+    $search_path = tripal_get_schema_name('chado') . ',' . tripal_get_schema_name('drupal');
   }
 
   $settings = array(

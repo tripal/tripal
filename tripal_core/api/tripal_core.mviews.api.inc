@@ -400,7 +400,7 @@ function tripal_delete_mview($mview_id) {
   db_query($sql);
 
   // does the table already exist?
-  $mview_exists = db_table_exists('chado.' . $mview->mv_table);
+  $mview_exists = chado_table_exists($mview->mv_table);
 
   // drop the table from chado if it exists
   if ($mview_exists) {

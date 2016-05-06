@@ -548,73 +548,73 @@ function tripal_featuremap_update_7201() {
     $fkey_exists = db_query('SELECT TRUE FROM pg_constraint WHERE conname = :constraint', array(':constraint' => 'featuremapprop_type_id_fkey'))->fetchField();
     if ($fkey_exists) {
       // featuremapprop table
-      db_query('
-        ALTER TABLE chado.featuremapprop
+      chado_query('
+        ALTER TABLE {featuremapprop}
         DROP CONSTRAINT featuremapprop_type_id_fkey CASCADE
       ');
-      db_query('
-        ALTER TABLE chado.featuremapprop
+      chado_query('
+        ALTER TABLE {featuremapprop}
         DROP CONSTRAINT featuremapprop_featuremap_id_fkey CASCADE
       ');
     }
-    db_query('
-      ALTER TABLE chado.featuremapprop
+    chado_query('
+      ALTER TABLE {featuremapprop}
       ADD CONSTRAINT featuremapprop_type_id_fkey
-      FOREIGN KEY (type_id) REFERENCES chado.cvterm (cvterm_id)
+      FOREIGN KEY (type_id) REFERENCES {cvterm} (cvterm_id)
       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
     ');
-    db_query('
-      ALTER TABLE chado.featuremapprop
+    chado_query('
+      ALTER TABLE {featuremapprop}
       ADD CONSTRAINT featuremapprop_featuremap_id_fkey
-      FOREIGN KEY (featuremap_id) REFERENCES chado.featuremap (featuremap_id)
+      FOREIGN KEY (featuremap_id) REFERENCES {featuremap} (featuremap_id)
       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
     ');
 
     // featuremap_dbref table
     if ($fkey_exists) {
-      db_query('
-        ALTER TABLE chado.featuremap_dbxref
+      chado_query('
+        ALTER TABLE {featuremap_dbxref}
         DROP CONSTRAINT featuremap_dbxref_dbxref_id_fkey CASCADE
       ');
-      db_query('
-        ALTER TABLE chado.featuremap_dbxref
+      chado_query('
+        ALTER TABLE {featuremap_dbxref}
         DROP CONSTRAINT featuremap_dbxref_featuremap_id_fkey CASCADE
       ');
     }
-    db_query('
-      ALTER TABLE chado.featuremap_dbxref
+    chado_query('
+      ALTER TABLE {featuremap_dbxref}
       ADD CONSTRAINT featuremap_dbxref_dbxref_id_fkey
-      FOREIGN KEY (dbxref_id) REFERENCES chado.dbxref (dbxref_id)
+      FOREIGN KEY (dbxref_id) REFERENCES {dbxref} (dbxref_id)
       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
     ');
-    db_query('
-      ALTER TABLE chado.featuremap_dbxref
+    chado_query('
+      ALTER TABLE {featuremap_dbxref}
       ADD CONSTRAINT featuremap_dbxref_featuremap_id_fkey
-      FOREIGN KEY (featuremap_id) REFERENCES chado.featuremap (featuremap_id)
+      FOREIGN KEY (featuremap_id) REFERENCES {featuremap} (featuremap_id)
       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
     ');
 
     // featureposprop
     if ($fkey_exists) {
-      db_query('
-        ALTER TABLE chado.featureposprop
+      chado_query('
+        ALTER TABLE {featureposprop}
         DROP CONSTRAINT featureposprop_type_id_fkey CASCADE
       ');
-      db_query('
-        ALTER TABLE chado.featureposprop
+      chado_query('
+        ALTER TABLE {featureposprop}
         DROP CONSTRAINT featureposprop_featurepos_id_fkey CASCADE
       ');
     }
-    db_query('
-      ALTER TABLE chado.featureposprop
+    chado_query('
+      ALTER TABLE {featureposprop}
       ADD CONSTRAINT featureposprop_type_id_fkey
-      FOREIGN KEY (type_id) REFERENCES chado.cvterm (cvterm_id)
+      FOREIGN KEY (type_id) REFERENCES {cvterm} (cvterm_id)
       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
     ');
-    db_query('
-      ALTER TABLE chado.featureposprop
+    chado_query('
+      ALTER TABLE {featureposprop}
       ADD CONSTRAINT featureposprop_featurepos_id_fkey
-      FOREIGN KEY (featurepos_id) REFERENCES chado.featurepos (featurepos_id)
+      FOREIGN KEY (featurepos_id) REFERENCES {featurepos} (featurepos_id)
       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
     ');
   }

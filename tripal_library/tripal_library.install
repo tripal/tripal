@@ -269,15 +269,15 @@ function tripal_library_update_7200() {
   // site upgrade when the tripal_core module is disabled.
   module_load_include('module', 'tripal_core', 'tripal_core');
   tripal_core_import_api();
+  module_load_include('inc', 'tripal_cv', 'api/tripal_cv.api');
 
   // the library types were formerly in a vocabulary named 'tripal_library_types'.
-  // rename that to just be 'library_type'. We cannot use the Tripal API calls
-  // because during upgrade the tripal_core should also be disabled
+  // rename that to just be 'library_type'.
   try {
-    $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'library_type'")->fetchObject();
+    $check = chado_query("SELECT cv_id FROM {cv} WHERE name = 'library_type'")->fetchObject();
     if (!$check->cv_id) {
-      $sql = "UPDATE chado.cv SET name = 'library_type' WHERE name = 'tripal_library_types'";
-      db_query($sql);
+      $sql = "UPDATE {cv} SET name = 'library_type' WHERE name = 'tripal_library_types'";
+      chado_query($sql);
     }
   }
   catch (\PDOException $e) {
@@ -287,13 +287,18 @@ function tripal_library_update_7200() {
 
   // add the library_property CV
   try {
-    $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'library_property'")->fetchObject();
-    if (!$check->cv_id) {
-      $sql = "INSERT INTO chado.cv (name, definition) VALUES (
-        'library_property',
-        'Contains properties for libraries.')
-      ";
-      db_query($sql);
+    $cv = tripal_insert_cv(
+      'library_property',
+      'Contains properties for libraries.'
+    );
+    if ($cv) {
+      $cv_id = $cv->cv_id;
+
+      // Set as Default CV for library properties.
+      $is_set = tripal_get_default_cv('libraryprop', 'type_id');
+      if (!$is_set) {
+        tripal_set_default_cv('libraryprop','type_id', 'library_property', $cv_id);
+      }
     }
   }
   catch (\PDOException $e) {
@@ -303,13 +308,20 @@ function tripal_library_update_7200() {
 
   // add the library_type CV
   try {
-    $check = db_query("SELECT cv_id FROM chado.cv WHERE name = 'library_type'")->fetchObject();
-    if (!$check->cv_id) {
-      $sql = "INSERT INTO chado.cv (name, definition) VALUES (
-        'library_type',
-        'Contains terms for types of libraries (e.g. BAC, cDNA, FOSMID, etc).')
-      ";
-      db_query($sql);
+    // Note: tripal_insert_cv will only insert it if doesn't already exist
+    // so this doesn't conflict with the update above.
+    $cv = tripal_insert_cv(
+      'library_type',
+      'Contains terms for types of libraries (e.g. BAC, cDNA, FOSMID, etc).'
+    );
+    if ($cv) {
+      $cv_id = $cv->cv_id;
+
+      // Set as Default CV for library types.
+      $is_set = tripal_get_default_cv('library', 'type_id');
+      if (!$is_set) {
+        tripal_set_default_cv('library','type_id', 'library_type', $cv_id);
+      }
     }
   }
   catch (\PDOException $e) {
@@ -321,19 +333,17 @@ function tripal_library_update_7200() {
   // 'tripal' CV.  It should be stored in the new library_property CV that
   // is added by this module for Tripal 2.0 and Drupal 7.  So, we need to
   // reset the CV ID for that term and rename the term to 'Library Description'
-  // We cannot use the Tripal API calls in the 7000 update
-  // because during upgrade the tripal_core should also be disabled
-  $sql = "
-    UPDATE chado.cvterm
-    SET
-      name = 'Library Description',
-      cv_id = (SELECT cv_id FROM chado.cv WHERE name = 'library_property')
-    WHERE
-      name = 'library_description' AND
-      cv_id = (SELECT cv_id FROM chado.cv WHERE name = 'tripal')
-  ";
   try {
-    db_query($sql);
+    $sql = "
+      UPDATE {cvterm}
+      SET
+        name = 'Library Description',
+        cv_id = (SELECT cv_id FROM {cv} WHERE name = 'library_property')
+      WHERE
+        name = 'library_description' AND
+        cv_id = (SELECT cv_id FROM {cv} WHERE name = 'tripal')
+    ";
+    chado_query($sql);
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
@@ -377,55 +387,6 @@ function tripal_library_update_7200() {
       throw new DrupalUpdateException('Could not move library taxonomy terms: '. $error);
     }
   }
-
-  // set the default vocabularies
-  // library_type
-  try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'library_type'")->fetchField();
-    $cdi = db_select('tripal_cv_defaults', 't')
-      ->fields('t', array('cv_default_id'))
-      ->condition('table_name', 'library')
-      ->condition('field_name', 'type_id')
-      ->execute()
-      ->fetchField();
-    if (!$cdi) {
-      db_insert('tripal_cv_defaults')
-        ->fields(array(
-          'table_name' => 'library',
-          'field_name' => 'type_id',
-          'cv_id' => $cv_id
-        ))
-        ->execute();
-    }
-  }
-  catch (\PDOException $e) {
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to set library_type vocabulary as default: '. $error);
-  }
-  // library_property
-  try {
-    $cv_id = db_query("SELECT cv_id FROM chado.cv WHERE name = 'library_property'")->fetchField();
-    $cdi = db_select('tripal_cv_defaults', 't')
-      ->fields('t', array('cv_default_id'))
-      ->condition('table_name', 'libraryprop')
-      ->condition('field_name', 'type_id')
-      ->execute()
-      ->fetchField();
-    if (!$cdi) {
-      db_insert('tripal_cv_defaults')
-        ->fields(array(
-          'table_name' => 'libraryprop',
-          'field_name' => 'type_id',
-          'cv_id' => $cv_id
-        ))
-        ->execute();
-    }
-  }
-  catch (\PDOException $e) {
-    $error = $e->getMessage();
-    throw new DrupalUpdateException('Failed to set the library_property vocabulary as default: '. $error);
-  }
-
 }
 
 /**
