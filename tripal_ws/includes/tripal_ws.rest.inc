@@ -397,6 +397,22 @@ function tripal_ws_get_content_type($api_url, &$response, $ws_args, $ctype) {
   $response['@context']['label'] = 'rdfs:label';
   $response['@context']['itemPage'] = 'schema:itemPage';
 
+  $response['operation'][] = array(
+    '@type' => 'hydra:CreateResourceOperation',
+    'hydra:method' => 'PUT'
+  );
+
+  $response['query'] = array(
+    '@id' => $response['@id'],
+    '@type' => 'IriTemplate',
+    "template" => $response['@id'] . "{?name,}",
+    "mapping" => array(
+      array(
+        "hydra:variable" => 'name',
+        "hydra:property" => 'name',
+      )
+    )
+  );
 }
 
 /**
@@ -436,10 +452,10 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
 
   // Next add in the ID and Type for this resources.
   $response['@id'] = $api_url . '/content/' . $ctype . '/' . $entity_id;
-  $response['@type'] = $term->name;
+  $response['@type'] = $vocab->namespace . ':' . $term->accession;
   $response['label'] = $entity->title;
   $response['itemPage'] = url('/bio_data/' . $entity->id, array('absolute' => TRUE));
-  $response['@context'][$term->name] = $vocab->namespace . ':' . $term->accession;
+
 
   // Get information about the fields attached to this bundle and sort them
   // in the order they were set for the display.
@@ -455,7 +471,6 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
     }
     return ($a_weight < $b_weight) ? -1 : 1;
   });
-
   // Iterate throught the fields and add each value to the response.
   //$response['fields'] = $fields;
   foreach ($fields as $field_name => $field) {
@@ -504,15 +519,14 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
         $lterm_details = tripal_get_term_details($lvocab->namespace, $lterm->namespace);
         $value[] = array(
           '@id'   => $api_url . '/content/' . $lterm->name . '/' . $items[0]['entity_id'],
-          '@type' => $lterm->name,
+          '@type' => $lvocab->namespace . ':' . $lterm->accession,
           'label' => $lentity->title,
+          'type' => $lterm->name,
         );
 
         if (!array_key_exists($lvocab->namespace, $response['@context'])) {
           $response['@context'][$lvocab->namespace] = $lterm_details->url;
         }
-        // TODO: what if the term is used by multiple vocabularies.
-        $response['@context'][$lterm->name] = $lvocab->namespace . ':' . $lterm->accession;
       }
       else {
         $value[] = $items[$i]['value'];
@@ -530,6 +544,16 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
   // Lastly, add in the terms used into the @context section.
   $response['@context']['label'] = 'rdfs:label';
   $response['@context']['itemPage'] = 'schema:itemPage';
+
+  $response['operation'][] = array(
+    '@type' => 'hydra:DeleteResourceOperation',
+    'hydra:method' => 'DELETE'
+  );
+  $response['operation'][] = array(
+    '@type' => 'hydra:ReplaceResourceOperation',
+    'hydra:method' => 'POST'
+  );
+
 }
 
 
