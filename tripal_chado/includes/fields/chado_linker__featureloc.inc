@@ -131,7 +131,7 @@ class chado_linker__featureloc extends TripalField {
          $strand = '+';
       }
       // if this is a match then make the other location
-      if(array_key_exists($alignment, 'right_feature')){
+      if(array_key_exists('right_feature', $alignment)){
         $rstrand = '.';
         if ($alignment['right_strand'] == -1) {
           $rstrand = '-';

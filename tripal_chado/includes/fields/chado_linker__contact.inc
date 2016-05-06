@@ -35,11 +35,11 @@ class chado_linker__contact extends TripalField {
   public function attach_info($entity_type, $bundle, $settings) {
     $field_info = array();
 
-    $table_name = $target['data_table'];
-    $type_table = $target['type_table'];
-    $type_field = $target['field'];
-    $cv_id      = $target['cv_id'];
-    $cvterm_id  = $target['cvterm_id'];
+    $table_name = $settings['data_table'];
+    $type_table = $settings['type_table'];
+    $type_field = $settings['field'];
+    $cv_id      = $settings['cv_id'];
+    $cvterm_id  = $settings['cvterm_id'];
 
     // If the linker table does not exists then we don't want to add attach.
     $contact_table = $table_name . '_contact';
@@ -96,7 +96,7 @@ class chado_linker__contact extends TripalField {
 
   }
 
-  public function load($field, $entity, $details) {
+  public function load($field, $entity, $record) {
     $field_name = $field['field_name'];
     $field_type = $field['type'];
     $field_table = $field['settings']['chado_table'];
@@ -104,9 +104,11 @@ class chado_linker__contact extends TripalField {
 
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
+    $base_table = $record['record']->tablename;
     $pkey = $schema['primary key'][0];
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
+
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
