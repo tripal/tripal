@@ -23,6 +23,7 @@ function chado_linker__cvterm_adder_info() {
       'module' => 'tripal_chado',
       'active' => TRUE
     ),
+    'no_ui' => TRUE
   );
 }
 /**

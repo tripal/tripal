@@ -23,6 +23,7 @@ function chado_linker__prop_adder_info() {
       'module' => 'tripal_chado',
       'active' => TRUE
     ),
+    'no_ui' => TRUE
   );
 }
 /**

@@ -180,11 +180,18 @@ function tripal_view_entity($entity, $view_mode = 'full') {
    // For each entity retrieved add a row to the data listing.
    while ($entity = $entities->fetchObject()) {
 
+     $namespace = '';
+     $term_name = '';
+
      // Get the term
      $term = entity_load('TripalTerm', array('id' => $entity->term_id));
      $term = reset($term);
-     $vocab = entity_load('TripalVocab', array('id' => $term->vocab_id));
-     $vocab = reset($vocab);
+     if ($term) {
+       $term_name = $term->name;
+       $vocab = entity_load('TripalVocab', array('id' => $term->vocab_id));
+       $vocab = reset($vocab);
+       $namespace = $vocab->namespace;
+     }
 
      // Retrieve details about the user who created this data.
      $author = user_load($entity->uid);
@@ -192,8 +199,8 @@ function tripal_view_entity($entity, $view_mode = 'full') {
      // Add information to the table.
      $rows[] = array(
        l($entity->title, 'bio_data/' . $entity->id),
-       $vocab->namespace,
-       $term->name,
+       $namespace,
+       $term_name,
        l($author->name, 'user/' . $entity->uid),
        $entity->status == 1 ? 'published' : 'unpublished',
        format_date($entity->changed, 'short'),

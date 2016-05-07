@@ -1,394 +1,341 @@
 <?php
 
-/**
- * Implements hook_info() for fields.
- *
- * This is a hook provided by the tripal_chado module for offloading the
- * hook_field_info() hook for each field to specify.
- */
-function chado_linker__relationship_info() {
-  return array(
-    'label' => t('Relationships'),
-    'description' => t('Relationships between features.'),
-    'default_widget' => 'chado_linker__relationship_widget',
-    'default_formatter' => 'chado_linker__relationship_formatter',
-    'settings' => array(),
-    'storage' => array(
-      'type' => 'field_chado_storage',
-      'module' => 'tripal_chado',
-      'active' => TRUE
-    ),
-  );
-}
-/**
- * Implements hook_attach_info().
- *
- * This is a hook provided by the tripal_Chado module. It allows the field
- * to specify which bundles it will attach to and to specify thee settings.
- *
- * @param $entity_type
- * @param $entity
- * @param $term
- *
- * @return
- *   A field array
- */
-function chado_linker__relationship_attach_info($entity_type, $bundle, $target) {
-  $field_info = array();
-
-  $table_name = $target['data_table'];
-  $type_table = $target['type_table'];
-  $type_field = $target['field'];
-  $cv_id      = $target['cv_id'];
-  $cvterm_id  = $target['cvterm_id'];
-
-  // If the linker table does not exists then we don't want to add attach.
-  $rel_table = $table_name . '_relationship';
-  if (!chado_table_exists($rel_table)) {
-    return $field_info;
+class chado_linker__relationship extends TripalField {
+  /**
+   * @see TripalField::field_info()
+   */
+  function field_info() {
+    return array(
+      'label' => t('Relationships'),
+      'description' => t('Relationships between records.'),
+      'default_widget' => 'chado_linker__relationship_widget',
+      'default_formatter' => 'chado_linker__relationship_formatter',
+      'settings' => array(),
+      'storage' => array(
+        'type' => 'field_chado_storage',
+        'module' => 'tripal_chado',
+        'active' => TRUE
+      ),
+    );
   }
 
-  $schema = chado_get_schema($rel_table);
-  $pkey = $schema['primary key'][0];
+  /**
+   * @see TripalField::attach_info()
+   */
+  function attach_info($entity_type, $bundle, $target) {
+    $field_info = array();
 
-  // Initialize the field array.
-  $field_info = array(
-    'field_name' => $table_name . '__relationship',
-    'field_type' => 'chado_linker__relationship',
-    'widget_type' => 'chado_linker__relationship_widget',
-    'widget_settings' => array('display_label' => 1),
-    'description' => 'A generic field for displaying relationships between data types',
-    'label' => 'Relationships',
-    'is_required' => 0,
-    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-    'storage' => 'field_chado_storage',
-    'field_settings' => array(
-      'chado_table' => $rel_table,
-      'chado_column' => $pkey,
-      'base_table' => $table_name,
-      'semantic_web' => array(
-        'name' => '',
-        'accession' => '',
-        'ns' => '',
-        'nsurl' => '',
-      ),
-    ),
-  );
+    $table_name = $target['data_table'];
+    $type_table = $target['type_table'];
+    $type_field = $target['field'];
+    $cv_id      = $target['cv_id'];
+    $cvterm_id  = $target['cvterm_id'];
 
-  return $field_info;
-
-}
-/**
- * Implements hook_widget_info.
- *
- * This is a hook provided by the tripal_chado module for offloading
- * the hook_field_widget_info() hook for each field to specify.
- */
-function chado_linker__relationship_widget_info() {
-  return array(
-    'label' => t('Relationship Settings'),
-    'field types' => array('chado_linker__relationship')
-  );
-}
-/**
- * Implements hook_formatter_info.
- *
- * This is a hook provided by the tripal_chado module for
- * offloading the hook_field_formatter_info() for each field
- * to specify.
- *
- */
-function chado_linker__relationship_formatter_info() {
-  return array(
-    'label' => t('Relationships'),
-    'field types' => array('chado_linker__relationship'),
-    'settings' => array(
-    ),
-  );
-}
-
-/**
- * Implements hook_formatter_settings_summary.
- *
- * This is a hook provided by the tripal_chado module for
- * offloading the hook_field_formatter_settings_summary() for each field
- * to specify.
- *
- */
-function chado_linker__relationship_formatter_settings_summary($field, $instance,
-    $view_mode) {
-
-}
-
-/**
- * Provides a settings form for the formatter.
- *
- * This is a hook provided by the tripal_chado module for
- * offloading the hook_field_formatter_settings_form() for each field
- * to specify.
- */
-function chado_linker__relationship_formatter_settings_form($field, $instance,
-    $view_mode, $form, &$form_state) {
-
-
-
-}
-
-/**
- * Validation function for the chado_linker_featureloc_formatter_settings_form.
- */
-function chado_linker__relationship_formatter_settings_form_validate(&$form, &$form_state) {
-
-  // Place here as an example for validating the settings form.
-}
-
-/**
- * TODO: because this field is meant to handle any xxxxx_relationship table
- * then feature hard-coding needs to be replaced as it won't work for
- * stocks, etc.
- */
-function chado_linker__relationship_formatter(&$element, $entity_type, $entity,
-    $field, $instance, $langcode, $items, $display) {
-
-  // Get the settings
-  $settings = $display['settings'];
-  $record = $entity->chado_record;
-
-  foreach ($items as $delta => $item) {
-
-    $all_relationships = $item['all_relationships'];
-    $object_rels = $all_relationships['object'];
-    $subject_rels = $all_relationships['subject'];
-    $content = '';
-
-    if (count($object_rels) > 0 or count($subject_rels) > 0) {
-
-      // first add in the subject relationships.
-      foreach ($subject_rels as $rel_type => $rels){
-        foreach ($rels as $obj_type => $objects){
-
-          // Make the verb in the sentence make sense in English.
-          switch ($rel_type) {
-            case 'integral part of':
-            case 'instance of':
-              $verb = 'is an';
-              break;
-            case 'proper part of':
-            case 'transformation of':
-            case 'genome of':
-            case 'part of':
-            case 'position of':
-            case 'sequence of':
-            case 'variant of':
-              $verb = 'is a';
-              break;
-            case 'derives from':
-            case 'connects on':
-            case 'contains':
-            case 'finishes':
-            case 'guides':
-            case 'has origin':
-            case 'has part':
-            case 'has quality':
-            case 'is consecutive sequence of':
-            case 'maximally overlaps':
-            case 'overlaps':
-            case 'starts':
-              $verb = '';
-              break;
-            default:
-              $verb = 'is';
-          }
-
-          // the $headers array is an array of fields to use as the colum headers.
-          // additional documentation can be found here
-          // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-          $headers = array('Feature Name' ,'Unique Name', 'Species', 'Type');
-
-          // the $rows array contains an array of rows where each row is an array
-          // of values for each column of the table in that row.  Additional documentation
-          // can be found here:
-          // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-          $rows = array();
-
-          foreach ($objects as $object){
-            // link the feature to it's node
-            $feature_name = $object->record->object_id->name;
-            if (property_exists($object->record, 'nid')) {
-              $feature_name = l($feature_name, "node/" . $object->record->nid, array('attributes' => array('target' => "_blank")));
-            }
-            // link the organism to it's node
-            $organism = $object->record->object_id->organism_id;
-            $organism_name = $organism->genus ." " . $organism->species;
-            if (property_exists($organism, 'nid')) {
-              $organism_name = l("<i>" . $organism->genus . " " . $organism->species . "</i>", "node/" . $organism->nid, array('html' => TRUE));
-            }
-            $rows[] = array(
-              array('data' => $feature_name, 'width' => '30%'),
-              array('data' => $object->record->object_id->uniquename, 'width' => '30%'),
-              array('data' => $organism_name, 'width' => '30%'),
-              array('data' => $object->record->object_id->type_id->name, 'width' => '10%'),
-            );
-           }
-           // the $table array contains the headers and rows array as well as other
-           // options for controlling the display of the table.  Additional
-           // documentation can be found here:
-           // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-           $table = array(
-             'header' => $headers,
-             'rows' => $rows,
-             'attributes' => array(
-               'id' => 'tripal_feature-table-relationship-object',
-               'class' => 'tripal-data-table'
-             ),
-             'sticky' => FALSE,
-             'caption' => "This " . $record->type_id->name . " $verb  $rel_type the following  <b>$obj_type</b> feature(s):",
-             'colgroups' => array(),
-             'empty' => '',
-           );
-
-           // once we have our table array structure defined, we call Drupal's theme_table()
-           // function to generate the table.
-           $content .= theme_table($table);
-         }
-      }
-
-      // second add in the object relationships.
-      foreach ($object_rels as $rel_type => $rels){
-        foreach ($rels as $subject_type => $subjects){
-
-          // Make the verb in the sentence make sense in English.
-          switch ($rel_type) {
-            case 'integral part of':
-            case 'instance of':
-              $verb = 'are an';
-              break;
-            case 'proper part of':
-            case 'transformation of':
-            case 'genome of':
-            case 'part of':
-            case 'position of':
-            case 'sequence of':
-            case 'variant of':
-              $verb = 'are a';
-              break;
-            case 'derives from':
-            case 'connects on':
-            case 'contains':
-            case 'finishes':
-            case 'guides':
-            case 'has origin':
-            case 'has part':
-            case 'has quality':
-            case 'is consecutive sequence of':
-            case 'maximally overlaps':
-            case 'overlaps':
-            case 'starts':
-              $verb = '';
-              break;
-            default:
-              $verb = 'are';
-          }
-
-          // the $headers array is an array of fields to use as the colum headers.
-          // additional documentation can be found here
-          // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-          $headers = array('Feature Name' ,'Unique Name', 'Species', 'Type');
-
-          // the $rows array contains an array of rows where each row is an array
-          // of values for each column of the table in that row.  Additional documentation
-          // can be found here:
-          // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-          $rows = array();
-
-          foreach ($subjects as $subject){
-            // link the feature to it's node
-            $feature_name = $subject->record->subject_id->name;
-            if (property_exists($subject->record, 'nid')) {
-              $feature_name = l($feature_name, "node/" . $subject->record->nid, array('attributes' => array('target' => "_blank")));
-            }
-            // link the organism to it's node
-            $organism = $subject->record->subject_id->organism_id;
-            $organism_name = $organism->genus ." " . $organism->species;
-            if (property_exists($organism, 'nid')) {
-              $organism_name = l("<i>" . $organism->genus . " " . $organism->species . "</i>", "node/" . $organism->nid, array('html' => TRUE));
-            }
-            $rows[] = array(
-              array('data' => $feature_name, 'width' => '30%'),
-              array('data' =>$subject->record->subject_id->uniquename, 'width' => '30%'),
-              array('data' =>$organism_name, 'width' => '30%'),
-              array('data' =>$subject->record->subject_id->type_id->name, 'width' => '10%'),
-            );
-           }
-           // the $table array contains the headers and rows array as well as other
-           // options for controlling the display of the table.  Additional
-           // documentation can be found here:
-           // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
-           $table = array(
-             'header' => $headers,
-             'rows' => $rows,
-             'attributes' => array(
-               'id' => 'tripal_feature-table-relationship-subject',
-               'class' => 'tripal-data-table'
-             ),
-             'sticky' => FALSE,
-             'caption' => "The following <b>" . $subjects[0]->record->subject_id->type_id->name . " </b> feature(s) $verb $rel_type this " . $record->type_id->name . ":",
-             'colgroups' => array(),
-             'empty' => '',
-           );
-
-           // once we have our table array structure defined, we call Drupal's theme_table()
-           // function to generate the table.
-           $content .= theme_table($table);
-         }
-      }
+    // If the linker table does not exists then we don't want to add attach.
+    $rel_table = $table_name . '_relationship';
+    if (!chado_table_exists($rel_table)) {
+      return $field_info;
     }
+
+    $schema = chado_get_schema($rel_table);
+    $pkey = $schema['primary key'][0];
+
+    // Initialize the field array.
+    $field_info = array(
+      'field_name' => $table_name . '__relationship',
+      'field_type' => 'chado_linker__relationship',
+      'widget_type' => 'chado_linker__relationship_widget',
+      'widget_settings' => array('display_label' => 1),
+      'description' => 'A generic field for displaying relationships between data types',
+      'label' => 'Relationships',
+      'is_required' => 0,
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'storage' => 'field_chado_storage',
+      'field_settings' => array(
+        'chado_table' => $rel_table,
+        'chado_column' => $pkey,
+        'base_table' => $table_name,
+        'semantic_web' => array(
+          'name' => 'relationship',
+          'accession' => 'relationship',
+          'ns' => 'local',
+          'nsurl' => '',
+        ),
+      ),
+    );
+
+    return $field_info;
+
+  }
+  /**
+   * @see TripalField::widget_info()
+   */
+  function widget_info() {
+    return array(
+      'label' => t('Relationship Settings'),
+      'field types' => array('chado_linker__relationship')
+    );
+  }
+  /**
+   * @see TripalField::formatter_info()
+   */
+  function formatter_info() {
+    return array(
+      'label' => t('Relationships'),
+      'field types' => array('chado_linker__relationship'),
+      'settings' => array(
+      ),
+    );
+  }
+
+  /**
+   * @see TripalField::formatter_view()
+   */
+  function formatter_view(&$element, $entity_type, $entity,
+      $field, $instance, $langcode, $items, $display) {
+
+    // Get the settings
+    $settings = $display['settings'];
+
+    $rows = array();
+    $headers = array('Subject' ,'Type', 'Object');
+    $headers = array('Relationship');
+
+    $this_name = $entity->chado_record->name;
+    if (property_exists($entity->chado_record, 'uniquename')) {
+      $this_name = $entity->chado_record->uniquename;
+    }
+
+    foreach ($items as $delta => $item) {
+      $subject_name = $item['value']['subject']['name'];
+      $subject_type = $item['value']['subject']['type'];
+      $object_name = $item['value']['object']['name'];
+      $object_type = $item['value']['object']['type'];
+      $phrase = $item['value']['phrase'];
+
+      // Handle some special cases.
+      // For mRNA objects we don't want to show the CDS, exons, 5' UTR, etc.
+      // we want to show the parent gene and the protein.
+      if ($object_type == 'mRNA' and ($subject_type != 'polypeptide')) {
+        continue;
+      }
+      if ($subject_type == 'mRNA' and ($object_type != 'gene')) {
+        continue;
+      }
+
+      if (array_key_exists('entity_id', $item['value']['object'])) {
+        $object_entity_id = $item['value']['object']['entity_id'];
+        if ($object_entity_id != $entity->id) {
+          $link = l($object_name, 'bio_data/' . $object_entity_id);
+          $phrase = preg_replace("/$object_name/", $link, $phrase);
+        }
+      }
+      if (array_key_exists('entity_id', $item['value']['subject'])) {
+        $subject_entity_id = $item['value']['subject']['entity_id'];
+        if ($subject_entity_id != $entity->id) {
+          $link = l($subject_name, 'bio_data/' . $subject_entity_id);
+          $phrase = preg_replace("/$subject_name/", $link, $phrase);
+        }
+      }
+
+      $phrase = preg_replace("/$subject_type/", "<b>$subject_type</b>", $phrase);
+      $phrase = preg_replace("/$object_type/", "<b>$object_type</b>", $phrase);
+      $rows[] = array($phrase);
+    }
+
+
+    // the $table array contains the headers and rows array as well as other
+    // options for controlling the display of the table.  Additional
+    // documentation can be found here:
+    // https://api.drupal.org/api/drupal/includes%21theme.inc/function/theme_table/7
+    $table = array(
+      'header' => $headers,
+      'rows' => $rows,
+      'attributes' => array(
+        'id' => 'tripal_feature-table-alignments',
+        'class' => 'tripal-data-table'
+      ),
+      'sticky' => FALSE,
+      'caption' => '',
+      'colgroups' => array(),
+      'empty' => '',
+    );
 
     // once we have our table array structure defined, we call Drupal's theme_table()
     // function to generate the table.
     $element[$delta] = array(
       '#type' => 'markup',
-      '#markup' => $content,
+      '#markup' => theme_table($table),
     );
   }
-}
 
-/**
- * Loads the field values with appropriate data.
- *
- * This function is called by the tripal_chado_field_storage_load() for
- * each property managed by the field_chado_storage storage type.  This is
- * an optional hook function that is only needed if the field has
- * multiple form elements.
- */
-function chado_linker__relationship_load($field, $entity, $base_table, $record) {
-  $field_name = $field['field_name'];
+  /**
+   * @see TripalField::load()
+   */
+  function load($field, $entity, $details) {
+    $settings = $field['settings'];
 
+    $record = $details['record'];
 
-  $entity->{$field_name}['und'][0]['all_relationships'] = tripal_get_feature_relationships($record);
-}
+    $field_name = $field['field_name'];
+    $field_type = $field['type'];
+    $field_table = $field['settings']['chado_table'];
+    $field_column = $field['settings']['chado_column'];
+    $base_table = $field['settings']['base_table'];
 
+    // Expand the object to include the relationships.
+    $options = array(
+      'return_array' => 1,
+      'order_by' => array('rank' => 'ASC'),
+      // we don't want to fully recurse we only need information about the
+      // relationship type and the object and subject  (including feature type
+      // and organism)
+      'include_fk' => array(
+        'type_id' => 1,
+        'object_id' => array(
+          'type_id' => 1,
+          'organism_id' => 1
+        ),
+        'subject_id'  => array(
+          'type_id' => 1,
+          'organism_id' => 1
+        ),
+      ),
+    );
+    $rel_table = $base_table . '_relationship';
+    $record = chado_expand_var($record, 'table', $rel_table, $options);
+    $srelationships = $record->$rel_table->subject_id;
+    $orelationships = $record->$rel_table->object_id;
 
-/**
- * Implements hook_ws_formatter().
- */
-// function chado_linker__relationship_ws_formatter(&$element, $entity_type, $entity,
-//     $field, $instance, $items) {
+    $i = 0;
+    if ($orelationships) {
+      foreach ($orelationships as $relationship) {
+        $rel_acc = $relationship->type_id->dbxref_id->db_id->name . ':' . $relationship->type_id->dbxref_id->accession;
+        $rel_type = $relationship->type_id->name;
+        $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
+        $verb = $this->get_rel_verb($rel_type_clean);
+        $subject_name = $relationship->subject_id->name;
+        $subject_type = $relationship->subject_id->type_id->name;
+        $object_name = $relationship->object_id->name;
+        $object_type = $relationship->object_id->type_id->name;
+        $entity->{$field_name}['und'][$i]['value'] = array(
+          '@type' => $rel_acc,
+          'subject' => array(
+            '@type' => $relationship->subject_id->type_id->dbxref_id->db_id->name .
+                ':' . $relationship->subject_id->type_id->dbxref_id->accession,
+            'type' =>  $subject_type,
+            'name' => $subject_name,
+          ),
+          'type' => $relationship->type_id->name,
+          'object' => array(
+            'entity_id' => $entity->id,
+            'entity_type' => 'TripalEntity',
+            'type' =>  $object_type,
+            'name' => $object_name,
+          )
+        );
+        if (property_exists($relationship->subject_id, 'uniquename')) {
+          $subject_name = $relationship->subject_id->uniquename;
+          $entity->{$field_name}['und'][$i]['value']['subject']['name'] = $subject_name;
+        }
+        if (property_exists($relationship->object_id, 'uniquename')) {
+          $object_name = $relationship->object_id->uniquename;
+          $entity->{$field_name}['und'][$i]['value']['object']['name'] = $object_name;
+        }
+        if (property_exists($relationship->subject_id, 'entity_id')) {
+          $entity_id = $relationship->subject_id->entity_id;
+          $entity->{$field_name}['und'][$i]['value']['subject']['entity_id'] = $entity_id;
+          $entity->{$field_name}['und'][$i]['value']['subject']['entity_type'] = 'TripalEntity';
+        }
+        $entity->{$field_name}['und'][$i]['value']['phrase'] = 'The ' . $subject_type . ', ' .
+          $subject_name . ', ' . $verb . ' '  . $rel_type_clean . ' this '  .
+          $object_type . '.';
 
-//   foreach ($items as $delta => $item) {
+        $i++;
+      }
+    }
 
-//   }
-// }
+    if ($srelationships) {
+      foreach ($srelationships as $relationship) {
+        $rel_acc = $relationship->type_id->dbxref_id->db_id->name . ':' . $relationship->type_id->dbxref_id->accession;
+        $rel_type = $relationship->type_id->name;
+        $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
+        $verb = $this->get_rel_verb($rel_type_clean);
+        $subject_name = $relationship->subject_id->name;
+        $subject_type = $relationship->subject_id->type_id->name;
+        $object_name = $relationship->object_id->name;
+        $object_type = $relationship->object_id->type_id->name;
+        $entity->{$field_name}['und'][$i]['value'] = array(
+          '@type' => $rel_acc,
+          'subject' => array(
+            'type' =>  $subject_type,
+            'name' => $subject_name,
+            'entity_id' => $entity->id,
+            'entity_type' => 'TripalEntity',
+          ),
+          'type' => $relationship->type_id->name,
+          'object' => array(
+            '@type' => $relationship->object_id->type_id->dbxref_id->db_id->name .
+               ':' . $relationship->subject_id->type_id->dbxref_id->accession,
+            'type' =>  $object_type,
+            'name' => $oject_name,
+          )
+        );
+        if (property_exists($relationship->subject_id, 'uniquename')) {
+          $subject_name = $relationship->subject_id->uniquename;
+          $entity->{$field_name}['und'][$i]['value']['subject']['name'] = $subject_name;
+        }
+        if (property_exists($relationship->object_id, 'uniquename')) {
+          $object_name = $relationship->object_id->uniquename;
+          $entity->{$field_name}['und'][$i]['value']['object']['name'] = $object_name;
+        }
+        if (property_exists($relationship->object_id, 'entity_id')) {
+          $entity_id = $relationship->object_id->entity_id;
+          $entity->{$field_name}['und'][$i]['value']['object']['entity_id'] = $entity_id;
+          $entity->{$field_name}['und'][$i]['value']['object']['entity_type'] = 'TripalEntity';
+        }
+        $entity->{$field_name}['und'][$i]['value']['phrase'] = 'This  ' .
+          $subject_type . ' ' . $verb . ' '  . $rel_type_clean . ' the '  .
+          $object_type . ', ' . $object_name . '.';
+        $i++;
+      }
+    }
+  }
+  private function get_rel_verb($rel_type) {
+    $verb = '';
+    switch ($rel_type) {
+      case 'integral part of':
+      case 'instance of':
+        $verb = 'is an';
+        break;
+      case 'proper part of':
+      case 'transformation of':
+      case 'genome of':
+      case 'part of':
+        $verb = 'is a';
+      case 'position of':
+      case 'sequence of':
+      case 'variant of':
+        $verb = 'is a';
+        break;
+      case 'derives from':
+      case 'connects on':
+      case 'contains':
+      case 'finishes':
+      case 'guides':
+      case 'has origin':
+      case 'has part':
+      case 'has quality':
+      case 'is consecutive sequence of':
+      case 'maximally overlaps':
+      case 'overlaps':
+      case 'starts':
+        $verb = '';
+        break;
+      default:
+        $verb = 'is';
+    }
 
-/**
- *  Implements hook_widget().
- */
-function chado_linker__relationship_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
-
-}
-/**
- * Callback function for validating the chado_linker_featureloc_widget.
- */
-function chado_linker__relationship_widget_validate($element, &$form_state) {
-
+    return $verb;
+  }
 }

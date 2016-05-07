@@ -141,7 +141,7 @@ class chado_linker__expression extends TripalField {
 
         $i++;
       }
-    }dpm($record);
+    }
   }
 
   public function settings_form($field, $instance, $has_data) {

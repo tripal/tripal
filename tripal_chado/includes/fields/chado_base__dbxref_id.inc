@@ -277,19 +277,6 @@ class chado_base__dbxref_id extends TripalField {
       }
     }
   }
-
-
-  /**
-   * @see TripalField::ws_formatter()
-   */
-  function ws_formatter($entity_type, $entity, $field, $instance, $items) {
-
-    $dbxref = $entity->chado_record->dbxref_id;
-
-    unset($dbxref->tablename);
-    unset($dbxref->db_id->tablename);
-    return $dbxref;
-  }
 }
 
 /**

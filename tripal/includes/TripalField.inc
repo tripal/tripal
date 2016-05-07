@@ -128,9 +128,8 @@ class TripalField {
    *  the web page.  The content returned by the formatter should only include
    *  what is present in the $items[$delta]['values] array. This way, the
    *  contents that are displayed on the page, via webservices and downloaded
-   *  into a CSV file will always be identical.  It should also include all of
-   *  the data in the $items[$delta]['values] array so that all the data is
-   *  present everywhere.
+   *  into a CSV file will always be identical.  The view need not show all
+   *  of the data in the 'values' array.
    *
    *  @param $element
    *  @param $entity_type
@@ -249,7 +248,50 @@ class TripalField {
    *   TRUE if the field already has data, FALSE if not.
    */
   public function settings_form($field, $instance, $has_data) {
+    $settings = $field['settings'];
+    $element = array();
 
+    $element['semantic_web'] = array(
+      '#type' => 'fieldset',
+      '#title' => 'Semantic Web',
+      '#description' => t('Each field must be associated with a term
+          from a controlled vocabulary.  This allows computer programs to understand
+          the data provided on this site.  Please be cautions changing these
+          values.  Defaults are set by Tripal and sites that use the same
+          terms can exchange information.'),
+      '#collapsed' => TRUE,
+      '#collapsible' => TRUE,
+      '#tree' => TRUE,
+    );
+
+    $element['semantic_web']['name'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Term Name',
+      '#description' => t('The name of the term (e.g. gene, mRNA, organism, etc.).'),
+      '#default_value' => $settings['semantic_web']['name'],
+    );
+    $element['semantic_web']['accession'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Term ID',
+      '#description' => t('The unique term ID (accession) in the vocabulary (e.g. ' .
+          'for the term "gene" in the Sequence Ontology, the accession is "0000704").'),
+      '#default_value' => $settings['semantic_web']['accession'],
+    );
+    $element['semantic_web']['ns'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Vocabulary Namespace',
+      '#description' => t('The namespace for the vocabulary to which this term ' .
+          'belongs (e.g. the namespace for the Sequence Ontology is "SO"). This '.
+          'value is prefixed to the Term ID to form the complete id (e.g. "SO:0000704")'),
+      '#default_value' => $settings['semantic_web']['ns'],
+    );
+    $element['semantic_web']['nsurl'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Vocabulary URL',
+      '#description' => t('The web URL of the vocabulary..'),
+      '#default_value' => $settings['semantic_web']['nsurl'],
+    );
+    return $element;
   }
 
   /**

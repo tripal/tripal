@@ -350,12 +350,40 @@ function tripal_chado_prepare_chado() {
       'cv_name' => 'local',
     ));
 
+    // TODO: change this to foaf:Project
     tripal_insert_cvterm(array(
       'id' => 'local:project',
       'name' => 'project',
       'definition' => 'A plan or proposal for accomplishing something. ' .
         '(American Heritage® Dictionary of the English Language, Fifth Edition. ' .
         'Copyright © 2011 by Houghton Mifflin Harcourt Publishing Company).',
+      'cv_name' => 'local',
+    ));
+
+    tripal_insert_cvterm(array(
+      'id' => 'local:contact',
+      'name' => 'contact',
+      'definition' => 'An entity (e.g. individual or organization) through ' .
+         'whom a person can gain access to information, favors, ' .
+         'influential people, and the like.',
+      'cv_name' => 'local',
+    ));
+
+    tripal_insert_cvterm(array(
+      'id' => 'local:md5_checksum',
+      'name' => 'md5_checksum',
+      'definition' => 'The MD5 message-digest algorithm is a widely used ' .
+         'cryptographic hash function producing a 128-bit (16-byte) hash ' .
+         'value, typically expressed in text format as a 32-digit hexadecimal ' .
+         'number. MD5 has been utilized in a wide variety of cryptographic ' .
+         'applications and is also commonly used to verify data integrity (Wikipedia)',
+      'cv_name' => 'local',
+    ));
+
+    tripal_insert_cvterm(array(
+      'id' => 'local:relationship',
+      'name' => 'relationship',
+      'definition' => 'The way in which two things are connected.',
       'cv_name' => 'local',
     ));
 
@@ -1252,6 +1280,9 @@ function tripal_feature_add_cvs() {
       'The Sequence Ontology'
   );
 }
+/**
+ *
+ */
 function tripal_feature_add_tripal_gff_temp_table() {
   $schema = array(
     'table' => 'tripal_gff_temp',

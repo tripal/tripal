@@ -41,6 +41,12 @@ class chado_base__organism_id extends TripalField {
       return $field_info;
     }
 
+    // If this is the organism table then do not attach as that is the
+    // primary key
+    if ($table_name == 'organism') {
+      return $field_info;
+    }
+
     // There is an organism_id column so attach the field!
     $field_info = array(
       'field_name' => $table_name . '__organism_id',
@@ -95,11 +101,16 @@ class chado_base__organism_id extends TripalField {
   public function formatter_view(&$element, $entity_type, $entity,
       $field, $instance, $langcode, $items, $display) {
 
+    $content =  $items[0]['value'];
+    if (array_key_exists('entity_id', $items[0])) {
+      $content = l(strip_tags($items[0]['value']), 'bio_data/' . $items[0]['entity_id']);
+    }
+
     // The cardinality of this field is 1 so we don't have to
     // iterate through the items array, as there will never be more than 1.
     $element[0] = array(
       '#type' => 'markup',
-      '#markup' => $items[0]['value'],
+      '#markup' => $content,
     );
   }
 
@@ -109,13 +120,18 @@ class chado_base__organism_id extends TripalField {
   public function widget_form(&$widget, $form, $form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
+    $default_value = 0;
+    if (array_key_exists('organism_id', $items[0])) {
+      $default_value = $items[0]['organism_id'];
+    }
+
     $options = tripal_get_organism_select_options(FALSE);
     $widget['value'] = array(
       '#type' => 'select',
       '#title' => $element['#title'],
       '#description' => $element['#description'],
       '#options' => $options,
-      '#default_value' => count($items) > 0 ? $items[0]['organism_id'] : 0,
+      '#default_value' => $default_value,
       '#required' => $element['#required'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
       '#delta' => $delta,
@@ -125,17 +141,6 @@ class chado_base__organism_id extends TripalField {
       '#type' => 'item',
       '#markup' => l('Add a new species', 'admin/content/bio_data/add/species', array('attributes' => array('target' => '_blank'))),
     );
-  }
-
-  /**
-   * @see TripalField::ws_formatter()
-   */
-  public function ws_formatter($entity_type, $entity, $field, $instance, $items) {
-
-    $organism = (array) $entity->chado_record->organism_id;
-    unset($organism->tablename);
-
-    return $organism;
   }
 
   /**
@@ -169,23 +174,11 @@ class chado_base__organism_id extends TripalField {
   /**
    * @see TripalField::settings_form()
    */
-  public function settings_form($field, $instance, $view_mode) {
+  public function settings_form($field, $instance, $has_data) {
 
     $settings = $field['settings'];
 
     $element = array();
-    $term = NULL;
-    $entity = NULL;
-
-    // Check to see if the organism bundle exists
-    $term = tripal_load_term_entity(array(
-      'namespace' => $field['settings']['semantic_web']['ns'],
-      'accession' => $field['settings']['semantic_web']['accession']
-    ));
-    if ($term) {
-      $entity = tripal_load_bundle_entity(array('term_id' => $term->id));
-    }
-
     $element['instructions'] = array(
       '#type' => 'item',
       '#markup' => 'You may rewrite the way this field is presented to the end-user.
@@ -240,16 +233,13 @@ class chado_base__organism_id extends TripalField {
       '#markup' => theme_table($table_vars),
     );
 
+    // Add in the semantic web fields.
+    $parent_elements = parent::settings_form($field, $instance, $has_data);
+    $element = array_merge($element, $parent_elements);
+
     return $element;
   }
 
-
-  /**
-   * @see TripalField::views_data()
-   */
-  public function views_data_alter(&$data, $field, $entity_info) {
-    dpm($data);
-  }
 }
 
 

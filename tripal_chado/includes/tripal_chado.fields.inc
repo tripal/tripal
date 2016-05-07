@@ -288,6 +288,9 @@ function tripal_chado_field_widget_form_alter(&$element, &$form_state, $context)
       $tablename = $matches[1];
       $colname = $matches[2];
       $schema = chado_get_schema($tablename);
+      if (!$schema) {
+        return;
+      }
 
       // The timelastmodified field exists in many Chado tables.  We want
       // the form element to update to the most recent time rather than the time
@@ -313,7 +316,7 @@ function tripal_chado_field_widget_form_alter(&$element, &$form_state, $context)
  * Returns a $field_info array for a field based on a database column.
  *
  */
-function tripal_chado_add_bundle_fields_base__fields_defaults($table_name, $schema, $column_name) {
+function tripal_chado_get_bundle_fields_base__fields_defaults($table_name, $schema, $column_name) {
   $details = $schema['fields'][$column_name];
 
   // Create an array with information about this field.
@@ -406,11 +409,29 @@ function tripal_chado_add_bundle_fields_base__fields_defaults($table_name, $sche
   }
 
   // Set some default semantic web information
-  if ($column_name == 'name') {
+  if ($column_name == 'uniquename') {
     $field['field_settings']['semantic_web']['name'] = 'name';
     $field['field_settings']['semantic_web']['accession'] = 'name';
     $field['field_settings']['semantic_web']['ns'] = 'foaf';
     $field['field_settings']['semantic_web']['nsurl'] = 'http://xmlns.com/foaf/0.1/';
+    $field['widget_type'] = 'text_textfield';
+    $field['field_settings']['text_processing'] = 0;
+  }
+  if ($column_name == 'name') {
+    // If this table also has a unqiuename field then use the 'name' field
+    // as an alternate name.
+    if (array_key_exists('uniquename', $schema['fields'])) {
+      $field['field_settings']['semantic_web']['name'] = 'alternateName';
+      $field['field_settings']['semantic_web']['accession'] = 'alternateName';
+      $field['field_settings']['semantic_web']['ns'] = 'schema';
+      $field['field_settings']['semantic_web']['nsurl'] = 'https://schema.org/';
+    }
+    else {
+      $field['field_settings']['semantic_web']['name'] = 'name';
+      $field['field_settings']['semantic_web']['accession'] = 'name';
+      $field['field_settings']['semantic_web']['ns'] = 'foaf';
+      $field['field_settings']['semantic_web']['nsurl'] = 'http://xmlns.com/foaf/0.1/';
+    }
   }
   if ($column_name == 'description' or $column_name == 'definition' or
       $column_name == 'comment') {
@@ -437,14 +458,14 @@ function tripal_chado_add_bundle_fields_base__fields_defaults($table_name, $sche
   //
   // FEATURE TABLE
   //
-  elseif ($field['field_settings']['chado_table'] == 'feature' and $field['field_settings']['chado_column'] == 'uniquename') {
+  elseif ($field['field_settings']['chado_table'] == 'pub' and $field['field_settings']['chado_column'] == 'uniquename') {
     $field['field_type'] = 'text';
     $field['widget_type'] = 'text_textfield';
     $field['field_settings']['text_processing'] = 0;
-    $field['field_settings']['semantic_web']['name'] = 'name';
-    $field['field_settings']['semantic_web']['accession'] = 'name';
-    $field['field_settings']['semantic_web']['ns'] = 'foaf';
-    $field['field_settings']['semantic_web']['nsurl'] = 'http://xmlns.com/foaf/0.1/';
+    $field['field_settings']['semantic_web']['name'] = 'Comment';
+    $field['field_settings']['semantic_web']['accession'] = 'Comment';
+    $field['field_settings']['semantic_web']['ns'] = 'schema';
+    $field['field_settings']['semantic_web']['nsurl'] = 'https://www.schema.org/';
   }
 
   //
@@ -678,6 +699,9 @@ function tripal_chado_get_bundle_fields($entity_type, $bundle, $term) {
   $fields_path = drupal_get_path('module', 'tripal_chado') . '/includes/fields';
   $field_files = file_scan_directory($fields_path, '/^chado_.*\.inc$/');
 
+  // Add fields from the base table.
+  tripal_chado_get_bundle_fields_base__fields($fields, $entity_type, $bundle_name, $bundle_data);
+
   // Iterate through the fields, include the file and run the info function.
   foreach ($field_files as $file) {
     $field_type = $file->name;
@@ -701,10 +725,6 @@ function tripal_chado_get_bundle_fields($entity_type, $bundle, $term) {
     $fields[$field_name] = $field_info;
   }
 
-  // Adds any remaining base fields that may not have been dealt with
-  // by a custom field.
-  tripal_chado_add_bundle_fields_base__fields($fields, $entity_type, $bundle_name, $bundle_data);
-
   return $fields;
 }
 
@@ -712,7 +732,7 @@ function tripal_chado_get_bundle_fields($entity_type, $bundle, $term) {
 /**
  * Adds the fields for the base table to the entity.
  */
-function tripal_chado_add_bundle_fields_base__fields(&$fields, $entity_type_name, $bundle_name, $bundle_data) {
+function tripal_chado_get_bundle_fields_base__fields(&$fields, $entity_type_name, $bundle_name, $bundle_data) {
 
   $table_name = $bundle_data['data_table'];
   $type_table = $bundle_data['type_table'];
@@ -736,7 +756,7 @@ function tripal_chado_add_bundle_fields_base__fields(&$fields, $entity_type_name
     }
 
     // Get the field defaults for this column.
-    $field_info = tripal_chado_add_bundle_fields_base__fields_defaults($table_name, $schema, $column_name);
+    $field_info = tripal_chado_get_bundle_fields_base__fields_defaults($table_name, $schema, $column_name);
 
 
     // TODO: add in a call to drupal_alter to allow other modules to change
@@ -770,27 +790,9 @@ function tripal_chado_add_bundle_fields_base__fields(&$fields, $entity_type_name
 
     // Add the field to the bundle.
     $fields[$field_name] = $field_info;
-    //tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
   }
 }
 
-
-/**
- * Implements hook_field_attach_validate().
- *
- * This function is used to validate entity-wide validation any of the fields
- * attached to an entity.
- */
-function tripal_chado_field_attach_validate($entity_type, $entity, &$errors) {
-  $bundle_name = $entity->bundle;
-  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-  $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
-
-  // Provide some higher-level validation for the organism type.
-  if ($term->name == 'organism') {
-
-  }
-}
 
 
 

@@ -235,7 +235,7 @@ function chado_insert_property($record, $property, $options = array()) {
          "The property is already assigned to the record with the following " .
          "rank.  And, because the 'force_rank' option is used, the property " .
          "cannot be added: %property.",
-          array('%property' => print_r($property, true)));
+          array('%property' => print_r($property, TRUE)));
         return FALSE;
       }
     }

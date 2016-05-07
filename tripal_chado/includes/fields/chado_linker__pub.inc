@@ -67,10 +67,10 @@ function chado_linker__pub_attach_info($entity_type, $bundle, $target) {
       'chado_column' => $pkey,
       'base_table' => $table_name,
       'semantic_web' => array(
-        'name' => '',
-        'accession' => '',
-        'ns' => '',
-        'nsurl' => '',
+        'name' => 'publication',
+        'accession' => 'publication',
+        'ns' => 'schema',
+        'nsurl' => 'https://schema.org/',
       ),
     ),
   );

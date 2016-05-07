@@ -119,7 +119,7 @@ class chado_gene__transcripts extends TripalField {
     $headers = array('Feature Name', 'Unique Name', 'Type', 'Location');
     $rows = array();
     foreach ($items as $delta => $item) {
-      $entity_id = $item['entity_id'];
+
       $transcript = $item['value'];
 
       // Get the field values
@@ -129,7 +129,8 @@ class chado_gene__transcripts extends TripalField {
       $type = $transcript['type'];
 
       // Add a link i there is an entity.
-      if ($entity_id) {
+      if (array_key_exists('entity_id', $transcript) and $transcript['$entity_id']) {
+        $entity_id = $transcript['entity_id'];
         $feature_name = l($feature_name, "bio_data/" . $entity_id, array('attributes' => array('target' => "_blank")));
       }
       $rows[] = array($feature_name, $feature_uname, $type, $loc);
@@ -185,7 +186,7 @@ class chado_gene__transcripts extends TripalField {
     foreach ($transcripts as $transcript) {
       // link the feature to it's node
       $feature_name = $transcript->record->subject_id->name;
-      $entity_id = $transcript->record->subject_id->entity_id;
+
       $locations = $transcript->child_featurelocs;
       $loc = "";
       foreach ($locations AS $location) {
@@ -198,8 +199,11 @@ class chado_gene__transcripts extends TripalField {
         'location' => $loc,
 
       );
-      $entity->{$field_name}['und'][$i]['entity_id'] = $entity_id;
-      $entity->{$field_name}['und'][$i]['entity_type'] = 'TripalEntity';
+      if (property_exists($transcript->record->subject_id, 'entity_id')) {
+        $entity_id = $transcript->record->subject_id->entity_id;
+        $entity->{$field_name}['und'][$i]['entity_id'] = $entity_id;
+        $entity->{$field_name}['und'][$i]['entity_type'] = 'TripalEntity';
+      }
       $i++;
     }
   }

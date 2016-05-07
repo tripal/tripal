@@ -66,9 +66,9 @@ class chado_linker__contact extends TripalField {
         'chado_column' => $pkey,
         'base_table' => $table_name,
         'semantic_web' => array(
-          'name' => '',
-          'accession' => '',
-          'ns' => '',
+          'name' => 'contact',
+          'accession' => 'contact',
+          'ns' => 'local',
           'nsurl' => '',
         ),
       ),
@@ -145,8 +145,19 @@ class chado_linker__contact extends TripalField {
     }
   }
 
+  /**
+   * @see TripalField::settings_form()
+   */
   public function settings_form($field, $instance, $has_data) {
+    $element = array();
 
+    // TODO: add settings here.
+
+    // Add in the semantic web fields.
+    $parent_elements = parent::settings_form($field, $instance, $has_data);
+    $element = array_merge($element, $parent_elements);
+
+    return $element;
   }
 
 

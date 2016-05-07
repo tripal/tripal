@@ -462,6 +462,7 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
   // TODO: should we allow for custom ordering of fields for web services
   // or use the default display ordering?
   $fields = field_info_instances('TripalEntity', $bundle->name);
+
   uasort($fields, function($a, $b) {
     $a_weight = (is_array($a) && isset($a['display']['default']['weight'])) ? $a['display']['default']['weight'] : 0;
     $b_weight = (is_array($b) && isset($b['display']['default']['weight'])) ? $b['display']['default']['weight'] : 0;
@@ -475,27 +476,19 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
   //$response['fields'] = $fields;
   foreach ($fields as $field_name => $field) {
     $field_info = field_info_field($field_name);
-    $items = field_get_items('TripalEntity', $entity, $field_name);
+    $settings = $field_info['settings'];
 
     // By default, the label for the key in the output should be the
     // term from the vocabulary that the field is assigned. But in the
     // case that the field is not assigned a term, we must use the field name.
     $key = $field['field_name'];
-    if (array_key_exists('semantic_web', $field['settings'])) {
-      if (array_key_exists('name', $field['settings']['semantic_web']) and
-          $field['settings']['semantic_web']['name']) {
-        $key = $field['settings']['semantic_web']['name'];
-      }
-    }
-
-    // Get the semantic web settings for this field.
-    $field_type = '';
-    if (array_key_exists('semantic_web', $field['settings'])) {
-      $field_name = $field['settings']['semantic_web']['name'];
-      if ($field_name) {
-        $accession = $field['settings']['semantic_web']['accession'];
-        $ns = $field['settings']['semantic_web']['ns'];
-        $nsurl = $field['settings']['semantic_web']['nsurl'];
+    if (array_key_exists('semantic_web', $settings)) {
+      if (array_key_exists('name', $settings['semantic_web']) and
+          $settings['semantic_web']['name']) {
+        $key = $settings['semantic_web']['name'];
+        $nsurl = $settings['semantic_web']['nsurl'];
+        $ns = $settings['semantic_web']['ns'];
+        $accession = $settings['semantic_web']['accession'];
         $response['@context'][$ns] = $nsurl;
         $response['@context'][$key] = $ns . ':' . $accession;
       }
@@ -507,11 +500,12 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
     }
 
     $value = array();
+    $items = field_get_items('TripalEntity', $entity, $field_name);
     for ($i = 0; $i < count($items); $i++) {
 
       // If the value for this key is an array with an 'entity_id' key then
       // we want to do a substitution.
-      if (array_key_exists('entity_id', $items[0])) {
+      if (array_key_exists('entity_id', $items[$i]) and $items[$i]['entity_id']) {
         $lentity = entity_load($items[$i]['entity_type'], array($items[$i]['entity_id']));
         $lentity = reset($lentity);
         $lterm = tripal_load_term_entity(array('term_id' => $lentity->term_id));
