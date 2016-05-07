@@ -10,6 +10,8 @@ stylesheets[all][] = theme/css/tripal.css
 scripts[]          = theme/js/tripal.js
 
 files[] = views_handlers/tripal_views_handler_filter_select_string.inc
+files[] = views_handlers/tripal_views_handler_field_entity.inc
+files[] = views_handlers/tripal_views_handler_field_entity_status.inc
 
 dependencies[] = views
 dependencies[] = path

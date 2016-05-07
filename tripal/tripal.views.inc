@@ -319,6 +319,12 @@ function tripal_views_views_handlers() {
       'tripal_views_handler_filter_select_string' => array(
         'parent' => 'views_handler_filter_string',
       ),
+      'tripal_views_handler_field_entity' => array(
+        'parent' => 'tripal_views_handler_field_entity',
+      ),
+      'tripal_views_handler_field_entity_status' => array(
+        'parent' => 'tripal_views_handler_field_entity_status',
+      ),
 //       'tripal_views_handler_filter_textarea' => array(
 //         'parent' => 'views_handler_filter',
 //       ),

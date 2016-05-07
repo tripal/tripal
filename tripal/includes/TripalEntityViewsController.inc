@@ -23,14 +23,17 @@ class TripalEntityViewsController extends EntityDefaultViewsController {
     $data['tripal_entity']['changed']['help'] = t('The date that the content was last updated.');
 
     $data['tripal_entity']['id']['title'] = 'Tripal Content ID';
-    $data['tripal_entity']['id']['help'] = 'The title for the content';
-
-    $data['tripal_entity']['id']['title'] = 'Tripal Content ID';
     $data['tripal_entity']['id']['help'] = 'The unique numeric ID for the content';
 
+
     $data['tripal_entity']['title']['help'] = 'The content\'s title.';
+    $data['tripal_entity']['title']['field']['handler'] = 'tripal_views_handler_field_entity';
+
     $data['tripal_entity']['uid']['help'] = 'The User\'s unique ID.';
+
     $data['tripal_entity']['status']['help'] = 'The publish status.';
+    $data['tripal_entity']['status']['field']['handler'] = 'tripal_views_handler_field_entity_status';
+
 
     $data['tripal_entity']['uid']['relationship'] = array(
       'base' => 'users',
@@ -46,6 +49,7 @@ class TripalEntityViewsController extends EntityDefaultViewsController {
     unset($data['tripal_entity']['bundle']);
     unset($data['tripal_entity']['term_id']);
     unset($data['tripal_entity']['type']);
+
     return $data;
   }
 
