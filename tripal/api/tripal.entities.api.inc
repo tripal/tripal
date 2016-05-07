@@ -605,6 +605,7 @@ function tripal_set_bundle_variable($variable_name, $bundle_id, $value) {
 
 }
 
+
 /**
  * @section
  * Title & URL Formats.

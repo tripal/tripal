@@ -115,6 +115,8 @@ function tripal_get_feature_sequences($feature, $options) {
   $relationship       = array_key_exists('relationship_type', $options)  ? $options['relationship_type']  : '';
   $rel_part           = array_key_exists('relationship_part', $options)  ? $options['relationship_part']  : '';
   $is_html            = array_key_exists('is_html', $options)            ? $options['is_html']            : 0;
+  $is_txt             = array_key_exists('is_txt', $options)             ? $options['is_txt']             : 0;
+  $is_raw             = array_key_exists('is_raw', $options)             ? $options['is_raw']             : 1;
 
   if (!$upstream) {
     $upstream = 0;
@@ -202,7 +204,7 @@ function tripal_get_feature_sequences($feature, $options) {
   $parent_sql ='
     SELECT featureloc_id, srcname, srcfeature_id, strand, srctypename, typename,
       fmin, fmax, upstream, downstream, adjfmin, adjfmax,
-      substring(residues from (adjfmin + 1) for (upstream + (fmax - fmin) + downstream))  as residues,
+      substring(residues from (cast(adjfmin as int4) + 1) for cast((upstream + (fmax - fmin) + downstream) as int4))  as residues,
       genus, species
     FROM (
       SELECT
@@ -410,7 +412,7 @@ function tripal_get_feature_sequences($feature, $options) {
       if ($is_html) {
         $seq = wordwrap($seq, $num_bases_per_line, "<br>", TRUE);
       }
-      else {
+      if ($is_txt) {
         $seq = wordwrap($seq, $num_bases_per_line, "\r\n", TRUE);
       }
       if (!$seq) {

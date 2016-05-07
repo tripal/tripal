@@ -123,6 +123,9 @@ class chado_linker__relationship extends TripalField {
         continue;
       }
 
+      $phrase = preg_replace("/$subject_type/", "<b>$subject_type</b>", $phrase);
+      $phrase = preg_replace("/$object_type/", "<b>$object_type</b>", $phrase);
+
       if (array_key_exists('entity_id', $item['value']['object'])) {
         $object_entity_id = $item['value']['object']['entity_id'];
         if ($object_entity_id != $entity->id) {
@@ -138,8 +141,6 @@ class chado_linker__relationship extends TripalField {
         }
       }
 
-      $phrase = preg_replace("/$subject_type/", "<b>$subject_type</b>", $phrase);
-      $phrase = preg_replace("/$object_type/", "<b>$object_type</b>", $phrase);
       $rows[] = array($phrase);
     }
 
@@ -278,7 +279,7 @@ class chado_linker__relationship extends TripalField {
             '@type' => $relationship->object_id->type_id->dbxref_id->db_id->name .
                ':' . $relationship->subject_id->type_id->dbxref_id->accession,
             'type' =>  $object_type,
-            'name' => $oject_name,
+            'name' => $object_name,
           )
         );
         if (property_exists($relationship->subject_id, 'uniquename')) {

@@ -26,6 +26,21 @@ function tripal_load_chado_entity($table, $record_id) {
 }
 
 /**
+ * Retrieves the entity ID using a record ID.
+ *
+ * @param unknown $data_table
+ * @param unknown $record_id
+ */
+function tripal_get_chado_entity_id($data_table, $record_id) {
+   return db_select('chado_entity', 'ce')
+     ->fields('ce', array('entity_id'))
+     ->condition('data_table', $data_table)
+     ->condition('record_id', $record_id)
+     ->execute()
+     ->fetchField();
+}
+
+/**
  * Publishes content in Chado as a new TripalEntity entity.
  *
  * @param $values
