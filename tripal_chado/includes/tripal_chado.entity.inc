@@ -253,7 +253,8 @@ function tripal_chado_entity_property_get_value($entity, $options, $field_name, 
   // @todo: handle fields with multiple values.
   else {
     $render_array = field_view_value($entity_type, $entity, $field_name, $items[0], $display, $langcode);
-    drupal_set_message('Tripal Chado currently only supports views integration for single value fields. The first value has been shown.', 'warning');
+    drupal_set_message('Tripal Chado currently only supports views integration ' .
+      'for single value fields. The first value has been shown.', 'warning');
   }
 
   return drupal_render($render_array);

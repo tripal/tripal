@@ -242,6 +242,14 @@ class chado_base__organism_id extends TripalField {
 
     return $element;
   }
+
+
+  /**
+   * @see TripalField::views_data()
+   */
+  public function views_data_alter(&$data, $field, $entity_info) {
+    dpm($data);
+  }
 }
 
 

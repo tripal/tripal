@@ -31,6 +31,17 @@ class TripalField {
     return array(
     );
   }
+
+
+  /**
+   * Provides an array that allows Tripal to attach a field to an entity.
+   *
+   * @todo: This function needs better documentation.
+   *
+   */
+  public function attach_info($entity_type, $bundle, $settings) {
+
+  }
   /**
    * Provides information about the widget for this field.
    *
@@ -242,10 +253,17 @@ class TripalField {
   }
 
   /**
-   * Provides an array that allows Tripal to attach a field to an entity.
+   * Describes this fields "data tables" to Views.
    *
+   * This function is the equivalent of the hook_views_data() function of
+   * the Drupal Views API.  It provides the necessary details to allow
+   * Views to integrate the field.
+   *
+   * @return
+   *   An associative array describing the data structure of the field.
    */
-  public function attach_info($entity_type, $bundle, $settings) {
+  public function views_data_alter(&$data, $field, $entity_info) {
 
   }
+
 }

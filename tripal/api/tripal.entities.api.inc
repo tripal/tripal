@@ -198,11 +198,14 @@ function tripal_refresh_bundle_fields($bundle_name) {
 
   // Allow modules now add fields to the bundle
   module_invoke_all('add_bundle_fields', 'TripalEntity', $bundle, $term);
+
+  // Allow modules to update existing fields
+  module_invoke_all('update_bundle_fields', 'TripalEntity', $bundle, $term);
 }
 
 
 /**
- * Adds a field to an Entity bundle.
+ * Adds a new field and attaches it to a bundle
  *
  * @param $field_name
  *   The name of the field.
@@ -231,18 +234,12 @@ function tripal_refresh_bundle_fields($bundle_name) {
  * @param $bundle_name
  *   The bundle name.
  *
+ * TODO: this function really shouldn't try to create an instance and
+ * attach to a bundle  at the same time.
  */
 function tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name) {
 
   $field = field_info_field($field_name);
-
-  // If the field is not present something is wrong and we should return.
-//   if (!$field) {
-//     tripal_report_error('tripal', TRIPAL_ERROR,
-//         "The field, '%name', cannot be found. Cannot add it to the bundle.",
-//         array('%name' => $field_name));
-//     return;
-//   }
 
   // If the field exists and is attached to this bundle then just return,
   // there is nothing left to do.
@@ -289,6 +286,104 @@ function tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $b
     'format' => array_key_exists('format', $field_info) ? $field_info['format'] : '',
   );
   field_create_instance($field_instance);
+}
+
+/**
+ * Updates an existing field and its attached instance to a bundle.
+ *
+ *
+ * @param $field_name
+ *   The name of the field.
+ * @param $field_info
+ *   An associative array containing the field information.  The following
+ *   key/value pairs are supported:
+ *     'field_type' : a valid field type.  May be any of the Drupal default
+ *       fields, one created by the tripal_chado module or another custom module.
+ *     'widget_type' : a valid widget type. May be any of the Drupal default
+ *       fields, one created by the tripal_chado module or another custom module.
+ *     'field_settings' : an array of settings that are appropriate for the
+ *       selected field type.
+ *     'widget_settings' : an array of settings that are appropriate for the
+ *       selected widget type.
+ *     'description' :  a default description for this field.
+ *     'label' : a label used as a header for this field.
+ *     'is_required' : indicates if the field is required in the edit form.
+ *     'cardinality' : indicates the number of values this field can support.
+ *       the default is 1 (meaning only one value). Use a value of
+ *       FIELD_CARDINALITY_UNLIMITED for unlimited number of values.
+ *     'default_value' : A default value for the field.
+ *     'format' : A string indicating the format for the field. Must be
+ *       specific to the field.
+ * @param $entity_type_name
+ *   The entity type name.
+ * @param $bundle_name
+ *   The bundle name.
+ *
+ * @return
+ *   FALSE if the field could not be updated
+ *
+ * TODO: this function really shouldn't try to create an instance and
+ * attach to a bundle  at the same time.
+ *
+ */
+function tripal_update_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name) {
+
+  $field = field_info_field($field_name);
+
+  // If the field doesn't exists or is not attached to this bundle then
+  // just return, there is nothing left to do.
+  if (!$field or !array_key_exists('bundles', $field) or
+      !array_key_exists($entity_type_name, $field['bundles']) or
+      !in_array($bundle_name, $field['bundles'][$entity_type_name])) {
+    return FALSE;
+  }
+
+  $field['field_name'] = $field_name;
+  if (array_key_exists('field_type', $field_info)) {
+    $field['cardinality'] = $field_info['cardinality'];
+  }
+  if (array_key_exists('locked', $field_info)) {
+    $field['locked'] = $field_info['locked'];
+  }
+  if (array_key_exists('storage', $field_info)) {
+    $field['storage']['type'] = $field_info['storage'];
+  }
+  if (array_key_exists('field_settings', $field_info)) {
+    $field['settings'] = $field_info['field_settings'];
+  }
+
+  field_update_field($field);
+
+  $field_instance['field_name'] = $field_name;
+  $field_instance['entity_type'] = $entity_type_name;
+  $field_instance['bundle'] = $bundle_name;
+  if (array_key_exists('label', $field_info)) {
+    $field['label'] = $field_info['label'];
+  }
+  if (array_key_exists('description', $field_info)) {
+    $field['description'] = $field_info['description'];
+  }
+  if (array_key_exists('widget', $field_info)) {
+    if (array_key_exists('widget_type', $field_info['widget'])) {
+      $field['widget']['type'] = $field_info['widget_type'];
+    }
+    if (array_key_exists('widget_settings', $field_info['widget'])) {
+      $field['widget']['settings'] = $field_info['widget_settings'];
+    }
+  }
+  if (array_key_exists('required', $field_info)) {
+    $field['required'] = $field_info['is_required'];
+  }
+  if (array_key_exists('settings', $field_info)) {
+    $field['settings'] = $field_info['field_settings'];
+  }
+  if (array_key_exists('default_value', $field_info)) {
+    $field['default_value'] = $field_info['default_value'];
+  }
+  if (array_key_exists('format', $field_info)) {
+    $field['format'] = $field_info['format'];
+  }
+  field_update_instance($field_instance);
 }
 
 /**

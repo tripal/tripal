@@ -15,11 +15,11 @@ class chado_views_handler_filter_boolean extends views_handler_filter_boolean_op
   function value_form(&$form, &$form_state) {
     parent::value_form($form, $form_state);
 
-    // change the keys of the options so that this filter can be optional.
+    // Change the keys of the options so that this filter can be optional.
     $form['value']['#options']['f'] = $form['value']['#options'][0];
     $form['value']['#options']['t'] = $form['value']['#options'][1];
     unset($form['value']['#options'][0], $form['value']['#options'][1]);
- 
+
   }
 
   /**
@@ -50,7 +50,7 @@ class chado_views_handler_filter_date extends views_handler_filter_date {
 
     // Adds joins to chado_entity and the chado table this field is from.
     $alias = _chado_views_add_table_joins($this);
-   
+
     // Then allow the parent handler to add the where.
     $field = $alias .'.'. $this->definition['chado_field'];
     $info = $this->operators();
@@ -93,7 +93,7 @@ class chado_views_handler_filter_date extends views_handler_filter_date {
  * Adds support for chado foreign key filters.
  */
 class chado_views_handler_filter_fk extends views_handler_filter {
-  
+
   /**
    * {@inheritdoc}
    */
@@ -106,7 +106,7 @@ class chado_views_handler_filter_fk extends views_handler_filter {
     if (is_array($this->value[0]) AND sizeof($this->value) == 1) {
       $this->value = $this->value[0];
     }
-    
+
     // Now add the restriction to the chado table as specified by user input.
     if (sizeof($this->value) == 1) {
       $value = current($this->value);
@@ -173,16 +173,16 @@ class chado_views_handler_filter_fk extends views_handler_filter {
       }
     }
   }
-  
+
   function get_select_options() {
 
     if (isset($this->options['display_column'])) {
       $name_field = $this->options['display_column'];
-    } 
+    }
     else {
       $name_field = 'name';
     }
-    
+
     // If the admin has selected to show all the values then just select all
     // records from the table referenced by the foreign key.
     if ($this->options['show_all']) {
@@ -224,7 +224,7 @@ class chado_views_handler_filter_fk extends views_handler_filter {
         '!name_field' => $name_field
       ));
     }
-    
+
     $resource = chado_query($sql);
     $options = array();
 
@@ -261,14 +261,14 @@ class chado_views_handler_filter_fk extends views_handler_filter {
       ),
       '#default_value' => $this->options['values_form_type'],
     );
-    
+
     $form['show_all'] = array(
       '#type' => 'checkbox',
       '#title' => t('Show All'),
       '#description' => t('When selected all records from the parent table will be shown in the drop-down rather than just those used in the current table.'),
       '#default_value' => $this->options['show_all'],
     );
- 
+
     $form['select_multiple'] = array(
       '#type' => 'checkbox',
       '#title' => t('Select Multiple'),
@@ -299,7 +299,7 @@ class chado_views_handler_filter_fk extends views_handler_filter {
       '#options' => $options,
       '#default_value' => $this->options['display_column'],
     );
-    
+
     $form['max_length'] = array(
       '#type' => 'textfield',
       '#title' => t('Max Width'),
@@ -334,7 +334,7 @@ class chado_views_handler_filter_fk extends views_handler_filter {
       return check_plain((string) $this->operator) . ' ' . check_plain((string) $this->value);
     }
   }
-  
+
   /**
    * {@inheritdoc}
    */
@@ -360,7 +360,7 @@ class chado_views_handler_filter_fk extends views_handler_filter {
       'bool' => TRUE,
       'export' => TRUE,
     );
-    
+
     // display column.
     $table_defn = chado_get_schema($this->definition['foreign_key']['right_table']);
     $fields = array_keys($table_defn['fields']);
@@ -390,7 +390,7 @@ class chado_views_handler_filter_fk extends views_handler_filter {
 class chado_views_handler_filter_string extends views_handler_filter_string {
 
   function query() {
-    
+
     // Adds joins to chado_entity and the chado table this field is from.
     $alias = _chado_views_add_table_joins($this);
 
@@ -414,7 +414,7 @@ class chado_views_handler_filter_string extends views_handler_filter_string {
  */
 function _chado_views_add_table_joins(&$handler) {
 
-  // First we need to join to the chado_entity table where the link between an 
+  // First we need to join to the chado_entity table where the link between an
   // entity and it's chado record is stored.
   $join = new views_join();
   $join->construct('chado_entity', $handler->table, 'id', 'chado_entity_id');
@@ -422,7 +422,7 @@ function _chado_views_add_table_joins(&$handler) {
 
   // Restrict the chado_entity join to only return the table this field is from.
   $handler->query->add_where(0, $alias .'.data_table', $handler->definition['chado_table'], '=');
-  
+
   // Now, we need to join from chado_entity to the chado table needed by this field.
   // This only works if the field is from the base table.
   // @todo: fix handler to work with non-base tables.

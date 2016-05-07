@@ -560,12 +560,44 @@ function tripal_chado_field_is_empty($item, $field) {
   return TRUE;
 }
 
-
+/**
+ * Implements hook_update_bundle_fields().
+ *
+ */
+function tripal_chado_update_bundle_fields($entity_type, $bundle, $term) {
+  // Get the list of fields that should be attached to this bundle and
+  // add them.
+  $bundle_name = $bundle->name;
+  $fields = tripal_chado_get_bundle_fields($entity_type, $bundle, $term);
+  foreach ($fields as $field_name => $field_info) {
+    tripal_update_bundle_field($field_name, $field_info, $entity_type, $bundle_name);
+  }
+}
 
 /**
  * Implements hook_add_bundle_fields().
  */
 function tripal_chado_add_bundle_fields($entity_type, $bundle, $term) {
+
+  // Get the list of fields that should be attached to this bundle and
+  // add them.
+  $bundle_name = $bundle->name;
+  $fields = tripal_chado_get_bundle_fields($entity_type, $bundle, $term);
+  foreach ($fields as $field_name => $field_info) {
+    tripal_add_bundle_field($field_name, $field_info, $entity_type, $bundle_name);
+  }
+}
+/**
+ * Retreives a list of the fields that should be attached to the bundle.
+ *
+ * @return
+ *   An associative array of fields to attach to the bundle. The keys are the
+ *   field names and the values is an info array that can be passed to the
+ *   tripal_add_bundle_field() function.
+ */
+function tripal_chado_get_bundle_fields($entity_type, $bundle, $term) {
+
+  $fields = array();
 
   $bundle_name = $bundle->name;
 
@@ -642,27 +674,6 @@ function tripal_chado_add_bundle_fields($entity_type, $bundle, $term) {
   tripal_set_bundle_variable('chado_table', $bundle->id, $bundle_data['data_table']);
   tripal_set_bundle_variable('chado_column', $bundle->id, $bundle_data['field']);
 
-
-/*   // Call the hook_attach_info() for all Chado fields to see if any of them
-  // want to attach themsevles to this bundle.
-  // Iterate through the fields, include the file and run the info function.
-  $fields_path = drupal_get_path('module', 'tripal_chado') . '/includes/fields';
-  $field_files = file_scan_directory($fields_path, '/^chado_.*\.inc$/');
-  foreach ($field_files as $file) {
-    $field_type = $file->name;
-    module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-    $function = $field_type . '_attach_info';
-    if (function_exists($function)) {
-      // Get the field info.
-      $field_info = $function($entity_type, $bundle, $bundle_data);
-      if (!is_array($field_info) or count(array_keys($field_info)) == 0) {
-        continue;
-      }
-      $field_name = $field_info['field_name'];
-      tripal_add_bundle_field($field_name, $field_info, $entity_type, $bundle_name);
-    }
-  } */
-
   // Find all of the files in the tripal_chado/includes/fields directory.
   $fields_path = drupal_get_path('module', 'tripal_chado') . '/includes/fields';
   $field_files = file_scan_directory($fields_path, '/^chado_.*\.inc$/');
@@ -686,21 +697,22 @@ function tripal_chado_add_bundle_fields($entity_type, $bundle, $term) {
       continue;
     }
     $field_name = $field_info['field_name'];
-    tripal_add_bundle_field($field_name, $field_info, $entity_type, $bundle_name);
+
+    $fields[$field_name] = $field_info;
   }
 
   // Adds any remaining base fields that may not have been dealt with
   // by a custom field.
-  tripal_chado_add_bundle_fields_base__fields($entity_type, $bundle_name, $bundle_data);
+  tripal_chado_add_bundle_fields_base__fields($fields, $entity_type, $bundle_name, $bundle_data);
 
-
+  return $fields;
 }
 
 
 /**
  * Adds the fields for the base table to the entity.
  */
-function tripal_chado_add_bundle_fields_base__fields($entity_type_name, $bundle_name, $bundle_data) {
+function tripal_chado_add_bundle_fields_base__fields(&$fields, $entity_type_name, $bundle_name, $bundle_data) {
 
   $table_name = $bundle_data['data_table'];
   $type_table = $bundle_data['type_table'];
@@ -757,7 +769,8 @@ function tripal_chado_add_bundle_fields_base__fields($entity_type_name, $bundle_
     }
 
     // Add the field to the bundle.
-    tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
+    $fields[$field_name] = $field_info;
+    //tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
   }
 }
 

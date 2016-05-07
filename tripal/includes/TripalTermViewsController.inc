@@ -10,15 +10,26 @@ class TripalTermViewsController extends EntityDefaultViewsController {
   public function views_data() {
     $data = parent::views_data();
 
-    // Change handlers for Date Timestamps.
-    // Date Created.
-    $data['tripal_term']['created']['field']['handler'] = 'views_handler_field_date';
-    $data['tripal_term']['created']['sort']['handler'] = 'views_handler_sort_date';
-    $data['tripal_term']['created']['filter']['handler'] = 'views_handler_filter_date';
-    // Date Changed/Updated.
-    $data['tripal_term']['changed']['field']['handler'] = 'views_handler_field_date';
-    $data['tripal_term']['changed']['sort']['handler'] = 'views_handler_sort_date';
-    $data['tripal_term']['changed']['filter']['handler'] = 'views_handler_filter_date';
+    $data['tripal_term']['table']['group'] = 'Tripal Content Type';
+
+    $data['tripal_term']['accession']['title'] = 'Term ID';
+    $data['tripal_term']['accession']['help'] = t('The unique term ID (accession) of the vocabulary term to which a Tripal content type is asscoiated.');
+
+    $data['tripal_term']['name']['title'] = 'Content Type';
+    $data['tripal_term']['name']['help'] = t('The name of a Tripal content type.');
+    $data['tripal_term']['name']['filter']['handler'] = 'tripal_views_handler_filter_select_string';
+
+    $data['tripal_term']['vocab_id']['title'] = t('Vocabulary ID');
+    $data['tripal_term']['vocab_id']['help'] = t('The internal numeric ID for the vocabulary to which the content type term belongs.');
+    $data['tripal_term']['vocab_id']['relationship'] = array(
+      'base' => 'tripal_vocab',
+      'base field' => 'id',
+      'handler' => 'views_handler_relationship',
+      'label' => t('Tripal Content Vocabulary'),
+      'title' => t('Tripal Content Vocabulary'),
+      'help' => t('Associates the vocabulary ID of the Tripal content type with information about the vocabulary.')
+    );
+
 
     $data['tripal_term']['table']['join'] = array();
 
@@ -28,6 +39,16 @@ class TripalTermViewsController extends EntityDefaultViewsController {
       'left_field' => 'term_id',
       'field' => 'id',
     );
+
+    // It is not intended that the following fields will every be used by the
+    // end-user.
+    unset($data['tripal_term']['id']);
+    unset($data['tripal_term']['changed']);
+    unset($data['tripal_term']['created']);
+
+    // This should not be a base table. It's not useful to create a
+    // view of the tripal_term table.
+    unset($data['tripal_term']['table']['base']);
 
     return $data;
   }

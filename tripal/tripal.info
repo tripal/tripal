@@ -9,6 +9,8 @@ configure = admin/tripal
 stylesheets[all][] = theme/css/tripal.css
 scripts[]          = theme/js/tripal.js
 
+files[] = views_handlers/tripal_views_handler_filter_select_string.inc
+
 dependencies[] = views
 dependencies[] = path
 dependencies[] = search
