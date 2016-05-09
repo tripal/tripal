@@ -56,10 +56,10 @@ class chado_linker__featureloc extends TripalField {
         'chado_column' => $pkey,
         'base_table' => 'feature',
         'semantic_web' => array(
-          'name' => '',
-          'accession' => '',
-          'ns' => '',
-          'nsurl' => '',
+          'name' => 'position_of',
+          'accession' => 'position_of',
+          'ns' => 'SO',
+          'nsurl' => 'http://www.sequenceontology.org/',
         ),
       ),
     );

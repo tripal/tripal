@@ -127,7 +127,7 @@ class chado_feature__md5checksum  extends TripalField {
 
     $field_name = $field['field_name'];
     if ($record and property_exists($record, 'md5checksum')) {
-      $entity->{$field_name}['und'][] = array('value' => $record->md5checksum);
+      $entity->{$field_name}['und'][0]['value'] = $record->md5checksum;
     }
   }
 }

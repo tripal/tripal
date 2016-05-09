@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
-* Contains tripal_views_handler_filter_select_string Filter Handler
+* Contains tripal_views_handler_filter_string_selectbox Filter Handler
 */
 
 /**
@@ -10,7 +10,7 @@
 *
 * @ingroup tripal_views
 */
-class tripal_views_handler_filter_select_string extends views_handler_filter_string {
+class tripal_views_handler_filter_string_selectbox extends views_handler_filter_string {
 
   /**
    * {@inheritdoc}

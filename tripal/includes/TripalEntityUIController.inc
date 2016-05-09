@@ -162,17 +162,79 @@ function tripal_view_entity($entity, $view_mode = 'full') {
   *   A form array describing this listing to the Form API.
   */
  function tripal_content_overview_form($form, &$form_state) {
-
+   $filter_status = '';
+   $filter_type = '';
+   if (array_key_exists('values', $form_state)) {
+     if ($form_state['values']['status'] != '[any]') {
+       $filter_status = preg_replace('/status-(\d+)/', '\1', $form_state['values']['status']);
+     }
+     if ($form_state['values']['type'] != '[any]') {
+       $filter_type = $form_state['values']['type'];
+     }
+   }
    // Set the title to be informative (defaults to content for some reason).
    drupal_set_title('Tripal Content');
 
+   $form['filter'] = array(
+     '#type' => 'fieldset',
+     '#title' => 'Filter',
+     '#collapsible' => TRUE,
+     '#collapsed' => TRUE,
+   );
+   $etypes = db_select('tripal_bundle', 'tb')
+     ->fields('tb', array('id', 'label'))
+     ->execute()
+     ->fetchAllKeyed();
+   $etypes = array('[any]' => 'any') +  $etypes;
+   $form['filter']['type'] = array(
+     '#type' => 'select',
+     '#title' => 'Content Type',
+     '#options' => $etypes,
+   );
+   $form['filter']['status'] = array(
+     '#type' => 'select',
+     '#title' => 'Status',
+     '#options' => array(
+       '[any]' => 'any',
+       'status-1' => 'published',
+       'status-0' => 'not published'
+     ),
+   );
+   $form['filter']['filterbtn'] = array(
+     '#type' => 'submit',
+     '#value' => 'Filter',
+   );
+
    // Retrieve a pages list of all tripal entitles (ie: biological data).
    // This will return the 25 most recently created entities.
-   $entities = db_select('tripal_entity', 'td')
-     ->fields('td')
-     ->orderBy('created', 'DESC')
+   $query = db_select('tripal_entity', 'td')
+     ->fields('td');
+   if ($filter_type) {
+     $query = $query->condition('term_id', $filter_type);
+   }
+   if (is_numeric($filter_status)) {
+     $query = $query->condition('status', $filter_status);
+   }
+   $entities = $query->orderBy('created', 'DESC')
      ->range(0,25)
      ->execute();
+
+   global $user;
+   $query = new EntityFieldQuery();
+   $query->entityCondition('entity_type', 'TripalEntity');
+   if ($filter_type) {
+     $query = $query->propertyCondition('term_id', $filter_type);
+   }
+   if (is_numeric($filter_status)) {
+     $query = $query->propertyCondition('status', $filter_status);
+   }
+//   $query = $query->fieldCondition('feature__name', 'value', 'orange1.1g022797m');
+//   $query = $query->fieldCondition('feature__uniquename', 'value', 'PAC:18136225');
+
+   $result = $query->range(0, 25)
+     ->addMetaData('account', $user)
+     ->execute();
+   dpm($result);
 
    $headers = array('Title', 'Vocabulary', 'Term', 'Author', 'Status', 'Updated', 'Operations');
    $rows = array();
@@ -214,7 +276,7 @@ function tripal_view_entity($entity, $view_mode = 'full') {
    if (empty($rows)) {
      $rows[] = array(
        array(
-         'data' => t('No Tripal content available.'),
+         'data' => t('No content can be found.'),
          'colspan' => 7
        )
      );
@@ -236,6 +298,21 @@ function tripal_view_entity($entity, $view_mode = 'full') {
    );
 
    return $form;
+ }
+
+ /**
+  *
+  */
+ function tripal_content_overview_form_validate($form, &$form_state) {
+ }
+
+ /**
+  *
+  */
+ function tripal_content_overview_form_submit($form, &$form_state) {
+   // Always just rebuild the form on submit.  that will update the
+   // result table using the filters provided.
+   $form_state['rebuild'] = TRUE;
  }
 
  /**

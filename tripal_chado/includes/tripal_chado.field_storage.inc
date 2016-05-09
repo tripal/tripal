@@ -406,4 +406,12 @@ function tripal_chado_field_storage_unnest_fields($fields, $entity_type, $entity
  * NOTE: This function needs to exist or errors are triggered but so far it doesn't
  * appear to actually need to do anything...
  */
-function tripal_chado_field_storage_query($query) { }
+function tripal_chado_field_storage_query($query) {
+  dpm($query);
+  $fieldConditions = $query->fieldConditions;
+  foreach ($fieldConditions as $condition) {
+    $field = $condition['field'];
+    $field_name = $field['field_name'];
+    $column = $condition['column'];
+  }
+}

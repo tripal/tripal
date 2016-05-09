@@ -17,7 +17,7 @@ class TripalTermViewsController extends EntityDefaultViewsController {
 
     $data['tripal_term']['name']['title'] = 'Content Type';
     $data['tripal_term']['name']['help'] = t('The name of a Tripal content type.');
-    $data['tripal_term']['name']['filter']['handler'] = 'tripal_views_handler_filter_select_string';
+    $data['tripal_term']['name']['filter']['handler'] = 'tripal_views_handler_filter_string_selectbox';
 
     $data['tripal_term']['vocab_id']['title'] = t('Vocabulary ID');
     $data['tripal_term']['vocab_id']['help'] = t('The internal numeric ID for the vocabulary to which the content type term belongs.');
