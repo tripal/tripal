@@ -88,6 +88,48 @@ class chado_linker__expression extends TripalField {
 
   public function formatter_view(&$element, $entity_type, $entity,
       $field, $instance, $langcode, $items, $display) {
+        // Get the settings
+        $settings = $display['settings'];
+        $record = $entity->chado_record;
+        
+        $headers = array('Uniquename', 'Description', 'Publication');
+        $rows = array();
+        foreach ($items as $delta => $item) {
+        
+          $expression = $item['value'];
+        
+          // Get the field values
+          $expression_uname = $expression['uniquename'];
+          $description = $expression['description'];
+          $pub = $expression['publication'];
+        
+          // Add a link i there is an entity.
+          if (array_key_exists('entity_id', $expression) and $expression['$entity_id']) {
+            $entity_id = $expression['entity_id'];
+            $expression_uname = l($expression_uname, "bio_data/" . $entity_id, array('attributes' => array('target' => "_blank")));
+          }
+          $rows[] = array($expression_uname, $description, $pub->title);
+        }
+        $table = array(
+          'header' => $headers,
+          'rows' => $rows,
+          'attributes' => array(
+            'id' => 'tripal_linker-table-expression-object',
+            'class' => 'tripal-data-table'
+          ),
+          'sticky' => FALSE,
+          'caption' => "",
+          'colgroups' => array(),
+          'empty' => '',
+        );
+        $content = theme_table($table);
+        
+        // once we have our table array structure defined, we call Drupal's theme_table()
+        // function to generate the table.
+        $element[$delta] = array(
+          '#type' => 'markup',
+          '#markup' => $content,
+        );
   }
 
 
@@ -96,7 +138,7 @@ class chado_linker__expression extends TripalField {
 
   }
 
-  public function load($field, $entity, $record) {
+  public function load($field, $entity, $details) {
     $field_name = $field['field_name'];
     $field_type = $field['type'];
     $field_table = $field['settings']['chado_table'];
@@ -104,41 +146,29 @@ class chado_linker__expression extends TripalField {
 
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
-    $base_table = $record['record']->tablename;
+    $base_table = $details['record']->tablename;
     $pkey = $schema['primary key'][0];
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
-
-    // Set some defaults for the empty record.
-    $entity->{$field_name}['und'][0] = array(
-      'value' => '',
-      $field_table . '__' . $fkey_lcolumn => '',
-      $field_table . '__' . 'expression_id' => '',
-      $field_table . '--' . 'expression__name' => '',
-    );
 
     $linker_table = $base_table . '_expression';
     $options = array(
       'return_array' => 1,
     );
-    $record = chado_expand_var($record, 'table', $linker_table, $options);
-
-    if (count($record->$linker_table) > 0) {
+    $details = chado_expand_var($details, 'table', $linker_table, $options);
+    $record = $details['record'];
+    $exp = $record->$linker_table;
+    $exp = is_array($exp) ? $exp : array($exp);
+    if (count($exp) > 0) {
       $i = 0;
-      foreach ($record->$linker_table as $index => $linker) {
+      foreach ($exp as $index => $linker) {
         $expression = $linker->expression_id;
-        $entity->{$field_name}['und'][$i] = array(
-          'value' => $linker->$pkey,
-          $field_table . '__' . $fkey_lcolumn => $linker->$fkey_lcolumn->$fkey_lcolumn,
-          $field_table . '__' . 'expression_id' => $expression->expression_id,
-          $field_table . '--' . 'expression__name' => $expression->uniquename,
+        $entity->{$field_name}['und'][$i]['value'] = array(
+          'expression_id' => $expression->expression_id,
+          'uniquename' => $expression->uniquename,
+          'description' => $expression->description,
+          'publication' => $linker->pub_id
         );
-        if (property_exists($entity->chado_record->$field_column, 'entity_id')) {
-          $fk_entity_id = $entity->chado_record->$field_column->entity_id;
-          $entity->{$field_name}['und'][$i]['entity_id'] = $fk_entity_id;
-          $entity->{$field_name}['und'][$i]['entity_type'] = 'TripalEntity';
-        }
-
         $i++;
       }
     }
