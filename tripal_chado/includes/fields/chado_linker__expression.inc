@@ -126,7 +126,7 @@ class chado_linker__expression extends TripalField {
         // Add the item as a new row.
         $rows[] = array(
           array(
-            'data' => ucfirst($key),
+            'data' => ucfirst(str_replace('_', ' ', $key)),
             'header' => TRUE,
             'width' => '20%',
           ),
@@ -212,7 +212,18 @@ class chado_linker__expression extends TripalField {
             $entity->{$field_name}['und'][$i]['publication'][0]['entity_type'] = 'TripalEntity';
           }
         }
-
+        
+        // Add the linker_expressionprop
+        $linkerprop_table =  $linker_table . 'prop';
+        if (db_table_exists('chado.' . $linkerprop_table)) {
+          $exp_linker = chado_expand_var($exp_linker, 'table', $linkerprop_table, $options);
+          $exp_linkerprops = $exp_linker->feature_expressionprop;
+          if ($exp_linkerprops) {
+            foreach ($exp_linkerprops AS $linkerprop) {
+              $entity->{$field_name}['und'][$i]['value'][$linkerprop->type_id->name] = $linkerprop->value;
+            }
+          }
+        }
         // Add the fields for the widget form.  The name requres the following
         // format if the fields should be used as values for insertint/updating
         // into the chado table:  [table_name]__[field_name]
