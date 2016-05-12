@@ -77,7 +77,7 @@ function tripal_pub_importers_list() {
     'caption' => '',
     'sticky' => TRUE,
     'colgroups' => array(),
-    'empty' => 'There are currently importers',
+    'empty' => 'There are no currently importers',
   );
 
   $page .= theme_table($table);

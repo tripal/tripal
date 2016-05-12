@@ -107,6 +107,9 @@ class chado_linker__relationship extends TripalField {
     }
 
     foreach ($items as $delta => $item) {
+      if (!$item['value']) {
+        continue;
+      }
       $subject_name = $item['value']['subject']['name'];
       $subject_type = $item['value']['subject']['type'];
       $object_name = $item['value']['object']['name'];
@@ -159,7 +162,7 @@ class chado_linker__relationship extends TripalField {
       'sticky' => FALSE,
       'caption' => '',
       'colgroups' => array(),
-      'empty' => '',
+      'empty' => 'There are no relationships',
     );
 
     // once we have our table array structure defined, we call Drupal's theme_table()
@@ -187,7 +190,6 @@ class chado_linker__relationship extends TripalField {
     // Expand the object to include the relationships.
     $options = array(
       'return_array' => 1,
-      'order_by' => array('rank' => 'ASC'),
       // we don't want to fully recurse we only need information about the
       // relationship type and the object and subject  (including feature type
       // and organism)
@@ -204,7 +206,14 @@ class chado_linker__relationship extends TripalField {
       ),
     );
     $rel_table = $base_table . '_relationship';
+    $schema = chado_get_schema($rel_table);
+    if (array_key_exists('rank', $schema['fields'])) {
+      $options['order_by'] = array('rank' => 'ASC');
+    }
     $record = chado_expand_var($record, 'table', $rel_table, $options);
+    if (!$record->$rel_table) {
+      return;
+    }
     $srelationships = $record->$rel_table->subject_id;
     $orelationships = $record->$rel_table->object_id;
 
@@ -229,6 +238,9 @@ class chado_linker__relationship extends TripalField {
           ),
           'type' => $relationship->type_id->name,
           'object' => array(
+            '@type' => $relationship->object_id->type_id->dbxref_id->db_id->name .
+               ':' . $relationship->object_id->type_id->dbxref_id->accession,
+            // TODO the entity_id should not be here.... wherre to put it.
             'entity_id' => $entity->id,
             'entity_type' => 'TripalEntity',
             'type' =>  $object_type,
@@ -269,6 +281,8 @@ class chado_linker__relationship extends TripalField {
         $entity->{$field_name}['und'][$i]['value'] = array(
           '@type' => $rel_acc,
           'subject' => array(
+            '@type' => $relationship->subject_id->type_id->dbxref_id->db_id->name .
+               ':' . $relationship->subject_id->type_id->dbxref_id->accession,
             'type' =>  $subject_type,
             'name' => $subject_name,
             'entity_id' => $entity->id,
@@ -277,7 +291,7 @@ class chado_linker__relationship extends TripalField {
           'type' => $relationship->type_id->name,
           'object' => array(
             '@type' => $relationship->object_id->type_id->dbxref_id->db_id->name .
-               ':' . $relationship->subject_id->type_id->dbxref_id->accession,
+               ':' . $relationship->object_id->type_id->dbxref_id->accession,
             'type' =>  $object_type,
             'name' => $object_name,
           )

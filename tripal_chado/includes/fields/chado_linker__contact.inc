@@ -91,18 +91,23 @@ class chado_linker__contact extends TripalField {
         // Get the settings
         $settings = $display['settings'];
         $record = $entity->chado_record;
-        
+
         $headers = array('Name', 'Description', 'Type');
         $rows = array();
+
         foreach ($items as $delta => $item) {
-        
           $contact = $item['value'];
-        
+          if (!$contact) {
+            continue;
+          }
+          $contact_id = $contact['contact_id'];
+
+
           // Get the field values
           $contact_name = $contact['name'];
           $description = $contact['description'];
           $type = $contact['type_id'];
-        
+
           // Add a link i there is an entity.
           if (array_key_exists('entity_id', $contact) and $contact['$entity_id']) {
             $entity_id = $contact['entity_id'];
@@ -120,10 +125,10 @@ class chado_linker__contact extends TripalField {
           'sticky' => FALSE,
           'caption' => "",
           'colgroups' => array(),
-          'empty' => '',
+          'empty' => 'No contacts available',
         );
         $content = theme_table($table);
-        
+
         // once we have our table array structure defined, we call Drupal's theme_table()
         // function to generate the table.
         $element[$delta] = array(
@@ -139,39 +144,53 @@ class chado_linker__contact extends TripalField {
   }
 
   public function load($field, $entity, $details) {
+    $record = $details['record'];
     $field_name = $field['field_name'];
     $field_type = $field['type'];
     $field_table = $field['settings']['chado_table'];
     $field_column = $field['settings']['chado_column'];
-    
+
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
     $base_table = $details['record']->tablename;
     $pkey = $schema['primary key'][0];
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
-    
+
     $linker_table = $base_table . '_contact';
     $options = array(
       'return_array' => 1,
+      'include_fk' => array(
+        'contact_id' => array(
+          'type_id' => array(
+            'dbxref_id' => array(
+              'db_id' => TRUE,
+            ),
+          ),
+        ),
+      ),
     );
-    $details = chado_expand_var($details, 'table', $linker_table, $options);
-    $record = $details['record'];
-    $exp = $record->$linker_table;
-    $exp = is_array($exp) ? $exp : array($exp);
-    if (count($exp) > 0) {
-      $i = 0;
-      foreach ($exp as $index => $linker) {
-        $contact = $linker->contact_id;
+    $record = chado_expand_var($record, 'table', $linker_table, $options);
+    $contact_linkers = $record->$linker_table;
+    if ($contact_linkers) {
+      foreach ($contact_linkers as $i => $contact_linker) {
+        $contact = $contact_linker->contact_id;
+        dpm($contact);
         $entity->{$field_name}['und'][$i]['value'] = array(
-          'contact_id' => $contact->contact_id,
+          '@type' => $contact->type_id->dbxref_id->db_id->name . ':' . $contact->type_id->dbxref_id->accession,
+          'type' => $contact->type_id->name,
           'name' => $contact->name,
           'description' => $contact->description,
-          'type_id' => $contact->type_id
         );
-        $i++;
+        $entity->$field_name['und'][$i]['contact_id'] = $contact->contact_id;
+
+        if (property_exists($contact, 'entity_id')) {
+          $entity->{$field_name}['und'][$i]['entity_id'] = $contact->entity_id;
+          $entity->{$field_name}['und'][$i]['entity_type'] = 'TripalEntity';
+        }
       }
     }
+
   }
 
   /**

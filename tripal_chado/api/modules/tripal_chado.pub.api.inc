@@ -996,3 +996,114 @@ function tripal_pub_create_citation($pub) {
 
   return $citation;
 }
+
+/**
+ * Retrieves the minimal information to uniquely describe any publication.
+ *
+ * @param $pub
+ *   A publication object as created by chado_generate_var()
+ *
+ * @return
+ *   An array with the following keys:  'Citation', 'Abstract', 'Authors',
+ *   'URL'. All keys are term names in the Tripal Publication Ontology :TPUB.
+ */
+function tripal_get_minimal_pub_info($pub) {
+  // Chado has a null pub as default.  We don't return anything for this.
+  if ($pub->uniquename == 'null') {
+    return array();
+  }
+
+  // expand the title
+  $pub = chado_expand_var($pub, 'field', 'pub.title');
+  $pub = chado_expand_var($pub, 'field', 'pub.volumetitle');
+
+  // get the citation
+  $values = array(
+    'pub_id' => $pub->pub_id,
+    'type_id' => array(
+      'name' => 'Citation',
+    ),
+  );
+  $options = array(
+    'include_fk' => array(
+    ),
+  );
+  $citation = chado_generate_var('pubprop', $values, $options);
+  $citation = chado_expand_var($citation, 'field', 'pubprop.value');
+  $citation = $citation->value;
+
+  // get the abstract
+  $values = array(
+    'pub_id' => $pub->pub_id,
+    'type_id' => array(
+      'name' => 'Abstract',
+    ),
+  );
+  $options = array(
+    'include_fk' => array(
+    ),
+  );
+  $abstract = chado_generate_var('pubprop', $values, $options);
+  $abstract = chado_expand_var($abstract, 'field', 'pubprop.value');
+  $abstract_text = '';
+  if ($abstract) {
+    $abstract_text = htmlspecialchars($abstract->value);
+  }
+
+  // get the author list
+  $values = array(
+    'pub_id' => $pub->pub_id,
+    'type_id' => array(
+      'name' => 'Authors',
+    ),
+  );
+  $options = array(
+    'include_fk' => array(
+    ),
+  );
+  $authors = chado_generate_var('pubprop', $values, $options);
+  $authors = chado_expand_var($authors, 'field', 'pubprop.value');
+  $authors_list = 'N/A';
+  if ($authors) {
+    $authors_list = $authors->value;
+  }
+
+  // get the first database cross-reference with a url
+  $options = array('return_array' => 1);
+  $pub = chado_expand_var($pub, 'table', 'pub_dbxref', $options);
+  $dbxref = NULL;
+  if ($pub->pub_dbxref) {
+    foreach ($pub->pub_dbxref as $index => $pub_dbxref) {
+      if ($pub_dbxref->dbxref_id->db_id->urlprefix) {
+        $dbxref = $pub_dbxref->dbxref_id;
+      }
+    }
+  }
+
+  // get the URL
+  // get the author list
+  $values = array(
+    'pub_id' => $pub->pub_id,
+    'type_id' => array(
+      'name' => 'URL',
+    ),
+  );
+
+  $options = array(
+    'return_array' => 1,
+    'include_fk' => array(),
+  );
+  $urls = chado_generate_var('pubprop', $values, $options);
+  $urls = chado_expand_var($urls, 'field', 'pubprop.value');
+  $url = '';
+  if (count($urls) > 0) {
+    $url = $urls[0]->value;
+  }
+  return array(
+    'Title' => $pub->title,
+    'Citation' => $citation,
+    'Abstract' => $abstract_text,
+    'Authors' => $authors_list,
+    'URL' => $url,
+  );
+}

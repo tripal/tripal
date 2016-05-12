@@ -192,9 +192,11 @@ class chado_gene__transcripts extends TripalField {
       foreach ($locations AS $location) {
         $loc .= $location->srcfeature_name . ":" . $location->fmin . ".." . $location->fmax;
       }
+      $type = $transcript->record->subject_id->type_id;
       $entity->{$field_name}['und'][$i]['value'] = array(
+        '@type' => $type->dbxref_id->db_id->name . ":" . $type->dbxref_id->accession,
+        'type' => $type->name,
         'name' => $feature_name,
-        'type' => $transcript->record->subject_id->type_id->name,
         'unique name' => $transcript->record->subject_id->uniquename,
         'location' => $loc,
 

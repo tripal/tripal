@@ -88,48 +88,73 @@ class chado_linker__expression extends TripalField {
 
   public function formatter_view(&$element, $entity_type, $entity,
       $field, $instance, $langcode, $items, $display) {
-        // Get the settings
-        $settings = $display['settings'];
-        $record = $entity->chado_record;
-        
-        $headers = array('Uniquename', 'Description', 'Publication');
-        $rows = array();
-        foreach ($items as $delta => $item) {
-        
-          $expression = $item['value'];
-        
-          // Get the field values
-          $expression_uname = $expression['uniquename'];
-          $description = $expression['description'];
-          $pub = $expression['publication'];
-        
-          // Add a link i there is an entity.
-          if (array_key_exists('entity_id', $expression) and $expression['$entity_id']) {
-            $entity_id = $expression['entity_id'];
-            $expression_uname = l($expression_uname, "bio_data/" . $entity_id, array('attributes' => array('target' => "_blank")));
+
+    // Get the settings
+    $settings = $display['settings'];
+    $record = $entity->chado_record;
+
+    $content = '';
+    foreach ($items as $delta => $item) {
+      if (!$item['value']) {
+        continue;
+      }
+      // Iterate through all of the children of the $item['value']. Add each
+      // one as an independent row in the table.
+      $rows = array();
+      foreach ($item['value'] as $key => $value) {
+
+        // If this key is the name, then we want to link to the entity if one
+        // exists.
+        if ($key == 'name') {
+          if (array_key_exists('entity_id', $item) and $item['$entity_id']) {
+            $entity_id = $item['entity_id'];
+            $value = l($value, "bio_data/" . $entity_id, array('attributes' => array('target' => "_blank")));
           }
-          $rows[] = array($expression_uname, $description, $pub->title);
         }
-        $table = array(
-          'header' => $headers,
-          'rows' => $rows,
-          'attributes' => array(
-            'id' => 'tripal_linker-table-expression-object',
-            'class' => 'tripal-data-table'
+        // If this key is the publication then we want to get the citation
+        // and link to the pub if an entity exits.
+        if ($key == 'publication') {
+          $pub = $value['Citation'];
+          if (array_key_exists('publication', $item) and array_key_exists('entity_id', $item['publication'][0])) {
+            $entity_id = $item['publication'][0]['entity_id'];
+            $title =  $item['value']['publication']['Title'];
+            $link = l($title, 'bio_data/' . $entity_id);
+            $pub = preg_replace("/$title/", $link, $pub);
+          }
+          $value = $pub;
+        }
+        // Add the item as a new row.
+        $rows[] = array(
+          array(
+            'data' => ucfirst($key),
+            'header' => TRUE,
+            'width' => '20%',
           ),
-          'sticky' => FALSE,
-          'caption' => "",
-          'colgroups' => array(),
-          'empty' => '',
+          $value
         );
-        $content = theme_table($table);
-        
-        // once we have our table array structure defined, we call Drupal's theme_table()
-        // function to generate the table.
-        $element[$delta] = array(
-          '#type' => 'markup',
-          '#markup' => $content,
-        );
+      }
+      $table = array(
+        'header' => array(),
+        'rows' => $rows,
+        'attributes' => array(
+          'id' => 'tripal_linker-table-expression-object',
+          'class' => 'tripal-data-table'
+        ),
+        'sticky' => FALSE,
+        'caption' => "",
+        'colgroups' => array(),
+        'empty' => '',
+      );
+      $content .= theme_table($table);
+    }
+
+
+    // once we have our table array structure defined, we call Drupal's theme_table()
+    // function to generate the table.
+    $element[$delta] = array(
+      '#type' => 'markup',
+      '#markup' => $content,
+    );
   }
 
 
@@ -139,6 +164,8 @@ class chado_linker__expression extends TripalField {
   }
 
   public function load($field, $entity, $details) {
+    $record = $details['record'];
+
     $field_name = $field['field_name'];
     $field_type = $field['type'];
     $field_table = $field['settings']['chado_table'];
@@ -155,21 +182,45 @@ class chado_linker__expression extends TripalField {
     $options = array(
       'return_array' => 1,
     );
-    $details = chado_expand_var($details, 'table', $linker_table, $options);
-    $record = $details['record'];
-    $exp = $record->$linker_table;
-    $exp = is_array($exp) ? $exp : array($exp);
-    if (count($exp) > 0) {
-      $i = 0;
-      foreach ($exp as $index => $linker) {
-        $expression = $linker->expression_id;
+    $record = chado_expand_var($record, 'table', $linker_table, $options);
+    $exp_linkers = $record->$linker_table;
+    if ($exp_linkers) {
+      foreach ($exp_linkers as $i => $exp_linker) {
+
+        // Because the unqiuename is a text field we must expand it.
+        $expression = $exp_linker->expression_id;
+        $expression = chado_expand_var($expression, 'field', 'expression.uniquename', $options);
+
+        // Set the values that will be seen by the user on the page and in
+        // web services, or anwhere this field is viewed.
         $entity->{$field_name}['und'][$i]['value'] = array(
-          'expression_id' => $expression->expression_id,
-          'uniquename' => $expression->uniquename,
+          'name' => $expression->uniquename,
           'description' => $expression->description,
-          'publication' => $linker->pub_id
+          //'md5checksum' => $expression->md5checksum,
         );
-        $i++;
+
+        // Add the pub information if a real pub is associated with the record.
+        $pub = $exp_linker->pub_id;
+        if ($pub->uniquename != 'null') {
+          $pub_details = tripal_get_minimal_pub_info($pub);
+
+          $entity->{$field_name}['und'][$i]['value']['publication'] = $pub_details;
+          $entity->{$field_name}['und'][$i]['value']['publication']['@type'] = $pub->type_id->dbxref_id->db_id->name . ':' . $pub->type_id->dbxref_id->accession;
+          $entity->{$field_name}['und'][$i]['value']['publication']['type'] = $pub->type_id->name;
+          if (property_exists($pub, 'entity_id')) {
+            $entity->{$field_name}['und'][$i]['publication'][0]['entity_id'] = $pub->entity_id;
+            $entity->{$field_name}['und'][$i]['publication'][0]['entity_type'] = 'TripalEntity';
+          }
+        }
+
+        // Add the fields for the widget form.  The name requres the following
+        // format if the fields should be used as values for insertint/updating
+        // into the chado table:  [table_name]__[field_name]
+        $entity->{$field_name}['und'][$i][$linker_table . '__expression_id'] = $expression->expression_id;
+        $entity->{$field_name}['und'][$i][$linker_table . '__uniquename'] = $expression->uniquename;
+        //$entity->{$field_name}['und'][$i][$linker_table . '__md5checksum'] = $expression->md5checksum;
+        $entity->{$field_name}['und'][$i][$linker_table . '__description'] = $expression->description;
+
       }
     }
   }

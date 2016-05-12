@@ -138,17 +138,7 @@ class chado_feature__residues extends TripalField {
   }
 
   /**
-   *
-   * @param unknown $field_name
-   * @param unknown $widget
-   * @param unknown $form
-   * @param unknown $form_state
-   * @param unknown $field
-   * @param unknown $instance
-   * @param unknown $langcode
-   * @param unknown $items
-   * @param unknown $delta
-   * @param unknown $element
+   * @see TripalField::widget_form()
    */
   function widget_form(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
