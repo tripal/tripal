@@ -100,20 +100,18 @@ class chado_linker__contact extends TripalField {
           if (!$contact) {
             continue;
           }
-          $contact_id = $contact['contact_id'];
-
 
           // Get the field values
           $contact_name = $contact['name'];
           $description = $contact['description'];
-          $type = $contact['type_id'];
+          $type = $contact['type'];
 
           // Add a link i there is an entity.
-          if (array_key_exists('entity_id', $contact) and $contact['$entity_id']) {
-            $entity_id = $contact['entity_id'];
+          if (array_key_exists('entity_id', $item) and $item['entity_id']) {
+            $entity_id = $item['entity_id'];
             $contact_name = l($contact_name, "bio_data/" . $entity_id, array('attributes' => array('target' => "_blank")));
           }
-          $rows[] = array($contact_name, $description, $type->name);
+          $rows[] = array($contact_name, $description, $type);
         }
         $table = array(
           'header' => $headers,
@@ -175,14 +173,13 @@ class chado_linker__contact extends TripalField {
     if ($contact_linkers) {
       foreach ($contact_linkers as $i => $contact_linker) {
         $contact = $contact_linker->contact_id;
-        dpm($contact);
         $entity->{$field_name}['und'][$i]['value'] = array(
           '@type' => $contact->type_id->dbxref_id->db_id->name . ':' . $contact->type_id->dbxref_id->accession,
           'type' => $contact->type_id->name,
           'name' => $contact->name,
           'description' => $contact->description,
         );
-        $entity->$field_name['und'][$i]['contact_id'] = $contact->contact_id;
+        $entity->{$field_name}['und'][$i]['contact_id'] = $contact->contact_id;
 
         if (property_exists($contact, 'entity_id')) {
           $entity->{$field_name}['und'][$i]['entity_id'] = $contact->entity_id;
