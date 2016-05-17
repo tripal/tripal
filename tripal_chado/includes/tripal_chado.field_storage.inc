@@ -138,7 +138,7 @@ function tripal_chado_field_storage_write_recursive($entity_type, $entity, $term
       $fk_vals = array();
       $fk_field_name = $tablename . '__' . $local_id;
       if (array_key_exists($fk_field_name, $field_vals)) {
-        $fk_val = $field_vals[$fk_field_name][0][$base_table . '__' . $local_id];
+        $fk_val = $field_vals[$fk_field_name][0][$tablename . '__' . $local_id];
         $fk_vals = $field_vals[$fk_field_name][0];
       }
 
@@ -204,6 +204,7 @@ function tripal_chado_field_storage_write_recursive($entity_type, $entity, $term
     return $record_id;
   }
 
+  dpm($values);
   // If we don't have an incoming record ID then this is an insert.
   if ($record_id == NULL) {
     // STEP 3a: Before inserting, we want to make sure the record does not
@@ -396,9 +397,6 @@ function tripal_chado_field_storage_unnest_fields($fields, $entity_type, $entity
     // Iterate through the field's items. Fields with cardinality ($delta) > 1
     // are multi-valued.
     $items = field_get_items($entity_type, $entity, $field_name);
-//     if ($field_name == 'feature__organism_id') {
-//       dpm($items);
-//     }
     foreach ($items as $delta => $item) {
       foreach ($item as $item_name => $value) {
         $matches = array();
@@ -407,12 +405,14 @@ function tripal_chado_field_storage_unnest_fields($fields, $entity_type, $entity
           $new_fields[$field_name][$delta][$item_name] = $value;
         }
       }
-      // If there is no value set for the field using the [table_name]__[field name]
-      // naming schema then check if a 'value' item is present and if so use that.
+      // If there is no value set for the field using the
+      // [table_name]__[field name] naming schema then check if a 'value' item
+      // is present and if so use that.
       $item_name = $chado_table . '__' . $chado_column;
       if ((!array_key_exists($field_name, $new_fields) or
            !array_key_exists($item_name, $new_fields[$field_name][$delta])) and
-          array_key_exists('value', $items[$delta])) {
+          array_key_exists('value', $items[$delta]) and
+          !is_array($items[$delta]['value'])) {
         $new_fields[$field_name][$delta][$item_name] = $items[$delta]['value'];
       }
     }

@@ -42,7 +42,7 @@ class chado_linker__synonym extends TripalField {
 
     // Initialize the field array.
     $field_info = array(
-      'field_name' => $table_name . '__synonym',
+      'field_name' => $table_name . '_synonym',
       'field_type' => 'chado_linker__synonym',
       'widget_type' => 'chado_linker__synonym_widget',
       'widget_settings' => array('display_label' => 1),
@@ -173,9 +173,9 @@ class chado_linker__synonym extends TripalField {
     $widget['#prefix'] =  "<span id='$table_name-$delta'>";
     $widget['#suffix'] =  "</span>";
 
-    $form['value'] = array(
+    $widget['value'] = array(
       '#type' => 'value',
-      '#value' => $items[$delta]['value'],
+      '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
 
     $widget[$table_name . '__' . $pkey] = array(

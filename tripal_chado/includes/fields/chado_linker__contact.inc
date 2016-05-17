@@ -64,7 +64,7 @@ class chado_linker__contact extends TripalField {
 
     // Initialize the field array.
     $field_info = array(
-      'field_name' => $table_name . '__contact',
+      'field_name' => $table_name . '_contact',
       'field_type' => 'chado_linker__contact',
       'widget_type' => 'chado_linker__contact_widget',
       'widget_settings' => array('display_label' => 1),
@@ -147,10 +147,7 @@ class chado_linker__contact extends TripalField {
   public function widget_form(&$widget, $form, $form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
-    $form['value'] = array(
-      '#type' => 'value',
-      '#value' => $items[$delta]['value'],
-    );
+
   }
 
   /**

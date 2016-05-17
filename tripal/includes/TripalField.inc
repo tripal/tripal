@@ -189,9 +189,9 @@ class TripalField {
   public function widget_form(&$widget, $form, $form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
-    $form['value'] = array(
+    $widget['value'] = array(
       '#type' => 'value',
-      '#value' => $items[$delta]['value'],
+      '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
   }
   /**

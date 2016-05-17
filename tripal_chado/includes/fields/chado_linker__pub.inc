@@ -162,7 +162,7 @@ class chado_linker_pub extends TripalField {
     $widget['#prefix'] =  "<span id='$table_name-$delta'>";
     $widget['#suffix'] =  "</span>";
 
-    $form['value'] = array(
+    $widget['value'] = array(
       '#type' => 'value',
       '#value' => $items[$delta]['value'],
     );

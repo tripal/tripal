@@ -42,7 +42,7 @@ class chado_linker__relationship extends TripalField {
 
     // Initialize the field array.
     $field_info = array(
-      'field_name' => $table_name . '__relationship',
+      'field_name' => $table_name . '_relationship',
       'field_type' => 'chado_linker__relationship',
       'widget_type' => 'chado_linker__relationship_widget',
       'widget_settings' => array('display_label' => 1),

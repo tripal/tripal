@@ -83,7 +83,7 @@ class chado_feature__residues extends TripalField {
    */
   function widget_info() {
     return array(
-      'label' => t('Sequences'),
+      'label' => t('Sequence'),
       'field types' => array('chado_feature__residues'),
     );
   }
@@ -118,6 +118,10 @@ class chado_feature__residues extends TripalField {
     $feature = $entity->chado_record;
 
     foreach ($items as $delta => $item) {
+      // If there are no residues then skip this one.
+      if (!array_key_exists('residues', $item['value'])) {
+        continue;
+      }
 
       $residues = $item['value']['residues'];
       $label = $item['value']['label'];
@@ -147,7 +151,14 @@ class chado_feature__residues extends TripalField {
     $field_table = $field['settings']['chado_table'];
     $field_column = $field['settings']['chado_column'];
 
-    $form['value'] = array(
+    // This field provides several items if an alignment for the feature
+    // is present.  We don't want widgets for those.  Just for the first
+    // one which should always be the residues for the feature table.
+    if ($delta > 0) {
+      return;
+    }
+
+    $widget['value'] = array(
       '#type' => 'value',
       '#value' => $items[$delta]['value'],
     );
@@ -156,7 +167,7 @@ class chado_feature__residues extends TripalField {
       '#title' => $element['#title'],
       '#description' => $element['#description'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-      '#default_value' => count($items) > 0 ? $items[0]['value'] : '',
+      '#default_value' => $items[$delta]['feature__residues'],
       '#delta' => $delta,
       '#element_validate' => array('chado_feature__residues_widget_validate'),
       '#cols' => 30,
@@ -171,15 +182,24 @@ class chado_feature__residues extends TripalField {
     $feature = $details['record'];
     $num_seqs = 0;
 
-    // we don't want to get the sequence for traditionally large types. They are
+
+    // We don't want to get the sequence for traditionally large types. They are
     // too big,  bog down the web browser, take longer to load and it's not
     // reasonable to print them on a page.
-
-    if(strcmp($feature->type_id->name,'scaffold') !=0 and
-       strcmp($feature->type_id->name,'chromosome') !=0 and
-       strcmp($feature->type_id->name,'supercontig') !=0 and
-       strcmp($feature->type_id->name,'pseudomolecule') !=0) {
-
+    if(strcmp($feature->type_id->name,'scaffold') == 0 or
+       strcmp($feature->type_id->name,'chromosome') == 0 or
+       strcmp($feature->type_id->name,'supercontig') == 0 or
+       strcmp($feature->type_id->name,'pseudomolecule') == 0) {
+      $entity->{$field_name}['und'][$num_seqs]['value'] = array(
+        '@type' => 'SO:0000110',
+        'type' => 'sequence_feature',
+        'label' => 'Residues',
+        'defline' => ">This sequence is too large for this display.",
+        'residues' => '',
+      );
+      $entity->{$field_name}['und'][$num_seqs]['feature__residues'] = '';
+    }
+    else {
       $feature = chado_expand_var($feature,'field','feature.residues');
       if ($feature->residues) {
         $entity->{$field_name}['und'][$num_seqs]['value'] = array(
@@ -189,9 +209,14 @@ class chado_feature__residues extends TripalField {
           'defline' => tripal_get_fasta_defline($feature, '', NULL, '', strlen($feature->residues)),
           'residues' => $feature->residues,
         );
-        $entity->{$field_name}['und'][$num_seqs++]['residues'] = $feature->residues;
+        $entity->{$field_name}['und'][$num_seqs]['feature__residues'] = $feature->residues;
+      }
+      else {
+        $entity->{$field_name}['und'][$num_seqs]['value'] = array();
+        $entity->{$field_name}['und'][$num_seqs]['feature__residues'] = '';
       }
     }
+    $num_seqs++;
 
     // Add in the protein sequences
     $values = array(
@@ -631,7 +656,7 @@ function chado_feature__residues_widget_validate($element, &$form_state) {
   $field_name = $element['#parents'][0];
 
   // Remove any white spaces.
-  $residues = tripal_chado_get_field_form_values($field_name, $form_state);
+  $residues = tripal_chado_get_field_form_values($field_name, $form_state, 0, 'feature__residues');
   if ($residues) {
     $residues = preg_replace('/\s/', '', $residues);
     tripal_chado_set_field_form_values($field_name, $form_state, $residues, 0, 'feature__residues');

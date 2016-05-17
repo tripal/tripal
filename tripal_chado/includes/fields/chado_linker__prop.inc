@@ -154,7 +154,7 @@ function chado_linker__prop_widget(&$widget, $form, $form_state, $field, $instan
   $widget['#element_validate'] = array('chado_linker__prop_widget_validate');
   $widget['#cardinality'] = 1;
 
-  $form['value'] = array(
+  $widget['value'] = array(
     '#type' => 'value',
     '#value' => $items[$delta]['value'],
   );

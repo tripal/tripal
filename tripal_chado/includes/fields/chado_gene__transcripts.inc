@@ -43,7 +43,7 @@ class chado_gene__transcripts extends TripalField {
 
     // Initialize the field array.
     $field_info = array(
-      'field_name' => 'gene__transcripts',
+      'field_name' => 'gene_transcripts',
       'field_type' => 'chado_gene__transcripts',
       'widget_type' => 'chado_gene__transcripts_widget',
       'widget_settings' => array('display_label' => 1),
@@ -218,9 +218,6 @@ class chado_gene__transcripts extends TripalField {
    * @see TripalField::widget_form()
    */
   public function widget_form(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
-    $form['value'] = array(
-      '#type' => 'value',
-      '#value' => $items[$delta]['value'],
-    );
+
   }
 }
