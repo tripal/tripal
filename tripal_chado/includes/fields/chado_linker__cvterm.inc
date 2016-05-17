@@ -213,7 +213,12 @@ function chado_linker__cvterm_widget(&$widget, $form, $form_state, $field,
   $widget['#prefix'] =  "<span id='$table_name-$delta'>";
   $widget['#suffix'] =  "</span>";
 
-  $widget['value'] = array(
+  $form['value'] = array(
+    '#type' => 'value',
+    '#value' => $items[$delta]['value'],
+  );
+
+  $widget[$table_name . '__' . $pkey] = array(
     '#type' => 'value',
     '#default_value' => $record_id,
   );

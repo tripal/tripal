@@ -139,7 +139,18 @@ function chado_feature__seqlen_formatter(&$element, $entity_type, $entity, $fiel
  */
 function chado_feature__seqlen_widget(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
-  $widget['value'] =  array(
+  $settings = $field['settings'];
+  $field_name = $field['field_name'];
+  $field_type = $field['type'];
+  $field_table = $field['settings']['chado_table'];
+  $field_column = $field['settings']['chado_column'];
+
+  $form['value'] = array(
+    '#type' => 'value',
+    '#value' => $items[$delta]['value'],
+  );
+
+  $widget['feature__seqlen'] =  array(
     '#type' => 'hidden',
     '#title' => $element['#title'],
     '#description' => $element['#description'],
@@ -160,10 +171,10 @@ function chado_feature__seqlen_widget_validate($element, &$form_state) {
   // Remove any white spaces.
   if ($residues) {
     $residues = preg_replace('/\s/', '', $residues);
-    tripal_chado_set_field_form_values($field_name, $form_state, strlen($residues));
+    tripal_chado_set_field_form_values($field_name, $form_state, strlen($residues), 0, 'feature__seqlen');
   }
   else {
-    // Otherwise, remove the md5 value
-    tripal_chado_set_field_form_values($field_name, $form_state, '__NULL__');
+    // Otherwise, remove the seqlen value
+    tripal_chado_set_field_form_values($field_name, $form_state, '__NULL__', 0, 'feature_seqlen');
   }
 }

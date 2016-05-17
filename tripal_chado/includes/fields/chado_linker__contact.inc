@@ -2,6 +2,9 @@
 
 class chado_linker__contact extends TripalField {
 
+  /**
+   * @see TripalField::field_info()
+   */
   public function field_info() {
     return array(
       'label' => t('Contacts'),
@@ -17,13 +20,19 @@ class chado_linker__contact extends TripalField {
       ),
     );
   }
- function widget_info() {
+  /**
+   * @see TripalField::widget_info()
+   */
+  function widget_info() {
     return array(
       'label' => t('Contacts'),
       'field types' => array('chado_linker__contact'),
     );
   }
 
+  /**
+   * @see TripalField::formatter_info()
+   */
   public function formatter_info() {
     return array(
       'label' => t('Contacts'),
@@ -32,6 +41,9 @@ class chado_linker__contact extends TripalField {
       ),
     );
   }
+  /**
+   * @see TripalField::attach_info()
+   */
   public function attach_info($entity_type, $bundle, $settings) {
     $field_info = array();
 
@@ -76,71 +88,74 @@ class chado_linker__contact extends TripalField {
     return $field_info;
   }
 
-  public function formatter_settings_summary($field, $instance, $view_mode) {
-
-  }
-
-  public function formatter_settings_form($field, $instance,
-      $view_mode, $form, &$form_state) {
-
-  }
-
-
+  /**
+   * @see TripalField::formatter_view()
+   */
   public function formatter_view(&$element, $entity_type, $entity,
       $field, $instance, $langcode, $items, $display) {
-        // Get the settings
-        $settings = $display['settings'];
-        $record = $entity->chado_record;
+    // Get the settings
+    $settings = $display['settings'];
+    $record = $entity->chado_record;
 
-        $headers = array('Name', 'Description', 'Type');
-        $rows = array();
+    $headers = array('Name', 'Description', 'Type');
+    $rows = array();
 
-        foreach ($items as $delta => $item) {
-          $contact = $item['value'];
-          if (!$contact) {
-            continue;
-          }
+    foreach ($items as $delta => $item) {
+      $contact = $item['value'];
+      if (!$contact) {
+        continue;
+      }
 
-          // Get the field values
-          $contact_name = $contact['name'];
-          $description = $contact['description'];
-          $type = $contact['type'];
+      // Get the field values
+      $contact_name = $contact['name'];
+      $description = $contact['description'];
+      $type = $contact['type'];
 
-          // Add a link i there is an entity.
-          if (array_key_exists('entity_id', $item) and $item['entity_id']) {
-            $entity_id = $item['entity_id'];
-            $contact_name = l($contact_name, "bio_data/" . $entity_id, array('attributes' => array('target' => "_blank")));
-          }
-          $rows[] = array($contact_name, $description, $type);
-        }
-        $table = array(
-          'header' => $headers,
-          'rows' => $rows,
-          'attributes' => array(
-            'id' => 'tripal_linker-table-contact-object',
-            'class' => 'tripal-data-table'
-          ),
-          'sticky' => FALSE,
-          'caption' => "",
-          'colgroups' => array(),
-          'empty' => 'No contacts available',
-        );
-        $content = theme_table($table);
+      // Add a link i there is an entity.
+      if (array_key_exists('entity_id', $item) and $item['entity_id']) {
+        $entity_id = $item['entity_id'];
+        $contact_name = l($contact_name, "bio_data/" . $entity_id, array('attributes' => array('target' => "_blank")));
+      }
+      $rows[] = array($contact_name, $description, $type);
+    }
+    $table = array(
+      'header' => $headers,
+      'rows' => $rows,
+      'attributes' => array(
+        'id' => 'tripal_linker-table-contact-object',
+        'class' => 'tripal-data-table'
+      ),
+      'sticky' => FALSE,
+      'caption' => "",
+      'colgroups' => array(),
+      'empty' => 'No contacts available',
+    );
+    $content = theme_table($table);
 
-        // once we have our table array structure defined, we call Drupal's theme_table()
-        // function to generate the table.
-        $element[$delta] = array(
-          '#type' => 'markup',
-          '#markup' => $content,
-        );
+    // once we have our table array structure defined, we call Drupal's theme_table()
+    // function to generate the table.
+    $element[$delta] = array(
+      '#type' => 'markup',
+      '#markup' => $content,
+    );
   }
 
 
+  /**
+   * @see TripalField::widget_form()
+   */
   public function widget_form(&$widget, $form, $form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
+    $form['value'] = array(
+      '#type' => 'value',
+      '#value' => $items[$delta]['value'],
+    );
   }
 
+  /**
+   * @see TripalField::load()
+   */
   public function load($field, $entity, $details) {
     $record = $details['record'];
     $field_name = $field['field_name'];
@@ -155,6 +170,16 @@ class chado_linker__contact extends TripalField {
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
+
+    // Set some defaults for the empty record.
+    $entity->{$field_name}['und'][0] = array(
+      'value' => array(),
+      $field_table . '__' . $pkey => '',
+      $field_table . '__' . $fkey_lcolumn => '',
+      $field_table . '__' . 'contact_id' => '',
+      // Ignore the synonym_sgml column for now.
+    );
+
     $linker_table = $base_table . '_contact';
     $options = array(
       'return_array' => 1,
@@ -166,6 +191,7 @@ class chado_linker__contact extends TripalField {
             ),
           ),
         ),
+        $fkey_lcolumn => TRUE,
       ),
     );
     $record = chado_expand_var($record, 'table', $linker_table, $options);
@@ -173,13 +199,17 @@ class chado_linker__contact extends TripalField {
     if ($contact_linkers) {
       foreach ($contact_linkers as $i => $contact_linker) {
         $contact = $contact_linker->contact_id;
-        $entity->{$field_name}['und'][$i]['value'] = array(
-          '@type' => $contact->type_id->dbxref_id->db_id->name . ':' . $contact->type_id->dbxref_id->accession,
-          'type' => $contact->type_id->name,
-          'name' => $contact->name,
-          'description' => $contact->description,
+        $entity->{$field_name}['und'][$i] = array(
+          'value' => array(
+            '@type' => $contact->type_id->dbxref_id->db_id->name . ':' . $contact->type_id->dbxref_id->accession,
+            'type' => $contact->type_id->name,
+            'name' => $contact->name,
+            'description' => $contact->description,
+          ),
+          $field_table . '__' . $pkey => $contact_linker->$pkey,
+          $field_table . '__' . $fkey_lcolumn => $contact_linker->$fkey_lcolumn->$fkey_lcolumn,
+          $field_table . '__' . 'contact_id' => $contact->contact_id
         );
-        $entity->{$field_name}['und'][$i]['contact_id'] = $contact->contact_id;
 
         if (property_exists($contact, 'entity_id')) {
           $entity->{$field_name}['und'][$i]['entity_id'] = $contact->entity_id;
@@ -187,23 +217,5 @@ class chado_linker__contact extends TripalField {
         }
       }
     }
-
   }
-
-  /**
-   * @see TripalField::settings_form()
-   */
-  public function settings_form($field, $instance, $has_data) {
-    $element = array();
-
-    // TODO: add settings here.
-
-    // Add in the semantic web fields.
-    $parent_elements = parent::settings_form($field, $instance, $has_data);
-    $element = array_merge($element, $parent_elements);
-
-    return $element;
-  }
-
-
 }

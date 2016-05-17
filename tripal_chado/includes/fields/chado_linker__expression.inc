@@ -160,7 +160,10 @@ class chado_linker__expression extends TripalField {
 
   public function widget_form(&$widget, $form, $form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
-
+    $form['value'] = array(
+      '#type' => 'value',
+      '#value' => $items[$delta]['value'],
+    );
   }
 
   public function load($field, $entity, $details) {
@@ -212,7 +215,7 @@ class chado_linker__expression extends TripalField {
             $entity->{$field_name}['und'][$i]['publication'][0]['entity_type'] = 'TripalEntity';
           }
         }
-        
+
         // Add the linker_expressionprop
         $linkerprop_table =  $linker_table . 'prop';
         if (db_table_exists('chado.' . $linkerprop_table)) {

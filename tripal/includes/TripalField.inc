@@ -146,6 +146,13 @@ class TripalField {
    */
   public function formatter_view(&$element, $entity_type, $entity,
       $field, $instance, $langcode, $items, $display) {
+
+    foreach($items as $delta => $item) {
+      $element[$delta] = array(
+        '#type' => 'markup',
+        '#markup' => $item['value'],
+      );
+    }
   }
 
   /**
@@ -154,6 +161,17 @@ class TripalField {
    * This form is diplayed when the user creates a new entity or edits an
    * existing entity.  If the field is attached to the entity then the form
    * provided by this function will be displayed.
+   *
+   * At a minimum, the form must have a 'value' element.  For Tripal, the
+   * 'value' element of a field always corresponds to the value that is
+   * presented to the end-user either directly on the page (with formatting)
+   * or via web services, or some other mechanism.  However, the 'value' is
+   * sometimes not enough for a field.  For example, the Tripal Chado module
+   * maps fields to table columns and sometimes those columns are foreign keys
+   * therefore, the Tripal Chado modules does not use the 'value' but adds
+   * additional elements to help link records via FKs.  But even in this case
+   * the 'value' element must always be present in the returne form and in such
+   * cases it's value should be set equal to that added in the 'load' function.
    *
    * @param $widget
    * @param $form
@@ -171,6 +189,10 @@ class TripalField {
   public function widget_form(&$widget, $form, $form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
+    $form['value'] = array(
+      '#type' => 'value',
+      '#value' => $items[$delta]['value'],
+    );
   }
   /**
    * Loads the field values from the underlying data store.

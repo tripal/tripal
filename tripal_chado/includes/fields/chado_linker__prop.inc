@@ -154,7 +154,12 @@ function chado_linker__prop_widget(&$widget, $form, $form_state, $field, $instan
   $widget['#element_validate'] = array('chado_linker__prop_widget_validate');
   $widget['#cardinality'] = 1;
 
-  $widget['value'] = array(
+  $form['value'] = array(
+    '#type' => 'value',
+    '#value' => $items[$delta]['value'],
+  );
+
+  $widget[$table_name . '__' . $pkey] = array(
     '#type' => 'hidden',
     '#default_value' => !empty($items[$delta]['value']) ? $items[$delta]['value'] : '',
   );
@@ -219,7 +224,6 @@ function chado_linker__prop_widget_validate($element, &$form_state) {
   $type_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__type_id');
 
   if (!$prop_value) {
-    tripal_chado_set_field_form_values($field_name, $form_state, '', $delta);
     tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__' . $lfkey_field);
     tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__value');
     tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__type_id');
@@ -278,6 +282,7 @@ function chado_linker__prop_load($field, $entity, $base_table, $record) {
   // Set some defaults for the empty record.
   $entity->{$field_name}['und'][0] = array(
     'value' => '',
+    $field_table . '__' . $pkey => '',
     $field_table . '__' . $fkey_lcolumn => '',
     $field_table . '__value' => '',
     $field_table . '__type_id' => '',
@@ -300,7 +305,8 @@ function chado_linker__prop_load($field, $entity, $base_table, $record) {
     $property = $properties[$i];
     foreach ($schema['fields'] as $fname => $details) {
       $entity->{$field_name}['und'][$i] = array(
-        'value' => $property->$pkey,
+        'value' => array(),
+        $field_table . '__' . $pkey => $property->$pkey,
         $field_table . '__' . $fkey_lcolumn => $property->$fkey_lcolumn,
         $field_table . '__value' => $property->value,
         $field_table . '__type_id' => $property->type_id,

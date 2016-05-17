@@ -120,13 +120,23 @@ class chado_base__organism_id extends TripalField {
   public function widget_form(&$widget, $form, $form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
+    $settings = $field['settings'];
+    $field_name = $field['field_name'];
+    $field_type = $field['type'];
+    $field_table = $field['settings']['chado_table'];
+    $field_column = $field['settings']['chado_column'];
+
     $default_value = 0;
-    if (array_key_exists('organism_id', $items[0])) {
-      $default_value = $items[0]['organism_id'];
+    if (array_key_exists($field_table . '__organism_id', $items[0])) {
+      $default_value = $items[0][$field_table . '__organism_id'];
     }
 
-    $options = tripal_get_organism_select_options(FALSE);
     $widget['value'] = array(
+      '#type' => 'value',
+      '#value' => $items[0]['value'],
+    );
+    $options = tripal_get_organism_select_options(FALSE);
+    $widget[$field_table . '__organism_id'] = array(
       '#type' => 'select',
       '#title' => $element['#title'],
       '#description' => $element['#description'],
@@ -136,10 +146,6 @@ class chado_base__organism_id extends TripalField {
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
       '#delta' => $delta,
       '#element_validate' => array('chado_base__organism_id_widget_validate'),
-    );
-    $widget['add_organism'] = array(
-      '#type' => 'item',
-      '#markup' => l('Add a new species', 'admin/content/bio_data/add/species', array('attributes' => array('target' => '_blank'))),
     );
   }
 
@@ -161,7 +167,7 @@ class chado_base__organism_id extends TripalField {
     $value = tripal_replace_chado_tokens($string, $organism);
 
     $entity->{$field_name}['und'][0]['value'] = $value;
-    $entity->{$field_name}['und'][0]['organism_id'] = $organism->organism_id;
+    $entity->{$field_name}['und'][0][$field_table . '__organism_id'] = $organism->organism_id;
 
     // Is there a published entity for this organism?
     if (property_exists($entity->chado_record->$field_column, 'entity_id')) {
@@ -248,6 +254,12 @@ class chado_base__organism_id extends TripalField {
  */
 function chado_base__organism_id_widget_validate($element, &$form_state) {
   $field_name = $element['#parents'][0];
+  $field = $form_state['field'][$field_name]['und']['field'];
+  $settings = $field['settings'];
+  $field_name = $field['field_name'];
+  $field_type = $field['type'];
+  $field_table = $field['settings']['chado_table'];
+  $field_column = $field['settings']['chado_column'];
 
   // If the form ID is field_ui_field_edit_form, then the user is editing the
   // field's values in the manage fields form of Drupal.  We don't want
@@ -255,7 +267,7 @@ function chado_base__organism_id_widget_validate($element, &$form_state) {
   if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
     return;
   }
-  $organism_id = tripal_chado_get_field_form_values($field_name, $form_state);
+  $organism_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__organism_id');
 
   if (!$organism_id) {
     form_error($element, t("Please specify an organism."));

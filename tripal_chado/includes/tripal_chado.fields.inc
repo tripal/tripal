@@ -251,7 +251,23 @@ function tripal_chado_get_field_form_values($field_name, $form_state, $delta = 0
 }
 
 /**
- * Sets the values of the field from the $form_state.
+ * Sets the values of the field from the $form_state.  If no child
+ * argument is specified then the 'value' field is set.
+ *
+ * @param $field_name
+ *   The name of the field to set.
+ * @param $form_state
+ *   The form's form_state array.
+ * @param $newvalue
+ *   The new value to set for the field.
+ * @param $delta
+ *   If cardinality of a field is greater than 1 the delta indicates
+ *   which instance to set.
+ * @param $child
+ *   The name of the property to set iff other than 'value'.
+ *
+ * @return
+ *   TRUE if the value was set, FALSE otherwise.
  */
 function tripal_chado_set_field_form_values($field_name, &$form_state, $newvalue, $delta = 0, $child = NULL) {
   // The form_state must have the 'values' key. If not then just return.

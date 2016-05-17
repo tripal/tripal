@@ -36,6 +36,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
 
   // Convert the fields into a key/value list of fields and their values.
   $field_vals = tripal_chado_field_storage_unnest_fields($fields, $entity_type, $entity);
+dpm($field_vals);
 
   // Recursively write fields for the base table.
   $record_id = tripal_chado_field_storage_write_recursive($entity_type, $entity, $term,
@@ -58,6 +59,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
     }
   }
 
+
   // Now that we have handled the base table, we need to handle fields that
   // are not part of the base table.
   foreach ($fields as $field_id) {
@@ -73,9 +75,11 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
         $field_table = $field['settings']['chado_table'];
 
         // Iterate through each record.
-        foreach ($field_vals[$field_name] as $delta => $fvals) {
-          tripal_chado_field_storage_write_recursive($entity_type, $entity, $term,
-              $op, $fvals, $base_table, $field_table);
+        if (array_key_exists($field_name, $field_vals)) {
+          foreach ($field_vals[$field_name] as $delta => $fvals) {
+            tripal_chado_field_storage_write_recursive($entity_type, $entity, $term,
+                $op, $fvals, $base_table, $field_table);
+          }
         }
       }
     }
@@ -134,9 +138,8 @@ function tripal_chado_field_storage_write_recursive($entity_type, $entity, $term
       $fk_vals = array();
       $fk_field_name = $tablename . '__' . $local_id;
       if (array_key_exists($fk_field_name, $field_vals)) {
-        $fk_val = $field_vals[$fk_field_name][0]['value'];
+        $fk_val = $field_vals[$fk_field_name][0][$base_table . '__' . $local_id];
         $fk_vals = $field_vals[$fk_field_name][0];
-        unset($fk_vals['value']);
       }
 
       // Don't recurse if the value of the FK field is set to NULL.  The
@@ -186,12 +189,12 @@ function tripal_chado_field_storage_write_recursive($entity_type, $entity, $term
       }
 
       // If the value is empty then exclude this field
-      if (!$items[0]['value']) {
+      if (!$items[0][$tablename . '__' . $chado_field]) {
         continue;
       }
 
       // Add the value of the field to the $values arr for later insert/update.
-      $values[$chado_field] = $items[0]['value'];
+      $values[$chado_field] = $items[0][$tablename . '__' . $chado_field];
     }
   }
 
@@ -222,6 +225,8 @@ function tripal_chado_field_storage_write_recursive($entity_type, $entity, $term
   }
   // We have an incoming record_id so this is an update.
   else {
+    // TODO: what if the unique constraint matches another record?  That is
+    // not being tested for here.
     $match[$pkey_field] = $record_id;
     if (!chado_update_record($tablename, $match, $values)) {
       drupal_set_message("Could not update Chado record in table: $tablename.", 'error');
@@ -317,10 +322,13 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
           // and because $record object is created by the chado_generate_var()
           // function we must go one more level deeper to get the value
           if (is_object($record->$field_column)) {
-            $entity->{$field_name}['und'][0]['value'] = $record->$field_column->$field_column;
+            $entity->{$field_name}['und'][0][$field_table . '__' . $field_column] = $record->$field_column->$field_column;
           }
           else {
+            // For non FK fields we'll make the field value be the same
+            // as the column value.
             $entity->{$field_name}['und'][0]['value'] = $record->$field_column;
+            $entity->{$field_name}['und'][0][$field_table . '__' . $field_column] = $record->$field_column;
           }
         }
 
@@ -373,24 +381,39 @@ function tripal_chado_field_storage_unnest_fields($fields, $entity_type, $entity
   // Iterate through all of the fields.
   foreach ($fields as $field_id => $ids) {
 
-    // Get the field name and all of it's items.
+    // Get the field name and information about it.
     $field = field_info_field_by_id($field_id);
     $field_name = $field['field_name'];
-    $items = field_get_items($entity_type, $entity, $field_name);
+    // Some fields (e.g. chado_linker_cvterm_adder) don't add data to
+    // Chado so they don't have a table, but they are still attached to the
+    // entity. Just skip these.
+    if (!array_key_exists('chado_table', $field['settings'])) {
+      continue;
+    }
+    $chado_table = $field['settings']['chado_table'];
+    $chado_column = $field['settings']['chado_column'];
 
     // Iterate through the field's items. Fields with cardinality ($delta) > 1
     // are multi-valued.
+    $items = field_get_items($entity_type, $entity, $field_name);
+//     if ($field_name == 'feature__organism_id') {
+//       dpm($items);
+//     }
     foreach ($items as $delta => $item) {
       foreach ($item as $item_name => $value) {
-        if ($item_name == 'value') {
-          $new_fields[$field_name][$delta]['value'] = $value;
-          continue;
-        }
         $matches = array();
         if (preg_match('/^(.*?)__.*?$/', $item_name, $matches)) {
           $table_name = $matches[1];
-          $new_fields[$field_name][$delta][$item_name][0]['value'] = $value;
+          $new_fields[$field_name][$delta][$item_name] = $value;
         }
+      }
+      // If there is no value set for the field using the [table_name]__[field name]
+      // naming schema then check if a 'value' item is present and if so use that.
+      $item_name = $chado_table . '__' . $chado_column;
+      if ((!array_key_exists($field_name, $new_fields) or
+           !array_key_exists($item_name, $new_fields[$field_name][$delta])) and
+          array_key_exists('value', $items[$delta])) {
+        $new_fields[$field_name][$delta][$item_name] = $items[$delta]['value'];
       }
     }
   }
@@ -407,7 +430,6 @@ function tripal_chado_field_storage_unnest_fields($fields, $entity_type, $entity
  * appear to actually need to do anything...
  */
 function tripal_chado_field_storage_query($query) {
-  dpm($query);
   $fieldConditions = $query->fieldConditions;
   foreach ($fieldConditions as $condition) {
     $field = $condition['field'];

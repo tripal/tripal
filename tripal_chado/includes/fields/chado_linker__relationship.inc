@@ -101,11 +101,6 @@ class chado_linker__relationship extends TripalField {
     $headers = array('Subject' ,'Type', 'Object');
     $headers = array('Relationship');
 
-    $this_name = $entity->chado_record->name;
-    if (property_exists($entity->chado_record, 'uniquename')) {
-      $this_name = $entity->chado_record->uniquename;
-    }
-
     foreach ($items as $delta => $item) {
       if (!$item['value']) {
         continue;
@@ -187,6 +182,15 @@ class chado_linker__relationship extends TripalField {
     $field_column = $field['settings']['chado_column'];
     $base_table = $field['settings']['base_table'];
 
+    // Set some defaults for the empty record.
+    $entity->{$field_name}['und'][0] = array(
+      'value' => array(),
+    );
+
+    if (!$record) {
+      return;
+    }
+
     // Expand the object to include the relationships.
     $options = array(
       'return_array' => 1,
@@ -222,8 +226,7 @@ class chado_linker__relationship extends TripalField {
       foreach ($orelationships as $relationship) {
         $rel_acc = $relationship->type_id->dbxref_id->db_id->name . ':' . $relationship->type_id->dbxref_id->accession;
         $rel_type = $relationship->type_id->name;
-        $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
-        $verb = $this->get_rel_verb($rel_type_clean);
+        $verb = $this->get_rel_verb($rel_type);
         $subject_name = $relationship->subject_id->name;
         $subject_type = $relationship->subject_id->type_id->name;
         $object_name = $relationship->object_id->name;
@@ -260,6 +263,7 @@ class chado_linker__relationship extends TripalField {
           $entity->{$field_name}['und'][$i]['value']['subject']['entity_id'] = $entity_id;
           $entity->{$field_name}['und'][$i]['value']['subject']['entity_type'] = 'TripalEntity';
         }
+        $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
         $entity->{$field_name}['und'][$i]['value']['phrase'] = 'The ' . $subject_type . ', ' .
           $subject_name . ', ' . $verb . ' '  . $rel_type_clean . ' this '  .
           $object_type . '.';
@@ -272,8 +276,7 @@ class chado_linker__relationship extends TripalField {
       foreach ($srelationships as $relationship) {
         $rel_acc = $relationship->type_id->dbxref_id->db_id->name . ':' . $relationship->type_id->dbxref_id->accession;
         $rel_type = $relationship->type_id->name;
-        $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
-        $verb = $this->get_rel_verb($rel_type_clean);
+        $verb = $this->get_rel_verb($rel_type);
         $subject_name = $relationship->subject_id->name;
         $subject_type = $relationship->subject_id->type_id->name;
         $object_name = $relationship->object_id->name;
@@ -309,6 +312,7 @@ class chado_linker__relationship extends TripalField {
           $entity->{$field_name}['und'][$i]['value']['object']['entity_id'] = $entity_id;
           $entity->{$field_name}['und'][$i]['value']['object']['entity_type'] = 'TripalEntity';
         }
+        $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
         $entity->{$field_name}['und'][$i]['value']['phrase'] = 'This  ' .
           $subject_type . ' ' . $verb . ' '  . $rel_type_clean . ' the '  .
           $object_type . ', ' . $object_name . '.';
@@ -316,9 +320,19 @@ class chado_linker__relationship extends TripalField {
       }
     }
   }
+  /**
+   * A helper function to define English verbs for relationship types.
+   *
+   * @param $rel_type
+   *   The vocabulary term name for the relationship.
+   *
+   * @return
+   *   The verb to use when creating a sentence of the relationship.
+   */
   private function get_rel_verb($rel_type) {
-    $verb = '';
-    switch ($rel_type) {
+    $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
+    $verb = $rel_type_clean;
+    switch ($rel_type_clean) {
       case 'integral part of':
       case 'instance of':
         $verb = 'is an';
@@ -345,7 +359,6 @@ class chado_linker__relationship extends TripalField {
       case 'maximally overlaps':
       case 'overlaps':
       case 'starts':
-        $verb = '';
         break;
       default:
         $verb = 'is';

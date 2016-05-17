@@ -436,7 +436,7 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
 
   if (!array_key_exists($vocab->namespace, $response['@context'])) {
     // If there is no URL prefix then use this API's vocabulary API
-    if ($term->urlprefix) {
+    if (property_exists($term, 'urlprefix')) {
       $response['@context'][$vocab->namespace] = $term->urlprefix;
     }
     else {
@@ -510,7 +510,6 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
         $lentity = reset($lentity);
         $lterm = tripal_load_term_entity(array('term_id' => $lentity->term_id));
         $lvocab = tripal_load_vocab_entity(array('vocab_id' => $lterm->vocab_id));
-        $lterm_details = tripal_get_term_details($lvocab->namespace, $lterm->namespace);
         $value[] = array(
           '@id'   => $api_url . '/content/' . $lterm->name . '/' . $items[0]['entity_id'],
           '@type' => $lvocab->namespace . ':' . $lterm->accession,
@@ -518,7 +517,8 @@ function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_i
           'type' => $lterm->name,
         );
 
-        if (!array_key_exists($lvocab->namespace, $response['@context'])) {
+        if (property_exists($lvocab, 'namespace') and !array_key_exists($lvocab->namespace, $response['@context'])) {
+          $lterm_details = tripal_get_term_details($lvocab->namespace, $lterm->namespace);
           $response['@context'][$lvocab->namespace] = $lterm_details->url;
         }
       }

@@ -234,7 +234,6 @@ function tripal_view_entity($entity, $view_mode = 'full') {
    $result = $query->range(0, 25)
      ->addMetaData('account', $user)
      ->execute();
-   dpm($result);
 
    $headers = array('Title', 'Vocabulary', 'Term', 'Author', 'Status', 'Updated', 'Operations');
    $rows = array();

@@ -136,7 +136,7 @@ class chado_linker__synonym extends TripalField {
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
     if (array_key_exists($delta, $items)) {
-      $record_id = $items[$delta]['value'];
+      $record_id = $items[$delta][$table_name . '__' . $pkey];
       $fkey_value = $items[$delta][$table_name . '__' . $fkey];
       $synonym_id = $items[$delta][$table_name . '__synonym_id'];
       $pub_id = $items[$delta][$table_name . '__pub_id'];
@@ -148,7 +148,7 @@ class chado_linker__synonym extends TripalField {
 
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state) and array_key_exists($delta, $form_state['values'])) {
-      $record_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name);
+      $record_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $pkey);
       $fkey_value = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $fkey);
       $synonym_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__synonym_id');
       $pub_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__pub_id');
@@ -173,7 +173,12 @@ class chado_linker__synonym extends TripalField {
     $widget['#prefix'] =  "<span id='$table_name-$delta'>";
     $widget['#suffix'] =  "</span>";
 
-    $widget['value'] = array(
+    $form['value'] = array(
+      '#type' => 'value',
+      '#value' => $items[$delta]['value'],
+    );
+
+    $widget[$table_name . '__' . $pkey] = array(
       '#type' => 'value',
       '#default_value' => $record_id,
     );
@@ -224,15 +229,19 @@ class chado_linker__synonym extends TripalField {
     $field_table = $field['settings']['chado_table'];
     $field_column = $field['settings']['chado_column'];
 
-    // Get the FK that links to the base record.
+    // Get the PKey for this table
     $schema = chado_get_schema($field_table);
     $pkey = $schema['primary key'][0];
+
+    // Get the FK that links to the base record.
+    $schema = chado_get_schema($field_table);
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
-      'value' => '',
+      'value' => array(),
+      $field_table . '__' . $pkey => '',
       $field_table . '__' . $fkey_lcolumn => '',
       $field_table . '__' . 'synonym_id' => '',
       $field_table . '__' . 'pub_id' => '',
@@ -251,7 +260,12 @@ class chado_linker__synonym extends TripalField {
       foreach ($record->$linker_table as $index => $linker) {
         $synonym = $linker->synonym_id;
         $entity->{$field_name}['und'][$i] = array(
-          'value' => $linker->$pkey,
+          'value' => array(
+            '@type' => $synonym->type_id->dbxref_id->db_id->name . ':' . $synonym->type_id->dbxref_id->accession,
+            'type' => $synonym->type_id->name,
+            'name' => $synonym->name,
+          ),
+          $field_table . '__' . $pkey = $linker->$pkey,
           $field_table . '__' . $fkey_lcolumn => $linker->$fkey_lcolumn->$fkey_lcolumn,
           $field_table . '__' . 'synonym_id' => $synonym->synonym_id,
           $field_table . '__' . 'pub_id' => $linker->pub_id->pub_id,

@@ -141,8 +141,17 @@ class chado_feature__residues extends TripalField {
    * @see TripalField::widget_form()
    */
   function widget_form(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
+    $settings = $field['settings'];
+    $field_name = $field['field_name'];
+    $field_type = $field['type'];
+    $field_table = $field['settings']['chado_table'];
+    $field_column = $field['settings']['chado_column'];
 
-    $widget['value'] = array(
+    $form['value'] = array(
+      '#type' => 'value',
+      '#value' => $items[$delta]['value'],
+    );
+    $widget['feature__residues'] = array(
       '#type' => 'textarea',
       '#title' => $element['#title'],
       '#description' => $element['#description'],
@@ -173,13 +182,14 @@ class chado_feature__residues extends TripalField {
 
       $feature = chado_expand_var($feature,'field','feature.residues');
       if ($feature->residues) {
-        $entity->{$field_name}['und'][$num_seqs++]['value'] = array(
+        $entity->{$field_name}['und'][$num_seqs]['value'] = array(
           '@type' => 'SO:0000110',
           'type' => 'sequence_feature',
           'label' => 'Sequence',
           'defline' => tripal_get_fasta_defline($feature, '', NULL, '', strlen($feature->residues)),
           'residues' => $feature->residues,
         );
+        $entity->{$field_name}['und'][$num_seqs++]['residues'] = $feature->residues;
       }
     }
 
@@ -624,7 +634,7 @@ function chado_feature__residues_widget_validate($element, &$form_state) {
   $residues = tripal_chado_get_field_form_values($field_name, $form_state);
   if ($residues) {
     $residues = preg_replace('/\s/', '', $residues);
-    tripal_chado_set_field_form_values($field_name, $form_state, $residues);
+    tripal_chado_set_field_form_values($field_name, $form_state, $residues, 0, 'feature__residues');
   }
 }
 
