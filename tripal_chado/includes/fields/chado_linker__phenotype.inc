@@ -197,7 +197,7 @@ class chado_linker__phenotype extends TripalField {
         $phenotype = $phenotype_linker->phenotype_id;
         $entity->{$field_name}['und'][$i] = array(
           'value' => array(
-       '@type' => $phenotype->attr_id->dbxref_id->db_id->name . ':' . $phenotype->type_id->dbxref_id->accession,
+       '@type' => $phenotype->attr_id->dbxref_id->db_id->name . ':' . $phenotype->attr_id->dbxref_id->accession,
             'type' => $phenotype->attr_id->name,
             'name' => $phenotype->name,
             'value' => $phenotype->value,

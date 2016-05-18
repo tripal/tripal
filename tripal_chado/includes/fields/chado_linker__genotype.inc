@@ -99,7 +99,7 @@ class chado_linker__genotype extends TripalField {
 
         $headers = array('Name', 'Description', 'Type');
         $rows = array();
-dpm($items);
+
         foreach ($items as $delta => $item) {
           $genotype = $item['value'];
           if (!$genotype) {
@@ -162,7 +162,7 @@ dpm($items);
     // Get the FK that links to the base record.
     $schema = chado_get_schema($field_table);
     $base_table = $details['record']->tablename;
-    $pkey = $schema['primary key'][0];dpm($schema);
+    $pkey = $schema['primary key'][0];
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
 
@@ -191,7 +191,7 @@ dpm($items);
       ),
     );
     $record = chado_expand_var($record, 'table', $linker_table, $options);
-    $genotype_linkers = $record->$linker_table;
+/* $genotype_linkers = $record->$linker_table;
     if ($genotype_linkers) {
       foreach ($genotype_linkers as $i => $genotype_linker) {
         $genotype = $genotype_linker->genotype_id;
@@ -212,6 +212,6 @@ dpm($items);
           $entity->{$field_name}['und'][$i]['entity_type'] = 'TripalEntity';
         }
       }
-    }
+    } */
   }
 }
