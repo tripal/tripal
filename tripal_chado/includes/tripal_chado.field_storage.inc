@@ -35,12 +35,20 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   $record_id  = $entity->chado_record_id;
 
   // Convert the fields into a key/value list of fields and their values.
-  $field_vals = tripal_chado_field_storage_unnest_fields($fields, $entity_type, $entity);
+  $field_vals = tripal_chado_field_storage_merge_fields($fields, $entity_type, $entity);
 dpm($field_vals);
-
-  // Recursively write fields for the base table.
-  $record_id = tripal_chado_field_storage_write_recursive($entity_type, $entity, $term,
-      $op, $field_vals, $base_table, $base_table, $type_field, $record_id);
+return;
+  // Write the record for the base table.
+  $record_id = tripal_chado_field_storage_write_table(array(
+    'entity' => $entity,
+    'term' => $term,
+    'op' => $op,
+    'field_vals' => $field_vals,
+    'base_table' => $base_table,
+    'tablename' => $base_table,
+    'type_field' => $type_field,
+    'record_id' => $record_id,
+  ));
 
   // If this is an insert then add the chado_entity record.
   if ($op == FIELD_STORAGE_INSERT) {
@@ -59,9 +67,7 @@ dpm($field_vals);
     }
   }
 
-
-  // Now that we have handled the base table, we need to handle fields that
-  // are not part of the base table.
+  // Now that we have handled the base table, we need to handle linking tables.
   foreach ($fields as $field_id) {
     // Get the field using the id.
     $field = field_info_field_by_id($field_id);
@@ -77,8 +83,14 @@ dpm($field_vals);
         // Iterate through each record.
         if (array_key_exists($field_name, $field_vals)) {
           foreach ($field_vals[$field_name] as $delta => $fvals) {
-            tripal_chado_field_storage_write_recursive($entity_type, $entity, $term,
-                $op, $fvals, $base_table, $field_table);
+            tripal_chado_field_storage_write_table(array(
+              'entity' => $entity,
+              'term' => $term,
+              'op' => $op,
+              'field_vals' => $fvals,
+              'base_table' => $base_table,
+              'tablename' => $field_table
+            ));
           }
         }
       }
@@ -88,21 +100,17 @@ dpm($field_vals);
 
 /**
  *
- * @param $entity_type
- * @param $entity
- * @param $op
- * @param $field_vals
- * @param $tablename
- * @param $type_field
- * @param $record_id
- * @param $depth
- * @throws Exception
- * @return
- *   The record_id of the table if a matching record exists.
  */
-function tripal_chado_field_storage_write_recursive($entity_type, $entity, $term,
-   $op, $field_vals, $base_table, $tablename, $type_field = NULL,
-   $record_id = NULL, $depth = 0) {
+function tripal_chado_field_storage_write_table($params) {
+  $entity = $params['entity'];
+  $term = $params['term'];
+  $op = $params['op'];
+  $field_vals = $params['field_vals'];
+  $base_table = $params['base_table'];
+  $tablename = $params['tablename'];
+  $type_field = array_key_exists('type_field', $params) ? $params['type_field'] : NULL;
+  $record_id = array_key_exists('record_id', $params) ? $params['record_id'] : NULL;
+  $depth = array_key_exists('depth', $params) ? $params['depth'] : 0;
 
   // Intialize the values array.
   $values = array();
@@ -126,8 +134,8 @@ function tripal_chado_field_storage_write_recursive($entity_type, $entity, $term
         continue;
       }
 
-      // If this is not the base table then do not recurse on the FK field
-      // that links this table to the base table.
+      // If this is a linking table, do not recurse on the fields that
+      // link back to the base table.
       if ($tablename != $base_table && $details['table'] == $base_table) {
         $fkey_base_linker = $local_id;
         continue;
@@ -158,10 +166,14 @@ function tripal_chado_field_storage_write_recursive($entity_type, $entity, $term
       // loop through the $fk_fields again.
       $fkey_fields_list[] = $local_id;
 
-      // Recurse on the FK field.  Pass in the ID for the FK field if one
-      // exists in the $field_vals;
-      $fk_val = tripal_chado_field_storage_write_recursive($entity_type,
-        $entity, $term, $op, $fk_vals, $base_table, $fk_table, NULL, $fk_val, $depth + 1);
+      // Recurse on the FK field.
+      $nparams = $params;
+      $nparams['field_vals'] = $fk_vals;
+      $nparams['tablename'] = $fk_table;
+      $nparams['type_field'] = NULL;
+      $nparams['record_id'] = $fk_val;
+      $nparams['depth'] = $depth + 1;
+      $fk_val = tripal_chado_field_storage_write_table($nparams);
       if (isset($fk_val) and $fk_val != '' and $fk_val != 0) {
         $values[$local_id] = $fk_val;
       }
@@ -372,14 +384,13 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
   } // end: foreach ($entities as $id => $entity) {
 }
 /**
- * Iterates through all of the fields reformats to a key/value array.
- *
- * @param $fields
+ * Merges the values of all fields into a single array keyed by table name.
  */
-function tripal_chado_field_storage_unnest_fields($fields, $entity_type, $entity) {
+function tripal_chado_field_storage_merge_fields($fields, $entity_type, $entity) {
   $new_fields = array();
 
-  // Iterate through all of the fields.
+  // Iterate through all of the fields and organize them into a
+  // new fields array keyed by the table name
   foreach ($fields as $field_id => $ids) {
 
     // Get the field name and information about it.
@@ -400,24 +411,70 @@ function tripal_chado_field_storage_unnest_fields($fields, $entity_type, $entity
     foreach ($items as $delta => $item) {
       foreach ($item as $item_name => $value) {
         $matches = array();
-        if (preg_match('/^(.*?)__.*?$/', $item_name, $matches)) {
+        if (preg_match('/^(.*?)__(.*?)$/', $item_name, $matches)) {
           $table_name = $matches[1];
-          $new_fields[$field_name][$delta][$item_name] = $value;
+          $column_name = $matches[2];
+
+          // Is this a nested FK field? If so break it down into a sub array.
+          if (preg_match('/^(.*?)--(.*?)$/', $column_name, $matches)) {
+            $parent_item_name = $matches[1];
+            $sub_item_name = $matches[2];
+            $sub_item = tripal_chado_field_storage_expand_field($sub_item_name, $value);
+            // If we've already encountered this table and column then we've
+            // already seen the numeric FK value or we've already added a
+            // subcolumn. If the former we want to convert this to an array
+            // so we can add the details.
+            if (array_key_exists($parent_item_name, $new_fields[$table_name][$delta]) and
+                !is_array($new_fields[$table_name][$delta][$parent_item_name])) {
+              $new_fields[$table_name][$delta][$parent_item_name] = array();
+            }
+            $new_fields[$table_name][$delta][$parent_item_name] += $sub_item;
+          }
+          else {
+            // If not seen this table and column then just add it. If we've
+            // already seen it then it means it's a FK field and we've already
+            // added subfields so do nothing.
+            if (!array_key_exists($table_name, $new_fields) or
+                !array_key_exists($delta, $new_fields[$table_name]) or
+                !array_key_exists($column_name, $new_fields[$table_name][$delta])) {
+              $new_fields[$table_name][$delta][$column_name] = $value;
+            }
+          }
         }
       }
       // If there is no value set for the field using the
       // [table_name]__[field name] naming schema then check if a 'value' item
       // is present and if so use that.
-      $item_name = $chado_table . '__' . $chado_column;
-      if ((!array_key_exists($field_name, $new_fields) or
-           !array_key_exists($item_name, $new_fields[$field_name][$delta])) and
+      if ((!array_key_exists($chado_table, $new_fields) or
+           !array_key_exists($delta, $new_fields[$chado_table]) or
+           !array_key_exists($chado_column, $new_fields[$chado_table][$delta])) and
           array_key_exists('value', $items[$delta]) and
           !is_array($items[$delta]['value'])) {
-        $new_fields[$field_name][$delta][$item_name] = $items[$delta]['value'];
+        $new_fields[$chado_table][$delta][$chado_column] = $items[$delta]['value'];
       }
     }
   }
+
   return $new_fields;
+}
+
+/**
+ * Recurses through a field's item name breaking it into a nested array.
+ *
+ *
+ */
+function tripal_chado_field_storage_expand_field($item_name, $value) {
+
+   $matches = array();
+   if (preg_match('/^(.*?)--(.*?)$/', $item_name, $matches)) {
+     $parent_item_name = $matches[1];
+     $sub_item_name = $matches[2];
+     $sub_item = tripal_chado_field_storage_expand_field($sub_item_name, $value);
+     return array($parent_item_name => $sub_item);
+   }
+   else {
+     return array($item_name => $value);
+   }
 }
 
 /**

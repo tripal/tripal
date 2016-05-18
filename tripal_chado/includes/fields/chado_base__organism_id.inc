@@ -133,7 +133,7 @@ class chado_base__organism_id extends TripalField {
 
     $widget['value'] = array(
       '#type' => 'value',
-      '#value' => $items[0]['value'],
+      '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
     $options = tripal_get_organism_select_options(FALSE);
     $widget[$field_table . '__organism_id'] = array(
