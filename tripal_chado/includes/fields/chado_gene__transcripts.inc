@@ -132,8 +132,8 @@ class chado_gene__transcripts extends TripalField {
       $type = $transcript['type'];
 
       // Add a link i there is an entity.
-      if (array_key_exists('entity_id', $transcript) and $transcript['$entity_id']) {
-        $entity_id = $transcript['entity_id'];
+      if (array_key_exists('entity_id', $item) and $item['entity_id']) {
+        $entity_id = $item['entity_id'];
         $feature_name = l($feature_name, "bio_data/" . $entity_id, array('attributes' => array('target' => "_blank")));
       }
       $rows[] = array($feature_name, $feature_uname, $type, $loc);
