@@ -96,24 +96,27 @@ class chado_organism__type_id extends TripalField {
     $field_table = $field['settings']['chado_table'];
     $field_column = $field['settings']['chado_column'];
 
-    $default_value = 0;
-    if (array_key_exists('organism__type_id', $items[0])) {
-      $default_value = $items[0]['organism__type_id'];
+    $type_id = 0;
+    if (count($items) > 0 and array_key_exists('organism__type_id', $items[0])) {
+      $type_id = $items[0]['organism__type_id'];
     }
 
     $form['value'] = array(
       '#type' => 'value',
-      '#value' => $items[$delta]['value'],
+      '#value' =>  array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
 
     $cv = tripal_get_default_cv($field_table, $field_column);
-    $options = tripal_get_cvterm_select_options($cv->cv_id);
+    $options = array();
+    if ($cv) {
+      $options = tripal_get_cvterm_select_options($cv->cv_id);
+    }
     $widget['organism__type_id'] = array(
       '#type' => 'select',
       '#title' => $element['#title'],
       '#description' => $element['#description'],
       '#options' => $options,
-      '#default_value' => $default_value,
+      '#default_value' => $type_id,
       '#required' => $element['#required'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
       '#delta' => $delta,
@@ -134,10 +137,16 @@ class chado_organism__type_id extends TripalField {
     $field_table = $field['settings']['chado_table'];
     $field_column = $field['settings']['chado_column'];
 
-    $organism = $record->organism_id;
+    // Set some defaults for the empty record.
+    $entity->{$field_name}['und'][0] = array(
+      'value' => '',
+      'organism__type_id' => '',
+    );
 
-    $entity->{$field_name}['und'][0]['value'] = $organism->type_id->name;
-    $entity->{$field_name}['und'][0]['organism__type_id'] = $organism->type_id->cvterm_id;
+    if ($record->type_id) {
+      $entity->{$field_name}['und'][0]['value'] = $record->type_id->name;
+      $entity->{$field_name}['und'][0]['organism__type_id'] = $record->type_id->cvterm_id;
+    }
   }
 
 }

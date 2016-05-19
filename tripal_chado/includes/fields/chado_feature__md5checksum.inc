@@ -107,13 +107,22 @@ class chado_feature__md5checksum  extends TripalField {
     $field_table = $field['settings']['chado_table'];
     $field_column = $field['settings']['chado_column'];
 
+    // Get the field defaults.
+    $md5checksum = '';
+    if (count($items) > 0 and array_key_exists('feature__md5checksum', $items[0])) {
+      $md5checksum = $items[0]['feature__md5checksum'];
+    }
+    if (array_key_exists('values', $form_state)) {
+      $md5checksum = tripal_chado_get_field_form_values($field_name, $form_state, 0, 'feature__md5checksum');
+    }
+
     $widget['value'] = array(
       '#type' => 'value',
-      '#value' => $items[0]['value'],
+      '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
     $widget['feature__md5checksum'] = array(
       '#type' => 'value',
-      '#value' => $items[0]['value'],
+      '#value' => $md5checksum,
       '#element_validate' => array('chado_feature__md5checksum_widget_validate'),
     );
   }

@@ -47,6 +47,12 @@ class chado_base__organism_id extends TripalField {
       return $field_info;
     }
 
+    $is_required = FALSE;
+    if (array_key_exists('not null', $schema['fields']['organism_id']) and
+        $schema['fields']['organism_id']['not null']) {
+      $is_required = TRUE;
+    }
+
     // There is an organism_id column so attach the field!
     $field_info = array(
       'field_name' => $table_name . '__organism_id',
@@ -54,7 +60,7 @@ class chado_base__organism_id extends TripalField {
       'widget_type' => 'chado_base__organism_id_widget',
       'description' => 'Select an organism.',
       'label' => 'Organism',
-      'is_required' => 0,
+      'is_required' => $is_required,
       'storage' => 'field_chado_storage',
       'widget_settings' => array(
         'display_label' => 1
@@ -126,9 +132,9 @@ class chado_base__organism_id extends TripalField {
     $field_table = $field['settings']['chado_table'];
     $field_column = $field['settings']['chado_column'];
 
-    $default_value = 0;
-    if (array_key_exists($field_table . '__organism_id', $items[0])) {
-      $default_value = $items[0][$field_table . '__organism_id'];
+    $organism_id = 0;
+    if (count($items) > 0 and array_key_exists($field_table . '__organism_id', $items[0])) {
+      $organism_id = $items[0][$field_table . '__organism_id'];
     }
 
     $widget['value'] = array(
@@ -141,7 +147,7 @@ class chado_base__organism_id extends TripalField {
       '#title' => $element['#title'],
       '#description' => $element['#description'],
       '#options' => $options,
-      '#default_value' => $default_value,
+      '#default_value' => $organism_id,
       '#required' => $element['#required'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
       '#delta' => $delta,
@@ -162,18 +168,25 @@ class chado_base__organism_id extends TripalField {
     $field_table = $field['settings']['chado_table'];
     $field_column = $field['settings']['chado_column'];
 
-    $organism = $record->organism_id;
-    $string = $settings['field_display_string'];
-    $value = tripal_replace_chado_tokens($string, $organism);
+    // Set some defaults for the empty record.
+    $entity->{$field_name}['und'][0] = array(
+      'value' => '',
+      'organism__type_id' => '',
+    );
 
-    $entity->{$field_name}['und'][0]['value'] = $value;
-    $entity->{$field_name}['und'][0][$field_table . '__organism_id'] = $organism->organism_id;
+    if ($record) {
+      $organism = $record->organism_id;
+      $string = $settings['field_display_string'];
+      $value = tripal_replace_chado_tokens($string, $organism);
+      $entity->{$field_name}['und'][0]['value'] = $value;
+      $entity->{$field_name}['und'][0][$field_table . '__organism_id'] = $organism->organism_id;
 
-    // Is there a published entity for this organism?
-    if (property_exists($entity->chado_record->$field_column, 'entity_id')) {
-      $fk_entity_id = $entity->chado_record->$field_column->entity_id;
-      $entity->{$field_name}['und'][0]['entity_id'] = $fk_entity_id;
-      $entity->{$field_name}['und'][0]['entity_type'] = 'TripalEntity';
+      // Is there a published entity for this organism?
+      if (property_exists($entity->chado_record->$field_column, 'entity_id')) {
+        $fk_entity_id = $entity->chado_record->$field_column->entity_id;
+        $entity->{$field_name}['und'][0]['entity_id'] = $fk_entity_id;
+        $entity->{$field_name}['und'][0]['entity_type'] = 'TripalEntity';
+      }
     }
   }
 

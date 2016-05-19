@@ -151,23 +151,25 @@ class chado_feature__residues extends TripalField {
     $field_table = $field['settings']['chado_table'];
     $field_column = $field['settings']['chado_column'];
 
-    // This field provides several items if an alignment for the feature
-    // is present.  We don't want widgets for those.  Just for the first
-    // one which should always be the residues for the feature table.
-    if ($delta > 0) {
-      return;
+    // Get the field defaults.
+    $residues = '';
+    if (count($items) > 0 and array_key_exists('feature__residues', $items[0])) {
+      $residues = $items[0]['feature__residues'];
+    }
+    if (array_key_exists('values', $form_state)) {
+      $residues = tripal_chado_get_field_form_values($field_name, $form_state, 0, 'feature__residues');
     }
 
     $widget['value'] = array(
       '#type' => 'value',
-      '#value' => $items[$delta]['value'],
+      '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
     $widget['feature__residues'] = array(
       '#type' => 'textarea',
       '#title' => $element['#title'],
       '#description' => $element['#description'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
-      '#default_value' => $items[$delta]['feature__residues'],
+      '#default_value' => $residues,
       '#delta' => $delta,
       '#element_validate' => array('chado_feature__residues_widget_validate'),
       '#cols' => 30,

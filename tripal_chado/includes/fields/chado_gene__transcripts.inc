@@ -120,6 +120,9 @@ class chado_gene__transcripts extends TripalField {
     $rows = array();
     foreach ($items as $delta => $item) {
 
+      if (!$item['value']) {
+        continue;
+      }
       $transcript = $item['value'];
 
       // Get the field values
@@ -164,6 +167,11 @@ class chado_gene__transcripts extends TripalField {
     $record = $details['record'];
 
     $field_name = $field['field_name'];
+
+    // Set some defaults for the empty record.
+    $entity->{$field_name}['und'][0] = array(
+      'value' => array(),
+    );
 
     // TODO: If the tripal_get_feature_relationships() slows this down then
     // we may need to write a custom function to get the data.

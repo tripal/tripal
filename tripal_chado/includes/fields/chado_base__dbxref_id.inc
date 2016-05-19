@@ -129,7 +129,7 @@ class chado_base__dbxref_id extends TripalField {
 
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
-    if (array_key_exists($delta, $items)) {
+    if (count($items) > 0 and array_key_exists($delta, $items)) {
       $fk_val = $items[$delta][$field_table . '__' . $field_column];
       $dbxref_id = $items[$delta][$field_table . '__' . $field_column . '--dbxref_id'];
       $db_id = $items[$delta][$field_table . '__' . $field_column . '--db_id'];
@@ -180,7 +180,7 @@ class chado_base__dbxref_id extends TripalField {
 
     $widget['value'] = array(
       '#type' => 'value',
-      '#value' => $items[0]['value'],
+      '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
 
     $widget[$field_table . '__' . $field_column] = array(

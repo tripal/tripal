@@ -120,6 +120,10 @@ class chado_linker__featureloc extends TripalField {
     $headers = array('Aligned Feature' ,'Feature Type', 'Alignment Location');
 
     foreach ($items as $delta => $item) {
+      if (!$item['value']) {
+        continue;
+      }
+
       $alignment = $item['value'];
       $feature_name = $alignment['name'];
       $feature_loc = '';
@@ -188,6 +192,11 @@ class chado_linker__featureloc extends TripalField {
 
     $field_name = $field['field_name'];
     $field_type = $field['type'];
+
+    // Set some defaults for the empty record.
+    $entity->{$field_name}['und'][0] = array(
+      'value' => array(),
+    );
 
     $options = array(
       'return_array' => TRUE,

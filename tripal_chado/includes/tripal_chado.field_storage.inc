@@ -27,6 +27,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
   $term = entity_load('TripalTerm', array('id' => $entity->term_id));
   $term = reset($term);
+  $cvterm = $term->details['cvterm'];
 
   // Get the base table, type field and record_id from the entity.
   $base_table = $entity->chado_table;
@@ -39,11 +40,14 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   // Convert the fields into a key/value list of fields and their values.
   $field_vals = tripal_chado_field_storage_merge_fields($fields, $entity_type, $entity);
 
-  // Write the record for the base table.  If this is an update then we'll have
-  // the record_id and we need to add that to our values array.
+  // Write the record for the base table.  First get the values for this table
+  // and set the record_id (update) or the type_id (insert)
   $values = $field_vals[$base_table][0];
   if ($record_id) {
     $values[$base_pkey] = $record_id;
+  }
+  else {
+    $values[$type_field] = $cvterm->cvterm_id;
   }
   $base_record_id = tripal_chado_field_storage_write_table($base_table, $values);
 
@@ -53,7 +57,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
     // fields can be pulled from Chado when loaded the next time.
     $record = array(
       'entity_id' => $entity->id,
-      'record_id' => $record_id,
+      'record_id' => $base_record_id,
       'data_table' => $base_table,
       'type_table' => $base_table,
       'field' => $type_field,
@@ -140,14 +144,14 @@ function tripal_chado_field_storage_write_table($table_name, $values) {
 
    // If the primary key column has a value then this will be an udpate,
    // otherwise it's an insert.
-   if (!$values[$pkey]) {
+   if (!array_key_exists($pkey, $values) or !$values[$pkey]) {
      // Before inserting, we want to make sure the record does not
      // already exist.  Using the unique constraint check for a matching record.
      $options = array('is_duplicate' => TRUE);
      $is_duplicate = chado_select_record($table_name, array('*'), $values, $options);
      if($is_duplicate) {
        $record = chado_select_record($table_name, array('*'), $values);
-       return $record[0]->$pkey_field;
+       return $record[0]->$pkey;
      }
 
      // Insert the values array as a new record in the table.
@@ -155,7 +159,7 @@ function tripal_chado_field_storage_write_table($table_name, $values) {
      if ($record === FALSE) {
        throw new Exception('Could not insert Chado record into table: "' . $tablename . '".');
      }
-     return $record_id = $record[$pkey_field];
+     return $record[$pkey];
    }
    // We have an incoming record_id so this is an update.
    else {

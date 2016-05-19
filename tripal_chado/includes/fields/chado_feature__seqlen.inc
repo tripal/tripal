@@ -106,7 +106,7 @@ class chado_feature__seqlen extends TripalField {
 
     $widget['value'] = array(
       '#type' => 'value',
-      '#value' => $items[$delta]['value'],
+      '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
 
     $widget['feature__seqlen'] =  array(
