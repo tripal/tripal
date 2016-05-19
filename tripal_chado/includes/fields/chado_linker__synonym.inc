@@ -142,8 +142,8 @@ class chado_linker__synonym extends TripalField {
       $pub_id = $items[$delta][$table_name . '__pub_id'];
       $is_current = $items[$delta][$table_name . '__is_current'];
       $is_internal = $items[$delta][$table_name . '__is_internal'];
-      $syn_name = $items[$delta][$table_name . '--synonym__name'];
-      $syn_type = $items[$delta][$table_name . '--synonym__type_id'];
+      $syn_name = $items[$delta][$table_name . '__synonym_id--name'];
+      $syn_type = $items[$delta][$table_name . '__synonym_id--type_id'];
     }
 
     // Check $form_state['values'] to see if an AJAX call set the values.
@@ -154,8 +154,8 @@ class chado_linker__synonym extends TripalField {
       $pub_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__pub_id');
       $is_current = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__is_current');
       $is_internal = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__is_internal');
-      $syn_name = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '--synonym__name');
-      $syn_type = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '--synonym__type_id');
+      $syn_name = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__synonym_id--name');
+      $syn_type = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__synonym_id--type_id');
     }
 
     // Get the synonym type terms.  There shouldn't be too many.
@@ -186,14 +186,18 @@ class chado_linker__synonym extends TripalField {
       '#type' => 'value',
       '#default_value' => $fkey_value,
     );
-
-    $widget[$table_name . '--synonym__type_id'] = array(
+    // TODO: add a widget for selecting a publication.
+    $widget[$table_name . '__pub_id'] = array(
+      '#type' => 'value',
+      '#default_value' => $pub_id,
+    );
+    $widget[$table_name . '__synonym_id--type_id'] = array(
       '#type' => 'select',
       '#title' => t('Type'),
       '#options' => $options,
       '#default_value' => $syn_type,
     );
-    $widget[$table_name . '--synonym__name'] = array(
+    $widget[$table_name . '__synonym_id--name'] = array(
       '#type' => 'textfield',
       '#title' => t('Synonym Name'),
       '#default_value' => $syn_name,
@@ -213,7 +217,6 @@ class chado_linker__synonym extends TripalField {
       '#default_value' => $is_internal,
       '#required' => $element['#required'],
     );
-
   }
 
   /**
@@ -247,8 +250,8 @@ class chado_linker__synonym extends TripalField {
       $field_table . '__' . 'pub_id' => '',
       $field_table . '__' . 'is_current' => TRUE,
       $field_table . '__' . 'is_internal' => '',
-      $field_table . '--' . 'synonym__name' => '',
-      $field_table . '--' . 'synonym__type_id' => '',
+      $field_table . '__synonym_id--name' => '',
+      $field_table . '__synonym_id--type_id' => '',
       // Ignore the synonym_sgml column for now.
     );
 
@@ -271,8 +274,8 @@ class chado_linker__synonym extends TripalField {
           $field_table . '__' . 'pub_id' => $linker->pub_id->pub_id,
           $field_table . '__' . 'is_current' => $linker->is_current,
           $field_table . '__' . 'is_internal' => $linker->is_internal,
-          $field_table . '--' . 'synonym__name' => $synonym->name,
-          $field_table . '--' . 'synonym__type_id' => $synonym->type_id->cvterm_id,
+          $field_table . '__synonym_id--name' => $synonym->name,
+          $field_table . '__synonym_id--type_id' => $synonym->type_id->cvterm_id,
         );
         $i++;
       }
@@ -296,10 +299,10 @@ function theme_chado_linker__synonym_widget($variables) {
   $layout = "
       <div class=\"synonym-widget\">
         <div class=\"synonym-widget-item\">" .
-        drupal_render($element[$table_name . '--synonym__name']) . "
+        drupal_render($element[$table_name . '__synonym_id--name']) . "
         </div>
         <div>" .
-        drupal_render($element[$table_name . '--synonym__type_id']) . "
+        drupal_render($element[$table_name . '__synonym_id--type_id']) . "
         </div>
         <div class=\"synonym-widget-item\">" .
         drupal_render($element[$table_name . '__is_internal']) . "

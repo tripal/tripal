@@ -2,7 +2,7 @@
 
 
 /**
- * A base class for all Fields supported by the Tripal Chado module.
+ * A base class for all Fields supported by Tripal.
  *
  * This class provides all of the necessary functions for a TripalField field.
  * It helps simplify and unify the process of creating fields for Tripal.  This
@@ -197,38 +197,9 @@ class TripalField {
   /**
    * Loads the field values from the underlying data store.
    *
-   * This function is called by the tripal_chado_field_storage_load() for
-   * each property managed by the field_chado_storage storage type.  This is
-   * an optional hook function that is only needed if the field has
-   * multiple form elements.
-   *
-   * This function must set the value for the field in the entity object. For
-   * example:
-   *
-   * @code
-   *   $field_name = $field['field_name'];
-   *   $field_type = $field['type'];
-   *   $language = 'und';
-   *   $delta = 0;
-   *   $entity->{$field_name}[$language][$delta]['value'] = TRUE;
-   * @endcode
-   *
-   * The field in the entity is an associative array where the first level is
-   * the field name, followed by the language.  The 'und' value indicates
-   * that the language is undefined and is the default.  Next is the 'delta'
-   * value. For field with a cardinality of 1, the delta value will always be
-   * 0.  For fields with a cardinality greater than 1 then the delta should
-   * increment for each value.  Next is a list of key/value pairs one of which
-   * should have the name 'value'.  The 'value' key should always contain the
-   * primary value that should be displayed to the user.  It can be a single
-   * value, or an array.  Any other number of keys can be present to help
-   * with the display. These keys also correspond to the names of the form
-   * fields specified by the widget() function of this class.
-   *
    * @param $field
    * @param $entity
-   * @param $base_table
-   * @param $record
+   * @param $details
    *
    * @return
    *   An array of the following format:

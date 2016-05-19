@@ -33,22 +33,19 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   $type_field = $entity->chado_column;
   $record     = $entity->chado_record;
   $record_id  = $entity->chado_record_id;
+  $base_schema = chado_get_schema($base_table);
+  $base_pkey = $base_schema['primary key'][0];
 
   // Convert the fields into a key/value list of fields and their values.
   $field_vals = tripal_chado_field_storage_merge_fields($fields, $entity_type, $entity);
-dpm($field_vals);
-return;
-  // Write the record for the base table.
-  $record_id = tripal_chado_field_storage_write_table(array(
-    'entity' => $entity,
-    'term' => $term,
-    'op' => $op,
-    'field_vals' => $field_vals,
-    'base_table' => $base_table,
-    'tablename' => $base_table,
-    'type_field' => $type_field,
-    'record_id' => $record_id,
-  ));
+
+  // Write the record for the base table.  If this is an update then we'll have
+  // the record_id and we need to add that to our values array.
+  $values = $field_vals[$base_table][0];
+  if ($record_id) {
+    $values[$base_pkey] = $record_id;
+  }
+  $base_record_id = tripal_chado_field_storage_write_table($base_table, $values);
 
   // If this is an insert then add the chado_entity record.
   if ($op == FIELD_STORAGE_INSERT) {
@@ -68,185 +65,108 @@ return;
   }
 
   // Now that we have handled the base table, we need to handle linking tables.
-  foreach ($fields as $field_id) {
-    // Get the field using the id.
-    $field = field_info_field_by_id($field_id);
-    $field_name = $field['field_name'];
-
-    // If the field has a chado_table setting then we can try to write.
-    if (array_key_exists('settings', $field) and array_key_exists('chado_table', $field['settings'])) {
-
-      // Skip fields that use the base table, as we've already handled those.
-      if ($field['settings']['chado_table'] != $base_table){
-        $field_table = $field['settings']['chado_table'];
-
-        // Iterate through each record.
-        if (array_key_exists($field_name, $field_vals)) {
-          foreach ($field_vals[$field_name] as $delta => $fvals) {
-            tripal_chado_field_storage_write_table(array(
-              'entity' => $entity,
-              'term' => $term,
-              'op' => $op,
-              'field_vals' => $fvals,
-              'base_table' => $base_table,
-              'tablename' => $field_table
-            ));
-          }
-        }
-      }
+  foreach ($field_vals as $table_name => $details) {
+    // Skip the base table as we've already dealt with it.
+    if ($table_name == $base_table) {
+      continue;
+    }
+    foreach ($details as $delta => $values) {
+      $record_id = tripal_chado_field_storage_write_table($table_name, $values);
     }
   }
 }
 
 /**
+ * Write (inserts/oupdates) a nested array of values for a table.
  *
+ * The $values array is of the same format used by chado_insert_record() and
+ * chado_update_record().  However, both of those methods will use any nested
+ * arrays (i.e. representing foreign keys) to select an appropriate record ID
+ * that can be substituted as the value.  Here, the nested arrays are
+ * either inserted or updated as well, but the choice is determined if the
+ * primary key value is present.  If present an update occurs, if not present
+ * then an insert occurs.
+ *
+ * This function is recursive and nested arrays from the lowest point of the
+ * "tree" are dealt with first.
+ *
+ * @param $table_name
+ *   The name of the table on which the insertion/update is performed.
+ * @param $values
+ *   The values array for the insertion.
+ * @throws Exception
+ * @return
+ *   The unique record ID.
  */
-function tripal_chado_field_storage_write_table($params) {
-  $entity = $params['entity'];
-  $term = $params['term'];
-  $op = $params['op'];
-  $field_vals = $params['field_vals'];
-  $base_table = $params['base_table'];
-  $tablename = $params['tablename'];
-  $type_field = array_key_exists('type_field', $params) ? $params['type_field'] : NULL;
-  $record_id = array_key_exists('record_id', $params) ? $params['record_id'] : NULL;
-  $depth = array_key_exists('depth', $params) ? $params['depth'] : 0;
+function tripal_chado_field_storage_write_table($table_name, $values) {
+   $schema = chado_get_schema($table_name);
+   $fkeys = $schema['foreign keys'];
+   $pkey = $schema['primary key'][0];
 
-  // Intialize the values array.
-  $values = array();
+   // Before inserting or updating this table, recruse if there are any
+   // nested FK array values.
+   foreach ($values as $column => $value) {
+     // If this value is an array then it must be a FK... let's recurse.
+     if (is_array($value)) {
 
-  // Get the schema for this table so that we can identify the primary key
-  // and foreign keys.
-  $schema = chado_get_schema($tablename);
-  $pkey_field = $schema['primary key'][0];
-  $fkey_fields = $schema['foreign keys'];
-  $fkey_fields_list = array();
-  $fkey_base_linker = NULL;
+       // Find the name of the FK table for this column.
+       $fktable_name = '';
+       foreach ($fkeys as $fktable => $details) {
+         foreach ($details['columns'] as $fkey_lcolumn => $fkey_rcolumn) {
+           if ($fkey_lcolumn == $column) {
+             $fktable_name = $fktable;
+           }
+         }
+       }
 
-  // STEP 1: Recurse on the FK fields.
-  // Loop through the foreign keys so that we can recurse on those first.
-  foreach ($fkey_fields as $fk_table => $details) {
-    foreach ($details['columns'] as $local_id => $remote_id) {
+       // Recurse on this recod.
+       $record_id = tripal_chado_field_storage_write_table($fktable_name, $values[$column]);
+       $values[$column] = $record_id;
+     }
+   }
 
-      // If this is the base table then do not recurse on the type_id.
-      if ($tablename == $base_table && $local_id == $type_field) {
-        $values[$local_id] = $term->details['cvterm']->cvterm_id;
-        continue;
-      }
+   // Fields with a cardinality greater than 1 will often submit an
+   // empty form.  We want to remove these empty submissions.  We can detect
+   // them if all of the fields are empty.
+   $num_empty = 0;
+   foreach ($values as $column => $value) {
+     if (!$value) {
+       $num_empty++;
+     }
+   }
+   if ($num_empty == count(array_keys($values))) {
+     return '';
+   }
 
-      // If this is a linking table, do not recurse on the fields that
-      // link back to the base table.
-      if ($tablename != $base_table && $details['table'] == $base_table) {
-        $fkey_base_linker = $local_id;
-        continue;
-      }
+   // If the primary key column has a value then this will be an udpate,
+   // otherwise it's an insert.
+   if (!$values[$pkey]) {
+     // Before inserting, we want to make sure the record does not
+     // already exist.  Using the unique constraint check for a matching record.
+     $options = array('is_duplicate' => TRUE);
+     $is_duplicate = chado_select_record($table_name, array('*'), $values, $options);
+     if($is_duplicate) {
+       $record = chado_select_record($table_name, array('*'), $values);
+       return $record[0]->$pkey_field;
+     }
 
-      // Get the value of the FK field as provided by the user.
-      $fk_val = NULL;
-      $fk_vals = array();
-      $fk_field_name = $tablename . '__' . $local_id;
-      if (array_key_exists($fk_field_name, $field_vals)) {
-        $fk_val = $field_vals[$fk_field_name][0][$tablename . '__' . $local_id];
-        $fk_vals = $field_vals[$fk_field_name][0];
-      }
-
-      // Don't recurse if the value of the FK field is set to NULL.  The
-      // Tripal Chado API value for NULL is '__NULL__'.
-      if ($fk_val == "__NULL__") {
-        $values[$local_id] = $fk_val;
-        continue;
-      }
-
-      // Don't recuse if there are no fkvals.
-      if (count(array_keys($fk_vals)) == 0) {
-        continue;
-      }
-
-      // Keep track of the FK fields so that in STEP 2 we don't have to
-      // loop through the $fk_fields again.
-      $fkey_fields_list[] = $local_id;
-
-      // Recurse on the FK field.
-      $nparams = $params;
-      $nparams['field_vals'] = $fk_vals;
-      $nparams['tablename'] = $fk_table;
-      $nparams['type_field'] = NULL;
-      $nparams['record_id'] = $fk_val;
-      $nparams['depth'] = $depth + 1;
-      $fk_val = tripal_chado_field_storage_write_table($nparams);
-      if (isset($fk_val) and $fk_val != '' and $fk_val != 0) {
-        $values[$local_id] = $fk_val;
-      }
-    }
-  }
-
-  // STEP 2: Loop through the non FK fields.
-  // Loop through the fields passed to the function and find any that
-  // are for this table.  Then add their values to the $values array.
-  foreach ($field_vals as $field_name => $items) {
-    if (preg_match('/^' . $tablename . '__(.*)/', $field_name, $matches)) {
-      $chado_field = $matches[1];
-
-      // Skip the PKey field. We won't ever insert a primary key and if
-      // one is provided in the fields then we use it for matching on an
-      // update.  We don't add it to the $values array in either case.
-      if ($chado_field == $pkey_field) {
-        continue;
-      }
-
-      // Skip FK fields as those should already have been dealt with the
-      // recursive code above.
-      if (in_array($chado_field, $fkey_fields_list)) {
-        continue;
-      }
-
-      // If the value is empty then exclude this field
-      if (!$items[0][$tablename . '__' . $chado_field]) {
-        continue;
-      }
-
-      // Add the value of the field to the $values arr for later insert/update.
-      $values[$chado_field] = $items[0][$tablename . '__' . $chado_field];
-    }
-  }
-
-  // STEP 3: Insert/Update the record.
-  // If there are no values then return.
-  if (count($values) == 0) {
-    return $record_id;
-  }
-
-  dpm($values);
-  // If we don't have an incoming record ID then this is an insert.
-  if ($record_id == NULL) {
-    // STEP 3a: Before inserting, we want to make sure the record does not
-    // already exist.  Using the unique constraint check for a matching record.
-    $options = array('is_duplicate' => TRUE);
-    $is_duplicate = chado_select_record($tablename, array('*'), $values, $options);
-    if($is_duplicate) {
-      $record = chado_select_record($tablename, array('*'), $values);
-      return $record[0]->$pkey_field;
-    }
-
-    // STEP 3b: Insert the reocrd
-    // Insert the values array as a new record in the table.
-    $record = chado_insert_record($tablename, $values);
-    if ($record === FALSE) {
-      throw new Exception('Could not insert Chado record into table: "' . $tablename . '".');
-    }
-    $record_id = $record[$pkey_field];
-  }
-  // We have an incoming record_id so this is an update.
-  else {
-    // TODO: what if the unique constraint matches another record?  That is
-    // not being tested for here.
-    $match[$pkey_field] = $record_id;
-    if (!chado_update_record($tablename, $match, $values)) {
-      drupal_set_message("Could not update Chado record in table: $tablename.", 'error');
-    }
-  }
-
-  return $record_id;
+     // Insert the values array as a new record in the table.
+     $record = chado_insert_record($table_name, $values);
+     if ($record === FALSE) {
+       throw new Exception('Could not insert Chado record into table: "' . $tablename . '".');
+     }
+     return $record_id = $record[$pkey_field];
+   }
+   // We have an incoming record_id so this is an update.
+   else {
+     // TODO: what if the unique constraint matches another record?  That is
+     // not being tested for here.
+     $match[$pkey] = $values[$pkey];
+     if (!chado_update_record($table_name, $match, $values)) {
+       drupal_set_message("Could not update Chado record in table: $tablename.", 'error');
+     }
+     return $values[$pkey];
+   }
 }
 
 /**
@@ -420,15 +340,19 @@ function tripal_chado_field_storage_merge_fields($fields, $entity_type, $entity)
             $parent_item_name = $matches[1];
             $sub_item_name = $matches[2];
             $sub_item = tripal_chado_field_storage_expand_field($sub_item_name, $value);
-            // If we've already encountered this table and column then we've
-            // already seen the numeric FK value or we've already added a
-            // subcolumn. If the former we want to convert this to an array
-            // so we can add the details.
-            if (array_key_exists($parent_item_name, $new_fields[$table_name][$delta]) and
-                !is_array($new_fields[$table_name][$delta][$parent_item_name])) {
-              $new_fields[$table_name][$delta][$parent_item_name] = array();
+            if (count(array_keys($sub_item))) {
+              // If we've already encountered this table and column then we've
+              // already seen the numeric FK value or we've already added a
+              // subcolumn. If the former we want to convert this to an array
+              // so we can add the details.
+              if (!array_key_exists($table_name, $new_fields) or
+                  !array_key_exists($delta, $new_fields[$table_name]) or
+                  !array_key_exists($parent_item_name, $new_fields[$table_name][$delta]) or
+                  !is_array($new_fields[$table_name][$delta][$parent_item_name])) {
+                $new_fields[$table_name][$delta][$parent_item_name] = array();
+              }
+              $new_fields[$table_name][$delta][$parent_item_name] += $sub_item;
             }
-            $new_fields[$table_name][$delta][$parent_item_name] += $sub_item;
           }
           else {
             // If not seen this table and column then just add it. If we've
