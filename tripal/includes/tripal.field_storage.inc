@@ -83,9 +83,11 @@ function tripal_field_storage_query($query) {
  * @param $conditions
  */
 function tripal_field_storage_tquery($conditions) {
+
   $filter = array();
   $entity_ids = array();
   foreach ($conditions as $index => $condition) {
+
     $field = $condition['field'];
     $field_type = $field['type'];
     $field_module = $field['module'];

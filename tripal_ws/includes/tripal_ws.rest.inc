@@ -1,12 +1,14 @@
 <?php
 
 /**
- *
+ *_a
  */
 function tripal_ws_rest() {
 
   global $base_url;
-  $ws_args = func_get_args();
+  $ws_path = func_get_args();
+  $ws_get_args = $_GET;
+  unset($ws_get_args['q']);
 
   // The web services should never be cached.
   drupal_page_is_cacheable(FALSE);
@@ -28,17 +30,17 @@ function tripal_ws_rest() {
   try {
 
     // The services is the first argument
-    $service = (count($ws_args) > 0) ? $ws_args[0] : '';
+    $service = (count($ws_path) > 0) ? $ws_path[0] : '';
 
     switch ($service) {
       case 'doc':
         tripal_ws_handle_doc_service($api_url, $response);
         break;
       case 'content':
-        tripal_ws_handle_content_service($api_url, $response, $ws_args);
+        tripal_ws_handle_content_service($api_url, $response, $ws_path);
         break;
       case 'vocab':
-        tripal_ws_handle_vocab_service($api_url, $response, $ws_args);
+        tripal_ws_handle_vocab_service($api_url, $response, $ws_path);
         break;
       default:
         tripal_ws_handle_no_service($api_url, $response);
@@ -73,13 +75,13 @@ function tripal_ws_rest() {
  *
  * @param $api_url
  * @param $response
- * @param $ws_args
+ * @param $ws_path
  */
-function tripal_ws_handle_content_service($api_url, &$response, $ws_args) {
+function tripal_ws_handle_content_service($api_url, &$response, $ws_path) {
 
   // Get the content type.
-  $ctype     = (count($ws_args) > 1) ? $ws_args[1] : '';
-  $entity_id = (count($ws_args) > 2) ? $ws_args[2] : '';
+  $ctype     = (count($ws_path) > 1) ? $ws_path[1] : '';
+  $entity_id = (count($ws_path) > 2) ? $ws_path[2] : '';
 
   // If we have no content type then list all of the available content types.
   if (!$ctype) {
@@ -88,24 +90,24 @@ function tripal_ws_handle_content_service($api_url, &$response, $ws_args) {
   // If we don't have an entity ID then show a paged list of entities with
   // the given type.
   else if ($ctype and !$entity_id) {
-    tripal_ws_get_content_type($api_url, $response, $ws_args, $ctype);
+    tripal_ws_get_content_type($api_url, $response, $ws_path, $ctype);
   }
   // If we have a content type and an entity ID then show the entity
   else {
-    tripal_ws_get_content($api_url, $response, $ws_args, $ctype, $entity_id);
+    tripal_ws_get_content($api_url, $response, $ws_path, $ctype, $entity_id);
   }
 }
 /**
  *
  * @param $api_url
  * @param $response
- * @param $ws_args
+ * @param $ws_path
  */
-function tripal_ws_handle_vocab_service($api_url, &$response, $ws_args) {
+function tripal_ws_handle_vocab_service($api_url, &$response, $ws_path) {
 
   // Get the vocab name.
-  $namespace = (count($ws_args) > 1) ? $ws_args[1] : '';
-  $accession = (count($ws_args) > 2) ? $ws_args[2] : '';
+  $namespace = (count($ws_path) > 1) ? $ws_path[1] : '';
+  $accession = (count($ws_path) > 2) ? $ws_path[2] : '';
 
   // If we have no $namespace type then list all of the available vocabs.
   if (!$namespace) {
@@ -113,11 +115,11 @@ function tripal_ws_handle_vocab_service($api_url, &$response, $ws_args) {
   }
   // If we don't have a $namespace then show a paged list of terms.
   else if ($namespace and !$accession) {
-    tripal_ws_get_vocab($api_url, $response, $ws_args, $namespace);
+    tripal_ws_get_vocab($api_url, $response, $ws_path, $namespace);
   }
   // If we have a content type and an entity ID then show the entity
   else if ($namespace and $accession) {
-    tripal_ws_get_term($api_url, $response, $ws_args, $namespace, $accession);
+    tripal_ws_get_term($api_url, $response, $ws_path, $namespace, $accession);
   }
 }
 
@@ -171,9 +173,9 @@ function tripal_ws_get_vocabs($api_url, &$response) {
  *
  * @param $api_url
  * @param $response
- * @param $ws_args
+ * @param $ws_path
  */
-function tripal_ws_get_vocab($api_url, &$response, $ws_args, $namespace) {
+function tripal_ws_get_vocab($api_url, &$response, $ws_path, $namespace) {
 
   // First, add the vocabularies used into the @context section.
   $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
@@ -231,9 +233,9 @@ function tripal_ws_get_vocab($api_url, &$response, $ws_args, $namespace) {
  *
  * @param $api_url
  * @param $response
- * @param $ws_args
+ * @param $ws_path
  */
-function tripal_ws_get_term($api_url, &$response, $ws_args, $namespace, $accession) {
+function tripal_ws_get_term($api_url, &$response, $ws_path, $namespace, $accession) {
 
   // First, add the vocabularies used into the @context section.
   $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
@@ -333,9 +335,9 @@ function tripal_ws_get_content_types($api_url, &$response) {
  *
  * @param $api_url
  * @param $response
- * @param $ws_args
+ * @param $ws_path
  */
-function tripal_ws_get_content_type($api_url, &$response, $ws_args, $ctype) {
+function tripal_ws_get_content_type($api_url, &$response, $ws_path, $ctype) {
 
   // First, add the vocabularies used into the @context section.
   $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
@@ -367,26 +369,26 @@ function tripal_ws_get_content_type($api_url, &$response, $ws_args, $ctype) {
   $response['label'] = $bundle->label . " collection";
 
   // Get the list of entities for this bundle.
-  $query = new EntityFieldQuery;
-  $query->entityCondition('entity_type', 'TripalEntity')
-    ->entityCondition('bundle', $bundle->name)
-    ->propertyOrderBy('title', 'DESC')
-    ->pager(10);
+  $query = new TripalFieldQuery();
+  $query->fieldCondition('content_type', $term->id);
+  $results = $query->execute();
+
+  // Get the entities
+  $query = db_select('tripal_entity', 'TE');
+  $query->fields('TE');
+  $query->condition('id', array_keys($results['TripalEntity']));
+  $results = $query->execute();
 
   // Iterate through the entities and add them to the list.
-  $results = $query->execute();
   $i = 0;
-  if (isset($results['TripalEntity'])) {
-    $entities = entity_load('TripalEntity', array_keys($results['TripalEntity']));
-    foreach ($entities as $entity) {
-      $response['member'][] = array(
-        '@id' => $api_url . '/content/' . urlencode($ctype) . '/' .  $entity->id,
-        '@type' => $vocab->namespace . ':' . $term->accession,
-        'label' => $entity->title,
-        'itemPage' => url('/bio_data/' . $entity->id, array('absolute' => TRUE)),
-      );
-      $i++;
-    }
+  while($entity = $results->fetchObject()) {
+    $response['member'][] = array(
+      '@id' => $api_url . '/content/' . urlencode($ctype) . '/' .  $entity->id,
+      '@type' => $vocab->namespace . ':' . $term->accession,
+      'label' => $entity->title,
+      'itemPage' => url('/bio_data/' . $entity->id, array('absolute' => TRUE)),
+    );
+    $i++;
   }
   $response['totalItems'] = $i;
 
@@ -419,9 +421,9 @@ function tripal_ws_get_content_type($api_url, &$response, $ws_args, $ctype) {
  *
  * @param $api_url
  * @param $response
- * @param $ws_args
+ * @param $ws_path
  */
-function tripal_ws_get_content($api_url, &$response, $ws_args, $ctype, $entity_id) {
+function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_id) {
 
   // First, add the vocabularies used into the @context section.
   $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
@@ -585,7 +587,7 @@ function tripal_ws_handle_doc_service($api_url, &$response) {
  *
  * @param $api_url
  * @param $response
- * @param $ws_args
+ * @param $ws_path
  */
 function tripal_ws_handle_no_service($api_url, &$response) {
 
