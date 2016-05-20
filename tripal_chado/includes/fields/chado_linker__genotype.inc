@@ -191,7 +191,7 @@ class chado_linker__genotype extends TripalField {
       ),
     );
     $record = chado_expand_var($record, 'table', $linker_table, $options);
-/* $genotype_linkers = $record->$linker_table;
+    $genotype_linkers = $record->$linker_table->$fkey_rcolumn;
     if ($genotype_linkers) {
       foreach ($genotype_linkers as $i => $genotype_linker) {
         $genotype = $genotype_linker->genotype_id;
@@ -212,6 +212,6 @@ class chado_linker__genotype extends TripalField {
           $entity->{$field_name}['und'][$i]['entity_type'] = 'TripalEntity';
         }
       }
-    } */
+    }
   }
 }

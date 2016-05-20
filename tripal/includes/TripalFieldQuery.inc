@@ -48,6 +48,7 @@ class TripalFieldQuery {
     return $this;
   }
 
+
   /**
    * Executes the query and returns results.
    *
