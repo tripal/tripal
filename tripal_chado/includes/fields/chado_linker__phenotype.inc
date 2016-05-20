@@ -7,7 +7,7 @@ class chado_linker__phenotype extends TripalField {
    */
   public function field_info() {
     return array(
-      'label' => t('Genotypes'),
+      'label' => t('Phenotypes'),
       'description' => t('Associates an indviddual or organization with
           this record.'),
       'default_widget' => 'chado_linker__phenotype_widget',
@@ -25,7 +25,7 @@ class chado_linker__phenotype extends TripalField {
    */
   function widget_info() {
     return array(
-      'label' => t('Genotypes'),
+      'label' => t('Phenotypes'),
       'field types' => array('chado_linker__phenotype'),
     );
   }
@@ -35,7 +35,7 @@ class chado_linker__phenotype extends TripalField {
    */
   public function formatter_info() {
     return array(
-      'label' => t('Genotypes'),
+      'label' => t('Phenotypes'),
       'field types' => array('chado_linker__phenotype'),
       'settings' => array(
       ),
@@ -69,7 +69,7 @@ class chado_linker__phenotype extends TripalField {
       'widget_type' => 'chado_linker__phenotype_widget',
       'widget_settings' => array('display_label' => 1),
       'description' => '',
-      'label' => 'Genotypes',
+      'label' => 'Phenotypes',
       'is_required' => 0,
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
       'storage' => 'field_chado_storage',
