@@ -38,7 +38,7 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   $base_pkey = $base_schema['primary key'][0];
 
   // Convert the fields into a key/value list of fields and their values.
-  $field_vals = tripal_chado_field_storage_merge_fields($fields, $entity_type, $entity);
+  $field_vals = tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $entity);
 
   // Write the record for the base table.  First get the values for this table
   // and set the record_id (update) or the type_id (insert)
@@ -296,7 +296,9 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
 
         if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
           $field_obj = new $field_type();
-          $field_obj->load($field, $entity, array('record' => $record));
+          if (method_exists($field_obj, 'load')) {
+            $field_obj->load($field, $entity, array('record' => $record));
+          }
         }
 
         if (function_exists($load_function)) {
@@ -310,7 +312,7 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
 /**
  * Merges the values of all fields into a single array keyed by table name.
  */
-function tripal_chado_field_storage_merge_fields($fields, $entity_type, $entity) {
+function tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $entity) {
   $new_fields = array();
 
   // Iterate through all of the fields and organize them into a
@@ -408,17 +410,118 @@ function tripal_chado_field_storage_expand_field($item_name, $value) {
 /**
  * Implements hook_field_storage_query().
  *
- * Used by EntityFieldQuery to find the entities having certain entity
- * and field conditions and sort them in the given field order.
+ * Used by EntityFieldQuery to find the entities having certain field values.
  *
- * NOTE: This function needs to exist or errors are triggered but so far it doesn't
- * appear to actually need to do anything...
+ * We do not support use of the EntityFieldQuery API for Tripal based fields
+ * because EFQ doesn't support when multiple storage backends are used. Instead
+ * use the TripalFieldQuery class and implement the hook_storage_tquery()
+ * function.
  */
 function tripal_chado_field_storage_query($query) {
-  $fieldConditions = $query->fieldConditions;
-  foreach ($fieldConditions as $condition) {
+
+}
+/**
+ * Implements hook_field_storage_tquery().
+ *
+ * Used by TripalFieldQuery to find the entities having certain field values.
+ *
+ * @param $conditions
+ */
+function tripal_chado_field_storage_tquery($conditions) {
+  $filter = array();
+  foreach ($conditions as $index => $condition) {
     $field = $condition['field'];
-    $field_name = $field['field_name'];
-    $column = $condition['column'];
+    $field_type = $field['type'];
+    $field_module = $field['module'];
+    $settings = $field['settings'];
+    $chado_table = $settings['chado_table'];
+    $chado_column = $settings['chado_column'];
+
+    // Allow the creating module to alter the value if desired.
+    $value = '';
+    module_load_include('inc', $field_module, 'includes/fields/' . $field_type);
+    if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
+      $field_obj = new $field_type();
+      if (method_exists($field_obj, 'query')) {
+        $value = $field_obj->query($condition);
+      }
+    }
+    // If there is no field to rewrite the value then use defaults.
+    else {
+      $value = $condition['value'];
+    }
+
+    // use the appropriate operator.
+    $operator = $condition['operator'];
+    switch ($operator) {
+      case '=':
+        $filter[$chado_table][$chado_column] = $condition['value'];
+        break;
+      case '>':
+      case '>=':
+      case '<':
+      case '<=':
+        $filter[$chado_table][$chado_column] = array(
+          'op' => $operator,
+          'data' => $value,
+        );
+        break;
+      case '<>':
+        $filter[$chado_table][$chado_column] = array(
+          'op' => 'NOT',
+          'data' => $value,
+        );
+        break;
+      case 'CONTAINS':
+        break;
+        $filter[$chado_table][$chado_column] = array(
+          'op' => 'LIKE',
+          'data' => '%' . $value . '%',
+        );
+      case 'STARTS WITH':
+        $filter[$chado_table][$chado_column] = array(
+          'op' => 'LIKE',
+          'data' => $value . '%',
+        );
+        break;
+      default:
+        // unrecognized operation.
+        break;
+    }
   }
+
+  // Iterate through the filters and perform the query
+  $entity_ids = array();
+  foreach ($filter as $chado_table => $values) {
+    // First get the matching record IDs from the Chado table.
+    $schema = chado_get_schema($chado_table);
+    $pkey = $schema['primary key'][0];
+    $results = chado_select_record($chado_table, array($pkey), $values);
+
+    $record_ids = array();
+    foreach ($results as $result) {
+      $record_ids[] = $result->$pkey;
+    }
+
+    // Next look for matching IDs in the chado_entity table.
+    $filter_ids = array();
+    $results = db_select('chado_entity', 'CE')
+      ->fields('CE', array('entity_id'))
+      ->condition('record_id', $record_ids)
+      ->execute();
+    while ($result = $results->fetchObject()) {
+      $filter_ids[] = $result->entity_id;
+    }
+
+    // Take the intersection of IDs in this filter with those in the
+    // final $entity_ids;
+    if (count($entity_ids) == 0) {
+      $entity_ids = $filter_ids;
+    }
+    else {
+      $entity_ids = array_intersect($entity_ids, $filter_ids);
+    }
+  }
+
+  return $entity_ids;
 }

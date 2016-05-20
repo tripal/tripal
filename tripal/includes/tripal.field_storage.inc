@@ -64,12 +64,54 @@ function tripal_field_storage_load($entity_type, $entities, $age,
 /**
  * Implements hook_field_storage_query().
  *
- * Used by EntityFieldQuery to find the entities having certain entity
- * and field conditions and sort them in the given field order.
+ * Used by EntityFieldQuery to find the entities having certain field values.
  *
- * NOTE: This function needs to exist or errors are triggered but so far it doesn't
- * appear to actually need to do anything...
+ * We do not support use of the EntityFieldQuery API for Tripal based fields
+ * because EFQ doesn't support when multiple storage backends are used. Instead
+ * use the TripalFieldQuery class and implement the hook_storage_tquery()
+ * function.
  */
 function tripal_field_storage_query($query) {
 
+}
+
+/**
+ * Implements hook_field_storage_tquery().
+ *
+ * Used by TripalFieldQuery to find the entities having certain field values.
+ *
+ * @param $conditions
+ */
+function tripal_field_storage_tquery($conditions) {
+  $filter = array();
+  $entity_ids = array();
+  foreach ($conditions as $index => $condition) {
+    $field = $condition['field'];
+    $field_type = $field['type'];
+    $field_module = $field['module'];
+    $settings = $field['settings'];
+    $operator = $condition['operator'];
+
+    // This module only supports one field, so we can just perform the filter.
+    // using the appropriate operator.
+    $query = db_select('tripal_entity', 'TE');
+    $query->join('chado_entity', 'CE', 'TE.id = CE.entity_id');
+    $query->fields('CE', array('entity_id'));
+    $query->condition('TE.term_id', $condition['value'], $operator);
+    $results = $query->execute();
+    $filter_ids = array();
+    while ($entity_id = $results->fetchField()) {
+      $filter_ids[] = $entity_id;
+    }
+
+    // Take the intersection of IDs in this filter with those in the
+    // final $entity_ids;
+    if (count($entity_ids) == 0) {
+      $entity_ids = $filter_ids;
+    }
+    else {
+      $entity_ids = array_intersect($entity_ids, $filter_ids);
+    }
+  }
+  return $entity_ids;
 }

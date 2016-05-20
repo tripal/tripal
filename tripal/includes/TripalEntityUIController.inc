@@ -205,42 +205,22 @@ function tripal_view_entity($entity, $view_mode = 'full') {
      '#value' => 'Filter',
    );
 
-   // Retrieve a pages list of all tripal entitles (ie: biological data).
-   // This will return the 25 most recently created entities.
-   $query = db_select('tripal_entity', 'td')
-     ->fields('td');
+   $query = new TripalFieldQuery();
    if ($filter_type) {
-     $query = $query->condition('term_id', $filter_type);
+     $query = $query->fieldCondition('content_type', $filter_type);
    }
-   if (is_numeric($filter_status)) {
-     $query = $query->condition('status', $filter_status);
-   }
-   $entities = $query->orderBy('created', 'DESC')
-     ->range(0,25)
-     ->execute();
-
-   global $user;
-   $query = new EntityFieldQuery();
-   $query->entityCondition('entity_type', 'TripalEntity');
-   if ($filter_type) {
-     $query = $query->propertyCondition('term_id', $filter_type);
-   }
-   if (is_numeric($filter_status)) {
-     $query = $query->propertyCondition('status', $filter_status);
-   }
-//   $query = $query->fieldCondition('feature__name', 'value', 'orange1.1g022797m');
-//   $query = $query->fieldCondition('feature__uniquename', 'value', 'PAC:18136225');
-
-   $result = $query->range(0, 25)
-     ->addMetaData('account', $user)
-     ->execute();
+   //
+   //$query = $query->fieldCondition('feature__name', 'orange1', 'STARTS WITH');
+   $results = $query->execute();
 
    $headers = array('Title', 'Vocabulary', 'Term', 'Author', 'Status', 'Updated', 'Operations');
    $rows = array();
 
    // For each entity retrieved add a row to the data listing.
-   while ($entity = $entities->fetchObject()) {
-
+   //while ($entity = $entities->fetchObject()) {
+   foreach ($results['TripalEntity'] as $entity_id => $stub) {
+     $entity = entity_load('TripalEntity', array($entity_id));
+     $entity = reset($entity);
      $namespace = '';
      $term_name = '';
 
