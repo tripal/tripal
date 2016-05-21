@@ -367,7 +367,7 @@ function tripal_insert_cv($name, $definition) {
     'definition' => $definition
   );
 
-  // see if the CV (default-namespace) exists already in the database
+  // see if the CV default exists already in the database
   $sel_values = array('name' => $name);
   $results = chado_select_record('cv', array('*'), $sel_values);
 
@@ -430,8 +430,7 @@ function tripal_insert_cv($name, $definition) {
  *        $term['id'] and it needs to be explicitly set.  Use this argument
  *        only if the database name cannot be specififed in the term ID
  *        (e.g. <DB>:<ACCESSION>).
- *    - namespace: the CV name for the term. DEPRECATED. Please use cv_name
- *       instead.
+ *    - namespace: DEPRECATED. Please use cv_name instead.
  * @param $options
  *   An associative array with the following keys:
  *    - update_existing: By default this is TRUE.  If the term exists it is

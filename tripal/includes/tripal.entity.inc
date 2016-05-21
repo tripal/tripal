@@ -229,8 +229,8 @@ function tripal_entity_info_alter(&$entity_info){
     // or configuration associated with an entity type .We want to dynamically
     // add the bundles to the entity.
     $bundles = db_select('tripal_bundle', 'tb')
-    ->fields('tb')
-    ->execute();
+      ->fields('tb')
+      ->execute();
     while ($bundle = $bundles->fetchObject()) {
       $bundle_name = $bundle->name;
       $term_id = $bundle->term_id;

@@ -7,8 +7,8 @@ function tripal_ws_rest() {
 
   global $base_url;
   $ws_path = func_get_args();
-  $ws_get_args = $_GET;
-  unset($ws_get_args['q']);
+  $params = $_GET;
+  unset($params['q']);
 
   // The web services should never be cached.
   drupal_page_is_cacheable(FALSE);
@@ -37,7 +37,7 @@ function tripal_ws_rest() {
         tripal_ws_handle_doc_service($api_url, $response);
         break;
       case 'content':
-        tripal_ws_handle_content_service($api_url, $response, $ws_path);
+        tripal_ws_handle_content_service($api_url, $response, $ws_path, $params);
         break;
       case 'vocab':
         tripal_ws_handle_vocab_service($api_url, $response, $ws_path);
@@ -77,7 +77,7 @@ function tripal_ws_rest() {
  * @param $response
  * @param $ws_path
  */
-function tripal_ws_handle_content_service($api_url, &$response, $ws_path) {
+function tripal_ws_handle_content_service($api_url, &$response, $ws_path, $params) {
 
   // Get the content type.
   $ctype     = (count($ws_path) > 1) ? $ws_path[1] : '';
@@ -90,7 +90,7 @@ function tripal_ws_handle_content_service($api_url, &$response, $ws_path) {
   // If we don't have an entity ID then show a paged list of entities with
   // the given type.
   else if ($ctype and !$entity_id) {
-    tripal_ws_get_content_type($api_url, $response, $ws_path, $ctype);
+    tripal_ws_get_content_type($api_url, $response, $ws_path, $ctype, $params);
   }
   // If we have a content type and an entity ID then show the entity
   else {
@@ -106,20 +106,20 @@ function tripal_ws_handle_content_service($api_url, &$response, $ws_path) {
 function tripal_ws_handle_vocab_service($api_url, &$response, $ws_path) {
 
   // Get the vocab name.
-  $namespace = (count($ws_path) > 1) ? $ws_path[1] : '';
+  $vocabulary = (count($ws_path) > 1) ? $ws_path[1] : '';
   $accession = (count($ws_path) > 2) ? $ws_path[2] : '';
 
-  // If we have no $namespace type then list all of the available vocabs.
-  if (!$namespace) {
+  // If we have no $vocabulary type then list all of the available vocabs.
+  if (!$vocabulary) {
     tripal_ws_get_vocabs($api_url, $response);
   }
-  // If we don't have a $namespace then show a paged list of terms.
-  else if ($namespace and !$accession) {
-    tripal_ws_get_vocab($api_url, $response, $ws_path, $namespace);
+  // If we don't have a $vocabulary then show a paged list of terms.
+  else if ($vocabulary and !$accession) {
+    tripal_ws_get_vocab($api_url, $response, $ws_path, $vocabulary);
   }
   // If we have a content type and an entity ID then show the entity
-  else if ($namespace and $accession) {
-    tripal_ws_get_term($api_url, $response, $ws_path, $namespace, $accession);
+  else if ($vocabulary and $accession) {
+    tripal_ws_get_term($api_url, $response, $ws_path, $vocabulary, $accession);
   }
 }
 
@@ -151,9 +151,9 @@ function tripal_ws_get_vocabs($api_url, &$response) {
     $term =
     // Add the bundle as a content type.
     $response['member'][] = array(
-      '@id' => $api_url . '/vocab/' . urlencode($vocab->namespace),
+      '@id' => $api_url . '/vocab/' . urlencode($vocab->vocabulary),
       '@type' => 'vocabulary',
-      'namespace' => $vocab->namespace,
+      'vocabulary' => $vocab->vocabulary,
     );
     $i++;
   }
@@ -175,7 +175,7 @@ function tripal_ws_get_vocabs($api_url, &$response) {
  * @param $response
  * @param $ws_path
  */
-function tripal_ws_get_vocab($api_url, &$response, $ws_path, $namespace) {
+function tripal_ws_get_vocab($api_url, &$response, $ws_path, $vocabulary) {
 
   // First, add the vocabularies used into the @context section.
   $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
@@ -183,15 +183,15 @@ function tripal_ws_get_vocab($api_url, &$response, $ws_path, $namespace) {
   $response['@context']['schema'] = 'https://schema.org/';
 
   // Next add in the ID for tihs resource.
-  $response['@id'] = $api_url . '/vocab/' . $namespace;
+  $response['@id'] = $api_url . '/vocab/' . $vocabulary;
 
   // Get the vocabulary
-  $vocab = tripal_load_vocab_entity(array('namespace' => $namespace));
+  $vocab = tripal_load_vocab_entity(array('vocabulary' => $vocabulary));
 
   // Start the list.
   $response['@type'] = 'Collection';
   $response['totalItems'] = 0;
-  $response['label'] = $namespace . " vocabulary collection";
+  $response['label'] = vocabulary . " vocabulary collection";
   $response['comment'] = 'The following list of terms may not be the full ' .
     'list for the vocabulary.  The terms listed here are only those ' .
     'that have associated content on this site.';
@@ -208,9 +208,9 @@ function tripal_ws_get_vocab($api_url, &$response, $ws_path, $namespace) {
   while($term = $terms->fetchObject()) {
     $term = tripal_load_term_entity(array('term_id' => $term->id));
     $response['member'][] = array(
-      '@id' => $api_url . '/vocab/' . urlencode($namespace) . '/' .  urlencode($term->accession),
+      '@id' => $api_url . '/vocab/' . urlencode($vocabulary) . '/' .  urlencode($term->accession),
       '@type' => 'vocabulary_term',
-      'namespace' => $vocab->namespace,
+      'vocabulary' => $vocab->vocabulary,
       'accession' => $term->accession,
       'name' => $term->name,
       'definition' => $term->definition,
@@ -235,7 +235,7 @@ function tripal_ws_get_vocab($api_url, &$response, $ws_path, $namespace) {
  * @param $response
  * @param $ws_path
  */
-function tripal_ws_get_term($api_url, &$response, $ws_path, $namespace, $accession) {
+function tripal_ws_get_term($api_url, &$response, $ws_path, $vocabulary, $accession) {
 
   // First, add the vocabularies used into the @context section.
   $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
@@ -243,13 +243,13 @@ function tripal_ws_get_term($api_url, &$response, $ws_path, $namespace, $accessi
   $response['@context']['schema'] = 'https://schema.org/';
 
   // Get the term.
-  $term = tripal_load_term_entity(array('namespace' => $namespace, 'accession' => $accession));
+  $term = tripal_load_term_entity(array('vocabulary' => $vocabulary, 'accession' => $accession));
 
   // Next add in the ID and Type for this resources.
-  $response['@id'] = $api_url . '/vocab/' . urlencode($namespace) . '/' . urlencode($accession);
+  $response['@id'] = $api_url . '/vocab/' . urlencode($vocabulary) . '/' . urlencode($accession);
   $response['@type'] = 'vocabulary_term';
   $response['label'] = $term->name;
-  $response['namespace'] = $namespace;
+  $response['vocabulary'] = $vocabulary;
   $response['accession'] = $accession;
   $response['name'] = $term->name;
   $response['definition'] = $term->definition;
@@ -297,13 +297,13 @@ function tripal_ws_get_content_types($api_url, &$response) {
     $term = reset($entity);
     $vocab = $term->vocab;
 
-    if (!array_key_exists($vocab->namespace, $response['@context'])) {
+    if (!array_key_exists($vocab->vocabulary, $response['@context'])) {
       // If there is no URL prefix then use this API's vocabulary API
       if ($term->urlprefix) {
-        $response['@context'][$vocab->namespace] = $term->urlprefix;
+        $response['@context'][$vocab->vocabulary] = $term->urlprefix;
       }
       else {
-        $response['@context'][$vocab->namespace] = $api_url . '/vocab/' . $vocab->namespace . '/';
+        $response['@context'][$vocab->vocabulary] = $api_url . '/vocab/' . $vocab->vocabulary . '/';
       }
     }
     // Get the bundle description. If no description is provided then
@@ -315,7 +315,7 @@ function tripal_ws_get_content_types($api_url, &$response) {
     // Add the bundle as a content type.
     $response['member'][] = array(
       '@id' => $api_url . '/content/' . urlencode($bundle->label),
-      '@type' => $vocab->namespace . ':' . $term->accession,
+      '@type' => $vocab->vocabulary . ':' . $term->accession,
       'label' => $bundle->label,
       'description' => $description,
     );
@@ -337,7 +337,7 @@ function tripal_ws_get_content_types($api_url, &$response) {
  * @param $response
  * @param $ws_path
  */
-function tripal_ws_get_content_type($api_url, &$response, $ws_path, $ctype) {
+function tripal_ws_get_content_type($api_url, &$response, $ws_path, $ctype, $params) {
 
   // First, add the vocabularies used into the @context section.
   $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
@@ -353,13 +353,13 @@ function tripal_ws_get_content_type($api_url, &$response, $ws_path, $ctype) {
   $term = reset($term);
   $vocab = $term->vocab;
 
-  if (!array_key_exists($vocab->namespace, $response['@context'])) {
+  if (!array_key_exists($vocab->vocabulary, $response['@context'])) {
     // If there is no URL prefix then use this API's vocabulary API
     if ($term->urlprefix) {
-      $response['@context'][$vocab->namespace] = $term->urlprefix;
+      $response['@context'][$vocab->vocabulary] = $term->urlprefix;
     }
     else {
-      $response['@context'][$vocab->namespace] = $api_url . '/vocab/' . $vocab->namespace . '/';
+      $response['@context'][$vocab->vocabulary] = $api_url . '/vocab/' . $vocab->vocabulary . '/';
     }
   }
 
@@ -368,12 +368,31 @@ function tripal_ws_get_content_type($api_url, &$response, $ws_path, $ctype) {
   $response['totalItems'] = 0;
   $response['label'] = $bundle->label . " collection";
 
+
+
+  // Organize the fields by their web service names.
+  $fields = field_info_fields();
+  $field_ws_names = array();
+  foreach ($fields as $field_name => $details) {
+    if (array_key_exists('settings', $details) and
+         array_key_exists('semantic_web', $details['settings'])) {
+      $sw_name = $details['settings']['semantic_web']['name'];
+      $field_ws_names[$sw_name][] = $field_name;
+    }
+  }
+
   // Get the list of entities for this bundle.
   $query = new TripalFieldQuery();
   $query->fieldCondition('content_type', $term->id);
+  foreach($params as $key => $value) {
+    foreach ($field_ws_names[$key] as $field_name) {
+      $query->fieldCondition($field_name, $value);
+    }
+  }
   $results = $query->execute();
 
-  // Get the entities
+  // Get the entities from the above search.  We do a direct query of the
+  // table because the load_entity() function is too slow.
   $query = db_select('tripal_entity', 'TE');
   $query->fields('TE');
   $query->condition('id', array_keys($results['TripalEntity']));
@@ -384,7 +403,7 @@ function tripal_ws_get_content_type($api_url, &$response, $ws_path, $ctype) {
   while($entity = $results->fetchObject()) {
     $response['member'][] = array(
       '@id' => $api_url . '/content/' . urlencode($ctype) . '/' .  $entity->id,
-      '@type' => $vocab->namespace . ':' . $term->accession,
+      '@type' => $vocab->vocabulary . ':' . $term->accession,
       'label' => $entity->title,
       'itemPage' => url('/bio_data/' . $entity->id, array('absolute' => TRUE)),
     );
@@ -436,13 +455,13 @@ function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_i
   $term = reset($term);
   $vocab = $term->vocab;
 
-  if (!array_key_exists($vocab->namespace, $response['@context'])) {
+  if (!array_key_exists($vocab->vocabulary, $response['@context'])) {
     // If there is no URL prefix then use this API's vocabulary API
     if (property_exists($term, 'urlprefix')) {
-      $response['@context'][$vocab->namespace] = $term->urlprefix;
+      $response['@context'][$vocab->vocabulary] = $term->urlprefix;
     }
     else {
-      $response['@context'][$vocab->namespace] = $api_url . '/vocab/' . $vocab->namespace . '/';
+      $response['@context'][$vocab->vocabulary] = $api_url . '/vocab/' . $vocab->vocabulary . '/';
     }
   }
 
@@ -454,7 +473,7 @@ function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_i
 
   // Next add in the ID and Type for this resources.
   $response['@id'] = $api_url . '/content/' . $ctype . '/' . $entity_id;
-  $response['@type'] = $vocab->namespace . ':' . $term->accession;
+  $response['@type'] = $vocab->vocabulary . ':' . $term->accession;
   $response['label'] = $entity->title;
   $response['itemPage'] = url('/bio_data/' . $entity->id, array('absolute' => TRUE));
 
@@ -514,14 +533,14 @@ function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_i
         $lvocab = tripal_load_vocab_entity(array('vocab_id' => $lterm->vocab_id));
         $value[] = array(
           '@id'   => $api_url . '/content/' . $lterm->name . '/' . $items[0]['entity_id'],
-          '@type' => $lvocab->namespace . ':' . $lterm->accession,
+          '@type' => $lvocab->vocabulary . ':' . $lterm->accession,
           'label' => $lentity->title,
           'type' => $lterm->name,
         );
 
-        if (property_exists($lvocab, 'namespace') and !array_key_exists($lvocab->namespace, $response['@context'])) {
-          $lterm_details = tripal_get_term_details($lvocab->namespace, $lterm->namespace);
-          $response['@context'][$lvocab->namespace] = $lterm_details->url;
+        if (property_exists($lvocab, 'vocabulary') and !array_key_exists($lvocab->vocabulary, $response['@context'])) {
+          $lterm_details = tripal_get_term_details($lvocab->vocabulary, $lterm->vocabulary);
+          $response['@context'][$lvocab->vocabulary] = $lterm_details->url;
         }
       }
       else {

@@ -54,6 +54,38 @@ function tripal_chado_uninstall() {
 //   ');
 }
 
+function tripal_chado_chado_semweb_schema(){
+  return array(
+    'fields' => array(
+      'chado_semweb_id' => array(
+        'type' => 'serial',
+        'not null' => TRUE
+      ),
+      'chado_table' => array(
+        'type' => 'varchar',
+        'length ' => 128,
+      ),
+      'chado_column' => array(
+        'type' => 'text',
+        'length ' => 128,
+        'not null' => TRUE
+      ),
+      'cvterm_id' => array(
+        'type' => 'int',
+        'not null' => TRUE
+      ),
+    ),
+    'primary key' => array(
+      0 => 'chado_semweb_id',
+    ),
+    'indexes' => array(
+      'chado_semweb_id_idx1' => array('cvterm_id'),
+      'chado_semweb_id_idx2' => array('chado_column'),
+      'chado_semweb_id_idx3' => array('chado_table', 'chado_table'),
+    )
+  );
+}
+
 /**
  * Table definition for the tripal_cv_obo table
  * @param $schema
@@ -154,12 +186,15 @@ function tripal_chado_schema() {
 
   // Links TripalEntity entities to the chado record.
   $schema['chado_entity'] = tripal_chado_chado_entity_schema();
+  $schema['chado_semweb'] = tripal_chado_chado_semweb_schema();
+
   $schema['tripal_mviews'] = tripal_chado_tripal_mviews_schema();
   $schema['tripal_custom_tables'] = tripal_chado_tripal_custom_tables_schema();
 
   $schema['tripal_cv_obo'] = tripal_chado_tripal_cv_obo_schema();
   $schema['tripal_cv_defaults'] = tripal_chado_tripal_cv_defaults_schema();
   $schema['tripal_pub_import'] = tripal_chado_tripal_pub_import_schema();
+
 
   // if this module is already installed and enabled, then we want to provide
   // the schemas for all of the custom tables.  This will allow Views to
@@ -174,6 +209,8 @@ function tripal_chado_schema() {
       $schema[$custom->table_name] = unserialize($custom->schema);
     }
   }
+
+
 
   return $schema;
 }

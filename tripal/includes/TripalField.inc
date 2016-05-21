@@ -270,12 +270,11 @@ class TripalField {
           'for the term "gene" in the Sequence Ontology, the accession is "0000704").'),
       '#default_value' => $settings['semantic_web']['accession'],
     );
-    $element['semantic_web']['ns'] = array(
+    $element['semantic_web']['vocabulary'] = array(
       '#type' => 'textfield',
-      '#title' => 'Vocabulary Namespace',
-      '#description' => t('The namespace for the vocabulary to which this term ' .
-          'belongs (e.g. the namespace for the Sequence Ontology is "SO"). This '.
-          'value is prefixed to the Term ID to form the complete id (e.g. "SO:0000704")'),
+      '#title' => 'Vocabulary Short Name',
+      '#description' => t('The short name for the vocabulary to which this term ' .
+          'belongs (e.g. SO, PATO, foaf). This value is prefixed to the Term ID to form the complete id (e.g. "SO:0000704")'),
       '#default_value' => $settings['semantic_web']['ns'],
     );
     $element['semantic_web']['nsurl'] = array(

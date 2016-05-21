@@ -97,7 +97,7 @@ class chado_base__dbxref_id extends TripalField {
 
     foreach ($items as $delta => $item) {
       if ($item['value']) {
-        $content = $item['value']['namespace'] . ':' . $item['value']['accession'];
+        $content = $item['value']['vocabulary'] . ':' . $item['value']['accession'];
         if ($item['value']['URL']) {
           $content = l($item['value']['URL'], $item['value']['URL']);
         }
@@ -279,7 +279,7 @@ class chado_base__dbxref_id extends TripalField {
 
       $entity->{$field_name}['und'][0] = array(
         'value' => array(
-          'namespace' => $dbxref->db_id->name,
+          'vocabulary' => $dbxref->db_id->name,
           'accession' => $dbxref->accession,
           'URL' => $URL,
         ),

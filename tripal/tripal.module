@@ -539,11 +539,11 @@ function tripal_add_bundle_fields($entity_type, $bundle, $term) {
       'semantic_web' => array(
         // The type is the term from a vocabulary that desribes this field..
         'name' => '',
-        // The accession of the term in the namespace.
+        // The accession of the term in the vocabulary.
         'accession' => '',
-        // The namepsace for the vocabulary (e.g. 'foaf').
-        'ns' => '',
-        // The URL for the namespace.  It must be that the type can be
+        // The short name for the vocabulary (e.g. SO, PATO, foaf).
+        'vocabulary' => '',
+        // The URL for the vocabulary.  It must be that the type can be
         // appended to the URL.
         'nsurl' => '',
       ),

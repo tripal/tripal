@@ -57,8 +57,8 @@ class chado_linker__relationship extends TripalField {
         'base_table' => $table_name,
         'semantic_web' => array(
           'name' => 'relationship',
-          'accession' => 'relationship',
-          'ns' => 'local',
+          'accession' => '0000374',
+          'ns' => 'SBO',
           'nsurl' => '',
         ),
       ),

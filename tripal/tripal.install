@@ -478,8 +478,8 @@ function tripal_tripal_vocab_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
-      'namespace' => array(
-        'description' => 'The namespace for the vocabulary (e.g. SO, PATO, etc.).',
+      'vocabulary' => array(
+        'description' => 'The short name for the vocabulary (e.g. SO, PATO, etc.).',
         'type' => 'varchar',
         'length' => 10,
         'not null' => TRUE,
@@ -498,11 +498,11 @@ function tripal_tripal_vocab_schema() {
       ),
     ),
     'indexes' => array(
-      'namespace' => array('namespace'),
+      'vocabulary' => array('vocabulary'),
       'entity_changed' => array('changed'),
       'entity_created' => array('created'),
     ),
-    'unique keys' => array('namespace' => array('namespace')),
+    'unique keys' => array('vocabulary' => array('vocabulary')),
     'primary key' => array('id'),
   );
   return $schema;

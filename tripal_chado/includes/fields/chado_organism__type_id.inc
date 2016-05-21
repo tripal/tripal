@@ -52,10 +52,10 @@ class chado_organism__type_id extends TripalField {
           'chado_table' => 'organism',
           'chado_column' => 'type_id',
           'semantic_web' => array(
-            'name' => 'infraspecificTaxon',
-            'accession' => '0000046',
-            'ns' => 'TAXRANK',
-            'nsurl' => 'https://github.com/phenoscape/taxrank',
+            'name' => 'infraspecific_type',
+            'accession' => 'infraspecific_type',
+            'ns' => 'local',
+            'nsurl' => '',
           ),
         ),
       );

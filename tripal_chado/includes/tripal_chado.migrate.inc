@@ -132,7 +132,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
       if (key_exists('cvterm', $fkeys) && key_exists('type_id', $fkeys['cvterm']['columns'])) {
         // Get all Tripal v2 node types from the chad_* linking table
         $sql =
-          "SELECT V.name AS type, X.accession, db.name AS namespace , count(*) AS num
+          "SELECT V.name AS type, X.accession, db.name AS vocabulary , count(*) AS num
               FROM {" . $table . "} T
               INNER JOIN public.$tv2_content_type CT ON T.$pkey = CT.$pkey
               INNER JOIN {cvterm} V ON V.cvterm_id = T.type_id
@@ -144,11 +144,11 @@ function tripal_chado_migrate_form($form, &$form_state) {
               GROUP BY V.name, X.accession, db.name";
         $tv3_content_types = chado_query($sql);
         while($tv3_content_type = $tv3_content_types->fetchObject()) {
-          // We need to store namespace/accession/type for each checkbox in the key becuase
+          // We need to store vocabulary/accession/type for each checkbox in the key becuase
           // the value only allows 1 or 0
           $key = urlencode(
             'tv3_content_type--' .
-            $tv3_content_type->namespace . '--' .
+            $tv3_content_type->vocabulary . '--' .
             $tv3_content_type->accession . '--' .
             $tv3_content_type->type);
           $form['step2']['step2_container']['tv3_content_type'][$key] = array(
@@ -316,7 +316,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
  * @param $form_state
  */
 function tripal_chado_migrate_form_validate($form, &$form_state) {
- 
+
 }
 
 /**
@@ -381,7 +381,7 @@ function tripal_chado_migrate_form_submit($form, &$form_state) {
     $includes = array(
       module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.migrate'),
     );
-  
+
     if (count($config['cp_title']) > 0) {
       $args = array($config['cp_title']);
       tripal_add_job("Copy Title over to Tripal v3 Content", 'tripal_chado',
@@ -415,11 +415,11 @@ function tripal_chado_migrate_form_submit($form, &$form_state) {
         $key = urldecode($key);
         if (preg_match('/^tv3_content_type--(.+)--(.+)--(.+)/', $key, $matches) &&
             ($value == 1 || $values['tv3_migrate_all'] == 1)) {
-          $namespace = $matches[1];
+          $vocabulary = $matches[1];
           $accession = $matches[2];
           $type = $matches[3];
           $tv3_content_type [] = array(
-            'namespace' => $namespace,
+            'vocabulary' => $vocabulary,
             'accession' => $accession,
             'term_name' => $type
           );
@@ -507,7 +507,7 @@ function tripal_chado_get_tripal_v2_content_type_options($all_option = FALSE, $h
     else {
       if (in_array($obj->type, $tables)) {
         $options[$obj->type] = $obj->name;
-      }      
+      }
     }
   }
   return $options;
@@ -538,9 +538,10 @@ function tripal_chado_get_tripal_v2_content_type_options($all_option = FALSE, $h
 /**
  * Migrate all Tripal v2 content types
  *
- * Gather all available Tripal v2 content types and store the result in an associated array with
- * values of namespace, accession, term_name. The array is then pass to the function
- * tripal_chado_migrate_selected_types() that handles the migration
+ * Gather all available Tripal v2 content types and store the result in an
+ * associated array with values of vocabulary, accession, term_name. The array
+ * is then pass to the function tripal_chado_migrate_selected_types() that
+ * handles the migration.
  */
 function tripal_chado_migrate_all_types() {
   // Get all available Tripal v2 content types
@@ -556,7 +557,7 @@ function tripal_chado_migrate_all_types() {
     if (key_exists('cvterm', $fkeys) && key_exists('type_id', $fkeys['cvterm']['columns'])) {
       // Get all Tripal v2 node types from the chad_* linking table
       $sql = "
-        SELECT V.name AS type, X.accession, db.name AS namespace
+        SELECT V.name AS type, X.accession, db.name AS vocabulary
         FROM {" . $table . "} T
           INNER JOIN public.$tv2_content_type CT ON T.$pkey = CT.$pkey
           INNER JOIN {cvterm} V ON V.cvterm_id = T.type_id
@@ -567,7 +568,7 @@ function tripal_chado_migrate_all_types() {
       $tv3_content_types = chado_query($sql);
       while($tv3_content_type = $tv3_content_types->fetchObject()) {
         array_push($types, array(
-          'namespace' => $tv3_content_type->namespace,
+          'vocabulary' => $tv3_content_type->vocabulary,
           'accession' => $tv3_content_type->accession,
           'term_name' => $tv3_content_type->type
         ));
@@ -575,14 +576,14 @@ function tripal_chado_migrate_all_types() {
     }
     else if ($table == 'organism') {
       array_push($types, array(
-        'namespace' => 'local',
+        'vocabulary' => 'local',
         'accession' => 'organism',
         'term_name' => 'organism'
       ));
     }
     else if ($table == 'analysis') {
       array_push($types, array(
-        'namespace' => 'local',
+        'vocabulary' => 'local',
         'accession' => 'analysis',
         'term_name' => 'analysis'
       ));
@@ -606,7 +607,7 @@ function tripal_chado_migrate_selected_types($tv3_content_types) {
     // If term doesn't exist, create a new bundle for this term
     if (!$term) {
       print("Creating bundle for term '" . $tv3_content_type['term_name'] . "'...\n");
-      $success = tripal_create_bundle($tv3_content_type['namespace'], $tv3_content_type['accession'], $tv3_content_type['term_name']);
+      $success = tripal_create_bundle($tv3_content_type['vocabulary'], $tv3_content_type['accession'], $tv3_content_type['term_name']);
       $term = tripal_load_term_entity($tv3_content_type);
     }
     // Create bundle name

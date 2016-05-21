@@ -468,11 +468,43 @@ function tripal_chado_get_bundle_fields_base__fields_defaults($table_name, $sche
   //
   // ORGANISM TABLE
   //
-  elseif ($field['field_settings']['chado_table'] == 'organism' and $field['field_settings']['chado_column'] == 'comment') {
-    $field['label'] = 'Description';
+  elseif ($field['field_settings']['chado_table'] == 'organism') {
+    if ($field['field_settings']['chado_column'] == 'comment') {
+      $field['label'] = 'Description';
+    }
+    elseif ($field['field_settings']['chado_column'] == 'genus') {
+      $field['field_settings']['semantic_web']['name'] = 'genus';
+      $field['field_settings']['semantic_web']['accession'] = '0000005';
+      $field['field_settings']['semantic_web']['ns'] = 'TAXRANK';
+      $field['field_settings']['semantic_web']['nsurl'] = 'https://github.com/phenoscape/taxrank';
+    }
+    elseif ($field['field_settings']['chado_column'] == 'species') {
+      $field['field_settings']['semantic_web']['name'] = 'species';
+      $field['field_settings']['semantic_web']['accession'] = '0000006';
+      $field['field_settings']['semantic_web']['ns'] = 'TAXRANK';
+      $field['field_settings']['semantic_web']['nsurl'] = 'https://github.com/phenoscape/taxrank';
+    }
+    elseif ($field['field_settings']['chado_column'] == 'infraspecific_name') {
+      $field['field_settings']['semantic_web']['name'] = 'infraspecies';
+      $field['field_settings']['semantic_web']['accession'] = '0000045';
+      $field['field_settings']['semantic_web']['ns'] = 'TAXRANK';
+      $field['field_settings']['semantic_web']['nsurl'] = 'https://github.com/phenoscape/taxrank';
+    }
+    elseif ($field['field_settings']['chado_column'] == 'common_name') {
+      $field['field_settings']['semantic_web']['name'] = 'common name';
+      $field['field_settings']['semantic_web']['accession'] = 'common_name';
+      $field['field_settings']['semantic_web']['ns'] = 'NCBITaxon';
+      $field['field_settings']['semantic_web']['nsurl'] = 'https://github.com/phenoscape/taxrank';
+    }
+    elseif ($field['field_settings']['chado_column'] == 'abbreviation') {
+      $field['field_settings']['semantic_web']['name'] = 'abbreviation';
+      $field['field_settings']['semantic_web']['accession'] = 'abbreviation';
+      $field['field_settings']['semantic_web']['ns'] = 'local';
+      $field['field_settings']['semantic_web']['nsurl'] = '';
+    }
   }
   //
-  // FEATURE TABLE
+  // PUB TABLE
   //
   elseif ($field['field_settings']['chado_table'] == 'pub' and $field['field_settings']['chado_column'] == 'uniquename') {
     $field['field_type'] = 'text';
@@ -647,7 +679,7 @@ function tripal_chado_get_bundle_fields($entity_type, $bundle, $term) {
   $match = array(
     'dbxref_id' => array(
       'db_id' => array(
-        'name' => $vocab->namespace,
+        'name' => $vocab->vocabulary,
       ),
       'accession' => $term->accession
     ),

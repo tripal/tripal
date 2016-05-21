@@ -3,8 +3,8 @@
  * Retrieves a TripalTerm entity that matches the given arguments.
  *
  * @param $values
- *   An associative array used to match a term.  Valid keys may be 'namespace',
- *   'accession, or 'term_id'.  The keys 'namespace' and 'accession' must
+ *   An associative array used to match a term.  Valid keys may be 'vocabulary',
+ *   'accession, or 'term_id'.  The keys 'vocabulary' and 'accession' must
  *   always be used together to uniquely identify a term.  The key 'term_id'
  *   can be used alone to uniquely identify a term.
  *
@@ -12,18 +12,18 @@
  *   A TripalTerm entity object or NULL if not found.
  */
 function tripal_load_term_entity($values) {
-  $namespace = array_key_exists('namespace', $values) ? $values['namespace'] : '';
+  $vocabulary = array_key_exists('vocabulary', $values) ? $values['vocabulary'] : '';
   $accession = array_key_exists('accession', $values) ? $values['accession'] : '';
   $term_id = array_key_exists('term_id', $values) ? $values['term_id'] : '';
 
   $term = NULL;
 
-  if ($namespace and $accession) {
+  if ($vocabulary and $accession) {
     $query = db_select('tripal_term', 'tt');
     $query->join('tripal_vocab', 'tv', 'tv.id = tt.vocab_id');
     $query->fields('tt', array('id'))
-      ->fields('tv', array('namespace'))
-      ->condition('tv.namespace', $namespace)
+      ->fields('tv', array('vocabulary'))
+      ->condition('tv.vocabulary', $vocabulary)
       ->condition('tt.accession', $accession);
     $term = $query->execute()->fetchObject();
   }
@@ -46,21 +46,21 @@ function tripal_load_term_entity($values) {
  *
  * @param $values
  *   An associative array used to match a vocabulary.  The valid keys are
- *   'vocab_id' and 'namespace'.
+ *   'vocab_id' and 'vocabulary'.
  *
  * @return
  * A TripalVocab entity object or NULL if not found.
  */
 function tripal_load_vocab_entity($values) {
-  $namespace = array_key_exists('namespace', $values) ? $values['namespace'] : '';
+  $vocabulary = array_key_exists('vocabulary', $values) ? $values['vocabulary'] : '';
   $vocab_id = array_key_exists('vocab_id', $values) ? $values['vocab_id'] : '';
   $vocab = NULL;
 
   $query= db_select('tripal_vocab', 'tv')
     ->fields('tv');
 
-  if ($namespace) {
-    $query->condition('tv.namespace', $namespace);
+  if ($vocabulary) {
+    $query->condition('tv.vocabulary', $vocabulary);
   }
   if ($vocab_id) {
     $query->condition('tv.id', $vocab_id);
@@ -114,10 +114,10 @@ function tripal_load_bundle_entity($values) {
 /**
  * Creates a new Tripal Entity type (i.e. bundle).
  *
- * @param $namespace
- *   The abbreviated namespace for the vocabulary (e.g. RO, SO, PATO).
+ * @param $vocabulary
+ *   The abbreviated vocabulary for the vocabulary (e.g. RO, SO, PATO).
  * @param $accession
- *   The unique term ID in the vocabulary $namespace (i.e. an accession).
+ *   The unique term ID in the vocabulary $vocabulary (i.e. an accession).
  * @param $term_name
  *   A human-readable name for this term.  This will became the name that
  *   appears for the content type.  In practice, this should be the name
@@ -129,18 +129,18 @@ function tripal_load_bundle_entity($values) {
  * @return
  *  TRUE if the entity type (bundle) was succesfully created.  FALSE otherwise.
  */
-function tripal_create_bundle($namespace, $accession, $term_name, &$error = '') {
+function tripal_create_bundle($vocabulary, $accession, $term_name, &$error = '') {
 
   // First create the TripalVocab if it doesn't already exist.
-  $vocab = tripal_load_vocab_entity(array('namespace' => $namespace));
+  $vocab = tripal_load_vocab_entity(array('vocabulary' => $vocabulary));
   if (!$vocab) {
-    $vocab = entity_get_controller('TripalVocab')->create(array('namespace' => $namespace));
+    $vocab = entity_get_controller('TripalVocab')->create(array('vocabulary' => $vocabulary));
     $vocab->save();
   }
 
   // Next create the TripalTerm if it doesn't already exist.
   $term = tripal_load_term_entity(array(
-    'namespace' => $namespace,
+    'vocabulary' => $vocabulary,
     'accession' => $accession
   ));
   if (!$term) {
@@ -437,7 +437,7 @@ function hook_add_bundle_fields($entity_type, $bundle, $term) {
   $match = array(
     'dbxref_id' => array(
       'db_id' => array(
-        'name' => $vocab->namespace,
+        'name' => $vocab->vocabulary,
       ),
       'accession' => $term->accession
     ),
@@ -483,11 +483,11 @@ function hook_add_bundle_fields($entity_type, $bundle, $term) {
   $semantic_web = array(
     // The type is the term from a vocabulary that desribes this field..
     'name' => '',
-    // The accession in the namespace for this term.
+    // The accession in the vocabulary for this term.
     'accession' => '',
-    // The namepsace for the vocabulary (e.g. 'foaf').
-    'ns' => '',
-    // The URL for the namespace.  It must be that the type can be
+    // The vocabulary short name (e.g. 'foaf', 'SO', 'PATO', etc.).
+    'vocabulary' => '',
+    // The URL for the vocabulary.  It must be that the type can be
     // appended to the URL.
     'nsurl' => '',
   );
@@ -934,14 +934,15 @@ function hook_vocab_storage_info() {
   );
 }
 
+
 /**
  * Creates a form for specifying a term for TripalEntity creation.
  *
  * This hook allows the module that implements a vocabulary storage backend
  * to provide the form necessary to select a term that will then be used for
- * creating a new TripalEntity type.  Tripal will expect that a 'namespace' and
- * 'accession' are in the $form_state['storage'] array. The 'namespace' and
- * must be the abbreviated uppercase namespace for the vocabulary (e.g. 'RO',
+ * creating a new TripalEntity type.  Tripal will expect that a 'vocabulary' and
+ * 'accession' are in the $form_state['storage'] array. The 'vocabulary' and
+ * must be the abbreviated uppercase vocabulary for the vocabulary (e.g. 'RO',
  * 'SO', 'PATO', etc.).  The 'accession' must be the unique term ID (or
  * accession) for the term in the vocabulary.
  *
@@ -991,14 +992,14 @@ function hook_vocab_import_form_submit($form, &$form_state) {
  * about the term from the storage backend.  It must return an array with
  * a set of keys.
  *
- * @param $namespace
- *   The namespace of the vocabulary in which the term is found.
+ * @param $vocabulary
+ *   The vocabulary of the vocabulary in which the term is found.
  * @param $accession
  *   The unique identifier (accession) for this term.
  *
  * @return
  *   An array with at least the following keys:
- *     namespace : The namespace of the vocabulary.
+ *     vocabulary : The short name of the vocabulary (e.g. SO, PATO, foaf).
  *     accession : The name unique ID of the term.
  *     url : The URL for the term.
  *     name : The name of the term.
@@ -1006,9 +1007,29 @@ function hook_vocab_import_form_submit($form, &$form_state) {
  *   any other keys may be added as desired. Returns NULL if the term
  *   cannot be found.
  */
-function hook_vocab_get_term($namespace, $accession) {
+function hook_vocab_get_term($vocabulary, $accession) {
   // See the tripal_chado_vocab_get_term() function for an example.
 }
+
+/**
+ * Hook used by the default term storage backend to add new terms.
+ *
+ * @param $values
+ *   An associative array of key/value pairs used to add a new term.  The
+ *   keys are:
+ *     vocabulary : The vocabulary of the vocabulary.
+ *     accession : The name unique ID of the term.
+ *     url : The URL for the term.
+ *     name : The name of the term.
+ *     definition : The term's description.
+ * @return
+ *   TRUE if the term was added, FALSE otherwise.  If the term already exists
+ *   it will be updated and the return value will be TRUE,
+ */
+function hook_vocab_set_term($values) {
+  // See the tripal_chado_vocab_set_term() function for an example.
+}
+
 
 /**
  * Retrieves full information about a vocabulary term.
@@ -1019,14 +1040,14 @@ function hook_vocab_get_term($namespace, $accession) {
  * hook_vocab_get_term() function for the database backend that is housing the
  * vocabularies and allow it to return the details about the term.
  *
- * @param $namespace
- *   The namespace of the vocabulary in which the term is found.
+ * @param $vocabulary
+ *   The vocabulary of the vocabulary in which the term is found.
  * @param $accession
  *   The unique identifier (accession) for this term.
  *
  * @return
  *   An array with at least the following keys:
- *     namespace : The namespace of the vocabulary.
+ *     vocabulary : The short name of the vocabulary (e.g. SO, PATO, foaf).
  *     accession : The name unique ID of the term.
  *     url : The URL for the term.
  *     name : The name of the term.
@@ -1034,7 +1055,7 @@ function hook_vocab_get_term($namespace, $accession) {
  *   any other keys may be added as desired. Returns NULL if the term
  *   cannot be found.
  */
-function tripal_get_term_details($namespace, $accession) {
+function tripal_get_term_details($vocabulary, $accession) {
   // TODO: we need some sort of administrative interface that lets the user
   // switch to the desired vocabulary type. For now, we'll just use the
   // first one in the list.
@@ -1044,7 +1065,7 @@ function tripal_get_term_details($namespace, $accession) {
     $module = $stores[$keys[0]]['module'];
     $function = $module . '_vocab_get_term';
     if (function_exists($function)) {
-      return $function($namespace, $accession);
+      return $function($vocabulary, $accession);
     }
   }
 }

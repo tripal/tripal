@@ -221,7 +221,7 @@ function tripal_view_entity($entity, $view_mode = 'full') {
    foreach ($results['TripalEntity'] as $entity_id => $stub) {
      $entity = entity_load('TripalEntity', array($entity_id));
      $entity = reset($entity);
-     $namespace = '';
+     $vocabulary = '';
      $term_name = '';
 
      // Get the term
@@ -231,7 +231,7 @@ function tripal_view_entity($entity, $view_mode = 'full') {
        $term_name = $term->name;
        $vocab = entity_load('TripalVocab', array('id' => $term->vocab_id));
        $vocab = reset($vocab);
-       $namespace = $vocab->namespace;
+       $vocabulary = $vocab->vocabulary;
      }
 
      // Retrieve details about the user who created this data.
@@ -240,7 +240,7 @@ function tripal_view_entity($entity, $view_mode = 'full') {
      // Add information to the table.
      $rows[] = array(
        l($entity->title, 'bio_data/' . $entity->id),
-       $namespace,
+       $vocabulary,
        $term_name,
        l($author->name, 'user/' . $entity->uid),
        $entity->status == 1 ? 'published' : 'unpublished',

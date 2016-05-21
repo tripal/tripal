@@ -24,7 +24,7 @@ class TripalTerm extends Entity {
       $module = $stores[$keys[0]]['module'];
       $function = $module . '_vocab_get_term';
       if (function_exists($function)) {
-        $term_details = $function($vocab->namespace, $this->accession);
+        $term_details = $function($vocab->vocabulary, $this->accession);
         $this->details = $term_details;
         if ($term_details and $term_details['definition']) {
           $this->definition = $term_details['definition'];

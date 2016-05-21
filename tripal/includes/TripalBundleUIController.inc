@@ -106,7 +106,7 @@ function tripal_tripal_bundle_form($form, &$form_state, $entityDataType) {
           'data' => 'Vocabulary',
           'class' => array('side-header')
         ),
-        $vocab->namespace
+        $vocab->vocabulary
       ),
       array(
         array(
@@ -450,20 +450,20 @@ function tripal_admin_add_type_form_validate($form, &$form_state) {
  *
  */
 function tripal_admin_add_type_form_submit($form, &$form_state) {
-  $namespace = '';
+  $vocabulary = '';
   $accession = '';
   if (array_key_exists('storage', $form_state)) {
     $storage = $form_state['storage'];
-    $namespace = array_key_exists('namespace', $storage) ? $storage['namespace'] : '';
+    $vocabulary = array_key_exists('vocabulary', $storage) ? $storage['vocabulary'] : '';
     $accession = array_key_exists('accession', $storage) ? $storage['accession'] : '';
     $term_name = array_key_exists('term_name', $storage) ? $storage['term_name'] : '';
 
     // Before we try to add this type, check to see if it already exists
     // as a bundle.
-    $term = tripal_load_term_entity(array('namespace' => $namespace, 'accession' => $accession));
+    $term = tripal_load_term_entity(array('vocabulary' => $vocabulary, 'accession' => $accession));
     if (!$term) {
       $error = '';
-      $success = tripal_create_bundle($namespace, $accession, $term_name, $error);
+      $success = tripal_create_bundle($vocabulary, $accession, $term_name, $error);
       if (!$success) {
         drupal_set_message($error, 'error');
         $form_state['redirect'] = "admin/structure/bio_data";

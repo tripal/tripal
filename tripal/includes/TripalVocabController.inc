@@ -12,7 +12,7 @@ class TripalVocabController extends EntityAPIController {
   }
 
   public function create(array $values = array()) {
-    $this->namespace = array_key_exists('namespace', $values) ? $values['namespace'] : '';
+    $this->vocabulary = array_key_exists('vocabulary', $values) ? $values['vocabulary'] : '';
     return parent::create($values);
   }
 
@@ -66,7 +66,7 @@ class TripalVocabController extends EntityAPIController {
 
       // Write out the entity record.
       $record = array(
-        'namespace' => $entity->namespace,
+        'vocabulary' => $entity->vocabulary,
         'created' => $entity->created,
         'changed' => time(),
       );

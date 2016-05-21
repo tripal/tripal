@@ -12,8 +12,8 @@ class TripalVocabViewsController extends EntityDefaultViewsController {
 
     $data['tripal_vocab']['table']['group'] = 'Tripal Content Vocabulary';
 
-    $data['tripal_vocab']['namespace']['title'] = 'Namespace';
-    $data['tripal_vocab']['namespace']['help'] = t('The namespace of the vocabulary.');
+    $data['tripal_vocab']['vocabulary']['title'] = 'Vocabulary';
+    $data['tripal_vocab']['vocabulary']['help'] = t('The short name of the vocabulary.');
 
 
     // It is not intended that the following fields will every be used by the
