@@ -51,12 +51,7 @@ class chado_organism__type_id extends TripalField {
         'field_settings' => array(
           'chado_table' => 'organism',
           'chado_column' => 'type_id',
-          'semantic_web' => array(
-            'name' => 'infraspecific_type',
-            'accession' => 'infraspecific_type',
-            'ns' => 'local',
-            'nsurl' => '',
-          ),
+          'semantic_web' => 'local:infraspecific_type',
         ),
       );
     }

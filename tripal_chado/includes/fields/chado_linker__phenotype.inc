@@ -77,12 +77,7 @@ class chado_linker__phenotype extends TripalField {
         'chado_table' => $phenotype_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
-        'semantic_web' => array(
-          'name' => 'phenotype',
-          'accession' => 'phenotype',
-          'ns' => 'local',
-          'nsurl' => '',
-        ),
+        'semantic_web' => 'SBO:0000358',
       ),
     );
     return $field_info;

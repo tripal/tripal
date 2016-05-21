@@ -65,12 +65,7 @@ class chado_linker__expression extends TripalField {
         'chado_table' => $expression_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
-        'semantic_web' => array(
-          'name' => '',
-          'accession' => '',
-          'ns' => '',
-          'nsurl' => '',
-        ),
+        'semantic_web' => 'local:expression',
       ),
     );
     return $field_info;

@@ -444,6 +444,9 @@ function tripal_ws_get_content_type($api_url, &$response, $ws_path, $ctype, $par
  */
 function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_id) {
 
+  $context_vocabs = array();
+  $context_terms = array();
+
   // First, add the vocabularies used into the @context section.
   $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
   $response['@context']['hydra'] = 'http://www.w3.org/ns/hydra/core#';
@@ -455,6 +458,7 @@ function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_i
   $term = reset($term);
   $vocab = $term->vocab;
 
+  // Add the vocabulary for this content type to the @context section.
   if (!array_key_exists($vocab->vocabulary, $response['@context'])) {
     // If there is no URL prefix then use this API's vocabulary API
     if (property_exists($term, 'urlprefix')) {
@@ -503,16 +507,12 @@ function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_i
     // term from the vocabulary that the field is assigned. But in the
     // case that the field is not assigned a term, we must use the field name.
     $key = $field['field_name'];
-    if (array_key_exists('semantic_web', $settings)) {
-      if (array_key_exists('name', $settings['semantic_web']) and
-          $settings['semantic_web']['name']) {
-        $key = $settings['semantic_web']['name'];
-        $nsurl = $settings['semantic_web']['nsurl'];
-        $ns = $settings['semantic_web']['ns'];
-        $accession = $settings['semantic_web']['accession'];
-        $response['@context'][$ns] = $nsurl;
-        $response['@context'][$key] = $ns . ':' . $accession;
-      }
+    if (array_key_exists('semantic_web', $settings) and $settings['semantic_web']) {
+      list($vocabulary, $accession) = explode(':', $settings['semantic_web']);
+      $term = tripal_get_term_details($vocabulary, $accession);
+      $key = $term['name'];
+      $context_vocabs[$vocabulary] = $term['url'];
+      $context_terms[$key] = $settings['semantic_web'];
     }
 
     // Skip hidden fields.
@@ -557,8 +557,10 @@ function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_i
   }
 
   // Lastly, add in the terms used into the @context section.
-  $response['@context']['label'] = 'rdfs:label';
-  $response['@context']['itemPage'] = 'schema:itemPage';
+  $context_terms['label'] = 'rdfs:label';
+  $context_terms['itemPage'] = 'schema:itemPage';
+
+  $response['@context'] = array_merge($context_vocabs, $context_terms);
 
   $response['operation'][] = array(
     '@type' => 'hydra:DeleteResourceOperation',

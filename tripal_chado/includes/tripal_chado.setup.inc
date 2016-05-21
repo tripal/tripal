@@ -1908,6 +1908,15 @@ function tripal_chado_populate_chado_semweb_table() {
   ));
   tripal_insert_cv('IAO','Information Artifact Ontology');
 
+
+  tripal_insert_db(array(
+    'name' => 'SBO',
+    'description' => 'Systems Biology. Terms commonly used in Systems Biology, and in particular in computational modeling.',
+    'url' => 'http://www.ebi.ac.uk/sbo/main/',
+    'urlprefix' => 'http://purl.obolibrary.org/obo/SBO_',
+  ));
+  tripal_insert_cv('sbo','Systems Biology');
+
   //
   // GENERIC TERMS
   //
@@ -1969,6 +1978,21 @@ function tripal_chado_populate_chado_semweb_table() {
   ));
   tripal_associate_chado_semweb_term(NULL, 'timeaccessioned', $time_executed);
 
+
+  $dbxref = tripal_insert_cvterm(array(
+    'id' => 'SBO:0000554',
+    'name' => 'database cross reference',
+    'cv_name' => 'sbo',
+    'definition' => 'An annotation which directs one to information contained within a database.',
+  ));
+
+  $relationship = tripal_insert_cvterm(array(
+    'id' => 'SBO:0000374',
+    'name' => 'relationship',
+    'cv_name' => 'sbo',
+    'definition' => 'connectedness between entities and/or interactions representing their relatedness or influence. [ src_code:NR ]',
+  ));
+
   //
   // ANALYSIS TABLE
   //
@@ -2028,6 +2052,15 @@ function tripal_chado_populate_chado_semweb_table() {
     'cv_name' => 'taxrank',
   ));
   tripal_associate_chado_semweb_term('organism', 'infraspecific_name', $term);
+
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'local:infraspecific_type',
+    'name' => 'infraspecific_type',
+    'definition' => 'The connector type for the infraspecific name',
+    'cv_name' => 'local',
+  ));
+  tripal_associate_chado_semweb_term('organism', 'type_id', $term);
 
   $term = tripal_insert_cvterm(array(
     'id' => 'NCBITaxon:common_name',

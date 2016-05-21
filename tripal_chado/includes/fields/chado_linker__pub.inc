@@ -55,12 +55,7 @@ class chado_linker_pub extends TripalField {
         'chado_table' => $pub_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
-        'semantic_web' => array(
-          'name' => 'publication',
-          'accession' => 'publication',
-          'ns' => 'schema',
-          'nsurl' => 'https://schema.org/',
-        ),
+        'semantic_web' => 'schema:publication',
       ),
     );
     return $field_info;

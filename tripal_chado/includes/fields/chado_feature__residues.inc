@@ -65,12 +65,7 @@ class chado_feature__residues extends TripalField {
       'field_settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'residues',
-        'semantic_web' => array(
-          'name' => 'sequence_feature',
-          'accession' => '0000110',
-          'ns' => 'SO',
-          'nsurl' => 'http://www.sequenceontology.org',
-        ),
+        'semantic_web' => 'SO:0000110',
       ),
     );
     return $field_info;

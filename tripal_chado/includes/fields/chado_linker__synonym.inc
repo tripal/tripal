@@ -55,12 +55,7 @@ class chado_linker__synonym extends TripalField {
         'chado_table' => $syn_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
-        'semantic_web' => array(
-          'name' => 'alternateName',
-          'accession' => 'alternateName',
-          'ns' => 'schema',
-          'nsurl' => 'https://schema.org/',
-        ),
+        'semantic_web' => 'schema:alternateName',
       ),
     );
     return $field_info;

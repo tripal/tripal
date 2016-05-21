@@ -46,12 +46,7 @@ class chado_feature__seqlen extends TripalField {
         'field_settings' => array(
           'chado_table' => $table_name,
           'chado_column' => 'seqlen',
-          'semantic_web' => array(
-            'name' => 'Sequence length',
-            'accession' => '1249',
-            'ns' => 'data',
-            'nsurl' => 'http://edamontology.org/',
-          ),
+          'semantic_web' => 'data:1249',
         ),
       );
     }

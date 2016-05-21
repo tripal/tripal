@@ -476,22 +476,6 @@ function hook_add_bundle_fields($entity_type, $bundle, $term) {
   $schema = chado_get_schema($syn_table);
   $pkey = $schema['primary key'][0];
 
-
-  // Tripal wants to map fields to a controlled vocabulary terms
-  // (e.g SO:0000704 for a 'gene').  This is not required, but is highly
-  // recommended to support mashups of data via web services.
-  $semantic_web = array(
-    // The type is the term from a vocabulary that desribes this field..
-    'name' => '',
-    // The accession in the vocabulary for this term.
-    'accession' => '',
-    // The vocabulary short name (e.g. 'foaf', 'SO', 'PATO', etc.).
-    'vocabulary' => '',
-    // The URL for the vocabulary.  It must be that the type can be
-    // appended to the URL.
-    'nsurl' => '',
-  );
-
   // The Tripal Chado module needs to know what Chado table and field
   // this field maps to, as well as the base table that it maps to
   // if this field will map to a record in a linking table.
@@ -502,7 +486,7 @@ function hook_add_bundle_fields($entity_type, $bundle, $term) {
     'chado_column' => $pkey,
     // The base table that this field is connected to.
     'base_table' => $base_table,
-    'semantic_web' => $semantic_web,
+    'semantic_web' => '',
   );
 
   // Finally set the field values.

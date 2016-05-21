@@ -76,13 +76,8 @@ class chado_linker__genotype extends TripalField {
       'field_settings' => array(
         'chado_table' => $genotype_table,
         'chado_column' => $pkey,
+        'semantic_web' => 'SO:0001027',
         'base_table' => $table_name,
-        'semantic_web' => array(
-          'name' => 'genotype',
-          'accession' => 'genotype',
-          'ns' => 'local',
-          'nsurl' => '',
-        ),
       ),
     );
     return $field_info;

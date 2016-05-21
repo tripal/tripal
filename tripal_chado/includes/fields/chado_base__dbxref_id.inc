@@ -55,12 +55,7 @@ class chado_base__dbxref_id extends TripalField {
       'field_settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'dbxref_id',
-        'semantic_web' => array(
-          'name' => 'Accession',
-          'accession' => '2091',
-          'ns' => 'data',
-          'nsurl' => ' http://edamontology.org/',
-        ),
+        'semantic_web' => 'data:2091',
       ),
     );
 

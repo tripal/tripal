@@ -48,12 +48,7 @@ class chado_feature__md5checksum  extends TripalField {
         'field_settings' => array(
           'chado_table' => 'feature',
           'chado_column' => 'md5checksum',
-          'semantic_web' => array(
-            'name' => 'md5_checksum',
-            'accession' => 'md5_checksum',
-            'ns' => 'local',
-            'nsurl' => '',
-          ),
+          'semantic_web' => 'local:md5_checksum',
         ),
       );
     }

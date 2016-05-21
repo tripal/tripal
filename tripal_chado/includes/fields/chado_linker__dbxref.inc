@@ -68,12 +68,7 @@ class chado_linker__dbxref extends TripalField {
           'chado_table' => $dbxref_table,
           'chado_column' => $pkey,
           'base_table' => $table_name,
-          'semantic_web' => array(
-            'name' => 'database cross reference',
-            'accession' => '0000554',
-            'ns' => 'SBO',
-            'nsurl' => 'http://www.ebi.ac.uk/sbo/main/',
-          ),
+          'semantic_web' => 'SBO:0000554',
         ),
       );
 

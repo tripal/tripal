@@ -77,12 +77,7 @@ class chado_linker__contact extends TripalField {
         'chado_table' => $contact_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
-        'semantic_web' => array(
-          'name' => 'contact',
-          'accession' => 'contact',
-          'ns' => 'local',
-          'nsurl' => '',
-        ),
+        'semantic_web' => 'local:contact'
       ),
     );
     return $field_info;

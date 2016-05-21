@@ -68,12 +68,7 @@ class chado_base__organism_id extends TripalField {
       'field_settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'organism_id',
-        'semantic_web' => array(
-          'name' => 'organism',
-          'accession' => 'organism',
-          'ns' => 'local',
-          'nsurl' => '',
-        ),
+        'semantic_web' => 'local:organism',
       ),
     );
 

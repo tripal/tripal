@@ -56,12 +56,7 @@ class chado_gene__transcripts extends TripalField {
         'chado_table' => $rel_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
-        'semantic_web' => array(
-          'name' => 'transcript',
-          'accession' => '0000673',
-          'ns' => 'SO',
-          'nsurl' => 'http://www.sequenceontology.org',
-        ),
+        'semantic_web' => 'SO:0000673',
       ),
     );
 

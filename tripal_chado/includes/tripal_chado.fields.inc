@@ -351,17 +351,7 @@ function tripal_chado_get_bundle_fields_base__fields_defaults($table_name, $sche
       'chado_table' => $table_name,
       // The column in the Chado table that this field maps to.
       'chado_column' => $column_name,
-      'semantic_web' => array(
-        // The type is the term from a vocabulary that desribes this field..
-        'name' => '',
-        // The accession ID for this term in the vocaulary.
-        'accession' => '',
-        // The namepsace for the vocabulary (e.g. 'foaf').
-        'ns' => '',
-        // The URL for the namespace.  It must be that the type can be
-        // appended to the URL.
-        'nsurl' => '',
-      ),
+      'semantic_web' => '',
     ),
   );
 
@@ -426,38 +416,10 @@ function tripal_chado_get_bundle_fields_base__fields_defaults($table_name, $sche
 
   // Set some default semantic web information
   if ($column_name == 'uniquename') {
-    $field['field_settings']['semantic_web']['name'] = 'name';
-    $field['field_settings']['semantic_web']['accession'] = 'name';
-    $field['field_settings']['semantic_web']['ns'] = 'foaf';
-    $field['field_settings']['semantic_web']['nsurl'] = 'http://xmlns.com/foaf/0.1/';
     $field['widget_type'] = 'text_textfield';
     $field['field_settings']['text_processing'] = 0;
   }
-  if ($column_name == 'name') {
-    // If this table also has a unqiuename field then use the 'name' field
-    // as an alternate name.
-    if (array_key_exists('uniquename', $schema['fields'])) {
-      $field['field_settings']['semantic_web']['name'] = 'alternateName';
-      $field['field_settings']['semantic_web']['accession'] = 'alternateName';
-      $field['field_settings']['semantic_web']['ns'] = 'schema';
-      $field['field_settings']['semantic_web']['nsurl'] = 'https://schema.org/';
-    }
-    else {
-      $field['field_settings']['semantic_web']['name'] = 'name';
-      $field['field_settings']['semantic_web']['accession'] = 'name';
-      $field['field_settings']['semantic_web']['ns'] = 'foaf';
-      $field['field_settings']['semantic_web']['nsurl'] = 'http://xmlns.com/foaf/0.1/';
-    }
-  }
-  if ($column_name == 'description' or $column_name == 'definition' or
-      $column_name == 'comment') {
-    $field['field_settings']['semantic_web']['name'] = 'description';
-    $field['field_settings']['semantic_web']['accession'] = 'description';
-    $field['field_settings']['semantic_web']['ns'] = 'hydra';
-    $field['field_settings']['semantic_web']['nsurl'] = 'http://www.w3.org/ns/hydra/core#';
-  }
-
-  if ($field['label'] == 'Timeaccessioned') {
+  elseif ($field['label'] == 'Timeaccessioned') {
     $field['label'] = 'Time Accessioned';
     $field['description'] = 'Please enter the time that this record was first added to the database.';
   }
@@ -468,40 +430,8 @@ function tripal_chado_get_bundle_fields_base__fields_defaults($table_name, $sche
   //
   // ORGANISM TABLE
   //
-  elseif ($field['field_settings']['chado_table'] == 'organism') {
-    if ($field['field_settings']['chado_column'] == 'comment') {
-      $field['label'] = 'Description';
-    }
-    elseif ($field['field_settings']['chado_column'] == 'genus') {
-      $field['field_settings']['semantic_web']['name'] = 'genus';
-      $field['field_settings']['semantic_web']['accession'] = '0000005';
-      $field['field_settings']['semantic_web']['ns'] = 'TAXRANK';
-      $field['field_settings']['semantic_web']['nsurl'] = 'https://github.com/phenoscape/taxrank';
-    }
-    elseif ($field['field_settings']['chado_column'] == 'species') {
-      $field['field_settings']['semantic_web']['name'] = 'species';
-      $field['field_settings']['semantic_web']['accession'] = '0000006';
-      $field['field_settings']['semantic_web']['ns'] = 'TAXRANK';
-      $field['field_settings']['semantic_web']['nsurl'] = 'https://github.com/phenoscape/taxrank';
-    }
-    elseif ($field['field_settings']['chado_column'] == 'infraspecific_name') {
-      $field['field_settings']['semantic_web']['name'] = 'infraspecies';
-      $field['field_settings']['semantic_web']['accession'] = '0000045';
-      $field['field_settings']['semantic_web']['ns'] = 'TAXRANK';
-      $field['field_settings']['semantic_web']['nsurl'] = 'https://github.com/phenoscape/taxrank';
-    }
-    elseif ($field['field_settings']['chado_column'] == 'common_name') {
-      $field['field_settings']['semantic_web']['name'] = 'common name';
-      $field['field_settings']['semantic_web']['accession'] = 'common_name';
-      $field['field_settings']['semantic_web']['ns'] = 'NCBITaxon';
-      $field['field_settings']['semantic_web']['nsurl'] = 'https://github.com/phenoscape/taxrank';
-    }
-    elseif ($field['field_settings']['chado_column'] == 'abbreviation') {
-      $field['field_settings']['semantic_web']['name'] = 'abbreviation';
-      $field['field_settings']['semantic_web']['accession'] = 'abbreviation';
-      $field['field_settings']['semantic_web']['ns'] = 'local';
-      $field['field_settings']['semantic_web']['nsurl'] = '';
-    }
+  elseif ($field['field_settings']['chado_table'] == 'organism' and $field['field_settings']['chado_column'] == 'comment') {
+    $field['label'] = 'Description';
   }
   //
   // PUB TABLE
@@ -510,20 +440,12 @@ function tripal_chado_get_bundle_fields_base__fields_defaults($table_name, $sche
     $field['field_type'] = 'text';
     $field['widget_type'] = 'text_textfield';
     $field['field_settings']['text_processing'] = 0;
-    $field['field_settings']['semantic_web']['name'] = 'Comment';
-    $field['field_settings']['semantic_web']['accession'] = 'Comment';
-    $field['field_settings']['semantic_web']['ns'] = 'schema';
-    $field['field_settings']['semantic_web']['nsurl'] = 'https://www.schema.org/';
   }
 
   //
   // ANALYSIS TABLE
   //
   elseif ($field['field_settings']['chado_table'] == 'analysis' and $field['field_settings']['chado_column'] == 'program') {
-    $field['field_settings']['semantic_web']['name'] = 'SoftwareApplication';
-    $field['field_settings']['semantic_web']['accession'] = 'SoftwareApplication';
-    $field['field_settings']['semantic_web']['ns'] = 'schema';
-    $field['field_settings']['semantic_web']['nsurl'] = 'https://schema.org/';
     $field['description'] = 'The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.';
     $field['label'] = 'Program, Pipeline, Workflow or Method Name.';
   }
@@ -556,6 +478,7 @@ function tripal_chado_get_bundle_fields_base__fields_defaults($table_name, $sche
   elseif ($field['field_settings']['chado_table'] == 'project' and $field['field_settings']['chado_column'] == 'description') {
     $field['label'] = 'Short Description';
   }
+
   return $field;
 }
 
@@ -771,6 +694,37 @@ function tripal_chado_get_bundle_fields($entity_type, $bundle, $term) {
     $field_name = $field_info['field_name'];
 
     $fields[$field_name] = $field_info;
+  }
+
+  // Add in the semantic web details
+  foreach ($fields as $field_name => $field) {
+    if (!array_key_exists('chado_table', $field['field_settings'])) {
+      continue;
+    }
+    $chado_column = $field['field_settings']['chado_column'];
+    $chado_table = $field['field_settings']['chado_table'];
+
+    // Get the semantic web mapping for this field. First look for a
+    // table specific mapping.
+    $smweb = db_select('chado_semweb', 'CS')
+      ->fields('CS')
+      ->condition('chado_column', $chado_column)
+      ->condition('chado_table', $chado_table)
+      ->execute()
+      ->fetchObject();
+    // We don't have a table/column specific mapping, so let's look for a
+    // generic column mapping.
+    if (!$smweb) {
+      $smweb = db_select('chado_semweb', 'CS')
+      ->fields('CS')
+      ->condition('chado_column', $chado_column)
+      ->execute()
+      ->fetchObject();
+    }
+    if ($smweb) {
+      $cvterm = tripal_get_cvterm(array('cvterm_id' => $smweb->cvterm_id));
+      $fields[$field_name]['field_settings']['semantic_web'] = $cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession;
+    }
   }
 
   return $fields;
