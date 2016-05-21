@@ -430,7 +430,6 @@ function tripal_insert_cv($name, $definition) {
  *        $term['id'] and it needs to be explicitly set.  Use this argument
  *        only if the database name cannot be specififed in the term ID
  *        (e.g. <DB>:<ACCESSION>).
- *    - namespace: DEPRECATED. Please use cv_name instead.
  * @param $options
  *   An associative array with the following keys:
  *    - update_existing: By default this is TRUE.  If the term exists it is

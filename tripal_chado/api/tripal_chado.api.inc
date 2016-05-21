@@ -254,3 +254,39 @@ function tripal_replace_chado_tokens($string, $record) {
   }
   return $string;
 }
+
+/**
+ *
+ */
+function tripal_associate_chado_semweb_term($chado_table, $chado_column, $term) {
+
+  // Check to see if the record has already been added to the chado_semweb table
+  $query = db_select('chado_semweb', 'CS');
+  $query->fields('CS', array('chado_semweb_id'));
+  $query->condition('chado_column', $chado_column);
+  $query->condition('cvterm_id', $term->cvterm_id);
+  if ($chado_table) {
+    $query->condition('chado_table', $chado_table);
+  }
+  $id = $query->execute()->fetchField();
+
+  $values = array(
+    'chado_table' => $chado_table,
+    'chado_column' => $chado_column,
+    'cvterm_id' => $term->cvterm_id,
+  );
+  // If we have an ID then this is an update, otherwise it's an insert.
+  if ($id) {
+    $values['chado_semweb_id'] = $id;
+    $success = drupal_write_record('chado_semweb', $values, 'chado_semweb_id');
+  }
+  else {
+    $success = drupal_write_record('chado_semweb', $values);
+  }
+  if (!$success) {
+    FALSE;
+  }
+
+  return TRUE;
+}
+
