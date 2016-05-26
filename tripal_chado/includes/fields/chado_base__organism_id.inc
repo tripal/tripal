@@ -166,7 +166,7 @@ class chado_base__organism_id extends TripalField {
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => '',
-      'organism__type_id' => '',
+      'organism__organism_id' => '',
     );
 
     if ($record) {

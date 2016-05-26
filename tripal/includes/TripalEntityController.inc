@@ -107,18 +107,13 @@ class TripalEntityController extends EntityAPIController {
     // If no title was supplied then we should try to generate one using the
     // default format set by admins.
     if (!$title) {
-
       // Load the TripalBundle entity for this TripalEntity.
-      $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
-
-      // First get the format for the title based on the bundle of the entity.
-      $title = tripal_get_title_format($bundle_entity);
-
+      // Get the format for the title based on the bundle of the entity.
       // And then replace all the tokens with values from the entity fields.
+      $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
+      $title = tripal_get_title_format($bundle_entity);
       $title = tripal_replace_entity_tokens($title, $entity, $bundle_entity);
-
     }
-
     // As long as we were able to determine a title, we should update it ;-).
     if ($title) {
       db_update('tripal_entity')
@@ -257,7 +252,13 @@ class TripalEntityController extends EntityAPIController {
   }
 
   /**
-   * Saves the custom fields using drupal_write_record().
+   * Saves a new entity.
+   *
+   * @param $entity
+   *   A TripalEntity object to save.
+   *
+   * @return
+   *   The saved entity object with updated properties.
    */
   public function save($entity) {
     global $user;

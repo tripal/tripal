@@ -40,13 +40,14 @@ function tripal_chado_field_storage_write($entity_type, $entity, $op, $fields) {
   // Convert the fields into a key/value list of fields and their values.
   $field_vals = tripal_chado_field_storage_write_merge_fields($fields, $entity_type, $entity);
 
-  // Write the record for the base table.  First get the values for this table
-  // and set the record_id (update) or the type_id (insert)
+  // First, write the record for the base table.  If we have a record id then
+  // this is an upate and we need to set the primary key.  If not, then this
+  // is an insert and we need to set the type_id if the table supports it.
   $values = $field_vals[$base_table][0];
   if ($record_id) {
     $values[$base_pkey] = $record_id;
   }
-  else {
+  elseif ($type_field) {
     $values[$type_field] = $cvterm->cvterm_id;
   }
   $base_record_id = tripal_chado_field_storage_write_table($base_table, $values);
@@ -107,7 +108,7 @@ function tripal_chado_field_storage_write_table($table_name, $values) {
    $fkeys = $schema['foreign keys'];
    $pkey = $schema['primary key'][0];
 
-   // Before inserting or updating this table, recruse if there are any
+   // Before inserting or updating this table, recurse if there are any
    // nested FK array values.
    foreach ($values as $column => $value) {
      // If this value is an array then it must be a FK... let's recurse.
@@ -157,7 +158,7 @@ function tripal_chado_field_storage_write_table($table_name, $values) {
      // Insert the values array as a new record in the table.
      $record = chado_insert_record($table_name, $values);
      if ($record === FALSE) {
-       throw new Exception('Could not insert Chado record into table: "' . $tablename . '".');
+       throw new Exception('Could not insert Chado record into table: "' . $table_name . '".');
      }
      return $record[$pkey];
    }
@@ -167,7 +168,7 @@ function tripal_chado_field_storage_write_table($table_name, $values) {
      // not being tested for here.
      $match[$pkey] = $values[$pkey];
      if (!chado_update_record($table_name, $match, $values)) {
-       drupal_set_message("Could not update Chado record in table: $tablename.", 'error');
+       drupal_set_message("Could not update Chado record in table: $table_name.", 'error');
      }
      return $values[$pkey];
    }
@@ -187,22 +188,34 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
   $langcode = $language->language;
 
   foreach ($entities as $id => $entity) {
-
-    // Get the base table and record id for the fields of this entity.
-    $details = db_select('chado_entity', 'ce')
-      ->fields('ce')
-      ->condition('entity_id', $entity->id)
-      ->execute()
-      ->fetchObject();
-
-    if (!$details) {
-      // TODO: what to do if record is missing!
+    // The chado_xxxx properties are added to the entity in the
+    // tripal_chado_entity_load() hook which unfortunately is called after
+    // attaching fields.  So, we may not have these properties. If that's
+    // the case we can get them by querying the chado_entity table directly.
+    // The chado_xxxx properites will be here in the case of syncing
+    // records.
+    // TODO: perhaps we should add a hook_entity_preattach() hook?
+    if (property_exists($entity, 'chado_table')) {
+      // Get the base table and record id for the fields of this entity.
+      $base_table = $entity->chado_table;
+      $type_field = $entity->chado_column;
+      $record_id = $entity->chado_record_id;
     }
-
-    // Get some values needed for loading the values from Chado.
-    $base_table = $details->data_table;
-    $type_field = $details->field;
-    $record_id = $details->record_id;
+    else {
+      // Get the base table and record id for the fields of this entity.
+      $details = db_select('chado_entity', 'ce')
+        ->fields('ce')
+        ->condition('entity_id', $entity->id)
+        ->execute()
+        ->fetchObject();
+      if (!$details) {
+        // TODO: what to do if record is missing!
+      }
+      // Get some values needed for loading the values from Chado.
+      $base_table = $details->data_table;
+      $type_field = $details->field;
+      $record_id = $details->record_id;
+    }
 
     // Get this table's schema.
     $schema = chado_get_schema($base_table);

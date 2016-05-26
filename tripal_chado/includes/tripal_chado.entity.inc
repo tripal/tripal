@@ -11,18 +11,22 @@ function tripal_chado_entity_create(&$entity, $type) {
   if ($type == 'TripalEntity') {
 
     // Set some defaults on vars needed by this module.
-    $entity->chado_table = NULL;
-    $entity->chado_column = NULL;
-    $entity->chado_record = NULL;
-    $entity->chado_record_id = NULL;
+    if (!property_exists($entity, 'chado_table')) {
+      $entity->chado_table =  NULL;
+      $entity->chado_column = NULL;
 
-    // Add in the Chado table information for this entity type.
-    $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
-    $chado_table = tripal_get_bundle_variable('chado_table', $bundle->id);
-    $chado_column = tripal_get_bundle_variable('chado_column', $bundle->id);
-    if ($chado_table) {
-      $entity->chado_table = $chado_table;
-      $entity->chado_column = $chado_column;
+      // Add in the Chado table information for this entity type.
+      $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
+      $chado_table = tripal_get_bundle_variable('chado_table', $bundle->id);
+      $chado_column = tripal_get_bundle_variable('chado_column', $bundle->id);
+      if ($chado_table) {
+        $entity->chado_table = $chado_table;
+        $entity->chado_column = $chado_column;
+      }
+    }
+    if (!property_exists($entity, 'chado_record')) {
+      $entity->chado_record = NULL;
+      $entity->chado_record_id = NULL;
     }
   }
 }
