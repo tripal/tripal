@@ -15,6 +15,7 @@ require_once 'api/tripal_chado.mviews.api.inc';
 require_once 'api/tripal_chado.schema_v1.3.api.inc';
 require_once 'api/tripal_chado.schema_v1.2.api.inc';
 require_once 'api/tripal_chado.schema_v1.11.api.inc';
+require_once 'api/tripal_chado.semweb.api.inc';
 
 // Chado module specific API functions
 require_once 'api/modules/tripal_chado.analysis.api.inc';

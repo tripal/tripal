@@ -69,6 +69,10 @@ function chado_edit_custom_table($table_id, $table_name, $schema, $skip_if_exist
     // update the custom table record and run the create custom table function
     drupal_write_record('tripal_custom_tables', $record, 'table_id');
     $success = chado_create_custom_table ($table_name, $schema, $skip_if_exists);
+
+    // Re-add the custom table to the semantic web interface to pick up any
+    // changes in fields.
+    tripal_add_chado_semweb_table($table_name);
   }
   catch (Exception $e) {
     $transaction->rollback();
@@ -187,6 +191,9 @@ function chado_create_custom_table($table, $schema, $skip_if_exists = 1, $mview_
         }
       }
     }
+
+    // Add the custom table to the semantic web interface
+    tripal_add_chado_semweb_table($table);
   }
   catch (Exception $e) {
     $transaction->rollback();

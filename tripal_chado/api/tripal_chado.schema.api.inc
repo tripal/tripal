@@ -321,6 +321,12 @@ function chado_get_table_names($include_custom = NULL) {
   $v = $GLOBALS["chado_version"];
 
   $tables = array();
+  if ($v == '1.3') {
+    $tables_v1_3 = tripal_chado_chado_get_v1_3_tables();
+    foreach ($tables_v1_3 as $table) {
+      $tables[$table] = $table;
+    }
+  }
   if ($v == '1.2') {
     $tables_v1_2 = tripal_chado_chado_get_v1_2_tables();
     foreach ($tables_v1_2 as $table) {

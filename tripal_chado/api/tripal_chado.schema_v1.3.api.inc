@@ -50,7 +50,7 @@
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_acquisition() {
+function tripal_chado_chado_schema_v1_3_acquisition() {
   $description = array(
     'description' => '',
     'table' => 'acquisition',
@@ -155,7 +155,7 @@ function tripal_core_chado_schema_v1_3_acquisition() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_acquisitionprop() {
+function tripal_chado_chado_schema_v1_3_acquisitionprop() {
   $description = array(
     'description' => '',
     'table' => 'acquisitionprop',
@@ -240,7 +240,7 @@ function tripal_core_chado_schema_v1_3_acquisitionprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_acquisition_relationship() {
+function tripal_chado_chado_schema_v1_3_acquisition_relationship() {
   $description = array(
     'description' => '',
     'table' => 'acquisition_relationship',
@@ -335,7 +335,7 @@ function tripal_core_chado_schema_v1_3_acquisition_relationship() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_analysis() {
+function tripal_chado_chado_schema_v1_3_analysis() {
   $description = array(
     'description' => '',
     'table' => 'analysis',
@@ -442,7 +442,7 @@ function tripal_core_chado_schema_v1_3_analysis() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_analysis_cvterm() {
+function tripal_chado_chado_schema_v1_3_analysis_cvterm() {
   $description = array(
     'description' => '',
     'table' => 'analysis_cvterm',
@@ -528,7 +528,7 @@ function tripal_core_chado_schema_v1_3_analysis_cvterm() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_analysis_dbxref() {
+function tripal_chado_chado_schema_v1_3_analysis_dbxref() {
   $description = array(
     'description' => '',
     'table' => 'analysis_dbxref',
@@ -607,7 +607,7 @@ function tripal_core_chado_schema_v1_3_analysis_dbxref() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_analysisfeature() {
+function tripal_chado_chado_schema_v1_3_analysisfeature() {
   $description = array(
     'description' => '',
     'table' => 'analysisfeature',
@@ -701,7 +701,7 @@ function tripal_core_chado_schema_v1_3_analysisfeature() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_analysisfeatureprop() {
+function tripal_chado_chado_schema_v1_3_analysisfeatureprop() {
   $description = array(
     'description' => '',
     'table' => 'analysisfeatureprop',
@@ -785,7 +785,7 @@ function tripal_core_chado_schema_v1_3_analysisfeatureprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_analysis_organism() {
+function tripal_chado_chado_schema_v1_3_analysis_organism() {
   $description = array(
     'description' => '',
     'table' => 'analysis_organism',
@@ -844,7 +844,7 @@ function tripal_core_chado_schema_v1_3_analysis_organism() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_analysisprop() {
+function tripal_chado_chado_schema_v1_3_analysisprop() {
   $description = array(
     'description' => '',
     'table' => 'analysisprop',
@@ -929,7 +929,7 @@ function tripal_core_chado_schema_v1_3_analysisprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_analysis_pub() {
+function tripal_chado_chado_schema_v1_3_analysis_pub() {
   $description = array(
     'description' => '',
     'table' => 'analysis_pub',
@@ -1002,7 +1002,7 @@ function tripal_core_chado_schema_v1_3_analysis_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_analysis_relationship() {
+function tripal_chado_chado_schema_v1_3_analysis_relationship() {
   $description = array(
     'description' => '',
     'table' => 'analysis_relationship',
@@ -1097,7 +1097,7 @@ function tripal_core_chado_schema_v1_3_analysis_relationship() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_arraydesign() {
+function tripal_chado_chado_schema_v1_3_arraydesign() {
   $description = array(
     'description' => '',
     'table' => 'arraydesign',
@@ -1269,7 +1269,7 @@ function tripal_core_chado_schema_v1_3_arraydesign() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_arraydesignprop() {
+function tripal_chado_chado_schema_v1_3_arraydesignprop() {
   $description = array(
     'description' => '',
     'table' => 'arraydesignprop',
@@ -1354,7 +1354,7 @@ function tripal_core_chado_schema_v1_3_arraydesignprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_assay() {
+function tripal_chado_chado_schema_v1_3_assay() {
   $description = array(
     'description' => '',
     'table' => 'assay',
@@ -1487,7 +1487,7 @@ function tripal_core_chado_schema_v1_3_assay() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_assay_biomaterial() {
+function tripal_chado_chado_schema_v1_3_assay_biomaterial() {
   $description = array(
     'description' => '',
     'table' => 'assay_biomaterial',
@@ -1582,7 +1582,7 @@ function tripal_core_chado_schema_v1_3_assay_biomaterial() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_assay_project() {
+function tripal_chado_chado_schema_v1_3_assay_project() {
   $description = array(
     'description' => '',
     'table' => 'assay_project',
@@ -1655,7 +1655,7 @@ function tripal_core_chado_schema_v1_3_assay_project() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_assayprop() {
+function tripal_chado_chado_schema_v1_3_assayprop() {
   $description = array(
     'description' => '',
     'table' => 'assayprop',
@@ -1740,7 +1740,7 @@ function tripal_core_chado_schema_v1_3_assayprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_biomaterial() {
+function tripal_chado_chado_schema_v1_3_biomaterial() {
   $description = array(
     'description' => '',
     'table' => 'biomaterial',
@@ -1842,7 +1842,7 @@ function tripal_core_chado_schema_v1_3_biomaterial() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_biomaterial_dbxref() {
+function tripal_chado_chado_schema_v1_3_biomaterial_dbxref() {
   $description = array(
     'description' => '',
     'table' => 'biomaterial_dbxref',
@@ -1915,7 +1915,7 @@ function tripal_core_chado_schema_v1_3_biomaterial_dbxref() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_biomaterialprop() {
+function tripal_chado_chado_schema_v1_3_biomaterialprop() {
   $description = array(
     'description' => '',
     'table' => 'biomaterialprop',
@@ -2000,7 +2000,7 @@ function tripal_core_chado_schema_v1_3_biomaterialprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_biomaterial_relationship() {
+function tripal_chado_chado_schema_v1_3_biomaterial_relationship() {
   $description = array(
     'description' => '',
     'table' => 'biomaterial_relationship',
@@ -2083,7 +2083,7 @@ function tripal_core_chado_schema_v1_3_biomaterial_relationship() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_biomaterial_treatment() {
+function tripal_chado_chado_schema_v1_3_biomaterial_treatment() {
   $description = array(
     'description' => '',
     'table' => 'biomaterial_treatment',
@@ -2181,7 +2181,7 @@ function tripal_core_chado_schema_v1_3_biomaterial_treatment() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_cell_line() {
+function tripal_chado_chado_schema_v1_3_cell_line() {
   $description = array(
     'description' => '',
     'table' => 'cell_line',
@@ -2267,7 +2267,7 @@ function tripal_core_chado_schema_v1_3_cell_line() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_cell_line_cvterm() {
+function tripal_chado_chado_schema_v1_3_cell_line_cvterm() {
   $description = array(
     'description' => '',
     'table' => 'cell_line_cvterm',
@@ -2352,7 +2352,7 @@ function tripal_core_chado_schema_v1_3_cell_line_cvterm() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_cell_line_cvtermprop() {
+function tripal_chado_chado_schema_v1_3_cell_line_cvtermprop() {
   $description = array(
     'description' => '',
     'table' => 'cell_line_cvtermprop',
@@ -2429,7 +2429,7 @@ function tripal_core_chado_schema_v1_3_cell_line_cvtermprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_cell_line_dbxref() {
+function tripal_chado_chado_schema_v1_3_cell_line_dbxref() {
   $description = array(
     'description' => '',
     'table' => 'cell_line_dbxref',
@@ -2500,7 +2500,7 @@ function tripal_core_chado_schema_v1_3_cell_line_dbxref() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_cell_line_feature() {
+function tripal_chado_chado_schema_v1_3_cell_line_feature() {
   $description = array(
     'description' => '',
     'table' => 'cell_line_feature',
@@ -2577,7 +2577,7 @@ function tripal_core_chado_schema_v1_3_cell_line_feature() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_cell_line_library() {
+function tripal_chado_chado_schema_v1_3_cell_line_library() {
   $description = array(
     'description' => '',
     'table' => 'cell_line_library',
@@ -2654,7 +2654,7 @@ function tripal_core_chado_schema_v1_3_cell_line_library() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_cell_lineprop() {
+function tripal_chado_chado_schema_v1_3_cell_lineprop() {
   $description = array(
     'description' => '',
     'table' => 'cell_lineprop',
@@ -2732,7 +2732,7 @@ function tripal_core_chado_schema_v1_3_cell_lineprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_cell_lineprop_pub() {
+function tripal_chado_chado_schema_v1_3_cell_lineprop_pub() {
   $description = array(
     'description' => '',
     'table' => 'cell_lineprop_pub',
@@ -2797,7 +2797,7 @@ function tripal_core_chado_schema_v1_3_cell_lineprop_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_cell_line_pub() {
+function tripal_chado_chado_schema_v1_3_cell_line_pub() {
   $description = array(
     'description' => '',
     'table' => 'cell_line_pub',
@@ -2862,7 +2862,7 @@ function tripal_core_chado_schema_v1_3_cell_line_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_cell_line_relationship() {
+function tripal_chado_chado_schema_v1_3_cell_line_relationship() {
   $description = array(
     'description' => '',
     'table' => 'cell_line_relationship',
@@ -2934,7 +2934,7 @@ function tripal_core_chado_schema_v1_3_cell_line_relationship() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_cell_line_synonym() {
+function tripal_chado_chado_schema_v1_3_cell_line_synonym() {
   $description = array(
     'description' => '',
     'table' => 'cell_line_synonym',
@@ -3023,7 +3023,7 @@ function tripal_core_chado_schema_v1_3_cell_line_synonym() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_chadoprop() {
+function tripal_chado_chado_schema_v1_3_chadoprop() {
   $description = array(
     'description' => '',
     'table' => 'chadoprop',
@@ -3088,7 +3088,7 @@ function tripal_core_chado_schema_v1_3_chadoprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_channel() {
+function tripal_chado_chado_schema_v1_3_channel() {
   $description = array(
     'description' => '',
     'table' => 'channel',
@@ -3142,7 +3142,7 @@ function tripal_core_chado_schema_v1_3_channel() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_contact() {
+function tripal_chado_chado_schema_v1_3_contact() {
   $description = array(
     'description' => '',
     'table' => 'contact',
@@ -3229,7 +3229,7 @@ function tripal_core_chado_schema_v1_3_contact() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_contactprop() {
+function tripal_chado_chado_schema_v1_3_contactprop() {
   $description = array(
     'description' => '',
     'table' => 'contactprop',
@@ -3314,7 +3314,7 @@ function tripal_core_chado_schema_v1_3_contactprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_contact_relationship() {
+function tripal_chado_chado_schema_v1_3_contact_relationship() {
   $description = array(
     'description' => '',
     'table' => 'contact_relationship',
@@ -3397,7 +3397,7 @@ function tripal_core_chado_schema_v1_3_contact_relationship() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_control() {
+function tripal_chado_chado_schema_v1_3_control() {
   $description = array(
     'description' => '',
     'table' => 'control',
@@ -3502,7 +3502,7 @@ function tripal_core_chado_schema_v1_3_control() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_cv() {
+function tripal_chado_chado_schema_v1_3_cv() {
   $description = array(
     'description' => '',
     'table' => 'cv',
@@ -3558,7 +3558,7 @@ function tripal_core_chado_schema_v1_3_cv() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_cvprop() {
+function tripal_chado_chado_schema_v1_3_cvprop() {
   $description = array(
     'description' => '',
     'table' => 'cvprop',
@@ -3635,7 +3635,7 @@ function tripal_core_chado_schema_v1_3_cvprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_cv_root_mview() {
+function tripal_chado_chado_schema_v1_3_cv_root_mview() {
   $description = array(
     'description' => '',
     'table' => 'cv_root_mview',
@@ -3694,7 +3694,7 @@ function tripal_core_chado_schema_v1_3_cv_root_mview() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_cvterm() {
+function tripal_chado_chado_schema_v1_3_cvterm() {
   $description = array(
     'description' => '',
     'table' => 'cvterm',
@@ -3907,7 +3907,7 @@ function tripal_core_chado_schema_v1_3_cvterm() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_cvterm_dbxref() {
+function tripal_chado_chado_schema_v1_3_cvterm_dbxref() {
   $description = array(
     'description' => '',
     'table' => 'cvterm_dbxref',
@@ -3986,7 +3986,7 @@ function tripal_core_chado_schema_v1_3_cvterm_dbxref() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_cvtermpath() {
+function tripal_chado_chado_schema_v1_3_cvtermpath() {
   $description = array(
     'description' => '',
     'table' => 'cvtermpath',
@@ -4084,7 +4084,7 @@ function tripal_core_chado_schema_v1_3_cvtermpath() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_cvtermprop() {
+function tripal_chado_chado_schema_v1_3_cvtermprop() {
   $description = array(
     'description' => '',
     'table' => 'cvtermprop',
@@ -4166,7 +4166,7 @@ function tripal_core_chado_schema_v1_3_cvtermprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_cvterm_relationship() {
+function tripal_chado_chado_schema_v1_3_cvterm_relationship() {
   $description = array(
     'description' => '',
     'table' => 'cvterm_relationship',
@@ -4244,7 +4244,7 @@ function tripal_core_chado_schema_v1_3_cvterm_relationship() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_cvtermsynonym() {
+function tripal_chado_chado_schema_v1_3_cvtermsynonym() {
   $description = array(
     'description' => '',
     'table' => 'cvtermsynonym',
@@ -4315,7 +4315,7 @@ function tripal_core_chado_schema_v1_3_cvtermsynonym() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_db() {
+function tripal_chado_chado_schema_v1_3_db() {
   $description = array(
     'description' => '',
     'table' => 'db',
@@ -4384,7 +4384,7 @@ function tripal_core_chado_schema_v1_3_db() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_dbprop() {
+function tripal_chado_chado_schema_v1_3_dbprop() {
   $description = array(
     'description' => '',
     'table' => 'dbprop',
@@ -4469,7 +4469,7 @@ function tripal_core_chado_schema_v1_3_dbprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_dbxref() {
+function tripal_chado_chado_schema_v1_3_dbxref() {
   $description = array(
     'description' => '',
     'table' => 'dbxref',
@@ -4579,7 +4579,7 @@ function tripal_core_chado_schema_v1_3_dbxref() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_dbxrefprop() {
+function tripal_chado_chado_schema_v1_3_dbxrefprop() {
   $description = array(
     'description' => '',
     'table' => 'dbxrefprop',
@@ -4665,7 +4665,7 @@ function tripal_core_chado_schema_v1_3_dbxrefprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_eimage() {
+function tripal_chado_chado_schema_v1_3_eimage() {
   $description = array(
     'description' => '',
     'table' => 'eimage',
@@ -4720,7 +4720,7 @@ function tripal_core_chado_schema_v1_3_eimage() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_element() {
+function tripal_chado_chado_schema_v1_3_element() {
   $description = array(
     'description' => '',
     'table' => 'element',
@@ -4823,7 +4823,7 @@ function tripal_core_chado_schema_v1_3_element() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_element_relationship() {
+function tripal_chado_chado_schema_v1_3_element_relationship() {
   $description = array(
     'description' => '',
     'table' => 'element_relationship',
@@ -4921,7 +4921,7 @@ function tripal_core_chado_schema_v1_3_element_relationship() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_elementresult() {
+function tripal_chado_chado_schema_v1_3_elementresult() {
   $description = array(
     'description' => '',
     'table' => 'elementresult',
@@ -5003,7 +5003,7 @@ function tripal_core_chado_schema_v1_3_elementresult() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_elementresult_relationship() {
+function tripal_chado_chado_schema_v1_3_elementresult_relationship() {
   $description = array(
     'description' => '',
     'table' => 'elementresult_relationship',
@@ -5101,7 +5101,7 @@ function tripal_core_chado_schema_v1_3_elementresult_relationship() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_environment() {
+function tripal_chado_chado_schema_v1_3_environment() {
   $description = array(
     'description' => '',
     'table' => 'environment',
@@ -5162,7 +5162,7 @@ function tripal_core_chado_schema_v1_3_environment() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_environment_cvterm() {
+function tripal_chado_chado_schema_v1_3_environment_cvterm() {
   $description = array(
     'description' => '',
     'table' => 'environment_cvterm',
@@ -5235,7 +5235,7 @@ function tripal_core_chado_schema_v1_3_environment_cvterm() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_expression() {
+function tripal_chado_chado_schema_v1_3_expression() {
   $description = array(
     'description' => '',
     'table' => 'expression',
@@ -5299,7 +5299,7 @@ function tripal_core_chado_schema_v1_3_expression() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_expression_cvterm() {
+function tripal_chado_chado_schema_v1_3_expression_cvterm() {
   $description = array(
     'description' => '',
     'table' => 'expression_cvterm',
@@ -5390,7 +5390,7 @@ function tripal_core_chado_schema_v1_3_expression_cvterm() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_expression_cvtermprop() {
+function tripal_chado_chado_schema_v1_3_expression_cvtermprop() {
   $description = array(
     'description' => '',
     'table' => 'expression_cvtermprop',
@@ -5475,7 +5475,7 @@ function tripal_core_chado_schema_v1_3_expression_cvtermprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_expression_image() {
+function tripal_chado_chado_schema_v1_3_expression_image() {
   $description = array(
     'description' => '',
     'table' => 'expression_image',
@@ -5548,7 +5548,7 @@ function tripal_core_chado_schema_v1_3_expression_image() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_expressionprop() {
+function tripal_chado_chado_schema_v1_3_expressionprop() {
   $description = array(
     'description' => '',
     'table' => 'expressionprop',
@@ -5633,7 +5633,7 @@ function tripal_core_chado_schema_v1_3_expressionprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_expression_pub() {
+function tripal_chado_chado_schema_v1_3_expression_pub() {
   $description = array(
     'description' => '',
     'table' => 'expression_pub',
@@ -5706,7 +5706,7 @@ function tripal_core_chado_schema_v1_3_expression_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_feature() {
+function tripal_chado_chado_schema_v1_3_feature() {
   $description = array(
     'description' => '',
     'table' => 'feature',
@@ -5873,7 +5873,7 @@ function tripal_core_chado_schema_v1_3_feature() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_feature_contact() {
+function tripal_chado_chado_schema_v1_3_feature_contact() {
   $description = array(
     'description' => '',
     'table' => 'feature_contact',
@@ -5946,7 +5946,7 @@ function tripal_core_chado_schema_v1_3_feature_contact() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_feature_cvterm() {
+function tripal_chado_chado_schema_v1_3_feature_cvterm() {
   $description = array(
     'description' => '',
     'table' => 'feature_cvterm',
@@ -6050,7 +6050,7 @@ function tripal_core_chado_schema_v1_3_feature_cvterm() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_feature_cvterm_dbxref() {
+function tripal_chado_chado_schema_v1_3_feature_cvterm_dbxref() {
   $description = array(
     'description' => '',
     'table' => 'feature_cvterm_dbxref',
@@ -6123,7 +6123,7 @@ function tripal_core_chado_schema_v1_3_feature_cvterm_dbxref() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_feature_cvtermprop() {
+function tripal_chado_chado_schema_v1_3_feature_cvtermprop() {
   $description = array(
     'description' => '',
     'table' => 'feature_cvtermprop',
@@ -6208,7 +6208,7 @@ function tripal_core_chado_schema_v1_3_feature_cvtermprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_feature_cvterm_pub() {
+function tripal_chado_chado_schema_v1_3_feature_cvterm_pub() {
   $description = array(
     'description' => '',
     'table' => 'feature_cvterm_pub',
@@ -6281,7 +6281,7 @@ function tripal_core_chado_schema_v1_3_feature_cvterm_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_feature_dbxref() {
+function tripal_chado_chado_schema_v1_3_feature_dbxref() {
   $description = array(
     'description' => '',
     'table' => 'feature_dbxref',
@@ -6360,7 +6360,7 @@ function tripal_core_chado_schema_v1_3_feature_dbxref() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_feature_expression() {
+function tripal_chado_chado_schema_v1_3_feature_expression() {
   $description = array(
     'description' => '',
     'table' => 'feature_expression',
@@ -6449,7 +6449,7 @@ function tripal_core_chado_schema_v1_3_feature_expression() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_feature_expressionprop() {
+function tripal_chado_chado_schema_v1_3_feature_expressionprop() {
   $description = array(
     'description' => '',
     'table' => 'feature_expressionprop',
@@ -6534,7 +6534,7 @@ function tripal_core_chado_schema_v1_3_feature_expressionprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_feature_genotype() {
+function tripal_chado_chado_schema_v1_3_feature_genotype() {
   $description = array(
     'description' => '',
     'table' => 'feature_genotype',
@@ -6638,7 +6638,7 @@ function tripal_core_chado_schema_v1_3_feature_genotype() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_featureloc() {
+function tripal_chado_chado_schema_v1_3_featureloc() {
   $description = array(
     'description' => '',
     'table' => 'featureloc',
@@ -6774,7 +6774,7 @@ function tripal_core_chado_schema_v1_3_featureloc() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_featureloc_pub() {
+function tripal_chado_chado_schema_v1_3_featureloc_pub() {
   $description = array(
     'description' => '',
     'table' => 'featureloc_pub',
@@ -6847,7 +6847,7 @@ function tripal_core_chado_schema_v1_3_featureloc_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_featuremap() {
+function tripal_chado_chado_schema_v1_3_featuremap() {
   $description = array(
     'description' => '',
     'table' => 'featuremap',
@@ -6919,7 +6919,7 @@ function tripal_core_chado_schema_v1_3_featuremap() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_featuremap_contact() {
+function tripal_chado_chado_schema_v1_3_featuremap_contact() {
   $description = array(
     'description' => '',
     'table' => 'featuremap_contact',
@@ -6992,7 +6992,7 @@ function tripal_core_chado_schema_v1_3_featuremap_contact() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_featuremap_dbxref() {
+function tripal_chado_chado_schema_v1_3_featuremap_dbxref() {
   $description = array(
     'description' => '',
     'table' => 'featuremap_dbxref',
@@ -7065,7 +7065,7 @@ function tripal_core_chado_schema_v1_3_featuremap_dbxref() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_featuremap_organism() {
+function tripal_chado_chado_schema_v1_3_featuremap_organism() {
   $description = array(
     'description' => '',
     'table' => 'featuremap_organism',
@@ -7138,7 +7138,7 @@ function tripal_core_chado_schema_v1_3_featuremap_organism() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_featuremapprop() {
+function tripal_chado_chado_schema_v1_3_featuremapprop() {
   $description = array(
     'description' => '',
     'table' => 'featuremapprop',
@@ -7223,7 +7223,7 @@ function tripal_core_chado_schema_v1_3_featuremapprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_featuremap_pub() {
+function tripal_chado_chado_schema_v1_3_featuremap_pub() {
   $description = array(
     'description' => '',
     'table' => 'featuremap_pub',
@@ -7290,7 +7290,7 @@ function tripal_core_chado_schema_v1_3_featuremap_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_feature_phenotype() {
+function tripal_chado_chado_schema_v1_3_feature_phenotype() {
   $description = array(
     'description' => '',
     'table' => 'feature_phenotype',
@@ -7363,7 +7363,7 @@ function tripal_core_chado_schema_v1_3_feature_phenotype() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_featurepos() {
+function tripal_chado_chado_schema_v1_3_featurepos() {
   $description = array(
     'description' => '',
     'table' => 'featurepos',
@@ -7445,7 +7445,7 @@ function tripal_core_chado_schema_v1_3_featurepos() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_featureposprop() {
+function tripal_chado_chado_schema_v1_3_featureposprop() {
   $description = array(
     'description' => '',
     'table' => 'featureposprop',
@@ -7530,7 +7530,7 @@ function tripal_core_chado_schema_v1_3_featureposprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_featureprop() {
+function tripal_chado_chado_schema_v1_3_featureprop() {
   $description = array(
     'description' => '',
     'table' => 'featureprop',
@@ -7616,7 +7616,7 @@ function tripal_core_chado_schema_v1_3_featureprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_featureprop_pub() {
+function tripal_chado_chado_schema_v1_3_featureprop_pub() {
   $description = array(
     'description' => '',
     'table' => 'featureprop_pub',
@@ -7689,7 +7689,7 @@ function tripal_core_chado_schema_v1_3_featureprop_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_feature_pub() {
+function tripal_chado_chado_schema_v1_3_feature_pub() {
   $description = array(
     'description' => '',
     'table' => 'feature_pub',
@@ -7763,7 +7763,7 @@ function tripal_core_chado_schema_v1_3_feature_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_feature_pubprop() {
+function tripal_chado_chado_schema_v1_3_feature_pubprop() {
   $description = array(
     'description' => '',
     'table' => 'feature_pubprop',
@@ -7845,7 +7845,7 @@ function tripal_core_chado_schema_v1_3_feature_pubprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_featurerange() {
+function tripal_chado_chado_schema_v1_3_featurerange() {
   $description = array(
     'description' => '',
     'table' => 'featurerange',
@@ -7954,7 +7954,7 @@ function tripal_core_chado_schema_v1_3_featurerange() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_feature_relationship() {
+function tripal_chado_chado_schema_v1_3_feature_relationship() {
   $description = array(
     'description' => '',
     'table' => 'feature_relationship',
@@ -8056,7 +8056,7 @@ function tripal_core_chado_schema_v1_3_feature_relationship() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_feature_relationshipprop() {
+function tripal_chado_chado_schema_v1_3_feature_relationshipprop() {
   $description = array(
     'description' => '',
     'table' => 'feature_relationshipprop',
@@ -8142,7 +8142,7 @@ function tripal_core_chado_schema_v1_3_feature_relationshipprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_feature_relationshipprop_pub() {
+function tripal_chado_chado_schema_v1_3_feature_relationshipprop_pub() {
   $description = array(
     'description' => '',
     'table' => 'feature_relationshipprop_pub',
@@ -8215,7 +8215,7 @@ function tripal_core_chado_schema_v1_3_feature_relationshipprop_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_feature_relationship_pub() {
+function tripal_chado_chado_schema_v1_3_feature_relationship_pub() {
   $description = array(
     'description' => '',
     'table' => 'feature_relationship_pub',
@@ -8288,7 +8288,7 @@ function tripal_core_chado_schema_v1_3_feature_relationship_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_feature_synonym() {
+function tripal_chado_chado_schema_v1_3_feature_synonym() {
   $description = array(
     'description' => '',
     'table' => 'feature_synonym',
@@ -8388,7 +8388,7 @@ function tripal_core_chado_schema_v1_3_feature_synonym() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_genotype() {
+function tripal_chado_chado_schema_v1_3_genotype() {
   $description = array(
     'description' => '',
     'table' => 'genotype',
@@ -8471,7 +8471,7 @@ function tripal_core_chado_schema_v1_3_genotype() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_genotypeprop() {
+function tripal_chado_chado_schema_v1_3_genotypeprop() {
   $description = array(
     'description' => '',
     'table' => 'genotypeprop',
@@ -8556,7 +8556,7 @@ function tripal_core_chado_schema_v1_3_genotypeprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_library() {
+function tripal_chado_chado_schema_v1_3_library() {
   $description = array(
     'description' => '',
     'table' => 'library',
@@ -8679,7 +8679,7 @@ function tripal_core_chado_schema_v1_3_library() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_library_contact() {
+function tripal_chado_chado_schema_v1_3_library_contact() {
   $description = array(
     'description' => '',
     'table' => 'library_contact',
@@ -8744,7 +8744,7 @@ function tripal_core_chado_schema_v1_3_library_contact() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_library_cvterm() {
+function tripal_chado_chado_schema_v1_3_library_cvterm() {
   $description = array(
     'description' => '',
     'table' => 'library_cvterm',
@@ -8832,7 +8832,7 @@ function tripal_core_chado_schema_v1_3_library_cvterm() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_library_dbxref() {
+function tripal_chado_chado_schema_v1_3_library_dbxref() {
   $description = array(
     'description' => '',
     'table' => 'library_dbxref',
@@ -8911,7 +8911,7 @@ function tripal_core_chado_schema_v1_3_library_dbxref() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_library_expression() {
+function tripal_chado_chado_schema_v1_3_library_expression() {
   $description = array(
     'description' => '',
     'table' => 'library_expression',
@@ -8999,7 +8999,7 @@ function tripal_core_chado_schema_v1_3_library_expression() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_library_expressionprop() {
+function tripal_chado_chado_schema_v1_3_library_expressionprop() {
   $description = array(
     'description' => '',
     'table' => 'library_expressionprop',
@@ -9084,7 +9084,7 @@ function tripal_core_chado_schema_v1_3_library_expressionprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_library_feature() {
+function tripal_chado_chado_schema_v1_3_library_feature() {
   $description = array(
     'description' => '',
     'table' => 'library_feature',
@@ -9158,7 +9158,7 @@ function tripal_core_chado_schema_v1_3_library_feature() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_library_featureprop() {
+function tripal_chado_chado_schema_v1_3_library_featureprop() {
   $description = array(
     'description' => '',
     'table' => 'library_featureprop',
@@ -9243,7 +9243,7 @@ function tripal_core_chado_schema_v1_3_library_featureprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_libraryprop() {
+function tripal_chado_chado_schema_v1_3_libraryprop() {
   $description = array(
     'description' => '',
     'table' => 'libraryprop',
@@ -9329,7 +9329,7 @@ function tripal_core_chado_schema_v1_3_libraryprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_libraryprop_pub() {
+function tripal_chado_chado_schema_v1_3_libraryprop_pub() {
   $description = array(
     'description' => '',
     'table' => 'libraryprop_pub',
@@ -9402,7 +9402,7 @@ function tripal_core_chado_schema_v1_3_libraryprop_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_library_pub() {
+function tripal_chado_chado_schema_v1_3_library_pub() {
   $description = array(
     'description' => '',
     'table' => 'library_pub',
@@ -9475,7 +9475,7 @@ function tripal_core_chado_schema_v1_3_library_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_library_relationship() {
+function tripal_chado_chado_schema_v1_3_library_relationship() {
   $description = array(
     'description' => '',
     'table' => 'library_relationship',
@@ -9559,7 +9559,7 @@ function tripal_core_chado_schema_v1_3_library_relationship() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_library_relationship_pub() {
+function tripal_chado_chado_schema_v1_3_library_relationship_pub() {
   $description = array(
     'description' => '',
     'table' => 'library_relationship_pub',
@@ -9632,7 +9632,7 @@ function tripal_core_chado_schema_v1_3_library_relationship_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_library_synonym() {
+function tripal_chado_chado_schema_v1_3_library_synonym() {
   $description = array(
     'description' => '',
     'table' => 'library_synonym',
@@ -9732,7 +9732,7 @@ function tripal_core_chado_schema_v1_3_library_synonym() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_magedocumentation() {
+function tripal_chado_chado_schema_v1_3_magedocumentation() {
   $description = array(
     'description' => '',
     'table' => 'magedocumentation',
@@ -9812,7 +9812,7 @@ function tripal_core_chado_schema_v1_3_magedocumentation() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_mageml() {
+function tripal_chado_chado_schema_v1_3_mageml() {
   $description = array(
     'description' => '',
     'table' => 'mageml',
@@ -9860,7 +9860,7 @@ function tripal_core_chado_schema_v1_3_mageml() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_materialized_view() {
+function tripal_chado_chado_schema_v1_3_materialized_view() {
   $description = array(
     'description' => '',
     'table' => 'materialized_view',
@@ -9947,7 +9947,7 @@ function tripal_core_chado_schema_v1_3_materialized_view() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_experiment() {
+function tripal_chado_chado_schema_v1_3_nd_experiment() {
   $description = array(
     'description' => '',
     'table' => 'nd_experiment',
@@ -10024,7 +10024,7 @@ function tripal_core_chado_schema_v1_3_nd_experiment() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_experiment_analysis() {
+function tripal_chado_chado_schema_v1_3_nd_experiment_analysis() {
   $description = array(
     'description' => '',
     'table' => 'nd_experiment_analysis',
@@ -10105,7 +10105,7 @@ function tripal_core_chado_schema_v1_3_nd_experiment_analysis() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_experiment_contact() {
+function tripal_chado_chado_schema_v1_3_nd_experiment_contact() {
   $description = array(
     'description' => '',
     'table' => 'nd_experiment_contact',
@@ -10172,7 +10172,7 @@ function tripal_core_chado_schema_v1_3_nd_experiment_contact() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_experiment_dbxref() {
+function tripal_chado_chado_schema_v1_3_nd_experiment_dbxref() {
   $description = array(
     'description' => '',
     'table' => 'nd_experiment_dbxref',
@@ -10239,7 +10239,7 @@ function tripal_core_chado_schema_v1_3_nd_experiment_dbxref() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_experiment_genotype() {
+function tripal_chado_chado_schema_v1_3_nd_experiment_genotype() {
   $description = array(
     'description' => '',
     'table' => 'nd_experiment_genotype',
@@ -10312,7 +10312,7 @@ function tripal_core_chado_schema_v1_3_nd_experiment_genotype() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_experiment_phenotype() {
+function tripal_chado_chado_schema_v1_3_nd_experiment_phenotype() {
   $description = array(
     'description' => '',
     'table' => 'nd_experiment_phenotype',
@@ -10385,7 +10385,7 @@ function tripal_core_chado_schema_v1_3_nd_experiment_phenotype() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_experiment_project() {
+function tripal_chado_chado_schema_v1_3_nd_experiment_project() {
   $description = array(
     'description' => '',
     'table' => 'nd_experiment_project',
@@ -10458,7 +10458,7 @@ function tripal_core_chado_schema_v1_3_nd_experiment_project() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_experimentprop() {
+function tripal_chado_chado_schema_v1_3_nd_experimentprop() {
   $description = array(
     'description' => '',
     'table' => 'nd_experimentprop',
@@ -10543,7 +10543,7 @@ function tripal_core_chado_schema_v1_3_nd_experimentprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_experiment_protocol() {
+function tripal_chado_chado_schema_v1_3_nd_experiment_protocol() {
   $description = array(
     'description' => '',
     'table' => 'nd_experiment_protocol',
@@ -10610,7 +10610,7 @@ function tripal_core_chado_schema_v1_3_nd_experiment_protocol() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_experiment_pub() {
+function tripal_chado_chado_schema_v1_3_nd_experiment_pub() {
   $description = array(
     'description' => '',
     'table' => 'nd_experiment_pub',
@@ -10683,7 +10683,7 @@ function tripal_core_chado_schema_v1_3_nd_experiment_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_experiment_stock() {
+function tripal_chado_chado_schema_v1_3_nd_experiment_stock() {
   $description = array(
     'description' => '',
     'table' => 'nd_experiment_stock',
@@ -10766,7 +10766,7 @@ function tripal_core_chado_schema_v1_3_nd_experiment_stock() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_experiment_stock_dbxref() {
+function tripal_chado_chado_schema_v1_3_nd_experiment_stock_dbxref() {
   $description = array(
     'description' => '',
     'table' => 'nd_experiment_stock_dbxref',
@@ -10833,7 +10833,7 @@ function tripal_core_chado_schema_v1_3_nd_experiment_stock_dbxref() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_experiment_stockprop() {
+function tripal_chado_chado_schema_v1_3_nd_experiment_stockprop() {
   $description = array(
     'description' => '',
     'table' => 'nd_experiment_stockprop',
@@ -10918,7 +10918,7 @@ function tripal_core_chado_schema_v1_3_nd_experiment_stockprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_geolocation() {
+function tripal_chado_chado_schema_v1_3_nd_geolocation() {
   $description = array(
     'description' => '',
     'table' => 'nd_geolocation',
@@ -10994,7 +10994,7 @@ function tripal_core_chado_schema_v1_3_nd_geolocation() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_geolocationprop() {
+function tripal_chado_chado_schema_v1_3_nd_geolocationprop() {
   $description = array(
     'description' => '',
     'table' => 'nd_geolocationprop',
@@ -11079,7 +11079,7 @@ function tripal_core_chado_schema_v1_3_nd_geolocationprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_protocol() {
+function tripal_chado_chado_schema_v1_3_nd_protocol() {
   $description = array(
     'description' => '',
     'table' => 'nd_protocol',
@@ -11146,7 +11146,7 @@ function tripal_core_chado_schema_v1_3_nd_protocol() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_protocolprop() {
+function tripal_chado_chado_schema_v1_3_nd_protocolprop() {
   $description = array(
     'description' => '',
     'table' => 'nd_protocolprop',
@@ -11231,7 +11231,7 @@ function tripal_core_chado_schema_v1_3_nd_protocolprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_protocol_reagent() {
+function tripal_chado_chado_schema_v1_3_nd_protocol_reagent() {
   $description = array(
     'description' => '',
     'table' => 'nd_protocol_reagent',
@@ -11312,7 +11312,7 @@ function tripal_core_chado_schema_v1_3_nd_protocol_reagent() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_reagent() {
+function tripal_chado_chado_schema_v1_3_nd_reagent() {
   $description = array(
     'description' => '',
     'table' => 'nd_reagent',
@@ -11388,7 +11388,7 @@ function tripal_core_chado_schema_v1_3_nd_reagent() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_reagentprop() {
+function tripal_chado_chado_schema_v1_3_nd_reagentprop() {
   $description = array(
     'description' => '',
     'table' => 'nd_reagentprop',
@@ -11473,7 +11473,7 @@ function tripal_core_chado_schema_v1_3_nd_reagentprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_nd_reagent_relationship() {
+function tripal_chado_chado_schema_v1_3_nd_reagent_relationship() {
   $description = array(
     'description' => '',
     'table' => 'nd_reagent_relationship',
@@ -11549,7 +11549,7 @@ function tripal_core_chado_schema_v1_3_nd_reagent_relationship() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_organism() {
+function tripal_chado_chado_schema_v1_3_organism() {
   $description = array(
     'description' => '',
     'table' => 'organism',
@@ -11654,7 +11654,7 @@ function tripal_core_chado_schema_v1_3_organism() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_organism_cvterm() {
+function tripal_chado_chado_schema_v1_3_organism_cvterm() {
   $description = array(
     'description' => '',
     'table' => 'organism_cvterm',
@@ -11746,7 +11746,7 @@ function tripal_core_chado_schema_v1_3_organism_cvterm() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_organism_cvtermprop() {
+function tripal_chado_chado_schema_v1_3_organism_cvtermprop() {
   $description = array(
     'description' => '',
     'table' => 'organism_cvtermprop',
@@ -11831,7 +11831,7 @@ function tripal_core_chado_schema_v1_3_organism_cvtermprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_organism_dbxref() {
+function tripal_chado_chado_schema_v1_3_organism_dbxref() {
   $description = array(
     'description' => '',
     'table' => 'organism_dbxref',
@@ -11904,7 +11904,7 @@ function tripal_core_chado_schema_v1_3_organism_dbxref() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_organism_feature_count() {
+function tripal_chado_chado_schema_v1_3_organism_feature_count() {
   $description = array(
     'description' => '',
     'table' => 'organism_feature_count',
@@ -11983,7 +11983,7 @@ function tripal_core_chado_schema_v1_3_organism_feature_count() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_organismprop() {
+function tripal_chado_chado_schema_v1_3_organismprop() {
   $description = array(
     'description' => '',
     'table' => 'organismprop',
@@ -12069,7 +12069,7 @@ function tripal_core_chado_schema_v1_3_organismprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_organismprop_pub() {
+function tripal_chado_chado_schema_v1_3_organismprop_pub() {
   $description = array(
     'description' => '',
     'table' => 'organismprop_pub',
@@ -12153,7 +12153,7 @@ function tripal_core_chado_schema_v1_3_organismprop_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_organism_pub() {
+function tripal_chado_chado_schema_v1_3_organism_pub() {
   $description = array(
     'description' => '',
     'table' => 'organism_pub',
@@ -12226,7 +12226,7 @@ function tripal_core_chado_schema_v1_3_organism_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_organism_relationship() {
+function tripal_chado_chado_schema_v1_3_organism_relationship() {
   $description = array(
     'description' => '',
     'table' => 'organism_relationship',
@@ -12316,7 +12316,7 @@ function tripal_core_chado_schema_v1_3_organism_relationship() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_phendesc() {
+function tripal_chado_chado_schema_v1_3_phendesc() {
   $description = array(
     'description' => '',
     'table' => 'phendesc',
@@ -12421,7 +12421,7 @@ function tripal_core_chado_schema_v1_3_phendesc() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_phenotype() {
+function tripal_chado_chado_schema_v1_3_phenotype() {
   $description = array(
     'description' => '',
     'table' => 'phenotype',
@@ -12524,7 +12524,7 @@ function tripal_core_chado_schema_v1_3_phenotype() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_phenotype_comparison() {
+function tripal_chado_chado_schema_v1_3_phenotype_comparison() {
   $description = array(
     'description' => '',
     'table' => 'phenotype_comparison',
@@ -12656,7 +12656,7 @@ function tripal_core_chado_schema_v1_3_phenotype_comparison() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_phenotype_comparison_cvterm() {
+function tripal_chado_chado_schema_v1_3_phenotype_comparison_cvterm() {
   $description = array(
     'description' => '',
     'table' => 'phenotype_comparison_cvterm',
@@ -12746,7 +12746,7 @@ function tripal_core_chado_schema_v1_3_phenotype_comparison_cvterm() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_phenotype_cvterm() {
+function tripal_chado_chado_schema_v1_3_phenotype_cvterm() {
   $description = array(
     'description' => '',
     'table' => 'phenotype_cvterm',
@@ -12826,7 +12826,7 @@ function tripal_core_chado_schema_v1_3_phenotype_cvterm() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_phenotypeprop() {
+function tripal_chado_chado_schema_v1_3_phenotypeprop() {
   $description = array(
     'description' => '',
     'table' => 'phenotypeprop',
@@ -12911,7 +12911,7 @@ function tripal_core_chado_schema_v1_3_phenotypeprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_phenstatement() {
+function tripal_chado_chado_schema_v1_3_phenstatement() {
   $description = array(
     'description' => '',
     'table' => 'phenstatement',
@@ -13020,7 +13020,7 @@ function tripal_core_chado_schema_v1_3_phenstatement() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_phylonode() {
+function tripal_chado_chado_schema_v1_3_phylonode() {
   $description = array(
     'description' => '',
     'table' => 'phylonode',
@@ -13143,7 +13143,7 @@ function tripal_core_chado_schema_v1_3_phylonode() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_phylonode_dbxref() {
+function tripal_chado_chado_schema_v1_3_phylonode_dbxref() {
   $description = array(
     'description' => '',
     'table' => 'phylonode_dbxref',
@@ -13216,7 +13216,7 @@ function tripal_core_chado_schema_v1_3_phylonode_dbxref() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_phylonode_organism() {
+function tripal_chado_chado_schema_v1_3_phylonode_organism() {
   $description = array(
     'description' => '',
     'table' => 'phylonode_organism',
@@ -13288,7 +13288,7 @@ function tripal_core_chado_schema_v1_3_phylonode_organism() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_phylonodeprop() {
+function tripal_chado_chado_schema_v1_3_phylonodeprop() {
   $description = array(
     'description' => '',
     'table' => 'phylonodeprop',
@@ -13375,7 +13375,7 @@ function tripal_core_chado_schema_v1_3_phylonodeprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_phylonode_pub() {
+function tripal_chado_chado_schema_v1_3_phylonode_pub() {
   $description = array(
     'description' => '',
     'table' => 'phylonode_pub',
@@ -13448,7 +13448,7 @@ function tripal_core_chado_schema_v1_3_phylonode_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_phylonode_relationship() {
+function tripal_chado_chado_schema_v1_3_phylonode_relationship() {
   $description = array(
     'description' => '',
     'table' => 'phylonode_relationship',
@@ -13547,7 +13547,7 @@ function tripal_core_chado_schema_v1_3_phylonode_relationship() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_phylotree() {
+function tripal_chado_chado_schema_v1_3_phylotree() {
   $description = array(
     'description' => '',
     'table' => 'phylotree',
@@ -13637,7 +13637,7 @@ function tripal_core_chado_schema_v1_3_phylotree() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_phylotreeprop() {
+function tripal_chado_chado_schema_v1_3_phylotreeprop() {
   $description = array(
     'description' => '',
     'table' => 'phylotreeprop',
@@ -13722,7 +13722,7 @@ function tripal_core_chado_schema_v1_3_phylotreeprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_phylotree_pub() {
+function tripal_chado_chado_schema_v1_3_phylotree_pub() {
   $description = array(
     'description' => '',
     'table' => 'phylotree_pub',
@@ -13795,7 +13795,7 @@ function tripal_core_chado_schema_v1_3_phylotree_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_project() {
+function tripal_chado_chado_schema_v1_3_project() {
   $description = array(
     'description' => '',
     'table' => 'project',
@@ -13858,7 +13858,7 @@ function tripal_core_chado_schema_v1_3_project() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_project_analysis() {
+function tripal_chado_chado_schema_v1_3_project_analysis() {
   $description = array(
     'description' => '',
     'table' => 'project_analysis',
@@ -13937,7 +13937,7 @@ function tripal_core_chado_schema_v1_3_project_analysis() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_project_contact() {
+function tripal_chado_chado_schema_v1_3_project_contact() {
   $description = array(
     'description' => '',
     'table' => 'project_contact',
@@ -14010,7 +14010,7 @@ function tripal_core_chado_schema_v1_3_project_contact() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_project_dbxref() {
+function tripal_chado_chado_schema_v1_3_project_dbxref() {
   $description = array(
     'description' => '',
     'table' => 'project_dbxref',
@@ -14089,7 +14089,7 @@ function tripal_core_chado_schema_v1_3_project_dbxref() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_project_feature() {
+function tripal_chado_chado_schema_v1_3_project_feature() {
   $description = array(
     'description' => '',
     'table' => 'project_feature',
@@ -14162,7 +14162,7 @@ function tripal_core_chado_schema_v1_3_project_feature() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_projectprop() {
+function tripal_chado_chado_schema_v1_3_projectprop() {
   $description = array(
     'description' => '',
     'table' => 'projectprop',
@@ -14239,7 +14239,7 @@ function tripal_core_chado_schema_v1_3_projectprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_project_pub() {
+function tripal_chado_chado_schema_v1_3_project_pub() {
   $description = array(
     'description' => '',
     'table' => 'project_pub',
@@ -14312,7 +14312,7 @@ function tripal_core_chado_schema_v1_3_project_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_project_relationship() {
+function tripal_chado_chado_schema_v1_3_project_relationship() {
   $description = array(
     'description' => '',
     'table' => 'project_relationship',
@@ -14384,7 +14384,7 @@ function tripal_core_chado_schema_v1_3_project_relationship() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_project_stock() {
+function tripal_chado_chado_schema_v1_3_project_stock() {
   $description = array(
     'description' => '',
     'table' => 'project_stock',
@@ -14457,7 +14457,7 @@ function tripal_core_chado_schema_v1_3_project_stock() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_protocol() {
+function tripal_chado_chado_schema_v1_3_protocol() {
   $description = array(
     'description' => '',
     'table' => 'protocol',
@@ -14574,7 +14574,7 @@ function tripal_core_chado_schema_v1_3_protocol() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_protocolparam() {
+function tripal_chado_chado_schema_v1_3_protocolparam() {
   $description = array(
     'description' => '',
     'table' => 'protocolparam',
@@ -14666,7 +14666,7 @@ function tripal_core_chado_schema_v1_3_protocolparam() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_pub() {
+function tripal_chado_chado_schema_v1_3_pub() {
   $description = array(
     'description' => '',
     'table' => 'pub',
@@ -14839,7 +14839,7 @@ function tripal_core_chado_schema_v1_3_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_pubauthor() {
+function tripal_chado_chado_schema_v1_3_pubauthor() {
   $description = array(
     'description' => '',
     'table' => 'pubauthor',
@@ -14931,7 +14931,7 @@ function tripal_core_chado_schema_v1_3_pubauthor() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_pubauthor_contact() {
+function tripal_chado_chado_schema_v1_3_pubauthor_contact() {
   $description = array(
     'description' => '',
     'table' => 'pubauthor_contact',
@@ -14996,7 +14996,7 @@ function tripal_core_chado_schema_v1_3_pubauthor_contact() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_pub_dbxref() {
+function tripal_chado_chado_schema_v1_3_pub_dbxref() {
   $description = array(
     'description' => '',
     'table' => 'pub_dbxref',
@@ -15075,7 +15075,7 @@ function tripal_core_chado_schema_v1_3_pub_dbxref() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_pubprop() {
+function tripal_chado_chado_schema_v1_3_pubprop() {
   $description = array(
     'description' => '',
     'table' => 'pubprop',
@@ -15159,7 +15159,7 @@ function tripal_core_chado_schema_v1_3_pubprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_pub_relationship() {
+function tripal_chado_chado_schema_v1_3_pub_relationship() {
   $description = array(
     'description' => '',
     'table' => 'pub_relationship',
@@ -15242,7 +15242,7 @@ function tripal_core_chado_schema_v1_3_pub_relationship() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_quantification() {
+function tripal_chado_chado_schema_v1_3_quantification() {
   $description = array(
     'description' => '',
     'table' => 'quantification',
@@ -15362,7 +15362,7 @@ function tripal_core_chado_schema_v1_3_quantification() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_quantificationprop() {
+function tripal_chado_chado_schema_v1_3_quantificationprop() {
   $description = array(
     'description' => '',
     'table' => 'quantificationprop',
@@ -15447,7 +15447,7 @@ function tripal_core_chado_schema_v1_3_quantificationprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_quantification_relationship() {
+function tripal_chado_chado_schema_v1_3_quantification_relationship() {
   $description = array(
     'description' => '',
     'table' => 'quantification_relationship',
@@ -15530,7 +15530,7 @@ function tripal_core_chado_schema_v1_3_quantification_relationship() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_stock() {
+function tripal_chado_chado_schema_v1_3_stock() {
   $description = array(
     'description' => '',
     'table' => 'stock',
@@ -15658,7 +15658,7 @@ function tripal_core_chado_schema_v1_3_stock() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_stockcollection() {
+function tripal_chado_chado_schema_v1_3_stockcollection() {
   $description = array(
     'description' => '',
     'table' => 'stockcollection',
@@ -15751,7 +15751,7 @@ function tripal_core_chado_schema_v1_3_stockcollection() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_stockcollection_db() {
+function tripal_chado_chado_schema_v1_3_stockcollection_db() {
   $description = array(
     'description' => '',
     'table' => 'stockcollection_db',
@@ -15824,7 +15824,7 @@ function tripal_core_chado_schema_v1_3_stockcollection_db() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_stockcollectionprop() {
+function tripal_chado_chado_schema_v1_3_stockcollectionprop() {
   $description = array(
     'description' => '',
     'table' => 'stockcollectionprop',
@@ -15909,7 +15909,7 @@ function tripal_core_chado_schema_v1_3_stockcollectionprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_stockcollection_stock() {
+function tripal_chado_chado_schema_v1_3_stockcollection_stock() {
   $description = array(
     'description' => '',
     'table' => 'stockcollection_stock',
@@ -15982,7 +15982,7 @@ function tripal_core_chado_schema_v1_3_stockcollection_stock() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_stock_cvterm() {
+function tripal_chado_chado_schema_v1_3_stock_cvterm() {
   $description = array(
     'description' => '',
     'table' => 'stock_cvterm',
@@ -16084,7 +16084,7 @@ function tripal_core_chado_schema_v1_3_stock_cvterm() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_stock_cvtermprop() {
+function tripal_chado_chado_schema_v1_3_stock_cvtermprop() {
   $description = array(
     'description' => '',
     'table' => 'stock_cvtermprop',
@@ -16169,7 +16169,7 @@ function tripal_core_chado_schema_v1_3_stock_cvtermprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_stock_dbxref() {
+function tripal_chado_chado_schema_v1_3_stock_dbxref() {
   $description = array(
     'description' => '',
     'table' => 'stock_dbxref',
@@ -16249,7 +16249,7 @@ function tripal_core_chado_schema_v1_3_stock_dbxref() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_stock_dbxrefprop() {
+function tripal_chado_chado_schema_v1_3_stock_dbxrefprop() {
   $description = array(
     'description' => '',
     'table' => 'stock_dbxrefprop',
@@ -16334,7 +16334,7 @@ function tripal_core_chado_schema_v1_3_stock_dbxrefprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_stock_feature() {
+function tripal_chado_chado_schema_v1_3_stock_feature() {
   $description = array(
     'description' => '',
     'table' => 'stock_feature',
@@ -16432,7 +16432,7 @@ function tripal_core_chado_schema_v1_3_stock_feature() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_stock_featuremap() {
+function tripal_chado_chado_schema_v1_3_stock_featuremap() {
   $description = array(
     'description' => '',
     'table' => 'stock_featuremap',
@@ -16520,7 +16520,7 @@ function tripal_core_chado_schema_v1_3_stock_featuremap() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_stock_genotype() {
+function tripal_chado_chado_schema_v1_3_stock_genotype() {
   $description = array(
     'description' => '',
     'table' => 'stock_genotype',
@@ -16593,7 +16593,7 @@ function tripal_core_chado_schema_v1_3_stock_genotype() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_stock_library() {
+function tripal_chado_chado_schema_v1_3_stock_library() {
   $description = array(
     'description' => '',
     'table' => 'stock_library',
@@ -16666,7 +16666,7 @@ function tripal_core_chado_schema_v1_3_stock_library() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_stockprop() {
+function tripal_chado_chado_schema_v1_3_stockprop() {
   $description = array(
     'description' => '',
     'table' => 'stockprop',
@@ -16752,7 +16752,7 @@ function tripal_core_chado_schema_v1_3_stockprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_stockprop_pub() {
+function tripal_chado_chado_schema_v1_3_stockprop_pub() {
   $description = array(
     'description' => '',
     'table' => 'stockprop_pub',
@@ -16825,7 +16825,7 @@ function tripal_core_chado_schema_v1_3_stockprop_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_stock_pub() {
+function tripal_chado_chado_schema_v1_3_stock_pub() {
   $description = array(
     'description' => '',
     'table' => 'stock_pub',
@@ -16898,7 +16898,7 @@ function tripal_core_chado_schema_v1_3_stock_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_stock_relationship() {
+function tripal_chado_chado_schema_v1_3_stock_relationship() {
   $description = array(
     'description' => '',
     'table' => 'stock_relationship',
@@ -16995,7 +16995,7 @@ function tripal_core_chado_schema_v1_3_stock_relationship() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_stock_relationship_cvterm() {
+function tripal_chado_chado_schema_v1_3_stock_relationship_cvterm() {
   $description = array(
     'description' => '',
     'table' => 'stock_relationship_cvterm',
@@ -17065,7 +17065,7 @@ function tripal_core_chado_schema_v1_3_stock_relationship_cvterm() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_stock_relationship_pub() {
+function tripal_chado_chado_schema_v1_3_stock_relationship_pub() {
   $description = array(
     'description' => '',
     'table' => 'stock_relationship_pub',
@@ -17138,7 +17138,7 @@ function tripal_core_chado_schema_v1_3_stock_relationship_pub() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_study() {
+function tripal_chado_chado_schema_v1_3_study() {
   $description = array(
     'description' => '',
     'table' => 'study',
@@ -17237,7 +17237,7 @@ function tripal_core_chado_schema_v1_3_study() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_study_assay() {
+function tripal_chado_chado_schema_v1_3_study_assay() {
   $description = array(
     'description' => '',
     'table' => 'study_assay',
@@ -17310,7 +17310,7 @@ function tripal_core_chado_schema_v1_3_study_assay() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_studydesign() {
+function tripal_chado_chado_schema_v1_3_studydesign() {
   $description = array(
     'description' => '',
     'table' => 'studydesign',
@@ -17370,7 +17370,7 @@ function tripal_core_chado_schema_v1_3_studydesign() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_studydesignprop() {
+function tripal_chado_chado_schema_v1_3_studydesignprop() {
   $description = array(
     'description' => '',
     'table' => 'studydesignprop',
@@ -17455,7 +17455,7 @@ function tripal_core_chado_schema_v1_3_studydesignprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_studyfactor() {
+function tripal_chado_chado_schema_v1_3_studyfactor() {
   $description = array(
     'description' => '',
     'table' => 'studyfactor',
@@ -17533,7 +17533,7 @@ function tripal_core_chado_schema_v1_3_studyfactor() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_studyfactorvalue() {
+function tripal_chado_chado_schema_v1_3_studyfactorvalue() {
   $description = array(
     'description' => '',
     'table' => 'studyfactorvalue',
@@ -17616,7 +17616,7 @@ function tripal_core_chado_schema_v1_3_studyfactorvalue() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_studyprop() {
+function tripal_chado_chado_schema_v1_3_studyprop() {
   $description = array(
     'description' => '',
     'table' => 'studyprop',
@@ -17702,7 +17702,7 @@ function tripal_core_chado_schema_v1_3_studyprop() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_studyprop_feature() {
+function tripal_chado_chado_schema_v1_3_studyprop_feature() {
   $description = array(
     'description' => '',
     'table' => 'studyprop_feature',
@@ -17786,7 +17786,7 @@ function tripal_core_chado_schema_v1_3_studyprop_feature() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_synonym() {
+function tripal_chado_chado_schema_v1_3_synonym() {
   $description = array(
     'description' => '',
     'table' => 'synonym',
@@ -17860,7 +17860,7 @@ function tripal_core_chado_schema_v1_3_synonym() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_tableinfo() {
+function tripal_chado_chado_schema_v1_3_tableinfo() {
   $description = array(
     'description' => '',
     'table' => 'tableinfo',
@@ -17944,7 +17944,7 @@ function tripal_core_chado_schema_v1_3_tableinfo() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_schema_v1_3_treatment() {
+function tripal_chado_chado_schema_v1_3_treatment() {
   $description = array(
     'description' => '',
     'table' => 'treatment',
@@ -18030,7 +18030,7 @@ function tripal_core_chado_schema_v1_3_treatment() {
  * @ingroup tripal_chado_v1.3_schema_api
  *
  */
-function tripal_core_chado_get_v1_3_tables() {
+function tripal_chado_chado_get_v1_3_tables() {
   $tables = array(
   'acquisition',
     'acquisitionprop',

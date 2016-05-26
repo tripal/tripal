@@ -64,6 +64,7 @@ function tripal_chado_chado_semweb_schema(){
       'chado_table' => array(
         'type' => 'varchar',
         'length ' => 128,
+        'not null' => TRUE
       ),
       'chado_column' => array(
         'type' => 'text',
@@ -72,7 +73,6 @@ function tripal_chado_chado_semweb_schema(){
       ),
       'cvterm_id' => array(
         'type' => 'int',
-        'not null' => TRUE
       ),
     ),
     'primary key' => array(
@@ -82,7 +82,10 @@ function tripal_chado_chado_semweb_schema(){
       'chado_semweb_id_idx1' => array('cvterm_id'),
       'chado_semweb_id_idx2' => array('chado_column'),
       'chado_semweb_id_idx3' => array('chado_table', 'chado_table'),
-    )
+    ),
+    'unique keys' => array(
+      'chado_semweb_uq1' => array('chado_table', 'chado_column'),
+    ),
   );
 }
 
