@@ -186,7 +186,7 @@ class TripalField {
    * @return
    *   A Drupal form. See the hook_field_widget_form() function for more information.
    */
-  public function widget_form(&$widget, $form, $form_state, $field, $instance,
+  public function widget_form(&$widget, &$form, &$form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
     $widget['value'] = array(
@@ -194,6 +194,7 @@ class TripalField {
       '#value' => array_key_exists($delta, $items) ? $items[$delta]['value'] : '',
     );
   }
+
   /**
    * Loads the field values from the underlying data store.
    *

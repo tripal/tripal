@@ -11,6 +11,41 @@
  * Provides an application programming interface (API) for working with features
  * @}
  */
+/**
+ * Used for autocomplete in forms for identifying for publications.
+ *
+ * @param $field
+ *   The field in the publication to search on.
+ * @param $string
+ *   The string to search for
+ *
+ * @return
+ *   A json array of terms that begin with the provided string
+ *
+ * @ingroup tripal_chado_api
+ */
+function tripal_autocomplete_feature($string = '') {
+  $items = array();
+  $sql = "
+    SELECT
+      F.feature_id, F.uniquename, F.name,
+      O.genus, O,species,
+      CVT.name as type
+    FROM {feature} F
+      INNER JOIN {organism} O ON O.organism_id = F.organism_id
+      INNER JOIN {cvterm} CVT ON CVT.cvterm_id = F.type_id
+    WHERE lower(F.uniquename) like lower(:str)
+    ORDER by F.uniquename
+    LIMIT 25 OFFSET 0
+  ";
+  $features = chado_query($sql, array(':str' => $string . '%'));
+  while ($feature = $features->fetchObject()) {
+    $key = "$feature->uniquename [id: $feature->feature_id]";
+    $items[$key] = "$feature->uniquename ($feature->name, $feature->type, $feature->genus $feature->species)";
+  }
+
+  drupal_json_output($items);
+}
 
 /**
  * Performs a reverse compliment of a nucleotide sequence

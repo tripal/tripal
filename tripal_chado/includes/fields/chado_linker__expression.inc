@@ -153,7 +153,7 @@ class chado_linker__expression extends TripalField {
   }
 
 
-  public function widget_form(&$widget, $form, $form_state, $field, $instance,
+  public function widget_form(&$widget, &$form, &$form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
 

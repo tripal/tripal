@@ -104,8 +104,8 @@ class chado_linker__synonym extends TripalField {
   /**
    * @see TripalField::widget_form()
    */
-  function widget_form(&$widget, $form, $form_state, $field,
-      $instance, $langcode, $items, $delta, $element) {
+  public function widget_form(&$widget, &$form, &$form_state, $field, $instance,
+      $langcode, $items, $delta, $element) {
 
     $entity = $form['#entity'];
     $field_name = $field['field_name'];

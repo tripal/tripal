@@ -16,6 +16,7 @@ require_once 'api/tripal_chado.schema_v1.3.api.inc';
 require_once 'api/tripal_chado.schema_v1.2.api.inc';
 require_once 'api/tripal_chado.schema_v1.11.api.inc';
 require_once 'api/tripal_chado.semweb.api.inc';
+require_once 'api/tripal_chado.views.api.inc';
 
 // Chado module specific API functions
 require_once 'api/modules/tripal_chado.analysis.api.inc';
@@ -152,6 +153,7 @@ function tripal_chado_menu() {
     'weight' => -99
   );
 
+  // Adds a +Publish Chado Content link on the 'Tripal Content Types' page.
   $items['admin/structure/bio_data/publish'] = array(
     'title' => 'Publish Chado Content',
     'description' => t('Publish data that is present in Chado but which does
@@ -164,6 +166,17 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_LOCAL_ACTION,
     'weight' => 2
+  );
+
+  $items['admin/tripal/storage/chado/vocab'] = array(
+    'title' => 'Vocabulary Defaults',
+    'description' => 'Set the default vocabularies for properties and relationships.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_chado_admin_set_defaults_form'),
+    'file' => 'includes/tripal_chado.cv_defaults.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'access arguments' => array('administer controlled vocabularies'),
+    'type' => MENU_NORMAL_ITEM,
   );
 
 
@@ -492,6 +505,14 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'type' => MENU_CALLBACK,
   );
+  $items['admin/tripal/storage/chado/auto_name/feature/%'] = array(
+    'page callback' => 'tripal_autocomplete_feature',
+    'page arguments' => array(6),
+    'access arguments' => array('access content'),
+    'file' => 'api/modules/tripal_chado.feature.api.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'type' => MENU_CALLBACK,
+  );
   return $items;
 
 }
@@ -530,6 +551,7 @@ function tripal_chado_permission() {
  */
 function tripal_chado_theme($existing, $type, $theme, $path) {
   $themes = array(
+
     // Theme fields.
     'chado_base__dbxref_id_widget' => array(
       'render element' => 'element',
@@ -546,6 +568,10 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
     'chado_linker__synonym_widget' => array(
       'render element' => 'element',
       'file' => 'includes/fields/chado_linker__synonym.inc',
+    ),
+    'chado_linker__relationship_widget' => array(
+      'render element' => 'element',
+      'file' => 'includes/fields/chado_linker__relationship.inc',
     ),
     'chado_linker__pub_widget' => array(
       'render element' => 'element',
@@ -568,6 +594,10 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
     'tripal_pub_search_setup_form_elements' => array(
       'render element' => 'form',
       'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
+    ),
+    'tripal_chado_admin_set_defaults_form' => array(
+      'function' => 'theme_tripal_chado_admin_set_defaults_form',
+      'render element' => 'element',
     ),
   );
 

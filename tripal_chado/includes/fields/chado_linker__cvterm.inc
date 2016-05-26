@@ -113,7 +113,7 @@ class chado_linker__cvterm extends TripalField {
   /**
    * @see TripalField::widget_form()
    */
-  function widget_form(&$widget, $form, $form_state, $field, $instance,
+  public function widget_form(&$widget, &$form, &$form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
     $entity = $form['#entity'];

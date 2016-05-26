@@ -260,3 +260,7 @@ function tripal_entity_access($entity) {
   // TODO: need to implement this function.
   return TRUE;
 }
+
+function tripal_form_tripal_entity_form_alter(&$form, &$form_state, $form_id) {
+  //dpm($form);
+}

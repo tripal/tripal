@@ -124,7 +124,7 @@ class chado_linker__dbxref extends TripalField {
   /**
    * @see TripalField::widget_form()
    */
-  function widget_form(&$widget, $form, $form_state, $field, $instance,
+  public function widget_form(&$widget, &$form, &$form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
     $field_name = $field['field_name'];

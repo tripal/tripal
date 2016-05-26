@@ -66,7 +66,7 @@ class TripalFieldQuery {
     // Are there any conditions?  If so, then let the field storage
     // systems handle the query. If there are no fields then just pull out
     // the list of entities.
-    dpm($this->conditions);
+    //dpm($this->conditions);
 
     $entity_ids = array();
     if (count($this->conditions) > 0) {

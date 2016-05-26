@@ -139,7 +139,7 @@ class chado_linker__genotype extends TripalField {
   /**
    * @see TripalField::widget_form()
    */
-  public function widget_form(&$widget, $form, $form_state, $field, $instance,
+  public function widget_form(&$widget, &$form, &$form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
   }

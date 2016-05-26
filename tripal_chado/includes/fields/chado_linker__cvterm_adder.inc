@@ -71,7 +71,7 @@ class chado_linker__cvterm_addr extends TripalField {
   /**
    * @see TripalField::widget_form()
    */
-  function widget_form(&$widget, $form, $form_state, $field, $instance,
+  public function widget_form(&$widget, &$form, &$form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
     // This field has no value field.  Just a fieldset for adding new annotation types.

@@ -3,7 +3,8 @@
 .synonym-widget-item,
 .primary-dbxref-widget-item,
 .secondary-dbxref-widget-item,
-.kvproperty-adder-widget-item {
+.kvproperty-adder-widget-item,
+.chado-linker--relationship-widget-item {
    float: left;
    margin-right: 10px;
 }
@@ -32,4 +33,8 @@
   white-space: normal;
   margin: 0;
   border-bottom: 0.5px solid #666666;
+}
+
+#autocomplete {
+  width: 600px !important;
 }

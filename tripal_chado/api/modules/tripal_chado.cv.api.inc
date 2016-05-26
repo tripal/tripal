@@ -282,6 +282,10 @@ function tripal_get_cvterm($identifiers, $options = array()) {
  *
  * @param $cv_id
  *   The chado cv_id; only cvterms with the supplied cv_id will be returned
+ * @param $rel_type
+ *   Set to TRUE if the terms returned should only be relationship types in
+ *   the vocabulary.  This is useful for creating drop-downs of terms
+ *   used for relationship linker tables.
  *
  * @return
  *   An associative array with the cvterm_id's as keys. The first
@@ -289,9 +293,12 @@ function tripal_get_cvterm($identifiers, $options = array()) {
  *
  * @ingroup tripal_chado_api
  */
-function tripal_get_cvterm_select_options($cv_id) {
+function tripal_get_cvterm_select_options($cv_id, $rel_type = FALSE) {
   $columns = array('cvterm_id', 'name');
   $values = array('cv_id' => $cv_id);
+  if ($rel_type) {
+    $values['is_relationshiptype'] = 1;
+  }
   $s_options = array('order_by' => array('name' => 'ASC'));
 
   $cvterms = chado_select_record('cvterm', $columns, $values, $s_options);

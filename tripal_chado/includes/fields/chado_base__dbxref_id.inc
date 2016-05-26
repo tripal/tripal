@@ -106,7 +106,7 @@ class chado_base__dbxref_id extends TripalField {
   /**
    * @see TripalField::widget_form()
    */
-  function widget_form(&$widget, $form, $form_state, $field, $instance,
+  function widget_form(&$widget, &$form, &$form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
     $field_name = $field['field_name'];
@@ -255,11 +255,11 @@ class chado_base__dbxref_id extends TripalField {
     $entity->{$field_name}['und'][0] = array(
       'value' => array(),
       $field_table . '__' . $field_column => '',
-      'dbxref__dbxref_id' => '',
-      'dbxref__db_id' => '',
-      'dbxref__accession' => '',
-      'dbxref__version' => '',
-      'dbxref__description' => '',
+      $field_table . '__dbxref_id--dbxref_id' => '',
+      $field_table . '__dbxref_id--db_id' => '',
+      $field_table . '__dbxref_id--accession' => '',
+      $field_table . '__dbxref_id--version' => '',
+      $field_table . '__dbxref_id--description' => '',
     );
 
     // Get the primary dbxref record (if it's not NULL).  Because we have a

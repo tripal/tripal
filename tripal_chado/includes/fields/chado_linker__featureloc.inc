@@ -359,7 +359,8 @@ class chado_linker__featureloc extends TripalField {
   /**
    * @see TripalField::widget_form()
    */
-  function widget_form(&$widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element) {
+   public function widget_form(&$widget, &$form, &$form_state, $field, $instance,
+      $langcode, $items, $delta, $element) {
 
   }
 

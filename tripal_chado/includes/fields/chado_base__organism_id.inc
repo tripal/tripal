@@ -118,7 +118,7 @@ class chado_base__organism_id extends TripalField {
   /**
    * @see TripalField::widget()
    */
-  public function widget_form(&$widget, $form, $form_state, $field, $instance,
+  public function widget_form(&$widget, &$form, &$form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
     $settings = $field['settings'];

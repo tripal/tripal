@@ -49,15 +49,6 @@ function tripal_cv_menu() {
     'weight' => 2,
   );
 
-  $items['admin/tripal/vocab/defaults'] = array(
-    'title' => 'Defaults',
-    'description' => 'Set the default vocabularies for properties and relationships.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_cv_admin_set_defaults_form'),
-    'access arguments' => array('administer controlled vocabularies'),
-    'type' => MENU_LOCAL_TASK,
-    'weight' => 5
-  );
 
   $items['admin/tripal/vocab/help'] = array(
     'title' => 'Help',
@@ -282,11 +273,6 @@ function tripal_cv_theme($existing, $type, $theme, $path) {
       'template' => 'tripal_cv_help',
       'variables' =>  array(NULL),
       'path' => "$path/theme/templates"
-    ),
-    // Default CV form
-    'tripal_cv_admin_set_defaults_form' => array(
-      'function' => 'theme_tripal_cv_admin_set_defaults_form',
-      'render element' => 'element',
     ),
   );
 
