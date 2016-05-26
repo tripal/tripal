@@ -5,12 +5,80 @@
  */
 
 /**
- * Generates an array containing the full details of a record(s) in chado. The
- * returned array differs from the array returned by chado_select_record as all foreign key
- * relationships have been followed and those data are also included. The array
- * returned by this function can be used with chado_expand_var function to add
- * additional FK relationships that were not included because they were not
- * a one-to-one mapping or for fields that were excluded such as large text fields.
+ * Generates an object containing the full details of a record(s) in Chado.
+ *
+ * The object returned contains key/value pairs where the keys are the fields
+ * in the Chado table.
+ *
+ * The returned object differs from the array returned by chado_select_record()
+ * as all foreign key relationships in the Chado table have been followed and
+ * those data are also included. This function automatically excludes some
+ * fields and tables. Fields that are extremely long, such as text fields are
+ * automatically excluded to prevent long page loads.  Linking tables that have
+ * a many-to-one relationship with the record are also excluded. Use the
+ * chado_expand_var() to manually add in excluded fields and data from linker
+ * tables.
+ *
+ * Example Usage:
+ * @code
+ *   $values = array(
+ *     'name' => 'Medtr4g030710'
+ *   );
+ *   $feature = chado_generate_var('feature', $values);
+ * @endcode
+ *
+ * The $values array passed to this fucntion can be of the same format used
+ * by the chado_select_record() function.
+ *
+ * If a field is a foreign key then its value is an object that contains
+ * key/value pairs for that record.  The following code provides examples
+ * for retrieving values associated with the record, either as columns in the
+ * original Chado table or as columns in linked records through foreign keys:
+ * @code
+ *   // Get the feature name.
+ *   $name = $feature->name;
+ *   // Get the feature unique name.
+ *   $uniquename = $feature->uniquename;
+ *   // Get the feature type. Because the type name is obtained via
+ *   // a foreign key with the cvterm table, the objects are nested
+ *   // and we can follow the foreign key fields to retrieve those values
+ *   $type = $feature->type_id->name;
+ *   // Get the name of the vocabulary.
+ *   $cv = $feature->type_id->cv_id->name;
+ *   // Get the vocabulary id.
+ *   $cv_id = $feature->type_id->cv_id->cv_id;
+ * @endcode
+ *
+ *
+ * This will return an object if there is only one feature with the name
+ * Medtr4g030710 or it will return an array of feature objects if more than one
+ * feature has that name.
+ *
+ * Note to Module Designers: Fields can be excluded by default from these
+ * objects by implementing one of the following hooks:
+ *  - hook_exclude_field_from_tablename_by_default (where tablename is the
+ *    name of the table): This hook allows you to add fields to be excluded
+ *    on a per table basis. Simply implement this hook to return an array of
+ *    fields to be excluded. The following example will ensure that
+ *    feature.residues is excluded from a feature object by default:
+ *    @code
+ *      mymodule_exclude_field_from_feature_by_default() {
+ *        return array('residues' => TRUE);
+ *      }
+ *    @endcode
+ *  - hook_exclude_type_by_default:
+ *      This hook allows you to exclude fields using conditional. This
+ *      function should return an array of postgresql types mapped to criteria.
+ *      If the field types of any table match the criteria then the field
+ *      is excluded. Tokens available in criteria are &gt;field_value&lt;
+ *      and &gt;field_name&lt;. The following example will exclude all text
+ *      fields with a length > 50. Thus if $feature.residues is longer than
+ *      50 it will be excluded, otherwise it will be added.
+ *      @code
+ *        mymodule_exclude_type_by_default() {
+ *          return array('text' => 'length(&gt;field_value&lt; ) > 50');
+ *        }
+ *      @endcode
  *
  *
  * @param $table
@@ -26,16 +94,16 @@
  *   Additionally,  These options are available for this function:
  *   -return_array:
  *     can be provided to force the function to always return an array. Default
- *     behavior is to return a single record if only one record exists or to return
- *     an array if multiple records exist.
+ *     behavior is to return a single record if only one record exists or to
+ *     return an array if multiple records exist.
  *  - include_fk:
  *     an array of FK relationships to follow. By default, the
  *     chado_select_record function will follow all FK relationships but this
- *     may generate more queries then is desired slowing down this function call when
- *     there are lots of FK relationships to follow.  Provide an array specifying the
- *     fields to include.  For example, if expanding a property table (e.g. featureprop)
- *     and you want the CV and accession but do not want the DB the following
- *     array would work:
+ *     may generate more queries then is desired slowing down this function
+ *     call when there are lots of FK relationships to follow.  Provide an
+ *     array specifying the fields to include.  For example, if expanding a
+ *     property table (e.g. featureprop) and you want the CV and accession
+ *     but do not want the DB the following array would work:
  *
  *        $table_options =  array(
  *          'include_fk' => array(
@@ -58,41 +126,9 @@
  *     one for each pager.
  * @return
  *   Either an object (if only one record was selected from the base table)
- *   or an array of objects (if more than one record was selected from the base table).
- *   If the option 'return_array' is provided the function always returns an array.
- *
- * Example Usage:
- * @code
-   $values = array(
-     'name' => 'Medtr4g030710'
-   );
-   $features = chado_generate_var('feature', $values);
- * @endcode
- * This will return an object if there is only one feature with the name Medtr4g030710 or it will
- * return an array of feature objects if more than one feature has that name.
- *
- * Note to Module Designers: Fields can be excluded by default from these objects by implementing
- * one of the following hooks:
- *  - hook_exclude_field_from_tablename_by_default (where tablename is the name of the table):
- *      This hook allows you to add fields to be excluded on a per table basis. Simply implement
- *      this hook to return an array of fields to be excluded. For example:
- * @code
-   mymodule_exclude_field_from_feature_by_default() {
-     return array('residues' => TRUE);
-   }
- * @endcode
- *      will ensure that feature.residues is ecluded from a feature object by default.
- *  - hook_exclude_type_by_default:
- *      This hook allows you to exclude fields from all tables that are of a given postgresql field
- *      type. Simply implement this hook to return an array of postgresql types mapped to criteria.
- *      Then all fields of that type where the criteria supplied returns TRUE will be excluded from
- *      any table. Tokens available in criteria are &gt;field_value&lt;  and &gt;field_name&lt; . For example:
- * @code
-   mymodule_exclude_type_by_default() {
-     return array('text' => 'length(&gt;field_value&lt; ) > 50');
-   }
- * @endcode
- *      will exclude all text fields with a length > 50. Thus if $feature.residues is longer than 50 *      it will be excluded, otherwise it will be added.
+ *   or an array of objects (if more than one record was selected from the
+ *   base table). If the option 'return_array' is provided the function
+ *   always returns an array.
  *
  * @ingroup tripal_chado_query_api
  */
@@ -417,11 +453,78 @@ function chado_generate_var($table, $values, $base_options = array()) {
 }
 
 /**
- * Retrieves fields/tables/nodes that were excluded by default from a variable and adds them
+ * Retrieves fields, or tables that were excluded by default from a variable.
  *
- * This function exists to allow chado_generate_var() to excldue some
- * fields/tables/nodes from the default form of a variable without making it extremely difficult for
- * the tripal admin to get at these variables if he/she wants them.
+ * The chado_generate_var() function automatically excludes some
+ * fields and tables from the default form of a variable. Fields that are
+ * extremely long, such as text fields are automatically excluded to prevent
+ * long page loads.  Linking tables that have a many-to-one relationship with
+ * the record are also excluded.  This function allows for custom expansion
+ * of the record created by chado_generate_var() by specifyin the field and
+ * tables that should be added.
+ *
+ * Example Usage:
+ * @code
+ *  // Get a chado object to be expanded
+ *  $values = array(
+ *    'name' => 'Medtr4g030710'
+ *  );
+ *  $features = chado_generate_var('feature', $values);
+ *  // Expand the feature.residues field
+ *  $feature = chado_expand_var($feature, 'field', 'feature.residues');
+ *  // Expand the feature properties (featureprop table)
+ *  $feature = chado_expand_var($feature, 'table', 'featureprop');
+ * @endcode
+ *
+ * If a field is requested, it's value is added where it normally is expected
+ * in the record.  If a table is requested then a new key/value element is
+ * added to the record. The key is the table's name and the value is an
+ * array of records (of the same type created by chado_generate_var()). For
+ * example, expanding a 'feature' record to include a 'pub' record via the
+ * 'feature_pub' table.  The following provides a simple example for how
+ * the 'feature_pub' table is added.
+ *
+ * @code
+ * array(
+ *   'feature_id' => 1
+ *   'name' => 'blah',
+ *   'uniquename' => 'blah',
+ *   ....
+ *   'feature_pub => array(
+ *      [pub object],
+ *      [pub object],
+ *      [pub object],
+ *      [pub object],
+ *   )
+ * )
+ * @endcode
+ *
+ * where [pub object] is a record of a publication as created by
+ * chado_generate_var().
+ *
+ * If the requested table has multiple foreign keys, such as the 'featureloc'
+ * or 'feature_genotype' tables, then an additional level is added to the
+ * array where the foreign key column names are added.  An example feature
+ * record with an expanded featureloc table is shown below:
+ *
+ * @code
+ * array(
+ *   'feature_id' => 1
+ *   'name' => 'blah',
+ *   'uniquename' => 'blah',
+ *   ....
+ *   'featureloc => array(
+ *      'srcfeature_id' => array(
+ *        [feature object],
+ *        ...
+ *      )
+ *      'feature_id' => array(
+ *        [feature object],
+ *        ...
+ *      )
+ *   )
+ * )
+ * @endcode
  *
  * @param $object
  *   This must be an object generated using chado_generate_var()
@@ -485,20 +588,6 @@ function chado_generate_var($table, $values, $base_options = array()) {
  *   If the type is a table and it has already been expanded no changes is made to the
  *   returned object
  *
- * Example Usage:
- * @code
-   // Get a chado object to be expanded
-   $values = array(
-     'name' => 'Medtr4g030710'
-   );
-   $features = chado_generate_var('feature', $values);
-   // Expand the organism node
-   $feature = chado_expand_var($feature, 'node', 'organism');
-   // Expand the feature.residues field
-   $feature = chado_expand_var($feature, 'field', 'feature.residues');
-   // Expand the feature properties (featureprop table)
-   $feature = chado_expand_var($feature, 'table', 'featureprop');
- * @endcode
  *
  * @ingroup tripal_chado_query_api
  */

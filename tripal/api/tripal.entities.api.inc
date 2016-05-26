@@ -813,46 +813,85 @@ function tripal_get_entity_tokens($entity, $options = array()) {
  * @return
  *   The string will all tokens replaced with values.
  */
-function tripal_replace_entity_tokens($string, $entity, $bundle_entity = NULL) {
-
-
+function tripal_replace_entity_tokens($string, &$entity, $bundle_entity = NULL) {
   // Determine which tokens were used in the format string
+  $used_tokens = array();
   if (preg_match_all('/\[\w+\]/', $string, $matches)) {
     $used_tokens = $matches[0];
+  }
 
-    foreach($used_tokens as $token) {
-      $field = str_replace(array('.','[',']'),array('__','',''),$token);
+  // If there are no tokens then just return the string.
+  if (count($used_tokens) == 0) {
+    return $string;
+  }
 
-      $value = '';
-      if (isset($entity->{$field})) {
+  // If the field are not loaded for the entity then we want to load them
+  // but we won't do a field_attach_load() as that will load all of the
+  // fields. For syncing (publishing) of content loading all fields for
+  // all synced entities causes extreme slowness, so we'll only attach
+  // the necessary fields for replacing tokens.
+  $attach_fields = array();
+  foreach($used_tokens as $token) {
+    $field_name = str_replace(array('.','[',']'), array('__','',''), $token);
 
-        // Render the value from the field.
-        // First get the items to be rendered.
-        $field_value = field_get_items('TripalEntity', $entity, $field);
-        if (isset($field_value[0])) {
-          // Then get a render array for just the value of the first item (no markup).
-          $field_render_arr = field_view_value('TripalEntity', $entity, $field, $field_value[0]);
-          // Finally render the value from the render array.
-          $value = render($field_render_arr);
-        }
-      }
-      elseif ($field === 'TripalBundle__bundle_id') {
-
-        // Load the bundle entity if we weren't given it.
-        if (!$bundle_entity) {
-          $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
-        }
-
-        // This token should be the id of the TripalBundle.
-        $value = $bundle_entity->id;
-      }
-      elseif ($field === 'TripalEntity__entity_id') {
-
-        // This token should be the id of the TripalEntity.
-        $value = $entity->id;
-      }
-      $string = str_replace($token, $value, $string);
+    if (!property_exists($entity, $field_name)) {
+      $field = field_info_field($field_name);
+      $storage = $field['storage'];
+      $attach_fields[$storage['type']]['storage'] = $storage;
+      $attach_fields[$storage['type']]['fields'][]  = $field;
     }
+  }
+
+  // If we have any fields that need attaching, then do so now.
+  if (count(array_keys($attach_fields)) > 0) {
+    foreach ($attach_fields as $storage_type => $details) {
+      $storage = $details['storage'];
+      $fields = $details['fields'];
+      $field_ids = array();
+      foreach ($fields as $field) {
+        $field_ids[$field['id']] = array($entity->id);
+      }
+
+      $entities = array($entity->id => $entity);
+      module_invoke($storage['module'], 'field_storage_load', 'TripalEntity',
+        $entities, FIELD_LOAD_CURRENT, $field_ids, array());
+    }
+  }
+
+  // Now that all necessary fields are attached process the tokens.
+  foreach($used_tokens as $token) {
+    $value = '';
+    if (isset($entity->{$field_name})) {
+
+      // Render the value from the field.
+      // First get the items to be rendered.
+      $field_value = field_get_items('TripalEntity', $entity, $field_name);
+      if (isset($field_value[0])) {
+        // Then get a render array for just the value of the first item (no markup).
+        $field_render_arr = field_view_value('TripalEntity', $entity, $field_name, $field_value[0]);
+        // Finally render the value from the render array.
+        $value = render($field_render_arr);
+      }
+    }
+    // The TripalBundle__bundle_id is a special token for substituting the
+    // bundle id.
+    elseif ($field_name === 'TripalBundle__bundle_id') {
+      // Load the bundle entity if we weren't given it.
+      if (!$bundle_entity) {
+        $bundle_entity = tripal_load_bundle_entity(array('name' => $entity->bundle));
+      }
+      // This token should be the id of the TripalBundle.
+      $value = $bundle_entity->id;
+    }
+    // The TripalBundle__bundle_id is a special token for substituting the
+    // entty id.
+    elseif ($field_name === 'TripalEntity__entity_id') {
+      // This token should be the id of the TripalEntity.
+      $value = $entity->id;
+    }
+
+    // Perform the replacement of the token with the value.
+    $string = str_replace($token, $value, $string);
   }
 
   return $string;

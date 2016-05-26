@@ -187,22 +187,34 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
   $langcode = $language->language;
 
   foreach ($entities as $id => $entity) {
-
-    // Get the base table and record id for the fields of this entity.
-    $details = db_select('chado_entity', 'ce')
-      ->fields('ce')
-      ->condition('entity_id', $entity->id)
-      ->execute()
-      ->fetchObject();
-
-    if (!$details) {
-      // TODO: what to do if record is missing!
+    // The chado_xxxx properties are added to the entity in the
+    // tripal_chado_entity_load() hook which unfortunately is called after
+    // attaching fields.  So, we may not have these properties. If that's
+    // the case we can get them by querying the chado_entity table directly.
+    // The chado_xxxx properites will be here in the case of syncing
+    // records.
+    // TODO: perhaps we should add a hook_entity_preattach() hook?
+    if (property_exists($entity, 'chado_table')) {
+      // Get the base table and record id for the fields of this entity.
+      $base_table = $entity->chado_table;
+      $type_field = $entity->chado_column;
+      $record_id = $entity->chado_record_id;
     }
-
-    // Get some values needed for loading the values from Chado.
-    $base_table = $details->data_table;
-    $type_field = $details->field;
-    $record_id = $details->record_id;
+    else {
+      // Get the base table and record id for the fields of this entity.
+      $details = db_select('chado_entity', 'ce')
+        ->fields('ce')
+        ->condition('entity_id', $entity->id)
+        ->execute()
+        ->fetchObject();
+      if (!$details) {
+        // TODO: what to do if record is missing!
+      }
+      // Get some values needed for loading the values from Chado.
+      $base_table = $details->data_table;
+      $type_field = $details->field;
+      $record_id = $details->record_id;
+    }
 
     // Get this table's schema.
     $schema = chado_get_schema($base_table);

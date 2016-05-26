@@ -56,43 +56,58 @@ function tripal_get_chado_entity_id($data_table, $record_id) {
  *   FALSE if a failure occured.
  */
 function tripal_chado_publish_records($values, $job_id = NULL) {
-  $bundle_name = $values['bundle_name'];
-  $sync_node = array_key_exists('sync_node', $values) ? $values['sync_node'] : '';
 
+  // Make sure we have the required options: bundle_name.
   if (!array_key_exists('bundle_name', $values) or !$values['bundle_name']) {
-    tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not publish record: @error", array('@error' => 'The bundle name was not provided'));
+    tripal_report_error('tripal_chado', TRIPAL_ERROR,
+      "Could not publish record: @error",
+      array('@error' => 'The bundle name must be provided'));
     return FALSE;
   }
 
+  $bundle_name = $values['bundle_name'];
+  $sync_node = array_key_exists('sync_node', $values) ? $values['sync_node'] : '';
+
+
+  // Load the bundle entity so we can get information about which Chado
+  // table/field this entity belongs to.
   $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
   $bundle_id = $bundle->id;
   $table = tripal_get_bundle_variable('chado_table', $bundle_id);
   $column = tripal_get_bundle_variable('chado_column', $bundle_id);
   $cvterm_id = tripal_get_bundle_variable('chado_cvterm_id', $bundle_id);
 
-  // Get the table information
+  // Get the table information for the Chado table.
   $table_schema = chado_get_schema($table);
   $pkey_field = $table_schema['primary key'][0];
 
+  // Construct the SQL for identifying which records should be published.
   $select = "SELECT $pkey_field as record_id ";
-  $from = "FROM {" . $table . "} T
+  $from = "
+    FROM {" . $table . "} T
       LEFT JOIN public.chado_entity CE on CE.record_id = T.$pkey_field
     AND CE.data_table = '$table'
   ";
 
+  // For migration of Tripal v2 nodes to entities we want to include the
+  // coresponding chado linker table.
   if ($sync_node && db_table_exists('chado_' . $table)) {
     $select = "SELECT T.$pkey_field as record_id, CT.nid ";
     $from .= "INNER JOIN public.chado_$table CT ON CT.$pkey_field = T.$pkey_field";
   }
   $where = " WHERE CE.record_id IS NULL ";
+  // TODO: here we have hard-coded the analysis and organism tables, but
+  // there may be more that don't hve a type field.  I think if the $column
+  // value is null then that check is good enough, but it needs to be looked at.
   if ($table != 'analysis' and $table != 'organism') {
     $where .= "AND $column = $cvterm_id";
   }
 
+  // Perform the query.
   $sql = $select . $from . $where;
   $records = chado_query($sql);
   $num_published = 0;
-  $transaction  = db_transaction();
+  //$transaction  = db_transaction();
   try {
     while($record = $records->fetchObject()) {
 
@@ -102,8 +117,11 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
       $entity = $ec->create(array(
         'bundle' => $bundle_name,
         'term_id' => $bundle->term_id,
+        'chado_record' => chado_generate_var($table, array($pkey_field => $record_id)),
+        'chado_record_id' => $record_id,
       ));
-      if (!$entity->save()) {
+      $entity = $entity->save();
+      if (!$entity) {
         throw new Exception('Could not create entity.');
       }
 
@@ -123,16 +141,11 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
       }
       $success = drupal_write_record('chado_entity', $entity_record);
 
-      $entity = entity_load('TripalEntity', array($entity->id));
-      $entity = reset($entity);
-      $title_format = tripal_get_title_format($bundle);
-      $title = tripal_replace_entity_tokens($title_format, $entity, $bundle);
-      $ec->setTitle($entity, $title);
       $num_published++;
     }
   }
   catch (Exception $e) {
-    $transaction->rollback();
+    //$transaction->rollback();
     $error = $e->getMessage();
     tripal_report_error('tripal_chado', TRIPAL_ERROR, "Could not publish record: @error", array('@error' => $error));
     drupal_set_message('Failed publishing record. See recent logs for more details.', 'error');

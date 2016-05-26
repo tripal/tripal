@@ -155,7 +155,7 @@ function tripal_chado_menu() {
     'title' => 'Publish Chado Content',
     'description' => t('Publish data that is present in Chado but which does
         not yet have a page on this site for viewing. In Tripal v2.0 or
-        earlier this was refered to as "syncing".'),    'page callback' => 'drupal_get_form',
+        earlier this was refered to as "syncing".'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_chado_publish_form'),
     'access arguments' => array('administer tripal'),

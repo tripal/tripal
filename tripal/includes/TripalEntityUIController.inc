@@ -219,10 +219,17 @@ function tripal_view_entity($entity, $view_mode = 'full') {
    // For each entity retrieved add a row to the data listing.
    //while ($entity = $entities->fetchObject()) {
    foreach ($results['TripalEntity'] as $entity_id => $stub) {
-     $entity = entity_load('TripalEntity', array($entity_id));
-     $entity = reset($entity);
      $vocabulary = '';
      $term_name = '';
+
+     // We don't need all of the attached fields for an entity so, we'll
+     // not use the entity_load() function.  Instead just pull it from the
+     // database table.
+     $entity = db_select('tripal_entity', 'TE')
+       ->fields('TE')
+       ->condition('TE.id', $entity_id)
+       ->execute()
+       ->fetchObject();
 
      // Get the term
      $term = entity_load('TripalTerm', array('id' => $entity->term_id));
