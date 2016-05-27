@@ -338,18 +338,24 @@ function tripal_view_entity($entity, $view_mode = 'full') {
        '#name' => 'update_data',
        '#weight' => 1000
      );
+
+     // Put the delete button on the far-right so that it's harder
+     // to accidentally click it.
      $form['delete_button'] = array(
        '#type' => 'submit',
        '#value' => t('Delete'),
        '#name' => 'delete_data',
-       '#weight' => 1002
+       '#weight' => 1002,
+       '#attributes' => array('style' => 'float: right')
      );
    }
    $form['cancel_button'] = array(
      '#type' => 'submit',
      '#value' => t('Cancel'),
      '#name' => 'cancel_data',
-     '#weight' => 1001
+     '#weight' => 1001,
+     '#limit_validation_errors' => array(array('')),
+     '#submit' => array('tripal_entity_form_submit'),
    );
 
    // The entity object must be added to the $form_state in order for
@@ -389,6 +395,21 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
  function tripal_entity_form_submit($form, &$form_state) {
    $entity = $form_state['TripalEntity'];
 
+   if ($form_state['clicked_button']['#name'] =='cancel_data') {
+     if (property_exists($entity, 'id')) {
+       $form_state['redirect'] = "bio_data/" . $entity->id;
+     }
+     else {
+       $form_state['redirect'] = 'bio_data/add';
+     }
+     return;
+   }
+
+   if ($form_state['clicked_button']['#name'] =='delete_data') {
+     $form_state['redirect'] = 'bio_data/' . $entity->id .'/delete';
+     return;
+   }
+
    // Allow the fields to perform actions prior to submit by calling
    // a hook_field_submit() functino.
    $fields = field_info_instances('TripalEntity', $entity->bundle);
@@ -413,28 +434,14 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
      }
    }
 
-   if ($form_state['clicked_button']['#name'] =='cancel_data') {
-     if ($entity) {
-      $form_state['redirect'] = "bio_data/" . $entity->id;
-     }
-     else {
-       $form_state['redirect'] = '';
-     }
+   $entityform = entity_ui_controller('TripalEntity')->entityFormSubmitBuildEntity($form, $form_state);
+   if ($entityform->save()) {
+     $form_state['redirect'] = "bio_data/" . $entity->id;
    }
-   if ($form_state['clicked_button']['#name'] =='update_data' or
-       $form_state['clicked_button']['#name'] =='add_data') {
+   else {
+     drupal_set_message('Cannot save entity', 'error');
+   }
 
-     $entityform = entity_ui_controller('TripalEntity')->entityFormSubmitBuildEntity($form, $form_state);
-     if ($entityform->save()) {
-       $form_state['redirect'] = "bio_data/" . $entity->id;
-     }
-     else {
-       drupal_set_message('Cannot save entity', 'error');
-     }
-   }
-   if ($form_state['clicked_button']['#name'] =='delete_data') {
-     $form_state['redirect'] = 'bio_data/' . $entity->id .'/delete';
-   }
  }
 
 

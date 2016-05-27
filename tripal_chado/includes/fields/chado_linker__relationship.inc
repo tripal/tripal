@@ -319,7 +319,7 @@ class chado_linker__relationship extends TripalField {
       $object_name = $item['object_name'];
 
 
-      // If the row is empty then just return, there's nothing to validate.
+      // If the row is empty then just continue, there's nothing to validate.
       if (!$type_name and !$subject_name and !$object_name) {
         continue;
       }
@@ -423,10 +423,11 @@ class chado_linker__relationship extends TripalField {
         );
       }
 
-      if ($object_id == $chado_record_id  and $subject_id == $chado_record_id) {
+      // Make sure that the object and subject are not both the same thing.
+      if ($object_id == $subject_id) {
         $errors[$field['field_name']][$langcode][$delta][] = array(
           'error' => 'chado_linker__relationship',
-          'message' =>  t("The subject and the object in the relationship cannot both refer to this record."),
+          'message' =>  t("The subject and the object in the relationship cannot both refer to the same record."),
         );
       }
     }
