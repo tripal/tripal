@@ -321,7 +321,7 @@ class chado_linker__relationship extends TripalField {
 
       // If the row is empty then just return, there's nothing to validate.
       if (!$type_name and !$subject_name and !$object_name) {
-        contineu;
+        continue;
       }
 
       // Make sure we have values for all of the fields.
@@ -436,7 +436,8 @@ class chado_linker__relationship extends TripalField {
    */
   public function submit($entity_type, $entity, $field, $instance, $langcode,
       &$items, $form, &$form_state) {
-        $field_name = $field['field_name'];
+
+    $field_name = $field['field_name'];
     $field_type = $field['type'];
     $field_table = $field['settings']['chado_table'];
     $field_column = $field['settings']['chado_column'];

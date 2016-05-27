@@ -13,10 +13,10 @@
  * (e.g. hook_field_info(), hook_field_widget_form(), etc.) to instantiate the
  * appropriate TripalField class.
  *
- * Because of the way Drupal handles callbacks, form validate functions,
- * AJAX callbacks, validate functions and theme functions cannot be part of
- * the implementation of this class.  Those functions should be added to
- * the bottom of the file where the child class is housed.
+ * Because of the way Drupal handles callbacks, AJAX callbacks, and theme
+ * functions cannot be part of the implementation of this class.  Those
+ * functions if needed, should be added to the bottom of the file where the
+ * child class is housed.
  *
  */
 class TripalField {
