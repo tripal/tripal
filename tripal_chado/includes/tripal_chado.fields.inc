@@ -326,7 +326,38 @@ function tripal_chado_field_widget_form_alter(&$element, &$form_state, $context)
   }
 }
 
+/**
+ * Implements hook_field_validate()
+ */
+function tripal_chado_field_validate($entity_type, $entity, $field, $instance,
+     $langcode, $items, &$errors) {
+  $field_type = $field['type'];
+  if ($field['storage']['type'] == 'field_chado_storage') {
+    module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+    if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
+      $field_obj = new $field_type();
+      $field_obj->validate($entity_type, $entity, $field, $instance,
+        $langcode, $items, $errors);
+    }
+  }
+}
 
+/**
+ * Implements hook_field_validate()
+ */
+function tripal_chado_field_submit($entity_type, $entity, $field, $instance,
+    $langcode, &$items, $form, &$form_state) {
+
+  $field_type = $field['type'];
+  if ($field['storage']['type'] == 'field_chado_storage') {
+    module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+    if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
+      $field_obj = new $field_type();
+      $field_obj->submit($entity_type, $entity, $field, $instance,
+          $langcode, $items, $form, $form_state);
+    }
+  }
+}
 
 /**
  * Returns a $field_info array for a field based on a database column.

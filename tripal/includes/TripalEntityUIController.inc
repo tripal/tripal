@@ -331,6 +331,7 @@ function tripal_view_entity($entity, $view_mode = 'full') {
    }
    else {
      field_attach_form('TripalEntity', $entity, $form, $form_state);
+
      $form['update_button'] = array(
        '#type' => 'submit',
        '#value' => t('Update'),
@@ -341,9 +342,15 @@ function tripal_view_entity($entity, $view_mode = 'full') {
        '#type' => 'submit',
        '#value' => t('Delete'),
        '#name' => 'delete_data',
-       '#weight' => 1001
+       '#weight' => 1002
      );
    }
+   $form['cancel_button'] = array(
+     '#type' => 'submit',
+     '#value' => t('Cancel'),
+     '#name' => 'cancel_data',
+     '#weight' => 1001
+   );
 
    // The entity object must be added to the $form_state in order for
    // the Entity API to work. It must have a key of the entity name.
@@ -366,13 +373,15 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
   */
  function tripal_entity_form_validate($form, &$form_state) {
 
-   if (array_key_exists('clicked_button', $form_state) and
-       $form_state['clicked_button']['#name'] =='add_data') {
-     $entity = $form_state['TripalEntity'];
-     field_attach_form_validate('TripalEntity', $entity, $form, $form_state);
+   // If the user is cancelling or deleting the entity then don't validate.
+   if ($form_state['clicked_button']['#name'] =='cancel_data' or
+       $form_state['clicked_button']['#name'] =='delete_data') {
+     return;
    }
+   // For adds and updates, perform validation.
+   $entity = $form_state['TripalEntity'];
+   field_attach_form_validate('TripalEntity', $entity, $form, $form_state);
  }
-
 
  /**
   * Implements hook_submit() for the tripal_entity_form.
@@ -380,10 +389,38 @@ function tripal_entity_form_ajax_callback($form, $form_state) {
  function tripal_entity_form_submit($form, &$form_state) {
    $entity = $form_state['TripalEntity'];
 
-   if ($form_state['clicked_button']['#name'] =='cancel') {
-     $form_state['redirect'] = "bio_data/" . $entity->id;
+   // Allow the fields to perform actions prior to submit by calling
+   // a hook_field_submit() functino.
+   $fields = field_info_instances('TripalEntity', $entity->bundle);
+   foreach ($fields as $field_name => $instance) {
+     $field = field_info_field($field_name);
+     $module = $field['module'];
+     $function = $module . '_field_submit';
+     if (function_exists($function)) {
+       // Get the items from the form_state and allow the caller to alter them.
+       $items = array();
+       $langcode = 'und';
+       field_default_extract_form_values('TripalEntity', $entity, $field,
+           $instance, $langcode, $items, $form, $form_state);
+       $function('TripalEntity', $entity, $field, $instance, $langcode, $items,
+           $form, $form_state);
+       // Copy any updated items into the $form_state 'values' array.
+       foreach ($items as $delta => $item) {
+         foreach ($item as $subfield => $value) {
+           $form_state['values'][$field_name][$langcode][$delta][$subfield] = $value;
+         }
+       }
+     }
    }
 
+   if ($form_state['clicked_button']['#name'] =='cancel_data') {
+     if ($entity) {
+      $form_state['redirect'] = "bio_data/" . $entity->id;
+     }
+     else {
+       $form_state['redirect'] = '';
+     }
+   }
    if ($form_state['clicked_button']['#name'] =='update_data' or
        $form_state['clicked_button']['#name'] =='add_data') {
 

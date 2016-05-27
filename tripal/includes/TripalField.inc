@@ -196,6 +196,70 @@ class TripalField {
   }
 
   /**
+   *  Perform validation of the widget_form when adding or editing the entity.
+   *
+   *  Any errors encountered should be indicatd by adding a value to the $errors
+   *  array according to the instructions below.
+   *
+   *  @param $entity_type
+   *    The type of $entity.
+   *  @param $entity
+   *    The entity for the operation.
+   *  @param $field
+   *    The field structure for the operation.
+   *  @param $instance
+   *    The instance structure for $field on $entity's bundle.
+   *  @param $langcode
+   *    The language associated with $items.
+   *  @param $items
+   *    $entity->{$field['field_name']}[$langcode], or an empty array if unset.
+   *  @param $errors
+   *    The array of errors (keyed by field name, language code, and delta) that
+   *    have already been reported for the entity. The function should add its
+   *    errors to this array. Each error is an associative array with the
+   *    following keys and values:
+   *      - error: An error code (should be a string prefixed with the
+   *        module name).
+   *      - message: The human readable message to be displayed.
+   *
+   */
+  public function validate($entity_type, $entity, $field, $instance, $langcode,
+      $items, &$errors) {
+
+  }
+
+  /**
+   *  Performs extra commands when the entity form is submitted.
+   *
+   *  Drupal typically does not provide a submit hook for fields.  The
+   *  TripalField provides one to allow for behind-the-scenes actions to
+   *  occur.   This function should never be used for updates, deletes or
+   *  inserts into the storage backend. Rather, the appropriate Field Storage
+   *  implementation will take care of that. An example where this function
+   *  may be useful would be to set values in the $items array using values
+   *  of the other.
+   *
+   *  @param $entity_type
+   *    The type of $entity.
+   *  @param $entity
+   *    The entity for the operation.
+   *  @param $field
+   *    The field structure for the operation.
+   *  @param $instance
+   *    The instance structure for $field on $entity's bundle.
+   *  @param $langcode
+   *    The language associated with $items.
+   *  @param $items
+   *    $entity->{$field['field_name']}[$langcode], or an empty array if unset.
+   *  @param $form
+   *    The submitted form array.
+   *  @param $form_state.
+   *    The form state array.
+   */
+  public function submit($entity_type, $entity, $field, $instance, $langcode,
+      &$items, $form, &$form_state) {
+  }
+  /**
    * Loads the field values from the underlying data store.
    *
    * @param $field

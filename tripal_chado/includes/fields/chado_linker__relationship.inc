@@ -226,7 +226,7 @@ class chado_linker__relationship extends TripalField {
     $widget['#fkeys'] = $schema['foreign keys'];
     $widget['#base_table'] = $base_table;
     $widget['#chado_record_id'] = $form['#entity']->chado_record_id;
-    $widget['#element_validate'] = array('chado_linker__relationship_validate');
+    //$widget['#element_validate'] = array('chado_linker__relationship_validate');
     $widget['#theme'] = 'chado_linker__relationship_widget';
     $widget['#prefix'] =  "<span id='$chado_table-$delta'>";
     $widget['#suffix'] =  "</span>";
@@ -294,7 +294,205 @@ class chado_linker__relationship extends TripalField {
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/$base_table",
     );
   }
+  /**
+   * @see TripalField::validate()
+   */
+  function validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
 
+    $field_name = $field['field_name'];
+    $field_type = $field['type'];
+    $field_table = $field['settings']['chado_table'];
+    $field_column = $field['settings']['chado_column'];
+    $base_table = $field['settings']['base_table'];
+
+    $chado_record_id = $entity->chado_record_id;
+
+    $schema = chado_get_schema($field_table);
+    $fkeys = $schema['foreign keys'];
+
+    foreach ($items as $delta => $item) {
+      $subject_id = $item[$field_table . '__subject_id'];
+      $object_id = $item[ $field_table . '__object_id'];
+      $type_id = $item[$field_table . '__type_id'];
+      $type_name = $item['type_name'];
+      $subject_name = $item['subject_name'];
+      $object_name = $item['object_name'];
+
+
+      // If the row is empty then just return, there's nothing to validate.
+      if (!$type_name and !$subject_name and !$object_name) {
+        contineu;
+      }
+
+      // Make sure we have values for all of the fields.
+      $form_error = FALSE;
+      if (!$type_name) {
+        $errors[$field['field_name']][$langcode][$delta][] = array(
+          'error' => 'chado_linker__relationship',
+          'message' => t("Please provide the type of relationship."),
+        );
+      }
+      if (!$subject_name) {
+        $errors[$field['field_name']][$langcode][$delta][] = array(
+          'error' => 'chado_linker__relationship',
+          'message' => t("Please provide the subject of the relationship."),
+        );
+      }
+      if (!$object_name) {
+        $errors[$field['field_name']][$langcode][$delta][] = array(
+          'error' => 'chado_linker__relationship',
+          'message' => t("Please provide the object of the relationship."),
+        );
+      }
+      if ($form_error) {
+        continue;
+      }
+
+      // Before submitting this form we need to make sure that our subject_id and
+      // object_ids are real values.  There are two ways to get the value, either
+      // just with the text value or with an [id: \d+] string embedded.  If the
+      // later we will pull it out.
+      $subject_id = '';
+      $fkey_rcolumn = $fkeys[$base_table]['columns']['subject_id'];
+      $matches = array();
+      if (preg_match('/\[id: (\d+)\]/', $subject_name, $matches)) {
+        $subject_id =  $matches[1];
+        $values = array($fkey_rcolumn => $subject_id);
+        $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
+        if (count($subject) == 0) {
+          $errors[$field['field_name']][$langcode][$delta][] = array(
+            'error' => 'chado_linker__relationship',
+            'message' => t("The subject record cannot be found using the specified id (e.g. [id: xx])."),
+          );
+        }
+      }
+      else {
+        $values = array('uniquename' => $subject_name);
+        $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
+        if (count($subject) == 0) {
+          $errors[$field['field_name']][$langcode][$delta][] = array(
+            'error' => 'chado_linker__relationship',
+            'message' => t("The subject record cannot be found. Please check spelling."),
+          );
+        }
+        elseif (count($subject) > 1) {
+          $errors[$field['field_name']][$langcode][$delta][] = array(
+            'error' => 'chado_linker__relationship',
+            'message' => t("The subject is not unique and therefore the relationship cannot be made."),
+          );
+        }
+      }
+
+      // Now check for a matching object.
+      $object_id = '';
+      $fkey_rcolumn = $fkeys[$base_table]['columns']['object_id'];
+      $matches = array();
+      if (preg_match('/\[id: (\d+)\]/', $object_name, $matches)) {
+        $object_id = $matches[1];
+        $values = array($fkey_rcolumn => $object_id);
+        $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
+        if (count($subject) == 0) {
+          $errors[$field['field_name']][$langcode][$delta][] = array(
+            'error' => 'chado_linker__relationship',
+            'message' => t("The object record cannot be found using the specified id (e.g. [id: xx])."),
+          );
+        }
+      }
+      else {
+        $values = array('uniquename' => $object_name);
+        $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
+        if (count($object) == 0) {
+          $errors[$field['field_name']][$langcode][$delta][] = array(
+            'error' => 'chado_linker__relationship',
+            'message' => t("The object record cannot be found. Please check spelling."),
+          );;
+        }
+        elseif (count($object) > 1) {
+          $errors[$field['field_name']][$langcode][$delta][] = array(
+            'error' => 'chado_linker__relationship',
+            'message' =>  t("The object is not unique and therefore the relationship cannot be made."),
+          );
+        }
+      }
+
+      // Make sure that either our object or our subject refers to the base record.
+      if ($object_id != $chado_record_id  and $subject_id != $chado_record_id) {
+        $errors[$field['field_name']][$langcode][$delta][] = array(
+          'error' => 'chado_linker__relationship',
+          'message' =>  t("Either the subject or the object in the relationship must refer to this record."),
+        );
+      }
+
+      if ($object_id == $chado_record_id  and $subject_id == $chado_record_id) {
+        $errors[$field['field_name']][$langcode][$delta][] = array(
+          'error' => 'chado_linker__relationship',
+          'message' =>  t("The subject and the object in the relationship cannot both refer to this record."),
+        );
+      }
+    }
+  }
+  /**
+   * @see TripalField::submit()
+   */
+  public function submit($entity_type, $entity, $field, $instance, $langcode,
+      &$items, $form, &$form_state) {
+        $field_name = $field['field_name'];
+    $field_type = $field['type'];
+    $field_table = $field['settings']['chado_table'];
+    $field_column = $field['settings']['chado_column'];
+    $base_table = $field['settings']['base_table'];
+
+    $chado_record_id = $entity->chado_record_id;
+
+    $schema = chado_get_schema($field_table);
+    $fkeys = $schema['foreign keys'];
+
+    foreach ($items as $delta => $item) {
+      $subject_id = $item[$field_table . '__subject_id'];
+      $object_id = $item[ $field_table . '__object_id'];
+      $type_id = $item[$field_table . '__type_id'];
+      $type_name = $item['type_name'];
+      $subject_name = $item['subject_name'];
+      $object_name = $item['object_name'];
+
+      // If the row is empty then skip this one, there's nothing to validate.
+      if (!$type_name and !$subject_name and !$object_name) {
+        continue;
+      }
+
+      // Get the subject ID.
+      $subject_id = '';
+      $fkey_rcolumn = $fkeys[$base_table]['columns']['subject_id'];
+      $matches = array();
+      if (preg_match('/\[id: (\d+)\]/', $subject_name, $matches)) {
+        $subject_id =  $matches[1];
+      }
+      else {
+        $values = array('uniquename' => $subject_name);
+        $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
+        $subject_id = $subject[0]->$fkey_rcolumn;
+      }
+
+      // Get the object ID.
+      $object_id = '';
+      $fkey_rcolumn = $fkeys[$base_table]['columns']['object_id'];
+      $matches = array();
+      if (preg_match('/\[id: (\d+)\]/', $object_name, $matches)) {
+        $object_id = $matches[1];
+      }
+      else {
+        $values = array('uniquename' => $object_name);
+        $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
+        $object_id = $object[0]->$fkey_rcolumn;
+      }
+
+      // Set the IDs according to the values that were determined above.
+      $items[$delta][$field_table . '__subject_id'] = $subject_id;
+      $items[$delta][$field_table . '__object_id'] = $object_id;
+      $items[$delta][$field_table . '__type_id'] = $type_name;
+      $items[$delta][$field_table . '__rank'] = $item['_weight'];
+    }
+  }
   /**
    * @see TripalField::load()
    */
@@ -594,138 +792,4 @@ function theme_chado_linker__relationship_widget($variables) {
   return $layout;
 }
 
-/**
- *
- */
-function chado_linker__relationship_validate($element, &$form_state) {
 
-  $field_name = $element['#field_name'];
-  $delta = $element['#delta'];
-  $table_name = $element['#table_name'];
-  $fkeys = $element['#fkeys'];
-  $base_table = $element['#base_table'];
-  $chado_record_id = $element['#chado_record_id'];
-  $field = field_info_field($field_name);
-  $field_type = $field['type'];
-  $field_table = $field['settings']['chado_table'];
-  $field_column = $field['settings']['chado_column'];
-
-  // If the form ID is field_ui_field_edit_form, then the user is editing the
-  // field's values in the manage fields form of Drupal.  We don't want
-  // to validate it as if it were being used in a data entry form.
-  if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
-    return;
-  }
-
-  // Get the field values.
-  $subject_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__subject_id');
-  $object_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__object_id');
-  $type_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__type_id');
-  $type_name = tripal_chado_get_field_form_values($field_name, $form_state, $delta, 'type_name');
-  $subject_name = tripal_chado_get_field_form_values($field_name, $form_state, $delta, 'subject_name');
-  $object_name = tripal_chado_get_field_form_values($field_name, $form_state, $delta, 'object_name');
-
-  // If the row is empty then just return, there's nothing to validate.
-  if (!$type_name and !$subject_name and !$object_name) {
-    return;
-  }
-
-  // Make sure we have values for all of the fields.
-  $form_error = FALSE;
-  if (!$type_name) {
-    form_set_error(implode('][', $element ['#parents']) . '][type_name',
-        t("Please provide the type of relationship."));
-  }
-  if (!$subject_name) {
-    form_set_error(implode('][', $element ['#parents']) . '][subject_name',
-        t("Please provide the subject of the relationship."));
-  }
-  if (!$object_name) {
-    form_set_error(implode('][', $element ['#parents']) . '][object_name',
-        t("Please provide the object of the relationship."));
-  }
-  if ($form_error) {
-    return;
-  }
-
-  // Before submitting this form we need to make sure that our subject_id and
-  // object_ids are real values.  There are two ways to get the value, either
-  // just with the text value or with an [id: \d+] string embedded.  If the
-  // later we will pull it out.
-  $subject_id = '';
-  $matches = array();
-  if (preg_match('/\[id: (\d+)\]/', $subject_name, $matches)) {
-    $subject_id = $matches[1];
-    tripal_chado_set_field_form_values($field_name, $form_state, $subject_id, $delta, $field_table . '__subject_id');
-  }
-  else {
-    $values = array(
-      'uniquename' => $subject_name,
-    );
-    $fkey_rcolumn = $fkeys[$base_table]['columns']['subject_id'];
-    $subject = chado_select_record($base_table, array($fkey_rcolumn), $values);
-    if (count($subject) == 0) {
-      form_set_error(implode('][', $element ['#parents']) . '][subject_name',
-          t("The subject record cannot be found. Please check spelling."));
-    }
-    elseif (count($subject) > 1) {
-      form_set_error(implode('][', $element ['#parents']) . '][subject_name',
-          t("The subject is not unique and therefore the relationship cannot be made."));
-    }
-    else {
-      $subject_id = $subject[0]->$fkey_rcolumn;
-      tripal_chado_set_field_form_values($field_name, $form_state, $subject_id, $delta, $field_table . '__subject_id');
-    }
-  }
-
-  // Now check for a matching object.
-  $object_id = '';
-  $matches = array();
-  if (preg_match('/\[id: (\d+)\]/', $object_name, $matches)) {
-    $object_id = $matches[1];
-    tripal_chado_set_field_form_values($field_name, $form_state, $object_id, $delta, $field_table . '__object_id');
-  }
-  else {
-    $values = array(
-      'uniquename' => $object_name,
-    );
-    $fkey_rcolumn = $fkeys[$base_table]['columns']['object_id'];
-    $object = chado_select_record($base_table, array($fkey_rcolumn), $values);
-    if (count($object) == 0) {
-      form_set_error(implode('][', $element ['#parents']) . '][object_name',
-          t("The object record cannot be found. Please check spelling."));
-    }
-    elseif (count($object) > 1) {
-      form_set_error(implode('][', $element ['#parents']) . '][object_name',
-          t("The object is not unique and therefore the relationship cannot be made."));
-    }
-    else {
-      $object_id = $object[0]->$fkey_rcolumn;
-      tripal_chado_set_field_form_values($field_name, $form_state, $object_id, $delta, $field_table . '__object_id');
-    }
-  }
-
-  // Make sure that either our object or our subject refers to the base record.
-  if ($object_id != $chado_record_id  and $subject_id != $chado_record_id) {
-    form_set_error(implode('][', $element ['#parents']) . '][subject_name',
-        t("Either the subject or the object in the relationship must refer to this record."));
-  }
-
-  if ($object_id == $chado_record_id  and $subject_id == $chado_record_id) {
-    form_set_error(implode('][', $element ['#parents']) . '][subject_name',
-        t("The subject and the object in the relationship cannot both refer to this record."));
-  }
-
-  // Now set the type_id to be the setting of the type_name field.
-  tripal_chado_set_field_form_values($field_name, $form_state, $type_name, $delta, $field_table . '__type_id');
-
-  // Reset the ranks of all fields based on their re-ordering in the form.
-  $schema = chado_get_schema($field_table);
-  if (array_key_exists('rank', $schema['fields'])) {
-    $weight = tripal_chado_get_field_form_values($field_name, $form_state, $delta, '_weight');
-    tripal_chado_set_field_form_values($field_name, $form_state, $weight, $delta, $field_table . '__rank');
-  }
-
- // form_set_error(implode('][', $element ['#parents']) . ']['type_name',
- //     t("Please provide the type of relationship."));
-}
