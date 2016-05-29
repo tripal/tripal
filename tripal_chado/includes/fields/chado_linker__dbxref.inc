@@ -33,49 +33,94 @@ class chado_linker__dbxref extends TripalField {
     );
   }
   /**
-   * @see TripalField::attach_info()
+   * @see TripalField::can_attach()
    */
-  function attach_info($entity_type, $bundle, $settings) {
-    $field_info = array();
-
-    $table_name = $settings['data_table'];
-    $type_table = $settings['type_table'];
-    $type_field = $settings['field'];
-    $cv_id      = $settings['cv_id'];
-    $cvterm_id  = $settings['cvterm_id'];
+  protected function can_attach($entity_type, $bundle, $details) {
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
 
     // If the linker table does not exists then we don't want to add attach.
     $dbxref_table = $table_name . '_dbxref';
     if (chado_table_exists($dbxref_table)) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+  /**
+   * @see TripalField::create_info()
+   */
+  function create_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
 
-      // We already have a dbxref_id field.
-      $schema = chado_get_schema($dbxref_table);
-      $pkey = $schema['primary key'][0];
+    $dbxref_table = $table_name . '_dbxref';
+    $schema = chado_get_schema($dbxref_table);
+    $pkey = $schema['primary key'][0];
 
-      // Initialize the field array.
-      $field_info = array(
-        'field_name' => $dbxref_table,
-        'field_type' => 'chado_linker__dbxref',
-        'widget_type' => 'chado_linker__dbxref_widget',
-        'widget_settings' => array('display_label' => 1),
-        'description' => 'This field specifies the IDs where this
-           record may be available in other external online databases.',
-        'label' => 'Cross References',
-        'is_required' => 0,
-        'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-        'storage' => 'field_chado_storage',
-        'field_settings' => array(
-          'chado_table' => $dbxref_table,
-          'chado_column' => $pkey,
-          'base_table' => $table_name,
-          'semantic_web' => 'SBO:0000554',
-        ),
-      );
-
+    return array(
+      'field_name' => $dbxref_table,
+      'type' => 'chado_linker__dbxref',
+      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+      'settings' => array(
+        'chado_table' => $dbxref_table,
+        'chado_column' => $pkey,
+        'base_table' => $table_name,
+        'semantic_web' => 'SBO:0000554',
+      ),
+    );
+  }
+  /**
+   * @see TripalField::create_instance_info()
+   */
+  function create_instance_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
     }
 
-    return $field_info;
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
+
+    $dbxref_table = $table_name . '_dbxref';
+    return array(
+      'field_name' => $dbxref_table,
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Cross References',
+      'description' => 'The IDs where this record may be available in other external online databases.',
+      'required' => FALSE,
+      'settings' => array(),
+      'widget' => array(
+        'type' => 'chado_linker__dbxref_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'deafult' => array(
+          'label' => 'above',
+          'type' => 'chado_linker__dbxref_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
   }
+
   /**
    * @see TripalField::widget_info()
    */

@@ -21,41 +21,88 @@ class chado_organism__type_id extends TripalField {
     );
   }
   /**
-   * @see TripalField::attach_info()
+   * @see TripalField::can_attach()
    */
-  public function attach_info($entity_type, $bundle, $settings) {
-
-    $field_info = array();
-
-    $table_name = $settings['data_table'];
-    $type_table = $settings['type_table'];
-    $type_field = $settings['field'];
-    $cv_id      = $settings['cv_id'];
-    $cvterm_id  = $settings['cvterm_id'];
+  function can_attach($entity_type, $bundle, $details){
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
 
     $schema = chado_get_schema($table_name);
 
     // If this is the organism table and Chado v1.3 then attach.
     if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
-      $field_info = array(
-        'field_name' => 'organism__type_id',
-        'field_type' => 'chado_organism__type_id',
-        'widget_type' => 'chado_organism__type_id_widget',
-        'description' => 'Select an Infraspecific Type.',
-        'label' => 'Infrapsecific Type',
-        'is_required' => 0,
-        'storage' => 'field_chado_storage',
-        'widget_settings' => array(
-          'display_label' => 1
-        ),
-        'field_settings' => array(
-          'chado_table' => 'organism',
-          'chado_column' => 'type_id',
-          'semantic_web' => 'local:infraspecific_type',
-        ),
-      );
+      return TRUE;
     }
-    return $field_info;
+    return FALSE;
+  }
+  /**
+   * @see TripalField::create_info()
+   */
+  function create_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
+
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
+
+    return array(
+      'field_name' => 'organism__type_id',
+      'type' => 'chado_organism__type_id',
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+      'settings' => array(
+        'chado_table' => 'organism',
+        'chado_column' => 'type_id',
+        'semantic_web' => 'local:infraspecific_type',
+      ),
+    );
+  }
+  /**
+   * @see TripalField::create_instance_info()
+   */
+  function create_instance_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
+
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
+
+    return array(
+      'field_name' => 'organism__type_id',
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Infrapsecific Type',
+      'description' => 'The Infrapsecific Type.',
+      'required' => FALSE,
+      'settings' => array(),
+      'widget' => array(
+        'type' => 'chado_organism__type_id_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'deafult' => array(
+          'label' => 'above',
+          'type' => 'chado_organism__type_id_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
   }
 
   /**

@@ -2,30 +2,79 @@
 
 
 /**
- * A base class for all Fields supported by Tripal.
+ * A base class for all fields supported by Tripal.
  *
- * This class provides all of the necessary functions for a TripalField field.
- * It helps simplify and unify the process of creating fields for Tripal.  This
- * class simply defines the function prototypes. It is up to the class that
- * extends this class to implement the functions.
+ * The Field API of Drupal defines three "levels" for fields:  field types,
+ * fields, and instances of fields.  All fields must be of a specific type, and
+ * the field types are typically defined using the hook_field_info() hook.
+ * Normally, using Drupal's Field API, fields can be created by using the
+ * field_create_field() function which defines the parameters and settings
+ * for the field.  The field_create_instance() function is then used to attach
+ * a field to a bundle and to set local parameters and settings for the field
+ * when attached to the bundle.  There are also a variety of hooks for creating
+ * widgets, formatters, customizaing settings forms, loading values, validating
+ * widget forms, etc. Rather than use all of these hooks, the TripalField class
+ * is used to consolidate and simplify creation and management of Fields.
  *
- * Each module that creates new fields should use the normal Field API hooks
- * (e.g. hook_field_info(), hook_field_widget_form(), etc.) to instantiate the
- * appropriate TripalField class.
+ * A module can extend this class to create new fields, and attach them to
+ * bundles.  The class is structure to allow fields to attach themselves to
+ * bundles. This is a bit different from how fields would normally be
+ * attached. But allows a field to be self-aware and all of the functionality
+ * for a field is self-contained in the Class implementation.  To change
+ * functionality a developer need only edit the class file for a field rathaer
+ * than look for all of the Field API hook that would typically be spread
+ * around the module.
  *
- * Because of the way Drupal handles callbacks, AJAX callbacks, and theme
- * functions cannot be part of the implementation of this class.  Those
- * functions if needed, should be added to the bottom of the file where the
- * child class is housed.
+ * This field also supports use of controlled vocabulaaries for providing
+ * "types" to these fields. This is important for use with the semantic web
+ * support for Tripal v3.
+ *
+ * AJAX callbacks, and theme functions unfortunately cannot be part of the
+ * implementation of this class.  To keep all functionality for a field
+ * in the same file, it is recommended that those functions, if needed, should
+ * be added to the bottom of the file where the child class is housed, and each
+ * TripalField child class should each be written in a separate file.
  *
  */
 class TripalField {
   /**
-   * Provides information about this field.
+   * Define this field type.
    *
-   * @return array
-   *   An associative array with key/value pairs compatible with those from
-   *   the hook_field_info() function of the Drupal Field API.
+   * @return
+   * An array whose keys are field type names and whose values are arrays
+   * describing the field type. The keys are the same as for the
+   * hook_field_info() function, which are:
+   *   - label: The human-readable name of the field type.
+   *   - description: A short description for the field type.
+   *   - settings: An array whose keys are the names of the settings available
+   *     for the field type, and whose values are the default values for those
+   *     settings.
+   *   - instance_settings: An array whose keys are the names of the settings
+   *     available for instances of the field type, and whose values are the
+   *     default values for those settings. Instance-level settings can have
+   *     different values on each field instance, and thus allow greater
+   *     flexibility than field-level settings. It is recommended to put
+   *     settings at the instance level whenever possible. Notable
+   *     exceptions: settings acting on the schema definition, or settings
+   *     that Views needs to use across field instances (for example, the
+   *     list of allowed values).
+   *   - default_widget: The machine name of the default widget to be used by
+   *     instances of this field type, when no widget is specified in the
+   *     instance definition. This widget must be available whenever the field
+   *     type is available (i.e. provided by the field type module, or by a
+   *     module the field type module depends on).  Valid names are those
+   *     provided by the widget_info() function of this class.
+   *   - default_formatter: The machine name of the default formatter to be
+   *     used by instances of this field type, when no formatter is specified
+   *     in the instance definition. This formatter must be available whenever
+   *     the field type is available (i.e. provided by the field type module,
+   *     or by a module the field type module depends on).  Valid names are
+   *     those provided by the formater_info() function of this class.
+   *   - no_ui: (optional) A boolean specifying that users should not be allowed
+   *     to create fields and instances of this field type through the UI.
+   *     Such fields can only be created programmatically with
+   *     field_create_field() and field_create_instance(). Defaults to
+   *     FALSE.
    */
   public function field_info() {
     return array(
@@ -34,20 +83,187 @@ class TripalField {
 
 
   /**
-   * Provides an array that allows Tripal to attach a field to an entity.
+   * Provides the information required for creating a field.
    *
-   * @todo: This function needs better documentation.
+   * These settings are global for every instance of the field.
    *
+   * he TripalField class allows a field to decide which bundles it would
+   * like to attach itself to. Therefore, the entity type, and bundle are
+   * passed as arguments to allow the field to decide if it wants to be
+   * attached.
+   *
+   * @param $entity_type
+   *   The class name for the entity type (e.g. TripalEntity).
+   * @param TripalBundle $bundle
+   *   The TripalBundle object.  This is the bundle that is being offered
+   *   to the field for attachement. The function will determine if this
+   *   field should be attached to this bundle.
+   * @param $details
+   * @return
+   *   A field definition array. The return value is identical to that
+   *   provided to the field_create_info() function. The field_name and
+   *   type properties are required. The semantic_web value is also required
+   *   under the settings. Other properties, if omitted, will be
+   *   given the following default values:
+   *     - cardinality: 1
+   *     - locked: FALSE. Set to TRUE if you do not want your field to be
+   *       re-used or deleted.
+   *     - settings: each omitted setting is given the default value
+   *       defined in field_info().
+   *       - semantic_web: a controlled vocabulary term written in the form
+   *         [CV short name]:[accession] (e.g. SO:000745).
+   *     - storage:
+   *       - type: the storage backend specified in the 'field_storage_default'
+   *         system variable.
+   *       - settings: each omitted setting is given the default value specified
+   *         in hook_field_storage_info().
+   *
+   *  Nothing is returned when this field will not be attached to the bundle.
    */
+  public function create_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
+  }
+
+  /**
+   * Provides the information required for creating an instance of a field.
+   *
+   * A field instance is a field that has been created using the values provided
+   * by the create_info() function of this class, and which is attached to
+   * a bundle.
+   *
+   * The TripalField class allows a field to decide which bundles it would
+   * like to attach itself to. Therefore, the entity type, and bundle are
+   * passed as arguments to allow the field to decide if it wants to be
+   * attached and if so then this function will provide the details to create
+   * the field.  The field instance can later be attached to the bundle
+   * using information provided by the create_instance_info() function.
+   *
+   * @param $entity_type
+   *   The entity type Class to which the bundle belongs.
+   * @param $bundle.
+   *   An instance of a TripalBundle object.  This is the bundle to which
+   *   the field can be added.
+   * @param $details
+   *   An associative array containing additional details provided by the
+   *   calling module that can be used by the function to determine if the
+   *   bundle should be attached to.
+   *
+   * @return
+   *  A field instance definition array. The values of thie array are identical
+   *  to those passed to the field_create_instance() function. The field_name,
+   *  entity_type and bundle (name of the bundle) properties are required.
+   *  Other properties, if omitted, will be given the following default values:
+   *    - label: the field name
+   *    - description: empty string
+   *    - required: FALSE
+   *    - default_value_function: empty string
+   *    - settings: each omitted setting is given the default value specified
+   *      in hook_field_info().
+   *    - widget:
+   *      - type: the default widget specified in field_info().
+   *      - settings: each omitted setting is given the default value specified
+   *        in widget_info().
+   *    - display: An instance can support multiple view modes. Eeach mode must
+   *      be listed as a separate key (e.g. 'default') with a the following
+   *      values (and their default specified below.  If display is not
+   *      included then the settings for the 'default' view mode will be added
+   *      automatically, and each view mode in the definition will be completed
+   *      with the following default values:
+   *      - label: 'above'
+   *      - type: the default formatter specified in field_info().
+   *      - settings: each omitted setting is given the default value specified
+   *        in formatter_info().
+   *      View modes not present in the definition are left empty, and the
+   *      field will not be displayed in this mode.
+   *
+   *  Nothing is returned when this field will not be attached to the bundle.
+   */
+  public function create_instance_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
+  }
+
+
+
+  /**
+   * A helper function to determine if this field wants to attach to a bundle.
+   *
+   * Because the create_info() and create_instance_info() functions both need
+   * to determine if they should attach to a bundle, this function is provided
+   * as a helper function to perform that check.  Any class that extends the
+   * TripalField class can use this function provide a single function that
+   * both create_info() and create_instance_info() can use.
+   *
+   * @param $entity_type
+   *   The entity type Class to which the bundle belongs.
+   * @param $bundle.
+   *   An instance of a TripalBundle object.  This is the bundle to which
+   *   the field can be added.
+   * @param $details
+   *   An associative array containing additional details provided by the
+   *   calling module that can be used by the function to determine if the
+   *   bundle should be attached to.
+   *
+   * @return
+   *   TRUE if the field should attach to the bundle. FALSE if not.
+   */
+  protected function can_attach($entity_type, $bundle, $details) {
+
+  }
+
   public function attach_info($entity_type, $bundle, $settings) {
 
   }
+
   /**
-   * Provides information about the widget for this field.
+   *  Provides information about the widgets provided by this field.
    *
-   * @return array
-   *   An associative array with key/value paris compatible with those from the
-   *   hook_field_widget_info() function of the Drupal Field API.
+   *  This function returns an array describing the widget types implemented by
+   *  the field.  The widgets created by this field are expecte to be used only
+   *  by this field.
+   *
+   * @param $entity_type
+   *   The entity type Class to which the bundle belongs.
+   * @param $bundle.
+   *   An instance of a TripalBundle object.  This is the bundle to which
+   *   the field can be added.
+   * @param $details
+   *   An associative array containing additional details provided by the
+   *   calling module that can be used by the function to determine if the
+   *   bundle should be attached to.
+   *
+   * @return
+   *   An associative array where the keys are widget type names. To avoid
+   *   name clashes, widget type names should be prefixed with the name of
+   *   the module that exposes them. The values are arrays describing the
+   *   widget type, with the following key/value pairs:
+   *
+   *     - label: The human-readable name of the widget type.
+   *     - description: A short description for the widget type.
+   *     - field types: An array of field types the widget supports.
+   *     - settings: An array whose keys are the names of the settings
+   *       available for the widget type, and whose values are the default
+   *       values for those settings.
+   *     - behaviors: (optional) An array describing behaviors of the widget,
+   *       with the following elements:
+   *       - multiple values: One of the following constants:
+   *          - FIELD_BEHAVIOR_DEFAULT: (default) If the widget allows the
+   *            input of one single field value (most common case). The widget
+   *            will be repeated for each value input.
+   *          - FIELD_BEHAVIOR_CUSTOM: If one single copy of the widget can
+   *            receive several field values. Examples: checkboxes, multiple
+   *            select, comma-separated textfield.
+   *        - default value: One of the following constants:
+   *          - FIELD_BEHAVIOR_DEFAULT: (default) If the widget accepts
+   *            default values.
+   *          - FIELD_BEHAVIOR_NONE: if the widget does not support
+   *            default values.
+   *     - weight: (optional) An integer to determine the weight of this
+   *       widget relative to other widgets in the Field UI when selecting a
+   *       widget for a given field instance.
    */
   public function widget_info() {
     return array(

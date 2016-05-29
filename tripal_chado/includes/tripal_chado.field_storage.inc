@@ -313,10 +313,6 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
             $field_obj->load($field, $entity, array('record' => $record));
           }
         }
-
-        if (function_exists($load_function)) {
-          $load_function($field, $entity, $base_table, $record);
-        }
       }
 
     } // end: foreach ($fields as $field_id => $ids) {

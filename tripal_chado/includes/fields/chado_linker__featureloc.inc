@@ -19,47 +19,91 @@ class chado_linker__featureloc extends TripalField {
       ),
     );
   }
-
   /**
-   * @see TripalField::attach_info()
+   * @see TripalField::can_attach()
    */
-  public function attach_info($entity_type, $bundle, $target) {
-    $field_info = array();
-
-    $table_name = $target['data_table'];
-    $type_table = $target['type_table'];
-    $type_field = $target['field'];
-    $cv_id      = $target['cv_id'];
-    $cvterm_id  = $target['cvterm_id'];
+  protected function can_attach($entity_type, $bundle, $details) {
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
 
     // If  this is not the feature table then we don't want to attach.
-    if ($table_name != 'feature') {
-      return $field_info;
+    if ($table_name == 'feature') {
+      return TRUE;
     }
+    return FALSE;
+  }
+  /**
+   * @see TripalField::create_info()
+   */
+  function create_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
 
     $schema = chado_get_schema('featureloc');
     $pkey = $schema['primary key'][0];
 
-    // Initialize the field array.
-    $field_info = array(
+    return array(
       'field_name' => 'featureloc',
-      'field_type' => 'chado_linker__featureloc',
-      'widget_type' => 'chado_linker__featureloc_widget',
-      'widget_settings' => array('display_label' => 1),
-      'description' => '',
-      'label' => 'Aligned Locations',
-      'is_required' => 0,
+      'type' => 'chado_linker__featureloc',
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'storage' => 'field_chado_storage',
-      'field_settings' => array(
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+      'settings' => array(
         'chado_table' => 'featureloc',
         'chado_column' => $pkey,
         'base_table' => 'feature',
         'semantic_web' => 'SO:position_of',
       ),
     );
+  }
+  /**
+   * @see TripalField::create_instance_info()
+   */
+  function create_instance_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
 
-    return $field_info;
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
+
+    return array(
+      'field_name' => 'featureloc',
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Aligned Locations',
+      'description' => 'The locations on other genomic sequences where this
+        record has been aligned.',
+      'required' => FALSE,
+      'settings' => array(),
+      'widget' => array(
+        'type' => 'chado_linker__featureloc_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'deafult' => array(
+          'label' => 'above',
+          'type' => 'chado_linker__featureloc_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
   }
 
   /**

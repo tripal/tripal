@@ -21,38 +21,90 @@ class chado_feature__md5checksum  extends TripalField {
   }
 
   /**
-   * @see TripalField::attach_info()
+   * @see TripalField::can_attach()
    */
-  function attach_info($entity_type, $bundle, $settings) {
-    $field_info = array();
-
-    $table_name = $settings['data_table'];
-    $type_table = $settings['type_table'];
-    $type_field = $settings['field'];
-    $cv_id      = $settings['cv_id'];
-    $cvterm_id  = $settings['cvterm_id'];
+  protected function can_attach($entity_type, $bundle, $details) {
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
 
     if ($table_name == 'feature') {
-      $field_info = array(
-        'field_name' => $table_name . '__md5checksum',
-        'field_type' => 'chado_feature__md5checksum',
-        'widget_type' => 'chado_feature__md5checksum_widget',
-        'description' => 'The MD5 checksum for the sequence.',
-        'label' => 'The Sequence MD5 Checksum',
-        'is_required' => 0,
-        'storage' => 'field_chado_storage',
-        'widget_settings' => array(
+      return TRUE;
+    }
+    return FALSE;
+  }
+  /**
+   * @see TripalField::create_info()
+   */
+  function create_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
+
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
+
+    return array(
+      'field_name' => $table_name . '__md5checksum',
+      'type' => 'chado_feature__md5checksum',
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+      'settings' => array(
+        'chado_table' => $table_name,
+        'chado_column' => 'md5checksum',
+        'semantic_web' => 'data:2190',
+      ),
+    );
+  }
+  /**
+   * @see TripalField::create_instance_info()
+   */
+  function create_instance_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
+
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
+
+    return array(
+      'field_name' => $table_name . '__md5checksum',
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Sequence Checksum',
+      'description' => 'The MD5 checksum for the sequence. The checksum here
+        will always be unique for the raw unformatted sequence. To verify that the
+        sequence has not been corrupted, download the raw sequence and use an MD5 tool
+        to calculate the value. If the value calculated is identical the one shown
+        here, then the downloaded sequence is uncorrupted.',
+      'required' => FALSE,
+      'settings' => array(),
+      'widget' => array(
+        'type' => 'chado_feature__md5checksum_widget',
+        'settings' => array(
           'display_label' => 1,
           'md5_fieldname' => 'feature__md5checksum',
         ),
-        'field_settings' => array(
-          'chado_table' => 'feature',
-          'chado_column' => 'md5checksum',
-          'semantic_web' => 'local:md5_checksum',
+      ),
+      'display' => array(
+        'deafult' => array(
+          'label' => 'above',
+          'type' => 'chado_feature__md5checksum_formatter',
+          'settings' => array(),
         ),
-      );
-    }
-    return $field_info;
+      ),
+    );
   }
 
   /**

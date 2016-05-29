@@ -174,8 +174,49 @@ function tripal_create_bundle($vocabulary, $accession, $term_name, &$error = '')
   // Get the bundle object.
   $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
 
-  // Allow modules now add fields to the bundle
-  module_invoke_all('add_bundle_fields', 'TripalEntity', $bundle, $term);
+  // Get the list of fields to create.
+  foreach (module_implements('field_create_info') as $module) {
+    $function = $module . '_field_create_info';
+    if (function_exists($function)) {
+      $fields = $function('TripalEntity', $bundle, $term);
+      if (!$fields){
+        continue;
+      }
+      foreach ($fields as $field_name => $info) {
+        // If the field already exists then skip it.
+        $field = field_info_field($info['field_name']);
+        if ($field) {
+          continue;
+        }
+        $field = field_create_field($info);
+        if (!$field) {
+          tripal_set_message(t("Could not create new field: %field.",
+            array('%field' =>  $info['field_name'])), TRIPAL_ERROR);
+        }
+      }
+    }
+  }
+
+  // Now get the list of field instances to add to the bundle.
+  foreach (module_implements('field_create_instance_info') as $module) {
+    $function = $module . '_field_create_instance_info';
+    if (function_exists($function)) {
+      $fields = $function('TripalEntity', $bundle, $term);
+      if (!$fields){
+        continue;
+      }
+      foreach ($fields as $field_name => $info) {
+        // If the field is already attached to this bundle then skip it.
+        $field = field_info_field($info['field_name']);
+        if ($field and array_key_exists('bundles', $field) and
+            array_key_exists('TripalEntity', $field['bundles']) and
+            in_array($bundle_name, $field['bundles']['TripalEntity'])) {
+          continue;
+        }
+        $instance = field_create_instance($info);
+      }
+    }
+  }
 
   return TRUE;
 }
@@ -201,91 +242,6 @@ function tripal_refresh_bundle_fields($bundle_name) {
 
   // Allow modules to update existing fields
   module_invoke_all('update_bundle_fields', 'TripalEntity', $bundle, $term);
-}
-
-
-/**
- * Adds a new field and attaches it to a bundle
- *
- * @param $field_name
- *   The name of the field.
- * @param $field_info
- *   An associative array containing the field information.  The following
- *   key/value pairs are supported:
- *     'field_type' : a valid field type.  May be any of the Drupal default
- *       fields, one created by the tripal_chado module or another custom module.
- *     'widget_type' : a valid widget type. May be any of the Drupal default
- *       fields, one created by the tripal_chado module or another custom module.
- *     'field_settings' : an array of settings that are appropriate for the
- *       selected field type.
- *     'widget_settings' : an array of settings that are appropriate for the
- *       selected widget type.
- *     'description' :  a default description for this field.
- *     'label' : a label used as a header for this field.
- *     'is_required' : indicates if the field is required in the edit form.
- *     'cardinality' : indicates the number of values this field can support.
- *       the default is 1 (meaning only one value). Use a value of
- *       FIELD_CARDINALITY_UNLIMITED for unlimited number of values.
- *     'default_value' : A default value for the field.
- *     'format' : A string indicating the format for the field. Must be
- *       specific to the field.
- * @param $entity_type_name
- *   The entity type name.
- * @param $bundle_name
- *   The bundle name.
- *
- * TODO: this function really shouldn't try to create an instance and
- * attach to a bundle  at the same time.
- */
-function tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name) {
-
-  $field = field_info_field($field_name);
-
-  // If the field exists and is attached to this bundle then just return,
-  // there is nothing left to do.
-  if ($field and array_key_exists('bundles', $field) and
-      array_key_exists($entity_type_name, $field['bundles']) and
-      in_array($bundle_name, $field['bundles'][$entity_type_name])) {
-    return;
-  }
-
-  $cardinality = 1;
-  if (array_key_exists('cardinality', $field_info) and is_numeric($field_info['cardinality'])) {
-    $cardinality = $field_info['cardinality'];
-  }
-
-  // If the field doesn't exist then create it.
-  if (!$field) {
-    $field = array(
-      'field_name' => $field_name,
-      'type' => $field_info['field_type'],
-      'cardinality' => $cardinality,
-      'locked' => FALSE,
-      'storage' => array(
-        'type' => $field_info['storage']
-      ),
-      'settings' => $field_info['field_settings'],
-    );
-    field_create_field($field);
-  }
-
-  // Attach the field to the bundle.
-  $field_instance = array(
-    'field_name' => $field_name,
-    'label' => $field_info['label'],
-    'description' => $field_info['description'],
-    'widget' => array(
-      'type' => $field_info['widget_type'],
-      'settings' => $field_info['widget_settings'],
-    ),
-    'entity_type' => $entity_type_name,
-    'required' => $field_info['is_required'],
-    'settings' => $field_info['field_settings'],
-    'bundle' => $bundle_name,
-    'default_value' => array_key_exists('default_value', $field_info) ? $field_info['default_value'] : '',
-    'format' => array_key_exists('format', $field_info) ? $field_info['format'] : '',
-  );
-  field_create_instance($field_instance);
 }
 
 /**
@@ -399,113 +355,6 @@ function hook_entity_create(&$entity, $entity_type) {
 
 }
 
-
-/**
- * Adds fields to a bundle type.
- *
- * When a new bundle (Tripal content type) is created, the tripal module
- * allows any other module the implements this hook to add fields too it. This
- * hook is called automatically.
- *
- * @param $entity_type
- *   The type of entity (e.g. 'TripalEntity')
- * @param $bundle
- *   An instance of a TripalBundle object.  This is the bundle to which
- *   the fields will be added.
- * @param $term
- *   An instance of a TripalTerm object. Each TripalBundle is associated with
- *   a controlled vocabulary term. This is the term object for the bundle.
- *
- * @return
- *   There is no return value.
- */
-function hook_add_bundle_fields($entity_type, $bundle, $term) {
-
-  //
-  // The example code below is derived from the tripal_chado modules and
-  // adds a 'synonym' field to the bundle.
-  //
-
-  $bundle_name = $bundle->name;
-
-  // This array will hold details that map the bundle to tables in Chado.
-  $bundle_data = array();
-
-  // Get the cvterm that corresponds to this TripalTerm object.
-  $vocab = entity_load('TripalVocab', array($term->vocab_id));
-  $vocab = reset($vocab);
-  $match = array(
-    'dbxref_id' => array(
-      'db_id' => array(
-        'name' => $vocab->vocabulary,
-      ),
-      'accession' => $term->accession
-    ),
-  );
-  $cvterm = chado_generate_var('cvterm', $match);
-
-
-  // Get the default table that this term maps to.
-  $default = db_select('tripal_cv_defaults', 't')
-  ->fields('t')
-  ->condition('cv_id', $cvterm->cv_id->cv_id)
-  ->execute()
-  ->fetchObject();
-  if ($default) {
-    $bundle_data = array(
-      'cv_id' => $cvterm->cv_id->cv_id,
-      'cvterm_id' => $cvterm->cvterm_id,
-      'data_table' => $default->table_name,
-      'type_table' => $default->table_name,
-      'field' =>  $default->field_name,
-    );
-  }
-  else {
-    return;
-  }
-
-  // Formulate the name of the synonym table.
-  $syn_table = $bundle_data['data_table'] . '_synonym';
-
-  // Don't add a field to this bundle if
-  if (!chado_table_exists($syn_table)) {
-    return;
-  }
-
-  $field_name = $syn_table;
-  $schema = chado_get_schema($syn_table);
-  $pkey = $schema['primary key'][0];
-
-  // The Tripal Chado module needs to know what Chado table and field
-  // this field maps to, as well as the base table that it maps to
-  // if this field will map to a record in a linking table.
-  $field_settings = array(
-    // The Chado table that this field maps to.
-    'chado_table' => $syn_table,
-    // The column in the chado table that this field maps to.
-    'chado_column' => $pkey,
-    // The base table that this field is connected to.
-    'base_table' => $base_table,
-    'semantic_web' => '',
-  );
-
-  // Finally set the field values.
-  $field_info = array(
-    'field_type' => 'synonym',
-    'widget_type' => 'tripal_fields_synonym_widget',
-    'widget_settings' => array('display_label' => 1),
-    'description' => '',
-    'label' => 'Synonyms',
-    'is_required' => 0,
-    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-    'storage' => 'field_chado_storage',
-    'field_settings' => $field_settings,
-  );
-
-  // Call the Tripal API function tripal_add_bundle_field to complete the
-  // addition of the field to the bundle.
-  tripal_add_bundle_field($field_name, $field_info, $entity_type_name, $bundle_name);
-}
 
 /**
  * @section

@@ -42,45 +42,92 @@ class chado_linker__phenotype extends TripalField {
     );
   }
   /**
-   * @see TripalField::attach_info()
+   * @see TripalField::can_attach()
    */
-  public function attach_info($entity_type, $bundle, $settings) {
-    $field_info = array();
-
-    $table_name = $settings['data_table'];
-    $type_table = $settings['type_table'];
-    $type_field = $settings['field'];
-    $cv_id      = $settings['cv_id'];
-    $cvterm_id  = $settings['cvterm_id'];
+  protected function can_attach($entity_type, $bundle, $details) {
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
 
     // If the linker table does not exists then we don't want to add attach.
     $phenotype_table = $table_name . '_phenotype';
-    if (!chado_table_exists($phenotype_table)) {
-      return $field_info;
+    if (chado_table_exists($phenotype_table)) {
+      return TRUE;
     }
+    return FALSE;
+  }
+  /**
+   * @see TripalField::create_info()
+   */
+  function create_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
 
+    $phenotype_table = $table_name . '_phenotype';
     $schema = chado_get_schema($phenotype_table);
     $pkey = $schema['primary key'][0];
 
-    // Initialize the field array.
-    $field_info = array(
+    return array(
       'field_name' => $table_name . '__phenotype',
-      'field_type' => 'chado_linker__phenotype',
-      'widget_type' => 'chado_linker__phenotype_widget',
-      'widget_settings' => array('display_label' => 1),
-      'description' => '',
-      'label' => 'Phenotypes',
-      'is_required' => 0,
+      'type' => 'chado_linker__phenotype',
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'storage' => 'field_chado_storage',
-      'field_settings' => array(
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+      'settings' => array(
         'chado_table' => $phenotype_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
         'semantic_web' => 'SBO:0000358',
       ),
     );
-    return $field_info;
+  }
+  /**
+   * @see TripalField::create_instance_info()
+   */
+  function create_instance_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
+
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
+
+    return array(
+      'field_name' => $table_name . '__phenotype',
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Phenotypes',
+      'description' => 'The phenotypes associated with this record.',
+      'required' => FALSE,
+      'settings' => array(),
+      'widget' => array(
+        'type' => 'chado_linker__phenotype_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'deafult' => array(
+          'label' => 'above',
+          'type' => 'chado_linker__phenotype_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+
   }
 
   /**

@@ -18,41 +18,90 @@ class chado_feature__seqlen extends TripalField {
       ),
     );
   }
+
   /**
-   * @see TripalField::attach_info()
+   * @see TripalField::can_attach()
    */
-  function attach_info($entity_type, $bundle, $settings) {
-    $field_info = array();
+  protected function can_attach($entity_type, $bundle, $details) {
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
 
-    $table_name = $settings['data_table'];
-    $type_table = $settings['type_table'];
-    $type_field = $settings['field'];
-    $cv_id      = $settings['cv_id'];
-    $cvterm_id  = $settings['cvterm_id'];
-
-    // If  this is not the feature table then we don't want to attach.
     if ($table_name == 'feature') {
-      $field_info = array(
-        'field_name' => 'feature__seqlen',
-        'field_type' => 'chado_feature__seqlen',
-        'widget_type' => 'chado_feature__seqlen_widget',
-        'description' => 'The length of the sequence (residues).',
-        'label' => 'Sequence Length',
-        'is_required' => 0,
-        'storage' => 'field_chado_storage',
-        'widget_settings' => array(
-          'display_label' => 1
-        ),
-        'field_settings' => array(
-          'chado_table' => $table_name,
-          'chado_column' => 'seqlen',
-          'semantic_web' => 'data:1249',
-        ),
-      );
+      return TRUE;
     }
-
-    return $field_info;
+    return FALSE;
   }
+  /**
+   * @see TripalField::create_info()
+   */
+  function create_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
+
+    return array(
+      'field_name' => 'feature__seqlen',
+      'type' => 'chado_feature__seqlen',
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+      'settings' => array(
+        'chado_table' => $table_name,
+        'chado_column' => 'seqlen',
+        'semantic_web' => 'data:1249',
+      ),
+    );
+  }
+  /**
+   * @see TripalField::create_instance_info()
+   */
+  function create_instance_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
+
+    return array(
+      'field_name' => 'feature__seqlen',
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Raw Sequence Length',
+      'description' => 'The number of residues in the raw sequence.  This length
+        is only for the assigned raw sequence and does not represent the length of any
+        sequences derived from alignments. If this value is zero but aligned sequences
+        are present then this record has no official assigned sequence.',
+      'required' => FALSE,
+      'settings' => array(),
+      'widget' => array(
+        'type' => 'chado_feature__seqlen_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'deafult' => array(
+          'label' => 'above',
+          'type' => 'chado_feature__seqlen_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
+
   /**
    * @see TripalField::widget_info()
    */

@@ -20,47 +20,91 @@ class chado_base__dbxref_id extends TripalField {
     );
   }
   /**
-   * @see TripalField::attach_info()
+   * @see TripalField::can_attach()
    */
-  function attach_info($entity_type, $bundle, $settings) {
+  protected function can_attach($entity_type, $bundle, $details) {
 
-    $field_info = array();
-
-    $table_name = $settings['data_table'];
-    $type_table = $settings['type_table'];
-    $type_field = $settings['field'];
-    $cv_id      = $settings['cv_id'];
-    $cvterm_id  = $settings['cvterm_id'];
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
 
     // Check the schema for the data table if it does not have
     // a 'dbxref_id' column then we don't want to attach this field.
     $schema = chado_get_schema($table_name);
-    if (!array_key_exists('dbxref_id', $schema['fields'])) {
-      return $field_info;
+    if (array_key_exists('dbxref_id', $schema['fields'])) {
+      return TRUE;
     }
+    return FALSE;
+  }
 
-    // There is an dbxref_id column so attach the field!
-    $field_info = array(
+  /**
+   * @see TripalField::create_info()
+   */
+  function create_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    };
+
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
+
+    return array(
       'field_name' => $table_name . '__dbxref_id',
-      'field_type' => 'chado_base__dbxref_id',
-      'widget_type' => 'chado_base__dbxref_id_widget',
-      'description' => 'This field specifies the unique stable accession (ID) for
-        this record. It requires that this site have a database entry.',
-      'label' => 'Accession',
-      'is_required' => 0,
-      'storage' => 'field_chado_storage',
-      'widget_settings' => array(
-        'display_label' => 1
+      'type' => 'chado_base__dbxref_id',
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
       ),
-      'field_settings' => array(
+      'settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'dbxref_id',
         'semantic_web' => 'data:2091',
       ),
     );
+  }
 
-    return $field_info;
+  /**
+   * @see TripalField::create_instance_info()
+   */
+  function create_instance_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
 
+    return array(
+      'field_name' => $table_name . '__dbxref_id',
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Accession',
+      'description' => 'This field specifies the unique stable accession (ID) for
+        this record. It requires that this site have a database entry.',
+      'required' => FALSE,
+      'settings' => array(),
+      'widget' => array(
+        'type' => 'chado_base__dbxref_id_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'deafult' => array(
+          'label' => 'above',
+          'type' => 'chado_base__dbxref_id_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
   }
   /**
    * @see TripalField::widget_info()

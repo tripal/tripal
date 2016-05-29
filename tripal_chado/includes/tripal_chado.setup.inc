@@ -391,16 +391,24 @@ function tripal_chado_prepare_chado() {
     // and the chado table and field that it maps to.  We will use a few
     // variables to do this:
     tripal_insert_variable(
+      'chado_cv_id',
+      'The ID of the controlled vocabulary in the chado.cv table..'
+    );
+    tripal_insert_variable(
       'chado_cvterm_id',
-      'The cvterm_id that a TripalBundle maps to.'
+      'The ID of the controlled vocabulary term in the chado.cvterm table.'
     );
     tripal_insert_variable(
       'chado_table',
       'The name of the table to which a TripalBundle maps.'
     );
     tripal_insert_variable(
-      'chado_column',
-      'The name of the column within the table that a TripalBundle maps to.'
+      'chado_type_table',
+      'The table that houses the foreign key the cvterm table.'
+    );
+    tripal_insert_variable(
+      'chado_type_column',
+      'The name of the column within the type table that houses the cvterm.'
     );
 
     // We want to provide a set of commonly used entity types by default. This

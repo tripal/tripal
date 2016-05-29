@@ -138,9 +138,16 @@ function tripal_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
-  // Menu items for facilitating import of extension modules.
   $items['admin/tripal/extension'] = array(
     'title' => 'Extensions',
+    'description' => t("Configuration and management pages for Tripal extension modules."),
+    'weight' => 8,
+    'access arguments' => array('administer tripal'),
+  );
+
+  // Menu items for facilitating import of extension modules.
+  $items['admin/tripal/extension/available'] = array(
+    'title' => 'Available Extensions',
     'description' => t('Look for extensions to add new functionality to this
         site. Tripal can be extended with new functionality developed
         by other Tripal site developers. These include modules with new or
@@ -153,19 +160,19 @@ function tripal_menu() {
     'type' => MENU_NORMAL_ITEM,
     'file' => 'includes/tripal.extensions.inc',
     'file path' => drupal_get_path('module', 'tripal'),
-    'weight' => 100
+    'weight' => -100
   );
-  $items['admin/tripal/extension/import'] = array(
-    'title' => 'Import Extensions',
-    'description' => 'Provides a list of the available extensions that are registered at the tripal.info site. From this page you can easily import or install extensions to your site.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_extensions_form'),
-    'access arguments' => array('administer tripal'),
-    'type' => MENU_NORMAL_ITEM,
-    'file' =>  'includes/tripal.extensions.inc',
-    'file path' => drupal_get_path('module', 'tripal'),
-    'weight' => -100,
-  );
+//   $items['admin/tripal/extension/import'] = array(
+//     'title' => 'Import Extensions',
+//     'description' => 'Provides a list of the available extensions that are registered at the tripal.info site. From this page you can easily import or install extensions to your site.',
+//     'page callback' => 'drupal_get_form',
+//     'page arguments' => array('tripal_extensions_form'),
+//     'access arguments' => array('administer tripal'),
+//     'type' => MENU_NORMAL_ITEM,
+//     'file' =>  'includes/tripal.extensions.inc',
+//     'file path' => drupal_get_path('module', 'tripal'),
+//     'weight' => -100,
+//   );
 
 
 /*
@@ -515,33 +522,3 @@ function tripal_import_api() {
   module_load_include('inc', 'tripal', 'api/tripal.notice.api');
   module_load_include('inc', 'tripal', 'api/tripal.variables.api');
 }
-
-
-/**
- * Implemenation of hook_add_bundle_fields().
- *
- * In this function we add the type field.
- */
-function tripal_add_bundle_fields($entity_type, $bundle, $term) {
-  $field_name = 'content_type';
-  $bundle_name = $bundle->name;
-
-  // Create the field array.
-  $field_info = array(
-    'field_type' => 'content_type',
-    'widget_type' => 'tripal_content_type_widget',
-    'widget_settings' => array('display_label' => 1),
-    'description' => '',
-    'label' => 'Record Type',
-    'is_required' => 0,
-    'storage' => 'tripal_no_storage',
-    'field_settings' => array(
-      'semantic_web' => '',
-    ),
-  );
-
-  tripal_add_bundle_field($field_name, $field_info, $entity_type, $bundle_name);
-}
-
-
-

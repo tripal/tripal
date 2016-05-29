@@ -22,57 +22,107 @@ class chado_base__organism_id extends TripalField {
     );
   }
   /**
-   * @see TripalField::attach_info()
+   * @see TripalField::can_attach()
    */
-  public function attach_info($entity_type, $bundle, $settings) {
+  protected function can_attach($entity_type, $bundle, $details) {
 
-    $field_info = array();
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
 
-    $table_name = $settings['data_table'];
-    $type_table = $settings['type_table'];
-    $type_field = $settings['field'];
-    $cv_id      = $settings['cv_id'];
-    $cvterm_id  = $settings['cvterm_id'];
-
-    // Check the schema for the data table if it does not have
-    // an 'organism_id' column then we don't want to attach this field.
     $schema = chado_get_schema($table_name);
-    if (!array_key_exists('organism_id', $schema['fields'])) {
-      return $field_info;
-    }
 
-    // If this is the organism table then do not attach as that is the
-    // primary key
+    // If this is the organism table then do not attach as the organism_id
+    // field is the primary key and we don't want a field for that.
     if ($table_name == 'organism') {
-      return $field_info;
+      return FALSE;
     }
 
-    $is_required = FALSE;
-    if (array_key_exists('not null', $schema['fields']['organism_id']) and
-        $schema['fields']['organism_id']['not null']) {
-      $is_required = TRUE;
+    // Check the schema for the data table if it has
+    // an 'organism_id' column then we want to attach this field.
+    if (array_key_exists('organism_id', $schema['fields'])) {
+      return TRUE;
     }
 
-    // There is an organism_id column so attach the field!
-    $field_info = array(
+    return FALSE;
+  }
+
+  /**
+   * @see TripalField::create_info()
+   */
+  public function create_info($entity_type, $bundle, $details) {
+
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
+
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
+
+    return array(
       'field_name' => $table_name . '__organism_id',
-      'field_type' => 'chado_base__organism_id',
-      'widget_type' => 'chado_base__organism_id_widget',
-      'description' => 'Select an organism.',
-      'label' => 'Organism',
-      'is_required' => $is_required,
-      'storage' => 'field_chado_storage',
-      'widget_settings' => array(
-        'display_label' => 1
+      'type' => 'chado_base__organism_id',
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
       ),
-      'field_settings' => array(
+      'settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'organism_id',
         'semantic_web' => 'local:organism',
       ),
     );
+  }
+  /**
+   * @see TripalField::create_instance_info()
+   */
+  public function create_instance_info($entity_type, $bundle, $details) {
 
-    return $field_info;
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
+
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
+
+    $is_required = FALSE;
+    $schema = chado_get_schema($table_name);
+    if (array_key_exists('not null', $schema['fields']['organism_id']) and
+        $schema['fields']['organism_id']['not null']) {
+      $is_required = TRUE;
+    }
+
+    return array(
+      'field_name' => $table_name . '__organism_id',
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Organism',
+      'description' => 'Select an organism.',
+      'required' => $is_required,
+      'settings' => array(),
+      'widget' => array(
+        'type' => 'chado_base__organism_id_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'deafult' => array(
+          'label' => 'above',
+          'type' => 'chado_base__organism_id_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
   }
 
   /**

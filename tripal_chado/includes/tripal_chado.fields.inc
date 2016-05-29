@@ -25,20 +25,539 @@ function tripal_chado_field_info() {
   foreach ($field_files as $file) {
     $field_type = $file->name;
     module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-
     if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
       $field_obj = new $field_type();
       $info[$field_type] = $field_obj->field_info();
-    }
-
-    $function = $field_type . '_info';
-    if (function_exists($function)) {
-      $info[$field_type] = $function();
     }
   }
   return $info;
 
 }
+
+/**
+ * Implements hook_field_create_info().
+ *
+ * This is a Tripal defined hook that supports integration with the
+ * TripalEntity field.
+ */
+function tripal_chado_field_create_info($entity_type, $bundle, $term) {
+
+  $bundle_name = $bundle->name;
+
+  // The details array is used to pass to the TripalEntity->create_info()
+  // function to provide more details about how the bundle is used by this
+  // module.
+  $details = array();
+
+  // This array will hold details that map the bundle to tables in Chado.
+  $bundle_data = array();
+
+  // Get the cvterm that corresponds to this TripalTerm object.
+  $vocab = entity_load('TripalVocab', array($term->vocab_id));
+  $vocab = reset($vocab);
+  $match = array(
+    'dbxref_id' => array(
+      'db_id' => array(
+        'name' => $vocab->vocabulary,
+      ),
+      'accession' => $term->accession
+    ),
+  );
+  $cvterm = chado_generate_var('cvterm', $match);
+
+  // The organism table does not have a type_id so we won't ever find
+  // a record for it in the tripal_cv_defaults table.
+  if ($cvterm->name == 'organism') {
+    $details = array(
+      'chado_cv_id' => $cvterm->cv_id->cv_id,
+      'chado_cvterm_id' => $cvterm->cvterm_id,
+      'chado_table' => 'organism',
+      'chado_type_table' => 'organism',
+      'chado_type_column' =>  '',
+    );
+  }
+  // The analysis table does not have a type_id so we won't ever find
+  // a record for it in the tripalcv_defaults table.
+  else if ($cvterm->name == 'analysis') {
+    $details = array(
+      'chado_cv_id' => $cvterm->cv_id->cv_id,
+      'chado_cvterm_id' => $cvterm->cvterm_id,
+      'chado_table' => 'analysis',
+      'chado_type_table' => 'analysis',
+      'chado_type_column' =>  '',
+    );
+  }
+  else if ($cvterm->name == 'project') {
+    $details = array(
+      'chado_cv_id' => $cvterm->cv_id->cv_id,
+      'chado_cvterm_id' => $cvterm->cvterm_id,
+      'chado_table' => 'project',
+      'chado_type_table' => 'project',
+      'chado_type_column' =>  '',
+    );
+  }
+  else {
+    // TODO: WHAT TO DO IF A VOCABULARY IS USED AS A DEFAULT FOR MULTIPLE
+    // TABLES.
+    // Look to see if this vocabulary is used as a default for any table.
+      $default = db_select('tripal_cv_defaults', 't')
+      ->fields('t')
+      ->condition('cv_id', $cvterm->cv_id->cv_id)
+      ->execute()
+      ->fetchObject();
+    if ($default) {
+      $details = array(
+        'chado_cv_id' => $cvterm->cv_id->cv_id,
+        'chado_cvterm_id' => $cvterm->cvterm_id,
+        'chado_table' => $default->table_name,
+        'chado_type_table' => $default->table_name,
+        'chado_type_column' =>  $default->field_name,
+      );
+    }
+  }
+
+  // Save the mapping information so that we can reuse it when we need to
+  // look things up for later (such as the hook_create_instance_info() function.
+  tripal_set_bundle_variable('chado_cv_id', $bundle->id, $details['chado_cv_id']);
+  tripal_set_bundle_variable('chado_cvterm_id', $bundle->id, $details['chado_cvterm_id']);
+  tripal_set_bundle_variable('chado_table', $bundle->id, $details['chado_table']);
+  tripal_set_bundle_variable('chado_type_table', $bundle->id, $details['chado_type_table']);
+  tripal_set_bundle_variable('chado_type_column', $bundle->id, $details['chado_type_column']);
+
+  $base_fields = tripal_chado_field_create_base('create_info', $entity_type, $bundle, $details);
+  $custom_fields = tripal_chado_field_create_info_custom($entity_type, $bundle, $details);
+  return array_merge($base_fields, $custom_fields);
+}
+
+/**
+ * A helper function for the tripal_chado_field_create_info() function.
+ *
+ * This function adds in the custom fields info by instantiating the class
+ * for the custom field, calling the create_info() function and
+ * returning the info array.
+ *
+ * @param $entity_type
+ *   The type of entity (e.g TripalEntity)
+ * @param $bundle
+ *   The bundle object.
+ * @param $details
+ *   An array containing the mapping of the bundle to the Chado table.
+ */
+function tripal_chado_field_create_info_custom($entity_type, $bundle, $details) {
+  $info = array();
+
+  // Find all of the files in the tripal_chado/includes/fields directory.
+  $fields_path = drupal_get_path('module', 'tripal_chado') . '/includes/fields';
+  $field_files = file_scan_directory($fields_path, '/^chado_.*\.inc$/');
+
+  // Iterate through the fields, include the file and run the info function.
+  foreach ($field_files as $file) {
+    $field_type = $file->name;
+    module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+    if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
+      $field_obj = new $field_type();
+      $result = $field_obj->create_info($entity_type, $bundle, $details);
+      if (is_array($result)) {
+        $info[$result['field_name']] = $result;
+      }
+    }
+  }
+  return $info;
+}
+
+/**
+ * Retrieves either the create_info or create_instance_info arrays.
+ *
+ * The logic for creating the fields for the base table is so similar for
+ * both the create_info and create_instance_info arrays they are both
+ * handled by this function to prevent duplication of code.
+ *
+ * @param $step
+ *   Set to 'create_info' to retrun the create_info array or
+ *   'create_instance_info' to return the create_instance_info array.
+ * @param $entity_type
+ *   The type of entity (e.g TripalEntity)
+ * @param $bundle
+ *   The bundle object.
+ * @param $details
+ *   An array containing the mapping of the bundle to the Chado table.
+ *
+ * @return
+ *   An array compabile with the tripal_chado_field_create_info() and
+ *   tripal_chado_field_create_instance_info() functions.
+ */
+function tripal_chado_field_create_base($step, $entity_type, $bundle, $details) {
+  $table_name = $details['chado_table'];
+  $type_table = $details['chado_type_table'];
+  $type_field = $details['chado_type_column'];
+
+  // Iterate through the columns of the table and see if fields have been
+  // created for each one. If not, then create them.
+  $schema = chado_get_schema($table_name);
+  $columns = $schema['fields'];
+  $fields = array();
+  foreach ($columns as $column_name => $details) {
+    $field_name = $table_name . '__' . $column_name;
+
+    // Skip the primary key field.
+    if ($column_name == $schema['primary key'][0]) {
+      continue;
+    }
+
+    // Skip the type field.
+    if ($table_name == $type_table and $column_name == $type_field) {
+      continue;
+    }
+
+    // Get the field defaults for this column.
+    $field_info = array();
+    if ($step == 'create_info') {
+      $field_info = tripal_chado_field_create_info_base_defaults($field_name,
+        $table_name, $schema, $column_name);
+    }
+    if ($step == 'create_instance_info') {
+      $field_info = tripal_chado_field_create_instance_info_base_defaults($bundle->name,
+        $field_name, $table_name, $schema, $column_name);
+    }
+
+    // TODO: add in a call to drupal_alter to allow other modules to change
+    // the field settings.
+
+    // Add the field to the bundle.
+    $fields[$field_name] = $field_info;
+  }
+  return $fields;
+}
+/**
+ * A helper function for the tripal_chado_field_create_info() function.
+ *
+ * This function generates the default chado_info array for a column in
+ * a base table of Chado.  All of fields returned by this function use
+ * default Drupal fields to manage the data in Chado columns.  For
+ * custom handling of columns there are custom TripalEntity extensions that
+ * are added by the tripal_chado_field_create_info_custom() function.  A
+ * custom field will superceed any default base field of the same name
+ * provided here.
+ *
+ * @param $field_name
+ *   The name for the new field.
+ * @param $table_name
+ *   The Chado table
+ * @param $schema
+ *   The Drupal schema array for the Chado table.
+ * @param $column_name
+ *   The name of the column in the Chado table.
+ * @return
+ *   An associative array compatible with the tripal_chado_field_create_info()
+ *   function.
+ */
+function tripal_chado_field_create_info_base_defaults($field_name, $table_name,
+    $schema, $column_name) {
+
+  $details = $schema['fields'][$column_name];
+
+  // Set some defaults for the field.
+  $field = array(
+    'field_name' => $field_name,
+    'type' => '',
+    'cardinality' => 1,
+    'locked' => FALSE,
+    'storage' => array(
+      'type' => 'field_chado_storage',
+    ),
+    'settings' => array(
+      'chado_table' => $table_name,
+      'chado_column' => $column_name,
+      'semantic_web' => '',
+    ),
+  );
+
+  // Alter the field info array depending on the column details.
+  switch($details['type']) {
+    case 'char':
+      $field['type'] = 'text';
+      $field['settings']['max_length'] = $details['length'];
+      break;
+    case 'varchar':
+      $field['type'] = 'text';
+      $field['settings']['max_length'] = $details['length'];
+      break;
+    case 'text':
+      $field['type'] = 'text';
+      $field['settings']['max_length'] = 17179869184;
+      $field['settings']['text_processing'] = 1;
+      break;
+    case 'blob':
+      // not sure how to support a blob field.
+      continue;
+      break;
+    case 'int':
+      $field['type'] = 'number_integer';
+      break;
+    case 'float':
+      $field['type'] = 'number_float';
+      $field['settings']['precision'] = 10;
+      $field['settings']['scale'] = 2;
+      $field['settings']['decimal_separator'] = '.';
+      break;
+    case 'numeric':
+      $field['type'] = 'number_decimal';
+      break;
+    case 'serial':
+      // Serial fields are most likely not needed as a field.
+      break;
+    case 'boolean':
+      $field['type'] = 'list_boolean';
+      $field['settings']['allowed_values'] = array(0 => "No", 1 => "Yes");
+      break;
+    case 'datetime':
+      // Use the Drupal Date and Date API to create the field/widget
+      $field['type'] = 'datetime';
+      break;
+  }
+
+  // Set some default semantic web information
+  if ($column_name == 'uniquename') {
+    $field['settings']['text_processing'] = 0;
+  }
+  //
+  // PUB TABLE
+  //
+  elseif ($table_name == 'pub' and $column_name == 'uniquename') {
+    $field['type'] = 'text';
+    $field['settings']['text_processing'] = 0;
+  }
+
+  //
+  // ANALYSIS TABLE
+  //
+  elseif ($table_name == 'analysis' and $column_name == 'sourceuri') {
+    $field['type'] = 'text';
+    $field['settings']['text_processing'] = 0;
+  }
+
+  return $field;
+}
+
+/**
+ * Implements hook_field_create_instance_info().
+ *
+ * This is a Tripal defined hook that supports integration with the
+ * TripalEntity field.
+ */
+function tripal_chado_field_create_instance_info($entity_type, $bundle, $term) {
+
+  // Get the details about the mapping of this bundle to the Chado table:
+  $details = array(
+    'chado_cv_id' => tripal_get_bundle_variable('chado_cv_id', $bundle->id),
+    'chado_cvterm_id' => tripal_get_bundle_variable('chado_cvterm_id', $bundle->id),
+    'chado_table' => tripal_get_bundle_variable('chado_table', $bundle->id),
+    'chado_type_table' => tripal_get_bundle_variable('chado_type_table', $bundle->id),
+    'chado_type_column' => tripal_get_bundle_variable('chado_type_column', $bundle->id),
+  );
+
+  $base_fields = tripal_chado_field_create_base('create_instance_info', $entity_type, $bundle, $details);
+  $custom_fields = tripal_chado_field_create_instance_info_custom($entity_type, $bundle, $details);
+  return array_merge($base_fields, $custom_fields);
+
+}
+/**
+ * A helper function for the tripal_chado_field_create_instance_info() function.
+ *
+ * This function generates the default chado_instance_info array for a column in
+ * a base table of Chado.  All of fields returned by this function use
+ * default Drupal fields to manage the data in Chado columns.  For
+ * custom handling of columns there are custom TripalEntity extensions that
+ * are added by the tripal_chado_field_create_info_custom() function.  A
+ * custom field will superceed any default base field of the same name
+ * provided here.
+ *
+ * @param $bundle_name
+ *   The name of the bundle to which this field will be attached.
+ * @param $field_name
+ *   The name for the new field.
+ * @param $table_name
+ *   The Chado table
+ * @param $schema
+ *   The Drupal schema array for the Chado table.
+ * @param $column_name
+ *   The name of the column in the Chado table.
+ * @return
+ *   An associative array compatible with the tripal_chado_field_create_info()
+ *   function.
+ */
+function tripal_chado_field_create_instance_info_base_defaults($bundle_name,
+    $field_name, $table_name, $schema, $column_name) {
+
+  $details = $schema['fields'][$column_name];
+
+  $field =  array(
+      'field_name' => $field_name,
+      'entity_type' => 'TripalEntity',
+      'bundle' => $bundle_name,
+      'label' => ucwords(preg_replace('/_/', ' ', $column_name)),
+      'description' => '',
+      'required' => FALSE,
+      'settings' => array(),
+      'widget' => array(
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'settings' => array(),
+        ),
+      ),
+    );
+
+  // Determine if the field is required.
+  if (array_key_exists('not null', $details) and $details['not null'] === TRUE) {
+    $field_info['required'] = TRUE;
+  }
+
+  // Alter the field info array depending on the column details.
+  switch($details['type']) {
+    case 'char':
+      $field['widget']['type'] = 'text_textfield';
+      break;
+    case 'varchar':
+      $field['widget']['type'] = 'text_textfield';
+      break;
+    case 'text':
+      $field['widget']['type'] = 'text_textarea';
+      $field['widget']['settings']['format'] = filter_default_format();
+      break;
+    case 'blob':
+      // not sure how to support a blob field.
+      continue;
+      break;
+    case 'int':
+      $field['widget']['type'] = 'number';
+      break;
+    case 'float':
+      $field['widget']['type'] = 'number';
+      break;
+    case 'numeric':
+      $field['widget']['type'] = 'number';
+      break;
+    case 'serial':
+      // Serial fields are most likely not needed as a field.
+      break;
+    case 'boolean':
+      $field['widget']['type'] = 'options_onoff';
+      break;
+    case 'datetime':
+      $field['widget']['type'] = 'date_select';
+      $field['widget']['settings']['increment'] = 1;
+      $field['widget']['settings']['tz_handling'] = 'none';
+      $field['widget']['settings']['collapsible'] = TRUE;
+
+      // TODO: Add settings so that the minutes increment by 1.
+      // And turn off the timezone, as the Chado field doesn't support it.
+      break;
+  }
+
+  // Set some default semantic web information
+  if ($column_name == 'uniquename') {
+    $field['widget_type'] = 'text_textfield';
+  }
+  elseif ($field['label'] == 'Timeaccessioned') {
+    $field['label'] = 'Time Accessioned';
+    $field['description'] = 'Please enter the time that this record was first added to the database.';
+  }
+  elseif ($field['label'] == 'Timelastmodified') {
+    $field['label'] = 'Time Last Modified';
+    $field['description'] = 'Please enter the time that this record was last modified. The default is the current time.';
+  }
+  //
+  // ORGANISM TABLE
+  //
+  elseif ($table_name == 'organism' and $column_name == 'comment') {
+    $field['label'] = 'Description';
+  }
+  //
+  // PUB TABLE
+  //
+  elseif ($table_name == 'pub' and $column_name == 'uniquename') {
+    $field['widget_type'] = 'text_textfield';
+  }
+
+  //
+  // ANALYSIS TABLE
+  //
+  elseif ($table_name == 'analysis' and $column_name == 'program') {
+    $field['description'] = 'The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.';
+    $field['label'] = 'Program, Pipeline, Workflow or Method Name.';
+  }
+  elseif ($table_name == 'analysis' and $column_name == 'sourceuri') {
+    $field['widget_type'] = 'text_textfield';
+    $field['label'] = 'Source URL';
+    $field['description'] = 'The URL where the original source data was derived.  Ideally, this should link to the page where more information about the source data can be found.';
+  }
+  elseif ($table_name == 'analysis' and $column_name == 'sourcename') {
+    $field['label'] = 'Source Name';
+    $field['description'] = 'The name of the source data. This could be a file name, data set or a small description for how the data was collected. For long descriptions use the larger description field.';
+  }
+  elseif ($table_name == 'analysis' and $column_name == 'sourceversion') {
+    $field['label'] = 'Source Version';
+    $field['description'] = 'If hte source data set has a version include it here.';
+  }
+  elseif ($table_name == 'analysis' and $column_name == 'algorithm') {
+    $field['label'] = 'Source Version';
+    $field['description'] = 'The name of the algorithm used to produce the dataset if different from the program.';
+  }
+  elseif ($table_name == 'analysis' and $column_name == 'programversion') {
+    $field['label'] = 'Program Version';
+    $field['description'] = 'The version of the program used to perform this analysis. (e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter "n/a" if no version is available or applicable.';
+  }
+  //
+  // PROJECT TABLE
+  //
+  elseif ($table_name == 'project' and $column_name == 'description') {
+    $field['label'] = 'Short Description';
+  }
+
+  return $field;
+}
+
+/**
+ * A helper function for the tripal_chado_field_create_instance_info() function.
+ *
+ * This function adds in the custom fields info by instantiating the class
+ * for the custom field, calling the create_instance_info() function and
+ * returning the info array.
+ *
+ * @param $entity_type
+ *   The type of entity (e.g TripalEntity)
+ * @param $bundle
+ *   The bundle object.
+ * @param $details
+ *   An array containing the mapping of the bundle to the Chado table.
+ */
+function tripal_chado_field_create_instance_info_custom($entity_type, $bundle, $details) {
+  $info = array();
+
+  // Find all of the files in the tripal_chado/includes/fields directory.
+  $fields_path = drupal_get_path('module', 'tripal_chado') . '/includes/fields';
+  $field_files = file_scan_directory($fields_path, '/^chado_.*\.inc$/');
+
+  // Iterate through the fields, include the file and run the info function.
+  foreach ($field_files as $file) {
+    $field_type = $file->name;
+    module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+    if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
+      $field_obj = new $field_type();
+      $result = $field_obj->create_instance_info($entity_type, $bundle, $details);
+      if (is_array($result)) {
+        $info[$result['field_name']] = $result;
+      }
+    }
+  }
+  return $info;
+}
+
 /**
  * Implements hook_field_widget_info().
  *
@@ -55,15 +574,9 @@ function tripal_chado_field_widget_info() {
     $field_type = $field['type'];
     if ($field['storage']['type'] == 'field_chado_storage') {
       module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-
       if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
         $field_obj = new $field_type();
         $widgets[$field_type . '_widget'] = $field_obj->widget_info();
-      }
-
-      $function = $field_type . '_widget_info';
-      if (function_exists($function)) {
-        $widgets[$field_type . '_widget'] = $function();
       }
     }
   }
@@ -85,15 +598,9 @@ function tripal_chado_field_formatter_info() {
     $field_type = $field['type'];
     if ($field['storage']['type'] == 'field_chado_storage') {
       module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-
       if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
         $field_obj = new $field_type();
         $formatters[$field_type . '_formatter'] = $field_obj->formatter_info();
-      }
-
-      $function = $field_type . '_formatter_info';
-      if (function_exists($function)) {
-        $formatters[$field_type . '_formatter'] = $function();
       }
     }
   }
@@ -112,12 +619,6 @@ function tripal_chado_field_settings_form($field, $instance, $has_data) {
     $field_obj = new $field_type();
     $form = $field_obj->settings_form($field, $instance, $has_data);
   }
-
-  $function = $field_type . '_settings_form';
-  if (function_exists($function)) {
-    $form = $function($field, $instance, $has_data);
-  }
-
   return $form;
 }
 /**
@@ -133,12 +634,6 @@ function tripal_chado_field_formatter_settings_summary($field, $instance, $view_
     $field = new $field_type();
     $summary = $field->formatter_settings_summary($field, $instance, $view_mode);
   }
-
-  $function = $field_type . '_formatter_settings_summary';
-  if (function_exists($function)) {
-    $summary = $function($field, $instance, $view_mode);
-  }
-
   return $summary;
 }
 
@@ -183,11 +678,6 @@ function tripal_chado_field_formatter_view($entity_type, $entity, $field,
     $field_obj->formatter_view($element, $entity_type, $entity, $field, $instance, $langcode, $items, $display);
   }
 
-  $function = $display['type'];
-  if (function_exists($function)) {
-    $function($element, $entity_type, $entity, $field, $instance, $langcode, $items, $display);
-  }
-
   return $element;
 }
 
@@ -209,87 +699,9 @@ function tripal_chado_field_widget_form(&$form, &$form_state, $field,
     $field_obj->widget_form($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
   }
 
-  $function = $field_type . '_widget';
-  if (function_exists($function)) {
-    $function($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
-  }
-
   return $widget;
 }
 
-/**
- * Returns the values of the field from the $form_state.
- */
-function tripal_chado_get_field_form_values($field_name, $form_state, $delta = 0, $child = NULL) {
-  $value = NULL;
-  // The form_state must have the 'values' key. If not then just return.
-  if (!array_key_exists('values', $form_state)) {
-    return $value;
-  }
-
-  // If the field name is not in the form_state['values'] then return.
-  if (!array_key_exists($field_name, $form_state['values'])) {
-    return $value;
-  }
-
-  // Iterate through the values looking for the field_name provided.
-  foreach ($form_state['values'][$field_name] as $langcode => $items) {
-    if (!array_key_exists($delta, $items)) {
-      continue;
-    }
-    $item = $items[$delta];
-    if ($child){
-      if(array_key_exists($child, $item) and $item[$child] != '') {
-        $value = $item[$child];
-      }
-    }
-    else {
-      $value = $item['value'];
-    }
-  }
-  return $value;
-}
-
-/**
- * Sets the values of the field from the $form_state.  If no child
- * argument is specified then the 'value' field is set.
- *
- * @param $field_name
- *   The name of the field to set.
- * @param $form_state
- *   The form's form_state array.
- * @param $newvalue
- *   The new value to set for the field.
- * @param $delta
- *   If cardinality of a field is greater than 1 the delta indicates
- *   which instance to set.
- * @param $child
- *   The name of the property to set iff other than 'value'.
- *
- * @return
- *   TRUE if the value was set, FALSE otherwise.
- */
-function tripal_chado_set_field_form_values($field_name, &$form_state, $newvalue, $delta = 0, $child = NULL) {
-  // The form_state must have the 'values' key. If not then just return.
-  if (!array_key_exists('values', $form_state)) {
-    return FALSE;
-  }
-
-  // If the field name is not in the form_state['values'] then reutrn.
-  if (!array_key_exists($field_name, $form_state['values'])) {
-    return FALSE;
-  }
-
-  foreach ($form_state['values'][$field_name] as $langcode => $items) {
-    if ($child) {
-      $form_state['values'][$field_name][$langcode][$delta][$child] = $newvalue;
-    }
-    else {
-      $form_state['values'][$field_name][$langcode][$delta]['value'] = $newvalue;
-    }
-  }
-  return TRUE;
-}
 
 /**
  * Implements hook_field_widget_form_alter().
@@ -359,159 +771,7 @@ function tripal_chado_field_submit($entity_type, $entity, $field, $instance,
   }
 }
 
-/**
- * Returns a $field_info array for a field based on a database column.
- *
- */
-function tripal_chado_get_bundle_fields_base__fields_defaults($table_name, $schema, $column_name) {
-  $details = $schema['fields'][$column_name];
 
-  // Create an array with information about this field.
-  $field = array(
-    'field_type' => '',
-    'widget_type' => '',
-    'description' => '',
-    'label' => ucwords(preg_replace('/_/', ' ', $column_name)),
-    'is_required' => 0,
-    'storage' => 'field_chado_storage',
-    'widget_settings' => array(
-      'display_label' => 1
-    ),
-    'field_settings' => array(
-      // The table in Chado where this field maps to.
-      'chado_table' => $table_name,
-      // The column in the Chado table that this field maps to.
-      'chado_column' => $column_name,
-      'semantic_web' => '',
-    ),
-  );
-
-  // Alter the field info array depending on the column details.
-  switch($details['type']) {
-    case 'char':
-      $field['field_type'] = 'text';
-      $field['widget_type'] = 'text_textfield';
-      $field['field_settings']['max_length'] = $details['length'];
-      break;
-    case 'varchar':
-      $field['field_type'] = 'text';
-      $field['widget_type'] = 'text_textfield';
-      $field['field_settings']['max_length'] = $details['length'];
-      break;
-    case 'text':
-      $field['field_type'] = 'text';
-      $field['widget_type'] = 'text_textarea';
-      $field['field_settings']['max_length'] = 17179869184;
-      $field['field_settings']['text_processing'] = 1;
-      $field['format'] = filter_default_format();
-      break;
-    case 'blob':
-      // not sure how to support a blob field.
-      continue;
-      break;
-    case 'int':
-      $field['field_type'] = 'number_integer';
-      $field['widget_type'] = 'number';
-      break;
-    case 'float':
-      $field['field_type'] = 'number_float';
-      $field['widget_type'] = 'number';
-      $field['field_settings']['precision'] = 10;
-      $field['field_settings']['scale'] = 2;
-      $field['field_settings']['decimal_separator'] = '.';
-      break;
-    case 'numeric':
-      $field['field_type'] = 'number_decimal';
-      $field['widget_type'] = 'number';
-      break;
-    case 'serial':
-      // Serial fields are most likely not needed as a field.
-      break;
-    case 'boolean':
-      $field['field_type'] = 'list_boolean';
-      $field['widget_type'] = 'options_onoff';
-      $field['field_settings']['allowed_values'] = array(0 => "No", 1 => "Yes");
-      break;
-    case 'datetime':
-      // Use the Drupal Date and Date API to create the field/widget
-      $field['field_type'] = 'datetime';
-      $field['widget_type'] = 'date_select';
-      $field['widget_settings']['increment'] = 1;
-      $field['widget_settings']['tz_handling'] = 'none';
-      $field['widget_settings']['collapsible'] = TRUE;
-
-      // TODO: Add settings so that the minutes increment by 1.
-      // And turn off the timezone, as the Chado field doesn't support it.
-      break;
-  }
-
-  // Set some default semantic web information
-  if ($column_name == 'uniquename') {
-    $field['widget_type'] = 'text_textfield';
-    $field['field_settings']['text_processing'] = 0;
-  }
-  elseif ($field['label'] == 'Timeaccessioned') {
-    $field['label'] = 'Time Accessioned';
-    $field['description'] = 'Please enter the time that this record was first added to the database.';
-  }
-  elseif ($field['label'] == 'Timelastmodified') {
-    $field['label'] = 'Time Last Modified';
-    $field['description'] = 'Please enter the time that this record was last modified. The default is the current time.';
-  }
-  //
-  // ORGANISM TABLE
-  //
-  elseif ($field['field_settings']['chado_table'] == 'organism' and $field['field_settings']['chado_column'] == 'comment') {
-    $field['label'] = 'Description';
-  }
-  //
-  // PUB TABLE
-  //
-  elseif ($field['field_settings']['chado_table'] == 'pub' and $field['field_settings']['chado_column'] == 'uniquename') {
-    $field['field_type'] = 'text';
-    $field['widget_type'] = 'text_textfield';
-    $field['field_settings']['text_processing'] = 0;
-  }
-
-  //
-  // ANALYSIS TABLE
-  //
-  elseif ($field['field_settings']['chado_table'] == 'analysis' and $field['field_settings']['chado_column'] == 'program') {
-    $field['description'] = 'The program name (e.g. blastx, blastp, sim4, genscan. If the analysis was not derived from a software package then provide a very brief description of the pipeline, workflow or method.';
-    $field['label'] = 'Program, Pipeline, Workflow or Method Name.';
-  }
-  elseif ($field['field_settings']['chado_table'] == 'analysis' and $field['field_settings']['chado_column'] == 'sourceuri') {
-    $field['field_type'] = 'text';
-    $field['widget_type'] = 'text_textfield';
-    $field['field_settings']['text_processing'] = 0;
-    $field['label'] = 'Source URL';
-    $field['description'] = 'The URL where the original source data was derived.  Ideally, this should link to the page where more information about the source data can be found.';
-  }
-  elseif ($field['field_settings']['chado_table'] == 'analysis' and $field['field_settings']['chado_column'] == 'sourcename') {
-    $field['label'] = 'Source Name';
-    $field['description'] = 'The name of the source data. This could be a file name, data set or a small description for how the data was collected. For long descriptions use the larger description field.';
-  }
-  elseif ($field['field_settings']['chado_table'] == 'analysis' and $field['field_settings']['chado_column'] == 'sourceversion') {
-    $field['label'] = 'Source Version';
-    $field['description'] = 'If hte source data set has a version include it here.';
-  }
-  elseif ($field['field_settings']['chado_table'] == 'analysis' and $field['field_settings']['chado_column'] == 'algorithm') {
-    $field['label'] = 'Source Version';
-    $field['description'] = 'The name of the algorithm used to produce the dataset if different from the program.';
-  }
-  elseif ($field['field_settings']['chado_table'] == 'analysis' and $field['field_settings']['chado_column'] == 'programversion') {
-    $field['label'] = 'Program Version';
-    $field['description'] = 'The version of the program used to perform this analysis. (e.g. TBLASTX 2.0MP-WashU [09-Nov-2000]. Enter "n/a" if no version is available or applicable.';
-  }
-  //
-  // PROJECT TABLE
-  //
-  elseif ($field['field_settings']['chado_table'] == 'project' and $field['field_settings']['chado_column'] == 'description') {
-    $field['label'] = 'Short Description';
-  }
-
-  return $field;
-}
 
 /**
  * Implements hook_form_FORM_ID_alter().
@@ -546,6 +806,7 @@ function tripal_chado_form_field_ui_display_overview_form_alter(&$form, &$form_s
  * for users to show or manage.
  */
 function tripal_chado_form_field_ui_field_overview_form_alter(&$form, &$form_state, $form_id) {
+
   // Remove the kvproperty_addr field as it isn't ever displayed. It's just used
   // on the add/edit form of an entity for adding new property fields.
   $fields_names = element_children($form['fields']);
@@ -582,251 +843,6 @@ function tripal_chado_field_is_empty($item, $field) {
   // Otherwise, the field is empty.
   return TRUE;
 }
-
-/**
- * Implements hook_update_bundle_fields().
- *
- */
-function tripal_chado_update_bundle_fields($entity_type, $bundle, $term) {
-  // Get the list of fields that should be attached to this bundle and
-  // add them.
-  $bundle_name = $bundle->name;
-  $fields = tripal_chado_get_bundle_fields($entity_type, $bundle, $term);
-  foreach ($fields as $field_name => $field_info) {
-    tripal_update_bundle_field($field_name, $field_info, $entity_type, $bundle_name);
-  }
-}
-
-/**
- * Implements hook_add_bundle_fields().
- */
-function tripal_chado_add_bundle_fields($entity_type, $bundle, $term) {
-
-  // Get the list of fields that should be attached to this bundle and
-  // add them.
-  $bundle_name = $bundle->name;
-  $fields = tripal_chado_get_bundle_fields($entity_type, $bundle, $term);
-  foreach ($fields as $field_name => $field_info) {
-    tripal_add_bundle_field($field_name, $field_info, $entity_type, $bundle_name);
-  }
-}
-/**
- * Retreives a list of the fields that should be attached to the bundle.
- *
- * @return
- *   An associative array of fields to attach to the bundle. The keys are the
- *   field names and the values is an info array that can be passed to the
- *   tripal_add_bundle_field() function.
- */
-function tripal_chado_get_bundle_fields($entity_type, $bundle, $term) {
-
-  $fields = array();
-
-  $bundle_name = $bundle->name;
-
-  // This array will hold details that map the bundle to tables in Chado.
-  $bundle_data = array();
-
-  // Get the cvterm that corresponds to this TripalTerm object.
-  $vocab = entity_load('TripalVocab', array($term->vocab_id));
-  $vocab = reset($vocab);
-  $match = array(
-    'dbxref_id' => array(
-      'db_id' => array(
-        'name' => $vocab->vocabulary,
-      ),
-      'accession' => $term->accession
-    ),
-  );
-  $cvterm = chado_generate_var('cvterm', $match);
-
-  // The organism table does not have a type_id so we won't ever find
-  // a record for it in the tripal_cv_defaults table.
-  if ($cvterm->name == 'organism') {
-    $bundle_data = array(
-      'cv_id' => $cvterm->cv_id->cv_id,
-      'cvterm_id' => $cvterm->cvterm_id,
-      'data_table' => 'organism',
-      'type_table' => 'organism',
-      'field' =>  '',
-    );
-  }
-  // The analysis table does not have a type_id so we won't ever find
-  // a record for it in the tripalcv_defaults table.
-  else if ($cvterm->name == 'analysis') {
-    $bundle_data = array(
-      'cv_id' => $cvterm->cv_id->cv_id,
-      'cvterm_id' => $cvterm->cvterm_id,
-      'data_table' => 'analysis',
-      'type_table' => 'analysis',
-      'field' =>  '',
-    );
-  }
-  else if ($cvterm->name == 'project') {
-    $bundle_data = array(
-      'cv_id' => $cvterm->cv_id->cv_id,
-      'cvterm_id' => $cvterm->cvterm_id,
-      'data_table' => 'project',
-      'type_table' => 'project',
-      'field' =>  '',
-    );
-  }
-  else {
-    // TODO: WHAT TO DO IF A VOCABULARY IS USED AS A DEFAULT FOR MULTIPLE
-    // TABLES.
-    // Look to see if this vocabulary is used as a default for any table.
-    $default = db_select('tripal_cv_defaults', 't')
-      ->fields('t')
-      ->condition('cv_id', $cvterm->cv_id->cv_id)
-      ->execute()
-      ->fetchObject();
-    if ($default) {
-      $bundle_data = array(
-        'cv_id' => $cvterm->cv_id->cv_id,
-        'cvterm_id' => $cvterm->cvterm_id,
-        'data_table' => $default->table_name,
-        'type_table' => $default->table_name,
-        'field' =>  $default->field_name,
-      );
-    }
-  }
-
-  // Save the mapping information so that we can reuse it when we need to
-  // look things up for later for an entity
-  tripal_set_bundle_variable('chado_cvterm_id', $bundle->id, $bundle_data['cvterm_id']);
-  tripal_set_bundle_variable('chado_table', $bundle->id, $bundle_data['data_table']);
-  tripal_set_bundle_variable('chado_column', $bundle->id, $bundle_data['field']);
-
-  // Find all of the files in the tripal_chado/includes/fields directory.
-  $fields_path = drupal_get_path('module', 'tripal_chado') . '/includes/fields';
-  $field_files = file_scan_directory($fields_path, '/^chado_.*\.inc$/');
-
-  // Add fields from the base table.
-  tripal_chado_get_bundle_fields_base__fields($fields, $entity_type, $bundle_name, $bundle_data);
-
-  // Iterate through the fields, include the file and run the info function.
-  foreach ($field_files as $file) {
-    $field_type = $file->name;
-    module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-
-    if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
-      $field_obj = new $field_type();
-      $field_info = $field_obj->attach_info($entity_type, $bundle, $bundle_data);
-    }
-
-    $function = $field_type . '_attach_info';
-    if (function_exists($function)) {
-      $field_info = $function($entity_type, $bundle, $bundle_data);
-    }
-
-    if (!is_array($field_info) or count(array_keys($field_info)) == 0) {
-      continue;
-    }
-    $field_name = $field_info['field_name'];
-
-    $fields[$field_name] = $field_info;
-  }
-
-  // Add in the semantic web details
-  foreach ($fields as $field_name => $field) {
-    if (!array_key_exists('chado_table', $field['field_settings'])) {
-      continue;
-    }
-    $chado_column = $field['field_settings']['chado_column'];
-    $chado_table = $field['field_settings']['chado_table'];
-
-    // Get the semantic web mapping for this field. First look for a
-    // table specific mapping.
-    $smweb = db_select('chado_semweb', 'CS')
-      ->fields('CS')
-      ->condition('chado_column', $chado_column)
-      ->condition('chado_table', $chado_table)
-      ->execute()
-      ->fetchObject();
-    // We don't have a table/column specific mapping, so let's look for a
-    // generic column mapping.
-    if (!$smweb) {
-      $smweb = db_select('chado_semweb', 'CS')
-      ->fields('CS')
-      ->condition('chado_column', $chado_column)
-      ->execute()
-      ->fetchObject();
-    }
-    if ($smweb) {
-      $cvterm = tripal_get_cvterm(array('cvterm_id' => $smweb->cvterm_id));
-      $fields[$field_name]['field_settings']['semantic_web'] = $cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession;
-    }
-  }
-
-  return $fields;
-}
-
-
-/**
- * Adds the fields for the base table to the entity.
- */
-function tripal_chado_get_bundle_fields_base__fields(&$fields, $entity_type_name, $bundle_name, $bundle_data) {
-
-  $table_name = $bundle_data['data_table'];
-  $type_table = $bundle_data['type_table'];
-  $type_field = $bundle_data['field'];
-
-  // Iterate through the columns of the table and see if fields have been
-  // created for each one. If not, then create them.
-  $schema = chado_get_schema($table_name);
-  $columns = $schema['fields'];
-  foreach ($columns as $column_name => $details) {
-    $field_name = $table_name . '__' . $column_name;
-
-    // Skip the primary key field.
-    if ($column_name == $schema['primary key'][0]) {
-      continue;
-    }
-
-    // Skip the type field.
-    if ($table_name == $type_table and $column_name == $type_field) {
-      continue;
-    }
-
-    // Get the field defaults for this column.
-    $field_info = tripal_chado_get_bundle_fields_base__fields_defaults($table_name, $schema, $column_name);
-
-
-    // TODO: add in a call to drupal_alter to allow other modules to change
-    // the field settings.
-
-    // Determine if the field is required.
-    if (array_key_exists('not null', $details) and $details['not null'] === TRUE) {
-      $field_info['is_required'] = array_key_exists('default', $details) ? 0 : 1;
-    }
-
-    // If we don't have a field type then we don't need to create a field.
-    if (!$field_info['field_type']) {
-      // If we don't have a field type but it is required and doesn't have
-      // a default value then we are in trouble.
-      if ($field_info['is_required'] and !array_key_exists('default', $details)) {
-        throw new Exception(t('The %table.%field type, %type, is not yet supported for Entity fields, but it is required,',
-            array('%table' => $table_name, '%field' => $column_name, '%type' => $details['type'])));
-      }
-      continue;
-    }
-
-    // If this field is a foreign key field then we will have a custom field.
-    $is_fk = FALSE;
-    if (array_key_exists('foreign keys', $schema)) {
-      foreach ($schema['foreign keys'] as $remote_table => $fk_details) {
-        if (array_key_exists($column_name, $fk_details['columns'])) {
-          $is_fk = TRUE;
-        }
-      }
-    }
-
-    // Add the field to the bundle.
-    $fields[$field_name] = $field_info;
-  }
-}
-
-
 
 
 

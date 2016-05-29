@@ -43,6 +43,63 @@ function tripal_field_formatter_info() {
     ),
   );
 }
+
+/**
+ * Implements hook_create_info().
+ *
+ * This is a Tripal defined hook that supports integration with the
+ * TripalEntity field.
+ */
+function tripal_field_create_info($entity_type, $bundle, $term) {
+  return array(
+    'content_type' => array(
+      'field_name' => 'content_type',
+      'type' => 'content_type',
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'tripal_no_storage'
+      ),
+      'settings' => array(
+        'semantic_web' => 'rdf:type',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_create_instance_info().
+ *
+ * This is a Tripal defined hook that supports integration with the
+ * TripalEntity field.
+ */
+function tripal_field_create_instance_info($entity_type, $bundle, $term) {
+  return array(
+    'content_type' => array(
+      'field_name' => 'content_type',
+      'entity_type' => 'TripalEntity',
+      'bundle' => $bundle->name,
+      'label' => 'Resource Type',
+      'description' => '',
+      'required' => FALSE,
+      'settings' => array(),
+      'widget' => array(
+        'type' => 'tripal_content_type_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'tripal_content_type_formatter',
+          'settings' => array(),
+        ),
+      ),
+    ),
+  );
+}
+
 /**
  * Implements hook_field_widget_form().
  */

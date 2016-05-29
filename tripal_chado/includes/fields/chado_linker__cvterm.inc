@@ -20,14 +20,31 @@ class chado_linker__cvterm extends TripalField {
     );
   }
   /**
-   * @see TripalField::attach_info()
+   * @see TripalField::can_attach()
    */
-  function attach_info($entity_type, $bundle, $target) {
-    $field_info = array();
+  protected function can_attach($entity_type, $bundle, $details) {
 
     // This field is only attached by the chado_linker__cvterm_addr field.
+    return FALSE;
+  }
+  /**
+   * @see TripalField::create_info()
+   */
+  function create_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
+    // This field is only attached by the chado_linker__cvterm_addr field.
+  }
+  /**
+   * @see TripalField::create_instance_info()
+   */
+  function create_instance_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
 
-    return $field_info;
+    // This field is only attached by the chado_linker__cvterm_addr field.
   }
   /**
    * @see TripalField::widget_info()

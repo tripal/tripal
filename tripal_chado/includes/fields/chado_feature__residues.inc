@@ -3,10 +3,7 @@
 class chado_feature__residues extends TripalField {
 
   /**
-   * Implements hook_info() for fields.
-   *
-   * This is a hook provided by the tripal_chado module for offloading the
-   * hook_field_info() hook for each field to specify.
+   * @see TripalField::field_info()
    */
   function field_info() {
     return array(
@@ -24,57 +21,89 @@ class chado_feature__residues extends TripalField {
     );
   }
   /**
-   * Implements hook_attach_info().
-   *
-   * This is a hook provided by the tripal_Chado module. It allows the field
-   * to specify which bundles it will attach to and to specify thee settings.
-   *
-   * @param $entity_type
-   * @param $entity
-   * @param $term
-   *
-   * @return
-   *   A field array
+   * @see TripalField::can_attach()
    */
-  function attach_info($entity_type, $bundle, $settings) {
-    $field_info = array();
-
-    $table_name = $settings['data_table'];
-    $type_table = $settings['type_table'];
-    $type_field = $settings['field'];
-    $cv_id      = $settings['cv_id'];
-    $cvterm_id  = $settings['cvterm_id'];
-
+  protected function can_attach($entity_type, $bundle, $details) {
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
 
     // If  this is not the feature table then we don't want to attach.
-    if ($table_name != 'feature') {
-      return $field_info;
+    if ($table_name == 'feature') {
+      return TRUE;
+    }
+    return FALSE;
+  }
+  /**
+   * @see TripalField::create_info()
+   */
+  function create_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
     }
 
-    $field_info = array(
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
+
+    return array(
       'field_name' => 'feature__residues',
-      'field_type' => 'chado_feature__residues',
-      'widget_type' => 'chado_feature__residues_widget',
-      'description' => 'An IUPAC compatible residues for this feature.',
-      'label' => 'Sequences',
-      'is_required' => 0,
-      'storage' => 'field_chado_storage',
-      'widget_settings' => array(
-        'display_label' => 1
+      'type' => 'chado_feature__residues',
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
       ),
-      'field_settings' => array(
+      'settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'residues',
         'semantic_web' => 'SO:0000110',
       ),
     );
-    return $field_info;
   }
   /**
-   * Implements hook_widget_info.
-   *
-   * This is a hook provided by the tripal_chado module for offloading
-   * the hook_field_widget_info() hook for each field to specify.
+   * @see TripalField::create_instance_info()
+   */
+  function create_instance_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
+
+    return array(
+      'field_name' => 'feature__residues',
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Sequences',
+      'description' => 'All available sequences for this record.',
+      'required' => FALSE,
+      'settings' => array(),
+      'widget' => array(
+        'type' => 'chado_feature__residues_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'deafult' => array(
+          'label' => 'above',
+          'type' => 'chado_feature__residues_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
+
+  /**
+   * @see TripalField::widget_info()
    */
   function widget_info() {
     return array(
@@ -83,12 +112,7 @@ class chado_feature__residues extends TripalField {
     );
   }
   /**
-   * Implements hook_formatter_info.
-   *
-   * This is a hook provided by the tripal_chado module for
-   * offloading the hook_field_formatter_info() for each field
-   * to specify.
-   *
+   * @see TripalField::formatter_info()
    */
   function formatter_info() {
     return array(
@@ -97,14 +121,7 @@ class chado_feature__residues extends TripalField {
     );
   }
   /**
-   *
-   * @param unknown $entity_type
-   * @param unknown $entity
-   * @param unknown $field
-   * @param unknown $instance
-   * @param unknown $langcode
-   * @param unknown $items
-   * @param unknown $display
+   * @see TripalField::formatter_view()
    */
   function formatter_view(&$element, $entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {

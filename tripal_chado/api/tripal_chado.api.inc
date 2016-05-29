@@ -74,7 +74,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
   $bundle_id = $bundle->id;
   $table = tripal_get_bundle_variable('chado_table', $bundle_id);
-  $column = tripal_get_bundle_variable('chado_column', $bundle_id);
+  $column = tripal_get_bundle_variable('chado_type_column', $bundle_id);
   $cvterm_id = tripal_get_bundle_variable('chado_cvterm_id', $bundle_id);
 
   // Get the table information for the Chado table.

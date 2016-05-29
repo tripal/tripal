@@ -18,50 +18,93 @@ class chado_linker__relationship extends TripalField {
       ),
     );
   }
-
   /**
-   * @see TripalField::attach_info()
+   * @see TripalField::can_attach()
    */
-  function attach_info($entity_type, $bundle, $target) {
-    $field_info = array();
-
-    $table_name = $target['data_table'];
-    $type_table = $target['type_table'];
-    $type_field = $target['field'];
-    $cv_id      = $target['cv_id'];
-    $cvterm_id  = $target['cvterm_id'];
+  protected function can_attach($entity_type, $bundle, $details) {
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
 
     // If the linker table does not exists then we don't want to add attach.
     $rel_table = $table_name . '_relationship';
-    if (!chado_table_exists($rel_table)) {
-      return $field_info;
+    if (chado_table_exists($rel_table)) {
+      return TRUE;
     }
+    return FALSE;
+  }
+  /**
+   * @see TripalField::create_info()
+   */
+  function create_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
 
+    $rel_table = $table_name . '_relationship';
     $schema = chado_get_schema($rel_table);
     $pkey = $schema['primary key'][0];
-
-    // Initialize the field array.
-    $field_info = array(
+    return array(
       'field_name' => $table_name . '_relationship',
-      'field_type' => 'chado_linker__relationship',
-      'widget_type' => 'chado_linker__relationship_widget',
-      'widget_settings' => array('display_label' => 1),
-      'description' => 'A generic field for displaying relationships between data types',
-      'label' => 'Relationships',
-      'is_required' => 0,
+      'type' => 'chado_linker__relationship',
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-      'storage' => 'field_chado_storage',
-      'field_settings' => array(
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+      'settings' => array(
         'chado_table' => $rel_table,
         'chado_column' => $pkey,
         'base_table' => $table_name,
         'semantic_web' => 'SBO:0000374',
       ),
     );
-
-    return $field_info;
-
   }
+  /**
+   * @see TripalField::create_instance_info()
+   */
+  function create_instance_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
+
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
+
+    return array(
+      'field_name' => $table_name . '_relationship',
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Relationships',
+      'description' => 'Other records with relationships to this record.',
+      'required' => FALSE,
+      'settings' => array(),
+      'widget' => array(
+        'type' => 'chado_linker__relationship_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'deafult' => array(
+          'label' => 'above',
+          'type' => 'chado_linker__relationship_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
+
   /**
    * @see TripalField::widget_info()
    */
@@ -200,8 +243,12 @@ class chado_linker__relationship extends TripalField {
       $type_id = $items[$delta][$field_table . '__type_id'];
       $object_id = $items[$delta][$field_table . '__object_id'];
 
-      $value = $items[$delta][$field_table . '__value'];
-      $rank = $items[$delta][$field_table . '__rank'];
+      if (array_key_exists('value', $schema['fields'])) {
+        $value = $items[$delta][$field_table . '__value'];
+      }
+      if (array_key_exists('rank', $schema['fields'])) {
+        $rank = $items[$delta][$field_table . '__rank'];
+      }
 
       $object_uniquename = $items[$delta]['object_name'];
       $subject_uniquename = $items[$delta]['subject_name'];
@@ -273,10 +320,13 @@ class chado_linker__relationship extends TripalField {
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/$base_table",
     );
     $default_cv = tripal_get_default_cv($field_table, 'type_id');
+    $options = array();
     if (!$default_cv) {
       drupal_set_message("There is no default vocabulary set for the relationships....");
     }
-    $options = tripal_get_cvterm_select_options($default_cv->cv_id, TRUE);
+    else {
+      $options = tripal_get_cvterm_select_options($default_cv->cv_id, TRUE);
+    }
     $widget['type_name'] = array(
       '#type' => 'select',
       '#title' => t('Type'),

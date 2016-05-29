@@ -20,45 +20,88 @@ class chado_linker__cvterm_addr extends TripalField {
     );
   }
   /**
-   * @see TripalField::attach_info()
+   * @see TripalField::can_attach()
    */
-  function attach_info($entity_type, $bundle, $settings) {
-
+  protected function can_attach($entity_type, $bundle, $details) {
     $field_info = array();
 
-    $table_name = $settings['data_table'];
-    $type_table = $settings['type_table'];
-    $type_field = $settings['field'];
-    $cv_id      = $settings['cv_id'];
-    $cvterm_id  = $settings['cvterm_id'];
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
 
 
     // If the linker table does not exists then we don't want to add attach.
     $cvterm_table = $table_name . '_cvterm';
-    if (!chado_table_exists($cvterm_table)) {
-      return $field_info;
+    if (chado_table_exists($cvterm_table)) {
+      return TRUE;
+    }
+    return FALSE;
+  }
+  /**
+   * @see TripalField::create_info()
+   */
+  function create_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
     }
 
-    // Initialize the field array.
-    $field_info = array(
-      'field_name' => $cvterm_table,
-      'field_type' => 'chado_linker__cvterm_adder',
-      'widget_type' => 'chado_linker__cvterm_adder_widget',
-      'field_settings' => array(
-        'base_table' => $table_name,
-      ),
-      'cardinality' => 1,
-      'storage' => 'field_chado_storage',
-      'widget_settings' => array('display_label' => 1),
-      'description' => '',
-      'label' => 'Additional Annotation Types',
-      'is_required' => 0,
-      // This feld is never visible so there are no field settings for
-      // Chado nor the semantiv web.
-    );
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
 
-    return $field_info;
+    return array(
+      'field_name' => $table_name . '_cvterm',
+      'type' => 'chado_linker__cvterm_adder',
+      'cardinality' => 1,
+      'locked' => FALSE,
+      'storage' => array(
+        'type' => 'field_chado_storage',
+      ),
+      'settings' => array(
+      ),
+    );
   }
+  /**
+   * @see TripalField::create_instance_info()
+   */
+  function create_instance_info($entity_type, $bundle, $details) {
+    if (!$this->can_attach($entity_type, $bundle, $details)) {
+      return;
+    }
+    $table_name = $details['chado_table'];
+    $type_table = $details['chado_type_table'];
+    $type_field = $details['chado_type_column'];
+    $cv_id      = $details['chado_cv_id'];
+    $cvterm_id  = $details['chado_cvterm_id'];
+
+    return array(
+      'field_name' => $table_name . '_cvterm',
+      'entity_type' => $entity_type,
+      'bundle' => $bundle->name,
+      'label' => 'Add Annotation Types',
+      'description' => 'Add additional annotations types to this record.',
+      'required' => FALSE,
+      'settings' => array(),
+      'widget' => array(
+        'type' => 'chado_linker__cvterm_adder_widget',
+        'settings' => array(
+          'display_label' => 1,
+        ),
+      ),
+      'display' => array(
+        'deafult' => array(
+          'label' => 'above',
+          'type' => 'chado_linker__cvterm_adder_formatter',
+          'settings' => array(),
+        ),
+      ),
+    );
+  }
+
   /**
    * @see TripalField::widget_info()
    */
@@ -153,29 +196,53 @@ function chado_linker__cvterm_adder_widget_validate($element, &$form_state) {
     $schema = chado_get_schema($field_name);
     $pkey = $schema['primary key'][0];
 
-    $field_info = array(
-      'field_type' => 'cvterm',
-      'widget_type' => 'tripal_chado_cvterm_widget',
-      'field_settings' => array(
-        'chado_table' => $field_name,
-        'chado_column' => $pkey,
-        'base_table' => $base_table,
-      ),
-      'storage' => 'field_chado_storage',
-      'widget_settings' => array(),
-      'description' => "Annotations from the $cv->name vocabulary",
-      'label' => ucfirst(preg_replace('/_/', ' ', $cv->name)),
-      'is_required' => FALSE,
-      // All annotations are unlimited.
-      'cardinality' => FIELD_CARDINALITY_UNLIMITED,
-    );
-    tripal_add_bundle_field($type_field_name, $field_info, $entity_type, $bundle);
+    // Add the field if it doesn't already exists.
+    $field = field_info_field('cvterm');
+    if (!$field) {
+      $create_info = array(
+        'field_name' => 'cvterm',
+        'type' => 'tripal_chado_cvterm_widget',
+        'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+        'locked' => FALSE,
+        'storage' => array(
+          'type' => 'field_chado_storage',
+        ),
+        'settings' => array(
+          'chado_table' => $field_name,
+          'chado_column' => $pkey,
+          'base_table' => $base_table,
+        ),
+      );
+      $field = field_create_field($create_info);
+    }
 
+    // Attach the field to the bundle if it isn't already.
+    if (!$field or !array_key_exists('bundles', $field) or
+        !array_key_exists('TripalEntity', $field['bundles']) or
+        !in_array($bundle_name, $field['bundles']['TripalEntity'])) {
+      $create_instance_info = array(
+        'field_name' => 'cvtmerm',
+        'entity_type' => 'TripalEntity',
+        'bundle' => $bundle->name,
+        'label' => ucfirst(preg_replace('/_/', ' ', $cv->name)),
+        'description' => "Annotations from the $cv->name vocabulary",
+        'required' => FALSE,
+        'settings' => array(),
+        'widget' => array(
+          'type' => 'tripal_chado_cvterm_widget',
+          'settings' => array(
+            'display_label' => 1,
+          ),
+        ),
+        'display' => array(
+          'deafult' => array(
+            'label' => 'above',
+            'type' => 'tripal_chado_cvterm_formatter',
+            'settings' => array(),
+          ),
+        ),
+      );
+      $instance = field_create_instance($create_instance_info);
+    }
   }
-}
-/**
- * Callback function for submitting the chado_linker__cvterm_adder_widget.
- */
-function chado_linker__cvterm_adder_widget_submit($element, &$form_state) {
-
 }
