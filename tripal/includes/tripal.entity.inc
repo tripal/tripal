@@ -272,7 +272,7 @@ function tripal_form_tripal_entity_form_alter(&$form, &$form_state, $form_id) {
  * Implements hook_entity_view.
  *
  * Here we want to overwite unattached fields with a div box that will be
- * recognized by JavaScript that will the use AJAX to load the field.
+ * recognized by JavaScript that will then use AJAX to load the field.
  *
  * The tripal_ajax_attach_field() function is called by an AJAX call to
  * retrieve the field.

@@ -4,7 +4,7 @@
   Drupal.behaviors.myModuleSecureLink = {
     attach: function (context, settings) {
 
-      $(".tripal-entity-unattached .field-items").replaceWith('Loading... <img src="/' + tripal_path + '/theme/images/ajax-loader.gif">');
+      $(".tripal-entity-unattached .field-items").replaceWith('Loading... <img src="' + tripal_path + '/theme/images/ajax-loader.gif">');
       $(".tripal-entity-unattached").each(function() {
         id = $(this).attr('id');
         $.ajax({
