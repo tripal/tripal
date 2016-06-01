@@ -262,3 +262,87 @@ function tripal_chado_populate_chado_semweb_table() {
 
 
 }
+
+/**
+ * Adds defaults to the chado_semweb table.
+ */
+function tripal_chado_semweb_form($form, &$form_state) {
+
+  $chado_table = '';
+  if (array_key_exists('values', $form_state)) {
+    $chado_table = $form_state['values']['chado_table'];
+  }
+
+  $chado_tables = chado_get_table_names(TRUE);
+  $chado_tables = array_merge(array('Select a Chado Table'), $chado_tables);
+
+  $form['chado_table'] = array(
+    '#type' => 'select',
+    '#title' => 'Chado Table',
+    '#description' => t('Select a chado table to set web services terms used for its columns.'),
+    '#options' => $chado_tables,
+    '#default_value' => $chado_table,
+    '#ajax' => array(
+      'callback' => "tripal_chado_semweb_form_ajax_callback",
+      'wrapper' => "tripal-chado-semweb-form",
+      'effect' => 'fade',
+      'method' => 'replace'
+    ),
+  );
+
+  // If the user has selected a content type, then we need to
+  // show some filters.
+  if ($chado_table) {
+    $form['filters'] = array(
+      '#type' => 'fieldset',
+      '#title' => 'Filters',
+      '#description' => t('Please provide any filters for limiting
+          the records. Only those that match the filters specified
+          below will be published.  To publish all records of this
+          type, leave all filters blank.'),
+      '#collapsed' => TRUE,
+      '#collapsible' => TRUE,
+    );
+
+    $form['publish_btn'] = array(
+      '#type' => 'submit',
+      '#name' => 'publish_btn',
+      '#value' => 'Publish',
+    );
+  }
+
+
+  $form['#prefix'] = '<div id="tripal-chado-publish-form">';
+  $form['#suffix'] = '</div>';
+  return $form;
+}
+
+function tripal_chado_semweb_form_validate($form, &$form_state) {
+
+}
+
+function tripal_chado_semweb_form_submit($form, &$form_state) {
+  if ($form_state['clicked_button']['#name'] == 'publish_btn') {
+    global $user;
+
+    $chado_table = $form_state['values']['chado_table'];
+    $bundle_name = 'bio_data_' . $chado_table;
+    $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+    $args = array(
+      array('bundle_name' => $bundle_name),
+    );
+    $includes = array(
+      module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.publish'),
+    );
+    return tripal_add_job("Publish " . $bundle->label . " records.",
+      'tripal_chado', 'tripal_chado_publish_records', $args,
+      $user->uid, 10, $includes);
+  }
+}
+/**
+ *
+ */
+function tripal_chado_semweb_form_ajax_callback($form, $form_state) {
+  return $form;
+}
+    
