@@ -331,5 +331,239 @@ class TripalEntityController extends EntityAPIController {
       return FALSE;
     }
   }
+
+  /**
+   * Override the load function.
+   *
+   * A TripalEntity may have a large number of fields attached which may
+   * slow down the loading of pages and web services.  Therefore, we only
+   * want to attach fields that are needed.
+   *
+   * @param $ids
+   *  The list of entity IDs to load.
+   * @param $conditions
+   *  The list of key/value filters for querying the entity.
+   * @param $field_ids
+   *  The list of numeric field IDs for fields that should be included.
+   */
+  public function load($ids = array(), $conditions = array(), $field_ids = array()) {
+
+    $entities = array();
+
+    // Revisions are not statically cached, and require a different query to
+    // other conditions, so separate the revision id into its own variable.
+    if ($this->revisionKey && isset($conditions[$this->revisionKey])) {
+      $revision_id = $conditions[$this->revisionKey];
+      unset($conditions[$this->revisionKey]);
+    }
+    else {
+      $revision_id = FALSE;
+    }
+
+    // Create a new variable which is either a prepared version of the $ids
+    // array for later comparison with the entity cache, or FALSE if no $ids
+    // were passed. The $ids array is reduced as items are loaded from cache,
+    // and we need to know if it's empty for this reason to avoid querying the
+    // database when all requested entities are loaded from cache.
+    $passed_ids = !empty($ids) ? array_flip($ids) : FALSE;
+
+    // Try to load entities from the static cache.
+    if ($this->cache && !$revision_id) {
+      $entities = $this->cacheGet($ids, $conditions);
+      // If any entities were loaded, remove them from the ids still to load.
+      if ($passed_ids) {
+        $ids = array_keys(array_diff_key($passed_ids, $entities));
+      }
+    }
+
+    // Support the entitycache module if activated.
+    if (!empty($this->entityInfo['entity cache']) && !$revision_id && $ids && !$conditions) {
+      $cached_entities = EntityCacheControllerHelper::entityCacheGet($this, $ids, $conditions);
+      // If any entities were loaded, remove them from the ids still to load.
+      $ids = array_diff($ids, array_keys($cached_entities));
+      $entities += $cached_entities;
+
+      // Add loaded entities to the static cache if we are not loading a
+      // revision.
+      if ($this->cache && !empty($cached_entities) && !$revision_id) {
+        $this->cacheSet($cached_entities);
+      }
+    }
+
+    // Load any remaining entities from the database. This is the case if $ids
+    // is set to FALSE (so we load all entities), if there are any ids left to
+    // load or if loading a revision.
+    if (!($this->cacheComplete && $ids === FALSE && !$conditions) && ($ids === FALSE || $ids || $revision_id)) {
+      $queried_entities = array();
+      foreach ($this->query($ids, $conditions, $revision_id) as $record) {
+        // Skip entities already retrieved from cache.
+        if (isset($entities[$record->{$this->idKey}])) {
+          continue;
+        }
+
+        // For DB-based entities take care of serialized columns.
+        if (!empty($this->entityInfo['base table'])) {
+          $schema = drupal_get_schema($this->entityInfo['base table']);
+
+          foreach ($schema['fields'] as $field => $info) {
+            if (!empty($info['serialize']) && isset($record->$field)) {
+              $record->$field = unserialize($record->$field);
+              // Support automatic merging of 'data' fields into the entity.
+              if (!empty($info['merge']) && is_array($record->$field)) {
+                foreach ($record->$field as $key => $value) {
+                  $record->$key = $value;
+                }
+                unset($record->$field);
+              }
+            }
+          }
+        }
+
+        $queried_entities[$record->{$this->idKey}] = $record;
+      }
+    }
+
+    // Pass all entities loaded from the database through $this->attachLoad(),
+    // which attaches fields (if supported by the entity type) and calls the
+    // entity type specific load callback, for example hook_node_load().
+    if (!empty($queried_entities)) {
+      $this->attachLoad($queried_entities, $revision_id, $field_ids);
+      $entities += $queried_entities;
+    }
+
+    // Entitycache module support: Add entities to the entity cache if we are
+    // not loading a revision.
+    if (!empty($this->entityInfo['entity cache']) && !empty($queried_entities) && !$revision_id) {
+      EntityCacheControllerHelper::entityCacheSet($this, $queried_entities);
+    }
+
+    if ($this->cache) {
+      // Add entities to the cache if we are not loading a revision.
+      if (!empty($queried_entities) && !$revision_id) {
+        $this->cacheSet($queried_entities);
+
+        // Remember if we have cached all entities now.
+        if (!$conditions && $ids === FALSE) {
+          $this->cacheComplete = TRUE;
+        }
+      }
+    }
+    // Ensure that the returned array is ordered the same as the original
+    // $ids array if this was passed in and remove any invalid ids.
+    if ($passed_ids && $passed_ids = array_intersect_key($passed_ids, $entities)) {
+      foreach ($passed_ids as $id => $value) {
+        $passed_ids[$id] = $entities[$id];
+      }
+      $entities = $passed_ids;
+    }
+    return $entities;
+  }
+
+  /**
+   * Override the attachLoad function.
+   *
+   * A TripalEntity may have a large number of fields attached which may
+   * slow down the loading of pages and web services.  Therefore, we only
+   * want to attach fields that are needed.
+   *
+   *
+   *
+   * @param $queried_entities
+   *   The list of queried
+   * @param $revision_id
+   * @param $field_ids
+   */
+  protected function attachLoad(&$queried_entities, $revision_id = FALSE,
+      $field_ids = array()) {
+
+    // Get the list of fields for later user.
+    $fields = field_info_fields();
+    // A temporary holding place for field instances (so we don't have
+    // to keep looking them up in our loop below).
+    $instances = array();
+
+    // Add in the content_type field by default. It should always be
+    // attached.
+    $ids = array();
+    $ct = field_info_field('content_type');
+    $ids[] = $ct['id'];
+    $field_ids += $ids;
+
+
+    // Attach fields.
+    if ($this->entityInfo['fieldable']) {
+      if ($revision_id) {
+        $function = 'field_attach_load_revision';
+      }
+      else {
+        $function = 'field_attach_load';
+      }
+      foreach ($queried_entities as $entity) {
+        $entity_ids = array();
+        $entity_ids += $field_ids;
+        // Iterate through the fields and find those that are set to
+        // 'auto_attach' and which are attached to this bundle.
+        foreach ($fields as $field) {
+          $field_name =  $field['field_name'];
+          if (array_key_exists('TripalEntity', $field['bundles'])) {
+            foreach ($field['bundles']['TripalEntity'] as $bundle_name) {
+              if ($bundle_name == $entity->bundle) {
+                // Get the instance of this field for this bundle.
+                if (!array_key_exists($field_name . '-' . $bundle_name, $instances)) {
+                  $instance = field_info_instance('TripalEntity', $field['field_name'], $bundle_name);
+                  $instances[$field_name . '-' . $bundle_name] = $instance;
+                }
+                else {
+                  $instance = $instances[$field_name . '-' . $bundle_name];
+                }
+                // If the 'auto_attach' is set then add this field id to our
+                // list.
+                if (array_key_exists('settings', $instance) and
+                    array_key_exists('auto_attach', $instance['settings']) and
+                    $instance['settings']['auto_attach'] === TRUE) {
+                  $entity_ids[] = $field['id'];
+                }
+                // If the field is not auto attached then we want to add an
+                // empty default valuea nd add an 'unattached' key to
+                // clue in other things that there may be data, it's just
+                // not attached.
+                else {
+                  $value = array(
+                    'und' => array(
+                      0 => array(
+                        'value' => '',
+                        '#unattached' => TRUE,
+                      ),
+                    ),
+                  );
+                  $entity->$field_name = $value;
+                }
+              }
+            }
+          }
+        }
+
+        // Iterate through each field that should be added and attach it.
+        foreach ($entity_ids as $field_id) {
+          $options = array();
+          $options['field_id'] = $field_id;
+          $function($this->entityType, array($entity->id => $entity), FIELD_LOAD_CURRENT, $options);
+        }
+      }
+    }
+
+    // Call hook_entity_load().
+    foreach (module_implements('entity_load') as $module) {
+      $function = $module . '_entity_load';
+      $function($queried_entities, $this->entityType);
+    }
+    // Call hook_TYPE_load(). The first argument for hook_TYPE_load() are
+    // always the queried entities, followed by additional arguments set in
+    // $this->hookLoadArguments.
+    $args = array_merge(array($queried_entities), $this->hookLoadArguments);
+    foreach (module_implements($this->entityInfo['load hook']) as $module) {
+      call_user_func_array($module . '_' . $this->entityInfo['load hook'], $args);
+    }
+  }
 }
 

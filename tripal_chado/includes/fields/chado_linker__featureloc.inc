@@ -89,7 +89,9 @@ class chado_linker__featureloc extends TripalField {
       'description' => 'The locations on other genomic sequences where this
         record has been aligned.',
       'required' => FALSE,
-      'settings' => array(),
+      'settings' => array(
+        'auto_attach' => FALSE,
+      ),
       'widget' => array(
         'type' => 'chado_linker__featureloc_widget',
         'settings' => array(
@@ -211,15 +213,17 @@ class chado_linker__featureloc extends TripalField {
       'sticky' => FALSE,
       'caption' => '',
       'colgroups' => array(),
-      'empty' => '',
+      'empty' => 'This record is not aligned to any locations.',
     );
 
     // once we have our table array structure defined, we call Drupal's theme_table()
     // function to generate the table.
-    $element[$delta] = array(
-      '#type' => 'markup',
-      '#markup' => theme_table($table),
-    );
+    if (count($items) > 0) {
+      $element[0] = array(
+        '#type' => 'markup',
+        '#markup' => theme_table($table),
+      );
+    }
   }
 
   /**

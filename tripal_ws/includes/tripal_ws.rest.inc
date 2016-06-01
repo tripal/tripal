@@ -471,7 +471,6 @@ function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_i
 
   // Get the TripalEntity and attach all the fields.
   $entity = entity_load('TripalEntity', array('id' => $entity_id));
-  field_attach_load('TripalEntity', $entity);
   $entity = reset($entity);
 
 

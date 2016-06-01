@@ -95,7 +95,9 @@ class chado_linker__contact extends TripalField {
         some responsibility for the creation, delivery or maintenance of
         the associated data.',
       'required' => FALSE,
-      'settings' => array(),
+      'settings' => array(
+        'auto_attach' => FALSE,
+      ),
       'widget' => array(
         'type' => 'chado_linker__contact_widget',
         'settings' => array(
@@ -178,12 +180,14 @@ class chado_linker__contact extends TripalField {
     );
     $content = theme_table($table);
 
-    // once we have our table array structure defined, we call Drupal's theme_table()
-    // function to generate the table.
-    $element[$delta] = array(
-      '#type' => 'markup',
-      '#markup' => $content,
-    );
+    if (count($items) > 0) {
+      // once we have our table array structure defined, we call Drupal's theme_table()
+      // function to generate the table.
+      $element[0] = array(
+        '#type' => 'markup',
+        '#markup' => $content,
+      );
+    }
   }
 
 

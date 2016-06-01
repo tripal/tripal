@@ -91,7 +91,9 @@ class chado_linker__synonym extends TripalField {
       'label' => 'Synonyms',
       'description' => 'Alternate names, aliases or synonyms for this record.',
       'required' => FALSE,
-      'settings' => array(),
+      'settings' => array(
+        'auto_attach' => FALSE,
+      ),
       'widget' => array(
         'type' => 'chado_linker__synonym_widget',
         'settings' => array(
@@ -135,7 +137,8 @@ class chado_linker__synonym extends TripalField {
 
     $chado_table = $field['settings']['chado_table'];
     foreach ($items as $delta => $item) {
-      if ($item[$chado_table . '__synonym_id']) {
+      if (array_key_exists($chado_table . '__synonym_id', $item) and
+          $item[$chado_table . '__synonym_id']) {
         $synonym = chado_generate_var('synonym', array('synonym_id' => $item[$chado_table . '__synonym_id']));
         $name = $synonym->name;
         if ($synonym->type_id->name != 'exact') {

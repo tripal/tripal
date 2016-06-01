@@ -91,7 +91,9 @@ class chado_linker__expression extends TripalField {
       'label' => 'Expression',
       'description' => 'Information about the expression of this record.',
       'required' => FALSE,
-      'settings' => array(),
+      'settings' => array(
+        'auto_attach' => FALSE,
+      ),
       'widget' => array(
         'type' => 'chado_linker__expression_widget',
         'settings' => array(
@@ -198,10 +200,12 @@ class chado_linker__expression extends TripalField {
 
     // once we have our table array structure defined, we call Drupal's theme_table()
     // function to generate the table.
-    $element[$delta] = array(
-      '#type' => 'markup',
-      '#markup' => $content,
-    );
+    if (count($items) > 0) {
+      $element[0] = array(
+        '#type' => 'markup',
+        '#markup' => $content,
+      );
+    }
   }
 
   /**

@@ -88,7 +88,9 @@ class chado_linker__relationship extends TripalField {
       'label' => 'Relationships',
       'description' => 'Other records with relationships to this record.',
       'required' => FALSE,
-      'settings' => array(),
+      'settings' => array(
+        'auto_attach' => FALSE,
+      ),
       'widget' => array(
         'type' => 'chado_linker__relationship_widget',
         'settings' => array(
@@ -199,10 +201,12 @@ class chado_linker__relationship extends TripalField {
 
     // once we have our table array structure defined, we call Drupal's theme_table()
     // function to generate the table.
-    $element[$delta] = array(
-      '#type' => 'markup',
-      '#markup' => theme_table($table),
-    );
+    if (count($items) > 0) {
+      $element[0] = array(
+        '#type' => 'markup',
+        '#markup' => theme_table($table),
+      );
+    }
   }
   /**
    * @see TripalField::widget_form()

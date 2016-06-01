@@ -85,7 +85,9 @@ class chado_feature__residues extends TripalField {
       'label' => 'Sequences',
       'description' => 'All available sequences for this record.',
       'required' => FALSE,
-      'settings' => array(),
+      'settings' => array(
+        'auto_attach' => FALSE,
+      ),
       'widget' => array(
         'type' => 'chado_feature__residues_widget',
         'settings' => array(
@@ -131,7 +133,7 @@ class chado_feature__residues extends TripalField {
 
     foreach ($items as $delta => $item) {
       // If there are no residues then skip this one.
-      if (!array_key_exists('residues', $item['value'])) {
+      if (!is_array($item['value']) or !array_key_exists('residues', $item['value'])) {
         continue;
       }
 

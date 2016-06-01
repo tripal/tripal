@@ -174,7 +174,11 @@ class TripalField {
    *      - label: 'above'
    *      - type: the default formatter specified in field_info().
    *      - settings: each omitted setting is given the default value specified
-   *        in formatter_info().
+   *        in formatter_info().  A setting specific to TripalFields is the
+   *        'auto_attach'. If this settings is set to TRUE then the field
+   *        will be automatically attached to the entity. IF FALSE then it
+   *        will not be and can be attached with a separate field_attach_load()
+   *        call.  If not specified the default is FALSE.
    *      View modes not present in the definition are left empty, and the
    *      field will not be displayed in this mode.
    *

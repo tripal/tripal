@@ -112,7 +112,9 @@ class chado_linker__phenotype extends TripalField {
       'label' => 'Phenotypes',
       'description' => 'The phenotypes associated with this record.',
       'required' => FALSE,
-      'settings' => array(),
+      'settings' => array(
+        'auto_attach' => FALSE,
+      ),
       'widget' => array(
         'type' => 'chado_linker__phenotype_widget',
         'settings' => array(
@@ -135,51 +137,53 @@ class chado_linker__phenotype extends TripalField {
    */
   public function formatter_view(&$element, $entity_type, $entity,
       $field, $instance, $langcode, $items, $display) {
-        // Get the settings
-        $settings = $display['settings'];
-        $record = $entity->chado_record;
+    // Get the settings
+    $settings = $display['settings'];
+    $record = $entity->chado_record;
 
-        $headers = array('Name', 'Value', 'Type');
-        $rows = array();
+    $headers = array('Name', 'Value', 'Type');
+    $rows = array();
 
-        foreach ($items as $delta => $item) {
-          $phenotype = $item['value'];
-          if (!$phenotype) {
-            continue;
-          }
+    foreach ($items as $delta => $item) {
+      $phenotype = $item['value'];
+      if (!$phenotype) {
+        continue;
+      }
 
-          // Get the field values
-          $phenotype_name = $phenotype['name'];
-          $value = $phenotype['value'];
-          $type = $phenotype['type'];
+      // Get the field values
+      $phenotype_name = $phenotype['name'];
+      $value = $phenotype['value'];
+      $type = $phenotype['type'];
 
-          // Add a link i there is an entity.
-          if (array_key_exists('entity_id', $item) and $item['entity_id']) {
-            $entity_id = $item['entity_id'];
-            $phenotype_name = l($phenotype_name, "bio_data/" . $entity_id, array('attributes' => array('target' => "_blank")));
-          }
-          $rows[] = array($phenotype_name, $value, $type);
-        }
-        $table = array(
-          'header' => $headers,
-          'rows' => $rows,
-          'attributes' => array(
-            'id' => 'tripal_linker-table-phenotype-object',
-            'class' => 'tripal-data-table'
-          ),
-          'sticky' => FALSE,
-          'caption' => "",
-          'colgroups' => array(),
-          'empty' => 'No phenotypes available',
-        );
-        $content = theme_table($table);
+      // Add a link i there is an entity.
+      if (array_key_exists('entity_id', $item) and $item['entity_id']) {
+        $entity_id = $item['entity_id'];
+        $phenotype_name = l($phenotype_name, "bio_data/" . $entity_id, array('attributes' => array('target' => "_blank")));
+      }
+      $rows[] = array($phenotype_name, $value, $type);
+    }
+    $table = array(
+      'header' => $headers,
+      'rows' => $rows,
+      'attributes' => array(
+        'id' => 'tripal_linker-table-phenotype-object',
+        'class' => 'tripal-data-table'
+      ),
+      'sticky' => FALSE,
+      'caption' => "",
+      'colgroups' => array(),
+      'empty' => 'No phenotypes available',
+    );
+    $content = theme_table($table);
 
-        // once we have our table array structure defined, we call Drupal's theme_table()
-        // function to generate the table.
-        $element[$delta] = array(
-          '#type' => 'markup',
-          '#markup' => $content,
-        );
+    // once we have our table array structure defined, we call Drupal's theme_table()
+    // function to generate the table.
+    if (count($items) > 0) {
+      $element[0] = array(
+        '#type' => 'markup',
+        '#markup' => $content,
+      );
+    }
   }
 
 
