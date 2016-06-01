@@ -91,7 +91,9 @@ class chado_linker_pub extends TripalField {
       'description' => 'This record has been referenced or is sourced from
         these publications.',
       'required' => FALSE,
-      'settings' => array(),
+      'settings' => array(
+        'auto_attach' => FALSE,
+      ),
       'widget' => array(
         'type' => 'chado_linker__pub_widget',
         'settings' => array(
@@ -151,10 +153,13 @@ class chado_linker_pub extends TripalField {
       'type' => 'ol',
       'attributes' => array(),
     );
-    $element[0] = array(
-      '#type' => 'markup',
-      '#markup' => theme_item_list($list),
-    );
+
+    if (count($items) > 0) {
+      $element[0] = array(
+        '#type' => 'markup',
+        '#markup' => theme_item_list($list),
+      );
+    }
   }
   /**
    * @see TripalField::widget_form()

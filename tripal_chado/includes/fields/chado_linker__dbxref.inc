@@ -104,7 +104,9 @@ class chado_linker__dbxref extends TripalField {
       'label' => 'Cross References',
       'description' => 'The IDs where this record may be available in other external online databases.',
       'required' => FALSE,
-      'settings' => array(),
+      'settings' => array(
+        'auto_attach' => FALSE,
+      ),
       'widget' => array(
         'type' => 'chado_linker__dbxref_widget',
         'settings' => array(

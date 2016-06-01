@@ -122,10 +122,12 @@ class chado_linker__cvterm extends TripalField {
       'empty' => 'There are no annotations of this type',
     );
 
-    $element[0] = array(
-      '#type' => 'markup',
-      '#markup' => theme_table($table),
-    );
+    if (count($items) > 0) {
+      $element[0] = array(
+        '#type' => 'markup',
+        '#markup' => theme_table($table),
+      );
+    }
   }
   /**
    * @see TripalField::widget_form()

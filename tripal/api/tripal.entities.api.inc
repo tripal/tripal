@@ -1,4 +1,53 @@
 <?php
+
+
+/**
+ * A replacement for the entity_load function of Drupal.
+ *
+ * This function should be used for loading of Tripal Entities. It provides
+ * greater control to limit which fields are loaded with the entity. The
+ * entity_load() function of Drupal will automatically attach all fields at
+ * once but this may not be desired as some fields can be comples and large and
+ * the site developer may desire loading of fields via AJAX or the user of
+ * web services may wish to specify the fields they want to include.
+ *
+ * @param $entity_type:
+ *   The entity type to load, e.g. node or user.
+ * @param $ids
+ *   An array of entity IDs, or FALSE to load all entities.
+ * @param $reset: Whether to reset the internal cache for the requested entity
+ *   type. Unlike the entity_load() function this defaults to TRUE.
+ * @param $field_ids
+ *   A list of numeric feild IDs that should be loaded.  The
+ *   TripalField named 'content_type' is always automatically added.
+ *
+ * @return
+ *   An array of entity objects indexed by their ids. When no results are
+ *   found, an empty array is returned.
+ */
+function tripal_load_entity($entity_type, $ids = FALSE, $reset = TRUE,
+    $field_ids = array()) {
+
+  // The $conditions is deprecated in the funtion arguments of entity_load
+  // so it was removed from the parameters of this function as well. But
+  // the load() function of the entity controller still expects it so set it
+  // to an empty array.
+  $conditions = array();
+
+  // If this isn't a TripalEntity then just load it the old fashioned way
+  // although caching will not be used if it not specifically set to FALSE.
+  if ($entity_type != 'TripalEntity') {
+    return entity_load($entity_type, $ids, $conditions, $reset);
+  }
+
+  // Get the entity controller and clear the cache if requested (default).
+  $ec = entity_get_controller($entity_type);
+  if ($reset) {
+    $ec->resetCache();
+  }
+
+  return $ec->load($ids, $conditions, $field_ids);
+}
 /**
  * Retrieves a TripalTerm entity that matches the given arguments.
  *

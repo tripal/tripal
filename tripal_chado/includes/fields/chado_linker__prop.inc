@@ -91,10 +91,13 @@ class chado_linker__prop extends TripalField {
       $properties[] = $item[$chado_table . '__value'];
     }
     $content = implode(', ', $properties);
-    $element[$delta] = array(
-      '#type' => 'markup',
-      '#markup' => $content,
-    );
+
+    if (count($items) > 0) {
+      $element[0] = array(
+        '#type' => 'markup',
+        '#markup' => $content,
+      );
+    }
   }
   /**
    * @see TripalField::widget_form()

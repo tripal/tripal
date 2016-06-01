@@ -85,7 +85,9 @@ class chado_linker__cvterm_addr extends TripalField {
       'label' => 'Add Annotation Types',
       'description' => 'Add additional annotations types to this record.',
       'required' => FALSE,
-      'settings' => array(),
+      'settings' => array(
+        'auto_attach' => FALSE,
+      ),
       'widget' => array(
         'type' => 'chado_linker__cvterm_adder_widget',
         'settings' => array(

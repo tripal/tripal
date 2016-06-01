@@ -398,7 +398,9 @@ function tripal_chado_field_create_instance_info_base_defaults($bundle_name,
       'label' => ucwords(preg_replace('/_/', ' ', $column_name)),
       'description' => '',
       'required' => FALSE,
-      'settings' => array(),
+      'settings' => array(
+        'auto_attach' => TRUE,
+      ),
       'widget' => array(
         'settings' => array(
           'display_label' => 1,

@@ -90,7 +90,9 @@ class chado_gene__transcripts extends TripalField {
       'label' => 'Transcripts',
       'description' => 'These transcripts are associated with this gene.',
       'required' => FALSE,
-      'settings' => array(),
+      'settings' => array(
+        'auto_attach' => FALSE,
+      ),
       'widget' => array(
         'type' => 'chado_gene__transcripts_widget',
         'settings' => array(
@@ -193,10 +195,12 @@ class chado_gene__transcripts extends TripalField {
 
     // once we have our table array structure defined, we call Drupal's theme_table()
     // function to generate the table.
-    $element[$delta] = array(
-      '#type' => 'markup',
-      '#markup' => $content,
-    );
+    if (count($items) > 0) {
+      $element[0] = array(
+        '#type' => 'markup',
+        '#markup' => $content,
+      );
+    }
   }
 
   /**

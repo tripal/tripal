@@ -56,9 +56,11 @@ function tripal_init() {
 
   // add some variables for all javasript to use for building URLs
   $clean_urls = variable_get('clean_url', 0);
-  drupal_add_js(
-    "var baseurl  = '$base_url';" .
-    "var isClean  =  $clean_urls;",
+  $tripal_path = drupal_get_path('module', 'tripal');
+  drupal_add_js("
+    var baseurl  = '$base_url';
+    var isClean  =  $clean_urls;
+    var tripal_path = '$tripal_path';",
     'inline', 'header');
 
   // make sure the date time settings are the way Tripal will insert them
@@ -226,6 +228,18 @@ function tripal_menu() {
     'page arguments' => array('tripal_admin_jobs', 'admin/tripal/tripal_jobs'),
     'access arguments' => array('administer tripal'),
     'type' => MENU_CALLBACK,
+  );
+
+  /*
+   * AJAX Callbacks.
+   */
+  $items['bio_data/ajax/field_attach/%'] = array(
+    'page callback' => 'tripal_ajax_attach_field',
+    'page arguments' => array(3),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/tripal.entity.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
   );
 
 
@@ -482,8 +496,9 @@ function TripalBundle_load($bundle_type, $reset = FALSE) {
  *
  * @see tripal_entity_load_multiple()
  */
-function TripalEntity_load($id, $reset = FALSE) {
-  $entity = entity_load('TripalEntity', array($id), array(), $reset);
+function TripalEntity_load($id, $reset = TRUE) {
+  // $entity = entity_load('TripalEntity', array($id), array(), $reset);
+  $entity = tripal_load_entity('TripalEntity', array($id), $reset);
   return reset($entity);
 }
 

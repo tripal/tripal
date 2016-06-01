@@ -48,6 +48,9 @@ function tripal_entity_info() {
     // FALSE disables caching. Caching functionality is handled by Drupal core.
     'static cache' => FALSE,
 
+    // Disable caching of fields
+    'field cache' => FALSE,
+
     // This entity doesn't support bundles.
     'bundles' => array (),
 
@@ -263,4 +266,54 @@ function tripal_entity_access($entity) {
 
 function tripal_form_tripal_entity_form_alter(&$form, &$form_state, $form_id) {
   //dpm($form);
+}
+
+/**
+ * Implements hook_entity_view.
+ *
+ * Here we want to overwite unattached fields with a div box that will be
+ * recognized by JavaScript that will the use AJAX to load the field.
+ *
+ * The tripal_ajax_attach_field() function is called by an AJAX call to
+ * retrieve the field.
+ */
+function tripal_entity_view($entity, $type, $view_mode, $langcode) {
+  if ($type == 'TripalEntity') {
+    foreach (element_children($entity->content) as $child_name) {
+      $child = $entity->content[$child_name];
+      if (array_key_exists('#items', $child) and
+          array_key_exists('0', $child['#items']) and
+          array_key_exists('#unattached', $child['#items'][0])
+          and $child['#items'][0]['#unattached'] === TRUE) {
+        $entity->content[$child_name]['#prefix'] = '<div id="tripal-entity-' . $entity->id . '--' . $child_name . '" class="tripal-entity-unattached">';
+        $entity->content[$child_name]['#suffix'] = '</div>';
+      }
+    }
+  }
+}
+
+/**
+ * Responds to an AJAX call for populating a field.
+ *
+ * @param $id
+ *   The ID of the HTML div box where the field is housed. The ID contains the
+ *   entity ID and field name.
+ */
+function tripal_ajax_attach_field($id) {
+
+  $matches = array();
+  if (preg_match('/^tripal-entity-(\d+)--(.+)$/', $id, $matches)) {
+    $entity_id = $matches[1];
+    $field_name = $matches[2];
+    $field = field_info_fields($field_name);
+    $result = tripal_load_entity('TripalEntity', array($entity_id), FALSE, array($field['id']));
+    reset($result);
+    $entity = $result[$entity_id];
+
+    $content = drupal_render(field_view_field('TripalEntity', $entity, $field_name));
+    return drupal_json_output(array(
+      'id' => $id,
+      'content' => $content
+    ));
+  }
 }

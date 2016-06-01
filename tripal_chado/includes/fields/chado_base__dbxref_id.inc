@@ -90,7 +90,9 @@ class chado_base__dbxref_id extends TripalField {
       'description' => 'This field specifies the unique stable accession (ID) for
         this record. It requires that this site have a database entry.',
       'required' => FALSE,
-      'settings' => array(),
+      'settings' => array(
+        'auto_attach' => TRUE,
+      ),
       'widget' => array(
         'type' => 'chado_base__dbxref_id_widget',
         'settings' => array(

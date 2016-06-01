@@ -11,7 +11,6 @@ class chado_feature__md5checksum  extends TripalField {
       'description' => t('A field for generating MD5 checksum for a sequence.'),
       'default_widget' => 'chado_feature__md5checksum_widget',
       'default_formatter' => 'chado_feature__md5checksum_formatter',
-      'settings' => array(),
       'storage' => array(
         'type' => 'field_chado_storage',
         'module' => 'tripal_chado',
@@ -89,7 +88,9 @@ class chado_feature__md5checksum  extends TripalField {
         to calculate the value. If the value calculated is identical the one shown
         here, then the downloaded sequence is uncorrupted.',
       'required' => FALSE,
-      'settings' => array(),
+      'settings' => array(
+        'auto_attach' => FALSE,
+      ),
       'widget' => array(
         'type' => 'chado_feature__md5checksum_widget',
         'settings' => array(

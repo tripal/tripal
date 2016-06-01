@@ -85,7 +85,9 @@ class chado_feature__seqlen extends TripalField {
         sequences derived from alignments. If this value is zero but aligned sequences
         are present then this record has no official assigned sequence.',
       'required' => FALSE,
-      'settings' => array(),
+      'settings' => array(
+        'auto_attach' => FALSE,
+      ),
       'widget' => array(
         'type' => 'chado_feature__seqlen_widget',
         'settings' => array(

@@ -108,7 +108,9 @@ class chado_base__organism_id extends TripalField {
       'label' => 'Organism',
       'description' => 'Select an organism.',
       'required' => $is_required,
-      'settings' => array(),
+      'settings' => array(
+        'auto_attach' => TRUE,
+      ),
       'widget' => array(
         'type' => 'chado_base__organism_id_widget',
         'settings' => array(
@@ -152,17 +154,19 @@ class chado_base__organism_id extends TripalField {
   public function formatter_view(&$element, $entity_type, $entity,
       $field, $instance, $langcode, $items, $display) {
 
-    $content =  $items[0]['value'];
-    if (array_key_exists('entity_id', $items[0])) {
-      $content = l(strip_tags($items[0]['value']), 'bio_data/' . $items[0]['entity_id']);
-    }
+    if (count($items) > 0) {
+      $content =  $items[0]['value'];
+      if (array_key_exists('entity_id', $items[0])) {
+        $content = l(strip_tags($items[0]['value']), 'bio_data/' . $items[0]['entity_id']);
+      }
 
-    // The cardinality of this field is 1 so we don't have to
-    // iterate through the items array, as there will never be more than 1.
-    $element[0] = array(
-      '#type' => 'markup',
-      '#markup' => $content,
-    );
+      // The cardinality of this field is 1 so we don't have to
+      // iterate through the items array, as there will never be more than 1.
+      $element[0] = array(
+        '#type' => 'markup',
+        '#markup' => $content,
+      );
+    }
   }
 
   /**
@@ -216,7 +220,6 @@ class chado_base__organism_id extends TripalField {
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
       'value' => '',
-      'organism__organism_id' => '',
     );
 
     if ($record) {

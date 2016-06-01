@@ -112,7 +112,9 @@ class chado_linker__genotype extends TripalField {
       'label' => 'Genotypes',
       'description' => 'The genotypes associated with this record.',
       'required' => FALSE,
-      'settings' => array(),
+      'settings' => array(
+        'auto_attach' => FALSE,
+      ),
       'widget' => array(
         'type' => 'chado_linker__genotype_widget',
         'settings' => array(
@@ -134,51 +136,54 @@ class chado_linker__genotype extends TripalField {
    */
   public function formatter_view(&$element, $entity_type, $entity,
       $field, $instance, $langcode, $items, $display) {
-        // Get the settings
-        $settings = $display['settings'];
-        $record = $entity->chado_record;
 
-        $headers = array('Name', 'Description', 'Type');
-        $rows = array();
+    // Get the settings
+    $settings = $display['settings'];
+    $record = $entity->chado_record;
 
-        foreach ($items as $delta => $item) {
-          $genotype = $item['value'];
-          if (!$genotype) {
-            continue;
-          }
+    $headers = array('Name', 'Description', 'Type');
+    $rows = array();
 
-          // Get the field values
-          $genotype_name = $genotype['name'];
-          $description = $genotype['description'];
-          $type = $genotype['type'];
+    foreach ($items as $delta => $item) {
+      $genotype = $item['value'];
+      if (!$genotype) {
+        continue;
+      }
 
-          // Add a link i there is an entity.
-          if (array_key_exists('entity_id', $item) and $item['entity_id']) {
-            $entity_id = $item['entity_id'];
-            $genotype_name = l($genotype_name, "bio_data/" . $entity_id, array('attributes' => array('target' => "_blank")));
-          }
-          $rows[] = array($genotype_name, $description, $type);
-        }
-        $table = array(
-          'header' => $headers,
-          'rows' => $rows,
-          'attributes' => array(
-            'id' => 'tripal_linker-table-genotype-object',
-            'class' => 'tripal-data-table'
-          ),
-          'sticky' => FALSE,
-          'caption' => "",
-          'colgroups' => array(),
-          'empty' => 'No genotypes available',
-        );
-        $content = theme_table($table);
+      // Get the field values
+      $genotype_name = $genotype['name'];
+      $description = $genotype['description'];
+      $type = $genotype['type'];
 
-        // once we have our table array structure defined, we call Drupal's theme_table()
-        // function to generate the table.
-        $element[$delta] = array(
-          '#type' => 'markup',
-          '#markup' => $content,
-        );
+      // Add a link i there is an entity.
+      if (array_key_exists('entity_id', $item) and $item['entity_id']) {
+        $entity_id = $item['entity_id'];
+        $genotype_name = l($genotype_name, "bio_data/" . $entity_id, array('attributes' => array('target' => "_blank")));
+      }
+      $rows[] = array($genotype_name, $description, $type);
+    }
+    $table = array(
+      'header' => $headers,
+      'rows' => $rows,
+      'attributes' => array(
+        'id' => 'tripal_linker-table-genotype-object',
+        'class' => 'tripal-data-table'
+      ),
+      'sticky' => FALSE,
+      'caption' => "",
+      'colgroups' => array(),
+      'empty' => 'No genotypes available.',
+    );
+    $content = theme_table($table);
+
+    // once we have our table array structure defined, we call Drupal's theme_table()
+    // function to generate the table.
+    if (count($items) > 0) {
+      $element[0] = array(
+        '#type' => 'markup',
+        '#markup' => $content,
+      );
+    }
   }
 
 

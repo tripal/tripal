@@ -86,7 +86,9 @@ class chado_linker__prop_adder extends TripalField {
       'label' => 'Add Properties',
       'description' => 'Add additional property types to this record.',
       'required' => FALSE,
-      'settings' => array(),
+      'settings' => array(
+        'auto_attach' => FALSE,
+      ),
       'widget' => array(
         'type' => 'chado_linker__prop_adder_widget',
         'settings' => array(
