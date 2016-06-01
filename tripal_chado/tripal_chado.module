@@ -476,6 +476,21 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'weight' => 10
   );
+  
+  //////////////////////////////////////////////////////////////////////////////
+  //                           Semantic Web Settings
+  //////////////////////////////////////////////////////////////////////////////
+  $items['admin/tripal/storage/chado/semweb'] = array(
+    'title' => 'Semantic Web',
+    'description' => t('Semantic web settings. Set terms used for the web services.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_chado_semweb_form'),
+    'type' => MENU_NORMAL_ITEM,
+    'access arguments' => array('administer tripal'),
+    'file' => 'includes/tripal_chado.semweb.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+    'weight' => 10
+  );
 
   //////////////////////////////////////////////////////////////////////////////
   //                           Auto Completes
