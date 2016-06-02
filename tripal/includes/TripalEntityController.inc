@@ -187,9 +187,14 @@ class TripalEntityController extends EntityAPIController {
         // SQL statement that gets called somewhere by Drupal:
         // SELECT DISTINCT SUBSTRING_INDEX(source, '/', 1) AS path FROM url_alias.
         // Perhaps we should write our own SQL to avoid this issue.
-        path_delete(array('source' => $source_url));
-        $path = array('source' => $source_url, 'alias' => $alias);
-        path_save($path);
+        drupal_write_record('url_alias', array(
+          'source' => $source_url,
+          'alias' => $alias,
+          'language' => 'und',
+        ));
+//        path_delete(array('source' => $source_url));
+//        $path = array('source' => $source_url, 'alias' => $alias);
+//        path_save($path);
       }
       // If there is only one alias matching then it might just be that we already
       // assigned this alias to this entity in a previous save.

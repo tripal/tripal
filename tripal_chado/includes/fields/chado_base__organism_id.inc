@@ -33,6 +33,9 @@ class chado_base__organism_id extends TripalField {
     $cvterm_id  = $details['chado_cvterm_id'];
 
     $schema = chado_get_schema($table_name);
+    if (!$schema) {
+      return FALSE;
+    }
 
     // If this is the organism table then do not attach as the organism_id
     // field is the primary key and we don't want a field for that.

@@ -607,7 +607,8 @@ function tripal_chado_migrate_selected_types($tv3_content_types) {
     // If term doesn't exist, create a new bundle for this term
     if (!$term) {
       print("Creating bundle for term '" . $tv3_content_type['term_name'] . "'...\n");
-      $success = tripal_create_bundle($tv3_content_type['vocabulary'], $tv3_content_type['accession'], $tv3_content_type['term_name']);
+      $success = tripal_create_bundle($tv3_content_type['vocabulary'],
+          $tv3_content_type['accession'], $tv3_content_type['term_name']);
       $term = tripal_load_term_entity($tv3_content_type);
     }
     // Create bundle name
@@ -618,7 +619,7 @@ function tripal_chado_migrate_selected_types($tv3_content_types) {
       'sync_node' => 1,
       'bundle_name' => $bundle_name
     );
-    tripal_chado_publish_records ($value);
+    tripal_chado_publish_records($value);
   }
 }
 

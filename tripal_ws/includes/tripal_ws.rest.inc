@@ -469,10 +469,9 @@ function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_i
     }
   }
 
-  // Get the TripalEntity and attach all the fields.
-  $entity = entity_load('TripalEntity', array('id' => $entity_id));
+  // Get the TripalEntity
+  $entity = tripal_load_entity('TripalEntity', array('id' => $entity_id));
   $entity = reset($entity);
-
 
   // Next add in the ID and Type for this resources.
   $response['@id'] = $api_url . '/content/' . $ctype . '/' . $entity_id;
@@ -480,14 +479,13 @@ function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_i
   $response['label'] = $entity->title;
   $response['itemPage'] = url('/bio_data/' . $entity->id, array('absolute' => TRUE));
 
-
   // Get information about the fields attached to this bundle and sort them
   // in the order they were set for the display.
   // TODO: should we allow for custom ordering of fields for web services
   // or use the default display ordering?
-  $fields = field_info_instances('TripalEntity', $bundle->name);
+  $instances = field_info_instances('TripalEntity', $bundle->name);
 
-  uasort($fields, function($a, $b) {
+  uasort($instances, function($a, $b) {
     $a_weight = (is_array($a) && isset($a['display']['default']['weight'])) ? $a['display']['default']['weight'] : 0;
     $b_weight = (is_array($b) && isset($b['display']['default']['weight'])) ? $b['display']['default']['weight'] : 0;
 
@@ -496,30 +494,79 @@ function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_i
     }
     return ($a_weight < $b_weight) ? -1 : 1;
   });
-  // Iterate throught the fields and add each value to the response.
-  //$response['fields'] = $fields;
-  foreach ($fields as $field_name => $field) {
-    $field_info = field_info_field($field_name);
-    $settings = $field_info['settings'];
 
-    // By default, the label for the key in the output should be the
-    // term from the vocabulary that the field is assigned. But in the
-    // case that the field is not assigned a term, we must use the field name.
-    $key = $field['field_name'];
-    if (array_key_exists('semantic_web', $settings) and $settings['semantic_web']) {
-      list($vocabulary, $accession) = explode(':', $settings['semantic_web']);
-      $term = tripal_get_term_details($vocabulary, $accession);
-      $key = $term['name'];
-      $context_vocabs[$vocabulary] = $term['url'];
-      $context_terms[$key] = $settings['semantic_web'];
-    }
+  // Iterate through the fields and add each value to the response.
+  //$response['fields'] = $fields;
+  foreach ($instances as $field_name => $instance) {
 
     // Skip hidden fields.
-    if ($field['display']['default']['type'] == 'hidden') {
+    if ($instance['display']['default']['type'] == 'hidden') {
       continue;
     }
 
-    $value = array();
+    // Get the information about this field. It will have settings different
+    // from the instance.
+    $field = field_info_field($field_name);
+
+    // Get the details for this field for the JSON-LD response.
+    $details = tripal_ws_get_field_JSON_LD($field, $instance);
+    print_r($details);
+    $context_vocabs += $details['context']['vocabs'];
+    $context_terms += $details['context']['terms'];
+    $response += $details['value'];
+  }
+
+  // Lastly, add in the terms used into the @context section.
+  $context_terms['label'] = 'rdfs:label';
+  $context_terms['itemPage'] = 'schema:itemPage';
+
+  $response['@context'] = array_merge($context_vocabs, $context_terms);
+
+//   $response['operation'][] = array(
+//     '@type' => 'hydra:DeleteResourceOperation',
+//     'hydra:method' => 'DELETE'
+//   );
+//   $response['operation'][] = array(
+//     '@type' => 'hydra:ReplaceResourceOperation',
+//     'hydra:method' => 'POST'
+//   );
+
+}
+
+/**
+ *
+ */
+function tripal_ws_get_field_JSON_LD($field, $instance) {
+
+  // Initialized the context array.
+  $context = array();
+  $context['vocabs'] = array();
+  $context['terms'] = array();
+
+  // Get the field  settings.
+  $field_name = $instance['field_name'];
+  $field_settings = $field['settings'];
+
+  // By default, the label for the key in the output should be the
+  // term from the vocabulary that the field is assigned. But in the
+  // case that the field is not assigned a term, we must use the field name.
+  $key = $field_name;
+  if (array_key_exists('semantic_web', $field_settings) and $field_settings['semantic_web']) {
+    list($vocabulary, $accession) = explode(':', $field_settings['semantic_web']);
+    $term = tripal_get_term_details($vocabulary, $accession);
+    $key = $term['name'];
+    $context['vocabs'][$vocabulary] = $term['url'];
+    $context['terms'][$key] = $field_settings['semantic_web'];
+  }
+
+  // Don't show fields that are not meant to be auto attached, even if the
+  // loading of the entity pulled a value for the field from the cache.
+  // We want the end-user to specifically load these.
+  $value = array();
+  $instance_settings = $instance['settings'];
+  if (array_key_exists('auto_attach', $instance_settings) and
+      $instance_settings['auto_attach'] === TRUE) {
+
     $items = field_get_items('TripalEntity', $entity, $field_name);
     for ($i = 0; $i < count($items); $i++) {
 
@@ -539,39 +586,31 @@ function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_i
 
         if (property_exists($lvocab, 'vocabulary') and !array_key_exists($lvocab->vocabulary, $response['@context'])) {
           $lterm_details = tripal_get_term_details($lvocab->vocabulary, $lterm->vocabulary);
-          $response['@context'][$lvocab->vocabulary] = $lterm_details->url;
+          $context[$lvocab->vocabulary] = $lterm_details->url;
         }
       }
       else {
         $value[] = $items[$i]['value'];
       }
     }
-
-    // Convert a single value to not be an array.
-    if (count($value) == 1) {
-      $value = $value[0];
-    }
-
-    $response[$key] = $value;
+  }
+  // If the value shouldn't be attached by default then create a link for the
+  // caller to retrieve the information.
+  else {
+    $value[] = $api_url . '/content/' . $ctype . '/' . $entity_id;
+  }
+  // Convert a single value to not be an array.
+  if (count($value) == 1) {
+    $value = $value[0];
   }
 
-  // Lastly, add in the terms used into the @context section.
-  $context_terms['label'] = 'rdfs:label';
-  $context_terms['itemPage'] = 'schema:itemPage';
-
-  $response['@context'] = array_merge($context_vocabs, $context_terms);
-
-  $response['operation'][] = array(
-    '@type' => 'hydra:DeleteResourceOperation',
-    'hydra:method' => 'DELETE'
+  return array(
+    'context' => $context,
+    'value' => array(
+      $key => $value
+    ),
   );
-  $response['operation'][] = array(
-    '@type' => 'hydra:ReplaceResourceOperation',
-    'hydra:method' => 'POST'
-  );
-
 }
-
 
 
 /**

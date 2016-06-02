@@ -1,5 +1,96 @@
 <?php
 
+/**
+ * Implements hook_chado_bundle_create().
+ *
+ * This is a Tripal hook. It allows any module to perform tasks after
+ * a bundle has been craeted.
+ *
+ * @param $bundle
+ *  The TripalBundle object.
+ */
+function triipal_chado_bundle_create(&$bundle) {
+  // The details array is used to pass to the TripalEntity->create_info()
+  // function to provide more details about how the bundle is used by this
+  // module.
+  $details = array();
+
+  // Get the term.
+  $term = entity_load('TripalTerm', array($bundle->term_id));
+  $term = reset($term);
+
+  // Get the cvterm that corresponds to this TripalTerm object.
+  $vocab = entity_load('TripalVocab', array($term->vocab_id));
+  $vocab = reset($vocab);
+  $match = array(
+    'dbxref_id' => array(
+      'db_id' => array(
+        'name' => $vocab->vocabulary,
+      ),
+      'accession' => $term->accession
+    ),
+  );
+  $cvterm = chado_generate_var('cvterm', $match);
+
+  // The organism table does not have a type_id so we won't ever find
+  // a record for it in the tripal_cv_defaults table.
+  if ($cvterm->name == 'organism') {
+    $details = array(
+      'chado_cv_id' => $cvterm->cv_id->cv_id,
+      'chado_cvterm_id' => $cvterm->cvterm_id,
+      'chado_table' => 'organism',
+      'chado_type_table' => 'organism',
+      'chado_type_column' =>  '',
+    );
+  }
+  // The analysis table does not have a type_id so we won't ever find
+  // a record for it in the tripalcv_defaults table.
+  else if ($cvterm->name == 'analysis') {
+    $details = array(
+      'chado_cv_id' => $cvterm->cv_id->cv_id,
+      'chado_cvterm_id' => $cvterm->cvterm_id,
+      'chado_table' => 'analysis',
+      'chado_type_table' => 'analysis',
+      'chado_type_column' =>  '',
+    );
+  }
+  else if ($cvterm->name == 'project') {
+    $details = array(
+      'chado_cv_id' => $cvterm->cv_id->cv_id,
+      'chado_cvterm_id' => $cvterm->cvterm_id,
+      'chado_table' => 'project',
+      'chado_type_table' => 'project',
+      'chado_type_column' =>  '',
+    );
+  }
+  else {
+    // TODO: WHAT TO DO IF A VOCABULARY IS USED AS A DEFAULT FOR MULTIPLE
+    // TABLES.
+    // Look to see if this vocabulary is used as a default for any table.
+    $default = db_select('tripal_cv_defaults', 't')
+      ->fields('t')
+      ->condition('cv_id', $cvterm->cv_id->cv_id)
+      ->execute()
+      ->fetchObject();
+    if ($default) {
+      $details = array(
+        'chado_cv_id' => $cvterm->cv_id->cv_id,
+        'chado_cvterm_id' => $cvterm->cvterm_id,
+        'chado_table' => $default->table_name,
+        'chado_type_table' => $default->table_name,
+        'chado_type_column' =>  $default->field_name,
+      );
+    }
+  }
+
+  // Save the mapping information so that we can reuse it when we need to
+  // look things up for later (such as the hook_create_instance_info() function.
+  tripal_set_bundle_variable('chado_cv_id', $bundle->id, $details['chado_cv_id']);
+  tripal_set_bundle_variable('chado_cvterm_id', $bundle->id, $details['chado_cvterm_id']);
+  tripal_set_bundle_variable('chado_table', $bundle->id, $details['chado_table']);
+  tripal_set_bundle_variable('chado_type_table', $bundle->id, $details['chado_type_table']);
+  tripal_set_bundle_variable('chado_type_column', $bundle->id, $details['chado_type_column']);
+}
 
 /**
  * Implements hook_entity_create().

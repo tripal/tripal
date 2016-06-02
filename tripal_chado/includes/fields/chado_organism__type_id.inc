@@ -89,7 +89,7 @@ class chado_organism__type_id extends TripalField {
       'description' => 'The Infrapsecific Type.',
       'required' => FALSE,
       'settings' => array(
-        'auto_attach' => FALSE,
+        'auto_attach' => TRUE,
       ),
       'widget' => array(
         'type' => 'chado_organism__type_id_widget',

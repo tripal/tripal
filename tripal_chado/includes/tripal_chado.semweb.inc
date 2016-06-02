@@ -18,6 +18,21 @@ function tripal_chado_populate_chado_semweb_table() {
   // Add in vocabularies of terms that will be used for the semantic web
   //
   tripal_insert_db(array(
+    'name' => 'rdfs',
+    'description' => 'Resource Description Framework Schema',
+    'url' => 'https://www.w3.org/TR/rdf-schema/',
+    'urlprefix' => 'https://www.w3.org/TR/rdf-schema/#ch_',
+  ));
+  tripal_insert_cv('rdfs','Resource Description Framework Schema');
+  $name = tripal_insert_cvterm(array(
+    'id' => 'rdfs:type',
+    'name' => 'type',
+    'cv_name' => 'rdfs',
+    'definition' => 'rdf:type is an instance of rdf:Property that is used to state that a resource is an instance of a class.',
+  ));
+
+  tripal_insert_cv('foaf','Friend of a Friend');
+  tripal_insert_db(array(
     'name' => 'foaf',
     'description' => 'Friend of a Friend. A dictionary of people-related terms that can be used in structured data).',
     'url' => 'http://www.foaf-project.org/',
@@ -77,7 +92,7 @@ function tripal_chado_populate_chado_semweb_table() {
   tripal_insert_cv('sbo','Systems Biology');
 
   //
-  // SET TERM DEFAULTS
+  // ADD TERMS AND SET TERM DEFAULTS
   //
   $name = tripal_insert_cvterm(array(
     'id' => 'schema:name',
@@ -345,4 +360,3 @@ function tripal_chado_semweb_form_submit($form, &$form_state) {
 function tripal_chado_semweb_form_ajax_callback($form, $form_state) {
   return $form;
 }
-    

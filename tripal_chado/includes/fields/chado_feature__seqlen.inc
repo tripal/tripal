@@ -86,7 +86,7 @@ class chado_feature__seqlen extends TripalField {
         are present then this record has no official assigned sequence.',
       'required' => FALSE,
       'settings' => array(
-        'auto_attach' => FALSE,
+        'auto_attach' => TRUE,
       ),
       'widget' => array(
         'type' => 'chado_feature__seqlen_widget',

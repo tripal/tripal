@@ -33,6 +33,9 @@ class chado_base__dbxref_id extends TripalField {
     // Check the schema for the data table if it does not have
     // a 'dbxref_id' column then we don't want to attach this field.
     $schema = chado_get_schema($table_name);
+    if (!$schema) {
+      return FALSE;
+    }
     if (array_key_exists('dbxref_id', $schema['fields'])) {
       return TRUE;
     }

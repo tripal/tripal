@@ -4,67 +4,26 @@
  * Implements hook_field_info().
  */
 function tripal_field_info() {
-  $fields = array(
-    'content_type' => array(
-      'label' => t('Record Type'),
-      'description' => t('The content type.'),
-      'default_widget' => 'tripal_content_type_widget',
-      'default_formatter' => 'tripal_content_type_formatter',
-      'settings' => array(),
-      'storage' => array(
-        'type' => 'tripal_no_storage',
-        'module' => 'tripal',
-        'active' => TRUE
-      ),
-    ),
-  );
-  return $fields;
+
+  $info = array();
+  $fields = tripal_get_fields('tripal');
+  foreach ($fields as $field) {
+    $info[] = $field->field_info();
+  }
+
 }
 /**
  * Implements hook_field_widget_info();
  */
 function tripal_field_widget_info() {
-  return array(
-    'tripal_content_type_widget' => array(
-      'label' => t('Record Type'),
-      'field types' => array('content_type')
-    ),
-  );
+
 }
 
 /**
  * Implements hook_field_formatter_info().
  */
 function tripal_field_formatter_info() {
-  return array(
-    'tripal_content_type_formatter' => array(
-      'label' => t('Record Type'),
-      'field types' => array('content_type')
-    ),
-  );
-}
 
-/**
- * Implements hook_create_info().
- *
- * This is a Tripal defined hook that supports integration with the
- * TripalEntity field.
- */
-function tripal_field_create_info($entity_type, $bundle, $term) {
-  return array(
-    'content_type' => array(
-      'field_name' => 'content_type',
-      'type' => 'content_type',
-      'cardinality' => 1,
-      'locked' => FALSE,
-      'storage' => array(
-        'type' => 'tripal_no_storage'
-      ),
-      'settings' => array(
-        'semantic_web' => 'rdf:type',
-      ),
-    ),
-  );
 }
 
 /**
@@ -74,30 +33,7 @@ function tripal_field_create_info($entity_type, $bundle, $term) {
  * TripalEntity field.
  */
 function tripal_field_create_instance_info($entity_type, $bundle, $term) {
-  return array(
-    'content_type' => array(
-      'field_name' => 'content_type',
-      'entity_type' => 'TripalEntity',
-      'bundle' => $bundle->name,
-      'label' => 'Resource Type',
-      'description' => '',
-      'required' => FALSE,
-      'settings' => array(),
-      'widget' => array(
-        'type' => 'tripal_content_type_widget',
-        'settings' => array(
-          'display_label' => 1,
-        ),
-      ),
-      'display' => array(
-        'default' => array(
-          'label' => 'above',
-          'type' => 'tripal_content_type_formatter',
-          'settings' => array(),
-        ),
-      ),
-    ),
-  );
+
 }
 
 /**
@@ -106,12 +42,34 @@ function tripal_field_create_instance_info($entity_type, $bundle, $term) {
 function tripal_field_widget_form(&$form, &$form_state, $field,
     $instance, $langcode, $items, $delta, $element) {
 
-  $widget = $element;
-  switch ($instance['widget']['type']) {
-    case 'tripal_content_type_widget':
-      // There is no widget for this type.
-      break;
+
+}
+/**
+ * Implements hook_field_create_info().
+ *
+ * This is a Tripal defined hook that supports integration with the
+ * TripalEntity field.
+ */
+function tripal_field_create_info($entity_type, $bundle, $term) {
+  $info = array();
+
+  // Find all of the files in the tripal_chado/includes/fields directory.
+  $fields_path = drupal_get_path('module', 'tripal') . '/includes/fields';
+  $field_files = file_scan_directory($fields_path, '/^.inc$/');
+
+  // Iterate through the fields, include the file and run the info function.
+  foreach ($field_files as $file) {
+    $field_type = $file->name;
+    module_load_include('inc', 'tripal', 'includes/fields/' . $field_type);
+    if (class_exists($field_type)) {
+      $field_obj = new $field_type();
+      $result = $field_obj->create_info($entity_type, $bundle, $details);
+      if (is_array($result)) {
+        $info[$result['field_name']] = $result;
+      }
+    }
   }
+  return $info;
 }
 /**
  * Implements hook_field_formatter_view().
@@ -120,14 +78,12 @@ function tripal_field_formatter_view($entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
 
   $element = array();
-  switch ($display['type']) {
-    case 'tripal_content_type_formatter':
-      module_load_include('inc', 'tripal', 'includes/fields/content_type');
-      tripal_content_type_formatter($element, $entity_type, $entity, $field,
-          $instance, $langcode, $items, $display);
-      break;
+  $field_type = $field['type'];
+  module_load_include('inc', 'tripal', 'includes/fields/' . $field_type);
+  if (class_exists($field_type)) {
+    $field_obj = new $field_type();
+    $field_obj->formatter_view($element, $entity_type, $entity, $field, $instance, $langcode, $items, $display);
   }
-  return $element;
 }
 /**
  * Implements hook_field_is_empty().
