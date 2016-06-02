@@ -37,6 +37,29 @@ function tripal_ws_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  // Tripal Web Services setting groups
+  $items['admin/tripal/ws'] = array(
+    'title' => 'Web Services',
+    'description' => t("Exchange data between Tripal sites using the web services."),
+    'weight' => 20,
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('administer tripal'),
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
+  );
+  $items['admin/tripal/ws/tripal_sites'] = array(
+    'title' => 'Other Tripal Sites',
+    'description' => t('Provides information about other Tripal sites.
+        This allows data exchange and communication betwen Tripal
+        enabled sites through the web services.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_ws_tripal_sites_form'),
+    'access arguments' => array('administer tripal'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 0,
+    'file' => 'includes/tripal_ws.admin.inc',
+    'file path' => drupal_get_path('module', 'tripal_ws'),
+  );
   return $items;
 }
 
