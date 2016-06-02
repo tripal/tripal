@@ -492,10 +492,20 @@ function tripal_chado_menu() {
     'weight' => 10
   );
   $items['admin/tripal/storage/chado/semweb/edit/%/%'] = array(
-    'title' => 'Edit Web Services Term',
+    'title' => 'Edit Semantic Web Term',
     'description' => t('Edit terms used for the web services.'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_chado_semweb_edit_form', 6, 7),
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('administer tripal'),
+    'file' => 'includes/tripal_chado.semweb.inc',
+    'file path' => drupal_get_path('module', 'tripal_chado'),
+  );
+  $items['admin/tripal/storage/chado/semweb/reset/%/%'] = array(
+    'title' => 'Reset Semantic Web Term',
+    'description' => t('Edit terms used for the web services.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_chado_semweb_reset_form', 6, 7),
     'type' => MENU_CALLBACK,
     'access arguments' => array('administer tripal'),
     'file' => 'includes/tripal_chado.semweb.inc',
