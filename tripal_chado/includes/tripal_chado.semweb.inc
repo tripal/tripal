@@ -266,9 +266,7 @@ function tripal_chado_populate_chado_semweb_table() {
 /**
  * Adds defaults to the chado_semweb table.
  */
-function tripal_chado_semweb_form($form, &$form_state) {
-
-  $chado_table = '';
+function tripal_chado_semweb_form($form, &$form_state, $chado_table = NULL) {
   if (array_key_exists('values', $form_state)) {
     $chado_table = $form_state['values']['chado_table'];
   }
@@ -290,54 +288,223 @@ function tripal_chado_semweb_form($form, &$form_state) {
     ),
   );
 
-  // If the user has selected a content type, then we need to
-  // show some filters.
+  // If the user has selected a chado table, then we need to
+  // show the columns for setting terms.
   if ($chado_table) {
-    $form['filters'] = array(
-      '#type' => 'fieldset',
-      '#title' => 'Filters',
+    $schema = chado_get_schema($chado_table);
+    $pk = $schema['primary key'][0];
+    $cv_default = 
+      db_select('tripal_cv_defaults', 'tc')
+      ->fields('tc', array('field_name'))
+      ->condition('table_name', $chado_table)
+      ->execute()
+      ->fetchField();
+    $columns = $schema['fields'];
+    $headers = array('Field Name', 'Term', 'Description', 'Action');
+    $rows = array();
+    foreach ($columns AS $column => $detail) {
+      // Do not show column if it's the primary key or default cv
+      if ($column != $pk && $column != $cv_default) {
+        $cvterm_id = 
+          db_select('chado_semweb', 'cs')
+          ->fields('cs', array('cvterm_id'))
+          ->condition('chado_table', $chado_table)
+          ->condition('chado_column', $column)
+          ->execute()
+          ->fetchField();
+        $sw_term = '';
+        $sw_desc = '';
+        if($cvterm_id) {
+          $term = tripal_get_cvterm(array(
+            'cvterm_id' => $cvterm_id
+          ));
+          $sw_term = $term->name;
+          $sw_desc = $term->definition;
+        }
+        $rows[] = array(
+          $column,
+          $sw_term,
+          $sw_desc,
+          l('Edit', '/admin/tripal/storage/chado/semweb/edit/' . $chado_table . '/' . $column)
+        );
+      }
+    }
+    $output = theme('table', array(
+      'header' => $headers,
+      'rows' => $rows,
+    ));
+    $form['table'] = array(
+      '#markup' => $output,
+      '#title' => 'Table',
       '#description' => t('Please provide any filters for limiting
-          the records. Only those that match the filters specified
-          below will be published.  To publish all records of this
-          type, leave all filters blank.'),
-      '#collapsed' => TRUE,
-      '#collapsible' => TRUE,
-    );
-
-    $form['publish_btn'] = array(
-      '#type' => 'submit',
-      '#name' => 'publish_btn',
-      '#value' => 'Publish',
+        the records. Only those that match the filters specified
+        below will be published.  To publish all records of this
+        type, leave all filters blank.'),
     );
   }
 
-
-  $form['#prefix'] = '<div id="tripal-chado-publish-form">';
+  $form['#prefix'] = '<div id="tripal-chado-semweb-form">';
   $form['#suffix'] = '</div>';
   return $form;
 }
 
-function tripal_chado_semweb_form_validate($form, &$form_state) {
+/**
+ * Adds defaults to the chado_semweb table.
+ */
+function tripal_chado_semweb_edit_form($form, &$form_state, $table = NULL, $column = NULL) {
+  
+  $term_name = array_key_exists('values', $form_state) ? $form_state['values']['term_name'] : '';
 
+  $form['chado_table'] = array(
+    '#markup' => 'Term used for the <strong>' . t($column) . '</strong> column of the chado <strong>' . t($table) . '</strong> table:',
+  );
+  $form['table_name'] = array(
+    '#type' => 'value',
+    '#value' => $table
+  );
+  $form['column'] = array(
+    '#type' => 'value',
+    '#value' => $column
+  );
+  // If no term has been selected yet then provide the auto complete field.
+  $form['term_name'] = array(
+    '#title'       => t('Term'),
+    '#type'        => 'textfield',
+    '#description' => t("The content type must be the name of a term in
+        a controlled vocabulary and the controlled vocabulary should
+        already be loaded into Tripal.  For example, to create a content
+        type for storing 'genes', use the 'gene' term from the
+        Sequence Ontology (SO)."),
+    '#required'    => TRUE,
+    '#default_value' => $term_name,
+    '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/",
+  );
+  $form['select_button'] = array(
+    '#type' => 'button',
+    '#value' => t('Lookup Term'),
+    '#name' => 'select_cvterm',
+    '#ajax' => array(
+      'callback' => "tripal_chado_semweb_form_ajax_callback",
+      'wrapper' => "tripal-chado-semweb-edit-form",
+      'effect' => 'fade',
+      'method' => 'replace'
+    ),
+  );
+  if ($term_name) {
+    $form['terms_list'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Matching Terms'),
+      '#description' => t('Please select the term the best matches the
+          content type you want to create. If the same term exists in
+          multiple vocabularies you will see more than one option below.')
+    );
+    $match = array(
+      'name' => $term_name,
+    );
+    $terms = chado_generate_var('cvterm', $match, array('return_array' => TRUE));
+    $terms = chado_expand_var($terms, 'field', 'cvterm.definition');
+    $num_terms = 0;
+    foreach ($terms as $term) {
+      // Save the user a click by setting the default value as 1 if there's
+      // only one matching term.
+      $default = FALSE;
+      $attrs = array();
+      if ($num_terms == 0 and count($terms) == 1) {
+        $default = TRUE;
+        $attrs = array('checked' => 'checked');
+      }
+       $form['terms_list']['term-' . $term->cvterm_id] = array(
+         '#type' => 'checkbox',
+         '#title' =>  $term->name,
+         '#default_value' => $default,
+         '#attributes' => $attrs,
+         '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name .
+             '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
+             '<br><b>Definition:</b>  ' . $term->definition,
+       );
+       $num_terms++;
+    }
+    if ($num_terms == 0) {
+      $form['terms_list']['none'] = array(
+        '#type' => 'item',
+        '#markup' => '<i>' . t('There is no term that matches the entered text.') . '</i>'
+      );
+    }
+    // Add in the button for the cases of no terms or too many.
+    $form['submit_button'] = array(
+      '#type' => 'submit',
+      '#value' => t('Use this term'),
+      '#name' => 'use_cvterm'
+    );
+  }
+
+  $form['#prefix'] = '<div id = "tripal-chado-semweb-edit-form">';
+  $form['#suffix'] = '</div>';
+
+  return $form;
 }
 
-function tripal_chado_semweb_form_submit($form, &$form_state) {
-  if ($form_state['clicked_button']['#name'] == 'publish_btn') {
-    global $user;
-
-    $chado_table = $form_state['values']['chado_table'];
-    $bundle_name = 'bio_data_' . $chado_table;
-    $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-    $args = array(
-      array('bundle_name' => $bundle_name),
-    );
-    $includes = array(
-      module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.publish'),
-    );
-    return tripal_add_job("Publish " . $bundle->label . " records.",
-      'tripal_chado', 'tripal_chado_publish_records', $args,
-      $user->uid, 10, $includes);
+function tripal_chado_semweb_edit_form_validate($form, &$form_state) {
+  if (array_key_exists('clicked_button', $form_state) && $form_state['clicked_button']['#name'] =='use_cvterm') {
+    $cvterm_id = NULL;
+    // Make sure we have a cvterm selected
+    $num_selected = 0;
+    foreach ($form_state['values'] as $key => $value) {
+      $matches = array();
+      if (preg_match("/^term-(\d+)$/", $key, $matches) and
+          $form_state['values']['term-' . $matches[1]]) {
+        $cvterm_id = $matches[1];
+        $num_selected++;
+      }
+    }
+    if ($num_selected == 0) {
+      form_set_error('', 'Please select at least one term.');
+    }
+    else if ($num_selected > 1) {
+      form_set_error('term-' . $cvterm_id, 'Please select only one term from the list below.');
+    }
+    else {
+      $form_state['values']['#selected_cvterm_id'] = $cvterm_id;
+    }
   }
+}
+
+function tripal_chado_semweb_edit_form_submit($form, &$form_state) {
+  if (array_key_exists('clicked_button', $form_state) && $form_state['clicked_button']['#name'] =='use_cvterm') {
+        $table_name = $form_state['values']['table_name'];
+        $column = $form_state['values']['column'];
+        $cvterm_id = $form_state['values']['#selected_cvterm_id'];
+        // Check if there is already a record
+        $record_id = 
+          db_select('chado_semweb', 'cs')
+          ->fields('cs', array('chado_semweb_id'))
+          ->condition('chado_table', $table_name)
+          ->condition('chado_column', $column)
+          ->execute()
+          ->fetchField();
+        
+        // If the record exists, update it
+        if ($record_id) {
+          db_update('chado_semweb')
+          ->fields(array(
+            'cvterm_id' => $cvterm_id
+          ))
+          ->condition('chado_semweb_id', $record_id)
+          ->execute();
+        }
+        // Otherwise, insert a new record
+        else {
+          db_insert('chado_semweb')
+          ->fields(array(
+            'chado_table' => $table_name,
+            'chado_column' => $column,
+            'cvterm_id' => $cvterm_id
+          ))
+          ->execute();
+        }
+        drupal_set_message('The term settings have been saved.');
+        drupal_goto('/admin/tripal/storage/chado/semweb/' . $table_name);
+      }
 }
 /**
  *
