@@ -108,7 +108,7 @@ function tripal_menu() {
   );
 
   $items['admin/tripal/storage'] = array(
-    'title' => 'Storage Backend',
+    'title' => 'Data Storage Settings',
     'description' => t("Tripal is designed to access biological
         data in any data storage back-end.  A storage back-end must have a
         module that can be installed that interfaces with Tripal.  By default

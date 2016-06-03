@@ -187,11 +187,12 @@ class TripalEntityController extends EntityAPIController {
         // SQL statement that gets called somewhere by Drupal:
         // SELECT DISTINCT SUBSTRING_INDEX(source, '/', 1) AS path FROM url_alias.
         // Perhaps we should write our own SQL to avoid this issue.
-        drupal_write_record('url_alias', array(
+        $values =  array(
           'source' => $source_url,
           'alias' => $alias,
           'language' => 'und',
-        ));
+        );
+        drupal_write_record('url_alias', $values);
 //        path_delete(array('source' => $source_url));
 //        $path = array('source' => $source_url, 'alias' => $alias);
 //        path_save($path);

@@ -3,9 +3,9 @@
 class chado_linker__phenotype extends TripalField {
 
   /**
-   * @see TripalField::field_info()
+   * @see TripalField::fieldInfo()
    */
-  public function field_info() {
+  public static function fieldInfo() {
     return array(
       'label' => t('Phenotypes'),
       'description' => t('Associates an indviddual or organization with
@@ -21,55 +21,60 @@ class chado_linker__phenotype extends TripalField {
     );
   }
   /**
-   * @see TripalField::widget_info()
+   * @see TripalField::widgetInfo()
    */
-  function widget_info() {
+  public static function widgetInfo() {
     return array(
-      'label' => t('Phenotypes'),
-      'field types' => array('chado_linker__phenotype'),
+      'chado_linker__phenotype_widget' => array(
+        'label' => t('Phenotypes'),
+        'field types' => array('chado_linker__phenotype'),
+      ),
     );
   }
 
   /**
-   * @see TripalField::formatter_info()
+   * @see TripalField::formatterInfo()
    */
-  public function formatter_info() {
+  public static function formatterInfo() {
     return array(
-      'label' => t('Phenotypes'),
-      'field types' => array('chado_linker__phenotype'),
-      'settings' => array(
+      'chado_linker__phenotype_formatter' => array(
+        'label' => t('Phenotypes'),
+        'field types' => array('chado_linker__phenotype'),
+        'settings' => array(
+        ),
       ),
     );
   }
   /**
    * @see TripalField::can_attach()
    */
-  protected function can_attach($entity_type, $bundle, $details) {
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+  protected function setCanAttach() {
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     // If the linker table does not exists then we don't want to add attach.
     $phenotype_table = $table_name . '_phenotype';
     if (chado_table_exists($phenotype_table)) {
-      return TRUE;
+      $this->can_attach = TRUE;
+      return;
     }
-    return FALSE;
+    $this->can_attach = FALSE;
   }
   /**
    * @see TripalField::create_info()
    */
-  function create_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInfo() {
+    if (!$this->can_attach) {
       return;
     }
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     $phenotype_table = $table_name . '_phenotype';
     $schema = chado_get_schema($phenotype_table);
@@ -92,23 +97,23 @@ class chado_linker__phenotype extends TripalField {
     );
   }
   /**
-   * @see TripalField::create_instance_info()
+   * @see TripalField::createInstanceInfo()
    */
-  function create_instance_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInstanceInfo() {
+    if (!$this->can_attach) {
       return;
     }
 
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
       'field_name' => $table_name . '__phenotype',
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
+      'entity_type' => $this->entity_type,
+      'bundle' => $this->bundle->name,
       'label' => 'Phenotypes',
       'description' => 'The phenotypes associated with this record.',
       'required' => FALSE,
@@ -133,9 +138,9 @@ class chado_linker__phenotype extends TripalField {
   }
 
   /**
-   * @see TripalField::formatter_view()
+   * @see TripalField::formatterView()
    */
-  public function formatter_view(&$element, $entity_type, $entity,
+  public static function formatterView(&$element, $entity_type, $entity,
       $field, $instance, $langcode, $items, $display) {
     // Get the settings
     $settings = $display['settings'];
@@ -188,9 +193,9 @@ class chado_linker__phenotype extends TripalField {
 
 
   /**
-   * @see TripalField::widget_form()
+   * @see TripalField::widgetForm()
    */
-  public function widget_form(&$widget, &$form, &$form_state, $field, $instance,
+  public static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
   }

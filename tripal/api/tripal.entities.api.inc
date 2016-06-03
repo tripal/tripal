@@ -160,6 +160,16 @@ function tripal_load_bundle_entity($values) {
   }
   return NULL;
 }
+
+/**
+ * Allows a module to perform tasks after a TripalBundle object is created.
+ *
+ * @param $bundle
+ *   The newly created TripalBundle object.
+ */
+function hook_bundle_create(&$bundle) {
+
+}
 /**
  * Creates a new Tripal Entity type (i.e. bundle).
  *
@@ -180,91 +190,109 @@ function tripal_load_bundle_entity($values) {
  */
 function tripal_create_bundle($vocabulary, $accession, $term_name, &$error = '') {
 
-  // First create the TripalVocab if it doesn't already exist.
-  $vocab = tripal_load_vocab_entity(array('vocabulary' => $vocabulary));
-  if (!$vocab) {
-    $vocab = entity_get_controller('TripalVocab')->create(array('vocabulary' => $vocabulary));
-    $vocab->save();
-  }
+  $transaction = db_transaction();
+  try {
+    // First create the TripalVocab if it doesn't already exist.
+    $vocab = tripal_load_vocab_entity(array('vocabulary' => $vocabulary));
+    if (!$vocab) {
+      $vocab = entity_get_controller('TripalVocab')->create(array('vocabulary' => $vocabulary));
+      $vocab->save();
+    }
 
-  // Next create the TripalTerm if it doesn't already exist.
-  $term = tripal_load_term_entity(array(
-    'vocabulary' => $vocabulary,
-    'accession' => $accession
-  ));
-  if (!$term) {
-    $args = array('vocab_id' => $vocab->id, 'accession' => $accession, 'name' => $term_name);
-    $term = entity_get_controller('TripalTerm')->create($args);
-    $term = $term->save();
-  }
+    // Next create the TripalTerm if it doesn't already exist.
+    $term = tripal_load_term_entity(array(
+      'vocabulary' => $vocabulary,
+      'accession' => $accession
+    ));
+    if (!$term) {
+      $args = array('vocab_id' => $vocab->id, 'accession' => $accession, 'name' => $term_name);
+      $term = entity_get_controller('TripalTerm')->create($args);
+      $term = $term->save();
+    }
 
-  // If the bundle doesn't already exist, then add it.
-  $bundle_name = 'bio_data_' . $term->id;
-  $einfo = entity_get_info('TripalEntity');
-  if (!in_array($bundle_name, array_keys($einfo['bundles']))) {
-    // Insert the bundle.
-    db_insert('tripal_bundle')
-      ->fields(array(
-        'label' => $term_name,
-        'type' => 'TripalEntity',
-        'name' => $bundle_name,
-        'term_id' => $term->id,
-      ))
-      ->execute();
-  }
+    // If the bundle doesn't already exist, then add it.
+    $bundle_name = 'bio_data_' . $term->id;
+    $einfo = entity_get_info('TripalEntity');
+    if (!in_array($bundle_name, array_keys($einfo['bundles']))) {
+      // Insert the bundle.
+      db_insert('tripal_bundle')
+        ->fields(array(
+          'label' => $term_name,
+          'type' => 'TripalEntity',
+          'name' => $bundle_name,
+          'term_id' => $term->id,
+        ))
+        ->execute();
+    }
 
-  // Clear the entity cache so that Drupal will read our
-  // hook_entity_info() implementation.
-  global $language;
-  $langcode = $language->language;
-  cache_clear_all("entity_info:$langcode", 'cache');
-  variable_set('menu_rebuild_needed', TRUE);
+    // Allow modules to make additions to the entity when it's created.
+    $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+    $modules = module_implements('bundle_create');
+    foreach ($modules as $module) {
+      $function = $module . '_bundle_create';
+      $function($bundle);
+    }
 
-  // Get the bundle object.
-  $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+    // Clear the entity cache so that Drupal will read our
+    // hook_entity_info() implementation.
+    global $language;
+    $langcode = $language->language;
+    cache_clear_all("entity_info:$langcode", 'cache');
+    variable_set('menu_rebuild_needed', TRUE);
 
-  // Get the list of fields to create.
-  foreach (module_implements('field_create_info') as $module) {
-    $function = $module . '_field_create_info';
-    if (function_exists($function)) {
-      $fields = $function('TripalEntity', $bundle, $term);
-      if (!$fields){
-        continue;
-      }
-      foreach ($fields as $field_name => $info) {
-        // If the field already exists then skip it.
-        $field = field_info_field($info['field_name']);
-        if ($field) {
+    // Get the bundle object.
+    $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+
+    // Get the list of fields to create.
+    foreach (module_implements('field_create_info') as $module) {
+      $function = $module . '_field_create_info';
+      if (function_exists($function)) {
+        $fields = $function('TripalEntity', $bundle);
+        if (!$fields){
           continue;
         }
-        $field = field_create_field($info);
-        if (!$field) {
-          tripal_set_message(t("Could not create new field: %field.",
-            array('%field' =>  $info['field_name'])), TRIPAL_ERROR);
+        foreach ($fields as $field_name => $info) {
+          // If the field already exists then skip it.
+          $field = field_info_field($info['field_name']);
+          if ($field) {
+            continue;
+          }
+          $field = field_create_field($info);
+          if (!$field) {
+            tripal_set_message(t("Could not create new field: %field.",
+              array('%field' =>  $info['field_name'])), TRIPAL_ERROR);
+          }
+        }
+      }
+    }
+
+    // Now get the list of field instances to add to the bundle.
+    foreach (module_implements('field_create_instance_info') as $module) {
+      $function = $module . '_field_create_instance_info';
+      if (function_exists($function)) {
+        $fields = $function('TripalEntity', $bundle);
+        if (!$fields){
+          continue;
+        }
+        foreach ($fields as $field_name => $info) {
+          // If the field is already attached to this bundle then skip it.
+          $field = field_info_field($info['field_name']);
+          if ($field and array_key_exists('bundles', $field) and
+              array_key_exists('TripalEntity', $field['bundles']) and
+              in_array($bundle_name, $field['bundles']['TripalEntity'])) {
+            continue;
+          }
+          $instance = field_create_instance($info);
         }
       }
     }
   }
-
-  // Now get the list of field instances to add to the bundle.
-  foreach (module_implements('field_create_instance_info') as $module) {
-    $function = $module . '_field_create_instance_info';
-    if (function_exists($function)) {
-      $fields = $function('TripalEntity', $bundle, $term);
-      if (!$fields){
-        continue;
-      }
-      foreach ($fields as $field_name => $info) {
-        // If the field is already attached to this bundle then skip it.
-        $field = field_info_field($info['field_name']);
-        if ($field and array_key_exists('bundles', $field) and
-            array_key_exists('TripalEntity', $field['bundles']) and
-            in_array($bundle_name, $field['bundles']['TripalEntity'])) {
-          continue;
-        }
-        $instance = field_create_instance($info);
-      }
-    }
+  catch (Exception $e) {
+    $transaction->rollback();
+    $error = _drupal_decode_exception($e);
+    drupal_set_message(t("Failed to create content type': %message",
+        array('%message' => $error['!message'])), 'error');
+    return FALSE;
   }
 
   return TRUE;

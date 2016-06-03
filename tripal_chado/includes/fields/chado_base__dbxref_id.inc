@@ -2,9 +2,9 @@
 
 class chado_base__dbxref_id extends TripalField {
   /**
-   * @see TripalField::field_info()
+   * @see TripalField::fieldInfo()
    */
-  function field_info() {
+  static function fieldInfo() {
     return array(
       'label' => t('Accession'),
       'description' => t('This field specifies the unique stable accession (ID) for
@@ -22,39 +22,41 @@ class chado_base__dbxref_id extends TripalField {
   /**
    * @see TripalField::can_attach()
    */
-  protected function can_attach($entity_type, $bundle, $details) {
+  protected function setCanAttach() {
 
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     // Check the schema for the data table if it does not have
     // a 'dbxref_id' column then we don't want to attach this field.
     $schema = chado_get_schema($table_name);
     if (!$schema) {
-      return FALSE;
+      $this->can_attach = FALSE;
+      return;
     }
     if (array_key_exists('dbxref_id', $schema['fields'])) {
-      return TRUE;
+      $this->can_attach = TRUE;
+      return;
     }
-    return FALSE;
+    $this->can_attach = FALSE;
   }
 
   /**
    * @see TripalField::create_info()
    */
-  function create_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInfo() {
+    if (!$this->can_attach) {
       return;
     };
 
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
       'field_name' => $table_name . '__dbxref_id',
@@ -73,22 +75,22 @@ class chado_base__dbxref_id extends TripalField {
   }
 
   /**
-   * @see TripalField::create_instance_info()
+   * @see TripalField::createInstanceInfo()
    */
-  function create_instance_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInstanceInfo() {
+    if (!$this->can_attach) {
       return;
     }
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
       'field_name' => $table_name . '__dbxref_id',
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
+      'entity_type' => $this->entity_type,
+      'bundle' => $this->bundle->name,
       'label' => 'Accession',
       'description' => 'This field specifies the unique stable accession (ID) for
         this record. It requires that this site have a database entry.',
@@ -112,31 +114,34 @@ class chado_base__dbxref_id extends TripalField {
     );
   }
   /**
-   * @see TripalField::widget_info()
+   * @see TripalField::widgetInfo()
    */
-  function widget_info() {
+  public static function widgetInfo() {
     return array(
-      'label' => t('Accession'),
-      'field types' => array('chado_base__dbxref_id'),
-      'description' => t('This field specifies the unique stable accession (ID) for
-        this record. It requires that this site have a database entry.'),
-    );
-  }
-  /**
-   * @see TripalField::formatter_info()
-   */
-  function formatter_info() {
-    return array(
-      'label' => t('Accession'),
-      'field types' => array('chado_base__dbxref_id'),
-      'settings' => array(
+      'chado_base__dbxref_id_widget' => array(
+        'label' => t('Accession'),
+        'field types' => array('chado_base__dbxref_id'),
+        'description' => t('This field specifies the unique stable accession (ID) for
+          this record. It requires that this site have a database entry.'),
       ),
     );
   }
   /**
-   * @see TripalField::formatter_view()
+   * @see TripalField::formatterInfo()
    */
-  function formatter_view(&$element, $entity_type, $entity, $field,
+  static function formatterInfo() {
+    return array(
+      'chado_base__dbxref_id_formatter' => array(
+        'label' => t('Accession'),
+        'field types' => array('chado_base__dbxref_id'),
+        'settings' => array(),
+      ),
+    );
+  }
+  /**
+   * @see TripalField::formatterView()
+   */
+  static function formatterView(&$element, $entity_type, $entity, $field,
       $instance, $langcode, $items, $display) {
 
     foreach ($items as $delta => $item) {
@@ -153,9 +158,9 @@ class chado_base__dbxref_id extends TripalField {
     }
   }
   /**
-   * @see TripalField::widget_form()
+   * @see TripalField::widgetForm()
    */
-  function widget_form(&$widget, &$form, &$form_state, $field, $instance,
+  static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
     $field_name = $field['field_name'];

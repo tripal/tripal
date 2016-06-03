@@ -3,9 +3,9 @@
 class chado_linker__expression extends TripalField {
 
   /**
-   * @see TripalField::field_info()
+   * @see TripalField::fieldInfo()
    */
-  public function field_info() {
+  public static function fieldInfo() {
     return array(
       'label' => t('Expression'),
       'description' => t('Associates an expression with
@@ -23,33 +23,34 @@ class chado_linker__expression extends TripalField {
   /**
    * @see TripalField::can_attach()
    */
-  protected function can_attach($entity_type, $bundle, $details) {
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+  protected function setCanAttach() {
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     // If the linker table does not exists then we don't want to add attach.
     $expression_table = $table_name . '_expression';
     if (chado_table_exists($expression_table)) {
-      return TRUE;
+      $this->can_attach = TRUE;
+      return;
     }
-    return FALSE;
+    $this->can_attach = FALSE;
   }
   /**
    * @see TripalField::create_info()
    */
-  function create_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInfo() {
+    if (!$this->can_attach) {
       return;
     }
 
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     $schema = chado_get_schema('featureloc');
     $pkey = $schema['primary key'][0];
@@ -71,23 +72,23 @@ class chado_linker__expression extends TripalField {
     );
   }
   /**
-   * @see TripalField::create_instance_info()
+   * @see TripalField::createInstanceInfo()
    */
-  function create_instance_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInstanceInfo() {
+    if (!$this->can_attach) {
       return;
     }
 
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
       'field_name' => $table_name . '_expression',
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
+      'entity_type' => $this->entity_type,
+      'bundle' => $this->bundle->name,
       'label' => 'Expression',
       'description' => 'Information about the expression of this record.',
       'required' => FALSE,
@@ -111,31 +112,35 @@ class chado_linker__expression extends TripalField {
   }
 
   /**
-   * @see TripalField::widget_info()
+   * @see TripalField::widgetInfo()
    */
- function widget_info() {
+ public static function widgetInfo() {
     return array(
-      'label' => t('Expressions'),
-      'field types' => array('chado_linker__expression'),
-    );
-  }
-
-  /**
-   * @see TripalField::formatter_info()
-   */
-  public function formatter_info() {
-    return array(
-      'label' => t('Expression'),
-      'field types' => array('chado_linker__expression'),
-      'settings' => array(
+      'chado_linker__expression_widget' => array(
+        'label' => t('Expressions'),
+        'field types' => array('chado_linker__expression'),
       ),
     );
   }
 
   /**
-   * @see TripalField::formatter_view()
+   * @see TripalField::formatterInfo()
    */
-  public function formatter_view(&$element, $entity_type, $entity,
+  public static function formatterInfo() {
+    return array(
+      'chado_linker__expression_formatter' => array(
+        'label' => t('Expression'),
+        'field types' => array('chado_linker__expression'),
+        'settings' => array(
+        ),
+      ),
+    );
+  }
+
+  /**
+   * @see TripalField::formatterView()
+   */
+  public static function formatterView(&$element, $entity_type, $entity,
       $field, $instance, $langcode, $items, $display) {
 
     // Get the settings

@@ -2,9 +2,9 @@
 
 class chado_linker__prop extends TripalField {
   /**
-   * @see TripalField::field_info()
+   * @see TripalField::fieldInfo()
    */
-  function field_info() {
+  static function fieldInfo() {
     return array(
       'label' => t('Add a Property'),
       'description' => t('Add details about this property.'),
@@ -21,15 +21,15 @@ class chado_linker__prop extends TripalField {
   /**
    * @see TripalField::can_attach()
    */
-  protected function can_attach($entity_type, $bundle, $details) {
+  protected function setCanAttach() {
     // This field is only attached by the chado_linker__prop_addr field.
-    return FALSE;
+    $this->can_attach = FALSE;
   }
   /**
    * @see TripalField::create_info()
    */
-  function create_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInfo() {
+    if (!$this->can_attach) {
       return;
     }
 
@@ -37,10 +37,10 @@ class chado_linker__prop extends TripalField {
 
   }
   /**
-   * @see TripalField::create_instance_info()
+   * @see TripalField::createInstanceInfo()
    */
-  function create_instance_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInstanceInfo() {
+    if (!$this->can_attach) {
       return;
     }
 
@@ -48,39 +48,33 @@ class chado_linker__prop extends TripalField {
 
   }
   /**
-   * @see TripalField::attach_info()
+   * @see TripalField::widgetInfo()
    */
-  function attach_info($entity_type, $bundle, $target) {
-    $field_info = array();
-
-    // This field is only attached by the chado_linker__prop_addr field.
-
-    return $field_info;
-  }
-  /**
-   * @see TripalField::widget_info()
-   */
-  function widget_info() {
+  public static function widgetInfo() {
     return array(
-      'label' => t('Property'),
-      'field types' => array('chado_linker__prop'),
-    );
-  }
-  /**
-   * @see TripalField::formatter_info()
-   */
-  function formatter_info() {
-    return array(
-      'label' => t('Property'),
-      'field types' => array('chado_linker__prop'),
-      'settings' => array(
+      'chado_linker__prop_widget' => array(
+        'label' => t('Property'),
+        'field types' => array('chado_linker__prop'),
       ),
     );
   }
   /**
-   * @see TripalField::formatter_view()
+   * @see TripalField::formatterInfo()
    */
-  function formatter_view(&$element, $entity_type, $entity, $field,
+  static function formatterInfo() {
+    return array(
+      'chado_linker__prop_formatter' => array(
+        'label' => t('Property'),
+        'field types' => array('chado_linker__prop'),
+        'settings' => array(
+        ),
+      ),
+    );
+  }
+  /**
+   * @see TripalField::formatterView()
+   */
+  static function formatterView(&$element, $entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
 
     $field_name = $field['field_name'];
@@ -100,9 +94,9 @@ class chado_linker__prop extends TripalField {
     }
   }
   /**
-   * @see TripalField::widget_form()
+   * @see TripalField::widgetForm()
    */
-  function widget_form(&$widget, &$form, &$form_state, $field, $instance,
+  static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
     $entity = $form['#entity'];
@@ -184,7 +178,7 @@ class chado_linker__prop extends TripalField {
   /**
    * @see TripalField::validate()
    */
-  function validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
+  static function widgetFormValidate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
     $field_name = $element['#field_name'];
     $delta = $element['#delta'];
     $entity = $element['#entity'];

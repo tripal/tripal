@@ -3,9 +3,9 @@
 class chado_gene__transcripts extends TripalField {
 
   /**
-   * @see TripalField::field_info()
+   * @see TripalField::fieldInfo()
    */
-  public function field_info() {
+  public static function fieldInfo() {
     return array(
       'label' => t('Transcripts'),
       'description' => t('Transcripts of genes.'),
@@ -22,32 +22,33 @@ class chado_gene__transcripts extends TripalField {
   /**
    * @see TripalField::can_attach()
    */
-  protected function can_attach($entity_type, $bundle, $details) {
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+  protected function setCanAttach() {
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     // If the linker table does not exists or this is not a gene then we don't want to add attach.
     $rel_table = $table_name . '_relationship';
-    if (chado_table_exists($rel_table) and $bundle->label == 'gene') {
-      return TRUE;
+    if (chado_table_exists($rel_table) and $this->bundle->label == 'gene') {
+      $this->can_attach = TRUE;
+      return;
     }
-    return FALSE;
+    $this->can_attach = FALSE;
   }
   /**
    * @see TripalField::create_info()
    */
-  function create_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInfo() {
+    if (!$this->can_attach) {
       return;
     }
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     $rel_table = $table_name . '_relationship';
     $schema = chado_get_schema($rel_table);
@@ -70,23 +71,23 @@ class chado_gene__transcripts extends TripalField {
     );
   }
   /**
-   * @see TripalField::create_instance_info()
+   * @see TripalField::createInstanceInfo()
    */
-  function create_instance_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInstanceInfo() {
+    if (!$this->can_attach) {
       return;
     }
 
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
       'field_name' => 'gene_transcripts',
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
+      'entity_type' => $this->entity_type,
+      'bundle' => $this->bundle->name,
       'label' => 'Transcripts',
       'description' => 'These transcripts are associated with this gene.',
       'required' => FALSE,
@@ -110,23 +111,27 @@ class chado_gene__transcripts extends TripalField {
   }
 
   /**
-   * @see TripalField::widget_info()
+   * @see TripalField::widgetInfo()
    */
-  public function widget_info() {
+  public static function widgetInfo() {
     return array(
-      'label' => t('Transcripts Settings'),
-      'field types' => array('chado_gene__transcripts')
+      'chado_gene__transcripts_widget' => array(
+        'label' => t('Transcripts Settings'),
+        'field types' => array('chado_gene__transcripts')
+      ),
     );
   }
 
   /**
-   * @see TripalField::formatter_info()
+   * @see TripalField::formatterInfo()
    */
-  public function formatter_info() {
+  public static function formatterInfo() {
     return array(
-      'label' => t('Transcripts'),
-      'field types' => array('chado_gene__transcripts'),
-      'settings' => array(
+      'chado_gene__transcripts_formatter' => array(
+        'label' => t('Transcripts'),
+        'field types' => array('chado_gene__transcripts'),
+        'settings' => array(
+        ),
       ),
     );
   }
@@ -134,7 +139,7 @@ class chado_gene__transcripts extends TripalField {
   /**
    * @see TripalField::formatter_settings_summary()
    */
-  public function formatter_settings_summary($field, $instance,
+  public function formatterSettingsSummary($field, $instance,
       $view_mode) {
 
   }
@@ -142,15 +147,15 @@ class chado_gene__transcripts extends TripalField {
   /**
    * @see TripalField::formatter_settings_form()
    */
-  public function formatter_settings_form($field, $instance,
+  public function formatterSettingsForm($field, $instance,
       $view_mode, $form, &$form_state) {
 
   }
 
   /**
-   * @see TripalField::formatter_view()
+   * @see TripalField::formatterView()
    */
-  public function formatter_view(&$element, $entity_type, $entity,
+  public static function formatterView(&$element, $entity_type, $entity,
       $field, $instance, $langcode, $items, $display) {
 
     // Get the settings
@@ -261,14 +266,9 @@ class chado_gene__transcripts extends TripalField {
     }
   }
   /**
-   * @see TripalField::settings_form()
+   * @see TripalField::widgetForm()
    */
-  public function settings_form($field, $instance, $view_mode) {
-  }
-  /**
-   * @see TripalField::widget_form()
-   */
-  public function widget_form(&$widget, &$form, &$form_state, $field, $instance,
+  public static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
   }

@@ -1,9 +1,9 @@
 <?php
 class chado_linker__cvterm_addr extends TripalField {
   /**
-   * @see TripalField::field_info()
+   * @see TripalField::fieldInfo()
    */
-  function field_info() {
+  static function fieldInfo() {
     return array(
       'label' => t('Add an Annotation Type'),
       'description' => t('This record may have any number of types of
@@ -22,36 +22,37 @@ class chado_linker__cvterm_addr extends TripalField {
   /**
    * @see TripalField::can_attach()
    */
-  protected function can_attach($entity_type, $bundle, $details) {
+  protected function setCanAttach() {
     $field_info = array();
 
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
 
     // If the linker table does not exists then we don't want to add attach.
     $cvterm_table = $table_name . '_cvterm';
     if (chado_table_exists($cvterm_table)) {
-      return TRUE;
+      $this->can_attach = TRUE;
+      return;
     }
-    return FALSE;
+    $this->can_attach = FALSE;
   }
   /**
    * @see TripalField::create_info()
    */
-  function create_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInfo() {
+    if (!$this->can_attach) {
       return;
     }
 
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
       'field_name' => $table_name . '_cvterm',
@@ -66,22 +67,22 @@ class chado_linker__cvterm_addr extends TripalField {
     );
   }
   /**
-   * @see TripalField::create_instance_info()
+   * @see TripalField::createInstanceInfo()
    */
-  function create_instance_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInstanceInfo() {
+    if (!$this->can_attach) {
       return;
     }
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
       'field_name' => $table_name . '_cvterm',
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
+      'entity_type' => $this->entity_type,
+      'bundle' => $this->bundle->name,
       'label' => 'Add Annotation Types',
       'description' => 'Add additional annotations types to this record.',
       'required' => FALSE,
@@ -105,18 +106,20 @@ class chado_linker__cvterm_addr extends TripalField {
   }
 
   /**
-   * @see TripalField::widget_info()
+   * @see TripalField::widgetInfo()
    */
-  function widget_info() {
+  public static function widgetInfo() {
     return array(
-      'label' => t('Add an Annotation'),
-      'field types' => array('chado_linker__cvterm_adder'),
+      'chado_linker__cvterm_adder_widget' => array(
+        'label' => t('Add an Annotation'),
+        'field types' => array('chado_linker__cvterm_adder'),
+      ),
     );
   }
   /**
-   * @see TripalField::widget_form()
+   * @see TripalField::widgetForm()
    */
-  public function widget_form(&$widget, &$form, &$form_state, $field, $instance,
+  public static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
     // This field has no value field.  Just a fieldset for adding new annotation types.
@@ -222,10 +225,10 @@ function chado_linker__cvterm_adder_widget_validate($element, &$form_state) {
     if (!$field or !array_key_exists('bundles', $field) or
         !array_key_exists('TripalEntity', $field['bundles']) or
         !in_array($bundle_name, $field['bundles']['TripalEntity'])) {
-      $create_instance_info = array(
+      $createInstanceInfo = array(
         'field_name' => 'cvtmerm',
         'entity_type' => 'TripalEntity',
-        'bundle' => $bundle->name,
+        'bundle' => $this->bundle->name,
         'label' => ucfirst(preg_replace('/_/', ' ', $cv->name)),
         'description' => "Annotations from the $cv->name vocabulary",
         'required' => FALSE,
@@ -244,7 +247,7 @@ function chado_linker__cvterm_adder_widget_validate($element, &$form_state) {
           ),
         ),
       );
-      $instance = field_create_instance($create_instance_info);
+      $instance = field_create_instance($createInstanceInfo);
     }
   }
 }

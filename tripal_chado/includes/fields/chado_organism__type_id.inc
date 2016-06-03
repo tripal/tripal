@@ -5,7 +5,7 @@ class chado_organism__type_id extends TripalField {
   /**
    * @see TripalField::info()
    */
-  public function field_info() {
+  public static function fieldInfo() {
     return array(
       'label' => t('Infraspecific Type'),
       'description' => t('A field for specifying an infraspecific type.'),
@@ -23,34 +23,35 @@ class chado_organism__type_id extends TripalField {
   /**
    * @see TripalField::can_attach()
    */
-  function can_attach($entity_type, $bundle, $details){
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+  protected function setCanAttach(){
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     $schema = chado_get_schema($table_name);
 
     // If this is the organism table and Chado v1.3 then attach.
     if ($table_name == 'organism' and array_key_exists('type_id', $schema['fields'])) {
-      return TRUE;
+      $this->can_attach = TRUE;
+      return;
     }
-    return FALSE;
+    $this->can_attach = FALSE;
   }
   /**
    * @see TripalField::create_info()
    */
-  function create_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInfo() {
+    if (!$this->can_attach) {
       return;
     }
 
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
       'field_name' => 'organism__type_id',
@@ -68,23 +69,23 @@ class chado_organism__type_id extends TripalField {
     );
   }
   /**
-   * @see TripalField::create_instance_info()
+   * @see TripalField::createInstanceInfo()
    */
-  function create_instance_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInstanceInfo() {
+    if (!$this->can_attach) {
       return;
     }
 
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
       'field_name' => 'organism__type_id',
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
+      'entity_type' => $this->entity_type,
+      'bundle' => $this->bundle->name,
       'label' => 'Infrapsecific Type',
       'description' => 'The Infrapsecific Type.',
       'required' => FALSE,
@@ -108,22 +109,26 @@ class chado_organism__type_id extends TripalField {
   }
 
   /**
-   * @see TripalField::widget_info()
+   * @see TripalField::widgetInfo()
    */
-  public function widget_info() {
+  public static function widgetInfo() {
     return array(
-      'label' => t('Infraspecific Type'),
-      'field types' => array('chado_organism__type_id')
+      'chado_organism__type_id_widget' => array(
+        'label' => t('Infraspecific Type'),
+        'field types' => array('chado_organism__type_id'),
+      ),
     );
   }
   /**
-   * @see TripalField::formatter_info()
+   * @see TripalField::formatterInfo()
    */
-  public function formatter_info() {
+  public static function formatterInfo() {
     return array(
-      'label' => t('Infraspecific Type'),
-      'field types' => array('chado_organism__type_id'),
-      'settings' => array(
+      'chado_organism__type_id_formatter' => array(
+        'label' => t('Infraspecific Type'),
+        'field types' => array('chado_organism__type_id'),
+        'settings' => array(
+        ),
       ),
     );
   }
@@ -131,7 +136,7 @@ class chado_organism__type_id extends TripalField {
   /**
    * @see TripalField::widget()
    */
-  public function widget_form(&$widget, &$form, &$form_state, $field, $instance,
+  public static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
     $settings = $field['settings'];

@@ -5,7 +5,7 @@ class chado_base__organism_id extends TripalField {
   /**
    * @see TripalField::info()
    */
-  public function field_info() {
+  public static function fieldInfo() {
     return array(
       'label' => t('Organism'),
       'description' => t('A field for specifying an organism.'),
@@ -24,48 +24,51 @@ class chado_base__organism_id extends TripalField {
   /**
    * @see TripalField::can_attach()
    */
-  protected function can_attach($entity_type, $bundle, $details) {
+  protected function setCanAttach() {
 
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     $schema = chado_get_schema($table_name);
     if (!$schema) {
-      return FALSE;
+      $this->can_attach = FALSE;
+      return;
     }
 
     // If this is the organism table then do not attach as the organism_id
     // field is the primary key and we don't want a field for that.
     if ($table_name == 'organism') {
-      return FALSE;
+      $this->can_attach = FALSE;
+      return;
     }
 
     // Check the schema for the data table if it has
     // an 'organism_id' column then we want to attach this field.
     if (array_key_exists('organism_id', $schema['fields'])) {
-      return TRUE;
+      $this->can_attach = TRUE;
+      return;
     }
 
-    return FALSE;
+    $this->can_attach = FALSE;
   }
 
   /**
    * @see TripalField::create_info()
    */
-  public function create_info($entity_type, $bundle, $details) {
+  public function createInfo() {
 
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+    if (!$this->can_attach) {
       return;
     }
 
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
       'field_name' => $table_name . '__organism_id',
@@ -83,19 +86,19 @@ class chado_base__organism_id extends TripalField {
     );
   }
   /**
-   * @see TripalField::create_instance_info()
+   * @see TripalField::createInstanceInfo()
    */
-  public function create_instance_info($entity_type, $bundle, $details) {
+  public function createInstanceInfo() {
 
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+    if (!$this->can_attach) {
       return;
     }
 
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     $is_required = FALSE;
     $schema = chado_get_schema($table_name);
@@ -106,8 +109,8 @@ class chado_base__organism_id extends TripalField {
 
     return array(
       'field_name' => $table_name . '__organism_id',
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
+      'entity_type' => $this->entity_type,
+      'bundle' => $this->bundle->name,
       'label' => 'Organism',
       'description' => 'Select an organism.',
       'required' => $is_required,
@@ -131,30 +134,34 @@ class chado_base__organism_id extends TripalField {
   }
 
   /**
-   * @see TripalField::widget_info()
+   * @see TripalField::widgetInfo()
    */
-  public function widget_info() {
+  public static function widgetInfo() {
     return array(
-      'label' => t('Organism Select'),
-      'field types' => array('chado_base__organism_id')
+      'chado_base__organism_id_widget' => array(
+        'label' => t('Organism Select'),
+        'field types' => array('chado_base__organism_id')
+      ),
     );
   }
   /**
-   * @see TripalField::formatter_info()
+   * @see TripalField::formatterInfo()
    */
-  public function formatter_info() {
+  public static function formatterInfo() {
     return array(
-      'label' => t('Organism'),
-      'field types' => array('chado_base__organism_id'),
-      'settings' => array(
+      'chado_base__organism_id_formatter' => array(
+        'label' => t('Organism'),
+        'field types' => array('chado_base__organism_id'),
+        'settings' => array(
+        ),
       ),
     );
   }
 
   /**
-   * @see TripalField::formatter_view()
+   * @see TripalField::formatterView()
    */
-  public function formatter_view(&$element, $entity_type, $entity,
+  public static function formatterView(&$element, $entity_type, $entity,
       $field, $instance, $langcode, $items, $display) {
 
     if (count($items) > 0) {
@@ -175,7 +182,7 @@ class chado_base__organism_id extends TripalField {
   /**
    * @see TripalField::widget()
    */
-  public function widget_form(&$widget, &$form, &$form_state, $field, $instance,
+  public static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
     $settings = $field['settings'];
@@ -244,7 +251,7 @@ class chado_base__organism_id extends TripalField {
   /**
    * @see TripalField::settings_form()
    */
-  public function settings_form($field, $instance, $has_data) {
+  public function settingsForm($field, $instance, $has_data) {
 
     $settings = $field['settings'];
 

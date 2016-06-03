@@ -26,16 +26,7 @@ class TripalBundleController extends EntityAPIControllerExportable {
       'is_new' => TRUE,
       'data' => '',
     );
-    $bundle = parent::create($values);
-
-    // Allow modules to make additions to the entity when it's created.
-    $modules = module_implements('bundle_create');
-    foreach ($modules as $module) {
-      $function = $module . '_bundle_create';
-      $function($bundle);
-    }
-
-    return $bundle;
+    return parent::create($values);
   }
 
   /**

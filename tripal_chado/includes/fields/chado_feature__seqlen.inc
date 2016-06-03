@@ -2,9 +2,9 @@
 
 class chado_feature__seqlen extends TripalField {
   /**
-   * @see TripalField::field_info()
+   * @see TripalField::fieldInfo()
    */
-  function field_info() {
+  static function fieldInfo() {
     return array(
       'label' => t('Sequence length'),
       'description' => t('A field for calculating the length of a sequence.'),
@@ -22,30 +22,31 @@ class chado_feature__seqlen extends TripalField {
   /**
    * @see TripalField::can_attach()
    */
-  protected function can_attach($entity_type, $bundle, $details) {
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+  protected function setCanAttach() {
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     if ($table_name == 'feature') {
-      return TRUE;
+      $this->can_attach = TRUE;
+      return;
     }
-    return FALSE;
+    $this->can_attach = FALSE;
   }
   /**
    * @see TripalField::create_info()
    */
-  function create_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInfo() {
+    if (!$this->can_attach) {
       return;
     }
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
       'field_name' => 'feature__seqlen',
@@ -63,22 +64,22 @@ class chado_feature__seqlen extends TripalField {
     );
   }
   /**
-   * @see TripalField::create_instance_info()
+   * @see TripalField::createInstanceInfo()
    */
-  function create_instance_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInstanceInfo() {
+    if (!$this->can_attach) {
       return;
     }
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
       'field_name' => 'feature__seqlen',
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
+      'entity_type' => $this->entity_type,
+      'bundle' => $this->bundle->name,
       'label' => 'Raw Sequence Length',
       'description' => 'The number of residues in the raw sequence.  This length
         is only for the assigned raw sequence and does not represent the length of any
@@ -105,30 +106,34 @@ class chado_feature__seqlen extends TripalField {
   }
 
   /**
-   * @see TripalField::widget_info()
+   * @see TripalField::widgetInfo()
    */
-  function widget_info() {
+  public static function widgetInfo() {
     return array(
-      'label' => t('Sequence Length'),
-      'field types' => array('chado_feature__seqlen'),
+      'chado_feature__seqlen_widget' => array(
+        'label' => t('Sequence Length'),
+        'field types' => array('chado_feature__seqlen'),
+      ),
     );
   }
   /**
-   * @see TripalField::formatter_info()
+   * @see TripalField::formatterInfo()
    */
-  function formatter_info() {
+  static function formatterInfo() {
     return array(
-      'label' => t('Residues Length'),
-      'field types' => array('chado_feature__seqlen'),
-      'settings' => array(
+      'chado_feature__seqlen_formatter' => array(
+        'label' => t('Residues Length'),
+        'field types' => array('chado_feature__seqlen'),
+        'settings' => array(
+        ),
       ),
     );
   }
 
   /**
-   * @see TripalField::formatter_view()
+   * @see TripalField::formatterView()
    */
-  function formatter_view(&$element, $entity_type, $entity, $field,
+  static function formatterView(&$element, $entity_type, $entity, $field,
       $instance, $langcode, $items, $display) {
 
     foreach ($items as $delta => $item) {
@@ -140,9 +145,9 @@ class chado_feature__seqlen extends TripalField {
   }
 
   /**
-   * @see TripalField::widget_form()
+   * @see TripalField::widgetForm()
    */
-  public function widget_form(&$widget, &$form, &$form_state, $field, $instance,
+  public static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
     $settings = $field['settings'];

@@ -17,18 +17,9 @@
 function tripal_chado_field_info() {
   $info = array();
 
-  // Find all of the files in the tripal_chado/includes/fields directory.
-  $fields_path = drupal_get_path('module', 'tripal_chado') . '/includes/fields';
-  $field_files = file_scan_directory($fields_path, '/^chado_.*\.inc$/');
-
-  // Iterate through the fields, include the file and run the info function.
-  foreach ($field_files as $file) {
-    $field_type = $file->name;
-    module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-    if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
-      $field_obj = new $field_type();
-      $info[$field_type] = $field_obj->field_info();
-    }
+  $field_types = tripal_get_field_types('tripal_chado');
+  foreach ($field_types as $field_type) {
+    $info[$field_type] = $field_type::fieldInfo();
   }
   return $info;
 
@@ -40,7 +31,7 @@ function tripal_chado_field_info() {
  * This is a Tripal defined hook that supports integration with the
  * TripalEntity field.
  */
-function tripal_chado_field_create_info($entity_type, $bundle, $term) {
+function tripal_chado_field_create_info($entity_type, $bundle) {
 
   // Get the details about the mapping of this bundle to the Chado table:
   $details = array(
@@ -72,21 +63,11 @@ function tripal_chado_field_create_info($entity_type, $bundle, $term) {
  */
 function tripal_chado_field_create_info_custom($entity_type, $bundle, $details) {
   $info = array();
-
-  // Find all of the files in the tripal_chado/includes/fields directory.
-  $fields_path = drupal_get_path('module', 'tripal_chado') . '/includes/fields';
-  $field_files = file_scan_directory($fields_path, '/^chado_.*\.inc$/');
-
-  // Iterate through the fields, include the file and run the info function.
-  foreach ($field_files as $file) {
-    $field_type = $file->name;
-    module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-    if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
-      $field_obj = new $field_type();
-      $result = $field_obj->create_info($entity_type, $bundle, $details);
-      if (is_array($result)) {
-        $info[$result['field_name']] = $result;
-      }
+  $fields = tripal_get_fields('tripal_chado', $entity_type, $bundle, $details);
+  foreach ($fields as $field) {
+    $field_name = $field->getFieldName();
+    if ($field->canAttach()) {
+      $info[$field_name] = $field->createInfo();
     }
   }
   return $info;
@@ -125,7 +106,7 @@ function tripal_chado_field_create_base($step, $entity_type, $bundle, $details) 
   // created for each one. If not, then create them.
   $schema = chado_get_schema($table_name);
   if (!$schema) {
-    return $fields();
+    return $fields;
   }
 
   $columns = $schema['fields'];
@@ -278,7 +259,7 @@ function tripal_chado_field_create_info_base_defaults($field_name, $table_name,
  * This is a Tripal defined hook that supports integration with the
  * TripalEntity field.
  */
-function tripal_chado_field_create_instance_info($entity_type, $bundle, $term) {
+function tripal_chado_field_create_instance_info($entity_type, $bundle) {
 
   // Get the details about the mapping of this bundle to the Chado table:
   $details = array(
@@ -473,21 +454,11 @@ function tripal_chado_field_create_instance_info_base_defaults($bundle_name,
  */
 function tripal_chado_field_create_instance_info_custom($entity_type, $bundle, $details) {
   $info = array();
-
-  // Find all of the files in the tripal_chado/includes/fields directory.
-  $fields_path = drupal_get_path('module', 'tripal_chado') . '/includes/fields';
-  $field_files = file_scan_directory($fields_path, '/^chado_.*\.inc$/');
-
-  // Iterate through the fields, include the file and run the info function.
-  foreach ($field_files as $file) {
-    $field_type = $file->name;
-    module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-    if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
-      $field_obj = new $field_type();
-      $result = $field_obj->create_instance_info($entity_type, $bundle, $details);
-      if (is_array($result)) {
-        $info[$result['field_name']] = $result;
-      }
+  $fields = tripal_get_fields('tripal_chado', $entity_type, $bundle, $details);
+  foreach ($fields as $field) {
+    $field_name = $field->getFieldName();
+    if ($field->canAttach()) {
+      $info[$field_name] = $field->createInstanceInfo();
     }
   }
   return $info;
@@ -502,20 +473,13 @@ function tripal_chado_field_create_instance_info_custom($entity_type, $bundle, $
  * all of the code for a single field to be self contained in a single file.
  */
 function tripal_chado_field_widget_info() {
-  $widgets = array();
+  $info = array();
 
-  $fields = field_info_fields();
-  foreach ($fields as $field) {
-    $field_type = $field['type'];
-    if ($field['storage']['type'] == 'field_chado_storage') {
-      module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-      if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
-        $field_obj = new $field_type();
-        $widgets[$field_type . '_widget'] = $field_obj->widget_info();
-      }
-    }
+  $field_types = tripal_get_field_types('tripal_chado');
+  foreach ($field_types as $field_type) {
+    $info += $field_type::widgetInfo();
   }
-  return $widgets;
+  return $info;
 }
 /**
  * Implements hook_field_formatter_info().
@@ -526,33 +490,24 @@ function tripal_chado_field_widget_info() {
  * all of the code for a single field to be self contained in a single file.
  */
 function tripal_chado_field_formatter_info() {
-  $formatters = array();
+  $info = array();
 
-  $fields = field_info_fields();
-  foreach ($fields as $field) {
-    $field_type = $field['type'];
-    if ($field['storage']['type'] == 'field_chado_storage') {
-      module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-      if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
-        $field_obj = new $field_type();
-        $formatters[$field_type . '_formatter'] = $field_obj->formatter_info();
-      }
-    }
+  $field_types = tripal_get_field_types('tripal_chado');
+  foreach ($field_types as $field_type) {
+    $info += $field_type::formatterInfo();
   }
-  return $formatters;
+  return $info;
 }
 
 /**
  * Implements hook_field_settings_form()
  */
 function tripal_chado_field_settings_form($field, $instance, $has_data) {
-  $form = '';
+  $form = array();
   $field_type = $field['type'];
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-
-  if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
-    $field_obj = new $field_type();
-    $form = $field_obj->settings_form($field, $instance, $has_data);
+  if (class_exists($field_type)) {
+    $form = $field_type::settingsForm($field, $instance, $has_data);
   }
   return $form;
 }
@@ -564,10 +519,8 @@ function tripal_chado_field_formatter_settings_summary($field, $instance, $view_
   $summary = '';
   $field_type = $field['type'];
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-
-  if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
-    $field = new $field_type();
-    $summary = $field->formatter_settings_summary($field, $instance, $view_mode);
+  if (class_exists($field_type)) {
+    $form = $field_type::formatterSettingsSummary($field, $instance, $view_mode);
   }
   return $summary;
 }
@@ -577,23 +530,14 @@ function tripal_chado_field_formatter_settings_summary($field, $instance, $view_
  */
 function tripal_chado_field_formatter_settings_form($field, $instance,
     $view_mode, $form, &$form_state) {
-  $element = array();
 
+  $form = array();
   $field_type = $field['type'];
-  form_load_include($form_state, 'inc', 'tripal_chado', 'includes/fields/' . $field_type);
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-
-  if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
-    $field_obj = new $field_type();
-     $element = $field_obj->formatter_settings_form($field, $instance, $view_mode, $form, $form_state);
+  if (class_exists($field_type)) {
+    $form = $field_type::formatterSettingsForm(field, $instance, $view_mode, $form, $form_state);
   }
-
-  $function = $field_type . '_formatter_settings_form';
-  if (function_exists($function)) {
-    $element = $function($field, $instance, $view_mode, $form, $form_state);
-  }
-
-  return $element;
+  return $form;
 }
 
 
@@ -607,12 +551,9 @@ function tripal_chado_field_formatter_view($entity_type, $entity, $field,
   $element = array();
   $field_type = $field['type'];
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-
-  if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
-    $field_obj = new $field_type();
-    $field_obj->formatter_view($element, $entity_type, $entity, $field, $instance, $langcode, $items, $display);
+  if (class_exists($field_type)) {
+    $field_type::formatterView($element, $entity_type, $entity, $field, $instance, $langcode, $items, $display);
   }
-
   return $element;
 }
 
@@ -623,18 +564,14 @@ function tripal_chado_field_widget_form(&$form, &$form_state, $field,
     $instance, $langcode, $items, $delta, $element) {
 
   $widget = $element;
-
-  $field_name = $instance['field_name'];
   $field_type = $field['type'];
-  form_load_include($form_state, 'inc', 'tripal_chado', 'includes/fields/' . $field_type);
-  module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_name);
-
-  if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
-    $field_obj = new $field_type();
-    $field_obj->widget_form($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
+  module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+  if (class_exists($field_type)) {
+    $field_type::widgetForm($widget, $form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
   }
-
   return $widget;
+
+
 }
 
 
@@ -678,31 +615,30 @@ function tripal_chado_field_widget_form_alter(&$element, &$form_state, $context)
  */
 function tripal_chado_field_validate($entity_type, $entity, $field, $instance,
      $langcode, $items, &$errors) {
+
   $field_type = $field['type'];
-  if ($field['storage']['type'] == 'field_chado_storage') {
-    module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-    if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
-      $field_obj = new $field_type();
-      $field_obj->validate($entity_type, $entity, $field, $instance,
+  module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+  if (class_exists($field_type)) {
+    $field_obj = new $field_type($entity_type, $entity->bundle);
+    $form = $field_obj::widgetFormValidate($entity_type, $entity, $field, $instance,
         $langcode, $items, $errors);
-    }
   }
 }
 
 /**
  * Implements hook_field_validate()
+ *
+ * This is a TripalEntity specific hook.
  */
 function tripal_chado_field_submit($entity_type, $entity, $field, $instance,
     $langcode, &$items, $form, &$form_state) {
 
   $field_type = $field['type'];
-  if ($field['storage']['type'] == 'field_chado_storage') {
-    module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
-    if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
-      $field_obj = new $field_type();
-      $field_obj->submit($entity_type, $entity, $field, $instance,
-          $langcode, $items, $form, $form_state);
-    }
+  module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+  if (class_exists($field_type)) {
+    $field_obj = new $field_type($entity_type, $entity->bundle);
+    $form = $field_obj::widgetFormSubmit($entity_type, $entity, $field, $instance,
+        $langcode, $items, $errors);
   }
 }
 

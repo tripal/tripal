@@ -6,24 +6,31 @@
 function tripal_field_info() {
 
   $info = array();
-  $fields = tripal_get_fields('tripal');
-  foreach ($fields as $field) {
-    $info[] = $field->field_info();
+
+  $field_types = tripal_get_field_types('tripal');
+  foreach ($field_types as $field_type) {
+    $info[$field_type] = $field_type::fieldInfo();
   }
-
-}
-/**
- * Implements hook_field_widget_info();
- */
-function tripal_field_widget_info() {
-
+  return $info;
 }
 
 /**
- * Implements hook_field_formatter_info().
+ * Implements hook_field_create_info().
+ *
+ * This is a Tripal defined hook that supports integration with the
+ * TripalEntity field.
  */
-function tripal_field_formatter_info() {
+function tripal_field_create_info($entity_type, $bundle) {
 
+  $info = array();
+  $fields = tripal_get_fields('tripal', $entity_type, $bundle);
+  foreach ($fields as $field) {
+    $field_name = $field->getFieldName();
+    if ($field->canAttach()) {
+      $info[$field_name] = $field->createInfo();
+    }
+  }
+  return $info;
 }
 
 /**
@@ -32,45 +39,43 @@ function tripal_field_formatter_info() {
  * This is a Tripal defined hook that supports integration with the
  * TripalEntity field.
  */
-function tripal_field_create_instance_info($entity_type, $bundle, $term) {
-
-}
-
-/**
- * Implements hook_field_widget_form().
- */
-function tripal_field_widget_form(&$form, &$form_state, $field,
-    $instance, $langcode, $items, $delta, $element) {
-
-
-}
-/**
- * Implements hook_field_create_info().
- *
- * This is a Tripal defined hook that supports integration with the
- * TripalEntity field.
- */
-function tripal_field_create_info($entity_type, $bundle, $term) {
+function tripal_field_create_instance_info($entity_type, $bundle) {
   $info = array();
-
-  // Find all of the files in the tripal_chado/includes/fields directory.
-  $fields_path = drupal_get_path('module', 'tripal') . '/includes/fields';
-  $field_files = file_scan_directory($fields_path, '/^.inc$/');
-
-  // Iterate through the fields, include the file and run the info function.
-  foreach ($field_files as $file) {
-    $field_type = $file->name;
-    module_load_include('inc', 'tripal', 'includes/fields/' . $field_type);
-    if (class_exists($field_type)) {
-      $field_obj = new $field_type();
-      $result = $field_obj->create_info($entity_type, $bundle, $details);
-      if (is_array($result)) {
-        $info[$result['field_name']] = $result;
-      }
+  $fields = tripal_get_fields('tripal', $entity_type, $bundle);
+  foreach ($fields as $field) {
+    $field_name = $field->getFieldName();
+    if ($field->canAttach()) {
+      $info[$field_name] = $field->createInstanceInfo();
     }
   }
   return $info;
 }
+/**
+ * Implements hook_field_widget_info();
+ */
+function tripal_field_widget_info() {
+  $info = array();
+
+  $field_types = tripal_get_field_types('tripal');
+  foreach ($field_types as $field_type) {
+    $info += $field_type::widgetInfo();
+  }
+  return $info;
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function tripal_field_formatter_info() {
+  $info = array();
+
+  $field_types = tripal_get_field_types('tripal');
+  foreach ($field_types as $field_type) {
+    $info += $field_type::formatterInfo();
+  }
+  return $info;
+}
+
 /**
  * Implements hook_field_formatter_view().
  */
@@ -81,9 +86,10 @@ function tripal_field_formatter_view($entity_type, $entity, $field,
   $field_type = $field['type'];
   module_load_include('inc', 'tripal', 'includes/fields/' . $field_type);
   if (class_exists($field_type)) {
-    $field_obj = new $field_type();
-    $field_obj->formatter_view($element, $entity_type, $entity, $field, $instance, $langcode, $items, $display);
+    $field_obj = new $field_type($entity_type, $entity->bundle);
+    $field_obj::formatterView($element, $entity_type, $entity, $field, $instance, $langcode, $items, $display);
   }
+  return $element;
 }
 /**
  * Implements hook_field_is_empty().
@@ -109,6 +115,10 @@ function tripal_field_is_empty($item, $field) {
 
 /**
  * Simple provides a message indicating that the field cannot be deleted.
+ *
+ * This function is used in the tripal_menu_alter() function.  We alter the
+ * menu created for managing fields to use this call back which
+ * prints a message that the field cannot be deleted.
  */
 function tripal_field_no_delete() {
   drupal_set_message('This field cannot be removed.', 'warning');

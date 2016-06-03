@@ -2,9 +2,9 @@
 
 class chado_linker__cvterm extends TripalField {
   /**
-   * @see TripalField::field_info()
+   * @see TripalField::fieldInfo()
    */
-  function field_info() {
+  static function fieldInfo() {
     return array(
       'label' => t('Annotations'),
       'description' => t('This record can be annotated with terms
@@ -22,56 +22,60 @@ class chado_linker__cvterm extends TripalField {
   /**
    * @see TripalField::can_attach()
    */
-  protected function can_attach($entity_type, $bundle, $details) {
+  protected function setCanAttach() {
 
     // This field is only attached by the chado_linker__cvterm_addr field.
-    return FALSE;
+    $this->can_attach = FALSE;
   }
   /**
    * @see TripalField::create_info()
    */
-  function create_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInfo() {
+    if (!$this->can_attach) {
       return;
     }
     // This field is only attached by the chado_linker__cvterm_addr field.
   }
   /**
-   * @see TripalField::create_instance_info()
+   * @see TripalField::createInstanceInfo()
    */
-  function create_instance_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInstanceInfo() {
+    if (!$this->can_attach) {
       return;
     }
 
     // This field is only attached by the chado_linker__cvterm_addr field.
   }
   /**
-   * @see TripalField::widget_info()
+   * @see TripalField::widgetInfo()
    */
-  function widget_info() {
+  public static function widgetInfo() {
     return array(
-      'label' => t('Annotations'),
-      'field types' => array('chado_linker__cvterm'),
-      'description' => t('This record can be annotated with terms
-            from other vocabularies.'),
-    );
-  }
-  /**
-   * @see TripalField::formatter_info()
-   */
-  function formatter_info() {
-    return array(
-      'label' => t('Annotations'),
-      'field types' => array('chado_linker__cvterm'),
-      'settings' => array(
+      'chado_linker__cvterm_widget' => array(
+        'label' => t('Annotations'),
+        'field types' => array('chado_linker__cvterm'),
+        'description' => t('This record can be annotated with terms
+              from other vocabularies.'),
       ),
     );
   }
   /**
-   * @see TripalField::formatter_view()
+   * @see TripalField::formatterInfo()
    */
-  function formatter_view(&$element, $entity_type, $entity, $field,
+  static function formatterInfo() {
+    return array(
+      'chado_linker__cvterm_formatter' => array(
+        'label' => t('Annotations'),
+        'field types' => array('chado_linker__cvterm'),
+        'settings' => array(
+        ),
+      ),
+    );
+  }
+  /**
+   * @see TripalField::formatterView()
+   */
+  static function formatterView(&$element, $entity_type, $entity, $field,
       $instance, $langcode, $items, $display) {
 
     $headers = array('Term', 'Definition', 'Is Not', 'Reference');
@@ -130,9 +134,9 @@ class chado_linker__cvterm extends TripalField {
     }
   }
   /**
-   * @see TripalField::widget_form()
+   * @see TripalField::widgetForm()
    */
-  public function widget_form(&$widget, &$form, &$form_state, $field, $instance,
+  public static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
     $entity = $form['#entity'];

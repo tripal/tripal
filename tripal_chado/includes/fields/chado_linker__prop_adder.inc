@@ -2,9 +2,9 @@
 
 class chado_linker__prop_adder extends TripalField {
   /**
-   * @see TripalField::field_info()
+   * @see TripalField::fieldInfo()
    */
-  function field_info() {
+  static function fieldInfo() {
     return array(
       'label' => t('Add a Property Type'),
       'description' => t('This record may have any number of properties. Use
@@ -23,33 +23,34 @@ class chado_linker__prop_adder extends TripalField {
   /**
    * @see TripalField::can_attach()
    */
-  protected function can_attach($entity_type, $bundle, $details) {
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+  protected function setCanAttach() {
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     // If the linker table does not exists then we don't want to add attach.
     $prop_table = $table_name . 'prop';
     if (chado_table_exists($prop_table)) {
-      return TRUE;
+      $this->can_attach = TRUE;
+      return;
     }
-    return FALSE;
+    $this->can_attach = FALSE;
   }
   /**
    * @see TripalField::create_info()
    */
-  function create_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInfo() {
+    if (!$this->can_attach) {
       return;
     }
 
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     $prop_table = $table_name . 'prop';
     return array(
@@ -65,24 +66,24 @@ class chado_linker__prop_adder extends TripalField {
     );
   }
   /**
-   * @see TripalField::create_instance_info()
+   * @see TripalField::createInstanceInfo()
    */
-  function create_instance_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInstanceInfo() {
+    if (!$this->canAttach()) {
       return;
     }
 
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     $prop_table = $table_name . 'prop';
     return array(
       'field_name' => $prop_table,
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
+      'entity_type' => $this->entity_type,
+      'bundle' => $this->bundle->name,
       'label' => 'Add Properties',
       'description' => 'Add additional property types to this record.',
       'required' => FALSE,
@@ -105,18 +106,20 @@ class chado_linker__prop_adder extends TripalField {
     );
   }
   /**
-   * @see TripalField::widget_info()
+   * @see TripalField::widgetInfo()
    */
-  function widget_info() {
+  public static function widgetInfo() {
     return array(
-      'label' => t('Add a Property'),
-      'field types' => array('chado_linker__prop_adder'),
+      'chado_linker__prop_adder_widget' => array(
+        'label' => t('Add a Property'),
+        'field types' => array('chado_linker__prop_adder'),
+      ),
     );
   }
   /**
-   * @see TripalField::widget_form()
+   * @see TripalField::widgetForm()
    */
-  function widget_form(&$widget, &$form, &$form_state,
+  static function widgetForm(&$widget, &$form, &$form_state,
       $field, $instance, $langcode, $items, $delta, $element) {
 
     // This field has no value field.  Just a fieldset for adding new properties.
@@ -219,10 +222,10 @@ function chado_linker__prop_adder_widget_validate($element, &$form_state) {
               !array_key_exists('TripalEntity', $field['bundles']) or
               !in_array($bundle_name, $field['bundles']['TripalEntity'])) {
 
-            $create_instance_info = array(
+            $createInstanceInfo = array(
               'field_name' => 'property-' . $term[0]->cvterm_id,
               'entity_type' => 'TripalEntity',
-              'bundle' => $bundle->name,
+              'bundle' => $this->bundle->name,
               'label' => ucfirst(preg_replace('/_/', ' ', $term[0]->name)),
               'description' => $term[0]->definition ? $term[0]->definition : '',
               'required' => FALSE,
@@ -241,7 +244,7 @@ function chado_linker__prop_adder_widget_validate($element, &$form_state) {
                 ),
               ),
             );
-            $instance = field_create_instance($create_instance_info);
+            $instance = field_create_instance($createInstanceInfo);
           }
         }
         else if (count($term) > 1) {

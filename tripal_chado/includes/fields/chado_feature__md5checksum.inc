@@ -3,9 +3,9 @@
 class chado_feature__md5checksum  extends TripalField {
 
   /**
-   * @see TripalField::field_info()
+   * @see TripalField::fieldInfo()
    */
-  function field_info() {
+  static function fieldInfo() {
     return array(
       'label' => t('Sequence MD5 checksum'),
       'description' => t('A field for generating MD5 checksum for a sequence.'),
@@ -22,31 +22,32 @@ class chado_feature__md5checksum  extends TripalField {
   /**
    * @see TripalField::can_attach()
    */
-  protected function can_attach($entity_type, $bundle, $details) {
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+  protected function setCanAttach() {
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     if ($table_name == 'feature') {
-      return TRUE;
+      $this->can_attach = TRUE;
+      return;
     }
-    return FALSE;
+    $this->can_attach = FALSE;
   }
   /**
    * @see TripalField::create_info()
    */
-  function create_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInfo() {
+    if (!$this->can_attach) {
       return;
     }
 
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
       'field_name' => $table_name . '__md5checksum',
@@ -64,23 +65,23 @@ class chado_feature__md5checksum  extends TripalField {
     );
   }
   /**
-   * @see TripalField::create_instance_info()
+   * @see TripalField::createInstanceInfo()
    */
-  function create_instance_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  function createInstanceInfo() {
+    if (!$this->can_attach) {
       return;
     }
 
-    $table_name = $details['chado_table'];
-    $type_table = $details['chado_type_table'];
-    $type_field = $details['chado_type_column'];
-    $cv_id      = $details['chado_cv_id'];
-    $cvterm_id  = $details['chado_cvterm_id'];
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
       'field_name' => $table_name . '__md5checksum',
-      'entity_type' => $entity_type,
-      'bundle' => $bundle->name,
+      'entity_type' => $this->entity_type,
+      'bundle' => $this->bundle->name,
       'label' => 'Sequence Checksum',
       'description' => 'The MD5 checksum for the sequence. The checksum here
         will always be unique for the raw unformatted sequence. To verify that the
@@ -109,31 +110,35 @@ class chado_feature__md5checksum  extends TripalField {
   }
 
   /**
-   * @see TripalField::widget_info()
+   * @see TripalField::widgetInfo()
    */
-  function widget_info() {
+  public static function widgetInfo() {
     return array(
-      'label' => t('MD5 Checksum'),
-      'field types' => array('chado_feature__md5checksum'),
-    );
-  }
-
-  /**
-   * @see TripalField::formatter_info()
-   */
-  function formatter_info() {
-    return array(
-      'label' => t('MD5 Checksum'),
-      'field types' => array('chado_feature__md5checksum'),
-      'settings' => array(
+      'chado_feature__md5checksum_widget' => array(
+        'label' => t('MD5 Checksum'),
+        'field types' => array('chado_feature__md5checksum'),
       ),
     );
   }
 
   /**
-   * @see TripalField::formatter_view()
+   * @see TripalField::formatterInfo()
    */
-  function formatter_view(&$element, $entity_type, $entity, $field,
+  static function formatterInfo() {
+    return array(
+        'chado_feature__md5checksum_formatter' => array(
+        'label' => t('MD5 Checksum'),
+        'field types' => array('chado_feature__md5checksum'),
+        'settings' => array(
+        ),
+      ),
+    );
+  }
+
+  /**
+   * @see TripalField::formatterView()
+   */
+  static function formatterView(&$element, $entity_type, $entity, $field,
       $instance, $langcode, $items, $display) {
     foreach ($items as $delta => $item) {
       $content = key_exists('value', $item) ? $item['value'] : '';
@@ -146,9 +151,9 @@ class chado_feature__md5checksum  extends TripalField {
   }
 
   /**
-   * @see TripalField::widget_form()
+   * @see TripalField::widgetForm()
    */
-  public function widget_form(&$widget, &$form, &$form_state, $field, $instance,
+  public static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
     $settings = $field['settings'];

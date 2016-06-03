@@ -37,13 +37,121 @@
  *
  */
 class TripalField {
+
+  // The type of Entity (e.g. TripalEntity).
+  protected $entity_type = '';
+  // The bundle to which this field may be attached.
+  protected $bundle = NULL;
+  // The name of this field.
+  protected $field_name = '';
+  // The type of field.
+  protected $field_type = '';
+  // Set to TRUE if this field is attached to the bundle.  TripalFields are
+  // allowed to decide if they want to be attached to bundles or not.
+  protected $can_attach = FALSE;
+  // An array of paramters that can be used by the field. This is typically
+  // passed by the module that provides the field.
+  protected $details = array();
+
   /**
-   * Define this field type.
+   * The TripalField constructor.
+   */
+  public function __construct($entity_type, $bundle, $details = array()) {
+    $this->entity_type = $entity_type;
+    $this->bundle = $bundle;
+    $this->details = $details;
+
+    // Set the field type. This will always be the name of the file. The
+    // field type, class name and file name must all be identical or things
+    // will break.
+    $this->field_type = get_class($this);
+
+    // Determine if this field can attach to the bundle.
+    $this->setCanAttach($bundle, $details);
+
+    // Set the field's name.
+    $this->setFieldName($bundle, $details);
+  }
+
+  /**
+   * Allows the child class to set the field name.
+   */
+  protected function setFieldName() {
+    // Set the field name to default to be the same as the field type. Any
+    // classes that extend this one can adjust the field name as needed.
+    $this->field_name = $this->field_type;
+  }
+
+  /**
+   * Retrives the name of this field.
    *
    * @return
-   * An array whose keys are field type names and whose values are arrays
-   * describing the field type. The keys are the same as for the
-   * hook_field_info() function, which are:
+   *   This field's name.
+   */
+  public function getFieldName() {
+    return $this->field_name;
+  }
+
+  /**
+   * A helper function to determine if this field wants to attach to a bundle.
+   *
+   * Any class that extends the TripalField class can override this function but
+   * it should set the $this->can_attach member to TRUE or FALSE.
+   *
+   * @param $entity_type
+   *   The entity type Class to which the bundle belongs.
+   * @param $bundle.
+   *   An instance of a TripalBundle object.  This is the bundle to which
+   *   the field can be added.
+   * @param $details
+   *   An associative array containing additional details provided by the
+   *   calling module that can be used by the function to determine if the
+   *   bundle should be attached to.
+   */
+  protected function setCanAttach() {
+    $this->can_attach = FALSE;
+  }
+
+  /**
+   * Retrieves the type of field for this field.
+   *
+   * @return
+   *   The field's type.
+   */
+  public function getType() {
+    return $this->field_type;
+  }
+
+  /**
+   * Retrieves the bundle that this field was provided.
+   *
+   * @return
+   *   A bundle object.
+   */
+  public function getBundle() {
+    return $this->bundle;
+  }
+  /**
+   * Indicates if the field should be attached to the bundle.
+   *
+   * @return
+   *   TRUE if the field wants to be attached to the bundle that was provdied
+   *   in the constructor. FALSE otherwise.
+   */
+  public function canAttach() {
+    return $this->can_attach;
+  }
+
+  /**
+   * Provides default settings for the field.
+   *
+   * This is a static function and defines defaults for all fields of this
+   * type.
+   *
+   * @return
+   *   An array whose keys are field type names and whose values are arrays
+   *   describing the field type. The keys are the same as for the
+   *   hook_field_info() function, which are:
    *   - label: The human-readable name of the field type.
    *   - description: A short description for the field type.
    *   - settings: An array whose keys are the names of the settings available
@@ -76,7 +184,7 @@ class TripalField {
    *     field_create_field() and field_create_instance(). Defaults to
    *     FALSE.
    */
-  public function field_info() {
+  public static function fieldInfo() {
     return array(
     );
   }
@@ -92,13 +200,6 @@ class TripalField {
    * passed as arguments to allow the field to decide if it wants to be
    * attached.
    *
-   * @param $entity_type
-   *   The class name for the entity type (e.g. TripalEntity).
-   * @param TripalBundle $bundle
-   *   The TripalBundle object.  This is the bundle that is being offered
-   *   to the field for attachement. The function will determine if this
-   *   field should be attached to this bundle.
-   * @param $details
    * @return
    *   A field definition array. The return value is identical to that
    *   provided to the field_create_info() function. The field_name and
@@ -120,8 +221,8 @@ class TripalField {
    *
    *  Nothing is returned when this field will not be attached to the bundle.
    */
-  public function create_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  public function createInfo() {
+    if (!$this->can_attach) {
       return;
     }
   }
@@ -184,50 +285,22 @@ class TripalField {
    *
    *  Nothing is returned when this field will not be attached to the bundle.
    */
-  public function create_instance_info($entity_type, $bundle, $details) {
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  public function createInstanceInfo() {
+    if (!$this->can_attach) {
       return;
     }
   }
 
-
-
   /**
-   * A helper function to determine if this field wants to attach to a bundle.
+   * Provides information about the widgets provided by this field.
    *
-   * Because the create_info() and create_instance_info() functions both need
-   * to determine if they should attach to a bundle, this function is provided
-   * as a helper function to perform that check.  Any class that extends the
-   * TripalField class can use this function provide a single function that
-   * both create_info() and create_instance_info() can use.
+   * This function returns an array describing the widget types implemented by
+   * the field.  The widgets created by this field are expecte to be used only
+   * by this field.
    *
-   * @param $entity_type
-   *   The entity type Class to which the bundle belongs.
-   * @param $bundle.
-   *   An instance of a TripalBundle object.  This is the bundle to which
-   *   the field can be added.
-   * @param $details
-   *   An associative array containing additional details provided by the
-   *   calling module that can be used by the function to determine if the
-   *   bundle should be attached to.
-   *
-   * @return
-   *   TRUE if the field should attach to the bundle. FALSE if not.
-   */
-  protected function can_attach($entity_type, $bundle, $details) {
-
-  }
-
-  public function attach_info($entity_type, $bundle, $settings) {
-
-  }
-
-  /**
-   *  Provides information about the widgets provided by this field.
-   *
-   *  This function returns an array describing the widget types implemented by
-   *  the field.  The widgets created by this field are expecte to be used only
-   *  by this field.
+   * This is a static function as it provides default values for all of the
+   * widgets for this field type, and thus we don't need an instantiated
+   * object to provide this information.
    *
    * @param $entity_type
    *   The entity type Class to which the bundle belongs.
@@ -269,19 +342,23 @@ class TripalField {
    *       widget relative to other widgets in the Field UI when selecting a
    *       widget for a given field instance.
    */
-  public function widget_info() {
+  public static function widgetInfo() {
     return array(
     );
   }
   /**
    * Provides information about the formatter for this field.
    *
+   * This is a static function as it provides default values for all of the
+   * formatters for this field type, and thus we don't need an instantiated
+   * object to provide this information.
+   *
    * @return
    *   An associative array with key/value paris compatible with those from the
    *   hook_field_formatter_info() function of the Drupal Field API.
    *
    */
-  public function formatter_info() {
+  public static function formatterInfo() {
     return array(
     );
   }
@@ -309,7 +386,7 @@ class TripalField {
    *   to the user.
    *
    */
-  public function formatter_settings_summary($field, $instance, $view_mode) {
+  public function formatterSettingsSummary($field, $instance, $view_mode) {
 
   }
 
@@ -336,7 +413,7 @@ class TripalField {
    * @return
    *   A Drupal Form array containing the settings form for this field.
    */
-  public function formatter_settings_form($field, $instance,
+  public function formatterSettingsForm($field, $instance,
       $view_mode, $form, &$form_state) {
 
   }
@@ -364,7 +441,7 @@ class TripalField {
    *    An element array compatible with that returned by the
    *    hook_field_formatter_view() function.
    */
-  public function formatter_view(&$element, $entity_type, $entity,
+  public static function formatterView(&$element, $entity_type, $entity,
       $field, $instance, $langcode, $items, $display) {
 
     foreach($items as $delta => $item) {
@@ -406,7 +483,7 @@ class TripalField {
    * @return
    *   A Drupal form. See the hook_field_widget_form() function for more information.
    */
-  public function widget_form(&$widget, &$form, &$form_state, $field, $instance,
+  public static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
     $widget['value'] = array(
@@ -443,7 +520,7 @@ class TripalField {
    *      - message: The human readable message to be displayed.
    *
    */
-  public function validate($entity_type, $entity, $field, $instance, $langcode,
+  public static function widgetFormValidate($entity_type, $entity, $field, $instance, $langcode,
       $items, &$errors) {
 
   }
@@ -476,7 +553,7 @@ class TripalField {
    *  @param $form_state.
    *    The form state array.
    */
-  public function submit($entity_type, $entity, $field, $instance, $langcode,
+  public static function widgetFormSubmit($entity_type, $entity, $field, $instance, $langcode,
       &$items, $form, &$form_state) {
   }
   /**
@@ -525,7 +602,7 @@ class TripalField {
    * @param $has_data
    *   TRUE if the field already has data, FALSE if not.
    */
-  public function settings_form($field, $instance, $has_data) {
+  public function settingsForm($field, $instance, $has_data) {
     $settings = $field['settings'];
     $element = array();
 
@@ -556,7 +633,7 @@ class TripalField {
    * @return
    *   An associative array describing the data structure of the field.
    */
-  public function views_data_alter(&$data, $field, $entity_info) {
+  public static function viewsDataAlter(&$data, $field, $entity_info) {
 
   }
 

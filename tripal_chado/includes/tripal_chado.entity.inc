@@ -9,7 +9,18 @@
  * @param $bundle
  *  The TripalBundle object.
  */
-function triipal_chado_bundle_create(&$bundle) {
+
+function tripal_chado_bundle_create($bundle) {
+  tripal_chado_set_bundle_vars($bundle);
+}
+
+/**
+ * Associates the Chado table/column with the bundle.
+ *
+ * @param $bundle
+ *   The TripalBundle object.
+ */
+function tripal_chado_set_bundle_vars($bundle) {
   // The details array is used to pass to the TripalEntity->create_info()
   // function to provide more details about how the bundle is used by this
   // module.

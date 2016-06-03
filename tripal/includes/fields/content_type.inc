@@ -1,10 +1,27 @@
 <?php
 
 class content_type extends TripalField {
+
   /**
-   * @see TripalField::field_info()
+   * @see TripalField::setFieldName()
    */
-  function field_info() {
+  protected function setFieldName() {
+    $this->field_name = 'content_type';
+  }
+
+  /**
+   * @see TripalField::setCanAttach()
+   */
+  protected function setCanAttach() {
+    // We always attach to TriplEntity entities.
+    if ($this->entity_type == 'TripalEntity') {
+      $this->can_attach = TRUE;
+    }
+  }
+  /**
+   * @see TripalField::fieldInfo()
+   */
+  static function fieldInfo() {
     return array(
       'label' => t('Record Type'),
       'description' => t('The content type.'),
@@ -19,48 +36,15 @@ class content_type extends TripalField {
     );
   }
   /**
-   * @see TripalField::widget_info()
+   * @see TripalField::createFieldInfo()
    */
-  function widget_info() {
-    return array(
-      'tripal_content_type_widget' => array(
-        'label' => t('Record Type'),
-        'field types' => array('content_type')
-      ),
-    );
-  }
-  /**
-   * @see TripalField::formatter_info()
-   */
-  function formatter_info() {
-    return array(
-      'tripal_content_type_formatter' => array(
-        'label' => t('Record Type'),
-        'field types' => array('content_type')
-      ),
-    );
-  }
-  /**
-   * @see TripalField::can_attach()
-   */
-  protected function can_attach($entity_type, $bundle, $details) {
-    // We always attach to TriplEntity entities.
-    if ($entity_type == 'TripalEntity') {
-      return TRUE;
-    }
-  }
-
-  /**
-   * @see TripalField::create_info()
-   */
-  public function create_info($entity_type, $bundle, $details) {
-
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+  public function createInfo() {
+    if (!$this->can_attach) {
       return;
     }
 
     return array(
-      'field_name' => 'content_type',
+      'field_name' => $this->field_name,
       'type' => 'content_type',
       'cardinality' => 1,
       'locked' => FALSE,
@@ -73,18 +57,18 @@ class content_type extends TripalField {
     );
   }
   /**
-   * @see TripalField::create_instance_info()
+   * @see TripalField::createInstanceInfo()
    */
-  public function create_instance_info($entity_type, $bundle, $details) {
+  public function createInstanceInfo() {
 
-    if (!$this->can_attach($entity_type, $bundle, $details)) {
+    if (!$this->can_attach) {
       return;
     }
 
     return array(
-      'field_name' => 'content_type',
+      'field_name' => $this->field_name,
       'entity_type' => 'TripalEntity',
-      'bundle' => $bundle->name,
+      'bundle' => $this->bundle->name,
       'label' => 'Resource Type',
       'description' => '',
       'required' => FALSE,
@@ -104,11 +88,41 @@ class content_type extends TripalField {
       ),
     );
   }
+  /**
+   * @see TripalField::widgetInfo()
+   */
+  static function widgetInfo() {
+    return array(
+      'tripal_content_type_widget' => array(
+        'label' => t('Record Type'),
+        'field types' => array('content_type')
+      ),
+    );
+  }
+  /**
+   * @see TripalField::formatterInfo()
+   */
+  static function formatterInfo() {
+    return array(
+      'tripal_content_type_formatter' => array(
+        'label' => t('Record Type'),
+        'field types' => array('content_type')
+      ),
+    );
+  }
 
   /**
-   * @see TripalField::formatter_view()
+   * @see TripalField::load()
    */
-  function formatter_view(&$element, $entity_type, $entity,
+  function load($field, $entity, $details) {
+
+    $entity->{$this->field_name}['und'][0]['value'] = $this->bundle->label;
+  }
+
+  /**
+   * @see TripalField::formatterView()
+   */
+  static function formatterView(&$element, $entity_type, $entity,
       $field, $instance, $langcode, $items, $display) {
 
     foreach ($items as $delta => $item) {
@@ -119,9 +133,9 @@ class content_type extends TripalField {
     }
   }
   /**
-   * @see TripalField::widget_form()
+   * @see TripalField::widgetForm()
    */
-  function widget_form(&$widget, &$form, &$form_state, $field, $instance,
+  static function widgetForm(&$widget, &$form, &$form_state, $field, $instance,
       $langcode, $items, $delta, $element) {
 
     $widget = $element;
@@ -132,13 +146,5 @@ class content_type extends TripalField {
     }
 
   }
-  /**
-   * @see TripalField::load()
-   */
-  function load($field, $entity) {
 
-    $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
-    $field_name = $field['field_name'];
-    $entity->{$field_name}['und'][0]['value'] = $bundle->label;
-  }
 }
