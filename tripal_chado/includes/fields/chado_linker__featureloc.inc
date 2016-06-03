@@ -36,6 +36,20 @@ class chado_linker__featureloc extends TripalField {
     }
     $this->can_attach = FALSE;
   }
+
+  /**
+   * @see TripalField::setFieldName()
+   */
+  protected function setFieldName() {
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
+
+    $this->field_name = 'featureloc';
+  }
+
   /**
    * @see TripalField::create_info()
    */
@@ -53,7 +67,7 @@ class chado_linker__featureloc extends TripalField {
     $pkey = $schema['primary key'][0];
 
     return array(
-      'field_name' => 'featureloc',
+      'field_name' => $this->field_name,
       'type' => 'chado_linker__featureloc',
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
       'locked' => FALSE,
@@ -83,7 +97,7 @@ class chado_linker__featureloc extends TripalField {
     $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
-      'field_name' => 'featureloc',
+      'field_name' => $this->field_name,
       'entity_type' => $this->entity_type,
       'bundle' => $this->bundle->name,
       'label' => 'Aligned Locations',
@@ -234,7 +248,7 @@ class chado_linker__featureloc extends TripalField {
   /**
    * @see TripalField::load()
    */
-  function load($field, $entity, $details) {
+  static function load($field, $entity, $details = array()) {
     $record = $details['record'];
     $settings = $field['settings'];
 
@@ -271,7 +285,7 @@ class chado_linker__featureloc extends TripalField {
     }
 
     // Get matched alignments (those with an itermediate 'match' or 'EST_match', etc
-    $mfeaturelocs = $this->get_matched_alignments($feature);
+    $mfeaturelocs = self::get_matched_alignments($feature);
     $feature->matched_featurelocs = $mfeaturelocs;
 
     // Combine all three alignments into a single array for printing together in

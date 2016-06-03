@@ -56,6 +56,19 @@ class chado_base__organism_id extends TripalField {
   }
 
   /**
+   * @see TripalField::setFieldName()
+   */
+  protected function setFieldName() {
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
+
+    $this->field_name = $table_name . '__organism_id';
+  }
+
+  /**
    * @see TripalField::create_info()
    */
   public function createInfo() {
@@ -71,7 +84,7 @@ class chado_base__organism_id extends TripalField {
     $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
-      'field_name' => $table_name . '__organism_id',
+      'field_name' => $this->field_name,
       'type' => 'chado_base__organism_id',
       'cardinality' => 1,
       'locked' => FALSE,
@@ -108,7 +121,7 @@ class chado_base__organism_id extends TripalField {
     }
 
     return array(
-      'field_name' => $table_name . '__organism_id',
+      'field_name' => $this->field_name,
       'entity_type' => $this->entity_type,
       'bundle' => $this->bundle->name,
       'label' => 'Organism',
@@ -217,7 +230,7 @@ class chado_base__organism_id extends TripalField {
   /**
    * @see TripalField::load()
    */
-  public function load($field, $entity, $details) {
+  static function load($field, $entity, $details = array()) {
 
     $record = $details['record'];
     $settings = $field['settings'];

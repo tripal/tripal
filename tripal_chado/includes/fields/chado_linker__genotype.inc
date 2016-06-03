@@ -64,6 +64,18 @@ class chado_linker__genotype extends TripalField {
     $this->can_attach = FALSE;
   }
   /**
+   * @see TripalField::setFieldName()
+   */
+  protected function setFieldName() {
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
+
+    $this->field_name = $table_name . '_genotype';
+  }
+  /**
    * @see TripalField::create_info()
    */
   function createInfo() {
@@ -81,7 +93,7 @@ class chado_linker__genotype extends TripalField {
     $pkey = $schema['primary key'][0];
 
     return array(
-      'field_name' => $table_name . '__genotype',
+      'field_name' => $this->field_name,
       'type' => 'chado_feature__md5checksum',
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
       'locked' => FALSE,
@@ -111,7 +123,7 @@ class chado_linker__genotype extends TripalField {
     $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
-      'field_name' => $table_name . '__genotype',
+      'field_name' => $this->field_name,
       'entity_type' => $this->entity_type,
       'bundle' => $this->bundle->name,
       'label' => 'Genotypes',
@@ -203,7 +215,7 @@ class chado_linker__genotype extends TripalField {
   /**
    * @see TripalField::load()
    */
-  public function load($field, $entity, $details) {
+  static function load($field, $entity, $details = array()) {
     $record = $details['record'];
     $field_name = $field['field_name'];
     $field_type = $field['type'];

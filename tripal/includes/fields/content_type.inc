@@ -114,9 +114,10 @@ class content_type extends TripalField {
   /**
    * @see TripalField::load()
    */
-  function load($field, $entity, $details) {
+  static function load($field, $entity, $details = array()) {
 
-    $entity->{$this->field_name}['und'][0]['value'] = $this->bundle->label;
+    $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
+    $entity->{$field['field_name']}['und'][0]['value'] = $bundle->label;
   }
 
   /**

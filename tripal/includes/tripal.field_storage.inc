@@ -50,11 +50,10 @@ function tripal_field_storage_load($entity_type, $entities, $age,
 
       // Allow the creating module to alter the value if desired.  The
       // module should do this if the field has any other form elements
-      // that need populationg besides the default value.
-      $load_function = $field_module . '_' . $field_type . '_field_load';
+      // that need populationg besides the value which was set above.
       module_load_include('inc', $field_module, 'includes/fields/' . $field_type);
-      if (function_exists($load_function)) {
-        $load_function($field, $entity);
+      if (class_exists($field_type)) {
+        $field_type::load($field, $entity);
       }
 
     } // end: foreach ($fields as $field_id => $ids) {

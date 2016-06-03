@@ -37,6 +37,20 @@ class chado_feature__residues extends TripalField {
     }
     $this->can_attach = FALSE;
   }
+
+  /**
+   * @see TripalField::setFieldName()
+   */
+  protected function setFieldName() {
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
+
+    $this->field_name = 'feature__residues';
+  }
+
   /**
    * @see TripalField::create_info()
    */
@@ -52,7 +66,7 @@ class chado_feature__residues extends TripalField {
     $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
-      'field_name' => 'feature__residues',
+      'field_name' => $this->field_name,
       'type' => 'chado_feature__residues',
       'cardinality' => 1,
       'locked' => FALSE,
@@ -80,7 +94,7 @@ class chado_feature__residues extends TripalField {
     $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
-      'field_name' => 'feature__residues',
+      'field_name' => $this->field_name,
       'entity_type' => $this->entity_type,
       'bundle' => $this->bundle->name,
       'label' => 'Sequences',
@@ -199,7 +213,8 @@ class chado_feature__residues extends TripalField {
   /**
    * @see TripalField::load()
    */
-  function load($field, $entity, $details) {
+  static function load($field, $entity, $details = array()) {
+
     $field_name = $field['field_name'];
     $feature = $details['record'];
     $num_seqs = 0;
@@ -287,7 +302,7 @@ class chado_feature__residues extends TripalField {
     );
     $feature = chado_expand_var($feature, 'table', 'featureloc', $options);
 
-    $featureloc_sequences = $this->get_featureloc_sequences($feature->feature_id, $feature->featureloc->feature_id);
+    $featureloc_sequences = self::get_featureloc_sequences($feature->feature_id, $feature->featureloc->feature_id);
 
     // Add in the coding sequences.
     $values = array(
@@ -391,7 +406,7 @@ class chado_feature__residues extends TripalField {
 
     // get the list of relationships (including any aggregators) and iterate
     // through each one to find information needed to color-code the reference sequence
-    $relationships = $this->get_aggregate_relationships($feature_id);
+    $relationships = self::get_aggregate_relationships($feature_id);
     if (!$relationships) {
       return array();
     }
@@ -401,7 +416,7 @@ class chado_feature__residues extends TripalField {
     // locations
     foreach ($relationships as $rindex => $rel) {
       // get the featurelocs for each of the relationship features
-      $rel_featurelocs = $this->get_featurelocs($rel->subject_id, 'as_child', 0);
+      $rel_featurelocs = self::get_featurelocs($rel->subject_id, 'as_child', 0);
       foreach ($rel_featurelocs as $rfindex => $rel_featureloc) {
         // keep track of this unique source feature
         $src = $rel_featureloc->src_feature_id . "-" . $rel_featureloc->src_cvterm_id;
@@ -537,7 +552,7 @@ class chado_feature__residues extends TripalField {
     }
 
     // first get the relationships for this feature
-    return $this->get_relationships($feature_id, 'as_object');
+    return self::get_relationships($feature_id, 'as_object');
 
   }
 

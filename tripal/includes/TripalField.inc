@@ -585,7 +585,7 @@ class TripalField {
    *
    *
    */
-  public function load($field, $entity, $details) {
+  public static function load($field, $entity, $details = array()) {
 
   }
 

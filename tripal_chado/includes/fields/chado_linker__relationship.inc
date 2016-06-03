@@ -37,6 +37,18 @@ class chado_linker__relationship extends TripalField {
     $this->can_attach = FALSE;
   }
   /**
+   * @see TripalField::setFieldName()
+   */
+  protected function setFieldName() {
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
+
+    $this->field_name = $table_name . '_relationship';
+  }
+  /**
    * @see TripalField::create_info()
    */
   function createInfo() {
@@ -53,7 +65,7 @@ class chado_linker__relationship extends TripalField {
     $schema = chado_get_schema($rel_table);
     $pkey = $schema['primary key'][0];
     return array(
-      'field_name' => $table_name . '_relationship',
+      'field_name' => $this->field_name,
       'type' => 'chado_linker__relationship',
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
       'locked' => FALSE,
@@ -83,7 +95,7 @@ class chado_linker__relationship extends TripalField {
     $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
-      'field_name' => $table_name . '_relationship',
+      'field_name' => $this->field_name,
       'entity_type' => $this->entity_type,
       'bundle' => $this->bundle->name,
       'label' => 'Relationships',
@@ -557,7 +569,8 @@ class chado_linker__relationship extends TripalField {
   /**
    * @see TripalField::load()
    */
-  function load($field, $entity, $details) {
+  static function load($field, $entity, $details = array()) {
+
     $settings = $field['settings'];
 
     $record = $details['record'];
@@ -654,7 +667,7 @@ class chado_linker__relationship extends TripalField {
       foreach ($orelationships as $relationship) {
         $rel_acc = $relationship->type_id->dbxref_id->db_id->name . ':' . $relationship->type_id->dbxref_id->accession;
         $rel_type = $relationship->type_id->name;
-        $verb = $this->get_rel_verb($rel_type);
+        $verb = self::get_rel_verb($rel_type);
         $subject_name = $relationship->subject_id->name;
         $subject_type = $relationship->subject_id->type_id->name;
         $object_name = $relationship->object_id->name;

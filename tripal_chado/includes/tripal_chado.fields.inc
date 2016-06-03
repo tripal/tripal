@@ -43,7 +43,9 @@ function tripal_chado_field_create_info($entity_type, $bundle) {
   );
 
   $base_fields = tripal_chado_field_create_base('create_info', $entity_type, $bundle, $details);
+  dpm($base_fields);
   $custom_fields = tripal_chado_field_create_info_custom($entity_type, $bundle, $details);
+  dpm($custom_fields);
   return array_merge($base_fields, $custom_fields);
 }
 

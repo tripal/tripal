@@ -40,6 +40,19 @@ class chado_linker__contact extends TripalField {
   }
 
   /**
+   * @see TripalField::setFieldName()
+   */
+  protected function setFieldName() {
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
+
+    $this->field_name = $table_name . '_contact';
+  }
+
+  /**
    * @see TripalField::create_info()
    */
   function createInfo() {
@@ -58,7 +71,7 @@ class chado_linker__contact extends TripalField {
     $pkey = $schema['primary key'][0];
 
     return array(
-      'field_name' => $contact_table,
+      'field_name' => $this->field_name,
       'type' => 'chado_linker__contact',
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
       'locked' => FALSE,
@@ -89,7 +102,7 @@ class chado_linker__contact extends TripalField {
     $contact_table = $table_name . '_contact';
 
     return array(
-      'field_name' => $contact_table,
+      'field_name' => $this->field_name,
       'entity_type' => $this->entity_type,
       'bundle' => $this->bundle->name,
       'label' => 'Contacts',
@@ -208,7 +221,8 @@ class chado_linker__contact extends TripalField {
   /**
    * @see TripalField::load()
    */
-  public function load($field, $entity, $details) {
+  static function load($field, $entity, $details = array()) {
+
     $record = $details['record'];
     $field_name = $field['field_name'];
     $field_type = $field['type'];

@@ -229,7 +229,7 @@ class chado_linker__prop extends TripalField {
   /**
    * @see TripalField::load()
    */
-  function load($field, $entity, $details) {
+  static function load($field, $entity, $details = array()) {
 
     $field_name = $details['field_name'];
     $field_type = $details['type'];

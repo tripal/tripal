@@ -40,6 +40,20 @@ class chado_linker__cvterm_addr extends TripalField {
     }
     $this->can_attach = FALSE;
   }
+
+  /**
+   * @see TripalField::setFieldName()
+   */
+  protected function setFieldName() {
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
+
+    $this->field_name = $table_name . '_cvterm';
+  }
+
   /**
    * @see TripalField::create_info()
    */
@@ -55,7 +69,7 @@ class chado_linker__cvterm_addr extends TripalField {
     $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
-      'field_name' => $table_name . '_cvterm',
+      'field_name' => $this->field_name,
       'type' => 'chado_linker__cvterm_adder',
       'cardinality' => 1,
       'locked' => FALSE,
@@ -80,7 +94,7 @@ class chado_linker__cvterm_addr extends TripalField {
     $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
-      'field_name' => $table_name . '_cvterm',
+      'field_name' => $this->field_name,
       'entity_type' => $this->entity_type,
       'bundle' => $this->bundle->name,
       'label' => 'Add Annotation Types',

@@ -254,7 +254,7 @@ class chado_linker__cvterm extends TripalField {
   /**
    * @see TripalField::load()
    */
-  function load($field, $entity, $details) {
+  static function load($field, $entity, $details = array()) {
 
     $record = $details['record'];
 

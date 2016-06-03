@@ -35,6 +35,20 @@ class chado_feature__seqlen extends TripalField {
     }
     $this->can_attach = FALSE;
   }
+
+  /**
+   * @see TripalField::setFieldName()
+   */
+  protected function setFieldName() {
+    $table_name = $this->details['chado_table'];
+    $type_table = $this->details['chado_type_table'];
+    $type_field = $this->details['chado_type_column'];
+    $cv_id      = $this->details['chado_cv_id'];
+    $cvterm_id  = $this->details['chado_cvterm_id'];
+
+    $this->field_name = 'feature__seqlen';
+  }
+
   /**
    * @see TripalField::create_info()
    */
@@ -49,7 +63,7 @@ class chado_feature__seqlen extends TripalField {
     $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
-      'field_name' => 'feature__seqlen',
+      'field_name' => $this->field_name,
       'type' => 'chado_feature__seqlen',
       'cardinality' => 1,
       'locked' => FALSE,
@@ -77,7 +91,7 @@ class chado_feature__seqlen extends TripalField {
     $cvterm_id  = $this->details['chado_cvterm_id'];
 
     return array(
-      'field_name' => 'feature__seqlen',
+      'field_name' => $this->field_name,
       'entity_type' => $this->entity_type,
       'bundle' => $this->bundle->name,
       'label' => 'Raw Sequence Length',
