@@ -288,7 +288,9 @@ function tripal_chado_semweb_form($form, &$form_state, $chado_table = NULL) {
 
   $chado_tables = chado_get_table_names(TRUE);
   $chado_tables = array_merge(array('Select a Chado Table'), $chado_tables);
-
+  // Make sure the table name exists. If not, reset it.
+  $chado_table = in_array($chado_table, $chado_tables) ? $chado_table: NULL;
+  
   $form['chado_table'] = array(
     '#type' => 'select',
     '#title' => 'Chado Table',
@@ -315,7 +317,7 @@ function tripal_chado_semweb_form($form, &$form_state, $chado_table = NULL) {
       ->execute()
       ->fetchField();
     $columns = $schema['fields'];
-    $headers = array('Field Name', 'Term', 'Description', 'Action');
+    $headers = array('Field Name', 'Vocabulary', 'Term Name', 'Term Description', 'Action');
     $rows = array();
     foreach ($columns AS $column => $detail) {
       // Do not show column if it's the primary key or default cv
@@ -327,20 +329,24 @@ function tripal_chado_semweb_form($form, &$form_state, $chado_table = NULL) {
           ->condition('chado_column', $column)
           ->execute()
           ->fetchField();
+        $sw_voc = '';
         $sw_term = '';
         $sw_desc = '';
         if($cvterm_id) {
           $term = tripal_get_cvterm(array(
             'cvterm_id' => $cvterm_id
           ));
+          $sw_voc = $term->cv_id->name;
           $sw_term = $term->name;
           $sw_desc = $term->definition;
         }
         $rows[] = array(
           $column,
+          $sw_voc,
           $sw_term,
           $sw_desc,
-          l('Edit', '/admin/tripal/storage/chado/semweb/edit/' . $chado_table . '/' . $column)
+          l('Edit', '/admin/tripal/storage/chado/semweb/edit/' . $chado_table . '/' . $column) . ' | ' .
+          l('Reset', '/admin/tripal/storage/chado/semweb/reset/' . $chado_table . '/' . $column)
         );
       }
     }
@@ -364,7 +370,14 @@ function tripal_chado_semweb_form($form, &$form_state, $chado_table = NULL) {
 }
 
 /**
- * Adds defaults to the chado_semweb table.
+ * Implements hook_form()
+ * Edit terms used by the semantic web
+ * 
+ * @param $form
+ * @param $form_state
+ * @param $table
+ * @param $column
+ * @return $form
  */
 function tripal_chado_semweb_edit_form($form, &$form_state, $table = NULL, $column = NULL) {
   
@@ -452,6 +465,13 @@ function tripal_chado_semweb_edit_form($form, &$form_state, $table = NULL, $colu
       '#name' => 'use_cvterm'
     );
   }
+  
+  $form['cancel_button'] = array(
+    '#type' => 'button',
+    '#value' => t('Cancel'),
+    '#name' => 'cancel_button',
+    '#limit_validation_errors' => array()
+  );
 
   $form['#prefix'] = '<div id = "tripal-chado-semweb-edit-form">';
   $form['#suffix'] = '</div>';
@@ -459,31 +479,54 @@ function tripal_chado_semweb_edit_form($form, &$form_state, $table = NULL, $colu
   return $form;
 }
 
+
+/**
+ * Implements hook_form_validate()
+ *
+ * Validate function for editing the semantic web term
+ *
+ * @param unknown $form
+ * @param unknown $form_state
+ */
 function tripal_chado_semweb_edit_form_validate($form, &$form_state) {
-  if (array_key_exists('clicked_button', $form_state) && $form_state['clicked_button']['#name'] =='use_cvterm') {
-    $cvterm_id = NULL;
-    // Make sure we have a cvterm selected
-    $num_selected = 0;
-    foreach ($form_state['values'] as $key => $value) {
-      $matches = array();
-      if (preg_match("/^term-(\d+)$/", $key, $matches) and
-          $form_state['values']['term-' . $matches[1]]) {
-        $cvterm_id = $matches[1];
-        $num_selected++;
+  if (array_key_exists('clicked_button', $form_state)) {
+    if ($form_state['clicked_button']['#name'] =='use_cvterm') {
+      $cvterm_id = NULL;
+      // Make sure we have a cvterm selected
+      $num_selected = 0;
+      foreach ($form_state['values'] as $key => $value) {
+        $matches = array();
+        if (preg_match("/^term-(\d+)$/", $key, $matches) and
+            $form_state['values']['term-' . $matches[1]]) {
+          $cvterm_id = $matches[1];
+          $num_selected++;
+        }
+      }
+      if ($num_selected == 0) {
+        form_set_error('', 'Please select at least one term.');
+      }
+      else if ($num_selected > 1) {
+        form_set_error('term-' . $cvterm_id, 'Please select only one term from the list below.');
+      }
+      else {
+        $form_state['values']['#selected_cvterm_id'] = $cvterm_id;
       }
     }
-    if ($num_selected == 0) {
-      form_set_error('', 'Please select at least one term.');
-    }
-    else if ($num_selected > 1) {
-      form_set_error('term-' . $cvterm_id, 'Please select only one term from the list below.');
-    }
-    else {
-      $form_state['values']['#selected_cvterm_id'] = $cvterm_id;
+    else if ($form_state['clicked_button']['#name'] =='cancel_button') {
+      $table_name = $form_state['values']['table_name'];
+      drupal_goto('/admin/tripal/storage/chado/semweb/' . $table_name);
     }
   }
 }
 
+/**
+ * Implements hook_form_submit()
+ *
+ * Submit function for editing the semantic web term
+ *
+ * @param unknown $form
+ * @param unknown $form_state
+ */
 function tripal_chado_semweb_edit_form_submit($form, &$form_state) {
   if (array_key_exists('clicked_button', $form_state) && $form_state['clicked_button']['#name'] =='use_cvterm') {
         $table_name = $form_state['values']['table_name'];
@@ -521,6 +564,124 @@ function tripal_chado_semweb_edit_form_submit($form, &$form_state) {
         drupal_goto('/admin/tripal/storage/chado/semweb/' . $table_name);
       }
 }
+
+
+/**
+ * Implements hook_form()
+ * Reset term used by semantic web
+ *
+ * @param $form
+ * @param $form_state
+ * @param $table
+ * @param $column
+ * @return $form
+ */
+function tripal_chado_semweb_reset_form($form, &$form_state, $table = NULL, $column = NULL) {
+
+  $term_name = array_key_exists('values', $form_state) ? $form_state['values']['term_name'] : '';
+
+  $form['chado_table'] = array(
+    '#markup' => 'Are you sure you want to remove the use of this term? ',
+  );
+  $form['table_name'] = array(
+    '#type' => 'value',
+    '#value' => $table
+  );
+  $form['column'] = array(
+    '#type' => 'value',
+    '#value' => $column
+  );
+  
+  $form['submit_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Reset'),
+    '#name' => 'reset_term'
+  );
+  
+  $form['cancel_button'] = array(
+    '#type' => 'button',
+    '#value' => t('Cancel'),
+    '#name' => 'cancel_button',
+    '#limit_validation_errors' => array()
+  );
+  
+  return $form;
+}
+
+/**
+ * Implements hook_form_validate()
+ * 
+ * Validate function for resetting the semantic web term
+ * 
+ * @param unknown $form
+ * @param unknown $form_state
+ */
+function tripal_chado_semweb_reset_form_validate($form, &$form_state) {
+  if (array_key_exists('clicked_button', $form_state)) {
+    if ($form_state['clicked_button']['#name'] =='use_cvterm') {
+      $cvterm_id = NULL;
+      // Make sure we have a cvterm selected
+      $num_selected = 0;
+      foreach ($form_state['values'] as $key => $value) {
+        $matches = array();
+        if (preg_match("/^term-(\d+)$/", $key, $matches) and
+            $form_state['values']['term-' . $matches[1]]) {
+              $cvterm_id = $matches[1];
+              $num_selected++;
+            }
+      }
+      if ($num_selected == 0) {
+        form_set_error('', 'Please select at least one term.');
+      }
+      else if ($num_selected > 1) {
+        form_set_error('term-' . $cvterm_id, 'Please select only one term from the list below.');
+      }
+      else {
+        $form_state['values']['#selected_cvterm_id'] = $cvterm_id;
+      }
+    }
+    else if ($form_state['clicked_button']['#name'] =='cancel_button') {
+      $table_name = $form_state['values']['table_name'];
+      drupal_goto('/admin/tripal/storage/chado/semweb/' . $table_name);
+    }
+  }
+}
+
+/**
+ * Implements hook_form_submit()
+ *
+ * Submit function for editing the semantic web term
+ *
+ * @param unknown $form
+ * @param unknown $form_state
+ */
+function tripal_chado_semweb_reset_form_submit($form, &$form_state) {
+  if (array_key_exists('clicked_button', $form_state) && $form_state['clicked_button']['#name'] =='reset_term') {
+    $table_name = $form_state['values']['table_name'];
+    $column = $form_state['values']['column'];
+    // Check if there is already a record
+    $record_id =
+    db_select('chado_semweb', 'cs')
+    ->fields('cs', array('chado_semweb_id'))
+    ->condition('chado_table', $table_name)
+    ->condition('chado_column', $column)
+    ->execute()
+    ->fetchField();
+
+    // If the record exists, reset it
+    if ($record_id) {
+      db_update('chado_semweb')
+      ->fields(array(
+        'cvterm_id' => NULL
+      ))
+      ->condition('chado_semweb_id', $record_id)
+      ->execute();
+    }
+    drupal_set_message('The term settings have been reset.');
+    drupal_goto('/admin/tripal/storage/chado/semweb/' . $table_name);
+  }
+}
+
 /**
  *
  */
