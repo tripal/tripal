@@ -173,8 +173,8 @@ class chado_linker__genotype extends TripalField {
       $type = $genotype['type'];
 
       // Add a link i there is an entity.
-      if (array_key_exists('entity_id', $item) and $item['entity_id']) {
-        $entity_id = $item['entity_id'];
+      if (array_key_exists('entity', $item['value']) and $item['value']['entity']) {
+        list($entity_type, $entity_id) = explode(':', $item['value']['entity']);
         $genotype_name = l($genotype_name, "bio_data/" . $entity_id, array('attributes' => array('target' => "_blank")));
       }
       $rows[] = array($genotype_name, $description, $type);
@@ -271,8 +271,7 @@ class chado_linker__genotype extends TripalField {
         );
 
         if ($genotype && property_exists($genotype, 'entity_id')) {
-          $entity->{$field_name}['und'][$i]['entity_id'] = $genotype->entity_id;
-          $entity->{$field_name}['und'][$i]['entity_type'] = 'TripalEntity';
+          $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $genotype->entity_id;
         }
       }
     }

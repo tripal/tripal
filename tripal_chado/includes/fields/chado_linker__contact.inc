@@ -179,8 +179,8 @@ class chado_linker__contact extends TripalField {
       $type = $contact['type'];
 
       // Add a link i there is an entity.
-      if (array_key_exists('entity_id', $item) and $item['entity_id']) {
-        $entity_id = $item['entity_id'];
+      if (array_key_exists('entity', $item['value']) and $item['value']['entity']) {
+        list($entity_type, $entity_id) = explode(':', $item['value']['entity']);
         $contact_name = l($contact_name, "bio_data/" . $entity_id, array('attributes' => array('target' => "_blank")));
       }
       $rows[] = array($contact_name, $description, $type);
@@ -278,8 +278,7 @@ class chado_linker__contact extends TripalField {
         );
 
         if (property_exists($contact, 'entity_id')) {
-          $entity->{$field_name}['und'][$i]['entity_id'] = $contact->entity_id;
-          $entity->{$field_name}['und'][$i]['entity_type'] = 'TripalEntity';
+          $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $contact->entity_id;
         }
       }
     }

@@ -308,8 +308,7 @@ class chado_linker_pub extends TripalField {
         $entity->{$field_name}['und'][$i][$field_table . '--' . 'pub__uniquename'] =  $pub->uniquename;
 
         if (property_exists($pub, 'entity_id')) {
-          $entity->{$field_name}['und'][$i]['entity_id'] = $pub->entity_id;
-          $entity->{$field_name}['und'][$i]['entity_type'] = 'TripalEntity';
+          $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $pub->entity_id;
         }
         $i++;
       }

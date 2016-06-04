@@ -114,8 +114,8 @@ class chado_linker__synonym extends TripalField {
         ),
       ),
       'display' => array(
-        'deafult' => array(
-          'label' => 'above',
+        'default' => array(
+          'label' => 'inline',
           'type' => 'chado_linker__synonym_formatter',
           'settings' => array(),
         ),

@@ -173,8 +173,8 @@ class chado_linker__expression extends TripalField {
         // If this key is the name, then we want to link to the entity if one
         // exists.
         if ($key == 'name') {
-          if (array_key_exists('entity_id', $item) and $item['$entity_id']) {
-            $entity_id = $item['entity_id'];
+          if (array_key_exists('entity', $item['value']) and $item['value']['$entity_id']) {
+            list($entity_type, $entity_id) = explode(':', $item['value']['entity']);
             $value = l($value, "bio_data/" . $entity_id, array('attributes' => array('target' => "_blank")));
           }
         }
@@ -182,7 +182,7 @@ class chado_linker__expression extends TripalField {
         // and link to the pub if an entity exits.
         if ($key == 'publication') {
           $pub = $value['Citation'];
-          if (array_key_exists('publication', $item) and array_key_exists('entity_id', $item['publication'][0])) {
+          if (array_key_exists('publication', $item) and array_key_exists('entity', $item['publication'][0])) {
             $entity_id = $item['publication'][0]['entity_id'];
             $title =  $item['value']['publication']['Title'];
             $link = l($title, 'bio_data/' . $entity_id);
@@ -274,11 +274,9 @@ class chado_linker__expression extends TripalField {
           $pub_details = tripal_get_minimal_pub_info($pub);
 
           $entity->{$field_name}['und'][$i]['value']['publication'] = $pub_details;
-          $entity->{$field_name}['und'][$i]['value']['publication']['@type'] = $pub->type_id->dbxref_id->db_id->name . ':' . $pub->type_id->dbxref_id->accession;
           $entity->{$field_name}['und'][$i]['value']['publication']['type'] = $pub->type_id->name;
           if (property_exists($pub, 'entity_id')) {
-            $entity->{$field_name}['und'][$i]['publication'][0]['entity_id'] = $pub->entity_id;
-            $entity->{$field_name}['und'][$i]['publication'][0]['entity_type'] = 'TripalEntity';
+            $entity->{$field_name}['und'][$i]['publication'][0]['value']['entity'] = 'TripalEntity:' . $pub->entity_id;
           }
         }
 

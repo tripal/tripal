@@ -180,15 +180,15 @@ class chado_linker__relationship extends TripalField {
       $phrase = preg_replace("/$subject_type/", "<b>$subject_type</b>", $phrase);
       $phrase = preg_replace("/$object_type/", "<b>$object_type</b>", $phrase);
 
-      if (array_key_exists('entity_id', $item['value']['object'])) {
-        $object_entity_id = $item['value']['object']['entity_id'];
+      if (array_key_exists('entity', $item['value']['object'])) {
+        list($entity_type, $object_entity_id) = explode(':', $item['value']['object']['entity']);
         if ($object_entity_id != $entity->id) {
           $link = l($object_name, 'bio_data/' . $object_entity_id);
           $phrase = preg_replace("/$object_name/", $link, $phrase);
         }
       }
-      if (array_key_exists('entity_id', $item['value']['subject'])) {
-        $subject_entity_id = $item['value']['subject']['entity_id'];
+      if (array_key_exists('entity', $item['value']['subject'])) {
+        list($entity_type, $subject_entity_id) = explode(':', $item['value']['subject']['entity']);
         if ($subject_entity_id != $entity->id) {
           $link = l($subject_name, 'bio_data/' . $subject_entity_id);
           $phrase = preg_replace("/$subject_name/", $link, $phrase);
@@ -624,6 +624,9 @@ class chado_linker__relationship extends TripalField {
       'subject_name' => '',
       'type_name' => '',
     );
+
+    // If the table has rank and value fields then add those to the default
+    // value array.
     if (array_key_exists('value', $schema['fields'])) {
       $entity->{$field_name}['und'][0][$field_table . '__value'] = '';
     }
@@ -631,6 +634,7 @@ class chado_linker__relationship extends TripalField {
       $entity->{$field_name}['und'][0][$field_table . '__rank'] = '';
     }
 
+    // If we have no record then just return.
     if (!$record) {
       return;
     }
@@ -673,42 +677,50 @@ class chado_linker__relationship extends TripalField {
         $object_name = $relationship->object_id->name;
         $object_type = $relationship->object_id->type_id->name;
         $entity->{$field_name}['und'][$i]['value'] = array(
-          '@type' => $rel_acc,
+          'type' => $relationship->type_id->name,
           'subject' => array(
-            '@type' => $relationship->subject_id->type_id->dbxref_id->db_id->name .
-                ':' . $relationship->subject_id->type_id->dbxref_id->accession,
-            'type' =>  $subject_type,
+            'type' => $subject_type,
             'name' => $subject_name,
           ),
           'type' => $relationship->type_id->name,
           'object' => array(
-            '@type' => $relationship->object_id->type_id->dbxref_id->db_id->name .
-               ':' . $relationship->object_id->type_id->dbxref_id->accession,
-            // TODO the entity_id should not be here.... wherre to put it.
-            'entity_id' => $entity->id,
-            'entity_type' => 'TripalEntity',
-            'type' =>  $object_type,
+            'type' => $object_type,
             'name' => $object_name,
+            'entity' => 'TripalEntity:' . $entity->id,
           )
         );
         if (property_exists($relationship->subject_id, 'uniquename')) {
-          $subject_name = $relationship->subject_id->uniquename;
-          $entity->{$field_name}['und'][$i]['value']['subject']['name'] = $subject_name;
+          $entity->{$field_name}['und'][$i]['value']['subject']['identifier'] =  $relationship->subject_id->uniquename;;
         }
         if (property_exists($relationship->object_id, 'uniquename')) {
-          $object_name = $relationship->object_id->uniquename;
-          $entity->{$field_name}['und'][$i]['value']['object']['name'] = $object_name;
+          $entity->{$field_name}['und'][$i]['value']['object']['identifier'] = $relationship->object_id->uniquename;
         }
         if (property_exists($relationship->subject_id, 'entity_id')) {
           $entity_id = $relationship->subject_id->entity_id;
-          $entity->{$field_name}['und'][$i]['value']['subject']['entity_id'] = $entity_id;
-          $entity->{$field_name}['und'][$i]['value']['subject']['entity_type'] = 'TripalEntity';
+          $entity->{$field_name}['und'][$i]['value']['subject']['entity'] = 'TripalEntity:' . $entity_id;
         }
         $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
         $entity->{$field_name}['und'][$i]['value']['phrase'] = 'The ' . $subject_type . ', ' .
           $subject_name . ', ' . $verb . ' '  . $rel_type_clean . ' this '  .
           $object_type . '.';
 
+        $entity->{$field_name}['und'][$i]['semantic_web'] = array(
+          'type' => $rel_acc,
+          'subject' => array(
+            $relationship->subject_id->type_id->dbxref_id->db_id->name . ':' . $relationship->subject_id->type_id->dbxref_id->accession,
+            array(
+              'type' => '',
+              'name' => '',
+            ),
+          ),
+          'object' => array(
+            $relationship->object_id->type_id->dbxref_id->db_id->name . ':' . $relationship->sobject_id->type_id->dbxref_id->accession,
+            array(
+              'type' => '',
+              'name' => '',
+            ),
+          ),
+        );
 
         $entity->{$field_name}['und'][$i][$field_table . '__' . $pkey] = $relationship->$pkey;
         $entity->{$field_name}['und'][$i][$field_table . '__subject_id'] = $relationship->subject_id->$subject_pkey;
@@ -716,8 +728,8 @@ class chado_linker__relationship extends TripalField {
         $entity->{$field_name}['und'][$i][$field_table . '__object_id'] = $relationship->object_id->$object_pkey;
 
         $entity->{$field_name}['und'][$i]['type_name'] = $relationship->type_id->name;
-        $entity->{$field_name}['und'][$i]['subject_name'] = $relationship->subject_id->uniquename . ' [id: ' . $relationship->subject_id->$fkey_rcolumn . ']';
-        $entity->{$field_name}['und'][$i]['object_name'] = $relationship->object_id->uniquename  . ' [id: ' . $relationship->object_id->$fkey_rcolumn . ']';
+        $entity->{$field_name}['und'][$i]['subject_name'] = $relationship->subject_id->name . ' [id: ' . $relationship->subject_id->$fkey_rcolumn . ']';
+        $entity->{$field_name}['und'][$i]['object_name'] = $relationship->object_id->name  . ' [id: ' . $relationship->object_id->$fkey_rcolumn . ']';
         if (array_key_exists('value', $schema['fields'])) {
           $entity->{$field_name}['und'][$i][$field_table . '__value'] = $relationship->value;
         }
@@ -738,48 +750,61 @@ class chado_linker__relationship extends TripalField {
         $object_name = $relationship->object_id->name;
         $object_type = $relationship->object_id->type_id->name;
         $entity->{$field_name}['und'][$i]['value'] = array(
-          '@type' => $rel_acc,
+          '@type' => $relationship->type_id->name,
           'subject' => array(
-            '@type' => $relationship->subject_id->type_id->dbxref_id->db_id->name .
-               ':' . $relationship->subject_id->type_id->dbxref_id->accession,
-            'type' =>  $subject_type,
+            'type' => $subject_type,
             'name' => $subject_name,
-            'entity_id' => $entity->id,
-            'entity_type' => 'TripalEntity',
+            'entity' => 'TripalEntity:' . $entity->id,
           ),
           'type' => $relationship->type_id->name,
           'object' => array(
-            '@type' => $relationship->object_id->type_id->dbxref_id->db_id->name .
-               ':' . $relationship->object_id->type_id->dbxref_id->accession,
             'type' =>  $object_type,
             'name' => $object_name,
           )
         );
         if (property_exists($relationship->subject_id, 'uniquename')) {
-          $subject_name = $relationship->subject_id->uniquename;
-          $entity->{$field_name}['und'][$i]['value']['subject']['name'] = $subject_name;
+          $entity->{$field_name}['und'][$i]['value']['subject']['identifier'] = $relationship->subject_id->uniquename;
         }
         if (property_exists($relationship->object_id, 'uniquename')) {
-          $object_name = $relationship->object_id->uniquename;
-          $entity->{$field_name}['und'][$i]['value']['object']['name'] = $object_name;
+          $entity->{$field_name}['und'][$i]['value']['object']['identifier'] = $relationship->object_id->uniquename;
         }
         if (property_exists($relationship->object_id, 'entity_id')) {
           $entity_id = $relationship->object_id->entity_id;
-          $entity->{$field_name}['und'][$i]['value']['object']['entity_id'] = $entity_id;
-          $entity->{$field_name}['und'][$i]['value']['object']['entity_type'] = 'TripalEntity';
+          $entity->{$field_name}['und'][$i]['value']['object']['entity'] = 'TripalEntity:' . $entity_id;
         }
         $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
         $entity->{$field_name}['und'][$i]['value']['phrase'] = 'This  ' .
           $subject_type . ' ' . $verb . ' '  . $rel_type_clean . ' the '  .
           $object_type . ', ' . $object_name . '.';
+
+
+        $entity->{$field_name}['und'][$i]['semantic_web'] = array(
+          'type' => $rel_acc,
+          'subject' => array(
+            $relationship->subject_id->type_id->dbxref_id->db_id->name . ':' . $relationship->subject_id->type_id->dbxref_id->accession,
+            array(
+              'type' => '',
+              'name' => '',
+            ),
+          ),
+          'object' => array(
+            $relationship->object_id->type_id->dbxref_id->db_id->name . ':' . $relationship->sobject_id->type_id->dbxref_id->accession,
+            array(
+              'type' => '',
+              'name' => '',
+            ),
+          ),
+        );
+
+
         $entity->{$field_name}['und'][$i][$field_table . '__' . $pkey] = $relationship->$pkey;
         $entity->{$field_name}['und'][$i][$field_table . '__subject_id'] = $relationship->subject_id->$subject_pkey;
         $entity->{$field_name}['und'][$i][$field_table . '__type_id'] = $relationship->type_id->cvterm_id;
         $entity->{$field_name}['und'][$i][$field_table . '__object_id'] = $relationship->object_id->$object_pkey;
 
         $entity->{$field_name}['und'][$i]['type_name'] = $relationship->type_id->name;
-        $entity->{$field_name}['und'][$i]['subject_name'] = $relationship->subject_id->uniquename  . ' [id: ' . $relationship->subject_id->$fkey_rcolumn . ']';
-        $entity->{$field_name}['und'][$i]['object_name'] = $relationship->object_id->uniquename  . ' [id: ' . $relationship->object_id->$fkey_rcolumn . ']';
+        $entity->{$field_name}['und'][$i]['subject_name'] = $relationship->subject_id->name  . ' [id: ' . $relationship->subject_id->$fkey_rcolumn . ']';
+        $entity->{$field_name}['und'][$i]['object_name'] = $relationship->object_id->name  . ' [id: ' . $relationship->object_id->$fkey_rcolumn . ']';
 
         if (array_key_exists('value', $schema['fields'])) {
           $entity->{$field_name}['und'][$i][$field_table . '__value'] = $relationship->value;

@@ -179,8 +179,9 @@ class chado_base__organism_id extends TripalField {
 
     if (count($items) > 0) {
       $content =  $items[0]['value'];
-      if (array_key_exists('entity_id', $items[0])) {
-        $content = l(strip_tags($items[0]['value']), 'bio_data/' . $items[0]['entity_id']);
+      if (array_key_exists('entity', $items[0]['value'])) {
+        list($entity_type, $entity_id) = explode(':', $items[0]['value']['entity']);
+        $content = l(strip_tags($items[0]['value']['label']), 'bio_data/' . $entity_id);
       }
 
       // The cardinality of this field is 1 so we don't have to
@@ -242,22 +243,45 @@ class chado_base__organism_id extends TripalField {
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
-      'value' => '',
+      'value' => array(
+        'label' => '',
+        'genus' => '',
+        'species' => '',
+      ),
     );
 
     if ($record) {
       $organism = $record->organism_id;
       $string = $settings['field_display_string'];
-      $value = tripal_replace_chado_tokens($string, $organism);
-      $entity->{$field_name}['und'][0]['value'] = $value;
+      $label = tripal_replace_chado_tokens($string, $organism);
+      $entity->{$field_name}['und'][0]['value'] = array(
+        'label' => $label,
+        'genus' => $organism->genus,
+        'species' => $organism->species,
+      );
+      // The infraspecific fiels were introdcued in Chado v1.3.
+      if (property_exists($organism, 'infraspecific_name')) {
+        $entity->{$field_name}['und'][0]['value']['infraspecific_type'] = NULL;
+        $entity->{$field_name}['und'][0]['value']['infraspecific_name'] = $organism->infraspecific_name;
+        if ($organism->type_id) {
+          $entity->{$field_name}['und'][0]['value']['infraspecific_type'] =  $organism->type_id->name;
+        }
+      }
       $entity->{$field_name}['und'][0][$field_table . '__organism_id'] = $organism->organism_id;
 
       // Is there a published entity for this organism?
       if (property_exists($entity->chado_record->$field_column, 'entity_id')) {
         $fk_entity_id = $entity->chado_record->$field_column->entity_id;
-        $entity->{$field_name}['und'][0]['entity_id'] = $fk_entity_id;
-        $entity->{$field_name}['und'][0]['entity_type'] = 'TripalEntity';
+        $entity->{$field_name}['und'][0]['value']['entity'] = 'TripalEntity:' . $fk_entity_id;
       }
+
+      $entity->{$field_name}['und'][0]['semantic_web'] = array(
+        'label' => 'rdfs:label',
+        'genus' => tripal_get_chado_semweb_term('organism', 'genus'),
+        'species' => tripal_get_chado_semweb_term('organism', 'species'),
+        'infraspecific_name' => tripal_get_chado_semweb_term('organism', 'infraspecific_name'),
+        'infraspecific_type' => tripal_get_chado_semweb_term('organism', 'type_id'),
+      );
     }
   }
 

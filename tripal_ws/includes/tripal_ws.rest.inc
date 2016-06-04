@@ -94,7 +94,7 @@ function tripal_ws_handle_content_service($api_url, &$response, $ws_path, $param
   }
   // If we have a content type and an entity ID then show the entity
   else {
-    tripal_ws_get_content($api_url, $response, $ws_path, $ctype, $entity_id);
+    tripal_ws_get_content($api_url, $response, $ws_path, $ctype, $entity_id, $params);
   }
 }
 /**
@@ -436,47 +436,14 @@ function tripal_ws_get_content_type($api_url, &$response, $ws_path, $ctype, $par
 
 /**
  *
- * @param $api_url
- * @param $response
- * @param $ws_path
+ * @param unknown $response
+ * @param unknown $ws_path
+ * @param unknown $ctype
+ * @param unknown $entity_id
+ * @param unknown $params
  */
-function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_id) {
+function tripal_ws_get_content_add_fields($entity, $bundle, $api_url, &$response, $ws_path, $ctype, $entity_id, $params) {
 
-  $context_vocabs = array();
-  $context_terms = array();
-
-  // First, add the vocabularies used into the @context section.
-  $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
-  $response['@context']['hydra'] = 'http://www.w3.org/ns/hydra/core#';
-  $response['@context']['schema'] = 'https://schema.org/';
-
-  // Get the TripalBundle, TripalTerm and TripalVocab type for this type.
-  $bundle = tripal_load_bundle_entity(array('label' => $ctype));
-  $term = entity_load('TripalTerm', array('id' => $bundle->term_id));
-  $term = reset($term);
-  $vocab = $term->vocab;
-
-  // Add the vocabulary for this content type to the @context section.
-  if (!array_key_exists($vocab->vocabulary, $response['@context'])) {
-    // If there is no URL prefix then use this API's vocabulary API
-    if (property_exists($term, 'urlprefix')) {
-      $response['@context'][$vocab->vocabulary] = $term->urlprefix;
-    }
-    else {
-      $response['@context'][$vocab->vocabulary] = $api_url . '/vocab/' . $vocab->vocabulary . '/';
-    }
-  }
-
-  // Get the TripalEntity
-  $entity = tripal_load_entity('TripalEntity', array('id' => $entity_id));
-  $entity = reset($entity);
-
-  // Next add in the ID and Type for this resources.
-  $response['@id'] = $api_url . '/content/' . $ctype . '/' . $entity_id;
-  $response['@type'] = $term->name;
-  $context_terms[$term->name] = $term->url;
-  $response['label'] = $entity->title;
-  $response['itemPage'] = url('/bio_data/' . $entity->id, array('absolute' => TRUE));
 
   // Get information about the fields attached to this bundle and sort them
   // in the order they were set for the display.
@@ -512,120 +479,262 @@ function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_i
     // from the instance.
     $field = field_info_field($field_name);
 
+    // By default, the label for the key in the output should be the
+    // term from the vocabulary that the field is assigned. But in the
+    // case that the field is not assigned a term, we must use the field name.
+    $field_name = $instance['field_name'];
+    $field_settings = $field['settings'];
+    $key = $field_name;
+    //$key = strtolower(preg_replace('/ /', '_', $key));
+    if (array_key_exists('semantic_web', $field_settings) and $field_settings['semantic_web']) {
+      list($vocabulary, $accession) = explode(':', $field_settings['semantic_web']);
+      $term = tripal_get_term_details($vocabulary, $accession);
+      if ($term) {
+        $key = $term['name'];
+        $response['@context'][$key] = array(
+          '@id' => $term['url'],
+        );
+      }
+    }
+
+    // If this field should not be attached by default then just add a link
+    // so that the caller can get the information separately.
+    $instance_settings = $instance['settings'];
+    if (array_key_exists('auto_attach', $instance_settings) and
+        $instance_settings['auto_attach'] != TRUE) {
+      $response['@context'][$key]['@type'] = '@id';
+      $response[$key] = $api_url . '/content/' . $ctype . '/' . $entity->id . '/' . urlencode($key);
+      continue;
+    }
+
     // Get the details for this field for the JSON-LD response.
-    $details = tripal_ws_get_field_JSON_LD($entity, $field, $instance, $api_url, $ctype);
-    //print_r($details);
-    $context_vocabs += $details['context']['vocabs'];
-    $context_terms += $details['context']['terms'];
-    $response += $details['value'];
+    tripal_ws_get_content_add_field($key, $entity, $field, $instance, $api_url, $response);
+
   }
 
   // Lastly, add in the terms used into the @context section.
-  $context_terms['label'] = 'rdfs:label';
-  $context_terms['itemPage'] = 'schema:itemPage';
+  $response['@context']['label'] = 'rdfs:label';
+  $response['@context']['itemPage'] = 'schema:itemPage';
 
-  $response['@context'] = array_merge($context_vocabs, $context_terms);
+  //   $response['operation'][] = array(
+  //     '@type' => 'hydra:DeleteResourceOperation',
+  //     'hydra:method' => 'DELETE'
+  //   );
+  //   $response['operation'][] = array(
+  //     '@type' => 'hydra:ReplaceResourceOperation',
+  //     'hydra:method' => 'POST'
+  //   );
+}
+/**
+ *
+ * @param unknown $field_arg
+ * @param unknown $api_url
+ * @param unknown $response
+ * @param unknown $ws_path
+ * @param unknown $ctype
+ * @param unknown $entity_id
+ * @param unknown $params
+ */
+function tripal_ws_get_content_find_field($field_arg, $ctype, $entity_id) {
 
-//   $response['operation'][] = array(
-//     '@type' => 'hydra:DeleteResourceOperation',
-//     'hydra:method' => 'DELETE'
-//   );
-//   $response['operation'][] = array(
-//     '@type' => 'hydra:ReplaceResourceOperation',
-//     'hydra:method' => 'POST'
-//   );
+  $bundle = tripal_load_bundle_entity(array('label' => $ctype));
+  $entity = tripal_load_entity('TripalEntity', array('id' => $entity_id));
+  $entity = reset($entity);
+  $term = NULL;
+
+  // Find the field whose term matches the one provied.
+  $value = array();
+  $instances = field_info_instances('TripalEntity', $bundle->name);
+  foreach ($instances as $instance) {
+    $field_name = $instance['field_name'];
+    $field = field_info_field($field_name);
+    $field_settings = $field['settings'];
+    if (array_key_exists('semantic_web', $field_settings) and
+        $field_settings['semantic_web']) {
+      list($vocabulary, $accession) = explode(':', $field_settings['semantic_web']);
+      $temp_term = tripal_get_term_details($vocabulary, $accession);
+      if ($temp_term['name'] == $field_arg) {
+        return array($entity, $bundle, $field, $instance, $temp_term);
+      }
+    }
+  }
+}
+/**
+ *
+ * @param unknown $api_url
+ * @param unknown $response
+ * @param unknown $ws_path
+ * @param unknown $ctype
+ * @param unknown $entity_id
+ * @param unknown $params
+ * @return number
+ */
+function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_id, $params) {
+  // First, add the vocabularies used into the @context section.
+  $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
+  $response['@context']['hydra'] = 'http://www.w3.org/ns/hydra/core#';
+
+  // If we have an argument in the 4th element (3rd index) then the user
+  // is requesting to epxand the details of a field that was not
+  // initially attached to the enity.
+  $field_arg = '';
+  if (array_key_exists(3, $ws_path)) {
+
+    $field_arg = $ws_path[3];
+    list($entity, $bundle, $field, $instance, $term) = tripal_ws_get_content_find_field($field_arg, $ctype, $entity_id);
+
+    // Next add in the ID and Type for this resources.
+    $key = $term['name'];
+    $response['@context'][$key] = $term['url'];
+    $response['@id'] = $key;
+
+    // Attach the field and then add it's values to the response.
+    field_attach_load($entity->type, array($entity->id => $entity), FIELD_LOAD_CURRENT,
+        array('field_id' => $field['id']));
+
+    tripal_ws_get_content_add_field($key, $entity, $field, $instance, $api_url, $response, TRUE);
+
+    return;
+  }
+
+  // If we don't have a 4th argument then we're loading the base record.
+  // Get the TripalBundle, TripalTerm and TripalVocab type for this type.
+  $bundle = tripal_load_bundle_entity(array('label' => $ctype));
+  $term = entity_load('TripalTerm', array('id' => $bundle->term_id));
+  $term = reset($term);
+  $vocab = $term->vocab;
+
+  // Add the vocabulary for this content type to the @context section.
+  if (!array_key_exists($vocab->vocabulary, $response['@context'])) {
+    // If there is no URL prefix then use this API's vocabulary API
+    if (property_exists($term, 'urlprefix')) {
+      $response['@context'][$vocab->vocabulary] = $term->urlprefix;
+    }
+    else {
+      $response['@context'][$vocab->vocabulary] = $api_url . '/vocab/' . $vocab->vocabulary . '/';
+    }
+  }
+
+  // Get the TripalEntity
+  $entity = tripal_load_entity('TripalEntity', array('id' => $entity_id));
+  $entity = reset($entity);
+
+  // Next add in the ID and Type for this resources.
+  $response['@id'] = $api_url . '/content/' . $ctype . '/' . $entity_id;
+  $response['@type'] = $term->name;
+  $response['@context'][$term->name] = $term->url;
+  $response['label'] = $entity->title;
+  $response['itemPage'] = url('/bio_data/' . $entity->id, array('absolute' => TRUE));
+
+  tripal_ws_get_content_add_fields($entity, $bundle, $api_url, $response, $ws_path, $ctype, $entity_id, $params);
 
 }
 
 /**
  *
  */
-function tripal_ws_get_field_JSON_LD($entity, $field, $instance, $api_url, $ctype) {
-
-  // Initialized the context array.
-  $context = array();
-  $context['vocabs'] = array();
-  $context['terms'] = array();
-
+function tripal_ws_get_content_add_field($key, $entity, $field, $instance, $api_url, &$response, $is_field_page = NULL) {
   // Get the field  settings.
-  $field_name = $instance['field_name'];
+  $field_name = $field['field_name'];
   $field_settings = $field['settings'];
 
-  // By default, the label for the key in the output should be the
-  // term from the vocabulary that the field is assigned. But in the
-  // case that the field is not assigned a term, we must use the field name.
-  $key = $field_name;
-  $key = strtolower(preg_replace('/ /', '_', $key));
-  if (array_key_exists('semantic_web', $field_settings) and $field_settings['semantic_web']) {
-    list($vocabulary, $accession) = explode(':', $field_settings['semantic_web']);
-    $term = tripal_get_term_details($vocabulary, $accession);
-    if ($term) {
-      $key = $term['name'];
-      $key = strtolower(preg_replace('/ /', '_', $key));
-      //$context['vocabs'][$vocabulary] = ;
-      $context['terms'][$key] = array(
-        '@id' => $term['url'],
-//        $field_settings['semantic_web'];
-      );
+  $items = field_get_items('TripalEntity', $entity, $field_name);
+  $values = array();
+
+  for ($i = 0; $i < count($items); $i++) {
+
+    // See if the keys in the values array have been mapped to semantic
+    // web terms.
+    if (array_key_exists('semantic_web', $items[$i])) {
+      foreach ($items[$i]['semantic_web'] as $k => $v) {
+        list($vocabulary, $accession) = explode(':', $v);
+        $term = tripal_get_term_details($vocabulary, $accession);
+        if ($k == 'type') {
+          $items[$i]['value']['@type'] = $items[$i]['value']['type'];
+          unset($items[$i]['value']['type']);
+          $response['@context'][$term['name']] = $term['url'];
+        }
+        else {
+          $response['@context'][$k] = $term['url'];
+        }
+      }
     }
+
+    // Recurse through the values array and set the entity elemtns
+    // and add the fields to the context.
+    tripal_ws_get_content_add_field_context($items[$i], $response, $api_url);
+
+    // Add the remaining values to the $values array.
+    $values[] = $items[$i]['value'];
+
   }
 
-  // Don't show fields that are not meant to be auto attached, even if the
-  // loading of the entity pulled a value for the field from the cache.
-  // We want the end-user to specifically load these.
-  $value = array();
-  $instance_settings = $instance['settings'];
-
-  if (array_key_exists('auto_attach', $instance_settings) and
-      $instance_settings['auto_attach'] == TRUE) {
-    $items = field_get_items('TripalEntity', $entity, $field_name);
-    for ($i = 0; $i < count($items); $i++) {
-
-      // If the value for this key is an array with an 'entity_id' key then
-      // we want to do a substitution.
-      if (array_key_exists('entity_id', $items[$i]) and $items[$i]['entity_id']) {
-        $lentity = entity_load($items[$i]['entity_type'], array($items[$i]['entity_id']));
-        $lentity = reset($lentity);
-        $lterm = tripal_load_term_entity(array('term_id' => $lentity->term_id));
-        $lvocab = tripal_load_vocab_entity(array('vocab_id' => $lterm->vocab_id));
-        $value[] = array(
-          '@id'   => $api_url . '/content/' . $lterm->name . '/' . $items[0]['entity_id'],
-          '@type' => $lvocab->vocabulary . ':' . $lterm->accession,
-          'label' => $lentity->title,
-          'type' => $lterm->name,
-        );
-
-        if (property_exists($lvocab, 'vocabulary') and !array_key_exists($lvocab->vocabulary, $response['@context'])) {
-          $lterm_details = tripal_get_term_details($lvocab->vocabulary, $lterm->vocabulary);
-          if ($lterm_details) {
-            $context[$lvocab->vocabulary] = $lterm_details->url;
-          }
+  // If we only have one value then set the response with just the value.
+  if (count($values) == 1) {
+    // If the value is an array and this is the field page then all of those
+    // key/value pairs should be added directly to the response.
+    if (is_array($values[0])) {
+      if ($is_field_page) {
+        foreach ($values[0] as $k => $v) {
+          $response[$k] = $v;
         }
       }
       else {
-        $value[] = $items[$i]['value'];
+        $response[$key] = $values[0];
       }
     }
-  }
-  // If the value shouldn't be attached by default then create a link for the
-  // caller to retrieve the information.
-  else {
-    $context['terms'][$key]['@type'] = '@id';
-    $value[] = $api_url . '/content/' . $ctype . '/' . $entity->id . '/' . urlencode($key);
-  }
-  // Convert a single value to not be an array.
-  if (count($value) == 1) {
-    $value = $value[0];
+    // If the value is not an array it's a scalar so add it as is to the
+    // response.
+    else {
+      $response[$key] = $values[0];
+    }
   }
 
-  return array(
-    'context' => $context,
-    'value' => array(
-      $key => $value
-    ),
-  );
+  // If we have more than one value then set the response to be a collection.
+  if (count($values) > 1) {
+
+    // If this is the field page then the Collection is added directly to the
+    // response, otherwise, it's added under the field $key.
+    if ($is_field_page) {
+      $response['@type'] = 'Collection';
+      $response['totalItems'] = count($values);
+      $response['label'] = $instance['label'];
+      $response['member'] = $values;
+    }
+    else {
+      $response[$key] = array(
+        '@type' => 'Collection',
+        'totalItems' => count($values),
+        'label' => $instance['label'],
+        'member' => $values,
+      );
+    }
+  }
 }
 
+/**
+ *
+ */
+function tripal_ws_get_content_add_field_context(&$items, &$response, $api_url) {
+
+  foreach ($items as $key => $value) {
+    if (is_array($value)) {
+      tripal_ws_get_content_add_field_context($items[$key], $response, $api_url);
+      continue;
+    }
+
+    if ($key == 'entity') {
+      list($item_etype, $item_eid) = explode(':', $items['entity']);
+      if ($item_eid) {
+        $item_entity = tripal_load_entity($item_etype, array($item_eid));
+        $item_entity = reset($item_entity);
+        $item_term = tripal_load_term_entity(array('term_id' => $item_entity->term_id));
+        $items['@id'] = $api_url . '/content/' . $item_term->name . '/' . $item_eid;
+      }
+      unset($items['entity']);
+    }
+  }
+}
 
 /**
  * Provides the Hydra compatible apiDocumentation page that describes this API.

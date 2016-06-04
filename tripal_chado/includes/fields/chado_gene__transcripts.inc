@@ -187,13 +187,13 @@ class chado_gene__transcripts extends TripalField {
 
       // Get the field values
       $feature_name = $transcript['name'];
-      $feature_uname = $transcript['unique name'];
+      $feature_uname = $transcript['identifier'];
       $loc = $transcript['location'];
       $type = $transcript['type'];
 
       // Add a link i there is an entity.
-      if (array_key_exists('entity_id', $item) and $item['entity_id']) {
-        $entity_id = $item['entity_id'];
+      if (array_key_exists('entity', $item['value']) and $item['value']['entity']) {
+        list($entity_type, $entity_id) = explode(':', $item['value']['entity']);
         $feature_name = l($feature_name, "bio_data/" . $entity_id, array('attributes' => array('target' => "_blank")));
       }
       $rows[] = array($feature_name, $feature_uname, $type, $loc);
@@ -251,7 +251,7 @@ class chado_gene__transcripts extends TripalField {
      $transcripts =  $rels['object']['part of']['mRNA'];
     }
 
-    $headers = array('Feature Name' ,'Unique Name', 'Location');
+    $headers = array('Name' ,'Identifier', 'Location');
     $rows = array();
     $i = 0;
     foreach ($transcripts as $transcript) {
@@ -265,17 +265,23 @@ class chado_gene__transcripts extends TripalField {
       }
       $type = $transcript->record->subject_id->type_id;
       $entity->{$field_name}['und'][$i]['value'] = array(
-        '@type' => $type->dbxref_id->db_id->name . ":" . $type->dbxref_id->accession,
         'type' => $type->name,
         'name' => $feature_name,
-        'unique name' => $transcript->record->subject_id->uniquename,
+        'identifier' => $transcript->record->subject_id->uniquename,
         'location' => $loc,
 
       );
+      // Add in the semantic web information that describes each key in the
+      // value array.
+      $entity->{$field_name}['und'][$i]['semantic_web'] = array(
+        'type' => $type->dbxref_id->db_id->name . ":" . $type->dbxref_id->accession,
+        'name' => tripal_get_chado_semweb_term('cvterm', 'name'),
+        'identifier' => tripal_get_chado_semweb_term('feature', 'uniquename'),
+        'location' => '',
+      );
       if (property_exists($transcript->record->subject_id, 'entity_id')) {
         $entity_id = $transcript->record->subject_id->entity_id;
-        $entity->{$field_name}['und'][$i]['entity_id'] = $entity_id;
-        $entity->{$field_name}['und'][$i]['entity_type'] = 'TripalEntity';
+        $entity->{$field_name}['und'][$i]['value']['entity'] = 'TripalEntity:' . $entity_id;
       }
       $i++;
     }
