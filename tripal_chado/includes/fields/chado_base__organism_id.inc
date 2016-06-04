@@ -94,7 +94,7 @@ class chado_base__organism_id extends TripalField {
       'settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'organism_id',
-        'semantic_web' => 'local:organism',
+        'semantic_web' => tripal_get_chado_semweb_term($table_name, 'organism_id'),
       ),
     );
   }
@@ -316,8 +316,6 @@ class chado_base__organism_id extends TripalField {
       'colgroups'  => array(),
       'empty'      => 'There are no tokens',
     );
-    $project_details = theme('table', $table_vars);
-
     $element['tokens']['list'] = array(
       '#type' => 'item',
       '#markup' => theme_table($table_vars),

@@ -386,7 +386,7 @@ class TripalField {
    *   to the user.
    *
    */
-  public function formatterSettingsSummary($field, $instance, $view_mode) {
+  public static function formatterSettingsSummary($field, $instance, $view_mode) {
 
   }
 
@@ -413,7 +413,7 @@ class TripalField {
    * @return
    *   A Drupal Form array containing the settings form for this field.
    */
-  public function formatterSettingsForm($field, $instance,
+  public static function formatterSettingsForm($field, $instance,
       $view_mode, $form, &$form_state) {
 
   }

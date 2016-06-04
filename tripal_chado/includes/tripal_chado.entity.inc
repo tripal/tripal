@@ -278,7 +278,7 @@ function tripal_chado_tripal_default_title_format($entity, $available_tokens) {
   // For organism titles  we want the genus and species with no comma separation.
   if ($table == 'organism') {
     $format[] = array(
-      'format' => '[organism.genus] [organism.species]',
+      'format' => '[organism__genus] [organism__species]',
       'weight' => -5
     );
   }

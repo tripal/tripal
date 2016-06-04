@@ -72,6 +72,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   // Load the bundle entity so we can get information about which Chado
   // table/field this entity belongs to.
   $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
+
   $bundle_id = $bundle->id;
   $table = tripal_get_bundle_variable('chado_table', $bundle_id);
   $column = tripal_get_bundle_variable('chado_type_column', $bundle_id);

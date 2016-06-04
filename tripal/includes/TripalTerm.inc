@@ -25,10 +25,12 @@ class TripalTerm extends Entity {
       $function = $module . '_vocab_get_term';
       if (function_exists($function)) {
         $term_details = $function($vocab->vocabulary, $this->accession);
-        $this->details = $term_details;
-        if ($term_details and $term_details['definition']) {
-          $this->definition = $term_details['definition'];
-          $this->url = $term_details['url'];
+        if ($term_details) {
+          $this->details = $term_details;
+          if ($term_details and $term_details['definition']) {
+            $this->definition = $term_details['definition'];
+            $this->url = $term_details['url'];
+          }
         }
       }
     }

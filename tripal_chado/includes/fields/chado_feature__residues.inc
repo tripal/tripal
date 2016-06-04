@@ -76,7 +76,7 @@ class chado_feature__residues extends TripalField {
       'settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'residues',
-        'semantic_web' => 'SO:0000110',
+        'semantic_web' => tripal_get_chado_semweb_term($table_name, 'residues'),
       ),
     );
   }

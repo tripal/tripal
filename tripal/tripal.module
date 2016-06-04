@@ -108,7 +108,7 @@ function tripal_menu() {
   );
 
   $items['admin/tripal/storage'] = array(
-    'title' => 'Data Storage Settings',
+    'title' => 'Data Storage',
     'description' => t("Tripal is designed to access biological
         data in any data storage back-end.  A storage back-end must have a
         module that can be installed that interfaces with Tripal.  By default
@@ -242,7 +242,30 @@ function tripal_menu() {
     'file path' => drupal_get_path('module', 'tripal'),
   );
 
+  /*
+   * Term Lookup
+   */
+  $items['cv/lookup'] = array(
+    'title' => 'Vocabulary Lookup',
+    'description' => t("Provides a tool to discover controlled vocabularies and their terms used by this site."),
+    'access arguments' => array('access content'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_vocabulary_lookup_form'),
+    'file' => 'includes/tripal.term_lookup.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+    'type' => MENU_NORMAL_ITEM,
+  );
 
+  $items['cv/lookup/%/%'] = array(
+    'title' => 'Vocabulary Lookup',
+    'description' => t("Provides a tool to discover controlled vocabularies and their terms used by this site."),
+    'access arguments' => array('access content'),
+    'page callback' => 'tripal_vocabulary_lookup_term_page',
+    'page arguments' => array(2, 3),
+    'file' => 'includes/tripal.term_lookup.inc',
+    'file path' => drupal_get_path('module', 'tripal'),
+    'type' => MENU_CALLBACK,
+  );
 
   return $items;
 }

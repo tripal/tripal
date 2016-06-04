@@ -153,7 +153,7 @@ class chado_gene__transcripts extends TripalField {
   /**
    * @see TripalField::formatter_settings_summary()
    */
-  public function formatterSettingsSummary($field, $instance,
+  public static function formatterSettingsSummary($field, $instance,
       $view_mode) {
 
   }
@@ -161,7 +161,7 @@ class chado_gene__transcripts extends TripalField {
   /**
    * @see TripalField::formatter_settings_form()
    */
-  public function formatterSettingsForm($field, $instance,
+  public static function formatterSettingsForm($field, $instance,
       $view_mode, $form, &$form_state) {
 
   }
@@ -176,7 +176,7 @@ class chado_gene__transcripts extends TripalField {
     $settings = $display['settings'];
     $record = $entity->chado_record;
 
-    $headers = array('Feature Name', 'Unique Name', 'Type', 'Location');
+    $headers = array('Transcript Name', 'Identifier', 'Type', 'Location');
     $rows = array();
     foreach ($items as $delta => $item) {
 

@@ -320,24 +320,15 @@ function tripal_chado_prepare_chado() {
     //                              Entity Bundles
     /////////////////////////////////////////////////////////////////////////////
 
+    // First, populate the semantic web associations for Chado tables/fields.
+    module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.semweb');
+    tripal_chado_populate_chado_semweb_table();
+
     // Unfortunately, some Chado base tables do not have a type_id, so we must
     // take special action for those tables.  These include: organism and
     // analysis. Until we can find an appropriate controlled vocabulary
     // that is well supported by the community with types for these tables we
     // will have to use in-house terms.
-
-    // Add a term to be used for an inherent 'type_id' for the organism table.
-    tripal_insert_cvterm(array(
-      'id' => 'local:organism',
-      'name' => 'organism',
-      'definition' => 'An individual form of life, such as a bacterium, protist, ' .
-        'fungus, plant, or animal, composed of a single cell or a complex of cells  ' .
-        'in which organelles or organs work together to carry out the various  ' .
-        'processes of life. (American Heritage® Dictionary of the English ' .
-        'Language, Fifth Edition. Copyright © 2011 by Houghton Mifflin ' .
-        'Harcourt Publishing Company).',
-      'cv_name' => 'local',
-    ));
 
     // Add a term to be used for an inherent 'type_id' for the organism table.
     tripal_insert_cvterm(array(
@@ -366,17 +357,6 @@ function tripal_chado_prepare_chado() {
       'definition' => 'An entity (e.g. individual or organization) through ' .
          'whom a person can gain access to information, favors, ' .
          'influential people, and the like.',
-      'cv_name' => 'local',
-    ));
-
-    tripal_insert_cvterm(array(
-      'id' => 'local:md5_checksum',
-      'name' => 'md5_checksum',
-      'definition' => 'The MD5 message-digest algorithm is a widely used ' .
-         'cryptographic hash function producing a 128-bit (16-byte) hash ' .
-         'value, typically expressed in text format as a 32-digit hexadecimal ' .
-         'number. MD5 has been utilized in a wide variety of cryptographic ' .
-         'applications and is also commonly used to verify data integrity (Wikipedia)',
       'cv_name' => 'local',
     ));
 
@@ -417,33 +397,23 @@ function tripal_chado_prepare_chado() {
     module_load_include('inc', 'tripal', 'api/tripal.api');
     module_load_include('inc', 'tripal', 'includes/tripal.admin');
 
-    // Create the 'Organism' entity type. This uses the local:organism term.
+    // Create the 'Organism' entity type. This uses the obi:organism term.
     $error = '';
-    $term = array('name' => 'organism', 'cv_id' => array('name' => 'local'));
-    $cvterm = chado_generate_var('cvterm', $term);
-    if (!tripal_create_bundle('local', 'organism', 'organism', $error)) {
+    if (!tripal_create_bundle('OBI', '0100026', 'organism', $error)) {
       throw new Exception($error);
     }
 
     // Create the 'Analysis' entity type. This uses the local:analysis term.
     $error = '';
-    $term = array('name' => 'analysis', 'cv_id' => array('name' => 'local'));
-    $cvterm = chado_generate_var('cvterm', $term);
     if (!tripal_create_bundle('local', 'analysis', 'analysis', $error)) {
       throw new Exception($error);
     }
 
     // Create the 'Project' entity type. This uses the local:project term.
     $error = '';
-    $term = array('name' => 'project', 'cv_id' => array('name' => 'local'));
-    $cvterm = chado_generate_var('cvterm', $term);
     if (!tripal_create_bundle('local', 'project', 'project', $error)) {
       throw new Exception($error);
     }
-
-    // Finally deal with the semantic web associations.
-    module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.semweb');
-    tripal_chado_populate_chado_semweb_table();
 
     // Set a variable to indicate the site is prepared.
     variable_set('tripal_chado_is_prepared', TRUE);

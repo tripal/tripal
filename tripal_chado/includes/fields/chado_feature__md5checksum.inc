@@ -74,7 +74,7 @@ class chado_feature__md5checksum  extends TripalField {
       'settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'md5checksum',
-        'semantic_web' => 'data:2190',
+        'semantic_web' => tripal_get_chado_semweb_term($table_name, 'md5checksum'),
       ),
     );
   }
@@ -104,7 +104,7 @@ class chado_feature__md5checksum  extends TripalField {
         here, then the downloaded sequence is uncorrupted.',
       'required' => FALSE,
       'settings' => array(
-        'auto_attach' => FALSE,
+        'auto_attach' => TRUE,
       ),
       'widget' => array(
         'type' => 'chado_feature__md5checksum_widget',

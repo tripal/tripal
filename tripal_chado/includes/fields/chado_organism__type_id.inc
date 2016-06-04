@@ -76,7 +76,7 @@ class chado_organism__type_id extends TripalField {
       'settings' => array(
         'chado_table' => 'organism',
         'chado_column' => 'type_id',
-        'semantic_web' => 'local:infraspecific_type',
+        'semantic_web' => tripal_get_chado_semweb_term('organism', 'type_id'),
       ),
     );
   }

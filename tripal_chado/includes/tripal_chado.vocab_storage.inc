@@ -22,25 +22,13 @@ function tripal_chado_vocab_storage_info() {
  * This hook is created by the Tripal module and is not a Drupal hook.
  */
 function tripal_chado_vocab_get_term($vocabulary, $accession) {
-  // Create an empty term array for returning if there is a problem.
-  $empty_term = array(
-    'vocabulary' => $vocabulary,
-    'accession'  => $accession,
-    'name'       => '',
-    'definition' => 'Term is undefined.',
-    'url'  => '',
-    // The following are not required for the returned array but we'll
-    // add these for convenience later when we look at the TripalTerm
-    // objects and these will be there.
-    'cvterm'     => NULL,
-  );
 
   // It's possible that Chado is not available (i.e. it gets renamed
   // for copying) but Tripal has already been prepared and the
   // entities exist.  If this is the case we don't want to run the
   // commands below.
   if (!chado_table_exists('cvterm')) {
-    return $empty_term;
+    return FALSE;
   }
   $match = array(
     'dbxref_id' => array(
@@ -52,24 +40,24 @@ function tripal_chado_vocab_get_term($vocabulary, $accession) {
   );
   $cvterm = chado_generate_var('cvterm', $match);
   if (!$cvterm) {
-    return $empty_term;
+    return FALSE;
   }
   $cvterm = chado_expand_var($cvterm, 'field', 'cvterm.definition');
   $term = array(
-    'vocabulary' => $cvterm->dbxref_id->db_id->name,
+    'vocabulary' => array(
+      'name' => $cvterm->dbxref_id->db_id->name,
+      'description' =>  $cvterm->dbxref_id->db_id->description,
+      'url' => $cvterm->dbxref_id->db_id->url
+    ),
     'accession'  => $cvterm->dbxref_id->accession,
     'name'       => $cvterm->name,
-    'url'        => '',
+    'url'        => tripal_get_dbxref_url($cvterm->dbxref_id),
     'definition' => (isset($cvterm->definition)) ? $cvterm->definition : '',
     // The following are not required for the returned array but we'll
     // add these for convenience later when we look at the TripalTerm
     // objects and these will be there.
     'cvterm'     => $cvterm,
   );
-  if ($cvterm->dbxref_id->db_id->urlprefix) {
-    $term['url'] = $cvterm->dbxref_id->db_id->urlprefix .
-      $cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession;
-  }
   return $term;
 }
 

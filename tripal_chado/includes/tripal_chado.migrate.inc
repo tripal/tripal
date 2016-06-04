@@ -576,8 +576,8 @@ function tripal_chado_migrate_all_types() {
     }
     else if ($table == 'organism') {
       array_push($types, array(
-        'vocabulary' => 'local',
-        'accession' => 'organism',
+        'vocabulary' => 'OBI',
+        'accession' => '0100026',
         'term_name' => 'organism'
       ));
     }

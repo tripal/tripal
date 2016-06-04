@@ -11,12 +11,38 @@ function tripal_chado_populate_chado_semweb_table() {
   }
 
   // Now set defaults!
+  tripal_chado_populate_vocab_EDAM();
+  tripal_chado_populate_vocab_FOAF();
+  tripal_chado_populate_vocab_IAO();
+  tripal_chado_populate_vocab_LOCAL();
+  tripal_chado_populate_vocab_NCBITAXON();
+  tripal_chado_populate_vocab_OBI();
+  tripal_chado_populate_vocab_RDFS();
+  tripal_chado_populate_vocab_SBO();
+  tripal_chado_populate_vocab_SCHEMA();
+  tripal_chado_populate_vocab_SWO();
+  tripal_chado_populate_vocab_TAXRANK();
+}
 
-  //
-  // VOCABUARIES:
+/**
+ * Adds the friend of a friend database and terms.
+ */
+function tripal_chado_populate_vocab_FOAF() {
 
-  // Add in vocabularies of terms that will be used for the semantic web
-  //
+  tripal_insert_cv('foaf','Friend of a Friend');
+  tripal_insert_db(array(
+    'name' => 'foaf',
+    'description' => 'Friend of a Friend',
+    'url' => 'http://www.foaf-project.org/',
+    'urlprefix' => 'http://xmlns.com/foaf/spec/#',
+  ));
+  tripal_insert_cv('foaf','Friend of a Friend. A dictionary of people-related terms that can be used in structured data).');
+}
+
+/**
+ * Adds the RDFS database and terms.
+ */
+function tripal_chado_populate_vocab_RDFS() {
   tripal_insert_db(array(
     'name' => 'rdfs',
     'description' => 'Resource Description Framework Schema',
@@ -24,102 +50,153 @@ function tripal_chado_populate_chado_semweb_table() {
     'urlprefix' => 'https://www.w3.org/TR/rdf-schema/#ch_',
   ));
   tripal_insert_cv('rdfs','Resource Description Framework Schema');
+
   $name = tripal_insert_cvterm(array(
     'id' => 'rdfs:type',
     'name' => 'type',
     'cv_name' => 'rdfs',
-    'definition' => 'rdf:type is an instance of rdf:Property that is used to state that a resource is an instance of a class.',
+    'definition' => 'The type of resource.',
   ));
-
-  tripal_insert_cv('foaf','Friend of a Friend');
-  tripal_insert_db(array(
-    'name' => 'foaf',
-    'description' => 'Friend of a Friend. A dictionary of people-related terms that can be used in structured data).',
-    'url' => 'http://www.foaf-project.org/',
-    'urlprefix' => 'http://xmlns.com/foaf/spec/#',
-  ));
-  tripal_insert_cv('foaf','Friend of a Friend');
-
+}
+/**
+ * Adds the Schema.org database and terms.
+ */
+function tripal_chado_populate_vocab_SCHEMA() {
   tripal_insert_db(array(
     'name' => 'schema',
-    'description' => 'Schema.org. Schema.org is sponsored by Google, Microsoft, Yahoo and Yandex. The vocabularies are developed by an open community process.',
+    'description' => 'Schema.org.',
     'url' => 'https://schema.org/',
-    'urlprefix' => 'https://schema.org/',
+    'urlprefix' => 'https://schema.org/{accession}',
   ));
-  tripal_insert_cv('schema','Schema.org');
-
-  tripal_insert_db(array(
-    'name' => 'TAXRANK',
-    'description' => 'Taxonomic rank vocabulary. A vocabulary of taxonomic ranks (species, family, phylum, etc).',
-    'url' => 'https://github.com/phenoscape/taxrank',
-    'urlprefix' => 'http://purl.obolibrary.org/obo/TAXRANK_',
-  ));
-  tripal_insert_cv('taxrank','Taxonomic rank vocabulary');
-
-  tripal_insert_db(array(
-    'name' => 'NCBITaxon',
-    'description' => 'NCBI organismal classification. An ontology representation of the NCBI organismal taxonomy.',
-    'url' => 'http://www.berkeleybop.org/ontologies/ncbitaxon/',
-    'urlprefix' => 'http://purl.obolibrary.org/obo/ncbitaxon#',
-  ));
-  tripal_insert_cv('ncbitaxon','NCBI organismal classification');
-
-  tripal_insert_db(array(
-    'name' => 'SWO',
-    'description' => 'Software Ontology. An ontology representation of the NCBI organismal taxonomy.',
-    'url' => 'http://theswo.sourceforge.net/',
-    'urlprefix' => '',
-  ));
-  tripal_insert_cv('swo','Software Ontology');
-
-  tripal_insert_db(array(
-    'name' => 'IAO',
-    'description' => 'The Information Artifact Ontology (IAO) is a new ' .
-    'ontology of information entities, originally driven by work by the ' .
-    'OBI digital entity and realizable information entity branch.',
-    'url' => 'https://github.com/information-artifact-ontology/IAO/',
-    'urlprefix' => 'http://purl.obolibrary.org/obo/IAO_',
-  ));
-  tripal_insert_cv('IAO','Information Artifact Ontology');
+  tripal_insert_cv('schema','Schema.org. Schema.org is sponsored by Google, Microsoft, Yahoo and Yandex. The vocabularies are developed by an open community process.');
 
 
-  tripal_insert_db(array(
-    'name' => 'SBO',
-    'description' => 'Systems Biology. Terms commonly used in Systems Biology, and in particular in computational modeling.',
-    'url' => 'http://www.ebi.ac.uk/sbo/main/',
-    'urlprefix' => 'http://purl.obolibrary.org/obo/SBO_',
-  ));
-  tripal_insert_cv('sbo','Systems Biology');
-
-  //
-  // ADD TERMS AND SET TERM DEFAULTS
-  //
-  $name = tripal_insert_cvterm(array(
+  $term = tripal_insert_cvterm(array(
     'id' => 'schema:name',
     'name' => 'name',
     'cv_name' => 'schema',
     'definition' => 'The name of the item.',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'uniquename', $name);
-  tripal_associate_chado_semweb_term(NULL, 'name', $name);
+  tripal_associate_chado_semweb_term(NULL, 'name', $term);
 
-  $alternate_name = tripal_insert_cvterm(array(
+  $term = tripal_insert_cvterm(array(
     'id' => 'schema:alternateName',
     'name' => 'alternateName',
     'cv_name' => 'schema',
-    'definition' => 'The name of the item.',
+    'definition' => 'An alias for the item.',
   ));
 
-  $description = tripal_insert_cvterm(array(
+  $term = tripal_insert_cvterm(array(
     'id' => 'schema:description',
     'name' => 'description',
     'cv_name' => 'schema',
     'definition' => 'A description of the item.',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'description', $description);
+  tripal_associate_chado_semweb_term(NULL, 'description', $term);
 
+  $term = tripal_insert_cvterm(array(
+    'id' => 'schema:comment',
+    'name' => 'comment',
+    'cv_name' => 'schema',
+    'definition' => 'Comments, typically from users.',
+  ));
+  tripal_associate_chado_semweb_term(NULL, 'comment', $term);
+  tripal_associate_chado_semweb_term('pub', 'uniquename', $term);
+}
+/**
+ * Adds the EDAM database and terms.
+ */
+function tripal_chado_populate_vocab_EDAM() {
+  tripal_insert_db(array(
+    'name' => 'data',
+    'description' => 'Bioinformatics operations, data types, formats, identifiers and topics.',
+    'url' => 'http://edamontology.org/page',
+    'urlprefix' => 'http://edamontology.org/{db}_{accession}',
+  ));
+  tripal_insert_db(array(
+    'name' => 'EDAM',
+    'description' => 'Bioinformatics operations, data types, formats, identifiers and topics.',
+    'url' => 'http://edamontology.org/page',
+    'urlprefix' => 'http://edamontology.org/{db}_{accession}',
+  ));
 
-  $definition = tripal_insert_cvterm(array(
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:1249',
+    'name' => 'Sequence length',
+    'cv_name' => 'EDAM',
+    'definition' => 'The size (length) of a sequence, subsequence or region in a sequence, or range(s) of lengths.',
+  ));
+  tripal_associate_chado_semweb_term('feature', 'seqlen', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:2190',
+    'name' => 'Sequence checksum',
+    'cv_name' => 'EDAM',
+    'definition' => 'A fixed-size datum calculated (by using a hash function) for a molecular sequence, typically for purposes of error detection or indexing.',
+  ));
+  tripal_associate_chado_semweb_term('feature', 'md5checksum', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:2091',
+    'name' => 'Accession',
+    'cv_name' => 'EDAM',
+    'definition' => 'A persistent (stable) and unique identifier, typically identifying an object (entry) from a database.',
+  ));
+  tripal_associate_chado_semweb_term(NULL, 'dbxref_id', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:2044',
+    'name' => 'Sequence',
+    'cv_name' => 'EDAM',
+    'definition' => 'One or more molecular sequences, possibly with associated annotation..',
+  ));
+  tripal_associate_chado_semweb_term('feature', 'residues', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'data:0842',
+    'name' => 'Identifier',
+    'cv_name' => 'EDAM',
+    'definition' => 'A text token, number or something else which identifies an entity, but which may not be persistent (stable) or unique (the same identifier may identify multiple things).',
+  ));
+  tripal_associate_chado_semweb_term(NULL, 'uniquename', $term);
+}
+
+/**
+ * Adds the Information Artifact Ontology database and terms.
+ */
+function tripal_chado_populate_vocab_OBI() {
+  tripal_insert_db(array(
+    'name' => 'OBI',
+    'description' => 'The Ontology for Biomedical Investigation.',
+    'url' => 'http://obi-ontology.org/page/Main_Page',
+    'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
+  ));
+  tripal_insert_cv('obi','Ontology for Biomedical Investigation. The Ontology for Biomedical Investigations (OBI) is build in a collaborative, international effort and will serve as a resource for annotating biomedical investigations, including the study design, protocols and instrumentation used, the data generated and the types of analysis performed on the data. This ontology arose from the Functional Genomics Investigation Ontology (FuGO) and will contain both terms that are common to all biomedical investigations, including functional genomics investigations and those that are more domain specific.');
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'OBI:0100026',
+    'name' => 'organism',
+    'cv_name' => 'obi',
+    'definition' => 'A material entity that is an individual living system, such as animal, plant, bacteria or virus, that is capable of replicating or reproducing, growth and maintenance in the right environment. An organism may be unicellular or made up, like humans, of many billions of cells divided into specialized tissues and organs.',
+  ));
+  tripal_associate_chado_semweb_term(NULL, 'organism_id', $term);
+}
+/**
+ * Adds the Information Artifact Ontology database and terms.
+ */
+function tripal_chado_populate_vocab_IAO() {
+
+  tripal_insert_db(array(
+    'name' => 'IAO',
+    'description' => 'The Information Artifact Ontology (IAO).',
+    'url' => 'https://github.com/information-artifact-ontology/IAO/',
+    'urlprefix' => 'http://purl.obolibrary.org/obo/IAO_',
+  ));
+  tripal_insert_cv('IAO','Information Artifact Ontology  is a new ' .
+      'ontology of information entities, originally driven by work by the ' .
+      'OBI digital entity and realizable information entity branch.');
+
+  $term = tripal_insert_cvterm(array(
     'id' => 'IAO:0000115',
     'name' => 'definition',
     'cv_name' => 'iao',
@@ -127,70 +204,7 @@ function tripal_chado_populate_chado_semweb_table() {
       'a class or property. Shall be Aristotelian, formalized and normalized. ' .
       'Can be augmented with colloquial definitions.',
   ));
-  tripal_associate_chado_semweb_term(NULL, 'definition', $definition);
-
-  $comment = tripal_insert_cvterm(array(
-    'id' => 'schema:comment',
-    'name' => 'comment',
-    'cv_name' => 'schema',
-    'definition' => 'Comments, typically from users.',
-  ));
-  tripal_associate_chado_semweb_term(NULL, 'comment', $comment);
-
-  $time_last_modified = tripal_insert_cvterm(array(
-    'id' => 'local:timelastmodified',
-    'name' => 'time_last_modified',
-    'cv_name' => 'local',
-    'definition' => 'The time at which a record for an item was first added.',
-  ));
-  tripal_associate_chado_semweb_term(NULL, 'timelastmodified', $time_last_modified);
-
-
-  $time_accessioned = tripal_insert_cvterm(array(
-    'id' => 'local:timeaccessioned',
-    'name' => 'time_accessioned',
-    'cv_name' => 'local',
-    'definition' => 'The time at which a record for an item was last upated or modified.',
-  ));
-  tripal_associate_chado_semweb_term(NULL, 'timeaccessioned', $time_accessioned);
-
-  $time_executed = tripal_insert_cvterm(array(
-    'id' => 'local:timeexecuted',
-    'name' => 'time_executed',
-    'cv_name' => 'local',
-    'definition' => 'The time at which a task was executed.',
-  ));
-  tripal_associate_chado_semweb_term(NULL, 'timeaccessioned', $time_executed);
-
-  $dbxref = tripal_insert_cvterm(array(
-    'id' => 'SBO:0000554',
-    'name' => 'database cross reference',
-    'cv_name' => 'sbo',
-    'definition' => 'An annotation which directs one to information contained within a database.',
-  ));
-
-  $relationship = tripal_insert_cvterm(array(
-    'id' => 'SBO:0000374',
-    'name' => 'relationship',
-    'cv_name' => 'sbo',
-    'definition' => 'connectedness between entities and/or interactions representing their relatedness or influence. [ src_code:NR ]',
-  ));
-
-  //
-  // ANALYSIS TABLE
-  //
-  $term = tripal_insert_cvterm(array(
-    'id' => 'SWO:0000001',
-    'name' => 'software',
-    'cv_name' => 'schema',
-    'definition' => 'Computer software, or generally just software, is any ' .
-      'set of machine-readable instructions (most often in the form of a ' .
-      'computer program) that conform to a given syntax (sometimes ' .
-      'referred to as a language) that is interpretable by a given ' .
-      'processor and that directs a computer\'s processor to perform ' .
-      'specific operations.',
-  ));
-  tripal_associate_chado_semweb_term('analysis', 'program', $term);
+  tripal_associate_chado_semweb_term(NULL, 'definition', $term);
 
   $term = tripal_insert_cvterm(array(
     'id' => 'IAO:0000129',
@@ -211,39 +225,198 @@ function tripal_chado_populate_chado_semweb_table() {
     'definition' => 'An algorithm is a set of instructions for performing a paticular calculation.',
   ));
   tripal_associate_chado_semweb_term('analysis', 'algorithm', $term);
+}
 
-  //
-  // ORGANISM TABLE
-  //
+/**
+ * Adds terms to the 'local' database.
+ *
+ * These are terms where an appropriate match could not be found in any other
+ * ontology.
+ */
+function tripal_chado_populate_vocab_LOCAL() {
+  tripal_insert_db(array(
+    'name' => 'local',
+    'description' => 'Terms created for this site.',
+    'url' => '/cv/lookup',
+    'urlprefix' => '/cv/lookup/{db}/{accession}',
+  ));
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'local:timelastmodified',
+    'name' => 'time_last_modified',
+    'cv_name' => 'local',
+    'definition' => 'The time at which the record was last modified.',
+  ));
+  tripal_associate_chado_semweb_term(NULL, 'timelastmodified', $term);
+
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'local:timeaccessioned',
+    'name' => 'time_accessioned',
+    'cv_name' => 'local',
+    'definition' => 'The time at which the record was first added.',
+  ));
+  tripal_associate_chado_semweb_term(NULL, 'timeaccessioned', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'local:timeexecuted',
+    'name' => 'time_executed',
+    'cv_name' => 'local',
+    'definition' => 'The time when the task was executed.',
+  ));
+  tripal_associate_chado_semweb_term(NULL, 'timeexecuted', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'local:infraspecific_type',
+    'name' => 'infraspecific_type',
+    'definition' => 'The connector type (e.g. subspecies, varietas, forma, etc.) for the infraspecific name',
+    'cv_name' => 'local',
+  ));
+  tripal_associate_chado_semweb_term('organism', 'type_id', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'local:abbreviation',
+    'name' => 'abbreviation',
+    'cv_name' => 'local',
+    'definition' => 'A shortened name (or abbreviation) for the item.'
+  ));
+  tripal_associate_chado_semweb_term('organism', 'abbreviation', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'local:expression',
+    'name' => 'expression',
+    'definition' => 'Curated expression data',
+    'cv_name' => 'local',
+  ));
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'local:is_analysis',
+    'name' => 'is_analysis',
+    'definition' => 'Indicates if this feature was predicted computationally using another feature.',
+    'cv_name' => 'local',
+  ));
+  tripal_associate_chado_semweb_term('feature', 'is_analysis', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'local:is_obsolete',
+    'name' => 'is_obsolete',
+    'definition' => 'Indicates if this record is obsolete.',
+    'cv_name' => 'local',
+  ));
+  tripal_associate_chado_semweb_term(NULL, 'is_obsolete', $term);
+
+}
+/**
+ * Adds the Systems Biology Ontology database and terms.
+ */
+function tripal_chado_populate_vocab_SBO() {
+  tripal_insert_db(array(
+    'name' => 'SBO',
+    'description' => 'Systems Biology.',
+    'url' => 'http://www.ebi.ac.uk/sbo/main/',
+    'urlprefix' => 'http://purl.obolibrary.org/obo/{db}_{accession}',
+  ));
+  tripal_insert_cv('sbo','Systems Biology.  Terms commonly used in Systems Biology, and in particular in computational modeling.');
+
+  $dbxref = tripal_insert_cvterm(array(
+    'id' => 'SBO:0000358',
+    'name' => 'phenotype',
+    'cv_name' => 'sbo',
+    'definition' => 'A biochemical network can generate phenotypes or affects biological processes. Such processes can take place at different levels and are independent of the biochemical network itself.',
+  ));
+
+  $dbxref = tripal_insert_cvterm(array(
+    'id' => 'SBO:0000554',
+    'name' => 'database cross reference',
+    'cv_name' => 'sbo',
+    'definition' => 'An annotation which directs one to information contained within a database.',
+  ));
+
+  $relationship = tripal_insert_cvterm(array(
+    'id' => 'SBO:0000374',
+    'name' => 'relationship',
+    'cv_name' => 'sbo',
+    'definition' => 'connectedness between entities and/or interactions representing their relatedness or influence. [ src_code:NR ]',
+  ));
+}
+
+/**
+ * Adds the Software Ontology database and terms.
+ */
+function tripal_chado_populate_vocab_SWO() {
+  tripal_insert_db(array(
+    'name' => 'SWO',
+    'description' => 'Software Ontology',
+    'url' => 'http://theswo.sourceforge.net/',
+    'urlprefix' => '',
+  ));
+  tripal_insert_cv('swo','Software Ontology. An ontology representation of the NCBI organismal taxonomy.');
+
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'SWO:0000001',
+    'name' => 'software',
+    'cv_name' => 'schema',
+    'definition' => 'Computer software, or generally just software, is any ' .
+      'set of machine-readable instructions (most often in the form of a ' .
+      'computer program) that conform to a given syntax (sometimes ' .
+      'referred to as a language) that is interpretable by a given ' .
+      'processor and that directs a computer\'s processor to perform ' .
+      'specific operations.',
+  ));
+  tripal_associate_chado_semweb_term('analysis', 'program', $term);
+}
+
+/**
+ * Adds the Taxonomic Rank Ontology database and terms.
+ */
+function tripal_chado_populate_vocab_TAXRANK() {
+  tripal_insert_db(array(
+    'name' => 'TAXRANK',
+    'description' => 'Taxonomic rank vocabulary.',
+    'url' => 'https://github.com/phenoscape/taxrank',
+    'urlprefix' => 'http://purl.obolibrary.org/obo/TAXRANK_',
+  ));
+  tripal_insert_cv('taxrank','Taxonomic rank vocabulary. A vocabulary of taxonomic ranks (species, family, phylum, etc).');
+
+
   $term = tripal_insert_cvterm(array(
     'id' => 'TAXRANK:0000005',
     'name' => 'genus',
-    'cv_name' => 'taxrank',
+    'cv_name' => 'taxonomic_rank',
+    'description' => 'Taxonomic rank of Genus'
   ));
   tripal_associate_chado_semweb_term('organism', 'genus', $term);
 
   $term = tripal_insert_cvterm(array(
     'id' => 'TAXRANK:0000006',
     'name' => 'species',
-    'cv_name' => 'taxrank',
+    'cv_name' => 'taxonomic_rank',
+    'description' => 'Taxonomic rank of species.'
   ));
   tripal_associate_chado_semweb_term('organism', 'species', $term);
 
   $term = tripal_insert_cvterm(array(
     'id' => 'TAXRANK:0000045',
     'name' => 'infraspecies',
-    'cv_name' => 'taxrank',
+    'cv_name' => 'taxonomic_rank',
+    'description' => 'Taxonomic infraspecies name.'
   ));
   tripal_associate_chado_semweb_term('organism', 'infraspecific_name', $term);
+}
 
-
-  $term = tripal_insert_cvterm(array(
-    'id' => 'local:infraspecific_type',
-    'name' => 'infraspecific_type',
-    'definition' => 'The connector type for the infraspecific name',
-    'cv_name' => 'local',
+/**
+ * Adds the NCBI Taxon vocabulary database and terms.
+ */
+function tripal_chado_populate_vocab_NCBITAXON() {
+  tripal_insert_db(array(
+    'name' => 'NCBITaxon',
+    'description' => 'NCBI organismal classification.',
+    'url' => 'http://www.berkeleybop.org/ontologies/ncbitaxon/',
+    'urlprefix' => 'http://purl.obolibrary.org/obo/ncbitaxon#',
   ));
-  tripal_associate_chado_semweb_term('organism', 'type_id', $term);
+  tripal_insert_cv('ncbitaxon','NCBI organismal classification. An ontology representation of the NCBI organismal taxonomy.');
+
 
   $term = tripal_insert_cvterm(array(
     'id' => 'NCBITaxon:common_name',
@@ -251,31 +424,6 @@ function tripal_chado_populate_chado_semweb_table() {
     'cv_name' => 'ncbitaxon',
   ));
   tripal_associate_chado_semweb_term('organism', 'common_name', $term);
-
-  $term = tripal_insert_cvterm(array(
-    'id' => 'local:abbreviation',
-    'name' => 'abbreviation',
-    'cv_name' => 'local',
-  ));
-  tripal_associate_chado_semweb_term('organism', 'abbreviation', $term);
-
-  //
-  // FEATURE TABLE
-  //
-  tripal_associate_chado_semweb_term('feature', 'name', $alternate_name);
-
-  //
-  // PUB TABLE
-  //
-  tripal_associate_chado_semweb_term('pub', 'uniquename', $comment);
-
-
-  //
-  // STOCK TABLE
-  //
-  tripal_associate_chado_semweb_term('stock', 'name', $alternate_name);
-
-
 }
 
 /**
@@ -290,7 +438,7 @@ function tripal_chado_semweb_form($form, &$form_state, $chado_table = NULL) {
   $chado_tables = array_merge(array('Select a Chado Table'), $chado_tables);
   // Make sure the table name exists. If not, reset it.
   $chado_table = in_array($chado_table, $chado_tables) ? $chado_table: NULL;
-  
+
   $form['chado_table'] = array(
     '#type' => 'select',
     '#title' => 'Chado Table',
@@ -310,7 +458,7 @@ function tripal_chado_semweb_form($form, &$form_state, $chado_table = NULL) {
   if ($chado_table) {
     $schema = chado_get_schema($chado_table);
     $pk = $schema['primary key'][0];
-    $cv_default = 
+    $cv_default =
       db_select('tripal_cv_defaults', 'tc')
       ->fields('tc', array('field_name'))
       ->condition('table_name', $chado_table)
@@ -322,7 +470,7 @@ function tripal_chado_semweb_form($form, &$form_state, $chado_table = NULL) {
     foreach ($columns AS $column => $detail) {
       // Do not show column if it's the primary key or default cv
       if ($column != $pk && $column != $cv_default) {
-        $cvterm_id = 
+        $cvterm_id =
           db_select('chado_semweb', 'cs')
           ->fields('cs', array('cvterm_id'))
           ->condition('chado_table', $chado_table)
@@ -372,7 +520,7 @@ function tripal_chado_semweb_form($form, &$form_state, $chado_table = NULL) {
 /**
  * Implements hook_form()
  * Edit terms used by the semantic web
- * 
+ *
  * @param $form
  * @param $form_state
  * @param $table
@@ -380,7 +528,7 @@ function tripal_chado_semweb_form($form, &$form_state, $chado_table = NULL) {
  * @return $form
  */
 function tripal_chado_semweb_edit_form($form, &$form_state, $table = NULL, $column = NULL) {
-  
+
   $term_name = array_key_exists('values', $form_state) ? $form_state['values']['term_name'] : '';
 
   $form['chado_table'] = array(
@@ -465,7 +613,7 @@ function tripal_chado_semweb_edit_form($form, &$form_state, $table = NULL, $colu
       '#name' => 'use_cvterm'
     );
   }
-  
+
   $form['cancel_button'] = array(
     '#type' => 'button',
     '#value' => t('Cancel'),
@@ -533,14 +681,14 @@ function tripal_chado_semweb_edit_form_submit($form, &$form_state) {
         $column = $form_state['values']['column'];
         $cvterm_id = $form_state['values']['#selected_cvterm_id'];
         // Check if there is already a record
-        $record_id = 
+        $record_id =
           db_select('chado_semweb', 'cs')
           ->fields('cs', array('chado_semweb_id'))
           ->condition('chado_table', $table_name)
           ->condition('chado_column', $column)
           ->execute()
           ->fetchField();
-        
+
         // If the record exists, update it
         if ($record_id) {
           db_update('chado_semweb')
@@ -591,28 +739,28 @@ function tripal_chado_semweb_reset_form($form, &$form_state, $table = NULL, $col
     '#type' => 'value',
     '#value' => $column
   );
-  
+
   $form['submit_button'] = array(
     '#type' => 'submit',
     '#value' => t('Reset'),
     '#name' => 'reset_term'
   );
-  
+
   $form['cancel_button'] = array(
     '#type' => 'button',
     '#value' => t('Cancel'),
     '#name' => 'cancel_button',
     '#limit_validation_errors' => array()
   );
-  
+
   return $form;
 }
 
 /**
  * Implements hook_form_validate()
- * 
+ *
  * Validate function for resetting the semantic web term
- * 
+ *
  * @param unknown $form
  * @param unknown $form_state
  */

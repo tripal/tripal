@@ -274,19 +274,49 @@ function tripal_form_tripal_entity_form_alter(&$form, &$form_state, $form_id) {
  * Here we want to overwite unattached fields with a div box that will be
  * recognized by JavaScript that will then use AJAX to load the field.
  *
+ * We also want to add tooltips to each field that describes to the user
+ * the meaning of the field.
+ *
  * The tripal_ajax_attach_field() function is called by an AJAX call to
  * retrieve the field.
  */
 function tripal_entity_view($entity, $type, $view_mode, $langcode) {
   if ($type == 'TripalEntity') {
     foreach (element_children($entity->content) as $child_name) {
+
+      // Initailize the prefix and suffix for this field.
+      if (!array_key_exists('#prefix', $entity->content[$child_name])) {
+        $entity->content[$child_name]['#prefix'] = '';
+      }
+      if (!array_key_exists('#suffix', $entity->content[$child_name])) {
+        $entity->content[$child_name]['#suffix'] = '';
+      }
+
+      // Surround the field with a <div> box for AJAX loading if this
+      // field is unattached.  this will allow JS code to automatically load
+      // the field.
       $child = $entity->content[$child_name];
       if (array_key_exists('#items', $child) and
           array_key_exists('0', $child['#items']) and
           array_key_exists('#unattached', $child['#items'][0])
           and $child['#items'][0]['#unattached'] === TRUE) {
-        $entity->content[$child_name]['#prefix'] = '<div id="tripal-entity-' . $entity->id . '--' . $child_name . '" class="tripal-entity-unattached">';
-        $entity->content[$child_name]['#suffix'] = '</div>';
+        $entity->content[$child_name]['#prefix'] .= '<div id="tripal-entity-' . $entity->id . '--' . $child_name . '" class="tripal-entity-unattached">';
+        $entity->content[$child_name]['#suffix'] .= '</div>';
+      }
+
+      // Add a tooltip to the field.
+      $field = field_info_field($child_name);
+      if (array_key_exists('settings', $field) and
+          array_key_exists('semantic_web', $field['settings'])) {
+        list($vocabulary, $accession) = explode(':', $field['settings']['semantic_web']);
+        $term = tripal_get_term_details($vocabulary, $accession);
+        if ($term) {
+          $entity->content[$child_name]['#prefix'] .= '' .
+            '<div class="tripal-tooltip">' .
+              '<img src="' . url(drupal_get_path('module', 'tripal') . '/theme/images/info.gif') . '">' .
+              '<div class="tripal-tooltiptext">' . $term['definition'] . '</div>' .
+            '</div>';
+        }
       }
     }
   }

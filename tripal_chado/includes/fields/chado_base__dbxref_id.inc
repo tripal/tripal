@@ -71,6 +71,7 @@ class chado_base__dbxref_id extends TripalField {
     $cv_id      = $this->details['chado_cv_id'];
     $cvterm_id  = $this->details['chado_cvterm_id'];
 
+
     return array(
       'field_name' => $this->field_name,
       'type' => 'chado_base__dbxref_id',
@@ -82,7 +83,7 @@ class chado_base__dbxref_id extends TripalField {
       'settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'dbxref_id',
-        'semantic_web' => 'data:2091',
+        'semantic_web' => tripal_get_chado_semweb_term($table_name, 'dbxref_id'),
       ),
     );
   }
@@ -160,9 +161,6 @@ class chado_base__dbxref_id extends TripalField {
     foreach ($items as $delta => $item) {
       if ($item['value']) {
         $content = $item['value']['vocabulary'] . ':' . $item['value']['accession'];
-        if ($item['value']['URL']) {
-          $content = l($item['value']['URL'], $item['value']['URL']);
-        }
         $element[$delta] = array(
           '#type' => 'markup',
           '#markup' => $content,
@@ -334,16 +332,11 @@ class chado_base__dbxref_id extends TripalField {
     if ($record->$field_column) {
       $dbxref = $record->$field_column;
       $value = $dbxref->db_id->name . ':' . $dbxref->accession;
-      $URL = '';
-      if ($dbxref->db_id->urlprefix) {
-        $URL = l($value, $dbxref->db_id->urlprefix . '/' . $dbxref->accession);
-      }
-
       $entity->{$field_name}['und'][0] = array(
         'value' => array(
           'vocabulary' => $dbxref->db_id->name,
           'accession' => $dbxref->accession,
-          'URL' => $URL,
+          'URL' => tripal_get_dbxref_url($dbxref),
         ),
         $field_table . '__' . $field_column => $record->$field_column->$field_column,
         $field_table . '__' . $field_column . '--dbxref_id'   => $dbxref->dbxref_id,

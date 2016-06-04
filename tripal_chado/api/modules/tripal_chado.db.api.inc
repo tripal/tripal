@@ -280,6 +280,50 @@ function tripal_get_dbxref($identifiers, $options = array()) {
 }
 
 /**
+ * Generates a URL for the controlled vocabulary term.
+ *
+ * If the URL and URL prefix are provided for the database record of a cvterm
+ * then a URL can be created for the term.  By default, the db.name and
+ * dbxref.accession are concatenated and appended to the end of the db.urlprefix.
+ * But Tripal supports the use of {db} and {accession} tokens when if present
+ * in the db.urlprefix string will be replaced with the db.name and
+ * dbxref.accession respectively.
+ *
+ * @param $dbxref
+ *   A dbxref object as created by the chado_generate_var() function.
+ *
+ * @return
+ *   A string containing the URL.
+ */
+function tripal_get_dbxref_url($dbxref) {
+  $final_url = '';
+
+  // Create the URL for the term.
+  if ($dbxref->db_id->urlprefix) {
+    $db_count = 0;
+    $acc_count = 0;
+    $url = $dbxref->db_id->urlprefix;
+
+    // If the URL prefix has replacement tokens then use those.
+    $url = preg_replace('/\{db\}/', $dbxref->db_id->name, $url, -1, $db_count);
+    $url = preg_replace('/\{accession\}/', $dbxref->accession, $url, -1, $acc_count);
+    $final_url = $url;
+
+    // If no replacements were made above then tokens weren't used and we can
+    // default to just appending the db name and accession to the end.
+    if (!$db_count and !$acc_count) {
+      $final_url .= $dbxref->db_id->name . ':' . $dbxref->accession;
+    }
+
+    // If the URL prefix is relative then convert it to a full URL.
+    if (!preg_match('/^(http|https)/', $final_url)) {
+      $final_url = url($final_url, array('absolute' => TRUE));
+    }
+  }
+  return $final_url;
+}
+
+/**
  * Adds a new database to the Chado DB table and returns the DB object.
  *
  * @param $values

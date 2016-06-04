@@ -368,8 +368,6 @@ function tripal_ws_get_content_type($api_url, &$response, $ws_path, $ctype, $par
   $response['totalItems'] = 0;
   $response['label'] = $bundle->label . " collection";
 
-
-
   // Organize the fields by their web service names.
   $fields = field_info_fields();
   $field_ws_names = array();
@@ -475,7 +473,8 @@ function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_i
 
   // Next add in the ID and Type for this resources.
   $response['@id'] = $api_url . '/content/' . $ctype . '/' . $entity_id;
-  $response['@type'] = $vocab->vocabulary . ':' . $term->accession;
+  $response['@type'] = $term->name;
+  $context_terms[$term->name] = $term->url;
   $response['label'] = $entity->title;
   $response['itemPage'] = url('/bio_data/' . $entity->id, array('absolute' => TRUE));
 
@@ -499,6 +498,11 @@ function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_i
   //$response['fields'] = $fields;
   foreach ($instances as $field_name => $instance) {
 
+    // Ignore the content_type field provided by Tripal.
+    if ($field_name == 'content_type') {
+      continue;
+    }
+
     // Skip hidden fields.
     if ($instance['display']['default']['type'] == 'hidden') {
       continue;
@@ -509,8 +513,8 @@ function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_i
     $field = field_info_field($field_name);
 
     // Get the details for this field for the JSON-LD response.
-    $details = tripal_ws_get_field_JSON_LD($field, $instance);
-    print_r($details);
+    $details = tripal_ws_get_field_JSON_LD($entity, $field, $instance, $api_url, $ctype);
+    //print_r($details);
     $context_vocabs += $details['context']['vocabs'];
     $context_terms += $details['context']['terms'];
     $response += $details['value'];
@@ -536,7 +540,7 @@ function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_i
 /**
  *
  */
-function tripal_ws_get_field_JSON_LD($field, $instance) {
+function tripal_ws_get_field_JSON_LD($entity, $field, $instance, $api_url, $ctype) {
 
   // Initialized the context array.
   $context = array();
@@ -551,12 +555,19 @@ function tripal_ws_get_field_JSON_LD($field, $instance) {
   // term from the vocabulary that the field is assigned. But in the
   // case that the field is not assigned a term, we must use the field name.
   $key = $field_name;
+  $key = strtolower(preg_replace('/ /', '_', $key));
   if (array_key_exists('semantic_web', $field_settings) and $field_settings['semantic_web']) {
     list($vocabulary, $accession) = explode(':', $field_settings['semantic_web']);
     $term = tripal_get_term_details($vocabulary, $accession);
-    $key = $term['name'];
-    $context['vocabs'][$vocabulary] = $term['url'];
-    $context['terms'][$key] = $field_settings['semantic_web'];
+    if ($term) {
+      $key = $term['name'];
+      $key = strtolower(preg_replace('/ /', '_', $key));
+      //$context['vocabs'][$vocabulary] = ;
+      $context['terms'][$key] = array(
+        '@id' => $term['url'],
+//        $field_settings['semantic_web'];
+      );
+    }
   }
 
   // Don't show fields that are not meant to be auto attached, even if the
@@ -564,9 +575,9 @@ function tripal_ws_get_field_JSON_LD($field, $instance) {
   // We want the end-user to specifically load these.
   $value = array();
   $instance_settings = $instance['settings'];
-  if (array_key_exists('auto_attach', $instance_settings) and
-      $instance_settings['auto_attach'] === TRUE) {
 
+  if (array_key_exists('auto_attach', $instance_settings) and
+      $instance_settings['auto_attach'] == TRUE) {
     $items = field_get_items('TripalEntity', $entity, $field_name);
     for ($i = 0; $i < count($items); $i++) {
 
@@ -586,7 +597,9 @@ function tripal_ws_get_field_JSON_LD($field, $instance) {
 
         if (property_exists($lvocab, 'vocabulary') and !array_key_exists($lvocab->vocabulary, $response['@context'])) {
           $lterm_details = tripal_get_term_details($lvocab->vocabulary, $lterm->vocabulary);
-          $context[$lvocab->vocabulary] = $lterm_details->url;
+          if ($lterm_details) {
+            $context[$lvocab->vocabulary] = $lterm_details->url;
+          }
         }
       }
       else {
@@ -597,7 +610,8 @@ function tripal_ws_get_field_JSON_LD($field, $instance) {
   // If the value shouldn't be attached by default then create a link for the
   // caller to retrieve the information.
   else {
-    $value[] = $api_url . '/content/' . $ctype . '/' . $entity_id;
+    $context['terms'][$key]['@type'] = '@id';
+    $value[] = $api_url . '/content/' . $ctype . '/' . $entity->id . '/' . urlencode($key);
   }
   // Convert a single value to not be an array.
   if (count($value) == 1) {

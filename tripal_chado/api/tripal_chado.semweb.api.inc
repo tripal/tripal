@@ -101,8 +101,8 @@ function tripal_associate_chado_semweb_term($chado_table, $chado_column, $term,
   // First check to see if a valid record exists that matches the table and
   // column indicated. If it doesn't then insert the record.
   $query = db_select('chado_semweb', 'CS')
-  ->fields('CS', array('chado_semweb_id'))
-  ->condition('chado_column', $chado_column);
+    ->fields('CS', array('chado_semweb_id'))
+    ->condition('chado_column', $chado_column);
   if ($chado_table) {
     $query->condition('chado_table', $chado_table);
   }
@@ -156,4 +156,40 @@ function tripal_associate_chado_semweb_term($chado_table, $chado_column, $term,
   }
 
   return TRUE;
+}
+
+/**
+ * Retrieves the term that maps to the given Chado table and field.
+ *
+ * @param $chado_table
+ *   The name of the Chado table.
+ * @param $chado_column
+ *   The name of the Chado field.
+ * @param $options
+ *   An associative array of one or more of the following keys:
+ *     -return_object:  Set to TRUE to return the cvterm object rather than
+ *      the string version of the term.
+ *
+ * @return
+ *   Returns a string-based representation of the term (e.g. SO:0000704). If
+ *   the 'return_object' options is provided then a cvterm object is returned.
+ *   returns NULL if no term is mapped to the table and column.
+ */
+function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = array()) {
+  $cvterm_id = db_select('chado_semweb', 'CS')
+    ->fields('CS', array('cvterm_id'))
+    ->condition('chado_column', $chado_column)
+    ->condition('chado_table', $chado_table)
+    ->execute()
+    ->fetchField();
+
+  if ($cvterm_id) {
+    $cvterm = tripal_get_cvterm(array('cvterm_id' => $cvterm_id));
+    if (array_key_exists('return_object', $options)) {
+      return $cvterm;
+    }
+
+    return $cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession;
+  }
+
 }

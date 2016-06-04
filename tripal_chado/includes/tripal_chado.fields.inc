@@ -43,9 +43,7 @@ function tripal_chado_field_create_info($entity_type, $bundle) {
   );
 
   $base_fields = tripal_chado_field_create_base('create_info', $entity_type, $bundle, $details);
-  dpm($base_fields);
   $custom_fields = tripal_chado_field_create_info_custom($entity_type, $bundle, $details);
-  dpm($custom_fields);
   return array_merge($base_fields, $custom_fields);
 }
 
@@ -172,6 +170,7 @@ function tripal_chado_field_create_info_base_defaults($field_name, $table_name,
 
   $details = $schema['fields'][$column_name];
 
+
   // Set some defaults for the field.
   $field = array(
     'field_name' => $field_name,
@@ -184,7 +183,7 @@ function tripal_chado_field_create_info_base_defaults($field_name, $table_name,
     'settings' => array(
       'chado_table' => $table_name,
       'chado_column' => $column_name,
-      'semantic_web' => '',
+      'semantic_web' => tripal_get_chado_semweb_term($table_name, $column_name),
     ),
   );
 
@@ -379,6 +378,7 @@ function tripal_chado_field_create_instance_info_base_defaults($bundle_name,
 
   // Set some default semantic web information
   if ($column_name == 'uniquename') {
+    $field['label'] = 'Identifier';
     $field['widget_type'] = 'text_textfield';
   }
   elseif ($field['label'] == 'Timeaccessioned') {

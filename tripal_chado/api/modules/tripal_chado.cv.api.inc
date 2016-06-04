@@ -275,7 +275,6 @@ function tripal_get_cvterm($identifiers, $options = array()) {
   }
 
 }
-
 /**
  * Create an options array to be used in a form element
  *   which provides a list of all chado cvterms

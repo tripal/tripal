@@ -35,7 +35,7 @@ if(count($references) > 0){ ?>
     }
     $accession = $dbxref->db_id->name . ':' . $dbxref->accession;
     if ($dbxref->db_id->urlprefix) {
-      $accession = l($accession, $dbxref->db_id->urlprefix . $dbxref->accession, array('attributes' => array('target' => '_blank')));
+      $accession = l($accession, tripal_get_dbxref_url($dbxref), array('attributes' => array('target' => '_blank')));
     }
     if (property_exists($dbxref, 'is_primary')) {
       $accession .= " <i>(primary cross-reference)</i>";

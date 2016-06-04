@@ -73,7 +73,7 @@ class chado_feature__seqlen extends TripalField {
       'settings' => array(
         'chado_table' => $table_name,
         'chado_column' => 'seqlen',
-        'semantic_web' => 'data:1249',
+        'semantic_web' => tripal_get_chado_semweb_term($table_name, 'seqlen'),
       ),
     );
   }

@@ -18,6 +18,15 @@
           }
         });
       });
+      
+      $(".tripal-tooltip").each(function() {
+        var field = $(this).next('.field');
+        $(this).detach();
+
+        if (field) {
+          field.children('.field-label').append($(this));
+        }
+      });
     }
   }
 })(jQuery);

@@ -72,7 +72,9 @@ class content_type extends TripalField {
       'label' => 'Resource Type',
       'description' => '',
       'required' => FALSE,
-      'settings' => array(),
+      'settings' => array(
+        'auto_attach' => TRUE,
+      ),
       'widget' => array(
         'type' => 'tripal_content_type_widget',
         'settings' => array(

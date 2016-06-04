@@ -948,16 +948,20 @@ function hook_vocab_import_form_submit($form, &$form_state) {
  *
  * @return
  *   An array with at least the following keys:
- *     vocabulary : The short name of the vocabulary (e.g. SO, PATO, foaf).
- *     accession : The name unique ID of the term.
- *     url : The URL for the term.
- *     name : The name of the term.
- *     definition : The term's description.
+ *     -vocabulary : An associative array with the following keys
+ *       -name:  The short name for the vocabulary (e.g. SO, PATO, etc).
+ *       -description: The description of this vocabulary.
+ *       -url: The URL for the vocabulary.
+ *     -accession : The name unique ID of the term.
+ *     -url : The URL for the term.
+ *     -name : The name of the term.
+ *     -definition : The term's description.
  *   any other keys may be added as desired. Returns NULL if the term
  *   cannot be found.
  */
 function hook_vocab_get_term($vocabulary, $accession) {
   // See the tripal_chado_vocab_get_term() function for an example.
+
 }
 
 /**
