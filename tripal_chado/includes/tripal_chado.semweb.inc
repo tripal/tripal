@@ -87,21 +87,21 @@ function tripal_chado_populate_vocab_SCHEMA() {
   ));
 
   $term = tripal_insert_cvterm(array(
-    'id' => 'schema:description',
-    'name' => 'description',
-    'cv_name' => 'schema',
-    'definition' => 'A description of the item.',
-  ));
-  tripal_associate_chado_semweb_term(NULL, 'description', $term);
-
-  $term = tripal_insert_cvterm(array(
     'id' => 'schema:comment',
     'name' => 'comment',
     'cv_name' => 'schema',
     'definition' => 'Comments, typically from users.',
   ));
   tripal_associate_chado_semweb_term(NULL, 'comment', $term);
-  tripal_associate_chado_semweb_term('pub', 'uniquename', $term);
+
+  $term = tripal_insert_cvterm(array(
+    'id' => 'schema:description',
+    'name' => 'description',
+    'cv_name' => 'schema',
+    'definition' => 'A description of the item.',
+  ));
+  tripal_associate_chado_semweb_term(NULL, 'description', $term);
+  tripal_associate_chado_semweb_term('organism', 'comment', $term);
 }
 /**
  * Adds the EDAM database and terms.

@@ -267,10 +267,14 @@ class chado_linker__contact extends TripalField {
         $contact = $contact_linker->contact_id;
         $entity->{$field_name}['und'][$i] = array(
           'value' => array(
-            '@type' => $contact->type_id->dbxref_id->db_id->name . ':' . $contact->type_id->dbxref_id->accession,
             'type' => $contact->type_id->name,
             'name' => $contact->name,
             'description' => $contact->description,
+          ),
+          'semantic_web' => array(
+            'type' => $contact->type_id->dbxref_id->db_id->name . ':' . $contact->type_id->dbxref_id->accession,
+            'name' => tripal_get_chado_semweb_term('contact', 'name'),
+            'description' => tripal_get_chado_semweb_term('contact', 'description'),
           ),
           $field_table . '__' . $pkey => $contact_linker->$pkey,
           $field_table . '__' . $fkey_lcolumn => $contact_linker->$fkey_lcolumn->$fkey_lcolumn,
