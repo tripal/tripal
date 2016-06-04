@@ -109,7 +109,7 @@ class chado_linker__prop_adder extends TripalField {
         ),
       ),
       'display' => array(
-        'deafult' => array(
+        'default' => array(
           'label' => 'above',
           'type' => 'chado_linker__prop_adder_formatter',
           'settings' => array(),
@@ -249,8 +249,8 @@ function chado_linker__prop_adder_widget_validate($element, &$form_state) {
                 ),
               ),
               'display' => array(
-                'deafult' => array(
-                  'label' => 'above',
+                'default' => array(
+                  'label' => 'inline',
                   'type' => 'tripal_chado_kvproperty_formatter',
                   'settings' => array(),
                 ),

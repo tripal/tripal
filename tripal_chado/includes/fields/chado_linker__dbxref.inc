@@ -127,8 +127,8 @@ class chado_linker__dbxref extends TripalField {
         ),
       ),
       'display' => array(
-        'deafult' => array(
-          'label' => 'above',
+        'default' => array(
+          'label' => 'inline',
           'type' => 'chado_linker__dbxref_formatter',
           'settings' => array(),
         ),

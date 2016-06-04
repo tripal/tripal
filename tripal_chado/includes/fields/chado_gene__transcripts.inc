@@ -115,7 +115,7 @@ class chado_gene__transcripts extends TripalField {
         ),
       ),
       'display' => array(
-        'deafult' => array(
+        'default' => array(
           'label' => 'above',
           'type' => 'chado_gene__transcripts_formatter',
           'settings' => array(),

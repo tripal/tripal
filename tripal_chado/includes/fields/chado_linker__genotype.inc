@@ -94,7 +94,7 @@ class chado_linker__genotype extends TripalField {
 
     return array(
       'field_name' => $this->field_name,
-      'type' => 'chado_feature__md5checksum',
+      'type' => 'chado_linker__genotype',
       'cardinality' => FIELD_CARDINALITY_UNLIMITED,
       'locked' => FALSE,
       'storage' => array(
@@ -139,7 +139,7 @@ class chado_linker__genotype extends TripalField {
         ),
       ),
       'display' => array(
-        'deafult' => array(
+        'default' => array(
           'label' => 'above',
           'type' => 'chado_linker__genotype_formatter',
           'settings' => array(),
@@ -179,6 +179,7 @@ class chado_linker__genotype extends TripalField {
       }
       $rows[] = array($genotype_name, $description, $type);
     }
+
     $table = array(
       'header' => $headers,
       'rows' => $rows,
@@ -192,10 +193,9 @@ class chado_linker__genotype extends TripalField {
       'empty' => 'No genotypes available.',
     );
     $content = theme_table($table);
-
-    // once we have our table array structure defined, we call Drupal's theme_table()
-    // function to generate the table.
     if (count($items) > 0) {
+      // once we have our table array structure defined, we call Drupal's theme_table()
+      // function to generate the table.
       $element[0] = array(
         '#type' => 'markup',
         '#markup' => $content,

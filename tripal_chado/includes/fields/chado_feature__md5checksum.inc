@@ -114,8 +114,8 @@ class chado_feature__md5checksum  extends TripalField {
         ),
       ),
       'display' => array(
-        'deafult' => array(
-          'label' => 'above',
+        'default' => array(
+          'label' => 'inline',
           'type' => 'chado_feature__md5checksum_formatter',
           'settings' => array(),
         ),

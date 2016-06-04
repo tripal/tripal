@@ -114,7 +114,7 @@ class chado_linker__expression extends TripalField {
         ),
       ),
       'display' => array(
-        'deafult' => array(
+        'default' => array(
           'label' => 'above',
           'type' => 'chado_linker__expression_formatter',
           'settings' => array(),
@@ -160,13 +160,14 @@ class chado_linker__expression extends TripalField {
     $record = $entity->chado_record;
 
     $content = '';
+    $rows = array();
     foreach ($items as $delta => $item) {
       if (!$item['value']) {
         continue;
       }
       // Iterate through all of the children of the $item['value']. Add each
       // one as an independent row in the table.
-      $rows = array();
+
       foreach ($item['value'] as $key => $value) {
 
         // If this key is the name, then we want to link to the entity if one
@@ -199,25 +200,23 @@ class chado_linker__expression extends TripalField {
           $value
         );
       }
-      $table = array(
-        'header' => array(),
-        'rows' => $rows,
-        'attributes' => array(
-          'id' => 'tripal_linker-table-expression-object',
-          'class' => 'tripal-data-table'
-        ),
-        'sticky' => FALSE,
-        'caption' => "",
-        'colgroups' => array(),
-        'empty' => '',
-      );
-      $content .= theme_table($table);
     }
-
-
-    // once we have our table array structure defined, we call Drupal's theme_table()
-    // function to generate the table.
+    $table = array(
+      'header' => array('Name'),
+      'rows' => $rows,
+      'attributes' => array(
+        'id' => 'tripal_linker-table-expression-object',
+        'class' => 'tripal-data-table'
+      ),
+      'sticky' => FALSE,
+      'caption' => "",
+      'colgroups' => array(),
+      'empty' => 'There are no curated expression data.',
+    );
+    $content = theme_table($table);
     if (count($items) > 0) {
+      // once we have our table array structure defined, we call Drupal's theme_table()
+      // function to generate the table.
       $element[0] = array(
         '#type' => 'markup',
         '#markup' => $content,
@@ -242,6 +241,11 @@ class chado_linker__expression extends TripalField {
     $pkey = $schema['primary key'][0];
     $fkey_lcolumn = key($schema['foreign keys'][$base_table]['columns']);
     $fkey_rcolumn = $schema['foreign keys'][$base_table]['columns'][$fkey_lcolumn];
+
+    // Set some defaults for the empty record.
+    $entity->{$field_name}['und'][0] = array(
+      'value' => array(),
+    );
 
     $linker_table = $base_table . '_expression';
     $options = array(

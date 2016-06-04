@@ -83,7 +83,7 @@ class content_type extends TripalField {
       ),
       'display' => array(
         'default' => array(
-          'label' => 'above',
+          'label' => 'inline',
           'type' => 'tripal_content_type_formatter',
           'settings' => array(),
         ),

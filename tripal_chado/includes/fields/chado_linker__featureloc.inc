@@ -114,7 +114,7 @@ class chado_linker__featureloc extends TripalField {
         ),
       ),
       'display' => array(
-        'deafult' => array(
+        'default' => array(
           'label' => 'above',
           'type' => 'chado_linker__featureloc_formatter',
           'settings' => array(),

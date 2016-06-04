@@ -323,7 +323,7 @@ function tripal_chado_field_create_instance_info_base_defaults($bundle_name,
       ),
       'display' => array(
         'default' => array(
-          'label' => 'above',
+          'label' => 'inline',
           'settings' => array(),
         ),
       ),

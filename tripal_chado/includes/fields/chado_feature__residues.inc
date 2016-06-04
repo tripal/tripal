@@ -110,7 +110,7 @@ class chado_feature__residues extends TripalField {
         ),
       ),
       'display' => array(
-        'deafult' => array(
+        'default' => array(
           'label' => 'above',
           'type' => 'chado_feature__residues_formatter',
           'settings' => array(),
@@ -147,9 +147,15 @@ class chado_feature__residues extends TripalField {
   static function formatterView(&$element, $entity_type, $entity, $field,
     $instance, $langcode, $items, $display) {
 
+
+    $element[0] = array(
+      // We create a render array to produce the desired markup,
+      '#type' => 'markup',
+      '#markup' => '',
+    );
+
     $num_bases = 50;
     $feature = $entity->chado_record;
-
     foreach ($items as $delta => $item) {
       // If there are no residues then skip this one.
       if (!is_array($item['value']) or !array_key_exists('residues', $item['value'])) {
@@ -242,7 +248,7 @@ class chado_feature__residues extends TripalField {
         $entity->{$field_name}['und'][$num_seqs]['value'] = array(
           '@type' => 'SO:0000110',
           'type' => 'sequence_feature',
-          'label' => 'Sequence',
+          'label' => 'Raw Sequence',
           'defline' => tripal_get_fasta_defline($feature, '', NULL, '', strlen($feature->residues)),
           'residues' => $feature->residues,
         );

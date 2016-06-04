@@ -110,8 +110,8 @@ class chado_feature__seqlen extends TripalField {
         ),
       ),
       'display' => array(
-        'deafult' => array(
-          'label' => 'above',
+        'default' => array(
+          'label' => 'inline',
           'type' => 'chado_feature__seqlen_formatter',
           'settings' => array(),
         ),

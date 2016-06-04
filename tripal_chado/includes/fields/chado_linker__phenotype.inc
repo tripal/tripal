@@ -139,7 +139,7 @@ class chado_linker__phenotype extends TripalField {
         ),
       ),
       'display' => array(
-        'deafult' => array(
+        'default' => array(
           'label' => 'above',
           'type' => 'chado_linker__phenotype_formatter',
           'settings' => array(),

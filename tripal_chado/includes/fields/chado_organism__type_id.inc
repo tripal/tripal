@@ -111,8 +111,8 @@ class chado_organism__type_id extends TripalField {
         ),
       ),
       'display' => array(
-        'deafult' => array(
-          'label' => 'above',
+        'default' => array(
+          'label' => 'inline',
           'type' => 'chado_organism__type_id_formatter',
           'settings' => array(),
         ),

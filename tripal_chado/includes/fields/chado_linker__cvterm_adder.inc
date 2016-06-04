@@ -110,7 +110,7 @@ class chado_linker__cvterm_addr extends TripalField {
         ),
       ),
       'display' => array(
-        'deafult' => array(
+        'default' => array(
           'label' => 'above',
           'type' => 'chado_linker__cvterm_adder_formatter',
           'settings' => array(),
@@ -254,7 +254,7 @@ function chado_linker__cvterm_adder_widget_validate($element, &$form_state) {
           ),
         ),
         'display' => array(
-          'deafult' => array(
+          'default' => array(
             'label' => 'above',
             'type' => 'tripal_chado_cvterm_formatter',
             'settings' => array(),

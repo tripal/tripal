@@ -336,7 +336,7 @@ function tripal_chado_populate_vocab_SBO() {
     'id' => 'SBO:0000374',
     'name' => 'relationship',
     'cv_name' => 'sbo',
-    'definition' => 'connectedness between entities and/or interactions representing their relatedness or influence. [ src_code:NR ]',
+    'definition' => 'Connectedness between entities and/or interactions representing their relatedness or influence.',
   ));
 }
 

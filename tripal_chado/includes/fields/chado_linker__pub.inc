@@ -114,7 +114,7 @@ class chado_linker_pub extends TripalField {
         ),
       ),
       'display' => array(
-        'deafult' => array(
+        'default' => array(
           'label' => 'above',
           'type' => 'chado_linker__pub_formatter',
           'settings' => array(),

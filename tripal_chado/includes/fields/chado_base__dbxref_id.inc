@@ -119,8 +119,8 @@ class chado_base__dbxref_id extends TripalField {
         ),
       ),
       'display' => array(
-        'deafult' => array(
-          'label' => 'above',
+        'default' => array(
+          'label' => 'inline',
           'type' => 'chado_base__dbxref_id_formatter',
           'settings' => array(),
         ),

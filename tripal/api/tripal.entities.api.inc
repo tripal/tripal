@@ -565,13 +565,14 @@ function tripal_save_title_format($entity, $format) {
  *   A default title format.
  */
 function tripal_get_default_title_format($entity) {
-  $format = NULL;
+  $format = '';
 
   // Retrieve all available tokens.
   $tokens = tripal_get_entity_tokens($entity);
 
-  // A) Check to see if more informed modules have suggested a title for this type.
-  // Invoke hook_tripal_default_title_format() to get all suggestions from other modules.
+  // A) Check to see if more informed modules have suggested a title for this
+  //    type. Invoke hook_tripal_default_title_format() to get all suggestions
+  //    from other modules.
   $suggestions = module_invoke_all('tripal_default_title_format', $entity, $tokens);
   if ($suggestions) {
     // Use the suggestion with the lightest weight.
@@ -581,15 +582,19 @@ function tripal_get_default_title_format($entity) {
       if ($s['weight'] < $lightest_key) $lightest_key = $k;
     }
     $format = $suggestions[$lightest_key]['format'];
+    return $format;
   }
 
-  // B) Check to see if any fields contain "name" in the machine name and if so, use them.
+  // B) Check to see if any fields contain "name" in the machine name and if
+  //    so, use them.
   $name_fields = preg_grep('/name/', array_keys($tokens));
   if ($name_fields AND !$format) {
     $format = implode(', ', $name_fields);
+    return $format;
   }
 
-  // C) Generate our own ugly title by simply comma-separating all the required fields.
+  // C) Generate our own ugly title by simply comma-separating all the
+  //    required fields.
   if (!$format) {
     $tmp = array();
 
@@ -600,6 +605,7 @@ function tripal_get_default_title_format($entity) {
       }
     }
     $format = implode(', ', $tmp);
+    return $format;
   }
 
   return $format;

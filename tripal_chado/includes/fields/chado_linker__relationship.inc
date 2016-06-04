@@ -111,7 +111,7 @@ class chado_linker__relationship extends TripalField {
         ),
       ),
       'display' => array(
-        'deafult' => array(
+        'default' => array(
           'label' => 'above',
           'type' => 'chado_linker__relationship_formatter',
           'settings' => array(),
@@ -732,7 +732,7 @@ class chado_linker__relationship extends TripalField {
       foreach ($srelationships as $relationship) {
         $rel_acc = $relationship->type_id->dbxref_id->db_id->name . ':' . $relationship->type_id->dbxref_id->accession;
         $rel_type = $relationship->type_id->name;
-        $verb = $this->get_rel_verb($rel_type);
+        $verb = self::get_rel_verb($rel_type);
         $subject_name = $relationship->subject_id->name;
         $subject_type = $relationship->subject_id->type_id->name;
         $object_name = $relationship->object_id->name;

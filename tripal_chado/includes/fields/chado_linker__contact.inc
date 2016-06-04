@@ -120,7 +120,7 @@ class chado_linker__contact extends TripalField {
         ),
       ),
       'display' => array(
-        'deafult' => array(
+        'default' => array(
           'label' => 'above',
           'type' => 'chado_linker__contact_formatter',
           'settings' => array(),
