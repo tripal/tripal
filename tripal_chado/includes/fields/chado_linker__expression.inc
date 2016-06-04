@@ -202,7 +202,7 @@ class chado_linker__expression extends TripalField {
       }
     }
     $table = array(
-      'header' => array('Name'),
+      'header' => array(),
       'rows' => $rows,
       'attributes' => array(
         'id' => 'tripal_linker-table-expression-object',
