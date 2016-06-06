@@ -68,7 +68,7 @@ function tripal_core_entity_property_info_alter(&$info) {
           if (!isset($info['node']['bundles'][ $n['base'] ]['properties'][$machine_name])) {
             $info['node']['bundles'][ $n['base'] ]['properties'][$machine_name] = array(
               'label' => $label,
-              'description' => $details['description'],
+              'description' => (isset($details['description'])) ? $details['description'] : '',
               'type' => ($details['type'] == 'varchar') ? 'text' : $details['type'],
               'schema field' => '[' . $machine_name . ']',
               // The following getter callback is a generic function that can retrieve
@@ -108,7 +108,7 @@ function tripal_core_entity_property_info_alter(&$info) {
           // among node types to facillitate use as a facet.
           $info['node']['properties'][$table . '.' . $right_field .' key'] = array(
             'label' => $key_label . ' (All Content Types)',
-            'description' => $field_details['description'],
+            'description' => (isset($field_details['description'])) ? $field_details['description'] : '',
             'type' => 'text',
             // We include both the token for the current node type and the token for
             // the parent table. That way the organism node will appear in the results
@@ -126,7 +126,7 @@ function tripal_core_entity_property_info_alter(&$info) {
           // search for fruitfly and get all features with that as an organism.
           $info['node']['bundles'][ $n['base'] ]['properties'][$machine_name .' expanded'] = array(
             'label' => $label . ' (Expanded)',
-            'description' => $field_details['description'],
+            'description' => (isset($field_details['description'])) ? $field_details['description'] : '',
             'type' => 'text',
             'schema field' => $format,
             // The following getter callback is a generic function that can retrieve
