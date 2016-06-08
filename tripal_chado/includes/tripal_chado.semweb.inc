@@ -465,7 +465,17 @@ function tripal_chado_semweb_form($form, &$form_state, $chado_table = NULL) {
       ->execute()
       ->fetchField();
     $columns = $schema['fields'];
-    $headers = array('Field Name', 'Vocabulary', 'Term Name', 'Term Description', 'Action');
+    $headers = array(
+      'Field Name',
+      'Vocabulary',
+      array(
+        'data' => 'Name',
+        'nowrap' => TRUE,
+      ),
+      'Term',
+      'Term Description',
+      'Action'
+    );
     $rows = array();
     foreach ($columns AS $column => $detail) {
       // Do not show column if it's the primary key or default cv
@@ -480,21 +490,29 @@ function tripal_chado_semweb_form($form, &$form_state, $chado_table = NULL) {
         $sw_voc = '';
         $sw_term = '';
         $sw_desc = '';
+        $sw_accession = '';
         if($cvterm_id) {
           $term = tripal_get_cvterm(array(
             'cvterm_id' => $cvterm_id
           ));
           $sw_voc = $term->cv_id->name;
           $sw_term = $term->name;
+          $sw_accession = l($term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession,
+              'cv/lookup/' . $term->dbxref_id->db_id->name . '/' . $term->dbxref_id->accession,
+              array('attributes' => array('target' => '_blank')));
           $sw_desc = $term->definition;
         }
         $rows[] = array(
           $column,
           $sw_voc,
           $sw_term,
+          $sw_accession,
           $sw_desc,
-          l('Edit', '/admin/tripal/storage/chado/semweb/edit/' . $chado_table . '/' . $column) . ' | ' .
-          l('Reset', '/admin/tripal/storage/chado/semweb/reset/' . $chado_table . '/' . $column)
+          array(
+            'data' => l('Edit', '/admin/tripal/storage/chado/semweb/edit/' . $chado_table . '/' . $column) . ' | ' .
+                      l('Reset', '/admin/tripal/storage/chado/semweb/reset/' . $chado_table . '/' . $column),
+            'nowrap' => TRUE,
+          ),
         );
       }
     }

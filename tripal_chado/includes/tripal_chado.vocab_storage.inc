@@ -45,7 +45,8 @@ function tripal_chado_vocab_get_term($vocabulary, $accession) {
   $cvterm = chado_expand_var($cvterm, 'field', 'cvterm.definition');
   $term = array(
     'vocabulary' => array(
-      'name' => $cvterm->dbxref_id->db_id->name,
+      'name' => $cvterm->cv_id->name,
+      'short_name' => $cvterm->dbxref_id->db_id->name,
       'description' =>  $cvterm->dbxref_id->db_id->description,
       'url' => $cvterm->dbxref_id->db_id->url
     ),
@@ -53,10 +54,6 @@ function tripal_chado_vocab_get_term($vocabulary, $accession) {
     'name'       => $cvterm->name,
     'url'        => tripal_get_dbxref_url($cvterm->dbxref_id),
     'definition' => (isset($cvterm->definition)) ? $cvterm->definition : '',
-    // The following are not required for the returned array but we'll
-    // add these for convenience later when we look at the TripalTerm
-    // objects and these will be there.
-    'cvterm'     => $cvterm,
   );
   return $term;
 }
