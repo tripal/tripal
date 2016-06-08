@@ -6,55 +6,269 @@
  * @param unknown $form_state
  */
 function tripal_ws_tripal_sites_form($form, &$form_state) {
+
   $form = array();
   $values = key_exists('values', $form_state) ? $form_state['values'] : NULL;
   $tripal_site = $values ? $values['tripal_site'] : 0;
   
-  $sites = array('Select a Tripal site', 'Add a Tripal site');
-  $form['tripal_site'] = array(
-    '#type' => 'select',
-    '#description' => 'Make change to an existing Tripal site',
-    '#options' => $sites,
-    '#default_value' => $tripal_site,
-    '#ajax' => array(
-      'callback' => "tripal_ws_tripal_sites_form_ajax_callback",
-      'wrapper' => "tripal-ws-tripal_sites-form",
-      'effect' => 'fade',
-      'method' => 'replace'
-    ),
-  );
-  
-  // Add/Edit a new tripal site
-  if ($tripal_site != 0) {
-    $form['tripal_site_info']['name'] = array(
-      '#title' => t('Name of Site'),
-      '#type' => 'textfield'
-    );
-    $form['tripal_site_info']['url'] = array(
-      '#title' => t('URL'),
-      '#type' => 'textfield'
-    );
-    $form['tripal_site_info']['description'] = array(
-      '#title' => t('Description'),
-      '#type' => 'textfield'
-    );
-    $form['submit_button'] = array(
-      '#type' => 'submit',
-      '#value' => t('Save'),
-      '#name' => 'save'
+  $results = 
+    db_select('tripal_sites', 'ts')
+      ->fields('ts')
+      ->execute();
+  $headers = array('Name', 'URL', 'Version', 'Description', 'Action');
+  $rows = array();
+  while ($site = $results->fetchObject()) {
+    $rows[] = array(
+      $site->name,
+      $site->url,
+      $site->version,
+      $site->description,
+      array(
+        'data' => l('Edit', '/admin/tripal/storage/ws/tripal_sites/edit/' . $site->id) . ' | ' .
+        l('Remove', '/admin/tripal/storage/ws/tripal_sites/remove/' . $site->id),
+        'nowrap' => TRUE,
+      ),
     );
   }
+  if (count($rows) == 0) {
+    $rows[] = array('No configured Tripal site.', array('colspan' => 5));
+  }
+  $output = theme('table', array(
+      'header' => $headers,
+      'rows' => $rows,
+    ));
+    $form['table'] = array(
+      '#markup' => $output
+    );
   
-  $form['#prefix'] = '<div id="tripal-ws-tripal_sites-form">';
-  $form['#suffix'] = '</div>';
   return $form;
 }
 
+/**
+ * Provide form to add/edit a Tripal site
+ *
+ * @param unknown $form
+ * @param unknown $form_state
+ */
+function tripal_ws_tripal_sites_edit_form($form, &$form_state, $tripal_site_id = NULL) {
+  $id = NULL;
+  $name = '';
+  $url = '';
+  $version = '';
+  $description = '';
+  if ($tripal_site_id) {
+    $site = db_select('tripal_sites', 'ts')
+      ->fields('ts')
+      ->condition('id', $tripal_site_id)
+      ->execute()
+      ->fetchObject();
+    if (is_object($site)) {
+      $id = $site->id;
+      $name = $site->name;
+      $url = $site->url;
+      $version = $site->version;
+      $description = $site->description;
+    }
+  }
+  $form = array();
+  $form['tripal_site_info']['id'] = array(
+    '#type' => 'hidden',
+    '#value' => $id,
+  );
+  $form['tripal_site_info']['name'] = array(
+    '#title' => t('Name'),
+    '#type' => 'textfield',
+    '#description' => t('Full name of the Tripal site.'),
+    '#default_value' => $name,
+    '#required' => TRUE
+  );
+  $form['tripal_site_info']['url'] = array(
+    '#title' => t('URL'),
+    '#type' => 'textfield',
+    '#description' => t('The URL of the Tripal site.'),
+    '#default_value' => $url,
+    '#required' => TRUE
+  );
+  $form['tripal_site_info']['version'] = array(
+    '#title' => t('Version'),
+    '#type' => 'textfield',
+    '#description' => t('Web services version used by the Tripal site.'),
+    '#default_value' => $version,
+  );
+  $form['tripal_site_info']['description'] = array(
+    '#title' => t('Description'),
+    '#type' => 'textarea',
+    '#default_value' => $description,
+  );
 
+  $form['submit_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    '#name' => 'save'
+  );
+  $form['cancel_button'] = array(
+    '#type' => 'button',
+    '#value' => t('Cancel'),
+    '#name' => 'cancel_button',
+    '#limit_validation_errors' => array()
+  );
+  
+  return $form;
+}
 
 /**
+ * Implements hook_validate()
  *
+ * @param unknown $form
+ * @param unknown $form_state
  */
-function tripal_ws_tripal_sites_form_ajax_callback($form, $form_state) {
+function tripal_ws_tripal_sites_edit_form_validate($form, &$form_state) {
+  if (array_key_exists('clicked_button', $form_state)) {
+    if ($form_state['clicked_button']['#name'] =='cancel_button') {
+      drupal_goto('/admin/tripal/storage/ws/tripal_sites');
+    }
+    // Make sure URL does not already exist when adding a new site (which has no 'id')
+    else if ($form_state['clicked_button']['#name'] =='save' && !$form_state['values']['id']) {
+      $url = $form_state['values']['url'];
+      $check =
+      db_select('tripal_sites', 'ts')
+      ->fields('ts', array('id'))
+      ->condition('url', $url)
+      ->execute()
+      ->fetchField();
+      if ($check) {
+        form_set_error('url', t('The URL already exists.'));
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_submit()
+ *
+ * @param unknown $form
+ * @param unknown $form_state
+ */
+function tripal_ws_tripal_sites_edit_form_submit($form, &$form_state) {
+  $id = $form_state['values']['id'];
+  $name = $form_state['values']['name'];
+  $url = $form_state['values']['url'];
+  $version = $form_state['values']['version'];
+  $description = $form_state['values']['description'];
+  // If there is an 'id' do an update, otherwise do an insert
+  if ($id) {
+    db_update('tripal_sites')
+    ->fields(array(
+      'name' => $name,
+      'url' => $url,
+      'version' => $version,
+      'description' => $description
+    ))
+    ->condition('id', $id)
+    ->execute();
+    drupal_set_message(t('Tripal site \'' . $name . '\' has been updated.'));
+  }
+  else {
+    db_insert('tripal_sites')
+      ->fields(array(
+          'name' => $name,
+          'url' => $url,
+          'version' => $version,
+          'description' => $description
+        ))
+        ->execute();
+    drupal_set_message(t('Tripal site \'' . $name . '\' has been added.'));
+  }
+  drupal_goto('/admin/tripal/storage/ws/tripal_sites');
+}
+
+/**
+ * Implements hook_form()
+ * Reset term used by semantic web
+ *
+ * @param $form
+ * @param $form_state
+ * @param $table
+ * @param $column
+ * @return $form
+ */
+function tripal_ws_tripal_sites_remove_form($form, &$form_state, $id = NULL) {
+  $name = '';
+  $record_id = '';
+  if ($id) {
+    $site = db_select('tripal_sites', 'ts')
+    ->fields('ts')
+    ->condition('id', $id)
+    ->execute()
+    ->fetchObject();
+    if (is_object($site)) {
+      $record_id = $site->id;
+      $name = $site->name;
+    }
+  }
+  $form['confirmation'] = array(
+    '#markup' => 'Really remove the \'' . $name . '\' Tripal site? ',
+  );
+  $form['tripal_site_id'] = array(
+    '#type' => 'value',
+    '#value' => $record_id
+  );
+  $form['tripal_site_name'] = array(
+    '#type' => 'value',
+    '#value' => $name
+  );
+
+  $form['submit_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Remove'),
+    '#name' => 'remove'
+  );
+
+  $form['cancel_button'] = array(
+    '#type' => 'button',
+    '#value' => t('Cancel'),
+    '#name' => 'cancel_button',
+    '#limit_validation_errors' => array()
+  );
+
   return $form;
+}
+
+/**
+ * Implements hook_form_validate()
+ *
+ * Validate function for resetting the semantic web term
+ *
+ * @param unknown $form
+ * @param unknown $form_state
+ */
+function tripal_ws_tripal_sites_remove_form_validate($form, &$form_state) {
+  if (array_key_exists('clicked_button', $form_state)) {
+    if ($form_state['clicked_button']['#name'] =='cancel_button') {
+      drupal_goto('/admin/tripal/storage/ws/tripal_sites');
+    }
+    else if (!$form_state['values']['tripal_site_id']) {
+      drupal_set_message(t('Invalid Tripal site id'), 'error');
+    }
+  }
+}
+
+/**
+ * Implements hook_form_submit()
+ *
+ * Submit function for editing the semantic web term
+ *
+ * @param unknown $form
+ * @param unknown $form_state
+ */
+function tripal_ws_tripal_sites_remove_form_submit($form, &$form_state) {
+  $id = $form_state['values']['tripal_site_id'];
+  $name = $form_state['values']['tripal_site_name'];
+  if ($id) {
+    db_delete('tripal_sites')
+      ->condition('id', $id)
+      ->execute();
+    drupal_set_message('The Tripal site \'' .$name . '\' has been removed.');
+  }    
+  drupal_goto('/admin/tripal/storage/ws/tripal_sites');
 }

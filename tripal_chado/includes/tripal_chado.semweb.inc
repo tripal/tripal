@@ -521,12 +521,7 @@ function tripal_chado_semweb_form($form, &$form_state, $chado_table = NULL) {
       'rows' => $rows,
     ));
     $form['table'] = array(
-      '#markup' => $output,
-      '#title' => 'Table',
-      '#description' => t('Please provide any filters for limiting
-        the records. Only those that match the filters specified
-        below will be published.  To publish all records of this
-        type, leave all filters blank.'),
+      '#markup' => $output
     );
   }
 

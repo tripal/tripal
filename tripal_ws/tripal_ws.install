@@ -38,10 +38,14 @@ function tripal_ws_tripal_sites_schema() {
         'length' => 255,
         'not null' => TRUE,
       ),
-      'description' => array(
-        'description' => 'The description of the Tripal site.',
+      'version' => array(
+        'description' => 'The web services version of the Tripal site.',
         'type' => 'varchar',
         'length' => 255,
+      ),
+      'description' => array(
+        'description' => 'The description of the Tripal site.',
+        'type' => 'text'
       ),
     ),
     'indexes' => array(
@@ -49,7 +53,7 @@ function tripal_ws_tripal_sites_schema() {
       'url' => array('url'),
       'description' => array('description'),
     ),
-    'unique keys' => array('name' => array('name')),
+    'unique keys' => array('url' => array('url')),
     'primary key' => array('id'),
   );
   return $schema;
