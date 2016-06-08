@@ -127,17 +127,31 @@ function tripal_ws_tripal_sites_edit_form_validate($form, &$form_state) {
     if ($form_state['clicked_button']['#name'] =='cancel_button') {
       drupal_goto('/admin/tripal/storage/ws/tripal_sites');
     }
-    // Make sure URL does not already exist when adding a new site (which has no 'id')
-    else if ($form_state['clicked_button']['#name'] =='save' && !$form_state['values']['id']) {
+    // Make sure URL does not already exist
+    else if ($form_state['clicked_button']['#name'] =='save') {
       $url = $form_state['values']['url'];
-      $check =
-      db_select('tripal_sites', 'ts')
-      ->fields('ts', array('id'))
-      ->condition('url', $url)
-      ->execute()
-      ->fetchField();
+      $check = NULL;
+      // When updating a record
+      if ($form_state['values']['id']) {
+        $check =
+        db_select('tripal_sites', 'ts')
+        ->fields('ts', array('id'))
+        ->condition('url', $url)
+        ->condition('id', $form_state['values']['id'], '<>')
+        ->execute()
+        ->fetchField();
+      }
+      // When inserting a record
+      else {
+        $check =
+        db_select('tripal_sites', 'ts')
+        ->fields('ts', array('id'))
+        ->condition('url', $url)
+        ->execute()
+        ->fetchField();
+      }
       if ($check) {
-        form_set_error('url', t('The URL already exists.'));
+        form_set_error('url', t('The URL is used by another site.'));
       }
     }
   }
