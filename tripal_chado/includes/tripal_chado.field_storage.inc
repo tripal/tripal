@@ -405,20 +405,6 @@ function tripal_chado_field_storage_expand_field($item_name, $value) {
      return array($item_name => $value);
    }
 }
-
-/**
- * Implements hook_field_storage_query().
- *
- * Used by EntityFieldQuery to find the entities having certain field values.
- *
- * We do not support use of the EntityFieldQuery API for Tripal based fields
- * because EFQ doesn't support when multiple storage backends are used. Instead
- * use the TripalFieldQuery class and implement the hook_storage_tquery()
- * function.
- */
-function tripal_chado_field_storage_query($query) {
-
-}
 /**
  * Implements hook_field_storage_tquery().
  *
@@ -446,6 +432,7 @@ function tripal_chado_field_storage_tquery($conditions) {
     // Set the value for this field search.
     $value = NULL;
     $subfields = explode('.', $filter);
+    print_r($subfields);
     if (count($subfields) > 1) {
       // Get the term for this field's column and replace the field_name with
       // the term.  We need to do this for the recursive function to work.
@@ -460,6 +447,7 @@ function tripal_chado_field_storage_tquery($conditions) {
     else {
       $value = $condition['value'];
     }
+
 
     // Use the appropriate operator.
     $operator = $condition['operator'];
@@ -503,6 +491,8 @@ function tripal_chado_field_storage_tquery($conditions) {
   // Iterate through the filters and perform the query
   $entity_ids = array();
   foreach ($filters as $chado_table => $values) {
+    print_r($chado_table);
+    print_r($values);
     // First get the matching record IDs from the Chado table.
     $schema = chado_get_schema($chado_table);
     $pkey = $schema['primary key'][0];

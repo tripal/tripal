@@ -53,7 +53,10 @@ function tripal_ws_tripal_sites_schema() {
       'url' => array('url'),
       'description' => array('description'),
     ),
-    'unique keys' => array('url' => array('url')),
+    'unique keys' => array(
+      'tripal_sites_c1' => array('url', 'version'),
+      'tripal_sites_c2' => array('name')
+    ),
     'primary key' => array('id'),
   );
   return $schema;

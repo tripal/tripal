@@ -178,7 +178,7 @@ class chado_base__organism_id extends TripalField {
       $field, $instance, $langcode, $items, $display) {
 
     if (count($items) > 0) {
-      $content =  $items[0]['value'];
+      $content = $items[0]['value']['label'];
       if (array_key_exists('entity', $items[0]['value'])) {
         list($entity_type, $entity_id) = explode(':', $items[0]['value']['entity']);
         $content = l(strip_tags($items[0]['value']['label']), 'bio_data/' . $entity_id);

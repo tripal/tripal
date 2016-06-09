@@ -80,7 +80,7 @@ class chado_linker__contact extends TripalField {
       ),
       'settings' => array(
         'chado_table' => $contact_table,
-        'chado_column' => $pkey,
+        'chado_column' => 'contact_id',
         'base_table' => $table_name,
         'semantic_web' => 'local:contact'
       ),
@@ -162,7 +162,6 @@ class chado_linker__contact extends TripalField {
       $field, $instance, $langcode, $items, $display) {
     // Get the settings
     $settings = $display['settings'];
-    $record = $entity->chado_record;
 
     $headers = array('Name', 'Description', 'Type');
     $rows = array();

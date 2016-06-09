@@ -36,10 +36,17 @@ function tripal_ws_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  $items['remote/%/%/%/%'] = array(
+    'page callback' => 'tripal_ws_load_remote_entity',
+    'page arguments' => array(1, 2, 3, 4),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
   // Tripal Web Services setting groups
   $items['admin/tripal/storage/ws'] = array(
-    'title' => 'Web Services',
-    'description' => t("Import data from other Tripal sites using the web services."),
+    'title' => 'Remote Tripal Sites',
+    'description' => t("Create mashups of content using data from this site and remote Tripal sites."),
     'weight' => 20,
     'page callback' => 'system_admin_menu_block_page',
     'access arguments' => array('administer tripal'),
@@ -47,7 +54,7 @@ function tripal_ws_menu() {
     'file path' => drupal_get_path('module', 'system'),
   );
   $items['admin/tripal/storage/ws/tripal_sites'] = array(
-    'title' => 'Other Tripal Sites',
+    'title' => 'Configuration',
     'description' => t('Provides information about other Tripal sites.
         This allows data exchange and communication betwen Tripal
         enabled sites through the web services.'),
@@ -118,4 +125,71 @@ function tripal_ws_services() {
 
   drupal_add_http_header('Content-Type', 'application/ld+json');
   print drupal_json_encode($response);
+}
+
+function tripal_ws_entity_load($entities, $type) {
+  foreach ($entities as $entity) {
+    //if ($entiy->type = 'TripalEntity') {
+      dpm($entity);
+    //}
+  }
+}
+
+function tripal_ws_load_remote_entity($site_id, $api_version, $ctype, $id) {
+
+  // Get the content from the web services of the remote site.
+  $url = "https://dev.bioinfo.wsu.edu/~ccheng/tripal3/ws/v0.1/content/gene/12";
+  $json = file_get_contents($url);
+  $response = json_decode($json, TRUE);
+  dpm($response);
+
+  // Set the title for this page to match the title provided.
+  drupal_set_title($response['label']);
+
+  // Attribute this data to the proper source.
+  $source_url = l($response['label'], $response['itemPage'], array('attributes' => array('target' => '_blank')));
+  $content = '<div><strong>Source:</strong> Chun-huai\'s amazing test site: ' . $source_url . '</div>';
+
+  // Fake an entity so we can display this content using the same
+  // entity type on this site.
+  $entity = new TripalEntity(array(), 'TripalEntity');
+  $entity->id = 807;
+  $entity->type = 'TripalEntity';
+  $entity->bundle = 'bio_data_266';
+  $entity->term_id = 266;
+  $entity->title = $response['label'];
+  $entity->uid = 1;
+  $entity->status = 1;
+
+  // Add fields.
+  $entity->feature__name = array(
+    'und' => array(
+      0 => array(
+        'value' => $response['name'],
+      ),
+    ),
+  );
+  $entity->feature__organism_id = array(
+    'und' => array(
+      0 => array(
+        'value' => $response['organism'],
+      ),
+    ),
+  );
+  $sequences_json = file_get_contents($response['sequence']);
+  $sequences = json_decode($sequences_json, TRUE);
+  $entity->feature__residues = array();
+  foreach ($sequences['member'] as $delta => $value) {
+    $entity->feature__residues['und'][$delta]['value'] = $sequences['member'][$delta];
+  }
+  dpm($entity);
+
+  // Generate the View for this entity
+  $entities = array();
+  $entities[] = $entity;
+  $view = entity_view('TripalEntity', $entities);
+  $content .= drupal_render($view['TripalEntity'][807]);
+
+  return $content;
+
 }

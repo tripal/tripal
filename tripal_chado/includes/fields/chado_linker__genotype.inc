@@ -156,7 +156,6 @@ class chado_linker__genotype extends TripalField {
 
     // Get the settings
     $settings = $display['settings'];
-    $record = $entity->chado_record;
 
     $headers = array('Name', 'Description', 'Type');
     $rows = array();

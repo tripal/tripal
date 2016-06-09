@@ -156,7 +156,6 @@ class chado_linker__phenotype extends TripalField {
       $field, $instance, $langcode, $items, $display) {
     // Get the settings
     $settings = $display['settings'];
-    $record = $entity->chado_record;
 
     $headers = array('Name', 'Value', 'Type');
     $rows = array();

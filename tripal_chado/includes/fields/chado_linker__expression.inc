@@ -157,7 +157,6 @@ class chado_linker__expression extends TripalField {
 
     // Get the settings
     $settings = $display['settings'];
-    $record = $entity->chado_record;
 
     $content = '';
     $rows = array();

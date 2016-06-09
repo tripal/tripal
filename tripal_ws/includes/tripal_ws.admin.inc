@@ -1,7 +1,7 @@
 <?php
 /**
  * Provide form to store information of other Tripal sites
- * 
+ *
  * @param unknown $form
  * @param unknown $form_state
  */
@@ -10,8 +10,8 @@ function tripal_ws_tripal_sites_form($form, &$form_state) {
   $form = array();
   $values = key_exists('values', $form_state) ? $form_state['values'] : NULL;
   $tripal_site = $values ? $values['tripal_site'] : 0;
-  
-  $results = 
+
+  $results =
     db_select('tripal_sites', 'ts')
       ->fields('ts')
       ->execute();
@@ -33,14 +33,27 @@ function tripal_ws_tripal_sites_form($form, &$form_state) {
   if (count($rows) == 0) {
     $rows[] = array('No configured Tripal site.', array('colspan' => 5));
   }
-  $output = theme('table', array(
-      'header' => $headers,
-      'rows' => $rows,
-    ));
-    $form['table'] = array(
-      '#markup' => $output
-    );
-  
+
+  $table = array(
+    'header' => $headers,
+    'rows' => $rows,
+    'attributes' => array(),
+    'sticky' => FALSE,
+    'caption' => '',
+    'colgroups' => array(),
+    'empty' => '',
+  );
+  $output = theme_table($table);
+
+  $form['instructions'] = array(
+    '#type' => 'item',
+    '#markup' => t('The following is a list of remote Tripal sites with which
+        this site can communicate. You may add and remove site as needed.')
+  );
+  $form['table'] = array(
+    '#markup' => $output
+  );
+
   return $form;
 }
 
@@ -112,7 +125,7 @@ function tripal_ws_tripal_sites_edit_form($form, &$form_state, $tripal_site_id =
     '#name' => 'cancel_button',
     '#limit_validation_errors' => array()
   );
-  
+
   return $form;
 }
 
@@ -283,6 +296,6 @@ function tripal_ws_tripal_sites_remove_form_submit($form, &$form_state) {
       ->condition('id', $id)
       ->execute();
     drupal_set_message('The Tripal site \'' .$name . '\' has been removed.');
-  }    
+  }
   drupal_goto('/admin/tripal/storage/ws/tripal_sites');
 }

@@ -155,7 +155,6 @@ class chado_feature__residues extends TripalField {
     );
 
     $num_bases = 50;
-    $feature = $entity->chado_record;
     foreach ($items as $delta => $item) {
       // If there are no residues then skip this one.
       if (!is_array($item['value']) or !array_key_exists('residues', $item['value'])) {

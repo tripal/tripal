@@ -174,7 +174,6 @@ class chado_gene__transcripts extends TripalField {
 
     // Get the settings
     $settings = $display['settings'];
-    $record = $entity->chado_record;
 
     $headers = array('Transcript Name', 'Identifier', 'Type', 'Location');
     $rows = array();
