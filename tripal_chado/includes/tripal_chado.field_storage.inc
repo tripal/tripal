@@ -427,58 +427,69 @@ function tripal_chado_field_storage_query($query) {
  * @param $conditions
  */
 function tripal_chado_field_storage_tquery($conditions) {
-  $filter = array();
+  $filters = array();
+  $entity_ids = array();
+
   foreach ($conditions as $index => $condition) {
     $field = $condition['field'];
+    $filter = $condition['filter'];
+
+    if ($field['storage']['type'] != 'field_chado_storage') {
+      continue;
+    }
     $field_type = $field['type'];
     $field_module = $field['module'];
     $settings = $field['settings'];
     $chado_table = $settings['chado_table'];
     $chado_column = $settings['chado_column'];
 
-    // Allow the creating module to alter the value if desired.
-    $value = '';
-    module_load_include('inc', $field_module, 'includes/fields/' . $field_type);
-    if (preg_match('/^chado/', $field_type) and class_exists($field_type)) {
-      $field_obj = new $field_type();
-      if (method_exists($field_obj, 'query')) {
-        $value = $field_obj->query($condition);
-      }
+    // Set the value for this field search.
+    $value = NULL;
+    $subfields = explode('.', $filter);
+    if (count($subfields) > 1) {
+      // Get the term for this field's column and replace the field_name with
+      // the term.  We need to do this for the recursive function to work.
+      // We must lowercase the term and underscore it because that's how we
+      // can support case-insensitivity and lack of spacing such as for
+      // web services.
+      $subfield1 = tripal_get_chado_semweb_term($chado_table, $chado_column, array('return_object' => TRUE));
+      $subfields[0] = strtolower(preg_replace('/ /', '_', $subfield1->name));
+      $value = tripal_chado_field_storage_recurse_subfilters($chado_table, $subfields, $condition['value']);
+      $value = array_shift($value);
     }
-    // If there is no field to rewrite the value then use defaults.
     else {
       $value = $condition['value'];
     }
 
-    // use the appropriate operator.
+    // Use the appropriate operator.
     $operator = $condition['operator'];
     switch ($operator) {
       case '=':
-        $filter[$chado_table][$chado_column] = $condition['value'];
+        $filters[$chado_table][$chado_column] = $value;
         break;
       case '>':
       case '>=':
       case '<':
       case '<=':
-        $filter[$chado_table][$chado_column] = array(
+        $filters[$chado_table][$chado_column] = array(
           'op' => $operator,
           'data' => $value,
         );
         break;
       case '<>':
-        $filter[$chado_table][$chado_column] = array(
+        $filters[$chado_table][$chado_column] = array(
           'op' => 'NOT',
           'data' => $value,
         );
         break;
       case 'CONTAINS':
-        break;
-        $filter[$chado_table][$chado_column] = array(
+        $filters[$chado_table][$chado_column] = array(
           'op' => 'LIKE',
           'data' => '%' . $value . '%',
         );
+        break;
       case 'STARTS WITH':
-        $filter[$chado_table][$chado_column] = array(
+        $filters[$chado_table][$chado_column] = array(
           'op' => 'LIKE',
           'data' => $value . '%',
         );
@@ -491,7 +502,7 @@ function tripal_chado_field_storage_tquery($conditions) {
 
   // Iterate through the filters and perform the query
   $entity_ids = array();
-  foreach ($filter as $chado_table => $values) {
+  foreach ($filters as $chado_table => $values) {
     // First get the matching record IDs from the Chado table.
     $schema = chado_get_schema($chado_table);
     $pkey = $schema['primary key'][0];
@@ -524,3 +535,58 @@ function tripal_chado_field_storage_tquery($conditions) {
 
   return $entity_ids;
 }
+
+/**
+ *
+ * @param $subfields
+ * @param $value
+ */
+function tripal_chado_field_storage_recurse_subfilters($chado_table, $subfields, $value) {
+   $sub_value = array();
+
+   // Get the subvalue for this iteration
+   $subfield = array_shift($subfields);
+
+   // Get the cvterms mapped to this table.
+   $columns = db_select('chado_semweb', 'CS')
+     ->fields('CS', array('chado_column', 'cvterm_id'))
+     ->condition('chado_table', $chado_table)
+     ->execute();
+
+   // Iterate through the columns and find the one with cvterm that matches
+   // the subfield name.
+   $chado_column = '';
+   while($column = $columns->fetchObject()) {
+     $cvterm_id = $column->cvterm_id;
+     $cvterm = tripal_get_cvterm(array('cvterm_id' => $cvterm_id));
+     // Convert the term name to lower-case and replace spaces with underscores
+     // so we can perform case insensitive comparisions and ingore spacing.
+     $term_name = strtolower(preg_replace('/ /', '_', $cvterm->name));
+     if ($subfield == $term_name) {
+       $chado_column = $column->chado_column;
+     }
+   }
+
+
+   // If we have more subfields then this should be a foreign key and we should
+   // recurse.
+   if (count($subfields) > 0) {
+
+    // Get the foreign keys for this Chado table.
+     $schema = chado_get_schema($chado_table);
+     $fkeys = $schema['foreign keys'];
+
+     // Iterate through the FKs to find the one that matches this Chado field.
+     foreach ($fkeys as $fk_table => $details) {
+       foreach ($details['columns'] as $lkey => $rkey) {
+         if ($lkey == $chado_column) {
+           $sub_value = tripal_chado_field_storage_recurse_subfilters($fk_table, $subfields, $value);
+           return array($chado_column => $sub_value);
+         }
+       }
+     }
+   }
+   return array($chado_column => $value);
+}
+
+

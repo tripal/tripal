@@ -264,12 +264,8 @@ function tripal_chado_entity_access($op, $entity = NULL, $account = NULL) {
 function tripal_chado_tripal_default_title_format($entity, $available_tokens) {
   $format = array();
 
-  // Load the term associated with this Tripal Content type.
-  $term = entity_load('TripalTerm', array('id' => $entity->term_id));
-  $term = reset($term);
-
   // Load the bundle
-  $bundle = tripal_load_bundle_entity(array('name' => $entity->bundle));
+  $bundle = tripal_load_bundle_entity(array('term_id' => $entity->term_id));
   $bundle_id = $bundle->id;
   $table = tripal_get_bundle_variable('chado_table', $bundle_id);
   $column = tripal_get_bundle_variable('chado_column', $bundle_id);

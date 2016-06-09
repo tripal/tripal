@@ -29,11 +29,10 @@ function tripal_ws_init() {
 function tripal_ws_menu() {
 
   // Web Services API callbacks.
-  $items['ws/v0.1'] = array(
-    'title' => 'Tripal Entities Web Services API v0.1',
-    'page callback' => 'tripal_ws_rest',
+  $items['ws'] = array(
+    'title' => 'Tripal Web Services API',
+    'page callback' => 'tripal_ws_services',
     'access arguments' => array('access content'),
-    'file' => '/includes/tripal_ws.rest.inc',
     'type' => MENU_CALLBACK,
   );
 
@@ -63,6 +62,38 @@ function tripal_ws_menu() {
   return $items;
 }
 
-function tripal_ws_test() {
-  print "Blah!!!!\n";
+/**
+ * The callback function for all RESTful web services.
+ *
+ */
+function tripal_ws_services() {
+  $ws_path = func_get_args();
+  $params = $_GET;
+  unset($params['q']);
+
+  // The web services should never be cached.
+  drupal_page_is_cacheable(FALSE);
+
+  // Using the provided version number, determine which web services
+  // verion to call.
+  $version = array_shift($ws_path);
+  if ($version and preg_match('/v\d+\.\d+/', $version)) {
+
+    $api_url = 'ws/' . $version;
+
+    // Add the file with the appropriate web services.
+    module_load_include('inc', 'tripal_ws', 'includes/tripal_ws.rest_' . $version);
+    $version = preg_replace('/\./', '_', $version);
+    $function = 'tripal_ws_services_' . $version;
+    $response = array();
+    if (function_exists($function)) {
+      $response = $function($api_url, $ws_path, $params);
+    }
+  }
+  else {
+    // TODO: What do we do if no version is provided?
+  }
+
+  drupal_add_http_header('Content-Type', 'application/ld+json');
+  print drupal_json_encode($response);
 }

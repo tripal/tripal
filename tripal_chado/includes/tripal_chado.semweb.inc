@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Adds defaults to the chado_semweb table.
  */
@@ -9,6 +10,13 @@ function tripal_chado_populate_chado_semweb_table() {
   foreach ($chado_tables as $chado_table) {
     tripal_add_chado_semweb_table($chado_table);
   }
+
+  // TODO: should this code be in the tripal_chado module? Some of these terms
+  // are used solely by web services (e.g. rdfs:label) and are not used to
+  // map chado terms to vocabularies.
+
+  // Perhaps we should have an API for working with terms where these can be
+  // inserted.
 
   // Now set defaults!
   tripal_chado_populate_vocab_EDAM();
@@ -56,6 +64,12 @@ function tripal_chado_populate_vocab_RDFS() {
     'name' => 'type',
     'cv_name' => 'rdfs',
     'definition' => 'The type of resource.',
+  ));
+  $name = tripal_insert_cvterm(array(
+    'id' => 'rdfs:label',
+    'name' => 'type',
+    'cv_name' => 'rdfs',
+    'definition' => 'A human-readable version of a resource\'s name.',
   ));
 }
 /**
@@ -612,7 +626,7 @@ function tripal_chado_semweb_edit_form($form, &$form_state, $table = NULL, $colu
          '#title' =>  $term->name,
          '#default_value' => $default,
          '#attributes' => $attrs,
-         '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name .
+         '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name . ' (' . $term->dbxref_id->db_id->name . ') ' . $term->cv_id->definition .
              '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
              '<br><b>Definition:</b>  ' . $term->definition,
        );

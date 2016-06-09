@@ -792,6 +792,7 @@ function tripal_replace_entity_tokens($string, &$entity, $bundle_entity = NULL) 
 
   // Now that all necessary fields are attached process the tokens.
   foreach($used_tokens as $token) {
+    $field_name = str_replace(array('.','[',']'), array('__','',''), $token);
     $value = '';
     if (isset($entity->{$field_name})) {
 

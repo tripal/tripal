@@ -22,7 +22,8 @@ class TripalFieldQuery {
   /**
    *
    * @param $field_name
-   *   The name of the field.
+   *   The name of the field.  Or, the name of the field with a subfield
+   *   concatenated using a '.' as a delimter.
    * @param $value
    *   The value to use for filtering.
    * @param $operator
@@ -32,11 +33,21 @@ class TripalFieldQuery {
    *   be an array of literals of the same type as the column.
    */
   public function fieldCondition($field_name, $value, $operator = '=') {
-    $field = field_info_field($field_name);
+
+    // See if there is a subfield as part of the field_name.
+    $subfields = explode('.', $field_name);
+    if ($subfields > 1) {
+      $field = field_info_field($subfields[0]);
+    }
+    else {
+      $field = field_info_field($field_name);
+    }
+
     if ($field) {
       $field_storage_type = $field['storage']['type'];
       $this->conditions[$field_storage_type][] = array(
         'field' => $field,
+        'filter' => $field_name,
         'value' => $value,
         'operator' => $operator,
       );

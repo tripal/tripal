@@ -1240,7 +1240,6 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
       $new_values = array();
       $new_columns = array();
       $new_options = array();
-      $uq_sname = "uq_" . $table . "_";
       $has_pkey = 0;
 
       // include the primary key in the results returned
@@ -1256,7 +1255,6 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
       foreach ($fields as $field) {
         if (array_key_exists($field, $values)) {
           $new_values[$field] = $values[$field];
-          $uq_sname .= substr($field, 0, 2);
           // if there is no primary key then use the unique contraint fields
           if (!$has_pkey) {
             array_push($new_columns, $field);
@@ -1266,7 +1264,6 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
         // substitute any default values
         elseif (array_key_exists('default', $table_desc['fields'][$field])) {
           $new_values[$field] = $table_desc['fields'][$field]['default'];
-          $uq_sname .= substr($field, 0, 2);
           if (!$has_pkey) {
             array_push($new_columns, $field);
           }
@@ -1275,7 +1272,6 @@ function chado_select_record($table, $columns, $values, $options = NULL) {
         // allowed to be null
         elseif (!$table_desc['fields'][$field]['not null']) {
           $new_values[$field] = NULL;
-          $uq_sname .= "n" . substr($field, 0, 2);
           if (!$has_pkey) {
             array_push($new_columns, $field);
           }

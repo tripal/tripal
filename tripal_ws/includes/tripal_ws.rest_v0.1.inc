@@ -1,26 +1,16 @@
 <?php
 
+
+
 /**
- *_a
+ *
  */
-function tripal_ws_rest() {
-
-  global $base_url;
-  $ws_path = func_get_args();
-  $params = $_GET;
-  unset($params['q']);
-
-  // The web services should never be cached.
-  drupal_page_is_cacheable(FALSE);
+function tripal_ws_services_v0_1($api_url, $ws_path, $params) {
 
   // Set some initial variables.
   $response = array();
-  $status = 'success';
   $version = 'v0.1';
-  $message = '';
-  $api_url = $base_url . '/ws/' . $version;
-  $page_limit = 25;
-  $pager_id = 0;
+
 
   // Set some defaults for the response.
   $response['@context'] =  array();
@@ -34,40 +24,26 @@ function tripal_ws_rest() {
 
     switch ($service) {
       case 'doc':
-        tripal_ws_handle_doc_service($api_url, $response);
+        tripal_ws_services_v0_1_handle_doc_service($api_url, $response);
         break;
       case 'content':
-        tripal_ws_handle_content_service($api_url, $response, $ws_path, $params);
+        tripal_ws_services_v0_1_handle_content_service($api_url, $response, $ws_path, $params);
         break;
       case 'vocab':
-        tripal_ws_handle_vocab_service($api_url, $response, $ws_path);
+        tripal_ws_services_v0_1_handle_vocab_service($api_url, $response, $ws_path);
         break;
       default:
-        tripal_ws_handle_no_service($api_url, $response);
+        tripal_ws_services_v0_1_handle_no_service($api_url, $response);
     }
   }
   catch (Exception $e) {
     watchdog('tripal_ws', $e->getMessage(), array(), WATCHDOG_ERROR);
     $message = $e->getMessage();
-    $status = 'error';
+    drupal_add_http_header('Status', '400 Bad Request');
+
   }
 
-  // The responses follow a similar format as the AGAVE API with a
-  // status, message, version and all data in the 'result' object.
-/*   $response['status']  = $status;
-  $response['message'] = $message;
-  $response['api_version'] = $version;
-  $response['source'] = array(
-    'site_name' => variable_get('site_name', 'Unspecified'),
-    'site_url' => $base_url,
-    'site_slogan' => variable_get('site_slogan', 'Unspecified'),
-    'site_email' =>  variable_get('site_mail', 'Unspecified'),
-  ); */
-
-  // Rather than use the drupal_json_output() funciton we manually specify
-  // content type because we want it to be 'ld+json'.
-  drupal_add_http_header('Content-Type', 'application/ld+json');
-  print drupal_json_encode($response);
+  return $response;
 }
 
 
@@ -77,7 +53,7 @@ function tripal_ws_rest() {
  * @param $response
  * @param $ws_path
  */
-function tripal_ws_handle_content_service($api_url, &$response, $ws_path, $params) {
+function tripal_ws_services_v0_1_handle_content_service($api_url, &$response, $ws_path, $params) {
 
   // Get the content type.
   $ctype     = (count($ws_path) > 1) ? $ws_path[1] : '';
@@ -85,25 +61,25 @@ function tripal_ws_handle_content_service($api_url, &$response, $ws_path, $param
 
   // If we have no content type then list all of the available content types.
   if (!$ctype) {
-    tripal_ws_get_content_types($api_url, $response);
+    tripal_ws_services_v0_1_get_content_types($api_url, $response);
   }
   // If we don't have an entity ID then show a paged list of entities with
   // the given type.
   else if ($ctype and !$entity_id) {
-    tripal_ws_get_content_type($api_url, $response, $ws_path, $ctype, $params);
+   tripal_ws_services_v0_1_get_content_type($api_url, $response, $ws_path, $ctype, $params);
   }
   // If we have a content type and an entity ID then show the entity
   else {
-    tripal_ws_get_content($api_url, $response, $ws_path, $ctype, $entity_id, $params);
+    tripal_ws_services_v0_1_get_content($api_url, $response, $ws_path, $ctype, $entity_id, $params);
   }
 }
 /**
- *
- * @param $api_url
- * @param $response
- * @param $ws_path
- */
-function tripal_ws_handle_vocab_service($api_url, &$response, $ws_path) {
+*
+* @param $api_url
+* @param $response
+* @param $ws_path
+*/
+function tripal_ws_services_v0_1_handle_vocab_service($api_url, &$response, $ws_path) {
 
   // Get the vocab name.
   $vocabulary = (count($ws_path) > 1) ? $ws_path[1] : '';
@@ -111,15 +87,15 @@ function tripal_ws_handle_vocab_service($api_url, &$response, $ws_path) {
 
   // If we have no $vocabulary type then list all of the available vocabs.
   if (!$vocabulary) {
-    tripal_ws_get_vocabs($api_url, $response);
+    tripal_ws_services_v0_1_get_vocabs($api_url, $response);
   }
   // If we don't have a $vocabulary then show a paged list of terms.
   else if ($vocabulary and !$accession) {
-    tripal_ws_get_vocab($api_url, $response, $ws_path, $vocabulary);
+    tripal_ws_services_v0_1_get_vocab($api_url, $response, $ws_path, $vocabulary);
   }
   // If we have a content type and an entity ID then show the entity
   else if ($vocabulary and $accession) {
-    tripal_ws_get_term($api_url, $response, $ws_path, $vocabulary, $accession);
+    tripal_ws_services_v0_1_get_term($api_url, $response, $ws_path, $vocabulary, $accession);
   }
 }
 
@@ -128,13 +104,13 @@ function tripal_ws_handle_vocab_service($api_url, &$response, $ws_path) {
  * @param $api_url
  * @param $response
  */
-function tripal_ws_get_vocabs($api_url, &$response) {
+function tripal_ws_services_v0_1_get_vocabs($api_url, &$response) {
   // First, add the vocabularies used into the @context section.
   $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
   $response['@context']['hydra'] = 'http://www.w3.org/ns/hydra/core#';
 
   // Next add in the ID for tihs resource.
-  $response['@id'] = $api_url . '/vocab';
+  $response['@id'] = url($api_url . '/vocab', array('absolute' => TRUE));
 
   // Start the list.
   $response['@type'] = 'Collection';
@@ -148,18 +124,15 @@ function tripal_ws_get_vocabs($api_url, &$response) {
   // Iterate through the vocabularies and add an entry in the collection.
   $i = 0;
   while ($vocab = $vocabs->fetchObject()) {
-    $term =
     // Add the bundle as a content type.
     $response['member'][] = array(
-      '@id' => $api_url . '/vocab/' . urlencode($vocab->vocabulary),
+      '@id' => url($api_url . '/vocab/' . urlencode($vocab->vocabulary), array('absolute' => TRUE)),
       '@type' => 'vocabulary',
       'vocabulary' => $vocab->vocabulary,
     );
     $i++;
   }
   $response['totalItems'] = $i;
-
-  //$response['totalItems'] = $i;
 
   // Lastly, add in the terms used into the @context section.
   $response['@context']['Collection'] = 'hydra:Collection';
@@ -175,7 +148,7 @@ function tripal_ws_get_vocabs($api_url, &$response) {
  * @param $response
  * @param $ws_path
  */
-function tripal_ws_get_vocab($api_url, &$response, $ws_path, $vocabulary) {
+function tripal_ws_services_v0_1_get_vocab($api_url, &$response, $ws_path, $vocabulary) {
 
   // First, add the vocabularies used into the @context section.
   $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
@@ -183,7 +156,7 @@ function tripal_ws_get_vocab($api_url, &$response, $ws_path, $vocabulary) {
   $response['@context']['schema'] = 'https://schema.org/';
 
   // Next add in the ID for tihs resource.
-  $response['@id'] = $api_url . '/vocab/' . $vocabulary;
+  $response['@id'] = url($api_url . '/vocab/' . $vocabulary, array('absolute' => TRUE));
 
   // Get the vocabulary
   $vocab = tripal_load_vocab_entity(array('vocabulary' => $vocabulary));
@@ -193,8 +166,8 @@ function tripal_ws_get_vocab($api_url, &$response, $ws_path, $vocabulary) {
   $response['totalItems'] = 0;
   $response['label'] = vocabulary . " vocabulary collection";
   $response['comment'] = 'The following list of terms may not be the full ' .
-    'list for the vocabulary.  The terms listed here are only those ' .
-    'that have associated content on this site.';
+      'list for the vocabulary.  The terms listed here are only those ' .
+      'that have associated content on this site.';
 
   // Get the list of terms for this vocab.
   $query = db_select('tripal_term', 'tt')
@@ -208,7 +181,7 @@ function tripal_ws_get_vocab($api_url, &$response, $ws_path, $vocabulary) {
   while($term = $terms->fetchObject()) {
     $term = tripal_load_term_entity(array('term_id' => $term->id));
     $response['member'][] = array(
-      '@id' => $api_url . '/vocab/' . urlencode($vocabulary) . '/' .  urlencode($term->accession),
+      '@id' => url($api_url . '/vocab/' . urlencode($vocabulary) . '/' .  urlencode($term->accession), array('absolute' => TRUE)),
       '@type' => 'vocabulary_term',
       'vocabulary' => $vocab->vocabulary,
       'accession' => $term->accession,
@@ -235,7 +208,7 @@ function tripal_ws_get_vocab($api_url, &$response, $ws_path, $vocabulary) {
  * @param $response
  * @param $ws_path
  */
-function tripal_ws_get_term($api_url, &$response, $ws_path, $vocabulary, $accession) {
+function tripal_ws_services_v0_1_get_term($api_url, &$response, $ws_path, $vocabulary, $accession) {
 
   // First, add the vocabularies used into the @context section.
   $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
@@ -246,7 +219,7 @@ function tripal_ws_get_term($api_url, &$response, $ws_path, $vocabulary, $access
   $term = tripal_load_term_entity(array('vocabulary' => $vocabulary, 'accession' => $accession));
 
   // Next add in the ID and Type for this resources.
-  $response['@id'] = $api_url . '/vocab/' . urlencode($vocabulary) . '/' . urlencode($accession);
+  $response['@id'] = url($api_url . '/vocab/' . urlencode($vocabulary) . '/' . urlencode($accession), array('absolute' => TRUE));
   $response['@type'] = 'vocabulary_term';
   $response['label'] = $term->name;
   $response['vocabulary'] = $vocabulary;
@@ -268,14 +241,14 @@ function tripal_ws_get_term($api_url, &$response, $ws_path, $vocabulary, $access
  * @param $api_url
  * @param $response
  */
-function tripal_ws_get_content_types($api_url, &$response) {
+function tripal_ws_services_v0_1_get_content_types($api_url, &$response) {
 
   // First, add the vocabularies used into the @context section.
   $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
   $response['@context']['hydra'] = 'http://www.w3.org/ns/hydra/core#';
 
   // Next add in the ID for tihs resource.
-  $response['@id'] = $api_url . '/content';
+  $response['@id'] = url($api_url . '/content', array('absolute' => TRUE));
 
   // Start the list.
   $response['@type'] = 'Collection';
@@ -288,7 +261,6 @@ function tripal_ws_get_content_types($api_url, &$response) {
     ->fields('tb')
     ->orderBy('tb.label', 'ASC')
     ->execute();
-  $terms = array();
 
   // Iterate through the terms and add an entry in the collection.
   $i = 0;
@@ -297,15 +269,8 @@ function tripal_ws_get_content_types($api_url, &$response) {
     $term = reset($entity);
     $vocab = $term->vocab;
 
-    if (!array_key_exists($vocab->vocabulary, $response['@context'])) {
-      // If there is no URL prefix then use this API's vocabulary API
-      if ($term->urlprefix) {
-        $response['@context'][$vocab->vocabulary] = $term->urlprefix;
-      }
-      else {
-        $response['@context'][$vocab->vocabulary] = $api_url . '/vocab/' . $vocab->vocabulary . '/';
-      }
-    }
+    $response['@context'][$term->name] = $term->url;
+
     // Get the bundle description. If no description is provided then
     // use the term definition
     $description = tripal_get_bundle_variable('description', $bundle->id);
@@ -314,8 +279,8 @@ function tripal_ws_get_content_types($api_url, &$response) {
     }
     // Add the bundle as a content type.
     $response['member'][] = array(
-      '@id' => $api_url . '/content/' . urlencode($bundle->label),
-      '@type' => $vocab->vocabulary . ':' . $term->accession,
+      '@id' => url($api_url . '/content/' . urlencode($bundle->label), array('absolute' => TRUE)),
+      '@type' => $term->name,
       'label' => $bundle->label,
       'description' => $description,
     );
@@ -337,71 +302,135 @@ function tripal_ws_get_content_types($api_url, &$response) {
  * @param $response
  * @param $ws_path
  */
-function tripal_ws_get_content_type($api_url, &$response, $ws_path, $ctype, $params) {
+function tripal_ws_services_v0_1_get_content_type($api_url, &$response, $ws_path, $ctype, $params) {
 
   // First, add the vocabularies used into the @context section.
   $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
   $response['@context']['hydra'] = 'http://www.w3.org/ns/hydra/core#';
-  $response['@context']['schema'] = 'https://schema.org/';
 
   // Next add in the ID for tihs resource.
-  $response['@id'] = $api_url . '/content/' . $ctype;
+  $response['@id'] = url($api_url . '/content/' . $ctype, array('absolute' => TRUE));
 
   // Get the TripalBundle, TripalTerm and TripalVocab type for this type.
   $bundle = tripal_load_bundle_entity(array('label' => $ctype));
   $term = entity_load('TripalTerm', array('id' => $bundle->term_id));
   $term = reset($term);
-  $vocab = $term->vocab;
-
-  if (!array_key_exists($vocab->vocabulary, $response['@context'])) {
-    // If there is no URL prefix then use this API's vocabulary API
-    if ($term->urlprefix) {
-      $response['@context'][$vocab->vocabulary] = $term->urlprefix;
-    }
-    else {
-      $response['@context'][$vocab->vocabulary] = $api_url . '/vocab/' . $vocab->vocabulary . '/';
-    }
-  }
+  $response['@context'][$term->name] = $term->url;
 
   // Start the list.
   $response['@type'] = 'Collection';
   $response['totalItems'] = 0;
   $response['label'] = $bundle->label . " collection";
 
-  // Organize the fields by their web service names.
+  // Iterate through the fields and create a $field_mapping array that makes
+  // it easier to determine which filter criteria belongs to which field.
+  $field_mapping = array();
   $fields = field_info_fields();
-  $field_ws_names = array();
-  foreach ($fields as $field_name => $details) {
-    if (array_key_exists('settings', $details) and
-         array_key_exists('semantic_web', $details['settings'])) {
-      $sw_name = $details['settings']['semantic_web']['name'];
-      $field_ws_names[$sw_name][] = $field_name;
+  foreach ($fields as $field) {
+    if (array_key_exists('TripalEntity', $field['bundles'])) {
+      foreach ($field['bundles']['TripalEntity'] as $bundle_name) {
+        if ($bundle_name == $bundle->name) {
+          if (array_key_exists('semantic_web', $field['settings'])) {
+            list($vocabulary, $accession) = explode(':', $field['settings']['semantic_web']);
+            $term = tripal_get_term_details($vocabulary, $accession);
+            $key = $term['name'];
+            $key = strtolower(preg_replace('/ /', '_', $key));
+            $field_mapping[$key] = $field['field_name'];
+          }
+        }
+      }
+    }
+  }
+
+  // Convert the filters to their field names
+  $new_params = array();
+  foreach ($params as $param => $value) {
+
+    // Break apart any operators
+    $key = $param;
+    $op = '=';
+    $matches = array();
+    if (preg_match('/^(.+);(.+)$/', $key, $matches)) {
+      $key = $matches[1];
+      $op = $matches[2];
+    }
+
+    // Break apart any subkeys and pull the first one out for the term name key.
+    $subkeys = explode(',', $key);
+    if (count($subkeys) > 0) {
+      $key = array_shift($subkeys);
+    }
+
+    // Map the values in the filters to their appropriate field names.
+    if (array_key_exists($key, $field_mapping)) {
+      $field_name = $field_mapping[$key];
+      if (count($subkeys) > 0) {
+        $field_name .= '.' . implode('.', $subkeys);
+      }
+      $new_params[$field_name]['value'] = $value;
+      $new_params[$field_name]['op'] = $op;
+    }
+    else {
+      throw new Exception("The filter term, '$key', is not available for use.");
     }
   }
 
   // Get the list of entities for this bundle.
   $query = new TripalFieldQuery();
-  $query->fieldCondition('content_type', $term->id);
-  foreach($params as $key => $value) {
-    foreach ($field_ws_names[$key] as $field_name) {
-      $query->fieldCondition($field_name, $value);
+  $query->fieldCondition('content_type', $bundle->id);
+  foreach($new_params as $field_name => $details) {
+    $value = $details['value'];
+    switch ($details['op']) {
+      case 'eq':
+        $op = '=';
+        break;
+      case 'gt':
+        $op = '>';
+        break;
+      case 'gte':
+        $op = '>=';
+        break;
+      case 'lt':
+        $op = '<';
+        break;
+      case 'lte':
+        $op = '<=';
+        break;
+      case 'ne':
+        $op = '<>';
+        break;
+      case 'contains':
+        $op = 'CONTAINS';
+        break;
+      case 'starts':
+        $op = 'STARTS WITH';
+        break;
+      default:
+        $op = '=';
     }
+    $query->fieldCondition($field_name, $value, $op);
   }
-  $results = $query->execute();
-
-  // Get the entities from the above search.  We do a direct query of the
-  // table because the load_entity() function is too slow.
-  $query = db_select('tripal_entity', 'TE');
-  $query->fields('TE');
-  $query->condition('id', array_keys($results['TripalEntity']));
   $results = $query->execute();
 
   // Iterate through the entities and add them to the list.
   $i = 0;
-  while($entity = $results->fetchObject()) {
+  foreach ($results['TripalEntity'] as $entity_id => $stub) {
+   $vocabulary = '';
+   $term_name = '';
+
+   // We don't need all of the attached fields for an entity so, we'll
+   // not use the entity_load() function.  Instead just pull it from the
+   // database table.
+   $entity = db_select('tripal_entity', 'TE')
+     ->fields('TE')
+     ->condition('TE.id', $entity_id)
+     ->execute()
+     ->fetchObject();
+
+    //$entity = tripal_load_entity('TripalEntity', array($entity->id));
     $response['member'][] = array(
-      '@id' => $api_url . '/content/' . urlencode($ctype) . '/' .  $entity->id,
-      '@type' => $vocab->vocabulary . ':' . $term->accession,
+      '@id' => url($api_url . '/content/' . urlencode($ctype) . '/' .  $entity->id, array('absolute' => TRUE)),
+      '@type' => $ctype,
       'label' => $entity->title,
       'itemPage' => url('/bio_data/' . $entity->id, array('absolute' => TRUE)),
     );
@@ -416,22 +445,22 @@ function tripal_ws_get_content_type($api_url, &$response, $ws_path, $ctype, $par
   $response['@context']['label'] = 'rdfs:label';
   $response['@context']['itemPage'] = 'schema:itemPage';
 
-  $response['operation'][] = array(
-    '@type' => 'hydra:CreateResourceOperation',
-    'hydra:method' => 'PUT'
-  );
+//   $response['operation'][] = array(
+//     '@type' => 'hydra:CreateResourceOperation',
+//     'hydra:method' => 'PUT'
+//   );
 
-  $response['query'] = array(
-    '@id' => $response['@id'],
-    '@type' => 'IriTemplate',
-    "template" => $response['@id'] . "{?name,}",
-    "mapping" => array(
-      array(
-        "hydra:variable" => 'name',
-        "hydra:property" => 'name',
-      )
-    )
-  );
+//   $response['query'] = array(
+//     '@id' => $response['@id'],
+//     '@type' => 'IriTemplate',
+//     "template" => $response['@id'] . "{?name,}",
+//     "mapping" => array(
+//       array(
+//         "hydra:variable" => 'name',
+//         "hydra:property" => 'name',
+//       )
+//     )
+//   );
 }
 
 /**
@@ -442,7 +471,7 @@ function tripal_ws_get_content_type($api_url, &$response, $ws_path, $ctype, $par
  * @param unknown $entity_id
  * @param unknown $params
  */
-function tripal_ws_get_content_add_fields($entity, $bundle, $api_url, &$response, $ws_path, $ctype, $entity_id, $params) {
+function tripal_ws_services_v0_1_get_content_add_fields($entity, $bundle, $api_url, &$response, $ws_path, $ctype, $entity_id, $params) {
 
 
   // Get information about the fields attached to this bundle and sort them
@@ -485,13 +514,14 @@ function tripal_ws_get_content_add_fields($entity, $bundle, $api_url, &$response
     $field_name = $instance['field_name'];
     $field_settings = $field['settings'];
     $key = $field_name;
-    //$key = strtolower(preg_replace('/ /', '_', $key));
+    $key_adj = strtolower(preg_replace('/ /', '_', $key));
     if (array_key_exists('semantic_web', $field_settings) and $field_settings['semantic_web']) {
       list($vocabulary, $accession) = explode(':', $field_settings['semantic_web']);
       $term = tripal_get_term_details($vocabulary, $accession);
       if ($term) {
         $key = $term['name'];
-        $response['@context'][$key] = array(
+        $key_adj = strtolower(preg_replace('/ /', '_', $key));
+        $response['@context'][$key_adj] = array(
           '@id' => $term['url'],
         );
       }
@@ -502,14 +532,13 @@ function tripal_ws_get_content_add_fields($entity, $bundle, $api_url, &$response
     $instance_settings = $instance['settings'];
     if (array_key_exists('auto_attach', $instance_settings) and
         $instance_settings['auto_attach'] != TRUE) {
-      $response['@context'][$key]['@type'] = '@id';
-      $response[$key] = $api_url . '/content/' . $ctype . '/' . $entity->id . '/' . urlencode($key);
+      $response['@context'][$key_adj]['@type'] = '@id';
+      $response[$key_adj] = url($api_url . '/content/' . $ctype . '/' . $entity->id . '/' . urlencode($key), array('absolute' => TRUE));
       continue;
     }
 
     // Get the details for this field for the JSON-LD response.
-    tripal_ws_get_content_add_field($key, $entity, $field, $instance, $api_url, $response);
-
+    tripal_ws_services_v0_1_get_content_add_field($key_adj, $entity, $field, $instance, $api_url, $response);
   }
 
   // Lastly, add in the terms used into the @context section.
@@ -535,7 +564,7 @@ function tripal_ws_get_content_add_fields($entity, $bundle, $api_url, &$response
  * @param unknown $entity_id
  * @param unknown $params
  */
-function tripal_ws_get_content_find_field($field_arg, $ctype, $entity_id) {
+function tripal_ws_services_v0_1_get_content_find_field($field_arg, $ctype, $entity_id) {
 
   $bundle = tripal_load_bundle_entity(array('label' => $ctype));
   $entity = tripal_load_entity('TripalEntity', array('id' => $entity_id));
@@ -551,12 +580,12 @@ function tripal_ws_get_content_find_field($field_arg, $ctype, $entity_id) {
     $field_settings = $field['settings'];
     if (array_key_exists('semantic_web', $field_settings) and
         $field_settings['semantic_web']) {
-      list($vocabulary, $accession) = explode(':', $field_settings['semantic_web']);
-      $temp_term = tripal_get_term_details($vocabulary, $accession);
-      if ($temp_term['name'] == $field_arg) {
-        return array($entity, $bundle, $field, $instance, $temp_term);
-      }
-    }
+          list($vocabulary, $accession) = explode(':', $field_settings['semantic_web']);
+          $temp_term = tripal_get_term_details($vocabulary, $accession);
+          if ($temp_term['name'] == $field_arg) {
+            return array($entity, $bundle, $field, $instance, $temp_term);
+          }
+        }
   }
 }
 /**
@@ -569,7 +598,7 @@ function tripal_ws_get_content_find_field($field_arg, $ctype, $entity_id) {
  * @param unknown $params
  * @return number
  */
-function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_id, $params) {
+function tripal_ws_services_v0_1_get_content($api_url, &$response, $ws_path, $ctype, $entity_id, $params) {
   // First, add the vocabularies used into the @context section.
   $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
   $response['@context']['hydra'] = 'http://www.w3.org/ns/hydra/core#';
@@ -581,7 +610,7 @@ function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_i
   if (array_key_exists(3, $ws_path)) {
 
     $field_arg = $ws_path[3];
-    list($entity, $bundle, $field, $instance, $term) = tripal_ws_get_content_find_field($field_arg, $ctype, $entity_id);
+    list($entity, $bundle, $field, $instance, $term) = tripal_ws_services_v0_1_get_content_find_field($field_arg, $ctype, $entity_id);
 
     // Next add in the ID and Type for this resources.
     $key = $term['name'];
@@ -592,7 +621,7 @@ function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_i
     field_attach_load($entity->type, array($entity->id => $entity), FIELD_LOAD_CURRENT,
         array('field_id' => $field['id']));
 
-    tripal_ws_get_content_add_field($key, $entity, $field, $instance, $api_url, $response, TRUE);
+    tripal_ws_services_v0_1_get_content_add_field($key, $entity, $field, $instance, $api_url, $response, TRUE);
 
     return;
   }
@@ -611,7 +640,7 @@ function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_i
       $response['@context'][$vocab->vocabulary] = $term->urlprefix;
     }
     else {
-      $response['@context'][$vocab->vocabulary] = $api_url . '/vocab/' . $vocab->vocabulary . '/';
+      $response['@context'][$vocab->vocabulary] = url($api_url . '/vocab/' . $vocab->vocabulary . '/', array('absolute' => TRUE));
     }
   }
 
@@ -620,20 +649,50 @@ function tripal_ws_get_content($api_url, &$response, $ws_path, $ctype, $entity_i
   $entity = reset($entity);
 
   // Next add in the ID and Type for this resources.
-  $response['@id'] = $api_url . '/content/' . $ctype . '/' . $entity_id;
+  $response['@id'] = url($api_url . '/content/' . $ctype . '/' . $entity_id, array('absolute' => TRUE));
   $response['@type'] = $term->name;
   $response['@context'][$term->name] = $term->url;
   $response['label'] = $entity->title;
   $response['itemPage'] = url('/bio_data/' . $entity->id, array('absolute' => TRUE));
 
-  tripal_ws_get_content_add_fields($entity, $bundle, $api_url, $response, $ws_path, $ctype, $entity_id, $params);
+  tripal_ws_services_v0_1_get_content_add_fields($entity, $bundle, $api_url, $response, $ws_path, $ctype, $entity_id, $params);
 
+  //tripal_ws_services_v0_1_write_context($response, $ctype);
 }
 
 /**
  *
+ * @param $response
+ * @param $ctype
  */
-function tripal_ws_get_content_add_field($key, $entity, $field, $instance, $api_url, &$response, $is_field_page = NULL) {
+function tripal_ws_services_v0_1_write_context(&$response, $ctype) {
+  // We want to write the context to a file. Try to open the lock file. if we
+  // can't then just leave the context in the response.
+  $context_uri = file_build_uri("ws.v0_1.$ctype.context.jsonld");
+  $context_file = drupal_realpath($context_uri);
+  $context_URL = file_create_url($context_uri);
+  $lock_fp = fopen("$context_file.lock", "w");
+  if (flock($lock_fp, LOCK_EX|LOCK_NB)) {
+    $fp = fopen("$context_file", "w");
+    if ($fp) {
+      $context = array('@context' => $response['@context']);
+      fwrite($fp, json_encode($context));
+      fflush($fp);
+      // Release the lock.
+      flock($lock_fp, LOCK_UN);
+      // Close the files.
+      fclose($lock_fp);
+      fclose($fp);
+      // Change the context to point to the file
+      $response['@context'] = $context_URL;
+    }
+  }
+}
+
+/**
+*
+*/
+function tripal_ws_services_v0_1_get_content_add_field($key, $entity, $field, $instance, $api_url, &$response, $is_field_page = NULL) {
   // Get the field  settings.
   $field_name = $field['field_name'];
   $field_settings = $field['settings'];
@@ -662,11 +721,10 @@ function tripal_ws_get_content_add_field($key, $entity, $field, $instance, $api_
 
     // Recurse through the values array and set the entity elemtns
     // and add the fields to the context.
-    tripal_ws_get_content_add_field_context($items[$i], $response, $api_url);
+    tripal_ws_services_v0_1_get_content_add_field_context($items[$i], $response, $api_url);
 
     // Add the remaining values to the $values array.
     $values[] = $items[$i]['value'];
-
   }
 
   // If we only have one value then set the response with just the value.
@@ -693,13 +751,13 @@ function tripal_ws_get_content_add_field($key, $entity, $field, $instance, $api_
   // If we have more than one value then set the response to be a collection.
   if (count($values) > 1) {
 
-    // If this is the field page then the Collection is added directly to the
+  // If this is the field page then the Collection is added directly to the
     // response, otherwise, it's added under the field $key.
     if ($is_field_page) {
-      $response['@type'] = 'Collection';
-      $response['totalItems'] = count($values);
-      $response['label'] = $instance['label'];
-      $response['member'] = $values;
+    $response['@type'] = 'Collection';
+        $response['totalItems'] = count($values);
+        $response['label'] = $instance['label'];
+        $response['member'] = $values;
     }
     else {
       $response[$key] = array(
@@ -715,11 +773,11 @@ function tripal_ws_get_content_add_field($key, $entity, $field, $instance, $api_
 /**
  *
  */
-function tripal_ws_get_content_add_field_context(&$items, &$response, $api_url) {
+function tripal_ws_services_v0_1_get_content_add_field_context(&$items, &$response, $api_url) {
 
   foreach ($items as $key => $value) {
     if (is_array($value)) {
-      tripal_ws_get_content_add_field_context($items[$key], $response, $api_url);
+      tripal_ws_services_v0_1_get_content_add_field_context($items[$key], $response, $api_url);
       continue;
     }
 
@@ -729,7 +787,7 @@ function tripal_ws_get_content_add_field_context(&$items, &$response, $api_url) 
         $item_entity = tripal_load_entity($item_etype, array($item_eid));
         $item_entity = reset($item_entity);
         $item_term = tripal_load_term_entity(array('term_id' => $item_entity->term_id));
-        $items['@id'] = $api_url . '/content/' . $item_term->name . '/' . $item_eid;
+        $items['@id'] = url($api_url . '/content/' . $item_term->name . '/' . $item_eid, array('absolute' => TRUE));
       }
       unset($items['entity']);
     }
@@ -742,16 +800,16 @@ function tripal_ws_get_content_add_field_context(&$items, &$response, $api_url) 
  * @param $api_url
  * @param $response
  */
-function tripal_ws_handle_doc_service($api_url, &$response) {
+function tripal_ws_services_v0_1_handle_doc_service($api_url, &$response) {
   // First, add the vocabularies used into the @context section.
   $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
   $response['@context']['hydra'] = 'http://www.w3.org/ns/hydra/core#';
 
   // Next add in the ID for tihs resource.
   $site_name = variable_get('site_name', '');
-  $response['@id'] = $api_url . '/doc/';
+  $response['@id'] = url($api_url . '/doc/', array('absolute' => TRUE));
   $response['title'] =  $site_name . ": RESTful Web Services API";
-  $response['entrypoint'] = $api_url;
+  $response['entrypoint'] = url($api_url, array('absolute' => TRUE));
   $response['description'] = "A fully queryable REST API using JSON-LD and " .
       "discoverable using the WC3 Hydra specification.";
 
@@ -771,7 +829,7 @@ function tripal_ws_handle_doc_service($api_url, &$response) {
  * @param $response
  * @param $ws_path
  */
-function tripal_ws_handle_no_service($api_url, &$response) {
+function tripal_ws_services_v0_1_handle_no_service($api_url, &$response) {
 
   // First, add the vocabularies used into the @context section.
   $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
@@ -780,8 +838,7 @@ function tripal_ws_handle_no_service($api_url, &$response) {
   $response['@context']['schema'] = 'https://schema.org/';
 
   // Next add in the ID for tihs resource.
-  $response['@id'] = $api_url;
-
+  $response['@id'] = url($api_url, array('absolute' => TRUE));
 
   // Start the list.
   $response['@type'] = 'Collection';
@@ -791,28 +848,28 @@ function tripal_ws_handle_no_service($api_url, &$response) {
 
   // Start the list.
   $response['member'][] = array(
-    '@id' => $api_url . '/content/',
+    '@id' => url($api_url . '/content/', array('absolute' => TRUE)),
     '@type' => 'Service',
     'label' => 'Content Types',
     'description' => 'Provides acesss to the biological and ' .
-      'ancilliary data available on this site. Each content type ' .
-      'represents biological data that is defined in a controlled vocabulary '.
-      '(e.g. Sequence Ontology term: gene (SO:0000704)).',
+    'ancilliary data available on this site. Each content type ' .
+    'represents biological data that is defined in a controlled vocabulary '.
+    '(e.g. Sequence Ontology term: gene (SO:0000704)).',
   );
   $response['member'][] = array(
-    '@id' => $api_url . '/doc/',
+    '@id' => url($api_url . '/doc/', array('absolute' => TRUE)),
     '@type' => 'Service',
     'label' => 'API Documentation',
     'description' => 'The WC3 Hydra compatible documentation for this API.',
   );
   $response['member'][] = array(
-    '@id' => $api_url . '/vocab/',
+    '@id' => url($api_url . '/vocab/', array('absolute' => TRUE)),
     '@type' => 'Service',
     'label' => 'Vocabulary',
     'description' => 'Defines in-house locally defined vocabulary terms that ' .
-      'have been added specifically for this site.  These terms are typically ' .
-      'added because no other appropriate term exists in another community-vetted '.
-      'controlled vocabulary.',
+    'have been added specifically for this site.  These terms are typically ' .
+    'added because no other appropriate term exists in another community-vetted '.
+    'controlled vocabulary.',
   );
 
   $response['totalItems'] = count($response['member']);

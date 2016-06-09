@@ -85,9 +85,13 @@ function tripal_field_storage_tquery($conditions) {
 
   $filter = array();
   $entity_ids = array();
+
   foreach ($conditions as $index => $condition) {
 
     $field = $condition['field'];
+    if ($field['storage']['type'] != 'tripal_no_storage') {
+      continue;
+    }
     $field_type = $field['type'];
     $field_module = $field['module'];
     $settings = $field['settings'];

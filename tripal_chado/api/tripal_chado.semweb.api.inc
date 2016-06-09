@@ -191,5 +191,4 @@ function tripal_get_chado_semweb_term($chado_table, $chado_column, $options = ar
 
     return $cvterm->dbxref_id->db_id->name . ':' . $cvterm->dbxref_id->accession;
   }
-
 }

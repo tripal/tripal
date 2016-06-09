@@ -275,12 +275,25 @@ class chado_base__organism_id extends TripalField {
         $entity->{$field_name}['und'][0]['value']['entity'] = 'TripalEntity:' . $fk_entity_id;
       }
 
+      // Add in the semantic web settings.  This array is expected by
+      // other Tripal modules that handle semantic web for fields.
       $entity->{$field_name}['und'][0]['semantic_web'] = array(
         'label' => 'rdfs:label',
         'genus' => tripal_get_chado_semweb_term('organism', 'genus'),
         'species' => tripal_get_chado_semweb_term('organism', 'species'),
         'infraspecific_name' => tripal_get_chado_semweb_term('organism', 'infraspecific_name'),
         'infraspecific_type' => tripal_get_chado_semweb_term('organism', 'type_id'),
+      );
+
+      // Add in subfield mapping to Chado tables. This is used by the
+      // chado_field_storage for performing queries on sub element values.
+      // It should be a comma-separated list (no spacing) of the field names
+      // as foreign keys are followed.
+      $entity->{$field_name}['und'][0]['chado_mapping'] = array(
+        'genus' => 'organism_id,genus',
+        'species' => 'organism_id,genus',
+        'infraspecific_name' => 'organism_id,infraspecific_name',
+        'infraspecific_type' => 'organism_id,infraspecific_type',
       );
     }
   }

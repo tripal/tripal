@@ -92,6 +92,7 @@ class TripalField {
     return $this->field_name;
   }
 
+
   /**
    * A helper function to determine if this field wants to attach to a bundle.
    *

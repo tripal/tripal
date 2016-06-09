@@ -183,6 +183,12 @@ class chado_linker__dbxref extends TripalField {
         );
       }
     }
+    if (count($items) > 0) {
+      $element[$delta] = array(
+        '#type' => 'markup',
+        '#markup' => '',
+      );
+    }
   }
 
   /**

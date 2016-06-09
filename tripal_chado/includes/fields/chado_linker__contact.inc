@@ -271,10 +271,22 @@ class chado_linker__contact extends TripalField {
             'name' => $contact->name,
             'description' => $contact->description,
           ),
+          // Add in the semantic web settings.  This array is expected by
+          // other Tripal modules that handle semantic web for fields.
           'semantic_web' => array(
             'type' => $contact->type_id->dbxref_id->db_id->name . ':' . $contact->type_id->dbxref_id->accession,
             'name' => tripal_get_chado_semweb_term('contact', 'name'),
             'description' => tripal_get_chado_semweb_term('contact', 'description'),
+          ),
+          // Add in subfield mapping to Chado tables. This is used by the
+          // chado_field_storage for performing queries on sub element values.
+          // It should be a comma-separated list (no spacing) of the field names
+          // as foreign keys are followed starting from the Chado table to which
+          // this field maps.
+          'chado_mapping' => array(
+            'type' => 'type_id,name',
+            'name' => 'contact_id,name',
+            'description' => 'contact_id,name'
           ),
           $field_table . '__' . $pkey => $contact_linker->$pkey,
           $field_table . '__' . $fkey_lcolumn => $contact_linker->$fkey_lcolumn->$fkey_lcolumn,

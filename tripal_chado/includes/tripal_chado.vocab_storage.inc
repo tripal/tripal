@@ -81,6 +81,9 @@ function tripal_chado_vocab_import_form_submit($form, &$form_state) {
 }
 /**
  * Implements hook_vocab_select_term_form().
+ *
+ * TODO: can't this be moved over to the tripal module and remove the
+ *  Chado specific parts???
  */
 function tripal_chado_vocab_select_term_form($form, &$form_state) {
   $term_name = array_key_exists('values', $form_state) ? $form_state['values']['term_name'] : '';
@@ -138,7 +141,7 @@ function tripal_chado_vocab_select_term_form($form, &$form_state) {
          '#title' =>  $term->name,
          '#default_value' => $default,
          '#attributes' => $attrs,
-         '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name .
+         '#description' => '<b>Vocabulary:</b> ' . $term->cv_id->name . ' (' . $term->dbxref_id->db_id->name . ') ' . $term->cv_id->definition .
              '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
              '<br><b>Definition:</b>  ' . $term->definition,
        );

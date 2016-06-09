@@ -304,17 +304,19 @@ function tripal_entity_view($entity, $type, $view_mode, $langcode) {
         $entity->content[$child_name]['#suffix'] .= '</div>';
       }
 
-      // Add a tooltip to the field.
+      // Add a tooltip to the field for the term.
       $field = field_info_field($child_name);
       if (array_key_exists('settings', $field) and
           array_key_exists('semantic_web', $field['settings'])) {
         list($vocabulary, $accession) = explode(':', $field['settings']['semantic_web']);
         $term = tripal_get_term_details($vocabulary, $accession);
         if ($term) {
+          $tooltip_img = url(drupal_get_path('module', 'tripal') . '/theme/images/info.gif');
+          $tooltip_text = $term['definition'] ? $term['definition'] : $term['name'];
           $entity->content[$child_name]['#prefix'] .= '' .
             '<div class="tripal-tooltip">' .
-              '<img src="' . url(drupal_get_path('module', 'tripal') . '/theme/images/info.gif') . '">' .
-              '<div class="tripal-tooltiptext">' . $term['definition'] . '</div>' .
+              '<img src="' . $tooltip_img . '">' .
+              '<div class="tripal-tooltiptext">' . $tooltip_text . '</div>' .
             '</div>';
         }
       }
