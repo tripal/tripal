@@ -37,16 +37,16 @@ function tripal_ws_menu() {
   );
 
   // Tripal Web Services setting groups
-  $items['admin/tripal/ws'] = array(
+  $items['admin/tripal/storage/ws'] = array(
     'title' => 'Web Services',
-    'description' => t("Exchange data between Tripal sites using the web services."),
+    'description' => t("Import data from other Tripal sites using the web services."),
     'weight' => 20,
     'page callback' => 'system_admin_menu_block_page',
     'access arguments' => array('administer tripal'),
     'file' => 'system.admin.inc',
     'file path' => drupal_get_path('module', 'system'),
   );
-  $items['admin/tripal/ws/tripal_sites'] = array(
+  $items['admin/tripal/storage/ws/tripal_sites'] = array(
     'title' => 'Other Tripal Sites',
     'description' => t('Provides information about other Tripal sites.
         This allows data exchange and communication betwen Tripal
@@ -58,6 +58,28 @@ function tripal_ws_menu() {
     'weight' => 0,
     'file' => 'includes/tripal_ws.admin.inc',
     'file path' => drupal_get_path('module', 'tripal_ws'),
+  );
+  $items['admin/tripal/storage/ws/tripal_sites/edit'] = array(
+    'title' => 'Add Tripal Site',
+    'description' => 'Add a Tripal site',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_ws_tripal_sites_edit_form'),
+    'access arguments' => array('administer tripal'),
+    'file' =>  'includes/tripal_ws.admin.inc',
+    'file path' => drupal_get_path('module', 'tripal_ws'),
+    'type' => MENU_LOCAL_ACTION,
+    'weight' => 2
+  );
+  $items['admin/tripal/storage/ws/tripal_sites/remove/%'] = array(
+    'title' => 'Remove Tripal Site',
+    'description' => 'Remove a Tripal site',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_ws_tripal_sites_remove_form', 6),
+    'access arguments' => array('administer tripal'),
+    'file' =>  'includes/tripal_ws.admin.inc',
+    'file path' => drupal_get_path('module', 'tripal_ws'),
+    'type' => MENU_CALLBACK,
+    'weight' => 2
   );
   return $items;
 }
