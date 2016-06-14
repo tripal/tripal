@@ -5,6 +5,23 @@
  */
 
 /**
+ * Implements of hook_views_plugins().
+ */
+function tripal_views_plugins() {
+  return array(
+    'module' => 'tripal',
+    'query' => array(
+      'tripal_views_query' => array(
+        'title' => t('Tripal Entity Query'),
+        'help' => t('Query that allows you to search with Tripal entities.'),
+        'handler' => 'tripal_views_query',
+        'parent' => 'views_query',
+      ),
+    ),
+  );
+}
+
+/**
  * Describe various Tripal Core systems to Views
  *   for the creation of administrative views.
  *
@@ -15,6 +32,60 @@ function tripal_views_data() {
   // Job Management System
   $data = tripal_views_data_jobs($data);
 
+  $data += tripal_entity_views_data();
+
+  return $data;
+}
+
+/**
+ * Integrates the TripalEntity entities with Drupal Views.
+ */
+function tripal_entity_views_data() {
+  $data = array();
+
+  // Get the list of all of the bundles (entity types) and add them
+  // as "base tables" for views.
+  $bundles = db_select('tripal_bundle', 'tb')
+    ->fields('tb')
+    ->execute();
+
+  // Iterate through the bundles.
+  while ($bundle = $bundles->fetchObject()) {
+
+    // Each bundle gets it's own "table".
+    $data[$bundle->name]['table']['group'] = t('Tripal ' . $bundle->label . ' page');
+    $data[$bundle->name]['table']['base'] = array(
+      'query class' => 'tripal_views_query',
+      'title' => t('Tripal ' . $bundle->label . ' page'),
+      'help' => t('Searches Tripal ' . $bundle->label . ' pages'),
+    );
+
+    // Now add the fields to the bundle.
+    $instances = field_info_instances('TripalEntity', $bundle->name);
+    foreach ($instances as $instance) {
+
+      $field_handler = 'views_handler_field_numeric';
+      $filter_handler = 'views_handler_filter_numeric';
+      $sort_handler = 'views_handler_sort';
+      $click_sortable = TRUE;
+
+      $field_name = $instance['field_name'];
+      $data[$bundle->name][$field_name] = array(
+        'title' => $instance['label'],
+        'help' => $instance['description'],
+        'field' => array(
+          'handler' => $field_handler,
+          'click sortable' => $click_sortable,
+        ),
+        'filter' => array(
+          'handler' => $filter_handler,
+        ),
+        'sort' => array(
+          'handler' => $sort_handler,
+        ),
+      );
+    }
+  }
   return $data;
 }
 
