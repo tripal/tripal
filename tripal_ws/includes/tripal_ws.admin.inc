@@ -143,28 +143,50 @@ function tripal_ws_tripal_sites_edit_form_validate($form, &$form_state) {
     // Make sure URL does not already exist
     else if ($form_state['clicked_button']['#name'] =='save') {
       $url = $form_state['values']['url'];
-      $check = NULL;
+      $version = $form_state['values']['version'];
+      $name = $form_state['values']['name'];
+      $check_url = NULL;
+      $check_name = NULL;
       // When updating a record
       if ($form_state['values']['id']) {
-        $check =
+        $check_url =
         db_select('tripal_sites', 'ts')
         ->fields('ts', array('id'))
         ->condition('url', $url)
+        ->condition('version', $version)
+        ->condition('id', $form_state['values']['id'], '<>')
+        ->execute()
+        ->fetchField();
+        $check_name =
+        db_select('tripal_sites', 'ts')
+        ->fields('ts', array('id'))
+        ->condition('name', $name)
         ->condition('id', $form_state['values']['id'], '<>')
         ->execute()
         ->fetchField();
       }
       // When inserting a record
       else {
-        $check =
+        $check_url =
         db_select('tripal_sites', 'ts')
         ->fields('ts', array('id'))
         ->condition('url', $url)
+        ->condition('version', $version)
+        ->execute()
+        ->fetchField();
+        $check_name =
+        db_select('tripal_sites', 'ts')
+        ->fields('ts', array('id'))
+        ->condition('name', $name)
         ->execute()
         ->fetchField();
       }
-      if ($check) {
-        form_set_error('url', t('The URL is used by another site.'));
+      if ($check_url) {
+        form_set_error('url', t('The URL and version is used by another site.'));
+        form_set_error('version');
+      }
+      if ($check_name) {
+        form_set_error('name', t('The name is used by another site.'));
       }
     }
   }
