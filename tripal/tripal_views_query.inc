@@ -53,7 +53,10 @@ class tripal_views_query extends views_plugin_query {
         field_attach_load($entity->type, array($entity->id => $entity), FIELD_LOAD_CURRENT,
             array('field_id' => $field['id']));
         $items = field_get_items('TripalEntity', $entity, $field_name);
-        $row->$field_name = $items[0]['value'];
+        //$row->$field_name = field_view_field('TripalEntity', $entity, $field_name);
+        $value = $items[0]['value'];
+        $row->entity = $entity;
+        $row->$field_name = $value;
       }
 
       // Add the row to the results list.
