@@ -432,7 +432,7 @@ function tripal_chado_field_storage_tquery($conditions) {
     // Set the value for this field search.
     $value = NULL;
     $subfields = explode('.', $filter);
-    print_r($subfields);
+    //print_r($subfields);
     if (count($subfields) > 1) {
       // Get the term for this field's column and replace the field_name with
       // the term.  We need to do this for the recursive function to work.
@@ -491,8 +491,8 @@ function tripal_chado_field_storage_tquery($conditions) {
   // Iterate through the filters and perform the query
   $entity_ids = array();
   foreach ($filters as $chado_table => $values) {
-    print_r($chado_table);
-    print_r($values);
+    //print_r($chado_table);
+    //print_r($values);
     // First get the matching record IDs from the Chado table.
     $schema = chado_get_schema($chado_table);
     $pkey = $schema['primary key'][0];

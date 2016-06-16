@@ -64,12 +64,21 @@ function tripal_entity_views_data() {
     $instances = field_info_instances('TripalEntity', $bundle->name);
     foreach ($instances as $instance) {
 
-      $field_handler = 'views_handler_field_numeric';
-      $filter_handler = 'views_handler_filter_numeric';
+      // TODO: how to determine which handler to use for each field? Perhaps
+      // fields should set their type and here we use that type to determine
+      // which handler to use. If not handler is specified then we use
+      // a default string handler.
+      $field_handler = 'views_handler_field';
+      $filter_handler = 'views_handler_filter';
       $sort_handler = 'views_handler_sort';
       $click_sortable = TRUE;
 
       $field_name = $instance['field_name'];
+
+      if ($field_name == 'feature__organism_id') {
+        $field_handler = 'chado_views_handler_field_chado_base__organism_id';
+      }
+
       $data[$bundle->name][$field_name] = array(
         'title' => $instance['label'],
         'help' => $instance['description'],

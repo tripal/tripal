@@ -1692,8 +1692,8 @@ function tripal_cv_add_obo_defaults() {
   $ontologies = array(
     // array('Relationship Ontology', 'http://purl.obolibrary.org/obo/ro.obo'),
     // array('Relationship Ontology (older deprecated version)', 'http://www.obofoundry.org/ro/ro.obo'),
-    array('Sequence Ontology', 'https://raw.githubusercontent.com/The-Sequence-Ontology/SO-Ontologies/master/so-xp-simple.obo'),
-    array('Gene Ontology', 'http://geneontology.org/ontology/go.obo'),
+    array('Sequence Ontology', 'http://purl.obolibrary.org/obo/so.obo'),
+    array('Gene Ontology', 'http://purl.obolibrary.org/obo/go.obo'),
     //    array('Cell Ontology', 'https://raw.githubusercontent.com/obophenotype/cell-ontology/master/cl.obo'),
     //    array('Plant Structure Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_anatomy.obo?view=co'),
     //    array('Plant Growth and Development Stages Ontology', 'http://palea.cgrb.oregonstate.edu/viewsvn/Poc/trunk/ontology/OBO_format/po_temporal.obo?view=co')
