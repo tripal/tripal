@@ -78,9 +78,6 @@ function tripal_entity_views_data() {
       if ($field_name == 'content_type') {
         $field_handler = 'views_handler_field';
       }
-      else if ($field_name == 'feature__organism_id') {
-        $field_handler = 'chado_views_handler_field_chado_base__organism_id';
-      }
 
       $data[$bundle->name][$field_name] = array(
         'title' => $instance['label'],
