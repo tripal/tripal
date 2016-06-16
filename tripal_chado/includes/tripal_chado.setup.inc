@@ -1691,7 +1691,7 @@ function tripal_cv_add_obo_defaults() {
   // Insert commonly used ontologies into the tables.
   $ontologies = array(
     // array('Relationship Ontology', 'http://purl.obolibrary.org/obo/ro.obo'),
-    // array('Relationship Ontology (older deprecated version)', 'http://www.obofoundry.org/ro/ro.obo'),
+    array('Relationship Ontology (legacy)', '{tripal_chado}/files/legacy_ro.obo'),
     array('Sequence Ontology', 'http://purl.obolibrary.org/obo/so.obo'),
     array('Gene Ontology', 'http://purl.obolibrary.org/obo/go.obo'),
     //    array('Cell Ontology', 'https://raw.githubusercontent.com/obophenotype/cell-ontology/master/cl.obo'),
