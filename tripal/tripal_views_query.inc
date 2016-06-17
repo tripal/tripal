@@ -75,7 +75,7 @@ class tripal_views_query extends views_plugin_query {
       }
     }
 
-    $view->total_rows = count($rows);
+    $view->total_rows = count($view->result);
     $view->pager['current_page'] = 0;
   }
 }
