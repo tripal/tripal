@@ -45,6 +45,10 @@ class tripal_views_query extends views_plugin_query {
       $entity = tripal_load_entity('TripalEntity', array('id' => $entity_id));
       $entity = reset($entity);
 
+      // Get the filters
+      $filters = $view->filter;
+      $exclude = FALSE;
+      
       // Iterate through the fields that are added to the view and attach those
       // to the entity.  After attaching we can get the value and include
       // it in the output results.
@@ -53,14 +57,22 @@ class tripal_views_query extends views_plugin_query {
         field_attach_load($entity->type, array($entity->id => $entity), FIELD_LOAD_CURRENT,
             array('field_id' => $field['id']));
         $items = field_get_items('TripalEntity', $entity, $field_name);
-        //$row->$field_name = field_view_field('TripalEntity', $entity, $field_name);
         $value = $items[0]['value'];
+
+        // Filter the $value here
+        $filter = key_exists($field_name, $filters) ? $filters[$field_name] : NULL;
+        if ($filter && trim($filter->value)) {
+          $exclude = $filter->exclude($value);
+        }
+        
         $row->entity = $entity;
         $row->$field_name = $value;
       }
 
       // Add the row to the results list.
-      $view->result[] = $row;
+      if (!$exclude) {
+        $view->result[] = $row;
+      }
     }
 
     $view->total_rows = count($rows);

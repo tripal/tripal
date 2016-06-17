@@ -69,7 +69,7 @@ function tripal_entity_views_data() {
       // which handler to use. If not handler is specified then we use
       // a default string handler.
       $field_handler = 'tripal_views_handler_field_entity_default_formatter';
-      $filter_handler = 'views_handler_filter';
+      $filter_handler = 'tripal_views_handler_filter_entity_string';
       $sort_handler = 'views_handler_sort';
       $click_sortable = TRUE;
 
