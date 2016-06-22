@@ -63,6 +63,7 @@ class tripal_views_query extends views_plugin_query {
         $filter = key_exists($field_name, $filters) ? $filters[$field_name] : NULL;
         if ($filter && trim($filter->value)) {
           $exclude = $filter->exclude($value);
+          continue;
         }
         
         $row->entity = $entity;
