@@ -18,6 +18,8 @@ class TripalFieldQuery {
   protected $fs_order = array();
   // An associative array of the filters to apply.
   protected $conditions = array();
+  // An associative array of the sorting.
+  protected $orderBy = array();
 
   /**
    *

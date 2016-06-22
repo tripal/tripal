@@ -637,18 +637,5 @@ class TripalField {
   public static function viewsDataAlter(&$data, $field, $entity_info) {
 
   }
-  
-  /**
-   * Sort data by the field
-   *
-   * This function takes an array of data and performs sorting by the
-   * specified field
-   * 
-   * @return
-   * 
-   */
-  public static function sort(&$data, $criteria = 'ASC') {
-  
-  }
 
 }

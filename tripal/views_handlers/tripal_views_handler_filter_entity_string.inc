@@ -244,29 +244,4 @@ class tripal_views_handler_filter_entity_string extends views_handler_filter {
 
   function op_empty($field) {
   }
-
-  function exclude ($value) {
-    $op = $this->operator;
-    $input = $this->value;
-    switch ($op) {
-      case '=':
-        return $value == $input ? FALSE : TRUE;
-      case '!=':
-        return $value != $input ? FALSE : TRUE;
-      case 'contains':
-        return preg_match("/$input/", $value) ? FALSE : TRUE;
-      case 'not':
-        return preg_match("/$input/", $value) ? TRUE : FALSE;
-      case 'starts':
-        return preg_match("/^$input/", $value) ? FALSE : TRUE;
-      case 'not_starts':
-        return preg_match("/^$input/", $value) ? TRUE : FALSE;
-      case 'ends':
-        return preg_match("/$input$/", $value) ? FALSE : TRUE;
-      case 'not_ends':
-        return preg_match("/$input$/", $value) ? TRUE : FALSE;
-        
-      return FALSE;
-    }
-  }
 }

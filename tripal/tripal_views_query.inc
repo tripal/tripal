@@ -35,6 +35,9 @@ class tripal_views_query extends views_plugin_query {
     // must be with the content_type field.
     $query = new TripalFieldQuery();
     $query->fieldCondition('content_type', $bundle->id);
+    foreach ($view->filter as $field_name => $handler) {
+      $query->fieldCondition($field_name, $handler->value, $handler->operator);
+    }
 
     $results = $query->execute();
     foreach ($results['TripalEntity'] as $entity_id => $stub) {
@@ -45,10 +48,6 @@ class tripal_views_query extends views_plugin_query {
       $entity = tripal_load_entity('TripalEntity', array('id' => $entity_id));
       $entity = reset($entity);
 
-      // Get the filters
-      $filters = $view->filter;
-      $exclude = FALSE;
-      
       // Iterate through the fields that are added to the view and attach those
       // to the entity.  After attaching we can get the value and include
       // it in the output results.
@@ -59,21 +58,13 @@ class tripal_views_query extends views_plugin_query {
         $items = field_get_items('TripalEntity', $entity, $field_name);
         $value = $items[0]['value'];
 
-        // Filter the $value here
-        $filter = key_exists($field_name, $filters) ? $filters[$field_name] : NULL;
-        if ($filter && trim($filter->value)) {
-          $exclude = $filter->exclude($value);
-          continue;
-        }
-        
         $row->entity = $entity;
         $row->$field_name = $value;
       }
 
       // Add the row to the results list.
-      if (!$exclude) {
-        $view->result[] = $row;
-      }
+      $view->result[] = $row;
+
     }
 
     $view->total_rows = count($view->result);

@@ -365,6 +365,14 @@ class chado_base__organism_id extends TripalField {
     return $element;
   }
 
+  /**
+   *
+   * @param unknown $data
+   * @param string $criteria
+   */
+  public static function sort(&$data, $criteria = 'ASC') {
+
+  }
 }
 
 
@@ -391,4 +399,6 @@ function chado_base__organism_id_widget_validate($element, &$form_state) {
   if (!$organism_id) {
     form_error($element, t("Please specify an organism."));
   }
+
+
 }
