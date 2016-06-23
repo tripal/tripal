@@ -35,36 +35,47 @@ class tripal_views_query extends views_plugin_query {
     // must be with the content_type field.
     $query = new TripalFieldQuery();
     $query->fieldCondition('content_type', $bundle->id);
+    // Apply filters
     foreach ($view->filter as $field_name => $handler) {
-      $query->fieldCondition($field_name, $handler->value, $handler->operator);
+      if (trim($handler->value)) {
+        $query->fieldCondition($field_name, $handler->value, $handler->operator);
+      }
+    }
+    // Apply sorting
+    foreach ($view->sort as $field_name => $sort) {
+      $options = $sort->options;
+      $query->fieldOrderBy($field_name, $options['order']);
     }
 
     $results = $query->execute();
-    foreach ($results['TripalEntity'] as $entity_id => $stub) {
-      // Begin a new row for Views output.
-      $row = new stdClass;
 
-      // Get the entity object.
-      $entity = tripal_load_entity('TripalEntity', array('id' => $entity_id));
-      $entity = reset($entity);
-
-      // Iterate through the fields that are added to the view and attach those
-      // to the entity.  After attaching we can get the value and include
-      // it in the output results.
-      foreach($view->field as $field_name => $handler) {
-        $field = field_info_field($field_name);
-        field_attach_load($entity->type, array($entity->id => $entity), FIELD_LOAD_CURRENT,
-            array('field_id' => $field['id']));
-        $items = field_get_items('TripalEntity', $entity, $field_name);
-        $value = $items[0]['value'];
-
-        $row->entity = $entity;
-        $row->$field_name = $value;
+    if (count($results) > 0) {
+      foreach ($results['TripalEntity'] as $entity_id => $stub) {
+        // Begin a new row for Views output.
+        $row = new stdClass;
+  
+        // Get the entity object.
+        $entity = tripal_load_entity('TripalEntity', array('id' => $entity_id));
+        $entity = reset($entity);
+  
+        // Iterate through the fields that are added to the view and attach those
+        // to the entity.  After attaching we can get the value and include
+        // it in the output results.
+        foreach($view->field as $field_name => $handler) {
+          $field = field_info_field($field_name);
+          field_attach_load($entity->type, array($entity->id => $entity), FIELD_LOAD_CURRENT,
+              array('field_id' => $field['id']));
+          $items = field_get_items('TripalEntity', $entity, $field_name);
+          $value = $items[0]['value'];
+  
+          $row->entity = $entity;
+          $row->$field_name = $value;
+        }
+  
+        // Add the row to the results list.
+        $view->result[] = $row;
+  
       }
-
-      // Add the row to the results list.
-      $view->result[] = $row;
-
     }
 
     $view->total_rows = count($view->result);

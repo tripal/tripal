@@ -402,7 +402,7 @@ class chado_feature__residues extends TripalField {
    * @param unknown $featurelocs
    * @return multitype:|Ambigous <multitype:, an>
    */
-  private function get_featureloc_sequences($feature_id, $featurelocs) {
+  private static function get_featureloc_sequences($feature_id, $featurelocs) {
 
     // if we don't have any featurelocs then no point in continuing
     if (!$featurelocs) {
@@ -546,7 +546,7 @@ class chado_feature__residues extends TripalField {
    *
    * @ingroup tripal_feature
    */
-  private function get_aggregate_relationships($feature_id, $substitute=1,
+  private static function get_aggregate_relationships($feature_id, $substitute=1,
       $levels=0, $base_type_id=NULL, $depth=0) {
 
     // we only want to recurse to as many levels deep as indicated by the
@@ -571,7 +571,7 @@ class chado_feature__residues extends TripalField {
    *
    * @ingroup tripal_feature
    */
-  private function get_relationships($feature_id, $side = 'as_subject') {
+  private static function get_relationships($feature_id, $side = 'as_subject') {
     // get the relationships for this feature.  The query below is used for both
     // querying the object and subject relationships
     $sql = "
@@ -635,7 +635,7 @@ class chado_feature__residues extends TripalField {
    *
    * @ingroup tripal_feature
    */
-  private function get_featurelocs($feature_id, $side = 'as_parent', $aggregate = 1) {
+  private static function get_featurelocs($feature_id, $side = 'as_parent', $aggregate = 1) {
 
     $sql = "
     SELECT

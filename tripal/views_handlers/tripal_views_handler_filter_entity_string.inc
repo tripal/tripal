@@ -29,6 +29,7 @@ class tripal_views_handler_filter_entity_string extends views_handler_filter {
    * adding/removing items from this array.
    */
   function operators() {
+    // The operators keys must match the ones used in the TripalFieldQuery
     $operators = array(
       '=' => array(
         'title' => t('Is equal to'),
@@ -36,43 +37,43 @@ class tripal_views_handler_filter_entity_string extends views_handler_filter {
         'method' => 'op_equal',
         'values' => 1,
       ),
-      '!=' => array(
+      '<>' => array(
         'title' => t('Is not equal to'),
         'short' => t('!='),
         'method' => 'op_equal',
         'values' => 1,
       ),
-      'contains' => array(
+      'CONTAINS' => array(
         'title' => t('Contains'),
         'short' => t('contains'),
         'method' => 'op_contains',
         'values' => 1,
       ),
-      'starts' => array(
+      'STARTS WITH' => array(
         'title' => t('Starts with'),
         'short' => t('begins'),
         'method' => 'op_starts',
         'values' => 1,
       ),
-      'not_starts' => array(
+      'NOT STARTS' => array(
         'title' => t('Does not start with'),
         'short' => t('not_begins'),
         'method' => 'op_not_starts',
         'values' => 1,
       ),
-      'ends' => array(
+      'ENDS WITH' => array(
         'title' => t('Ends with'),
         'short' => t('ends'),
         'method' => 'op_ends',
         'values' => 1,
       ),
-      'not_ends' => array(
+      'NOT ENDS' => array(
         'title' => t('Does not end with'),
         'short' => t('not_ends'),
         'method' => 'op_not_ends',
         'values' => 1,
       ),
-      'not' => array(
+      'NOT' => array(
         'title' => t('Does not contain'),
         'short' => t('!has'),
         'method' => 'op_not',

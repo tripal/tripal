@@ -448,7 +448,6 @@ function tripal_chado_field_storage_tquery($conditions) {
       $value = $condition['value'];
     }
 
-
     // Use the appropriate operator.
     $operator = $condition['operator'];
     switch ($operator) {
@@ -466,7 +465,7 @@ function tripal_chado_field_storage_tquery($conditions) {
         break;
       case '<>':
         $filters[$chado_table][$chado_column] = array(
-          'op' => 'NOT',
+          'op' => '<>',
           'data' => $value,
         );
         break;
@@ -476,10 +475,34 @@ function tripal_chado_field_storage_tquery($conditions) {
           'data' => '%' . $value . '%',
         );
         break;
+      case 'NOT':
+        $filters[$chado_table][$chado_column] = array(
+        'op' => 'NOT LIKE',
+        'data' => '%' . $value . '%',
+        );
+        break;
       case 'STARTS WITH':
         $filters[$chado_table][$chado_column] = array(
           'op' => 'LIKE',
           'data' => $value . '%',
+        );
+        break;
+      case 'NOT STARTS':
+        $filters[$chado_table][$chado_column] = array(
+        'op' => 'NOT LIKE',
+        'data' => $value . '%',
+        );
+        break;
+      case 'ENDS WITH':
+        $filters[$chado_table][$chado_column] = array(
+        'op' => 'LIKE',
+        'data' => '%' . $value,
+        );
+        break;
+      case 'NOT ENDS':
+        $filters[$chado_table][$chado_column] = array(
+        'op' => 'NOT LIKE',
+        'data' => '%' . $value,
         );
         break;
       default:
@@ -505,12 +528,14 @@ function tripal_chado_field_storage_tquery($conditions) {
 
     // Next look for matching IDs in the chado_entity table.
     $filter_ids = array();
-    $results = db_select('chado_entity', 'CE')
-      ->fields('CE', array('entity_id'))
-      ->condition('record_id', $record_ids)
-      ->execute();
-    while ($result = $results->fetchObject()) {
-      $filter_ids[] = $result->entity_id;
+    if (count($record_ids) > 0) {
+      $results = db_select('chado_entity', 'CE')
+        ->fields('CE', array('entity_id'))
+        ->condition('record_id', $record_ids)
+        ->execute();
+      while ($result = $results->fetchObject()) {
+        $filter_ids[] = $result->entity_id;
+      }
     }
 
     // Take the intersection of IDs in this filter with those in the

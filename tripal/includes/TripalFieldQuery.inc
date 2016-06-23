@@ -19,7 +19,7 @@ class TripalFieldQuery {
   // An associative array of the filters to apply.
   protected $conditions = array();
   // An associative array of the sorting.
-  protected $orderBy = array();
+  protected $order = array();
 
   /**
    *
@@ -61,6 +61,36 @@ class TripalFieldQuery {
     return $this;
   }
 
+  /**
+   * Orders the result set by a given field column.
+   * 
+   * @param $field
+   * @param $column
+   * @param $direction
+   * @throws EntityFieldQueryException
+   * @return TripalFieldQuery
+   */
+  public function fieldOrderBy($field_name, $direction = 'ASC') {
+    if (is_scalar($field_name)) {
+      $field_definition = field_info_field($field_name);
+      if (empty($field_definition)) {
+        throw new EntityFieldQueryException(t('Unknown field: @field_name', array('@field_name' => $field_name)));
+      }
+      $field_name = $field_definition;
+    }
+    // Save the index used for the new field, for later use in field storage.
+    $index = count($this->fields);
+    $this->fields[$index] = $field_name;
+    $this->order[] = array(
+      'type' => 'field',
+      'specifier' => array(
+        'field' => $field_name,
+        'index' => $index,
+      ),
+      'direction' => $direction,
+    );
+    return $this;
+  }
 
   /**
    * Executes the query and returns results.
@@ -79,7 +109,8 @@ class TripalFieldQuery {
     // Are there any conditions?  If so, then let the field storage
     // systems handle the query. If there are no fields then just pull out
     // the list of entities.
-    //dpm($this->conditions);
+    // dpm($this->conditions);
+    // dpm($this->order);
 
     $entity_ids = array();
     if (count($this->conditions) > 0) {
@@ -112,6 +143,11 @@ class TripalFieldQuery {
       while ($entity_id = $results->fetchField()) {
         $entity_ids[] = $entity_id;
       }
+    }
+    
+    // Order the entities by the field
+    if (count($this->order) > 0) {
+      
     }
 
     // Generate the entities for the keys.
