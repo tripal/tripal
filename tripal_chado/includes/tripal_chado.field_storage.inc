@@ -412,7 +412,7 @@ function tripal_chado_field_storage_expand_field($item_name, $value) {
  *
  * @param $conditions
  */
-function tripal_chado_field_storage_tquery($conditions) {
+function tripal_chado_field_storage_tquery($conditions, $sort) {
   $filters = array();
   $entity_ids = array();
 

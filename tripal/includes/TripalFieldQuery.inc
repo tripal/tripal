@@ -10,16 +10,7 @@
  */
 class TripalFieldQuery {
 
-
-  // A list of the field storage instances for the fields in the filter.
-  protected $field_storage = array();
-  // The order in which the field storage execute() function should be
-  // called.
-  protected $fs_order = array();
-  // An associative array of the filters to apply.
-  protected $conditions = array();
-  // An associative array of the sorting.
-  protected $order = array();
+  protected $options = array();
 
   /**
    *
@@ -47,48 +38,43 @@ class TripalFieldQuery {
 
     if ($field) {
       $field_storage_type = $field['storage']['type'];
-      $this->conditions[$field_storage_type][] = array(
+      $this->options[$field_storage_type]['filters'][] = array(
         'field' => $field,
         'filter' => $field_name,
         'value' => $value,
         'operator' => $operator,
       );
-      if (!array_key_exists($field_storage_type, $this->field_storage)) {
-        $this->field_storage[$field_storage_type] = $field['storage'];
-        $this->fs_order[] = $field_storage_type;
-      }
     }
     return $this;
   }
 
   /**
    * Orders the result set by a given field column.
-   * 
-   * @param $field
-   * @param $column
+   *
+   * @param $field_name
    * @param $direction
-   * @throws EntityFieldQueryException
+   *
    * @return TripalFieldQuery
    */
   public function fieldOrderBy($field_name, $direction = 'ASC') {
-    if (is_scalar($field_name)) {
-      $field_definition = field_info_field($field_name);
-      if (empty($field_definition)) {
-        throw new EntityFieldQueryException(t('Unknown field: @field_name', array('@field_name' => $field_name)));
-      }
-      $field_name = $field_definition;
+
+    // See if there is a subfield as part of the field_name.
+    $subfields = explode('.', $field_name);
+    if ($subfields > 1) {
+      $field = field_info_field($subfields[0]);
     }
-    // Save the index used for the new field, for later use in field storage.
-    $index = count($this->fields);
-    $this->fields[$index] = $field_name;
-    $this->order[] = array(
-      'type' => 'field',
-      'specifier' => array(
-        'field' => $field_name,
-        'index' => $index,
-      ),
-      'direction' => $direction,
-    );
+    else {
+      $field = field_info_field($field_name);
+    }
+
+    if ($field) {
+      $field_storage_type = $field['storage']['type'];
+      $this->options[$field_storage_type]['sort'][] = array(
+        'field' => $field,
+        'orderBy' => $field_name,
+        'direction' => $direction,
+      );
+    }
     return $this;
   }
 
@@ -106,23 +92,33 @@ class TripalFieldQuery {
    *  function are used.
    */
   public function execute() {
-    // Are there any conditions?  If so, then let the field storage
+    // Are there any filters?  If so, then let the field storage
     // systems handle the query. If there are no fields then just pull out
     // the list of entities.
-    // dpm($this->conditions);
-    // dpm($this->order);
+    // dpm($this->filters);
+    // dpm($this->sort);
 
     $entity_ids = array();
-    if (count($this->conditions) > 0) {
+    if (count($this->options) > 0) {
       // Iterate through each of the field storage types and run their
       // tquery() function.
-      foreach ($this->fs_order as $field_storage_type) {
-        $storage = $this->field_storage[$field_storage_type];
+      foreach ($this->options as $field_storage_type => $option) {
+        $filters = array_key_exists('filters', $option) ? $option['filters'] : array();
+        $sort = array_key_exists('sort', $option) ? $option['sort'] : array();
+
+        // Get the storage infor for the fields that belong to this type.
+        // We can get it from the first field.
+        if (count($filters) > 0) {
+          $storage = $filters[0]['field']['storage'];
+        }
+        else {
+          $storage = $sort[0]['field']['storage'];
+        }
         $module = $storage['module'];
         $function_name = $module . '_field_storage_tquery';
         $filter_ids = array();
         if (function_exists($function_name)) {
-          $filter_ids = $function_name($this->conditions[$field_storage_type]);
+          $filter_ids = $function_name($filters, $sort);
         }
         // Take the intersection of IDs in this filter with those in the
         // final $entity_ids;
@@ -144,10 +140,10 @@ class TripalFieldQuery {
         $entity_ids[] = $entity_id;
       }
     }
-    
+
     // Order the entities by the field
     if (count($this->order) > 0) {
-      
+
     }
 
     // Generate the entities for the keys.

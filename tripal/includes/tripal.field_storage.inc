@@ -81,7 +81,7 @@ function tripal_field_storage_query($query) {
  *
  * @param $conditions
  */
-function tripal_field_storage_tquery($conditions) {
+function tripal_field_storage_tquery($conditions, $sort) {
 
   $filter = array();
   $entity_ids = array();
