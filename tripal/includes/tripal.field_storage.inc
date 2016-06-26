@@ -62,61 +62,57 @@ function tripal_field_storage_load($entity_type, $entities, $age,
 
 /**
  * Implements hook_field_storage_query().
- *
- * Used by EntityFieldQuery to find the entities having certain field values.
- *
- * We do not support use of the EntityFieldQuery API for Tripal based fields
- * because EFQ doesn't support when multiple storage backends are used. Instead
- * use the TripalFieldQuery class and implement the hook_storage_tquery()
- * function.
  */
 function tripal_field_storage_query($query) {
-
-}
-
-/**
- * Implements hook_field_storage_tquery().
- *
- * Used by TripalFieldQuery to find the entities having certain field values.
- *
- * @param $conditions
- */
-function tripal_field_storage_tquery($conditions, $sort) {
 
   $filter = array();
   $entity_ids = array();
 
-  foreach ($conditions as $index => $condition) {
+  // Create the initial query.
+  $select = db_select('tripal_entity', 'TE');
+  $select->join('tripal_bundle', 'TB', 'TE.bundle = TB.name');
+  $select->fields('TE', array('id'));
+  $select->fields('TB', array('name'));
 
+  // Add in any filters to the query.
+  foreach ($query->fieldConditions as $index => $condition) {
     $field = $condition['field'];
+    // Skip conditions that don't belong to this storage type.
     if ($field['storage']['type'] != 'tripal_no_storage') {
       continue;
     }
-    $field_type = $field['type'];
-    $field_module = $field['module'];
-    $settings = $field['settings'];
-    $operator = $condition['operator'];
+    $value = $condition['value'];
+    $operator = $condition['operator'] ? $condition['operator'] : '=';
 
-    // This module only supports one field, so we can just perform the filter.
-    // using the appropriate operator.
-    $query = db_select('tripal_entity', 'TE');
-    $query->join('chado_entity', 'CE', 'TE.id = CE.entity_id');
-    $query->fields('CE', array('entity_id'));
-    $query->condition('TE.term_id', $condition['value'], $operator);
-    $results = $query->execute();
-    $filter_ids = array();
-    while ($entity_id = $results->fetchField()) {
-      $filter_ids[] = $entity_id;
-    }
-
-    // Take the intersection of IDs in this filter with those in the
-    // final $entity_ids;
-    if (count($entity_ids) == 0) {
-      $entity_ids = $filter_ids;
-    }
-    else {
-      $entity_ids = array_intersect($entity_ids, $filter_ids);
+    // Filtering on the content type is filtering on the label.
+    if ($field['field_name'] == 'content_type') {
+      $select->condition('TB.label', $value, $operator);
     }
   }
-  return $entity_ids;
+
+  // Add in any sorting to the query.
+  foreach ($query->order as $index => $sort) {
+    $field = $sort['specifier']['field'];
+    // Skip sorts that don't belong to this storage type.
+    if ($field['storage']['type'] != 'tripal_no_storage') {
+      continue;
+    }
+    $direction = $sort['direction'];
+
+    // Filtering on the content type is a filter using the label
+    if ($field['field_name'] == 'content_type') {
+      $select->orderBy('TB.label', $direction);
+    }
+  }
+
+  // Perform the query and return the results.
+  $entities = $select->execute();
+  $result = array(
+    'TripalEntity' => array(),
+  );
+  while ($entity = $entities->fetchObject()) {
+    $ids = array($entity->id, '0', $entity->name);
+    $result['TripalEntity'][$entity->id] = entity_create_stub_entity('TripalEntity', $ids);
+  }
+  return $result;
 }

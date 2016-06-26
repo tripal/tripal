@@ -35,6 +35,7 @@ class tripal_views_query extends views_plugin_query {
     // must be with the content_type field.
     $query = new TripalFieldQuery();
     $query->fieldCondition('content_type', $bundle->id);
+
     // Apply filters
     foreach ($view->filter as $field_name => $handler) {
       if (trim($handler->value)) {
@@ -53,11 +54,11 @@ class tripal_views_query extends views_plugin_query {
       foreach ($results['TripalEntity'] as $entity_id => $stub) {
         // Begin a new row for Views output.
         $row = new stdClass;
-  
+
         // Get the entity object.
         $entity = tripal_load_entity('TripalEntity', array('id' => $entity_id));
         $entity = reset($entity);
-  
+
         // Iterate through the fields that are added to the view and attach those
         // to the entity.  After attaching we can get the value and include
         // it in the output results.
@@ -67,14 +68,14 @@ class tripal_views_query extends views_plugin_query {
               array('field_id' => $field['id']));
           $items = field_get_items('TripalEntity', $entity, $field_name);
           $value = $items[0]['value'];
-  
+
           $row->entity = $entity;
           $row->$field_name = $value;
         }
-  
+
         // Add the row to the results list.
         $view->result[] = $row;
-  
+
       }
     }
 

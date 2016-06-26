@@ -1,6 +1,35 @@
 <?php
 
 /**
+ * Executes a TripalFieldQuery using the provided conditions.
+ *
+ * This hook is called to find the entities having certain field
+ * conditions and sort them in the given field order.
+ *
+ * @param $conditions
+ *   An array of filter representing the conditions to be applied to the query.
+ *   Each filter is an associative array whose keys include the following:
+ *   - field: an array representing the field identical to the output of the
+ *     field_info_field() function.
+ *   - filter: the name of the field on which the filter should be applied.
+ *   - value: the value of the filter.
+ *   - operator:  the operation to apply: '=', '<>', '>', '>=', '<', '<=',
+ *     'STARTS_WITH', 'CONTAINS': These operators expect $value to be a
+ *     literal of the same type as the column. 'IN', 'NOT IN': These operators
+ *     expect $value to be an array of literals of the same type as the column.
+ * @param $orderBy
+ *   An array of sorting instructions.  Each sort is an associative array with
+ *   the following keys:
+ *   - field: an array representing the field identical to the output of the
+ *     field_info_field() function.
+ *   - orderBy: the name of the field on which the filter should be applied.
+ *   - direction: either the string 'ASC' (for ascending sort) or 'DESC' (for
+ *     descending).
+ */
+function hook_field_storage_tquery($conditions, $orderBy) {
+  // See the tripal_chado_field_storage_tquery() function for an example.
+}
+/**
  * Retrieves a list of TripalField class instances for a given module.
  *
  * The TripalField classes can be added by a site developer and should be

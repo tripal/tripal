@@ -182,7 +182,7 @@ function tripal_view_entity($entity, $view_mode = 'full') {
      '#collapsed' => TRUE,
    );
    $etypes = db_select('tripal_bundle', 'tb')
-     ->fields('tb', array('id', 'label'))
+     ->fields('tb', array('name', 'label'))
      ->execute()
      ->fetchAllKeyed();
    $etypes = array('[any]' => 'any') +  $etypes;
@@ -206,11 +206,14 @@ function tripal_view_entity($entity, $view_mode = 'full') {
    );
 
    $query = new TripalFieldQuery();
+   $query->entityCondition('entity_type', 'TripalEntity');
    if ($filter_type) {
-     $query = $query->fieldCondition('content_type', $filter_type);
+     $query->entityCondition('bundle', $filter_type);
+     //$query->fieldCondition('content_type', 'content_type', 'organism');
+     //$query->fieldOrderBy('content_type', 'content_type', 'DESC');
+     //$query->fieldCondition('organism__genus', 'organism__genus', 'Oryza');
+
    }
-   //
-   //$query = $query->fieldCondition('feature__name', 'orange1', 'STARTS WITH');
    $results = $query->execute();
 
    $headers = array('Title', 'Vocabulary', 'Term', 'Author', 'Status', 'Updated', 'Operations');

@@ -405,24 +405,29 @@ function tripal_chado_field_storage_expand_field($item_name, $value) {
      return array($item_name => $value);
    }
 }
+
 /**
- * Implements hook_field_storage_tquery().
- *
- * Used by TripalFieldQuery to find the entities having certain field values.
- *
- * @param $conditions
+ * Implements hook_field_storage_query().
  */
-function tripal_chado_field_storage_tquery($conditions, $sort) {
+function tripal_chado_field_storage_query($query) {
+dpm($query);
+  // The conditions and order bys are reorganized into a filters array for the
+  // chado_select_record function()
   $filters = array();
-  $entity_ids = array();
 
-  foreach ($conditions as $index => $condition) {
+  // Iterate through all the conditions and add to the filters array
+  // a chado_select_record compatible set of filters.
+  foreach ($query->fieldConditions as $index => $condition) {
     $field = $condition['field'];
-    $filter = $condition['filter'];
 
+    // Skip conditions that don't belong to this storage type.
     if ($field['storage']['type'] != 'field_chado_storage') {
       continue;
     }
+
+    $column = $condition['column'];
+    $value = $condition['value'];
+
     $field_type = $field['type'];
     $field_module = $field['module'];
     $settings = $field['settings'];
@@ -431,7 +436,7 @@ function tripal_chado_field_storage_tquery($conditions, $sort) {
 
     // Set the value for this field search.
     $value = NULL;
-    $subfields = explode('.', $filter);
+    $subfields = explode('.', $column);
     //print_r($subfields);
     if (count($subfields) > 1) {
       // Get the term for this field's column and replace the field_name with
@@ -441,7 +446,7 @@ function tripal_chado_field_storage_tquery($conditions, $sort) {
       // web services.
       $subfield1 = tripal_get_chado_semweb_term($chado_table, $chado_column, array('return_object' => TRUE));
       $subfields[0] = strtolower(preg_replace('/ /', '_', $subfield1->name));
-      $value = tripal_chado_field_storage_recurse_subfilters($chado_table, $subfields, $condition['value']);
+      $value = tripal_chado_field_storage_recurse_subfilters($chado_table, $subfields, $value);
       $value = array_shift($value);
     }
     else {
@@ -449,7 +454,7 @@ function tripal_chado_field_storage_tquery($conditions, $sort) {
     }
 
     // Use the appropriate operator.
-    $operator = $condition['operator'];
+    $operator = $condition['operator'] ? $condition['operator'] : '=';
     switch ($operator) {
       case '=':
         $filters[$chado_table][$chado_column] = $value;
@@ -511,6 +516,26 @@ function tripal_chado_field_storage_tquery($conditions, $sort) {
     }
   }
 
+  // Now get the list for sorting.
+  foreach ($query->order as $index => $sort) {
+    $field = $sort['specifier']['field'];
+
+    // Skip sorts that don't belong to this storage type.
+    if ($field['storage']['type'] != 'field_chado_storage') {
+      continue;
+    }
+
+    $direction = $sort['direction'];
+
+    $field_type = $field['type'];
+    $field_module = $field['module'];
+    $settings = $field['settings'];
+    $chado_table = $settings['chado_table'];
+    $chado_column = $settings['chado_column'];
+
+    $sorting[$chado_table][$chado_column] = $direction;
+  }
+
   // Iterate through the filters and perform the query
   $entity_ids = array();
   foreach ($filters as $chado_table => $values) {
@@ -529,26 +554,25 @@ function tripal_chado_field_storage_tquery($conditions, $sort) {
     // Next look for matching IDs in the chado_entity table.
     $filter_ids = array();
     if (count($record_ids) > 0) {
-      $results = db_select('chado_entity', 'CE')
-        ->fields('CE', array('entity_id'))
-        ->condition('record_id', $record_ids)
-        ->execute();
+      $select = db_select('chado_entity', 'CE');
+      $select->join('tripal_entity', 'TE', 'TE.id = CE.entity_id');
+      $select->fields('CE', array('entity_id'));
+      $select->fields('TE', array('bundle'));
+      $select->condition('record_id', $record_ids);
+      $results = $select->execute();
       while ($result = $results->fetchObject()) {
-        $filter_ids[] = $result->entity_id;
+        $entity_ids[] = array($result->entity_id, 0, $result->bundle);
       }
-    }
-
-    // Take the intersection of IDs in this filter with those in the
-    // final $entity_ids;
-    if (count($entity_ids) == 0) {
-      $entity_ids = $filter_ids;
-    }
-    else {
-      $entity_ids = array_intersect($entity_ids, $filter_ids);
     }
   }
 
-  return $entity_ids;
+  $result = array(
+    'TripalEntity' => array()
+  );
+  foreach ($entity_ids as $ids) {
+    $result['TripalEntity'][$ids[0]] = entity_create_stub_entity('TripalEntity', $ids);
+  }
+  return $result;
 }
 
 /**

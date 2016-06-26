@@ -451,6 +451,7 @@ function tripal_tripal_entity_schema() {
       'entity_created' => array('created'),
       'type' => array('type'),
       'uid' => array('uid'),
+      'bundle' => array('bundle'),
     ),
     'unique keys' => array(),
     'primary key' => array('id'),
@@ -627,6 +628,7 @@ function tripal_tripal_bundle_schema() {
     'indexes' => array(
       'name' => array('name'),
       'term_id' => array('term_id'),
+      'label' => array('label'),
     ),
     'primary key' => array('id'),
     'unique keys' => array(
