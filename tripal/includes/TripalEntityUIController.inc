@@ -221,6 +221,7 @@ function tripal_view_entity($entity, $view_mode = 'full') {
 
    // For each entity retrieved add a row to the data listing.
    //while ($entity = $entities->fetchObject()) {
+   if (!isset($results['TripalEntity'])) $results['TripalEntity'] = array();
    foreach ($results['TripalEntity'] as $entity_id => $stub) {
      $vocabulary = '';
      $term_name = '';

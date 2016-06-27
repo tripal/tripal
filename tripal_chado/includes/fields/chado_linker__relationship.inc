@@ -343,7 +343,11 @@ class chado_linker__relationship extends TripalField {
     $default_cv = tripal_get_default_cv($field_table, 'type_id');
     $options = array();
     if (!$default_cv) {
-      drupal_set_message("There is no default vocabulary set for the relationships....");
+      $msg = t('There is no default vocabulary set for the relationship types.');
+      if (module_exists('tripal_chado')) {
+        $msg .= t(' Please set the default vocabulary at <a href="@url" target="_blank">Tripal > Data Storage > Chado > Vocabulary Defaults.</a>', array('@url' => url('/admin/tripal/storage/chado/vocab')));
+      }
+      drupal_set_message($msg, 'warning');
     }
     else {
       $options = tripal_get_cvterm_select_options($default_cv->cv_id, TRUE);
