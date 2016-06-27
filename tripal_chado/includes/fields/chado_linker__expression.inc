@@ -210,7 +210,7 @@ class chado_linker__expression extends TripalField {
       'sticky' => FALSE,
       'caption' => "",
       'colgroups' => array(),
-      'empty' => 'There are no curated expression data.',
+      'empty' => 'There is no curated expression data.',
     );
     $content = theme_table($table);
     if (count($items) > 0) {

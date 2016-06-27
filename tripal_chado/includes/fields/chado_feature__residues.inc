@@ -260,34 +260,29 @@ class chado_feature__residues extends TripalField {
     }
     $num_seqs++;
 
-    // Add in the protein sequences
-    $values = array(
-      'object_id' => $feature->feature_id,
-      'subject_id' => array(
-        'type_id' => array(
-          'name' => 'polypeptide'
-        ),
-      ),
-      'type_id' => array(
-        'name' => 'derives_from',
-      ),
-    );
-    $options = array(
-      'return_array' => 1,
-      'include_fk' => array(
-        'subject_id'  => 1
-      ),
-    );
-    $protein_rels = chado_generate_var('feature_relationship', $values, $options);
-    foreach ($protein_rels as $protein_rel) {
-      $protein_rel = chado_expand_var($protein_rel, 'field', 'feature.residues');
-      if ($protein_rel->subject_id->residues) {
+    // Add in the protein sequences. It's faster to provide the SQL rather than
+    // to use chado_generate_var based on the type.
+    $sql = "
+      SELECT F.*
+      FROM {feature_relationship} FR
+        INNER JOIN {feature} F on FR.subject_id = F.feature_id
+        INNER JOIN {cvterm} CVT on CVT.cvterm_id = F.type_id
+        INNER JOIN {cvterm} RCVT on RCVT.cvterm_id = FR.type_id
+      WHERE
+        FR.object_id = :feature_id and
+        CVT.name = 'polypeptide' and
+        RCVT.name = 'derives_from'
+      ORDER BY FR.rank ASC
+    ";
+    $results = chado_query($sql, array(':feature_id' => $feature->feature_id));
+    while ($protein = $results->fetchObject()) {
+      if ($protein->residues) {
         $entity->{$field_name}['und'][$num_seqs++]['value'] = array(
           '@type' => 'SO:0000104',
           'type' => 'polypeptide',
           'label' => 'Protein Sequence',
-          'defline' => tripal_get_fasta_defline($protein_rel->subject_id, '', NULL, '', strlen($protein_rel->subject_id->residues)),
-          'residues' => $protein_rel->subject_id->residues,
+          'defline' => tripal_get_fasta_defline($protein, '', NULL, '', strlen($protein->residues)),
+          'residues' => $protein->residues,
         );
       }
     }
@@ -306,34 +301,28 @@ class chado_feature__residues extends TripalField {
       ),
     );
     $feature = chado_expand_var($feature, 'table', 'featureloc', $options);
-
     $featureloc_sequences = self::get_featureloc_sequences($feature->feature_id, $feature->featureloc->feature_id);
 
-    // Add in the coding sequences.
-    $values = array(
-      'object_id' => $feature->feature_id,
-      'subject_id' => array(
-        'type_id' => array(
-          'name' => 'CDS'
-        ),
-      ),
-      'type_id' => array(
-        'name' => 'part_of',
-      ),
-    );
-    $options = array(
-      'order_by' => array('rank' => 'ASC'),
-      'return_array' => 1,
-      'include_fk' => array(
-        'subject_id'  => 1
-      ),
-    );
-    $cds_rels = chado_generate_var('feature_relationship', $values, $options);
+    // Add in the coding sequences. It's faster to provide the SQL rather than
+    // to use chado_generate_var based on the type.
+    $sql = "
+      SELECT F.*
+      FROM {feature_relationship} FR
+        INNER JOIN {feature} F on FR.subject_id = F.feature_id
+        INNER JOIN {cvterm} CVT on CVT.cvterm_id = F.type_id
+        INNER JOIN {cvterm} RCVT on RCVT.cvterm_id = FR.type_id
+        INNER JOIN {featureloc} FL on FL.feature_id = F.feature_id
+      WHERE
+        FR.object_id = :feature_id and
+        CVT.name = 'CDS' and
+        RCVT.name = 'part_of'
+      ORDER BY FR.rank ASC
+    ";
+    $results = chado_query($sql, array(':feature_id' => $feature->feature_id));
     $coding_seq = '';
-    foreach ($cds_rels as $cds_rel) {
-      $cds_rel = chado_expand_var($cds_rel, 'field', 'feature.residues');
-      if ($cds_rel->subject_id->residues) {
-        $coding_seq .= $cds_rel->subject_id->residues;
+    while ($CDS = $results->fetchObject) {
+      if ($CDS->residues) {
+        $coding_seq .= $CDS->residues;
       }
     }
     if ($coding_seq) {
@@ -341,7 +330,7 @@ class chado_feature__residues extends TripalField {
         '@type' => 'SO:0000316',
         'type' => 'coding_sequence',
         'label' => 'Coding sequence (CDS)',
-        'defline' => tripal_get_fasta_defline($feature, '', $feature->featureloc->feature_id[0], '', strlen($coding_seq)),
+        'defline' => tripal_get_fasta_defline($feature, 'CDS', NULL, '', strlen($coding_seq)),
         'residues' => $coding_seq,
       );
     }
@@ -378,6 +367,7 @@ class chado_feature__residues extends TripalField {
           'is_html' => 0
         )
       );
+
       if (count($cds_sequence) > 0) {
         // the tripal_get_feature_sequences() function can return multiple sequences
         // if a feature is aligned to multiple places. In the case of CDSs we expect

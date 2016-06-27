@@ -212,8 +212,8 @@ function tripal_view_entity($entity, $view_mode = 'full') {
      //$query->fieldCondition('content_type', 'content_type', 'organism');
      //$query->fieldOrderBy('content_type', 'content_type', 'DESC');
      //$query->fieldCondition('organism__genus', 'organism__genus', 'Oryza');
-
    }
+   $query->range(0, 25);
    $results = $query->execute();
 
    $headers = array('Title', 'Vocabulary', 'Term', 'Author', 'Status', 'Updated', 'Operations');

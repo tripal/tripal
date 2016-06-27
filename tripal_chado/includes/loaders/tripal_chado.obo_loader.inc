@@ -101,7 +101,7 @@ function tripal_cv_obo_form($form, &$form_state) {
       $matches = array();
       if (preg_match('/\{(.*?)\}/', $uobo_file, $matches)) {
         $modpath = drupal_get_path('module', $matches[1]);
-        $uobo_file = 'preg_replace('/\{.*?\}/', $modpath, $uobo_file);
+        $uobo_file = preg_replace('/\{.*?\}/', $modpath, $uobo_file);
       }
     }
     // We don't want the previous value to remain. We want the new default to

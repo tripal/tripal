@@ -783,7 +783,6 @@ function tripal_replace_entity_tokens($string, &$entity, $bundle_entity = NULL) 
       foreach ($fields as $field) {
         $field_ids[$field['id']] = array($entity->id);
       }
-
       $entities = array($entity->id => $entity);
       module_invoke($storage['module'], 'field_storage_load', 'TripalEntity',
         $entities, FIELD_LOAD_CURRENT, $field_ids, array());
@@ -794,17 +793,13 @@ function tripal_replace_entity_tokens($string, &$entity, $bundle_entity = NULL) 
   foreach($used_tokens as $token) {
     $field_name = str_replace(array('.','[',']'), array('__','',''), $token);
     $value = '';
-    if (isset($entity->{$field_name})) {
 
-      // Render the value from the field.
-      // First get the items to be rendered.
-      $field_value = field_get_items('TripalEntity', $entity, $field_name);
-      if (isset($field_value[0])) {
-        // Then get a render array for just the value of the first item (no markup).
-        $field_render_arr = field_view_value('TripalEntity', $entity, $field_name, $field_value[0]);
-        // Finally render the value from the render array.
-        $value = render($field_render_arr);
-      }
+    if (property_exists($entity, $field_name)) {
+      // Note: there is a memory leak in field_get_items() so we can't use it
+      // here or bulk publising will slowly erode memory.
+      //$field_value = field_get_items('TripalEntity', $entity, $field_name);
+      $value = $entity->{$field_name}['und'][0]['value'];
+      // TODO: deal with the value when it is not a scalar.
     }
     // The TripalBundle__bundle_id is a special token for substituting the
     // bundle id.

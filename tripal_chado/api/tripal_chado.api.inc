@@ -104,13 +104,33 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
     $where .= "AND $column = $cvterm_id";
   }
 
+  // First get the count
+  $sql = "SELECT count(*) as num_records " . $from . $where;
+    $result = chado_query($sql);
+  $count = $result->fetchField();
+
+  // calculate the interval for updates
+  $interval = intval($count / 1000);
+  if ($interval < 1) {
+    $interval = 1;
+  }
+
   // Perform the query.
   $sql = $select . $from . $where;
   $records = chado_query($sql);
-  $num_published = 0;
   $transaction  = db_transaction();
+
+  printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, 0, number_format(memory_get_usage()));
   try {
+    $i = 0;
     while($record = $records->fetchObject()) {
+
+      // update the job status every interval
+      //if ($jobid and $i % $interval == 0) {
+        $complete = ($i / $count) * 33.33333333;
+        //tripal_set_job_progress($jobid, intval($complete + 33.33333333));
+        printf("%d of %d records. (%0.2f%%) Memory: %s bytes\r", $i, $count, $complete * 3, number_format(memory_get_usage()));
+      //}
 
       // First save the tripal_entity record.
       $record_id = $record->record_id;
@@ -142,7 +162,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
       }
       $success = drupal_write_record('chado_entity', $entity_record);
 
-      $num_published++;
+      $i++;
     }
   }
   catch (Exception $e) {
@@ -152,7 +172,7 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
     drupal_set_message('Failed publishing record. See recent logs for more details.', 'error');
     return FALSE;
   }
-  drupal_set_message("Succesfully published $num_published " . $bundle->label . " record(s).");
+  drupal_set_message("Succesfully published $i " . $bundle->label . " record(s).");
   return TRUE;
 }
 
