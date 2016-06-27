@@ -308,8 +308,9 @@ function tripal_ws_services_v0_1_get_content_type($api_url, &$response, $ws_path
   $response['@context']['rdfs'] = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
   $response['@context']['hydra'] = 'http://www.w3.org/ns/hydra/core#';
 
-  // Next add in the ID for tihs resource.
-  $response['@id'] = url($api_url . '/content/' . $ctype, array('absolute' => TRUE));
+  // Next add in the ID for this resource.
+  $URL = url($api_url . '/content/' . $ctype, array('absolute' => TRUE));
+  $response['@id'] = $URL;
 
   // Get the TripalBundle, TripalTerm and TripalVocab type for this type.
   $bundle = tripal_load_bundle_entity(array('label' => $ctype));
@@ -346,6 +347,11 @@ function tripal_ws_services_v0_1_get_content_type($api_url, &$response, $ws_path
   $new_params = array();
   foreach ($params as $param => $value) {
 
+    // Ignore non filter parameters
+    if ($param == 'page' or $param == 'limit') {
+      continue;
+    }
+
     // Break apart any operators
     $key = $param;
     $op = '=';
@@ -377,7 +383,8 @@ function tripal_ws_services_v0_1_get_content_type($api_url, &$response, $ws_path
 
   // Get the list of entities for this bundle.
   $query = new TripalFieldQuery();
-  $query->fieldCondition('content_type', $bundle->id);
+  $query->entityCondition('entity_type', 'TripalEntity');
+  $query->entityCondition('bundle', $bundle->name);
   foreach($new_params as $field_name => $details) {
     $value = $details['value'];
     switch ($details['op']) {
@@ -408,9 +415,40 @@ function tripal_ws_services_v0_1_get_content_type($api_url, &$response, $ws_path
       default:
         $op = '=';
     }
-    $query->fieldCondition($field_name, $value, $op);
+    $query->fieldCondition($field_name, $field_name, $value, $op);
   }
+
+  // Perform the query just as a count first to get the number of records.
+  $cquery = clone $query;
+  $cquery->count();
+  $num_records = $cquery->execute();
+
+  // Add in the pager to the response.
+  $response['totalItems'] = $num_records;
+  $limit = array_key_exists('limit', $params) ? $params['limit'] : 25;
+  $total_pages = ceil($num_records / $limit);
+  $page = array_key_exists('page', $params) ? $params['page'] : 1;
+  $response['view'] = array(
+    '@id' => $URL . "?page=$page&limit=$limit",
+    '@type' => 'PartialCollectionView',
+    'first' => $URL . "?page=1&limit=$limit",
+    'last' => $URL . "?page=$total_pages&limit=$limit",
+  );
+  $prev = $page - 1;
+  $next = $page + 1;
+  if ($prev > 0) {
+    $response['view']['previous'] = $URL . "?page=$prev&limit=$limit";
+  }
+  if ($next < $total_pages) {
+    $response['view']['next'] = $URL . "?page=$next&limit=$limit";
+  }
+
+  // Now perform teh query.
+  $start = ($page - 1) * $limit;
+  $query->range($start, $limit);
   $results = $query->execute();
+
+
 
   // Iterate through the entities and add them to the list.
   $i = 0;
@@ -436,7 +474,7 @@ function tripal_ws_services_v0_1_get_content_type($api_url, &$response, $ws_path
     );
     $i++;
   }
-  $response['totalItems'] = $i;
+
 
   // Lastly, add in the terms used into the @context section.
   $response['@context']['Collection'] = 'hydra:Collection';
@@ -580,12 +618,12 @@ function tripal_ws_services_v0_1_get_content_find_field($field_arg, $ctype, $ent
     $field_settings = $field['settings'];
     if (array_key_exists('semantic_web', $field_settings) and
         $field_settings['semantic_web']) {
-          list($vocabulary, $accession) = explode(':', $field_settings['semantic_web']);
-          $temp_term = tripal_get_term_details($vocabulary, $accession);
-          if ($temp_term['name'] == $field_arg) {
-            return array($entity, $bundle, $field, $instance, $temp_term);
-          }
-        }
+      list($vocabulary, $accession) = explode(':', $field_settings['semantic_web']);
+      $temp_term = tripal_get_term_details($vocabulary, $accession);
+      if ($temp_term['name'] == $field_arg) {
+        return array($entity, $bundle, $field, $instance, $temp_term);
+      }
+    }
   }
 }
 /**
@@ -609,13 +647,18 @@ function tripal_ws_services_v0_1_get_content($api_url, &$response, $ws_path, $ct
   $field_arg = '';
   if (array_key_exists(3, $ws_path)) {
 
-    $field_arg = $ws_path[3];
+    $field_arg = urldecode($ws_path[3]);
     list($entity, $bundle, $field, $instance, $term) = tripal_ws_services_v0_1_get_content_find_field($field_arg, $ctype, $entity_id);
+
+    // If we couldn't match this field argument to a field and entity then return
+    if (!$entity or !$field) {
+      return;
+    }
 
     // Next add in the ID and Type for this resources.
     $key = $term['name'];
     $response['@context'][$key] = $term['url'];
-    $response['@id'] = $key;
+    $response['@id'] = url($api_url . '/content/' . $ctype . '/' . $entity->id . '/' . urlencode($key), array('absolute' => TRUE));
 
     // Attach the field and then add it's values to the response.
     field_attach_load($entity->type, array($entity->id => $entity), FIELD_LOAD_CURRENT,
@@ -706,15 +749,19 @@ function tripal_ws_services_v0_1_get_content_add_field($key, $entity, $field, $i
     // web terms.
     if (array_key_exists('semantic_web', $items[$i])) {
       foreach ($items[$i]['semantic_web'] as $k => $v) {
-        list($vocabulary, $accession) = explode(':', $v);
-        $term = tripal_get_term_details($vocabulary, $accession);
-        if ($k == 'type') {
-          $items[$i]['value']['@type'] = $items[$i]['value']['type'];
-          unset($items[$i]['value']['type']);
-          $response['@context'][$term['name']] = $term['url'];
-        }
-        else {
-          $response['@context'][$k] = $term['url'];
+        $matches = array();
+        if (preg_match('/^(.+):(.+)$/', $v, $matches)) {
+          $vocabulary = $matches[1];
+          $accession = $matches[2];
+          $term = tripal_get_term_details($vocabulary, $accession);
+          if ($k == 'type') {
+            $items[$i]['value']['@type'] = $items[$i]['value']['type'];
+            unset($items[$i]['value']['type']);
+            $response['@context'][$term['name']] = $term['url'];
+          }
+          else {
+            $response['@context'][$k] = $term['url'];
+          }
         }
       }
     }

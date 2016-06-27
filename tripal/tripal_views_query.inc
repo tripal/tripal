@@ -34,12 +34,13 @@ class tripal_views_query extends views_plugin_query {
     // The base table for the view is a bundle therefore the first condition
     // must be with the content_type field.
     $query = new TripalFieldQuery();
-    $query->fieldCondition('content_type', $bundle->id);
+    $query->entityCondition('entity_type', 'TripalEntity');
+    $query->entityCondition('bundle', $bundle->name);
 
     // Apply filters
     foreach ($view->filter as $field_name => $handler) {
       if (trim($handler->value)) {
-        $query->fieldCondition($field_name, $handler->value, $handler->operator);
+        $query->fieldCondition($field_name, $field_name, $handler->value, $handler->operator);
       }
     }
     // Apply sorting

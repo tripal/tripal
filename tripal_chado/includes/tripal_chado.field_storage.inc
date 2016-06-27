@@ -410,7 +410,7 @@ function tripal_chado_field_storage_expand_field($item_name, $value) {
  * Implements hook_field_storage_query().
  */
 function tripal_chado_field_storage_query($query) {
-dpm($query);
+
   // The conditions and order bys are reorganized into a filters array for the
   // chado_select_record function()
   $filters = array();
