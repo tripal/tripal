@@ -67,10 +67,10 @@ class TripalField {
     $this->field_type = get_class($this);
 
     // Determine if this field can attach to the bundle.
-    $this->setCanAttach($bundle, $details);
+    $this->setCanAttach();
 
     // Set the field's name.
-    $this->setFieldName($bundle, $details);
+    $this->setFieldName();
   }
 
   /**

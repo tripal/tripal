@@ -298,6 +298,7 @@ function tripal_entity_view($entity, $type, $view_mode, $langcode) {
       $child = $entity->content[$child_name];
       if (array_key_exists('#items', $child) and
           array_key_exists('0', $child['#items']) and
+          is_array($child['#items'][0]) and
           array_key_exists('#unattached', $child['#items'][0])
           and $child['#items'][0]['#unattached'] === TRUE) {
         $entity->content[$child_name]['#prefix'] .= '<div id="tripal-entity-' . $entity->id . '--' . $child_name . '" class="tripal-entity-unattached">';

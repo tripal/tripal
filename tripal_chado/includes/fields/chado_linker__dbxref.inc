@@ -247,7 +247,7 @@ class chado_linker__dbxref extends TripalField {
 
     $widget['#table_name'] = $chado_table;
     $widget['#fkey_field'] = $fkey;
-    $widget['#element_validate'] = array('chado_linker__dbxref_widget_validate');
+    //$widget['#element_validate'] = array('chado_linker__dbxref_widget_validate');
     $widget['#theme'] = 'chado_linker__dbxref_widget';
     $widget['#prefix'] =  "<span id='$field_name-dbxref--db-id-$delta'>";
     $widget['#suffix'] =  "</span>";

@@ -30,7 +30,7 @@ class chado_linker__prop_adder extends TripalField {
     $cv_id      = $this->details['chado_cv_id'];
     $cvterm_id  = $this->details['chado_cvterm_id'];
 
-    // If the linker table does not exists then we don't want to add attach.
+    // If the linker table does not exist then we don't want to add attach.
     $prop_table = $table_name . 'prop';
     if (chado_table_exists($prop_table)) {
       $this->can_attach = TRUE;
@@ -134,9 +134,6 @@ class chado_linker__prop_adder extends TripalField {
   static function widgetForm(&$widget, &$form, &$form_state,
       $field, $instance, $langcode, $items, $delta, $element) {
 
-    // This field has no value field.  Just a fieldset for adding new properties.
-    $widget['#element_validate'] = array('chado_linker__prop_adder_widget_validate');
-
     $widget['#type'] = 'fieldset';
     $widget['#title'] = $element['#title'];
     $widget['#description'] = $element['#description'];
@@ -177,6 +174,13 @@ class chado_linker__prop_adder extends TripalField {
     );
   }
 
+  /**
+   * @see TripalField::widgetFormValidate
+   */
+  public static function widgetFormValidate($entity_type, $entity, $field, $instance, $langcode,
+      $items, &$errors) {
+
+  }
 }
 /**
  * Callback function for validating the chado_linker__prop_adder_widget.
