@@ -20,12 +20,18 @@ function tripal_core_chado_load_form() {
 
   if ($real_version == '1.2') {
     drupal_set_message('Please note: the upgrade of Chado from v1.2 to v1.3 may
-        require a fix to your materialized views.  All of the primary keys
+        require three fixes to your database. All of the primary keys
         in Chado were changed from integers to big integers to support larger
-        tables.  If your materialized views uses these fields you may need to
-        alter and repopulate those views.  Additionally, if you have made
+        tables.  First, if your site has custom materialized views that will hold
+        data derived from fields changed to big integers then you may need to
+        alter the views to change the fields from integers to big integers
+        and repopulate those views.  Second, if you have made
         any custom PL/pgSQL functions that expect primary and foreign key fields
-        to be integers, then those functions will need to be correct.
+        to be integers, then those functions will need to be altered to accept
+        big integers.  Third, if you have PostgreSQL Views that use fields
+        that are converted to big integers then most likely this upgrade will
+        fail.  You must first remove those views, perform the upgrade and then
+        recreate them with the appropriate fields change to big integers.
         The Tripal upgrader is not able to fix these problems automatically',
         'warning');
   }

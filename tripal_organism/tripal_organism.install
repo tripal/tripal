@@ -35,9 +35,8 @@ function tripal_organism_install() {
   tripal_set_default_cv('organismprop', 'type_id', 'organism_property');
 
   // Add taxonomic terms.
-  $obo_id = tripal_insert_obo('Taxonomic Rank', '{tripal_organism}/files/taxrank.obo');
+  $obo_id = tripal_insert_obo('Taxonomic Rank', 'http://purl.obolibrary.org/obo/taxrank.obo');
   tripal_submit_obo_job(array('obo_id' => $obo_id));
-
 }
 
 /**
@@ -200,13 +199,19 @@ function tripal_organism_update_7200() {
  */
 function tripal_organism_update_7201() {
   try {
+    // Make sure we have the full API loaded this will help during a
+    // site upgrade when the tripal_core module is disabled.
+    module_load_include('module', 'tripal_core', 'tripal_core');
+    tripal_core_import_api();
+    module_load_include('inc', 'tripal_cv', 'api/tripal_cv.api');
+
     // Add taxonomic terms.
-    $obo_id = tripal_insert_obo('Taxonomic Rank', '{tripal_organism}/files/taxrank.obo');
+    $obo_id = tripal_insert_obo('Taxonomic Rank', 'http://purl.obolibrary.org/obo/taxrank.obo');
     tripal_submit_obo_job(array('obo_id' => $obo_id));
   }
   catch (\PDOException $e) {
     $error = $e->getMessage();
-    throw new DrupalUpdateException('Could not move organism taxonomy terms: '. $error);
+    throw new DrupalUpdateException('Could not add taxrank ontology: '. $error);
   }
 }
 

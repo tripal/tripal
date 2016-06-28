@@ -873,11 +873,13 @@ function tripal_insert_obo($name, $path) {
     return $obo_id;
   }
   else {
-    $record = new stdClass;
-    $record->name = $name;
-    $record->path = $path;
-    drupal_write_record('tripal_cv_obo', $record);
-    return $record->obo_id;
+    $obo_id = db_insert('tripal_cv_obo')
+      ->fields(array(
+        'name' => $name,
+        'path' => $path,
+      ))
+      ->execute();
+    return $obo_id;
   }
 }
 

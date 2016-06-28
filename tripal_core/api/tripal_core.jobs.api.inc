@@ -73,17 +73,21 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $pr
     $args = serialize($arguments);
   }
 
-  $record = new stdClass();
-  $record->job_name = $job_name;
-  $record->modulename = $modulename;
-  $record->callback = $callback;
-  $record->status = 'Waiting';
-  $record->submit_date = REQUEST_TIME;
-  $record->uid = $uid;
-  $record->priority = $priority;  # the lower the number the higher the priority
-  $record->arguments = $args;
+  $job_id = db_insert('tripal_jobs')
+    ->fields(array(
+      'job_name' => $job_name,
+      'modulename' => $modulename,
+      'callback' => $callback,
+      'status' => 'Waiting',
+      'submit_date' => REQUEST_TIME,
+      'uid' => $uid,
+      # The lower the number the higher the priority.
+      'priority' => $priority,
+      'arguments' => $args,
+    ))
+    ->execute();
 
-  if (drupal_write_record('tripal_jobs', $record)) {
+  if ($job_id) {
     drupal_set_message(t("Job '%job_name' submitted.", array('%job_name' => $job_name)));
     if (user_access('administer tripal')) {
       $jobs_url = url("admin/tripal/tripal_jobs");
@@ -95,10 +99,10 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid, $pr
     }
   }
   else {
-    drupal_set_message(t("Failed to add job %job_name.", array('%job_name' => $job_name)), 'error');
+    drupal_set_message(t("Failed to add job: %job_name.", array('%job_name' => $job_name)), 'error');
   }
 
-  return $record->job_id;
+  return $job_id;
 }
 
 /**
