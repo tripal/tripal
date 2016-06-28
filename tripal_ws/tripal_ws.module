@@ -188,6 +188,10 @@ function tripal_ws_load_remote_entity($site_id, $api_version, $ctype, $id) {
     }
   }
 
+  // Add in the value for the 'content_type' field.
+  $entity->content_type = array();
+  $entity->content_type['und'][0]['value'] = $bundle->label;
+
   // For each field we know about that should be attached to our bundle,
   // see if we can find a corresponding entry in the results returned from
   // the web service call. If so, then add the field to our fake entity.
