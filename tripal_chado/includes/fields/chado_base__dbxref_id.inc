@@ -318,7 +318,11 @@ class chado_base__dbxref_id extends TripalField {
 
     // Set some defauls for the empty record
     $entity->{$field_name}['und'][0] = array(
-      'value' => array(),
+      'value' => array(
+        'vocabulary' => '',
+        'accession' => '',
+        'URL' => '',
+      ),
       $field_table . '__' . $field_column => '',
       $field_table . '__dbxref_id--dbxref_id' => '',
       $field_table . '__dbxref_id--db_id' => '',

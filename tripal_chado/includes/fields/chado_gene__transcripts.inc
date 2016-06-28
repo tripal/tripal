@@ -232,7 +232,12 @@ class chado_gene__transcripts extends TripalField {
 
     // Set some defaults for the empty record.
     $entity->{$field_name}['und'][0] = array(
-      'value' => array(),
+      'value' => array(
+        'type' => '',
+        'name' => '',
+        'identifier' => '',
+        'location' => '',
+      ),
     );
 
     // TODO: If the tripal_get_feature_relationships() slows this down then
