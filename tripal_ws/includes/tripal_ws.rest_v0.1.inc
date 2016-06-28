@@ -741,8 +741,10 @@ function tripal_ws_services_v0_1_get_content_add_field($key, $entity, $field, $i
   $field_settings = $field['settings'];
 
   $items = field_get_items('TripalEntity', $entity, $field_name);
+  if (!$items) {
+    return;
+  }
   $values = array();
-
   for ($i = 0; $i < count($items); $i++) {
 
     // See if the keys in the values array have been mapped to semantic
