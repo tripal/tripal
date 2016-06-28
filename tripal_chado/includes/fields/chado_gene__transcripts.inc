@@ -207,7 +207,7 @@ class chado_gene__transcripts extends TripalField {
       'sticky' => FALSE,
       'caption' => "",
       'colgroups' => array(),
-      'empty' => '',
+      'empty' => 'This feature has no transcripts',
     );
     $content = theme_table($table);
 

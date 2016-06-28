@@ -172,18 +172,19 @@ class chado_linker__dbxref extends TripalField {
 
     $chado_table = $field['settings']['chado_table'];
     foreach ($items as $delta => $item) {
-      if ($item['value']) {
-        $content = $item['value']['vocabulary'] . ':' . $item['value']['accession'];
-        if ($item['value']['URL']) {
-          $content = l($item['value']['URL'], $item['value']['URL']);
-        }
-        $element[$delta] = array(
-          '#type' => 'markup',
-          '#markup' => $content,
-        );
+      if (!$item['value']) {
+        continue;
       }
+      $content = $item['value']['vocabulary'] . ':' . $item['value']['accession'];
+      if ($item['value']['URL']) {
+        $content = l($item['value']['URL'], $item['value']['URL']);
+      }
+      $element[$delta] = array(
+        '#type' => 'markup',
+        '#markup' => $content,
+      );
     }
-    if (count($items) > 0) {
+    if (count($items) == 0) {
       $element[$delta] = array(
         '#type' => 'markup',
         '#markup' => '',
