@@ -141,7 +141,7 @@ function tripal_chado_prepare_chado() {
     tripal_set_default_cv('organismprop', 'type_id', 'organism_property');
 
     // Add taxonomic terms.
-    $obo_id = tripal_insert_obo('Taxonomic Rank', '{tripal_chado}/files/taxrank.obo');
+    $obo_id = tripal_insert_obo('Taxonomic Rank', 'http://purl.obolibrary.org/obo/taxrank.obo');
     $cv = chado_select_record('cv', array('name'), array('name' => 'taxonomic_rank'));
     if (count($cv) == 0 and $obo_id) {
       tripal_chado_load_obo_v1_2_id($obo_id);
