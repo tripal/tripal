@@ -99,6 +99,7 @@ function tripal_add_job($job_name, $modulename, $callback, $arguments, $uid,
     # The lower the number the higher the priority.
     'priority' => $priority,
     'arguments' => $args,
+    'includes' => serialize($includes),
   ))
   ->execute();
 
