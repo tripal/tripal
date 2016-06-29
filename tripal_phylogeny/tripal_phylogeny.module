@@ -1,0 +1,276 @@
+<?php
+
+/**
+ * @file
+ * Integrates the Chado Phylotree module with Drupal Nodes & Views
+ */
+
+/**
+ * @defgroup tripal_phylogeny Phylotree Module
+ * @ingroup tripal_modules
+ * @{
+ * Integrates the Chado Phylotree module with Drupal Nodes
+ * @}
+ */
+require_once 'api/tripal_phylogeny.api.inc';
+require_once 'theme/tripal_phylogeny.theme.inc';
+require_once 'includes/tripal_phylogeny.admin.inc';
+require_once 'includes/tripal_phylogeny.chado_node.inc';
+require_once 'includes/tripal_phylogeny.import_tree.inc';
+require_once 'includes/tripal_phylogeny.taxonomy_import.inc';
+
+/**
+ * Implements hook_permission().
+ *
+ * Set the permission types that the chado module uses.  Essentially we
+ * want permissionis that protect creation, editing and deleting of chado
+ * data objects
+ *
+ * @ingroup tripal_phylogeny
+ */
+function tripal_phylogeny_permission() {
+  return array(
+    'access chado_phylotree content' => array(
+      'title' => t('View Phylotrees'),
+      'description' => t('Allow users to view phylotree pages.'),
+    ),
+    'administer tripal phylotree' => array(
+      'title' => t('Administer Phylotrees'),
+      'description' => t('Allow users to administer all phylotrees.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ *
+ * Menu items are automatically added for the new node types created
+ * by this module to the 'Create Content' Navigation menu item.  This function
+ * adds more menu items needed for this module.
+ *
+ * @ingroup tripal_phylogeny
+ */
+function tripal_phylogeny_menu() {
+  $items = array();
+
+  // administration landing page. currently has no content but is
+  // apparently required for the Sync and Help links to work.
+  $items['admin/tripal/extension/tripal_phylogeny'] = array(
+    'title' => 'Phylotrees',
+    'description' => 'Phylogenetic trees & gene families',
+    'page callback' => 'tripal_phylogeny_admin_phylotrees_listing',
+    'access arguments' => array('administer tripal phylotree'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  // help menu
+  $items['admin/tripal/extension/tripal_phylogeny/help'] = array(
+    'title' => 'Help',
+    'description' => 'Basic Description of Tripal Phylotree Module Functionality',
+    'page callback' => 'theme',
+    'page arguments' => array('tripal_phylogeny_help'),
+    'access arguments' => array('administer tripal phylotree'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 10
+  );
+
+  // configuration menu item
+  $items['admin/tripal/extension/tripal_phylogeny/configuration'] = array(
+    'title' => 'Settings',
+    'description' => 'Configure the Tripal Phylotree module',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_phylogeny_admin'),
+    'access arguments' => array('administer tripal phylotree'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 1
+  );
+
+  $items['admin/tripal/extension/tripal_phylogeny/plots'] = array(
+    'title' => 'Plot Defaults',
+    'description' => 'Set defaults for the trees, dendrograms and bubble plot',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('tripal_phylogeny_default_plots_form'),
+    'access arguments' => array('administer tripal phylotree'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2
+  );
+
+  // sync menu item (will be rendered as a tab by tripal)
+  $items['admin/tripal/extension/tripal_phylogeny/sync'] = array(
+    'title' => ' Sync',
+    'description' => 'Create pages on this site for phylotrees stored in Chado',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('chado_node_sync_form', 'tripal_phylogeny', 'chado_phylotree'),
+    'access arguments' => array('administer tripal phylotree'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 3
+  );
+
+  // Enable admin view
+  $items['admin/tripal/extension/tripal_phylogeny/views/phylotree/enable'] = array(
+    'title' => 'Enable Phylotree Administrative View',
+    'page callback' => 'tripal_enable_view',
+    'page arguments' => array('tripal_phylogeny_admin_phylotree', 'admin/tripal/chado/tripal_phylogeny'),
+    'access arguments' => array('administer tripal phylotree'),
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['chado_phylotree/%'] = array(
+    'page callback' => 'phylotree_by_name',
+    'page arguments' => array(1),
+    'access callback' => TRUE // allow all anonymous http clients
+  );
+
+   // create a route for viewing json of all phylonodes having this phylotree_id
+   $items['chado_phylotree/%/json'] = array(
+    'page callback' => 'phylotree_json',
+    'page arguments' => array(1),
+    'access callback' => TRUE // allow all anonymous http clients
+   );
+
+   // Data Loaders
+   $items['admin/tripal/loaders/newic_tree_loader'] = array(
+     'title' => 'Phylogenetic Trees',
+     'description' => 'Loads phylogenetic trees. (Redirects to create a phylogenetic tree content type)',
+     'page callback' => 'drupal_goto',
+     'page arguments' => array('node/add/chado-phylotree'),
+     'access arguments' => array('administer tripal phylotree'),
+     'type' => MENU_NORMAL_ITEM,
+   );
+   $items['admin/tripal/loaders/taxonomy_loader'] = array(
+     'title' => 'NCBI Taxonomy Loader',
+     'description' => 'Loads taxonomic details about installed organisms.',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_phylogeny_taxonomy_load_form'),
+     'access arguments' => array('administer tripal phylotree'),
+     'file' => '/includes/tripal_phylogeny.taxonomy_import.inc',
+     'type' => MENU_NORMAL_ITEM,
+   );
+
+  return $items;
+}
+
+/**
+ * Implements hook_search_biological_data_views().
+ *
+ * Adds the described views to the "Search Data" Page created by Tripal Views
+ */
+function tripal_phylogeny_search_biological_data_views() {
+  return array(
+      'tripal_phylogeny_user_phylotree' => array(
+          'machine_name' => 'tripal_phylogeny_user_phylotree',
+          'human_name' => 'Phylogenetic Trees',
+          'description' => 'Gene trees, species trees, etc.',
+          'link' => 'chado/phylotree'
+      ),
+  );
+}
+
+/**
+ * Implements hook_views_api().
+ *
+ * Essentially this hook tells drupal that there is views support for
+ *  for this module which then includes tripal_db.views.inc where all the
+ *  views integration code is
+ *
+ * @ingroup tripal_phylogeny
+ */
+function tripal_phylogeny_views_api() {
+  return array(
+    'api' => 3.0,
+  );
+}
+
+/**
+ *  Implements hook_theme().
+ *
+ * We need to let drupal know about our theme functions and their arguments.
+ *  We create theme functions to allow users of the module to customize the
+ *  look and feel of the output generated in this module
+ *
+ * @ingroup tripal_phylogeny
+ */
+function tripal_phylogeny_theme($existing, $type, $theme, $path) {
+  $core_path = drupal_get_path('module', 'tripal_core');
+  $items = array(
+    // built-in theme
+    'node__chado_phylotree' => array(
+      'template' => 'node--chado-generic',
+      'render element' => 'node',
+      'base hook' => 'node',
+      'path' => "$core_path/theme/templates",
+    ),
+    // base template for this page (default tab) includes the phylogram
+    'tripal_phylogeny_base' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_phylogeny_base',
+      'path' => "$path/theme/templates",
+    ),
+    // Template for the phylogram.
+    'tripal_phylogeny_phylogram' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_phylogeny_phylogram',
+      'path' => "$path/theme/templates",
+    ),
+    // Template for the taxonomic tree.
+    'tripal_phylogeny_taxonomic_tree' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_phylogeny_taxonomic_tree',
+      'path' => "$path/theme/templates",
+    ),
+    // partial for organisms block
+    'tripal_phylogeny_organisms' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_phylogeny_organisms',
+      'path' => "$path/theme/templates",
+    ),
+    // partial for phylotree radial block
+    'tripal_phylogeny_radial' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_phylogeny_radial',
+      'path' => "$path/theme/templates",
+    ),
+    // partial for cross references block
+    'tripal_phylogeny_references' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_phylogeny_references',
+      'path' => "$path/theme/templates",
+    ),
+    // partial for cross references block
+    'tripal_phylogeny_analysis' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_phylogeny_analysis',
+      'path' => "$path/theme/templates",
+    ),
+    // partial for teaser view
+    'tripal_phylogeny_teaser' => array(
+      'variables' => array('node' => NULL),
+      'template' => 'tripal_phylogeny_teaser',
+      'path' => "$path/theme/templates",
+    ),
+
+    // FORM THEMES
+    // Theme function for the project table in admin projects form
+    'tripal_phylogeny_admin_org_color_tables' => array(
+      'render element' => 'element',
+    )
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_help().
+ * Adds a help page to the module list
+ *
+ * @ingroup tripal_phylogeny
+ */
+function tripal_phylogeny_help ($path, $arg) {
+  if ($path == 'admin/help#tripal_phylogeny') {
+    return theme('tripal_phylogeny_help', array());
+  }
+}
+
+// hack to suppress the 'Submitted by...' info drupal adds to nodes
+$variables['display_submitted'] = FALSE;
+
+
