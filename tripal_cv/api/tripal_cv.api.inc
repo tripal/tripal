@@ -420,7 +420,7 @@ function tripal_insert_cv($name, $definition) {
  * @return
  *   A cvterm object
  *
- * @ingroup tripal_cv_api
+ * @ingroup tripal_chado_api
  */
 function tripal_insert_cvterm($term, $options = array()) {
 
@@ -727,6 +727,42 @@ function tripal_insert_cvterm($term, $options = array()) {
         tripal_report_error('tripal_cv', TRIPAL_WARNING, "Failed to update the term: $name", NULL);
         return 0;
       }
+
+      // Second, check that the dbxref has not changed and if it has then update it.
+      $checksql = "
+        SELECT cvterm_id
+        FROM {cvterm} CVT
+          INNER JOIN {dbxref} DBX on CVT.dbxref_id = DBX.dbxref_id
+          INNER JOIN {db} DB on DBX.db_id = DB.db_id
+          INNER JOIN {cv} CV on CV.cv_id = CVT.cv_id
+        WHERE DBX.accession = :accession and DB.name = :dbname and CVT.name = :term and CV.name = :cvname
+      ";
+      $check = chado_query($checksql, array(':accession' => $dbxref->accession, ':dbname' => $dbname, ':term' => $name, ':cvname' => $cvname))->fetchObject();
+      if (!$check) {
+
+        // check to see if the dbxref exists if not, add it.
+        $dbxref =  tripal_insert_dbxref(array(
+          'db_id' => $db->db_id,
+          'accession' => $accession
+        ));
+        if (!$dbxref) {
+          tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to find or insert the dbxref record for cvterm, " .
+              "$name (id: $accession), for database $dbname", NULL);
+          return 0;
+        }
+
+        $match = array('cvterm_id' => $cvterm->cvterm_id);
+        $upd_values = array(
+          'dbxref_id' => $dbxref->dbxref_id,
+        );
+        $success = chado_update_record('cvterm', $match, $upd_values);
+        if (!$success) {
+          tripal_report_error('tripal_chado', TRIPAL_WARNING, "Failed to update the term $name with new accession $db:$accession", NULL);
+          return 0;
+        }
+      }
+
+      // Finally grab the updated details.
       $result = chado_query($cvtermsql, array(':accession' => $accession, ':name' => $dbname));
       $cvterm = $result->fetchObject();
     }
