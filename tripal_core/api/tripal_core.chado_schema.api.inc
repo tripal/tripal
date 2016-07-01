@@ -26,8 +26,9 @@
  */
 
 /**
- * Check that any given Chado table exists.  This function
- * is necessary because Drupa's db_table_exists will not
+ * Check that any given Chado table exists.
+ *
+ * This function is necessary because Drupal's db_table_exists will not
  * look in any other schema but the one were Drupal is installed
  *
  * @param $table
@@ -50,7 +51,12 @@ function chado_table_exists($table) {
       table_schema = :chado AND
       table_catalog = :default_db
   ";
-  $results = db_query($sql, array(':table_name' => $table, ':chado' => tripal_get_schema_name('chado'), ':default_db' => $default_db));
+  $args = array(
+    ':table_name' => $table,
+    ':chado' => tripal_get_schema_name('chado'),
+    ':default_db' => $default_db
+  );
+  $results = db_query($sql, $args);
   $exists = $results->fetchObject();
   if (!$exists) {
     return FALSE;
@@ -58,6 +64,89 @@ function chado_table_exists($table) {
   return TRUE;
 }
 
+/**
+ * Check that any given column in a Chado table exists.
+ *
+ * This function is necessary because Drupal's db_field_exists() will not
+ * look in any other schema but the one were Drupal is installed
+ *
+ * @param $table
+ *   The name of the chado table.
+ * @param $column
+ *   The name of the column in the chado table.
+
+ * @return
+ *   TRUE if the column exists for the table in the chado schema and
+ *   FALSE if it does not.
+ *
+ * @ingroup tripal_chado_schema_api
+ */
+function chado_column_exists($table, $column) {
+  global $databases;
+
+  $default_db = $databases['default']['default']['database'];
+
+  $sql = "
+    SELECT 1
+    FROM information_schema.columns
+    WHERE
+      table_name = :table_name AND
+      column_name = :column_name AND
+      table_schema = :chado AND
+      table_catalog = :default_db
+  ";
+  $args = array(
+    ':table_name' => $table,
+    ':column_name' => $column,
+    ':chado' => tripal_get_schema_name('chado'),
+    ':default_db' => $default_db
+  );
+  $results = db_query($sql, $args);
+  $exists = $results->fetchField();
+  if (!$exists) {
+    return FALSE;
+  }
+  return TRUE;
+}
+
+/**
+ * Check that any given column in a Chado table exists.
+ *
+ * This function is necessary because Drupal's db_field_exists() will not
+ * look in any other schema but the one were Drupal is installed
+ *
+ * @param sequence
+ *   The name of the sequence
+ * @return
+ *   TRUE if the seqeuence exists in the chado schema and FALSE if it does not.
+ *
+ * @ingroup tripal_chado_schema_api
+ */
+function chado_sequence_exists($sequence) {
+  global $databases;
+
+  $default_db = $databases['default']['default']['database'];
+
+  $sql = "
+    SELECT 1
+    FROM information_schema.sequences
+    WHERE
+      sequence_name = :sequence_name AND
+      sequence_schema = :sequence_schema AND
+      sequence_catalog = :sequence_catalog
+  ";
+  $args = array(
+    ':sequence_name' => $sequence,
+    ':sequence_schema' => tripal_get_schema_name('chado'),
+    ':sequence_catalog' => $default_db
+  );
+  $results = db_query($sql, $args);
+  $exists = $results->fetchField();
+  if (!$exists) {
+    return FALSE;
+  }
+  return TRUE;
+}
 /**
  * A Chado-aware replacement for the db_index_exists() function.
  *
@@ -73,7 +162,11 @@ function chado_index_exists($table, $name) {
 
   $default_db = $databases['default']['default']['database'];
 
-  $sql = "SELECT 1 as exists FROM pg_indexes WHERE indexname = :indexname";
+  $sql = "
+      SELECT 1 as exists
+      FROM pg_indexes
+      WHERE indexname = :indexname
+  ";
 
   $result = db_query($sql, array(':indexname' => $indexname));
   $exists = $result->fetchObject();
