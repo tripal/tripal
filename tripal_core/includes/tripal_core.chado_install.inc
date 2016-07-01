@@ -84,18 +84,18 @@ function tripal_core_chado_load_form($form, $form_state) {
   );
 
   $form['action_to_do'] = array(
-     '#type' => 'radios',
-     '#title' => 'Installation/Upgrade Action',
-     '#options' => array(
-        'Install Chado v1.3' => t('New Install of Chado v1.3 (erases all existing Chado data if Chado already exists)'),
-        'Upgrade Chado v1.2 to v1.3' => t('Upgrade existing Chado v1.2 to v1.3 (no data is lost)'),
-        'Install Chado v1.2' => t('New Install of Chado v1.2 (erases all existing Chado data if Chado already exists)'),
-        'Upgrade Chado v1.11 to v1.2' => t('Upgrade existing Chado v1.11 to v1.2 (no data is lost)'),
-        'Install Chado v1.11' => t('New Install of Chado v1.11 (erases all existing Chado data if Chado already exists)'),
-     ),
-     '#description' => t('Select an action to perform. If you want to install Chado all other Tripal modules must not be installed.'),
-     '#required' => TRUE,
-     '#ajax' => array(
+    '#type' => 'radios',
+    '#title' => 'Installation/Upgrade Action',
+    '#options' => array(
+      'Install Chado v1.3' => t('New Install of Chado v1.3 (erases all existing Chado data if Chado already exists)'),
+      'Upgrade Chado v1.2 to v1.3' => t('Upgrade existing Chado v1.2 to v1.3 (no data is lost)'),
+      'Install Chado v1.2' => t('New Install of Chado v1.2 (erases all existing Chado data if Chado already exists)'),
+      'Upgrade Chado v1.11 to v1.2' => t('Upgrade existing Chado v1.11 to v1.2 (no data is lost)'),
+      'Install Chado v1.11' => t('New Install of Chado v1.11 (erases all existing Chado data if Chado already exists)'),
+    ),
+    '#description' => t('Select an action to perform. If you want to install Chado all other Tripal modules must not be installed.'),
+    '#required' => TRUE,
+    '#ajax' => array(
       'callback' => "tripal_core_chado_load_form_ajax_callback",
       'wrapper'  => 'tripal_core_chado_load_form',
       'effect'   => 'fade',
@@ -108,14 +108,13 @@ function tripal_core_chado_load_form($form, $form_state) {
       Chado will remove and recreate the Chado database if it already exists.') . '</div>',
   );
 
-  $form['#prefix'] = '<div id="tripal_core_chado_load_form">';
-  $form['#suffix'] = '</div>';
-
   $form['button'] = array(
     '#type' => 'submit',
     '#value' => t('Install/Upgrade Chado'),
   );
 
+  $form['#prefix'] = '<div id="tripal_core_chado_load_form">';
+  $form['#suffix'] = '</div>';
   return $form;
 }
 
@@ -484,10 +483,6 @@ function tripal_core_upgrade_chado_1_2_to_1_3_pre_alter() {
     }
   }
 }
-
-
-
-
 
 /**
  * Upgrades Chado from v1.11 to v1.2
