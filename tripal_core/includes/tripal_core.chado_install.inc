@@ -9,7 +9,7 @@
  *
  * @ingroup tripal_core
  */
-function tripal_core_chado_load_form() {
+function tripal_core_chado_load_form($form, $form_state) {
 
   // we want to force the version of Chado to be set properly
   $real_version = chado_get_version(TRUE);
@@ -17,23 +17,64 @@ function tripal_core_chado_load_form() {
   // get the effective version.  Pass true as second argument
   // to warn the user if the current version is not compatible
   $version = chado_get_version(FALSE, TRUE);
-
-  if ($real_version == '1.2') {
-    drupal_set_message('Please note: the upgrade of Chado from v1.2 to v1.3 may
-        require three fixes to your database. All of the primary keys
-        in Chado were changed from integers to big integers to support larger
-        tables.  First, if your site has custom materialized views that will hold
-        data derived from fields changed to big integers then you may need to
-        alter the views to change the fields from integers to big integers
-        and repopulate those views.  Second, if you have made
-        any custom PL/pgSQL functions that expect primary and foreign key fields
-        to be integers, then those functions will need to be altered to accept
-        big integers.  Third, if you have PostgreSQL Views that use fields
-        that are converted to big integers then most likely this upgrade will
-        fail.  You must first remove those views, perform the upgrade and then
-        recreate them with the appropriate fields change to big integers.
-        The Tripal upgrader is not able to fix these problems automatically',
-        'warning');
+  if (array_key_exists('values', $form_state)) {
+    if ($form_state['values']['action_to_do'] == "Upgrade Chado v1.2 to v1.3") {
+      $tables_list = implode(', ', array('analysis_cvterm', 'analysis_dbxref', 'analysis_pub',
+        'analysis_relationship', 'contactprop', 'dbprop', 'feature_contact',
+        'featuremap_contact', 'featuremap_dbxref', 'featuremap_organism', 'featuremapprop',
+        'featureposprop', 'library_contact', 'library_expression', 'library_expressionprop',
+        'library_featureprop', 'library_relationship', 'library_relationship_pub', 'nd_experiment_analysis',
+        'organism_cvterm', 'organism_cvtermprop', 'organism_pub', 'organism_relationship',
+        'organismprop_pub', 'phenotypeprop', 'phylotreeprop', 'project_analysis',
+        'project_dbxref', 'project_feature', 'project_stock', 'pubauthor_contact',
+        'stock_feature', 'stock_featuremap', 'stock_library', 'stockcollection_db'));
+      $items = array(
+        'PostgreSQL version 9.1 is required to perform this upgrade. If your Tripal
+         site uses an older version please upgrade before proceeding.',
+        'A major change between Chado v1.2 and v1.3 is that primary and foreign
+         keys were upgraded from integers to big integers. If your site has custom
+         materialized views that will hold data derived from fields changed to
+         big integers then you may need to alter the views to change the fields
+         from integers to big integers and repopulate those views. If you have not
+         added any materialized views you can ignore this issue.',
+        'Custom PL/pgSQL functions that expect primary and
+         foreign key fields to be integers will not work after the upgrade.
+         Those functions will need to be altered to accept big integers. If you
+         do not have any custom PL/pgSQL functions you can ignore this issue.',
+        'PostgreSQL Views that use fields that are converted to big
+         integers will cause this upgrade to fail.  You must first remove
+         those views, perform the upgrade and then recreate them with the
+         appropriate fields change to big integers. If you do not have custom
+         PostgreSQL Views you can ignore this issue.',
+        'Several new tables were added to Chado v1.3.  However, some groups have
+         added these tables to their Chado v1.2 installation.  The Tripal upgrader
+         will alter the primary and foreign keys of those tables to be "bigints"
+         if they already exist but will otherwise leave them the same.  You should
+         verify that any tables with Chado v1.3 names correctly match the v1.3 schema.
+         Otherwise you may have problems using Tripal. If you have not added any
+         Chado v1.3 tables to your Chado v1.2 database you can ignore this issue.
+         These are the newly added tables:  ' .
+         $tables_list  . '.'
+      );
+      $list = theme_item_list(array(
+        'items' => $items,
+        'title' => '',
+        'type' => 'ul',
+        'attributes' => array(),
+      ));
+      drupal_set_message('Please note: the upgrade of Chado from v1.2 to v1.3 may
+          require several fixes to your database. Please review the following
+          list to ensure a safe upgrade. The Tripal upgrader is
+          not able to fix these problems automatically: ' . $list, 'warning');
+    }
+    if ($form_state['values']['action_to_do'] == "Install Chado v1.3" or
+        $form_state['values']['action_to_do'] == "Install Chado v1.2" or
+        $form_state['values']['action_to_do'] == "Install Chado v1.11") {
+      drupal_set_message('Please note: if Chado is already installed it will
+          be removed and recreated and all data will be lost. If this is
+          desired or if this is the first time Chado has been installed
+          you can ignore this issue.', 'warning');
+    }
   }
 
   $form['current_version'] = array(
@@ -43,17 +84,23 @@ function tripal_core_chado_load_form() {
   );
 
   $form['action_to_do'] = array(
-     '#type' => 'radios',
-     '#title' => 'Installation/Upgrade Action',
-     '#options' => array(
-        'Install Chado v1.3' => t('New Install of Chado v1.3 (erases all existing Chado data if Chado already exists)'),
-        'Upgrade Chado v1.2 to v1.3' => t('Upgrade existing Chado v1.2 to v1.3 (no data is lost)'),
-        'Install Chado v1.2' => t('New Install of Chado v1.2 (erases all existing Chado data if Chado already exists)'),
-        'Upgrade Chado v1.11 to v1.2' => t('Upgrade existing Chado v1.11 to v1.2 (no data is lost)'),
-        'Install Chado v1.11' => t('New Install of Chado v1.11 (erases all existing Chado data if Chado already exists)'),
-     ),
-     '#description' => t('Select an action to perform. If you want to install Chado all other Tripal modules must not be installed.'),
-     '#required' => TRUE,
+    '#type' => 'radios',
+    '#title' => 'Installation/Upgrade Action',
+    '#options' => array(
+      'Install Chado v1.3' => t('New Install of Chado v1.3 (erases all existing Chado data if Chado already exists)'),
+      'Upgrade Chado v1.2 to v1.3' => t('Upgrade existing Chado v1.2 to v1.3 (no data is lost)'),
+      'Install Chado v1.2' => t('New Install of Chado v1.2 (erases all existing Chado data if Chado already exists)'),
+      'Upgrade Chado v1.11 to v1.2' => t('Upgrade existing Chado v1.11 to v1.2 (no data is lost)'),
+      'Install Chado v1.11' => t('New Install of Chado v1.11 (erases all existing Chado data if Chado already exists)'),
+    ),
+    '#description' => t('Select an action to perform. If you want to install Chado all other Tripal modules must not be installed.'),
+    '#required' => TRUE,
+    '#ajax' => array(
+      'callback' => "tripal_core_chado_load_form_ajax_callback",
+      'wrapper'  => 'tripal_core_chado_load_form',
+      'effect'   => 'fade',
+      'method'   => 'replace',
+    ),
   );
 
   $form['warning'] = array(
@@ -65,6 +112,20 @@ function tripal_core_chado_load_form() {
     '#type' => 'submit',
     '#value' => t('Install/Upgrade Chado'),
   );
+
+  $form['#prefix'] = '<div id="tripal_core_chado_load_form">';
+  $form['#suffix'] = '</div>';
+  return $form;
+}
+
+/**
+ * Ajax callback function for the gensas_job_view_panel_form.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function tripal_core_chado_load_form_ajax_callback($form, $form_state) {
+  // drupal_debug($form['tree_settings']['org_table']['num_orgs']);
 
   return $form;
 }
@@ -281,7 +342,14 @@ function tripal_core_install_chado_1_11() {
  */
 function tripal_core_upgrade_chado_1_2_to_1_3() {
 
+  // Upgrade some of the custom tables that Tripal created that are now in
+  // Chado v1.3.  We'll do this ahead of time because the upgrade script won't
+  // upgrade tables if they already exist.
+  print "Checking for existing v1.3 tables in v1.2 and fixing bigints...\n";
+  tripal_core_upgrade_chado_1_2_to_1_3_pre_alter();
+
   // Get the path to the diff schema and upgrade SQL files.
+  print "Incorporating additional changes...\n";
   $diff_file = drupal_get_path('module', 'tripal_core') .
     '/chado_schema/default_schema-1.2-1.3-diff.sql';
 
@@ -293,6 +361,129 @@ function tripal_core_upgrade_chado_1_2_to_1_3() {
     throw new Exception("Upgrade problems!  Please check output above for errors.");
   }
 }
+
+/**
+ * Upgrade custom tables that may match the tables now in Chado v1.3.
+ *
+ * There were many new tables that were added to Chado v1.3 that were
+ * suggested by the Chado user community.  Some of those were Tripal users.
+ * Therefore, to help these Tripal users upgrade more seemlessly this function
+ * checks if those custom tables already exists, and if so updates them as
+ * best it can to match.  At a minimum it will create the table if it doesn't
+ * exist and if it does it will change the primary keys and foreign keys to
+ * be big ints.
+ */
+function tripal_core_upgrade_chado_1_2_to_1_3_pre_alter() {
+
+  // Include the Chado v1.3 schema definitions.
+  module_load_include('inc', 'tripal_core', '/api/tripal_core.schema_v1.3.api');
+
+  // The list of new tables in Chado v1.3
+  $new_tables = array('analysis_cvterm', 'analysis_dbxref', 'analysis_pub', 'analysis_relationship',
+    'contactprop', 'dbprop', 'feature_contact', 'featuremap_contact', 'featuremap_dbxref',
+    'featuremap_organism', 'featuremapprop', 'featureposprop', 'library_contact',
+    'library_expression', 'library_expressionprop', 'library_featureprop',
+    'library_relationship', 'library_relationship_pub', 'nd_experiment_analysis',
+    'organism_cvterm', 'organism_cvtermprop', 'organism_pub', 'organism_relationship',
+    'organismprop_pub', 'phenotypeprop', 'phylotreeprop', 'project_analysis',
+    'project_dbxref', 'project_feature', 'project_stock', 'pubauthor_contact',
+    'stock_feature', 'stock_featuremap', 'stock_library', 'stockcollection_db',
+  );
+
+  // Get the name of the chado schema.
+  $chado_schema = tripal_get_schema_name('chado');
+
+  // Iterate through the new Chado tables and create them or if they already
+  // exist then update them.
+  foreach ($new_tables as $table) {
+
+    // Get the schema for this table.
+    $function = 'tripal_core_chado_schema_v1_3_' . $table;
+    $schema = $function();
+
+    // If the table exists then fix the pkeys and fkeys.
+    if (chado_table_exists($table)) {
+
+      // Update the primary key fields to be bigints.
+      $fields = $schema['fields'];
+      foreach ($fields as $field_name => $field) {
+        if ($field['type'] == 'serial') {
+          if (chado_column_exists($table, $field_name)) {
+            $sql = 'ALTER TABLE {' . $table . '} ALTER COLUMN ' . $field_name . ' TYPE bigint';
+            chado_query($sql);
+          }
+          else {
+            throw new Exception('Could not alter primary key to bigint: ' . $table . '.' . $field_name);
+          }
+        }
+      }
+
+      // Update the foreign key fields to be bigints.
+      $fkeys = $schema['foreign keys'];
+      foreach ($fkeys as $fktable => $details) {
+        foreach ($details['columns'] as $leftkey => $rightkey) {
+          if (chado_column_exists($table, $leftkey)) {
+            $sql = 'ALTER TABLE {' . $table . '} ALTER COLUMN ' . $leftkey . ' TYPE bigint';
+            chado_query($sql);
+          }
+          else {
+            throw new Exception('Could not alter foreign key to bigint: ' . $table . '.' . $leftkey);
+          }
+        }
+      }
+
+    }
+  }
+  // Now create the sequences if they don't already exist.
+  $sequences = array(
+    'analysis_cvterm_analysis_cvterm_id_seq',
+    'analysis_dbxref_analysis_dbxref_id_seq',
+    'analysis_pub_analysis_pub_id_seq',
+    'analysis_relationship_analysis_relationship_id_seq',
+    'contactprop_contactprop_id_seq',
+    'dbprop_dbprop_id_seq',
+    'feature_contact_feature_contact_id_seq',
+    'featuremap_contact_featuremap_contact_id_seq',
+    'featuremap_dbxref_featuremap_dbxref_id_seq',
+    'featuremap_organism_featuremap_organism_id_seq',
+    'featuremapprop_featuremapprop_id_seq',
+    'featureposprop_featureposprop_id_seq',
+    'library_contact_library_contact_id_seq',
+    'library_expression_library_expression_id_seq',
+    'library_expressionprop_library_expressionprop_id_seq',
+    'library_featureprop_library_featureprop_id_seq',
+    'library_relationship_library_relationship_id_seq',
+    'library_relationship_pub_library_relationship_pub_id_seq',
+    'nd_experiment_analysis_nd_experiment_analysis_id_seq',
+    'organism_cvterm_organism_cvterm_id_seq',
+    'organism_cvtermprop_organism_cvtermprop_id_seq',
+    'organism_pub_organism_pub_id_seq',
+    'organism_relationship_organism_relationship_id_seq',
+    'organismprop_pub_organismprop_pub_id_seq',
+    'phenotypeprop_phenotypeprop_id_seq',
+    'phylotreeprop_phylotreeprop_id_seq',
+    'project_analysis_project_analysis_id_seq',
+    'project_dbxref_project_dbxref_id_seq',
+    'project_feature_project_feature_id_seq',
+    'project_stock_project_stock_id_seq',
+    'pubauthor_contact_pubauthor_contact_id_seq',
+    'stock_feature_stock_feature_id_seq',
+    'stock_featuremap_stock_featuremap_id_seq',
+    'stock_library_stock_library_id_seq',
+    'stockcollection_db_stockcollection_db_id_seq'
+  );
+  foreach ($sequences as $sequence) {
+
+    // Now add in the sequences if they don't already exist. There is no
+    // PostgreSQL 'CREATE SEQUENCE IF NOT EXIST' so we're forced to do it here
+    // and these create statements were removed from the diff upgrade file.
+    if (!chado_sequence_exists($sequence)) {
+      $sql = "CREATE SEQUENCE {" . $sequence . "} START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1";
+      chado_query($sql);
+    }
+  }
+}
+
 /**
  * Upgrades Chado from v1.11 to v1.2
  */
