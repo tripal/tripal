@@ -117,18 +117,18 @@ function tripal_chado_menu() {
     'access arguments' => array('administer tripal'),
   );
 
-  $items['admin/tripal/storage/chado/chado_install'] = array(
+  $items['admin/tripal/storage/chado/install'] = array(
     'title' => 'Install Chado',
     'description' => t('Installs the Chado database tables, views, etc., inside the current Drupal database'),
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_chado_install_form'),
+    'page arguments' => array('tripal_chado_load_form'),
     'type' => MENU_NORMAL_ITEM,
     'access arguments' => array('install chado'),
     'file' => 'includes/tripal_chado.install.inc',
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'weight' => -100
   );
-  $items['admin/tripal/storage/chado/chado_prepare'] = array(
+  $items['admin/tripal/storage/chado/prepare'] = array(
     'title' => 'Prepare Chado',
     'description' => t('Prepares Drupal to use Chado.'),
     'page callback' => 'drupal_get_form',
@@ -476,7 +476,7 @@ function tripal_chado_menu() {
     'file path' => drupal_get_path('module', 'tripal_chado'),
     'weight' => 10
   );
-  
+
   //////////////////////////////////////////////////////////////////////////////
   //                           Semantic Web Settings
   //////////////////////////////////////////////////////////////////////////////

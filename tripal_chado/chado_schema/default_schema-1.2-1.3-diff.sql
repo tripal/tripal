@@ -1,5 +1,6 @@
 set search_path=public,so,frange,genetic_code;
 DROP FUNCTION IF EXISTS gfffeatureatts(integer);
+DROP VIEW IF EXISTS unorient_intra_transposition;
 DROP VIEW IF EXISTS db_dbxref_count CASCADE;
 DROP VIEW IF EXISTS stats_paths_to_root CASCADE;
 DROP VIEW IF EXISTS cv_root CASCADE;
@@ -1892,8 +1893,8 @@ CREATE OR REPLACE FUNCTION create_point(bigint, bigint) RETURNS point
 --
 -- Name: boxrange(bigint, bigint); Type: FUNCTION; Schema: public; Owner: chado
 --
-DROP INDEX bingroup_boxrange;
-DROP INDEX binloc_boxrange;
+DROP INDEX IF EXISTS bingroup_boxrange;
+DROP INDEX IF EXISTS binloc_boxrange;
 DROP FUNCTION IF EXISTS boxrange(integer, integer);
 CREATE OR REPLACE FUNCTION boxrange(bigint, bigint) RETURNS box
     LANGUAGE sql IMMUTABLE
@@ -1902,7 +1903,7 @@ CREATE OR REPLACE FUNCTION boxrange(bigint, bigint) RETURNS box
 --
 -- Name: boxrange(bigint, bigint, bigint); Type: FUNCTION; Schema: public; Owner: chado
 --
-DROP INDEX binloc_boxrange_src;
+DROP INDEX IF EXISTS binloc_boxrange_src;
 DROP FUNCTION IF EXISTS boxrange(integer, integer, integer);
 CREATE OR REPLACE FUNCTION boxrange(bigint, bigint, bigint) RETURNS box
     LANGUAGE sql IMMUTABLE
@@ -1924,6 +1925,7 @@ ALTER TABLE featuregroup
     ALTER fmin TYPE bigint,
     ALTER fmax TYPE bigint;
 
+DROP INDEX IF EXISTS bingroup_boxrange;
 CREATE INDEX bingroup_boxrange ON featuregroup USING RTREE (boxrange(fmin, fmax)) WHERE is_root = 1;
 
 
@@ -2409,6 +2411,7 @@ ALTER TABLE FEATURELOC
     ALTER fmin TYPE bigint,
     ALTER fmax TYPE bigint;
 
+DROP INDEX IF EXISTS binloc_boxrange_src;
 CREATE INDEX binloc_boxrange_src ON featureloc USING RTREE (boxrange(srcfeature_id,fmin, fmax));
   
 --
@@ -2978,7 +2981,7 @@ ALTER TABLE analysis ALTER analysis_id TYPE bigint;
 -- Name: analysis_cvterm; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE analysis_cvterm (
+CREATE TABLE IF NOT EXISTS analysis_cvterm (
     analysis_cvterm_id bigint NOT NULL,
     analysis_id bigint NOT NULL,
     cvterm_id bigint NOT NULL,
@@ -3007,12 +3010,12 @@ NOT have the specified term.';
 -- Name: analysis_cvterm_analysis_cvterm_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE analysis_cvterm_analysis_cvterm_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE analysis_cvterm_analysis_cvterm_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 
 --
@@ -3026,7 +3029,7 @@ ALTER SEQUENCE analysis_cvterm_analysis_cvterm_id_seq OWNED BY analysis_cvterm.a
 -- Name: analysis_dbxref; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE analysis_dbxref (
+CREATE TABLE IF NOT EXISTS analysis_dbxref (
     analysis_dbxref_id bigint NOT NULL,
     analysis_id bigint NOT NULL,
     dbxref_id bigint NOT NULL,
@@ -3054,12 +3057,12 @@ accessions should set this field to false';
 -- Name: analysis_dbxref_analysis_dbxref_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE analysis_dbxref_analysis_dbxref_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE analysis_dbxref_analysis_dbxref_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 
 --
@@ -3073,7 +3076,7 @@ ALTER SEQUENCE analysis_dbxref_analysis_dbxref_id_seq OWNED BY analysis_dbxref.a
 -- Name: analysis_pub; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE analysis_pub (
+CREATE TABLE IF NOT EXISTS analysis_pub (
     analysis_pub_id bigint NOT NULL,
     analysis_id bigint NOT NULL,
     pub_id bigint NOT NULL
@@ -3092,12 +3095,12 @@ COMMENT ON TABLE analysis_pub IS 'Provenance. Linking table between analyses and
 -- Name: analysis_pub_analysis_pub_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE analysis_pub_analysis_pub_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE analysis_pub_analysis_pub_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 
 
@@ -3112,7 +3115,7 @@ ALTER SEQUENCE analysis_pub_analysis_pub_id_seq OWNED BY analysis_pub.analysis_p
 -- Name: analysis_relationship; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE analysis_relationship (
+CREATE TABLE IF NOT EXISTS analysis_relationship (
     analysis_relationship_id bigint NOT NULL,
     subject_id bigint NOT NULL,
     object_id bigint NOT NULL,
@@ -3168,12 +3171,12 @@ important where rank is used to order these; starts from zero.';
 -- Name: analysis_relationship_analysis_relationship_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE analysis_relationship_analysis_relationship_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE analysis_relationship_analysis_relationship_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 
 --
@@ -3468,7 +3471,7 @@ ALTER TABLE contact_relationship
 -- Name: contactprop; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE contactprop (
+CREATE TABLE IF NOT EXISTS contactprop (
     contactprop_id bigint NOT NULL,
     contact_id bigint NOT NULL,
     type_id bigint NOT NULL,
@@ -3489,12 +3492,12 @@ relational schema, and is completely extensible.';
 -- Name: contactprop_contactprop_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE contactprop_contactprop_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE contactprop_contactprop_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 
 --
@@ -3563,7 +3566,7 @@ ALTER TABLE cvtermsynonym
 -- Name: dbprop; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE dbprop (
+CREATE TABLE IF NOT EXISTS dbprop (
     dbprop_id bigint NOT NULL,
     db_id bigint NOT NULL,
     type_id bigint NOT NULL,
@@ -3586,12 +3589,12 @@ the combination of db_id, rank, and type_id. Multivalued property-value pairs mu
 -- Name: dbprop_dbprop_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE dbprop_dbprop_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE dbprop_dbprop_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: dbprop_dbprop_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -3726,7 +3729,7 @@ ALTER TABLE expressionprop
 -- Name: feature_contact; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE feature_contact (
+CREATE TABLE IF NOT EXISTS feature_contact (
     feature_contact_id bigint NOT NULL,
     feature_id bigint NOT NULL,
     contact_id bigint NOT NULL
@@ -3744,12 +3747,12 @@ person or organization responsible for discovery or that can provide more inform
 -- Name: feature_contact_feature_contact_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE feature_contact_feature_contact_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE feature_contact_feature_contact_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: feature_contact_feature_contact_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -3898,7 +3901,7 @@ ALTER TABLE featuremap
 -- Name: featuremap_contact; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE featuremap_contact (
+CREATE TABLE IF NOT EXISTS featuremap_contact (
     featuremap_contact_id bigint NOT NULL,
     featuremap_id bigint NOT NULL,
     contact_id bigint NOT NULL
@@ -3917,12 +3920,12 @@ that can provide more information on a particular featuremap.';
 -- Name: featuremap_contact_featuremap_contact_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE featuremap_contact_featuremap_contact_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE featuremap_contact_featuremap_contact_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: featuremap_contact_featuremap_contact_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -3935,7 +3938,7 @@ ALTER SEQUENCE featuremap_contact_featuremap_contact_id_seq OWNED BY featuremap_
 -- Name: featuremap_dbxref; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE featuremap_dbxref (
+CREATE TABLE IF NOT EXISTS featuremap_dbxref (
     featuremap_dbxref_id bigint NOT NULL,
     featuremap_id bigint NOT NULL,
     dbxref_id bigint NOT NULL,
@@ -3946,12 +3949,12 @@ CREATE TABLE featuremap_dbxref (
 -- Name: featuremap_dbxref_featuremap_dbxref_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE featuremap_dbxref_featuremap_dbxref_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE featuremap_dbxref_featuremap_dbxref_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: featuremap_dbxref_featuremap_dbxref_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -3963,7 +3966,7 @@ ALTER SEQUENCE featuremap_dbxref_featuremap_dbxref_id_seq OWNED BY featuremap_db
 -- Name: featuremap_organism; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE featuremap_organism (
+CREATE TABLE IF NOT EXISTS featuremap_organism (
     featuremap_organism_id bigint NOT NULL,
     featuremap_id bigint NOT NULL,
     organism_id bigint NOT NULL
@@ -3981,12 +3984,12 @@ COMMENT ON TABLE featuremap_organism IS 'Links a featuremap to the organism(s) w
 -- Name: featuremap_organism_featuremap_organism_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE featuremap_organism_featuremap_organism_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE featuremap_organism_featuremap_organism_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: featuremap_organism_featuremap_organism_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4007,7 +4010,7 @@ ALTER TABLE featuremap_pub
 -- Name: featuremapprop; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE featuremapprop (
+CREATE TABLE IF NOT EXISTS featuremapprop (
     featuremapprop_id bigint NOT NULL,
     featuremap_id bigint NOT NULL,
     type_id bigint NOT NULL,
@@ -4028,12 +4031,12 @@ relational schema, and is completely extensible.';
 -- Name: featuremapprop_featuremapprop_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE featuremapprop_featuremapprop_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE featuremapprop_featuremapprop_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 
 --
@@ -4059,7 +4062,7 @@ DROP SEQUENCE featurepos_featuremap_id_seq;
 -- Name: featureposprop; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE featureposprop (
+CREATE TABLE IF NOT EXISTS featureposprop (
     featureposprop_id bigint NOT NULL,
     featurepos_id bigint NOT NULL,
     type_id bigint NOT NULL,
@@ -4078,12 +4081,12 @@ COMMENT ON TABLE featureposprop IS 'Property or attribute of a featurepos record
 -- Name: featureposprop_featureposprop_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE featureposprop_featureposprop_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE featureposprop_featureposprop_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: featureposprop_featureposprop_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4151,7 +4154,7 @@ COMMENT ON COLUMN library.type_id IS 'The type_id foreign key links to a control
 -- Name: library_contact; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE library_contact (
+CREATE TABLE IF NOT EXISTS library_contact (
     library_contact_id bigint NOT NULL,
     library_id bigint NOT NULL,
     contact_id bigint NOT NULL
@@ -4168,12 +4171,12 @@ COMMENT ON TABLE library_contact IS 'Links contact(s) with a library.  Used to i
 -- Name: library_contact_library_contact_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE library_contact_library_contact_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE library_contact_library_contact_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: library_contact_library_contact_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4210,7 +4213,7 @@ COMMENT ON TABLE library_dbxref IS 'Links a library to dbxrefs.';
 -- Name: library_expression; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE library_expression (
+CREATE TABLE IF NOT EXISTS library_expression (
     library_expression_id bigint NOT NULL,
     library_id bigint NOT NULL,
     expression_id bigint NOT NULL,
@@ -4228,12 +4231,12 @@ COMMENT ON TABLE library_expression IS 'Links a library to expression statements
 -- Name: library_expression_library_expression_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE library_expression_library_expression_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE library_expression_library_expression_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: library_expression_library_expression_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4246,7 +4249,7 @@ ALTER SEQUENCE library_expression_library_expression_id_seq OWNED BY library_exp
 -- Name: library_expressionprop; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE library_expressionprop (
+CREATE TABLE IF NOT EXISTS library_expressionprop (
     library_expressionprop_id bigint NOT NULL,
     library_expression_id bigint NOT NULL,
     type_id bigint NOT NULL,
@@ -4265,12 +4268,12 @@ COMMENT ON TABLE library_expressionprop IS 'Attributes of a library_expression r
 -- Name: library_expressionprop_library_expressionprop_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE library_expressionprop_library_expressionprop_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE library_expressionprop_library_expressionprop_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: library_expressionprop_library_expressionprop_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4291,7 +4294,7 @@ ALTER TABLE library_feature
 -- Name: library_featureprop; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE library_featureprop (
+CREATE TABLE IF NOT EXISTS library_featureprop (
     library_featureprop_id bigint NOT NULL,
     library_feature_id bigint NOT NULL,
     type_id bigint NOT NULL,
@@ -4310,12 +4313,12 @@ COMMENT ON TABLE library_featureprop IS 'Attributes of a library_feature relatio
 -- Name: library_featureprop_library_featureprop_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE library_featureprop_library_featureprop_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE library_featureprop_library_featureprop_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: library_featureprop_library_featureprop_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4342,7 +4345,7 @@ COMMENT ON TABLE library_pub IS 'Attribution for a library.';
 -- Name: library_relationship; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE library_relationship (
+CREATE TABLE IF NOT EXISTS library_relationship (
     library_relationship_id bigint NOT NULL,
     subject_id bigint NOT NULL,
     object_id bigint NOT NULL,
@@ -4361,12 +4364,12 @@ COMMENT ON TABLE library_relationship IS 'Relationships between libraries.';
 -- Name: library_relationship_library_relationship_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE library_relationship_library_relationship_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE library_relationship_library_relationship_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 
 --
@@ -4380,7 +4383,7 @@ ALTER SEQUENCE library_relationship_library_relationship_id_seq OWNED BY library
 -- Name: library_relationship_pub; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE library_relationship_pub (
+CREATE TABLE IF NOT EXISTS library_relationship_pub (
     library_relationship_pub_id bigint NOT NULL,
     library_relationship_id bigint NOT NULL,
     pub_id bigint NOT NULL
@@ -4397,12 +4400,12 @@ COMMENT ON TABLE library_relationship_pub IS 'Provenance of library_relationship
 -- Name: library_relationship_pub_library_relationship_pub_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE library_relationship_pub_library_relationship_pub_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE library_relationship_pub_library_relationship_pub_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: library_relationship_pub_library_relationship_pub_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4497,7 +4500,7 @@ relate to each other should be linked to the same record in the project table.';
 -- Name: nd_experiment_analysis; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE nd_experiment_analysis (
+CREATE TABLE IF NOT EXISTS nd_experiment_analysis (
     nd_experiment_analysis_id bigint NOT NULL,
     nd_experiment_id bigint NOT NULL,
     analysis_id bigint NOT NULL,
@@ -4515,12 +4518,12 @@ COMMENT ON TABLE nd_experiment_analysis IS 'An analysis that is used in an exper
 -- Name: nd_experiment_analysis_nd_experiment_analysis_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE nd_experiment_analysis_nd_experiment_analysis_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE nd_experiment_analysis_nd_experiment_analysis_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: nd_experiment_analysis_nd_experiment_analysis_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4741,7 +4744,7 @@ subspecies, varietas, subvarietas, forma and subforma';
 -- Name: organism_cvterm; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE organism_cvterm (
+CREATE TABLE IF NOT EXISTS organism_cvterm (
     organism_cvterm_id bigint NOT NULL,
     organism_id bigint NOT NULL,
     cvterm_id bigint NOT NULL,
@@ -4771,12 +4774,12 @@ the default 0 value should be used';
 -- Name: organism_cvterm_organism_cvterm_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE organism_cvterm_organism_cvterm_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE organism_cvterm_organism_cvterm_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: organism_cvterm_organism_cvterm_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4789,7 +4792,7 @@ ALTER SEQUENCE organism_cvterm_organism_cvterm_id_seq OWNED BY organism_cvterm.o
 -- Name: organism_cvtermprop; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE organism_cvtermprop (
+CREATE TABLE IF NOT EXISTS organism_cvtermprop (
     organism_cvtermprop_id bigint NOT NULL,
     organism_cvterm_id bigint NOT NULL,
     type_id bigint NOT NULL,
@@ -4840,12 +4843,12 @@ the default 0 value should be used';
 -- Name: organism_cvtermprop_organism_cvtermprop_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE organism_cvtermprop_organism_cvtermprop_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE organism_cvtermprop_organism_cvtermprop_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: organism_cvtermprop_organism_cvtermprop_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4873,7 +4876,7 @@ COMMENT ON TABLE organism_dbxref IS 'Links an organism to a dbxref.';
 -- Name: organism_pub; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE organism_pub (
+CREATE TABLE IF NOT EXISTS organism_pub (
     organism_pub_id bigint NOT NULL,
     organism_id bigint NOT NULL,
     pub_id bigint NOT NULL
@@ -4890,12 +4893,12 @@ COMMENT ON TABLE organism_pub IS 'Attribution for organism.';
 -- Name: organism_pub_organism_pub_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE organism_pub_organism_pub_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE organism_pub_organism_pub_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: organism_pub_organism_pub_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4908,7 +4911,7 @@ ALTER SEQUENCE organism_pub_organism_pub_id_seq OWNED BY organism_pub.organism_p
 -- Name: organism_relationship; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE organism_relationship (
+CREATE TABLE IF NOT EXISTS organism_relationship (
     organism_relationship_id bigint NOT NULL,
     subject_id bigint NOT NULL,
     object_id bigint NOT NULL,
@@ -4930,12 +4933,12 @@ relatinoships should be housed in the phylogeny tables.';
 -- Name: organism_relationship_organism_relationship_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE organism_relationship_organism_relationship_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE organism_relationship_organism_relationship_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: organism_relationship_organism_relationship_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -4956,7 +4959,7 @@ ALTER TABLE organismprop
 -- Name: organismprop_pub; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE organismprop_pub (
+CREATE TABLE IF NOT EXISTS organismprop_pub (
     organismprop_pub_id bigint NOT NULL,
     organismprop_id bigint NOT NULL,
     pub_id bigint NOT NULL,
@@ -4975,12 +4978,12 @@ COMMENT ON TABLE organismprop_pub IS 'Attribution for organismprop.';
 -- Name: organismprop_pub_organismprop_pub_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE organismprop_pub_organismprop_pub_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE organismprop_pub_organismprop_pub_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: organismprop_pub_organismprop_pub_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -5054,7 +5057,7 @@ COMMENT ON TABLE phenotype_cvterm IS 'phenotype to cvterm associations.';
 -- Name: phenotypeprop; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE phenotypeprop (
+CREATE TABLE IF NOT EXISTS phenotypeprop (
     phenotypeprop_id bigint NOT NULL,
     phenotype_id bigint NOT NULL,
     type_id bigint NOT NULL,
@@ -5074,12 +5077,12 @@ COMMENT ON TABLE phenotypeprop IS 'A phenotype can have any number of slot-value
 -- Name: phenotypeprop_phenotypeprop_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE phenotypeprop_phenotypeprop_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE phenotypeprop_phenotypeprop_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: phenotypeprop_phenotypeprop_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -5180,7 +5183,7 @@ ALTER TABLE phylotree_pub
 -- Name: phylotreeprop; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE phylotreeprop (
+CREATE TABLE IF NOT EXISTS phylotreeprop (
     phylotreeprop_id bigint NOT NULL,
     phylotree_id bigint NOT NULL,
     type_id bigint NOT NULL,
@@ -5230,12 +5233,12 @@ default 0 value should be used';
 -- Name: phylotreeprop_phylotreeprop_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE phylotreeprop_phylotreeprop_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE phylotreeprop_phylotreeprop_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 
 --
@@ -5264,7 +5267,7 @@ COMMENT ON TABLE project IS 'Standard Chado flexible property table for projects
 -- Name: project_analysis; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE project_analysis (
+CREATE TABLE IF NOT EXISTS project_analysis (
     project_analysis_id bigint NOT NULL,
     project_id bigint NOT NULL,
     analysis_id bigint NOT NULL,
@@ -5284,12 +5287,12 @@ The rank column can be used to specify a simple ordering in which analyses were 
 -- Name: project_analysis_project_analysis_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE project_analysis_project_analysis_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE project_analysis_project_analysis_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 
 --
@@ -5319,7 +5322,7 @@ COMMENT ON TABLE project_contact IS 'Linking table for associating projects and 
 -- Name: project_dbxref; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE project_dbxref (
+CREATE TABLE IF NOT EXISTS project_dbxref (
     project_dbxref_id bigint NOT NULL,
     project_id bigint NOT NULL,
     dbxref_id bigint NOT NULL,
@@ -5344,12 +5347,12 @@ COMMENT ON COLUMN project_dbxref.is_current IS 'The is_current boolean indicates
 -- Name: project_dbxref_project_dbxref_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE project_dbxref_project_dbxref_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE project_dbxref_project_dbxref_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: project_dbxref_project_dbxref_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -5362,7 +5365,7 @@ ALTER SEQUENCE project_dbxref_project_dbxref_id_seq OWNED BY project_dbxref.proj
 -- Name: project_feature; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE project_feature (
+CREATE TABLE IF NOT EXISTS project_feature (
     project_feature_id bigint NOT NULL,
     feature_id bigint NOT NULL,
     project_id bigint NOT NULL
@@ -5380,12 +5383,12 @@ COMMENT ON TABLE project_feature IS 'This table is intended associate records in
 -- Name: project_feature_project_feature_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE project_feature_project_feature_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE project_feature_project_feature_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: project_feature_project_feature_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -5432,7 +5435,7 @@ COMMENT ON COLUMN project_relationship.type_id IS 'The cvterm type of the relati
 -- Name: project_stock; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE project_stock (
+CREATE TABLE IF NOT EXISTS project_stock (
     project_stock_id bigint NOT NULL,
     stock_id bigint NOT NULL,
     project_id bigint NOT NULL
@@ -5450,12 +5453,12 @@ COMMENT ON TABLE project_stock IS 'This table is intended associate records in t
 -- Name: project_stock_project_stock_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE project_stock_project_stock_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE project_stock_project_stock_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 --
 -- Name: projectprop; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
@@ -5516,7 +5519,7 @@ ALTER TABLE pubauthor
 -- Name: pubauthor_contact; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE pubauthor_contact (
+CREATE TABLE IF NOT EXISTS pubauthor_contact (
     pubauthor_contact_id bigint NOT NULL,
     contact_id bigint NOT NULL,
     pubauthor_id bigint NOT NULL
@@ -5534,12 +5537,12 @@ COMMENT ON TABLE pubauthor_contact IS 'An author on a publication may have a cor
 -- Name: pubauthor_contact_pubauthor_contact_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE pubauthor_contact_pubauthor_contact_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE pubauthor_contact_pubauthor_contact_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: pubauthor_contact_pubauthor_contact_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -5637,7 +5640,7 @@ ALTER TABLE stock_dbxrefprop
 -- Name: stock_feature; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE stock_feature (
+CREATE TABLE IF NOT EXISTS stock_feature (
     stock_feature_id bigint NOT NULL,
     feature_id bigint NOT NULL,
     stock_id bigint NOT NULL,
@@ -5657,12 +5660,12 @@ COMMENT ON TABLE stock_feature IS 'Links a stock to a feature.';
 -- Name: stock_feature_stock_feature_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE stock_feature_stock_feature_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE stock_feature_stock_feature_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: stock_feature_stock_feature_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chado
@@ -5675,7 +5678,7 @@ ALTER SEQUENCE stock_feature_stock_feature_id_seq OWNED BY stock_feature.stock_f
 -- Name: stock_featuremap; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE stock_featuremap (
+CREATE TABLE IF NOT EXISTS stock_featuremap (
     stock_featuremap_id bigint NOT NULL,
     featuremap_id bigint NOT NULL,
     stock_id bigint NOT NULL,
@@ -5694,12 +5697,12 @@ COMMENT ON TABLE stock_featuremap IS 'Links a featuremap to a stock.';
 -- Name: stock_featuremap_stock_featuremap_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE stock_featuremap_stock_featuremap_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE stock_featuremap_stock_featuremap_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: stock_genotype; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
@@ -5714,7 +5717,7 @@ ALTER TABLE stock_genotype
 -- Name: stock_library; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE stock_library (
+CREATE TABLE IF NOT EXISTS stock_library (
     stock_library_id bigint NOT NULL,
     library_id bigint NOT NULL,
     stock_id bigint NOT NULL
@@ -5732,12 +5735,12 @@ COMMENT ON TABLE stock_library IS 'Links a stock with a library.';
 -- Name: stock_library_stock_library_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE stock_library_stock_library_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE stock_library_stock_library_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: stock_pub; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
@@ -5790,7 +5793,7 @@ ALTER TABLE stockcollection
 -- Name: stockcollection_db; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
 --
 
-CREATE TABLE stockcollection_db (
+CREATE TABLE IF NOT EXISTS stockcollection_db (
     stockcollection_db_id bigint NOT NULL,
     stockcollection_id bigint NOT NULL,
     db_id bigint NOT NULL
@@ -5812,12 +5815,12 @@ db_id record';
 -- Name: stockcollection_db_stockcollection_db_id_seq; Type: SEQUENCE; Schema: public; Owner: chado
 --
 
-CREATE SEQUENCE stockcollection_db_stockcollection_db_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+---CREATE SEQUENCE stockcollection_db_stockcollection_db_id_seq
+---    START WITH 1
+---    INCREMENT BY 1
+---    NO MINVALUE
+---    NO MAXVALUE
+---    CACHE 1;
 
 --
 -- Name: stockcollection_stock; Type: TABLE; Schema: public; Owner: chado; Tablespace: 
@@ -6174,6 +6177,7 @@ ALTER TABLE ONLY stockcollection_db ALTER COLUMN stockcollection_db_id SET DEFAU
 -- Name: analysis_cvterm_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
 
+ALTER TABLE analysis_cvterm DROP CONSTRAINT IF EXISTS analysis_cvterm_c1;
 ALTER TABLE ONLY analysis_cvterm
     ADD CONSTRAINT analysis_cvterm_c1 UNIQUE (analysis_id, cvterm_id, rank);
 
@@ -6181,7 +6185,7 @@ ALTER TABLE ONLY analysis_cvterm
 --
 -- Name: analysis_cvterm_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE analysis_cvterm DROP CONSTRAINT IF EXISTS analysis_cvterm_pkey;
 ALTER TABLE ONLY analysis_cvterm
     ADD CONSTRAINT analysis_cvterm_pkey PRIMARY KEY (analysis_cvterm_id);
 
@@ -6189,7 +6193,7 @@ ALTER TABLE ONLY analysis_cvterm
 --
 -- Name: analysis_dbxref_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE analysis_dbxref DROP CONSTRAINT IF EXISTS analysis_dbxref_c1;
 ALTER TABLE ONLY analysis_dbxref
     ADD CONSTRAINT analysis_dbxref_c1 UNIQUE (analysis_id, dbxref_id);
 
@@ -6197,14 +6201,14 @@ ALTER TABLE ONLY analysis_dbxref
 --
 -- Name: analysis_dbxref_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE analysis_dbxref DROP CONSTRAINT IF EXISTS analysis_dbxref_pkey;
 ALTER TABLE ONLY analysis_dbxref
     ADD CONSTRAINT analysis_dbxref_pkey PRIMARY KEY (analysis_dbxref_id);
 
 --
 -- Name: analysis_pub_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE analysis_pub DROP CONSTRAINT IF EXISTS analysis_pub_c1;
 ALTER TABLE ONLY analysis_pub
     ADD CONSTRAINT analysis_pub_c1 UNIQUE (analysis_id, pub_id);
 
@@ -6212,7 +6216,7 @@ ALTER TABLE ONLY analysis_pub
 --
 -- Name: analysis_pub_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE analysis_pub DROP CONSTRAINT IF EXISTS analysis_pub_pkey;
 ALTER TABLE ONLY analysis_pub
     ADD CONSTRAINT analysis_pub_pkey PRIMARY KEY (analysis_pub_id);
 
@@ -6220,7 +6224,7 @@ ALTER TABLE ONLY analysis_pub
 --
 -- Name: analysis_relationship_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE analysis_relationship DROP CONSTRAINT IF EXISTS analysis_relationship_c1;
 ALTER TABLE ONLY analysis_relationship
     ADD CONSTRAINT analysis_relationship_c1 UNIQUE (subject_id, object_id, type_id, rank);
 
@@ -6228,14 +6232,14 @@ ALTER TABLE ONLY analysis_relationship
 --
 -- Name: analysis_relationship_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE analysis_relationship DROP CONSTRAINT IF EXISTS analysis_relationship_pkey;
 ALTER TABLE ONLY analysis_relationship
     ADD CONSTRAINT analysis_relationship_pkey PRIMARY KEY (analysis_relationship_id);
 
 --
 -- Name: contactprop_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE contactprop DROP CONSTRAINT IF EXISTS contactprop_c1;
 ALTER TABLE ONLY contactprop
     ADD CONSTRAINT contactprop_c1 UNIQUE (contact_id, type_id, rank);
 
@@ -6243,14 +6247,14 @@ ALTER TABLE ONLY contactprop
 --
 -- Name: contactprop_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE contactprop DROP CONSTRAINT IF EXISTS contactprop_pkey;
 ALTER TABLE ONLY contactprop
     ADD CONSTRAINT contactprop_pkey PRIMARY KEY (contactprop_id);
 
 --
 -- Name: dbprop_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE dbprop DROP CONSTRAINT IF EXISTS dbprop_c1;
 ALTER TABLE ONLY dbprop
     ADD CONSTRAINT dbprop_c1 UNIQUE (db_id, type_id, rank);
 
@@ -6258,15 +6262,14 @@ ALTER TABLE ONLY dbprop
 --
 -- Name: dbprop_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE dbprop DROP CONSTRAINT IF EXISTS dbprop_pkey;
 ALTER TABLE ONLY dbprop
     ADD CONSTRAINT dbprop_pkey PRIMARY KEY (dbprop_id);
 
 --
 -- Name: expression_cvterm_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-ALTER TABLE ONLY expression_cvterm
-    DROP CONSTRAINT expression_cvterm_c1;
+ALTER TABLE ONLY expression_cvterm DROP CONSTRAINT expression_cvterm_c1;
 ALTER TABLE ONLY expression_cvterm
     ADD CONSTRAINT expression_cvterm_c1 UNIQUE (expression_id, cvterm_id, rank, cvterm_type_id);
 
@@ -6279,7 +6282,7 @@ ALTER TABLE ONLY contactprop ALTER COLUMN contactprop_id SET DEFAULT nextval('co
 --
 -- Name: feature_contact_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE feature_contact DROP CONSTRAINT IF EXISTS feature_contact_c1;
 ALTER TABLE ONLY feature_contact
     ADD CONSTRAINT feature_contact_c1 UNIQUE (feature_id, contact_id);
 
@@ -6287,14 +6290,14 @@ ALTER TABLE ONLY feature_contact
 --
 -- Name: feature_contact_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE feature_contact DROP CONSTRAINT IF EXISTS feature_contact_pkey;
 ALTER TABLE ONLY feature_contact
     ADD CONSTRAINT feature_contact_pkey PRIMARY KEY (feature_contact_id);
 
 --
 -- Name: featuremap_contact_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE featuremap_contact DROP CONSTRAINT IF EXISTS featuremap_contact_c1;
 ALTER TABLE ONLY featuremap_contact
     ADD CONSTRAINT featuremap_contact_c1 UNIQUE (featuremap_id, contact_id);
 
@@ -6302,7 +6305,7 @@ ALTER TABLE ONLY featuremap_contact
 --
 -- Name: featuremap_contact_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE featuremap_contact DROP CONSTRAINT IF EXISTS featuremap_contact_pkey;
 ALTER TABLE ONLY featuremap_contact
     ADD CONSTRAINT featuremap_contact_pkey PRIMARY KEY (featuremap_contact_id);
 
@@ -6310,7 +6313,7 @@ ALTER TABLE ONLY featuremap_contact
 --
 -- Name: featuremap_dbxref_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE featuremap_dbxref DROP CONSTRAINT IF EXISTS featuremap_dbxref_pkey;
 ALTER TABLE ONLY featuremap_dbxref
     ADD CONSTRAINT featuremap_dbxref_pkey PRIMARY KEY (featuremap_dbxref_id);
 
@@ -6318,6 +6321,7 @@ ALTER TABLE ONLY featuremap_dbxref
 --
 -- Name: featuremap_organism_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
+ALTER TABLE featuremap_organism DROP CONSTRAINT IF EXISTS featuremap_organism_c1;
 ALTER TABLE ONLY featuremap_organism
     ADD CONSTRAINT featuremap_organism_c1 UNIQUE (featuremap_id, organism_id);
 
@@ -6325,14 +6329,14 @@ ALTER TABLE ONLY featuremap_organism
 --
 -- Name: featuremap_organism_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE featuremap_organism DROP CONSTRAINT IF EXISTS featuremap_organism_pkey;
 ALTER TABLE ONLY featuremap_organism
     ADD CONSTRAINT featuremap_organism_pkey PRIMARY KEY (featuremap_organism_id);
 
 --
 -- Name: featuremapprop_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE featuremapprop DROP CONSTRAINT IF EXISTS featuremapprop_c1;
 ALTER TABLE ONLY featuremapprop
     ADD CONSTRAINT featuremapprop_c1 UNIQUE (featuremap_id, type_id, rank);
 
@@ -6340,14 +6344,14 @@ ALTER TABLE ONLY featuremapprop
 --
 -- Name: featuremapprop_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE featuremapprop DROP CONSTRAINT IF EXISTS featuremapprop_pkey;
 ALTER TABLE ONLY featuremapprop
     ADD CONSTRAINT featuremapprop_pkey PRIMARY KEY (featuremapprop_id);
 
 --
 -- Name: featureposprop_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE featureposprop DROP CONSTRAINT IF EXISTS featureposprop_c1;
 ALTER TABLE ONLY featureposprop
     ADD CONSTRAINT featureposprop_c1 UNIQUE (featurepos_id, type_id, rank);
 
@@ -6355,14 +6359,14 @@ ALTER TABLE ONLY featureposprop
 --
 -- Name: featureposprop_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE featureposprop DROP CONSTRAINT IF EXISTS featureposprop_pkey;
 ALTER TABLE ONLY featureposprop
     ADD CONSTRAINT featureposprop_pkey PRIMARY KEY (featureposprop_id);
 
 --
 -- Name: library_contact_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE library_contact DROP CONSTRAINT IF EXISTS library_contact_c1;
 ALTER TABLE ONLY library_contact
     ADD CONSTRAINT library_contact_c1 UNIQUE (library_id, contact_id);
 
@@ -6370,14 +6374,14 @@ ALTER TABLE ONLY library_contact
 --
 -- Name: library_contact_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE library_contact DROP CONSTRAINT IF EXISTS library_contact_pkey;
 ALTER TABLE ONLY library_contact
     ADD CONSTRAINT library_contact_pkey PRIMARY KEY (library_contact_id);
 
 --
 -- Name: library_expression_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE library_expression DROP CONSTRAINT IF EXISTS library_expression_c1;
 ALTER TABLE ONLY library_expression
     ADD CONSTRAINT library_expression_c1 UNIQUE (library_id, expression_id);
 
@@ -6385,7 +6389,7 @@ ALTER TABLE ONLY library_expression
 --
 -- Name: library_expression_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE library_expression DROP CONSTRAINT IF EXISTS library_expression_pkey;
 ALTER TABLE ONLY library_expression
     ADD CONSTRAINT library_expression_pkey PRIMARY KEY (library_expression_id);
 
@@ -6393,7 +6397,7 @@ ALTER TABLE ONLY library_expression
 --
 -- Name: library_expressionprop_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE library_expressionprop DROP CONSTRAINT IF EXISTS library_expressionprop_c1;
 ALTER TABLE ONLY library_expressionprop
     ADD CONSTRAINT library_expressionprop_c1 UNIQUE (library_expression_id, type_id, rank);
 
@@ -6401,14 +6405,14 @@ ALTER TABLE ONLY library_expressionprop
 --
 -- Name: library_expressionprop_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE library_expressionprop DROP CONSTRAINT IF EXISTS library_expressionprop_pkey;
 ALTER TABLE ONLY library_expressionprop
     ADD CONSTRAINT library_expressionprop_pkey PRIMARY KEY (library_expressionprop_id);
 
 --
 -- Name: library_featureprop_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE library_featureprop DROP CONSTRAINT IF EXISTS library_featureprop_c1;
 ALTER TABLE ONLY library_featureprop
     ADD CONSTRAINT library_featureprop_c1 UNIQUE (library_feature_id, type_id, rank);
 
@@ -6416,14 +6420,14 @@ ALTER TABLE ONLY library_featureprop
 --
 -- Name: library_featureprop_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE library_featureprop DROP CONSTRAINT IF EXISTS library_featureprop_pkey;
 ALTER TABLE ONLY library_featureprop
     ADD CONSTRAINT library_featureprop_pkey PRIMARY KEY (library_featureprop_id);
 
 --
 -- Name: library_relationship_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE library_relationship DROP CONSTRAINT IF EXISTS library_relationship_c1;
 ALTER TABLE ONLY library_relationship
     ADD CONSTRAINT library_relationship_c1 UNIQUE (subject_id, object_id, type_id);
 
@@ -6431,7 +6435,7 @@ ALTER TABLE ONLY library_relationship
 --
 -- Name: library_relationship_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE library_relationship DROP CONSTRAINT IF EXISTS library_relationship_pkey;
 ALTER TABLE ONLY library_relationship
     ADD CONSTRAINT library_relationship_pkey PRIMARY KEY (library_relationship_id);
 
@@ -6439,7 +6443,7 @@ ALTER TABLE ONLY library_relationship
 --
 -- Name: library_relationship_pub_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE library_relationship_pub DROP CONSTRAINT IF EXISTS library_relationship_pub_c1;
 ALTER TABLE ONLY library_relationship_pub
     ADD CONSTRAINT library_relationship_pub_c1 UNIQUE (library_relationship_id, pub_id);
 
@@ -6447,26 +6451,25 @@ ALTER TABLE ONLY library_relationship_pub
 --
 -- Name: library_relationship_pub_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE library_relationship_pub DROP CONSTRAINT IF EXISTS library_relationship_pub_pkey;
 ALTER TABLE ONLY library_relationship_pub
     ADD CONSTRAINT library_relationship_pub_pkey PRIMARY KEY (library_relationship_pub_id);
 
 --
 -- Name: nd_experiment_analysis_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE nd_experiment_analysis DROP CONSTRAINT IF EXISTS nd_experiment_analysis_pkey;
 ALTER TABLE ONLY nd_experiment_analysis
     ADD CONSTRAINT nd_experiment_analysis_pkey PRIMARY KEY (nd_experiment_analysis_id);
 
 --
 -- Name: nd_experiment_project_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE nd_experiment_project DROP CONSTRAINT IF EXISTS nd_experiment_project_c1;
 ALTER TABLE ONLY nd_experiment_project
     ADD CONSTRAINT nd_experiment_project_c1 UNIQUE (project_id, nd_experiment_id);
 
-ALTER TABLE ONLY organism
-    DROP CONSTRAINT organism_c1;
+ALTER TABLE ONLY organism DROP CONSTRAINT organism_c1;
 ALTER TABLE ONLY organism
     ADD CONSTRAINT organism_c1 UNIQUE (genus, species, type_id, infraspecific_name);
 
@@ -6474,7 +6477,7 @@ ALTER TABLE ONLY organism
 --
 -- Name: organism_cvterm_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE organism_cvterm DROP CONSTRAINT IF EXISTS organism_cvterm_c1;
 ALTER TABLE ONLY organism_cvterm
     ADD CONSTRAINT organism_cvterm_c1 UNIQUE (organism_id, cvterm_id, pub_id);
 
@@ -6482,7 +6485,7 @@ ALTER TABLE ONLY organism_cvterm
 --
 -- Name: organism_cvterm_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE organism_cvterm DROP CONSTRAINT IF EXISTS organism_cvterm_pkey;
 ALTER TABLE ONLY organism_cvterm
     ADD CONSTRAINT organism_cvterm_pkey PRIMARY KEY (organism_cvterm_id);
 
@@ -6490,7 +6493,7 @@ ALTER TABLE ONLY organism_cvterm
 --
 -- Name: organism_cvtermprop_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE organism_cvtermprop DROP CONSTRAINT IF EXISTS organism_cvtermprop_c1;
 ALTER TABLE ONLY organism_cvtermprop
     ADD CONSTRAINT organism_cvtermprop_c1 UNIQUE (organism_cvterm_id, type_id, rank);
 
@@ -6498,14 +6501,14 @@ ALTER TABLE ONLY organism_cvtermprop
 --
 -- Name: organism_cvtermprop_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE organism_cvtermprop DROP CONSTRAINT IF EXISTS organism_cvtermprop_pkey;
 ALTER TABLE ONLY organism_cvtermprop
     ADD CONSTRAINT organism_cvtermprop_pkey PRIMARY KEY (organism_cvtermprop_id);
 
 --
 -- Name: organism_pub_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE organism_pub DROP CONSTRAINT IF EXISTS organism_pub_c1;
 ALTER TABLE ONLY organism_pub
     ADD CONSTRAINT organism_pub_c1 UNIQUE (organism_id, pub_id);
 
@@ -6513,7 +6516,7 @@ ALTER TABLE ONLY organism_pub
 --
 -- Name: organism_pub_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE organism_pub DROP CONSTRAINT IF EXISTS organism_pub_pkey;
 ALTER TABLE ONLY organism_pub
     ADD CONSTRAINT organism_pub_pkey PRIMARY KEY (organism_pub_id);
 
@@ -6521,7 +6524,7 @@ ALTER TABLE ONLY organism_pub
 --
 -- Name: organism_relationship_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE organism_relationship DROP CONSTRAINT IF EXISTS organism_relationship_c1;
 ALTER TABLE ONLY organism_relationship
     ADD CONSTRAINT organism_relationship_c1 UNIQUE (subject_id, object_id, type_id, rank);
 
@@ -6529,14 +6532,14 @@ ALTER TABLE ONLY organism_relationship
 --
 -- Name: organism_relationship_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE organism_relationship DROP CONSTRAINT IF EXISTS organism_relationship_pkey;
 ALTER TABLE ONLY organism_relationship
     ADD CONSTRAINT organism_relationship_pkey PRIMARY KEY (organism_relationship_id);
 
 --
 -- Name: organismprop_pub_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE organismprop_pub DROP CONSTRAINT IF EXISTS organismprop_pub_c1;
 ALTER TABLE ONLY organismprop_pub
     ADD CONSTRAINT organismprop_pub_c1 UNIQUE (organismprop_id, pub_id);
 
@@ -6544,7 +6547,7 @@ ALTER TABLE ONLY organismprop_pub
 --
 -- Name: organismprop_pub_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE organismprop_pub DROP CONSTRAINT IF EXISTS organismprop_pub_pkey;
 ALTER TABLE ONLY organismprop_pub
     ADD CONSTRAINT organismprop_pub_pkey PRIMARY KEY (organismprop_pub_id);
 
@@ -6552,7 +6555,7 @@ ALTER TABLE ONLY organismprop_pub
 --
 -- Name: phenotypeprop_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE phenotypeprop DROP CONSTRAINT IF EXISTS phenotypeprop_c1;
 ALTER TABLE ONLY phenotypeprop
     ADD CONSTRAINT phenotypeprop_c1 UNIQUE (phenotype_id, type_id, rank);
 
@@ -6560,14 +6563,14 @@ ALTER TABLE ONLY phenotypeprop
 --
 -- Name: phenotypeprop_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE phenotypeprop DROP CONSTRAINT IF EXISTS phenotypeprop_pkey;
 ALTER TABLE ONLY phenotypeprop
     ADD CONSTRAINT phenotypeprop_pkey PRIMARY KEY (phenotypeprop_id);
 
 --
 -- Name: phylotreeprop_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE phylotreeprop DROP CONSTRAINT IF EXISTS phylotreeprop_c1;
 ALTER TABLE ONLY phylotreeprop
     ADD CONSTRAINT phylotreeprop_c1 UNIQUE (phylotree_id, type_id, rank);
 
@@ -6575,7 +6578,7 @@ ALTER TABLE ONLY phylotreeprop
 --
 -- Name: phylotreeprop_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE phylotreeprop DROP CONSTRAINT IF EXISTS phylotreeprop_pkey;
 ALTER TABLE ONLY phylotreeprop
     ADD CONSTRAINT phylotreeprop_pkey PRIMARY KEY (phylotreeprop_id);
 
@@ -6583,7 +6586,7 @@ ALTER TABLE ONLY phylotreeprop
 --
 -- Name: project_analysis_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE project_analysis DROP CONSTRAINT IF EXISTS project_analysis_c1;
 ALTER TABLE ONLY project_analysis
     ADD CONSTRAINT project_analysis_c1 UNIQUE (project_id, analysis_id);
 
@@ -6591,14 +6594,14 @@ ALTER TABLE ONLY project_analysis
 --
 -- Name: project_analysis_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE project_analysis DROP CONSTRAINT IF EXISTS project_analysis_pkey;
 ALTER TABLE ONLY project_analysis
     ADD CONSTRAINT project_analysis_pkey PRIMARY KEY (project_analysis_id);
 
 --
 -- Name: project_dbxref_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE project_dbxref DROP CONSTRAINT IF EXISTS project_dbxref_c1;
 ALTER TABLE ONLY project_dbxref
     ADD CONSTRAINT project_dbxref_c1 UNIQUE (project_id, dbxref_id);
 
@@ -6606,7 +6609,7 @@ ALTER TABLE ONLY project_dbxref
 --
 -- Name: project_dbxref_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE project_dbxref DROP CONSTRAINT IF EXISTS project_dbxref_pkey;
 ALTER TABLE ONLY project_dbxref
     ADD CONSTRAINT project_dbxref_pkey PRIMARY KEY (project_dbxref_id);
 
@@ -6614,7 +6617,7 @@ ALTER TABLE ONLY project_dbxref
 --
 -- Name: project_feature_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE project_feature DROP CONSTRAINT IF EXISTS project_feature_c1;
 ALTER TABLE ONLY project_feature
     ADD CONSTRAINT project_feature_c1 UNIQUE (feature_id, project_id);
 
@@ -6622,14 +6625,14 @@ ALTER TABLE ONLY project_feature
 --
 -- Name: project_feature_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE project_feature DROP CONSTRAINT IF EXISTS project_feature_pkey;
 ALTER TABLE ONLY project_feature
     ADD CONSTRAINT project_feature_pkey PRIMARY KEY (project_feature_id);
 
 --
 -- Name: project_stock_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE project_stock DROP CONSTRAINT IF EXISTS project_stock_c1;
 ALTER TABLE ONLY project_stock
     ADD CONSTRAINT project_stock_c1 UNIQUE (stock_id, project_id);
 
@@ -6637,14 +6640,14 @@ ALTER TABLE ONLY project_stock
 --
 -- Name: project_stock_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE project_stock DROP CONSTRAINT IF EXISTS project_stock_pkey;
 ALTER TABLE ONLY project_stock
     ADD CONSTRAINT project_stock_pkey PRIMARY KEY (project_stock_id);
 
 --
 -- Name: pubauthor_contact_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE pubauthor_contact DROP CONSTRAINT IF EXISTS pubauthor_contact_c1;
 ALTER TABLE ONLY pubauthor_contact
     ADD CONSTRAINT pubauthor_contact_c1 UNIQUE (contact_id, pubauthor_id);
 
@@ -6652,14 +6655,14 @@ ALTER TABLE ONLY pubauthor_contact
 --
 -- Name: pubauthor_contact_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE pubauthor_contact DROP CONSTRAINT IF EXISTS pubauthor_contact_pkey;
 ALTER TABLE ONLY pubauthor_contact
     ADD CONSTRAINT pubauthor_contact_pkey PRIMARY KEY (pubauthor_contact_id);
 
 --
 -- Name: stock_feature_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE stock_feature DROP CONSTRAINT IF EXISTS stock_feature_c1;
 ALTER TABLE ONLY stock_feature
     ADD CONSTRAINT stock_feature_c1 UNIQUE (feature_id, stock_id, type_id, rank);
 
@@ -6667,7 +6670,7 @@ ALTER TABLE ONLY stock_feature
 --
 -- Name: stock_feature_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE stock_feature DROP CONSTRAINT IF EXISTS stock_feature_pkey;
 ALTER TABLE ONLY stock_feature
     ADD CONSTRAINT stock_feature_pkey PRIMARY KEY (stock_feature_id);
 
@@ -6675,7 +6678,7 @@ ALTER TABLE ONLY stock_feature
 --
 -- Name: stock_featuremap_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE stock_featuremap DROP CONSTRAINT IF EXISTS stock_featuremap_c1;
 ALTER TABLE ONLY stock_featuremap
     ADD CONSTRAINT stock_featuremap_c1 UNIQUE (featuremap_id, stock_id, type_id);
 
@@ -6683,14 +6686,14 @@ ALTER TABLE ONLY stock_featuremap
 --
 -- Name: stock_featuremap_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE stock_featuremap DROP CONSTRAINT IF EXISTS stock_featuremap_pkey;
 ALTER TABLE ONLY stock_featuremap
     ADD CONSTRAINT stock_featuremap_pkey PRIMARY KEY (stock_featuremap_id);
 
 --
 -- Name: stock_library_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE stock_library DROP CONSTRAINT IF EXISTS stock_library_c1;
 ALTER TABLE ONLY stock_library
     ADD CONSTRAINT stock_library_c1 UNIQUE (library_id, stock_id);
 
@@ -6698,7 +6701,7 @@ ALTER TABLE ONLY stock_library
 --
 -- Name: stock_library_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE stock_library DROP CONSTRAINT IF EXISTS stock_library_pkey;
 ALTER TABLE ONLY stock_library
     ADD CONSTRAINT stock_library_pkey PRIMARY KEY (stock_library_id);
 
@@ -6706,7 +6709,7 @@ ALTER TABLE ONLY stock_library
 --
 -- Name: stockcollection_db_c1; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE stockcollection_db DROP CONSTRAINT IF EXISTS stockcollection_db_c1;
 ALTER TABLE ONLY stockcollection_db
     ADD CONSTRAINT stockcollection_db_c1 UNIQUE (stockcollection_id, db_id);
 
@@ -6714,7 +6717,7 @@ ALTER TABLE ONLY stockcollection_db
 --
 -- Name: stockcollection_db_pkey; Type: CONSTRAINT; Schema: public; Owner: chado; Tablespace: 
 --
-
+ALTER TABLE stockcollection_db DROP CONSTRAINT IF EXISTS stockcollection_db_pkey;
 ALTER TABLE ONLY stockcollection_db
     ADD CONSTRAINT stockcollection_db_pkey PRIMARY KEY (stockcollection_db_id);
 
@@ -6722,6 +6725,7 @@ ALTER TABLE ONLY stockcollection_db
 -- Name: analysis_cvterm_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
 
+DROP INDEX IF EXISTS analysis_cvterm_idx1;
 CREATE INDEX analysis_cvterm_idx1 ON analysis_cvterm USING btree (analysis_id);
 
 
@@ -6729,390 +6733,391 @@ CREATE INDEX analysis_cvterm_idx1 ON analysis_cvterm USING btree (analysis_id);
 -- Name: analysis_cvterm_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
 
+DROP INDEX IF EXISTS analysis_cvterm_idx2;
 CREATE INDEX analysis_cvterm_idx2 ON analysis_cvterm USING btree (cvterm_id);
 
 
 --
 -- Name: analysis_dbxref_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS analysis_dbxref_idx1;
 CREATE INDEX analysis_dbxref_idx1 ON analysis_dbxref USING btree (analysis_id);
 
 
 --
 -- Name: analysis_dbxref_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS analysis_dbxref_idx2;
 CREATE INDEX analysis_dbxref_idx2 ON analysis_dbxref USING btree (dbxref_id);
 
 
 --
 -- Name: analysis_pub_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS analysis_pub_idx1;
 CREATE INDEX analysis_pub_idx1 ON analysis_pub USING btree (analysis_id);
 
 
 --
 -- Name: analysis_pub_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS analysis_pub_idx2;
 CREATE INDEX analysis_pub_idx2 ON analysis_pub USING btree (pub_id);
 
 
 --
 -- Name: analysis_relationship_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS analysis_relationship_idx1;
 CREATE INDEX analysis_relationship_idx1 ON analysis_relationship USING btree (subject_id);
 
 
 --
 -- Name: analysis_relationship_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS analysis_relationship_idx2;
 CREATE INDEX analysis_relationship_idx2 ON analysis_relationship USING btree (object_id);
 
 
 --
 -- Name: analysis_relationship_idx3; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS analysis_relationship_idx3;
 CREATE INDEX analysis_relationship_idx3 ON analysis_relationship USING btree (type_id);
 
 --
 -- Name: analysisfeatureprop_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-DROP INDEX analysisfeatureprop_idx1;
+DROP INDEX IF EXISTS analysisfeatureprop_idx1;
 CREATE INDEX analysisfeatureprop_idx1 ON analysisfeatureprop USING btree (analysisfeature_id);
 
 
 --
 -- Name: analysisfeatureprop_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-DROP INDEX analysisfeatureprop_idx2;
+DROP INDEX IF EXISTS analysisfeatureprop_idx2;
 CREATE INDEX analysisfeatureprop_idx2 ON analysisfeatureprop USING btree (type_id);
 
 --
 -- Name: contactprop_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS contactprop_idx1;
 CREATE INDEX contactprop_idx1 ON contactprop USING btree (contact_id);
 
 
 --
 -- Name: contactprop_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS contactprop_idx2;
 CREATE INDEX contactprop_idx2 ON contactprop USING btree (type_id);
 
 --
 -- Name: dbprop_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS dbprop_idx1;
 CREATE INDEX dbprop_idx1 ON dbprop USING btree (db_id);
 
 
 --
 -- Name: dbprop_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS dbprop_idx2;
 CREATE INDEX dbprop_idx2 ON dbprop USING btree (type_id);
 
 --
 -- Name: feature_contact_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS feature_contact_idx1;
 CREATE INDEX feature_contact_idx1 ON feature_contact USING btree (feature_id);
 
 
 --
 -- Name: feature_contact_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS feature_contact_idx2;
 CREATE INDEX feature_contact_idx2 ON feature_contact USING btree (contact_id);
 
 
 --
 -- Name: featuremap_contact_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS featuremap_contact_idx1;
 CREATE INDEX featuremap_contact_idx1 ON featuremap_contact USING btree (featuremap_id);
 
 
 --
 -- Name: featuremap_contact_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS featuremap_contact_idx2;
 CREATE INDEX featuremap_contact_idx2 ON featuremap_contact USING btree (contact_id);
 
 
 --
 -- Name: featuremap_dbxref_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS featuremap_dbxref_idx1;
 CREATE INDEX featuremap_dbxref_idx1 ON featuremap_dbxref USING btree (featuremap_id);
 
 
 --
 -- Name: featuremap_dbxref_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS featuremap_dbxref_idx2;
 CREATE INDEX featuremap_dbxref_idx2 ON featuremap_dbxref USING btree (dbxref_id);
 
 
 --
 -- Name: featuremap_organism_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS featuremap_organism_idx1;
 CREATE INDEX featuremap_organism_idx1 ON featuremap_organism USING btree (featuremap_id);
 
 
 --
 -- Name: featuremap_organism_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS featuremap_organism_idx2;
 CREATE INDEX featuremap_organism_idx2 ON featuremap_organism USING btree (organism_id);
 
 
 --
 -- Name: featuremapprop_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS featuremapprop_idx1;
 CREATE INDEX featuremapprop_idx1 ON featuremapprop USING btree (featuremap_id);
 
 
 --
 -- Name: featuremapprop_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS featuremapprop_idx2;
 CREATE INDEX featuremapprop_idx2 ON featuremapprop USING btree (type_id);
 
 
 --
 -- Name: featureposprop_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS featureposprop_idx1;
 CREATE INDEX featureposprop_idx1 ON featureposprop USING btree (featurepos_id);
 
 
 --
 -- Name: featureposprop_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS featureposprop_idx2;
 CREATE INDEX featureposprop_idx2 ON featureposprop USING btree (type_id);
 
 
 --
 -- Name: library_contact_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS library_contact_idx1;
 CREATE INDEX library_contact_idx1 ON library USING btree (library_id);
 
 
 --
 -- Name: library_contact_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS library_contact_idx2;
 CREATE INDEX library_contact_idx2 ON contact USING btree (contact_id);
 
 --
 -- Name: library_expression_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS library_expression_idx1;
 CREATE INDEX library_expression_idx1 ON library_expression USING btree (library_id);
 
 
 --
 -- Name: library_expression_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS library_expression_idx2;
 CREATE INDEX library_expression_idx2 ON library_expression USING btree (expression_id);
 
 
 --
 -- Name: library_expression_idx3; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS library_expression_idx3;
 CREATE INDEX library_expression_idx3 ON library_expression USING btree (pub_id);
 
 
 --
 -- Name: library_expressionprop_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS library_expressionprop_idx1;
 CREATE INDEX library_expressionprop_idx1 ON library_expressionprop USING btree (library_expression_id);
 
 
 --
 -- Name: library_expressionprop_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS library_expressionprop_idx2;
 CREATE INDEX library_expressionprop_idx2 ON library_expressionprop USING btree (type_id);
 
 --
 -- Name: library_featureprop_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS library_featureprop_idx1;
 CREATE INDEX library_featureprop_idx1 ON library_featureprop USING btree (library_feature_id);
 
 
 --
 -- Name: library_featureprop_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS library_featureprop_idx2;
 CREATE INDEX library_featureprop_idx2 ON library_featureprop USING btree (type_id);
 
 --
 -- Name: library_relationship_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS library_relationship_idx1;
 CREATE INDEX library_relationship_idx1 ON library_relationship USING btree (subject_id);
 
 
 --
 -- Name: library_relationship_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS library_relationship_idx2;
 CREATE INDEX library_relationship_idx2 ON library_relationship USING btree (object_id);
 
 
 --
 -- Name: library_relationship_idx3; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS library_relationship_idx3;
 CREATE INDEX library_relationship_idx3 ON library_relationship USING btree (type_id);
 
 
 --
 -- Name: library_relationship_pub_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS library_relationship_pub_idx1;
 CREATE INDEX library_relationship_pub_idx1 ON library_relationship_pub USING btree (library_relationship_id);
 
 
 --
 -- Name: library_relationship_pub_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS library_relationship_pub_idx2;
 CREATE INDEX library_relationship_pub_idx2 ON library_relationship_pub USING btree (pub_id);
 
 --
 -- Name: nd_experiment_analysis_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_analysis_idx1;
 CREATE INDEX nd_experiment_analysis_idx1 ON nd_experiment_analysis USING btree (nd_experiment_id);
 
 
 --
 -- Name: nd_experiment_analysis_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_analysis_idx2;
 CREATE INDEX nd_experiment_analysis_idx2 ON nd_experiment_analysis USING btree (analysis_id);
 
 
 --
 -- Name: nd_experiment_analysis_idx3; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_analysis_idx3;
 CREATE INDEX nd_experiment_analysis_idx3 ON nd_experiment_analysis USING btree (type_id);
 
 
 --
 -- Name: nd_experiment_contact_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_contact_idx1;
 CREATE INDEX nd_experiment_contact_idx1 ON nd_experiment_contact USING btree (nd_experiment_id);
 
 
 --
 -- Name: nd_experiment_contact_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_contact_idx2;
 CREATE INDEX nd_experiment_contact_idx2 ON nd_experiment_contact USING btree (contact_id);
 
 
 --
 -- Name: nd_experiment_dbxref_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_dbxref_idx1;
 CREATE INDEX nd_experiment_dbxref_idx1 ON nd_experiment_dbxref USING btree (nd_experiment_id);
 
 
 --
 -- Name: nd_experiment_dbxref_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_dbxref_idx2;
 CREATE INDEX nd_experiment_dbxref_idx2 ON nd_experiment_dbxref USING btree (dbxref_id);
 
 
 --
 -- Name: nd_experiment_genotype_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_genotype_idx1;
 CREATE INDEX nd_experiment_genotype_idx1 ON nd_experiment_genotype USING btree (nd_experiment_id);
 
 
 --
 -- Name: nd_experiment_genotype_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_genotype_idx2;
 CREATE INDEX nd_experiment_genotype_idx2 ON nd_experiment_genotype USING btree (genotype_id);
 
 
 --
 -- Name: nd_experiment_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_idx1;
 CREATE INDEX nd_experiment_idx1 ON nd_experiment USING btree (nd_geolocation_id);
 
 
 --
 -- Name: nd_experiment_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_idx2;
 CREATE INDEX nd_experiment_idx2 ON nd_experiment USING btree (type_id);
 
 
 --
 -- Name: nd_experiment_phenotype_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_phenotype_idx1;
 CREATE INDEX nd_experiment_phenotype_idx1 ON nd_experiment_phenotype USING btree (nd_experiment_id);
 
 
 --
 -- Name: nd_experiment_phenotype_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_phenotype_idx2;
 CREATE INDEX nd_experiment_phenotype_idx2 ON nd_experiment_phenotype USING btree (phenotype_id);
 
 
 --
 -- Name: nd_experiment_project_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_project_idx1;
 CREATE INDEX nd_experiment_project_idx1 ON nd_experiment_project USING btree (project_id);
 
 
 --
 -- Name: nd_experiment_project_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_project_idx2;
 CREATE INDEX nd_experiment_project_idx2 ON nd_experiment_project USING btree (nd_experiment_id);
 
 
 --
 -- Name: nd_experiment_protocol_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_protocol_idx1;
 CREATE INDEX nd_experiment_protocol_idx1 ON nd_experiment_protocol USING btree (nd_experiment_id);
 
 
 --
 -- Name: nd_experiment_protocol_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_protocol_idx2;
 CREATE INDEX nd_experiment_protocol_idx2 ON nd_experiment_protocol USING btree (nd_protocol_id);
 
 
@@ -7122,286 +7127,286 @@ CREATE INDEX nd_experiment_protocol_idx2 ON nd_experiment_protocol USING btree (
 --
 -- Name: nd_experiment_stock_dbxref_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_stock_dbxref_idx1;
 CREATE INDEX nd_experiment_stock_dbxref_idx1 ON nd_experiment_stock_dbxref USING btree (nd_experiment_stock_id);
 
 
 --
 -- Name: nd_experiment_stock_dbxref_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_stock_dbxref_idx2;
 CREATE INDEX nd_experiment_stock_dbxref_idx2 ON nd_experiment_stock_dbxref USING btree (dbxref_id);
 
 
 --
 -- Name: nd_experiment_stock_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_stock_idx1;
 CREATE INDEX nd_experiment_stock_idx1 ON nd_experiment_stock USING btree (nd_experiment_id);
 
 
 --
 -- Name: nd_experiment_stock_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_stock_idx2;
 CREATE INDEX nd_experiment_stock_idx2 ON nd_experiment_stock USING btree (stock_id);
 
 
 --
 -- Name: nd_experiment_stock_idx3; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_stock_idx3;
 CREATE INDEX nd_experiment_stock_idx3 ON nd_experiment_stock USING btree (type_id);
 
 
 --
 -- Name: nd_experiment_stockprop_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_stockprop_idx1;
 CREATE INDEX nd_experiment_stockprop_idx1 ON nd_experiment_stockprop USING btree (nd_experiment_stock_id);
 
 
 --
 -- Name: nd_experiment_stockprop_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experiment_stockprop_idx2;
 CREATE INDEX nd_experiment_stockprop_idx2 ON nd_experiment_stockprop USING btree (type_id);
 
 
 --
 -- Name: nd_experimentprop_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experimentprop_idx1;
 CREATE INDEX nd_experimentprop_idx1 ON nd_experimentprop USING btree (nd_experiment_id);
 
 
 --
 -- Name: nd_experimentprop_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_experimentprop_idx2;
 CREATE INDEX nd_experimentprop_idx2 ON nd_experimentprop USING btree (type_id);
 
 
 --
 -- Name: nd_geolocation_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_geolocation_idx1;
 CREATE INDEX nd_geolocation_idx1 ON nd_geolocation USING btree (latitude);
 
 
 --
 -- Name: nd_geolocation_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_geolocation_idx2;
 CREATE INDEX nd_geolocation_idx2 ON nd_geolocation USING btree (longitude);
 
 
 --
 -- Name: nd_geolocation_idx3; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_geolocation_idx3;
 CREATE INDEX nd_geolocation_idx3 ON nd_geolocation USING btree (altitude);
 
 
 --
 -- Name: nd_geolocationprop_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_geolocationprop_idx1;
 CREATE INDEX nd_geolocationprop_idx1 ON nd_geolocationprop USING btree (nd_geolocation_id);
 
 
 --
 -- Name: nd_geolocationprop_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_geolocationprop_idx2;
 CREATE INDEX nd_geolocationprop_idx2 ON nd_geolocationprop USING btree (type_id);
 
 
 --
 -- Name: nd_protocol_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_protocol_idx1;
 CREATE INDEX nd_protocol_idx1 ON nd_protocol USING btree (type_id);
 
 
 --
 -- Name: nd_protocol_reagent_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_protocol_reagent_idx1;
 CREATE INDEX nd_protocol_reagent_idx1 ON nd_protocol_reagent USING btree (nd_protocol_id);
 
 
 --
 -- Name: nd_protocol_reagent_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_protocol_reagent_idx2;
 CREATE INDEX nd_protocol_reagent_idx2 ON nd_protocol_reagent USING btree (reagent_id);
 
 
 --
 -- Name: nd_protocol_reagent_idx3; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_protocol_reagent_idx3;
 CREATE INDEX nd_protocol_reagent_idx3 ON nd_protocol_reagent USING btree (type_id);
 
 
 --
 -- Name: nd_protocolprop_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_protocolprop_idx1;
 CREATE INDEX nd_protocolprop_idx1 ON nd_protocolprop USING btree (nd_protocol_id);
 
 
 --
 -- Name: nd_protocolprop_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_protocolprop_idx2;
 CREATE INDEX nd_protocolprop_idx2 ON nd_protocolprop USING btree (type_id);
 
 
 --
 -- Name: nd_reagent_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_reagent_idx1;
 CREATE INDEX nd_reagent_idx1 ON nd_reagent USING btree (type_id);
 
 
 --
 -- Name: nd_reagent_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_reagent_idx2;
 CREATE INDEX nd_reagent_idx2 ON nd_reagent USING btree (feature_id);
 
 
 --
 -- Name: nd_reagent_relationship_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_reagent_relationship_idx1;
 CREATE INDEX nd_reagent_relationship_idx1 ON nd_reagent_relationship USING btree (subject_reagent_id);
 
 
 --
 -- Name: nd_reagent_relationship_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_reagent_relationship_idx2;
 CREATE INDEX nd_reagent_relationship_idx2 ON nd_reagent_relationship USING btree (object_reagent_id);
 
 
 --
 -- Name: nd_reagent_relationship_idx3; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_reagent_relationship_idx3;
 CREATE INDEX nd_reagent_relationship_idx3 ON nd_reagent_relationship USING btree (type_id);
 
 
 --
 -- Name: nd_reagentprop_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_reagentprop_idx1;
 CREATE INDEX nd_reagentprop_idx1 ON nd_reagentprop USING btree (nd_reagent_id);
 
 
 --
 -- Name: nd_reagentprop_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS nd_reagentprop_idx2;
 CREATE INDEX nd_reagentprop_idx2 ON nd_reagentprop USING btree (type_id);
 
 
 --
 -- Name: organism_cvterm_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS organism_cvterm_idx1;
 CREATE INDEX organism_cvterm_idx1 ON organism_cvterm USING btree (organism_id);
 
 
 --
 -- Name: organism_cvterm_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS organism_cvterm_idx2;
 CREATE INDEX organism_cvterm_idx2 ON organism_cvterm USING btree (cvterm_id);
 
 
 --
 -- Name: organism_cvtermprop_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS organism_cvtermprop_idx1;
 CREATE INDEX organism_cvtermprop_idx1 ON organism_cvtermprop USING btree (organism_cvterm_id);
 
 
 --
 -- Name: organism_cvtermprop_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS organism_cvtermprop_idx2;
 CREATE INDEX organism_cvtermprop_idx2 ON organism_cvtermprop USING btree (type_id);
 
 
 --
 -- Name: organism_pub_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS organism_pub_idx1;
 CREATE INDEX organism_pub_idx1 ON organism_pub USING btree (organism_id);
 
 
 --
 -- Name: organism_pub_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS organism_pub_idx2;
 CREATE INDEX organism_pub_idx2 ON organism_pub USING btree (pub_id);
 
 
 --
 -- Name: organism_relationship_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS organism_relationship_idx1;
 CREATE INDEX organism_relationship_idx1 ON organism_relationship USING btree (subject_id);
 
 
 --
 -- Name: organism_relationship_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS organism_relationship_idx2;
 CREATE INDEX organism_relationship_idx2 ON organism_relationship USING btree (object_id);
 
 
 --
 -- Name: organism_relationship_idx3; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS organism_relationship_idx3;
 CREATE INDEX organism_relationship_idx3 ON organism_relationship USING btree (type_id);
 
 
 --
 -- Name: organismprop_pub_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS organismprop_pub_idx1;
 CREATE INDEX organismprop_pub_idx1 ON organismprop_pub USING btree (organismprop_id);
 
 
 --
 -- Name: organismprop_pub_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS organismprop_pub_idx2;
 CREATE INDEX organismprop_pub_idx2 ON organismprop_pub USING btree (pub_id);
 
 
 --
 -- Name: phenotypeprop_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS phenotypeprop_idx1;
 CREATE INDEX phenotypeprop_idx1 ON phenotypeprop USING btree (phenotype_id);
 
 
 --
 -- Name: phenotypeprop_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS phenotypeprop_idx2;
 CREATE INDEX phenotypeprop_idx2 ON phenotypeprop USING btree (type_id);
 
 --
 -- Name: phylonode_parent_phylonode_id_idx; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS phylonode_parent_phylonode_id_idx;
 CREATE INDEX phylonode_parent_phylonode_id_idx ON phylonode USING btree (parent_phylonode_id);
 
 
@@ -7416,163 +7421,163 @@ property-value pairs must be differentiated by rank.';
 --
 -- Name: phylotreeprop_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS phylotreeprop_idx1;
 CREATE INDEX phylotreeprop_idx1 ON phylotreeprop USING btree (phylotree_id);
 
 
 --
 -- Name: phylotreeprop_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS phylotreeprop_idx2;
 CREATE INDEX phylotreeprop_idx2 ON phylotreeprop USING btree (type_id);
 
 
 --
 -- Name: project_analysis_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS project_analysis_idx1;
 CREATE INDEX project_analysis_idx1 ON project_analysis USING btree (project_id);
 
 
 --
 -- Name: project_analysis_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS project_analysis_idx2;
 CREATE INDEX project_analysis_idx2 ON project_analysis USING btree (analysis_id);
 
 --
 -- Name: project_dbxref_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS project_dbxref_idx1;
 CREATE INDEX project_dbxref_idx1 ON project_dbxref USING btree (project_id);
 
 
 --
 -- Name: project_dbxref_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS project_dbxref_idx2;
 CREATE INDEX project_dbxref_idx2 ON project_dbxref USING btree (dbxref_id);
 
 
 --
 -- Name: project_feature_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS project_feature_idx1;
 CREATE INDEX project_feature_idx1 ON project_feature USING btree (feature_id);
 
 
 --
 -- Name: project_feature_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS project_feature_idx2;
 CREATE INDEX project_feature_idx2 ON project_feature USING btree (project_id);
 
 
 --
 -- Name: project_stock_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS project_stock_idx1;
 CREATE INDEX project_stock_idx1 ON project_stock USING btree (stock_id);
 
 
 --
 -- Name: project_stock_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS project_stock_idx2;
 CREATE INDEX project_stock_idx2 ON project_stock USING btree (project_id);
 
 --
 -- Name: pubauthor_contact_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS pubauthor_contact_idx1;
 CREATE INDEX pubauthor_contact_idx1 ON pubauthor USING btree (pubauthor_id);
 
 
 --
 -- Name: pubauthor_contact_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS pubauthor_contact_idx2;
 CREATE INDEX pubauthor_contact_idx2 ON contact USING btree (contact_id);
 
 --
 -- Name: stock_feature_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS stock_feature_idx1;
 CREATE INDEX stock_feature_idx1 ON stock_feature USING btree (stock_feature_id);
 
 
 --
 -- Name: stock_feature_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS stock_feature_idx2;
 CREATE INDEX stock_feature_idx2 ON stock_feature USING btree (feature_id);
 
 
 --
 -- Name: stock_feature_idx3; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS stock_feature_idx3;
 CREATE INDEX stock_feature_idx3 ON stock_feature USING btree (stock_id);
 
 
 --
 -- Name: stock_feature_idx4; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS stock_feature_idx4;
 CREATE INDEX stock_feature_idx4 ON stock_feature USING btree (type_id);
 
 
 --
 -- Name: stock_featuremap_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS stock_featuremap_idx1;
 CREATE INDEX stock_featuremap_idx1 ON stock_featuremap USING btree (featuremap_id);
 
 
 --
 -- Name: stock_featuremap_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS stock_featuremap_idx2;
 CREATE INDEX stock_featuremap_idx2 ON stock_featuremap USING btree (stock_id);
 
 
 --
 -- Name: stock_featuremap_idx3; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS stock_featuremap_idx3;
 CREATE INDEX stock_featuremap_idx3 ON stock_featuremap USING btree (type_id);
 
 --
 -- Name: stock_library_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS stock_library_idx1;
 CREATE INDEX stock_library_idx1 ON stock_library USING btree (library_id);
 
 
 --
 -- Name: stock_library_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS stock_library_idx2;
 CREATE INDEX stock_library_idx2 ON stock_library USING btree (stock_id);
 
 --
 -- Name: stockcollection_db_idx1; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS stockcollection_db_idx1;
 CREATE INDEX stockcollection_db_idx1 ON stockcollection_db USING btree (stockcollection_id);
 
 
 --
 -- Name: stockcollection_db_idx2; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS stockcollection_db_idx2;
 CREATE INDEX stockcollection_db_idx2 ON stockcollection_db USING btree (db_id);
 
 
 --
 -- Name: analysis_cvterm_analysis_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE analysis_cvterm DROP CONSTRAINT IF EXISTS analysis_cvterm_analysis_id_fkey;
 ALTER TABLE ONLY analysis_cvterm
     ADD CONSTRAINT analysis_cvterm_analysis_id_fkey FOREIGN KEY (analysis_id) REFERENCES analysis(analysis_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7580,7 +7585,7 @@ ALTER TABLE ONLY analysis_cvterm
 --
 -- Name: analysis_cvterm_cvterm_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE analysis_cvterm DROP CONSTRAINT IF EXISTS analysis_cvterm_cvterm_id_fkey;
 ALTER TABLE ONLY analysis_cvterm
     ADD CONSTRAINT analysis_cvterm_cvterm_id_fkey FOREIGN KEY (cvterm_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7588,7 +7593,7 @@ ALTER TABLE ONLY analysis_cvterm
 --
 -- Name: analysis_dbxref_analysis_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE analysis_dbxref DROP CONSTRAINT IF EXISTS analysis_dbxref_analysis_id_fkey;
 ALTER TABLE ONLY analysis_dbxref
     ADD CONSTRAINT analysis_dbxref_analysis_id_fkey FOREIGN KEY (analysis_id) REFERENCES analysis(analysis_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7596,7 +7601,7 @@ ALTER TABLE ONLY analysis_dbxref
 --
 -- Name: analysis_dbxref_dbxref_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE analysis_dbxref DROP CONSTRAINT IF EXISTS analysis_dbxref_dbxref_id_fkey;
 ALTER TABLE ONLY analysis_dbxref
     ADD CONSTRAINT analysis_dbxref_dbxref_id_fkey FOREIGN KEY (dbxref_id) REFERENCES dbxref(dbxref_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7604,7 +7609,7 @@ ALTER TABLE ONLY analysis_dbxref
 --
 -- Name: analysis_pub_analysis_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE analysis_pub DROP CONSTRAINT IF EXISTS analysis_pub_analysis_id_fkey;
 ALTER TABLE ONLY analysis_pub
     ADD CONSTRAINT analysis_pub_analysis_id_fkey FOREIGN KEY (analysis_id) REFERENCES analysis(analysis_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7612,7 +7617,7 @@ ALTER TABLE ONLY analysis_pub
 --
 -- Name: analysis_pub_pub_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE analysis_pub DROP CONSTRAINT IF EXISTS analysis_pub_pub_id_fkey;
 ALTER TABLE ONLY analysis_pub
     ADD CONSTRAINT analysis_pub_pub_id_fkey FOREIGN KEY (pub_id) REFERENCES pub(pub_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7620,7 +7625,7 @@ ALTER TABLE ONLY analysis_pub
 --
 -- Name: analysis_relationship_object_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE analysis_relationship DROP CONSTRAINT IF EXISTS analysis_relationship_object_id_fkey;
 ALTER TABLE ONLY analysis_relationship
     ADD CONSTRAINT analysis_relationship_object_id_fkey FOREIGN KEY (object_id) REFERENCES analysis(analysis_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7628,7 +7633,7 @@ ALTER TABLE ONLY analysis_relationship
 --
 -- Name: analysis_relationship_subject_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE analysis_relationship DROP CONSTRAINT IF EXISTS analysis_relationship_subject_id_fkey;
 ALTER TABLE ONLY analysis_relationship
     ADD CONSTRAINT analysis_relationship_subject_id_fkey FOREIGN KEY (subject_id) REFERENCES analysis(analysis_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7636,14 +7641,14 @@ ALTER TABLE ONLY analysis_relationship
 --
 -- Name: analysis_relationship_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE analysis_relationship DROP CONSTRAINT IF EXISTS analysis_relationship_type_id_fkey;
 ALTER TABLE ONLY analysis_relationship
     ADD CONSTRAINT analysis_relationship_type_id_fkey FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 --
 -- Name: contactprop_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE contactprop DROP CONSTRAINT IF EXISTS contactprop_contact_id_fkey;
 ALTER TABLE ONLY contactprop
     ADD CONSTRAINT contactprop_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES contact(contact_id) ON DELETE CASCADE;
 
@@ -7651,7 +7656,7 @@ ALTER TABLE ONLY contactprop
 --
 -- Name: contactprop_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE contactprop DROP CONSTRAINT IF EXISTS contactprop_type_id_fkey;
 ALTER TABLE ONLY contactprop
     ADD CONSTRAINT contactprop_type_id_fkey FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE;
 
@@ -7659,7 +7664,7 @@ ALTER TABLE ONLY contactprop
 --
 -- Name: dbprop_db_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE dbprop DROP CONSTRAINT IF EXISTS dbprop_db_id_fkey;
 ALTER TABLE ONLY dbprop
     ADD CONSTRAINT dbprop_db_id_fkey FOREIGN KEY (db_id) REFERENCES db(db_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7667,7 +7672,7 @@ ALTER TABLE ONLY dbprop
 --
 -- Name: dbprop_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE dbprop DROP CONSTRAINT IF EXISTS dbprop_type_id_fkey;
 ALTER TABLE ONLY dbprop
     ADD CONSTRAINT dbprop_type_id_fkey FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7675,7 +7680,7 @@ ALTER TABLE ONLY dbprop
 --
 -- Name: feature_contact_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE feature_contact DROP CONSTRAINT IF EXISTS feature_contact_contact_id_fkey;
 ALTER TABLE ONLY feature_contact
     ADD CONSTRAINT feature_contact_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES contact(contact_id) ON DELETE CASCADE;
 
@@ -7683,14 +7688,14 @@ ALTER TABLE ONLY feature_contact
 --
 -- Name: feature_contact_feature_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE feature_contact DROP CONSTRAINT IF EXISTS feature_contact_feature_id_fkey;
 ALTER TABLE ONLY feature_contact
     ADD CONSTRAINT feature_contact_feature_id_fkey FOREIGN KEY (feature_id) REFERENCES feature(feature_id) ON DELETE CASCADE;
 
 --
 -- Name: featuremap_contact_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE featuremap_contact DROP CONSTRAINT IF EXISTS featuremap_contact_contact_id_fkey;
 ALTER TABLE ONLY featuremap_contact
     ADD CONSTRAINT featuremap_contact_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES contact(contact_id) ON DELETE CASCADE;
 
@@ -7698,7 +7703,7 @@ ALTER TABLE ONLY featuremap_contact
 --
 -- Name: featuremap_contact_featuremap_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE featuremap_contact DROP CONSTRAINT IF EXISTS featuremap_contact_featuremap_id_fkey;
 ALTER TABLE ONLY featuremap_contact
     ADD CONSTRAINT featuremap_contact_featuremap_id_fkey FOREIGN KEY (featuremap_id) REFERENCES featuremap(featuremap_id) ON DELETE CASCADE;
 
@@ -7706,7 +7711,7 @@ ALTER TABLE ONLY featuremap_contact
 --
 -- Name: featuremap_dbxref_dbxref_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE featuremap_dbxref DROP CONSTRAINT IF EXISTS featuremap_dbxref_dbxref_id_fkey;
 ALTER TABLE ONLY featuremap_dbxref
     ADD CONSTRAINT featuremap_dbxref_dbxref_id_fkey FOREIGN KEY (dbxref_id) REFERENCES dbxref(dbxref_id) ON DELETE CASCADE;
 
@@ -7714,7 +7719,7 @@ ALTER TABLE ONLY featuremap_dbxref
 --
 -- Name: featuremap_dbxref_featuremap_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE featuremap_dbxref DROP CONSTRAINT IF EXISTS featuremap_dbxref_featuremap_id_fkey;
 ALTER TABLE ONLY featuremap_dbxref
     ADD CONSTRAINT featuremap_dbxref_featuremap_id_fkey FOREIGN KEY (featuremap_id) REFERENCES featuremap(featuremap_id) ON DELETE CASCADE;
 
@@ -7722,7 +7727,7 @@ ALTER TABLE ONLY featuremap_dbxref
 --
 -- Name: featuremap_organism_featuremap_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE featuremap_organism DROP CONSTRAINT IF EXISTS featuremap_organism_featuremap_id_fkey;
 ALTER TABLE ONLY featuremap_organism
     ADD CONSTRAINT featuremap_organism_featuremap_id_fkey FOREIGN KEY (featuremap_id) REFERENCES featuremap(featuremap_id) ON DELETE CASCADE;
 
@@ -7730,14 +7735,14 @@ ALTER TABLE ONLY featuremap_organism
 --
 -- Name: featuremap_organism_organism_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE featuremap_organism DROP CONSTRAINT IF EXISTS featuremap_organism_organism_id_fkey;
 ALTER TABLE ONLY featuremap_organism
     ADD CONSTRAINT featuremap_organism_organism_id_fkey FOREIGN KEY (organism_id) REFERENCES organism(organism_id) ON DELETE CASCADE;
 
 --
 -- Name: featuremapprop_featuremap_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE featuremapprop DROP CONSTRAINT IF EXISTS featuremapprop_featuremap_id_fkey;
 ALTER TABLE ONLY featuremapprop
     ADD CONSTRAINT featuremapprop_featuremap_id_fkey FOREIGN KEY (featuremap_id) REFERENCES featuremap(featuremap_id) ON DELETE CASCADE;
 
@@ -7745,14 +7750,14 @@ ALTER TABLE ONLY featuremapprop
 --
 -- Name: featuremapprop_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE featuremapprop DROP CONSTRAINT IF EXISTS featuremapprop_type_id_fkey;
 ALTER TABLE ONLY featuremapprop
     ADD CONSTRAINT featuremapprop_type_id_fkey FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE;
 
 --
 -- Name: featureposprop_featurepos_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE featureposprop DROP CONSTRAINT IF EXISTS featureposprop_featurepos_id_fkey;
 ALTER TABLE ONLY featureposprop
     ADD CONSTRAINT featureposprop_featurepos_id_fkey FOREIGN KEY (featurepos_id) REFERENCES featurepos(featurepos_id) ON DELETE CASCADE;
 
@@ -7760,7 +7765,7 @@ ALTER TABLE ONLY featureposprop
 --
 -- Name: featureposprop_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE featureposprop DROP CONSTRAINT IF EXISTS featureposprop_type_id_fkey;
 ALTER TABLE ONLY featureposprop
     ADD CONSTRAINT featureposprop_type_id_fkey FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE;
 
@@ -7768,7 +7773,7 @@ ALTER TABLE ONLY featureposprop
 --
 -- Name: library_contact_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE library_contact DROP CONSTRAINT IF EXISTS library_contact_contact_id_fkey;
 ALTER TABLE ONLY library_contact
     ADD CONSTRAINT library_contact_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES contact(contact_id) ON DELETE CASCADE;
 
@@ -7776,14 +7781,14 @@ ALTER TABLE ONLY library_contact
 --
 -- Name: library_contact_library_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE library_contact DROP CONSTRAINT IF EXISTS library_contact_library_id_fkey;
 ALTER TABLE ONLY library_contact
     ADD CONSTRAINT library_contact_library_id_fkey FOREIGN KEY (library_id) REFERENCES library(library_id) ON DELETE CASCADE;
 
 --
 -- Name: library_expression_expression_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE library_expression DROP CONSTRAINT IF EXISTS library_expression_expression_id_fkey;
 ALTER TABLE ONLY library_expression
     ADD CONSTRAINT library_expression_expression_id_fkey FOREIGN KEY (expression_id) REFERENCES expression(expression_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7791,7 +7796,7 @@ ALTER TABLE ONLY library_expression
 --
 -- Name: library_expression_library_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE library_expression DROP CONSTRAINT IF EXISTS library_expression_library_id_fkey;
 ALTER TABLE ONLY library_expression
     ADD CONSTRAINT library_expression_library_id_fkey FOREIGN KEY (library_id) REFERENCES library(library_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7799,7 +7804,7 @@ ALTER TABLE ONLY library_expression
 --
 -- Name: library_expression_pub_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE library_expression DROP CONSTRAINT IF EXISTS library_expression_pub_id_fkey;
 ALTER TABLE ONLY library_expression
     ADD CONSTRAINT library_expression_pub_id_fkey FOREIGN KEY (pub_id) REFERENCES pub(pub_id);
 
@@ -7807,7 +7812,7 @@ ALTER TABLE ONLY library_expression
 --
 -- Name: library_expressionprop_library_expression_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE library_expressionprop DROP CONSTRAINT IF EXISTS library_expressionprop_library_expression_id_fkey;
 ALTER TABLE ONLY library_expressionprop
     ADD CONSTRAINT library_expressionprop_library_expression_id_fkey FOREIGN KEY (library_expression_id) REFERENCES library_expression(library_expression_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7815,7 +7820,7 @@ ALTER TABLE ONLY library_expressionprop
 --
 -- Name: library_expressionprop_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE library_expressionprop DROP CONSTRAINT IF EXISTS library_expressionprop_type_id_fkey;
 ALTER TABLE ONLY library_expressionprop
     ADD CONSTRAINT library_expressionprop_type_id_fkey FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id);
 
@@ -7823,7 +7828,7 @@ ALTER TABLE ONLY library_expressionprop
 --
 -- Name: library_featureprop_library_feature_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE library_featureprop DROP CONSTRAINT IF EXISTS library_featureprop_library_feature_id_fkey;
 ALTER TABLE ONLY library_featureprop
     ADD CONSTRAINT library_featureprop_library_feature_id_fkey FOREIGN KEY (library_feature_id) REFERENCES library_feature(library_feature_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7831,7 +7836,7 @@ ALTER TABLE ONLY library_featureprop
 --
 -- Name: library_featureprop_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE library_featureprop DROP CONSTRAINT IF EXISTS library_featureprop_type_id_fkey;
 ALTER TABLE ONLY library_featureprop
     ADD CONSTRAINT library_featureprop_type_id_fkey FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id);
 
@@ -7839,7 +7844,7 @@ ALTER TABLE ONLY library_featureprop
 --
 -- Name: library_relationship_object_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE library_relationship DROP CONSTRAINT IF EXISTS library_relationship_object_id_fkey;
 ALTER TABLE ONLY library_relationship
     ADD CONSTRAINT library_relationship_object_id_fkey FOREIGN KEY (object_id) REFERENCES library(library_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7847,7 +7852,7 @@ ALTER TABLE ONLY library_relationship
 --
 -- Name: library_relationship_pub_library_relationship_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE library_relationship_pub DROP CONSTRAINT IF EXISTS library_relationship_pub_library_relationship_id_fkey;
 ALTER TABLE ONLY library_relationship_pub
     ADD CONSTRAINT library_relationship_pub_library_relationship_id_fkey FOREIGN KEY (library_relationship_id) REFERENCES library_relationship(library_relationship_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7855,7 +7860,7 @@ ALTER TABLE ONLY library_relationship_pub
 --
 -- Name: library_relationship_pub_pub_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE library_relationship_pub DROP CONSTRAINT IF EXISTS library_relationship_pub_pub_id_fkey;
 ALTER TABLE ONLY library_relationship_pub
     ADD CONSTRAINT library_relationship_pub_pub_id_fkey FOREIGN KEY (pub_id) REFERENCES pub(pub_id);
 
@@ -7863,7 +7868,7 @@ ALTER TABLE ONLY library_relationship_pub
 --
 -- Name: library_relationship_subject_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE library_relationship DROP CONSTRAINT IF EXISTS library_relationship_subject_id_fkey;
 ALTER TABLE ONLY library_relationship
     ADD CONSTRAINT library_relationship_subject_id_fkey FOREIGN KEY (subject_id) REFERENCES library(library_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7871,14 +7876,14 @@ ALTER TABLE ONLY library_relationship
 --
 -- Name: library_relationship_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE library_relationship DROP CONSTRAINT IF EXISTS library_relationship_type_id_fkey;
 ALTER TABLE ONLY library_relationship
     ADD CONSTRAINT library_relationship_type_id_fkey FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id);
 
 --
 -- Name: nd_experiment_analysis_analysis_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE nd_experiment_analysis DROP CONSTRAINT IF EXISTS nd_experiment_analysis_analysis_id_fkey;
 ALTER TABLE ONLY nd_experiment_analysis
     ADD CONSTRAINT nd_experiment_analysis_analysis_id_fkey FOREIGN KEY (analysis_id) REFERENCES analysis(analysis_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7886,7 +7891,7 @@ ALTER TABLE ONLY nd_experiment_analysis
 --
 -- Name: nd_experiment_analysis_nd_experiment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE nd_experiment_analysis DROP CONSTRAINT IF EXISTS nd_experiment_analysis_nd_experiment_id_fkey;
 ALTER TABLE ONLY nd_experiment_analysis
     ADD CONSTRAINT nd_experiment_analysis_nd_experiment_id_fkey FOREIGN KEY (nd_experiment_id) REFERENCES nd_experiment(nd_experiment_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7894,7 +7899,7 @@ ALTER TABLE ONLY nd_experiment_analysis
 --
 -- Name: nd_experiment_analysis_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE nd_experiment_analysis DROP CONSTRAINT IF EXISTS nd_experiment_analysis_type_id_fkey;
 ALTER TABLE ONLY nd_experiment_analysis
     ADD CONSTRAINT nd_experiment_analysis_type_id_fkey FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7902,7 +7907,7 @@ ALTER TABLE ONLY nd_experiment_analysis
 --
 -- Name: nd_reagent_feature_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE nd_reagent DROP CONSTRAINT IF EXISTS nd_reagent_feature_id_fkey;
 ALTER TABLE ONLY nd_reagent
     ADD CONSTRAINT nd_reagent_feature_id_fkey FOREIGN KEY (feature_id) REFERENCES feature(feature_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7910,7 +7915,7 @@ ALTER TABLE ONLY nd_reagent
 --
 -- Name: organism_cvterm_cvterm_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE organism_cvterm DROP CONSTRAINT IF EXISTS organism_cvterm_cvterm_id_fkey;
 ALTER TABLE ONLY organism_cvterm
     ADD CONSTRAINT organism_cvterm_cvterm_id_fkey FOREIGN KEY (cvterm_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7918,7 +7923,7 @@ ALTER TABLE ONLY organism_cvterm
 --
 -- Name: organism_cvterm_organism_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE organism_cvterm DROP CONSTRAINT IF EXISTS organism_cvterm_organism_id_fkey;
 ALTER TABLE ONLY organism_cvterm
     ADD CONSTRAINT organism_cvterm_organism_id_fkey FOREIGN KEY (organism_id) REFERENCES organism(organism_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7926,7 +7931,7 @@ ALTER TABLE ONLY organism_cvterm
 --
 -- Name: organism_cvterm_pub_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE organism_cvterm DROP CONSTRAINT IF EXISTS organism_cvterm_pub_id_fkey;
 ALTER TABLE ONLY organism_cvterm
     ADD CONSTRAINT organism_cvterm_pub_id_fkey FOREIGN KEY (pub_id) REFERENCES pub(pub_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7934,7 +7939,7 @@ ALTER TABLE ONLY organism_cvterm
 --
 -- Name: organism_cvtermprop_organism_cvterm_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE organism_cvtermprop DROP CONSTRAINT IF EXISTS organism_cvtermprop_organism_cvterm_id_fkey;
 ALTER TABLE ONLY organism_cvtermprop
     ADD CONSTRAINT organism_cvtermprop_organism_cvterm_id_fkey FOREIGN KEY (organism_cvterm_id) REFERENCES organism_cvterm(organism_cvterm_id) ON DELETE CASCADE;
 
@@ -7942,7 +7947,7 @@ ALTER TABLE ONLY organism_cvtermprop
 --
 -- Name: organism_cvtermprop_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE organism_cvtermprop DROP CONSTRAINT IF EXISTS organism_cvtermprop_type_id_fkey;
 ALTER TABLE ONLY organism_cvtermprop
     ADD CONSTRAINT organism_cvtermprop_type_id_fkey FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7950,7 +7955,7 @@ ALTER TABLE ONLY organism_cvtermprop
 --
 -- Name: organism_pub_organism_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE organism_pub DROP CONSTRAINT IF EXISTS organism_pub_organism_id_fkey;
 ALTER TABLE ONLY organism_pub
     ADD CONSTRAINT organism_pub_organism_id_fkey FOREIGN KEY (organism_id) REFERENCES organism(organism_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7958,7 +7963,7 @@ ALTER TABLE ONLY organism_pub
 --
 -- Name: organism_pub_pub_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE organism_pub DROP CONSTRAINT IF EXISTS organism_pub_pub_id_fkey;
 ALTER TABLE ONLY organism_pub
     ADD CONSTRAINT organism_pub_pub_id_fkey FOREIGN KEY (pub_id) REFERENCES pub(pub_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -7966,7 +7971,7 @@ ALTER TABLE ONLY organism_pub
 --
 -- Name: organism_relationship_object_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE organism_relationship DROP CONSTRAINT IF EXISTS organism_relationship_object_id_fkey;
 ALTER TABLE ONLY organism_relationship
     ADD CONSTRAINT organism_relationship_object_id_fkey FOREIGN KEY (object_id) REFERENCES organism(organism_id) ON DELETE CASCADE;
 
@@ -7974,7 +7979,7 @@ ALTER TABLE ONLY organism_relationship
 --
 -- Name: organism_relationship_subject_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE organism_relationship DROP CONSTRAINT IF EXISTS organism_relationship_subject_id_fkey;
 ALTER TABLE ONLY organism_relationship
     ADD CONSTRAINT organism_relationship_subject_id_fkey FOREIGN KEY (subject_id) REFERENCES organism(organism_id) ON DELETE CASCADE;
 
@@ -7982,7 +7987,7 @@ ALTER TABLE ONLY organism_relationship
 --
 -- Name: organism_relationship_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE organism_relationship DROP CONSTRAINT IF EXISTS organism_relationship_type_id_fkey;
 ALTER TABLE ONLY organism_relationship
     ADD CONSTRAINT organism_relationship_type_id_fkey FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE;
 
@@ -7990,14 +7995,14 @@ ALTER TABLE ONLY organism_relationship
 --
 -- Name: organism_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE organism DROP CONSTRAINT IF EXISTS organism_type_id_fkey;
 ALTER TABLE ONLY organism
     ADD CONSTRAINT organism_type_id_fkey FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE;
 
 --
 -- Name: organismprop_pub_organismprop_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE organismprop_pub DROP CONSTRAINT IF EXISTS organismprop_pub_organismprop_id_fkey;
 ALTER TABLE ONLY organismprop_pub
     ADD CONSTRAINT organismprop_pub_organismprop_id_fkey FOREIGN KEY (organismprop_id) REFERENCES organismprop(organismprop_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -8005,7 +8010,7 @@ ALTER TABLE ONLY organismprop_pub
 --
 -- Name: organismprop_pub_pub_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE organismprop_pub DROP CONSTRAINT IF EXISTS organismprop_pub_pub_id_fkey;
 ALTER TABLE ONLY organismprop_pub
     ADD CONSTRAINT organismprop_pub_pub_id_fkey FOREIGN KEY (pub_id) REFERENCES pub(pub_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -8013,7 +8018,7 @@ ALTER TABLE ONLY organismprop_pub
 --
 -- Name: phenotypeprop_phenotype_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE phenotypeprop DROP CONSTRAINT IF EXISTS phenotypeprop_phenotype_id_fkey;
 ALTER TABLE ONLY phenotypeprop
     ADD CONSTRAINT phenotypeprop_phenotype_id_fkey FOREIGN KEY (phenotype_id) REFERENCES phenotype(phenotype_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -8021,7 +8026,7 @@ ALTER TABLE ONLY phenotypeprop
 --
 -- Name: phenotypeprop_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE phenotypeprop DROP CONSTRAINT IF EXISTS phenotypeprop_type_id_fkey;
 ALTER TABLE ONLY phenotypeprop
     ADD CONSTRAINT phenotypeprop_type_id_fkey FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -8029,7 +8034,7 @@ ALTER TABLE ONLY phenotypeprop
 --
 -- Name: phylotreeprop_phylotree_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE phylotreeprop DROP CONSTRAINT IF EXISTS phylotreeprop_phylotree_id_fkey;
 ALTER TABLE ONLY phylotreeprop
     ADD CONSTRAINT phylotreeprop_phylotree_id_fkey FOREIGN KEY (phylotree_id) REFERENCES phylotree(phylotree_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -8037,7 +8042,7 @@ ALTER TABLE ONLY phylotreeprop
 --
 -- Name: phylotreeprop_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE phylotreeprop DROP CONSTRAINT IF EXISTS phylotreeprop_type_id_fkey;
 ALTER TABLE ONLY phylotreeprop
     ADD CONSTRAINT phylotreeprop_type_id_fkey FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -8045,7 +8050,7 @@ ALTER TABLE ONLY phylotreeprop
 --
 -- Name: project_analysis_analysis_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE project_analysis DROP CONSTRAINT IF EXISTS project_analysis_analysis_id_fkey;
 ALTER TABLE ONLY project_analysis
     ADD CONSTRAINT project_analysis_analysis_id_fkey FOREIGN KEY (analysis_id) REFERENCES analysis(analysis_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -8053,14 +8058,14 @@ ALTER TABLE ONLY project_analysis
 --
 -- Name: project_analysis_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE project_analysis DROP CONSTRAINT IF EXISTS project_analysis_project_id_fkey;
 ALTER TABLE ONLY project_analysis
     ADD CONSTRAINT project_analysis_project_id_fkey FOREIGN KEY (project_id) REFERENCES project(project_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 --
 -- Name: project_dbxref_dbxref_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE project_dbxref DROP CONSTRAINT IF EXISTS project_dbxref_dbxref_id_fkey;
 ALTER TABLE ONLY project_dbxref
     ADD CONSTRAINT project_dbxref_dbxref_id_fkey FOREIGN KEY (dbxref_id) REFERENCES dbxref(dbxref_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -8068,7 +8073,7 @@ ALTER TABLE ONLY project_dbxref
 --
 -- Name: project_dbxref_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE project_dbxref DROP CONSTRAINT IF EXISTS project_dbxref_project_id_fkey;
 ALTER TABLE ONLY project_dbxref
     ADD CONSTRAINT project_dbxref_project_id_fkey FOREIGN KEY (project_id) REFERENCES project(project_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -8076,7 +8081,7 @@ ALTER TABLE ONLY project_dbxref
 --
 -- Name: project_feature_feature_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE project_feature DROP CONSTRAINT IF EXISTS project_feature_feature_id_fkey;
 ALTER TABLE ONLY project_feature
     ADD CONSTRAINT project_feature_feature_id_fkey FOREIGN KEY (feature_id) REFERENCES feature(feature_id) ON DELETE CASCADE;
 
@@ -8084,7 +8089,7 @@ ALTER TABLE ONLY project_feature
 --
 -- Name: project_feature_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE project_feature DROP CONSTRAINT IF EXISTS project_feature_project_id_fkey;
 ALTER TABLE ONLY project_feature
     ADD CONSTRAINT project_feature_project_id_fkey FOREIGN KEY (project_id) REFERENCES project(project_id) ON DELETE CASCADE;
 
@@ -8092,7 +8097,7 @@ ALTER TABLE ONLY project_feature
 --
 -- Name: project_stock_project_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE project_stock DROP CONSTRAINT IF EXISTS project_stock_project_id_fkey;
 ALTER TABLE ONLY project_stock
     ADD CONSTRAINT project_stock_project_id_fkey FOREIGN KEY (project_id) REFERENCES project(project_id) ON DELETE CASCADE;
 
@@ -8100,7 +8105,7 @@ ALTER TABLE ONLY project_stock
 --
 -- Name: project_stock_stock_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE project_stock DROP CONSTRAINT IF EXISTS project_stock_stock_id_fkey;
 ALTER TABLE ONLY project_stock
     ADD CONSTRAINT project_stock_stock_id_fkey FOREIGN KEY (stock_id) REFERENCES stock(stock_id) ON DELETE CASCADE;
 
@@ -8108,7 +8113,7 @@ ALTER TABLE ONLY project_stock
 --
 -- Name: pubauthor_contact_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE pubauthor_contact DROP CONSTRAINT IF EXISTS pubauthor_contact_contact_id_fkey;
 ALTER TABLE ONLY pubauthor_contact
     ADD CONSTRAINT pubauthor_contact_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES contact(contact_id) ON DELETE CASCADE;
 
@@ -8116,7 +8121,7 @@ ALTER TABLE ONLY pubauthor_contact
 --
 -- Name: pubauthor_contact_pubauthor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE pubauthor_contact DROP CONSTRAINT IF EXISTS pubauthor_contact_pubauthor_id_fkey;
 ALTER TABLE ONLY pubauthor_contact
     ADD CONSTRAINT pubauthor_contact_pubauthor_id_fkey FOREIGN KEY (pubauthor_id) REFERENCES pubauthor(pubauthor_id) ON DELETE CASCADE;
 
@@ -8124,7 +8129,7 @@ ALTER TABLE ONLY pubauthor_contact
 --
 -- Name: stock_feature_feature_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE stock_feature DROP CONSTRAINT IF EXISTS stock_feature_feature_id_fkey;
 ALTER TABLE ONLY stock_feature
     ADD CONSTRAINT stock_feature_feature_id_fkey FOREIGN KEY (feature_id) REFERENCES feature(feature_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -8132,7 +8137,7 @@ ALTER TABLE ONLY stock_feature
 --
 -- Name: stock_feature_stock_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE stock_feature DROP CONSTRAINT IF EXISTS stock_feature_stock_id_fkey;
 ALTER TABLE ONLY stock_feature
     ADD CONSTRAINT stock_feature_stock_id_fkey FOREIGN KEY (stock_id) REFERENCES stock(stock_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -8140,7 +8145,7 @@ ALTER TABLE ONLY stock_feature
 --
 -- Name: stock_feature_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE stock_feature DROP CONSTRAINT IF EXISTS stock_feature_type_id_fkey;
 ALTER TABLE ONLY stock_feature
     ADD CONSTRAINT stock_feature_type_id_fkey FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -8148,7 +8153,7 @@ ALTER TABLE ONLY stock_feature
 --
 -- Name: stock_featuremap_featuremap_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE stock_featuremap DROP CONSTRAINT IF EXISTS stock_featuremap_featuremap_id_fkey;
 ALTER TABLE ONLY stock_featuremap
     ADD CONSTRAINT stock_featuremap_featuremap_id_fkey FOREIGN KEY (featuremap_id) REFERENCES featuremap(featuremap_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -8156,7 +8161,7 @@ ALTER TABLE ONLY stock_featuremap
 --
 -- Name: stock_featuremap_stock_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE stock_featuremap DROP CONSTRAINT IF EXISTS stock_featuremap_stock_id_fkey;
 ALTER TABLE ONLY stock_featuremap
     ADD CONSTRAINT stock_featuremap_stock_id_fkey FOREIGN KEY (stock_id) REFERENCES stock(stock_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
@@ -8164,14 +8169,14 @@ ALTER TABLE ONLY stock_featuremap
 --
 -- Name: stock_featuremap_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE stock_featuremap DROP CONSTRAINT IF EXISTS stock_featuremap_type_id_fkey;
 ALTER TABLE ONLY stock_featuremap
     ADD CONSTRAINT stock_featuremap_type_id_fkey FOREIGN KEY (type_id) REFERENCES cvterm(cvterm_id) ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
 --
 -- Name: stock_library_library_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE stock_library DROP CONSTRAINT IF EXISTS stock_library_library_id_fkey;
 ALTER TABLE ONLY stock_library
     ADD CONSTRAINT stock_library_library_id_fkey FOREIGN KEY (library_id) REFERENCES library(library_id) ON DELETE CASCADE;
 
@@ -8179,14 +8184,14 @@ ALTER TABLE ONLY stock_library
 --
 -- Name: stock_library_stock_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE stock_library DROP CONSTRAINT IF EXISTS stock_library_stock_id_fkey;
 ALTER TABLE ONLY stock_library
     ADD CONSTRAINT stock_library_stock_id_fkey FOREIGN KEY (stock_id) REFERENCES stock(stock_id) ON DELETE CASCADE;
 
 --
 -- Name: stockcollection_db_db_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE stockcollection_db DROP CONSTRAINT IF EXISTS stockcollection_db_db_id_fkey;
 ALTER TABLE ONLY stockcollection_db
     ADD CONSTRAINT stockcollection_db_db_id_fkey FOREIGN KEY (db_id) REFERENCES db(db_id) ON DELETE CASCADE;
 
@@ -8194,7 +8199,7 @@ ALTER TABLE ONLY stockcollection_db
 --
 -- Name: stockcollection_db_stockcollection_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: chado
 --
-
+ALTER TABLE stockcollection_db DROP CONSTRAINT IF EXISTS stockcollection_db_stockcollection_id_fkey;
 ALTER TABLE ONLY stockcollection_db
     ADD CONSTRAINT stockcollection_db_stockcollection_id_fkey FOREIGN KEY (stockcollection_id) REFERENCES stockcollection(stockcollection_id) ON DELETE CASCADE;
 
@@ -8202,7 +8207,7 @@ ALTER TABLE ONLY stockcollection_db
 --
 -- Name: binloc_boxrange; Type: INDEX; Schema: public; Owner: chado; Tablespace: 
 --
-
+DROP INDEX IF EXISTS binloc_boxrange;
 CREATE INDEX binloc_boxrange ON featureloc USING gist (boxrange(fmin, fmax));
 
 SET search_path = so,public,pg_catalog;
@@ -53025,10 +53030,12 @@ FROM pub s, feature_pub fs
 WHERE fs.feature_id= $1 AND fs.pub_id = s.pub_id
 $_$;
 
+DROP INDEX IF EXISTS feature_relationship_idx1b;
 create index feature_relationship_idx1b on feature_relationship (object_id, subject_id, type_id);
+DROP INDEX IF EXISTS featureloc_idx1b;
 create index featureloc_idx1b on featureloc (feature_id, fmin, fmax);
+DROP INDEX IF EXISTS feature_idx1b;
 create index feature_idx1b on feature (feature_id, dbxref_id) where dbxref_id is not null;
-
 
 --
 -- Name: _fill_cvtermpath4node(BIGINT, BIGINT, BIGINT, BIGINT, INTEGER)
@@ -53093,7 +53100,7 @@ LANGUAGE 'plpgsql';
 --
 
 DROP FUNCTION IF EXISTS fill_cvtermpath(integer);
-;CREATE OR REPLACE FUNCTION fill_cvtermpath(BIGINT) RETURNS INTEGER AS
+CREATE OR REPLACE FUNCTION fill_cvtermpath(BIGINT) RETURNS INTEGER AS
 '
 DECLARE
     cvid alias for $1;
