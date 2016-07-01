@@ -1,6 +1,6 @@
 set search_path=public,so,frange,genetic_code;
 DROP FUNCTION IF EXISTS gfffeatureatts(integer);
-DROP VIEW IF EXISTS unorient_intra_transposition
+DROP VIEW IF EXISTS unorient_intra_transposition;
 DROP VIEW IF EXISTS db_dbxref_count CASCADE;
 DROP VIEW IF EXISTS stats_paths_to_root CASCADE;
 DROP VIEW IF EXISTS cv_root CASCADE;
