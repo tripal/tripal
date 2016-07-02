@@ -6,6 +6,7 @@
 
   $(document).ready( function () {
 
+    // Callback function to determine node size.
     var nodeSize = function(d) {
       var size;
       if (d.cvterm_name == "phylo_root") {
@@ -17,40 +18,43 @@
       if (d.cvterm_name == "phylo_leaf") {
         size = treeOptions['leaf_node_size']; 
       }
-        return size;
+      return size;
     }
 
-    // function to generate color based on the organism genus and species
-    // on graph node d
+    // Callback function to determine the node color.
     var organismColor = function(d) {
       var color = null;
       if (d.fo_genus) {
         color = organismColors[d.fo_genus + ' ' + d.fo_species];
       }
-      if (color) { return color; }
-      else { return 'grey'; }
+      if (color) { 
+        return color; 
+      }
+      else { 
+        return 'grey'; 
+      }
     };
 
-    // callback for mouseover event on graph node d
+    // Callback for mouseover event on graph node d.
     var nodeMouseOver = function(d) {
-      var el =$(this);
+      var el = $(this);
       el.attr('cursor', 'pointer');
       var circle = el.find('circle');
       // highlight in yellow no matter if leaf or interior node
       circle.attr('fill', 'yellow');
-      if(! d.children) {
+      if(!d.children) {
         // only leaf nodes have descriptive text
         var txt = el.find('text');
         txt.attr('font-weight', 'bold');
       }
     };
     
-    // callback for mouseout event on graph node d
+    // Callback for mouseout event on graph node d.
     var nodeMouseOut = function(d) {
       var el = $(this);
       el.attr('cursor', 'default');
       var circle = el.find('circle');
-      if(! d.children) {
+      if(!d.children) {
         // restore the color based on organism id for leaf nodes
         circle.attr('fill', organismColor(d));
         var txt = el.find('text');
@@ -62,7 +66,7 @@
       }
     };
     
-    // callback for mousedown/click event on graph node d
+    // Callback for mousedown/click event on graph node d.
     var nodeMouseDown = function(d) {
       var el = $(this);
       var title = (! d.children ) ? d.name : 'interior node ' + d.phylonode_id;
@@ -76,15 +80,23 @@
         }
       }
       else {
+        // If this node is not associated with a feature but it has an 
+        // organism node then this is a taxonomic node and we want to
+        // link it to the organism page.
+        if (!d.feature_id && d.organism_node_id) {
+          window.location.replace(baseurl + '/node/' + d.organism_node_id);
+        }
         // leaf node
       }
     };
 
+    // AJAX function for retrieving the tree data.
     $.getJSON(phylotreeDataURL, function(treeData) {
       displayData(treeData);
-      $('.phylogram-ajax-loader').remove();
+      $('.phylogram-ajax-loader').hide();
     });
 
+    // Creates the tree using the d3.phylogram.js library.
     function displayData(treeData) {
       height = graphHeight(treeData);
       d3.phylogram.build('#phylogram', treeData, {
@@ -94,7 +106,8 @@
         'size' : nodeSize,
         'nodeMouseOver' : nodeMouseOver,
         'nodeMouseOut' : nodeMouseOut,
-        'nodeMouseDown' : nodeMouseDown
+        'nodeMouseDown' : nodeMouseDown,
+        'skipTicks' : treeOptions['skipTicks']
       });
     }
 

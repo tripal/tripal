@@ -1,6 +1,21 @@
 <?php
 
 /**
+ * Generates a page that contains the taxonomy view.
+ */
+function tripal_phylogeny_taxonomy_view() {
+  $values = array(
+    'type_id' => array(
+      'name' => 'taxonomy',
+    ),
+  );
+  $phylotree = chado_generate_var('phylotree', $values);
+  $node = new stdClass();
+  $node->phylotree = $phylotree;
+
+  return theme('tripal_phylogeny_taxonomic_tree', array('node' => $node));
+}
+/**
  *
  */
 function tripal_phylogeny_taxonomy_load_form($form, &$form_state) {
@@ -80,7 +95,7 @@ function tripal_phylogeny_ncbi_taxonomy_import($job_id) {
       // Add the taxonomic tree.
       $options = array(
         'name' =>  $site_name . 'Taxonomy Tree',
-        'description' => 'The taxonomic tree of organisms represented in this database.',
+        'description' => 'The taxonomic tree of species present on this site.',
         'leaf_type' => 'taxonomy',
         'analysis_id' => $analysis->analysis_id,
         'tree_file' => '/dev/null',
