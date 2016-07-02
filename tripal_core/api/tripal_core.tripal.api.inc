@@ -137,8 +137,10 @@ function tripal_report_error($type, $severity, $message, $variables = array(), $
 }
 
 /**
- * Display messages to tripal administrators. This can be used instead of
- * drupal_set_message when you want to target tripal administrators.
+ * Display messages to tripal administrators.
+ *
+ * This can be used instead of drupal_set_message when you want to target
+ * tripal administrators.
  *
  * @param $message
  *   The message to be displayed to the tripal administrators

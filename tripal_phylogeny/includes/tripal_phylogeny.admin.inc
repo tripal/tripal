@@ -135,7 +135,7 @@ function tripal_phylogeny_default_plots_form($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => 'Interor Node Size',
     '#description' => 'Please specify a size for the interior node size. If set to zero, the node will not appear.',
-    '#default_value' => variable_get('tripal_phylogeny_default_interior_node_size', 1),
+    '#default_value' => variable_get('tripal_phylogeny_default_interior_node_size', 0),
     '#element_validate' => array(
       'element_validate_integer'
     ),

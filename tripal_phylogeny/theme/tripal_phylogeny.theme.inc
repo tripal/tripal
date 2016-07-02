@@ -28,7 +28,7 @@ function tripal_phylogeny_prepare_tree_viewer($phylotree) {
   $options = json_encode(array(
     'phylogram_width' => variable_get('tripal_phylogeny_default_phylogram_width', 350),
     'root_node_size' => variable_get('tripal_phylogeny_default_root_node_size', 3),
-    'interior_node_size' => variable_get('tripal_phylogeny_default_interior_node_size', 1),
+    'interior_node_size' => variable_get('tripal_phylogeny_default_interior_node_size', 0),
     'leaf_node_size' => variable_get('tripal_phylogeny_default_leaf_node_size', 6),
     'skipTicks' => $skip_ticks,
   ));
