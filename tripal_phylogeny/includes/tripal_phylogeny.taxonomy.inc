@@ -21,16 +21,23 @@ function tripal_phylogeny_taxonomy_view() {
 function tripal_phylogeny_taxonomy_load_form($form, &$form_state) {
   $form['instructions'] = array(
     '#type' => 'item',
-    '#markup' => t('The NCBI Taxonmic Importer examines the organisms
+    '#markup' => '',
+  );
+
+  $form['import_existing'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Import taxonomy for existing species.',
+    '#description' =>  t('The NCBI Taxonmic Importer examines the organisms
       currently present in the database and queries NCBI for the
       taxonomic details.  If the importer is able to match the
       genus and species with NCBI the species details will be imported,
       and a page containing the taxonomic tree will be created.'),
   );
-  $form['import_ncbi'] = array(
+
+  $form['submit'] = array(
     '#type' => 'submit',
-    '#name' => 'import_sync',
-    '#value' => 'Import NCBI taxonomic data'
+    '#name' => 'import',
+    '#value' => 'Submit',
   );
   return $form;
 }
@@ -40,12 +47,27 @@ function tripal_phylogeny_taxonomy_load_form($form, &$form_state) {
  * @param unknown $form
  * @param unknown $form_state
  */
+function tripal_phylogeny_taxonomy_load_form_validate($form, &$form_state) {
+  global $user;
+
+  if (!$form_state['values']['import_existing']) {
+    form_set_error('import_exists', 'Please confirm the import by clicking the checkbox.');
+  }
+}
+
+/**
+ *
+ * @param unknown $form
+ * @param unknown $form_state
+ */
 function tripal_phylogeny_taxonomy_load_form_submit($form, &$form_state) {
   global $user;
-  $sync = $form_state['values']['do_sync'];
-  $args = array();
-  tripal_add_job("Import NCBI Taxonomy", 'tripal_phylogeny',
-    'tripal_phylogeny_ncbi_taxonomy_import', $args, $user->uid);
+
+  if ($form_state['values']['import_existing']) {
+    $args = array();
+    tripal_add_job("Import NCBI Taxonomy", 'tripal_phylogeny',
+      'tripal_phylogeny_ncbi_taxonomy_import', $args, $user->uid);
+  }
 }
 
 /**
@@ -135,7 +157,7 @@ function tripal_phylogeny_ncbi_taxonomy_import($job_id) {
       'cv_id' => array('name' => 'tripal_phylogeny')
     ));
 
-    // Get the list of orgnaisms
+    // Get the list of organisms
     $sql = "SELECT O.* FROM {organism} O";
     $organisms = chado_query($sql);
     while ($organism = $organisms->fetchObject()) {
