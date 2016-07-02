@@ -18,11 +18,6 @@
  */
 function tripal_phylogeny_views_handlers() {
   return array(
-    'info' => array(
-      'path' => drupal_get_path('module', 'tripal_phylogeny') . '/views_handlers',
-    ),
-    'handlers' => array(
-      
-    ),
+
   );
 }

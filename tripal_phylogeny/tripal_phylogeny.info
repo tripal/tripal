@@ -1,5 +1,5 @@
 name = Tripal Phylotree
-description = Supports the phylogeny tables of Chado by providing pages for viewing and editing of phylotrees. Table list at: http://gmod.org/wiki/Chado_Phylogeny_Module
+description = Supports the phylogeny tables of Chado by providing pages for viewing and editing of phylotrees. Table list at: http://gmod.org/wiki/chado_phylotree_Module. This module was added to Tripal through collaboration with the LegumeInformation group (http://http://legumeinfo.org/)
 core = 7.x
 project = tripal_phylogeny
 package = Tripal Extensions

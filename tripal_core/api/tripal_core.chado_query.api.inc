@@ -1577,7 +1577,7 @@ function chado_query($sql, $args = array()) {
  *    indicated by :tokens with values being in the $args array and all tables should
  *    be prefixed with the schema name described in tripal_get_schema_name().
  * @param $args
- *    An array of arguements where the key is the token used in $sql (for example, :value)
+ *    An array of arguments where the key is the token used in $sql (for example, :value)
  *    and the value is the value you would like substituted in.
  */
 function hook_chado_query_alter(&$sql, &$args) {

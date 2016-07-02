@@ -1,7 +1,6 @@
 <?php
-$phylotree = $variables['node']->phylotree; 
+$phylotree = $variables['node']->phylotree;
 $phylotree = chado_expand_var($phylotree,'field','phylotree.comment'); ?>
-
 
 <div class="tripal_phylogeny-data-block-desc tripal-data-block-desc"> <?php
 
@@ -70,4 +69,4 @@ $table = array(
 
 // once we have our table array structure defined, we call Drupal's theme_table()
 // function to generate the table.
-print theme_table($table);  ?>
+print theme_table($table);

@@ -73,13 +73,14 @@ function tripal_phylogeny_ncbi_taxonomy_import($job_id) {
     }
 
     // If the tree already exists then don't insert it again.
-    $tree_name = 'NCBI Taxonomy Tree';
+    global $site_name;
+    $tree_name = $site_name . 'Taxonomy Tree';
     $phylotree = chado_select_record('phylotree', array('*'), array('name' => $tree_name));
     if (count($phylotree) == 0) {
       // Add the taxonomic tree.
       $options = array(
-        'name' => 'NCBI Taxonomy Tree',
-        'description' => 'The Taxonomy Database is a curated classification and nomenclature for all of the organisms in the public sequence databases.',
+        'name' =>  $site_name . 'Taxonomy Tree',
+        'description' => 'The taxonomic tree of organisms represented in this database.',
         'leaf_type' => 'taxonomy',
         'analysis_id' => $analysis->analysis_id,
         'tree_file' => '/dev/null',
@@ -90,7 +91,7 @@ function tripal_phylogeny_ncbi_taxonomy_import($job_id) {
       $warnings = array();
       $success = tripal_insert_phylotree($options, $errors, $warnings);
       if (!$success) {
-        throw new Exception("Cannot add the NCBI Taxonomy Tree phylotree record.");
+        throw new Exception("Cannot add the Taxonomy Tree record.");
       }
       $phylotree = (object) $options;
     }

@@ -460,7 +460,7 @@ function tripal_bulk_loader_progess_file_get_progress($job_id, $update_progress 
  * @params $callback
  *   The callback passed into tripal_add_job()
  * @param $args
- *   The arguements passed into tripal_add_job()
+ *   The arguments passed into tripal_add_job()
  * @return
  *   An array where keys are the human readable headers describing each arguement
  *   and the value is the aguement passed in after formatting

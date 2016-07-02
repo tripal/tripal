@@ -74,13 +74,6 @@ function tripal_phylogeny_node_view($node, $view_mode, $langcode) {
       '#tripal_toc_title' => 'Taxonomic Tree',
       '#weight' => -80,
     );
-    $node->content['tripal_phylogeny_radial'] = array(
-      '#theme' => 'tripal_phylogeny_radial',
-      '#node' => $node,
-      '#tripal_toc_id'    => 'phylotree_circ_dendrogram',
-      '#tripal_toc_title' => 'Circular Dendrogram',
-      '#weight' => -80,
-    );
     $node->content['tripal_phylogeny_organisms'] = array(
       '#theme' => 'tripal_phylogeny_organisms',
       '#node' => $node,
@@ -894,7 +887,6 @@ function phylotree_json($phylotree_id) {
     // Add this node to the list, organized by ID.
     $phylonodes[$phylonode_id] = $node;
   }
-  drupal_debug($phylonodes);
 
   // Populate the children[] arrays for each node.
   foreach ($phylonodes as $key => &$node) {

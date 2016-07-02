@@ -529,7 +529,7 @@ function tripal_core_theme($existing, $type, $theme, $path) {
 
 /**
  * Implements hook_job_describe_args().
- * Describes the arguements for the tripal_populate_mview job to allow for greater
+ * Describes the arguments for the tripal_populate_mview job to allow for greater
  * readability in the jobs details pages.
  *
  * @param $callback

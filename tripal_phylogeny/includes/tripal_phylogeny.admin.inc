@@ -100,34 +100,14 @@ function tripal_phylogeny_default_plots_form($form, &$form_state) {
     '#title' => t('Plot Settings'),
     '#description' => t('You can customize settings for each plot'),
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE
+    '#collapsed' => FALSE
   );
 
   $form['plot_settings']['phylogram_width'] = array(
     '#type' => 'textfield',
-    '#title' => 'Phylogram Width',
+    '#title' => 'Tree Width',
     '#description' => 'Please specify the width in pixels for the phylogram',
     '#default_value' => variable_get('tripal_phylogeny_default_phylogram_width', 350),
-    '#element_validate' => array(
-      'element_validate_integer_positive'
-    ),
-    '#size' => 5,
-  );
-  $form['plot_settings']['dendrogram_width'] = array(
-    '#type' => 'textfield',
-    '#title' => 'Dendrogram Width',
-    '#description' => 'Please specify the width in pixels for the circular dendrogram',
-    '#default_value' => variable_get('tripal_phylogeny_default_dendrogram_width', 500),
-    '#element_validate' => array(
-      'element_validate_integer_positive'
-    ),
-    '#size' => 5,
-  );
-  $form['plot_settings']['bubble_width'] = array(
-    '#type' => 'textfield',
-    '#title' => 'Bubble Plot Width',
-    '#description' => 'Please specify the width in pixels for the organism bubble plot',
-    '#default_value' => variable_get('tripal_phylogeny_default_bubble_width', 500),
     '#element_validate' => array(
       'element_validate_integer_positive'
     ),
@@ -139,13 +119,13 @@ function tripal_phylogeny_default_plots_form($form, &$form_state) {
     '#title' => t('Node Settings'),
     '#description' => t('You can customize settings for the nodes on the trees.'),
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE
+    '#collapsed' => FALSE
   );
   $form['node_settings']['root_node_size'] = array(
     '#type' => 'textfield',
     '#title' => 'Root Node Size',
     '#description' => 'Please specify a size for the root node size. If set to zero, the node will not appear.',
-    '#default_value' => variable_get('tripal_phylogeny_default_root_node_size', 6),
+    '#default_value' => variable_get('tripal_phylogeny_default_root_node_size', 3),
     '#element_validate' => array(
       'element_validate_integer'
     ),
@@ -155,7 +135,7 @@ function tripal_phylogeny_default_plots_form($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => 'Interor Node Size',
     '#description' => 'Please specify a size for the interior node size. If set to zero, the node will not appear.',
-    '#default_value' => variable_get('tripal_phylogeny_default_interior_node_size', 6),
+    '#default_value' => variable_get('tripal_phylogeny_default_interior_node_size', 1),
     '#element_validate' => array(
       'element_validate_integer'
     ),
@@ -272,8 +252,6 @@ function tripal_phylogeny_default_plots_form_submit($form, &$form_state) {
 
   if ($form_state['clicked_button']['#name'] == 'submit') {
     variable_set('tripal_phylogeny_default_phylogram_width', $form_state['values']['phylogram_width']);
-    variable_set('tripal_phylogeny_default_dendrogram_width', $form_state['values']['dendrogram_width']);
-    variable_set('tripal_phylogeny_default_bubble_width', $form_state['values']['bubble_width']);
 
     variable_set('tripal_phylogeny_default_root_node_size', $form_state['values']['root_node_size']);
     variable_set('tripal_phylogeny_default_interior_node_size', $form_state['values']['interior_node_size']);

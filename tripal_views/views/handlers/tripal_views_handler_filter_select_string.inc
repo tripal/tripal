@@ -88,7 +88,7 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
 
     $return = $this->get_select_option_where();
     $where_clauses = $return['where_clauses'];
-    $arguements = $return['arguements'];
+    $arguments = $return['arguments'];
     $where = '';
     if (!empty($where_clauses)) {
       $where = ' WHERE ' . implode(' AND ', $where_clauses);
@@ -96,7 +96,7 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
 
     // get the values from the table
     $sql = 'SELECT ' . $this->real_field . ' FROM {' . $this->table . '} ' . $where . ' ORDER BY ' . $this->field . ' ASC';
-    $results = chado_query($sql, $arguements);
+    $results = chado_query($sql, $arguments);
 
     // Build the select box options
     $max_length = (isset($this->options['max_length'])) ? $this->options['max_length'] : 40;
@@ -126,12 +126,13 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
    *   An array of full qualified where clauses (ie: table.myfield = 'fred')
    */
   function get_select_option_where($table = NULL, $generic_placeholder = TRUE) {
+
     $where = array();
     $values = array();
 
     $table = (is_null($table)) ? $this->table : $table;
 
-    // build a where clause that will filter the list in the drop box
+    // Build a where clause that will filter the list in the drop box
     // using fields that are not exposed and that are for the table
     // from whcih the values in the drop box will be slected and
     // we only want to use non-exposed fields because these are not
@@ -177,7 +178,7 @@ class tripal_views_handler_filter_select_string extends views_handler_filter_str
 
     return array(
       'where_clauses' => $where,
-      'arguements' => $values
+      'arguments' => $values
     );
   }
 

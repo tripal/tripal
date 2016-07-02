@@ -17,7 +17,7 @@ require_once 'theme/tripal_phylogeny.theme.inc';
 require_once 'includes/tripal_phylogeny.admin.inc';
 require_once 'includes/tripal_phylogeny.chado_node.inc';
 require_once 'includes/tripal_phylogeny.import_tree.inc';
-require_once 'includes/tripal_phylogeny.taxonomy_import.inc';
+require_once 'includes/tripal_phylogeny.taxonomy.inc';
 
 /**
  * Implements hook_permission().
@@ -55,16 +55,16 @@ function tripal_phylogeny_menu() {
 
   // administration landing page. currently has no content but is
   // apparently required for the Sync and Help links to work.
-  $items['admin/tripal/extension/tripal_phylogeny'] = array(
-    'title' => 'Phylotrees',
-    'description' => 'Phylogenetic trees & gene families',
+  $items['admin/tripal/chado/tripal_phylogeny'] = array(
+    'title' => 'Phylogeny and Taxonomy',
+    'description' => 'Phylogenetic and taxonomic trees.',
     'page callback' => 'tripal_phylogeny_admin_phylotrees_listing',
     'access arguments' => array('administer tripal phylotree'),
     'type' => MENU_NORMAL_ITEM,
   );
 
   // help menu
-  $items['admin/tripal/extension/tripal_phylogeny/help'] = array(
+  $items['admin/tripal/chado/tripal_phylogeny/help'] = array(
     'title' => 'Help',
     'description' => 'Basic Description of Tripal Phylotree Module Functionality',
     'page callback' => 'theme',
@@ -75,7 +75,7 @@ function tripal_phylogeny_menu() {
   );
 
   // configuration menu item
-  $items['admin/tripal/extension/tripal_phylogeny/configuration'] = array(
+  $items['admin/tripal/chado/tripal_phylogeny/configuration'] = array(
     'title' => 'Settings',
     'description' => 'Configure the Tripal Phylotree module',
     'page callback' => 'drupal_get_form',
@@ -85,9 +85,9 @@ function tripal_phylogeny_menu() {
     'weight' => 1
   );
 
-  $items['admin/tripal/extension/tripal_phylogeny/plots'] = array(
+  $items['admin/tripal/chado/tripal_phylogeny/plots'] = array(
     'title' => 'Plot Defaults',
-    'description' => 'Set defaults for the trees, dendrograms and bubble plot',
+    'description' => 'Set defaults for the trees',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('tripal_phylogeny_default_plots_form'),
     'access arguments' => array('administer tripal phylotree'),
@@ -96,7 +96,7 @@ function tripal_phylogeny_menu() {
   );
 
   // sync menu item (will be rendered as a tab by tripal)
-  $items['admin/tripal/extension/tripal_phylogeny/sync'] = array(
+  $items['admin/tripal/chado/tripal_phylogeny/sync'] = array(
     'title' => ' Sync',
     'description' => 'Create pages on this site for phylotrees stored in Chado',
     'page callback' => 'drupal_get_form',
@@ -107,7 +107,7 @@ function tripal_phylogeny_menu() {
   );
 
   // Enable admin view
-  $items['admin/tripal/extension/tripal_phylogeny/views/phylotree/enable'] = array(
+  $items['admin/tripal/chado/tripal_phylogeny/views/phylotree/enable'] = array(
     'title' => 'Enable Phylotree Administrative View',
     'page callback' => 'tripal_enable_view',
     'page arguments' => array('tripal_phylogeny_admin_phylotree', 'admin/tripal/chado/tripal_phylogeny'),
@@ -118,32 +118,45 @@ function tripal_phylogeny_menu() {
   $items['chado_phylotree/%'] = array(
     'page callback' => 'phylotree_by_name',
     'page arguments' => array(1),
-    'access callback' => TRUE // allow all anonymous http clients
+    // allow all anonymous http clients
+    'access callback' => TRUE
   );
 
    // create a route for viewing json of all phylonodes having this phylotree_id
    $items['chado_phylotree/%/json'] = array(
     'page callback' => 'phylotree_json',
     'page arguments' => array(1),
-    'access callback' => TRUE // allow all anonymous http clients
+     // allow all anonymous http clients
+    'access callback' => TRUE
    );
 
    // Data Loaders
-   $items['admin/tripal/loaders/newic_tree_loader'] = array(
-     'title' => 'Phylogenetic Trees',
-     'description' => 'Loads phylogenetic trees. (Redirects to create a phylogenetic tree content type)',
+   $items['admin/tripal/loaders/newic_phylotree_loader'] = array(
+     'title' => 'Phylogenetic Trees (Newic format)',
+     'description' => 'Loads phylogenetic trees in Newic format. (Redirects to create a phylogenetic tree content type)',
      'page callback' => 'drupal_goto',
      'page arguments' => array('node/add/chado-phylotree'),
      'access arguments' => array('administer tripal phylotree'),
      'type' => MENU_NORMAL_ITEM,
    );
-   $items['admin/tripal/loaders/taxonomy_loader'] = array(
+
+   $items['admin/tripal/loaders/ncbi_taxonomy_loader'] = array(
      'title' => 'NCBI Taxonomy Loader',
      'description' => 'Loads taxonomic details about installed organisms.',
      'page callback' => 'drupal_get_form',
      'page arguments' => array('tripal_phylogeny_taxonomy_load_form'),
      'access arguments' => array('administer tripal phylotree'),
-     'file' => '/includes/tripal_phylogeny.taxonomy_import.inc',
+     'file' => '/includes/tripal_phylogeny.taxonomy.inc',
+     'type' => MENU_NORMAL_ITEM,
+   );
+
+   $items['taxonomy_view'] = array(
+     'title' => 'Site Taxonomy',
+     'description' => 'A taxonomy viewer for the species on this site.',
+     'page callback' => 'drupal_get_form',
+     'page arguments' => array('tripal_phylogeny_taxonomy_viewer'),
+     'access arguments' => array('access taxonomy content'),
+     'file' => '/includes/tripal_phylogeny.taxonomy.inc',
      'type' => MENU_NORMAL_ITEM,
    );
 
@@ -222,12 +235,6 @@ function tripal_phylogeny_theme($existing, $type, $theme, $path) {
     'tripal_phylogeny_organisms' => array(
       'variables' => array('node' => NULL),
       'template' => 'tripal_phylogeny_organisms',
-      'path' => "$path/theme/templates",
-    ),
-    // partial for phylotree radial block
-    'tripal_phylogeny_radial' => array(
-      'variables' => array('node' => NULL),
-      'template' => 'tripal_phylogeny_radial',
       'path' => "$path/theme/templates",
     ),
     // partial for cross references block

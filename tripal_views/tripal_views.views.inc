@@ -7,69 +7,6 @@
 include 'views/handlers/tripal_views_handler_area_action_links.inc';
 
 /**
- * Implements hook_views_handlers().
- *
- * Purpose: Register all custom handlers with views
- *   where a handler describes either "the type of field",
- *   "how a field should be filtered", "how a field should be sorted"
- *
- * @return
- *   An array of handler definitions
- *
- * @ingroup tripal_views
- */
-function tripal_views_views_handlers() {
-
-  return array(
-    'info' => array(
-      'path' => drupal_get_path('module', 'tripal_views') . '/views/handlers',
-    ),
-    'handlers' => array(
-
-      // Custom Tripal Field Handlers
-      /** CANT FIX UNTIL Tripal Feature is working
-      'tripal_views_handler_field_sequence' => array(
-        'parent' => 'views_handler_field',
-      ),
-      */
-
-      // Custom area handler
-      'tripal_views_handler_area_action_links' => array(
-        'parent' => 'views_handler_area',
-      ),
-
-      // Custom Tripal Filter Handlers
-      'tripal_views_handler_filter_no_results' => array(
-        'parent' => 'views_handler_filter'
-      ),
-      'tripal_views_handler_filter_select_cvterm' => array(
-        'parent' => 'tripal_views_handler_filter_select_string',
-      ),
-      'tripal_views_handler_filter_select_id' => array(
-        'parent' => 'tripal_views_handler_filter_select_string',
-      ),
-      'tripal_views_handler_filter_select_string' => array(
-        'parent' => 'views_handler_filter_string',
-      ),
-      'tripal_views_handler_filter_textarea' => array(
-        'parent' => 'views_handler_filter',
-      ),
-      'tripal_views_handler_filter_file_upload' => array(
-        'parent' => 'views_handler_filter',
-      ),
-      /** D7 @todo: get handlers working
-
-      */
-      /** CANT FIX UNTIL Tripal Feature is working
-      'tripal_views_handler_filter_sequence' => array(
-        'parent' => 'chado_views_handler_filter_string',
-      ),
-      */
-    ),
-  );
-}
-
-/**
  * Implements hook_views_pre_render().
  *
  * Purpose: Intercepts the view after the query has been executed
@@ -412,7 +349,6 @@ function tripal_views_views_data() {
         }
       }
   }
-
   return $data;
 }
 
