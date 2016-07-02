@@ -24,8 +24,8 @@
     // Callback function to determine the node color.
     var organismColor = function(d) {
       var color = null;
-      if (d.fo_genus) {
-        color = organismColors[d.fo_genus + ' ' + d.fo_species];
+      if (d.genus) {
+        color = organismColors[d.genus + ' ' + d.species];
       }
       if (color) { 
         return color; 
