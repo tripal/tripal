@@ -432,7 +432,7 @@ function tripal_ws_services_v0_1_get_content_type($api_url, &$response, $ws_path
   // Add in the pager to the response.
   $response['totalItems'] = $num_records;
   $limit = array_key_exists('limit', $params) ? $params['limit'] : 25;
-  drupal_debug(array($num_records, $limit));
+
   $total_pages = ceil($num_records / $limit);
   $page = array_key_exists('page', $params) ? $params['page'] : 1;
   if ($num_records > 0) {

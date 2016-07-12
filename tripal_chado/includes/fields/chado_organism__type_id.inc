@@ -24,6 +24,7 @@ class chado_organism__type_id extends TripalField {
    * @see TripalField::can_attach()
    */
   protected function setCanAttach(){
+
     $table_name = $this->details['chado_table'];
     $type_table = $this->details['chado_type_table'];
     $type_field = $this->details['chado_type_column'];
@@ -98,8 +99,8 @@ class chado_organism__type_id extends TripalField {
       'field_name' => $this->field_name,
       'entity_type' => $this->entity_type,
       'bundle' => $this->bundle->name,
-      'label' => 'Infrapsecific Type',
-      'description' => 'The Infrapsecific Type.',
+      'label' => 'Infraspecific Type',
+      'description' => 'The Infraspecific Type.',
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => TRUE,
@@ -181,7 +182,6 @@ class chado_organism__type_id extends TripalField {
       '#required' => $element['#required'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
       '#delta' => $delta,
-      '#element_validate' => array('chado_organism__type_id_widget_validate'),
     );
   }
 
@@ -212,18 +212,3 @@ class chado_organism__type_id extends TripalField {
 
 }
 
-
-/**
- * Callback function for validating the chado_organism__type_id_widget.
- */
-function chado_organism__type_id_widget_validate($element, &$form_state) {
-  $field_name = $element['#parents'][0];
-  $field = $form_state['field'][$field_name]['und']['field'];
-  $settings = $field['settings'];
-  $field_name = $field['field_name'];
-  $field_type = $field['type'];
-  $field_table = $field['settings']['chado_table'];
-  $field_column = $field['settings']['chado_column'];
-
-
-}
