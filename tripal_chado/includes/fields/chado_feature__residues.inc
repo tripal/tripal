@@ -320,7 +320,7 @@ class chado_feature__residues extends TripalField {
     ";
     $results = chado_query($sql, array(':feature_id' => $feature->feature_id));
     $coding_seq = '';
-    while ($CDS = $results->fetchObject) {
+    while ($CDS = $results->fetchObject()) {
       if ($CDS->residues) {
         $coding_seq .= $CDS->residues;
       }

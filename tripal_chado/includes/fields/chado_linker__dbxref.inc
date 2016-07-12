@@ -365,6 +365,7 @@ class chado_linker__dbxref extends TripalField {
       $i = 0;
       foreach ($record->$linker_table as $index => $linker) {
         $dbxref = $linker->dbxref_id;
+        $URL = tripal_get_dbxref_url($dbxref);
         $entity->{$field_name}['und'][$i] = array(
           'value' => array(
             'vocabulary' => $dbxref->db_id->name,

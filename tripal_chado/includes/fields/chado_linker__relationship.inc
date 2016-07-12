@@ -710,20 +710,8 @@ class chado_linker__relationship extends TripalField {
 
         $entity->{$field_name}['und'][$i]['semantic_web'] = array(
           'type' => $rel_acc,
-          'subject' => array(
-            $relationship->subject_id->type_id->dbxref_id->db_id->name . ':' . $relationship->subject_id->type_id->dbxref_id->accession,
-            array(
-              'type' => '',
-              'name' => '',
-            ),
-          ),
-          'object' => array(
-            $relationship->object_id->type_id->dbxref_id->db_id->name . ':' . $relationship->sobject_id->type_id->dbxref_id->accession,
-            array(
-              'type' => '',
-              'name' => '',
-            ),
-          ),
+          'subject' => $relationship->subject_id->type_id->dbxref_id->db_id->name . ':' . $relationship->subject_id->type_id->dbxref_id->accession,
+          'object' => $relationship->object_id->type_id->dbxref_id->db_id->name . ':' . $relationship->object_id->type_id->dbxref_id->accession,
         );
 
         $entity->{$field_name}['und'][$i][$field_table . '__' . $pkey] = $relationship->$pkey;
@@ -784,20 +772,8 @@ class chado_linker__relationship extends TripalField {
 
         $entity->{$field_name}['und'][$i]['semantic_web'] = array(
           'type' => $rel_acc,
-          'subject' => array(
-            $relationship->subject_id->type_id->dbxref_id->db_id->name . ':' . $relationship->subject_id->type_id->dbxref_id->accession,
-            array(
-              'type' => '',
-              'name' => '',
-            ),
-          ),
-          'object' => array(
-            $relationship->object_id->type_id->dbxref_id->db_id->name . ':' . $relationship->sobject_id->type_id->dbxref_id->accession,
-            array(
-              'type' => '',
-              'name' => '',
-            ),
-          ),
+          'subject' => $relationship->subject_id->type_id->dbxref_id->db_id->name . ':' . $relationship->subject_id->type_id->dbxref_id->accession,
+          'object' => $relationship->object_id->type_id->dbxref_id->db_id->name . ':' . $relationship->object_id->type_id->dbxref_id->accession,
         );
 
 
@@ -829,7 +805,7 @@ class chado_linker__relationship extends TripalField {
    * @return
    *   The verb to use when creating a sentence of the relationship.
    */
-  private function get_rel_verb($rel_type) {
+  public static function get_rel_verb($rel_type) {
     $rel_type_clean = lcfirst(preg_replace('/_/', ' ', $rel_type));
     $verb = $rel_type_clean;
     switch ($rel_type_clean) {

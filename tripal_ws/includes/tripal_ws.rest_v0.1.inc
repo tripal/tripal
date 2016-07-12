@@ -366,12 +366,13 @@ function tripal_ws_services_v0_1_get_content_type($api_url, &$response, $ws_path
     if (count($subkeys) > 0) {
       $key = array_shift($subkeys);
     }
+    $column_name = $key;
 
     // Map the values in the filters to their appropriate field names.
     if (array_key_exists($key, $field_mapping)) {
       $field_name = $field_mapping[$key];
       if (count($subkeys) > 0) {
-        $field_name .= '.' . implode('.', $subkeys);
+        $column_name .= '.' . implode('.', $subkeys);
       }
       $new_params[$field_name]['value'] = $value;
       $new_params[$field_name]['op'] = $op;
@@ -415,40 +416,46 @@ function tripal_ws_services_v0_1_get_content_type($api_url, &$response, $ws_path
       default:
         $op = '=';
     }
-    $query->fieldCondition($field_name, $field_name, $value, $op);
+    // We pass in the $column_name as an identifier for any sub fields
+    // that are present for the fields.
+    $query->fieldCondition($field_name, $column_name, $value, $op);
   }
 
   // Perform the query just as a count first to get the number of records.
   $cquery = clone $query;
   $cquery->count();
   $num_records = $cquery->execute();
+  if (!$num_records) {
+    $num_records = 0;
+  }
 
   // Add in the pager to the response.
   $response['totalItems'] = $num_records;
   $limit = array_key_exists('limit', $params) ? $params['limit'] : 25;
+  drupal_debug(array($num_records, $limit));
   $total_pages = ceil($num_records / $limit);
   $page = array_key_exists('page', $params) ? $params['page'] : 1;
-  $response['view'] = array(
-    '@id' => $URL . "?page=$page&limit=$limit",
-    '@type' => 'PartialCollectionView',
-    'first' => $URL . "?page=1&limit=$limit",
-    'last' => $URL . "?page=$total_pages&limit=$limit",
-  );
-  $prev = $page - 1;
-  $next = $page + 1;
-  if ($prev > 0) {
-    $response['view']['previous'] = $URL . "?page=$prev&limit=$limit";
-  }
-  if ($next < $total_pages) {
-    $response['view']['next'] = $URL . "?page=$next&limit=$limit";
+  if ($num_records > 0) {
+    $response['view'] = array(
+      '@id' => $URL . "?page=$page&limit=$limit",
+      '@type' => 'PartialCollectionView',
+      'first' => $URL . "?page=1&limit=$limit",
+      'last' => $URL . "?page=$total_pages&limit=$limit",
+    );
+    $prev = $page - 1;
+    $next = $page + 1;
+    if ($prev > 0) {
+      $response['view']['previous'] = $URL . "?page=$prev&limit=$limit";
+    }
+    if ($next < $total_pages) {
+      $response['view']['next'] = $URL . "?page=$next&limit=$limit";
+    }
   }
 
-  // Now perform teh query.
+  // Now perform the query.
   $start = ($page - 1) * $limit;
   $query->range($start, $limit);
   $results = $query->execute();
-
-
 
   // Iterate through the entities and add them to the list.
   $i = 0;
@@ -459,16 +466,17 @@ function tripal_ws_services_v0_1_get_content_type($api_url, &$response, $ws_path
    // We don't need all of the attached fields for an entity so, we'll
    // not use the entity_load() function.  Instead just pull it from the
    // database table.
-   $entity = db_select('tripal_entity', 'TE')
-     ->fields('TE')
-     ->condition('TE.id', $entity_id)
-     ->execute()
-     ->fetchObject();
+   $query = db_select('tripal_entity', 'TE');
+   $query->join('tripal_term', 'TT', 'TE.term_id = TT.id');
+   $query->fields('TE');
+   $query->fields('TT', array('name'));
+   $query->condition('TE.id', $entity_id);
+   $entity = $query->execute()->fetchObject();
 
     //$entity = tripal_load_entity('TripalEntity', array($entity->id));
     $response['member'][] = array(
       '@id' => url($api_url . '/content/' . urlencode($ctype) . '/' .  $entity->id, array('absolute' => TRUE)),
-      '@type' => $ctype,
+      '@type' => $entity->name,
       'label' => $entity->title,
       'itemPage' => url('/bio_data/' . $entity->id, array('absolute' => TRUE)),
     );

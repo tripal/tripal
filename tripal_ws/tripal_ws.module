@@ -127,6 +127,11 @@ function tripal_ws_services() {
   print drupal_json_encode($response);
 }
 
+/**
+ *
+ * @param $entities
+ * @param $type
+ */
 function tripal_ws_entity_load($entities, $type) {
   foreach ($entities as $entity) {
     //if ($entiy->type = 'TripalEntity') {
@@ -135,6 +140,15 @@ function tripal_ws_entity_load($entities, $type) {
   }
 }
 
+/**
+ *
+ * @param $site_id
+ * @param $api_version
+ * @param $ctype
+ * @param $id
+ *
+ * @return
+ */
 function tripal_ws_load_remote_entity($site_id, $api_version, $ctype, $id) {
 
   // Get the content type on this site

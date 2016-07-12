@@ -367,12 +367,12 @@ class chado_linker__featureloc extends TripalField {
    * alignment of feature 3 with feature 2
    *
    * Features may align to more than one feature and are not matches. We do
-     * not want to include these, so we have to filter on the SO terms:
-     * match, or %_match
-     *
-     * @ingroup tripal_feature
-     */
-   private  function get_matched_alignments($feature) {
+   * not want to include these, so we have to filter on the SO terms:
+   * match, or %_match
+   *
+   * @ingroup tripal_feature
+   */
+   static public function get_matched_alignments($feature) {
 
      $sql = "
        SELECT

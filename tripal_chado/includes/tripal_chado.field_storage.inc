@@ -410,6 +410,7 @@ function tripal_chado_field_storage_expand_field($item_name, $value) {
  * Implements hook_field_storage_query().
  */
 function tripal_chado_field_storage_query($query) {
+//print_r($query->fieldConditions);
 
   // The conditions and order bys are reorganized into a filters array for the
   // chado_select_record function()
@@ -435,7 +436,6 @@ function tripal_chado_field_storage_query($query) {
     $chado_column = $settings['chado_column'];
 
     // Set the value for this field search.
-    $value = NULL;
     $subfields = explode('.', $column);
     //print_r($subfields);
     if (count($subfields) > 1) {
@@ -559,6 +559,10 @@ function tripal_chado_field_storage_query($query) {
       $select->fields('CE', array('entity_id'));
       $select->fields('TE', array('bundle'));
       $select->condition('record_id', $record_ids);
+      // If a bundle is specified then make sure we match on the bundle.
+      if (array_key_exists('bundle', $query->entityConditions)) {
+        $select->condition('bundle', $query->entityConditions['bundle']);
+      }
       $results = $select->execute();
       while ($result = $results->fetchObject()) {
         $entity_ids[] = array($result->entity_id, 0, $result->bundle);
