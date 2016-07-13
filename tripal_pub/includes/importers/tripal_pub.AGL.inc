@@ -446,9 +446,9 @@ function tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $tot
     }
     drupal_set_message("ERROR waiting on search at AGL: ($error_no) $error_msg", "error");
     watchdog('tpub_import', "ERROR waiting on search at AGL: (%error_no) %error_msg",
-    array('%error_no' => $error_no, '%error_msg' => $error_msg), WATCHDOG_ERROR);
+      array('%error_no' => $error_no, '%error_msg' => $error_msg), WATCHDOG_ERROR);
     return array(
-      'total_records' => $total_records,
+      'total_records' => 0,
       'search_str'    => $search_str,
       'pubs'          => array(),
     );
@@ -461,6 +461,18 @@ function tripal_pub_AGL_range($yazc, $search_str, $start, $num_to_retrieve, $tot
   for($i = $start; $i < $start + $num_to_retrieve; $i++) {
     // retrieve the XML results
     $pub_xml = yaz_record($yazc, $i + 1, 'xml; charset=marc-8,utf-8');
+    if (!$pub_xml) {
+      $error_no = yaz_errno($yazc);
+      $error_msg = yaz_error($yazc);
+      drupal_set_message("ERROR retrieving records from AGL: ($error_no) $error_msg", "error");
+      watchdog('tpub_import', "ERROR retrieving records from AGL: (%error_no) %error_msg",
+          array('%error_no' => $error_no, '%error_msg' => $error_msg), WATCHDOG_ERROR);
+      return array(
+        'total_records' => 0,
+        'search_str'    => $search_str,
+        'pubs'          => array(),
+      );
+    }
 
     // parse the pub XML
     $pub     = tripal_pub_AGL_parse_pubxml($pub_xml);
