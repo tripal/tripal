@@ -26,7 +26,7 @@ if (count($libraries) > 0) {?>
   foreach ($libraries as $library){ 
     
     $libname = $library->name;
-    if ($library->nid) {
+    if (isset($library->nid)) {
       $libname = l($libname, "node/".$library->nid, array('attributes' => array('target' => '_blank')));
     }
     
