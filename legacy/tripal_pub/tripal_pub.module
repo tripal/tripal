@@ -287,8 +287,8 @@ function tripal_pub_permission() {
  * @ingroup tripal_pub
  */
 function tripal_pub_mail($key, &$message, $params) {
+  $site_name = variable_get('site_name');
   $language = $message['language'];
-  $variables = user_mail_tokens($params['account'], $language);
   switch($key) {
     case 'import_report':
       $headers = array(
@@ -296,13 +296,13 @@ function tripal_pub_mail($key, &$message, $params) {
         'Content-Type' => 'text/html; charset=UTF-8; format=flowed',
         'Content-Transfer-Encoding' => '8Bit',
         'X-Mailer' => 'Drupal'
-        );
-        foreach ($headers as $key => $value) {
-          $message['headers'][$key] = $value;
-        }
-        $message['subject'] = t('Publication import from !site', $variables, $language->language);
-        $message['body'][] = $params['message'];
-        break;
+      );
+      foreach ($headers as $key => $value) {
+        $message['headers'][$key] = $value;
+      }
+      $message['subject'] = t('Publication import from !site', array('!site' => $site_name));
+      $message['body'][] = $params['message'];
+      break;
   }
 }
 

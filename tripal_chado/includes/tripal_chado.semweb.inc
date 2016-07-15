@@ -472,8 +472,7 @@ function tripal_chado_semweb_form($form, &$form_state, $chado_table = NULL) {
   if ($chado_table) {
     $schema = chado_get_schema($chado_table);
     $pk = $schema['primary key'][0];
-    $cv_default =
-      db_select('tripal_cv_defaults', 'tc')
+    $cv_default = db_select('tripal_cv_defaults', 'tc')
       ->fields('tc', array('field_name'))
       ->condition('table_name', $chado_table)
       ->execute()

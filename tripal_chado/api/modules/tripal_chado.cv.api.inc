@@ -1155,7 +1155,19 @@ function tripal_set_default_cv($table, $field, $cv_name, $cv_id = FALSE) {
 }
 
 /**
- * Retreives the default vocabulary for a given table and field
+ * Retreives the default vocabulary for a given table and field.
+ *
+ * Each table in Chado that has a 'type_id' (or foreign key constraint to
+ * the cvterm table) will have a default vocabulary assigned. This indicates to
+ * Tripal that terms in that vocabulary are used to set the type_id for that
+ * table. An example where this is used is the
+ * tripal_get_cvterm_select_options() function which generates a list of options
+ * for a select box used in a Drupal form.  The select box will list the terms
+ * from the default vocabulary in the drop down.
+ *
+ * This function uses the Chado table and field name (e.g. 'type_id') to
+ * retreive the vocabulary assgined.
+ *
  * @param $table
  *   The name of the table that contains a field with a foreign key
  *   relationship to the cvterm table
@@ -1176,6 +1188,36 @@ function tripal_get_default_cv($table, $field) {
   $cv_id = db_query($sql, array(':table' => $table, ':field' => $field))->fetchField();
 
   return tripal_get_cv(array('cv_id' => $cv_id));
+}
+
+/**
+ * Retrieves the Chado table to which a vocbulary is set as default.
+ *
+ * Each table in Chado that has a 'type_id' (or foreign key constraint to
+ * the cvterm table) will have a default vocabulary assigned. This indicates to
+ * Tripal that terms in that vocabulary are used to set the type_id for that
+ * table. An example where this is used is the
+ * tripal_get_cvterm_select_options() function which generates a list of options
+ * for a select box used in a Drupal form.  The select box will list the terms
+ * from the default vocabulary in the drop down.
+ *
+ * This function uses the vocabulary ID to get the Chado table to which it
+ * is assigned.
+ *
+ * @param $cv_id
+ *  The ID of the vocabulary.
+ *
+ * @return
+ *   If an assignment is present, an object containing the 'table_name' and
+ *   'field_name' is returned.
+ */
+function tripal_get_default_cv_table($cv_id) {
+  $default = db_select('tripal_cv_defaults', 't')
+    ->fields('t', array('table_name', 'field_name'))
+    ->condition('cv_id', $cv_id)
+    ->execute()
+    ->fetchObject();
+  return $default;
 }
 
 /**

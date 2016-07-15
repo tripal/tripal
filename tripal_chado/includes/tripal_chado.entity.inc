@@ -43,6 +43,8 @@ function tripal_chado_set_bundle_vars($bundle) {
   );
   $cvterm = chado_generate_var('cvterm', $match);
 
+  // TODO: these cvterm names should not be hardcoded. A better solution
+  // should be found.
   // The organism table does not have a type_id so we won't ever find
   // a record for it in the tripal_cv_defaults table.
   if ($cvterm->name == 'organism') {
@@ -78,11 +80,7 @@ function tripal_chado_set_bundle_vars($bundle) {
     // TODO: WHAT TO DO IF A VOCABULARY IS USED AS A DEFAULT FOR MULTIPLE
     // TABLES.
     // Look to see if this vocabulary is used as a default for any table.
-    $default = db_select('tripal_cv_defaults', 't')
-      ->fields('t')
-      ->condition('cv_id', $cvterm->cv_id->cv_id)
-      ->execute()
-      ->fetchObject();
+    $default = tripal_get_default_cv_table($cvterm->cv_id->cv_id);
     if ($default) {
       $details = array(
         'chado_cv_id' => $cvterm->cv_id->cv_id,
