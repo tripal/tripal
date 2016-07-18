@@ -10,33 +10,35 @@ function tripal_chado_install() {
 //       ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
 //   ');
 
-  // For an upgraded site we need to move some vocabulary terms over
-  // to the new 'local' vocabulary:
-  tripal_insert_db(array(
-    'name' => 'local',
-    'description' => variable_get('site_name', 'This site.'),
-  ));
+  if (chado_is_installed()) {
+    // For an upgraded site we need to move some vocabulary terms over
+    // to the new 'local' vocabulary:
+    tripal_insert_db(array(
+      'name' => 'local',
+      'description' => variable_get('site_name', 'This site.'),
+    ));
 
-  // Move the library properties out of the tripal database and into the
-  // local database.
-  $sql = "
-    UPDATE {dbxref}
-      SET db_id = (SELECT db_id FROM {db} WHERE name = 'local')
-    WHERE dbxref_id IN (
-      SELECT DISTINCT CVT.dbxref_id
-      FROM {cvterm} CVT
-        INNER JOIN {cv} CV ON CV.cv_id = CVT.cv_id
-      WHERE CV.name IN (
-        'library_property',
-        'library_type',
-        'project_property',
-        'nd_experiment_types',
-        'nd_geolocation_property',
-        'tripal_analysis'
+    // Move the library properties out of the tripal database and into the
+    // local database.
+    $sql = "
+      UPDATE {dbxref}
+        SET db_id = (SELECT db_id FROM {db} WHERE name = 'local')
+      WHERE dbxref_id IN (
+        SELECT DISTINCT CVT.dbxref_id
+        FROM {cvterm} CVT
+          INNER JOIN {cv} CV ON CV.cv_id = CVT.cv_id
+        WHERE CV.name IN (
+          'library_property',
+          'library_type',
+          'project_property',
+          'nd_experiment_types',
+          'nd_geolocation_property',
+          'tripal_analysis'
+        )
       )
-    )
-  ";
-  chado_query($sql);
+    ";
+    chado_query($sql);
+  }
 }
 
 /**
