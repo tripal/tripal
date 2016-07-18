@@ -180,8 +180,10 @@ function tripal_chado_load_form_submit($form, &$form_state) {
   global $user;
   $action_to_do = trim($form_state['values']['action_to_do']);
   $args = array($action_to_do);
+
+  $includes = array(module_load_include('inc', 'tripal_chado', 'includes/tripal_chado.install'));
   tripal_add_job($action_to_do, 'tripal_chado',
-      'tripal_chado_install_chado', $args, $user->uid);
+    'tripal_chado_install_chado', $args, $user->uid, 10, $includes);
 }
 
 /**
