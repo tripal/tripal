@@ -1841,3 +1841,31 @@ function chado_schema_get_foreign_key($table_desc, $field, $values, $options = N
 
   return array();
 }
+
+/**
+ * Retrieve the name of the PostgreSQL schema housing Chado or Drupal.
+ *
+ * @param $schema
+ *   Wehter you want the schema name for 'chado' or 'drupal'. Chado is the default.
+ * @return
+ *   The name of the PostgreSQL schema housing the $schema specified.
+ */
+function tripal_get_schema_name($schema = 'chado') {
+
+  // First we will set our default. This is what will be returned in most cases.
+  if ($schema == 'chado') {
+    $schema_name = 'chado';
+  }
+  else {
+    $schema_name = 'public';
+  }
+
+  // There are cases where modules or admin might need to change the default
+  // names for the schema. Thus we provide an alter hook here to allow
+  // the names to be changed and ensure that schema names are never hardcoded
+  // directly into queries.
+  $context = array('schema' => $schema);
+  drupal_alter('tripal_get_schema_name', $schema_name, $context);
+
+  return $schema_name;
+}
