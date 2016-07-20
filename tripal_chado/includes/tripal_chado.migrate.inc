@@ -316,7 +316,45 @@ function tripal_chado_migrate_form($form, &$form_state) {
  * @param $form_state
  */
 function tripal_chado_migrate_form_validate($form, &$form_state) {
-
+  if ($form_state['clicked_button']['#name'] == 'migrate_btn') {
+    $selected_type = $form_state['values']['tv2_content_type'];
+    $tv3_content_types = array();
+    $values = $form_state['values'];
+    if ($selected_type == 'all') {
+      $tv2_content_types = tripal_chado_get_tripal_v2_content_type_options();
+      $tv3_content_types = tripal_chado_migrate_map_types($tv2_content_types);
+    }
+    else {
+      foreach ($values AS $key => $value) {
+        if ($selected_type != 'all') {
+          $key = urldecode($key);
+          if (preg_match('/^tv3_content_type--(.+)--(.+)--(.+)/', $key, $matches) &&
+              ($value == 1 || $values['tv3_migrate_all'] == 1)) {
+            $vocabulary = $matches[1];
+            $accession = $matches[2];
+            $type = $matches[3];
+            $tv3_content_types [] = array(
+              'vocabulary' => $vocabulary,
+              'accession' => $accession,
+              'term_name' => $type
+            );
+          }
+        }
+      }
+    }
+    // Check if CV exists in the tripal_cv_defaults table. If not, do not proceed to migration
+    foreach ($tv3_content_types AS $type) {
+      $voc = $type['vocabulary'];
+      $cv = tripal_get_cv(array('name' => $voc));
+      if (!$cv) {
+        continue;
+      }
+      $default = tripal_get_default_cv_table($cv->cv_id);
+      if (!$default) {
+        form_set_error('', "'$voc' is not a " . l('Default Vocabulary', 'admin/tripal/storage/chado/vocab') . ". Migration can not be proceeded.");
+      }
+    }
+  }
 }
 
 /**
@@ -405,6 +443,7 @@ function tripal_chado_migrate_form_submit($form, &$form_state) {
     $_SESSION['tripal_migrate_current_tab'] = 'edit-step4';
     return;
   }
+  // Migrate tv2 content to tv3 content
   else if ($form_state['clicked_button']['#name'] == 'migrate_btn') {
     global $user;
     $values = $form_state['values'];
@@ -426,7 +465,6 @@ function tripal_chado_migrate_form_submit($form, &$form_state) {
         }
       }
     }
-
     // Submit a job to migrate content
     global $user;
     $args = array(
@@ -546,14 +584,23 @@ function tripal_chado_get_tripal_v2_content_type_options($all_option = FALSE, $h
 function tripal_chado_migrate_all_types() {
   // Get all available Tripal v2 content types
   $tv2_content_types = tripal_chado_get_tripal_v2_content_type_options();
-
+  $types = tripal_chado_migrate_map_types($tv2_content_types);
+  tripal_chado_migrate_selected_types($types);
+}
+/**
+ * Map all tv2_content_type to tv3_content_type
+ *
+ * @param unknown $tv2_content_type
+ * return $tv3_content_type
+ */
+function tripal_chado_migrate_map_types($tv2_content_types) {
   $types = array();
   foreach($tv2_content_types AS $tv2_content_type => $value) {
     $table = str_replace('chado_', '', $tv2_content_type);
     $schema = chado_get_schema($table);
     $pkey = $schema['primary key'][0];
     $fkeys = $schema['foreign keys'];
-
+  
     if (key_exists('cvterm', $fkeys) && key_exists('type_id', $fkeys['cvterm']['columns'])) {
       // Get all Tripal v2 node types from the chad_* linking table
       $sql = "
@@ -563,8 +610,8 @@ function tripal_chado_migrate_all_types() {
           INNER JOIN {cvterm} V ON V.cvterm_id = T.type_id
           INNER JOIN {dbxref} X ON X.dbxref_id = V.dbxref_id
           INNER JOIN {db} ON db.db_id = X.db_id
-        GROUP BY V.name, X.accession, db.name
-      ";
+          GROUP BY V.name, X.accession, db.name
+          ";
       $tv3_content_types = chado_query($sql);
       while($tv3_content_type = $tv3_content_types->fetchObject()) {
         array_push($types, array(
@@ -589,10 +636,8 @@ function tripal_chado_migrate_all_types() {
       ));
     }
   }
-
-  tripal_chado_migrate_selected_types($types);
+  return $types;
 }
-
 /**
  * Migrate only selected Tripal v2 content types
  *
