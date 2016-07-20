@@ -346,7 +346,7 @@ function tripal_chado_migrate_form_validate($form, &$form_state) {
     foreach ($tv3_content_types AS $type) {
       $voc = $type['vocabulary'];
       $cv = tripal_get_cv(array('name' => $voc));
-      if (!$cv) {
+      if (!$cv || $voc == 'local') {
         continue;
       }
       $default = tripal_get_default_cv_table($cv->cv_id);
