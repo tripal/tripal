@@ -345,13 +345,31 @@ function tripal_chado_migrate_form_validate($form, &$form_state) {
     // Check if CV exists in the tripal_cv_defaults table. If not, do not proceed to migration
     foreach ($tv3_content_types AS $type) {
       $voc = $type['vocabulary'];
-      $cv = tripal_get_cv(array('name' => $voc));
-      if (!$cv || $voc == 'local') {
+      $acc = $type['accession'];
+      $term_name =  $type['term_name'];
+      $match = array(
+        'dbxref_id' => array(
+          'db_id' => array(
+            'name' => $voc,
+          ),
+          'accession' => $acc
+        ),
+      );
+      $cvterm = chado_generate_var('cvterm', $match);
+      if ($voc == 'local' || !$cvterm) {
+        // Ignore local terms
         continue;
       }
-      $default = tripal_get_default_cv_table($cv->cv_id);
+      $default = tripal_get_default_cv_table($cvterm->cv_id->cv_id);
       if (!$default) {
-        form_set_error('', "'$voc' is not a " . l('Default Vocabulary', 'admin/tripal/storage/chado/vocab') . ". Migration can not be proceeded.");
+        form_set_error('', 
+            t("'@voc' is not a ". l('Default Vocabulary', 'admin/tripal/storage/chado/vocab') . ". '@cvterm' can not be migrated.", 
+              array(
+                '@voc' => $voc,
+                '@cvterm' => $cvterm->name
+              )
+            )
+        );
       }
     }
   }
@@ -623,8 +641,8 @@ function tripal_chado_migrate_map_types($tv2_content_types) {
     }
     else if ($table == 'organism') {
       array_push($types, array(
-        'vocabulary' => 'OBI',
-        'accession' => '0100026',
+        'vocabulary' => 'local',
+        'accession' => 'organism',
         'term_name' => 'organism'
       ));
     }
