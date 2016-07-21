@@ -73,7 +73,7 @@ function tripal_chado_init() {
       // Check to see if the Chado and Drupal have been prepared
       if (!variable_get('tripal_chado_is_prepared', FALSE)) {
         drupal_set_message('Chado is installed but Tripal has not yet prepared Drupal and Chado. Please ' .
-            l('prepare both Drupal and Chado', 'admin/tripal/storage/chado/chado_prepare') .
+            l('prepare both Drupal and Chado', 'admin/tripal/storage/chado/prepare') .
             ' before continuing.', 'warning');
       }
     }

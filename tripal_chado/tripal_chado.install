@@ -215,7 +215,8 @@ function tripal_chado_schema() {
     }
   }
 
-
+  // Map cvterm usage to chado tables
+  $schema['tripal_cvterm_mapping'] = tripal_chado_tripal_cvterm_mapping_schema();
 
   return $schema;
 }
@@ -661,6 +662,46 @@ function tripal_chado_chado_entity_schema() {
       'entity_id' => array('entity_id'),
     ),
     'primary key' => array('chado_entity_id'),
+  );
+  return $schema;
+}
+
+/**
+ * Tripal cvterm mapping schema
+ * Map cvterms to chado tables that use them
+ */
+function tripal_chado_tripal_cvterm_mapping_schema() {
+
+  $schema = array (
+    'table' => 'tripal_cvterm_mapping',
+    'fields' => array (
+      'mapping_id' => array(
+        'type' => 'serial',
+        'not null' => TRUE
+      ),
+      'cvterm_id' => array (
+        'type' => 'int',
+        'not null' => TRUE
+      ),
+      'chado_table' => array (
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE
+      ),
+      'chado_field' => array (
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE
+      ),
+    ),
+    'primary key' => array (
+      0 => 'mapping_id'
+    ),
+    'indexes' => array(
+      'tripal_cvterm2table_idx1' => array('cvterm_id'),
+      'tripal_cvterm2table_idx2' => array('chado_table'),
+      'tripal_cvterm2table_idx3' => array('chado_table', 'chado_field'),
+    ),
   );
   return $schema;
 }

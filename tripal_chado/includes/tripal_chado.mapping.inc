@@ -1,45 +1,6 @@
 <?php
 
 /**
- *
- */
-function tripal_chado_tripal_cvterm_mapping_schema() {
-
-  $schema = array (
-    'table' => 'tripal_cvterm_mapping',
-    'fields' => array (
-      'mapping_id' => array(
-        'type' => 'serial',
-        'not null' => TRUE
-      ),
-      'cvterm_id' => array (
-        'type' => 'int',
-        'not null' => TRUE
-      ),
-      'chado_table' => array (
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE
-      ),
-      'chado_field' => array (
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE
-      ),
-    ),
-    'primary key' => array (
-      0 => 'mapping_id'
-    ),
-    'indexes' => array(
-      'tripal_cvterm2table_idx1' => array('cvterm_id'),
-      'tripal_cvterm2table_idx2' => array('chado_table'),
-      'tripal_cvterm2table_idx3' => array('chado_table', 'chado_field'),
-    ),
-  );
-  return $schema;
-}
-
-/**
  * This function populates the Tripal entity tables using existing
  * data in the database.
  */
@@ -50,7 +11,7 @@ function tripal_chado_map_cvterms() {
 
   // Perform this action in a transaction
   $transaction = db_transaction();
-  print "\nNOTE: Populating of tripal entity tables is performed using a database transaction. \n" .
+  print "\nNOTE: Populating of tripal_cvterm_mapping table is performed using a database transaction. \n" .
       "If the load fails or is terminated prematurely then the entire set of \n" .
       "insertions/updates is rolled back and will not be found in the database\n\n";
   try {
@@ -84,12 +45,16 @@ function tripal_chado_map_cvterms() {
           // it doesn't already exist.
           $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
 
-          $values = array(
-            'cvterm_id' => $cvterm->cvterm_id,
-            'chado_table' => $tablename,
-            'chado_field' => $remote_id
-          );
           // TODO insert records into the tripal_cvterm_mapping table.
+          db_insert('tripal_cvterm_mapping')
+            ->fields(
+              array(
+                'cvterm_id' => $cvterm->cvterm_id,
+                'chado_table' => $tablename,
+                'chado_field' => $remote_id
+              )
+            )
+            ->execute();
         }
       }
     }
