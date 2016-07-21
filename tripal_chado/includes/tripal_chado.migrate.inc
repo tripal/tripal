@@ -356,8 +356,8 @@ function tripal_chado_migrate_form_validate($form, &$form_state) {
         ),
       );
       $cvterm = chado_generate_var('cvterm', $match);
-      if ($voc == 'local' || !$cvterm) {
-        // Ignore local terms
+      if ($voc == 'local' || ($voc == 'OBI' && $term_name == 'organism')) {
+        // Ignore local terms and OBI:organism
         continue;
       }
       $default = tripal_get_default_cv_table($cvterm->cv_id->cv_id);
@@ -641,8 +641,8 @@ function tripal_chado_migrate_map_types($tv2_content_types) {
     }
     else if ($table == 'organism') {
       array_push($types, array(
-        'vocabulary' => 'local',
-        'accession' => 'organism',
+        'vocabulary' => 'OBI',
+        'accession' => '0100026',
         'term_name' => 'organism'
       ));
     }
