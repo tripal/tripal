@@ -316,6 +316,10 @@ function tripal_chado_migrate_form($form, &$form_state) {
  * @param $form_state
  */
 function tripal_chado_migrate_form_validate($form, &$form_state) {
+
+  // If the user selects the migrate button then we want to make sure that the
+  // the term for each content is mapped to a table and column in Chado.
+  // Otherwise creation of bundles will be bungled.
   if ($form_state['clicked_button']['#name'] == 'migrate_btn') {
     $selected_type = $form_state['values']['tv2_content_type'];
     $tv3_content_types = array();
@@ -342,6 +346,7 @@ function tripal_chado_migrate_form_validate($form, &$form_state) {
         }
       }
     }
+
     // Check if CV exists in the tripal_cv_defaults table. If not, do not proceed to migration
     foreach ($tv3_content_types AS $type) {
       $voc = $type['vocabulary'];
@@ -362,13 +367,17 @@ function tripal_chado_migrate_form_validate($form, &$form_state) {
       }
       $default = tripal_get_default_cv_table($cvterm->cv_id->cv_id);
       if (!$default) {
-        form_set_error('', 
-            t("'@voc' is not a ". l('Default Vocabulary', 'admin/tripal/storage/chado/vocab') . ". '@cvterm' can not be migrated.", 
-              array(
-                '@voc' => $voc,
-                '@cvterm' => $cvterm->name
-              )
+        form_set_error('',
+          t("The tripal content type, '@type', of subtype, '@cvterm', cannot be
+              migrated because the vocabulary, '@voc', has not been mapped to a table in Chado.
+              Please go to the ". l('Default Vocabulary settings page', 'admin/tripal/storage/chado/vocab') . "and indicate
+              which table to use for the vocabulary.",
+            array(
+              '@type' => $type,
+              '@voc' => $voc,
+              '@cvterm' => $cvterm->name
             )
+          )
         );
       }
     }
@@ -618,7 +627,7 @@ function tripal_chado_migrate_map_types($tv2_content_types) {
     $schema = chado_get_schema($table);
     $pkey = $schema['primary key'][0];
     $fkeys = $schema['foreign keys'];
-  
+
     if (key_exists('cvterm', $fkeys) && key_exists('type_id', $fkeys['cvterm']['columns'])) {
       // Get all Tripal v2 node types from the chad_* linking table
       $sql = "

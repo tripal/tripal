@@ -285,14 +285,14 @@ function theme_tripal_chado_admin_set_defaults_form($variables) {
   foreach ($element['settings']['existing'] as $key => $value) {
     if (is_numeric($key)) {
 
-      $action_links = '<ul class="links inline">';
-      if (!empty($value['view-terms'])) {
-        $action_links .= '<li>' . drupal_render($value['view-terms']) . '</li>';
-      }
-      if (!empty($value['add-new-term'])) {
-        $action_links .= '<li>' . drupal_render($value['add-new-term']) . '</li>';
-      }
-      $action_links .= '</li></ul>';
+//       $action_links = '<ul class="links inline">';
+//       if (!empty($value['view-terms'])) {
+//         $action_links .= '<li>' . drupal_render($value['view-terms']) . '</li>';
+//       }
+//       if (!empty($value['add-new-term'])) {
+//         $action_links .= '<li>' . drupal_render($value['add-new-term']) . '</li>';
+//       }
+//       $action_links .= '</li></ul>';
 
       $rows[] = array(
         drupal_render($value['table_name-display']),

@@ -54,6 +54,8 @@ function tripal_chado_uninstall() {
 //     ALTER TABLE {tripal_custom_tables}
 //     DROP CONSTRAINT tripal_custom_tables_fk1 CASCADE
 //   ');
+
+  variable_set('tripal_chado_is_prepared', FALSE);
 }
 
 function tripal_chado_chado_semweb_schema(){

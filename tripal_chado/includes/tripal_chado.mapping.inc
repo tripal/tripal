@@ -19,7 +19,7 @@ function tripal_chado_map_cvterms() {
     // Iterate through the referring tables to see what records are there.
     foreach ($referring as $tablename) {
 
-      // We only want to look at base tables.
+      // Ignore the cvterm tables, relationships, chadoprop tables.
       if ($tablename == 'cvterm_dbxref' || $tablename == 'cvterm_relationship' ||
           $tablename == 'cvtermpath' || $tablename == 'cvtermprop' || $tablename == 'chadoprop' ||
           $tablename == 'cvtermsynonym' || preg_match('/_relationship$/', $tablename) ||
@@ -51,7 +51,7 @@ function tripal_chado_map_cvterms() {
               array(
                 'cvterm_id' => $cvterm->cvterm_id,
                 'chado_table' => $tablename,
-                'chado_field' => $remote_id
+                'chado_field' => $local_id
               )
             )
             ->execute();
