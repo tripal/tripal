@@ -5,9 +5,8 @@
  * data in the database.
  */
 function tripal_chado_map_cvterms() {
-  // Get the cvterm table and look for all of the tables that link to it.
-  $schema = chado_get_schema('cvterm');
-  $referring = $schema['referring_tables'];
+  // Get chado base tables
+  $base_tables = chado_get_base_tables();
 
   // Perform this action in a transaction
   $transaction = db_transaction();
@@ -17,19 +16,13 @@ function tripal_chado_map_cvterms() {
   try {
 
     // Iterate through the referring tables to see what records are there.
-    foreach ($referring as $tablename) {
-
-      // Ignore the cvterm tables, relationships, chadoprop tables.
-      if ($tablename == 'cvterm_dbxref' || $tablename == 'cvterm_relationship' ||
-          $tablename == 'cvtermpath' || $tablename == 'cvtermprop' || $tablename == 'chadoprop' ||
-          $tablename == 'cvtermsynonym' || preg_match('/_relationship$/', $tablename) ||
-          preg_match('/_cvterm$/', $tablename)) {
-            continue;
-      }
-
+    foreach ($base_tables as $tablename) {
       print "Examining $tablename...\n";
       $ref_schema = chado_get_schema($tablename);
       $fkeys = $ref_schema['foreign keys'];
+      if (!isset($fkeys['cvterm']['columns'])) {
+        continue;
+      }
       foreach ($fkeys['cvterm']['columns'] as $local_id => $remote_id) {
 
         // Get the list of cvterm_ids from existing records in the table.
@@ -40,21 +33,7 @@ function tripal_chado_map_cvterms() {
         ";
         $results = chado_query($sql);
         while ($cvterm_id = $results->fetchField()) {
-
-          // Get the CV term details and add it to the tripal_vocabulary table if
-          // it doesn't already exist.
-          $cvterm = chado_generate_var('cvterm', array('cvterm_id' => $cvterm_id));
-
-          // TODO insert records into the tripal_cvterm_mapping table.
-          db_insert('tripal_cvterm_mapping')
-            ->fields(
-              array(
-                'cvterm_id' => $cvterm->cvterm_id,
-                'chado_table' => $tablename,
-                'chado_field' => $local_id
-              )
-            )
-            ->execute();
+          tripal_chado_add_cvterm_mapping($cvterm_id, $tablename, $local_id);
         }
       }
     }
@@ -66,4 +45,51 @@ function tripal_chado_map_cvterms() {
     print "FAILED: Rolling back database changes...\n";
   }
   print "\nDone.\n";
+}
+
+/*
+ * Return mapped tables for a cvterm
+ * 
+ * Query the tripal_cvterm_mapping table and return tables used by a cvterm
+ */
+function tripal_chado_get_cvterm_mapped_tables($cvterm_id) {
+  $tables = array();
+  $results = db_select('tripal_cvterm_mapping', 'tcm')
+    ->fields('tcm')
+    ->condition('cvterm_id', $cvterm_id)
+    ->execute();
+  while($table = $results->fetchObject()) {
+    array_push($tables, $table);
+  }
+  return $tables;
+}
+
+/*
+ * Add a cvterm mapping record
+ * 
+ * Check if the cvterm mapping record exists. If not, add it to the tripal_cvterm_mapping 
+ * table
+ */
+function tripal_chado_add_cvterm_mapping($cvterm_id, $tablename, $chado_field) {
+  // check if the record exists
+  $record = db_select('tripal_cvterm_mapping', 'tcm')
+  ->fields('tcm', array('mapping_id'))
+  ->condition('cvterm_id', $cvterm_id)
+  ->condition('chado_table', $tablename)
+  ->condition('chado_field', $chado_field)
+  ->execute()
+  ->fetchField();
+  
+  // insert records into the tripal_cvterm_mapping table.
+  if (!$record) {
+    db_insert('tripal_cvterm_mapping')
+    ->fields(
+        array(
+          'cvterm_id' => $cvterm_id,
+          'chado_table' => $tablename,
+          'chado_field' => $chado_field
+        )
+        )
+        ->execute();
+  }
 }

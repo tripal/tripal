@@ -1869,3 +1869,33 @@ function tripal_get_schema_name($schema = 'chado') {
 
   return $schema_name;
 }
+
+/**
+ *  Returns all chado base tables
+ *  
+ *   Thie function returns all tables that are referred to by the cvterm table. In addition,
+ *   organism, project, and analysis tables are considered base tables and also returned
+ */
+function chado_get_base_tables() {
+  // Get the cvterm table and look for all of the tables that link to it.
+  $schema = chado_get_schema('cvterm');
+  $referring = $schema['referring_tables'];
+  
+  $base_tables = array('organism', 'project', 'analysis');
+  
+  foreach ($referring as $tablename) {
+  
+    // Ignore the cvterm tables, relationships, chadoprop tables.
+    if ($tablename == 'cvterm_dbxref' || $tablename == 'cvterm_relationship' ||
+        $tablename == 'cvtermpath' || $tablename == 'cvtermprop' || $tablename == 'chadoprop' ||
+        $tablename == 'cvtermsynonym' || preg_match('/_relationship$/', $tablename) ||
+        preg_match('/_cvterm$/', $tablename)) {
+          continue;
+    }
+    else {
+      array_push($base_tables, $tablename);
+    }
+  }
+  sort($base_tables);
+  return $base_tables;
+}

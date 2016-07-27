@@ -145,6 +145,23 @@ function tripal_chado_vocab_select_term_form($form, &$form_state) {
              '<br><b>Term: </b> ' . $term->dbxref_id->db_id->name . ':' . $term->dbxref_id->accession . '.  ' .
              '<br><b>Definition:</b>  ' . $term->definition,
        );
+       $base_tables = chado_get_base_tables();
+       $options = array(0 => '-- Select table --');
+       foreach ($base_tables AS $tablename) {
+         $options[$tablename] = $tablename;
+       }
+       $mapped_tables = tripal_chado_get_cvterm_mapped_tables($term->cvterm_id);
+       $default_table = 0;
+       if (count($mapped_tables) > 0) {
+         $first_table = $mapped_tables[0];
+         $default_table = $first_table->chado_table;
+       }
+       $form['terms_list']['default_table-' . $term->cvterm_id] = array(
+         '#type' => 'select',
+         '#title' => 'Default table',
+         '#options' => $options,
+         '#default_value' => $default_table
+       );
        $num_terms++;
     }
     if ($num_terms == 0) {
@@ -205,6 +222,19 @@ function tripal_chado_vocab_select_term_form_validate($form, &$form_state) {
       $form_state['storage']['vocabulary'] = $term->dbxref_id->db_id->name;
       $form_state['storage']['accession'] = $term->dbxref_id->accession;
       $form_state['storage']['term_name'] = $term->name;
+      // Make sure a default table is selected
+      $default_table = $form_state['values']['default_table-' . $cvterm_id];
+      if (!$default_table) {
+        form_set_error('default_table-' . $cvterm_id, 'Please select a default table.');
+      }
+      else {
+        $schema = chado_get_schema($default_table);
+        if (isset($schema['foreign keys']['cvterm']['columns'])) {
+          $fkey = array_keys($schema['foreign keys']['cvterm']['columns']);
+          $chado_field = $fkey[0];
+          tripal_chado_add_cvterm_mapping($cvterm_id, $default_table, $chado_field);
+        }
+      }
     }
   }
   // For any other button click it's an AJAX call and we just want to reubild
