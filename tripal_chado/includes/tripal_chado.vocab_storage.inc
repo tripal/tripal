@@ -146,20 +146,21 @@ function tripal_chado_vocab_select_term_form($form, &$form_state) {
              '<br><b>Definition:</b>  ' . $term->definition,
        );
        $base_tables = chado_get_base_tables();
+       $default_table = 0;
        $options = array(0 => '-- Select table --');
        foreach ($base_tables AS $tablename) {
          $options[$tablename] = $tablename;
        }
-       $mapped_tables = tripal_chado_get_cvterm_mapped_tables($term->cvterm_id);
-       $default_table = 0;
-       if (count($mapped_tables) > 0) {
-         $first_table = $mapped_tables[0];
-         $default_table = $first_table->chado_table;
+       $mapped_table = chado_get_cvterm_mapping(array('cvterm_id' => $term->cvterm_id));
+       if ($mapped_table) {
+         $default_table = $mapped_table->chado_table;
        }
        $form['terms_list']['default_table-' . $term->cvterm_id] = array(
          '#type' => 'select',
-         '#title' => 'Default table',
+         '#title' => 'Chado table',
          '#options' => $options,
+         '#description' => 'Select the table in Chado where data of this type
+           will be stored.',
          '#default_value' => $default_table
        );
        $num_terms++;

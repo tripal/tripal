@@ -48,26 +48,9 @@ function tripal_chado_map_cvterms() {
 }
 
 /*
- * Return mapped tables for a cvterm
- * 
- * Query the tripal_cvterm_mapping table and return tables used by a cvterm
- */
-function tripal_chado_get_cvterm_mapped_tables($cvterm_id) {
-  $tables = array();
-  $results = db_select('tripal_cvterm_mapping', 'tcm')
-    ->fields('tcm')
-    ->condition('cvterm_id', $cvterm_id)
-    ->execute();
-  while($table = $results->fetchObject()) {
-    array_push($tables, $table);
-  }
-  return $tables;
-}
-
-/*
  * Add a cvterm mapping record
- * 
- * Check if the cvterm mapping record exists. If not, add it to the tripal_cvterm_mapping 
+ *
+ * Check if the cvterm mapping record exists. If not, add it to the tripal_cvterm_mapping
  * table
  */
 function tripal_chado_add_cvterm_mapping($cvterm_id, $tablename, $chado_field) {
@@ -79,7 +62,7 @@ function tripal_chado_add_cvterm_mapping($cvterm_id, $tablename, $chado_field) {
   ->condition('chado_field', $chado_field)
   ->execute()
   ->fetchField();
-  
+
   // insert records into the tripal_cvterm_mapping table.
   if (!$record) {
     db_insert('tripal_cvterm_mapping')

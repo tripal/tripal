@@ -72,11 +72,17 @@ function tripal_chado_publish_records($values, $job_id = NULL) {
   // Load the bundle entity so we can get information about which Chado
   // table/field this entity belongs to.
   $bundle = tripal_load_bundle_entity(array('name' => $bundle_name));
-
   $bundle_id = $bundle->id;
-  $table = tripal_get_bundle_variable('chado_table', $bundle_id);
-  $column = tripal_get_bundle_variable('chado_type_column', $bundle_id);
-  $cvterm_id = tripal_get_bundle_variable('chado_cvterm_id', $bundle_id);
+  $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+  $vocab = $term->vocab;
+  $params = array(
+    'vocabulary' => $vocab->vocabulary,
+    'accession' => $term->accession,
+  );
+  $mapped_table = chado_get_cvterm_mapping($params);
+  $table = $mapped_table->chado_table;
+  $column = $mapped_table->chado_field;
+  $cvterm_id = $mapped_table->cvterm->cvterm_id;
 
   // Get the table information for the Chado table.
   $table_schema = chado_get_schema($table);

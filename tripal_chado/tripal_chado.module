@@ -652,7 +652,15 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
     // map to tables that used had Tripal v2 nodes.  For those, if the
     // legacy support is turned on then we want to use the legacy template.
     while ($bundle = $bundles->fetchObject()) {
-      $chado_table = tripal_get_bundle_variable('chado_table', $bundle->id);
+      $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+      $vocab = $term->vocab;
+      $params = array(
+        'vocabulary' => $vocab->vocabulary,
+        'accession' => $term->accession,
+      );
+      $mapped_table = chado_get_cvterm_mapping($params);
+
+      $chado_table = $mapped_table->chado_table;
       $legacy_template = 'legacy_template--chado_' . $chado_table;
       if (key_exists($legacy_template, $enabled_templates) && $enabled_templates[$legacy_template]) {
         $themes['TripalEntity__' . $bundle->name] = array(

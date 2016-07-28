@@ -33,13 +33,22 @@ function tripal_chado_field_info() {
  */
 function tripal_chado_field_create_info($entity_type, $bundle) {
 
+  // Get the table this bundle is mapped to.
+  $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+  $vocab = $term->vocab;
+  $params = array(
+    'vocabulary' => $vocab->vocabulary,
+    'accession' => $term->accession,
+  );
+  $mapped_table = chado_get_cvterm_mapping($params);
+
   // Get the details about the mapping of this bundle to the Chado table:
   $details = array(
-    'chado_cv_id' => tripal_get_bundle_variable('chado_cv_id', $bundle->id),
-    'chado_cvterm_id' => tripal_get_bundle_variable('chado_cvterm_id', $bundle->id),
-    'chado_table' => tripal_get_bundle_variable('chado_table', $bundle->id),
-    'chado_type_table' => tripal_get_bundle_variable('chado_type_table', $bundle->id),
-    'chado_type_column' => tripal_get_bundle_variable('chado_type_column', $bundle->id),
+    'chado_cv_id' => $mapped_table->cvterm->cv_id->cv_id,
+    'chado_cvterm_id' => $mapped_table->cvterm->cvterm_id,
+    'chado_table' => $mapped_table->chado_table,
+    'chado_type_table' => $mapped_table->chado_table,
+    'chado_type_column' => $mapped_table->chado_field,
   );
 
   $base_fields = tripal_chado_field_create_base('create_info', $entity_type, $bundle, $details);
@@ -262,13 +271,21 @@ function tripal_chado_field_create_info_base_defaults($field_name, $table_name,
  */
 function tripal_chado_field_create_instance_info($entity_type, $bundle) {
 
+  $term = tripal_load_term_entity(array('term_id' => $bundle->term_id));
+  $vocab = $term->vocab;
+  $params = array(
+    'vocabulary' => $vocab->vocabulary,
+    'accession' => $term->accession,
+  );
+  $mapped_table = chado_get_cvterm_mapping($params);
+
   // Get the details about the mapping of this bundle to the Chado table:
   $details = array(
-    'chado_cv_id' => tripal_get_bundle_variable('chado_cv_id', $bundle->id),
-    'chado_cvterm_id' => tripal_get_bundle_variable('chado_cvterm_id', $bundle->id),
-    'chado_table' => tripal_get_bundle_variable('chado_table', $bundle->id),
-    'chado_type_table' => tripal_get_bundle_variable('chado_type_table', $bundle->id),
-    'chado_type_column' => tripal_get_bundle_variable('chado_type_column', $bundle->id),
+    'chado_cv_id' => $mapped_table->cvterm->cv_id->cv_id,
+    'chado_cvterm_id' => $mapped_table->cvterm->cvterm_id,
+    'chado_table' => $mapped_table->chado_table,
+    'chado_type_table' => $mapped_table->chado_table,
+    'chado_type_column' => $mapped_table->chado_field,
   );
 
   $base_fields = tripal_chado_field_create_base('create_instance_info', $entity_type, $bundle, $details);
