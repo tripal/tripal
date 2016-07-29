@@ -693,11 +693,14 @@ function tripal_chado_tripal_cvterm_mapping_schema() {
       'chado_field' => array (
         'type' => 'varchar',
         'length' => 128,
-        'not null' => TRUE
+        'not null' => FALSE
       ),
     ),
     'primary key' => array (
       0 => 'mapping_id'
+    ),
+    'unique key' => array(
+      'cvterm_id',
     ),
     'indexes' => array(
       'tripal_cvterm2table_idx1' => array('cvterm_id'),
