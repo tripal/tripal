@@ -366,6 +366,16 @@ function tripal_chado_prepare_chado() {
       'definition' => 'The way in which two things are connected.',
       'cv_name' => 'local',
     ));
+    
+    tripal_insert_cvterm(array(
+      'id' => 'local:biomaterial',
+      'name' => 'biomaterial',
+      'definition' => 'A biomaterial represents the MAGE concept of BioSource, BioSample, ' . 
+        'and LabeledExtract. It is essentially some biological material (tissue, cells, serum) that ' .
+        'may have been processed. Processed biomaterials should be traceable back to raw ' .
+        'biomaterials via the biomaterialrelationship table.',
+      'cv_name' => 'local',
+    ));
 
     // For the TripalBundle entities we will want to associate the cvterm_id,
     // and the chado table and field that it maps to.  We will use a few
@@ -414,6 +424,9 @@ function tripal_chado_prepare_chado() {
     if (!tripal_create_bundle('local', 'project', 'project', $error)) {
       throw new Exception($error);
     }
+    
+    // Initialize the population of the tripal_cvterm_mapping table.
+    tripal_chado_map_cvterms();
 
     // Set a variable to indicate the site is prepared.
     variable_set('tripal_chado_is_prepared', TRUE);

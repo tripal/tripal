@@ -58,11 +58,8 @@ function tripal_chado_add_cvterm_mapping($cvterm_id, $tablename, $chado_field) {
   $record = db_select('tripal_cvterm_mapping', 'tcm')
   ->fields('tcm', array('mapping_id'))
   ->condition('cvterm_id', $cvterm_id)
-  ->condition('chado_table', $tablename)
-  ->condition('chado_field', $chado_field)
   ->execute()
   ->fetchField();
-
   // insert records into the tripal_cvterm_mapping table.
   if (!$record) {
     db_insert('tripal_cvterm_mapping')
@@ -74,5 +71,18 @@ function tripal_chado_add_cvterm_mapping($cvterm_id, $tablename, $chado_field) {
         )
         )
         ->execute();
+  }
+  // if the record exists, update the term mapping
+  else {
+    db_update('tripal_cvterm_mapping')
+    ->fields(
+        array(
+          'chado_table' => $tablename,
+          'chado_field' => $chado_field
+        )
+      )
+    ->condition('cvterm_id', $cvterm_id)
+    ->execute()
+    ;
   }
 }

@@ -229,12 +229,13 @@ function tripal_chado_vocab_select_term_form_validate($form, &$form_state) {
         form_set_error('default_table-' . $cvterm_id, 'Please select a default table.');
       }
       else {
+        $chado_field = NULL;
         $schema = chado_get_schema($default_table);
         if (isset($schema['foreign keys']['cvterm']['columns'])) {
           $fkey = array_keys($schema['foreign keys']['cvterm']['columns']);
           $chado_field = $fkey[0];
-          tripal_chado_add_cvterm_mapping($cvterm_id, $default_table, $chado_field);
         }
+        tripal_chado_add_cvterm_mapping($cvterm_id, $default_table, $chado_field);
       }
     }
   }
