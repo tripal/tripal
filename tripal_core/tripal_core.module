@@ -81,11 +81,9 @@ function tripal_core_init() {
   }
 
   // add some variables for all javasript to use for building URLs
-  $theme_dir = drupal_get_path('theme', 'tripal');
   $clean_urls = variable_get('clean_url', 0);
   drupal_add_js(
     " var baseurl  = '$base_url';
-      var themedir = '$theme_dir';
       var isClean  =  $clean_urls;",
     'inline', 'header');
 
