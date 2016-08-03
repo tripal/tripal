@@ -13,7 +13,7 @@ function tripal_phylogeny_admin_phylotrees_listing() {
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Chado', 'admin/tripal/chado');
+  $breadcrumb[] = l('Chado', 'admin/tripal/legacy');
   $breadcrumb[] = l('Phylotrees', 'admin/tripal/extension/tripal_phylogeny');
   drupal_set_breadcrumb($breadcrumb);
 
@@ -183,7 +183,7 @@ function tripal_phylogeny_default_plots_form($form, &$form_state) {
     $form['node_settings']['org_table']['organism_' . $i] = array(
       '#type' => 'textfield',
       '#default_value' => array_key_exists($i, $color_defaults) ? $color_defaults[$i]['organism'] : '',
-      '#autocomplete_path' => "admin/tripal/chado/tripal_organism/organism/auto_name",
+      '#autocomplete_path' => "admin/tripal/legacy/tripal_organism/organism/auto_name",
       '#description' => t('Please enter the name of the organism.'),
       '#size' => 30,
     );

@@ -68,7 +68,7 @@ function tripal_pub_menu() {
     'type ' => MENU_CALLBACK,
   );
 
-  $items['admin/tripal/chado/tripal_pub']= array(
+  $items['admin/tripal/legacy/tripal_pub']= array(
     'title' => 'Publications',
     'description' => ('A documented provenance artefact - publications, documents, personal communication.'),
     'page callback' => 'tripal_pub_admin_pub_view',
@@ -76,7 +76,7 @@ function tripal_pub_menu() {
     'type' => MENU_NORMAL_ITEM
   );
 
-  $items['admin/tripal/chado/tripal_pub/help']= array(
+  $items['admin/tripal/legacy/tripal_pub/help']= array(
     'title' => 'Help',
     'description' => ('A module for interfacing the GMOD chado database with Drupal, providing viewing of publications'),
     'page callback' => 'theme',
@@ -86,7 +86,7 @@ function tripal_pub_menu() {
     'weight' => 10
   );
 
-  $items['admin/tripal/chado/tripal_pub/configuration'] = array(
+  $items['admin/tripal/legacy/tripal_pub/configuration'] = array(
     'title' => 'Settings',
     'description' => 'Configure the Tripal publication module.',
     'page callback' => 'drupal_get_form',
@@ -96,7 +96,7 @@ function tripal_pub_menu() {
     'weight' => 5
   );
 
-  $items['admin/tripal/chado/tripal_pub/sync'] = array(
+  $items['admin/tripal/legacy/tripal_pub/sync'] = array(
     'title' => ' Sync',
     'description' => 'Create pages on this site for libraries stored in Chado',
     'page callback' => 'drupal_get_form',
@@ -106,7 +106,7 @@ function tripal_pub_menu() {
     'weight' => 2
   );
 
-  $items['admin/tripal/chado/tripal_pub/chado_pub_toc'] = array(
+  $items['admin/tripal/legacy/tripal_pub/chado_pub_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for pub nodes.',
     'page callback' => 'drupal_get_form',
@@ -118,7 +118,7 @@ function tripal_pub_menu() {
     'weight' => 3
   );
 
-  $items['admin/tripal/chado/tripal_pub/citation'] = array(
+  $items['admin/tripal/legacy/tripal_pub/citation'] = array(
     'title' => 'Citations',
     'description' => 'Update publication citations',
     'page callback' => 'drupal_get_form',

@@ -17,8 +17,8 @@ function tripal_pub_admin_pub_view() {
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Chado', 'admin/tripal/chado');
-  $breadcrumb[] = l('Publications', 'admin/tripal/chado/tripal_pub');
+  $breadcrumb[] = l('Chado', 'admin/tripal/legacy');
+  $breadcrumb[] = l('Publications', 'admin/tripal/legacy/tripal_pub');
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
@@ -32,7 +32,7 @@ function tripal_pub_admin_pub_view() {
       . 'administrative interface are disabled. <strong>Click each of the following links to '
       . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
-      $output .= '<li>'.l('Publications View', 'admin/tripal/chado/tripal_pub/views/pubs/enable').'</li>';
+      $output .= '<li>'.l('Publications View', 'admin/tripal/legacy/tripal_pub/views/pubs/enable').'</li>';
     $output .= '</ul>';
   }
 
@@ -65,7 +65,7 @@ function tripal_pub_admin() {
   // This call adds the configuration form to your current form
   // This sub-form handles it's own validation & submit
   chado_add_admin_form_set_title($form, $form_state, $details);
-  
+
   // -----------------------------------------
   // add in the fields for selecting which fields are used when search for pubs
   $form['searching'] = array(

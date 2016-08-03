@@ -169,17 +169,6 @@ function tripal_chado_menu() {
     'weight' => 2
   );
 
-  $items['admin/tripal/storage/chado/vocab'] = array(
-    'title' => 'Vocabulary Defaults',
-    'description' => 'Set the default vocabularies for properties and relationships.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('tripal_chado_admin_set_defaults_form'),
-    'file' => 'includes/tripal_chado.cv_defaults.inc',
-    'file path' => drupal_get_path('module', 'tripal_chado'),
-    'access arguments' => array('administer controlled vocabularies'),
-    'type' => MENU_NORMAL_ITEM,
-  );
-
 
   //////////////////////////////////////////////////////////////////////////////
   //                       Materialized Views
@@ -630,10 +619,6 @@ function tripal_chado_theme($existing, $type, $theme, $path) {
     'tripal_pub_search_setup_form_elements' => array(
       'render element' => 'form',
       'file' => 'includes/loaders/tripal_chado.pub_importers.inc',
-    ),
-    'tripal_chado_admin_set_defaults_form' => array(
-      'function' => 'theme_tripal_chado_admin_set_defaults_form',
-      'render element' => 'element',
     ),
   );
 

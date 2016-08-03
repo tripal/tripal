@@ -55,7 +55,7 @@ function tripal_phylogeny_menu() {
 
   // administration landing page. currently has no content but is
   // apparently required for the Sync and Help links to work.
-  $items['admin/tripal/chado/tripal_phylogeny'] = array(
+  $items['admin/tripal/legacy/tripal_phylogeny'] = array(
     'title' => 'Phylogeny and Taxonomy',
     'description' => 'Phylogenetic and taxonomic trees.',
     'page callback' => 'tripal_phylogeny_admin_phylotrees_listing',
@@ -64,7 +64,7 @@ function tripal_phylogeny_menu() {
   );
 
   // help menu
-  $items['admin/tripal/chado/tripal_phylogeny/help'] = array(
+  $items['admin/tripal/legacy/tripal_phylogeny/help'] = array(
     'title' => 'Help',
     'description' => 'Basic Description of Tripal Phylotree Module Functionality',
     'page callback' => 'theme',
@@ -75,7 +75,7 @@ function tripal_phylogeny_menu() {
   );
 
   // configuration menu item
-  $items['admin/tripal/chado/tripal_phylogeny/configuration'] = array(
+  $items['admin/tripal/legacy/tripal_phylogeny/configuration'] = array(
     'title' => 'Settings',
     'description' => 'Configure the Tripal Phylotree module',
     'page callback' => 'drupal_get_form',
@@ -85,7 +85,7 @@ function tripal_phylogeny_menu() {
     'weight' => 1
   );
 
-  $items['admin/tripal/chado/tripal_phylogeny/plots'] = array(
+  $items['admin/tripal/legacy/tripal_phylogeny/plots'] = array(
     'title' => 'Plot Defaults',
     'description' => 'Set defaults for the trees',
     'page callback' => 'drupal_get_form',
@@ -96,7 +96,7 @@ function tripal_phylogeny_menu() {
   );
 
   // sync menu item (will be rendered as a tab by tripal)
-  $items['admin/tripal/chado/tripal_phylogeny/sync'] = array(
+  $items['admin/tripal/legacy/tripal_phylogeny/sync'] = array(
     'title' => ' Sync',
     'description' => 'Create pages on this site for phylotrees stored in Chado',
     'page callback' => 'drupal_get_form',
@@ -107,10 +107,10 @@ function tripal_phylogeny_menu() {
   );
 
   // Enable admin view
-  $items['admin/tripal/chado/tripal_phylogeny/views/phylotree/enable'] = array(
+  $items['admin/tripal/legacy/tripal_phylogeny/views/phylotree/enable'] = array(
     'title' => 'Enable Phylotree Administrative View',
     'page callback' => 'tripal_enable_view',
-    'page arguments' => array('tripal_phylogeny_admin_phylotree', 'admin/tripal/chado/tripal_phylogeny'),
+    'page arguments' => array('tripal_phylogeny_admin_phylotree', 'admin/tripal/legacy/tripal_phylogeny'),
     'access arguments' => array('administer tripal phylotree'),
     'type' => MENU_CALLBACK,
   );

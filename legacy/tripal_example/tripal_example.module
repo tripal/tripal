@@ -158,11 +158,11 @@ function tripal_example_menu() {
   // This menu will provide a form similar to the one found on the node that
   // allows the user to set global TOC settings for the content type. Be sure to
   // always use a menu path of the form:
-  //   admin/tripal/chado/[module name]/[content type name]_toc
+  //   admin/tripal/legacy/[module name]/[content type name]_toc
   // this allows for a module to support TOC management when there are multiple
   // content types provided by the module, as the content type is specified
   // in the menu path.
-  $items['admin/tripal/chado/tripal_example/chado_example_toc'] = array(
+  $items['admin/tripal/legacy/tripal_example/chado_example_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for example nodes.',
     'page callback' => 'drupal_get_form',

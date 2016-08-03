@@ -64,7 +64,7 @@ function tripal_pub_importers_list() {
           link labeled 'Import Pubs' to schedule a job to import the publications</li>
       <li>The first method only performs the import once.  However, you can schedule the
           importer to run peridically by adding a cron job. See the " .
-     l("Pub Module help instructions", "admin/tripal/chado/tripal_pub/help") . " to learn how to
+     l("Pub Module help instructions", "admin/tripal/legacy/tripal_pub/help") . " to learn how to
      set the importers to run automatically.") . '</li>
      </ol><br>';
 

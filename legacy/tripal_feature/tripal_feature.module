@@ -133,8 +133,7 @@ function tripal_feature_menu() {
   );
 
   // the administative settings menu
-  /*
-  $items['admin/tripal/chado/tripal_feature'] = array(
+  $items['admin/tripal/legacy/tripal_feature'] = array(
     'title' => 'Features',
     'description' => 'A biological sequence or a section of a biological sequence, or a collection of such sections.',
     'page callback' => 'tripal_feature_admin_feature_view',
@@ -142,7 +141,7 @@ function tripal_feature_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
-  $items['admin/tripal/chado/tripal_feature/delete'] = array(
+  $items['admin/tripal/legacy/tripal_feature/delete'] = array(
     'title' => ' Delete',
     'description' => 'Delete multiple features from Chado',
     'page callback' => 'drupal_get_form',
@@ -151,7 +150,7 @@ function tripal_feature_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 2
   );
-  $items['admin/tripal/chado/tripal_feature/sync'] = array(
+  $items['admin/tripal/legacy/tripal_feature/sync'] = array(
     'title' => ' Sync',
     'description' => 'Create pages on this site for features stored in Chado',
     'page callback' => 'drupal_get_form',
@@ -160,7 +159,7 @@ function tripal_feature_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 1
   );
-  $items['admin/tripal/chado/tripal_feature/chado_feature_toc'] = array(
+  $items['admin/tripal/legacy/tripal_feature/chado_feature_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for feature nodes.',
     'page callback' => 'drupal_get_form',
@@ -171,7 +170,7 @@ function tripal_feature_menu() {
     'file path' => drupal_get_path('module', 'tripal_core'),
     'weight' => 3
   );
-  $items['admin/tripal/chado/tripal_feature/configuration'] = array(
+  $items['admin/tripal/legacy/tripal_feature/configuration'] = array(
     'title' => 'Settings',
     'description' => 'Configure the Tripal Feature module.',
     'page callback' => 'drupal_get_form',
@@ -180,7 +179,7 @@ function tripal_feature_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 5
   );
-  $items['admin/tripal/chado/tripal_feature/help'] = array(
+  $items['admin/tripal/legacy/tripal_feature/help'] = array(
     'title' => 'Help',
     'description' => 'Help with the Tripal Feature module.',
     'page callback' => 'theme',
@@ -198,7 +197,6 @@ function tripal_feature_menu() {
     'access arguments' => array('administer tripal feature'),
     'type' => MENU_CALLBACK,
   );
-  */
   return $items;
 }
 

@@ -49,6 +49,17 @@ function tripal_core_init() {
 function tripal_core_menu() {
   $items = array();
 
+  // Triapl setting groups
+  $items['admin/tripal/legacy'] = array(
+    'title' => 'Tripal Legacy',
+    'description' => t("Legacy functionality from Tripal v2.0."),
+    'weight' => -8,
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('administer tripal'),
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
+  );
+
   // Relationshi API autocomplete callback
   $items['tripal_ajax/relationship_nodeform/%/%/name_to_id'] = array(
     'page callback' => 'chado_add_node_form_relationships_name_to_id_callback',

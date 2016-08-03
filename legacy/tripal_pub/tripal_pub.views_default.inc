@@ -198,7 +198,7 @@ function tripal_pub_defaultview_admin_publications() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_pub/publications';
+  $handler->display->display_options['path'] = 'admin/tripal/legacy/tripal_pub/publications';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Publications';
   $handler->display->display_options['menu']['description'] = 'A published article, book, conference proceeding, etc.';

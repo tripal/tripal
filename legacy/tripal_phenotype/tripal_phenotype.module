@@ -44,8 +44,8 @@ function tripal_phenotype_menu() {
   $items = array();
 
     // the administative settings menu
-    /*
-  $items['admin/tripal/chado/tripal_phenotype'] = array(
+
+  $items['admin/tripal/legacy/tripal_phenotype'] = array(
    'title' => 'Phenotypes',
    'description' => 'A controlled sentence describing observable effects of non-wild type function.',
    'page callback' => 'tripal_phenotype_admin_phenotypes_listing',
@@ -53,7 +53,7 @@ function tripal_phenotype_menu() {
    'type' => MENU_NORMAL_ITEM,
   );
 
-  $items['admin/tripal/chado/tripal_phenotype/help'] = array(
+  $items['admin/tripal/legacy/tripal_phenotype/help'] = array(
    'title' => 'Help',
    'description' => "A description of the Tripal phenotype module including a short description of it's usage.",
    'page callback' => 'theme',
@@ -62,14 +62,14 @@ function tripal_phenotype_menu() {
    'type' => MENU_LOCAL_TASK,
   );
 
-  $items['admin/tripal/chado/tripal_phenotype/views/phenotypes/enable'] = array(
+  $items['admin/tripal/legacy/tripal_phenotype/views/phenotypes/enable'] = array(
     'title' => 'Enable Phenotype Administrative View',
     'page callback' => 'tripal_enable_view',
-    'page arguments' => array('tripal_phenotype_admin_phenotypes', 'admin/tripal/chado/tripal_phenotype'),
+    'page arguments' => array('tripal_phenotype_admin_phenotypes', 'admin/tripal/legacy/tripal_phenotype'),
     'access arguments' => array('administer tripal phenotype'),
     'type' => MENU_CALLBACK,
   );
-  */
+
   return $items;
 }
 
@@ -144,8 +144,8 @@ function tripal_phenotype_admin_phenotypes_listing() {
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Chado', 'admin/tripal/chado');
-  $breadcrumb[] = l('Phenotypes', 'admin/tripal/chado/tripal_phenotype');
+  $breadcrumb[] = l('Chado', 'admin/tripal/legacy');
+  $breadcrumb[] = l('Phenotypes', 'admin/tripal/legacy/tripal_phenotype');
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
@@ -159,7 +159,7 @@ function tripal_phenotype_admin_phenotypes_listing() {
       . 'administrative interface are disabled. <strong>Click each of the following links to '
       . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
-      $output .= '<li>'.l('Phenotype Admin', 'admin/tripal/chado/tripal_phenotype/views/phenotypes/enable').'</li>';
+      $output .= '<li>'.l('Phenotype Admin', 'admin/tripal/legacy/tripal_phenotype/views/phenotypes/enable').'</li>';
     $output .= '</ul>';
   }
 

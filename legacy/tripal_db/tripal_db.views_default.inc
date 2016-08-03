@@ -94,7 +94,7 @@ function tripal_db_defaultview_admin_db_listing() {
   $handler->display->display_options['header']['action_links_area']['empty'] = TRUE;
   $handler->display->display_options['header']['action_links_area']['link-1'] = array(
     'label-1' => 'Add Database',
-    'path-1' => 'admin/tripal/chado/tripal_db/add',
+    'path-1' => 'admin/tripal/legacy/tripal_db/add',
   );
   /* No results behavior: Global: Text area */
   $handler->display->display_options['empty']['text']['id'] = 'area';
@@ -139,7 +139,7 @@ function tripal_db_defaultview_admin_db_listing() {
   $handler->display->display_options['fields']['nothing']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing']['alter']['text'] = 'edit';
   $handler->display->display_options['fields']['nothing']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/tripal/chado/tripal_db/edit/[db_id]';
+  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/tripal/legacy/tripal_db/edit/[db_id]';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_1']['id'] = 'nothing_1';
   $handler->display->display_options['fields']['nothing_1']['table'] = 'views';
@@ -148,7 +148,7 @@ function tripal_db_defaultview_admin_db_listing() {
   $handler->display->display_options['fields']['nothing_1']['exclude'] = TRUE;
   $handler->display->display_options['fields']['nothing_1']['alter']['text'] = 'References';
   $handler->display->display_options['fields']['nothing_1']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/tripal/chado/tripal_db/dbxrefs?db_name=[name]';
+  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/tripal/legacy/tripal_db/dbxrefs?db_name=[name]';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_2']['id'] = 'nothing_2';
   $handler->display->display_options['fields']['nothing_2']['table'] = 'views';
@@ -196,7 +196,7 @@ function tripal_db_defaultview_admin_db_listing() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_db/dbs';
+  $handler->display->display_options['path'] = 'admin/tripal/legacy/tripal_db/dbs';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Databases';
   $handler->display->display_options['menu']['description'] = 'Lists all databases available to create database references for.';
@@ -378,7 +378,7 @@ function tripal_db_defaultview_admin_dbxref_listing() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
-  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_db/dbxrefs';
+  $handler->display->display_options['path'] = 'admin/tripal/legacy/tripal_db/dbxrefs';
   $handler->display->display_options['menu']['type'] = 'tab';
   $handler->display->display_options['menu']['title'] = 'References';
   $handler->display->display_options['menu']['weight'] = '0';

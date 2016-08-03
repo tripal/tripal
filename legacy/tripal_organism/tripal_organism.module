@@ -29,9 +29,9 @@ require_once 'includes/tripal_organism.chado_node.inc';
  */
 function tripal_organism_menu() {
   $items = array();
-/*
+
   // the administative settings menu
-  $items['admin/tripal/chado/tripal_organism'] = array(
+  $items['admin/tripal/legacy/tripal_organism'] = array(
     'title' => 'Organisms',
     'description' => 'Any living biological entity, such as an animal, plant, fungus, or bacterium.',
     'page callback' => 'tripal_organism_admin_organism_view',
@@ -39,7 +39,7 @@ function tripal_organism_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
-  $items['admin/tripal/chado/tripal_organism/sync'] = array(
+  $items['admin/tripal/legacy/tripal_organism/sync'] = array(
     'title' => ' Sync',
     'description' => 'Create pages on this site for organisms stored in Chado',
     'page callback' => 'drupal_get_form',
@@ -48,7 +48,7 @@ function tripal_organism_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 1
   );
-  $items['admin/tripal/chado/tripal_organism/delete'] = array(
+  $items['admin/tripal/legacy/tripal_organism/delete'] = array(
     'title' => ' Delete',
     'description' => 'Delete multiple organisms from Chado',
     'page callback' => 'drupal_get_form',
@@ -59,7 +59,7 @@ function tripal_organism_menu() {
     'file' =>  'includes/tripal_organism.delete.inc',
     'weight' => 2
   );
-  $items['admin/tripal/chado/tripal_organism/chado_organism_toc'] = array(
+  $items['admin/tripal/legacy/tripal_organism/chado_organism_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for organism nodes.',
     'page callback' => 'drupal_get_form',
@@ -70,7 +70,7 @@ function tripal_organism_menu() {
     'file path' => drupal_get_path('module', 'tripal_core'),
     'weight' => 3
   );
-  $items['admin/tripal/chado/tripal_organism/configuration'] = array(
+  $items['admin/tripal/legacy/tripal_organism/configuration'] = array(
     'title' => 'Settings',
     'description' => 'Manage integration of Chado organisms including associated features',
     'page callback' => 'drupal_get_form',
@@ -79,7 +79,7 @@ function tripal_organism_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 5
   );
-  $items['admin/tripal/chado/tripal_organism/help'] = array(
+  $items['admin/tripal/legacy/tripal_organism/help'] = array(
     'title' => 'Help',
     'description' => "A description of the Tripal Organism module including a short description of it's usage.",
     'page callback' => 'theme',
@@ -88,20 +88,19 @@ function tripal_organism_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 10
   );
-  $items['admin/tripal/chado/tripal_organism/views/organisms/enable'] = array(
+  $items['admin/tripal/legacy/tripal_organism/views/organisms/enable'] = array(
     'title' => 'Enable Organism Administrative View',
     'page callback' => 'tripal_enable_view',
-    'page arguments' => array('tripal_organism_admin_organisms', 'admin/tripal/chado/tripal_organism'),
+    'page arguments' => array('tripal_organism_admin_organisms', 'admin/tripal/legacy/tripal_organism'),
     'access arguments' => array('administer tripal organism'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/chado/tripal_organism/organism/auto_name/%'] = array(
+  $items['admin/tripal/legacy/tripal_organism/organism/auto_name/%'] = array(
     'page callback' => 'tripal_autocomplete_organism',
     'page arguments' => array(6),
     'access arguments' => array('administer tripal organism'),
     'type' => MENU_CALLBACK,
   );
-*/
   return $items;
 }
 

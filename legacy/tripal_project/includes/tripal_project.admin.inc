@@ -17,8 +17,8 @@ function tripal_project_admin_project_view() {
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Chado', 'admin/tripal/chado');
-  $breadcrumb[] = l('Projects', 'admin/tripal/chado/tripal_project');
+  $breadcrumb[] = l('Chado', 'admin/tripal/legacy');
+  $breadcrumb[] = l('Projects', 'admin/tripal/legacy/tripal_project');
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
@@ -32,7 +32,7 @@ function tripal_project_admin_project_view() {
       . 'administrative interface are disabled. <strong>Click each of the following links to '
       . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
-      $output .= '<li>'.l('Projects View', 'admin/tripal/chado/tripal_project/views/projects/enable').'</li>';
+      $output .= '<li>'.l('Projects View', 'admin/tripal/legacy/tripal_project/views/projects/enable').'</li>';
     $output .= '</ul>';
   }
 

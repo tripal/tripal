@@ -2,9 +2,9 @@
 /**
  * Provide landing page to the new admin pages
  *
- * @ingroup tripal_chado
+ * @ingroup tripal_cv
  */
-function tripal_chado_admin_cv_listing() {
+function tripal_cv_admin_cv_listing() {
   $output = '';
 
   // set the breadcrumb
@@ -12,13 +12,13 @@ function tripal_chado_admin_cv_listing() {
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Chado Modules', 'admin/tripal/chado');
-  $breadcrumb[] = l('Vocabularies', 'admin/tripal/vocab');
+  $breadcrumb[] = l('Chado Modules', 'admin/tripal/legacy');
+  $breadcrumb[] = l('Vocabularies', 'admin/tripal/legacy/vocab');
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
-  $cvs_view = views_embed_view('tripal_chado_admin_cvs','default');
-  $cvterms_view = views_embed_view('tripal_chado_admin_cvterms','default');
+  $cvs_view = views_embed_view('tripal_cv_admin_cvs','default');
+  $cvterms_view = views_embed_view('tripal_cv_admin_cvterms','default');
   if (isset($cvs_view) && isset($cvterms_view)) {
     $output .= $cvs_view;
   }
@@ -43,7 +43,7 @@ function tripal_chado_admin_cv_listing() {
 /**
  *
  */
-function tripal_chado_admin_set_defaults_form($form, &$form_state) {
+function tripal_cv_admin_set_defaults_form($form, &$form_state) {
 
   $form['instructions'] = array(
     '#markup' => t('Much of the data housed in Chado is typed, meaning that a ' .
@@ -194,7 +194,7 @@ function tripal_chado_admin_set_defaults_form($form, &$form_state) {
     '#options' => $chado_tables,
     '#default_value' => 0,
     '#ajax' => array(
-      'callback' => 'tripal_chado_admin_ajax_new_default_field_callback',
+      'callback' => 'tripal_cv_admin_ajax_new_default_field_callback',
       'wrapper' => 'new-default',
     )
   );
@@ -235,7 +235,7 @@ function tripal_chado_admin_set_defaults_form($form, &$form_state) {
   return $form;
 }
 
-function tripal_chado_admin_set_defaults_form_submit($form, $form_state) {
+function tripal_cv_admin_set_defaults_form_submit($form, $form_state) {
 
   if ($form_state['triggering_element']['#value'] == 'Update Defaults') {
     foreach ($form_state['values']['settings']['existing'] as $default_cv) {
@@ -262,7 +262,7 @@ function tripal_chado_admin_set_defaults_form_submit($form, $form_state) {
   }
 }
 
-function tripal_chado_admin_ajax_new_default_field_callback($form, $form_state) {
+function tripal_cv_admin_ajax_new_default_field_callback($form, $form_state) {
   return $form['new'];
 }
 
@@ -270,7 +270,7 @@ function tripal_chado_admin_ajax_new_default_field_callback($form, $form_state) 
  *
  * @param unknown $variables
  */
-function theme_tripal_chado_admin_set_defaults_form($variables) {
+function theme_tripal_cv_admin_set_defaults_form($variables) {
   $element = $variables['element'];
 
   $header = array(

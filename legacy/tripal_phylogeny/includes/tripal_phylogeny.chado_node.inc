@@ -222,7 +222,7 @@ function chado_phylotree_form($node, &$form_state) {
         tree. In this case, the word 'taxonomy' should be used."),
     '#required'    => TRUE,
     '#default_value' => $leaf_type,
-    '#autocomplete_path' => "admin/tripal/chado/tripal_cv/cvterm/auto_name/$cv_id",
+    '#autocomplete_path' => "admin/tripal/legacy/tripal_cv/cvterm/auto_name/$cv_id",
   );
 
   // Get the list of analyses.

@@ -354,9 +354,9 @@ function chado_add_node_form_subtable_ajax_update($form, &$form_state) {
     // the base specified in hook_node_info
     $node_type = 'chado_example';
 
-    // This menu item will be a tab on the admin/tripal/chado/tripal_example page
+    // This menu item will be a tab on the admin/tripal/legacy/tripal_example page
     // that is not selected by default
-    $items['admin/tripal/chado/tripal_example/sync'] = array(
+    $items['admin/tripal/legacy/tripal_example/sync'] = array(
       'title' => ' Sync',
       'description' => 'Sync examples from Chado with Drupal',
       'page callback' => 'drupal_get_form',

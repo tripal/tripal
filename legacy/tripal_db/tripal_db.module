@@ -29,8 +29,8 @@ require_once 'includes/tripal_db.admin.inc';
 function tripal_db_menu() {
   $items = array();
 
-  /*
-  $items['admin/tripal/chado/tripal_db'] = array(
+
+  $items['admin/tripal/legacy/tripal_db'] = array(
     'title' => 'Databases',
     'description' => 'References to External Database sites such as NCBI',
     'page callback' => 'tripal_db_admin_db_listing',
@@ -38,7 +38,7 @@ function tripal_db_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
-  $items['admin/tripal/chado/tripal_db/help'] = array(
+  $items['admin/tripal/legacy/tripal_db/help'] = array(
     'title' => 'Help',
     'description' => "A description of the Tripal Database module including a short description of it's usage.",
     'page callback' => 'theme',
@@ -48,7 +48,7 @@ function tripal_db_menu() {
     'weight' => 10
   );
 
-  $items['admin/tripal/chado/tripal_db/edit/%'] = array(
+  $items['admin/tripal/legacy/tripal_db/edit/%'] = array(
     'title' => 'Edit a Database Reference',
     'description' => 'Edit existing Database References.',
     'page callback' => 'drupal_get_form',
@@ -58,7 +58,7 @@ function tripal_db_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  $items['admin/tripal/chado/tripal_db/add'] = array(
+  $items['admin/tripal/legacy/tripal_db/add'] = array(
     'title' => 'Create a Database Reference',
     'description' => 'Create a new reference to an External Database.',
     'page callback' => 'drupal_get_form',
@@ -68,27 +68,27 @@ function tripal_db_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  $items['admin/tripal/chado/tripal_db/views/dbs/enable'] = array(
+  $items['admin/tripal/legacy/tripal_db/views/dbs/enable'] = array(
     'title' => 'Enable Database Administrative View',
     'page callback' => 'tripal_enable_view',
-    'page arguments' => array('tripal_db_admin_dbs', 'admin/tripal/chado/tripal_db'),
+    'page arguments' => array('tripal_db_admin_dbs', 'admin/tripal/legacy/tripal_db'),
     'access arguments' => array('administer db cross-references'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/chado/tripal_db/views/dbxrefs/enable'] = array(
+  $items['admin/tripal/legacy/tripal_db/views/dbxrefs/enable'] = array(
     'title' => 'Enable Reference Administrative View',
     'page callback' => 'tripal_enable_view',
-    'page arguments' => array('tripal_db_admin_dbxrefs', 'admin/tripal/chado/tripal_db'),
+    'page arguments' => array('tripal_db_admin_dbxrefs', 'admin/tripal/legacy/tripal_db'),
     'access arguments' => array('administer db cross-references'),
     'type' => MENU_CALLBACK,
   );
-  $items['admin/tripal/chado/tripal_db/dbxref/auto_name/%/%'] = array(
+  $items['admin/tripal/legacy/tripal_db/dbxref/auto_name/%/%'] = array(
     'page callback' => 'tripal_db_dbxref_accession_autocomplete',
     'page arguments' => array(6, 7),
     'access arguments' => array('administer db cross-references'),
     'type' => MENU_CALLBACK,
   );
- */
+
   return $items;
 }
 

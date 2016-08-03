@@ -249,7 +249,7 @@ function chado_stock_form($node, $form_state) {
         about this stock, please provide the name of the database, the accession
         and an optional description using the fields below. If the database
         is not present in the list, then please ') .
-        l(t('add the database '), 'admin/tripal/chado/tripal_db/add', array('attributes' => array('target' => '_blank'))) .
+        l(t('add the database '), 'admin/tripal/legacy/tripal_db/add', array('attributes' => array('target' => '_blank'))) .
         t('then refresh this page.'),
   );
 

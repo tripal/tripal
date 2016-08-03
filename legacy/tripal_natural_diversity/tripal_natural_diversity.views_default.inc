@@ -137,7 +137,7 @@ function tripal_natural_diversity_defaultview_admin_natdiv_exp() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_natdiv/experiments';
+  $handler->display->display_options['path'] = 'admin/tripal/legacy/tripal_natdiv/experiments';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Experiments';
   $handler->display->display_options['menu']['description'] = 'A single assay resulting in a single genotype or phenotype.';
@@ -325,7 +325,7 @@ function tripal_natural_diversity_defaultview_admin_geolocations() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_natdiv/locations';
+  $handler->display->display_options['path'] = 'admin/tripal/legacy/tripal_natdiv/locations';
   $handler->display->display_options['menu']['type'] = 'tab';
   $handler->display->display_options['menu']['title'] = 'Locations';
   $handler->display->display_options['menu']['description'] = 'Geographical locations in which natural diversity experiments might be performed.';
@@ -432,7 +432,7 @@ function tripal_natural_diversity_defaultview_admin_reagents() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_natdiv/reagents';
+  $handler->display->display_options['path'] = 'admin/tripal/legacy/tripal_natdiv/reagents';
   $handler->display->display_options['menu']['type'] = 'tab';
   $handler->display->display_options['menu']['title'] = 'Reagents';
   $handler->display->display_options['menu']['description'] = 'Reagents used in natural diversity experiments';
@@ -526,7 +526,7 @@ function tripal_natural_diversity_defaultview_admin_protocols() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_natdiv/protocols';
+  $handler->display->display_options['path'] = 'admin/tripal/legacy/tripal_natdiv/protocols';
   $handler->display->display_options['menu']['type'] = 'tab';
   $handler->display->display_options['menu']['title'] = 'Protocols';
   $handler->display->display_options['menu']['description'] = 'The protcols used for natural diversity experiments';

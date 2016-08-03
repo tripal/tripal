@@ -13,8 +13,8 @@ function tripal_example_admin_examples_listing() {
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Chado', 'admin/tripal/chado');
-  $breadcrumb[] = l('Examples', 'admin/tripal/chado/tripal_example');
+  $breadcrumb[] = l('Chado', 'admin/tripal/legacy');
+  $breadcrumb[] = l('Examples', 'admin/tripal/legacy/tripal_example');
   drupal_set_breadcrumb($breadcrumb);
 
 
@@ -33,7 +33,7 @@ function tripal_example_admin_examples_listing() {
       . 'administrative interface are disabled. <strong>Click each of the following links to '
       . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
-      $output .= '<li>'.l('Example Admin', 'admin/tripal/chado/tripal_example/views/examples/enable').'</li>';
+      $output .= '<li>'.l('Example Admin', 'admin/tripal/legacy/tripal_example/views/examples/enable').'</li>';
     $output .= '</ul>';
   }
   */

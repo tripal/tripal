@@ -392,7 +392,7 @@ function tripal_organism_admin_defaultview_organisms() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_organism/organisms';
+  $handler->display->display_options['path'] = 'admin/tripal/legacy/tripal_organism/organisms';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Organisms';
   $handler->display->display_options['menu']['description'] = 'A biological organism.';

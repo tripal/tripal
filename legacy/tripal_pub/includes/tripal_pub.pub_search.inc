@@ -178,7 +178,7 @@ function tripal_pub_search_form($form, &$form_state) {
   $form['admin-instructions'] = array(
     '#markup'  =>  tripal_set_message(
       t('Administrators, you can select the fields with which a user can use to search, by checking the desired fields on the ' .
-        l('Publication Module Settings Page', 'admin/tripal/chado/tripal_pub/configuration', array('attributes' => array('target' => '_blank'))) . '
+        l('Publication Module Settings Page', 'admin/tripal/legacy/tripal_pub/configuration', array('attributes' => array('target' => '_blank'))) . '
         in the section titled "Search Options".  The selected fields will appear in the dropdowns below.'),
       TRIPAL_INFO,
       array('return_html' => 1)),

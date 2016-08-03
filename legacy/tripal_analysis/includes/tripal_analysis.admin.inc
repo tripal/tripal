@@ -20,8 +20,8 @@ function tripal_analysis_admin_analysis_view() {
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Chado', 'admin/tripal/chado');
-  $breadcrumb[] = l('Analysis', 'admin/tripal/chado/tripal_analysis');
+  $breadcrumb[] = l('Chado', 'admin/tripal/legacy');
+  $breadcrumb[] = l('Analysis', 'admin/tripal/legacy/tripal_analysis');
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
@@ -35,7 +35,7 @@ function tripal_analysis_admin_analysis_view() {
       . 'administrative interface are disabled. <strong>Click each of the following links to '
       . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
-      $output .= '<li>'.l('Analysis View', 'admin/tripal/chado/tripal_analysis/views/analyses/enable').'</li>';
+      $output .= '<li>'.l('Analysis View', 'admin/tripal/legacy/tripal_analysis/views/analyses/enable').'</li>';
     $output .= '</ul>';
   }
 

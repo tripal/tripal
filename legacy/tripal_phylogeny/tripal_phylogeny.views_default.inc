@@ -143,7 +143,7 @@ function tripal_phylogeny_defaultview_admin_phylotree() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
-  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_phylogeny/phylotree';
+  $handler->display->display_options['path'] = 'admin/tripal/legacy/tripal_phylogeny/phylotree';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Trees';
   $handler->display->display_options['menu']['weight'] = '0';

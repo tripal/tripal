@@ -17,8 +17,8 @@ function tripal_organism_admin_organism_view() {
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Chado', 'admin/tripal/chado');
-  $breadcrumb[] = l('Organisms', 'admin/tripal/chado/tripal_organism');
+  $breadcrumb[] = l('Chado', 'admin/tripal/legacy');
+  $breadcrumb[] = l('Organisms', 'admin/tripal/legacy/tripal_organism');
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
@@ -32,7 +32,7 @@ function tripal_organism_admin_organism_view() {
       . 'administrative interface are disabled. <strong>Click each of the following links to '
       . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
-      $output .= '<li>'.l('Organisms View', 'admin/tripal/chado/tripal_organism/views/organisms/enable').'</li>';
+      $output .= '<li>'.l('Organisms View', 'admin/tripal/legacy/tripal_organism/views/organisms/enable').'</li>';
     $output .= '</ul>';
   }
 

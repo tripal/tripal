@@ -4,7 +4,7 @@ core = 7.x
 project = tripal
 package = Tripal v2 Legacy
 version = 7.x-3.0-alpha1
-configure = admin/tripal/chado/tripal_organism
+configure = admin/tripal/legacy/tripal_organism
 
 stylesheets[all][] = theme/css/tripal_organism.css
 

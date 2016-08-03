@@ -17,8 +17,8 @@ function tripal_natural_diversity_admin_natdiv_view() {
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Chado', 'admin/tripal/chado');
-  $breadcrumb[] = l('Diversity Experiments', 'admin/tripal/chado/tripal_natdiv');
+  $breadcrumb[] = l('Chado', 'admin/tripal/legacy');
+  $breadcrumb[] = l('Diversity Experiments', 'admin/tripal/legacy/tripal_natdiv');
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
@@ -32,7 +32,7 @@ function tripal_natural_diversity_admin_natdiv_view() {
       . 'administrative interface are disabled. <strong>Click each of the following links to '
       . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
-      $output .= '<li>'.l('Natural Diversity Experiments Admin', 'admin/tripal/chado/tripal_natdiv/views/natdiv_exp/enable').'</li>';
+      $output .= '<li>'.l('Natural Diversity Experiments Admin', 'admin/tripal/legacy/tripal_natdiv/views/natdiv_exp/enable').'</li>';
     $output .= '</ul>';
   }
 

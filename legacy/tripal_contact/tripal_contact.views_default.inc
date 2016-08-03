@@ -270,7 +270,7 @@ function tripal_contact_defaultview_admin_contacts() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_contact/contacts';
+  $handler->display->display_options['path'] = 'admin/tripal/legacy/tripal_contact/contacts';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Contacts';
   $handler->display->display_options['menu']['description'] = 'Contacts can be persons, institutes, groups, or organizations.';

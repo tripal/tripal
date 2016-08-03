@@ -142,7 +142,7 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
       $db_options[$db->db_id] = $db->name;
     }
   }
-  
+
   // Determine the node type using the name of the foreign key.
   $details['nodetype'] = str_replace('_id', '', $details['base_foreign_key']);
 
@@ -152,7 +152,7 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
     t('To add databases to the drop down list, you need to <a href="@dblink">add
       an external database reference</a>.',
       array(
-        '@dblink' => url('admin/tripal/chado/tripal_db/add')
+        '@dblink' => url('admin/tripal/legacy/tripal_db/add')
       )
     ),
     $importance,
@@ -170,18 +170,18 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
   );
 
   // the fieldset of the dbxref elements
-  $instructions = 'To add an external reference, select the database you want to reference from the 
-    drop-down below. Then enter the name/accession (as it is shown in the external database) of this 
-    particular %nodetype into the text box before clicking "Add". The version can be used to 
-    indicate the version of the external database or the version of the reference 
-    depending upon what is available. To remove incorrect references, click the 
-    "Remove" button. Note: you cannot edit previously added references but instead 
+  $instructions = 'To add an external reference, select the database you want to reference from the
+    drop-down below. Then enter the name/accession (as it is shown in the external database) of this
+    particular %nodetype into the text box before clicking "Add". The version can be used to
+    indicate the version of the external database or the version of the reference
+    depending upon what is available. To remove incorrect references, click the
+    "Remove" button. Note: you cannot edit previously added references but instead
     need to remove and re-add them.';
   $form['addtl_dbxrefs'] = array(
     '#type' => 'fieldset',
     '#title' => t($details['fieldset_title']),
-    '#description' => t('<p><strong>Indicate that this %nodetype either originates from 
-      or is present in another database.</strong></p><p>'. $instructions . $details['additional_instructions'] . '</p>', 
+    '#description' => t('<p><strong>Indicate that this %nodetype either originates from
+      or is present in another database.</strong></p><p>'. $instructions . $details['additional_instructions'] . '</p>',
       array('%nodetype' => $details['nodetype'])),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
@@ -235,11 +235,11 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
   else {
     $existing_dbxrefs = chado_query(
       "SELECT
-         db.name as db_name, 
+         db.name as db_name,
          db.db_id as db_id,
-         dbxref.dbxref_id, 
+         dbxref.dbxref_id,
          dbxref.accession as accession,
-         dbxref.description as description, 
+         dbxref.description as description,
          dbxref.version
        FROM {dbxref} dbxref
          LEFT JOIN {db} db ON db.db_id = dbxref.db_id
@@ -441,7 +441,7 @@ function chado_add_node_form_dbxrefs(&$form, &$form_state, $details) {
  * @ingroup tripal_core
  */
 function chado_add_node_form_dbxrefs_add_button_validate($form, &$form_state) {
-  
+
   // Ensure the db_id is supplied & Valid
   $db = chado_select_record(
     'db',

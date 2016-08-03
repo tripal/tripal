@@ -42,8 +42,8 @@ function tripal_analysis_init() {
 function tripal_analysis_menu() {
   $items = array();
   // Tripal Analysis administrative settings
-  /*
-  $items['admin/tripal/chado/tripal_analysis'] = array(
+
+  $items['admin/tripal/legacy/tripal_analysis'] = array(
     'title' => 'Analyses',
     'description' => 'A bioinformatics analysis producing features.',
     'page callback' => 'tripal_analysis_admin_analysis_view',
@@ -51,7 +51,7 @@ function tripal_analysis_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
-  $items['admin/tripal/chado/tripal_analysis/help'] = array(
+  $items['admin/tripal/legacy/tripal_analysis/help'] = array(
     'title' => 'Help',
     'description' => "A description of the Tripal Analysis module including a short description of it's usage.",
     'page callback' => 'theme',
@@ -61,7 +61,7 @@ function tripal_analysis_menu() {
     'weight' => 10,
   );
 
-  $items['admin/tripal/chado/tripal_analysis/configuration'] = array(
+  $items['admin/tripal/legacy/tripal_analysis/configuration'] = array(
     'title' => 'Settings',
     'description' => 'Settings for the displays of analysis results.',
     'page callback' => 'drupal_get_form',
@@ -71,7 +71,7 @@ function tripal_analysis_menu() {
     'weight' => 5
   );
 
-  $items['admin/tripal/chado/tripal_analysis/sync'] = array(
+  $items['admin/tripal/legacy/tripal_analysis/sync'] = array(
     'title' => ' Sync',
     'description' => 'Create pages on this site for analyses stored in Chado',
     'page callback' => 'drupal_get_form',
@@ -80,7 +80,7 @@ function tripal_analysis_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 1
   );
-  $items['admin/tripal/chado/tripal_analysis/delete'] = array(
+  $items['admin/tripal/legacy/tripal_analysis/delete'] = array(
       'title' => ' Delete',
       'description' => 'Delete multiple analyses from Chado',
       'page callback' => 'drupal_get_form',
@@ -91,7 +91,7 @@ function tripal_analysis_menu() {
       'file' =>  'includes/tripal_analysis.delete.inc',
       'weight' => 2
   );
-  $items['admin/tripal/chado/tripal_analysis/chado_analysis_toc'] = array(
+  $items['admin/tripal/legacy/tripal_analysis/chado_analysis_toc'] = array(
     'title' => ' TOC',
     'description' => 'Manage the table of contents for analysis nodes.',
     'page callback' => 'drupal_get_form',
@@ -102,7 +102,7 @@ function tripal_analysis_menu() {
     'file path' => drupal_get_path('module', 'tripal_core'),
     'weight' => 3
   );
-  */
+
   return $items;
 }
 
@@ -242,7 +242,7 @@ function tripal_analysis_form_alter(&$form, &$form_state, $form_id) {
   // turn of preview button for insert/updates
   if ($form_id == "chado_analysis_node_form") {
     $form['actions']['preview']['#access'] = FALSE;
-    
+
     //remove the body field
     unset($form['body']);
   }
