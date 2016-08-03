@@ -316,72 +316,6 @@ function tripal_chado_migrate_form($form, &$form_state) {
  * @param $form_state
  */
 function tripal_chado_migrate_form_validate($form, &$form_state) {
-
-  // If the user selects the migrate button then we want to make sure that the
-  // the term for each content is mapped to a table and column in Chado.
-  // Otherwise creation of bundles will be bungled.
-  if ($form_state['clicked_button']['#name'] == 'migrate_btn') {
-    $selected_type = $form_state['values']['tv2_content_type'];
-    $tv3_content_types = array();
-    $values = $form_state['values'];
-    if ($selected_type == 'all') {
-      $tv2_content_types = tripal_chado_get_tripal_v2_content_type_options();
-      $tv3_content_types = tripal_chado_migrate_map_types($tv2_content_types);
-    }
-    else {
-      foreach ($values AS $key => $value) {
-        if ($selected_type != 'all') {
-          $key = urldecode($key);
-          if (preg_match('/^tv3_content_type--(.+)--(.+)--(.+)/', $key, $matches) &&
-              ($value == 1 || $values['tv3_migrate_all'] == 1)) {
-            $vocabulary = $matches[1];
-            $accession = $matches[2];
-            $type = $matches[3];
-            $tv3_content_types [] = array(
-              'vocabulary' => $vocabulary,
-              'accession' => $accession,
-              'term_name' => $type
-            );
-          }
-        }
-      }
-    }
-
-    // Check if CV exists in the tripal_cv_defaults table. If not, do not proceed to migration
-    foreach ($tv3_content_types AS $type) {
-      $voc = $type['vocabulary'];
-      $acc = $type['accession'];
-      $term_name =  $type['term_name'];
-      $match = array(
-        'dbxref_id' => array(
-          'db_id' => array(
-            'name' => $voc,
-          ),
-          'accession' => $acc
-        ),
-      );
-      $cvterm = chado_generate_var('cvterm', $match);
-      if ($voc == 'local' || ($voc == 'OBI' && $term_name == 'organism')) {
-        // Ignore local terms and OBI:organism
-        continue;
-      }
-      $default = tripal_get_default_cv_table($cvterm->cv_id->cv_id);
-      if (!$default) {
-        form_set_error('',
-          t("The tripal content type, '@type', of subtype, '@cvterm', cannot be
-              migrated because the vocabulary, '@voc', has not been mapped to a table in Chado.
-              Please go to the ". l('Default Vocabulary settings page', 'admin/tripal/storage/chado/vocab') . "and indicate
-              which table to use for the vocabulary.",
-            array(
-              '@type' => $type,
-              '@voc' => $voc,
-              '@cvterm' => $cvterm->name
-            )
-          )
-        );
-      }
-    }
-  }
 }
 
 /**
@@ -671,6 +605,9 @@ function tripal_chado_migrate_map_types($tv2_content_types) {
  * @param unknown $tv3_content_type
  */
 function tripal_chado_migrate_selected_types($tv3_content_types) {
+  
+  // Initialize the population of the tripal_cvterm_mapping table before migration.
+  tripal_chado_map_cvterms();
 
   foreach ($tv3_content_types AS $tv3_content_type) {
     // Check if the term already exists
@@ -680,7 +617,7 @@ function tripal_chado_migrate_selected_types($tv3_content_types) {
     if (!$term) {
       print("Creating bundle for term '" . $tv3_content_type['term_name'] . "'...\n");
       $success = tripal_create_bundle($tv3_content_type['vocabulary'],
-          $tv3_content_type['accession'], $tv3_content_type['term_name']);
+      $tv3_content_type['accession'], $tv3_content_type['term_name']);
       $term = tripal_load_term_entity($tv3_content_type);
     }
     // Create bundle name
