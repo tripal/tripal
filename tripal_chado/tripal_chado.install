@@ -122,43 +122,6 @@ function tripal_chado_tripal_cv_obo_schema() {
 }
 
 /**
- * * Table definition for the tripal_cv_defaults table
- * @param unknown $schema
- */
-function tripal_chado_tripal_cv_defaults_schema() {
-  return array(
-    'fields' => array(
-      'cv_default_id' => array(
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE
-      ),
-      'table_name' => array(
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE,
-      ),
-      'field_name' => array(
-        'type' => 'varchar',
-        'length' => 128,
-        'not null' => TRUE,
-      ),
-      'cv_id' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-      )
-    ),
-    'indexes' => array(
-      'tripal_cv_defaults_idx1' => array('table_name', 'field_name'),
-    ),
-    'unique keys' => array(
-      'tripal_cv_defaults_unq1' => array('table_name', 'field_name', 'cv_id'),
-    ),
-    'primary key' => array('cv_default_id')
-  );
-}
-
-/**
  *
  */
 function tripal_chado_enable() {
@@ -199,7 +162,6 @@ function tripal_chado_schema() {
   $schema['tripal_custom_tables'] = tripal_chado_tripal_custom_tables_schema();
 
   $schema['tripal_cv_obo'] = tripal_chado_tripal_cv_obo_schema();
-  $schema['tripal_cv_defaults'] = tripal_chado_tripal_cv_defaults_schema();
   $schema['tripal_pub_import'] = tripal_chado_tripal_pub_import_schema();
 
 

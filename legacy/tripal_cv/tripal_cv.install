@@ -59,3 +59,48 @@ function tripal_cv_install() {
 function tripal_cv_uninstall() {
 
 }
+
+/**
+ * Implements hook_schema().
+ */
+function tripal_cv_schema() {
+  $schema['tripal_cv_defaults'] = tripal_chado_tripal_cv_defaults_schema();
+  return $schema;
+}
+
+/**
+ * * Table definition for the tripal_cv_defaults table
+ * @param unknown $schema
+ */
+function tripal_chado_tripal_cv_defaults_schema() {
+  return array(
+    'fields' => array(
+      'cv_default_id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'table_name' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+      ),
+      'field_name' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+      ),
+      'cv_id' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      )
+    ),
+    'indexes' => array(
+      'tripal_cv_defaults_idx1' => array('table_name', 'field_name'),
+    ),
+    'unique keys' => array(
+      'tripal_cv_defaults_unq1' => array('table_name', 'field_name', 'cv_id'),
+    ),
+    'primary key' => array('cv_default_id')
+  );
+}
