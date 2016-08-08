@@ -158,8 +158,28 @@ function tripal_views_views_data() {
       foreach ($fields as $column => $attrs) {
         $base_fields[$column] = array(
           'column_name' => $column,
-          'type' => $attrs['type'],
+          // Add a default for type since module developers may sometimes need to use a
+          // PostgreSQL-specific type.
+          'type' => (isset($attrs['type'])) ? $attrs['type'] : 'text',
         );
+        // If PostgreSQL-specifc types are needed the module developer should be given
+        // a way to set the most closely matching type for views. They should also be
+        // allowed to override the type for views. This can be done by adding a views_type
+        // to the schema definition :-).
+        if (isset($attrs['views_type'])) {
+          $base_fields[$column]['type'] = $attrs['views_type'];
+        }
+        // Tell admin about this feature and warn them that we made an assumption for them.
+        if (!isset($attrs['type']) AND !isset($attrs['views_type'])) {
+          tripal_report_error(
+            'tripal_views',
+            TRIPAL_WARNING,
+            "Unable to determine the type for %column thus we have defaulted to type 'text'.
+              Tip: This may be due to setting a  postgresql-specific type. Solution: Add a
+              'views_type' to your schema definition to specify what type should be used.",
+            array('%column' => $column)
+          );
+        }
       }
 
       // get the field name and descriptions
