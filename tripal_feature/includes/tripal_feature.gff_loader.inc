@@ -330,7 +330,7 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
   $args = array($gff_file, $organism_id, $analysis_id, $add_only,
     $update, $refresh, $remove, $use_transaction, $target_organism_id,
     $target_type, $create_target, $line_number, $landmark_type, $alt_id_attr,
-    $re_mrna, $re_protein, $create_organism);
+    $create_organism, $re_mrna, $re_protein);
 
   $type = '';
   if ($add_only) {
@@ -411,10 +411,6 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
  *   Sometimes lines in the GFF file are missing the required ID attribute that
  *   specifies the unique name of the feature. If so, you may specify the
  *   name of an existing attribute to use for the ID.
- * @param $re_mrna A
- *          regular expression to extract portions from mRNA id
- * @param $re_protein A
- *          replacement string to generate the protein id
  * @param $create_organism
  *   The Tripal GFF loader supports the "organism" attribute. This allows
  *   features of a different organism to be aligned to the landmark sequence of
@@ -423,6 +419,10 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
  *   Check this box to automatically add the organism to the database if it does
  *   not already exists. Otherwise lines with an oraganism attribute where the
  *   organism is not present in the database will be skipped.
+ * @param $re_mrna A
+ *          regular expression to extract portions from mRNA id
+ * @param $re_protein A
+ *          replacement string to generate the protein id
  * @param $job
  *  The tripal job_id.  Only used by the Tripal Jobs subsystem.
  *
@@ -431,8 +431,8 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
 function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   $add_only = 0, $update = 1, $refresh = 0, $remove = 0, $use_transaction = 1,
   $target_organism_id = NULL, $target_type = NULL,  $create_target = 0,
-  $start_line = 1, $landmark_type = '', $alt_id_attr = '', $re_mrna = '',
-  $re_protein = '', $create_organism = FALSE, $job = NULL) {
+  $start_line = 1, $landmark_type = '', $alt_id_attr = '',  $create_organism = FALSE,
+  $re_mrna = '', $re_protein = '', $job = NULL) {
 
   $ret = array();
   $date = getdate();
