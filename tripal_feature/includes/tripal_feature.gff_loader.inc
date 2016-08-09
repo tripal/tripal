@@ -93,23 +93,27 @@ function tripal_feature_gff3_load_form() {
   );
 
   // Advanced Options
-  $form['advanced'] = array('#type' => 'fieldset','#title' => t('Advanced Options'),
+  $form['advanced'] = array(
+    '#type' => 'fieldset','#title' => t('Advanced Options'),
     '#collapsible' => TRUE,'#collapsed' => TRUE
   );
-  $form['advanced']['re_help'] = array('#type' => 'item',
+  $form['advanced']['re_help'] = array(
+    '#type' => 'item',
     '#value' => t('A regular expression is an advanced method for extracting information from a string of text.
                    If your GFF3 file does not contain polypeptide (or protein) features, but contains CDS features, proteins will be automatically created.
                    By default the loader will give each protein a name based on the name of the corresponding mRNA followed by the "-protein" suffix.
                    If you want to customize the name of the created protein, you can use the following regex.')
   );
-  $form['advanced']['re_mrna'] = array('#type' => 'textfield',
+  $form['advanced']['re_mrna'] = array(
+    '#type' => 'textfield',
     '#title' => t('Regular expression for the mRNA name'),'#required' => FALSE,
     '#description' => t('Enter the regular expression that will extract portions of
        the mRNA unique name. For example, for a
        mRNA with a unique name finishing by -RX (e.g. SPECIES0000001-RA),
        the regular expression would be, "^(.*?)-R([A-Z]+)$".')
   );
-  $form['advanced']['re_protein'] = array('#type' => 'textfield',
+  $form['advanced']['re_protein'] = array(
+    '#type' => 'textfield',
     '#title' => t('Replacement string for the protein name'),'#required' => FALSE,
     '#description' => t('Enter the replacement string that will be used to create
        the protein name based on the mRNA regular expression. For example, for a
