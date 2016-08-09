@@ -94,8 +94,10 @@ function tripal_feature_gff3_load_form() {
 
   // Advanced Options
   $form['advanced'] = array(
-    '#type' => 'fieldset','#title' => t('Advanced Options'),
-    '#collapsible' => TRUE,'#collapsed' => TRUE
+    '#type' => 'fieldset',
+    '#title' => t('Advanced Options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE
   );
   $form['advanced']['re_help'] = array(
     '#type' => 'item',
@@ -106,7 +108,8 @@ function tripal_feature_gff3_load_form() {
   );
   $form['advanced']['re_mrna'] = array(
     '#type' => 'textfield',
-    '#title' => t('Regular expression for the mRNA name'),'#required' => FALSE,
+    '#title' => t('Regular expression for the mRNA name'),
+    '#required' => FALSE,
     '#description' => t('Enter the regular expression that will extract portions of
        the mRNA unique name. For example, for a
        mRNA with a unique name finishing by -RX (e.g. SPECIES0000001-RA),
@@ -114,7 +117,8 @@ function tripal_feature_gff3_load_form() {
   );
   $form['advanced']['re_protein'] = array(
     '#type' => 'textfield',
-    '#title' => t('Replacement string for the protein name'),'#required' => FALSE,
+    '#title' => t('Replacement string for the protein name'),
+    '#required' => FALSE,
     '#description' => t('Enter the replacement string that will be used to create
        the protein name based on the mRNA regular expression. For example, for a
        mRNA regular expression "^(.*?)-R()[A-Z]+)$", the corresponding protein regular
