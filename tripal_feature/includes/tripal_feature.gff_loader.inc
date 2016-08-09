@@ -92,6 +92,39 @@ function tripal_feature_gff3_load_form() {
       you may specify the name of the attribute to use for the name."),
   );
 
+  // Advanced Options
+  $form['advanced'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Advanced Options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE
+  );
+  $form['advanced']['re_help'] = array(
+    '#type' => 'item',
+    '#value' => t('A regular expression is an advanced method for extracting information from a string of text.
+                   If your GFF3 file does not contain polypeptide (or protein) features, but contains CDS features, proteins will be automatically created.
+                   By default the loader will give each protein a name based on the name of the corresponding mRNA followed by the "-protein" suffix.
+                   If you want to customize the name of the created protein, you can use the following regex.')
+  );
+  $form['advanced']['re_mrna'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Regular expression for the mRNA name'),
+    '#required' => FALSE,
+    '#description' => t('Enter the regular expression that will extract portions of
+       the mRNA unique name. For example, for a
+       mRNA with a unique name finishing by -RX (e.g. SPECIES0000001-RA),
+       the regular expression would be, "^(.*?)-R([A-Z]+)$".')
+  );
+  $form['advanced']['re_protein'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Replacement string for the protein name'),
+    '#required' => FALSE,
+    '#description' => t('Enter the replacement string that will be used to create
+       the protein name based on the mRNA regular expression. For example, for a
+       mRNA regular expression "^(.*?)-R()[A-Z]+)$", the corresponding protein regular
+       expression would be "$1-P$2".')
+  );
+
   $form['import_options'] = array(
     '#type' => 'fieldset',
     '#title' => t('Import Options'),
@@ -230,6 +263,8 @@ function tripal_feature_gff3_load_form_validate($form, &$form_state) {
   $line_number   = trim($form_state['values']['line_number']);
   $landmark_type   = trim($form_state['values']['landmark_type']);
   $alt_id_attr   = trim($form_state['values']['alt_id_attr']);
+  $re_mrna = trim($form_state['values']['re_mrna']);
+  $re_protein = trim($form_state['values']['re_protein']);
 
 
 
@@ -256,6 +291,21 @@ function tripal_feature_gff3_load_form_validate($form, &$form_state) {
   if ($line_number and !is_numeric($line_number) or $line_number < 0) {
     form_set_error('line_number', t("Please provide an integer line number greater than zero."));
   }
+
+  if (!($re_mrna and $re_protein) and ($re_mrna or $re_protein)) {
+    form_set_error('re_uname', t("You must provide both a regular expression for mRNA and a replacement string for protein"));
+  }
+
+  // check the regular expression to make sure it is valid
+  set_error_handler(function() {}, E_WARNING);
+  $result_re = preg_match("/" . $re_mrna . "/", null);
+  $result = preg_replace("/" . $re_mrna . "/", $re_protein, null);
+  restore_error_handler();
+  if ($result_re === FALSE) {
+    form_set_error('re_mrna', 'Invalid regular expression.');
+  } else if ($result === FALSE) {
+    form_set_error('re_protein', 'Invalid replacement string.');
+  }
 }
 
 /**
@@ -281,12 +331,14 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
   $landmark_type   = trim($form_state['values']['landmark_type']);
   $alt_id_attr   = trim($form_state['values']['alt_id_attr']);
   $create_organism = $form_state['values']['create_organism'];
+  $re_mrna = trim($form_state['values']['re_mrna']);
+  $re_protein = trim($form_state['values']['re_protein']);
 
 
   $args = array($gff_file, $organism_id, $analysis_id, $add_only,
     $update, $refresh, $remove, $use_transaction, $target_organism_id,
     $target_type, $create_target, $line_number, $landmark_type, $alt_id_attr,
-    $create_organism);
+    $create_organism, $re_mrna, $re_protein);
 
   $type = '';
   if ($add_only) {
@@ -375,6 +427,10 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
  *   Check this box to automatically add the organism to the database if it does
  *   not already exists. Otherwise lines with an oraganism attribute where the
  *   organism is not present in the database will be skipped.
+ * @param $re_mrna A
+ *          regular expression to extract portions from mRNA id
+ * @param $re_protein A
+ *          replacement string to generate the protein id
  * @param $job
  *  The tripal job_id.  Only used by the Tripal Jobs subsystem.
  *
@@ -383,8 +439,8 @@ function tripal_feature_gff3_load_form_submit($form, &$form_state) {
 function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
   $add_only = 0, $update = 1, $refresh = 0, $remove = 0, $use_transaction = 1,
   $target_organism_id = NULL, $target_type = NULL,  $create_target = 0,
-  $start_line = 1, $landmark_type = '', $alt_id_attr = '', $create_organism = FALSE,
-  $job = NULL) {
+  $start_line = 1, $landmark_type = '', $alt_id_attr = '',  $create_organism = FALSE,
+  $re_mrna = '', $re_protein = '', $job = NULL) {
 
   $ret = array();
   $date = getdate();
@@ -925,8 +981,16 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
           // protein.
           if (!$result->protein_id) {
             // Get details about this protein
-            $uname = $result->uniquename . '-protein';
-            $name =  $result->name;
+            if ($re_mrna and $re_protein) {
+              // We use a regex to generate protein name from mRNA name
+              $uname = preg_replace("/$re_mrna/", $re_protein, $result->uniquename);
+              $name =  $result->name;
+            }
+            else {
+              // No regex, use the default '-protein' suffix
+              $uname = $result->uniquename . '-protein';
+              $name =  $result->name;
+            }
             $values = array(
               'parent_id' => $result->feature_id,
               'fmin' => $result->fmin
