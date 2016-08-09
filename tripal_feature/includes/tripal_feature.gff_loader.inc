@@ -976,7 +976,7 @@ function tripal_feature_load_gff3($gff_file, $organism_id, $analysis_id,
             if ($re_mrna and $re_protein) {
               // We use a regex to generate protein name from mRNA name
               $uname = preg_replace("/$re_mrna/", $re_protein, $result->uniquename);
-              $name =  $uname;
+              $name =  $result->name;
             }
             else {
               // No regex, use the default '-protein' suffix
