@@ -603,7 +603,7 @@ class TripalField {
    * @param $has_data
    *   TRUE if the field already has data, FALSE if not.
    */
-  public function settingsForm($field, $instance, $has_data) {
+  public static function settingsForm($field, $instance, $has_data) {
     $settings = $field['settings'];
     $element = array();
 

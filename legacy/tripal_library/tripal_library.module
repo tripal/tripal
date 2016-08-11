@@ -124,7 +124,7 @@ function tripal_library_menu() {
     'access arguments' => array('administer tripal library'),
     'type' => MENU_CALLBACK,
   );
-  */
+  
   return $items;
 }
 
