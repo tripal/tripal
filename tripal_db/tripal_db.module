@@ -107,9 +107,13 @@ function tripal_db_help ($path, $arg) {
  */
 function tripal_db_permission() {
   return array(
+    'access chado_db content' => array(
+      'title' => t('Administer External Databases'),
+      'description' => t('Allows the user to add, edit or delete external databases stored in the Chado database.'),
+    ),
     'administer db cross-references' => array(
       'title' => t('Administer External Database Cross-references.'),
-      'description' => t('Allows the user to add, edit or delete external databases references stored in the Chado database.'),
+      'description' => t('Allows the user to add, edit or delete external database references stored in the Chado database.'),
     ),
   );
 }
