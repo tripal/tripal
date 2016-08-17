@@ -17,8 +17,8 @@ function tripal_db_admin_db_listing() {
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Chado Modules', 'admin/tripal/chado');
-  $breadcrumb[] = l('Databases', 'admin/tripal/chado/tripal_db');
+  $breadcrumb[] = l('Chado Modules', 'admin/tripal/legacy');
+  $breadcrumb[] = l('Databases', 'admin/tripal/legacy/tripal_db');
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
@@ -34,10 +34,10 @@ function tripal_db_admin_db_listing() {
       . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
     if (!isset($dbs_view)) {
-      $output .= '<li>'.l('DB Admin', 'admin/tripal/chado/tripal_db/views/dbs/enable').'</li>';
+      $output .= '<li>'.l('DB Admin', 'admin/tripal/legacy/tripal_db/views/dbs/enable').'</li>';
     }
     if (!isset($dbxrefs_view)) {
-      $output .= '<li>'.l('DB Reference Admin', 'admin/tripal/chado/tripal_db/views/dbxrefs/enable').'</li>';
+      $output .= '<li>'.l('DB Reference Admin', 'admin/tripal/legacy/tripal_db/views/dbxrefs/enable').'</li>';
     }
     $output .= '</ul>';
   }

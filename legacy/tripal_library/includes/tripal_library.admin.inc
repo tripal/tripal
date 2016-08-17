@@ -17,8 +17,8 @@ function tripal_library_admin_libraries_listing() {
   $breadcrumb[] = l('Home', '<front>');
   $breadcrumb[] = l('Administration', 'admin');
   $breadcrumb[] = l('Tripal', 'admin/tripal');
-  $breadcrumb[] = l('Chado', 'admin/tripal/chado');
-  $breadcrumb[] = l('Libraries', 'admin/tripal/chado/tripal_library');
+  $breadcrumb[] = l('Chado', 'admin/tripal/legacy');
+  $breadcrumb[] = l('Libraries', 'admin/tripal/legacy/tripal_library');
   drupal_set_breadcrumb($breadcrumb);
 
   // Add the view
@@ -32,7 +32,7 @@ function tripal_library_admin_libraries_listing() {
       . 'administrative interface are disabled. <strong>Click each of the following links to '
       . 'enable the pertinent views</strong>:</p>';
     $output .= '<ul>';
-      $output .= '<li>'.l('Library Admin', 'admin/tripal/chado/tripal_library/views/libraries/enable').'</li>';
+      $output .= '<li>'.l('Library Admin', 'admin/tripal/legacy/tripal_library/views/libraries/enable').'</li>';
     $output .= '</ul>';
   }
 

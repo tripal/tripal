@@ -329,10 +329,10 @@ function tripal_pub_form_alter(&$form, &$form_state, $form_id) {
     // the form to the ahah callback URL. We need to set it back
     // to the normal form URL
     if (array_key_exists('values', $form_state) and $form_state['values']['action'] == 'edit') {
-      $form['#action'] = url("admin/tripal/chado/tripal_pub/import/edit/" . $form_state['values']['pub_import_id']);
+      $form['#action'] = url("admin/tripal/legacy/tripal_pub/import/edit/" . $form_state['values']['pub_import_id']);
     }
     if (array_key_exists('values', $form_state) and $form_state['values']['action'] == 'new') {
-      $form['#action'] = url("admin/tripal/chado/tripal_pub/import/new");
+      $form['#action'] = url("admin/tripal/legacy/tripal_pub/import/new");
     }
     */
   }

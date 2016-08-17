@@ -282,7 +282,7 @@ function tripal_library_admin_defaultviews_library() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_library/libraries';
+  $handler->display->display_options['path'] = 'admin/tripal/legacy/tripal_library/libraries';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Libraries';
   $handler->display->display_options['menu']['description'] = 'A library is a collection of features of a given type. For example, a cDNA or BAC clone library.';

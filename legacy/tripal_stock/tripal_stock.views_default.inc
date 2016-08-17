@@ -299,7 +299,7 @@ function tripal_stock_defaultview_admin_stocks() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_stock/stocks';
+  $handler->display->display_options['path'] = 'admin/tripal/legacy/tripal_stock/stocks';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Stocks';
   $handler->display->display_options['menu']['description'] = 'A stock is the physical entities, either living or preserved';

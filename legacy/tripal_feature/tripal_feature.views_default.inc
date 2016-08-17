@@ -526,7 +526,7 @@ function tripal_feature_defaultview_admin_features() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page_1');
-  $handler->display->display_options['path'] = 'admin/tripal/chado/tripal_feature/features';
+  $handler->display->display_options['path'] = 'admin/tripal/legacy/tripal_feature/features';
   $handler->display->display_options['menu']['type'] = 'default tab';
   $handler->display->display_options['menu']['title'] = 'Features';
   $handler->display->display_options['menu']['description'] = 'A feature is a biological sequence or a section of a biological sequence, or a collection of such sections.';

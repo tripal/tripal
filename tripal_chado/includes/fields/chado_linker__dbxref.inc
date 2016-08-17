@@ -322,7 +322,7 @@ class chado_linker__dbxref extends TripalField {
     if (!$db_id) {
       $widget['links'] = array(
         '#type' => 'item',
-        '#markup' => l('Add a database', 'admin/tripal/chado/tripal_db/add', array('attributes' => array('target' => '_blank')))
+        '#markup' => l('Add a database', 'admin/tripal/legacy/tripal_db/add', array('attributes' => array('target' => '_blank')))
       );
     }
   }

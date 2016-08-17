@@ -94,7 +94,7 @@ function tripal_project_menu() {
   $items['admin/tripal/legacy/tripal_project/views/projects/enable'] = array(
     'title' => 'Enable Project Administrative View',
     'page callback' => 'tripal_enable_view',
-    'page arguments' => array('tripal_project_admin_projects', 'admin/tripal/chado/tripal_project'),
+    'page arguments' => array('tripal_project_admin_projects', 'admin/tripal/legacy/tripal_project'),
     'access arguments' => array('administer tripal project'),
     'type' => MENU_CALLBACK,
   );

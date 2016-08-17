@@ -67,7 +67,7 @@ if (count($so_terms) > 0) {
     print tripal_set_message("Administrators, you can specify the feature types ".
       "that should appear in this browser or remove it from the list of resources ".
       "by navigating to the ".
-      l("Tripal feature settings page", "admin/tripal/chado/tripal_feature/configuration", array('attributes' => array('target' => '_blank'))),
+      l("Tripal feature settings page", "admin/tripal/legacy/tripal_feature/configuration", array('attributes' => array('target' => '_blank'))),
       TRIPAL_INFO,
       array('return_html' => 1)
     );
