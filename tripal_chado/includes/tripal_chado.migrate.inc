@@ -168,7 +168,7 @@ function tripal_chado_migrate_form($form, &$form_state) {
               WHERE CE.record_id IS NULL";
         $org_count = chado_query($sql)->fetchField();
         if ($org_count > 0) {
-          $key = urldecode('tv3_content_type--local--organism--organism');
+          $key = urldecode('tv3_content_type--OBI--0100026--organism');
           $form['step2']['step2_container']['tv3_content_type'][$key] = array(
             '#type' => 'checkbox',
             '#title' => 'Organism (' . $org_count . ')',

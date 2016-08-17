@@ -246,7 +246,7 @@ class chado_linker__relationship extends TripalField {
 
     // Get the field defaults.
     $record_id = '';
-    $fkey_value = $element['#entity']->chado_record_id;
+    $fkey_value = $element['#entity'] ? $element['#entity']->chado_record_id : '';
     $subject_id = '';
     $subject_uniquename = '';
     $type_id = '';
@@ -293,7 +293,7 @@ class chado_linker__relationship extends TripalField {
 
     $widget['#fkeys'] = $schema['foreign keys'];
     $widget['#base_table'] = $base_table;
-    $widget['#chado_record_id'] = $form['#entity']->chado_record_id;
+    $widget['#chado_record_id'] = isset($form['#entity']) ? $form['#entity']->chado_record_id : '';
     //$widget['#element_validate'] = array('chado_linker__relationship_validate');
     $widget['#theme'] = 'chado_linker__relationship_widget';
     $widget['#prefix'] =  "<span id='$chado_table-$delta'>";
@@ -340,25 +340,35 @@ class chado_linker__relationship extends TripalField {
       '#size' => 35,
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/$base_table",
     );
-    $default_cv = tripal_get_default_cv($field_table, 'type_id');
-    $options = array();
-    if (!$default_cv) {
-      $msg = t('There is no default vocabulary set for the relationship types.');
-      if (module_exists('tripal_chado')) {
-        $msg .= t(' Please set the default vocabulary at <a href="@url" target="_blank">Tripal > Data Storage > Chado > Vocabulary Defaults.</a>', array('@url' => url('/admin/tripal/storage/chado/vocab')));
-      }
-      drupal_set_message($msg, 'warning');
-    }
-    else {
-      $options = tripal_get_cvterm_select_options($default_cv->cv_id, TRUE);
-    }
-    $widget['type_name'] = array(
+
+    // Set up available cvterms for selection
+    $vocs = tripal_get_cv_select_options();
+    $form['#prefix'] = '<div id="chado-linker--relationship-widget-terms">';
+    $form['#suffix'] = '</div>';
+    $widget['vocabulary'] = array(
       '#type' => 'select',
-      '#title' => t('Type'),
-      '#options' => $options,
+      '#title' => t('Vocabulary'),
+      '#options' => $vocs,
       '#required' => $element['#required'],
       '#default_value' => $type_id,
+      '#ajax' => array(
+        'callback' => "chado_linker__relationship_widget_form_ajax_callback",
+        'wrapper' => "chado-linker--relationship-widget-terms",
+        'effect' => 'fade',
+        'method' => 'replace'
+      ),
     );
+    $cv_id = isset($form_state['values'][$field_name]['und'][0]['vocabulary']) ? $form_state['values'][$field_name]['und'][0]['vocabulary'] : 0;
+    if ($cv_id) {
+      $options = array();
+      $widget['type_name'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Type'),
+        '#size' => 15,
+        '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/$cv_id"
+      );
+    }
+    
     $widget['object_name'] = array(
       '#type' => 'textfield',
       '#title' => t('Object'),
@@ -854,11 +864,13 @@ function theme_chado_linker__relationship_widget($variables) {
   $field_type = $field['type'];
   $field_table = $field['settings']['chado_table'];
   $field_column = $field['settings']['chado_column'];
-
   $layout = "
       <div class=\"chado-linker--relationship-widget\">
         <div class=\"chado-linker--relationship-widget-item\">" .
           drupal_render($element['subject_name']) . "
+        </div>
+        <div class=\"chado-linker--relationship-widget-item\">" .
+          drupal_render($element['vocabulary']) . "
         </div>
         <div class=\"chado-linker--relationship-widget-item\">" .
           drupal_render($element['type_name']) . "
@@ -871,4 +883,9 @@ function theme_chado_linker__relationship_widget($variables) {
   return $layout;
 }
 
-
+/**
+ * An Ajax callback for the dbxref widget.
+ */
+function chado_linker__relationship_widget_form_ajax_callback(&$form, $form_state) {
+  return $form['instance']['default_value_widget'];
+}
