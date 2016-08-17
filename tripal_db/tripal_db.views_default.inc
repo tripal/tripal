@@ -47,7 +47,7 @@ function tripal_db_defaultview_admin_db_listing() {
   $handler->display->display_options['title'] = 'Databases';
   $handler->display->display_options['use_more_always'] = FALSE;
   $handler->display->display_options['access']['type'] = 'perm';
-  $handler->display->display_options['access']['perm'] = 'access chado_db content';
+  $handler->display->display_options['access']['perm'] = 'administer db cross-references';
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
   $handler->display->display_options['exposed_form']['type'] = 'input_required';
