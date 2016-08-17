@@ -278,15 +278,15 @@ class chado_linker__relationship extends TripalField {
 
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state) and array_key_exists($delta, $form_state['values'])) {
-      $record_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__' . $pkey);
-      $subject_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__subject_id');
-      $subject_uniquename = tripal_chado_get_field_form_values($field_name, $form_state, $delta, 'subject_name');
-      $type_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__type_id');
-      $type = tripal_chado_get_field_form_values($field_name, $form_state, $delta, 'type_name');
-      $object_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__object_id');
-      $object_uniquename = tripal_chado_get_field_form_values($field_name, $form_state, $delta, 'object_name');
-      $value = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__value');
-      $rank = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__rank');
+//       $record_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__' . $pkey);
+//       $subject_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__subject_id');
+//       $subject_uniquename = tripal_chado_get_field_form_values($field_name, $form_state, $delta, 'subject_name');
+//       $type_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__type_id');
+//       $type = tripal_chado_get_field_form_values($field_name, $form_state, $delta, 'type_name');
+//       $object_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__object_id');
+//       $object_uniquename = tripal_chado_get_field_form_values($field_name, $form_state, $delta, 'object_name');
+//       $value = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__value');
+//       $rank = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $field_table . '__rank');
     }
 
     $widget['#table_name'] = $chado_table;
@@ -343,8 +343,6 @@ class chado_linker__relationship extends TripalField {
 
     // Set up available cvterms for selection
     $vocs = tripal_get_cv_select_options();
-    $form['#prefix'] = '<div id="chado-linker--relationship-widget-terms">';
-    $form['#suffix'] = '</div>';
     $widget['vocabulary'] = array(
       '#type' => 'select',
       '#title' => t('Vocabulary'),
@@ -353,7 +351,7 @@ class chado_linker__relationship extends TripalField {
       '#default_value' => $type_id,
       '#ajax' => array(
         'callback' => "chado_linker__relationship_widget_form_ajax_callback",
-        'wrapper' => "chado-linker--relationship-widget-terms",
+        'wrapper' => "$chado_table-$delta",
         'effect' => 'fade',
         'method' => 'replace'
       ),
@@ -368,7 +366,7 @@ class chado_linker__relationship extends TripalField {
         '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/$cv_id"
       );
     }
-    
+
     $widget['object_name'] = array(
       '#type' => 'textfield',
       '#title' => t('Object'),
@@ -887,5 +885,9 @@ function theme_chado_linker__relationship_widget($variables) {
  * An Ajax callback for the dbxref widget.
  */
 function chado_linker__relationship_widget_form_ajax_callback(&$form, $form_state) {
-  return $form['instance']['default_value_widget'];
+  // Get the triggering element
+  $form_element_name = $form_state['triggering_element']['#name'];
+  dpm($form);
+  dpm($form_state);
+  return $form['instance']['default_value_widget']['organism_relationship'];
 }

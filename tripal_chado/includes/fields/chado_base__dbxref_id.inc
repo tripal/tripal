@@ -200,12 +200,12 @@ class chado_base__dbxref_id extends TripalField {
 
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state)) {
-      $fk_val = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__' . $field_column);
-      $dbxref_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__' . $field_column . '--dbxref_id');
-      $db_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__' . $field_column . '--db_id');
-      $accession = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__' . $field_column . '--accession');
-      $version = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__' . $field_column . '--version');
-      $description = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__' . $field_column . '--description');
+//       $fk_val = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__' . $field_column);
+//       $dbxref_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__' . $field_column . '--dbxref_id');
+//       $db_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__' . $field_column . '--db_id');
+//       $accession = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__' . $field_column . '--accession');
+//       $version = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__' . $field_column . '--version');
+//       $description = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__' . $field_column . '--description');
     }
 
     // If we are here because our parent was triggered in a form submit
@@ -223,7 +223,7 @@ class chado_base__dbxref_id extends TripalField {
     $schema = chado_get_schema('dbxref');
     $options = tripal_get_db_select_options();
 
-    $widget['#element_validate'] = array('chado_base__dbxref_id_widget_validate');
+    //$widget['#element_validate'] = array('chado_base__dbxref_id_widget_validate');
     $widget['#theme'] = 'chado_base__dbxref_id_widget';
     $widget['#prefix'] =  "<span id='$field_name-dbxref--db-id'>";
     $widget['#suffix'] =  "</span>";
@@ -375,12 +375,12 @@ function chado_base__dbxref_id_widget_validate($element, &$form_state) {
   }
 
   // Get the field values.
-  $fk_value = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__' . $field_column);
-  $dbxref_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--dbxref_id');
-  $db_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--db_id');
-  $accession = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--accession');
-  $version = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--version');
-  $description = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--description');
+//   $fk_value = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__' . $field_column);
+//   $dbxref_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--dbxref_id');
+//   $db_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--db_id');
+//   $accession = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--accession');
+//   $version = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--version');
+//   $description = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--description');
 
   // Make sure that if a database ID is provided that an accession is also
   // provided.  Here we use the form_set_error function rather than the
@@ -428,8 +428,8 @@ function chado_base__dbxref_id_widget_form_ajax_callback($form, $form_state) {
   $field_column = $field['settings']['chado_column'];
   $field_prefix = $field_table . '__' . $field_column;
 
-  $db_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--db_id');
-  $accession = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--accession');
+//   $db_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--db_id');
+//   $accession = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_prefix . '--accession');
   if ($db_id and $accession) {
     $values = array(
       'db_id' => $db_id,

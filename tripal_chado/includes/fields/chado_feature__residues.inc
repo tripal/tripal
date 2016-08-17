@@ -196,7 +196,7 @@ class chado_feature__residues extends TripalField {
       $residues = $items[0]['feature__residues'];
     }
     if (array_key_exists('values', $form_state)) {
-      $residues = tripal_chado_get_field_form_values($field_name, $form_state, 0, 'feature__residues');
+      //$residues = tripal_chado_get_field_form_values($field_name, $form_state, 0, 'feature__residues');
     }
 
     $widget['value'] = array(
@@ -210,7 +210,7 @@ class chado_feature__residues extends TripalField {
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
       '#default_value' => $residues,
       '#delta' => $delta,
-      '#element_validate' => array('chado_feature__residues_widget_validate'),
+//      '#element_validate' => array('chado_feature__residues_widget_validate'),
       '#cols' => 30,
     );
   }
@@ -688,7 +688,7 @@ function chado_feature__residues_widget_validate($element, &$form_state) {
   $field_name = $element['#parents'][0];
 
   // Remove any white spaces.
-  $residues = tripal_chado_get_field_form_values($field_name, $form_state, 0, 'feature__residues');
+  //$residues = tripal_chado_get_field_form_values($field_name, $form_state, 0, 'feature__residues');
   if ($residues) {
     $residues = preg_replace('/\s/', '', $residues);
     tripal_chado_set_field_form_values($field_name, $form_state, $residues, 0, 'feature__residues');

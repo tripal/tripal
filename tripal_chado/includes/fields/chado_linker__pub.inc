@@ -212,10 +212,10 @@ class chado_linker_pub extends TripalField {
 
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state) and array_key_exists($delta, $form_state['values'])) {
-      $record_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $pkey);
-      $fkey_value = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $fkey);
-      $pub_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__pub_id');
-      $title = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__title');
+//       $record_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $pkey);
+//       $fkey_value = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $fkey);
+//       $pub_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__pub_id');
+//       $title = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__title');
     }
 
     $schema = chado_get_schema('pub');
@@ -334,9 +334,9 @@ function chado_linker__pub_widget_validate($element, &$form_state) {
   }
 
   // Get the field values.
-  $fkey_value = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $fkey);
-  $pub_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__pub_id');
-  $uname = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '--pub__uniquename');
+//   $fkey_value = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $fkey);
+//   $pub_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__pub_id');
+//   $uname = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '--pub__uniquename');
 
   // If the user provided a uniquename then we want to set the
   // foreign key value to be the chado_record_idd

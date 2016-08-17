@@ -201,7 +201,7 @@ function chado_linker__prop_adder_widget_validate($element, &$form_state) {
         $base_table = $field['settings']['base_table'];
 
         // Get the term for the property
-        $kvproperty = tripal_chado_get_field_form_values($field_name, $form_state);
+        //$kvproperty = tripal_chado_get_field_form_values($field_name, $form_state);
         $term = chado_generate_var('cvterm', array('name' => $kvproperty), $options = array('return_array' => TRUE));
 
         if (count($term) == 1) {

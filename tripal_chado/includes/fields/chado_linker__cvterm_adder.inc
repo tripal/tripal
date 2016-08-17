@@ -200,7 +200,7 @@ function chado_linker__cvterm_adder_widget_validate($element, &$form_state) {
     $base_table = $field['settings']['base_table'];
 
     // Get the vocabulary.
-    $cvterm_class_adder = tripal_chado_get_field_form_values($field_name, $form_state);
+    //$cvterm_class_adder = tripal_chado_get_field_form_values($field_name, $form_state);
     $cv = chado_generate_var('cv', array('cv_id' => $cvterm_class_adder));
 
     if (!$cv) {

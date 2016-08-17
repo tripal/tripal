@@ -224,7 +224,7 @@ class chado_base__organism_id extends TripalField {
       '#required' => $element['#required'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
       '#delta' => $delta,
-      '#element_validate' => array('chado_base__organism_id_widget_validate'),
+//      '#element_validate' => array('chado_base__organism_id_widget_validate'),
     );
   }
 
@@ -386,7 +386,7 @@ function chado_base__organism_id_widget_validate($element, &$form_state) {
   if ($form_state['build_info']['form_id'] =='field_ui_field_edit_form') {
     return;
   }
-  $organism_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__organism_id');
+  //$organism_id = tripal_chado_get_field_form_values($field_name, $form_state, 0, $field_table . '__organism_id');
 
   if (!$organism_id) {
     form_error($element, t("Please specify an organism."));

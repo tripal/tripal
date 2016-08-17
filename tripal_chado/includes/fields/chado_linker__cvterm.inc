@@ -180,10 +180,10 @@ class chado_linker__cvterm extends TripalField {
 
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state) and array_key_exists($delta, $form_state['values'])) {
-      $record_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name);
-      $fkey_value = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $fkey);
-      $is_not = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__is_not');
-      $cvterm_name = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '--cvterm__name');
+//       $record_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name);
+//       $fkey_value = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $fkey);
+//       $is_not = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__is_not');
+//       $cvterm_name = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '--cvterm__name');
     }
 
     if ($cvterm_name) {
@@ -374,11 +374,11 @@ function chado_linker__cvterm_widget_validate($element, &$form_state) {
   }
 
   // Get the field values.
-  $cvterm_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__cvterm_id');
-  $cv_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '--cvterm__cv_id--cv__cv_id');
-  $cvterm_name = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '--cvterm__name');
-  $cvterm_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__cvterm_id');
-  $pub_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__pub_id');
+//   $cvterm_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__cvterm_id');
+//   $cv_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '--cvterm__cv_id--cv__cv_id');
+//   $cvterm_name = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '--cvterm__name');
+//   $cvterm_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__cvterm_id');
+//   $pub_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__pub_id');
 
   // If the user provided a cv_id and a name then we want to set the
   // foreign key value to be the chado_record_idd

@@ -182,7 +182,7 @@ class chado_feature__seqlen extends TripalField {
       '#description' => $element['#description'],
       '#weight' => isset($element['#weight']) ? $element['#weight'] : 0,
       '#delta' => $delta,
-      '#element_validate' => array('chado_feature__seqlen_widget_validate'),
+//      '#element_validate' => array('chado_feature__seqlen_widget_validate'),
     );
   }
 
@@ -195,7 +195,7 @@ function chado_feature__seqlen_widget_validate($element, &$form_state) {
   $field_name = $element['#parents'][0];
 
   // Get the residues so we can calculate teh length.
-  $residues = tripal_chado_get_field_form_values('feature__residues', $form_state, 0, 'feature__residues');
+  //$residues = tripal_chado_get_field_form_values('feature__residues', $form_state, 0, 'feature__residues');
   // Remove any white spaces.
   if ($residues) {
     $residues = preg_replace('/\s/', '', $residues);

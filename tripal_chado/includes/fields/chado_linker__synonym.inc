@@ -210,14 +210,14 @@ class chado_linker__synonym extends TripalField {
 
     // Check $form_state['values'] to see if an AJAX call set the values.
     if (array_key_exists('values', $form_state) and array_key_exists($delta, $form_state['values'])) {
-      $record_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $pkey);
-      $fkey_value = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $fkey);
-      $synonym_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__synonym_id');
-      $pub_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__pub_id');
-      $is_current = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__is_current');
-      $is_internal = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__is_internal');
-      $syn_name = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__synonym_id--name');
-      $syn_type = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__synonym_id--type_id');
+//       $record_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $pkey);
+//       $fkey_value = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $fkey);
+//       $synonym_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__synonym_id');
+//       $pub_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__pub_id');
+//       $is_current = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__is_current');
+//       $is_internal = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__is_internal');
+//       $syn_name = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__synonym_id--name');
+//       $syn_type = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__synonym_id--type_id');
     }
 
     // Get the synonym type terms.  There shouldn't be too many.
@@ -230,7 +230,7 @@ class chado_linker__synonym extends TripalField {
 
     $widget['#table_name'] = $table_name;
     $widget['#fkey_field'] = $fkey;
-    $widget['#element_validate'] = array('chado_linker__synonym_widget_validate');
+//    $widget['#element_validate'] = array('chado_linker__synonym_widget_validate');
     $widget['#theme'] = 'chado_linker__synonym_widget';
     $widget['#prefix'] =  "<span id='$table_name-$delta'>";
     $widget['#suffix'] =  "</span>";
@@ -395,13 +395,13 @@ function chado_linker__synonym_widget_validate($element, &$form_state) {
   }
 
   // Get the field values.
-  $fkey_value = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $fkey);
-  $synonym_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__synonym_id');
-  $pub_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__pub_id');
-  $is_current = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__is_current');
-  $is_internal = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__is_internal');
-  $syn_name = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '--synonym__name');
-  $syn_type = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '--synonym__type_id');
+//   $fkey_value = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__' . $fkey);
+//   $synonym_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__synonym_id');
+//   $pub_id = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__pub_id');
+//   $is_current = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__is_current');
+//   $is_internal = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '__is_internal');
+//   $syn_name = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '--synonym__name');
+//   $syn_type = tripal_chado_get_field_form_values($table_name, $form_state, $delta, $table_name . '--synonym__type_id');
 
   // Make sure that if a synonym is provided that a type is also
   // provided.

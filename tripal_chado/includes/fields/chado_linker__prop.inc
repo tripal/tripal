@@ -202,10 +202,10 @@ class chado_linker__prop extends TripalField {
     // If we don't have a property value then we need to set all other fields
     // to be empty so that when the module tries to save the field on the
     // entity it won't try to save a partial record.
-    $pkey_val = tripal_chado_get_field_form_values($field_name, $form_state, $delta);
-    $prop_value = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . "__value");
-    $fk_val = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__' . $lfkey_field);
-    $type_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__type_id');
+//     $pkey_val = tripal_chado_get_field_form_values($field_name, $form_state, $delta);
+//     $prop_value = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . "__value");
+//     $fk_val = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__' . $lfkey_field);
+//     $type_id = tripal_chado_get_field_form_values($field_name, $form_state, $delta, $table_name . '__type_id');
 
     if (!$prop_value) {
       tripal_chado_set_field_form_values($field_name, $form_state, '', $delta, $table_name . '__' . $lfkey_field);
