@@ -22,11 +22,11 @@ class chado_linker__relationship extends TripalField {
    * @see TripalField::can_attach()
    */
   protected function setCanAttach() {
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
+    $table_name = isset($this->details['chado_table']) ? $this->details['chado_table'] : '';
+    $type_table = isset($this->details['chado_type_table']) ? $this->details['chado_type_table'] : '';
+    $type_field = isset($this->details['chado_type_column']) ? $this->details['chado_type_column'] : '';
+    $cv_id      = isset($this->details['chado_cv_id']) ? $this->details['chado_cv_id'] : '';
+    $cvterm_id  = isset($this->details['chado_cvterm_id']) ? $this->details['chado_cvterm_id'] : '';
 
     // If the linker table does not exists then we don't want to add attach.
     $rel_table = $table_name . '_relationship';
@@ -40,11 +40,11 @@ class chado_linker__relationship extends TripalField {
    * @see TripalField::setFieldName()
    */
   protected function setFieldName() {
-    $table_name = $this->details['chado_table'];
-    $type_table = $this->details['chado_type_table'];
-    $type_field = $this->details['chado_type_column'];
-    $cv_id      = $this->details['chado_cv_id'];
-    $cvterm_id  = $this->details['chado_cvterm_id'];
+    $table_name = isset($this->details['chado_table']) ? $this->details['chado_table'] : '';
+    $type_table = isset($this->details['chado_type_table']) ? $this->details['chado_type_table'] : '';
+    $type_field = isset($this->details['chado_type_column']) ? $this->details['chado_type_column'] : '';
+    $cv_id      = isset($this->details['chado_cv_id']) ? $this->details['chado_cv_id'] : '';
+    $cvterm_id  = isset($this->details['chado_cvterm_id']) ? $this->details['chado_cvterm_id'] : '';
 
     $this->field_name = $table_name . '_relationship';
   }
@@ -259,10 +259,10 @@ class chado_linker__relationship extends TripalField {
     // If the field already has a value then it will come through the $items
     // array.  This happens when editing an existing record.
     if (array_key_exists($delta, $items)) {
-      $record_id = $items[$delta][$field_table . '__' . $pkey];
-      $subject_id = $items[$delta][$field_table . '__subject_id'];
-      $type_id = $items[$delta][$field_table . '__type_id'];
-      $object_id = $items[$delta][$field_table . '__object_id'];
+      $record_id = isset($items[$delta][$field_table . '__' . $pkey]) ? $items[$delta][$field_table . '__' . $pkey] : '';
+      $subject_id = isset($items[$delta][$field_table . '__subject_id']) ? $items[$delta][$field_table . '__subject_id'] : '';
+      $type_id = isset($items[$delta][$field_table . '__type_id']) ? $items[$delta][$field_table . '__type_id'] : '';
+      $object_id = isset($items[$delta][$field_table . '__object_id']) ? $items[$delta][$field_table . '__object_id'] : '';
 
       if (array_key_exists('value', $schema['fields'])) {
         $value = $items[$delta][$field_table . '__value'];
@@ -271,9 +271,9 @@ class chado_linker__relationship extends TripalField {
         $rank = $items[$delta][$field_table . '__rank'];
       }
 
-      $object_uniquename = $items[$delta]['object_name'];
-      $subject_uniquename = $items[$delta]['subject_name'];
-      $type = $items[$delta]['type_name'];
+      $object_uniquename = isset($items[$delta]['object_name']) ? $items[$delta]['object_name'] : '';
+      $subject_uniquename = isset($items[$delta]['subject_name']) ? $items[$delta]['subject_name'] : '';
+      $type = isset($items[$delta]['type_name']) ? $items[$delta]['type_name'] : '';
     }
 
     // Check $form_state['values'] to see if an AJAX call set the values.
@@ -850,7 +850,38 @@ class chado_linker__relationship extends TripalField {
 
     return $verb;
   }
+  
+  public static function settingsForm($field, $instance, $has_data) {
+  
+    $settings = $field['settings'];
+  
+    $element = array();
+    $element['instructions'] = array(
+      '#type' => 'item',
+      '#markup' => 'You may provide a list of terms that will be available in a select box
+        as the relationship types. This select box will replace the vocabulary select box if the 
+        following value is set.'
+    );
+    
+    $terms = variable_get('chado_linker_relationship_types');
+    $element['term_list'] = array(
+      '#type' => 'textarea',
+      '#title' => 'Relationship Types',
+      '#description' => 'Provide terms separated by a new line',
+      '#default_value' => $terms,
+    );
+  
+    // Add in the semantic web fields.
+    $parent_elements = parent::settingsForm($field, $instance, $has_data);
+    $element = array_merge($element, $parent_elements);
+  dpm($instance);
+    return $element;
+  }
 }
+
+  function settingsFormValidate($field, $instance, $has_data) {
+  dpm($field);
+  }
 
 /**
  * Theme function for the chado_linker__relationship_widget.
@@ -887,7 +918,18 @@ function theme_chado_linker__relationship_widget($variables) {
 function chado_linker__relationship_widget_form_ajax_callback(&$form, $form_state) {
   // Get the triggering element
   $form_element_name = $form_state['triggering_element']['#name'];
-  dpm($form);
-  dpm($form_state);
-  return $form['instance']['default_value_widget']['organism_relationship'];
+  preg_match('/(.+?)\[(.+?)\]\[(.+?)\]/', $form_element_name, $matches);
+  $field = $matches[1];
+  $lang = $matches[2];
+  $delta = $matches[3];
+  // Return the widget that triggered the AJAX call
+  if (isset($form[$field][$lang][$delta])) {
+    return $form[$field][$lang][$delta];
+  }
+  // Alternatively, return the default value widget for the widget setting form 
+  else {
+    return $form['instance']['default_value_widget'][$field];
+  }
 }
+
+
