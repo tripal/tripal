@@ -530,6 +530,24 @@ function tripal_chado_field_settings_form($field, $instance, $has_data) {
   }
   return $form;
 }
+
+/**
+ * Implements hook_field_settings_form_validate().
+ *
+ * This is not an actual Drpual hook, but rather a Tripal created hook
+ * to alow the TripalField objects to have a settingsFormValidate() member
+ * function.
+ */
+function tripal_chado_field_settings_form_valiate($form, &$form_state) {
+  $field = $form['#field'];
+  $instance = $form['#instance'];
+  $field_type = $field['type'];
+  module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+  if (class_exists($field_type)) {
+    $form = $field_type::settingsFormValidate($field, $instance, $form, $form_state);
+  }
+}
+
 /**
  * Implements hook_field_formatter_settings_summary().
  */

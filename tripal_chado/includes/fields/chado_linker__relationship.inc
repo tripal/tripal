@@ -10,7 +10,9 @@ class chado_linker__relationship extends TripalField {
       'description' => t('Relationships between records.'),
       'default_widget' => 'chado_linker__relationship_widget',
       'default_formatter' => 'chado_linker__relationship_formatter',
-      'settings' => array(),
+      'settings' => array(
+        # Put settings here that Drupal will save automatically.
+      ),
       'storage' => array(
         'type' => 'field_chado_storage',
         'module' => 'tripal_chado',
@@ -18,6 +20,7 @@ class chado_linker__relationship extends TripalField {
       ),
     );
   }
+
   /**
    * @see TripalField::can_attach()
    */
@@ -850,12 +853,15 @@ class chado_linker__relationship extends TripalField {
 
     return $verb;
   }
-  
+
+  /**
+   *
+   * @param unknown $field
+   * @param unknown $instance
+   * @param unknown $has_data
+   */
   public static function settingsForm($field, $instance, $has_data) {
-  
-    $settings = $field['settings'];
-  
-    $element = array();
+    $element = parent::settingsForm($field, $instance, $has_data);
     $element['instructions'] = array(
       '#type' => 'item',
       '#markup' => 'You may provide a list of terms that will be available in a select box
@@ -874,8 +880,18 @@ class chado_linker__relationship extends TripalField {
     // Add in the semantic web fields.
     $parent_elements = parent::settingsForm($field, $instance, $has_data);
     $element = array_merge($element, $parent_elements);
-  dpm($instance);
+
     return $element;
+
+  }
+  /**
+   *
+   * @param unknown $field
+   * @param unknown $instance
+   * @param unknown $has_data
+   */
+  public static function settingsFormValidate($form, &$form_state) {
+
   }
 }
 
