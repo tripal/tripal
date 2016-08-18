@@ -11,7 +11,7 @@ class chado_linker__relationship extends TripalField {
       'default_widget' => 'chado_linker__relationship_widget',
       'default_formatter' => 'chado_linker__relationship_formatter',
       'settings' => array(
-        # Put settings here that Drupal will save automatically.
+        'relationship_types' => ''
       ),
       'storage' => array(
         'type' => 'field_chado_storage',
@@ -869,12 +869,10 @@ class chado_linker__relationship extends TripalField {
         following value is set.'
     );
     
-    $terms = variable_get('chado_linker_relationship_types');
-    $element['term_list'] = array(
+    $element['relationship_types'] = array(
       '#type' => 'textarea',
       '#title' => 'Relationship Types',
       '#description' => 'Provide terms separated by a new line',
-      '#default_value' => $terms,
     );
   
     // Add in the semantic web fields.
@@ -891,13 +889,9 @@ class chado_linker__relationship extends TripalField {
    * @param unknown $has_data
    */
   public static function settingsFormValidate($form, &$form_state) {
-
+    //dpm($form);dpm($form_state);
   }
 }
-
-  function settingsFormValidate($field, $instance, $has_data) {
-  dpm($field);
-  }
 
 /**
  * Theme function for the chado_linker__relationship_widget.

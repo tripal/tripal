@@ -538,7 +538,7 @@ function tripal_chado_field_settings_form($field, $instance, $has_data) {
  * to alow the TripalField objects to have a settingsFormValidate() member
  * function.
  */
-function tripal_chado_field_settings_form_valiate($form, &$form_state) {
+function tripal_chado_field_settings_form_validate($form, &$form_state) {
   $field = $form['#field'];
   $instance = $form['#instance'];
   $field_type = $field['type'];
@@ -656,7 +656,8 @@ function tripal_chado_field_validate($entity_type, $entity, $field, $instance,
   $field_type = $field['type'];
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
   if (class_exists($field_type)) {
-    $field_obj = new $field_type($entity_type, $entity->bundle);
+    $bundle = isset($entity->bundle) ? $entity->bundle : NULL;
+    $field_obj = new $field_type($entity_type, $bundle);
     $form = $field_obj::widgetFormValidate($entity_type, $entity, $field, $instance,
         $langcode, $items, $errors);
   }

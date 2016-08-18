@@ -619,10 +619,10 @@ class TripalField {
 //       '#collapsible' => TRUE,
 //       '#tree' => TRUE,
 //     );
-
+    $module = $field['module'];
     $element['#field'] = $field;
     $element['#instance'] = $instance;
-    $element['#validate'][] = "[module_name]_field_settings_form_validate";
+    $element['#element_validate'][] = $module . '_field_settings_form_validate';
 
     return $element;
   }
