@@ -620,8 +620,19 @@ class TripalField {
 //       '#tree' => TRUE,
 //     );
 
+    $element['#field'] = $field;
+    $element['#instance'] = $instance;
+    $element['#validate'][] = "[module_name]_field_settings_form_validate";
 
     return $element;
+  }
+  /**
+   *
+   * @param unknown $form
+   * @param unknown $form_state
+   */
+  public static function settingsFormValidate($form, &$form_state) {
+
   }
 
   /**
