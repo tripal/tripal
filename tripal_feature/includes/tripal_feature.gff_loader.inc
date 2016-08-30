@@ -97,16 +97,25 @@ function tripal_feature_gff3_load_form() {
     '#type' => 'fieldset',
     '#title' => t('Advanced Options'),
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE
+    '#collapsed' => TRUE,
   );
-  $form['advanced']['re_help'] = array(
+
+  $form['advanced']['protein_names'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Protein Names'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#weight' => 5,
+  );
+
+  $form['advanced']['protein_names']['re_help'] = array(
     '#type' => 'item',
-    '#value' => t('A regular expression is an advanced method for extracting information from a string of text.
+    '#markup' => t('A regular expression is an advanced method for extracting information from a string of text.
                    If your GFF3 file does not contain polypeptide (or protein) features, but contains CDS features, proteins will be automatically created.
                    By default the loader will give each protein a name based on the name of the corresponding mRNA followed by the "-protein" suffix.
                    If you want to customize the name of the created protein, you can use the following regex.')
   );
-  $form['advanced']['re_mrna'] = array(
+  $form['advanced']['protein_names']['re_mrna'] = array(
     '#type' => 'textfield',
     '#title' => t('Regular expression for the mRNA name'),
     '#required' => FALSE,
@@ -115,7 +124,7 @@ function tripal_feature_gff3_load_form() {
        mRNA with a unique name finishing by -RX (e.g. SPECIES0000001-RA),
        the regular expression would be, "^(.*?)-R([A-Z]+)$".')
   );
-  $form['advanced']['re_protein'] = array(
+  $form['advanced']['protein_names']['re_protein'] = array(
     '#type' => 'textfield',
     '#title' => t('Replacement string for the protein name'),
     '#required' => FALSE,
@@ -125,13 +134,15 @@ function tripal_feature_gff3_load_form() {
        expression would be "$1-P$2".')
   );
 
-  $form['import_options'] = array(
+  $form['advanced']['import_options'] = array(
     '#type' => 'fieldset',
     '#title' => t('Import Options'),
-    '#collapsed' => TRUE
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#weight' => 0,
   );
 
-  $form['import_options']['use_transaction']= array(
+  $form['advanced']['import_options']['use_transaction']= array(
     '#type' => 'checkbox',
     '#title' => t('Use a transaction'),
     '#required' => FALSE,
@@ -141,14 +152,14 @@ function tripal_feature_gff3_load_form() {
       of failure will be present in the database.'),
     '#default_value' => 1,
   );
-  $form['import_options']['add_only']= array(
+  $form['advanced']['import_options']['add_only']= array(
     '#type' => 'checkbox',
     '#title' => t('Import only new features'),
     '#required' => FALSE,
     '#description' => t('The job will skip features in the GFF file that already
                          exist in the database and import only new features.'),
   );
-  $form['import_options']['update']= array(
+  $form['advanced']['import_options']['update']= array(
     '#type' => 'checkbox',
     '#title' => t('Import all and update'),
     '#required' => FALSE,
@@ -178,7 +189,7 @@ function tripal_feature_gff3_load_form() {
 //     '#description' => t('Features present in the GFF file that exist in the database
 //                          will be removed rather than imported'),
 //   );
-  $form['import_options']['create_organism']= array(
+  $form['advanced']['import_options']['create_organism']= array(
     '#type' => 'checkbox',
     '#title' => t('Create organism'),
     '#required' => FALSE,
@@ -189,12 +200,14 @@ function tripal_feature_gff3_load_form() {
        Otherwise lines with an oraganism attribute where the organism is not present in the database will be skipped.'),
   );
 
-  $form['targets'] = array(
+  $form['advanced']['targets'] = array(
     '#type' => 'fieldset',
     '#title' => t('Targets'),
-    '#collapsed' => TRUE
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    '#weight' => 1,
   );
-  $form['targets']['adesc'] = array(
+  $form['advanced']['targets']['adesc'] = array(
     '#markup' => t("When alignments are represented in the GFF file (e.g. such as
        alignments of cDNA sequences to a whole genome, or blast matches), they are
        represented using two feature types: 'match' (or cDNA_match, EST_match, etc.)
@@ -205,7 +218,7 @@ function tripal_feature_gff3_load_form() {
        The options here will apply to all targets unless the organism and type are explicity
        set in the GFF file using the 'target_organism' and 'target_type' attributes."),
   );
-  $form['targets']['target_organism_id'] = array(
+  $form['advanced']['targets']['target_organism_id'] = array(
     '#title'       => t('Target Organism'),
     '#type'        => t('select'),
     '#description' => t("Optional. Choose the organism to which target sequences belong.
@@ -216,7 +229,7 @@ function tripal_feature_gff3_load_form() {
       attribute in the GFF file."),
     '#options'     => $organisms,
   );
-  $form['targets']['target_type'] = array(
+  $form['advanced']['targets']['target_type'] = array(
     '#title'       => t('Target Type'),
     '#type'        => t('textfield'),
     '#description' => t("Optional. If the unique name for a target sequence is not unique (e.g. a protein
@@ -224,7 +237,7 @@ function tripal_feature_gff3_load_form() {
        the targets are of different types then the type must be specified using the 'target_type=type' attribute
        in the GFF file. This must be a valid Sequence Ontology (SO) term."),
   );
-  $form['targets']['create_target']= array(
+  $form['advanced']['targets']['create_target']= array(
     '#type' => 'checkbox',
     '#title' => t('Create Target'),
     '#required' => FALSE,
