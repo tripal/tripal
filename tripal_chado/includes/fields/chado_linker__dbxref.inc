@@ -16,7 +16,7 @@ class chado_linker__dbxref extends TripalField {
    * This is a hook provided by the tripal_chado module for offloading the
    * hook_fieldInfo() hook for each field to specify.
    */
-  static function fieldInfo() {
+  static function fieldDefaults() {
     return array(
       'label' => t('Cross references'),
       'description' => t('This record can be cross referenced with a record in

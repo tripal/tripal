@@ -2,9 +2,9 @@
 
 class chado_linker__prop extends TripalField {
   /**
-   * @see TripalField::fieldInfo()
+   * @see TripalField::fieldDefaults()
    */
-  static function fieldInfo() {
+  static function fieldDefaults() {
     return array(
       'label' => t('Add a Property'),
       'description' => t('Add details about this property.'),

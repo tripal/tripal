@@ -2,9 +2,9 @@
 
 class chado_feature__seqlen extends TripalField {
   /**
-   * @see TripalField::fieldInfo()
+   * @see TripalField::fieldDefaults()
    */
-  static function fieldInfo() {
+  static function fieldDefaults() {
     return array(
       'label' => t('Sequence length'),
       'description' => t('A field for calculating the length of a sequence.'),

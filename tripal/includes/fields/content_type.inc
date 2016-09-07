@@ -19,9 +19,9 @@ class content_type extends TripalField {
     }
   }
   /**
-   * @see TripalField::fieldInfo()
+   * @see TripalField::fieldDefaults()
    */
-  static function fieldInfo() {
+  static function fieldDefaults() {
     return array(
       'label' => t('Record Type'),
       'description' => t('The content type.'),

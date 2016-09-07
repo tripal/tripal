@@ -3,9 +3,9 @@
 class chado_linker__featureloc extends TripalField {
 
   /**
-   * @see TripalField::fieldInfo()
+   * @see TripalField::fieldDefaults()
    */
-  public static function fieldInfo() {
+  public static function fieldDefaults() {
     return array(
       'label' => t('Aligned Locations'),
       'description' => t('Locations on landmark sequences where the feature is aligned.'),

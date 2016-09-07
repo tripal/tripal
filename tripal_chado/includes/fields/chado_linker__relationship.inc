@@ -2,9 +2,9 @@
 
 class chado_linker__relationship extends TripalField {
   /**
-   * @see TripalField::fieldInfo()
+   * @see TripalField::fieldDefaults()
    */
-  static function fieldInfo() {
+  static function fieldDefaults() {
     return array(
       'label' => t('Relationships'),
       'description' => t('Relationships between records.'),
@@ -860,8 +860,9 @@ class chado_linker__relationship extends TripalField {
    * @param unknown $instance
    * @param unknown $has_data
    */
-  public static function fieldSettingsForm($field, $instance, $has_data) {
-    $element = parent::fieldSettingsForm($field, $instance, $has_data);
+  public static function instanceSettingsForm($field, $instance) {
+
+    $element = parent::instanceSettingsForm($field, $instance);
     $element['instructions'] = array(
       '#type' => 'item',
       '#markup' => 'You may provide a list of terms that will be available in a select box
@@ -873,6 +874,7 @@ class chado_linker__relationship extends TripalField {
       '#type' => 'textarea',
       '#title' => 'Relationship Types',
       '#description' => 'Provide terms separated by a new line',
+      '#default_value' => $instance['settings']['relationship_types'],
     );
 
     return $element;
@@ -884,7 +886,7 @@ class chado_linker__relationship extends TripalField {
    * @param unknown $instance
    * @param unknown $has_data
    */
-  public static function fieldSettingsFormValidate($form, &$form_state) {
+  public static function instanceSettingsFormValidate($form, &$form_state) {
     //dpm($form);dpm($form_state);
   }
 }

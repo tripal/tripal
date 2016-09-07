@@ -3,9 +3,9 @@
 class chado_feature__md5checksum  extends TripalField {
 
   /**
-   * @see TripalField::fieldInfo()
+   * @see TripalField::fieldDefaults()
    */
-  static function fieldInfo() {
+  static function fieldDefaults() {
     return array(
       'label' => t('Sequence MD5 checksum'),
       'description' => t('A field for generating MD5 checksum for a sequence.'),

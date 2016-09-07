@@ -2,9 +2,9 @@
 
 class chado_linker__cvterm extends TripalField {
   /**
-   * @see TripalField::fieldInfo()
+   * @see TripalField::fieldDefaults()
    */
-  static function fieldInfo() {
+  static function fieldDefaults() {
     return array(
       'label' => t('Annotations'),
       'description' => t('This record can be annotated with terms

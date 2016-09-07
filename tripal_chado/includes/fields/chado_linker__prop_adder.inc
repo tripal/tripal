@@ -2,9 +2,9 @@
 
 class chado_linker__prop_adder extends TripalField {
   /**
-   * @see TripalField::fieldInfo()
+   * @see TripalField::fieldDefaults()
    */
-  static function fieldInfo() {
+  static function fieldDefaults() {
     return array(
       'label' => t('Add a Property Type'),
       'description' => t('This record may have any number of properties. Use

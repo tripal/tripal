@@ -1,9 +1,9 @@
 <?php
 class chado_linker__cvterm_addr extends TripalField {
   /**
-   * @see TripalField::fieldInfo()
+   * @see TripalField::fieldDefaults()
    */
-  static function fieldInfo() {
+  static function fieldDefaults() {
     return array(
       'label' => t('Add an Annotation Type'),
       'description' => t('This record may have any number of types of

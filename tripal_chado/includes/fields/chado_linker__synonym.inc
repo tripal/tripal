@@ -3,9 +3,9 @@
 class chado_linker__synonym extends TripalField {
 
   /**
-   * @see TripalField::fieldInfo()
+   * @see TripalField::fieldDefaults()
    */
-  static function fieldInfo() {
+  static function fieldDefaults() {
     return array(
       'label' => t('Synonyms'),
       'description' => t('Adds an alternative name (synonym or alias) to this record.'),

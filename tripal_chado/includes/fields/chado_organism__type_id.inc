@@ -3,9 +3,9 @@
 class chado_organism__type_id extends TripalField {
 
   /**
-   * @see TripalField::info()
+   * @see TripalField::fieldDefaults()
    */
-  public static function fieldInfo() {
+  public static function fieldDefaults() {
     return array(
       'label' => t('Infraspecific Type'),
       'description' => t('A field for specifying an infraspecific type.'),

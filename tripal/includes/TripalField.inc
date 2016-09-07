@@ -147,7 +147,8 @@ class TripalField {
    * Provides default settings for the field.
    *
    * This is a static function and defines defaults for all fields of this
-   * type.
+   * type.  This function corresponds to the hook_field_info() of the Drupal
+   * Field API.
    *
    * @return
    *   An array whose keys are field type names and whose values are arrays
@@ -185,7 +186,7 @@ class TripalField {
    *     field_create_field() and field_create_instance(). Defaults to
    *     FALSE.
    */
-  public static function fieldInfo() {
+  public static function fieldDefaults() {
     return array(
     );
   }
@@ -196,7 +197,7 @@ class TripalField {
    *
    * These settings are global for every instance of the field.
    *
-   * he TripalField class allows a field to decide which bundles it would
+   * The TripalField class allows a field to decide which bundles it would
    * like to attach itself to. Therefore, the entity type, and bundle are
    * passed as arguments to allow the field to decide if it wants to be
    * attached.
@@ -622,7 +623,7 @@ class TripalField {
     $module = $field['module'];
     $element['#field'] = $field;
     $element['#instance'] = $instance;
-    $element['#element_validate'][] = $module . '_instance_settings_form_validate';
+    $element['#element_validate'][] = $module . '_field_instance_settings_form_validate';
 
     return $element;
   }

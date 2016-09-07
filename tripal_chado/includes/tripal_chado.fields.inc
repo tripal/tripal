@@ -19,7 +19,7 @@ function tripal_chado_field_info() {
 
   $field_types = tripal_get_field_types('tripal_chado');
   foreach ($field_types as $field_type) {
-    $info[$field_type] = $field_type::fieldInfo();
+    $info[$field_type] = $field_type::fieldDefaults();
   }
   return $info;
 
@@ -533,7 +533,7 @@ function tripal_chado_field_settings_form($field, $instance, $has_data) {
 /**
  * Implements hook_instance_settings_form()
  */
-function tripal_chado_instance_settings_form($field, $instance) {
+function tripal_chado_field_instance_settings_form($field, $instance) {
   $form = array();
   $field_type = $field['type'];
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
@@ -566,7 +566,7 @@ function tripal_chado_field_settings_form_validate($form, &$form_state) {
  * to alow the TripalField objects to have a instanceSettingsFormValidate()
  * member function.
  */
-function tripal_chado_instance_settings_form_validate($form, &$form_state) {
+function tripal_chado_field_instance_settings_form_validate($form, &$form_state) {
   $field = $form['#field'];
   $instance = $form['#instance'];
   $field_type = $field['type'];

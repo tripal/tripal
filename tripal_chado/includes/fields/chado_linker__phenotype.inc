@@ -3,9 +3,9 @@
 class chado_linker__phenotype extends TripalField {
 
   /**
-   * @see TripalField::fieldInfo()
+   * @see TripalField::fieldDefaults()
    */
-  public static function fieldInfo() {
+  public static function fieldDefaults() {
     return array(
       'label' => t('Phenotypes'),
       'description' => t('Associates an indviddual or organization with

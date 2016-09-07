@@ -3,9 +3,9 @@
 class chado_linker__contact extends TripalField {
 
   /**
-   * @see TripalField::fieldInfo()
+   * @see TripalField::fieldDefaults()
    */
-  public static function fieldInfo() {
+  public static function fieldDefaults() {
     return array(
       'label' => t('Contacts'),
       'description' => t('Associates an indviddual or organization with

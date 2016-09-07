@@ -2,9 +2,9 @@
 
 class chado_linker_pub extends TripalField {
   /**
-   * @see TripalField::fieldInfo()
+   * @see TripalField::fieldDefaults()
    */
-  static function fieldInfo() {
+  static function fieldDefaults() {
     return array(
       'label' => t('Publications'),
       'description' => t('Associates a publication (e.g. journal article,

@@ -3,9 +3,9 @@
 class chado_feature__residues extends TripalField {
 
   /**
-   * @see TripalField::fieldInfo()
+   * @see TripalField::fieldDefaults()
    */
-  static function fieldInfo() {
+  static function fieldDefaults() {
     return array(
       'label' => t('Sequences'),
       'description' => t('A field for managing nucleotide and protein residues.'),

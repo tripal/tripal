@@ -3,9 +3,9 @@
 class chado_gene__transcripts extends TripalField {
 
   /**
-   * @see TripalField::fieldInfo()
+   * @see TripalField::fieldDefaults()
    */
-  public static function fieldInfo() {
+  public static function fieldDefaults() {
     return array(
       'label' => t('Transcripts'),
       'description' => t('Transcripts of genes.'),

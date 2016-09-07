@@ -3,9 +3,9 @@
 class chado_linker__expression extends TripalField {
 
   /**
-   * @see TripalField::fieldInfo()
+   * @see TripalField::fieldDefaults()
    */
-  public static function fieldInfo() {
+  public static function fieldDefaults() {
     return array(
       'label' => t('Expression'),
       'description' => t('Associates an expression with

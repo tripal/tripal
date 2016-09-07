@@ -5,7 +5,7 @@ class chado_base__organism_id extends TripalField {
   /**
    * @see TripalField::info()
    */
-  public static function fieldInfo() {
+  public static function fieldDefaults() {
     return array(
       'label' => t('Organism'),
       'description' => t('A field for specifying an organism.'),

@@ -2,9 +2,9 @@
 
 class chado_base__dbxref_id extends TripalField {
   /**
-   * @see TripalField::fieldInfo()
+   * @see TripalField::fieldDefaults()
    */
-  static function fieldInfo() {
+  static function fieldDefaults() {
     return array(
       'label' => t('Accession'),
       'description' => t('This field specifies the unique stable accession (ID) for
