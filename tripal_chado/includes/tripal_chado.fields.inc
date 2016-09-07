@@ -556,7 +556,7 @@ function tripal_chado_field_settings_form_validate($form, &$form_state) {
   $field_type = $field['type'];
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
   if (class_exists($field_type)) {
-    $form = $field_type::settingsFormValidate($field, $instance, $form, $form_state);
+    $form = $field_type::fieldSettingsFormValidate($field, $instance, $form, $form_state);
   }
 }
 /**
@@ -566,7 +566,7 @@ function tripal_chado_field_settings_form_validate($form, &$form_state) {
  * to alow the TripalField objects to have a instanceSettingsFormValidate()
  * member function.
  */
-function tripal_chado_field_settings_form_validate($form, &$form_state) {
+function tripal_chado_instance_settings_form_validate($form, &$form_state) {
   $field = $form['#field'];
   $instance = $form['#instance'];
   $field_type = $field['type'];

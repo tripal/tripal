@@ -212,9 +212,9 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
         // TODO: what to do if record is missing!
       }
       // Get some values needed for loading the values from Chado.
-      $base_table = $details->data_table;
-      $type_field = $details->field;
-      $record_id = $details->record_id;
+      $base_table = isset($details->data_table) ? $details->data_table : '';
+      $type_field = isset($details->field) ? $details->field : '';
+      $record_id = isset($details->record_id) ? $details->record_id : '';
     }
 
     // Get this table's schema.
@@ -230,9 +230,11 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
     // For now, expand all 'text' fields.
     // TODO: we want to be a bit smarter and allow the user to configure this
     // for now we'll expand.
-    foreach ($schema['fields'] as $field_name => $details) {
-      if ($schema['fields'][$field_name]['type'] == 'text') {
-        $record = chado_expand_var($record, 'field', $base_table . '.' . $field_name);
+    if (isset($schema['fields'])) {
+      foreach ($schema['fields'] as $field_name => $details) {
+        if ($schema['fields'][$field_name]['type'] == 'text') {
+          $record = chado_expand_var($record, 'field', $base_table . '.' . $field_name);
+        }
       }
     }
 
@@ -300,7 +302,7 @@ function tripal_chado_field_storage_load($entity_type, $entities, $age,
         $entity->{$field_name}['und'][0]['value'] = '';
         $load_function = $field_type . '_load';
         module_load_include('inc', $field_module, 'includes/fields/' . $field_type);
-        if (class_exists($field_type)) {
+        if (class_exists($field_type) && method_exists($field_type, 'load')) {
           $field_type::load($field, $entity, array('record' => $record));
         }
       }
