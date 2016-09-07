@@ -874,10 +874,6 @@ class chado_linker__relationship extends TripalField {
       '#title' => 'Relationship Types',
       '#description' => 'Provide terms separated by a new line',
     );
-  
-    // Add in the semantic web fields.
-    $parent_elements = parent::settingsForm($field, $instance, $has_data);
-    $element = array_merge($element, $parent_elements);
 
     return $element;
 
