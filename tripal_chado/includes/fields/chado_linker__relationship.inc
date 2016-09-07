@@ -855,10 +855,7 @@ class chado_linker__relationship extends TripalField {
   }
 
   /**
-   *
-   * @param unknown $field
-   * @param unknown $instance
-   * @param unknown $has_data
+   * @see TripalField::instanceSettingsForm()
    */
   public static function instanceSettingsForm($field, $instance) {
 
@@ -881,13 +878,11 @@ class chado_linker__relationship extends TripalField {
 
   }
   /**
-   *
-   * @param unknown $field
-   * @param unknown $instance
-   * @param unknown $has_data
+   * @see TripalField::instanceSettingsFormValidate()
    */
-  public static function instanceSettingsFormValidate($form, &$form_state) {
+  public static function instanceSettingsFormValidate($field, $instance, $form, &$form_state) {
     //dpm($form);dpm($form_state);
+    //form_set_error("instance][settings][relationship_types", t('blah'));
   }
 }
 

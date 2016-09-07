@@ -632,7 +632,7 @@ class TripalField {
    * @param unknown $form
    * @param unknown $form_state
    */
-  public static function instanceSettingsFormValidate($form, &$form_state) {
+  public static function instanceSettingsFormValidate($field, $instance, $form, &$form_state) {
 
   }
 
@@ -677,7 +677,7 @@ class TripalField {
    * @param unknown $form
    * @param unknown $form_state
    */
-  public static function fieldSettingsFormValidate($form, &$form_state) {
+  public static function fieldSettingsFormValidate($field, $instance, $form, &$form_state) {
 
   }
 
