@@ -11,7 +11,6 @@ class chado_linker__relationship extends TripalField {
       'default_widget' => 'chado_linker__relationship_widget',
       'default_formatter' => 'chado_linker__relationship_formatter',
       'settings' => array(
-        'relationship_types' => ''
       ),
       'storage' => array(
         'type' => 'field_chado_storage',
@@ -106,6 +105,7 @@ class chado_linker__relationship extends TripalField {
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,
+        'relationship_types' => '',
       ),
       'widget' => array(
         'type' => 'chado_linker__relationship_widget',
@@ -364,7 +364,7 @@ class chado_linker__relationship extends TripalField {
       $options = array();
       $widget['type_name'] = array(
         '#type' => 'textfield',
-        '#title' => t('Type'),
+        '#title' => t('Relationship Type'),
         '#size' => 15,
         '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/$cv_id"
       );
@@ -860,15 +860,15 @@ class chado_linker__relationship extends TripalField {
    * @param unknown $instance
    * @param unknown $has_data
    */
-  public static function settingsForm($field, $instance, $has_data) {
-    $element = parent::settingsForm($field, $instance, $has_data);
+  public static function fieldSettingsForm($field, $instance, $has_data) {
+    $element = parent::fieldSettingsForm($field, $instance, $has_data);
     $element['instructions'] = array(
       '#type' => 'item',
       '#markup' => 'You may provide a list of terms that will be available in a select box
-        as the relationship types. This select box will replace the vocabulary select box if the 
+        as the relationship types. This select box will replace the vocabulary select box if the
         following value is set.'
     );
-    
+
     $element['relationship_types'] = array(
       '#type' => 'textarea',
       '#title' => 'Relationship Types',
@@ -884,7 +884,7 @@ class chado_linker__relationship extends TripalField {
    * @param unknown $instance
    * @param unknown $has_data
    */
-  public static function settingsFormValidate($form, &$form_state) {
+  public static function fieldSettingsFormValidate($form, &$form_state) {
     //dpm($form);dpm($form_state);
   }
 }
@@ -932,7 +932,7 @@ function chado_linker__relationship_widget_form_ajax_callback(&$form, $form_stat
   if (isset($form[$field][$lang][$delta])) {
     return $form[$field][$lang][$delta];
   }
-  // Alternatively, return the default value widget for the widget setting form 
+  // Alternatively, return the default value widget for the widget setting form
   else {
     return $form['instance']['default_value_widget'][$field];
   }

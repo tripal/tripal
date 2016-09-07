@@ -293,11 +293,11 @@ class chado_base__organism_id extends TripalField {
   /**
    * @see TripalField::settings_form()
    */
-  public static function settingsForm($field, $instance, $has_data) {
+  public static function fieldSettingsForm($field, $instance, $has_data) {
+    $element = parent::fieldSettingsForm($field, $instance, $has_data);
 
     $settings = $field['settings'];
 
-    $element = array();
     $element['instructions'] = array(
       '#type' => 'item',
       '#markup' => 'You may rewrite the way this field is presented to the end-user.

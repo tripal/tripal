@@ -336,7 +336,9 @@ function tripal_launch_job($do_parallel = 0, $job_id = NULL) {
 
     // Include the necessary files
     foreach (unserialize($job->includes) as $path) {
-      require_once $path;
+      if ($path) {
+        require_once $path;
+      }
     }
     // set the start time for this job
     $record = new stdClass();

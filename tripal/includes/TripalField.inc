@@ -603,7 +603,52 @@ class TripalField {
    * @param $has_data
    *   TRUE if the field already has data, FALSE if not.
    */
-  public static function settingsForm($field, $instance, $has_data) {
+  public static function instanceSettingsForm($field, $instance) {
+    $settings = $instance['settings'];
+    $element = array();
+
+    //     $element['semantic_web'] = array(
+    //       '#type' => 'textfield',
+    //       '#title' => 'Semantic Web',
+    //       '#description' => t('Each field must be associated with a term
+    //           from a controlled vocabulary.  This allows computer programs to understand
+    //           the data provided on this site.  Please be cautions changing these
+    //           values.  Defaults are set by Tripal and sites that use the same
+    //           terms can exchange information.'),
+    //       '#collapsed' => TRUE,
+    //       '#collapsible' => TRUE,
+    //       '#tree' => TRUE,
+    //     );
+    $module = $field['module'];
+    $element['#field'] = $field;
+    $element['#instance'] = $instance;
+    $element['#element_validate'][] = $module . '_instance_settings_form_validate';
+
+    return $element;
+  }
+  /**
+   *
+   * @param unknown $form
+   * @param unknown $form_state
+   */
+  public static function instanceSettingsFormValidate($form, &$form_state) {
+
+  }
+
+  /**
+   * Provides a form for the 'Field Settings' of the field management page.
+   *
+   * This is an optional hook function and is similar to the
+   * hook_field_settings_form function().
+   *
+   * @param $field
+   *   The field structure being configured.
+   * @param $instance
+   *   The instance structure being configured.
+   * @param $has_data
+   *   TRUE if the field already has data, FALSE if not.
+   */
+  public static function fieldSettingsForm($field, $instance, $has_data) {
     $settings = $field['settings'];
     $element = array();
 
@@ -631,7 +676,7 @@ class TripalField {
    * @param unknown $form
    * @param unknown $form_state
    */
-  public static function settingsFormValidate($form, &$form_state) {
+  public static function fieldSettingsFormValidate($form, &$form_state) {
 
   }
 

@@ -526,7 +526,19 @@ function tripal_chado_field_settings_form($field, $instance, $has_data) {
   $field_type = $field['type'];
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
   if (class_exists($field_type)) {
-    $form = $field_type::settingsForm($field, $instance, $has_data);
+    $form = $field_type::fieldSettingsForm($field, $instance, $has_data);
+  }
+  return $form;
+}
+/**
+ * Implements hook_instance_settings_form()
+ */
+function tripal_chado_instance_settings_form($field, $instance) {
+  $form = array();
+  $field_type = $field['type'];
+  module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+  if (class_exists($field_type)) {
+    $form = $field_type::instanceSettingsForm($field, $instance);
   }
   return $form;
 }
@@ -535,8 +547,8 @@ function tripal_chado_field_settings_form($field, $instance, $has_data) {
  * Implements hook_field_settings_form_validate().
  *
  * This is not an actual Drpual hook, but rather a Tripal created hook
- * to alow the TripalField objects to have a settingsFormValidate() member
- * function.
+ * to alow the TripalField objects to have a fieldSettingsFormValidate()
+ * member function.
  */
 function tripal_chado_field_settings_form_validate($form, &$form_state) {
   $field = $form['#field'];
@@ -545,6 +557,22 @@ function tripal_chado_field_settings_form_validate($form, &$form_state) {
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
   if (class_exists($field_type)) {
     $form = $field_type::settingsFormValidate($field, $instance, $form, $form_state);
+  }
+}
+/**
+ * Implements hook_instance_settings_form_validate().
+ *
+ * This is not an actual Drpual hook, but rather a Tripal created hook
+ * to alow the TripalField objects to have a instanceSettingsFormValidate()
+ * member function.
+ */
+function tripal_chado_field_settings_form_validate($form, &$form_state) {
+  $field = $form['#field'];
+  $instance = $form['#instance'];
+  $field_type = $field['type'];
+  module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
+  if (class_exists($field_type)) {
+    $form = $field_type::instanceSettingsFormValidate($field, $instance, $form, $form_state);
   }
 }
 
