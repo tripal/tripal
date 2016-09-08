@@ -267,10 +267,10 @@ class chado_linker__relationship extends TripalField {
       $type_id = isset($items[$delta][$field_table . '__type_id']) ? $items[$delta][$field_table . '__type_id'] : '';
       $object_id = isset($items[$delta][$field_table . '__object_id']) ? $items[$delta][$field_table . '__object_id'] : '';
 
-      if (array_key_exists('value', $schema['fields'])) {
+      if (isset($items[$delta][$field_table . '__value'])) {
         $value = $items[$delta][$field_table . '__value'];
       }
-      if (array_key_exists('rank', $schema['fields'])) {
+      if (isset($items[$delta][$field_table . '__rank'])) {
         $rank = $items[$delta][$field_table . '__rank'];
       }
 
@@ -346,12 +346,22 @@ class chado_linker__relationship extends TripalField {
 
     // Set up available cvterms for selection
     $vocs = tripal_get_cv_select_options();
+    $cv_id = isset($form_state['values'][$field_name]['und'][0]['vocabulary']) ? $form_state['values'][$field_name]['und'][0]['vocabulary'] : 0;
+    // Try getting the cv_id from cvterm for existing records
+    $default_term = '';
+    if (!$cv_id && $type_id) {
+      $cvterm = tripal_get_cvterm(array('cvterm_id' => $type_id));
+      if (isset($cvterm->cv_id->cv_id)) {
+        $cv_id = $cvterm->cv_id->cv_id;
+        $default_term = $cvterm->name;
+      }
+    }
     $widget['vocabulary'] = array(
       '#type' => 'select',
       '#title' => t('Vocabulary'),
       '#options' => $vocs,
       '#required' => $element['#required'],
-      '#default_value' => $type_id,
+      '#default_value' => $cv_id,
       '#ajax' => array(
         'callback' => "chado_linker__relationship_widget_form_ajax_callback",
         'wrapper' => "$chado_table-$delta",
@@ -359,13 +369,14 @@ class chado_linker__relationship extends TripalField {
         'method' => 'replace'
       ),
     );
-    $cv_id = isset($form_state['values'][$field_name]['und'][0]['vocabulary']) ? $form_state['values'][$field_name]['und'][0]['vocabulary'] : 0;
+    
     if ($cv_id) {
-      $options = array();
+      $options = array();      
       $widget['type_name'] = array(
         '#type' => 'textfield',
         '#title' => t('Relationship Type'),
         '#size' => 15,
+        '#default_value' => $default_term,
         '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/$cv_id"
       );
     }
@@ -870,7 +881,8 @@ class chado_linker__relationship extends TripalField {
     $element['relationship_types'] = array(
       '#type' => 'textarea',
       '#title' => 'Relationship Types',
-      '#description' => 'Provide terms separated by a new line',
+      '#description' => 'Provide terms separated by a new line. The term provided should be 
+        unique and distinguishable by the name.',
       '#default_value' => $instance['settings']['relationship_types'],
     );
 
@@ -882,7 +894,24 @@ class chado_linker__relationship extends TripalField {
    */
   public static function instanceSettingsFormValidate($field, $instance, $form, &$form_state) {
     //dpm($form);dpm($form_state);
-    //form_set_error("instance][settings][relationship_types", t('blah'));
+    $value = $form_state['values']['instance']['settings']['relationship_types'];
+    $rel_types = explode(PHP_EOL, $value);
+
+    // Make sure the supplied types are valid cvterms
+    foreach($rel_types AS $type) {
+      // Ignore empty lines
+      if (trim($type) == '') {
+        continue;
+      }
+      $term = tripal_get_cvterm(array('name' => trim($type)));
+      // Don't save the form  if a term can not be found or it matches more than one cvterm
+      if (!isset($term->cvterm_id)) {
+        form_set_error(
+          "instance][settings][relationship_types", 
+          t("The term '@type' can not be found or matches more than one term.", array('@type' => $type))
+        );
+      }
+    }
   }
 }
 
