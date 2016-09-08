@@ -105,6 +105,7 @@ class chado_linker__relationship extends TripalField {
       'required' => FALSE,
       'settings' => array(
         'auto_attach' => FALSE,
+        'child_relationship_types' => '',
         'relationship_types' => '',
       ),
       'widget' => array(
@@ -369,7 +370,6 @@ class chado_linker__relationship extends TripalField {
         'method' => 'replace'
       ),
     );
-    
     if ($cv_id) {
       $options = array();      
       $widget['type_name'] = array(
@@ -878,9 +878,18 @@ class chado_linker__relationship extends TripalField {
         following value is set.'
     );
 
+    $element['child_relationship_types'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Child Relationship Types',
+      '#description' => 'Provide a term that all of its child terms will be available as  
+        relationship types.',
+      '#default_value' => $instance['settings']['child_relationship_types'],
+      '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/"
+    );
+    
     $element['relationship_types'] = array(
       '#type' => 'textarea',
-      '#title' => 'Relationship Types',
+      '#title' => 'Specific Relationship Types',
       '#description' => 'Provide terms separated by a new line. The term provided should be 
         unique and distinguishable by the name.',
       '#default_value' => $instance['settings']['relationship_types'],
@@ -894,22 +903,35 @@ class chado_linker__relationship extends TripalField {
    */
   public static function instanceSettingsFormValidate($field, $instance, $form, &$form_state) {
     //dpm($form);dpm($form_state);
-    $value = $form_state['values']['instance']['settings']['relationship_types'];
-    $rel_types = explode(PHP_EOL, $value);
+    $settings = $form_state['values']['instance']['settings'];
 
     // Make sure the supplied types are valid cvterms
-    foreach($rel_types AS $type) {
-      // Ignore empty lines
-      if (trim($type) == '') {
-        continue;
+    if (isset($settings['relationship_types'])) {
+      $rel_types = explode(PHP_EOL, $settings['relationship_types']);
+      foreach($rel_types AS $type) {
+        // Ignore empty lines
+        if (trim($type) == '') {
+          continue;
+        }
+        $term = tripal_get_cvterm(array('name' => trim($type)));
+        // Don't save the form  if a term can not be found or it matches more than one cvterm
+        if (!isset($term->cvterm_id)) {
+          form_set_error(
+            "instance][settings][relationship_types", 
+            t("The term '@type' can not be found or matches more than one term.", array('@type' => $type))
+          );
+        }
       }
-      $term = tripal_get_cvterm(array('name' => trim($type)));
-      // Don't save the form  if a term can not be found or it matches more than one cvterm
+    }
+    // Make sure child relationship types are using a valid cvterm
+    if (isset($settings['child_relationship_types'])) {
+      $supertype = $settings['child_relationship_types'];
+      $term = tripal_get_cvterm(array('name' => trim($supertype)));
       if (!isset($term->cvterm_id)) {
         form_set_error(
-          "instance][settings][relationship_types", 
-          t("The term '@type' can not be found or matches more than one term.", array('@type' => $type))
-        );
+            "instance][settings][child_relationship_types",
+            t("The term '@type' can not be found or matches more than one term.", array('@type' => $supertype))
+            );
       }
     }
   }
