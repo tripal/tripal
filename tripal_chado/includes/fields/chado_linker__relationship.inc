@@ -371,7 +371,7 @@ class chado_linker__relationship extends TripalField {
       ),
     );
     if ($cv_id) {
-      $options = array();      
+      $options = array();
       $widget['type_name'] = array(
         '#type' => 'textfield',
         '#title' => t('Relationship Type'),
@@ -871,27 +871,74 @@ class chado_linker__relationship extends TripalField {
   public static function instanceSettingsForm($field, $instance) {
 
     $element = parent::instanceSettingsForm($field, $instance);
-    $element['instructions'] = array(
+    $element['relationships'] = array(
+      '#type' => 'fieldset',
+      '#title' => 'Allowed Relationship Types',
+      '#description' => t('There are three ways that relationship types
+          can be limited for users who have permission to add new relationships.
+          Please select the most appropriate for you use case.  By default
+          all vocabularies are provided to the user which allows use of any
+          term for the relationship type.'),
+      '#collapsed' => TRUE,
+      '#collapsible' => TRUE,
+    );
+//     $element['instructions'] = array(
+//       '#type' => 'item',
+//       '#markup' => 'You may provide a list of terms that will be available in a select box
+//         as the relationship types. This select box will replace the vocabulary select box if the
+//         following value is set.'
+//     );
+
+    $vocs = tripal_get_cv_select_options();
+    $element['relationships']['option1'] = array(
       '#type' => 'item',
-      '#markup' => 'You may provide a list of terms that will be available in a select box
-        as the relationship types. This select box will replace the vocabulary select box if the
-        following value is set.'
+      '#title' => 'Option #1',
+      '#description' => t('Use this option to limit the vocabularies that a user .
+        could use to specify relationship types. With this option any term in .
+        the vocabulary can be used for the relationship type. You may select
+        more than one vocabulary.'),
+
+    );
+    $element['relationships']['option1_vocabs'] = array(
+      '#type' => 'select',
+      '#multiple' => TRUE,
+      '#options' => $vocs,
+      '#size' => 6,
+      '#default_value' => $instance['settings']['default_vocabs'],
+      // TODO add ajax here so that the relationship autocomplete below works
     );
 
-    $element['child_relationship_types'] = array(
+    $element['relationships']['option2'] = array(
+      '#type' => 'item',
+      '#title' => '<b>Option #2</b>',
+      '#description' => 'Some vocabularies are heirarchichal (an ontology). Within this
+         heirarchy groups of related terms typically fall under a common parent. If you
+         wish to limit the list of terms that a user can use for the relationship type,
+         you can provide the parent term here.  Then, only that term\'s children will
+         then be avilable for use as a relationship type.',
+    );
+    $element['relationships']['option2_vocab'] = array(
+      '#type' => 'select',
+      '#description' => 'Specify Default Vocabularies',
+      '#multiple' => FALSE,
+      '#options' => $vocs,
+      '#default_value' => $instance['settings']['default_vocabs'],
+      // TODO add ajax here so that the relationship autocomplete below works
+    );
+    $element['relationships']['option2_parent'] = array(
       '#type' => 'textfield',
-      '#title' => 'Child Relationship Types',
-      '#description' => 'Provide a term that all of its child terms will be available as  
-        relationship types.',
+      '#description' => 'Specify a Heirarchical Parent Term',
       '#default_value' => $instance['settings']['child_relationship_types'],
       '#autocomplete_path' => "admin/tripal/storage/chado/auto_name/cvterm/"
     );
-    
-    $element['relationship_types'] = array(
-      '#type' => 'textarea',
-      '#title' => 'Specific Relationship Types',
-      '#description' => 'Provide terms separated by a new line. The term provided should be 
+    $element['relationships']['option3'] = array(
+      '#type' => 'item',
+      '#title' => 'Option #3',
+      '#description' => 'Provide terms separated by a new line. The term provided should be
         unique and distinguishable by the name.',
+    );
+    $element['relationships']['relationship_types'] = array(
+      '#type' => 'textarea',
       '#default_value' => $instance['settings']['relationship_types'],
     );
 
@@ -917,7 +964,7 @@ class chado_linker__relationship extends TripalField {
         // Don't save the form  if a term can not be found or it matches more than one cvterm
         if (!isset($term->cvterm_id)) {
           form_set_error(
-            "instance][settings][relationship_types", 
+            "instance][settings][relationships][relationship_types",
             t("The term '@type' can not be found or matches more than one term.", array('@type' => $type))
           );
         }
@@ -929,7 +976,7 @@ class chado_linker__relationship extends TripalField {
       $term = tripal_get_cvterm(array('name' => trim($supertype)));
       if (!isset($term->cvterm_id)) {
         form_set_error(
-            "instance][settings][child_relationship_types",
+            "instance][settings][relationships][child_relationship_types",
             t("The term '@type' can not be found or matches more than one term.", array('@type' => $supertype))
             );
       }
