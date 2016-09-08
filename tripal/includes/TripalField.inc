@@ -67,6 +67,9 @@ class TripalField {
     $this->field_type = get_class($this);
 
     // Determine if this field can attach to the bundle.
+    if ($this->field_type == "chado_base__dbxref_id") {
+      dpm(debug_backtrace());
+    }
     $this->setCanAttach();
 
     // Set the field's name.

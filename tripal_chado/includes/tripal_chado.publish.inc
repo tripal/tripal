@@ -60,10 +60,21 @@ function tripal_chado_publish_form($form, &$form_state) {
   return $form;
 }
 
+/**
+ *
+ * @param unknown $form
+ * @param unknown $form_state
+ */
 function tripal_chado_publish_form_validate($form, &$form_state) {
 
 }
 
+/**
+ *
+ * @param unknown $form
+ * @param unknown $form_state
+ * @return The
+ */
 function tripal_chado_publish_form_submit($form, &$form_state) {
   if ($form_state['clicked_button']['#name'] == 'publish_btn') {
     global $user;

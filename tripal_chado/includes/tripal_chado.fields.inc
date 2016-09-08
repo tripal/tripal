@@ -685,14 +685,13 @@ function tripal_chado_field_validate($entity_type, $entity, $field, $instance,
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
   if (class_exists($field_type)) {
     $bundle = isset($entity->bundle) ? $entity->bundle : NULL;
-    $field_obj = new $field_type($entity_type, $bundle);
-    $form = $field_obj::widgetFormValidate($entity_type, $entity, $field, $instance,
+    $form = $field_type::widgetFormValidate($entity_type, $entity, $field, $instance,
         $langcode, $items, $errors);
   }
 }
 
 /**
- * Implements hook_field_validate()
+ * Implements hook_field_submit()
  *
  * This is a TripalEntity specific hook.
  */
@@ -702,9 +701,8 @@ function tripal_chado_field_submit($entity_type, $entity, $field, $instance,
   $field_type = $field['type'];
   module_load_include('inc', 'tripal_chado', 'includes/fields/' . $field_type);
   if (class_exists($field_type)) {
-    $field_obj = new $field_type($entity_type, $entity->bundle);
-    $form = $field_obj::widgetFormSubmit($entity_type, $entity, $field, $instance,
-        $langcode, $items, $errors);
+    $form = $field_type::widgetFormSubmit($entity_type, $entity, $field, $instance,
+        $langcode, $items, $form, $form_state);
   }
 }
 

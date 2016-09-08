@@ -20,7 +20,7 @@ class chado_base__dbxref_id extends TripalField {
     );
   }
   /**
-   * @see TripalField::can_attach()
+   * @see TripalField::setCanAttach()
    */
   protected function setCanAttach() {
 
