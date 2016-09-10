@@ -9,7 +9,7 @@ function tripal_field_info() {
 
   $field_types = tripal_get_field_types('tripal');
   foreach ($field_types as $field_type) {
-    $info[$field_type] = $field_type::fieldDefaults();
+    $info[$field_type] = $field_type::fieldInfo();
   }
   return $info;
 }
